@@ -1385,11 +1385,11 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
   } else {
     // Indexed case.
     GeomVertexReader index(cdata->_vertices.get_read_pointer(), 0, current_thread);
-    int num_vertices = get_num_vertices();
 
     if (got_mat) {
-      for (int i = 0; i < num_vertices; ++i) {
-        reader.set_row(index.get_data1i());
+      while (!index.is_at_end()) {
+        int ii = index.get_data1i();
+        reader.set_row(ii);
         LPoint3f vertex = mat.xform_point(reader.get_data3f());
         
         if (found_any) {
@@ -1406,7 +1406,7 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
         }
       }
     } else {
-      for (int i = 0; i < num_vertices; ++i) {
+      while (!index.is_at_end()) {
         int ii = index.get_data1i();
         reader.set_row(ii);
         const LVecBase3f &vertex = reader.get_data3f();
@@ -1523,76 +1523,79 @@ recompute_minmax(GeomPrimitive::CData *cdata) {
     cdata->_mins.clear();
     cdata->_maxs.clear();
 
-  } else if (get_num_vertices() == 0) {
-    // Or if we don't have any vertices, the minmax is also trivial.
-    cdata->_min_vertex = 0;
-    cdata->_max_vertex = 0;
-    cdata->_mins.clear();
-    cdata->_maxs.clear();
+  } else {
+    int num_vertices = cdata->_vertices.get_read_pointer()->get_num_rows();
 
-  } else if (get_num_vertices_per_primitive() == 0) {
-    // This is a complex primitive type like a triangle strip; compute
-    // the minmax of each primitive (as well as the overall minmax).
-    GeomVertexReader index(cdata->_vertices.get_read_pointer(), 0);
-
-    cdata->_mins = make_index_data();
-    cdata->_maxs = make_index_data();
-
-    GeomVertexWriter mins(cdata->_mins.get_write_pointer(), 0);
-    GeomVertexWriter maxs(cdata->_maxs.get_write_pointer(), 0);
-
-    int pi = 0;
-
-    unsigned int vertex = index.get_data1i();
-    cdata->_min_vertex = vertex;
-    cdata->_max_vertex = vertex;
-    unsigned int min_prim = vertex;
-    unsigned int max_prim = vertex;
-
-    int num_vertices = get_num_vertices();
-    for (int vi = 1; vi < num_vertices; ++vi) {
-      nassertv(!index.is_at_end());
+    if (num_vertices == 0) {
+      // Or if we don't have any vertices, the minmax is also trivial.
+      cdata->_min_vertex = 0;
+      cdata->_max_vertex = 0;
+      cdata->_mins.clear();
+      cdata->_maxs.clear();
+      
+    } else if (get_num_vertices_per_primitive() == 0) {
+      // This is a complex primitive type like a triangle strip; compute
+      // the minmax of each primitive (as well as the overall minmax).
+      GeomVertexReader index(cdata->_vertices.get_read_pointer(), 0);
+      
+      cdata->_mins = make_index_data();
+      cdata->_maxs = make_index_data();
+      
+      GeomVertexWriter mins(cdata->_mins.get_write_pointer(), 0);
+      GeomVertexWriter maxs(cdata->_maxs.get_write_pointer(), 0);
+      
+      int pi = 0;
+      
       unsigned int vertex = index.get_data1i();
-      cdata->_min_vertex = min(cdata->_min_vertex, vertex);
-      cdata->_max_vertex = max(cdata->_max_vertex, vertex);
+      cdata->_min_vertex = vertex;
+      cdata->_max_vertex = vertex;
+      unsigned int min_prim = vertex;
+      unsigned int max_prim = vertex;
+      
+      for (int vi = 1; vi < num_vertices; ++vi) {
+        nassertv(!index.is_at_end());
+        unsigned int vertex = index.get_data1i();
+        cdata->_min_vertex = min(cdata->_min_vertex, vertex);
+        cdata->_max_vertex = max(cdata->_max_vertex, vertex);
 
-      if (vi == cdata->_ends[pi]) {
-        mins.add_data1i(min_prim);
-        maxs.add_data1i(max_prim);
-        min_prim = vertex;
-        max_prim = vertex;
-        ++pi;
-
-      } else {
-        min_prim = min(min_prim, vertex);
-        max_prim = max(max_prim, vertex);
+        nassertv(pi < cdata->_ends.size());
+        if (vi == cdata->_ends[pi]) {
+          mins.add_data1i(min_prim);
+          maxs.add_data1i(max_prim);
+          min_prim = vertex;
+          max_prim = vertex;
+          ++pi;
+          
+        } else {
+          min_prim = min(min_prim, vertex);
+          max_prim = max(max_prim, vertex);
+        }
+      }
+      mins.add_data1i(min_prim);
+      maxs.add_data1i(max_prim);
+      nassertv(mins.get_array_data()->get_num_rows() == (int)cdata->_ends.size());
+      
+    } else {
+      // This is a simple primitive type like a triangle; just compute
+      // the overall minmax.
+      GeomVertexReader index(cdata->_vertices.get_read_pointer(), 0);
+      
+      cdata->_mins.clear();
+      cdata->_maxs.clear();
+      
+      unsigned int vertex = index.get_data1i();
+      cdata->_min_vertex = vertex;
+      cdata->_max_vertex = vertex;
+      
+      for (int vi = 1; vi < num_vertices; ++vi) {
+        nassertv(!index.is_at_end());
+        unsigned int vertex = index.get_data1i();
+        cdata->_min_vertex = min(cdata->_min_vertex, vertex);
+        cdata->_max_vertex = max(cdata->_max_vertex, vertex);
       }
     }
-    mins.add_data1i(min_prim);
-    maxs.add_data1i(max_prim);
-    nassertv(mins.get_array_data()->get_num_rows() == (int)cdata->_ends.size());
-
-  } else {
-    // This is a simple primitive type like a triangle; just compute
-    // the overall minmax.
-    GeomVertexReader index(cdata->_vertices.get_read_pointer(), 0);
-
-    cdata->_mins.clear();
-    cdata->_maxs.clear();
-
-    unsigned int vertex = index.get_data1i();
-    cdata->_min_vertex = vertex;
-    cdata->_max_vertex = vertex;
-
-    int num_vertices = get_num_vertices();
-    for (int vi = 1; vi < num_vertices; ++vi) {
-      nassertv(!index.is_at_end());
-      unsigned int vertex = index.get_data1i();
-      cdata->_min_vertex = min(cdata->_min_vertex, vertex);
-      cdata->_max_vertex = max(cdata->_max_vertex, vertex);
-    }
   }
-
+    
   cdata->_got_minmax = true;
 }
 

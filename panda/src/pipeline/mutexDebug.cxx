@@ -27,7 +27,7 @@ MutexTrueImpl *MutexDebug::_global_lock;
 ////////////////////////////////////////////////////////////////////
 MutexDebug::
 MutexDebug(const string &name, bool allow_recursion) :
-  _name(name),
+  Namable(name),
   _allow_recursion(allow_recursion),
   _locking_thread(NULL),
   _lock_count(0),
@@ -58,9 +58,9 @@ MutexDebug::
 void MutexDebug::
 output(ostream &out) const {
   if (_allow_recursion) {
-    out << "ReMutex " << _name << " " << (void *)this;
+    out << "ReMutex " << get_name() << " " << (void *)this;
   } else {
-    out << "Mutex " << _name << " " << (void *)this;
+    out << "Mutex " << get_name() << " " << (void *)this;
   }
 }
 
@@ -90,7 +90,7 @@ do_lock() {
     nassertv(_lock_count > 0);
     if (!_allow_recursion) {
       ostringstream ostr;
-      ostr << *_locking_thread << " attempted to double-lock non-reentrant "
+      ostr << *this_thread << " attempted to double-lock non-reentrant "
            << *this;
       nassert_raise(ostr.str());
     }
@@ -98,6 +98,26 @@ do_lock() {
 
   } else {
     // The mutex is locked by some other thread.
+
+#ifdef PHONY_MUTEX
+    // In this case, we don't really have mutexes anyway.
+    MissedThreads::iterator mi = _missed_threads.insert(MissedThreads::value_type(this_thread, 0)).first;
+    if ((*mi).second == 0) {
+      thread_cat.info()
+        << *this_thread << " not stopped by " << *this << " (held by "
+        << *_locking_thread << ")\n";
+    } else {
+      if (!_allow_recursion) {
+        ostringstream ostr;
+        ostr << *this_thread << " attempted to double-lock non-reentrant "
+             << *this;
+        nassert_raise(ostr.str());
+      }
+    }
+    ++((*mi).second);
+
+#else // PHONY_MUTEX
+    // This is the real case.  We have mutexes, so enforce it.
 
     // Check for deadlock.
     MutexDebug *next_mutex = this;
@@ -133,6 +153,7 @@ do_lock() {
         << *this_thread << " blocking on " << *this << " (held by "
         << *_locking_thread << ")\n";
     }
+
     while (_locking_thread != (Thread *)NULL) {
       _cvar_impl.wait();
     }
@@ -147,6 +168,7 @@ do_lock() {
     _locking_thread = this_thread;
     ++_lock_count;
     nassertv(_lock_count == 1);
+#endif  // PHONY_MUTEX
   }
 }
 
@@ -165,10 +187,27 @@ do_release() {
   Thread *this_thread = Thread::get_current_thread();
 
   if (_locking_thread != this_thread) {
+#ifdef PHONY_MUTEX
+    // No real mutexes.  This just means we blew past a mutex without
+    // locking it, above.
+
+    MissedThreads::iterator mi = _missed_threads.find(this_thread);
+    nassertv(mi != _missed_threads.end());
+    nassertv((*mi).second > 0);
+    --((*mi).second);
+
+    if ((*mi).second == 0) {
+      _missed_threads.erase(mi);
+    }
+
+#else  // PHONY_MUTEX
+    // In the real-mutex case, this is an error condition.
     ostringstream ostr;
     ostr << *this_thread << " attempted to release "
          << *this << " which it does not own";
     nassert_raise(ostr.str());
+#endif  // PHONY_MUTEX
+
     _global_lock->release();
     return;
   }
@@ -179,7 +218,19 @@ do_release() {
   if (_lock_count == 0) {
     // That was the last lock held by this thread.  Release the lock.
     _locking_thread = (Thread *)NULL;
+
+#ifdef PHONY_MUTEX
+    if (!_missed_threads.empty()) {
+      // Promote some other thread to be the honorary lock holder.
+      MissedThreads::iterator mi = _missed_threads.begin();
+      _locking_thread = (*mi).first;
+      _lock_count = (*mi).second;
+      _missed_threads.erase(mi);
+      nassertv(_lock_count > 0);
+    }
+#else
     _cvar_impl.signal();
+#endif
   }
 }
 
@@ -191,7 +242,20 @@ do_release() {
 ////////////////////////////////////////////////////////////////////
 bool MutexDebug::
 do_debug_is_locked() const {
-  return (_locking_thread == Thread::get_current_thread());
+  Thread *this_thread = Thread::get_current_thread();
+  if (_locking_thread == this_thread) {
+    return true;
+  }
+
+#ifdef PHONY_MUTEX
+  MissedThreads::const_iterator mi = _missed_threads.find(this_thread);
+  if (mi != _missed_threads.end()) {
+    nassertr((*mi).second > 0, false);
+    return true;
+  }
+#endif
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -245,11 +245,10 @@ call_python_func(PyObject *function, PyObject *args) {
 
   } else {
 #ifdef SIMPLE_THREADS
-    // We can't use the PyGILState interface, which assumes we are using
-    // true OS-level threading (and we might be just using
-    // SIMPLE_THREADS).  PyGILState enforces policies like only one
-    // thread state per OS-level thread, which is not true in the case
-    // of SIMPLE_THREADS.
+    // We can't use the PyGILState interface, which assumes we are
+    // using true OS-level threading.  PyGILState enforces policies
+    // like only one thread state per OS-level thread, which is not
+    // true in the case of SIMPLE_THREADS.
     
     PyThreadState *orig_thread_state = PyThreadState_Get();
     PyInterpreterState *istate = orig_thread_state->interp;

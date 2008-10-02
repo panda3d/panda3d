@@ -34,6 +34,7 @@ set_virtual_frame(float left, float right, float bottom, float top) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGScrollFrame::
 set_virtual_frame(const LVecBase4f &frame) {
+  ReMutexHolder holder(_lock);
   _has_virtual_frame = true;
   _virtual_frame = frame;
 
@@ -52,6 +53,7 @@ set_virtual_frame(const LVecBase4f &frame) {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase4f &PGScrollFrame::
 get_virtual_frame() const {
+  ReMutexHolder holder(_lock);
   return _has_virtual_frame ? _virtual_frame : get_clip_frame();
 }
 
@@ -64,6 +66,7 @@ get_virtual_frame() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGScrollFrame::
 has_virtual_frame() const {
+  ReMutexHolder holder(_lock);
   return _has_virtual_frame;
 }
 
@@ -77,6 +80,7 @@ has_virtual_frame() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGScrollFrame::
 clear_virtual_frame() {
+  ReMutexHolder holder(_lock);
   _has_virtual_frame = false;
 }
 
@@ -92,6 +96,7 @@ clear_virtual_frame() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGScrollFrame:: 
 set_manage_pieces(bool manage_pieces) {
+  ReMutexHolder holder(_lock);
   _manage_pieces = manage_pieces;
   _needs_remanage = true;
   _needs_recompute_clip = true;
@@ -105,6 +110,7 @@ set_manage_pieces(bool manage_pieces) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGScrollFrame:: 
 get_manage_pieces() const {
+  ReMutexHolder holder(_lock);
   return _manage_pieces;
 }
 
@@ -122,6 +128,7 @@ get_manage_pieces() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGScrollFrame:: 
 set_auto_hide(bool auto_hide) {
+  ReMutexHolder holder(_lock);
   _auto_hide = auto_hide;
   if (_auto_hide) {
     set_manage_pieces(true);
@@ -137,6 +144,7 @@ set_auto_hide(bool auto_hide) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGScrollFrame:: 
 get_auto_hide() const {
+  ReMutexHolder holder(_lock);
   return _auto_hide;
 }
 
@@ -150,6 +158,7 @@ get_auto_hide() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGScrollFrame::
 set_horizontal_slider(PGSliderBar *horizontal_slider) {
+  ReMutexHolder holder(_lock);
   if (_horizontal_slider != (PGSliderBar *)NULL) {
     _horizontal_slider->set_notify(NULL);
   }
@@ -181,6 +190,7 @@ clear_horizontal_slider() {
 ////////////////////////////////////////////////////////////////////
 INLINE PGSliderBar *PGScrollFrame::
 get_horizontal_slider() const {
+  ReMutexHolder holder(_lock);
   return _horizontal_slider;
 }
 
@@ -194,6 +204,7 @@ get_horizontal_slider() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGScrollFrame::
 set_vertical_slider(PGSliderBar *vertical_slider) {
+  ReMutexHolder holder(_lock);
   if (_vertical_slider != (PGSliderBar *)NULL) {
     _vertical_slider->set_notify(NULL);
   }
@@ -225,6 +236,7 @@ clear_vertical_slider() {
 ////////////////////////////////////////////////////////////////////
 INLINE PGSliderBar *PGScrollFrame::
 get_vertical_slider() const {
+  ReMutexHolder holder(_lock);
   return _vertical_slider;
 }
 
@@ -236,6 +248,7 @@ get_vertical_slider() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGScrollFrame::
 recompute() {
+  ReMutexHolder holder(_lock);
   recompute_clip();
   recompute_canvas();
 }

@@ -162,7 +162,9 @@ PandaNode(const PandaNode &copy) :
     cdata->_into_collide_mask = copy_cdata->_into_collide_mask;
     cdata->_user_bounds = copy_cdata->_user_bounds;
     cdata->_internal_bounds = NULL;
-    cdata->_internal_bounds_stale = true;
+    cdata->_internal_bounds_computed = UpdateSeq::initial();
+    cdata->_internal_bounds_mark = UpdateSeq::initial();
+    ++cdata->_internal_bounds_mark;
     cdata->_final_bounds = copy_cdata->_final_bounds;
     cdata->_fancy_bits = copy_cdata->_fancy_bits;
     
@@ -1772,7 +1774,7 @@ copy_all_properties(PandaNode *other) {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 replace_node(PandaNode *other) {
-  nassertv(Thread::get_current_pipeline_stage() == 0);
+  //  nassertv(Thread::get_current_pipeline_stage() == 0);
 
   if (other == this) {
     // Trivial.
@@ -2123,8 +2125,9 @@ get_off_clip_planes(Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 prepare_scene(GraphicsStateGuardianBase *gsg, const RenderState *net_state) {
+  Thread *current_thread = Thread::get_current_thread();
   PreparedGraphicsObjects *prepared_objects = gsg->get_prepared_objects();
-  r_prepare_scene(net_state, prepared_objects);
+  r_prepare_scene(net_state, prepared_objects, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2421,18 +2424,42 @@ as_light() {
 ////////////////////////////////////////////////////////////////////
 CPT(BoundingVolume) PandaNode::
 get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
-  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
-  if (cdata->_user_bounds != (BoundingVolume *)NULL) {
-    return cdata->_user_bounds;
-  }
+  while (true) {
+    UpdateSeq mark;
+    {
+      CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+      if (cdata->_user_bounds != (BoundingVolume *)NULL) {
+        return cdata->_user_bounds;
+      }
+      
+      if (cdata->_internal_bounds_mark == cdata->_internal_bounds_computed) {
+        return cdata->_internal_bounds;
+      }
 
-  if (cdata->_internal_bounds_stale) {
-    CDStageWriter cdataw(((PandaNode *)this)->_cycler, pipeline_stage, cdata);
-    compute_internal_bounds(cdataw, pipeline_stage, current_thread);
-    nassertr(!cdataw->_internal_bounds.is_null(), NULL);
-    return cdataw->_internal_bounds;
+      mark = cdata->_internal_bounds_mark;
+    }
+
+    // First, call compute_internal_bounds without acquiring the lock.
+    // This avoids a deadlock condition.
+    CPT(BoundingVolume) internal_bounds;
+    int internal_vertices;
+    compute_internal_bounds(internal_bounds, internal_vertices,
+                            pipeline_stage, current_thread);
+    nassertr(!internal_bounds.is_null(), NULL);
+    
+    // Now, acquire the lock, and apply the above-computed bounds.
+    CDStageWriter cdataw(((PandaNode *)this)->_cycler, pipeline_stage);
+    if (cdataw->_internal_bounds_mark == mark) {
+      cdataw->_internal_bounds_computed = mark;
+      cdataw->_internal_bounds = internal_bounds;
+      cdataw->_internal_vertices = internal_vertices;
+      return cdataw->_internal_bounds;
+    }
+
+    // Dang, someone in another thread incremented
+    // _internal_bounds_mark while we weren't holding the lock.  That
+    // means we need to go back and do it again.
   }
-  return cdata->_internal_bounds;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2447,14 +2474,38 @@ get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
 ////////////////////////////////////////////////////////////////////
 int PandaNode::
 get_internal_vertices(int pipeline_stage, Thread *current_thread) const {
-  CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
-  if (cdata->_internal_bounds_stale) {
-    CDStageWriter cdataw(((PandaNode *)this)->_cycler, pipeline_stage, cdata);
-    compute_internal_bounds(cdataw, pipeline_stage, current_thread);
-    nassertr(!cdataw->_internal_bounds.is_null(), 0);
-    return cdataw->_internal_vertices;
+  while (true) {
+    UpdateSeq mark;
+    {
+      CDStageReader cdata(_cycler, pipeline_stage, current_thread);
+      if (cdata->_internal_bounds_mark == cdata->_internal_bounds_computed) {
+        return cdata->_internal_vertices;
+      }
+
+      mark = cdata->_internal_bounds_mark;
+    }
+
+    // First, call compute_internal_bounds without acquiring the lock.
+    // This avoids a deadlock condition.
+    CPT(BoundingVolume) internal_bounds;
+    int internal_vertices;
+    compute_internal_bounds(internal_bounds, internal_vertices,
+                            pipeline_stage, current_thread);
+    nassertr(!internal_bounds.is_null(), NULL);
+    
+    // Now, acquire the lock, and apply the above-computed bounds.
+    CDStageWriter cdataw(((PandaNode *)this)->_cycler, pipeline_stage);
+    if (cdataw->_internal_bounds_mark == mark) {
+      cdataw->_internal_bounds_computed = mark;
+      cdataw->_internal_bounds = internal_bounds;
+      cdataw->_internal_vertices = internal_vertices;
+      return cdataw->_internal_vertices;
+    }
+
+    // Dang, someone in another thread incremented
+    // _internal_bounds_mark while we weren't holding the lock.  That
+    // means we need to go back and do it again.
   }
-  return cdata->_internal_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2472,7 +2523,7 @@ set_internal_bounds(const BoundingVolume *volume) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
     cdataw->_internal_bounds = volume;
-    cdataw->_internal_bounds_stale = false;
+    cdataw->_internal_bounds_computed = cdataw->_internal_bounds_mark;
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   mark_bounds_stale(current_thread);
@@ -2539,11 +2590,12 @@ force_bounds_stale(int pipeline_stage, Thread *current_thread) {
 //               something internally.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
                         Thread *current_thread) const {
-  bdata->_internal_bounds = new BoundingSphere;
-  bdata->_internal_vertices = 0;
-  bdata->_internal_bounds_stale = false;
+  internal_bounds = new BoundingSphere;
+  internal_vertices = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2693,12 +2745,15 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 r_prepare_scene(const RenderState *state,
-                PreparedGraphicsObjects *prepared_objects) {
-  int num_children = get_num_children();
-  for (int i = 0; i < num_children; i++) {
-    PandaNode *child = get_child(i);
+                PreparedGraphicsObjects *prepared_objects,
+                Thread *current_thread) {
+  Children children = get_children(current_thread);
+  // We must call get_num_children() each time through the loop, in
+  // case we're running SIMPLE_THREADS and we get interrupted.
+  for (int i = 0; i < children.get_num_children(); i++) {
+    PandaNode *child = children.get_child(i);
     CPT(RenderState) child_state = state->compose(child->get_state());
-    child->r_prepare_scene(child_state, prepared_objects);
+    child->r_prepare_scene(child_state, prepared_objects, current_thread);
   }
 }
 
@@ -3546,6 +3601,8 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
     // Also get the list of the node's children.
     Children children(cdata);
 
+    int num_vertices = cdata->_internal_vertices;
+
     // Now that we've got all the data we need from the node, we can
     // release the lock.
     _cycler.release_read_stage(pipeline_stage, cdata.take_pointer());
@@ -3578,8 +3635,6 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
         all_box = false;
       }
     }
-
-    int num_vertices = cdata->_internal_vertices;
 
     // Now expand those contents to include all of our children.
 
@@ -3754,6 +3809,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
             << "} " << *this << "::update_bounds();\n";
         }
 
+        nassertr(cdataw->_last_update == cdataw->_next_update, cdataw)
         return cdataw;
       }
       

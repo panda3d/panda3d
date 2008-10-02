@@ -86,6 +86,8 @@ PUBLISHED:
   BLOCKING INLINE PT(PandaNode) load_sync(const Filename &filename, 
                                           const LoaderOptions &options = LoaderOptions()) const;
 
+  PT(AsyncTask) make_async_request(const Filename &filename, 
+                                   const LoaderOptions &options = LoaderOptions());
   INLINE void load_async(AsyncTask *request);
 
   BLOCKING PT(PandaNode) load_bam_stream(istream &in);

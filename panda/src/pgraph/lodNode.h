@@ -83,7 +83,9 @@ protected:
   int compute_child(CullTraverser *trav, CullTraverserData &data);
 
   bool show_switches_cull_callback(CullTraverser *trav, CullTraverserData &data);
-  virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
+  virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                                       int &internal_vertices,
+                                       int pipeline_stage,
                                        Thread *current_thread) const;
 
   INLINE void consider_verify_lods(CullTraverser *trav, CullTraverserData &data);

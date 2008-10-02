@@ -366,10 +366,13 @@ safe_to_combine() const {
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
 r_prepare_scene(const RenderState *state,
-                PreparedGraphicsObjects *prepared_objects) {
-  int num_geoms = get_num_geoms();
-  for (int i = 0; i < num_geoms; i++) {
-    CPT(RenderState) geom_state = state->compose(get_geom_state(i));
+                PreparedGraphicsObjects *prepared_objects,
+                Thread *current_thread) {
+  CDReader cdata(_cycler, current_thread);
+  GeomList::const_iterator gi;
+  CPT(GeomList) geoms = cdata->get_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
+    CPT(RenderState) geom_state = state->compose((*gi)._state);
     const RenderAttrib *attrib = 
       geom_state->get_attrib(TextureAttrib::get_class_type());
     if (attrib != (const RenderAttrib *)NULL) {
@@ -382,7 +385,7 @@ r_prepare_scene(const RenderState *state,
     }
   }
   
-  PandaNode::r_prepare_scene(state, prepared_objects);
+  PandaNode::r_prepare_scene(state, prepared_objects, current_thread);
 }
 
 
@@ -842,24 +845,31 @@ do_premunge(GraphicsStateGuardianBase *gsg,
 //               something internally.
 ////////////////////////////////////////////////////////////////////
 void GeomNode::
-compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
                         Thread *current_thread) const {
   int num_vertices = 0;
 
   CDLockedStageReader cdata(_cycler, pipeline_stage, current_thread);
 
   pvector<const BoundingVolume *> child_volumes;
+  pvector<CPT(BoundingVolume) > child_volumes_ref;
   bool all_box = true;
 
   GeomList::const_iterator gi;
   CPT(GeomList) geoms = cdata->get_geoms();
+  child_volumes.reserve(geoms->size());
+  child_volumes_ref.reserve(geoms->size());
+
   for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);
     CPT(Geom) geom = entry._geom.get_read_pointer();
-    const BoundingVolume *volume = geom->get_bounds();
+    CPT(BoundingVolume) volume = geom->get_bounds();
 
     if (!volume->is_empty()) {
       child_volumes.push_back(volume);
+      child_volumes_ref.push_back(volume);
       if (!volume->is_exact_type(BoundingBox::get_class_type())) {
         all_box = false;
       }
@@ -885,9 +895,8 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
     ((BoundingVolume *)gbv)->around(child_begin, child_end);
   }
   
-  bdata->_internal_bounds = gbv;
-  bdata->_internal_vertices = num_vertices;
-  bdata->_internal_bounds_stale = false;
+  internal_bounds = gbv;
+  internal_vertices = num_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////

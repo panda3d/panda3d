@@ -610,191 +610,195 @@ render_frame() {
       << "render_frame() - frame " << global_clock->get_frame_count() << "\n";
   }
 
-  ReMutexHolder holder(_lock, current_thread);
+  {
+    ReMutexHolder holder(_lock, current_thread);
 
-  if (!_windows_sorted) {
-    do_resort_windows();
-  }
-
-  if (sync_flip && _flip_state != FS_flip) {
-    do_flip_frame(current_thread);
-  }
-
-  // Are any of the windows ready to be deleted?
-  Windows new_windows;
-  new_windows.reserve(_windows.size());
-  Windows::iterator wi;
-  for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
-    if (win->get_delete_flag()) {
-      do_remove_window(win, current_thread);
-      
-    } else {
-      new_windows.push_back(win);
-      
-      // Let's calculate each scene's bounding volume here in App,
-      // before we cycle the pipeline.  The cull traversal will
-      // calculate it anyway, but if we calculate it in App first
-      // before it gets calculated in the Cull thread, it will be more
-      // likely to stick for subsequent frames, so we won't have to
-      // recompute it each frame.
-      int num_drs = win->get_num_active_display_regions();
-      for (int i = 0; i < num_drs; ++i) {
-        DisplayRegion *dr = win->get_active_display_region(i);
-        if (dr != (DisplayRegion *)NULL) {
-          NodePath camera_np = dr->get_camera(current_thread);
-          if (!camera_np.is_empty()) {
-            Camera *camera = DCAST(Camera, camera_np.node());
-            NodePath scene = camera->get_scene();
-            if (scene.is_empty()) {
-              scene = camera_np.get_top(current_thread);
-            }
-            if (!scene.is_empty()) {
-              scene.get_bounds(current_thread);
+    if (!_windows_sorted) {
+      do_resort_windows();
+    }
+    
+    if (sync_flip && _flip_state != FS_flip) {
+      do_flip_frame(current_thread);
+    }
+    
+    // Are any of the windows ready to be deleted?
+    Windows new_windows;
+    new_windows.reserve(_windows.size());
+    Windows::iterator wi;
+    for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
+      GraphicsOutput *win = (*wi);
+      if (win->get_delete_flag()) {
+        do_remove_window(win, current_thread);
+        
+      } else {
+        new_windows.push_back(win);
+        
+        // Let's calculate each scene's bounding volume here in App,
+        // before we cycle the pipeline.  The cull traversal will
+        // calculate it anyway, but if we calculate it in App first
+        // before it gets calculated in the Cull thread, it will be more
+        // likely to stick for subsequent frames, so we won't have to
+        // recompute it each frame.
+        int num_drs = win->get_num_active_display_regions();
+        for (int i = 0; i < num_drs; ++i) {
+          DisplayRegion *dr = win->get_active_display_region(i);
+          if (dr != (DisplayRegion *)NULL) {
+            NodePath camera_np = dr->get_camera(current_thread);
+            if (!camera_np.is_empty()) {
+              Camera *camera = DCAST(Camera, camera_np.node());
+              NodePath scene = camera->get_scene();
+              if (scene.is_empty()) {
+                scene = camera_np.get_top(current_thread);
+              }
+              if (!scene.is_empty()) {
+                scene.get_bounds(current_thread);
+              }
             }
           }
         }
       }
     }
-  }
-  _windows.swap(new_windows);
-
-  // Now it's time to do any drawing from the main frame--after all of
-  // the App code has executed, but before we begin the next frame.
-  _app.do_frame(this, current_thread);
-  
-  // Grab each thread's mutex again after all windows have flipped,
-  // and wait for the thread to finish.
-  {
-    PStatTimer timer(_wait_pcollector, current_thread);
+    _windows.swap(new_windows);
+    
+    // Now it's time to do any drawing from the main frame--after all of
+    // the App code has executed, but before we begin the next frame.
+    _app.do_frame(this, current_thread);
+    
+    // Grab each thread's mutex again after all windows have flipped,
+    // and wait for the thread to finish.
+    {
+      PStatTimer timer(_wait_pcollector, current_thread);
+      Threads::const_iterator ti;
+      for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+        RenderThread *thread = (*ti).second;
+        thread->_cv_mutex.lock();
+        
+        while (thread->_thread_state != TS_wait) {
+          thread->_cv_done.wait();
+        }
+      }
+    }
+    
+#if defined(THREADED_PIPELINE) && defined(DO_PSTATS)
+    _cyclers_pcollector.set_level(_pipeline->get_num_cyclers());
+    _dirty_cyclers_pcollector.set_level(_pipeline->get_num_dirty_cyclers());
+    
+#ifdef DEBUG_THREADS
+    if (PStatClient::is_connected()) {
+      _pipeline->iterate_all_cycler_types(pstats_count_cycler_type, this);
+      _pipeline->iterate_dirty_cycler_types(pstats_count_dirty_cycler_type, this);
+    }
+#endif  // DEBUG_THREADS
+    
+#endif  // THREADED_PIPELINE && DO_PSTATS
+    
+    GeomCacheManager::flush_level();
+    CullTraverser::flush_level();
+    RenderState::flush_level();
+    TransformState::flush_level();
+    CullableObject::flush_level();
+    
+    // Now cycle the pipeline and officially begin the next frame.
+#ifdef THREADED_PIPELINE
+    {
+      PStatTimer timer(_cycle_pcollector, current_thread);
+      _pipeline->cycle();
+    }
+#endif  // THREADED_PIPELINE
+    
+    global_clock->tick(current_thread);
+    if (global_clock->check_errors(current_thread)) {
+      throw_event("clock_error");
+    }
+    
+#ifdef DO_PSTATS
+    PStatClient::main_tick();
+    
+    // Reset our pcollectors that track data across the frame.
+    CullTraverser::_nodes_pcollector.clear_level();
+    CullTraverser::_geom_nodes_pcollector.clear_level();
+    CullTraverser::_geoms_pcollector.clear_level();
+    GeomCacheManager::_geom_cache_active_pcollector.clear_level();
+    GeomCacheManager::_geom_cache_record_pcollector.clear_level();
+    GeomCacheManager::_geom_cache_erase_pcollector.clear_level();
+    GeomCacheManager::_geom_cache_evict_pcollector.clear_level();
+    
+    GraphicsStateGuardian::init_frame_pstats();
+    
+    _transform_states_pcollector.set_level(TransformState::get_num_states());
+    _render_states_pcollector.set_level(RenderState::get_num_states());
+    if (pstats_unused_states) {
+      _transform_states_unused_pcollector.set_level(TransformState::get_num_unused_states());
+      _render_states_unused_pcollector.set_level(RenderState::get_num_unused_states());
+    }
+    
+    _sw_sprites_pcollector.clear_level();
+    
+    _cnode_volume_pcollector.clear_level();
+    _gnode_volume_pcollector.clear_level();
+    _geom_volume_pcollector.clear_level();
+    _node_volume_pcollector.clear_level();
+    _volume_pcollector.clear_level();
+    _test_pcollector.clear_level();
+    _volume_polygon_pcollector.clear_level();
+    _test_polygon_pcollector.clear_level();
+    _volume_plane_pcollector.clear_level();
+    _test_plane_pcollector.clear_level();
+    _volume_sphere_pcollector.clear_level();
+    _test_sphere_pcollector.clear_level();
+    _volume_tube_pcollector.clear_level();
+    _test_tube_pcollector.clear_level();
+    _volume_inv_sphere_pcollector.clear_level();
+    _test_inv_sphere_pcollector.clear_level();
+    _volume_geom_pcollector.clear_level();
+    _test_geom_pcollector.clear_level();
+    _occlusion_untested_pcollector.clear_level();
+    _occlusion_passed_pcollector.clear_level();
+    _occlusion_failed_pcollector.clear_level();
+    _occlusion_tests_pcollector.clear_level();
+    
+    if (PStatClient::is_connected()) {
+      size_t small_buf = GeomVertexArrayData::get_small_lru()->get_total_size();
+      size_t independent = GeomVertexArrayData::get_independent_lru()->get_total_size();
+      size_t resident = VertexDataPage::get_global_lru(VertexDataPage::RC_resident)->get_total_size();
+      size_t compressed = VertexDataPage::get_global_lru(VertexDataPage::RC_compressed)->get_total_size();
+      size_t pending = VertexDataPage::get_pending_lru()->get_total_size();
+      
+      VertexDataSaveFile *save_file = VertexDataPage::get_save_file();
+      size_t total_disk = save_file->get_total_file_size();
+      size_t used_disk = save_file->get_used_file_size();
+      
+      _vertex_data_small_pcollector.set_level(small_buf);
+      _vertex_data_independent_pcollector.set_level(independent);
+      _vertex_data_pending_pcollector.set_level(pending);
+      _vertex_data_resident_pcollector.set_level(resident);
+      _vertex_data_compressed_pcollector.set_level(compressed);
+      _vertex_data_unused_disk_pcollector.set_level(total_disk - used_disk);
+      _vertex_data_used_disk_pcollector.set_level(used_disk);
+    }
+    
+#endif  // DO_PSTATS
+    
+    GeomVertexArrayData::lru_epoch();
+    
+    // Now signal all of our threads to begin their next frame.
     Threads::const_iterator ti;
     for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
       RenderThread *thread = (*ti).second;
-      thread->_cv_mutex.lock();
-      
-      while (thread->_thread_state != TS_wait) {
-        thread->_cv_done.wait();
+      if (thread->_thread_state == TS_wait) {
+        thread->_thread_state = TS_do_frame;
+        thread->_cv_start.signal();
       }
+      thread->_cv_mutex.release();
     }
+    
+    // Some threads may still be drawing, so indicate that we have to
+    // wait for those threads before we can flip.
+    _flip_state = _auto_flip ? FS_flip : FS_draw;
   }
 
-#if defined(THREADED_PIPELINE) && defined(DO_PSTATS)
-  _cyclers_pcollector.set_level(_pipeline->get_num_cyclers());
-  _dirty_cyclers_pcollector.set_level(_pipeline->get_num_dirty_cyclers());
-
-#ifdef DEBUG_THREADS
-  if (PStatClient::is_connected()) {
-    _pipeline->iterate_all_cycler_types(pstats_count_cycler_type, this);
-    _pipeline->iterate_dirty_cycler_types(pstats_count_dirty_cycler_type, this);
-  }
-#endif  // DEBUG_THREADS
-
-#endif  // THREADED_PIPELINE && DO_PSTATS
-
-  GeomCacheManager::flush_level();
-  CullTraverser::flush_level();
-  RenderState::flush_level();
-  TransformState::flush_level();
-  CullableObject::flush_level();
-
-  // Now cycle the pipeline and officially begin the next frame.
-#ifdef THREADED_PIPELINE
-  {
-    PStatTimer timer(_cycle_pcollector, current_thread);
-    _pipeline->cycle();
-  }
-#endif  // THREADED_PIPELINE
-
-  global_clock->tick(current_thread);
-  if (global_clock->check_errors(current_thread)) {
-    throw_event("clock_error");
-  }
-
-#ifdef DO_PSTATS
-  PStatClient::main_tick();
-
-  // Reset our pcollectors that track data across the frame.
-  CullTraverser::_nodes_pcollector.clear_level();
-  CullTraverser::_geom_nodes_pcollector.clear_level();
-  CullTraverser::_geoms_pcollector.clear_level();
-  GeomCacheManager::_geom_cache_active_pcollector.clear_level();
-  GeomCacheManager::_geom_cache_record_pcollector.clear_level();
-  GeomCacheManager::_geom_cache_erase_pcollector.clear_level();
-  GeomCacheManager::_geom_cache_evict_pcollector.clear_level();
+  // Now the lock is released.
   
-  GraphicsStateGuardian::init_frame_pstats();
-
-  _transform_states_pcollector.set_level(TransformState::get_num_states());
-  _render_states_pcollector.set_level(RenderState::get_num_states());
-  if (pstats_unused_states) {
-    _transform_states_unused_pcollector.set_level(TransformState::get_num_unused_states());
-    _render_states_unused_pcollector.set_level(RenderState::get_num_unused_states());
-  }
-
-  _sw_sprites_pcollector.clear_level();
-
-  _cnode_volume_pcollector.clear_level();
-  _gnode_volume_pcollector.clear_level();
-  _geom_volume_pcollector.clear_level();
-  _node_volume_pcollector.clear_level();
-  _volume_pcollector.clear_level();
-  _test_pcollector.clear_level();
-  _volume_polygon_pcollector.clear_level();
-  _test_polygon_pcollector.clear_level();
-  _volume_plane_pcollector.clear_level();
-  _test_plane_pcollector.clear_level();
-  _volume_sphere_pcollector.clear_level();
-  _test_sphere_pcollector.clear_level();
-  _volume_tube_pcollector.clear_level();
-  _test_tube_pcollector.clear_level();
-  _volume_inv_sphere_pcollector.clear_level();
-  _test_inv_sphere_pcollector.clear_level();
-  _volume_geom_pcollector.clear_level();
-  _test_geom_pcollector.clear_level();
-  _occlusion_untested_pcollector.clear_level();
-  _occlusion_passed_pcollector.clear_level();
-  _occlusion_failed_pcollector.clear_level();
-  _occlusion_tests_pcollector.clear_level();
-
-  if (PStatClient::is_connected()) {
-    size_t small_buf = GeomVertexArrayData::get_small_lru()->get_total_size();
-    size_t independent = GeomVertexArrayData::get_independent_lru()->get_total_size();
-    size_t resident = VertexDataPage::get_global_lru(VertexDataPage::RC_resident)->get_total_size();
-    size_t compressed = VertexDataPage::get_global_lru(VertexDataPage::RC_compressed)->get_total_size();
-    size_t pending = VertexDataPage::get_pending_lru()->get_total_size();
-
-    VertexDataSaveFile *save_file = VertexDataPage::get_save_file();
-    size_t total_disk = save_file->get_total_file_size();
-    size_t used_disk = save_file->get_used_file_size();
-
-    _vertex_data_small_pcollector.set_level(small_buf);
-    _vertex_data_independent_pcollector.set_level(independent);
-    _vertex_data_pending_pcollector.set_level(pending);
-    _vertex_data_resident_pcollector.set_level(resident);
-    _vertex_data_compressed_pcollector.set_level(compressed);
-    _vertex_data_unused_disk_pcollector.set_level(total_disk - used_disk);
-    _vertex_data_used_disk_pcollector.set_level(used_disk);
-  }
-
-#endif  // DO_PSTATS
-
-  GeomVertexArrayData::lru_epoch();
-  
-  // Now signal all of our threads to begin their next frame.
-  Threads::const_iterator ti;
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    RenderThread *thread = (*ti).second;
-    if (thread->_thread_state == TS_wait) {
-      thread->_thread_state = TS_do_frame;
-      thread->_cv_start.signal();
-    }
-    thread->_cv_mutex.release();
-  }
-
-  // Some threads may still be drawing, so indicate that we have to
-  // wait for those threads before we can flip.
-  _flip_state = _auto_flip ? FS_flip : FS_draw;
-
   if (yield_timeslice) {
     // Nap for a moment to yield the timeslice, to be polite to other
     // running applications.
@@ -804,7 +808,7 @@ render_frame() {
     PStatTimer timer(_yield_pcollector, current_thread);
     Thread::consider_yield();
   }
-
+  
   // Anything that happens outside of GraphicsEngine::render_frame()
   // is deemed to be App.
   _app_pcollector.start();

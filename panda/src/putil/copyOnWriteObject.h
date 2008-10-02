@@ -22,6 +22,15 @@
 #include "conditionVar.h"
 #include "mutexHolder.h"
 
+// Should we implement full thread protection for CopyOnWritePointer?
+// If we can be assured that no other thread will interrupt while a
+// write pointer is held, we don't need thread protection.
+#if defined(HAVE_THREADS) && !(defined(SIMPLE_THREADS) && defined(SIMPLE_THREADS_NO_MUTEX))
+  #define COW_THREADED 1
+#else
+  #undef COW_THREADED
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //       Class : CopyOnWriteObject
 // Description : This base class provides basic reference counting,
@@ -35,16 +44,16 @@ public:
   INLINE void operator = (const CopyOnWriteObject &copy);
 
 PUBLISHED:
-#ifdef HAVE_THREADS
+#ifdef COW_THREADED
   bool unref() const;
   INLINE void cache_ref() const;
-#endif  // HAVE_THREADS
+#endif  // COW_THREADED
 
 protected:
   virtual PT(CopyOnWriteObject) make_cow_copy()=0;
 
 private:
-#ifdef HAVE_THREADS
+#ifdef COW_THREADED
   enum LockStatus {
     LS_unlocked,
     LS_locked_read,
@@ -54,7 +63,7 @@ private:
   ConditionVar _lock_cvar;
   LockStatus _lock_status;
   Thread *_locking_thread;
-#endif  // HAVE_THREADS
+#endif  // COW_THREADED
 
 public:
   virtual TypeHandle get_type() const {

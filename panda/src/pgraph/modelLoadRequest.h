@@ -36,7 +36,8 @@ public:
   ALLOC_DELETED_CHAIN(ModelLoadRequest);
 
 PUBLISHED:
-  INLINE ModelLoadRequest(const Filename &filename, 
+  INLINE ModelLoadRequest(const string &name,
+                          const Filename &filename, 
                           const LoaderOptions &options,
                           Loader *loader);
   

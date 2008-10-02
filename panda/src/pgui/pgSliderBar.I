@@ -60,6 +60,7 @@ get_notify() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
 set_axis(const LVector3f &axis) {
+  ReMutexHolder holder(_lock);
   _axis = axis;
   _needs_remanage = true;
   _needs_recompute = true;
@@ -73,6 +74,7 @@ set_axis(const LVector3f &axis) {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVector3f &PGSliderBar:: 
 get_axis() const {
+  ReMutexHolder holder(_lock);
   return _axis;
 }
 
@@ -83,6 +85,7 @@ get_axis() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
 set_range(float min_value, float max_value) {
+  ReMutexHolder holder(_lock);
   nassertv(min_value != max_value);
   _min_value = min_value;
   _max_value = max_value;
@@ -101,6 +104,7 @@ set_range(float min_value, float max_value) {
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
 get_min_value() const {
+  ReMutexHolder holder(_lock);
   return _min_value;
 }
 
@@ -112,6 +116,7 @@ get_min_value() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
 get_max_value() const {
+  ReMutexHolder holder(_lock);
   return _max_value;
 }
 
@@ -123,6 +128,7 @@ get_max_value() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
 set_scroll_size(float value) {
+  ReMutexHolder holder(_lock);
   _scroll_value = value;
   _needs_recompute = true;
 }
@@ -134,6 +140,7 @@ set_scroll_size(float value) {
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
 get_scroll_size() const {
+  ReMutexHolder holder(_lock);
   return _scroll_value;
 }
 
@@ -148,6 +155,7 @@ get_scroll_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
 set_page_size(float value) {
+  ReMutexHolder holder(_lock);
   _page_value = value;
   _needs_recompute = true;
 }
@@ -159,6 +167,7 @@ set_page_size(float value) {
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
 get_page_size() const {
+  ReMutexHolder holder(_lock);
   return _page_value;
 }
 
@@ -171,6 +180,7 @@ get_page_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
 set_value(float value) {
+  ReMutexHolder holder(_lock);
   set_ratio((value - _min_value) / (_max_value - _min_value));
 }
 
@@ -181,6 +191,7 @@ set_value(float value) {
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
 get_value() const {
+  ReMutexHolder holder(_lock);
   return get_ratio() * (_max_value - _min_value) + _min_value;
 }
 
@@ -192,6 +203,7 @@ get_value() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
 set_ratio(float ratio) {
+  ReMutexHolder holder(_lock);
   if (!is_button_down()) {
     internal_set_ratio(ratio);
   }
@@ -205,6 +217,7 @@ set_ratio(float ratio) {
 ////////////////////////////////////////////////////////////////////
 INLINE float PGSliderBar:: 
 get_ratio() const {
+  ReMutexHolder holder(_lock);
   return _ratio;
 }
 
@@ -218,6 +231,7 @@ get_ratio() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGSliderBar:: 
 is_button_down() const {
+  ReMutexHolder holder(_lock);
   return _dragging || _mouse_button_page || 
     (_scroll_button_held != (PGItem *)NULL);
 }
@@ -232,6 +246,7 @@ is_button_down() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
 set_resize_thumb(bool resize_thumb) {
+  ReMutexHolder holder(_lock);
   _resize_thumb = resize_thumb;
   _needs_recompute = true;
 }
@@ -244,6 +259,7 @@ set_resize_thumb(bool resize_thumb) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGSliderBar:: 
 get_resize_thumb() const {
+  ReMutexHolder holder(_lock);
   return _resize_thumb;
 }
 
@@ -258,6 +274,7 @@ get_resize_thumb() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar:: 
 set_manage_pieces(bool manage_pieces) {
+  ReMutexHolder holder(_lock);
   _manage_pieces = manage_pieces;
   _needs_remanage = true;
   _needs_recompute = true;
@@ -271,6 +288,7 @@ set_manage_pieces(bool manage_pieces) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGSliderBar:: 
 get_manage_pieces() const {
+  ReMutexHolder holder(_lock);
   return _manage_pieces;
 }
 
@@ -288,6 +306,7 @@ get_manage_pieces() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar::
 set_thumb_button(PGButton *thumb_button) {
+  ReMutexHolder holder(_lock);
   if (_thumb_button != (PGButton *)NULL) {
     _thumb_button->set_notify(NULL);
   }
@@ -319,6 +338,7 @@ clear_thumb_button() {
 ////////////////////////////////////////////////////////////////////
 INLINE PGButton *PGSliderBar::
 get_thumb_button() const {
+  ReMutexHolder holder(_lock);
   return _thumb_button;
 }
 
@@ -336,6 +356,7 @@ get_thumb_button() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar::
 set_left_button(PGButton *left_button) {
+  ReMutexHolder holder(_lock);
   if (_left_button != (PGButton *)NULL) {
     _left_button->set_notify(NULL);
   }
@@ -368,6 +389,7 @@ clear_left_button() {
 ////////////////////////////////////////////////////////////////////
 INLINE PGButton *PGSliderBar::
 get_left_button() const {
+  ReMutexHolder holder(_lock);
   return _left_button;
 }
 
@@ -385,6 +407,7 @@ get_left_button() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGSliderBar::
 set_right_button(PGButton *right_button) {
+  ReMutexHolder holder(_lock);
   if (_right_button != (PGButton *)NULL) {
     _right_button->set_notify(NULL);
   }
@@ -417,6 +440,7 @@ clear_right_button() {
 ////////////////////////////////////////////////////////////////////
 INLINE PGButton *PGSliderBar::
 get_right_button() const {
+  ReMutexHolder holder(_lock);
   return _right_button;
 }
 
@@ -441,6 +465,7 @@ get_adjust_prefix() {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGSliderBar::
 get_adjust_event() const {
+  ReMutexHolder holder(_lock);
   return get_adjust_prefix() + get_id();
 }
 

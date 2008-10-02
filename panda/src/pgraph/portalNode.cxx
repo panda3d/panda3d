@@ -379,7 +379,9 @@ draw() const {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 void PortalNode::
-compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
                         Thread *current_thread) const {
   // First, get ourselves a fresh, empty bounding volume.
   PT(BoundingVolume) bound = new BoundingSphere;
@@ -394,9 +396,8 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
   // Now actually compute the bounding volume by putting it around all
   gbv->around(vertices_begin, vertices_end);
 
-  bdata->_internal_bounds = bound;
-  bdata->_internal_vertices = 0;
-  bdata->_internal_bounds_stale = false;
+  internal_bounds = bound;
+  internal_vertices = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

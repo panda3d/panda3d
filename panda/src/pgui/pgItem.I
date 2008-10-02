@@ -14,6 +14,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGItem::set_name
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE void PGItem::
+set_name(const string &name) {
+  Namable::set_name(name);
+  _lock.set_name(name);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGItem::get_region
 //       Access: Public
 //  Description: Returns the MouseWatcherRegion associated with this
@@ -26,6 +37,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE PGMouseWatcherRegion *PGItem:: 
 get_region() const {
+  ReMutexHolder holder(_lock);
   return _region;
 }
 
@@ -40,6 +52,7 @@ get_region() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGItem:: 
 set_notify(PGItemNotify *notify) {
+  ReMutexHolder holder(_lock);
   if (_notify != (PGItemNotify *)NULL) {
     _notify->remove_item(this);
   }
@@ -57,6 +70,7 @@ set_notify(PGItemNotify *notify) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGItem:: 
 has_notify() const {
+  ReMutexHolder holder(_lock);
   return (_notify != (PGItemNotify *)NULL);
 }
 
@@ -69,6 +83,7 @@ has_notify() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PGItemNotify *PGItem:: 
 get_notify() const {
+  ReMutexHolder holder(_lock);
   return _notify;
 }
 
@@ -97,6 +112,7 @@ set_frame(float left, float right, float bottom, float top) {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGItem::
 set_frame(const LVecBase4f &frame) {
+  ReMutexHolder holder(_lock);
   if (!_has_frame || _frame != frame) {
     _has_frame = true;
     _frame = frame;
@@ -113,6 +129,7 @@ set_frame(const LVecBase4f &frame) {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase4f &PGItem::
 get_frame() const {
+  ReMutexHolder holder(_lock);
   nassertr(has_frame(), _frame);
   return _frame;
 }
@@ -125,6 +142,7 @@ get_frame() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGItem::
 has_frame() const {
+  ReMutexHolder holder(_lock);
   return _has_frame;
 }
 
@@ -137,6 +155,7 @@ has_frame() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGItem::
 clear_frame() {
+  ReMutexHolder holder(_lock);
   if (_has_frame) {
     _has_frame = false;
     frame_changed();
@@ -154,6 +173,7 @@ clear_frame() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGItem::
 set_state(int state) {
+  ReMutexHolder holder(_lock);
   _state = state;
 }
 
@@ -165,6 +185,7 @@ set_state(int state) {
 ////////////////////////////////////////////////////////////////////
 INLINE int PGItem::
 get_state() const {
+  ReMutexHolder holder(_lock);
   return _state;
 }
 
@@ -176,6 +197,7 @@ get_state() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGItem::
 get_active() const {
+  ReMutexHolder holder(_lock);
   return (_flags & F_active) != 0;
 }
 
@@ -187,6 +209,7 @@ get_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGItem::
 get_focus() const {
+  ReMutexHolder holder(_lock);
   return (_flags & F_focus) != 0;
 }
 
@@ -198,6 +221,7 @@ get_focus() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGItem::
 get_background_focus() const {
+  ReMutexHolder holder(_lock);
   return (_flags & F_background_focus) != 0;
 }
 
@@ -210,6 +234,7 @@ get_background_focus() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGItem::
 set_suppress_flags(int suppress_flags) {
+  ReMutexHolder holder(_lock);
   _region->set_suppress_flags(suppress_flags);
 }
 
@@ -222,6 +247,7 @@ set_suppress_flags(int suppress_flags) {
 ////////////////////////////////////////////////////////////////////
 INLINE int PGItem::
 get_suppress_flags() const {
+  ReMutexHolder holder(_lock);
   return _region->get_suppress_flags();
 }
 
@@ -235,6 +261,7 @@ get_suppress_flags() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const string &PGItem::
 get_id() const {
+  ReMutexHolder holder(_lock);
   return _region->get_name();
 }
 
@@ -253,6 +280,7 @@ get_id() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGItem::
 set_id(const string &id) {
+  ReMutexHolder holder(_lock);
   _region->set_name(id);
 }
 
@@ -395,6 +423,7 @@ get_keystroke_prefix() {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_enter_event() const {
+  ReMutexHolder holder(_lock);
   return get_enter_prefix() + get_id();
 }
 
@@ -407,6 +436,7 @@ get_enter_event() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_exit_event() const {
+  ReMutexHolder holder(_lock);
   return get_exit_prefix() + get_id();
 }
 
@@ -421,6 +451,7 @@ get_exit_event() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_within_event() const {
+  ReMutexHolder holder(_lock);
   return get_within_prefix() + get_id();
 }
 
@@ -436,6 +467,7 @@ get_within_event() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_without_event() const {
+  ReMutexHolder holder(_lock);
   return get_without_prefix() + get_id();
 }
 
@@ -447,6 +479,7 @@ get_without_event() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_focus_in_event() const {
+  ReMutexHolder holder(_lock);
   return get_focus_in_prefix() + get_id();
 }
 
@@ -458,6 +491,7 @@ get_focus_in_event() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_focus_out_event() const {
+  ReMutexHolder holder(_lock);
   return get_focus_out_prefix() + get_id();
 }
 
@@ -471,6 +505,7 @@ get_focus_out_event() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_press_event(const ButtonHandle &button) const {
+  ReMutexHolder holder(_lock);
   return get_press_prefix() + button.get_name() + "-" + get_id();
 }
 
@@ -484,6 +519,7 @@ get_press_event(const ButtonHandle &button) const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_repeat_event(const ButtonHandle &button) const {
+  ReMutexHolder holder(_lock);
   return get_repeat_prefix() + button.get_name() + "-" + get_id();
 }
 
@@ -497,6 +533,7 @@ get_repeat_event(const ButtonHandle &button) const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_release_event(const ButtonHandle &button) const {
+  ReMutexHolder holder(_lock);
   return get_release_prefix() + button.get_name() + "-" + get_id();
 }
 
@@ -508,6 +545,7 @@ get_release_event(const ButtonHandle &button) const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGItem::
 get_keystroke_event() const {
+  ReMutexHolder holder(_lock);
   return get_keystroke_prefix() + get_id();
 }
 
@@ -543,6 +581,7 @@ get_focus_item() {
 ////////////////////////////////////////////////////////////////////
 INLINE LMatrix4f PGItem::
 get_frame_inv_xform() const {
+  ReMutexHolder holder(_lock);
   return _frame_inv_xform;
 }
 

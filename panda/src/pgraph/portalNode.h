@@ -93,7 +93,9 @@ PUBLISHED:
   //  void draw () const;
 
 protected:
-  virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
+  virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                                       int &internal_vertices,
+                                       int pipeline_stage,
                                        Thread *current_thread) const;
 
 private:

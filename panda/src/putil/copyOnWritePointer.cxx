@@ -51,7 +51,7 @@ get_read_pointer() const {
   }
 
   _object->_lock_status = CopyOnWriteObject::LS_locked_read;
-  _object->_locking_thread = Thread::get_current_thread();
+  _object->_locking_thread = current_thread;
   return _object;
 }
 #endif  // COW_THREADED
@@ -129,7 +129,7 @@ get_write_pointer() {
     // have saved himself a reference.
   }
   _object->_lock_status = CopyOnWriteObject::LS_locked_write;
-  _object->_locking_thread = Thread::get_current_thread();
+  _object->_locking_thread = current_thread;
 
   return _object;
 }

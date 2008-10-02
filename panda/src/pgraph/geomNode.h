@@ -60,7 +60,8 @@ public:
   virtual bool safe_to_combine() const;
 
   virtual void r_prepare_scene(const RenderState *state,
-                               PreparedGraphicsObjects *prepared_objects);
+                               PreparedGraphicsObjects *prepared_objects,
+                               Thread *current_thread);
 
 PUBLISHED:
   INLINE void set_preserved(bool value);
@@ -97,7 +98,9 @@ public:
                    GeomTransformer &transformer);
 
 protected:
-  virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
+  virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                                       int &internal_vertices,
+                                       int pipeline_stage,
                                        Thread *current_thread) const;
 
 public:

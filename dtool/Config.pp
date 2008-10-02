@@ -714,7 +714,8 @@
 // This gives you control over when the context switch happens, and
 // may make mutexes unnecessary, if you are somewhat careful in your
 // code design.  Disabling mutexes saves a tiny bit of runtime and
-// memory overhead.
+// memory overhead.  NOT RECOMMENDED!  Many internal Panda functions
+// aren't quite secure enough to enable this mode for now.
 #define SIMPLE_THREADS_NO_MUTEX
 
 // Whether threading is defined or not, you might want to validate the

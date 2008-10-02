@@ -20,9 +20,10 @@
 //               via load_async(), to begin an asynchronous load.
 ////////////////////////////////////////////////////////////////////
 INLINE ModelLoadRequest::
-ModelLoadRequest(const Filename &filename, const LoaderOptions &options,
+ModelLoadRequest(const string &name, 
+                 const Filename &filename, const LoaderOptions &options,
                  Loader *loader) :
-  AsyncTask(filename.get_basename()),
+  AsyncTask(name),
   _filename(filename),
   _options(options),
   _loader(loader),

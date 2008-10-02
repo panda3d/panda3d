@@ -307,7 +307,9 @@ set_from_collide_mask(CollideMask mask) {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 void CollisionNode::
-compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
                         Thread *current_thread) const {
   pvector<CPT(BoundingVolume) > child_volumes_ref;
   pvector<const BoundingVolume *> child_volumes;
@@ -345,9 +347,8 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
     ((BoundingVolume *)gbv)->around(child_begin, child_end);
   }
   
-  bdata->_internal_bounds = gbv;
-  bdata->_internal_vertices = 0;
-  bdata->_internal_bounds_stale = false;
+  internal_bounds = gbv;
+  internal_vertices = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

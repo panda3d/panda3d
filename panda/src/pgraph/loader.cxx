@@ -17,6 +17,7 @@
 #include "loaderFileTypeRegistry.h"
 #include "config_pgraph.h"
 #include "modelPool.h"
+#include "modelLoadRequest.h"
 #include "config_express.h"
 #include "config_util.h"
 #include "virtualFileSystem.h"
@@ -61,6 +62,18 @@ Loader(const string &name) :
     
     chain->set_num_threads(loader_num_threads);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Loader::make_async_request
+//       Access: Published
+//  Description: Returns a new AsyncTask object suitable for adding to
+//               load_async() to start an asynchronous model load.
+////////////////////////////////////////////////////////////////////
+PT(AsyncTask) Loader::
+make_async_request(const Filename &filename, const LoaderOptions &options) {
+  return new ModelLoadRequest(string("model:")+filename.get_basename(),
+                              filename, options, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -367,6 +380,6 @@ void Loader::
 make_global_ptr() {
   nassertv(_global_ptr == (Loader *)NULL);
 
-  _global_ptr = new Loader("taskMgr");
+  _global_ptr = new Loader("loader");
 }
 

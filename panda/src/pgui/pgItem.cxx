@@ -58,7 +58,8 @@ is_right(const LVector2f &v1, const LVector2f &v2) {
 ////////////////////////////////////////////////////////////////////
 PGItem::
 PGItem(const string &name) : 
-  PandaNode(name)
+  PandaNode(name),
+  _lock(name)
 {
   set_cull_callback();
 
@@ -142,6 +143,7 @@ PGItem(const PGItem &copy) :
 ////////////////////////////////////////////////////////////////////
 PandaNode *PGItem::
 make_copy() const {
+  ReMutexHolder holder(_lock);
   return new PGItem(*this);
 }
 
@@ -154,6 +156,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 transform_changed() {
+  ReMutexHolder holder(_lock);
   PandaNode::transform_changed();
   if (has_notify()) {
     get_notify()->item_transform_changed(this);
@@ -169,6 +172,7 @@ transform_changed() {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 draw_mask_changed() {
+  ReMutexHolder holder(_lock);
   PandaNode::draw_mask_changed();
   if (has_notify()) {
     get_notify()->item_draw_mask_changed(this);
@@ -202,6 +206,7 @@ draw_mask_changed() {
 ////////////////////////////////////////////////////////////////////
 bool PGItem::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  ReMutexHolder holder(_lock);
   bool this_node_hidden = data.is_this_node_hidden(trav);
   if (!this_node_hidden && has_frame() && get_active()) {
     // The item has a frame, so we want to generate a region for it
@@ -296,8 +301,11 @@ is_renderable() const {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 void PGItem::
-compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
                         Thread *current_thread) const {
+  ReMutexHolder holder(_lock, current_thread);
   int num_vertices = 0;
 
   // First, get ourselves a fresh, empty bounding volume.
@@ -330,9 +338,8 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
 
   bound->around(child_begin, child_end);
 
-  bdata->_internal_bounds = bound;
-  bdata->_internal_vertices = num_vertices;
-  bdata->_internal_bounds_stale = false;
+  internal_bounds = bound;
+  internal_vertices = num_vertices;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,18 +352,20 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 r_prepare_scene(const RenderState *state,
-                PreparedGraphicsObjects *prepared_objects) {
+                PreparedGraphicsObjects *prepared_objects,
+                Thread *current_thread) {
+  ReMutexHolder holder(_lock);
   StateDefs::iterator di;
   for (di = _state_defs.begin(); di != _state_defs.end(); ++di) {
     NodePath &root = (*di)._root;
     if (!root.is_empty()) {
       PandaNode *child = root.node();
       CPT(RenderState) child_state = state->compose(child->get_state());
-      child->r_prepare_scene(child_state, prepared_objects);
+      child->r_prepare_scene(child_state, prepared_objects, current_thread);
     }
   }
   
-  PandaNode::r_prepare_scene(state, prepared_objects);
+  PandaNode::r_prepare_scene(state, prepared_objects, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -368,6 +377,7 @@ r_prepare_scene(const RenderState *state,
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 xform(const LMatrix4f &mat) {
+  ReMutexHolder holder(_lock);
   // Transform the frame.
   LPoint3f ll(_frame[0], 0.0f, _frame[2]);
   LPoint3f ur(_frame[1], 0.0f, _frame[3]);
@@ -407,6 +417,7 @@ bool PGItem::
 activate_region(const LMatrix4f &transform, int sort,
                 const ClipPlaneAttrib *cpa,
                 const ScissorAttrib *sa) {
+  ReMutexHolder holder(_lock);
   // Transform all four vertices, and get the new bounding box.  This
   // way the region works (mostly) even if has been rotated.
   LPoint3f ll(_frame[0], 0.0f, _frame[2]);
@@ -503,6 +514,7 @@ activate_region(const LMatrix4f &transform, int sort,
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 enter_region(const MouseWatcherParameter &param) {
+  ReMutexHolder holder(_lock);
   if (pgui_cat.is_debug()) {
     pgui_cat.debug()
       << *this << "::enter_region(" << param << ")\n";
@@ -529,6 +541,7 @@ enter_region(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 exit_region(const MouseWatcherParameter &param) {
+  ReMutexHolder holder(_lock);
   if (pgui_cat.is_debug()) {
     pgui_cat.debug()
       << *this << "::exit_region(" << param << ")\n";
@@ -558,6 +571,7 @@ exit_region(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 within_region(const MouseWatcherParameter &param) {
+  ReMutexHolder holder(_lock);
   if (pgui_cat.is_debug()) {
     pgui_cat.debug()
       << *this << "::within_region(" << param << ")\n";
@@ -582,6 +596,7 @@ within_region(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 without_region(const MouseWatcherParameter &param) {
+  ReMutexHolder holder(_lock);
   if (pgui_cat.is_debug()) {
     pgui_cat.debug()
       << *this << "::without_region(" << param << ")\n";
@@ -605,6 +620,7 @@ without_region(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 focus_in() {
+  ReMutexHolder holder(_lock);
   if (pgui_cat.is_debug()) {
     pgui_cat.debug()
       << *this << "::focus_in()\n";
@@ -627,6 +643,7 @@ focus_in() {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 focus_out() {
+  ReMutexHolder holder(_lock);
   if (pgui_cat.is_debug()) {
     pgui_cat.debug()
       << *this << "::focus_out()\n";
@@ -650,6 +667,7 @@ focus_out() {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 press(const MouseWatcherParameter &param, bool background) {
+  ReMutexHolder holder(_lock);
   if (pgui_cat.is_debug()) {
     pgui_cat.debug()
       << *this << "::press(" << param << ", " << background << ")\n";
@@ -681,6 +699,7 @@ press(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 release(const MouseWatcherParameter &param, bool background) {
+  ReMutexHolder holder(_lock);
   if (pgui_cat.is_debug()) {
     pgui_cat.debug()
       << *this << "::release(" << param << ", " << background << ")\n";
@@ -706,6 +725,7 @@ release(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 keystroke(const MouseWatcherParameter &param, bool background) {
+  ReMutexHolder holder(_lock);
   if (pgui_cat.is_debug()) {
     pgui_cat.debug()
       << *this << "::keystroke(" << param << ", " << background << ")\n";
@@ -731,6 +751,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 candidate(const MouseWatcherParameter &param, bool background) {
+  ReMutexHolder holder(_lock);
   if (pgui_cat.is_debug()) {
     pgui_cat.debug()
       << *this << "::candidate(" << param << ", " << background << ")\n";
@@ -752,6 +773,7 @@ candidate(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 move(const MouseWatcherParameter &param) {
+  ReMutexHolder holder(_lock);
   if (pgui_cat.is_debug()) {
     pgui_cat.debug()
       << *this << "::move(" << param << ")\n";
@@ -841,6 +863,7 @@ background_candidate(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 set_active(bool active) {
+  ReMutexHolder holder(_lock);
   if (active) {
     _flags |= F_active;
   } else {
@@ -867,6 +890,7 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 set_focus(bool focus) {
+  ReMutexHolder holder(_lock);
   if (focus) {
     if (!get_active()) {
       // Cannot set focus on an inactive item.
@@ -911,6 +935,7 @@ set_focus(bool focus) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 set_background_focus(bool focus) {
+  ReMutexHolder holder(_lock);
   if (focus != get_background_focus()) {
     if (focus) {
       // Activate background focus.
@@ -940,6 +965,7 @@ set_background_focus(bool focus) {
 ////////////////////////////////////////////////////////////////////
 int PGItem::
 get_num_state_defs() const {
+  ReMutexHolder holder(_lock);
   return _state_defs.size();
 }
 
@@ -952,6 +978,7 @@ get_num_state_defs() const {
 ////////////////////////////////////////////////////////////////////
 bool PGItem::
 has_state_def(int state) const {
+  ReMutexHolder holder(_lock);
   if (state < 0 || state >= (int)_state_defs.size()) {
     return false;
   }
@@ -967,6 +994,7 @@ has_state_def(int state) const {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 clear_state_def(int state) {
+  ReMutexHolder holder(_lock);
   if (state < 0 || state >= (int)_state_defs.size()) {
     return;
   }
@@ -988,6 +1016,7 @@ clear_state_def(int state) {
 ////////////////////////////////////////////////////////////////////
 NodePath &PGItem::
 get_state_def(int state) {
+  ReMutexHolder holder(_lock);
   nassertr(state >= 0 && state < 1000, get_state_def(0));  // Sanity check.
   slot_state_def(state);
 
@@ -1012,6 +1041,7 @@ get_state_def(int state) {
 ////////////////////////////////////////////////////////////////////
 NodePath PGItem::
 instance_to_state_def(int state, const NodePath &path) {
+  ReMutexHolder holder(_lock);
   if (path.is_empty()) {
     // If the source is empty, quietly do nothing.
     return NodePath();
@@ -1030,6 +1060,7 @@ instance_to_state_def(int state, const NodePath &path) {
 ////////////////////////////////////////////////////////////////////
 PGFrameStyle PGItem::
 get_frame_style(int state) {
+  ReMutexHolder holder(_lock);
   if (state < 0 || state >= (int)_state_defs.size()) {
     return PGFrameStyle();
   }
@@ -1044,14 +1075,15 @@ get_frame_style(int state) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 set_frame_style(int state, const PGFrameStyle &style) {
+  ReMutexHolder holder(_lock);
   // Get the state def node, mainly to ensure that this state is
   // slotted and listed as having been defined.
   NodePath &root = get_state_def(state);
   nassertv(!root.is_empty());
-
+  
   _state_defs[state]._frame_style = style;
   _state_defs[state]._frame_stale = true;
-
+    
   mark_internal_bounds_stale();
 }
 
@@ -1064,6 +1096,7 @@ set_frame_style(int state, const PGFrameStyle &style) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 set_sound(const string &event, AudioSound *sound) {
+  ReMutexHolder holder(_lock);
   _sounds[event] = sound;
 }
 
@@ -1075,6 +1108,7 @@ set_sound(const string &event, AudioSound *sound) {
 ////////////////////////////////////////////////////////////////////
 void PGItem::
 clear_sound(const string &event) {
+  ReMutexHolder holder(_lock);
   _sounds.erase(event);
 }
 
@@ -1086,6 +1120,7 @@ clear_sound(const string &event) {
 ////////////////////////////////////////////////////////////////////
 AudioSound *PGItem::
 get_sound(const string &event) const {
+  ReMutexHolder holder(_lock);
   Sounds::const_iterator si = _sounds.find(event);
   if (si != _sounds.end()) {
     return (*si).second;
@@ -1101,6 +1136,7 @@ get_sound(const string &event) const {
 ////////////////////////////////////////////////////////////////////
 bool PGItem::
 has_sound(const string &event) const {
+  ReMutexHolder holder(_lock);
   return (_sounds.count(event) != 0);
 }
 #endif  // HAVE_AUDIO
@@ -1134,6 +1170,7 @@ get_text_node() {
 void PGItem::
 play_sound(const string &event) {
 #ifdef HAVE_AUDIO
+  ReMutexHolder holder(_lock);
   Sounds::const_iterator si = _sounds.find(event);
   if (si != _sounds.end()) {
     AudioSound *sound = (*si).second;

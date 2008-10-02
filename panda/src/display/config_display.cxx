@@ -206,13 +206,14 @@ ConfigVariableBool alpha_scale_via_texture
           "color-scale-via-lighting."));
 
 ConfigVariableBool allow_incomplete_render
-("allow-incomplete-render", false,
+("allow-incomplete-render", true,
  PRC_DESC("When this is true, the frame may be rendered even if some of the "
-          "geometry in the scene has been paged out.  The nonresident "
-          "geometry will be rendered as soon as it can be paged back in, "
+          "geometry in the scene has been paged out, or if the textures are "
+          "unavailable.  The nonresident geometry and textures will be "
+          "rendered as soon as they can be read from disk, "
           "which may be several frames in the future.  When this is false, "
-          "geometry is always paged in when needed, holding up the frame "
-          "render if necessary."));
+          "geometry is always paged in immediately when needed, holding up "
+          "the frame render if necessary."));
 
 ConfigVariableInt win_size
 ("win-size", "640 480",

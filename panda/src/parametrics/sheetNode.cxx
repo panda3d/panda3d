@@ -220,15 +220,16 @@ reset_bound(const NodePath &rel_to) {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 void SheetNode::
-compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
                         Thread *current_thread) const {
   PT(BoundingVolume) bounds = 
     do_recompute_bounds(NodePath((PandaNode *)this), pipeline_stage, 
                         current_thread);
 
-  bdata->_internal_bounds = bounds;
-  bdata->_internal_vertices = 0;  // TODO--estimate this better.
-  bdata->_internal_bounds_stale = false;
+  internal_bounds = bounds;
+  internal_vertices = 0;  // TODO--estimate this better.
 }
 
 ////////////////////////////////////////////////////////////////////

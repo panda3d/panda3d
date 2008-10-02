@@ -18,7 +18,7 @@
 
 TypeHandle CopyOnWriteObject::_type_handle;
 
-#ifdef HAVE_THREADS
+#ifdef COW_THREADED
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWriteObject::unref
 //       Access: Public
@@ -40,4 +40,4 @@ unref() const {
   }
   return is_zero;
 }
-#endif  // HAVE_THREADS
+#endif  // COW_THREADED

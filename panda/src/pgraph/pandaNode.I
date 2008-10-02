@@ -708,7 +708,7 @@ INLINE void PandaNode::
 mark_internal_bounds_stale(int pipeline_stage, Thread *current_thread) {
   {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
-    cdata->_internal_bounds_stale = true;
+    ++cdata->_internal_bounds_mark;
   }
   mark_bounds_stale(pipeline_stage, current_thread);
 }
@@ -942,9 +942,9 @@ get_parent() const {
 INLINE PandaNode::BoundsData::
 BoundsData() :
   _internal_bounds(NULL),
-  _internal_vertices(0),
-  _internal_bounds_stale(true)
+  _internal_vertices(0)
 {
+  ++_internal_bounds_mark;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -956,8 +956,22 @@ INLINE PandaNode::BoundsData::
 BoundsData(const PandaNode::BoundsData &copy) :
   _internal_bounds(copy._internal_bounds),
   _internal_vertices(copy._internal_vertices),
-  _internal_bounds_stale(copy._internal_bounds_stale)
+  _internal_bounds_mark(copy._internal_bounds_mark),
+  _internal_bounds_computed(copy._internal_bounds_computed)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::BoundsData::copy_bounds
+//       Access: Protected
+//  Description: Copies just the BoundsData part of the structure.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::BoundsData::
+copy_bounds(const PandaNode::BoundsData &copy) {
+  _internal_bounds = copy._internal_bounds;
+  _internal_vertices = copy._internal_vertices;
+  _internal_bounds_mark = copy._internal_bounds_mark;
+  _internal_bounds_computed = copy._internal_bounds_computed;
 }
 
 ////////////////////////////////////////////////////////////////////

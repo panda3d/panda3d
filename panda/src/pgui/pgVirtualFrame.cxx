@@ -72,6 +72,7 @@ PGVirtualFrame(const PGVirtualFrame &copy) :
 ////////////////////////////////////////////////////////////////////
 PandaNode *PGVirtualFrame::
 make_copy() const {
+  ReMutexHolder holder(_lock);
   return new PGVirtualFrame(*this);
 }
 
@@ -93,6 +94,7 @@ make_copy() const {
 void PGVirtualFrame::
 r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
                 Thread *current_thread) {
+  ReMutexHolder holder(_lock);
   PandaNode::r_copy_children(from, inst_map, current_thread);
 
   // Reassign the canvas_node to point to the new copy, if it's there.
@@ -129,6 +131,7 @@ r_copy_children(const PandaNode *from, PandaNode::InstanceMap &inst_map,
 ////////////////////////////////////////////////////////////////////
 void PGVirtualFrame::
 setup(float width, float height) {
+  ReMutexHolder holder(_lock);
   set_state(0);
   clear_state_def(0);
 
@@ -159,6 +162,7 @@ setup(float width, float height) {
 ////////////////////////////////////////////////////////////////////
 void PGVirtualFrame::
 set_clip_frame(const LVecBase4f &frame) {
+  ReMutexHolder holder(_lock);
   if (!_has_clip_frame || _clip_frame != frame) {
     _has_clip_frame = true;
     _clip_frame = frame;
@@ -182,6 +186,7 @@ set_clip_frame(const LVecBase4f &frame) {
 ////////////////////////////////////////////////////////////////////
 void PGVirtualFrame::
 clear_clip_frame() {
+  ReMutexHolder holder(_lock);
   if (_has_clip_frame) {
     _has_clip_frame = false;
     

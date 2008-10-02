@@ -29,6 +29,8 @@
 #include "textNode.h"
 #include "plane.h"
 #include "pmap.h"
+#include "reMutex.h"
+#include "reMutexHolder.h"
 
 class PGTop;
 class MouseWatcherParameter;
@@ -55,6 +57,8 @@ PUBLISHED:
   PGItem(const string &name);
   virtual ~PGItem();
 
+  INLINE void set_name(const string &name);
+
 protected:
   PGItem(const PGItem &copy);
 
@@ -65,11 +69,14 @@ protected:
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
   virtual bool is_renderable() const;
 
-  virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
+  virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                                       int &internal_vertices,
+                                       int pipeline_stage,
                                        Thread *current_thread) const;
 
   virtual void r_prepare_scene(const RenderState *state,
-                               PreparedGraphicsObjects *prepared_objects);
+                               PreparedGraphicsObjects *prepared_objects,
+                               Thread *current_thread);
 
 public:
   virtual void xform(const LMatrix4f &mat);
@@ -190,6 +197,9 @@ private:
                                      const LVecBase4f *new_frame);
 
   bool clip_frame(pvector<LPoint2f> &source_points, const Planef &plane) const;
+
+protected:
+  ReMutex _lock;
 
 private:
   PGItemNotify *_notify;

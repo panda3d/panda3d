@@ -19,11 +19,12 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE BindAnimRequest::
-BindAnimRequest(const Filename &filename, const LoaderOptions &options,
+BindAnimRequest(const string &name,
+                const Filename &filename, const LoaderOptions &options,
                 Loader *loader,
                 AnimControl *control, int hierarchy_match_flags,
                 const PartSubset &subset) :
-  ModelLoadRequest(filename, options, loader),
+  ModelLoadRequest(name, filename, options, loader),
   _control(control),
   _hierarchy_match_flags(hierarchy_match_flags),
   _subset(subset)

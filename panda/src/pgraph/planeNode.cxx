@@ -201,12 +201,13 @@ is_renderable() const {
 //               something internally.
 ////////////////////////////////////////////////////////////////////
 void PlaneNode::
-compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
                         Thread *current_thread) const {
   CDStageReader cdata(_cycler, pipeline_stage, current_thread);
-  bdata->_internal_bounds = new BoundingPlane(cdata->_plane);
-  bdata->_internal_vertices = 0;
-  bdata->_internal_bounds_stale = false;
+  internal_bounds = new BoundingPlane(cdata->_plane);
+  internal_vertices = 0;
 }
 
 ////////////////////////////////////////////////////////////////////

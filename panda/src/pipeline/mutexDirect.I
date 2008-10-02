@@ -102,3 +102,60 @@ INLINE bool MutexDirect::
 debug_is_locked() const {
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexDirect::debug_is_locked
+//       Access: Published
+//  Description: Returns true if the current thread has locked the
+//               Mutex, false otherwise.  This method is only intended
+//               for use in debugging, hence the method name; in the
+//               MutexDirect case, it always returns true, since
+//               there's not a reliable way to determine this
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool MutexDirect::
+debug_is_locked() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexDirect::set_name
+//       Access: Public
+//  Description: The mutex name is only defined when compiling in
+//               DEBUG_THREADS mode.
+////////////////////////////////////////////////////////////////////
+INLINE void MutexDirect::
+set_name(const string &) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexDirect::clear_name
+//       Access: Public
+//  Description: The mutex name is only defined when compiling in
+//               DEBUG_THREADS mode.
+////////////////////////////////////////////////////////////////////
+INLINE void MutexDirect::
+clear_name() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexDirect::has_name
+//       Access: Public
+//  Description: The mutex name is only defined when compiling in
+//               DEBUG_THREADS mode.
+////////////////////////////////////////////////////////////////////
+INLINE bool MutexDirect::
+has_name() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexDirect::get_name
+//       Access: Public
+//  Description: The mutex name is only defined when compiling in
+//               DEBUG_THREADS mode.
+////////////////////////////////////////////////////////////////////
+INLINE string MutexDirect::
+get_name() const {
+  return string();
+}

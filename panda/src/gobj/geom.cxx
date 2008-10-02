@@ -1421,14 +1421,17 @@ combine_primitives(GeomPrimitive *a_prim, const GeomPrimitive *b_prim,
     b_prim2 = b_prim_copy;
   }
 
-  PT(GeomVertexArrayDataHandle) a_handle = a_prim->modify_vertices()->modify_handle(current_thread);
-  CPT(GeomVertexArrayDataHandle) b_handle = b_prim2->get_vertices()->get_handle(current_thread);
+  PT(GeomVertexArrayData) a_vertices = a_prim->modify_vertices();
+  CPT(GeomVertexArrayData) b_vertices = b_prim2->get_vertices();
 
   if (a_prim->requires_unused_vertices()) {
-    GeomVertexReader index(b_handle->get_object(), 0);
+    GeomVertexReader index(b_vertices, 0);
     int b_vertex = index.get_data1i();
-    a_prim->append_unused_vertices(a_handle->get_object(), b_vertex);
+    a_prim->append_unused_vertices(a_vertices, b_vertex);
   }
+
+  PT(GeomVertexArrayDataHandle) a_handle = a_vertices->modify_handle(current_thread);
+  CPT(GeomVertexArrayDataHandle) b_handle = b_vertices->get_handle(current_thread);
 
   size_t orig_a_vertices = a_handle->get_num_rows();
 

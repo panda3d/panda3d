@@ -37,6 +37,7 @@ TypeHandle AsyncTaskManager::_type_handle;
 AsyncTaskManager::
 AsyncTaskManager(const string &name) :
   Namable(name),
+  _lock("AsyncTaskManager::_lock"),
   _num_tasks(0),
   _clock(ClockObject::get_global_clock()),
   _frame_cvar(_lock)

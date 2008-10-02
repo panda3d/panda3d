@@ -620,7 +620,9 @@ is_renderable() const {
 //               thing.
 ////////////////////////////////////////////////////////////////////
 void TextNode::
-compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage, 
+compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                        int &internal_vertices,
+                        int pipeline_stage,
                         Thread *current_thread) const {
   // First, get ourselves a fresh, empty bounding volume.
   PT(BoundingVolume) bound = new BoundingSphere;
@@ -644,9 +646,8 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
 
   gbv->around(vertices, vertices + 8);
 
-  bdata->_internal_bounds = bound;
-  bdata->_internal_vertices = 0;  // TODO: estimate this better.
-  bdata->_internal_bounds_stale = false;
+  internal_bounds = bound;
+  internal_vertices = 0;  // TODO: estimate this better.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -659,16 +660,17 @@ compute_internal_bounds(PandaNode::BoundsData *bdata, int pipeline_stage,
 ////////////////////////////////////////////////////////////////////
 void TextNode::
 r_prepare_scene(const RenderState *state,
-                PreparedGraphicsObjects *prepared_objects) {
+                PreparedGraphicsObjects *prepared_objects,
+                Thread *current_thread) {
   check_rebuild();
 
   PandaNode *child = _internal_geom;
   if (child != (PandaNode *)NULL) {
     CPT(RenderState) child_state = state->compose(child->get_state());
-    child->r_prepare_scene(child_state, prepared_objects);
+    child->r_prepare_scene(child_state, prepared_objects, current_thread);
   }
   
-  PandaNode::r_prepare_scene(state, prepared_objects);
+  PandaNode::r_prepare_scene(state, prepared_objects, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

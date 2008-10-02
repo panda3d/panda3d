@@ -60,8 +60,8 @@ public:
   void enqueue_ready(ThreadSimpleImpl *thread);
   void enqueue_sleep(ThreadSimpleImpl *thread, double seconds);
   void enqueue_block(ThreadSimpleImpl *thread, BlockerSimple *blocker);
-  void unblock_one(BlockerSimple *blocker);
-  void unblock_all(BlockerSimple *blocker);
+  bool unblock_one(BlockerSimple *blocker);
+  bool unblock_all(BlockerSimple *blocker);
   void enqueue_finished(ThreadSimpleImpl *thread);
   void preempt(ThreadSimpleImpl *thread);
   void next_context();

@@ -46,7 +46,13 @@ do_lock() {
 void MutexSimpleImpl::
 do_release() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
-  manager->unblock_one(this);
+  if (manager->unblock_one(this)) {
+    // There had been a thread waiting on this mutex.  Switch contexts
+    // immediately, to make fairness more likely.
+    ThreadSimpleImpl *thread = manager->get_current_thread();
+    manager->enqueue_ready(thread);
+    manager->next_context();
+  }
 }
 
 #endif  // THREAD_SIMPLE_IMPL

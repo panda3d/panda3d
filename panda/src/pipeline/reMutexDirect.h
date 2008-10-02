@@ -43,6 +43,11 @@ PUBLISHED:
 
   INLINE bool debug_is_locked() const;
 
+  INLINE void set_name(const string &name);
+  INLINE void clear_name();
+  INLINE bool has_name() const;
+  INLINE string get_name() const;
+
   void output(ostream &out) const;
 
 private:

@@ -76,6 +76,7 @@ PGScrollFrame(const PGScrollFrame &copy) :
 ////////////////////////////////////////////////////////////////////
 PandaNode *PGScrollFrame::
 make_copy() const {
+  ReMutexHolder holder(_lock);
   return new PGScrollFrame(*this);
 }
 
@@ -106,6 +107,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool PGScrollFrame::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
+  ReMutexHolder holder(_lock);
   if (_manage_pieces && _needs_remanage) {
     remanage();
   }
@@ -127,6 +129,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 ////////////////////////////////////////////////////////////////////
 void PGScrollFrame::
 xform(const LMatrix4f &mat) {
+  ReMutexHolder holder(_lock);
   PGVirtualFrame::xform(mat);
 
   _needs_remanage = true;
@@ -143,6 +146,7 @@ void PGScrollFrame::
 setup(float width, float height,
       float left, float right, float bottom, float top,
       float slider_width, float bevel) {
+  ReMutexHolder holder(_lock);
   set_state(0);
   clear_state_def(0);
 
@@ -196,6 +200,7 @@ setup(float width, float height,
 ////////////////////////////////////////////////////////////////////
 void PGScrollFrame::
 remanage() {
+  ReMutexHolder holder(_lock);
   _needs_remanage = false;
 
   const LVecBase4f &frame = get_frame();
@@ -312,6 +317,7 @@ remanage() {
 ////////////////////////////////////////////////////////////////////
 void PGScrollFrame::
 frame_changed() {
+  ReMutexHolder holder(_lock);
   PGVirtualFrame::frame_changed();
   _needs_remanage = true;
   _needs_recompute_clip = true;
@@ -325,6 +331,7 @@ frame_changed() {
 ////////////////////////////////////////////////////////////////////
 void PGScrollFrame::
 item_transform_changed(PGItem *) {
+  ReMutexHolder holder(_lock);
   _needs_recompute_clip = true;
 }
 
@@ -336,6 +343,7 @@ item_transform_changed(PGItem *) {
 ////////////////////////////////////////////////////////////////////
 void PGScrollFrame::
 item_frame_changed(PGItem *) {
+  ReMutexHolder holder(_lock);
   _needs_recompute_clip = true;
 }
 
@@ -347,6 +355,7 @@ item_frame_changed(PGItem *) {
 ////////////////////////////////////////////////////////////////////
 void PGScrollFrame::
 item_draw_mask_changed(PGItem *) {
+  ReMutexHolder holder(_lock);
   _needs_remanage = true;
   _needs_recompute_clip = true;
 }
@@ -359,6 +368,7 @@ item_draw_mask_changed(PGItem *) {
 ////////////////////////////////////////////////////////////////////
 void PGScrollFrame::
 slider_bar_adjust(PGSliderBar *) {
+  ReMutexHolder holder(_lock);
   _needs_recompute_canvas = true;
 }
 
@@ -370,6 +380,7 @@ slider_bar_adjust(PGSliderBar *) {
 ////////////////////////////////////////////////////////////////////
 void PGScrollFrame::
 recompute_clip() {
+  ReMutexHolder holder(_lock);
   _needs_recompute_clip = false;
   _needs_recompute_canvas = true;
 
@@ -397,6 +408,7 @@ recompute_clip() {
 ////////////////////////////////////////////////////////////////////
 void PGScrollFrame::
 recompute_canvas() {
+  ReMutexHolder holder(_lock);
   _needs_recompute_canvas = false;
 
   const LVecBase4f &clip = get_clip_frame();
@@ -423,6 +435,7 @@ float PGScrollFrame::
 interpolate_canvas(float clip_min, float clip_max, 
                    float canvas_min, float canvas_max,
                    PGSliderBar *slider_bar) {
+  ReMutexHolder holder(_lock);
   float t = 0.0f;
   if (slider_bar != (PGSliderBar *)NULL) {
     t = slider_bar->get_ratio();

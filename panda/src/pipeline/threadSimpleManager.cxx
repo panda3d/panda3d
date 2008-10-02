@@ -106,16 +106,17 @@ enqueue_block(ThreadSimpleImpl *thread, BlockerSimple *blocker) {
 //     Function: ThreadSimpleManager::unblock_one
 //       Access: Public
 //  Description: Unblocks one thread waiting on the indicated blocker,
-//               if any.
+//               if any.  Returns true if anything was unblocked,
+//               false otherwise.
 ////////////////////////////////////////////////////////////////////
-void ThreadSimpleManager::
+bool ThreadSimpleManager::
 unblock_one(BlockerSimple *blocker) {
   Blocked::iterator bi = _blocked.find(blocker);
   if (bi != _blocked.end()) {
-    nassertv(blocker->_flags & BlockerSimple::F_has_waiters);
+    nassertr(blocker->_flags & BlockerSimple::F_has_waiters, false);
 
     FifoThreads &threads = (*bi).second;
-    nassertv(!threads.empty());
+    nassertr(!threads.empty(), false);
     ThreadSimpleImpl *thread = threads.front();
     threads.pop_front();
     _ready.push_back(thread);
@@ -123,23 +124,27 @@ unblock_one(BlockerSimple *blocker) {
       blocker->_flags &= ~BlockerSimple::F_has_waiters;
       _blocked.erase(bi);
     }
+    return true;
   }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ThreadSimpleManager::unblock_all
 //       Access: Public
 //  Description: Unblocks all threads waiting on the indicated
-//               blocker.
+//               blocker.  Returns true if anything was unblocked,
+//               false otherwise.
 ////////////////////////////////////////////////////////////////////
-void ThreadSimpleManager::
+bool ThreadSimpleManager::
 unblock_all(BlockerSimple *blocker) {
   Blocked::iterator bi = _blocked.find(blocker);
   if (bi != _blocked.end()) {
-    nassertv(blocker->_flags & BlockerSimple::F_has_waiters);
+    nassertr(blocker->_flags & BlockerSimple::F_has_waiters, false);
 
     FifoThreads &threads = (*bi).second;
-    nassertv(!threads.empty());
+    nassertr(!threads.empty(), false);
     while (!threads.empty()) {
       ThreadSimpleImpl *thread = threads.front();
       threads.pop_front();
@@ -147,7 +152,9 @@ unblock_all(BlockerSimple *blocker) {
     }
     blocker->_flags &= ~BlockerSimple::F_has_waiters;
     _blocked.erase(bi);
+    return true;
   }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

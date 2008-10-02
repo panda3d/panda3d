@@ -301,7 +301,9 @@ protected:
   void force_bounds_stale(int pipeline_stage, Thread *current_thread);
   INLINE void mark_internal_bounds_stale(int pipeline_stage, Thread *current_thread);
 
-  virtual void compute_internal_bounds(BoundsData *bdata, int pipeline_stage,
+  virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
+                                       int &internal_vertices,
+                                       int pipeline_stage,
                                        Thread *current_thread) const;
   virtual void parents_changed();
   virtual void children_changed();
@@ -319,7 +321,8 @@ protected:
 
 public:
   virtual void r_prepare_scene(const RenderState *state,
-                               PreparedGraphicsObjects *prepared_objects);
+                               PreparedGraphicsObjects *prepared_objects,
+                               Thread *current_thread);
 
 protected:
   // This is a base class of CData, defined below.  It contains just
@@ -329,6 +332,7 @@ protected:
   protected:
     INLINE BoundsData();
     INLINE BoundsData(const BoundsData &copy);
+    INLINE void copy_bounds(const BoundsData &copy);
 
   public:
     // This is the "internal" bounding volume, which is normally
@@ -337,7 +341,8 @@ protected:
     // overriding compute_internal_bounds().
     CPT(BoundingVolume) _internal_bounds;
     int _internal_vertices;
-    bool _internal_bounds_stale;
+    UpdateSeq _internal_bounds_mark;     // incremented on mark_stale
+    UpdateSeq _internal_bounds_computed; // set to above when computing
   };
 
 private:

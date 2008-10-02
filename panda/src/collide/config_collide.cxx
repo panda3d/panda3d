@@ -26,6 +26,7 @@
 #include "collisionInvSphere.h"
 #include "collisionLine.h"
 #include "collisionLevelStateBase.h"
+#include "collisionGeom.h"
 #include "collisionNode.h"
 #include "collisionParabola.h"
 #include "collisionPlane.h"
@@ -129,6 +130,7 @@ init_libcollide() {
   CollisionInvSphere::init_type();
   CollisionLine::init_type();
   CollisionLevelStateBase::init_type();
+  CollisionGeom::init_type();
   CollisionNode::init_type();
   CollisionParabola::init_type();
   CollisionPlane::init_type();

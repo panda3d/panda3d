@@ -165,6 +165,48 @@ debug_is_locked() const {
   return true;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::set_name
+//       Access: Public
+//  Description: The mutex name is only defined when compiling in
+//               DEBUG_THREADS mode.
+////////////////////////////////////////////////////////////////////
+INLINE void ReMutexDirect::
+set_name(const string &) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::clear_name
+//       Access: Public
+//  Description: The mutex name is only defined when compiling in
+//               DEBUG_THREADS mode.
+////////////////////////////////////////////////////////////////////
+INLINE void ReMutexDirect::
+clear_name() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::has_name
+//       Access: Public
+//  Description: The mutex name is only defined when compiling in
+//               DEBUG_THREADS mode.
+////////////////////////////////////////////////////////////////////
+INLINE bool ReMutexDirect::
+has_name() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::get_name
+//       Access: Public
+//  Description: The mutex name is only defined when compiling in
+//               DEBUG_THREADS mode.
+////////////////////////////////////////////////////////////////////
+INLINE string ReMutexDirect::
+get_name() const {
+  return string();
+}
+
 #ifndef HAVE_REMUTEXIMPL
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::do_lock

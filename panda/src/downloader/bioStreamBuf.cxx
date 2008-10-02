@@ -144,6 +144,7 @@ sync() {
 
   size_t num_wrote = write_chars(pbase(), n);
   pbump(-(int)n);
+
   if (num_wrote != n) {
     return EOF;
   }
@@ -213,6 +214,12 @@ underflow() {
         }
         gbump(num_bytes);
         return EOF;
+
+      } 
+        
+      if (downloader_cat.is_spam()) {
+        downloader_cat.spam()
+          << "read " << read_count << " bytes from " << _source << "\n";
       }
 
       // Slide what we did read to the top of the buffer.
@@ -241,7 +248,7 @@ write_chars(const char *start, size_t length) {
     int write_count = BIO_write(*_source, start, length);
     if (downloader_cat.is_spam()) {
       downloader_cat.spam()
-        << "wrote " << write_count << " bytes.\n";
+        << "wrote " << write_count << " bytes to " << _source << "\n";
     }
     thread_consider_yield();
     while (write_count != (int)(length - wrote_so_far)) {
@@ -272,10 +279,17 @@ write_chars(const char *start, size_t length) {
             downloader_cat.spam()
               << "waiting to write to BIO.\n";
           }
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+          // In SIMPLE_THREADS mode, instead of blocking, simply yield
+          // the thread.
+          thread_yield();
+#else
+          // In any other threading mode, we actually want to block.
           fd_set wset;
           FD_ZERO(&wset);
           FD_SET(fd, &wset);
           select(fd + 1, NULL, &wset, NULL, NULL);
+#endif  // SIMPLE_THREADS
         }        
         
       } else {

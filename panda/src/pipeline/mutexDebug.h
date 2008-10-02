@@ -19,8 +19,17 @@
 #include "mutexTrueImpl.h"
 #include "conditionVarImpl.h"
 #include "thread.h"
+#include "namable.h"
 
 #ifdef DEBUG_THREADS
+
+#if defined(SIMPLE_THREADS) && defined(SIMPLE_THREADS_NO_MUTEX)
+// In this mode, we don't actually lock and unlock a mutex.  We just
+// wave at them as they go by.  This actually involves a bit more
+// work, here in the debug mode, than a real mutex, because we have to
+// track all the threads that failed to lock the mutex.
+#define PHONY_MUTEX
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexDebug
@@ -28,7 +37,7 @@
 //               by doing everything by hand.  This does allow fancy
 //               things like deadlock detection, however.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PIPELINE MutexDebug {
+class EXPCL_PANDA_PIPELINE MutexDebug : public Namable {
 protected:
   MutexDebug(const string &name, bool allow_recursion);
   virtual ~MutexDebug();
@@ -57,10 +66,13 @@ private:
 private:
   INLINE static MutexTrueImpl *get_global_lock();
 
-  string _name;
   bool _allow_recursion;
   Thread *_locking_thread;
   int _lock_count;
+#ifdef PHONY_MUTEX
+  typedef pmap<Thread *, int> MissedThreads;
+  MissedThreads _missed_threads;
+#endif
 
   ConditionVarImpl _cvar_impl;
 

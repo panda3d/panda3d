@@ -363,7 +363,8 @@ load_bind_anim(Loader *loader, const Filename &filename,
   }
 
   PT(BindAnimRequest) request = 
-    new BindAnimRequest(filename, anim_options, loader, control, 
+    new BindAnimRequest(string("bind:") + filename.get_basename(),
+                        filename, anim_options, loader, control, 
                         hierarchy_match_flags, subset);
   loader->load_async(request);
 
