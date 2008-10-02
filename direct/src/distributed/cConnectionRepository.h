@@ -24,6 +24,8 @@
 #include "pStatCollector.h"
 #include "datagramIterator.h"
 #include "clockObject.h"
+#include "reMutex.h"
+#include "reMutexHolder.h"
 
 #ifdef HAVE_NET
 #include "queuedConnectionManager.h"
@@ -154,6 +156,9 @@ private:
 
   void describe_message(ostream &out, const string &prefix, 
                         const Datagram &dg) const;
+
+private:
+  ReMutex _lock;
 
 #ifdef HAVE_PYTHON
   PyObject *_python_repository;

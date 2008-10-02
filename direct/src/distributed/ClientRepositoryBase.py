@@ -662,12 +662,11 @@ class ClientRepositoryBase(ConnectionRepository):
 
     def sendHeartbeatTask(self, task):
         self.sendHeartbeat()
-        self.waitForNextHeartBeat()
-        return Task.done
+        return Task.again
 
     def waitForNextHeartBeat(self):
         taskMgr.doMethodLater(self.heartbeatInterval, self.sendHeartbeatTask,
-                              "heartBeat")
+                              "heartBeat", taskChain = 'net')
 
     def replaceMethod(self, oldMethod, newFunction):
         return 0

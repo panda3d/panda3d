@@ -142,7 +142,7 @@ get_qcr() {
 
 #ifdef WANT_NATIVE_NET
 ////////////////////////////////////////////////////////////////////
-//     Function: CConnectionRepository::get_bcd
+//     Function: CConnectionRepository::get_bdc
 //       Access: Published
 //  Description: Returns the Buffered_DatagramConnection object associated
 //               with the repository.
@@ -162,6 +162,7 @@ get_bdc() {
 ////////////////////////////////////////////////////////////////////
 INLINE void CConnectionRepository::
 get_datagram(Datagram &dg) {
+  ReMutexHolder holder(_lock);
   dg = _dg;
 }
 
@@ -176,6 +177,7 @@ get_datagram(Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CConnectionRepository::
 get_datagram_iterator(DatagramIterator &di) {
+  ReMutexHolder holder(_lock);
   di = _di;
 }
 
@@ -188,13 +190,15 @@ get_datagram_iterator(DatagramIterator &di) {
 ////////////////////////////////////////////////////////////////////
 INLINE CHANNEL_TYPE CConnectionRepository::
 get_msg_channel(int offset) const {
-   nassertr(offset < (int)_msg_channels.size(),0);
-   return _msg_channels[offset];
+  ReMutexHolder holder(_lock);
+  nassertr(offset < (int)_msg_channels.size(),0);
+  return _msg_channels[offset];
 }
 
 INLINE int CConnectionRepository::
 get_msg_channel_count() const {
-    return _msg_channels.size();
+  ReMutexHolder holder(_lock);
+  return _msg_channels.size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -206,6 +210,7 @@ get_msg_channel_count() const {
 ////////////////////////////////////////////////////////////////////
 INLINE CHANNEL_TYPE CConnectionRepository::
 get_msg_sender() const {
+  ReMutexHolder holder(_lock);
   return _msg_sender;
 }
 
@@ -229,6 +234,7 @@ get_msg_sender() const {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned int CConnectionRepository::
 get_msg_type() const {
+  ReMutexHolder holder(_lock);
   return _msg_type;
 }
 
@@ -251,6 +257,7 @@ get_overflow_event_name() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CConnectionRepository::
 is_bundling_messages() const {
+  ReMutexHolder holder(_lock);
   return _bundling_msgs > 0;
 }
 
@@ -261,6 +268,7 @@ is_bundling_messages() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CConnectionRepository::
 set_want_message_bundling(bool flag) {
+  ReMutexHolder holder(_lock);
   // don't allow enable/disable while bundling
   nassertv(_bundling_msgs == 0);
   _want_message_bundling = flag;
@@ -273,6 +281,7 @@ set_want_message_bundling(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CConnectionRepository::
 get_want_message_bundling() const {
+  ReMutexHolder holder(_lock);
   return _want_message_bundling;
 }
 
