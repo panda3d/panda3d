@@ -226,40 +226,45 @@ class TaskManager:
         to the task manager), or a callable function object.  If this
         is a function, a new Task object will be created and returned.
 
-        name - the name to assign to the Task.
+        name - the name to assign to the Task.  Required, unless you
+        are passing in a Task object that already has a name.
+
+        extraArgs - the list of arguments to pass to the task
+        function.  If this is omitted, the list is just the task
+        object itself.
+
+        appendTask - a boolean flag.  If this is true, then the task
+        object itself will be appended to the end of the extraArgs
+        list before calling the function.
 
         sort - the sort value to assign the task.  The default sort is
         0.  Within a particular task chain, it is guaranteed that the
         tasks with a lower sort value will all run before tasks with a
         higher sort value run.
 
-        extraArgs - the list of arguments to pass to the task
-        function.  If this is omitted, the list is just the task
-        object itself.
-
         priority - the priority at which to run the task.  The default
-        priority is 0.  For historical purposes, if you specify a
+        priority is 0.  Higher priority tasks are run sooner, and/or
+        more often.  For historical purposes, if you specify a
         priority without also specifying a sort, the priority value is
         understood to actually be a sort value.  (Previously, there
         was no priority value, only a sort value, and it was called
         "priority".)
 
         uponDeath - a function to call when the task terminates,
-        either because it has run to completion, or because
-
-        appendTask - a boolean flag.  If this is true, then the task
-        object itself will be appended to the extraArgs list before
-        calling the function.
+        either because it has run to completion, or because it has
+        been explicitly removed.
 
         taskChain - the name of the task chain to assign the task to.
 
-        owner - an option Python object that is declared as the
+        owner - an optional Python object that is declared as the
         "owner" of this task for maintenance purposes.  The owner must
         have two methods: owner._addTask(self, task), which is called
         when the task begins, and owner._clearTask(self, task), which
-        is called when the task terminates.
+        is called when the task terminates.  This is all the owner
+        means.
 
-        The return value is the new Task object that has been added.
+        The return value of add() is the new Task object that has been
+        added, or the original Task object that was passed in.
 
         """
         
@@ -313,11 +318,13 @@ class TaskManager:
         return task
         
     def remove(self, taskOrName):
-        """Removes a task from the task manager.  The task is
-        immediately stopped, almost as if it had returned task.done.
-        You may specify either an explicit Task object, or the name of
-        a task.  If you specify a name, all tasks with the indicated
-        name are removed.  Returns the number of tasks removed. """
+        """Removes a task from the task manager.  The task is stopped,
+        almost as if it had returned task.done.  (But if the task is
+        currently executing, it will finish out its current frame
+        before being removed.)  You may specify either an explicit
+        Task object, or the name of a task.  If you specify a name,
+        all tasks with the indicated name are removed.  Returns the
+        number of tasks removed. """
         
         if isinstance(taskOrName, types.StringTypes):
             tasks = self.mgr.findTasks(taskOrName)
