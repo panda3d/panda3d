@@ -211,7 +211,7 @@ class TaskManager:
         self.mgr.add(task)
         return task
 
-    def add(self, funcOrTask, name, sort = None, extraArgs = None,
+    def add(self, funcOrTask, name = None, sort = None, extraArgs = None,
             priority = None, uponDeath = None, appendTask = False,
             taskChain = None, owner = None):
         
@@ -275,13 +275,16 @@ class TaskManager:
         else:
             self.notify.error(
                 'add: Tried to add a task that was not a Task or a func')
-        assert isinstance(name, types.StringTypes), 'Name must be a string type'
+
         if extraArgs is None:
             extraArgs = []
             appendTask = True
         task.setArgs(extraArgs, appendTask)
 
-        task.setName(name)
+        if name is not None:
+            assert isinstance(name, types.StringTypes), 'Name must be a string type'
+            task.setName(name)
+        assert task.hasName()
 
         # For historical reasons, if priority is specified but not
         # sort, it really means sort.

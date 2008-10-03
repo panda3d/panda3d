@@ -49,8 +49,9 @@ get_manager() const {
 //
 //               Setting this value after the task has already been
 //               added will not affect the task's wake time; it will
-//               only affect the task if the it is re-added to the
-//               queue in the future.
+//               only affect the task if it is re-added to the queue
+//               in the future, for instance if the task returns
+//               DS_again.
 ////////////////////////////////////////////////////////////////////
 INLINE void AsyncTask::
 set_delay(double delay) {

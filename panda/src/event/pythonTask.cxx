@@ -248,9 +248,13 @@ __setattr__(const string &attr_name, PyObject *v) {
   }
 
   if (attr_name == "delayTime") {
-    double delay = PyFloat_AsDouble(v);
-    if (!PyErr_Occurred()) {
-      set_delay(delay);
+    if (v == Py_None) {
+      clear_delay();
+    } else {
+      double delay = PyFloat_AsDouble(v);
+      if (!PyErr_Occurred()) {
+        set_delay(delay);
+      }
     }
 
   } else if (attr_name == "name") {
@@ -259,7 +263,7 @@ __setattr__(const string &attr_name, PyObject *v) {
       set_name(name);
     }
 
-  } else if (attr_name == "id") {
+  } else if (attr_name == "id" || attr_name == "wakeTime") {
     nassert_raise("Cannot set constant value");
     return true;
 
@@ -300,7 +304,15 @@ __getattr__(const string &attr_name) const {
   } else if (attr_name == "name") {
     return PyString_FromString(get_name().c_str());
   } else if (attr_name == "wakeTime") {
+    if (get_state() != S_sleeping) {
+      Py_RETURN_NONE;
+    }
     return PyFloat_FromDouble(get_wake_time());
+  } else if (attr_name == "delayTime") {
+    if (!has_delay()) {
+      Py_RETURN_NONE;
+    }
+    return PyFloat_FromDouble(get_delay());
   } else if (attr_name == "id") {
     return PyInt_FromLong(_task_id);
   } else {
