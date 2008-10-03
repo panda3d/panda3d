@@ -77,6 +77,8 @@ PUBLISHED:
   
   INLINE double get_start_time() const;
   double get_elapsed_time() const;
+  INLINE int get_start_frame() const;
+  int get_elapsed_frames() const;
 
   void set_name(const string &name);
   INLINE void clear_name();
@@ -121,14 +123,17 @@ protected:
   double _delay;
   bool _has_delay;
   double _wake_time;
-  double _start_time;
   int _sort;
   int _priority;
   string _done_event;
+
   State _state;
   Thread *_servicing_thread;
   AsyncTaskManager *_manager;
   AsyncTaskChain *_chain;
+
+  double _start_time;
+  int _start_frame;
 
   double _dt;
   double _max_dt;

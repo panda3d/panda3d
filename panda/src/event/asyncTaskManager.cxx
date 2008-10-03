@@ -597,8 +597,10 @@ write(ostream &out, int indent_level) const {
        tci != _task_chains.end();
        ++tci) {
     AsyncTaskChain *chain = (*tci);
-    out << "\n";
-    chain->do_write(out, indent_level + 2);
+    if (chain->_num_tasks != 0) {
+      out << "\n";
+      chain->do_write(out, indent_level + 2);
+    }
   }
 }
 

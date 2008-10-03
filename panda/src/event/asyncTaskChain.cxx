@@ -452,6 +452,7 @@ do_add(AsyncTask *task) {
 
   double now = _manager->_clock->get_frame_time();
   task->_start_time = now;
+  task->_start_frame = _manager->_clock->get_frame_count();
 
   _manager->add_task_by_name(task);
 
@@ -882,6 +883,7 @@ finish_sort_group() {
       pop_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
       _sleeping.pop_back();
       task->_state = AsyncTask::S_active;
+      task->_start_frame = _manager->_clock->get_frame_count();
       _active.push_back(task);
     }
 

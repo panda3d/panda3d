@@ -130,6 +130,21 @@ get_start_time() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::get_start_frame
+//       Access: Published
+//  Description: Returns the frame number at which the task was
+//               started, according to the task manager's clock.
+//
+//               It is only valid to call this if the task's status is
+//               not S_inactive.
+////////////////////////////////////////////////////////////////////
+INLINE int AsyncTask::
+get_start_frame() const {
+  nassertr(_state != S_inactive, 0);
+  return _start_frame;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::clear_name
 //       Access: Public
 //  Description: Resets the task's name to empty.

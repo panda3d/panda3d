@@ -40,6 +40,8 @@ AsyncTask(const string &name) :
   _servicing_thread(NULL),
   _manager(NULL),
   _chain(NULL),
+  _start_time(0.0),
+  _start_frame(0),
   _dt(0.0),
   _max_dt(0.0),
   _total_dt(0.0),
@@ -100,6 +102,23 @@ get_elapsed_time() const {
   nassertr(_state != S_inactive, 0.0);
   nassertr(_manager != (AsyncTaskManager *)NULL, 0.0);
   return _manager->_clock->get_frame_time() - _start_time;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::get_elapsed_frames
+//       Access: Published
+//  Description: Returns the number of frames that have elapsed since
+//               the task was started, according to the task manager's
+//               clock.
+//
+//               It is only valid to call this if the task's status is
+//               not S_inactive.
+////////////////////////////////////////////////////////////////////
+int AsyncTask::
+get_elapsed_frames() const {
+  nassertr(_state != S_inactive, 0);
+  nassertr(_manager != (AsyncTaskManager *)NULL, 0);
+  return _manager->_clock->get_frame_count() - _start_frame;
 }
 
 ////////////////////////////////////////////////////////////////////

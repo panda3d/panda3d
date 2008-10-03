@@ -263,7 +263,8 @@ __setattr__(const string &attr_name, PyObject *v) {
       set_name(name);
     }
 
-  } else if (attr_name == "id" || attr_name == "wakeTime") {
+  } else if (attr_name == "id" || attr_name == "time" || 
+             attr_name == "frame" || attr_name == "wakeTime") {
     nassert_raise("Cannot set constant value");
     return true;
 
@@ -313,6 +314,8 @@ __getattr__(const string &attr_name) const {
       Py_RETURN_NONE;
     }
     return PyFloat_FromDouble(get_delay());
+  } else if (attr_name == "frame") {
+    return PyInt_FromLong(get_elapsed_frames());
   } else if (attr_name == "id") {
     return PyInt_FromLong(_task_id);
   } else {
