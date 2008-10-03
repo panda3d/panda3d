@@ -117,6 +117,9 @@ protected:
   virtual void upon_birth();
   virtual void upon_death(bool clean_exit);
 
+  void release_lock();
+  void grab_lock();
+
 protected:
   AtomicAdjust::Integer _task_id;
   string _chain_name;

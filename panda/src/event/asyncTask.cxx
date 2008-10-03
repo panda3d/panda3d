@@ -466,3 +466,30 @@ upon_death(bool clean_exit) {
     throw_event(event);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::release_lock
+//       Access: Protected
+//  Description: Releases the task lock.  This is intended to be
+//               used within callback functions, for instance
+//               upon_birth() or upon_death(), as needed to release
+//               the lock for processing.  Be sure to grab it again
+//               before returning.
+////////////////////////////////////////////////////////////////////
+void AsyncTask::
+release_lock() {
+  _manager->_lock.release();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::grab_lock
+//       Access: Protected
+//  Description: Releases the task lock.  This is intended to be
+//               used within callback functions, to grab the lock
+//               after a previous call to release_lock().
+////////////////////////////////////////////////////////////////////
+void AsyncTask::
+grab_lock() {
+  _manager->_lock.lock();
+}
+

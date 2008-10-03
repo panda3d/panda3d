@@ -1302,7 +1302,7 @@ create_anim_controls() {
   setup_shuttle_button("4", 2, st_play_button);
   setup_shuttle_button(":", 3, st_forward_button);
 
-  _panda_framework->get_event_handler().add_hook("NewFrame", st_update_anim_controls, (void *)this);
+  _panda_framework->get_task_mgr().add(new GenericAsyncTask("controls", st_update_anim_controls, (void *)this));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1442,12 +1442,13 @@ forward_button() {
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::st_update_anim_controls
 //       Access: Private, Static
-//  Description: The static event handler function.
+//  Description: The static task function.
 ////////////////////////////////////////////////////////////////////
-void WindowFramework::
-st_update_anim_controls(const Event *, void *data) {
+AsyncTask::DoneStatus WindowFramework::
+st_update_anim_controls(GenericAsyncTask *, void *data) {
   WindowFramework *self = (WindowFramework *)data;
   self->update_anim_controls();
+  return AsyncTask::DS_cont;
 }
 
 

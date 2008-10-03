@@ -15,6 +15,7 @@
     config_event.h \
     buttonEvent.I buttonEvent.h \
     buttonEventList.I buttonEventList.h \
+    genericAsyncTask.h genericAsyncTask.I \
     pointerEvent.I pointerEvent.h \
     pointerEventList.I pointerEventList.h \
     pythonTask.h pythonTask.I \
@@ -30,6 +31,7 @@
     asyncTaskManager.cxx \
     buttonEvent.cxx \
     buttonEventList.cxx \
+    genericAsyncTask.cxx \
     pointerEvent.cxx \
     pointerEventList.cxx \
     pythonTask.cxx \
@@ -44,6 +46,7 @@
     asyncTaskManager.h asyncTaskManager.I \
     buttonEvent.I buttonEvent.h \
     buttonEventList.I buttonEventList.h \
+    genericAsyncTask.cxx \
     pointerEvent.I pointerEvent.h \
     pointerEventList.I pointerEventList.h \
     pythonTask.h pythonTask.I \

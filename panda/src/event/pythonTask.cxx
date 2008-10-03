@@ -476,7 +476,7 @@ upon_birth() {
   AsyncTask::upon_birth();
 
   if (_owner != Py_None) {
-    _manager->_lock.release();
+    release_lock();
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     // Use PyGILState to protect this asynchronous call.
     PyGILState_STATE gstate;
@@ -488,7 +488,7 @@ upon_birth() {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     PyGILState_Release(gstate);
 #endif
-    _manager->_lock.lock();
+    grab_lock();
   }
 }
 
@@ -514,7 +514,7 @@ upon_death(bool clean_exit) {
   AsyncTask::upon_death(clean_exit);
 
   if (_owner != Py_None && _upon_death != Py_None) {
-    _manager->_lock.release();
+    release_lock();
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     // Use PyGILState to protect this asynchronous call.
     PyGILState_STATE gstate;
@@ -527,7 +527,7 @@ upon_death(bool clean_exit) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     PyGILState_Release(gstate);
 #endif
-    _manager->_lock.lock();
+    grab_lock();
   }
 }
 

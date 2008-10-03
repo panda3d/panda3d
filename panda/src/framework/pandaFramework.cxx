@@ -37,7 +37,8 @@ LoaderOptions PandaFramework::_loader_options;
 ////////////////////////////////////////////////////////////////////
 PandaFramework::
 PandaFramework() :
-  _event_handler(*EventHandler::get_global_event_handler())
+  _event_handler(*EventHandler::get_global_event_handler()),
+  _task_mgr(*AsyncTaskManager::get_global_ptr())
 {
   _is_open = false;
   _made_default_pipe = false;
@@ -86,7 +87,18 @@ open_framework(int &argc, char **&argv) {
 
   reset_frame_rate();
 
+  {
+    PT(GenericAsyncTask) task = new GenericAsyncTask("event", task_event, this);
+    _task_mgr.add(task);
+  }
+
   _data_root = NodePath("data");
+  {
+    PT(GenericAsyncTask) task = new GenericAsyncTask("data_loop", task_data_loop, this);
+    task->set_sort(-50);
+    _task_mgr.add(task);
+  }
+
   _highlight_wireframe = NodePath("wireframe");
   _highlight_wireframe.set_render_mode_wireframe(1);
   _highlight_wireframe.set_texture_off(1);
@@ -98,12 +110,20 @@ open_framework(int &argc, char **&argv) {
     // playing.
     _recorder = new RecorderController;
     _recorder->begin_playback(Filename::from_os_specific(playback_session));
+
+    PT(GenericAsyncTask) task = new GenericAsyncTask("play_frame", task_play_frame, this);
+    task->set_sort(55);
+    _task_mgr.add(task);
     
   } else if (!record_session.empty()) {
     // If the config file so indicates, create a recorder and start it
     // recording.
     _recorder = new RecorderController;
     _recorder->begin_record(Filename::from_os_specific(record_session));
+
+    PT(GenericAsyncTask) task = new GenericAsyncTask("record_frame", task_record_frame, this);
+    task->set_sort(45);
+    _task_mgr.add(task);
   } 
 
   _event_handler.add_hook("window-event", event_window_event, this);
@@ -125,7 +145,7 @@ close_framework() {
   close_all_windows();
   // Also close down any other windows that might have been opened.
   if (_engine != (GraphicsEngine *)NULL) {
-    delete _engine;
+    _engine->remove_all_windows();
     _engine = NULL;
   }
 
@@ -766,30 +786,8 @@ enable_default_keys() {
 bool PandaFramework::
 do_frame(Thread *current_thread) {
   nassertr(_is_open, false);
-  DataGraphTraverser dg_trav(current_thread);
-  dg_trav.traverse(_data_root.node());
 
-  throw_event("NewFrame");
-  _event_handler.process_events();
-
-  if (!_screenshot_text.is_empty()) {
-    double now = ClockObject::get_global_clock()->get_frame_time();
-    if (now >= _screenshot_clear_time) {
-      _screenshot_text.remove_node();
-    }
-  }
-
-  if (_recorder != (RecorderController *)NULL) {
-    _recorder->record_frame();
-  }
-  
-  if (_engine != (GraphicsEngine *)NULL) {
-    _engine->render_frame();
-  }
-
-  if (_recorder != (RecorderController *)NULL) {
-    _recorder->play_frame();
-  }
+  _task_mgr.poll();
 
   return !_exit_flag;
 }
@@ -1338,8 +1336,11 @@ event_f9(const Event *event, void *data) {
     self->_screenshot_text.reparent_to(wf->get_aspect_2d());
     cout << "Screenshot saved: " + output_text + "\n";
 
-    double now = ClockObject::get_global_clock()->get_frame_time();
-    self->_screenshot_clear_time = now + 3.0;
+    // Set a do-later to remove the text in 3 seconds.
+    self->_task_mgr.remove(self->_task_mgr.find_tasks("clear_text"));
+    PT(GenericAsyncTask) task = new GenericAsyncTask("clear_text", task_clear_text, self);
+    task->set_delay(3.0);
+    self->_task_mgr.add(task);
   }
 }
 
@@ -1468,4 +1469,98 @@ event_window_event(const Event *event, void *data) {
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::task_data_loop
+//       Access: Public, Static
+//  Description: Called once per frame to process the data graph (which
+//               handles user input via the mouse and keyboard, etc.)
+////////////////////////////////////////////////////////////////////
+AsyncTask::DoneStatus PandaFramework::
+task_data_loop(GenericAsyncTask *task, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  DataGraphTraverser dg_trav;
+  dg_trav.traverse(self->_data_root.node());
+
+  return AsyncTask::DS_cont;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::task_event
+//       Access: Public, Static
+//  Description: Called once per frame to process the pending events.
+////////////////////////////////////////////////////////////////////
+AsyncTask::DoneStatus PandaFramework::
+task_event(GenericAsyncTask *task, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  throw_event("NewFrame");
+  self->_event_handler.process_events();
+
+  return AsyncTask::DS_cont;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::task_igloop
+//       Access: Public, Static
+//  Description: Called once per frame to render the scene.
+////////////////////////////////////////////////////////////////////
+AsyncTask::DoneStatus PandaFramework::
+task_igloop(GenericAsyncTask *task, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+  
+  if (self->_engine != (GraphicsEngine *)NULL) {
+    self->_engine->render_frame();
+  }
+
+  return AsyncTask::DS_cont;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::task_record_frame
+//       Access: Public, Static
+//  Description: Called once per frame to ask the recorder to record
+//               the user input data, if enabled.
+////////////////////////////////////////////////////////////////////
+AsyncTask::DoneStatus PandaFramework::
+task_record_frame(GenericAsyncTask *task, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  if (self->_recorder != (RecorderController *)NULL) {
+    self->_recorder->record_frame();
+  }
+
+  return AsyncTask::DS_cont;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::task_play_frame
+//       Access: Public, Static
+//  Description: Called once per frame to ask the recorder to play back
+//               the user input data, if enabled.
+////////////////////////////////////////////////////////////////////
+AsyncTask::DoneStatus PandaFramework::
+task_play_frame(GenericAsyncTask *task, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  if (self->_recorder != (RecorderController *)NULL) {
+    self->_recorder->play_frame();
+  }
+
+  return AsyncTask::DS_cont;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::task_clear_text
+//       Access: Public, Static
+//  Description: Called once to remove the screenshot text from onscreen.
+////////////////////////////////////////////////////////////////////
+AsyncTask::DoneStatus PandaFramework::
+task_clear_text(GenericAsyncTask *task, void *data) {
+  PandaFramework *self = (PandaFramework *)data;
+
+  self->clear_text();
+  return AsyncTask::DS_cont;
 }

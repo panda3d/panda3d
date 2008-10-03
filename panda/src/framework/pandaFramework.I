@@ -23,7 +23,10 @@
 INLINE GraphicsEngine *PandaFramework::
 get_graphics_engine() {
   if (_engine == (GraphicsEngine *)NULL) {
-    _engine = new GraphicsEngine;
+    _engine = GraphicsEngine::get_global_ptr();
+    PT(GenericAsyncTask) task = new GenericAsyncTask("igloop", task_igloop, this);
+    task->set_sort(50);
+    _task_mgr.add(task);
   }
   return _engine;
 }
@@ -50,6 +53,17 @@ get_data_root() const {
 INLINE EventHandler &PandaFramework::
 get_event_handler() {
   return _event_handler;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFramework::get_task_mgr
+//       Access: Public
+//  Description: Returns the Task Manager object that manages tasks in
+//               the framework.
+////////////////////////////////////////////////////////////////////
+INLINE AsyncTaskManager &PandaFramework::
+get_task_mgr() {
+  return _task_mgr;
 }
 
 ////////////////////////////////////////////////////////////////////

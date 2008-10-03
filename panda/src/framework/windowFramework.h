@@ -32,6 +32,7 @@
 #include "pgSliderBar.h"
 #include "textNode.h"
 #include "eventHandler.h"
+#include "genericAsyncTask.h"
 
 class PandaFramework;
 class AmbientLight;
@@ -146,7 +147,7 @@ private:
   void play_button();
   void forward_button();
 
-  static void st_update_anim_controls(const Event *, void *data);
+  static AsyncTask::DoneStatus st_update_anim_controls(GenericAsyncTask *task, void *data);
 
   static void st_back_button(const Event *, void *data);
   static void st_pause_button(const Event *, void *data);

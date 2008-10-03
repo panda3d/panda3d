@@ -26,6 +26,8 @@
 #include "graphicsWindow.h"
 #include "recorderController.h"
 #include "pointerTo.h"
+#include "asyncTaskManager.h"
+#include "genericAsyncTask.h"
 
 #include "pvector.h"
 
@@ -47,6 +49,7 @@ public:
   INLINE GraphicsEngine *get_graphics_engine();
   INLINE const NodePath &get_data_root() const;
   INLINE EventHandler &get_event_handler();
+  INLINE AsyncTaskManager &get_task_mgr();
   NodePath get_mouse(GraphicsWindow *window);
   void remove_mouse(const GraphicsWindow *window);
 
@@ -148,6 +151,15 @@ public:
   static void event_window_event(const Event *, void *data);
 
 
+  static AsyncTask::DoneStatus task_data_loop(GenericAsyncTask *task, void *data);
+  static AsyncTask::DoneStatus task_event(GenericAsyncTask *task, void *data);
+  static AsyncTask::DoneStatus task_clear_screenshot_text(GenericAsyncTask *task, void *data);
+  static AsyncTask::DoneStatus task_igloop(GenericAsyncTask *task, void *data);
+  static AsyncTask::DoneStatus task_record_frame(GenericAsyncTask *task, void *data);
+  static AsyncTask::DoneStatus task_play_frame(GenericAsyncTask *task, void *data);
+
+  static AsyncTask::DoneStatus task_clear_text(GenericAsyncTask *task, void *data);
+
 private:
   bool _is_open;
   bool _made_default_pipe;
@@ -155,10 +167,11 @@ private:
   string _window_title;
 
   PT(GraphicsPipe) _default_pipe;
-  GraphicsEngine *_engine;
+  PT(GraphicsEngine) _engine;
 
   NodePath _data_root;
   EventHandler &_event_handler;
+  AsyncTaskManager &_task_mgr;
 
   typedef pvector< PT(WindowFramework) > Windows;
   Windows _windows;
@@ -196,7 +209,6 @@ private:
 
   NodePath _help_text;
   NodePath _screenshot_text;
-  double _screenshot_clear_time;
 
   PT(RecorderController) _recorder;
 
