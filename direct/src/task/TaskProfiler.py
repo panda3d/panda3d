@@ -129,30 +129,32 @@ class TaskProfiler:
         # set up for the next frame
         if (self._task is not None) and taskMgr._hasProfiledDesignatedTask():
             session = taskMgr._getLastProfileSession()
-            sessionDur = session.getWallClockDuration()
-            namePattern = self._task.getNamePattern()
-            if namePattern not in self._namePattern2tracker:
-                self._namePattern2tracker[namePattern] = TaskTracker(namePattern)
-            tracker = self._namePattern2tracker[namePattern]
-            isSpike = False
-            # do we have enough samples?
-            if tracker.getNumDurationSamples() > self._minSamples:
-                # was this a spike?
-                if sessionDur > (tracker.getAvgDuration() * self._spikeThreshold):
-                    print 'sessionDur=%s' % sessionDur
-                    print 'avgDur=%s' % tracker.getAvgDuration()
-                    isSpike = True
-                    avgSession = tracker.getAvgSession()
-                    maxNSSession = tracker.getMaxNonSpikeSession()
-                    self.notify.info('task CPU spike profile (%s):\n'
-                                     '== AVERAGE (%s wall-clock seconds)\n%s\n'
-                                     '== LONGEST NON-SPIKE (%s wall-clock seconds)\n%s\n'
-                                     '== SPIKE (%s wall-clock seconds)\n%s' % (
-                        namePattern,
-                        avgSession.getWallClockDuration(), avgSession.getResults(),
-                        maxNSSession.getWallClockDuration(), maxNSSession.getResults(),
-                        sessionDur, session.getResults()))
-            tracker.addProfileSession(session, isSpike)
+            # if we couldn't profile, throw this result out
+            if session.profileSucceeded():
+                sessionDur = session.getWallClockDuration()
+                namePattern = self._task.getNamePattern()
+                if namePattern not in self._namePattern2tracker:
+                    self._namePattern2tracker[namePattern] = TaskTracker(namePattern)
+                tracker = self._namePattern2tracker[namePattern]
+                isSpike = False
+                # do we have enough samples?
+                if tracker.getNumDurationSamples() > self._minSamples:
+                    # was this a spike?
+                    if sessionDur > (tracker.getAvgDuration() * self._spikeThreshold):
+                        print 'sessionDur=%s' % sessionDur
+                        print 'avgDur=%s' % tracker.getAvgDuration()
+                        isSpike = True
+                        avgSession = tracker.getAvgSession()
+                        maxNSSession = tracker.getMaxNonSpikeSession()
+                        self.notify.info('task CPU spike profile (%s):\n'
+                                         '== AVERAGE (%s wall-clock seconds)\n%s\n'
+                                         '== LONGEST NON-SPIKE (%s wall-clock seconds)\n%s\n'
+                                         '== SPIKE (%s wall-clock seconds)\n%s' % (
+                            namePattern,
+                            avgSession.getWallClockDuration(), avgSession.getResults(),
+                            maxNSSession.getWallClockDuration(), maxNSSession.getResults(),
+                            sessionDur, session.getResults()))
+                tracker.addProfileSession(session, isSpike)
 
         # set up the next task
         self._task = taskMgr._getRandomTask()

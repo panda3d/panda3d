@@ -27,9 +27,11 @@ class ProfileSession:
         self._func = func
         self._name = name
         self._filename = 'profileData-%s-%s' % (self._name, id(self))
+        self._profileSucceeded = False
         self._wallClockDur = None
         self._ramFile = None
         self._refCount = 0
+        self._resultCache = {}
         self.acquire()
 
     def acquire(self):
@@ -45,97 +47,124 @@ class ProfileSession:
         del self._filename
         del self._wallClockDur
         del self._ramFile
+        del self._resultCache
 
     def run(self):
         # make sure this instance doesn't get destroyed inside self._func
         self.acquire()
 
-        # put the function in the global namespace so that profile can find it
-        assert 'globalProfileFunc' not in __builtin__.__dict__
-        __builtin__.globalProfileFunc = self._func
-        __builtin__.globalProfileResult = [None]
+        self._profileSucceeded = False
 
-        # set up the RAM file
-        _installProfileCustomFuncs(self._filename)
+        # if we're already profiling, just run the func and don't profile
+        if 'globalProfileFunc' in __builtin__.__dict__:
+            result = self._func()
+            self._wallClockDur = 0.
+        else:
+            # put the function in the global namespace so that profile can find it
+            __builtin__.globalProfileFunc = self._func
+            __builtin__.globalProfileResult = [None]
 
-        # do the profiling
-        Profile = profile.Profile
-        statement = 'globalProfileResult[0]=globalProfileFunc()'
-        sort = -1
-        retVal = None
+            # set up the RAM file
+            _installProfileCustomFuncs(self._filename)
 
-        # this is based on profile.run, the code is replicated here to allow us to
-        # eliminate a memory leak
-        prof = Profile()
-        # try to get wall-clock duration that is as accurate as possible
-        startT = self.TrueClock.getShortTime()
-        try:
-            prof = prof.run(statement)
-        except SystemExit:
-            pass
-        # try to get wall-clock duration that is as accurate as possible
-        endT = self.TrueClock.getShortTime()
-        # this has to be run immediately after profiling for the timings to be accurate
-        # tell the Profile object to generate output to the RAM file
-        prof.dump_stats(self._filename)
+            # do the profiling
+            Profile = profile.Profile
+            statement = 'globalProfileResult[0]=globalProfileFunc()'
+            sort = -1
+            retVal = None
 
-        dur = endT - startT
+            # this is based on profile.run, the code is replicated here to allow us to
+            # eliminate a memory leak
+            prof = Profile()
+            # try to get wall-clock duration that is as accurate as possible
+            startT = self.TrueClock.getShortTime()
+            try:
+                prof = prof.run(statement)
+            except SystemExit:
+                pass
+            # try to get wall-clock duration that is as accurate as possible
+            endT = self.TrueClock.getShortTime()
+            # this has to be run immediately after profiling for the timings to be accurate
+            # tell the Profile object to generate output to the RAM file
+            prof.dump_stats(self._filename)
 
-        # eliminate the memory leak
-        del prof.dispatcher
+            dur = endT - startT
 
-        # and store the results
-        self._wallClockDur = dur
+            # eliminate the memory leak
+            del prof.dispatcher
 
-        # store the RAM file for later
-        self._ramFile = _getProfileResultFileInfo(self._filename)
-        # clean up the RAM file support
-        _removeProfileCustomFuncs(self._filename)
+            # and store the results
+            self._wallClockDur = dur
 
-        # clean up the globals
-        result = globalProfileResult[0]
-        del __builtin__.__dict__['globalProfileFunc']
-        del __builtin__.__dict__['globalProfileResult']
+            # store the RAM file for later
+            self._ramFile = _getProfileResultFileInfo(self._filename)
+            # clean up the RAM file support
+            _removeProfileCustomFuncs(self._filename)
 
+            # clean up the globals
+            result = globalProfileResult[0]
+            del __builtin__.__dict__['globalProfileFunc']
+            del __builtin__.__dict__['globalProfileResult']
+
+            self._profileSucceeded = True
+            
         self.release()
         return result
 
     def getWallClockDuration(self):
         # this might not be accurate, it may include time taken up by other processes
         return self._wallClockDur
+
+    def profileSucceeded(self):
+        return self._profileSucceeded
     
     def getResults(self,
                    lines=80,
                    sorts=['cumulative', 'time', 'calls'],
                    callInfo=False):
-        # set up the RAM file
-        _installProfileCustomFuncs(self._filename)
-        # install the stored RAM file from self.run()
-        _setProfileResultsFileInfo(self._filename, self._ramFile)
+        if not self._profileSucceeded:
+            output = '%s: profiler already running, could not profile' % self._name
+        else:
+            # make sure the arguments will hash efficiently if callers provide different types
+            lines = int(lines)
+            sorts = list(sorts)
+            callInfo = bool(callInfo)
+            k = str((lines, sorts, callInfo))
+            if k in self._resultCache:
+                # we've already created this output string, get it from the cache
+                output = self._resultCache[k]
+            else:
+                # set up the RAM file
+                _installProfileCustomFuncs(self._filename)
+                # install the stored RAM file from self.run()
+                _setProfileResultsFileInfo(self._filename, self._ramFile)
 
-        # now extract human-readable output from the RAM file
+                # now extract human-readable output from the RAM file
 
-        # capture print output to a string
-        sc = StdoutCapture()
+                # capture print output to a string
+                sc = StdoutCapture()
 
-        # print the info to stdout
-        s = pstats.Stats(self._filename)
-        s.strip_dirs()
-        for sort in sorts:
-            s.sort_stats(sort)
-            s.print_stats(lines)
-            if callInfo:
-                s.print_callees(lines)
-                s.print_callers(lines)
-        
-        # make a copy of the print output
-        output = sc.getString()
+                # print the info to stdout
+                s = pstats.Stats(self._filename)
+                s.strip_dirs()
+                for sort in sorts:
+                    s.sort_stats(sort)
+                    s.print_stats(lines)
+                    if callInfo:
+                        s.print_callees(lines)
+                        s.print_callers(lines)
 
-        # restore stdout to what it was before
-        sc.destroy()
+                # make a copy of the print output
+                output = sc.getString()
 
-        # clean up the RAM file support
-        _removeProfileCustomFuncs(self._filename)
+                # restore stdout to what it was before
+                sc.destroy()
+
+                # clean up the RAM file support
+                _removeProfileCustomFuncs(self._filename)
+
+                # cache this result
+                self._resultCache[k] = output
 
         return output
     
