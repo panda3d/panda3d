@@ -46,7 +46,7 @@
     asyncTaskManager.h asyncTaskManager.I \
     buttonEvent.I buttonEvent.h \
     buttonEventList.I buttonEventList.h \
-    genericAsyncTask.cxx \
+    genericAsyncTask.h genericAsyncTask.I \
     pointerEvent.I pointerEvent.h \
     pointerEventList.I pointerEventList.h \
     pythonTask.h pythonTask.I \
