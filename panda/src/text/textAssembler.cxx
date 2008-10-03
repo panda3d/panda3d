@@ -1432,7 +1432,7 @@ get_character_glyphs(int character, const TextProperties *properties,
                      int &additional_flags,
                      float &glyph_scale, float &advance_scale) {
   TextFont *font = properties->get_font();
-  nassertv(font != (TextFont *)NULL);
+  nassertv_always(font != (TextFont *)NULL);
 
   got_glyph = false;
   glyph = NULL;
