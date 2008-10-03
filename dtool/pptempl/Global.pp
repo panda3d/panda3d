@@ -135,6 +135,14 @@
   #define sdl_framework $[SDL_FRAMEWORK]
 #endif
 
+#if $[HAVE_X11]
+  #define x11_ipath $[wildcard $[X11_IPATH]]
+  #define x11_lpath $[wildcard $[X11_LPATH]]
+  #define x11_cflags $[X11_CFLAGS]
+  #define x11_libs $[X11_LIBS]
+  #define x11_framework $[X11_FRAMEWORK]
+#endif
+
 #if $[HAVE_MESA]
   #define mesa_ipath $[wildcard $[MESA_IPATH]]
   #define mesa_lpath $[wildcard $[MESA_LPATH]]

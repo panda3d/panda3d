@@ -625,6 +625,13 @@
 #define SDL_LIBS
 #defer HAVE_SDL $[libtest $[SDL_LPATH],$[SDL_LIBS]]
 
+// X11 may need to be linked against for tinydisplay, but probably
+// only on a Linux platform.
+#define X11_IPATH
+#define X11_LPATH /usr/X11R6/lib
+#define X11_LIBS X11
+#defer HAVE_X11 $[libtest $[X11_LPATH],$[X11_LIBS]]
+
 // How about GLX?
 #define GLX_IPATH
 #define GLX_LPATH

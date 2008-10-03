@@ -6,6 +6,9 @@
                    dtoolutil:c dtoolbase:c dtool:m prc:c 
 
 #define USE_PACKAGES sdl
+#if $[UNIX_PLATFORM]
+  #define USE_PACKAGES $[USE_PACKAGES] x11
+#endif
 
 #begin lib_target
   #define TARGET tinydisplay
