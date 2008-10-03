@@ -43,7 +43,11 @@ class Loader(DirectObject):
     # special methods
     def __init__(self, base):
         self.base = base
-        self.loader = PandaLoader()
+        # Temporary hasattr for old Pandas.
+        if hasattr(PandaLoader, 'getGlobalPtr'):
+            self.loader = PandaLoader.getGlobalPtr()
+        else:
+            self.loader = PandaLoader()
 
         self.hook = "async_loader_%s" % (Loader.loaderIndex)
         Loader.loaderIndex += 1

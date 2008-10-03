@@ -44,22 +44,6 @@ import OnScreenDebug
 
 __builtin__.FADE_SORT_INDEX = 1000
 __builtin__.NO_FADE_SORT_INDEX = 2000
-
-####################################################
-## expermential use of  inter-frame yielding...
-## 
-##  this needs to be remove and problem cleared if we adopt this model..
-##
-####################################################
-want_fifothreads = config.GetBool("want-fifothreads", 0)
-if want_fifothreads:
-    class HackGraphicsEngine(GraphicsEngine):    
-        def renderFrame(self):
-            if isinstance(Thread.getCurrentThread(), MainThread):
-                    GraphicsEngine.renderFrame(self)
-            else:
-                print 'renderFrame Not Main Thread %s' % (repr(Thread.getCurrentThread()))
-                
     
 
 # Now ShowBase is a DirectObject.  We need this so ShowBase can hang
@@ -183,9 +167,9 @@ class ShowBase(DirectObject.DirectObject):
 
         self.hidden = NodePath('hidden')
 
-        # We need a graphics engine to manage the actual rendering.
-        if want_fifothreads:
-            self.graphicsEngine = HackGraphicsEngine()
+        # Temporary hasattr for old pandas.
+        if hasattr(GraphicsEngine, 'getGlobalPtr'):
+            self.graphicsEngine = GraphicsEngine.getGlobalPtr()
         else:
             self.graphicsEngine = GraphicsEngine()
 
