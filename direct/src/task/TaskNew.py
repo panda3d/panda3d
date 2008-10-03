@@ -342,11 +342,7 @@ class TaskManager:
         Normally, this executes each task exactly once, though task
         chains that are in sub-threads or that have frame budgets
         might execute their tasks differently. """
-        
-        self.__doStep()
-        self.mgr.stopThreads()
 
-    def __doStep(self):
         # Replace keyboard interrupt handler during task list processing
         # so we catch the keyboard interrupt but don't handle it until
         # after task list processing is complete.
@@ -382,12 +378,12 @@ class TaskManager:
             self.resumeFunc()
 
         if self.stepping:
-            self.__doStep()
+            self.step()
         else:
             self.running = True
             while self.running:
                 try:
-                    self.__doStep()
+                    self.step()
                 except KeyboardInterrupt:
                     self.stop()
                 except IOError, ioError:
