@@ -299,6 +299,8 @@ __getattr__(const string &attr_name) const {
     return PyFloat_FromDouble(get_elapsed_time());
   } else if (attr_name == "name") {
     return PyString_FromString(get_name().c_str());
+  } else if (attr_name == "wakeTime") {
+    return PyFloat_FromDouble(get_wake_time());
   } else if (attr_name == "id") {
     return PyInt_FromLong(_task_id);
   } else {
