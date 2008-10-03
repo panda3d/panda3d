@@ -21,7 +21,7 @@
 TypeHandle PythonTask::_type_handle;
 
 #ifndef CPPPARSER
-IMPORT_THIS struct Dtool_PyTypedObject Dtool_TypedReferenceCount;
+IMPORT_THIS struct Dtool_PyTypedObject Dtool_PythonTask;
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -147,10 +147,10 @@ get_args() {
       PyTuple_SET_ITEM(with_task, i, item);
     }
 
+    this->ref();
     PyObject *self = 
-      DTool_CreatePyInstanceTyped(this, Dtool_TypedReferenceCount,
+      DTool_CreatePyInstanceTyped(this, Dtool_PythonTask,
                                   true, false, get_type_index());
-    Py_INCREF(self);
     PyTuple_SET_ITEM(with_task, num_args, self);
     return with_task;
 
@@ -565,10 +565,12 @@ call_owner_method(const char *method_name) {
 void PythonTask::
 call_function(PyObject *function) {
   if (function != Py_None) {
+    this->ref();
     PyObject *self = 
-      DTool_CreatePyInstanceTyped(this, Dtool_TypedReferenceCount,
+      DTool_CreatePyInstanceTyped(this, Dtool_PythonTask,
                                   true, false, get_type_index());
     PyObject *args = PyTuple_Pack(1, self);
+    Py_DECREF(self);
     
     PyObject *result = PyObject_CallObject(function, args);
     Py_XDECREF(result);
