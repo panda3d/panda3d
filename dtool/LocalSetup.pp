@@ -299,7 +299,7 @@ $[cdefine HAVE_THREADS]
 
 /* Define if we want to use fast, user-space simulated threads.  */
 $[cdefine SIMPLE_THREADS]
-$[cdefine SIMPLE_THREADS_NO_MUTEX]
+// Taking this out for now: $[cdefine SIMPLE_THREADS_NO_MUTEX]
 
 /* Define to enable deadlock detection, mutex recursion checks, etc. */
 $[cdefine DEBUG_THREADS]
