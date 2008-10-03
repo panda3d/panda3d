@@ -1,8 +1,10 @@
 import sys, string, math, types
 from pandac.PandaModules import *
 import direct.gui.DirectGuiGlobals as DGG
+from direct.gui.DirectGui import *
 
 from PieMenu import *
+from ScrollMenu import *
 
 dnaDirectory = Filename.expandFrom(base.config.GetString("dna-directory", "$TTMODELS/src/dna"))
 
@@ -1010,7 +1012,9 @@ class LevelStyleManager:
             # Prepend None to allow option of no item
             if ((dnaType == 'street') or (dnaType == 'prop') or
                 (dnaType == 'toon_landmark')):
-                attribute.setMenu(self.createTextPieMenu(dnaType, dnaList))
+                # attribute.setMenu(self.createTextPieMenu(dnaType, dnaList))
+                attribute.setMenu(self.createScrollMenu(dnaType, dnaList))
+                attribute.getMenu().createScrolledList()
             elif (dnaType == 'wall'):
                 attribute.setMenu(self.createDNAPieMenu(dnaType, dnaList,
                                                          sf = 0.25))
@@ -1106,6 +1110,11 @@ class LevelStyleManager:
         newMenu.setScale(0.5)
         # Create and return a pie menu
         return PieMenu(newMenu, textList)
+    
+    def createScrollMenu(self, dnaType, textList):
+        newMenu = hidden.attachNewNode(dnaType+'ScrollMenu')
+        
+        return ScrollMenu(newMenu, textList)
 
     # MISCELLANEOUS MENUS
     def createMiscAttributes(self):

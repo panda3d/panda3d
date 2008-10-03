@@ -8,6 +8,7 @@ from direct.showbase.TkGlobal import *
 from direct.directtools.DirectUtil import *
 from direct.directtools.DirectGeometry import *
 from direct.tkwidgets.SceneGraphExplorer import *
+from direct.directnotify import DirectNotifyGlobal
 from tkMessageBox import showinfo
 from tkFileDialog import *
 from Tkinter import *
@@ -292,7 +293,8 @@ except NameError:
 
 class LevelEditor(NodePath, DirectObject):
     """Class used to create a Toontown LevelEditor object"""
-
+    notify = DirectNotifyGlobal.directNotify.newCategory('LevelEditor')
+        
     # Init the list of callbacks:
     selectedNodePathHookHooks=[]
     deselectedNodePathHookHooks=[]
@@ -498,7 +500,7 @@ class LevelEditor(NodePath, DirectObject):
         self.innerBarricadeDict = {}
 
         # [gjeon] to find out currently moving camera in maya mode
-        self.mouseMayaCamera = False
+        self.mouseMayaCamera = True
 
         # [gjeon] to find out drive mode stat
         self.fDrive = False
@@ -1105,13 +1107,19 @@ class LevelEditor(NodePath, DirectObject):
     def replace(self, nodePath, dnaNode):
         """ Replace a node path with the results of a DNANode traversal """
         # Find node path's parent
+        if not nodePath:
+            return None
         parent = nodePath.getParent()
         dnaParent = dnaNode.getParent()
         # Get rid of the old node path and remove its DNA and
         # node relations from the DNA Store
         self.remove(dnaNode, nodePath)
         # Traverse the old (modified) dna to create the new node path
-        newNodePath = dnaNode.traverse(parent, DNASTORE, 1)
+        try:
+            newNodePath = dnaNode.traverse(parent, DNASTORE, 1)
+        except Exception:
+            self.notify.debug("Couldn't traverse existing DNA! Do not trust replace")
+            return None
         # Add it back to the dna parent
         dnaParent.add(dnaNode)
         # Update scene graph explorer
@@ -1725,6 +1733,7 @@ class LevelEditor(NodePath, DirectObject):
 
     # LEVEL-OBJECT MODIFICATION FUNCTIONS
     def levelHandleMouse3(self, modifiers):
+        # import pdb; pdb.set_trace()
         if base.direct.cameraControl.useMayaCamControls and modifiers == 4: # alt is down, use maya controls
             self.mouseMayaCamera = True
             return
@@ -1936,6 +1945,53 @@ class LevelEditor(NodePath, DirectObject):
                 (objClass.eq(DNA_PROP))
                 ):
                 self.panel.setCurrentColor(self.DNATarget.getColor())
+                
+##        b1 = DirectButton(text = ("Button1", "click!", "roll", "disabled"),
+##                  text_scale=0.1, borderWidth = (0.01, 0.01),
+##                  relief=2)
+##
+##        b2 = DirectButton(text = ("Button2", "click!", "roll", "disabled"),
+##                  text_scale=0.1, borderWidth = (0.01, 0.01),
+##                  relief=2)
+##
+##        l1 = DirectLabel(text = "Test1", text_scale=0.1)
+##        l2 = DirectLabel(text = "Test2", text_scale=0.1)
+##        l3 = DirectLabel(text = "Test3", text_scale=0.1)
+##
+##        numItemsVisible = 4
+##        itemHeight = 0.11
+##
+##        myScrolledList = DirectScrolledList(
+##                decButton_pos= (0.35, 0, 0.53),
+##                decButton_text = "Dec",
+##                decButton_text_scale = 0.04,
+##                decButton_borderWidth = (0.005, 0.005),
+##
+##                incButton_pos= (0.35, 0, -0.02),
+##                incButton_text = "Inc",
+##                incButton_text_scale = 0.04,
+##                incButton_borderWidth = (0.005, 0.005),
+##
+##                frameSize = (0.0, 0.7, -0.05, 0.59),
+##                frameColor = (1,0,0,0.5),
+##                pos = (-1, 0, 0),
+##                items = [b1, b2],
+##                numItemsVisible = numItemsVisible,
+##                forceHeight = itemHeight,
+##                itemFrame_frameSize = (-0.2, 0.2, -0.37, 0.11),
+##                itemFrame_pos = (0.35, 0, 0.4),
+##        )
+##
+##        myScrolledList.addItem(l1)
+##        myScrolledList.addItem(l2)
+##        myScrolledList.addItem(l3)
+##
+##        for fruit in ['apple', 'pear', 'banana', 'orange']:
+##            l = DirectLabel(text = fruit, text_scale=0.1)
+##            myScrolledList.addItem(l)
+##
+##        myScrolledList.reparentTo(aspect2d)
+
 
     def setDNATargetColor(self, color):
         if self.DNATarget:
@@ -2643,7 +2699,10 @@ class LevelEditor(NodePath, DirectObject):
         # Now load in new file
         if fUseCVS:
             self.cvsUpdate(filename)
-        node = loadDNAFile(DNASTORE, Filename.fromOsSpecific(filename).cStr(), CSDefault, 1)
+        try:
+            node = loadDNAFile(DNASTORE, Filename.fromOsSpecific(filename).cStr(), CSDefault, 1)
+        except Exception:
+            self.notify.debug("Couldn't load specified DNA file. Please make sure storage code has been specified in Config.prc file")
         if node.getNumParents() == 1:
             # If the node already has a parent arc when it's loaded, we must
             # be using the level editor and we want to preserve that arc.
@@ -4698,13 +4757,16 @@ class LevelEditorPanel(Pmw.MegaToplevel):
         base.direct.gridButton.pack(side = LEFT, expand = 1, fill = X)
 
         self.fMaya = IntVar()
-        self.fMaya.set(0)
+        self.fMaya.set(1)
         self.mayaButton = Checkbutton(buttonFrame,
                                       text = 'Maya Cam',
                                       width = 6,
                                       variable = self.fMaya,
                                       command = self.toggleMaya)
         self.mayaButton.pack(side = LEFT, expand = 1, fill = X)
+        
+        #Make maya mode on by default
+        self.toggleMaya()
 
         buttonFrame.pack(fill = X)
 
