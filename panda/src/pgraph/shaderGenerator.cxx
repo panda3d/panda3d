@@ -651,7 +651,7 @@ synthesize_shader(const RenderState *rs) {
     for (int i=0; i<(int)_alights.size(); i++) {
       text << "\t // Ambient Light " << i << "\n";
       text << "\t lcolor = alight_alight" << i << ";\n";
-      if (_separate_ambient_diffuse) {
+      if (_separate_ambient_diffuse && _have_ambient) {
         text << "\t tot_ambient += lcolor;\n";
       } else {
         text << "\t tot_diffuse += lcolor;\n";
