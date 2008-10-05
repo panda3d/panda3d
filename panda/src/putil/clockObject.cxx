@@ -639,7 +639,7 @@ operator >> (istream &in, ClockObject::Mode &mode) {
   } else if (cmp_nocase_uh(word, "slave") == 0) {
     mode = ClockObject::M_slave;
   } else {
-    util_cat.error()
+    util_cat->error()
       << "Invalid ClockObject::Mode: " << word << "\n";
     mode = ClockObject::M_normal;
   }
