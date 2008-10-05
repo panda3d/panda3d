@@ -199,34 +199,37 @@ void AsyncTaskManager::
 add(AsyncTask *task) {
   nassertv(task->is_runnable());
 
-  MutexHolder holder(_lock);
-
-  if (task_cat.is_debug()) {
-    task_cat.debug()
-      << "Adding " << *task << "\n";
-  }
-  
-  if (task->_state == AsyncTask::S_servicing_removed) {
-    if (task->_manager == this) {
-      // Re-adding a self-removed task; this just means clearing the
-      // removed flag.
-      task->_state = AsyncTask::S_servicing;
-      return;
+  {
+    MutexHolder holder(_lock);
+    
+    if (task_cat.is_debug()) {
+      task_cat.debug()
+        << "Adding " << *task << "\n";
     }
+    
+    if (task->_state == AsyncTask::S_servicing_removed) {
+      if (task->_manager == this) {
+        // Re-adding a self-removed task; this just means clearing the
+        // removed flag.
+        task->_state = AsyncTask::S_servicing;
+        return;
+      }
+    }
+    
+    nassertv(task->_manager == NULL &&
+             task->_state == AsyncTask::S_inactive);
+    nassertv(!do_has_task(task));
+    
+    AsyncTaskChain *chain = do_find_task_chain(task->_chain_name);
+    if (chain == (AsyncTaskChain *)NULL) {
+      task_cat.warning()
+        << "Creating implicit AsyncTaskChain " << task->_chain_name
+        << " for " << get_type() << " " << get_name() << "\n";
+      chain = do_make_task_chain(task->_chain_name);
+    }
+    chain->do_add(task);
   }
 
-  nassertv(task->_manager == NULL &&
-           task->_state == AsyncTask::S_inactive);
-  nassertv(!do_has_task(task));
-
-  AsyncTaskChain *chain = do_find_task_chain(task->_chain_name);
-  if (chain == (AsyncTaskChain *)NULL) {
-    task_cat.warning()
-      << "Creating implicit AsyncTaskChain " << task->_chain_name
-      << " for " << get_type() << " " << get_name() << "\n";
-    chain = do_make_task_chain(task->_chain_name);
-  }
-  chain->do_add(task);
   task->upon_birth();
 }
 
@@ -353,7 +356,7 @@ remove(const AsyncTaskCollection &tasks) {
   int num_tasks = tasks.get_num_tasks();
   int i;
   for (i = 0; i < num_tasks; ++i) {
-    AsyncTask *task = tasks.get_task(i);
+    PT(AsyncTask) task = tasks.get_task(i);
     
     if (task->_manager != this) {
       // Not a member of this manager, or already removed.
@@ -365,7 +368,9 @@ remove(const AsyncTaskCollection &tasks) {
           << "Removing " << *task << "\n";
       }
       if (task->_chain->do_remove(task)) {
+        _lock.release();
         task->upon_death(false);
+        _lock.lock();
         ++num_removed;
       } else {
         if (task_cat.is_debug()) {

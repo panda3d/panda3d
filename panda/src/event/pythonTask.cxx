@@ -341,7 +341,10 @@ is_runnable() {
 ////////////////////////////////////////////////////////////////////
 //     Function: PythonTask::do_task
 //       Access: Protected, Virtual
-//  Description: 
+//  Description: Override this function to do something useful for the
+//               task.
+//
+//               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 AsyncTask::DoneStatus PythonTask::
 do_task() {
@@ -434,6 +437,8 @@ do_python_task() {
     case DS_done:
     case DS_cont:
     case DS_pickup:
+    case DS_exit:
+    case DS_pause:
       // Legitimate value.
       Py_DECREF(result);
       return (DoneStatus)retval;
@@ -467,16 +472,13 @@ do_python_task() {
 //  Description: Override this function to do something useful when the
 //               task has been added to the active queue.
 //
-//               This function is called with the lock held.  You may
-//               temporarily release if it necessary, but be sure to
-//               return with it held.
+//               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 void PythonTask::
 upon_birth() {
   AsyncTask::upon_birth();
 
   if (_owner != Py_None) {
-    release_lock();
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     // Use PyGILState to protect this asynchronous call.
     PyGILState_STATE gstate;
@@ -488,7 +490,6 @@ upon_birth() {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     PyGILState_Release(gstate);
 #endif
-    grab_lock();
   }
 }
 
@@ -505,16 +506,13 @@ upon_birth() {
 //               The normal behavior is to throw the done_event only
 //               if clean_exit is true.
 //
-//               This function is called with the lock held.  You may
-//               temporarily release if it necessary, but be sure to
-//               return with it held.
+//               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 void PythonTask::
 upon_death(bool clean_exit) {
   AsyncTask::upon_death(clean_exit);
 
   if (_owner != Py_None && _upon_death != Py_None) {
-    release_lock();
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     // Use PyGILState to protect this asynchronous call.
     PyGILState_STATE gstate;
@@ -527,7 +525,6 @@ upon_death(bool clean_exit) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     PyGILState_Release(gstate);
 #endif
-    grab_lock();
   }
 }
 

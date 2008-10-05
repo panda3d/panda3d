@@ -16,6 +16,8 @@
 #include "asyncTask.h"
 #include "asyncTaskChain.h"
 #include "asyncTaskManager.h"
+#include "asyncTaskPause.h"
+#include "asyncTaskSequence.h"
 #include "buttonEventList.h"
 #include "event.h"
 #include "eventHandler.h"
@@ -34,6 +36,8 @@ ConfigureFn(config_event) {
   AsyncTask::init_type();
   AsyncTaskChain::init_type();
   AsyncTaskManager::init_type();
+  AsyncTaskPause::init_type();
+  AsyncTaskSequence::init_type();
   ButtonEventList::init_type();
   PointerEventList::init_type();
   Event::init_type();

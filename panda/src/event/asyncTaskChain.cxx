@@ -494,7 +494,8 @@ do_add(AsyncTask *task) {
 //       Access: Protected
 //  Description: Removes the indicated task from this chain.  Returns
 //               true if removed, false otherwise.  Assumes the lock
-//               is already held.
+//               is already held.  The task->upon_death() method is
+//               *not* called.
 ////////////////////////////////////////////////////////////////////
 bool AsyncTaskChain::
 do_remove(AsyncTask *task) {
@@ -521,7 +522,7 @@ do_remove(AsyncTask *task) {
       _sleeping.erase(_sleeping.begin() + index);
       make_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
       removed = true;
-      cleanup_task(task);
+      cleanup_task(task, false, false);
     }
     break;
     
@@ -542,7 +543,7 @@ do_remove(AsyncTask *task) {
         }
       }
       removed = true;
-      cleanup_task(task);
+      cleanup_task(task, false, false);
     }
   }
 
@@ -607,23 +608,19 @@ do_cleanup() {
   TaskHeap::const_iterator ti;
   for (ti = active.begin(); ti != active.end(); ++ti) {
     AsyncTask *task = (*ti);
-    cleanup_task(task);
-    task->upon_death(false);
+    cleanup_task(task, true, false);
   }
   for (ti = this_active.begin(); ti != this_active.end(); ++ti) {
     AsyncTask *task = (*ti);
-    cleanup_task(task);
-    task->upon_death(false);
+    cleanup_task(task, true, false);
   }
   for (ti = next_active.begin(); ti != next_active.end(); ++ti) {
     AsyncTask *task = (*ti);
-    cleanup_task(task);
-    task->upon_death(false);
+    cleanup_task(task, true, false);
   }
   for (ti = sleeping.begin(); ti != sleeping.end(); ++ti) {
     AsyncTask *task = (*ti);
-    cleanup_task(task);
-    task->upon_death(false);
+    cleanup_task(task, true, false);
   }
 }
 
@@ -706,13 +703,12 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
     if (task->_chain == this) {
       if (task->_state == AsyncTask::S_servicing_removed) {
         // This task wants to kill itself.
-        cleanup_task(task);
-        task->upon_death(false);
+        cleanup_task(task, true, false);
 
       } else if (task->_chain_name != get_name()) {
         // The task wants to jump to a different chain.
         PT(AsyncTask) hold_task = task;
-        cleanup_task(task);
+        cleanup_task(task, false, false);
         task->jump_to_task_chain(_manager);
 
       } else {
@@ -752,8 +748,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
 
         case AsyncTask::DS_abort:
           // The task had an exception and wants to raise a big flag.
-          cleanup_task(task);
-          task->upon_death(false);
+          cleanup_task(task, true, false);
           if (_state == S_started) {
             _state = S_aborting;
             _cvar.signal_all();
@@ -762,8 +757,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
           
         default:
           // The task has finished.
-          cleanup_task(task);
-          task->upon_death(true);
+          cleanup_task(task, true, true);
         }
       }
     }
@@ -777,11 +771,15 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
 //               interrupted) and is about to be removed from the
 //               active queue.  Assumes the lock is held.
 //
+//               If upon_death is true, then task->upon_death() will
+//               also be called, with the indicated clean_exit
+//               parameter.
+//
 //               Note that the lock may be temporarily released by
 //               this method.
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
-cleanup_task(AsyncTask *task) {
+cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
   nassertv(task->_chain == this);
   PT(AsyncTask) hold_task = task;
 
@@ -792,6 +790,12 @@ cleanup_task(AsyncTask *task) {
   --(_manager->_num_tasks);
 
   _manager->remove_task_by_name(task);
+
+  if (upon_death) {
+    _manager->_lock.release();
+    task->upon_death(clean_exit);
+    _manager->_lock.lock();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

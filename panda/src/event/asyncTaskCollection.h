@@ -21,7 +21,11 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AsyncTaskCollection
-// Description : 
+// Description : A list of tasks, for instance as returned by some of
+//               the AsyncTaskManager query functions.  This also
+//               serves to define an AsyncTaskSequence.
+//
+//               TODO: None of this is thread-safe yet.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH AsyncTaskCollection {
 PUBLISHED:

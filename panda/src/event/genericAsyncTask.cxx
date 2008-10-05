@@ -65,7 +65,10 @@ is_runnable() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GenericAsyncTask::do_task
 //       Access: Protected, Virtual
-//  Description: 
+//  Description: Override this function to do something useful for the
+//               task.
+//
+//               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 AsyncTask::DoneStatus GenericAsyncTask::
 do_task() {
@@ -79,18 +82,14 @@ do_task() {
 //  Description: Override this function to do something useful when the
 //               task has been added to the active queue.
 //
-//               This function is called with the lock held.  You may
-//               temporarily release if it necessary, but be sure to
-//               return with it held.
+//               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 void GenericAsyncTask::
 upon_birth() {
   AsyncTask::upon_birth();
 
   if (_upon_birth != NULL) {
-    release_lock();
     (*_upon_birth)(this, _user_data);
-    grab_lock();
   }
 }
 
@@ -107,17 +106,13 @@ upon_birth() {
 //               The normal behavior is to throw the done_event only
 //               if clean_exit is true.
 //
-//               This function is called with the lock held.  You may
-//               temporarily release if it necessary, but be sure to
-//               return with it held.
+//               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 void GenericAsyncTask::
 upon_death(bool clean_exit) {
   AsyncTask::upon_death(clean_exit);
 
   if (_upon_death != NULL) {
-    release_lock();
     (*_upon_death)(this, clean_exit, _user_data);
-    grab_lock();
   }
 }

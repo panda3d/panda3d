@@ -109,7 +109,7 @@ protected:
   int find_task_on_heap(const TaskHeap &heap, AsyncTask *task) const;
 
   void service_one_task(AsyncTaskChainThread *thread);
-  void cleanup_task(AsyncTask *task);
+  void cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit);
   bool finish_sort_group();
   void filter_timeslice_priority();
   void do_stop_threads();

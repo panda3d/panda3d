@@ -3,7 +3,8 @@ AsyncTaskManager interface.  It replaces the old full-Python
 implementation of the Task system. """
 
 __all__ = ['Task', 'TaskManager',
-           'cont', 'done', 'again', 'pickup']
+           'cont', 'done', 'again', 'pickup', 'exit',
+           'sequence', 'loop', 'pause']
 
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import ExceptionVarDump
@@ -57,6 +58,7 @@ done = AsyncTask.DSDone
 cont = AsyncTask.DSCont
 again = AsyncTask.DSAgain
 pickup = AsyncTask.DSPickup
+exit = AsyncTask.DSExit
 
 # Alias PythonTask to Task for historical purposes.
 Task = PythonTask
@@ -68,6 +70,26 @@ Task.DtoolClassDict['done'] = done
 Task.DtoolClassDict['cont'] = cont
 Task.DtoolClassDict['again'] = again
 Task.DtoolClassDict['pickup'] = pickup
+Task.DtoolClassDict['exit'] = exit
+
+# Alias the AsyncTaskPause constructor as Task.pause().
+pause = AsyncTaskPause
+Task.DtoolClassDict['pause'] = staticmethod(pause)
+
+def sequence(*taskList):
+    seq = AsyncTaskSequence('sequence')
+    for task in taskList:
+        seq.addTask(task)
+    return seq
+Task.DtoolClassDict['sequence'] = staticmethod(sequence)
+
+def loop(*taskList):
+    seq = AsyncTaskSequence('loop')
+    for task in taskList:
+        seq.addTask(task)
+    seq.setRepeatCount(-1)
+    return seq
+Task.DtoolClassDict['loop'] = staticmethod(loop)
 
 class TaskManager:
     notify = directNotify.newCategory("TaskManager")
@@ -273,7 +295,7 @@ class TaskManager:
         return task
 
     def __setupTask(self, funcOrTask, name, priority, sort, extraArgs, taskChain, appendTask, owner, uponDeath):
-        if isinstance(funcOrTask, PythonTask):
+        if isinstance(funcOrTask, AsyncTask):
             task = funcOrTask
         elif callable(funcOrTask):
             task = PythonTask(funcOrTask)
@@ -281,10 +303,15 @@ class TaskManager:
             self.notify.error(
                 'add: Tried to add a task that was not a Task or a func')
 
-        if extraArgs is None:
-            extraArgs = []
-            appendTask = True
-        task.setArgs(extraArgs, appendTask)
+        if hasattr(task, 'setArgs'):
+            # It will only accept arguments if it's a PythonTask.
+            if extraArgs is None:
+                extraArgs = []
+                appendTask = True
+            task.setArgs(extraArgs, appendTask)
+        elif extraArgs is not None:
+            self.notify.error(
+                'Task %s does not accept arguments.' % (repr(task)))
 
         if name is not None:
             assert isinstance(name, types.StringTypes), 'Name must be a string type'
@@ -300,11 +327,6 @@ class TaskManager:
                 task.setPriority(priority)
             if sort is not None:
                 task.setSort(sort)
-
-        if extraArgs is None:
-            extraArgs = []
-            appendTask = True
-        task.setArgs(extraArgs, appendTask)
 
         if taskChain is not None:
             task.setTaskChain(taskChain)

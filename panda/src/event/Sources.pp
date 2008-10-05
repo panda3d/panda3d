@@ -12,6 +12,8 @@
     asyncTaskChain.h asyncTaskChain.I \
     asyncTaskCollection.h asyncTaskCollection.I \
     asyncTaskManager.h asyncTaskManager.I \
+    asyncTaskPause.h asyncTaskPause.I \
+    asyncTaskSequence.h asyncTaskSequence.I \
     config_event.h \
     buttonEvent.I buttonEvent.h \
     buttonEventList.I buttonEventList.h \
@@ -29,6 +31,8 @@
     asyncTaskChain.cxx \
     asyncTaskCollection.cxx \
     asyncTaskManager.cxx \
+    asyncTaskPause.cxx \
+    asyncTaskSequence.cxx \
     buttonEvent.cxx \
     buttonEventList.cxx \
     genericAsyncTask.cxx \
@@ -44,6 +48,8 @@
     asyncTaskChain.h asyncTaskChain.I \
     asyncTaskCollection.h asyncTaskCollection.I \
     asyncTaskManager.h asyncTaskManager.I \
+    asyncTaskPause.h asyncTaskPause.I \
+    asyncTaskSequence.h asyncTaskSequence.I \
     buttonEvent.I buttonEvent.h \
     buttonEventList.I buttonEventList.h \
     genericAsyncTask.h genericAsyncTask.I \

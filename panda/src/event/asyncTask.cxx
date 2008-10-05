@@ -417,7 +417,14 @@ is_runnable() {
 //               re-run the task again without waiting for the next
 //               frame.  Otherwise, run it next epoch as usual.
 //
-//               DS_abort: abort the task, and interrupt the whole
+//               DS_exit: stop the task, and stop the enclosing
+//               sequence too.  Outside of a sequence, this is the
+//               same as DS_done.
+//
+//               DS_pause: delay the task for set_delay() seconds,
+//               then stop it.  This is only useful within a sequence.
+//
+//               DS_abort: stop the task, and interrupt the whole
 //               AsyncTaskManager.
 //
 //               This function is called with the lock *not* held.
@@ -433,9 +440,7 @@ do_task() {
 //  Description: Override this function to do something useful when the
 //               task has been added to the active queue.
 //
-//               This function is called with the lock held.  You may
-//               temporarily release if it necessary, but be sure to
-//               return with it held.
+//               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 void AsyncTask::
 upon_birth() {
@@ -454,9 +459,7 @@ upon_birth() {
 //               The normal behavior is to throw the done_event only
 //               if clean_exit is true.
 //
-//               This function is called with the lock held.  You may
-//               temporarily release if it necessary, but be sure to
-//               return with it held.
+//               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 void AsyncTask::
 upon_death(bool clean_exit) {
@@ -466,30 +469,3 @@ upon_death(bool clean_exit) {
     throw_event(event);
   }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTask::release_lock
-//       Access: Protected
-//  Description: Releases the task lock.  This is intended to be
-//               used within callback functions, for instance
-//               upon_birth() or upon_death(), as needed to release
-//               the lock for processing.  Be sure to grab it again
-//               before returning.
-////////////////////////////////////////////////////////////////////
-void AsyncTask::
-release_lock() {
-  _manager->_lock.release();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AsyncTask::grab_lock
-//       Access: Protected
-//  Description: Releases the task lock.  This is intended to be
-//               used within callback functions, to grab the lock
-//               after a previous call to release_lock().
-////////////////////////////////////////////////////////////////////
-void AsyncTask::
-grab_lock() {
-  _manager->_lock.lock();
-}
-

@@ -44,16 +44,19 @@ class AsyncTaskChain;
 class EXPCL_PANDA_EVENT AsyncTask : public TypedReferenceCount, public Namable {
 public:
   AsyncTask(const string &name = string());
-  virtual ~AsyncTask();
   ALLOC_DELETED_CHAIN(AsyncTask);
 
 PUBLISHED:
+  virtual ~AsyncTask();
+
   enum DoneStatus {
     DS_done,    // normal task completion
     DS_cont,    // run task again next epoch
     DS_again,   // start the task over from the beginning
     DS_pickup,  // run task again this frame, if frame budget allows
-    DS_abort,   // abort the task and interrupt the whole task manager
+    DS_exit,    // stop the enclosing sequence
+    DS_pause,   // pause, then exit (useful within a sequence)
+    DS_abort,   // interrupt the task manager
   };
 
   enum State {
@@ -62,6 +65,7 @@ PUBLISHED:
     S_servicing,
     S_servicing_removed,  // Still servicing, but wants removal from manager.
     S_sleeping,
+    S_active_nested,      // active within a sequence.
   };
 
   INLINE State get_state() const;
@@ -117,9 +121,6 @@ protected:
   virtual void upon_birth();
   virtual void upon_death(bool clean_exit);
 
-  void release_lock();
-  void grab_lock();
-
 protected:
   AtomicAdjust::Integer _task_id;
   string _chain_name;
@@ -172,6 +173,7 @@ private:
 
   friend class AsyncTaskManager;
   friend class AsyncTaskChain;
+  friend class AsyncTaskSequence;
 };
 
 INLINE ostream &operator << (ostream &out, const AsyncTask &task) {
