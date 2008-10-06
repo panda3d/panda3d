@@ -1056,10 +1056,9 @@ is_scene_root(const PandaNode *node) {
           }
 
           Camera *camera_node;
-          DCAST_INTO_R(camera_node, camera.node(), NULL);
+          DCAST_INTO_R(camera_node, camera.node(), false);
           if (!camera_node->is_active()) {
             continue;
-            return NULL;
           }
 
           NodePath scene_root = camera_node->get_scene();
