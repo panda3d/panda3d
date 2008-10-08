@@ -26,7 +26,7 @@ output(ostream &out) const {
   out << "ReMutex " << (void *)this;
 }
 
-#ifndef HAVE_REMUTEXIMPL
+#ifndef HAVE_REMUTEXTRUEIMPL
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::do_lock
 //       Access: Private
@@ -68,9 +68,9 @@ do_lock(Thread *current_thread) {
   }
   _lock_impl.release();
 }
-#endif  // !HAVE_REMUTEXIMPL
+#endif  // !HAVE_REMUTEXTRUEIMPL
 
-#ifndef HAVE_REMUTEXIMPL
+#ifndef HAVE_REMUTEXTRUEIMPL
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::do_elevate_lock
 //       Access: Private
@@ -104,9 +104,9 @@ do_elevate_lock() {
 
   _lock_impl.release();
 }
-#endif  // !HAVE_REMUTEXIMPL
+#endif  // !HAVE_REMUTEXTRUEIMPL
 
-#ifndef HAVE_REMUTEXIMPL
+#ifndef HAVE_REMUTEXTRUEIMPL
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::do_release
 //       Access: Private
@@ -142,4 +142,4 @@ do_release() {
   }
   _lock_impl.release();
 }
-#endif  // !HAVE_REMUTEXIMPL
+#endif  // !HAVE_REMUTEXTRUEIMPL

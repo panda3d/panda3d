@@ -54,7 +54,6 @@
     reMutex.I reMutex.h \
     reMutexDirect.h reMutexDirect.I \
     reMutexHolder.I reMutexHolder.h \
-    reMutexSimpleImpl.h reMutexSimpleImpl.I \
     thread.h thread.I threadImpl.h \
     threadDummyImpl.h threadDummyImpl.I \
     threadPosixImpl.h threadPosixImpl.I \
@@ -101,7 +100,6 @@
     reMutex.cxx \
     reMutexDirect.cxx \
     reMutexHolder.cxx \
-    reMutexSimpleImpl.cxx \
     thread.cxx \
     threadDummyImpl.cxx \
     threadPosixImpl.cxx \
@@ -154,7 +152,6 @@
     reMutex.I reMutex.h \
     reMutexDirect.h reMutexDirect.I \
     reMutexHolder.I reMutexHolder.h \
-    reMutexSimpleImpl.h reMutexSimpleImpl.I \
     thread.h thread.I threadImpl.h \
     threadDummyImpl.h threadDummyImpl.I \
     threadPosixImpl.h threadPosixImpl.I \

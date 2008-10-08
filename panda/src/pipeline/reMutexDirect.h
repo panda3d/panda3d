@@ -16,7 +16,7 @@
 #define REMUTEXDIRECT_H
 
 #include "pandabase.h"
-#include "mutexImpl.h"
+#include "mutexTrueImpl.h"
 #include "conditionVarImpl.h"
 
 class Thread;
@@ -51,7 +51,7 @@ PUBLISHED:
   void output(ostream &out) const;
 
 private:
-#ifdef HAVE_REMUTEXIMPL
+#ifdef HAVE_REMUTEXTRUEIMPL
   ReMutexImpl _impl;
 
 #else
@@ -64,9 +64,9 @@ private:
   Thread *_locking_thread;
   int _lock_count;
 
-  MutexImpl _lock_impl;
+  MutexTrueImpl _lock_impl;
   ConditionVarImpl _cvar_impl;
-#endif  // HAVE_REMUTEXIMPL
+#endif  // HAVE_REMUTEXTRUEIMPL
 };
 
 INLINE ostream &

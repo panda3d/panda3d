@@ -27,6 +27,8 @@
 ////////////////////////////////////////////////////////////////////
 void MutexSimpleImpl::
 do_lock() {
+  // By the time we get here, we already know that someone else is
+  // holding the lock: (_flags & F_lock_count) != 0.
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   ThreadSimpleImpl *thread = manager->get_current_thread();
 
@@ -45,6 +47,8 @@ do_lock() {
 ////////////////////////////////////////////////////////////////////
 void MutexSimpleImpl::
 do_release() {
+  // By the time we get here, we already know that someone else is
+  // blocked on this mutex: (_flags & F_waiters) != 0.
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   if (manager->unblock_one(this)) {
     // There had been a thread waiting on this mutex.  Switch contexts

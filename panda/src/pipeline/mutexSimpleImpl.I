@@ -50,7 +50,6 @@ lock() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool MutexSimpleImpl::
 try_lock() {
-  ThreadSimpleImpl::consider_yield();
   if ((_flags & F_lock_count) != 0) {
     return false;
   }

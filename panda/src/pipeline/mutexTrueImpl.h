@@ -36,15 +36,17 @@
 #if defined(THREAD_SIMPLE_IMPL) && !defined(SIMPLE_THREADS_NO_MUTEX)
 
 #include "mutexSimpleImpl.h"
-#include "reMutexSimpleImpl.h"
 typedef MutexSimpleImpl MutexTrueImpl;
-typedef ReMutexSimpleImpl ReMutexTrueImpl;
+#undef HAVE_REMUTEXTRUEIMPL
 
 #else
 
 typedef MutexImpl MutexTrueImpl;
 #if HAVE_REMUTEXIMPL
 typedef ReMutexImpl ReMutexTrueImpl;
+#define HAVE_REMUTEXTRUEIMPL 1
+#else
+#undef HAVE_REMUTEXTRUEIMPL
 #endif // HAVE_REMUTEXIMPL
 
 #endif

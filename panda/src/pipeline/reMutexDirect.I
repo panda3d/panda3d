@@ -20,11 +20,11 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutexDirect::
 ReMutexDirect() 
-#ifndef HAVE_REMUTEXIMPL
+#ifndef HAVE_REMUTEXTRUEIMPL
   : _cvar_impl(_lock_impl)
 #endif
 {
-#ifndef HAVE_REMUTEXIMPL
+#ifndef HAVE_REMUTEXTRUEIMPL
   _locking_thread = NULL;
   _lock_count = 0;
 #endif
@@ -46,7 +46,7 @@ INLINE ReMutexDirect::
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutexDirect::
 ReMutexDirect(const ReMutexDirect &copy)
-#ifndef HAVE_REMUTEXIMPL
+#ifndef HAVE_REMUTEXTRUEIMPL
   : _cvar_impl(_lock_impl)
 #endif
 {
@@ -81,11 +81,11 @@ operator = (const ReMutexDirect &copy) {
 INLINE void ReMutexDirect::
 lock() const {
   TAU_PROFILE("void ReMutexDirect::lock()", " ", TAU_USER);
-#ifdef HAVE_REMUTEXIMPL
+#ifdef HAVE_REMUTEXTRUEIMPL
   ((ReMutexDirect *)this)->_impl.lock();
 #else
   ((ReMutexDirect *)this)->do_lock();
-#endif  // HAVE_REMUTEXIMPL
+#endif  // HAVE_REMUTEXTRUEIMPL
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,11 +98,11 @@ lock() const {
 INLINE void ReMutexDirect::
 lock(Thread *current_thread) const {
   TAU_PROFILE("void ReMutexDirect::lock(Thread *)", " ", TAU_USER);
-#ifdef HAVE_REMUTEXIMPL
+#ifdef HAVE_REMUTEXTRUEIMPL
   ((ReMutexDirect *)this)->_impl.lock();
 #else
   ((ReMutexDirect *)this)->do_lock(current_thread);
-#endif  // HAVE_REMUTEXIMPL
+#endif  // HAVE_REMUTEXTRUEIMPL
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,11 +123,11 @@ lock(Thread *current_thread) const {
 INLINE void ReMutexDirect::
 elevate_lock() const {
   TAU_PROFILE("void ReMutexDirect::elevate_lock()", " ", TAU_USER);
-#ifdef HAVE_REMUTEXIMPL
+#ifdef HAVE_REMUTEXTRUEIMPL
   ((ReMutexDirect *)this)->_impl.lock();
 #else
   ((ReMutexDirect *)this)->do_elevate_lock();
-#endif  // HAVE_REMUTEXIMPL
+#endif  // HAVE_REMUTEXTRUEIMPL
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -143,11 +143,11 @@ elevate_lock() const {
 INLINE void ReMutexDirect::
 release() const {
   TAU_PROFILE("void ReMutexDirect::release()", " ", TAU_USER);
-#ifdef HAVE_REMUTEXIMPL
+#ifdef HAVE_REMUTEXTRUEIMPL
   ((ReMutexDirect *)this)->_impl.release();
 #else
   ((ReMutexDirect *)this)->do_release();
-#endif  // HAVE_REMUTEXIMPL
+#endif  // HAVE_REMUTEXTRUEIMPL
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,7 +207,7 @@ get_name() const {
   return string();
 }
 
-#ifndef HAVE_REMUTEXIMPL
+#ifndef HAVE_REMUTEXTRUEIMPL
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::do_lock
 //       Access: Private
