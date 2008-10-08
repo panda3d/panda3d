@@ -135,6 +135,7 @@ private:
   Filtered _filtered;
 
   UpdateSeq _sort_seq;
+  UpdateSeq _filtered_seq;
 
   static CPT(RenderAttrib) _empty_attrib;
   static CPT(RenderAttrib) _all_off_attrib;

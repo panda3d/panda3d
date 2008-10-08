@@ -24,6 +24,7 @@ TextureAttrib() {
   _next_implicit_sort = 0;
   _off_all_stages = false;
   _sort_seq = UpdateSeq::old();
+  _filtered_seq = UpdateSeq::old();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -36,13 +37,15 @@ TextureAttrib() {
 INLINE TextureAttrib::
 TextureAttrib(const TextureAttrib &copy) :
   _on_stages(copy._on_stages),
+  _on_ptr_stages(copy._on_ptr_stages),
   _on_ff_stages(copy._on_ff_stages),
   _ff_tc_index(copy._ff_tc_index),
   _next_implicit_sort(copy._next_implicit_sort),
   _off_stages(copy._off_stages),
   _off_all_stages(copy._off_all_stages),
   _on_textures(copy._on_textures),
-  _sort_seq(copy._sort_seq)
+  _sort_seq(copy._sort_seq),
+  _filtered_seq(UpdateSeq::old())
 {
 }
 

@@ -301,6 +301,7 @@ return_new(RenderAttrib *attrib) {
     // The attribute was inserted; save the iterator and return the
     // input attribute.
     attrib->_saved_entry = result.first;
+
     return pt_attrib;
   }
 
@@ -444,7 +445,7 @@ release_new() {
         while (si != _attribs->end()) {
           const RenderAttrib *attrib = (*si);
           cerr << "    " << *attrib << " (" << (void *)attrib << ")\n";
-          if (((*sprev)->compare_to(*attrib)) > 0) {
+          if (((*sprev)->compare_to(*attrib)) >= 0) {
             cerr << "*** above out of order!\n";
           }
           sprev = si;
