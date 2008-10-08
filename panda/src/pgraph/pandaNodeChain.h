@@ -17,7 +17,7 @@
 
 #include "pandabase.h"
 #include "linkedListNode.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 class PandaNode;
 
@@ -33,7 +33,7 @@ public:
   INLINE PandaNodeChain();
   INLINE ~PandaNodeChain();
 
-  Mutex _lock;
+  LightMutex _lock;
 
   friend class PandaNode;
 };

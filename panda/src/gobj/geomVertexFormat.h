@@ -27,7 +27,7 @@
 #include "pset.h"
 #include "pvector.h"
 #include "indirectCompareTo.h"
-#include "reMutex.h"
+#include "lightReMutex.h"
 
 class FactoryParams;
 class GeomVertexData;
@@ -218,7 +218,7 @@ private:
     void unregister_format(GeomVertexFormat *format);
 
     Formats _formats;
-    ReMutex _lock;
+    LightReMutex _lock;
 
     CPT(GeomVertexFormat) _v3;
     CPT(GeomVertexFormat) _v3n3;

@@ -26,7 +26,7 @@
 #include "cycleDataLockedStageReader.h"
 #include "cycleDataStageReader.h"
 #include "cycleDataStageWriter.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "deletedChain.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -113,7 +113,7 @@ private:
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
   static int _next_key;
-  static Mutex _key_lock;
+  static LightMutex _key_lock;
 
 public:
   static TypeHandle get_class_type() {

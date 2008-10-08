@@ -20,7 +20,7 @@
 #include "filename.h"
 #include "modelRoot.h"
 #include "pointerTo.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "pmap.h"
 #include "loaderOptions.h"
 
@@ -86,7 +86,7 @@ private:
 
   static ModelPool *_global_ptr;
 
-  Mutex _lock;
+  LightMutex _lock;
   typedef pmap<string,  PT(ModelRoot) > Models;
   Models _models;
 };

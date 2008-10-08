@@ -17,7 +17,7 @@
 #include "graphicsEngine.h"
 #include "graphicsWindow.h"
 #include "config_display.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include "renderBuffer.h"
 #include "indirectLess.h"
 #include "pStatTimer.h"
@@ -217,7 +217,7 @@ GraphicsOutput::
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 clear_render_textures() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   throw_event("render-texture-targets-changed");
   _textures.clear();
 }
@@ -268,7 +268,7 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   if (mode == RTM_none) {
     return;
   }
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   throw_event("render-texture-targets-changed");
 
@@ -442,7 +442,7 @@ set_sort(int sort) {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsOutput::
 remove_display_region(DisplayRegion *display_region) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   nassertr(display_region != _default_display_region, false);
 
@@ -472,7 +472,7 @@ remove_display_region(DisplayRegion *display_region) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 remove_all_display_regions() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   TotalDisplayRegions::iterator dri;
   for (dri = _total_display_regions.begin();
@@ -501,7 +501,7 @@ get_num_display_regions() const {
   determine_display_regions();
   int result;
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
     result = _total_display_regions.size();
   }
   return result;
@@ -521,7 +521,7 @@ get_display_region(int n) const {
   determine_display_regions();
   PT(DisplayRegion) result;
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
     if (n >= 0 && n < (int)_total_display_regions.size()) {
       result = _total_display_regions[n];
     } else {
@@ -542,7 +542,7 @@ get_num_active_display_regions() const {
   determine_display_regions();
   int result;
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
     result = _active_display_regions.size();
   }
   return result;
@@ -562,7 +562,7 @@ get_active_display_region(int n) const {
   determine_display_regions();
   PT(DisplayRegion) result;
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
     if (n >= 0 && n < (int)_active_display_regions.size()) {
       result = _active_display_regions[n];
     } else {
@@ -1200,7 +1200,7 @@ process_events() {
 ////////////////////////////////////////////////////////////////////
 DisplayRegion *GraphicsOutput::
 add_display_region(DisplayRegion *display_region) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _total_display_regions.push_back(display_region);
   _display_regions_stale = true;
 
@@ -1215,7 +1215,7 @@ add_display_region(DisplayRegion *display_region) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 do_determine_display_regions() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _display_regions_stale = false;
 
   _active_display_regions.clear();

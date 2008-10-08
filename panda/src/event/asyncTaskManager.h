@@ -23,6 +23,7 @@
 #include "typedReferenceCount.h"
 #include "thread.h"
 #include "pmutex.h"
+#include "mutexHolder.h"
 #include "conditionVarFull.h"
 #include "pvector.h"
 #include "pdeque.h"

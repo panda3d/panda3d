@@ -39,10 +39,8 @@ private:
   // If HAVE_THREADS is defined, the Mutex class implements an actual
   // mutex object of some kind.  If HAVE_THREADS is not defined, this
   // will be a MutexDummyImpl, which does nothing much anyway, so we
-  // might as well not even store a pointer to one--but MutexDummyImpl
-  // does perform some circularity testing in the case that NDEBUG is
-  // not defined, so we go ahead and store a pointer in that case too.
-#if defined(HAVE_THREADS) || !defined(NDEBUG)
+  // might as well not even store a pointer to one.
+#if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   const Mutex *_mutex;
 #endif
 };

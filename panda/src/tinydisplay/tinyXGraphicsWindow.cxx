@@ -28,7 +28,7 @@
 #include "pStatTimer.h"
 #include "textEncoder.h"
 #include "throw_event.h"
-#include "reMutexHolder.h"
+#include "lightReMutexHolder.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -255,7 +255,7 @@ supports_pixel_zoom() const {
 ////////////////////////////////////////////////////////////////////
 void TinyXGraphicsWindow::
 process_events() {
-  ReMutexHolder holder(TinyXGraphicsPipe::_x_mutex);
+  LightReMutexHolder holder(TinyXGraphicsPipe::_x_mutex);
 
   GraphicsWindow::process_events();
 

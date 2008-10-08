@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE MutexHolder::
 MutexHolder(const Mutex &mutex) {
-#if defined(HAVE_THREADS) || !defined(NDEBUG)
+#if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex = &mutex;
   _mutex->lock();
 #endif
@@ -39,7 +39,7 @@ MutexHolder(const Mutex &mutex) {
 ////////////////////////////////////////////////////////////////////
 INLINE MutexHolder::
 MutexHolder(Mutex *&mutex) {
-#if defined(HAVE_THREADS) || !defined(NDEBUG)
+#if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   if (mutex == (Mutex *)NULL) {
     mutex = new Mutex;
   }
@@ -55,7 +55,7 @@ MutexHolder(Mutex *&mutex) {
 ////////////////////////////////////////////////////////////////////
 INLINE MutexHolder::
 ~MutexHolder() {
-#if defined(HAVE_THREADS) || !defined(NDEBUG)
+#if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex->release();
 #endif
 }

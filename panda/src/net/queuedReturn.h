@@ -20,10 +20,10 @@
 #include "connectionListener.h"
 #include "connection.h"
 #include "netAddress.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "pdeque.h"
 #include "config_net.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 #include <algorithm>
 
@@ -55,7 +55,7 @@ protected:
   bool enqueue_unique_thing(const Thing &thing);
 
 private:
-  Mutex _mutex;
+  LightMutex _mutex;
   pdeque<Thing> _things;
   bool _available;
   int _max_queue_size;

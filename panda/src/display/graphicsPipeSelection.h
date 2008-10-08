@@ -20,7 +20,7 @@
 #include "graphicsPipe.h"
 #include "pointerTo.h"
 #include "typeHandle.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "vector_string.h"
 
 class HardwareChannel;
@@ -70,7 +70,7 @@ private:
   };
   typedef pvector<PipeType> PipeTypes;
   PipeTypes _pipe_types;
-  Mutex _lock;
+  LightMutex _lock;
 
   typedef vector_string DisplayModules;
   DisplayModules _display_modules;

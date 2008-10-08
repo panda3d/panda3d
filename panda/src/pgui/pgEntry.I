@@ -27,7 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGEntry:: 
 set_text(const string &text) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   TextNode *text_node = get_text_def(S_focus);
   nassertr(text_node != (TextNode *)NULL, false);
   return set_wtext(text_node->decode_text(text));
@@ -45,7 +45,7 @@ set_text(const string &text) {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGEntry:: 
 get_plain_text() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   TextNode *text_node = get_text_def(S_focus);
   nassertr(text_node != (TextNode *)NULL, string());
   return text_node->encode_wtext(get_plain_wtext());
@@ -61,7 +61,7 @@ get_plain_text() const {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGEntry:: 
 get_text() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   TextNode *text_node = get_text_def(S_focus);
   nassertr(text_node != (TextNode *)NULL, string());
   return text_node->encode_wtext(get_wtext());
@@ -82,7 +82,7 @@ get_text() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PGEntry::
 get_num_characters() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _text.get_num_characters();
 }
 
@@ -95,7 +95,7 @@ get_num_characters() const {
 ////////////////////////////////////////////////////////////////////
 INLINE wchar_t PGEntry::
 get_character(int n) const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _text.get_character(n);
 }
 
@@ -109,7 +109,7 @@ get_character(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const TextGraphic *PGEntry::
 get_graphic(int n) const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _text.get_graphic(n);
 }
 
@@ -122,7 +122,7 @@ get_graphic(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const TextProperties &PGEntry::
 get_properties(int n) const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _text.get_properties(n);
 }
 
@@ -136,7 +136,7 @@ get_properties(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_cursor_position(int position) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (_cursor_position != position) {
     _cursor_position = position;
     _cursor_stale = true;
@@ -151,7 +151,7 @@ set_cursor_position(int position) {
 ////////////////////////////////////////////////////////////////////
 INLINE int PGEntry:: 
 get_cursor_position() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _cursor_position;
 }
 
@@ -167,7 +167,7 @@ get_cursor_position() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_max_chars(int max_chars) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _max_chars = max_chars;
 }
 
@@ -180,7 +180,7 @@ set_max_chars(int max_chars) {
 ////////////////////////////////////////////////////////////////////
 INLINE int PGEntry:: 
 get_max_chars() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _max_chars;
 }
 
@@ -201,7 +201,7 @@ get_max_chars() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_max_width(float max_width) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _max_width = max_width;
   _text_geom_stale = true;
 }
@@ -215,7 +215,7 @@ set_max_width(float max_width) {
 ////////////////////////////////////////////////////////////////////
 INLINE float PGEntry:: 
 get_max_width() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _max_width;
 }
 
@@ -228,7 +228,7 @@ get_max_width() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_num_lines(int num_lines) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   nassertv(num_lines >= 1);
   _num_lines = num_lines;
   _text_geom_stale = true;
@@ -242,7 +242,7 @@ set_num_lines(int num_lines) {
 ////////////////////////////////////////////////////////////////////
 INLINE int PGEntry:: 
 get_num_lines() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _num_lines;
 }
 
@@ -257,7 +257,7 @@ get_num_lines() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_blink_rate(float blink_rate) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _blink_rate = blink_rate;
 }
 
@@ -269,7 +269,7 @@ set_blink_rate(float blink_rate) {
 ////////////////////////////////////////////////////////////////////
 INLINE float PGEntry:: 
 get_blink_rate() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _blink_rate;
 }
 
@@ -282,7 +282,7 @@ get_blink_rate() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const NodePath &PGEntry:: 
 get_cursor_def() {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _cursor_def;
 }
 
@@ -294,7 +294,7 @@ get_cursor_def() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 clear_cursor_def() {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _cursor_def.remove_node();
   _cursor_def = _cursor_scale.attach_new_node("cursor");
 }
@@ -308,7 +308,7 @@ clear_cursor_def() {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_cursor_keys_active(bool flag) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _cursor_keys_active = flag;
 }
 
@@ -321,7 +321,7 @@ set_cursor_keys_active(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGEntry:: 
 get_cursor_keys_active() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _cursor_keys_active;
 }
 
@@ -341,7 +341,7 @@ get_cursor_keys_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_obscure_mode(bool flag) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (_obscure_mode != flag) {
     _obscure_mode = flag;
     _text_geom_stale = true;
@@ -356,7 +356,7 @@ set_obscure_mode(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGEntry:: 
 get_obscure_mode() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _obscure_mode;
 }
 
@@ -379,7 +379,7 @@ get_obscure_mode() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_candidate_active(const string &candidate_active) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _candidate_active = candidate_active;
 }
 
@@ -390,7 +390,7 @@ set_candidate_active(const string &candidate_active) {
 ////////////////////////////////////////////////////////////////////
 INLINE const string &PGEntry:: 
 get_candidate_active() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _candidate_active;
 }
 
@@ -413,7 +413,7 @@ get_candidate_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_candidate_inactive(const string &candidate_inactive) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _candidate_inactive = candidate_inactive;
 }
 
@@ -424,7 +424,7 @@ set_candidate_inactive(const string &candidate_inactive) {
 ////////////////////////////////////////////////////////////////////
 INLINE const string &PGEntry:: 
 get_candidate_inactive() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _candidate_inactive;
 }
 
@@ -557,7 +557,7 @@ get_erase_event() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGEntry:: 
 set_wtext(const wstring &wtext) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   bool ret = _text.set_wtext(wtext);
   if (_obscure_mode) {
     ret = _obscure_text.set_wtext(wstring(_text.get_num_characters(), '*'));
@@ -575,7 +575,7 @@ set_wtext(const wstring &wtext) {
 ////////////////////////////////////////////////////////////////////
 INLINE wstring PGEntry:: 
 get_plain_wtext() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _text.get_plain_wtext();
 }
 
@@ -587,7 +587,7 @@ get_plain_wtext() const {
 ////////////////////////////////////////////////////////////////////
 INLINE wstring PGEntry:: 
 get_wtext() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _text.get_wtext();
 }
 
@@ -599,6 +599,6 @@ get_wtext() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGEntry:: 
 set_accept_enabled(bool enabled) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _accept_enabled = enabled;
 }

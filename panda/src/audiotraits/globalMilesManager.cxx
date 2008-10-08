@@ -16,7 +16,7 @@
 
 #ifdef HAVE_RAD_MSS //[
 
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include "milesAudioManager.h"
 #include "milesAudioSample.h"
 #include "milesAudioSequence.h"
@@ -50,7 +50,7 @@ GlobalMilesManager() :
 ////////////////////////////////////////////////////////////////////
 void GlobalMilesManager::
 add_manager(MilesAudioManager *manager) {
-  MutexHolder holder(_managers_lock);
+  LightMutexHolder holder(_managers_lock);
   _managers.insert(manager);
   if (!_is_open) {
     open_api();
@@ -66,7 +66,7 @@ add_manager(MilesAudioManager *manager) {
 ////////////////////////////////////////////////////////////////////
 void GlobalMilesManager::
 remove_manager(MilesAudioManager *manager) {
-  MutexHolder holder(_managers_lock);
+  LightMutexHolder holder(_managers_lock);
   _managers.erase(manager);
   if (_managers.empty() && _is_open) {
     close_api();
@@ -81,7 +81,7 @@ remove_manager(MilesAudioManager *manager) {
 ////////////////////////////////////////////////////////////////////
 void GlobalMilesManager::
 cleanup() {
-  MutexHolder holder(_managers_lock);
+  LightMutexHolder holder(_managers_lock);
   Managers::iterator mi;
   for (mi = _managers.begin(); mi != _managers.end(); ++mi) {
     (*mi)->cleanup();
@@ -105,7 +105,7 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 bool GlobalMilesManager::
 get_sample(HSAMPLE &sample, size_t &index, MilesAudioSample *sound) {
-  MutexHolder holder(_samples_lock);
+  LightMutexHolder holder(_samples_lock);
 
   for (size_t i = 0; i < _samples.size(); ++i) {
     SampleData &smp = _samples[i];
@@ -146,7 +146,7 @@ get_sample(HSAMPLE &sample, size_t &index, MilesAudioSample *sound) {
 ////////////////////////////////////////////////////////////////////
 void GlobalMilesManager::
 release_sample(size_t index, MilesAudioSample *sound) {
-  MutexHolder holder(_samples_lock);
+  LightMutexHolder holder(_samples_lock);
   nassertv(index < _samples.size());
 
   SampleData &smp = _samples[index];
@@ -172,7 +172,7 @@ release_sample(size_t index, MilesAudioSample *sound) {
 ////////////////////////////////////////////////////////////////////
 bool GlobalMilesManager::
 get_sequence(HSEQUENCE &sequence, size_t &index, MilesAudioSequence *sound) {
-  MutexHolder holder(_sequences_lock);
+  LightMutexHolder holder(_sequences_lock);
 
   for (size_t i = 0; i < _sequences.size(); ++i) {
     SequenceData &seq = _sequences[i];
@@ -212,7 +212,7 @@ get_sequence(HSEQUENCE &sequence, size_t &index, MilesAudioSequence *sound) {
 ////////////////////////////////////////////////////////////////////
 void GlobalMilesManager::
 release_sequence(size_t index, MilesAudioSequence *sound) {
-  MutexHolder holder(_sequences_lock);
+  LightMutexHolder holder(_sequences_lock);
   nassertv(index < _sequences.size());
 
   SequenceData &seq = _sequences[index];

@@ -69,7 +69,7 @@ PGButton(const PGButton &copy) :
 ////////////////////////////////////////////////////////////////////
 PandaNode *PGButton::
 make_copy() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return new PGButton(*this);
 }
 
@@ -81,7 +81,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void PGButton::
 enter_region(const MouseWatcherParameter &param) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (get_active()) {
     set_state(_button_down ? S_depressed : S_rollover);
   }
@@ -96,7 +96,7 @@ enter_region(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGButton::
 exit_region(const MouseWatcherParameter &param) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (get_active()) {
     set_state(S_ready);
   }
@@ -112,7 +112,7 @@ exit_region(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGButton::
 press(const MouseWatcherParameter &param, bool background) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (has_click_button(param.get_button())) {
     if (get_active()) {
       _button_down = true;
@@ -131,7 +131,7 @@ press(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGButton::
 release(const MouseWatcherParameter &param, bool background) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (has_click_button(param.get_button())) {
     _button_down = false;
     if (get_active()) {
@@ -154,7 +154,7 @@ release(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGButton::
 click(const MouseWatcherParameter &param) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_click_event(param.get_button());
   play_sound(event);
@@ -176,7 +176,7 @@ click(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGButton::
 setup(const string &label, float bevel) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   clear_state_def(S_ready);
   clear_state_def(S_depressed);
   clear_state_def(S_rollover);
@@ -233,7 +233,7 @@ setup(const string &label, float bevel) {
 void PGButton::
 setup(const NodePath &ready, const NodePath &depressed, 
       const NodePath &rollover, const NodePath &inactive) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   clear_state_def(S_ready);
   clear_state_def(S_depressed);
   clear_state_def(S_rollover);
@@ -254,7 +254,7 @@ setup(const NodePath &ready, const NodePath &depressed,
 ////////////////////////////////////////////////////////////////////
 void PGButton:: 
 set_active(bool active) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (active != get_active()) {
     PGItem::set_active(active);
     set_state(active ? S_ready : S_inactive);
@@ -271,7 +271,7 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 bool PGButton::
 add_click_button(const ButtonHandle &button) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _click_buttons.insert(button).second;
 }
 
@@ -286,7 +286,7 @@ add_click_button(const ButtonHandle &button) {
 ////////////////////////////////////////////////////////////////////
 bool PGButton::
 remove_click_button(const ButtonHandle &button) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return (_click_buttons.erase(button) != 0);
 }
 
@@ -299,6 +299,6 @@ remove_click_button(const ButtonHandle &button) {
 ////////////////////////////////////////////////////////////////////
 bool PGButton::
 has_click_button(const ButtonHandle &button) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return (_click_buttons.count(button) != 0);
 }

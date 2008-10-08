@@ -32,13 +32,13 @@
 #include "datagramIterator.h"
 #include "indent.h"
 #include "compareTo.h"
-#include "reMutexHolder.h"
-#include "mutexHolder.h"
+#include "lightReMutexHolder.h"
+#include "lightMutexHolder.h"
 #include "thread.h"
 #include "attribSlots.h"
 #include "shaderGenerator.h"
   
-ReMutex *RenderState::_states_lock = NULL;
+LightReMutex *RenderState::_states_lock = NULL;
 RenderState::States *RenderState::_states = NULL;
 CPT(RenderState) RenderState::_empty_state;
 UpdateSeq RenderState::_last_cycle_detect;
@@ -104,7 +104,7 @@ RenderState::
   nassertv(!is_destructing());
   set_destructing();
 
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // unref() should have cleared these.
   nassertv(_saved_entry == _states->end());
@@ -345,7 +345,7 @@ compose(const RenderState *other) const {
   }
 #endif  // NDEBUG
 
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // Is this composition already cached?
   int index = _composition_cache.find(other);
@@ -442,7 +442,7 @@ invert_compose(const RenderState *other) const {
   }
 #endif  // NDEBUG
 
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // Is this composition already cached?
   int index = _invert_composition_cache.find(other);
@@ -766,7 +766,7 @@ bool RenderState::
 unref() const {
   // We always have to grab the lock, since we will definitely need to
   // be holding it if we happen to drop the reference count to 0.
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   if (auto_break_cycles) {
     if (get_cache_ref_count() > 0 &&
@@ -871,7 +871,7 @@ get_num_states() {
   if (_states == (States *)NULL) {
     return 0;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   return _states->size();
 }
 
@@ -898,7 +898,7 @@ get_num_unused_states() {
   if (_states == (States *)NULL) {
     return 0;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // First, we need to count the number of times each RenderState
   // object is recorded in the cache.
@@ -993,7 +993,7 @@ clear_cache() {
   if (_states == (States *)NULL) {
     return 0;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_cache_update_pcollector);
   int orig_size = _states->size();
@@ -1063,7 +1063,7 @@ clear_cache() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 clear_munger_cache() {
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // First, we need to count the number of times each RenderState
   // object is recorded in the cache.
@@ -1101,7 +1101,7 @@ list_cycles(ostream &out) {
   if (_states == (States *)NULL) {
     return;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   typedef pset<const RenderState *> VisitedStates;
   VisitedStates visited;
@@ -1157,7 +1157,7 @@ list_states(ostream &out) {
     out << "0 states:\n";
     return;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   out << _states->size() << " states:\n";
   States::const_iterator si;
@@ -1183,7 +1183,7 @@ validate_states() {
     return true;
   }
 
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   if (_states->empty()) {
     return true;
   }
@@ -1324,7 +1324,7 @@ return_new(RenderState *state) {
   }
 #endif
 
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // This should be a newly allocated pointer, not one that was used
   // for anything else.
@@ -1709,7 +1709,7 @@ remove_cache_pointers() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_bin_index() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_bin_index) != 0) {
     // Someone else checked it first.
     return;
@@ -1768,7 +1768,7 @@ determine_bin_index() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_fog() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_fog) != 0) {
     // Someone else checked it first.
     return;
@@ -1833,7 +1833,7 @@ do_determine_transparency() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_color() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_color) != 0) {
     // Someone else checked it first.
     return;
@@ -1854,7 +1854,7 @@ determine_color() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_color_scale() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_color_scale) != 0) {
     // Someone else checked it first.
     return;
@@ -1875,7 +1875,7 @@ determine_color_scale() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_texture() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_texture) != 0) {
     // Someone else checked it first.
     return;
@@ -1896,7 +1896,7 @@ determine_texture() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_tex_gen() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_tex_gen) != 0) {
     // Someone else checked it first.
     return;
@@ -1917,7 +1917,7 @@ determine_tex_gen() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_tex_matrix() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_tex_matrix) != 0) {
     // Someone else checked it first.
     return;
@@ -1938,7 +1938,7 @@ determine_tex_matrix() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_render_mode() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_render_mode) != 0) {
     // Someone else checked it first.
     return;
@@ -1959,7 +1959,7 @@ determine_render_mode() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_clip_plane() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_clip_plane) != 0) {
     // Someone else checked it first.
     return;
@@ -1980,7 +1980,7 @@ determine_clip_plane() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_scissor() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_scissor) != 0) {
     // Someone else checked it first.
     return;
@@ -2001,7 +2001,7 @@ determine_scissor() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_shader() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_shader) != 0) {
     // Someone else checked it first.
     return;
@@ -2022,7 +2022,7 @@ determine_shader() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_cull_callback() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_cull_callback) != 0) {
     // Someone else checked it first.
     return;
@@ -2047,7 +2047,7 @@ determine_cull_callback() {
 ////////////////////////////////////////////////////////////////////
 void RenderState::
 determine_audio_volume() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_audio_volume) != 0) {
     // Someone else checked it first.
     return;
@@ -2104,7 +2104,7 @@ init_states() {
   // meantime, this is OK because we guarantee that this method is
   // called at static init time, presumably when there is still only
   // one thread in the world.
-  _states_lock = new ReMutex("RenderState::_states_lock");
+  _states_lock = new LightReMutex("RenderState::_states_lock");
   _cache_stats.init();
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 }

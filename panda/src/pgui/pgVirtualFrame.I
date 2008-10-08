@@ -37,7 +37,7 @@ set_clip_frame(float left, float right, float bottom, float top) {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVecBase4f &PGVirtualFrame::
 get_clip_frame() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _has_clip_frame ? _clip_frame : get_frame();
 }
 
@@ -50,7 +50,7 @@ get_clip_frame() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGVirtualFrame::
 has_clip_frame() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _has_clip_frame;
 }
 
@@ -63,7 +63,7 @@ has_clip_frame() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGVirtualFrame::
 set_canvas_transform(const TransformState *transform) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _canvas_node->set_transform(transform);
 }
 
@@ -76,7 +76,7 @@ set_canvas_transform(const TransformState *transform) {
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *PGVirtualFrame::
 get_canvas_transform() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _canvas_node->get_transform();
 }
 
@@ -88,7 +88,7 @@ get_canvas_transform() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PGVirtualFrame::
 get_canvas_node() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _canvas_node;
 }
 
@@ -99,6 +99,6 @@ get_canvas_node() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *PGVirtualFrame::
 get_canvas_parent() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _canvas_parent;
 }

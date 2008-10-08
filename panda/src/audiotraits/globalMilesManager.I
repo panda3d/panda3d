@@ -32,7 +32,7 @@ is_open() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GlobalMilesManager::
 get_num_samples() const {
-  MutexHolder holder(_samples_lock);
+  LightMutexHolder holder(_samples_lock);
   return _samples.size();
 }
 
@@ -44,6 +44,6 @@ get_num_samples() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GlobalMilesManager::
 get_num_sequences() const {
-  MutexHolder holder(_sequences_lock);
+  LightMutexHolder holder(_sequences_lock);
   return _sequences.size();
 }

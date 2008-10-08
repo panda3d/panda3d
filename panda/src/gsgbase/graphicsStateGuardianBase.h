@@ -19,7 +19,7 @@
 
 #include "typedWritableReferenceCount.h"
 #include "luse.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 // A handful of forward references.
 
@@ -222,7 +222,7 @@ private:
   typedef pvector<GraphicsStateGuardianBase *> GSGs;
   static GSGs _gsgs;
   static GraphicsStateGuardianBase *_default_gsg;
-  static Mutex _lock;
+  static LightMutex _lock;
 
 public:
   static TypeHandle get_class_type() {

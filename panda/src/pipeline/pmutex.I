@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE Mutex::
 #ifdef DEBUG_THREADS
-Mutex() : MutexDebug(string(), false)
+Mutex() : MutexDebug(string(), false, false)
 #else
 Mutex()
 #endif  // DEBUG_THREADS
@@ -34,7 +34,7 @@ Mutex()
 ////////////////////////////////////////////////////////////////////
 INLINE Mutex::
 #ifdef DEBUG_THREADS
-Mutex(const char *name) : MutexDebug(string(name), false)
+Mutex(const char *name) : MutexDebug(string(name), false, false)
 #else
 Mutex(const char *)
 #endif  // DEBUG_THREADS
@@ -48,7 +48,7 @@ Mutex(const char *)
 ////////////////////////////////////////////////////////////////////
 INLINE Mutex::
 #ifdef DEBUG_THREADS
-Mutex(const string &name) : MutexDebug(name, false)
+Mutex(const string &name) : MutexDebug(name, false, false)
 #else
 Mutex(const string &)
 #endif  // DEBUG_THREADS
@@ -71,7 +71,7 @@ INLINE Mutex::
 ////////////////////////////////////////////////////////////////////
 INLINE Mutex::
 #ifdef DEBUG_THREADS
-Mutex(const Mutex &copy) : MutexDebug(string(), false)
+Mutex(const Mutex &copy) : MutexDebug(string(), false, false)
 #else
   Mutex(const Mutex &copy)
 #endif  // DEBUG_THREADS

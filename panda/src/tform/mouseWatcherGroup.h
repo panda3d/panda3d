@@ -22,7 +22,7 @@
 #include "referenceCount.h"
 #include "pvector.h"
 #include "nodePath.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MouseWatcherGroup
@@ -78,7 +78,7 @@ protected:
   // This mutex protects the above list of regions, as well as the
   // below list of vizzes.  It is also referenced directly by
   // MouseWatcher, a derived class.
-  Mutex _lock;
+  LightMutex _lock;
 
 private:
 #ifndef NDEBUG

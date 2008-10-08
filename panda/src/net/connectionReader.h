@@ -20,7 +20,7 @@
 #include "connection.h"
 
 #include "pointerTo.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "pvector.h"
 #include "pset.h"
 #include "socket_fdset.h"
@@ -147,7 +147,7 @@ private:
   int _num_results;
   // Threads go to sleep on this mutex waiting for their chance to
   // read a socket.
-  Mutex _select_mutex;
+  LightMutex _select_mutex;
 
   // This is atomically updated with the index (in _threads) of the
   // thread that is currently waiting on the PR_Poll() call.  It
@@ -161,7 +161,7 @@ private:
   // delete them until they're no longer _busy.
   Sockets _removed_sockets;
   // Any operations on _sockets are protected by this mutex.
-  Mutex _sockets_mutex;
+  LightMutex _sockets_mutex;
 
 
   friend class ConnectionManager;

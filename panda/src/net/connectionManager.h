@@ -21,7 +21,7 @@
 #include "connection.h"
 #include "pointerTo.h"
 #include "pset.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 class NetAddress;
 class ConnectionReader;
@@ -76,7 +76,7 @@ protected:
   Connections _connections;
   Readers _readers;
   Writers _writers;
-  Mutex _set_mutex;
+  LightMutex _set_mutex;
 
 private:
   friend class ConnectionReader;

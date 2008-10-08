@@ -164,7 +164,7 @@ get_collector_fullname(int index) const {
 ////////////////////////////////////////////////////////////////////
 PStatThread PStatClient::
 get_thread(int index) const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   nassertr(index >= 0 && index < _num_threads, PStatThread());
   return PStatThread((PStatClient *)this, index);
 }
@@ -370,7 +370,7 @@ thread_tick(const string &sync_name) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 client_main_tick() {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (has_impl()) {
     _impl->client_main_tick();
 
@@ -395,7 +395,7 @@ client_main_tick() {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 client_thread_tick(const string &sync_name) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
 
   if (has_impl()) {
     MultiThingsByName::const_iterator ni =
@@ -418,7 +418,7 @@ client_thread_tick(const string &sync_name) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 client_disconnect() {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (has_impl()) {
     _impl->client_disconnect();
     delete _impl;
@@ -479,7 +479,7 @@ get_global_pstats() {
 ////////////////////////////////////////////////////////////////////
 PStatCollector PStatClient::
 make_collector_with_relname(int parent_index, string relname) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
 
   if (relname.empty()) {
     relname = "Unnamed";
@@ -519,7 +519,7 @@ make_collector_with_relname(int parent_index, string relname) {
 ////////////////////////////////////////////////////////////////////
 PStatCollector PStatClient::
 make_collector_with_name(int parent_index, const string &name) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
 
   nassertr(parent_index >= 0 && parent_index < _num_collectors,
            PStatCollector());
@@ -588,7 +588,7 @@ do_get_current_thread() const {
 ////////////////////////////////////////////////////////////////////
 PStatThread PStatClient::
 make_thread(Thread *thread) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return do_make_thread(thread);
 }
 
@@ -688,7 +688,7 @@ is_started(int collector_index, int thread_index) const {
   InternalThread *thread = get_thread_ptr(thread_index);
 
   if (client_is_connected() && collector->is_active() && thread->_is_active) {
-    MutexHolder holder(thread->_thread_lock);
+    LightMutexHolder holder(thread->_thread_lock);
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       // Not started.
       return false;
@@ -719,7 +719,7 @@ start(int collector_index, int thread_index) {
   InternalThread *thread = get_thread_ptr(thread_index);
 
   if (client_is_connected() && collector->is_active() && thread->_is_active) {
-    MutexHolder holder(thread->_thread_lock);
+    LightMutexHolder holder(thread->_thread_lock);
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       // This collector wasn't already started in this thread; record
       // a new data point.
@@ -749,7 +749,7 @@ start(int collector_index, int thread_index, float as_of) {
   InternalThread *thread = get_thread_ptr(thread_index);
 
   if (client_is_connected() && collector->is_active() && thread->_is_active) {
-    MutexHolder holder(thread->_thread_lock);
+    LightMutexHolder holder(thread->_thread_lock);
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       // This collector wasn't already started in this thread; record
       // a new data point.
@@ -779,7 +779,7 @@ stop(int collector_index, int thread_index) {
   InternalThread *thread = get_thread_ptr(thread_index);
 
   if (client_is_connected() && collector->is_active() && thread->_is_active) {
-    MutexHolder holder(thread->_thread_lock);
+    LightMutexHolder holder(thread->_thread_lock);
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       if (pstats_cat.is_debug()) {
         pstats_cat.debug()
@@ -820,7 +820,7 @@ stop(int collector_index, int thread_index, float as_of) {
   InternalThread *thread = get_thread_ptr(thread_index);
 
   if (client_is_connected() && collector->is_active() && thread->_is_active) {
-    MutexHolder holder(thread->_thread_lock);
+    LightMutexHolder holder(thread->_thread_lock);
     if (collector->_per_thread[thread_index]._nested_count == 0) {
       if (pstats_cat.is_debug()) {
         pstats_cat.debug()
@@ -860,7 +860,7 @@ clear_level(int collector_index, int thread_index) {
 
   Collector *collector = get_collector_ptr(collector_index);
   InternalThread *thread = get_thread_ptr(thread_index);
-  MutexHolder holder(thread->_thread_lock);
+  LightMutexHolder holder(thread->_thread_lock);
 
   collector->_per_thread[thread_index]._has_level = true;
   collector->_per_thread[thread_index]._level = 0.0;
@@ -889,7 +889,7 @@ set_level(int collector_index, int thread_index, double level) {
   // connected or the collector is already active, since we might
   // connect the client later, and we will want to have an accurate
   // value at that time.
-  MutexHolder holder(thread->_thread_lock);
+  LightMutexHolder holder(thread->_thread_lock);
 
   level *= collector->get_def(this, collector_index)->_factor;
 
@@ -917,7 +917,7 @@ add_level(int collector_index, int thread_index, double increment) {
 
   Collector *collector = get_collector_ptr(collector_index);
   InternalThread *thread = get_thread_ptr(thread_index);
-  MutexHolder holder(thread->_thread_lock);
+  LightMutexHolder holder(thread->_thread_lock);
 
   increment *= collector->get_def(this, collector_index)->_factor;
 
@@ -942,7 +942,7 @@ get_level(int collector_index, int thread_index) const {
 
   Collector *collector = get_collector_ptr(collector_index);
   InternalThread *thread = get_thread_ptr(thread_index);
-  MutexHolder holder(thread->_thread_lock);
+  LightMutexHolder holder(thread->_thread_lock);
 
   double factor = collector->get_def(this, collector_index)->_factor;
 
@@ -1139,7 +1139,7 @@ activate_hook(Thread *thread) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::Collector::
 make_def(const PStatClient *client, int this_index) {
-  ReMutexHolder holder(client->_lock);
+  LightReMutexHolder holder(client->_lock);
   if (_def == (PStatCollectorDef *)NULL) {
     _def = new PStatCollectorDef(this_index, _name);
     if (_parent_index != this_index) {

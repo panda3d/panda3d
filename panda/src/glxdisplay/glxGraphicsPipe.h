@@ -19,8 +19,8 @@
 #include "graphicsWindow.h"
 #include "graphicsPipe.h"
 #include "glgsg.h"
-#include "pmutex.h"
-#include "reMutex.h"
+#include "lightMutex.h"
+#include "lightReMutex.h"
 
 class FrameBufferProperties;
 
@@ -151,7 +151,7 @@ private:
 public:
   // This Mutex protects any X library calls, which all have to be
   // single-threaded.  In particular, it protects glXMakeCurrent().
-  static ReMutex _x_mutex;
+  static LightReMutex _x_mutex;
 
 public:
   static TypeHandle get_class_type() {

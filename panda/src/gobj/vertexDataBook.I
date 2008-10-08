@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE VertexDataBlock *VertexDataBook::
 alloc(size_t size) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return do_alloc(size);
 }
 

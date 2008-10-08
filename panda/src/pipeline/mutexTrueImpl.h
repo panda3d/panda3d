@@ -33,13 +33,13 @@
 // until we have defined the whole ThreadSimpleManager and related
 // infrastructure.
 
-#if defined(THREAD_SIMPLE_IMPL) && !defined(SIMPLE_THREADS_NO_MUTEX)
+#ifdef THREAD_SIMPLE_IMPL
 
 #include "mutexSimpleImpl.h"
 typedef MutexSimpleImpl MutexTrueImpl;
 #undef HAVE_REMUTEXTRUEIMPL
 
-#else
+#else  // THREAD_SIMPLE_IMPL
 
 typedef MutexImpl MutexTrueImpl;
 #if HAVE_REMUTEXIMPL
@@ -49,7 +49,7 @@ typedef ReMutexImpl ReMutexTrueImpl;
 #undef HAVE_REMUTEXTRUEIMPL
 #endif // HAVE_REMUTEXIMPL
 
-#endif
+#endif  // THREAD_SIMPLE_IMPL
 
 #endif
 

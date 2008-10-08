@@ -1,4 +1,3 @@
-#include "externalThread.cxx"
 #include "mainThread.cxx"
 #include "mutexDebug.cxx"
 #include "mutexDirect.cxx"

@@ -42,7 +42,7 @@
 #include "string_utils.h"
 #include "pnmImage.h"
 #include "config_gobj.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include "indirectLess.h"
 #include "pStatTimer.h"
 #include "load_prc_file.h"
@@ -1670,7 +1670,7 @@ end_frame(Thread *current_thread) {
 
   // Now is a good time to delete any pending display lists.
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
     if (!_deleted_display_lists.empty()) {
       DeletedDisplayLists::iterator ddli;
       for (ddli = _deleted_display_lists.begin();
@@ -2795,7 +2795,7 @@ release_shader(ShaderContext *sc) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 record_deleted_display_list(GLuint index) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _deleted_display_lists.push_back(index);
 }
 

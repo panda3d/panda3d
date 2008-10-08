@@ -13,12 +13,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "graphicsStateGuardianBase.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include <algorithm>
 
 GraphicsStateGuardianBase::GSGs GraphicsStateGuardianBase::_gsgs;
 GraphicsStateGuardianBase *GraphicsStateGuardianBase::_default_gsg;
-Mutex GraphicsStateGuardianBase::_lock;
+LightMutex GraphicsStateGuardianBase::_lock;
 TypeHandle GraphicsStateGuardianBase::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -35,7 +35,7 @@ TypeHandle GraphicsStateGuardianBase::_type_handle;
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardianBase *GraphicsStateGuardianBase::
 get_default_gsg() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return _default_gsg;
 }
 
@@ -47,7 +47,7 @@ get_default_gsg() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardianBase::
 set_default_gsg(GraphicsStateGuardianBase *default_gsg) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if (find(_gsgs.begin(), _gsgs.end(), default_gsg) == _gsgs.end()) {
     // The specified GSG doesn't exist or it has already destructed.
     nassertv(false);
@@ -65,7 +65,7 @@ set_default_gsg(GraphicsStateGuardianBase *default_gsg) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardianBase::
 add_gsg(GraphicsStateGuardianBase *gsg) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   if (find(_gsgs.begin(), _gsgs.end(), gsg) != _gsgs.end()) {
     // Already on the list.
@@ -87,7 +87,7 @@ add_gsg(GraphicsStateGuardianBase *gsg) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardianBase::
 remove_gsg(GraphicsStateGuardianBase *gsg) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   GSGs::iterator gi = find(_gsgs.begin(), _gsgs.end(), gsg);
   if (gi == _gsgs.end()) {

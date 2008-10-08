@@ -35,7 +35,7 @@ private:
   INLINE void operator = (const ReMutexHolder &copy);
 
 private:
-#if defined(HAVE_THREADS) || !defined(NDEBUG)
+#if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   const ReMutex *_mutex;
 #endif
 };

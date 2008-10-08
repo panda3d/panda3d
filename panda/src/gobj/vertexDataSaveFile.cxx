@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "vertexDataSaveFile.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include "clockObject.h"
 
 #ifndef _WIN32
@@ -189,7 +189,7 @@ VertexDataSaveFile::
 ////////////////////////////////////////////////////////////////////
 PT(VertexDataSaveBlock) VertexDataSaveFile::
 write_data(const unsigned char *data, size_t size, bool compressed) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   if (!_is_valid) {
     return NULL;
@@ -269,7 +269,7 @@ write_data(const unsigned char *data, size_t size, bool compressed) {
 ////////////////////////////////////////////////////////////////////
 bool VertexDataSaveFile::
 read_data(unsigned char *data, size_t size, VertexDataSaveBlock *block) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   if (!_is_valid) {
     return false;

@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutex::
 #ifdef DEBUG_THREADS
-ReMutex() : MutexDebug(string(), true)
+ReMutex() : MutexDebug(string(), true, false)
 #else
 ReMutex()
 #endif  // DEBUG_THREADS
@@ -34,7 +34,7 @@ ReMutex()
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutex::
 #ifdef DEBUG_THREADS
-ReMutex(const char *name) : MutexDebug(string(name), true)
+ReMutex(const char *name) : MutexDebug(string(name), true, false)
 #else
 ReMutex(const char *)
 #endif  // DEBUG_THREADS
@@ -48,7 +48,7 @@ ReMutex(const char *)
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutex::
 #ifdef DEBUG_THREADS
-ReMutex(const string &name) : MutexDebug(name, true)
+ReMutex(const string &name) : MutexDebug(name, true, false)
 #else
 ReMutex(const string &)
 #endif  // DEBUG_THREADS

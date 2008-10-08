@@ -21,11 +21,11 @@
 #include "compareTo.h"
 #include "pStatTimer.h"
 #include "config_pgraph.h"
-#include "reMutexHolder.h"
-#include "mutexHolder.h"
+#include "lightReMutexHolder.h"
+#include "lightMutexHolder.h"
 #include "thread.h"
 
-ReMutex *TransformState::_states_lock = NULL;
+LightReMutex *TransformState::_states_lock = NULL;
 TransformState::States *TransformState::_states = NULL;
 CPT(TransformState) TransformState::_identity_state;
 UpdateSeq TransformState::_last_cycle_detect;
@@ -100,7 +100,7 @@ TransformState::
     _inv_mat = (LMatrix4f *)NULL;
   }
 
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // unref() should have cleared these.
   nassertv(_saved_entry == _states->end());
@@ -599,7 +599,7 @@ compose(const TransformState *other) const {
   }
 #endif  // NDEBUG
 
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // Is this composition already cached?
   int index = _composition_cache.find(other);
@@ -704,7 +704,7 @@ invert_compose(const TransformState *other) const {
   }
 #endif  // NDEBUG
 
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // Is this composition already cached?
   int index = _invert_composition_cache.find(other);
@@ -784,7 +784,7 @@ bool TransformState::
 unref() const {
   // We always have to grab the lock, since we will definitely need to
   // be holding it if we happen to drop the reference count to 0.
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   if (auto_break_cycles) {
     if (get_cache_ref_count() > 0 &&
@@ -941,7 +941,7 @@ get_num_states() {
   if (_states == (States *)NULL) {
     return 0;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   return _states->size();
 }
 
@@ -968,7 +968,7 @@ get_num_unused_states() {
   if (_states == (States *)NULL) {
     return 0;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // First, we need to count the number of times each TransformState
   // object is recorded in the cache.  We could just trust
@@ -1064,7 +1064,7 @@ clear_cache() {
   if (_states == (States *)NULL) {
     return 0;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   PStatTimer timer(_cache_update_pcollector);
   int orig_size = _states->size();
@@ -1148,7 +1148,7 @@ list_cycles(ostream &out) {
   if (_states == (States *)NULL) {
     return;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   typedef pset<const TransformState *> VisitedStates;
   VisitedStates visited;
@@ -1204,7 +1204,7 @@ list_states(ostream &out) {
     out << "0 states:\n";
     return;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   out << _states->size() << " states:\n";
   States::const_iterator si;
@@ -1232,7 +1232,7 @@ validate_states() {
 
   PStatTimer timer(_transform_validate_pcollector);
 
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   if (_states->empty()) {
     return true;
   }
@@ -1287,7 +1287,7 @@ init_states() {
   // meantime, this is OK because we guarantee that this method is
   // called at static init time, presumably when there is still only
   // one thread in the world.
-  _states_lock = new ReMutex("TransformState::_states_lock");
+  _states_lock = new LightReMutex("TransformState::_states_lock");
   _cache_stats.init();
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 }
@@ -1326,7 +1326,7 @@ return_new(TransformState *state) {
 
   PStatTimer timer(_transform_new_pcollector);
 
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // This should be a newly allocated pointer, not one that was used
   // for anything else.
@@ -1836,7 +1836,7 @@ do_calc_hash() {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 calc_singular() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_singular_known) != 0) {
     // Someone else computed it first.
     return;
@@ -1953,7 +1953,7 @@ do_calc_hpr() {
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 calc_quat() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_quat_known) != 0) {
     // Someone else computed it first.
     return;
@@ -1984,7 +1984,7 @@ calc_norm_quat() {
   PStatTimer timer(_transform_calc_pcollector);
 
   LQuaternionf quat = get_quat();
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _norm_quat = quat;
   _norm_quat.normalize();
   _flags |= F_norm_quat_known;

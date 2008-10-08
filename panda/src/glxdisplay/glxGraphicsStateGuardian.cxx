@@ -15,7 +15,7 @@
 #include "glxGraphicsStateGuardian.h"
 #include "config_glxdisplay.h"
 #include "config_glgsg.h"
-#include "reMutexHolder.h"
+#include "lightReMutexHolder.h"
 
 #include <dlfcn.h>
 
@@ -388,7 +388,7 @@ glx_is_at_least_version(int major_version, int minor_version) const {
 void glxGraphicsStateGuardian::
 gl_flush() const {
   // This call requires synchronization with X.
-  ReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
   GLGraphicsStateGuardian::gl_flush();
 }
 
@@ -400,7 +400,7 @@ gl_flush() const {
 GLenum glxGraphicsStateGuardian::
 gl_get_error() const {
   // This call requires synchronization with X.
-  ReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
   return GLGraphicsStateGuardian::gl_get_error();
 }
 

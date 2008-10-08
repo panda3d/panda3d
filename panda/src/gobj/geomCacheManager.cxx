@@ -14,7 +14,7 @@
 
 #include "geomCacheManager.h"
 #include "geomCacheEntry.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 GeomCacheManager *GeomCacheManager::_global_ptr = NULL;
 
@@ -59,7 +59,7 @@ GeomCacheManager::
 ////////////////////////////////////////////////////////////////////
 void GeomCacheManager::
 flush() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   evict_old_entries(0, false);
 }
 

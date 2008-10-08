@@ -15,7 +15,7 @@
 #include "geomVertexFormat.h"
 #include "geomVertexData.h"
 #include "geomMunger.h"
-#include "reMutexHolder.h"
+#include "lightReMutexHolder.h"
 #include "indent.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -96,7 +96,7 @@ GeomVertexFormat::
 bool GeomVertexFormat::
 unref() const {
   Registry *registry = get_registry();
-  ReMutexHolder holder(registry->_lock);
+  LightReMutexHolder holder(registry->_lock);
 
   if (ReferenceCount::unref()) {
     return true;
@@ -1058,7 +1058,7 @@ register_format(GeomVertexFormat *format) {
 
   GeomVertexFormat *new_format;
   {
-    ReMutexHolder holder(_lock);
+    LightReMutexHolder holder(_lock);
     Formats::iterator fi = _formats.insert(format).first;
     new_format = (*fi);
     if (!new_format->is_registered()) {

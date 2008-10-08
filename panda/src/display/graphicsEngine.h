@@ -24,7 +24,7 @@
 #include "pointerTo.h"
 #include "thread.h"
 #include "pmutex.h"
-#include "reMutex.h"
+#include "lightReMutex.h"
 #include "conditionVar.h"
 #include "pStatCollector.h"
 #include "pset.h"
@@ -302,7 +302,7 @@ private:
     GSGs _gsgs;       // draw stage
 
     Callbacks _callbacks[CB_len];
-    ReMutex _wl_lock;
+    LightReMutex _wl_lock;
   };
 
   class RenderThread : public Thread, public WindowRenderer {
@@ -343,7 +343,7 @@ private:
   bool _singular_warning_last_frame;
   bool _singular_warning_this_frame;
 
-  ReMutex _lock;
+  LightReMutex _lock;
 
   static PT(GraphicsEngine) _global_ptr;
 

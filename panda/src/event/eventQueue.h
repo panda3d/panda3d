@@ -19,7 +19,7 @@
 
 #include "event.h"
 #include "pt_Event.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "pdeque.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ private:
   typedef pdeque<CPT_Event> Events;
   Events _queue;
 
-  Mutex _lock;
+  LightMutex _lock;
 };
 
 #include "eventQueue.I"

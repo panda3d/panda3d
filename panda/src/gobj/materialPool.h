@@ -18,7 +18,7 @@
 #include "pandabase.h"
 #include "material.h"
 #include "pointerTo.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ private:
 
   static MaterialPool *_global_ptr;
 
-  Mutex _lock;
+  LightMutex _lock;
 
   // We store a map of CPT(Material) to PT(Material).  These are two
   // equivalent structures, but different pointers.  The first pointer

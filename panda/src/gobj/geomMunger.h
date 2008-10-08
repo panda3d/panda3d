@@ -23,8 +23,8 @@
 #include "geomCacheEntry.h"
 #include "indirectCompareTo.h"
 #include "pStatCollector.h"
-#include "pmutex.h"
-#include "reMutex.h"
+#include "lightMutex.h"
+#include "lightReMutex.h"
 #include "pointerTo.h"
 #include "pmap.h"
 #include "pset.h"
@@ -127,7 +127,7 @@ private:
   Formats _premunge_formats;
 
   // This mutex protects the above.
-  Mutex _formats_lock;
+  LightMutex _formats_lock;
 
   GraphicsStateGuardianBase *_gsg;
 
@@ -141,7 +141,7 @@ private:
     void unregister_mungers_for_gsg(GraphicsStateGuardianBase *gsg);
 
     Mungers _mungers;
-    ReMutex _registry_lock;
+    LightReMutex _registry_lock;
   };
 
   // We store the iterator into the above registry, while we are

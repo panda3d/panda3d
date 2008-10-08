@@ -25,7 +25,7 @@
 #include "pStatTimer.h"
 #include "textEncoder.h"
 #include "throw_event.h"
-#include "reMutexHolder.h"
+#include "lightReMutexHolder.h"
 
 #include <errno.h>
 #include <sys/time.h>
@@ -151,7 +151,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_R(glxgsg, _gsg, false);
   {
-    ReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+    LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
 
     if (glXGetCurrentDisplay() == _display &&
         glXGetCurrentDrawable() == _xwindow &&
@@ -231,7 +231,7 @@ begin_flip() {
 
     //make_current();
 
-    ReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+    LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
     glXSwapBuffers(_display, _xwindow);
   }
 }
@@ -248,7 +248,7 @@ begin_flip() {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
 process_events() {
-  ReMutexHolder holder(glxGraphicsPipe::_x_mutex);
+  LightReMutexHolder holder(glxGraphicsPipe::_x_mutex);
 
   GraphicsWindow::process_events();
 

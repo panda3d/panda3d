@@ -26,9 +26,9 @@
 #include <string>
 
 class EggGroupNode;
-class Mutex;
+class LightMutex;
 
-extern Mutex egg_lock;
+extern LightMutex egg_lock;
 
 void egg_init_parser(istream &in, const string &filename,
                      EggObject *tos, EggGroupNode *egg_top_node);

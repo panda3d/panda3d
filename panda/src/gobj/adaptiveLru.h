@@ -18,8 +18,8 @@
 #include "pandabase.h"
 #include "linkedListNode.h"
 #include "namable.h"
-#include "pmutex.h"
-#include "mutexHolder.h"
+#include "lightMutex.h"
+#include "lightMutexHolder.h"
 
 class AdaptiveLruPage;
 
@@ -99,7 +99,7 @@ private:
   void do_evict_to(size_t target_size, bool hard_evict);
   bool do_validate();
 
-  Mutex _lock;
+  LightMutex _lock;
 
   size_t _total_size;
   size_t _max_size;

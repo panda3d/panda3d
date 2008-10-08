@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "graphicsPipeSelection.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include "string_utils.h"
 #include "filename.h"
 #include "load_dso.h"
@@ -95,7 +95,7 @@ get_num_pipe_types() const {
 
   int result;
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
     result = _pipe_types.size();
   }
   return result;
@@ -113,7 +113,7 @@ get_pipe_type(int n) const {
 
   TypeHandle result;
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
     if (n >= 0 && n < (int)_pipe_types.size()) {
       result = _pipe_types[n]._type;
     }
@@ -131,7 +131,7 @@ void GraphicsPipeSelection::
 print_pipe_types() const {
   load_default_module();
 
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   nout << "Known pipe types:" << endl;
   PipeTypes::const_iterator pi;
   for (pi = _pipe_types.begin(); pi != _pipe_types.end(); ++pi) {
@@ -202,7 +202,7 @@ make_pipe(const string &type_name, const string &module_name) {
 ////////////////////////////////////////////////////////////////////
 PT(GraphicsPipe) GraphicsPipeSelection::
 make_pipe(TypeHandle type) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   PipeTypes::const_iterator ti;
 
   // First, look for an exact match of the requested type.
@@ -257,7 +257,7 @@ PT(GraphicsPipe) GraphicsPipeSelection::
 make_default_pipe() {
   load_default_module();
 
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   PipeTypes::const_iterator ti;
 
   if (!_default_pipe_name.empty()) {
@@ -340,7 +340,7 @@ add_pipe_type(TypeHandle type, PipeConstructorFunc *func) {
   
   // First, make sure we don't already have a GraphicsPipe of this
   // type.
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   PipeTypes::const_iterator ti;
   for (ti = _pipe_types.begin(); ti != _pipe_types.end(); ++ti) {
     const PipeType &ptype = (*ti);

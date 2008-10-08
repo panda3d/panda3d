@@ -27,7 +27,7 @@
 #include "pvector.h"
 #include "thread.h"
 #include "pmutex.h"
-#include "reMutex.h"
+#include "lightReMutex.h"
 #include "conditionVar.h"
 
 class MilesAudioSound;
@@ -143,7 +143,7 @@ private:
   bool _hasMidiSounds;
 
   // This mutex protects everything above.
-  ReMutex _lock;
+  LightReMutex _lock;
   bool _sounds_finished;
 
   typedef pvector<HSTREAM> Streams;

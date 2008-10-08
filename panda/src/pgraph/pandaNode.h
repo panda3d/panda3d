@@ -44,7 +44,7 @@
 #include "pStatCollector.h"
 #include "copyOnWriteObject.h"
 #include "copyOnWritePointer.h"
-#include "reMutex.h"
+#include "lightReMutex.h"
 
 #ifdef HAVE_PYTHON
 
@@ -444,7 +444,7 @@ private:
   // threads.  A NodePathComponent, once created, is always associated
   // with the same node.  We do, however, protect the Paths under a mutex.
   Paths _paths;
-  ReMutex _paths_lock;
+  LightReMutex _paths_lock;
 
   bool _dirty_prev_transform;
   static PandaNodeChain _dirty_prev_transforms;

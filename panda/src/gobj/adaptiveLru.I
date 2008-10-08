@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE size_t AdaptiveLru::
 get_total_size() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return _total_size;
 }
 
@@ -33,7 +33,7 @@ get_total_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t AdaptiveLru::
 get_max_size() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return _max_size;
 }
 
@@ -47,7 +47,7 @@ get_max_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void AdaptiveLru::
 set_max_size(size_t max_size) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _max_size = max_size;
   if (_total_size > _max_size) {
     do_evict_to(_max_size, false);
@@ -61,7 +61,7 @@ set_max_size(size_t max_size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void AdaptiveLru::
 consider_evict() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if (_total_size > _max_size) {
     do_evict_to(_max_size, false);
   }
@@ -76,7 +76,7 @@ consider_evict() {
 ////////////////////////////////////////////////////////////////////
 INLINE void AdaptiveLru::
 evict_to(size_t target_size) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if (_total_size > target_size) {
     do_evict_to(target_size, true);
   }
@@ -91,7 +91,7 @@ evict_to(size_t target_size) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool AdaptiveLru::
 validate() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return do_validate();
 }
 
@@ -219,7 +219,7 @@ get_lru_size() const {
 INLINE void AdaptiveLruPage::
 set_lru_size(size_t lru_size) {
   if (_lru != (AdaptiveLru *)NULL) {
-    MutexHolder holder(_lru->_lock);
+    LightMutexHolder holder(_lru->_lock);
     _lru->_total_size -= _lru_size;
     _lru->_total_size += lru_size;
     _lru_size = lru_size;

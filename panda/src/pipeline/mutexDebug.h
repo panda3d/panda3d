@@ -23,14 +23,6 @@
 
 #ifdef DEBUG_THREADS
 
-#if defined(SIMPLE_THREADS) && defined(SIMPLE_THREADS_NO_MUTEX)
-// In this mode, we don't actually lock and unlock a mutex.  We just
-// wave at them as they go by.  This actually involves a bit more
-// work, here in the debug mode, than a real mutex, because we have to
-// track all the threads that failed to lock the mutex.
-#define PHONY_MUTEX
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexDebug
 // Description : This class implements a standard mutex the hard way,
@@ -39,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PIPELINE MutexDebug : public Namable {
 protected:
-  MutexDebug(const string &name, bool allow_recursion);
+  MutexDebug(const string &name, bool allow_recursion, bool lightweight);
   virtual ~MutexDebug();
 private:
   INLINE MutexDebug(const MutexDebug &copy);
@@ -67,12 +59,13 @@ private:
   INLINE static MutexTrueImpl *get_global_lock();
 
   bool _allow_recursion;
+  bool _lightweight;
   Thread *_locking_thread;
   int _lock_count;
-#ifdef PHONY_MUTEX
+
+  // For _lightweight mutexes.
   typedef pmap<Thread *, int> MissedThreads;
   MissedThreads _missed_threads;
-#endif
 
   ConditionVarImpl _cvar_impl;
 

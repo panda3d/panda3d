@@ -13,7 +13,7 @@
 #include "parser.h"
 #include "indent.h"
 #include "pnotify.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "thread.h"
 
 #include <math.h>
@@ -28,7 +28,7 @@ static int yyinput(void);        // declared by flex.
 ////////////////////////////////////////////////////////////////////
 
 // This mutex protects all of these global variables. 
-Mutex egg_lock; 
+LightMutex egg_lock; 
 
 // We'll increment line_number and col_number as we parse the file, so
 // that we can report the position of an error.

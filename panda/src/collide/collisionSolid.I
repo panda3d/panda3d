@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSolid::
 set_tangible(bool tangible) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if (tangible) {
     _flags |= F_tangible;
   } else {
@@ -45,7 +45,7 @@ set_tangible(bool tangible) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionSolid::
 is_tangible() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return do_is_tangible();
 }
 
@@ -63,7 +63,7 @@ is_tangible() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSolid::
 set_effective_normal(const LVector3f &effective_normal) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _effective_normal = effective_normal;
   _flags |= F_effective_normal;
 }
@@ -76,7 +76,7 @@ set_effective_normal(const LVector3f &effective_normal) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSolid::
 clear_effective_normal() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _flags &= ~F_effective_normal;
 }
 
@@ -88,7 +88,7 @@ clear_effective_normal() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionSolid::
 has_effective_normal() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return do_has_effective_normal();
 }
 
@@ -101,7 +101,7 @@ has_effective_normal() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const LVector3f &CollisionSolid::
 get_effective_normal() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   nassertr(do_has_effective_normal(), LVector3f::zero());
   return _effective_normal;
 }
@@ -118,7 +118,7 @@ get_effective_normal() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSolid::
 set_respect_effective_normal(bool respect_effective_normal) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   // For historical reasons, the bit we store is the opposite of the
   // bool flag we present.
   if (respect_effective_normal) {
@@ -135,7 +135,7 @@ set_respect_effective_normal(bool respect_effective_normal) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CollisionSolid::
 get_respect_effective_normal() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return (_flags & F_ignore_effective_normal) == 0;
 }
 
@@ -172,7 +172,7 @@ do_has_effective_normal() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSolid::
 mark_internal_bounds_stale() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _flags |= F_internal_bounds_stale;
 }
 
@@ -186,6 +186,6 @@ mark_internal_bounds_stale() {
 ////////////////////////////////////////////////////////////////////
 INLINE void CollisionSolid::
 mark_viz_stale() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _flags |= F_viz_geom_stale;
 }

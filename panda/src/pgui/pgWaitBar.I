@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void PGWaitBar:: 
 set_range(float range) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _range = range;
   _bar_state = -1;
 }
@@ -32,7 +32,7 @@ set_range(float range) {
 ////////////////////////////////////////////////////////////////////
 INLINE float PGWaitBar:: 
 get_range() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _range;
 }
 
@@ -44,7 +44,7 @@ get_range() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGWaitBar:: 
 set_value(float value) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _value = value;
   _bar_state = -1;
 }
@@ -56,7 +56,7 @@ set_value(float value) {
 ////////////////////////////////////////////////////////////////////
 INLINE float PGWaitBar:: 
 get_value() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _value;
 }
 
@@ -67,7 +67,7 @@ get_value() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float PGWaitBar:: 
 get_percent() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return (_value / _range) * 100.0f;
 }
 
@@ -79,7 +79,7 @@ get_percent() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void PGWaitBar:: 
 set_bar_style(const PGFrameStyle &style) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _bar_style = style;
   _bar_state = -1;
 }
@@ -92,6 +92,6 @@ set_bar_style(const PGFrameStyle &style) {
 ////////////////////////////////////////////////////////////////////
 INLINE PGFrameStyle PGWaitBar:: 
 get_bar_style() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _bar_style;
 }

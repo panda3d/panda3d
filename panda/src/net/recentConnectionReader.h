@@ -19,7 +19,7 @@
 
 #include "connectionReader.h"
 #include "netDatagram.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RecentConnectionReader
@@ -48,7 +48,7 @@ protected:
 private:
   bool _available;
   Datagram _datagram;
-  Mutex _mutex;
+  LightMutex _mutex;
 };
 
 #endif

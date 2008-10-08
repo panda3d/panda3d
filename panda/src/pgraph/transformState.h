@@ -25,8 +25,8 @@
 #include "updateSeq.h"
 #include "pStatCollector.h"
 #include "geomEnums.h"
-#include "reMutex.h"
-#include "pmutex.h"
+#include "lightReMutex.h"
+#include "lightMutex.h"
 #include "config_pgraph.h"
 #include "deletedChain.h"
 #include "simpleHashMap.h"
@@ -233,7 +233,7 @@ private:
   // This mutex protects _states.  It also protects any modification
   // to the cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
-  static ReMutex *_states_lock;
+  static LightReMutex *_states_lock;
   typedef phash_set<const TransformState *, indirect_less_hash<const TransformState *> > States;
   static States *_states;
   static CPT(TransformState) _identity_state;
@@ -344,7 +344,7 @@ private:
   unsigned int _flags;
 
   // This mutex protects _flags, and all of the above computed values.
-  Mutex _lock;
+  LightMutex _lock;
 
   static CacheStats _cache_stats;
 

@@ -28,7 +28,7 @@
 template<class Thing>
 void QueuedReturn<Thing>::
 set_max_queue_size(int max_size) {
-  MutexHolder holder(_mutex);
+  LightMutexHolder holder(_mutex);
   _max_queue_size = max_size;
 }
 
@@ -52,7 +52,7 @@ get_max_queue_size() const {
 template<class Thing>
 int QueuedReturn<Thing>::
 get_current_queue_size() const {
-  MutexHolder holder(_mutex);
+  LightMutexHolder holder(_mutex);
   int size = _things.size();
   return size;
 }
@@ -134,7 +134,7 @@ thing_available() const {
 template<class Thing>
 bool QueuedReturn<Thing>::
 get_thing(Thing &result) {
-  MutexHolder holder(_mutex);
+  LightMutexHolder holder(_mutex);
   if (_things.empty()) {
     // Huh.  Nothing after all.
     _available = false;
@@ -157,7 +157,7 @@ get_thing(Thing &result) {
 template<class Thing>
 bool QueuedReturn<Thing>::
 enqueue_thing(const Thing &thing) {
-  MutexHolder holder(_mutex);
+  LightMutexHolder holder(_mutex);
   bool enqueue_ok = ((int)_things.size() < _max_queue_size);
   if (enqueue_ok) {
     _things.push_back(thing);
@@ -181,7 +181,7 @@ enqueue_thing(const Thing &thing) {
 template<class Thing>
 bool QueuedReturn<Thing>::
 enqueue_unique_thing(const Thing &thing) {
-  MutexHolder holder(_mutex);
+  LightMutexHolder holder(_mutex);
   bool enqueue_ok = ((int)_things.size() < _max_queue_size);
   if (enqueue_ok) {
     if (find(_things.begin(), _things.end(), thing) == _things.end()) {

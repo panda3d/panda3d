@@ -430,7 +430,7 @@ get_audio_volume() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void RenderState::
 determine_bin() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_determine_bin();
 }
 
@@ -441,7 +441,7 @@ determine_bin() {
 ////////////////////////////////////////////////////////////////////
 INLINE void RenderState::
 determine_transparency() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_determine_transparency();
 }
 

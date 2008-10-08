@@ -124,7 +124,7 @@ PGEntry(const PGEntry &copy) :
 ////////////////////////////////////////////////////////////////////
 PandaNode *PGEntry::
 make_copy() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return new PGEntry(*this);
 }
 
@@ -137,7 +137,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 xform(const LMatrix4f &mat) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGItem::xform(mat);
   _text_render_root.set_mat(_text_render_root.get_mat() * mat);
 }
@@ -169,7 +169,7 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 bool PGEntry::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGItem::cull_callback(trav, data);
   update_text();
   update_cursor();
@@ -191,7 +191,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 press(const MouseWatcherParameter &param, bool background) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (get_active()) {
     if (param.has_button()) {
       // Make sure _text is initialized properly.
@@ -300,7 +300,7 @@ press(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 keystroke(const MouseWatcherParameter &param, bool background) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (get_active()) {
     if (param.has_keycode()) {
       // Make sure _text is initialized properly.
@@ -407,7 +407,7 @@ keystroke(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 candidate(const MouseWatcherParameter &param, bool background) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (get_active()) {
     if (param.has_candidate()) {
       // Save the candidate string so it can be displayed.
@@ -432,7 +432,7 @@ candidate(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 accept(const MouseWatcherParameter &param) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_accept_event(param.get_button());
   play_sound(event);
@@ -448,7 +448,7 @@ accept(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 accept_failed(const MouseWatcherParameter &param) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_accept_failed_event(param.get_button());
   play_sound(event);
@@ -466,7 +466,7 @@ accept_failed(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 overflow(const MouseWatcherParameter &param) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_overflow_event();
   play_sound(event);
@@ -481,7 +481,7 @@ overflow(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 type(const MouseWatcherParameter &param) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_type_event();
   play_sound(event);
@@ -496,7 +496,7 @@ type(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 erase(const MouseWatcherParameter &param) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGMouseWatcherParameter *ep = new PGMouseWatcherParameter(param);
   string event = get_erase_event();
   play_sound(event);
@@ -514,7 +514,7 @@ erase(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 setup(float width, int num_lines) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   setup_minimal(width, num_lines);
 
   TextNode *text_node = get_text_def(S_focus);
@@ -582,7 +582,7 @@ setup(float width, int num_lines) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 setup_minimal(float width, int num_lines) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   set_text(string());
   _cursor_position = 0;
   set_max_chars(0);
@@ -621,7 +621,7 @@ setup_minimal(float width, int num_lines) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry::
 set_text_def(int state, TextNode *node) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   nassertv(state >= 0 && state < 1000);  // Sanity check.
   if (node == (TextNode *)NULL && state >= (int)_text_defs.size()) {
     // If we're setting it to NULL, we don't need to slot a new one.
@@ -641,7 +641,7 @@ set_text_def(int state, TextNode *node) {
 ////////////////////////////////////////////////////////////////////
 TextNode *PGEntry:: 
 get_text_def(int state) const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (state < 0 || state >= (int)_text_defs.size()) {
     // If we don't have a definition, use the global one.
     return get_text_node();
@@ -661,7 +661,7 @@ get_text_def(int state) const {
 ////////////////////////////////////////////////////////////////////
 void PGEntry:: 
 set_active(bool active) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGItem::set_active(active);
   update_state();
 }
@@ -674,7 +674,7 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 void PGEntry:: 
 set_focus(bool focus) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGItem::set_focus(focus);
   _blink_start = ClockObject::get_global_clock()->get_frame_time();
   update_state();
@@ -690,7 +690,7 @@ set_focus(bool focus) {
 ////////////////////////////////////////////////////////////////////
 bool PGEntry:: 
 is_wtext() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   for (int i = 0; i < _text.get_num_characters(); ++i) {
     wchar_t ch = _text.get_character(i);
     if ((ch & ~0x7f) != 0) {

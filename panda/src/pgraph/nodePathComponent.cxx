@@ -13,12 +13,12 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "nodePathComponent.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 // We start the key counters off at 1, since 0 is reserved for an
 // empty NodePath (and also for an unassigned key).
 int NodePathComponent::_next_key = 1;
-Mutex NodePathComponent::_key_lock("NodePathComponent::_key_lock");
+LightMutex NodePathComponent::_key_lock("NodePathComponent::_key_lock");
 TypeHandle NodePathComponent::_type_handle;
 TypeHandle NodePathComponent::CData::_type_handle;
 
@@ -72,7 +72,7 @@ NodePathComponent(PandaNode *node, NodePathComponent *next,
 ////////////////////////////////////////////////////////////////////
 int NodePathComponent::
 get_key() const {
-  MutexHolder holder(_key_lock);
+  LightMutexHolder holder(_key_lock);
   if (_key == 0) {
     // The first time someone asks for a particular component's key,
     // we make it up on the spot.  This helps keep us from wasting

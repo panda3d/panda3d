@@ -25,8 +25,8 @@
 
 #include "pdeque.h"
 #include "pvector.h"
-#include "pmutex.h"
-#include "mutexHolder.h"
+#include "lightMutex.h"
+#include "lightMutexHolder.h"
 
 
 ////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ private:
   };
   typedef pdeque<ButtonEvent> ButtonEvents;
 
-  Mutex _lock;
+  LightMutex _lock;
   
   GraphicsWindow *_host;
   

@@ -18,7 +18,7 @@
 #include "pandabase.h"
 #include "nodePath.h"
 #include "ordered_vector.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : AttribNodeRegistry
@@ -76,7 +76,7 @@ private:
   typedef ov_set<Entry> Entries;
   Entries _entries;
 
-  Mutex _lock;
+  LightMutex _lock;
 
   static AttribNodeRegistry * TVOLATILE _global_ptr;
 };

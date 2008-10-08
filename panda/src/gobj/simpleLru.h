@@ -18,8 +18,8 @@
 #include "pandabase.h"
 #include "linkedListNode.h"
 #include "namable.h"
-#include "pmutex.h"
-#include "mutexHolder.h"
+#include "lightMutex.h"
+#include "lightMutexHolder.h"
 
 class SimpleLruPage;
 
@@ -48,7 +48,7 @@ PUBLISHED:
   void write(ostream &out, int indent_level) const;
 
 public:
-  static Mutex &_global_lock;
+  static LightMutex &_global_lock;
 
 private:
   void do_evict_to(size_t target_size, bool hard_evict);

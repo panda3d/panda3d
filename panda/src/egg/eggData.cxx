@@ -24,7 +24,7 @@
 #include "string_utils.h"
 #include "dSearchPath.h"
 #include "virtualFileSystem.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include "zStream.h"
 
 extern int eggyyparse();
@@ -122,7 +122,7 @@ read(istream &in) {
 
   int error_count;
   {
-    MutexHolder holder(egg_lock);
+    LightMutexHolder holder(egg_lock);
     egg_init_parser(in, get_egg_filename(), data, data);
     eggyyparse();
     egg_cleanup_parser();

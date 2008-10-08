@@ -713,18 +713,6 @@
 // overhead over plain single-threaded code.
 #define SIMPLE_THREADS
 
-// If you are using SIMPLE_THREADS, you might further wish to disable
-// mutexes altogether.  In this mode, mutexes are compiled out (they
-// become a no-op), and the only context switches happen at explicit
-// calls to Thread::force_yield(), consider_yield(), and sleep(), as
-// well as calls to ConditionVar::wait(), and certain I/O operations.
-// This gives you control over when the context switch happens, and
-// may make mutexes unnecessary, if you are somewhat careful in your
-// code design.  Disabling mutexes saves a tiny bit of runtime and
-// memory overhead.  NOT RECOMMENDED!  Many internal Panda functions
-// aren't quite secure enough to enable this mode for now.
-#define SIMPLE_THREADS_NO_MUTEX
-
 // Whether threading is defined or not, you might want to validate the
 // thread and synchronization operations.  With threading enabled,
 // defining this will also enable deadlock detection and logging.

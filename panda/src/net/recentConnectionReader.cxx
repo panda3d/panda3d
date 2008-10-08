@@ -14,7 +14,7 @@
 
 #include "recentConnectionReader.h"
 #include "config_net.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RecentConnectionReader::Constructor
@@ -70,7 +70,7 @@ data_available() {
 ////////////////////////////////////////////////////////////////////
 bool RecentConnectionReader::
 get_data(NetDatagram &result) {
-  MutexHolder holder(_mutex);
+  LightMutexHolder holder(_mutex);
   if (!_available) {
     // Huh.  Nothing after all.
     return false;
@@ -117,7 +117,7 @@ receive_datagram(const NetDatagram &datagram) {
       << " bytes\n";
   }
 
-  MutexHolder holder(_mutex);
+  LightMutexHolder holder(_mutex);
   _datagram = datagram;
   _available = true;
 }

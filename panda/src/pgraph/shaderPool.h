@@ -18,7 +18,7 @@
 #include "pandabase.h"
 #include "shader.h"
 #include "filename.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ private:
   static ShaderPool *get_ptr();
   static ShaderPool *_global_ptr;
 
-  Mutex _lock;
+  LightMutex _lock;
   typedef pmap<string,  CPT(Shader) > Shaders;
   Shaders _shaders;
 };

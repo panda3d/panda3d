@@ -18,7 +18,7 @@
 #include "connectionWriter.h"
 #include "netAddress.h"
 #include "config_net.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include "trueClock.h"
 
 #ifdef WIN32_VC
@@ -238,7 +238,7 @@ close_connection(const PT(Connection) &connection) {
   }
 
   {
-    MutexHolder holder(_set_mutex);
+    LightMutexHolder holder(_set_mutex);
     Connections::iterator ci = _connections.find(connection);
     if (ci == _connections.end()) {
       // Already closed, or not part of this ConnectionManager.
@@ -295,7 +295,7 @@ get_host_name() {
 ////////////////////////////////////////////////////////////////////
 void ConnectionManager::
 new_connection(const PT(Connection) &connection) {
-  MutexHolder holder(_set_mutex);
+  LightMutexHolder holder(_set_mutex);
   _connections.insert(connection);
 }
 
@@ -338,7 +338,7 @@ connection_reset(const PT(Connection) &connection, bool okflag) {
 ////////////////////////////////////////////////////////////////////
 void ConnectionManager::
 add_reader(ConnectionReader *reader) {
-  MutexHolder holder(_set_mutex);
+  LightMutexHolder holder(_set_mutex);
   _readers.insert(reader);
 }
 
@@ -350,7 +350,7 @@ add_reader(ConnectionReader *reader) {
 ////////////////////////////////////////////////////////////////////
 void ConnectionManager::
 remove_reader(ConnectionReader *reader) {
-  MutexHolder holder(_set_mutex);
+  LightMutexHolder holder(_set_mutex);
   _readers.erase(reader);
 }
 
@@ -362,7 +362,7 @@ remove_reader(ConnectionReader *reader) {
 ////////////////////////////////////////////////////////////////////
 void ConnectionManager::
 add_writer(ConnectionWriter *writer) {
-  MutexHolder holder(_set_mutex);
+  LightMutexHolder holder(_set_mutex);
   _writers.insert(writer);
 }
 
@@ -374,6 +374,6 @@ add_writer(ConnectionWriter *writer) {
 ////////////////////////////////////////////////////////////////////
 void ConnectionManager::
 remove_writer(ConnectionWriter *writer) {
-  MutexHolder holder(_set_mutex);
+  LightMutexHolder holder(_set_mutex);
   _writers.erase(writer);
 }

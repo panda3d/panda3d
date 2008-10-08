@@ -15,8 +15,8 @@
 #include "geomMunger.h"
 #include "geom.h"
 #include "geomCacheManager.h"
-#include "mutexHolder.h"
-#include "reMutexHolder.h"
+#include "lightMutexHolder.h"
+#include "lightReMutexHolder.h"
 #include "pStatTimer.h"
 
 GeomMunger::Registry *GeomMunger::_registry = NULL;
@@ -36,7 +36,7 @@ GeomMunger(GraphicsStateGuardianBase *gsg) :
 {
 #ifndef NDEBUG
   Registry *registry = get_registry();
-  ReMutexHolder holder(registry->_registry_lock);
+  LightReMutexHolder holder(registry->_registry_lock);
   _registered_key = registry->_mungers.end();
 #endif
 }
@@ -52,7 +52,7 @@ GeomMunger(const GeomMunger &copy) :
 {
 #ifndef NDEBUG
   Registry *registry = get_registry();
-  ReMutexHolder holder(registry->_registry_lock);
+  LightReMutexHolder holder(registry->_registry_lock);
   _registered_key = registry->_mungers.end();
 #endif
 }
@@ -168,7 +168,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
     // Create a new entry for the result.
     entry = new Geom::CacheEntry(orig_geom, source_data, this);
     {
-      MutexHolder holder(orig_geom->_cache_lock);
+      LightMutexHolder holder(orig_geom->_cache_lock);
       bool inserted = orig_geom->_cache.insert(Geom::Cache::value_type(&entry->_key, entry)).second;
       if (!inserted) {
         // Some other thread must have beat us to the punch.  Never
@@ -203,7 +203,7 @@ do_munge_format(const GeomVertexFormat *format,
   nassertr(_is_registered, NULL);
   nassertr(format->is_registered(), NULL);
 
-  MutexHolder holder(_formats_lock);
+  LightMutexHolder holder(_formats_lock);
 
   Formats &formats = _formats_by_animation[animation];
 
@@ -281,7 +281,7 @@ do_premunge_format(const GeomVertexFormat *format) {
   nassertr(_is_registered, NULL);
   nassertr(format->is_registered(), NULL);
 
-  MutexHolder holder(_formats_lock);
+  LightMutexHolder holder(_formats_lock);
 
   Formats::iterator fi;
   fi = _premunge_formats.find(format);
@@ -472,7 +472,7 @@ register_munger(GeomMunger *munger, Thread *current_thread) {
   // will be automatically deleted when this function returns.
   PT(GeomMunger) pt_munger = munger;
 
-  ReMutexHolder holder(_registry_lock);
+  LightReMutexHolder holder(_registry_lock);
 
   Mungers::iterator mi = _mungers.insert(munger).first;
   GeomMunger *new_munger = (*mi);
@@ -493,7 +493,7 @@ register_munger(GeomMunger *munger, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GeomMunger::Registry::
 unregister_munger(GeomMunger *munger) {
-  ReMutexHolder holder(_registry_lock);
+  LightReMutexHolder holder(_registry_lock);
 
   nassertv(munger->is_registered());
   nassertv(munger->_registered_key != _mungers.end());
@@ -510,7 +510,7 @@ unregister_munger(GeomMunger *munger) {
 ////////////////////////////////////////////////////////////////////
 void GeomMunger::Registry::
 unregister_mungers_for_gsg(GraphicsStateGuardianBase *gsg) {
-  ReMutexHolder holder(_registry_lock);
+  LightReMutexHolder holder(_registry_lock);
 
   Mungers::iterator mi = _mungers.begin();
   while (mi != _mungers.end()) {

@@ -21,7 +21,7 @@
 #include "trueClock.h"
 #include "socket_udp.h"
 #include "socket_tcp.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include "pnotify.h"
 #include "atomicAdjust.h"
 
@@ -187,7 +187,7 @@ bool ConnectionReader::
 add_connection(Connection *connection) {
   nassertr(connection != (Connection *)NULL, false);
 
-  MutexHolder holder(_sockets_mutex);
+  LightMutexHolder holder(_sockets_mutex);
 
   // Make sure it's not already on the _sockets list.
   Sockets::const_iterator si;
@@ -216,7 +216,7 @@ add_connection(Connection *connection) {
 ////////////////////////////////////////////////////////////////////
 bool ConnectionReader::
 remove_connection(Connection *connection) {
-  MutexHolder holder(_sockets_mutex);
+  LightMutexHolder holder(_sockets_mutex);
 
   // Walk through the list of sockets to find the one we're removing.
   Sockets::iterator si;
@@ -247,7 +247,7 @@ remove_connection(Connection *connection) {
 ////////////////////////////////////////////////////////////////////
 bool ConnectionReader::
 is_connection_ok(Connection *connection) {
-  MutexHolder holder(_sockets_mutex);
+  LightMutexHolder holder(_sockets_mutex);
 
   // Walk through the list of sockets to find the one we're asking
   // about.
@@ -784,7 +784,7 @@ ConnectionReader::SocketInfo *ConnectionReader::
 get_next_available_socket(bool allow_block, int current_thread_index) {
   // Go to sleep on the select() mutex.  This guarantees that only one
   // thread is in this function at a time.
-  MutexHolder holder(_select_mutex);
+  LightMutexHolder holder(_select_mutex);
 
   do {
     // First, check the result from the previous select call.  If
@@ -865,7 +865,7 @@ rebuild_select_list() {
   _fdset.clear();
   _selecting_sockets.clear();
 
-  MutexHolder holder(_sockets_mutex);
+  LightMutexHolder holder(_sockets_mutex);
   Sockets::const_iterator si;
   for (si = _sockets.begin(); si != _sockets.end(); ++si) {
     SocketInfo *sinfo = (*si);

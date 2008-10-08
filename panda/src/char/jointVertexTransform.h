@@ -19,7 +19,7 @@
 #include "characterJoint.h"
 #include "vertexTransform.h"
 #include "pointerTo.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : JointVertexTransform
@@ -59,7 +59,7 @@ private:
 
   LMatrix4f _matrix;
   bool _matrix_stale;
-  Mutex _lock;
+  LightMutex _lock;
 
 public:
   static void register_with_read_factory();

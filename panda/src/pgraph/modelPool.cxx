@@ -15,7 +15,7 @@
 #include "modelPool.h"
 #include "loader.h"
 #include "config_pgraph.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 
 ModelPool *ModelPool::_global_ptr = (ModelPool *)NULL;
@@ -39,7 +39,7 @@ write(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 bool ModelPool::
 ns_has_model(const string &filename) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   Models::const_iterator ti;
   ti = _models.find(filename);
   if (ti != _models.end() && (*ti).second != (ModelRoot *)NULL) {
@@ -58,7 +58,7 @@ ns_has_model(const string &filename) {
 ModelRoot *ModelPool::
 ns_load_model(const string &filename, const LoaderOptions &options) {
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
     Models::const_iterator ti;
     ti = _models.find(filename);
     if (ti != _models.end()) {
@@ -91,7 +91,7 @@ ns_load_model(const string &filename, const LoaderOptions &options) {
   }
 
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
 
     // Look again, in case someone has just loaded the model in
     // another thread.
@@ -115,7 +115,7 @@ ns_load_model(const string &filename, const LoaderOptions &options) {
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
 ns_add_model(const string &filename, ModelRoot *model) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   // We blow away whatever model was there previously, if any.
   _models[filename] = model;
 }
@@ -127,7 +127,7 @@ ns_add_model(const string &filename, ModelRoot *model) {
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
 ns_release_model(const string &filename) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   Models::iterator ti;
   ti = _models.find(filename);
   if (ti != _models.end()) {
@@ -142,7 +142,7 @@ ns_release_model(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
 ns_add_model(ModelRoot *model) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   // We blow away whatever model was there previously, if any.
   _models[model->get_fullpath()] = model;
 }
@@ -154,7 +154,7 @@ ns_add_model(ModelRoot *model) {
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
 ns_release_model(ModelRoot *model) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   Models::iterator ti;
   ti = _models.find(model->get_fullpath());
   if (ti != _models.end()) {
@@ -169,7 +169,7 @@ ns_release_model(ModelRoot *model) {
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
 ns_release_all_models() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _models.clear();
 }
 
@@ -180,7 +180,7 @@ ns_release_all_models() {
 ////////////////////////////////////////////////////////////////////
 int ModelPool::
 ns_garbage_collect() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   int num_released = 0;
   Models new_set;
@@ -211,7 +211,7 @@ ns_garbage_collect() {
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
 ns_list_contents(ostream &out) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   out << "model pool contents:\n";
   

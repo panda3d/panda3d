@@ -19,7 +19,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsWindowInputDevice::
 GraphicsWindowInputDevice() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _flags = 0;
 }
 
@@ -30,7 +30,7 @@ GraphicsWindowInputDevice() {
 ////////////////////////////////////////////////////////////////////
 INLINE string GraphicsWindowInputDevice::
 get_name() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return _name;
 }
 
@@ -41,7 +41,7 @@ get_name() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsWindowInputDevice::
 has_pointer() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return ((_flags & IDF_has_pointer) != 0);
 }
 
@@ -52,7 +52,7 @@ has_pointer() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsWindowInputDevice::
 has_keyboard() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return ((_flags & IDF_has_keyboard) != 0);
 }
 
@@ -64,7 +64,7 @@ has_keyboard() const {
 ////////////////////////////////////////////////////////////////////
 INLINE  MouseData GraphicsWindowInputDevice::
 get_pointer() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return _mouse_data;
 }
 
@@ -77,7 +77,7 @@ get_pointer() const {
 ////////////////////////////////////////////////////////////////////
 INLINE  MouseData GraphicsWindowInputDevice::
 get_raw_pointer() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return _true_mouse_data;
 }
 
@@ -90,7 +90,7 @@ get_raw_pointer() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsWindowInputDevice::
 set_device_index(int index) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _device_index = index;
 }
 
@@ -101,7 +101,7 @@ set_device_index(int index) {
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsWindowInputDevice::
 enable_pointer_events() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _enable_pointer_events = true;
 }
 
@@ -112,7 +112,7 @@ enable_pointer_events() {
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsWindowInputDevice::
 disable_pointer_events() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _enable_pointer_events = false;
   _pointer_events.clear();
 }

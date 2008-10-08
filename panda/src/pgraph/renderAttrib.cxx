@@ -17,9 +17,9 @@
 #include "bamReader.h"
 #include "indent.h"
 #include "config_pgraph.h"
-#include "reMutexHolder.h"
+#include "lightReMutexHolder.h"
 
-ReMutex *RenderAttrib::_attribs_lock = NULL;
+LightReMutex *RenderAttrib::_attribs_lock = NULL;
 RenderAttrib::Attribs *RenderAttrib::_attribs = NULL;
 TypeHandle RenderAttrib::_type_handle;
 
@@ -66,7 +66,7 @@ operator = (const RenderAttrib &) {
 ////////////////////////////////////////////////////////////////////
 RenderAttrib::
 ~RenderAttrib() {
-  ReMutexHolder holder(*_attribs_lock);
+  LightReMutexHolder holder(*_attribs_lock);
 
   // unref() should have cleared this.
   nassertv(_saved_entry == _attribs->end());
@@ -147,7 +147,7 @@ bool RenderAttrib::
 unref() const {
   // We always have to grab the lock, since we will definitely need to
   // be holding it if we happen to drop the reference count to 0.
-  ReMutexHolder holder(*_attribs_lock);
+  LightReMutexHolder holder(*_attribs_lock);
 
   if (ReferenceCount::unref()) {
     // The reference count is still nonzero.
@@ -191,7 +191,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 int RenderAttrib::
 get_num_attribs() {
-  ReMutexHolder holder(*_attribs_lock);
+  LightReMutexHolder holder(*_attribs_lock);
 
   if (_attribs == (Attribs *)NULL) {
     return 0;
@@ -208,7 +208,7 @@ get_num_attribs() {
 ////////////////////////////////////////////////////////////////////
 void RenderAttrib::
 list_attribs(ostream &out) {
-  ReMutexHolder holder(*_attribs_lock);
+  LightReMutexHolder holder(*_attribs_lock);
 
   out << _attribs->size() << " attribs:\n";
   Attribs::const_iterator si;
@@ -228,7 +228,7 @@ list_attribs(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 bool RenderAttrib::
 validate_attribs() {
-  ReMutexHolder holder(*_attribs_lock);
+  LightReMutexHolder holder(*_attribs_lock);
 
   if (_attribs->empty()) {
     return true;
@@ -274,7 +274,7 @@ return_new(RenderAttrib *attrib) {
     return attrib;
   }
 
-  ReMutexHolder holder(*_attribs_lock);
+  LightReMutexHolder holder(*_attribs_lock);
 
   // This should be a newly allocated pointer, not one that was used
   // for anything else.
@@ -496,7 +496,7 @@ init_attribs() {
   // meantime, this is OK because we guarantee that this method is
   // called at static init time, presumably when there is still only
   // one thread in the world.
-  _attribs_lock = new ReMutex("RenderAttrib::_attribs_lock");
+  _attribs_lock = new LightReMutex("RenderAttrib::_attribs_lock");
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 }
 

@@ -20,8 +20,8 @@
 
 #include "mss.h"
 #include "pset.h"
-#include "pmutex.h"
-#include "mutexHolder.h"
+#include "lightMutex.h"
+#include "lightMutexHolder.h"
 
 #ifndef UINTa
 #define UINTa U32
@@ -86,7 +86,7 @@ private:
 
   typedef pset<MilesAudioManager *> Managers;
   Managers _managers;
-  Mutex _managers_lock;
+  LightMutex _managers_lock;
 
   class SampleData {
   public:
@@ -96,7 +96,7 @@ private:
 
   typedef pvector<SampleData> Samples;
   Samples _samples;
-  Mutex _samples_lock;
+  LightMutex _samples_lock;
 
   class SequenceData {
   public:
@@ -106,7 +106,7 @@ private:
 
   typedef pvector<SequenceData> Sequences;
   Sequences _sequences;
-  Mutex _sequences_lock;
+  LightMutex _sequences_lock;
   
   static GlobalMilesManager *_global_ptr;
 };

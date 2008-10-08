@@ -20,10 +20,10 @@
 #include "pStatFrameData.h"
 #include "pStatClientImpl.h"
 #include "pStatCollectorDef.h"
-#include "reMutex.h"
-#include "pmutex.h"
-#include "reMutexHolder.h"
-#include "mutexHolder.h"
+#include "lightReMutex.h"
+#include "lightMutex.h"
+#include "lightReMutexHolder.h"
+#include "lightMutexHolder.h"
 #include "pmap.h"
 #include "thread.h"
 #include "weakPointerTo.h"
@@ -142,7 +142,7 @@ private:
 
 private:
   // This mutex protects everything in this class.
-  ReMutex _lock;
+  LightReMutex _lock;
 
   typedef pmap<string, int> ThingsByName;
   typedef pmap<string, vector_int> MultiThingsByName;
@@ -214,7 +214,7 @@ private:
     // This mutex is used to protect writes to _frame_data for this
     // particular thread, as well as writes to the _per_thread data
     // for this particular thread in the Collector class, above.
-    Mutex _thread_lock;
+    LightMutex _thread_lock;
   };
   typedef InternalThread *ThreadPointer;
   void *_threads;  // ThreadPointer *_threads;

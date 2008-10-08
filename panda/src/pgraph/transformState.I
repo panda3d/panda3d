@@ -781,7 +781,7 @@ node_unref() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int TransformState::
 get_composition_cache_num_entries() const {
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   return _composition_cache.get_num_entries();
 }
 
@@ -796,7 +796,7 @@ get_composition_cache_num_entries() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int TransformState::
 get_invert_composition_cache_num_entries() const {
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   return _invert_composition_cache.get_num_entries();
 }
 
@@ -814,7 +814,7 @@ get_invert_composition_cache_num_entries() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int TransformState::
 get_composition_cache_size() const {
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   return _composition_cache.get_size();
 }
 
@@ -831,7 +831,7 @@ get_composition_cache_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *TransformState::
 get_composition_cache_source(int n) const {
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   if (!_composition_cache.has_element(n)) {
     return NULL;
   }
@@ -854,7 +854,7 @@ get_composition_cache_source(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *TransformState::
 get_composition_cache_result(int n) const {
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   if (!_composition_cache.has_element(n)) {
     return NULL;
   }
@@ -875,7 +875,7 @@ get_composition_cache_result(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int TransformState::
 get_invert_composition_cache_size() const {
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   return _invert_composition_cache.get_size();
 }
 
@@ -892,7 +892,7 @@ get_invert_composition_cache_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *TransformState::
 get_invert_composition_cache_source(int n) const {
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   if (!_invert_composition_cache.has_element(n)) {
     return NULL;
   }
@@ -915,7 +915,7 @@ get_invert_composition_cache_source(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE const TransformState *TransformState::
 get_invert_composition_cache_result(int n) const {
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   if (!_invert_composition_cache.has_element(n)) {
     return NULL;
   }
@@ -1067,7 +1067,7 @@ check_mat() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformState::
 calc_hash() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_calc_hash();
 }
 
@@ -1078,7 +1078,7 @@ calc_hash() {
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformState::
 calc_components() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_calc_components();
 }
 
@@ -1090,7 +1090,7 @@ calc_components() {
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformState::
 calc_hpr() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_calc_hpr();
 }
 
@@ -1101,7 +1101,7 @@ calc_hpr() {
 ////////////////////////////////////////////////////////////////////
 INLINE void TransformState::
 calc_mat() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_calc_mat();
 }
 

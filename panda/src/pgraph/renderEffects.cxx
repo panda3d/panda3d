@@ -24,11 +24,11 @@
 #include "datagramIterator.h"
 #include "indent.h"
 #include "compareTo.h"
-#include "reMutexHolder.h"
-#include "mutexHolder.h"
+#include "lightReMutexHolder.h"
+#include "lightMutexHolder.h"
 #include "thread.h"
   
-ReMutex *RenderEffects::_states_lock = NULL;
+LightReMutex *RenderEffects::_states_lock = NULL;
 RenderEffects::States *RenderEffects::_states = NULL;
 CPT(RenderEffects) RenderEffects::_empty_state;
 TypeHandle RenderEffects::_type_handle;
@@ -78,7 +78,7 @@ operator = (const RenderEffects &) {
 RenderEffects::
 ~RenderEffects() {
   // Remove the deleted RenderEffects object from the global pool.
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // unref() should have cleared this.
   nassertv(_saved_entry == _states->end());
@@ -399,7 +399,7 @@ get_effect(TypeHandle type) const {
 ////////////////////////////////////////////////////////////////////
 bool RenderEffects::
 unref() const {
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   if (ReferenceCount::unref()) {
     // The reference count is still nonzero.
@@ -464,7 +464,7 @@ get_num_states() {
   if (_states == (States *)NULL) {
     return 0;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
   return _states->size();
 }
 
@@ -498,7 +498,7 @@ validate_states() {
   if (_states->empty()) {
     return true;
   }
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   States::const_iterator si = _states->begin();
   States::const_iterator snext = si;
@@ -587,7 +587,7 @@ init_states() {
   // meantime, this is OK because we guarantee that this method is
   // called at static init time, presumably when there is still only
   // one thread in the world.
-  _states_lock = new ReMutex("RenderEffects::_states_lock");
+  _states_lock = new LightReMutex("RenderEffects::_states_lock");
   nassertv(Thread::get_current_thread() == Thread::get_main_thread());
 }
   
@@ -620,7 +620,7 @@ return_new(RenderEffects *state) {
   }
 #endif
 
-  ReMutexHolder holder(*_states_lock);
+  LightReMutexHolder holder(*_states_lock);
 
   // This should be a newly allocated pointer, not one that was used
   // for anything else.
@@ -671,7 +671,7 @@ release_new() {
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
 determine_decal() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_decal) != 0) {
     // Someone else checked it first.
     return;
@@ -691,7 +691,7 @@ determine_decal() {
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
 determine_show_bounds() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_show_bounds) != 0) {
     // Someone else checked it first.
     return;
@@ -715,7 +715,7 @@ determine_show_bounds() {
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
 determine_cull_callback() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_cull_callback) != 0) {
     // Someone else checked it first.
     return;
@@ -739,7 +739,7 @@ determine_cull_callback() {
 ////////////////////////////////////////////////////////////////////
 void RenderEffects::
 determine_adjust_transform() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if ((_flags & F_checked_adjust_transform) != 0) {
     // Someone else checked it first.
     return;

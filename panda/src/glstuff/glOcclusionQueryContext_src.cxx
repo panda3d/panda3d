@@ -14,7 +14,7 @@
 
 #include "pnotify.h"
 #include "dcast.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include "pStatTimer.h"
 
 TypeHandle CLP(OcclusionQueryContext)::_type_handle;
@@ -30,7 +30,7 @@ CLP(OcclusionQueryContext)::
     // Tell the GSG to recycle this index when it gets around to it.
     CLP(GraphicsStateGuardian) *glgsg;
     DCAST_INTO_V(glgsg, _gsg);
-    MutexHolder holder(glgsg->_lock);
+    LightMutexHolder holder(glgsg->_lock);
     glgsg->_deleted_queries.push_back(_index);
 
     _index = 0;

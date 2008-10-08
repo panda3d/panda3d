@@ -14,9 +14,9 @@
 
 #include "typedWritable.h"
 #include "bamWriter.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
-Mutex TypedWritable::_bam_writers_lock;
+LightMutex TypedWritable::_bam_writers_lock;
 
 TypeHandle TypedWritable::_type_handle;
 TypedWritable* const TypedWritable::Null = (TypedWritable*)0L;
@@ -32,7 +32,7 @@ TypedWritable::
   if (_bam_writers != (BamWriters *)NULL) {
     BamWriters temp;
     {
-      MutexHolder holder(_bam_writers_lock);
+      LightMutexHolder holder(_bam_writers_lock);
       _bam_writers->swap(temp);
       delete _bam_writers;
       _bam_writers = NULL;

@@ -24,7 +24,7 @@
 #include "texturePoolFilter.h"
 #include "configVariableList.h"
 #include "load_dso.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 TexturePool *TexturePool::_global_ptr;
 
@@ -51,7 +51,7 @@ write(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 register_texture_type(MakeTextureFunc *func, const string &extensions) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   vector_string words;
   extract_words(downcase(extensions), words);
@@ -70,7 +70,7 @@ register_texture_type(MakeTextureFunc *func, const string &extensions) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 register_filter(TexturePoolFilter *filter) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   gobj_cat.info()
     << "Registering Texture filter " << *filter << "\n";
@@ -87,7 +87,7 @@ register_filter(TexturePoolFilter *filter) {
 ////////////////////////////////////////////////////////////////////
 TexturePool::MakeTextureFunc *TexturePool::
 get_texture_type(const string &extension) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   string c = downcase(extension);
   TypeRegistry::const_iterator ti;
@@ -139,7 +139,7 @@ make_texture(const string &extension) const {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 write_texture_types(ostream &out, int indent_level) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   PNMFileTypeRegistry *pnm_reg = PNMFileTypeRegistry::get_global_ptr();
   pnm_reg->write(out, indent_level);
@@ -206,7 +206,7 @@ TexturePool() {
 ////////////////////////////////////////////////////////////////////
 bool TexturePool::
 ns_has_texture(const Filename &orig_filename) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   Filename filename(orig_filename);
 
@@ -247,7 +247,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
     vfs->resolve_filename(filename, get_model_path());
 
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
     Textures::const_iterator ti;
     ti = _textures.find(filename);
     if (ti != _textures.end()) {
@@ -312,7 +312,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   tex->_texture_pool_key = filename;
 
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
 
     // Now look again--someone may have just loaded this texture in
     // another thread.
@@ -375,7 +375,7 @@ ns_load_texture(const Filename &orig_filename,
     vfs->resolve_filename(alpha_filename, get_model_path());
 
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
 
     Textures::const_iterator ti;
     ti = _textures.find(filename);
@@ -444,7 +444,7 @@ ns_load_texture(const Filename &orig_filename,
   tex->_texture_pool_key = filename;
 
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
 
     // Now look again.
     Textures::const_iterator ti;
@@ -494,7 +494,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
     vfs->resolve_filename(filename, get_model_path());
 
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
 
     Textures::const_iterator ti;
     ti = _textures.find(filename);
@@ -549,7 +549,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
   tex->_texture_pool_key = filename;
 
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
 
     // Now look again.
     Textures::const_iterator ti;
@@ -588,7 +588,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
     vfs->resolve_filename(filename, get_model_path());
 
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
 
     Textures::const_iterator ti;
     ti = _textures.find(filename);
@@ -643,7 +643,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   tex->_texture_pool_key = filename;
 
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
 
     // Now look again.
     Textures::const_iterator ti;
@@ -673,7 +673,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_get_normalization_cube_map(int size) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   if (_normalization_cube_map == (Texture *)NULL) {
     _normalization_cube_map = new Texture("normalization_cube_map");
@@ -693,7 +693,7 @@ ns_get_normalization_cube_map(int size) {
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_get_alpha_scale_map() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   if (_alpha_scale_map == (Texture *)NULL) {
     _alpha_scale_map = new Texture("alpha_scale_map");
@@ -711,7 +711,7 @@ ns_get_alpha_scale_map() {
 void TexturePool::
 ns_add_texture(Texture *tex) {
   PT(Texture) keep = tex;
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   if (!tex->_texture_pool_key.empty()) {
     ns_release_texture(tex);
@@ -734,7 +734,7 @@ ns_add_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_release_texture(Texture *tex) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   if (!tex->_texture_pool_key.empty()) {
     Textures::iterator ti;
@@ -753,7 +753,7 @@ ns_release_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_release_all_textures() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
@@ -772,7 +772,7 @@ ns_release_all_textures() {
 ////////////////////////////////////////////////////////////////////
 int TexturePool::
 ns_garbage_collect() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   int num_released = 0;
   Textures new_set;
@@ -814,7 +814,7 @@ ns_garbage_collect() {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_list_contents(ostream &out) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   int total_size;
   int total_ram_size;
@@ -985,7 +985,7 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
          bool read_mipmaps, const LoaderOptions &options) {
   PT(Texture) tex;
 
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   FilterRegistry::iterator fi;
   for (fi = _filter_registry.begin();
@@ -1011,7 +1011,7 @@ PT(Texture) TexturePool::
 post_load(Texture *tex) {
   PT(Texture) result = tex;
 
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   FilterRegistry::iterator fi;
   for (fi = _filter_registry.begin();

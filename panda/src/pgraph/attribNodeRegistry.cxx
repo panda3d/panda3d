@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "attribNodeRegistry.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 AttribNodeRegistry * TVOLATILE AttribNodeRegistry::_global_ptr;
 
@@ -46,7 +46,7 @@ AttribNodeRegistry() {
 void AttribNodeRegistry::
 add_node(const NodePath &attrib_node) {
   nassertv(!attrib_node.is_empty());
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   pair<Entries::iterator, bool> result = _entries.insert(Entry(attrib_node));
   if (!result.second) {
@@ -70,7 +70,7 @@ add_node(const NodePath &attrib_node) {
 bool AttribNodeRegistry::
 remove_node(const NodePath &attrib_node) {
   nassertr(!attrib_node.is_empty(), false);
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   Entries::iterator ei = _entries.find(Entry(attrib_node));
   if (ei != _entries.end()) {
     _entries.erase(ei);
@@ -91,7 +91,7 @@ NodePath AttribNodeRegistry::
 lookup_node(const NodePath &orig_node) const {
   nassertr(!orig_node.is_empty(), orig_node);
 
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   Entries::const_iterator ei = _entries.find(Entry(orig_node));
   if (ei != _entries.end()) {
     return (*ei)._node;
@@ -106,7 +106,7 @@ lookup_node(const NodePath &orig_node) const {
 ////////////////////////////////////////////////////////////////////
 int AttribNodeRegistry::
 get_num_nodes() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return _entries.size();
 }
 
@@ -117,7 +117,7 @@ get_num_nodes() const {
 ////////////////////////////////////////////////////////////////////
 NodePath AttribNodeRegistry::
 get_node(int n) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   nassertr(n >= 0 && n < (int)_entries.size(), NodePath());
   return _entries[n]._node;
 }
@@ -130,7 +130,7 @@ get_node(int n) const {
 ////////////////////////////////////////////////////////////////////
 TypeHandle AttribNodeRegistry::
 get_node_type(int n) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   nassertr(n >= 0 && n < (int)_entries.size(), TypeHandle::none());
   return _entries[n]._type;
 }
@@ -146,7 +146,7 @@ get_node_type(int n) const {
 ////////////////////////////////////////////////////////////////////
 string AttribNodeRegistry::
 get_node_name(int n) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   nassertr(n >= 0 && n < (int)_entries.size(), string());
   return _entries[n]._name;
 }
@@ -163,7 +163,7 @@ get_node_name(int n) const {
 int AttribNodeRegistry::
 find_node(const NodePath &attrib_node) const {
   nassertr(!attrib_node.is_empty(), -1);
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   Entries::const_iterator ei = _entries.find(Entry(attrib_node));
   if (ei != _entries.end()) {
     return ei - _entries.begin();
@@ -180,7 +180,7 @@ find_node(const NodePath &attrib_node) const {
 ////////////////////////////////////////////////////////////////////
 int AttribNodeRegistry::
 find_node(TypeHandle type, const string &name) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   Entries::const_iterator ei = _entries.find(Entry(type, name));
   if (ei != _entries.end()) {
     return ei - _entries.begin();
@@ -195,7 +195,7 @@ find_node(TypeHandle type, const string &name) const {
 ////////////////////////////////////////////////////////////////////
 void AttribNodeRegistry::
 remove_node(int n) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   nassertv(n >= 0 && n < (int)_entries.size());
   _entries.erase(_entries.begin() + n);
 }
@@ -207,7 +207,7 @@ remove_node(int n) {
 ////////////////////////////////////////////////////////////////////
 void AttribNodeRegistry::
 clear() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   _entries.clear();
 }
 
@@ -218,7 +218,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void AttribNodeRegistry::
 output(ostream &out) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   typedef pmap<TypeHandle, int> Counts;
   Counts counts;
@@ -251,7 +251,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void AttribNodeRegistry::
 write(ostream &out) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   Entries::const_iterator ei;
   for (ei = _entries.begin(); ei != _entries.end(); ++ei) {

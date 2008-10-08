@@ -818,7 +818,7 @@ verify_child_no_cycles(PandaNode *child_node) {
 INLINE void PandaNode::
 set_dirty_prev_transform() {
   if (!_dirty_prev_transform) {
-    MutexHolder holder(_dirty_prev_transforms._lock);
+    LightMutexHolder holder(_dirty_prev_transforms._lock);
     if (!_dirty_prev_transform) {
       LinkedListNode::insert_before(&_dirty_prev_transforms);
       _dirty_prev_transform = true;
@@ -835,7 +835,7 @@ set_dirty_prev_transform() {
 INLINE void PandaNode::
 clear_dirty_prev_transform() {
   if (_dirty_prev_transform) {
-    MutexHolder holder(_dirty_prev_transforms._lock);
+    LightMutexHolder holder(_dirty_prev_transforms._lock);
     if (_dirty_prev_transform) {
       LinkedListNode::remove_from_list();
       _dirty_prev_transform = false;

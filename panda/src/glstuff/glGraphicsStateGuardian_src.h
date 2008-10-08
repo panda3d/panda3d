@@ -33,7 +33,7 @@
 #include "pset.h"
 #include "pmap.h"
 #include "geomVertexArrayData.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 class PlaneNode;
 class Light;
@@ -503,7 +503,7 @@ public:
   GLenum _mirror_edge_clamp;
   GLenum _mirror_border_clamp;
 
-  Mutex _lock;
+  LightMutex _lock;
   typedef pvector<GLuint> DeletedDisplayLists;
   DeletedDisplayLists _deleted_display_lists;
   DeletedDisplayLists _deleted_queries;

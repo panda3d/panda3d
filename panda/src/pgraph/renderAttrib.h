@@ -20,7 +20,7 @@
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "pset.h"
-#include "reMutex.h"
+#include "lightReMutex.h"
 
 class AttribSlots;
 class GraphicsStateGuardianBase;
@@ -190,7 +190,7 @@ public:
 
 private:
   // This mutex protects _attribs.
-  static ReMutex *_attribs_lock;
+  static LightReMutex *_attribs_lock;
   typedef pset<const RenderAttrib *, indirect_compare_to<const RenderAttrib *> > Attribs;
   static Attribs *_attribs;
 

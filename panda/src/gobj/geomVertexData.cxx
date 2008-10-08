@@ -800,7 +800,7 @@ convert_to(const GeomVertexFormat *new_format) const {
     // Create a new entry for the result.
     entry = new CacheEntry((GeomVertexData *)this, new_format);
     {
-      MutexHolder holder(_cache_lock);
+      LightMutexHolder holder(_cache_lock);
       bool inserted = ((GeomVertexData *)this)->_cache.insert(Cache::value_type(&entry->_key, entry)).second;
       if (!inserted) {
         // Some other thread must have beat us to the punch.  Never
@@ -1230,7 +1230,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 clear_cache() {
-  MutexHolder holder(_cache_lock);
+  LightMutexHolder holder(_cache_lock);
   for (Cache::iterator ci = _cache.begin();
        ci != _cache.end();
        ++ci) {
@@ -1253,7 +1253,7 @@ clear_cache() {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::
 clear_cache_stage() {
-  MutexHolder holder(_cache_lock);
+  LightMutexHolder holder(_cache_lock);
   for (Cache::iterator ci = _cache.begin();
        ci != _cache.end();
        ++ci) {
@@ -1793,7 +1793,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void GeomVertexData::CacheEntry::
 evict_callback() {
-  MutexHolder holder(_source->_cache_lock);
+  LightMutexHolder holder(_source->_cache_lock);
   Cache::iterator ci = _source->_cache.find(&_key);
   nassertv(ci != _source->_cache.end());
   nassertv((*ci).second == this);

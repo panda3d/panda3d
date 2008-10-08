@@ -20,7 +20,7 @@
 #include "bam.h"
 #include "bamWriter.h"
 #include "bamReader.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 #include <algorithm>
 
@@ -48,7 +48,7 @@ BamWriter::
   StateMap::iterator si;
   for (si = _state_map.begin(); si != _state_map.end(); ++si) {
     TypedWritable *object = (TypedWritable *)(*si).first;
-    MutexHolder holder(TypedWritable::_bam_writers_lock);
+    LightMutexHolder holder(TypedWritable::_bam_writers_lock);
     nassertv(object->_bam_writers != (TypedWritable::BamWriters *)NULL);
     TypedWritable::BamWriters::iterator wi = 
       find(object->_bam_writers->begin(), object->_bam_writers->end(), this);
@@ -513,7 +513,7 @@ enqueue_object(const TypedWritable *object) {
       _state_map.insert(StateMap::value_type(object, StoreState(_next_object_id))).second;
     nassertr(inserted, false);
     {
-      MutexHolder holder(TypedWritable::_bam_writers_lock);
+      LightMutexHolder holder(TypedWritable::_bam_writers_lock);
       if (object->_bam_writers == ((TypedWritable::BamWriters *)NULL)) {
         ((TypedWritable *)object)->_bam_writers = new TypedWritable::BamWriters;
       }

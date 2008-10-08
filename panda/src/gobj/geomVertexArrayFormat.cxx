@@ -20,7 +20,7 @@
 #include "bamReader.h"
 #include "bamWriter.h"
 #include "indirectLess.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 GeomVertexArrayFormat::Registry *GeomVertexArrayFormat::_registry = NULL;
 TypeHandle GeomVertexArrayFormat::_type_handle;
@@ -202,7 +202,7 @@ GeomVertexArrayFormat::
 bool GeomVertexArrayFormat::
 unref() const {
   Registry *registry = get_registry();
-  MutexHolder holder(registry->_lock);
+  LightMutexHolder holder(registry->_lock);
 
   if (ReferenceCount::unref()) {
     return true;
@@ -782,7 +782,7 @@ register_format(GeomVertexArrayFormat *format) {
   
   GeomVertexArrayFormat *new_format;
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
     ArrayFormats::iterator fi = _formats.insert(format).first;
     new_format = (*fi);
     if (!new_format->is_registered()) {

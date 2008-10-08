@@ -27,7 +27,7 @@
 #include "pandaNode.h"
 #include "pStatCollector.h"
 #include "pnotify.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "filename.h"
 #include "drawMask.h"
 #include "pvector.h"
@@ -273,7 +273,7 @@ protected:
   pvector<WPT(Texture)> _hold_textures;
   
 protected:
-  Mutex _lock; 
+  LightMutex _lock; 
   // protects _display_regions.
   PT(DisplayRegion) _default_display_region;
   typedef pvector< PT(DisplayRegion) > TotalDisplayRegions;

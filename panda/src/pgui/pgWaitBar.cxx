@@ -67,7 +67,7 @@ PGWaitBar(const PGWaitBar &copy) :
 ////////////////////////////////////////////////////////////////////
 PandaNode *PGWaitBar::
 make_copy() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return new PGWaitBar(*this);
 }
 
@@ -98,7 +98,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 bool PGWaitBar::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   update();
   return PGItem::cull_callback(trav, data);
 }
@@ -111,7 +111,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 ////////////////////////////////////////////////////////////////////
 void PGWaitBar::
 setup(float width, float height, float range) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   set_state(0);
   clear_state_def(0);
 
@@ -139,7 +139,7 @@ setup(float width, float height, float range) {
 ////////////////////////////////////////////////////////////////////
 void PGWaitBar:: 
 update() {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   int state = get_state();
 
   // If the bar was last drawn in this state and is still current, we

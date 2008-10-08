@@ -20,7 +20,7 @@
 #include "graphicsDevice.h"
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "displayInformation.h"
 
 class GraphicsOutput;
@@ -121,7 +121,7 @@ protected:
                                          int retry,
                                          bool &precertify);
   
-  Mutex _lock;
+  LightMutex _lock;
 
   bool _is_valid;
   int _supported_types;

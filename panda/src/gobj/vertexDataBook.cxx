@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "vertexDataBook.h"
-#include "reMutexHolder.h"
+#include "lightReMutexHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VertexDataBook::Constructor
@@ -44,7 +44,7 @@ VertexDataBook::
 ////////////////////////////////////////////////////////////////////
 size_t VertexDataBook::
 count_total_page_size() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   size_t total = 0;
   Pages::const_iterator pi;
@@ -63,7 +63,7 @@ count_total_page_size() const {
 ////////////////////////////////////////////////////////////////////
 size_t VertexDataBook::
 count_total_page_size(VertexDataPage::RamClass ram_class) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   size_t total = 0;
   Pages::const_iterator pi;
@@ -83,7 +83,7 @@ count_total_page_size(VertexDataPage::RamClass ram_class) const {
 ////////////////////////////////////////////////////////////////////
 size_t VertexDataBook::
 count_allocated_size() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   size_t total = 0;
   Pages::const_iterator pi;
@@ -102,7 +102,7 @@ count_allocated_size() const {
 ////////////////////////////////////////////////////////////////////
 size_t VertexDataBook::
 count_allocated_size(VertexDataPage::RamClass ram_class) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   size_t total = 0;
   Pages::const_iterator pi;
@@ -124,7 +124,7 @@ count_allocated_size(VertexDataPage::RamClass ram_class) const {
 ////////////////////////////////////////////////////////////////////
 void VertexDataBook::
 save_to_disk() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   Pages::iterator pi;
   for (pi = _pages.begin(); pi != _pages.end(); ++pi) {

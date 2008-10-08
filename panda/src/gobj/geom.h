@@ -39,7 +39,7 @@
 #include "boundingVolume.h"
 #include "pStatCollector.h"
 #include "deletedChain.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 class GeomContext;
 class PreparedGraphicsObjects;
@@ -321,7 +321,7 @@ private:
   typedef CycleDataStageWriter<CData> CDStageWriter;
 
   Cache _cache;
-  Mutex _cache_lock;
+  LightMutex _cache_lock;
 
   // This works just like the Texture contexts: each Geom keeps a
   // record of all the PGO objects that hold the Geom, and vice-versa.

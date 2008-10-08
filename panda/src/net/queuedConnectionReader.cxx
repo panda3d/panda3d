@@ -15,7 +15,7 @@
 #include "queuedConnectionReader.h"
 #include "config_net.h"
 #include "trueClock.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: QueuedConnectionReader::Constructor
@@ -141,7 +141,7 @@ receive_datagram(const NetDatagram &datagram) {
 ////////////////////////////////////////////////////////////////////
 void QueuedConnectionReader::
 start_delay(double min_delay, double max_delay) {
-  MutexHolder holder(_dd_mutex);
+  LightMutexHolder holder(_dd_mutex);
   _min_delay = min_delay;
   _delay_variance = max(max_delay - min_delay, 0.0);
   _delay_active = true;
@@ -156,7 +156,7 @@ start_delay(double min_delay, double max_delay) {
 ////////////////////////////////////////////////////////////////////
 void QueuedConnectionReader::
 stop_delay() {
-  MutexHolder holder(_dd_mutex);
+  LightMutexHolder holder(_dd_mutex);
   _delay_active = false;
 
   // Copy the entire contents of the delay queue to the normal queue.
@@ -180,7 +180,7 @@ stop_delay() {
 void QueuedConnectionReader::
 get_delayed() {
   if (_delay_active) {
-    MutexHolder holder(_dd_mutex);
+    LightMutexHolder holder(_dd_mutex);
     double now = TrueClock::get_global_ptr()->get_short_time();
     while (!_delayed.empty()) {
       const DelayedDatagram &dd = _delayed.front();
@@ -211,7 +211,7 @@ delay_datagram(const NetDatagram &datagram) {
         << "QueuedConnectionReader queue full!\n";
     }
   } else {
-    MutexHolder holder(_dd_mutex);
+    LightMutexHolder holder(_dd_mutex);
     // Check the delay_active flag again, now that we have grabbed the
     // mutex.
     if (!_delay_active) {

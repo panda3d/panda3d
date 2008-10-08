@@ -14,7 +14,7 @@
 
 #include "eventQueue.h"
 #include "config_event.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 EventQueue *EventQueue::_global_event_queue = NULL;
 
@@ -50,7 +50,7 @@ queue_event(CPT_Event event) {
     return;
   }
 
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   _queue.push_back(event);
   if (event_cat.is_spam() || event_cat.is_debug()) {
@@ -73,7 +73,7 @@ queue_event(CPT_Event event) {
 ////////////////////////////////////////////////////////////////////
 void EventQueue::
 clear() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   _queue.clear();
 }
@@ -86,7 +86,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 bool EventQueue::
 is_queue_empty() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return _queue.empty();
 }
 
@@ -109,7 +109,7 @@ is_queue_full() const {
 ////////////////////////////////////////////////////////////////////
 CPT_Event EventQueue::
 dequeue_event() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   CPT_Event result = _queue.front();
   _queue.pop_front();

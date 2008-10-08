@@ -24,8 +24,8 @@ TypeHandle VertexDataBuffer::_type_handle;
 ////////////////////////////////////////////////////////////////////
 void VertexDataBuffer::
 operator = (const VertexDataBuffer &copy) {
-  MutexHolder holder(_lock);
-  MutexHolder holder2(copy._lock);
+  LightMutexHolder holder(_lock);
+  LightMutexHolder holder2(copy._lock);
 
   if (_resident_data != (unsigned char *)NULL) {
     nassertv(_size != 0);

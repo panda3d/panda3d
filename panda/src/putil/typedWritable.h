@@ -18,7 +18,7 @@
 #include "typedObject.h"
 #include "vector_typedWritable.h"
 #include "pvector.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 class BamReader;
 class BamWriter;
@@ -59,7 +59,7 @@ private:
   // those tables when it destructs.
   typedef pvector<BamWriter *> BamWriters;
   BamWriters *_bam_writers;
-  static Mutex _bam_writers_lock;
+  static LightMutex _bam_writers_lock;
 
 PUBLISHED:
   static TypeHandle get_class_type() {

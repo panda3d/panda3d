@@ -20,7 +20,7 @@
 #include "connectionReader.h"
 #include "netDatagram.h"
 #include "queuedReturn.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "pdeque.h"
 
 EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<NetDatagram>);
@@ -62,7 +62,7 @@ private:
     NetDatagram _datagram;
   };
     
-  Mutex _dd_mutex;
+  LightMutex _dd_mutex;
   typedef pdeque<DelayedDatagram> Delayed;
   Delayed _delayed;
   bool _delay_active;

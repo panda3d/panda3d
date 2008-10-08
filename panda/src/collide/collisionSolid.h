@@ -23,8 +23,8 @@
 #include "pointerTo.h"
 #include "renderState.h"
 #include "geomNode.h"
-#include "pmutex.h"
-#include "mutexHolder.h"
+#include "lightMutex.h"
+#include "lightMutexHolder.h"
 #include "pStatCollector.h"
 
 class CollisionHandler;
@@ -143,7 +143,7 @@ private:
   };
   int _flags;
 
-  Mutex _lock;
+  LightMutex _lock;
 
   static PStatCollector _volume_pcollector;
   static PStatCollector _test_pcollector;

@@ -24,8 +24,8 @@
 #include "modifierButtons.h"
 #include "buttonEvent.h"
 #include "pnotify.h"
-#include "pmutex.h"
-#include "reMutex.h"
+#include "lightMutex.h"
+#include "lightReMutex.h"
 #include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -121,13 +121,13 @@ protected:
   INLINE void add_input_device(const GraphicsWindowInputDevice &device);
   typedef vector_GraphicsWindowInputDevice InputDevices;
   InputDevices _input_devices;
-  Mutex _input_lock;
+  LightMutex _input_lock;
 
 protected:
   WindowProperties _properties;
 
 private:
-  ReMutex _properties_lock; 
+  LightReMutex _properties_lock; 
   // protects _requested_properties, _rejected_properties, and
   // _window_event.
 

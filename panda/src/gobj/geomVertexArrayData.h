@@ -28,7 +28,7 @@
 #include "cycleDataStageWriter.h"
 #include "pipelineCycler.h"
 #include "pmap.h"
-#include "reMutex.h"
+#include "lightReMutex.h"
 #include "simpleLru.h"
 #include "vertexDataBuffer.h"
 #include "config_gobj.h"
@@ -166,7 +166,7 @@ private:
 
     // This implements read-write locking.  Anyone who gets the data for
     // reading or writing will hold this mutex during the lock.
-    ReMutex _rw_lock;
+    LightReMutex _rw_lock;
     
   public:
     static TypeHandle get_class_type() {

@@ -26,13 +26,19 @@ MutexTrueImpl *MutexDebug::_global_lock;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MutexDebug::
-MutexDebug(const string &name, bool allow_recursion) :
+MutexDebug(const string &name, bool allow_recursion, bool lightweight) :
   Namable(name),
   _allow_recursion(allow_recursion),
+  _lightweight(lightweight),
   _locking_thread(NULL),
   _lock_count(0),
   _cvar_impl(*get_global_lock())
 {
+#ifndef SIMPLE_THREADS
+  // If we're using real threads, there's no such thing as a
+  // lightweight mutex.
+  _lightweight = false;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -57,6 +63,9 @@ MutexDebug::
 ////////////////////////////////////////////////////////////////////
 void MutexDebug::
 output(ostream &out) const {
+  if (_lightweight) {
+    out << "Light";
+  }
   if (_allow_recursion) {
     out << "ReMutex " << get_name() << " " << (void *)this;
   } else {
@@ -99,76 +108,74 @@ do_lock() {
   } else {
     // The mutex is locked by some other thread.
 
-#ifdef PHONY_MUTEX
-    // In this case, we don't really have mutexes anyway.
-    MissedThreads::iterator mi = _missed_threads.insert(MissedThreads::value_type(this_thread, 0)).first;
-    if ((*mi).second == 0) {
-      thread_cat.info()
-        << *this_thread << " not stopped by " << *this << " (held by "
-        << *_locking_thread << ")\n";
+    if (_lightweight) {
+      // In this case, it's not a real mutex.  Just watch it go by.
+      MissedThreads::iterator mi = _missed_threads.insert(MissedThreads::value_type(this_thread, 0)).first;
+      if ((*mi).second == 0) {
+        thread_cat.info()
+          << *this_thread << " not stopped by " << *this << " (held by "
+          << *_locking_thread << ")\n";
+      } else {
+        if (!_allow_recursion) {
+          ostringstream ostr;
+          ostr << *this_thread << " attempted to double-lock non-reentrant "
+               << *this;
+          nassert_raise(ostr.str());
+        }
+      }
+      ++((*mi).second);
+
     } else {
-      if (!_allow_recursion) {
-        ostringstream ostr;
-        ostr << *this_thread << " attempted to double-lock non-reentrant "
-             << *this;
-        nassert_raise(ostr.str());
+      // This is the real case.  It's a real mutex, so block if necessary.
+
+      // Check for deadlock.
+      MutexDebug *next_mutex = this;
+      while (next_mutex != NULL) {
+        if (next_mutex->_locking_thread == this_thread) {
+          // Whoops, the thread is blocked on me!  Deadlock!
+          report_deadlock(this_thread);
+          nassert_raise("Deadlock");
+          return;
+        }
+        Thread *next_thread = next_mutex->_locking_thread;
+        if (next_thread == NULL) {
+          // Looks like this mutex isn't actually locked, which means
+          // the last thread isn't really blocked--it just hasn't woken
+          // up yet to discover that.  In any case, no deadlock.
+          break;
+        }
+        
+        // The last thread is blocked on this "next thread"'s mutex, but
+        // what mutex is the next thread blocked on?
+        next_mutex = next_thread->_blocked_on_mutex;
       }
-    }
-    ++((*mi).second);
-
-#else // PHONY_MUTEX
-    // This is the real case.  We have mutexes, so enforce it.
-
-    // Check for deadlock.
-    MutexDebug *next_mutex = this;
-    while (next_mutex != NULL) {
-      if (next_mutex->_locking_thread == this_thread) {
-        // Whoops, the thread is blocked on me!  Deadlock!
-        report_deadlock(this_thread);
-        nassert_raise("Deadlock");
-
-        _global_lock->release();
-        return;
+      
+      // OK, no deadlock detected.  Carry on.
+      this_thread->_blocked_on_mutex = this;
+      
+      // Go to sleep on the condition variable until it's unlocked.
+      
+      if (thread_cat->is_debug()) {
+        thread_cat.debug()
+          << *this_thread << " blocking on " << *this << " (held by "
+          << *_locking_thread << ")\n";
       }
-      Thread *next_thread = next_mutex->_locking_thread;
-      if (next_thread == NULL) {
-        // Looks like this mutex isn't actually locked, which means
-        // the last thread isn't really blocked--it just hasn't woken
-        // up yet to discover that.  In any case, no deadlock.
-        break;
+      
+      while (_locking_thread != (Thread *)NULL) {
+        _cvar_impl.wait();
       }
-
-      // The last thread is blocked on this "next thread"'s mutex, but
-      // what mutex is the next thread blocked on?
-      next_mutex = next_thread->_blocked_on_mutex;
+      
+      if (thread_cat.is_debug()) {
+        thread_cat.debug()
+          << *this_thread << " awake on " << *this << "\n";
+      }
+      
+      this_thread->_blocked_on_mutex = NULL;
+      
+      _locking_thread = this_thread;
+      ++_lock_count;
+      nassertv(_lock_count == 1);
     }
-
-    // OK, no deadlock detected.  Carry on.
-    this_thread->_blocked_on_mutex = this;
-
-    // Go to sleep on the condition variable until it's unlocked.
-
-    if (thread_cat->is_debug()) {
-      thread_cat.debug()
-        << *this_thread << " blocking on " << *this << " (held by "
-        << *_locking_thread << ")\n";
-    }
-
-    while (_locking_thread != (Thread *)NULL) {
-      _cvar_impl.wait();
-    }
-    
-    if (thread_cat.is_debug()) {
-      thread_cat.debug()
-        << *this_thread << " awake on " << *this << "\n";
-    }
-
-    this_thread->_blocked_on_mutex = NULL;
-
-    _locking_thread = this_thread;
-    ++_lock_count;
-    nassertv(_lock_count == 1);
-#endif  // PHONY_MUTEX
   }
 }
 
@@ -187,28 +194,28 @@ do_release() {
   Thread *this_thread = Thread::get_current_thread();
 
   if (_locking_thread != this_thread) {
-#ifdef PHONY_MUTEX
-    // No real mutexes.  This just means we blew past a mutex without
-    // locking it, above.
+    // We're not holding this mutex.
 
-    MissedThreads::iterator mi = _missed_threads.find(this_thread);
-    nassertv(mi != _missed_threads.end());
-    nassertv((*mi).second > 0);
-    --((*mi).second);
+    if (_lightweight) {
+      // Not a real mutex.  This just means we blew past a mutex
+      // without locking it, above.
 
-    if ((*mi).second == 0) {
-      _missed_threads.erase(mi);
+      MissedThreads::iterator mi = _missed_threads.find(this_thread);
+      nassertv(mi != _missed_threads.end());
+      nassertv((*mi).second > 0);
+      --((*mi).second);
+      
+      if ((*mi).second == 0) {
+        _missed_threads.erase(mi);
+      }
+
+    } else {
+      // In the real-mutex case, this is an error condition.
+      ostringstream ostr;
+      ostr << *this_thread << " attempted to release "
+           << *this << " which it does not own";
+      nassert_raise(ostr.str());
     }
-
-#else  // PHONY_MUTEX
-    // In the real-mutex case, this is an error condition.
-    ostringstream ostr;
-    ostr << *this_thread << " attempted to release "
-         << *this << " which it does not own";
-    nassert_raise(ostr.str());
-#endif  // PHONY_MUTEX
-
-    _global_lock->release();
     return;
   }
 
@@ -219,18 +226,18 @@ do_release() {
     // That was the last lock held by this thread.  Release the lock.
     _locking_thread = (Thread *)NULL;
 
-#ifdef PHONY_MUTEX
-    if (!_missed_threads.empty()) {
-      // Promote some other thread to be the honorary lock holder.
-      MissedThreads::iterator mi = _missed_threads.begin();
-      _locking_thread = (*mi).first;
-      _lock_count = (*mi).second;
-      _missed_threads.erase(mi);
-      nassertv(_lock_count > 0);
+    if (_lightweight) {
+      if (!_missed_threads.empty()) {
+        // Promote some other thread to be the honorary lock holder.
+        MissedThreads::iterator mi = _missed_threads.begin();
+        _locking_thread = (*mi).first;
+        _lock_count = (*mi).second;
+        _missed_threads.erase(mi);
+        nassertv(_lock_count > 0);
+      }
+    } else {
+      _cvar_impl.signal();
     }
-#else
-    _cvar_impl.signal();
-#endif
   }
 }
 
@@ -247,13 +254,13 @@ do_debug_is_locked() const {
     return true;
   }
 
-#ifdef PHONY_MUTEX
-  MissedThreads::const_iterator mi = _missed_threads.find(this_thread);
-  if (mi != _missed_threads.end()) {
-    nassertr((*mi).second > 0, false);
-    return true;
+  if (_lightweight) {
+    MissedThreads::const_iterator mi = _missed_threads.find(this_thread);
+    if (mi != _missed_threads.end()) {
+      nassertr((*mi).second > 0, false);
+      return true;
+    }
   }
-#endif
 
   return false;
 }

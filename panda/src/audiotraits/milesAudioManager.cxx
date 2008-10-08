@@ -28,7 +28,7 @@
 #include "nullAudioSound.h"
 #include "string_utils.h"
 #include "mutexHolder.h"
-#include "reMutexHolder.h"
+#include "lightReMutexHolder.h"
 
 #include <algorithm>
 
@@ -125,7 +125,7 @@ shutdown() {
 ////////////////////////////////////////////////////////////////////
 bool MilesAudioManager::
 is_valid() {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return do_is_valid();
 }
 
@@ -136,7 +136,7 @@ is_valid() {
 ////////////////////////////////////////////////////////////////////
 PT(AudioSound) MilesAudioManager::
 get_sound(const string &file_name, bool, int) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   audio_debug("MilesAudioManager::get_sound(file_name=\""<<file_name<<"\")");
 
   if (!do_is_valid()) {
@@ -239,7 +239,7 @@ void MilesAudioManager::
 uncache_sound(const string &file_name) {
   audio_debug("MilesAudioManager::uncache_sound(file_name=\""
       <<file_name<<"\")");
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   nassertv(do_is_valid());
   Filename path = file_name;
 
@@ -267,7 +267,7 @@ uncache_sound(const string &file_name) {
 void MilesAudioManager::
 clear_cache() {
   audio_debug("MilesAudioManager::clear_cache()");
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   do_clear_cache();
 }
 
@@ -278,7 +278,7 @@ clear_cache() {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 set_cache_limit(unsigned int count) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
 
   audio_debug("MilesAudioManager::set_cache_limit(count="<<count<<")");
   nassertv(do_is_valid());
@@ -307,7 +307,7 @@ get_cache_limit() const {
 void MilesAudioManager::
 set_volume(float volume) {
   audio_debug("MilesAudioManager::set_volume(volume="<<volume<<")");
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (_volume != volume) {
     _volume = volume;
     // Tell our AudioSounds to adjust:
@@ -336,7 +336,7 @@ get_volume() const {
 void MilesAudioManager::
 set_play_rate(float play_rate) {
   audio_debug("MilesAudioManager::set_play_rate(play_rate="<<play_rate<<")");
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (_play_rate != play_rate) {
     _play_rate = play_rate;
     // Tell our AudioSounds to adjust:
@@ -365,7 +365,7 @@ get_play_rate() const {
 void MilesAudioManager::
 set_active(bool active) {
   audio_debug("MilesAudioManager::set_active(flag="<<active<<")");
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (_active != active) {
     _active=active;
     // Tell our AudioSounds to adjust:
@@ -397,7 +397,7 @@ get_active() const {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 set_concurrent_sound_limit(unsigned int limit) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _concurrent_sound_limit = limit;
   do_reduce_sounds_playing_to(_concurrent_sound_limit);
 }
@@ -419,7 +419,7 @@ get_concurrent_sound_limit() const {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 reduce_sounds_playing_to(unsigned int count) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   do_reduce_sounds_playing_to(count);
 }
 
@@ -482,7 +482,7 @@ void MilesAudioManager::
 release_sound(MilesAudioSound *audioSound) {
   audio_debug("MilesAudioManager::release_sound(audioSound=\""
               <<audioSound->get_name()<<"\"), this = " << (void *)this);
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   AudioSet::iterator ai = _sounds_on_loan.find(audioSound);
   nassertv(ai != _sounds_on_loan.end());
   _sounds_on_loan.erase(ai);
@@ -501,7 +501,7 @@ void MilesAudioManager::
 cleanup() {
   audio_debug("MilesAudioManager::cleanup(), this = " << (void *)this
               << ", _cleanup_required = " << _cleanup_required);
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (!_cleanup_required) {
     return;
   }
@@ -541,7 +541,7 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 output(ostream &out) const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   out << get_type() << ": " << _sounds_playing.size()
       << " / " << _sounds_on_loan.size() << " sounds playing / total"; 
 }
@@ -553,7 +553,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 write(ostream &out) const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
 
   out << (*this) << "\n";
   AudioSet::const_iterator ai;
@@ -733,7 +733,7 @@ uncache_a_sound() {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 starting_sound(MilesAudioSound *audio) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (_concurrent_sound_limit) {
     do_reduce_sounds_playing_to(_concurrent_sound_limit);
   }
@@ -749,7 +749,7 @@ starting_sound(MilesAudioSound *audio) {
 ////////////////////////////////////////////////////////////////////
 void MilesAudioManager::
 stopping_sound(MilesAudioSound *audio) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _sounds_playing.erase(audio);
   if (_hasMidiSounds && _sounds_playing.size() == 0) {
     GlobalMilesManager::get_global_ptr()->force_midi_reset();

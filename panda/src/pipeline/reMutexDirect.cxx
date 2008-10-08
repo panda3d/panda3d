@@ -15,6 +15,8 @@
 #include "reMutexDirect.h"
 #include "thread.h"
 
+#ifndef DEBUG_THREADS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::output
 //       Access: Published
@@ -143,3 +145,5 @@ do_release() {
   _lock_impl.release();
 }
 #endif  // !HAVE_REMUTEXTRUEIMPL
+
+#endif  // !DEBUG_THREADS

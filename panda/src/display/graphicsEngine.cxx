@@ -27,7 +27,7 @@
 #include "pStatClient.h"
 #include "pStatCollector.h"
 #include "mutexHolder.h"
-#include "reMutexHolder.h"
+#include "lightReMutexHolder.h"
 #include "cullFaceAttrib.h"
 #include "string_utils.h"
 #include "geomCacheManager.h"
@@ -196,7 +196,7 @@ set_threading_model(const GraphicsThreadingModel &threading_model) {
       << "Danger!  Creating requested render threads anyway!\n";
   }
 #endif  // THREADED_PIPELINE
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _threading_model = threading_model;
 }
 
@@ -210,7 +210,7 @@ GraphicsThreadingModel GraphicsEngine::
 get_threading_model() const {
   GraphicsThreadingModel result;
   {
-    ReMutexHolder holder(_lock);
+    LightReMutexHolder holder(_lock);
     result = _threading_model;
   }
   return result;
@@ -454,7 +454,7 @@ remove_window(GraphicsOutput *window) {
   PT(GraphicsOutput) ptwin = window;
   size_t count;
   {
-    ReMutexHolder holder(_lock, current_thread);
+    LightReMutexHolder holder(_lock, current_thread);
     if (!_windows_sorted) {
       do_resort_windows();
     }
@@ -613,7 +613,7 @@ render_frame() {
   }
 
   {
-    ReMutexHolder holder(_lock, current_thread);
+    LightReMutexHolder holder(_lock, current_thread);
 
     if (!_windows_sorted) {
       do_resort_windows();
@@ -833,7 +833,7 @@ void GraphicsEngine::
 open_windows() {
   Thread *current_thread = Thread::get_current_thread();
 
-  ReMutexHolder holder(_lock, current_thread);
+  LightReMutexHolder holder(_lock, current_thread);
 
   if (!_windows_sorted) {
     do_resort_windows();
@@ -876,7 +876,7 @@ open_windows() {
 void GraphicsEngine::
 sync_frame() {
   Thread *current_thread = Thread::get_current_thread();
-  ReMutexHolder holder(_lock, current_thread);
+  LightReMutexHolder holder(_lock, current_thread);
 
   if (_flip_state == FS_draw) {
     do_sync_frame(current_thread);
@@ -895,7 +895,7 @@ sync_frame() {
 void GraphicsEngine::
 flip_frame() {
   Thread *current_thread = Thread::get_current_thread();
-  ReMutexHolder holder(_lock, current_thread);
+  LightReMutexHolder holder(_lock, current_thread);
 
   if (_flip_state != FS_flip) {
     do_flip_frame(current_thread);
@@ -933,7 +933,7 @@ flip_frame() {
 ////////////////////////////////////////////////////////////////////
 bool GraphicsEngine::
 extract_texture_data(Texture *tex, GraphicsStateGuardian *gsg) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
 
   string draw_name = gsg->get_threading_model().get_draw_name();
   if (draw_name.empty()) {
@@ -994,7 +994,7 @@ bool GraphicsEngine::
 add_callback(const string &thread_name, 
              GraphicsEngine::CallbackTime callback_time,
              GraphicsEngine::CallbackFunction *func, void *data) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   WindowRenderer *wr = get_window_renderer(thread_name, 0);
   return wr->add_callback(callback_time, Callback(func, data));
 }
@@ -1015,7 +1015,7 @@ bool GraphicsEngine::
 remove_callback(const string &thread_name,
                 GraphicsEngine::CallbackTime callback_time,
                 GraphicsEngine::CallbackFunction *func, void *data) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   WindowRenderer *wr = get_window_renderer(thread_name, 0);
   return wr->remove_callback(callback_time, Callback(func, data));
 }
@@ -1092,7 +1092,7 @@ is_scene_root(const PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 set_window_sort(GraphicsOutput *window, int sort) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   window->_sort = sort;
   _windows_sorted = false;
 }
@@ -1776,7 +1776,7 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
 void GraphicsEngine::
 do_add_window(GraphicsOutput *window,
               const GraphicsThreadingModel &threading_model) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
 
   // We have a special counter that is unique per window that allows
   // us to assure that recently-added windows end up on the end of the
@@ -1841,7 +1841,7 @@ do_add_window(GraphicsOutput *window,
 void GraphicsEngine::
 do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
            const GraphicsThreadingModel &threading_model) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
 
   gsg->_threading_model = threading_model;
   gsg->_pipe = pipe;
@@ -2072,7 +2072,7 @@ auto_adjust_capabilities(GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 terminate_threads(Thread *current_thread) {
-  ReMutexHolder holder(_lock, current_thread);
+  LightReMutexHolder holder(_lock, current_thread);
 
   // We spend almost our entire time in this method just waiting for
   // threads.  Time it appropriately.
@@ -2221,7 +2221,7 @@ WindowRenderer(const string &name) :
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 add_gsg(GraphicsStateGuardian *gsg) {
-  ReMutexHolder holder(_wl_lock);
+  LightReMutexHolder holder(_wl_lock);
   _gsgs.insert(gsg);
 }
 
@@ -2233,7 +2233,7 @@ add_gsg(GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 add_window(Windows &wlist, GraphicsOutput *window) {
-  ReMutexHolder holder(_wl_lock);
+  LightReMutexHolder holder(_wl_lock);
   wlist.insert(window);
 }
 
@@ -2247,7 +2247,7 @@ add_window(Windows &wlist, GraphicsOutput *window) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 remove_window(GraphicsOutput *window) {
-  ReMutexHolder holder(_wl_lock);
+  LightReMutexHolder holder(_wl_lock);
   PT(GraphicsOutput) ptwin = window;
 
   _cull.erase(ptwin);
@@ -2284,7 +2284,7 @@ remove_window(GraphicsOutput *window) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 resort_windows() {
-  ReMutexHolder holder(_wl_lock);
+  LightReMutexHolder holder(_wl_lock);
 
   _cull.sort();
   _cdraw.sort();
@@ -2324,7 +2324,7 @@ resort_windows() {
 void GraphicsEngine::WindowRenderer::
 do_frame(GraphicsEngine *engine, Thread *current_thread) {
   PStatTimer timer(engine->_do_frame_pcollector, current_thread);
-  ReMutexHolder holder(_wl_lock);
+  LightReMutexHolder holder(_wl_lock);
 
   do_callbacks(CB_pre_frame);
 
@@ -2367,7 +2367,7 @@ do_frame(GraphicsEngine *engine, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 do_windows(GraphicsEngine *engine, Thread *current_thread) {
-  ReMutexHolder holder(_wl_lock);
+  LightReMutexHolder holder(_wl_lock);
 
   engine->process_events(_window, current_thread);
 
@@ -2383,7 +2383,7 @@ do_windows(GraphicsEngine *engine, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 do_flip(GraphicsEngine *engine, Thread *current_thread) {
-  ReMutexHolder holder(_wl_lock);
+  LightReMutexHolder holder(_wl_lock);
   engine->flip_windows(_cdraw, current_thread);
   engine->flip_windows(_draw, current_thread);
 }
@@ -2395,7 +2395,7 @@ do_flip(GraphicsEngine *engine, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 do_close(GraphicsEngine *engine, Thread *current_thread) {
-  ReMutexHolder holder(_wl_lock);
+  LightReMutexHolder holder(_wl_lock);
   Windows::iterator wi;
   for (wi = _window.begin(); wi != _window.end(); ++wi) {
     GraphicsOutput *win = (*wi);
@@ -2428,7 +2428,7 @@ do_close(GraphicsEngine *engine, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 do_pending(GraphicsEngine *engine, Thread *current_thread) {
-  ReMutexHolder holder(_wl_lock);
+  LightReMutexHolder holder(_wl_lock);
 
   if (!_pending_close.empty()) {
     if (display_cat.is_debug()) {
@@ -2477,7 +2477,7 @@ bool GraphicsEngine::WindowRenderer::
 add_callback(GraphicsEngine::CallbackTime callback_time, 
              const GraphicsEngine::Callback &callback) {
   nassertr(callback_time >= 0 && callback_time < CB_len, false);
-  ReMutexHolder holder(_wl_lock);
+  LightReMutexHolder holder(_wl_lock);
   return _callbacks[callback_time].insert(callback).second;
 }
 
@@ -2493,7 +2493,7 @@ bool GraphicsEngine::WindowRenderer::
 remove_callback(GraphicsEngine::CallbackTime callback_time, 
                 const GraphicsEngine::Callback &callback) {
   nassertr(callback_time >= 0 && callback_time < CB_len, false);
-  ReMutexHolder holder(_wl_lock);
+  LightReMutexHolder holder(_wl_lock);
   Callbacks::iterator cbi = _callbacks[callback_time].find(callback);
   if (cbi != _callbacks[callback_time].end()) {
     _callbacks[callback_time].erase(cbi);

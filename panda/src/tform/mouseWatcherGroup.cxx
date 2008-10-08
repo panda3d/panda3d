@@ -15,7 +15,7 @@
 #include "mouseWatcherGroup.h"
 #include "lineSegs.h"
 #include "indent.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 TypeHandle MouseWatcherGroup::_type_handle;
 
@@ -55,7 +55,7 @@ void MouseWatcherGroup::
 add_region(MouseWatcherRegion *region) {
   PT(MouseWatcherRegion) pt = region;
 
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   // We will only bother to check for duplicates in the region list if
   // we are building a development Panda.  The overhead for doing this
@@ -87,7 +87,7 @@ add_region(MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcherGroup::
 has_region(MouseWatcherRegion *region) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   PT(MouseWatcherRegion) ptr = region;
 
@@ -111,7 +111,7 @@ has_region(MouseWatcherRegion *region) const {
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcherGroup::
 remove_region(MouseWatcherRegion *region) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return do_remove_region(region);
 }
 
@@ -124,7 +124,7 @@ remove_region(MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 MouseWatcherRegion *MouseWatcherGroup::
 find_region(const string &name) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   Regions::const_iterator ri;
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
@@ -144,7 +144,7 @@ find_region(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 clear_regions() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   _regions.clear();
   _sorted = true;
@@ -165,7 +165,7 @@ clear_regions() {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 sort_regions() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_sort_regions();
 }
 
@@ -177,7 +177,7 @@ sort_regions() {
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcherGroup::
 is_sorted() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   return _sorted;
 }
@@ -189,7 +189,7 @@ is_sorted() const {
 ////////////////////////////////////////////////////////////////////
 int MouseWatcherGroup::
 get_num_regions() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   return _regions.size();
 }
@@ -204,7 +204,7 @@ get_num_regions() const {
 ////////////////////////////////////////////////////////////////////
 MouseWatcherRegion *MouseWatcherGroup::
 get_region(int n) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if (n >= 0 && n < (int)_regions.size()) {
     return _regions[n];
   }
@@ -228,7 +228,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 write(ostream &out, int indent_level) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   Regions::const_iterator ri;
   for (ri = _regions.begin(); ri != _regions.end(); ++ri) {
@@ -248,7 +248,7 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 show_regions(const NodePath &render2d, const string &bin_name, int draw_order) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_show_regions(render2d, bin_name, draw_order);
 }
 #endif  // NDEBUG
@@ -263,7 +263,7 @@ show_regions(const NodePath &render2d, const string &bin_name, int draw_order) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 set_color(const Colorf &color) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   _color = color;
   do_update_regions();
@@ -279,7 +279,7 @@ set_color(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 hide_regions() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_hide_regions();
 }
 #endif  // NDEBUG
@@ -293,7 +293,7 @@ hide_regions() {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcherGroup::
 update_regions() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_update_regions();
 }
 #endif  // NDEBUG

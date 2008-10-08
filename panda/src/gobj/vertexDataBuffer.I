@@ -74,7 +74,7 @@ INLINE VertexDataBuffer::
 ////////////////////////////////////////////////////////////////////
 INLINE const unsigned char *VertexDataBuffer::
 get_read_pointer(bool force) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   if (_resident_data != (unsigned char *)NULL || _size == 0) {
     return _resident_data;
@@ -95,7 +95,7 @@ get_read_pointer(bool force) const {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *VertexDataBuffer::
 get_write_pointer() { 
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   if (_resident_data == (unsigned char *)NULL && _size != 0) {
     do_page_in();
@@ -123,7 +123,7 @@ get_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataBuffer::
 clean_realloc(size_t size) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_clean_realloc(size);
 }
 
@@ -136,7 +136,7 @@ clean_realloc(size_t size) {
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataBuffer::
 unclean_realloc(size_t size) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_unclean_realloc(size);
 }
 
@@ -162,7 +162,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataBuffer::
 page_out(VertexDataBook &book) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   do_page_out(book);
 }
 
@@ -174,8 +174,8 @@ page_out(VertexDataBook &book) {
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataBuffer::
 swap(VertexDataBuffer &other) {
-  MutexHolder holder(_lock);
-  MutexHolder holder2(other._lock);
+  LightMutexHolder holder(_lock);
+  LightMutexHolder holder2(other._lock);
 
   unsigned char *resident_data = _resident_data;
   size_t size = _size;

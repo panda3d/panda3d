@@ -17,7 +17,7 @@
 #include "datagramIterator.h"
 #include "bamReader.h"
 #include "bamWriter.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 TypeHandle JointVertexTransform::_type_handle;
 
@@ -137,7 +137,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void JointVertexTransform::
 compute_matrix() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if (_matrix_stale) {
     _matrix = _joint->_initial_net_transform_inverse * _joint->_net_transform;
     _matrix_stale = false;

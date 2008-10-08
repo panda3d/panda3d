@@ -20,7 +20,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutexHolder::
 ReMutexHolder(const ReMutex &mutex) {
-#if defined(HAVE_THREADS) || !defined(NDEBUG)
+#if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex = &mutex;
   _mutex->lock();
 #endif
@@ -35,7 +35,7 @@ ReMutexHolder(const ReMutex &mutex) {
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutexHolder::
 ReMutexHolder(const ReMutex &mutex, Thread *current_thread) {
-#if defined(HAVE_THREADS) || !defined(NDEBUG)
+#if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex = &mutex;
   _mutex->lock(current_thread);
 #endif
@@ -54,7 +54,7 @@ ReMutexHolder(const ReMutex &mutex, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutexHolder::
 ReMutexHolder(ReMutex *&mutex) {
-#if defined(HAVE_THREADS) || !defined(NDEBUG)
+#if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   if (mutex == (ReMutex *)NULL) {
     mutex = new ReMutex;
   }
@@ -70,7 +70,7 @@ ReMutexHolder(ReMutex *&mutex) {
 ////////////////////////////////////////////////////////////////////
 INLINE ReMutexHolder::
 ~ReMutexHolder() {
-#if defined(HAVE_THREADS) || !defined(NDEBUG)
+#if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex->release();
 #endif
 }

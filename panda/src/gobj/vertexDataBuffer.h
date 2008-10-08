@@ -21,8 +21,8 @@
 #include "pointerTo.h"
 #include "virtualFile.h"
 #include "pStatCollector.h"
-#include "pmutex.h"
-#include "mutexHolder.h"
+#include "lightMutex.h"
+#include "lightMutexHolder.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : VertexDataBuffer
@@ -86,7 +86,7 @@ private:
   unsigned char *_resident_data;
   size_t _size;
   PT(VertexDataBlock) _block;
-  Mutex _lock;
+  LightMutex _lock;
 
 public:
   static TypeHandle get_class_type() {

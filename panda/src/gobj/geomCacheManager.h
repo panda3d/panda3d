@@ -17,7 +17,7 @@
 
 #include "pandabase.h"
 #include "config_gobj.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "pStatCollector.h"
 
 class GeomCacheEntry;
@@ -63,7 +63,7 @@ public:
 private:
   // This mutex protects all operations on this object, especially the
   // linked-list operations.
-  Mutex _lock;
+  LightMutex _lock;
 
   int _total_size;
 

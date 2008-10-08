@@ -98,7 +98,7 @@ PGSliderBar(const PGSliderBar &copy) :
 ////////////////////////////////////////////////////////////////////
 PandaNode *PGSliderBar::
 make_copy() const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return new PGSliderBar(*this);
 }
 
@@ -111,7 +111,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 press(const MouseWatcherParameter &param, bool background) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (param.has_mouse()) {
     _mouse_pos = param.get_mouse();
   }
@@ -140,7 +140,7 @@ press(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 release(const MouseWatcherParameter &param, bool background) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (MouseButton::is_mouse_button(param.get_button())) {
     _mouse_button_page = false;
   }
@@ -158,7 +158,7 @@ release(const MouseWatcherParameter &param, bool background) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 move(const MouseWatcherParameter &param) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _mouse_pos = param.get_mouse();
   if (_dragging) {
     // We only get here if we the user originally clicked on the
@@ -197,7 +197,7 @@ move(const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 bool PGSliderBar::
 cull_callback(CullTraverser *trav, CullTraverserData &data) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (_manage_pieces && _needs_remanage) {
     remanage();
   }
@@ -231,7 +231,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 xform(const LMatrix4f &mat) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGItem::xform(mat);
   _axis = _axis * mat;
 
@@ -254,7 +254,7 @@ xform(const LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 adjust() {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   string event = get_adjust_event();
   play_sound(event);
   throw_event(event);
@@ -280,7 +280,7 @@ adjust() {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 setup_scroll_bar(bool vertical, float length, float width, float bevel) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   set_state(0);
   clear_state_def(0);
 
@@ -354,7 +354,7 @@ setup_scroll_bar(bool vertical, float length, float width, float bevel) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 setup_slider(bool vertical, float length, float width, float bevel) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   set_state(0);
   clear_state_def(0);
 
@@ -410,7 +410,7 @@ setup_slider(bool vertical, float length, float width, float bevel) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 set_active(bool active) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGItem::set_active(active);
 
   // This also implicitly sets the managed pieces.
@@ -434,7 +434,7 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 remanage() {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _needs_remanage = false;
 
   const LVecBase4f &frame = get_frame();
@@ -486,7 +486,7 @@ remanage() {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 recompute() {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _needs_recompute = false;
 
   if (_min_value != _max_value) {
@@ -603,7 +603,7 @@ recompute() {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 frame_changed() {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   PGItem::frame_changed();
   _needs_remanage = true;
   _needs_recompute = true;
@@ -617,7 +617,7 @@ frame_changed() {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 item_transform_changed(PGItem *) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _needs_recompute = true;
 }
 
@@ -629,7 +629,7 @@ item_transform_changed(PGItem *) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 item_frame_changed(PGItem *) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _needs_recompute = true;
 }
 
@@ -641,7 +641,7 @@ item_frame_changed(PGItem *) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 item_draw_mask_changed(PGItem *) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _needs_recompute = true;
 }
 
@@ -653,7 +653,7 @@ item_draw_mask_changed(PGItem *) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 item_press(PGItem *item, const MouseWatcherParameter &param) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (param.has_mouse()) {
     _mouse_pos = param.get_mouse();
   }
@@ -678,7 +678,7 @@ item_press(PGItem *item, const MouseWatcherParameter &param) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 item_release(PGItem *item, const MouseWatcherParameter &) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   if (item == _scroll_button_held) {
     _scroll_button_held = NULL;
 
@@ -698,7 +698,7 @@ item_release(PGItem *item, const MouseWatcherParameter &) {
 ////////////////////////////////////////////////////////////////////
 void PGSliderBar::
 item_move(PGItem *item, const MouseWatcherParameter &param) {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   _mouse_pos = param.get_mouse();
   if (item == _thumb_button) {
     if (_dragging) {

@@ -14,7 +14,7 @@
 
 #include "geomCacheEntry.h"
 #include "geomCacheManager.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include "config_gobj.h"
 #include "clockObject.h"
 
@@ -39,7 +39,7 @@ record(Thread *current_thread) {
   PT(GeomCacheEntry) keepme = this;
 
   GeomCacheManager *cache_mgr = GeomCacheManager::get_global_ptr();
-  MutexHolder holder(cache_mgr->_lock);
+  LightMutexHolder holder(cache_mgr->_lock);
 
   if (gobj_cat.is_debug()) {
     gobj_cat.debug()
@@ -79,7 +79,7 @@ record(Thread *current_thread) {
 void GeomCacheEntry::
 refresh(Thread *current_thread) {
   GeomCacheManager *cache_mgr = GeomCacheManager::get_global_ptr();
-  MutexHolder holder(cache_mgr->_lock);
+  LightMutexHolder holder(cache_mgr->_lock);
   nassertv(_next != (GeomCacheEntry *)NULL && _prev != (GeomCacheEntry *)NULL);
 
   remove_from_list();
@@ -114,7 +114,7 @@ erase() {
   }
 
   GeomCacheManager *cache_mgr = GeomCacheManager::get_global_ptr();
-  MutexHolder holder(cache_mgr->_lock);
+  LightMutexHolder holder(cache_mgr->_lock);
 
   remove_from_list();
   --cache_mgr->_total_size;

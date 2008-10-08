@@ -20,7 +20,7 @@
 #include "texture.h"
 #include "textFont.h"
 #include "filename.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 #include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -64,7 +64,7 @@ private:
   static FontPool *get_ptr();
   static FontPool *_global_ptr;
 
-  Mutex _lock;
+  LightMutex _lock;
   typedef pmap<string,  PT(TextFont) > Fonts;
   Fonts _fonts;
 };

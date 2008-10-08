@@ -30,7 +30,7 @@
 #include "geomPoints.h"
 #include "dcast.h"
 #include "indent.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 #include "nearly_zero.h"
 
 #include <algorithm>
@@ -111,7 +111,7 @@ MouseWatcher::
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
 remove_region(MouseWatcherRegion *region) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   remove_region_from(_current_regions, region);
   if (region == _preferred_region) {
@@ -138,7 +138,7 @@ remove_region(MouseWatcherRegion *region) {
 ////////////////////////////////////////////////////////////////////
 MouseWatcherRegion *MouseWatcher::
 get_over_region(const LPoint2f &pos) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   Regions regions;
   get_over_regions(regions, pos);
@@ -163,7 +163,7 @@ get_over_region(const LPoint2f &pos) const {
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
 add_group(MouseWatcherGroup *group) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   // See if the group is in the set/vector already
   PT(MouseWatcherGroup) pt = group;
@@ -196,8 +196,8 @@ add_group(MouseWatcherGroup *group) {
 ////////////////////////////////////////////////////////////////////
 bool MouseWatcher::
 remove_group(MouseWatcherGroup *group) {
-  MutexHolder holder(_lock);
-  MutexHolder holder2(group->_lock);
+  LightMutexHolder holder(_lock);
+  LightMutexHolder holder2(group->_lock);
 
   group->do_sort_regions();
 
@@ -255,10 +255,10 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
     return true;
   }
 
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
-  MutexHolder holder2(old_group->_lock);
-  MutexHolder holder3(new_group->_lock);
+  LightMutexHolder holder2(old_group->_lock);
+  LightMutexHolder holder3(new_group->_lock);
 
   old_group->do_sort_regions();
   new_group->do_sort_regions();
@@ -351,7 +351,7 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
 ////////////////////////////////////////////////////////////////////
 int MouseWatcher::
 get_num_groups() const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   return _groups.size();
 }
 
@@ -363,7 +363,7 @@ get_num_groups() const {
 ////////////////////////////////////////////////////////////////////
 MouseWatcherGroup *MouseWatcher::
 get_group(int n) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   nassertr(n >= 0 && n < (int)_groups.size(), NULL);
   return _groups[n];
 }
@@ -534,7 +534,7 @@ note_activity() {
 ////////////////////////////////////////////////////////////////////
 void MouseWatcher::
 output(ostream &out) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   DataNode::output(out);
 
   int count = _regions.size();
@@ -558,7 +558,7 @@ write(ostream &out, int indent_level) const {
     << "MouseWatcher " << get_name() << ":\n";
   MouseWatcherGroup::write(out, indent_level + 2);
 
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
   if (!_groups.empty()) {
     Groups::const_iterator gi;
     for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
@@ -1380,7 +1380,7 @@ void MouseWatcher::
 do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
                  DataNodeTransmit &output) {
   Thread *current_thread = trav->get_current_thread();
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   bool activity = false;
 

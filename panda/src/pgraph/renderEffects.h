@@ -24,8 +24,8 @@
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "ordered_vector.h"
-#include "reMutex.h"
-#include "pmutex.h"
+#include "lightReMutex.h"
+#include "lightMutex.h"
 
 class CullTraverser;
 class CullTraverserData;
@@ -124,7 +124,7 @@ private:
   // This mutex protects _states.  It also protects any modification
   // to the cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
-  static ReMutex *_states_lock;
+  static LightReMutex *_states_lock;
   typedef pset<const RenderEffects *, indirect_less<const RenderEffects *> > States;
   static States *_states;
   static CPT(RenderEffects) _empty_state;
@@ -167,7 +167,7 @@ private:
   int _flags;
 
   // This mutex protects _flags, and all of the above computed values.
-  Mutex _lock;
+  LightMutex _lock;
 
 
 public:

@@ -20,7 +20,7 @@
 #include "virtualFileSystem.h"
 #include "nodePath.h"
 #include "loader.h"
-#include "mutexHolder.h"
+#include "lightMutexHolder.h"
 
 FontPool *FontPool::_global_ptr = (FontPool *)NULL;
 
@@ -42,7 +42,7 @@ write(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 bool FontPool::
 ns_has_font(const string &str) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   string index_str;
   Filename filename;
@@ -72,7 +72,7 @@ ns_load_font(const string &str) {
   lookup_filename(str, index_str, filename, face_index);
 
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
     
     Fonts::const_iterator ti;
     ti = _fonts.find(index_str);
@@ -126,7 +126,7 @@ ns_load_font(const string &str) {
 
 
   {
-    MutexHolder holder(_lock);
+    LightMutexHolder holder(_lock);
 
     // Look again.  It may have been loaded by another thread.
     Fonts::const_iterator ti;
@@ -149,7 +149,7 @@ ns_load_font(const string &str) {
 ////////////////////////////////////////////////////////////////////
 void FontPool::
 ns_add_font(const string &str, TextFont *font) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   string index_str;
   Filename filename;
@@ -167,7 +167,7 @@ ns_add_font(const string &str, TextFont *font) {
 ////////////////////////////////////////////////////////////////////
 void FontPool::
 ns_release_font(const string &filename) {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   Fonts::iterator ti;
   ti = _fonts.find(filename);
@@ -183,7 +183,7 @@ ns_release_font(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 void FontPool::
 ns_release_all_fonts() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   _fonts.clear();
 }
@@ -195,7 +195,7 @@ ns_release_all_fonts() {
 ////////////////////////////////////////////////////////////////////
 int FontPool::
 ns_garbage_collect() {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   int num_released = 0;
   Fonts new_set;
@@ -225,7 +225,7 @@ ns_garbage_collect() {
 ////////////////////////////////////////////////////////////////////
 void FontPool::
 ns_list_contents(ostream &out) const {
-  MutexHolder holder(_lock);
+  LightMutexHolder holder(_lock);
 
   out << _fonts.size() << " fonts:\n";
   Fonts::const_iterator ti;

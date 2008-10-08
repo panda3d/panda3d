@@ -21,6 +21,8 @@
 
 class Thread;
 
+#ifndef DEBUG_THREADS
+
 ////////////////////////////////////////////////////////////////////
 //       Class : ReMutexDirect
 // Description : This class implements a standard reMutex by making
@@ -67,6 +69,8 @@ private:
   MutexTrueImpl _lock_impl;
   ConditionVarImpl _cvar_impl;
 #endif  // HAVE_REMUTEXTRUEIMPL
+
+  friend class LightReMutexDirect;
 };
 
 INLINE ostream &
@@ -76,5 +80,7 @@ operator << (ostream &out, const ReMutexDirect &m) {
 }
 
 #include "reMutexDirect.I"
+
+#endif  // !DEBUG_THREADS
 
 #endif

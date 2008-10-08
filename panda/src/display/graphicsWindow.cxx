@@ -17,8 +17,8 @@
 #include "config_display.h"
 #include "mouseButton.h"
 #include "keyboardButton.h"
-#include "mutexHolder.h"
-#include "reMutexHolder.h"
+#include "lightMutexHolder.h"
+#include "lightReMutexHolder.h"
 #include "throw_event.h"
 #include "string_utils.h"
 
@@ -88,7 +88,7 @@ const WindowProperties GraphicsWindow::
 get_properties() const {
   WindowProperties result;
   {
-    ReMutexHolder holder(_properties_lock);
+    LightReMutexHolder holder(_properties_lock);
     result = _properties;
   }
   return result;
@@ -106,7 +106,7 @@ const WindowProperties GraphicsWindow::
 get_requested_properties() const {
   WindowProperties result;
   {
-    ReMutexHolder holder(_properties_lock);
+    LightReMutexHolder holder(_properties_lock);
     result = _requested_properties;
   }
   return result;
@@ -120,7 +120,7 @@ get_requested_properties() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 clear_rejected_properties() {
-  ReMutexHolder holder(_properties_lock);
+  LightReMutexHolder holder(_properties_lock);
   _rejected_properties.clear();
 }
 
@@ -137,7 +137,7 @@ WindowProperties GraphicsWindow::
 get_rejected_properties() const {
   WindowProperties result;
   {
-    ReMutexHolder holder(_properties_lock);
+    LightReMutexHolder holder(_properties_lock);
     result = _rejected_properties;
   }
   return result;
@@ -156,7 +156,7 @@ get_rejected_properties() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 request_properties(const WindowProperties &requested_properties) {
-  ReMutexHolder holder(_properties_lock);
+  LightReMutexHolder holder(_properties_lock);
   _requested_properties.add_properties(requested_properties);
 
   if (!_has_size && _requested_properties.has_size()) {
@@ -197,7 +197,7 @@ is_active() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 set_window_event(const string &window_event) {
-  ReMutexHolder holder(_properties_lock);
+  LightReMutexHolder holder(_properties_lock);
   _window_event = window_event;
 }
 
@@ -211,7 +211,7 @@ set_window_event(const string &window_event) {
 string GraphicsWindow::
 get_window_event() const {
   string result;
-  ReMutexHolder holder(_properties_lock);
+  LightReMutexHolder holder(_properties_lock);
   result = _window_event;
   return result;
 }
@@ -242,7 +242,7 @@ get_window_event() const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 set_close_request_event(const string &close_request_event) {
-  ReMutexHolder holder(_properties_lock);
+  LightReMutexHolder holder(_properties_lock);
   _close_request_event = close_request_event;
 }
 
@@ -258,7 +258,7 @@ set_close_request_event(const string &close_request_event) {
 string GraphicsWindow::
 get_close_request_event() const {
   string result;
-  ReMutexHolder holder(_properties_lock);
+  LightReMutexHolder holder(_properties_lock);
   result = _close_request_event;
   return result;
 }
@@ -277,7 +277,7 @@ int GraphicsWindow::
 get_num_input_devices() const {
   int result;
   {
-    MutexHolder holder(_input_lock);
+    LightMutexHolder holder(_input_lock);
     result = _input_devices.size();
   }
   return result;
@@ -292,7 +292,7 @@ string GraphicsWindow::
 get_input_device_name(int device) const {
   string result;
   {
-    MutexHolder holder(_input_lock);
+    LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), "");
     result = _input_devices[device].get_name();
   }
@@ -310,7 +310,7 @@ bool GraphicsWindow::
 has_pointer(int device) const {
   bool result;
   {
-    MutexHolder holder(_input_lock);
+    LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), false);
     result = _input_devices[device].has_pointer();
   }
@@ -327,7 +327,7 @@ bool GraphicsWindow::
 has_keyboard(int device) const {
   bool result;
   {
-    MutexHolder holder(_input_lock);
+    LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), false);
     result = _input_devices[device].has_keyboard();
   }
@@ -341,7 +341,7 @@ has_keyboard(int device) const {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 enable_pointer_events(int device) {
-  MutexHolder holder(_input_lock);
+  LightMutexHolder holder(_input_lock);
   nassertv(device >= 0 && device < (int)_input_devices.size());
   _input_devices[device].enable_pointer_events();
 }
@@ -353,7 +353,7 @@ enable_pointer_events(int device) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 disable_pointer_events(int device) {
-  MutexHolder holder(_input_lock);
+  LightMutexHolder holder(_input_lock);
   nassertv(device >= 0 && device < (int)_input_devices.size());
   _input_devices[device].disable_pointer_events();
 }
@@ -365,7 +365,7 @@ disable_pointer_events(int device) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 enable_pointer_mode(int device, double speed) {
-  MutexHolder holder(_input_lock);
+  LightMutexHolder holder(_input_lock);
   nassertv(device >= 0 && device < (int)_input_devices.size());
   _input_devices[device].enable_pointer_mode(speed);
 }
@@ -377,7 +377,7 @@ enable_pointer_mode(int device, double speed) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsWindow::
 disable_pointer_mode(int device) {
-  MutexHolder holder(_input_lock);
+  LightMutexHolder holder(_input_lock);
   nassertv(device >= 0 && device < (int)_input_devices.size());
   _input_devices[device].disable_pointer_mode();
 }
@@ -392,7 +392,7 @@ MouseData GraphicsWindow::
 get_pointer(int device) const {
   MouseData result;
   {
-    MutexHolder holder(_input_lock);
+    LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), MouseData());
     result = _input_devices[device].get_pointer();
   }
@@ -438,7 +438,7 @@ bool GraphicsWindow::
 has_button_event(int device) const {
   bool result;
   {
-    MutexHolder holder(_input_lock);
+    LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), false);
     result = _input_devices[device].has_button_event();
   }
@@ -455,7 +455,7 @@ ButtonEvent GraphicsWindow::
 get_button_event(int device) {
   ButtonEvent result;
   {
-    MutexHolder holder(_input_lock);
+    LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), ButtonEvent());
     nassertr(_input_devices[device].has_button_event(), ButtonEvent());
     result = _input_devices[device].get_button_event();
@@ -475,7 +475,7 @@ bool GraphicsWindow::
 has_pointer_event(int device) const {
   bool result;
   {
-    MutexHolder holder(_input_lock);
+    LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), false);
     result = _input_devices[device].has_pointer_event();
   }
@@ -492,7 +492,7 @@ PT(PointerEventList) GraphicsWindow::
 get_pointer_events(int device) {
   PT(PointerEventList) result;
   {
-    MutexHolder holder(_input_lock);
+    LightMutexHolder holder(_input_lock);
     nassertr(device >= 0 && device < (int)_input_devices.size(), NULL);
     nassertr(_input_devices[device].has_pointer_event(), NULL);
     result = _input_devices[device].get_pointer_events();
@@ -591,7 +591,7 @@ process_events() {
     // bitmask after all.
     WindowProperties properties;
     {
-      ReMutexHolder holder(_properties_lock);
+      LightReMutexHolder holder(_properties_lock);
       properties = _requested_properties;
       _requested_properties.clear();
 
@@ -806,7 +806,7 @@ system_changed_properties(const WindowProperties &properties) {
       << "system_changed_properties(" << properties << ")\n";
   }
 
-  ReMutexHolder holder(_properties_lock);
+  LightReMutexHolder holder(_properties_lock);
 
   if (properties.has_size()) {
     system_changed_size(properties.get_x_size(), properties.get_y_size());

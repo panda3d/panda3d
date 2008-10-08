@@ -29,8 +29,8 @@
 #include "textNode.h"
 #include "plane.h"
 #include "pmap.h"
-#include "reMutex.h"
-#include "reMutexHolder.h"
+#include "lightReMutex.h"
+#include "lightReMutexHolder.h"
 
 class PGTop;
 class MouseWatcherParameter;
@@ -199,7 +199,7 @@ private:
   bool clip_frame(pvector<LPoint2f> &source_points, const Planef &plane) const;
 
 protected:
-  ReMutex _lock;
+  LightReMutex _lock;
 
 private:
   PGItemNotify *_notify;

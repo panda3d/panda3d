@@ -22,7 +22,7 @@
 #include "indirectCompareTo.h"
 #include "pvector.h"
 #include "pmap.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 class GeomVertexFormat;
 class GeomVertexData;
@@ -146,7 +146,7 @@ private:
     void unregister_format(GeomVertexArrayFormat *format);
 
     ArrayFormats _formats;
-    Mutex _lock;
+    LightMutex _lock;
   };
 
   static Registry *_registry;

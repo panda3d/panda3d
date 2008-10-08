@@ -20,7 +20,7 @@
 #include "typedWritableReferenceCount.h"
 #include "pointerTo.h"
 #include "pmap.h"
-#include "pmutex.h"
+#include "lightMutex.h"
 
 class FactoryParams;
 
@@ -93,7 +93,7 @@ private:
 
   typedef phash_map<string, InternalName *, string_hash> NameTable;
   NameTable _name_table;
-  Mutex _name_table_lock;
+  LightMutex _name_table_lock;
 
   static PT(InternalName) _root;
   static PT(InternalName) _error;

@@ -18,8 +18,8 @@
 #define ENABLE_MUTEX 1
 
 #if ENABLE_MUTEX
-#include "pmutex.h"
-#include "mutexHolder.h"
+#include "lightMutex.h"
+#include "lightMutexHolder.h"
 #define LruMutexHolder(mutex) MutexHolder(mutex)
 #else
 #define LruMutexHolder(mutex)

@@ -27,8 +27,8 @@
 #include "texMatrixAttrib.h"
 #include "geomMunger.h"
 #include "weakPointerTo.h"
-#include "reMutex.h"
-#include "pmutex.h"
+#include "lightReMutex.h"
+#include "lightMutex.h"
 #include "deletedChain.h"
 #include "simpleHashMap.h"
 #include "cacheStats.h"
@@ -221,7 +221,7 @@ private:
   // This mutex protects _states.  It also protects any modification
   // to the cache, which is encoded in _composition_cache and
   // _invert_composition_cache.
-  static ReMutex *_states_lock;
+  static LightReMutex *_states_lock;
   typedef phash_set<const RenderState *, indirect_less_hash<const RenderState *> > States;
   static States *_states;
   static CPT(RenderState) _empty_state;
@@ -344,7 +344,7 @@ private:
   unsigned int _flags;
 
   // This mutex protects _flags, and all of the above computed values.
-  Mutex _lock;
+  LightMutex _lock;
 
   static CacheStats _cache_stats;
 

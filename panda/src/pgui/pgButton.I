@@ -93,7 +93,7 @@ get_click_prefix() {
 ////////////////////////////////////////////////////////////////////
 INLINE string PGButton::
 get_click_event(const ButtonHandle &button) const {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return get_click_prefix() + button.get_name() + "-" + get_id();
 }
 
@@ -105,6 +105,6 @@ get_click_event(const ButtonHandle &button) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PGButton::
 is_button_down() {
-  ReMutexHolder holder(_lock);
+  LightReMutexHolder holder(_lock);
   return _button_down;
 }
