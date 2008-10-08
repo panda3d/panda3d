@@ -366,6 +366,24 @@ class DirectScrolledList(DirectFrame):
             return 1
         else:
             return 0
+        
+    def removeAndDestroyItem(self, item, refresh = 1):
+        """
+        Remove and destroy this item from the panel.
+        """
+        assert self.notify.debugStateCall(self)
+        if item in self["items"]:
+            if hasattr(self, "currentSelected") and self.currentSelected is item:
+                del self.currentSelected
+            if (hasattr(item, 'destroy') and callable(item.destroy)):
+                item.destroy()
+            self["items"].remove(item)
+            if type(item) != type(''):
+                item.reparentTo(hidden)
+            self.refresh()
+            return 1
+        else:
+            return 0
 
     def removeAllItems(self, refresh=1):
         """
@@ -391,6 +409,29 @@ class DirectScrolledList(DirectFrame):
         if (refresh):
             self.refresh()
             
+        return retval
+    
+    def removeAndDestroyAllItems(self, refresh = 1):
+        """
+        Remove and destroy all items from the panel.
+        Warning 2006_10_19 tested only in the trolley metagame
+        """
+        assert self.notify.debugStateCall(self)
+        retval = 0
+        while len (self["items"]):
+            item = self['items'][0]
+            if hasattr(self, "currentSelected") and self.currentSelected is item:
+                del self.currentSelected
+            if (hasattr(item, 'destroy') and callable(item.destroy)):
+                item.destroy()
+            self["items"].remove(item)
+            if type(item) != type(''):
+                #RAU possible leak here, let's try to do the right thing 
+                #item.reparentTo(hidden)
+                item.removeNode()
+            retval = 1
+        if (refresh):
+            self.refresh()            
         return retval
 
     def refresh(self):
