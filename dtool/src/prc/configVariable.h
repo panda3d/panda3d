@@ -46,6 +46,7 @@ PUBLISHED:
 
   INLINE const string &get_string_value() const;
   INLINE void set_string_value(const string &value);
+  INLINE void clear_value();
 
   INLINE int get_num_words() const;
 

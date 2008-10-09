@@ -103,6 +103,19 @@ set_string_value(const string &string_value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariable::clear_value
+//       Access: Published
+//  Description: Removes the value assigned to this variable, and lets
+//               its original value (as read from the prc files) show
+//               through.
+////////////////////////////////////////////////////////////////////
+INLINE void ConfigVariable::
+clear_value() {
+  nassertv(_core != (ConfigVariableCore *)NULL);
+  _core->clear_local_value();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariable::get_num_words
 //       Access: Published
 //  Description: Returns the number of words in the variable's
