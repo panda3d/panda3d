@@ -1540,7 +1540,7 @@ update_animated_vertices(GeomVertexData::CData *cdata, Thread *current_thread) {
             data_column->get_numeric_type() == NT_float32) {
           // Table of vectors is a table of LVector3f's.  Optimize this
           // common case.
-          int data_index = new_format->get_array_with(new_format->get_point(ci));
+          int data_index = new_format->get_array_with(new_format->get_vector(ci));
           PT(GeomVertexArrayData) data_array = new_data->modify_array(data_index);
           PT(GeomVertexArrayDataHandle) data_handle = data_array->modify_handle();
           unsigned char *datat = data_handle->get_write_pointer();
