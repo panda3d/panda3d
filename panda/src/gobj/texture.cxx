@@ -920,7 +920,7 @@ get_ram_mipmap_image(int n) {
 void Texture::
 set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size) {
   MutexHolder holder(_lock);
-  nassertv(_ram_image_compression != CM_off || image.size() == get_expected_ram_mipmap_image_size(n));
+  nassertv(_ram_image_compression != CM_off || image.size() == do_get_expected_ram_mipmap_image_size(n));
 
   while (n >= (int)_ram_images.size()) {
     _ram_images.push_back(RamImage());
@@ -3099,7 +3099,7 @@ do_make_ram_mipmap_image(int n) {
     _ram_images.back()._page_size = 0;
   }
 
-  _ram_images[n]._image = PTA_uchar::empty_array(get_expected_ram_mipmap_image_size(n), get_class_type());
+  _ram_images[n]._image = PTA_uchar::empty_array(do_get_expected_ram_mipmap_image_size(n), get_class_type());
   _ram_images[n]._page_size = do_get_expected_ram_mipmap_page_size(n);
   return _ram_images[n]._image;
 }
@@ -3271,7 +3271,6 @@ do_assign(const Texture &copy) {
   _border_color = copy._border_color;
   _compression = copy._compression;
   _match_framebuffer_format = copy._match_framebuffer_format;
-  _post_load_store_cache = false;
   _quality_level = copy._quality_level;
   _ram_image_compression = copy._ram_image_compression;
   _ram_images = copy._ram_images;

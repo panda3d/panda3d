@@ -1558,7 +1558,7 @@ recompute_minmax(GeomPrimitive::CData *cdata) {
         cdata->_min_vertex = min(cdata->_min_vertex, vertex);
         cdata->_max_vertex = max(cdata->_max_vertex, vertex);
 
-        nassertv(pi < cdata->_ends.size());
+        nassertv(pi < (int)cdata->_ends.size());
         if (vi == cdata->_ends[pi]) {
           mins.add_data1i(min_prim);
           maxs.add_data1i(max_prim);

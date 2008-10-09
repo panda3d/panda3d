@@ -1283,7 +1283,7 @@ get_ram_mipmap_page_size(int n) const {
 INLINE size_t Texture::
 get_expected_ram_mipmap_image_size(int n) const {
   MutexHolder holder(_lock);
-  return do_get_expected_ram_mipmap_page_size(n) * (size_t)do_get_expected_mipmap_z_size(n);
+  return do_get_expected_ram_mipmap_image_size(n);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1820,6 +1820,16 @@ do_get_expected_ram_image_size() const {
 INLINE size_t Texture::
 do_get_expected_ram_page_size() const {
   return (size_t)(_x_size * _y_size * _num_components * _component_width);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_get_expected_ram_mipmap_image_size
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE size_t Texture::
+do_get_expected_ram_mipmap_image_size(int n) const {
+  return do_get_expected_ram_mipmap_page_size(n) * (size_t)do_get_expected_mipmap_z_size(n);
 }
 
 ////////////////////////////////////////////////////////////////////

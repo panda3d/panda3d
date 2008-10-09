@@ -513,6 +513,7 @@ protected:
   INLINE size_t do_get_expected_ram_image_size() const;
   INLINE size_t do_get_expected_ram_page_size() const;
   size_t do_get_ram_mipmap_page_size(int n) const;
+  INLINE size_t do_get_expected_ram_mipmap_image_size(int n) const;
   INLINE size_t do_get_expected_ram_mipmap_page_size(int n) const;
   int do_get_expected_mipmap_x_size(int n) const;
   int do_get_expected_mipmap_y_size(int n) const;
