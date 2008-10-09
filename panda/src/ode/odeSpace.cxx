@@ -29,6 +29,7 @@ int OdeSpace::contact_ids[128];
 OdeSpace::
 OdeSpace(dSpaceID id) : 
   _id(id) {
+  my_world = NULL;
 }
 
 OdeSpace::
@@ -104,11 +105,16 @@ set_auto_collide_joint_group(OdeJointGroup &joint_group)
 int OdeSpace::
 autoCollide()
 {
-    OdeSpace::contactCount = 0;
-    _collide_space = this;
-    _collide_world = my_world;
-    dSpaceCollide(_id, this, &autoCallback);
-    return OdeSpace::contactCount;
+    if (my_world == NULL) {
+      odespace_cat.error() << "No collide world has been set!\n";
+      return 0;
+    } else {
+      OdeSpace::contactCount = 0;
+      _collide_space = this;
+      _collide_world = my_world;
+      dSpaceCollide(_id, this, &autoCallback);
+      return OdeSpace::contactCount;
+    }
 }
 
 double OdeSpace:: 
@@ -155,6 +161,7 @@ autoCallback(void *data, dGeomID o1, dGeomID o2)
     int surface1 = _collide_space->get_surface_type(o1);
     int surface2 = _collide_space->get_surface_type(o2);
     
+    nassertv(_collide_world != NULL);
     sSurfaceParams collide_params;
     collide_params = _collide_world->get_surface(surface1, surface2);
     
