@@ -16,6 +16,9 @@
 #include "mainThread.h"
 #include "externalThread.h"
 #include "config_pipeline.h"
+#include "mutexDebug.h"
+#include "conditionVarDebug.h"
+#include "conditionVarFullDebug.h"
 
 Thread *Thread::_main_thread;
 Thread *Thread::_external_thread;
@@ -52,6 +55,8 @@ Thread(const string &name, const string &sync_name) :
 
 #ifdef DEBUG_THREADS
   _blocked_on_mutex = NULL;
+  _waiting_on_cvar = NULL;
+  _waiting_on_cvar_full = NULL;
 #endif
 
 #if defined(HAVE_PYTHON) && !defined(SIMPLE_THREADS)
@@ -69,7 +74,9 @@ Thread(const string &name, const string &sync_name) :
 Thread::
 ~Thread() {
 #ifdef DEBUG_THREADS
-  nassertv(_blocked_on_mutex == NULL);
+  nassertv(_blocked_on_mutex == NULL &&
+           _waiting_on_cvar == NULL &&
+           _waiting_on_cvar_full == NULL);
 #endif
 }
 
@@ -151,6 +158,27 @@ set_pipeline_stage(int pipeline_stage) {
 void Thread::
 output(ostream &out) const {
   out << get_type() << " " << get_name();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::output_blocker
+//       Access: Published
+//  Description: Writes a description of the mutex or condition
+//               variable that this thread is blocked on.  Writes
+//               nothing if there is no blocker, or if we are not in
+//               DEBUG_THREADS mode.
+////////////////////////////////////////////////////////////////////
+void Thread::
+output_blocker(ostream &out) const {
+#ifdef DEBUG_THREADS
+  if (_blocked_on_mutex != (MutexDebug *)NULL) {
+    out << *_blocked_on_mutex;
+  } else if (_waiting_on_cvar != (ConditionVarDebug *)NULL) {
+    out << *_waiting_on_cvar;
+  } else if (_waiting_on_cvar_full != (ConditionVarFullDebug *)NULL) {
+    out << *_waiting_on_cvar_full;
+  }
+#endif  // DEBUG_THREADS
 }
 
 ////////////////////////////////////////////////////////////////////

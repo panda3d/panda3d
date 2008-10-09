@@ -31,6 +31,8 @@
 class Mutex;
 class ReMutex;
 class MutexDebug;
+class ConditionVarDebug;
+class ConditionVarFullDebug;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Thread
@@ -83,6 +85,7 @@ PUBLISHED:
   BLOCKING INLINE static void consider_yield();
 
   virtual void output(ostream &out) const;
+  void output_blocker(ostream &out) const;
   static void write_status(ostream &out);
 
   INLINE bool is_started() const;
@@ -130,7 +133,9 @@ private:
 
 #ifdef DEBUG_THREADS
   MutexDebug *_blocked_on_mutex;
-#endif
+  ConditionVarDebug *_waiting_on_cvar;
+  ConditionVarFullDebug *_waiting_on_cvar_full;
+#endif  // DEBUG_THREADS
 
 private:
   static Thread *_main_thread;
@@ -154,6 +159,8 @@ private:
   static TypeHandle _type_handle;
 
   friend class MutexDebug;
+  friend class ConditionVarDebug;
+  friend class ConditionVarFullDebug;
 
   friend class ThreadDummyImpl;
   friend class ThreadWin32Impl;

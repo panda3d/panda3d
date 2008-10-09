@@ -74,9 +74,11 @@ void ConditionVarFullDebug::
 wait() {
   _mutex._global_lock->lock();
 
+  Thread *this_thread = Thread::get_current_thread();
+
   if (!_mutex.do_debug_is_locked()) {
     ostringstream ostr;
-    ostr << *Thread::get_current_thread() << " attempted to wait on "
+    ostr << *this_thread << " attempted to wait on "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
     _mutex._global_lock->release();
@@ -85,16 +87,25 @@ wait() {
 
   if (thread_cat->is_spam()) {
     thread_cat.spam()
-      << *Thread::get_current_thread() << " waiting on " << *this << "\n";
+      << *this_thread << " waiting on " << *this << "\n";
   }
+
+  nassertd(this_thread->_waiting_on_cvar == NULL &&
+           this_thread->_waiting_on_cvar_full == NULL) {
+  }
+  this_thread->_waiting_on_cvar_full = this;
   
   _mutex.do_release();
-  _impl.wait();
+  _impl.wait();  // temporarily releases _global_lock
   _mutex.do_lock();
+
+  nassertd(this_thread->_waiting_on_cvar_full == this) {
+  }
+  this_thread->_waiting_on_cvar_full = NULL;
 
   if (thread_cat.is_spam()) {
     thread_cat.spam()
-      << *Thread::get_current_thread() << " awake on " << *this << "\n";
+      << *this_thread << " awake on " << *this << "\n";
   }
 
   _mutex._global_lock->release();
@@ -115,9 +126,11 @@ void ConditionVarFullDebug::
 wait(double timeout) {
   _mutex._global_lock->lock();
 
+  Thread *this_thread = Thread::get_current_thread();
+
   if (!_mutex.do_debug_is_locked()) {
     ostringstream ostr;
-    ostr << *Thread::get_current_thread() << " attempted to wait on "
+    ostr << *this_thread << " attempted to wait on "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
     _mutex._global_lock->release();
@@ -126,17 +139,26 @@ wait(double timeout) {
 
   if (thread_cat.is_spam()) {
     thread_cat.spam()
-      << *Thread::get_current_thread() << " waiting on " << *this 
+      << *this_thread << " waiting on " << *this 
       << ", with timeout " << timeout << "\n";
   }
+
+  nassertd(this_thread->_waiting_on_cvar == NULL &&
+           this_thread->_waiting_on_cvar_full == NULL) {
+  }
+  this_thread->_waiting_on_cvar_full = this;
   
   _mutex.do_release();
-  _impl.wait(timeout);
+  _impl.wait(timeout);  // temporarily releases _global_lock
   _mutex.do_lock();
+
+  nassertd(this_thread->_waiting_on_cvar_full == this) {
+  }
+  this_thread->_waiting_on_cvar_full = NULL;
 
   if (thread_cat.is_spam()) {
     thread_cat.spam()
-      << *Thread::get_current_thread() << " awake on " << *this << "\n";
+      << *this_thread << " awake on " << *this << "\n";
   }
 
   _mutex._global_lock->release();
@@ -162,9 +184,12 @@ wait(double timeout) {
 void ConditionVarFullDebug::
 signal() {
   _mutex._global_lock->lock();
+
+  Thread *this_thread = Thread::get_current_thread();
+
   if (!_mutex.do_debug_is_locked()) {
     ostringstream ostr;
-    ostr << *Thread::get_current_thread() << " attempted to signal "
+    ostr << *this_thread << " attempted to signal "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
     _mutex._global_lock->release();
@@ -173,7 +198,7 @@ signal() {
 
   if (thread_cat->is_spam()) {
     thread_cat.spam()
-      << *Thread::get_current_thread() << " signalling " << *this << "\n";
+      << *this_thread << " signalling " << *this << "\n";
   }
 
   _impl.signal();
@@ -197,9 +222,12 @@ signal() {
 void ConditionVarFullDebug::
 signal_all() {
   _mutex._global_lock->lock();
+
+  Thread *this_thread = Thread::get_current_thread();
+
   if (!_mutex.do_debug_is_locked()) {
     ostringstream ostr;
-    ostr << *Thread::get_current_thread() << " attempted to signal "
+    ostr << *this_thread << " attempted to signal "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
     _mutex._global_lock->release();
@@ -208,7 +236,7 @@ signal_all() {
 
   if (thread_cat->is_spam()) {
     thread_cat.spam()
-      << *Thread::get_current_thread() << " signalling all " << *this << "\n";
+      << *this_thread << " signalling all " << *this << "\n";
   }
 
   _impl.signal_all();

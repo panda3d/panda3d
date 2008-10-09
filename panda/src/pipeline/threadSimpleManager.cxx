@@ -334,6 +334,9 @@ write_status(ostream &out) const {
   for (ti = _ready.begin(); ti != _ready.end(); ++ti) {
     out << " " << *(*ti)->_parent_obj;
   }
+  for (ti = _next_ready.begin(); ti != _next_ready.end(); ++ti) {
+    out << " " << *(*ti)->_parent_obj;
+  }
   out << "\n";
 
   double now = get_current_time();
@@ -357,6 +360,11 @@ write_status(ostream &out) const {
     for (ti = threads.begin(); ti != threads.end(); ++ti) {
       ThreadSimpleImpl *thread = (*ti);
       out << " " << *thread->_parent_obj;
+#ifdef DEBUG_THREADS
+      out << " (";
+      thread->_parent_obj->output_blocker(out);
+      out << ")";
+#endif  // DEBUG_THREADS
     }
     out << "\n";
   }
@@ -527,17 +535,23 @@ wake_sleepers(double now) {
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 report_deadlock() {
-  Blocked::iterator bi;
+  Blocked::const_iterator bi;
   for (bi = _blocked.begin(); bi != _blocked.end(); ++bi) {
     BlockerSimple *blocker = (*bi).first;
-    FifoThreads &threads = (*bi).second;
+    const FifoThreads &threads = (*bi).second;
     thread_cat.info()
       << "On blocker " << blocker << ":\n";
-    FifoThreads::iterator ti;
+    FifoThreads::const_iterator ti;
     for (ti = threads.begin(); ti != threads.end(); ++ti) {
       ThreadSimpleImpl *thread = (*ti);
       thread_cat.info()
-        << "  " << *thread->_parent_obj << "\n";
+        << "  " << *thread->_parent_obj;
+#ifdef DEBUG_THREADS
+      thread_cat.info(false) << " (";
+      thread->_parent_obj->output_blocker(thread_cat.info(false));
+      thread_cat.info(false) << ")";
+#endif  // DEBUG_THREADS
+      thread_cat.info(false) << "\n";
     }
   }
 }
