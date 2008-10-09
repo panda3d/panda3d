@@ -1900,5 +1900,5 @@ ANIMATION STRUCTURE
   Although animations and models are typically stored in separate egg
   files, it is possible to store them together in one large egg file.
   The Actor interface will then make available all of the animations
-  it find within the egg file, by bundle name.
+  it finds within the egg file, by bundle name.
 
