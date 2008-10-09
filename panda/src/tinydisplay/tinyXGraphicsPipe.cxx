@@ -28,7 +28,7 @@ bool TinyXGraphicsPipe::_error_handlers_installed = false;
 TinyXGraphicsPipe::ErrorHandlerFunc *TinyXGraphicsPipe::_prev_error_handler;
 TinyXGraphicsPipe::IOErrorHandlerFunc *TinyXGraphicsPipe::_prev_io_error_handler;
 
-ReMutex TinyXGraphicsPipe::_x_mutex;
+LightReMutex TinyXGraphicsPipe::_x_mutex;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyXGraphicsPipe::Constructor
