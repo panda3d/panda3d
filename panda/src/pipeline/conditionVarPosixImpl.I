@@ -48,7 +48,12 @@ INLINE void ConditionVarPosixImpl::
 wait() {
   TAU_PROFILE("ConditionVarPosixImpl::wait()", " ", TAU_USER);
   int result = pthread_cond_wait(&_cvar, &_mutex._lock);
-  nassertv(result == 0);
+#ifndef NDEBUG
+  if (result != 0) {
+    pipeline_cat.error()
+      << "Unexpected error " << result << " from pthread_cond_wait()\n";
+  }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

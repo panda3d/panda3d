@@ -22,6 +22,7 @@
 
 #include "mutexPosixImpl.h"
 #include "pnotify.h"
+#include "config_pipeline.h"
 
 #include <pthread.h>
 

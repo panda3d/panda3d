@@ -41,7 +41,12 @@ wait(double timeout) {
   ts.tv_nsec += (int)((timeout - seconds) * 1000000.0);
 
   int result = pthread_cond_timedwait(&_cvar, &_mutex._lock, &ts);
-  nassertv(result == 0 || errno == ETIMEDOUT);
+#ifndef NDEBUG
+  if (result != 0 && result != ETIMEDOUT) {
+    pipeline_cat.error()
+      << "Unexpected error " << result << " from pthread_cond_timedwait()\n";
+  }
+#endif
 }
 
 #endif  // HAVE_POSIX_THREADS
