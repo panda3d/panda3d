@@ -3271,6 +3271,7 @@ do_assign(const Texture &copy) {
   _border_color = copy._border_color;
   _compression = copy._compression;
   _match_framebuffer_format = copy._match_framebuffer_format;
+  _post_load_store_cache = false;
   _quality_level = copy._quality_level;
   _ram_image_compression = copy._ram_image_compression;
   _ram_images = copy._ram_images;
