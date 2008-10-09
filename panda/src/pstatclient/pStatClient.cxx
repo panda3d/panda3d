@@ -372,6 +372,11 @@ void PStatClient::
 client_main_tick() {
   LightReMutexHolder holder(_lock);
   if (has_impl()) {
+    if (!_impl->client_is_connected()) {
+      client_disconnect();
+      return;
+    }
+
     _impl->client_main_tick();
 
     MultiThingsByName::const_iterator ni =

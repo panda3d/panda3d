@@ -458,7 +458,7 @@ handle_server_control_message(const PStatServerControlMessage &message) {
 void PStatClientImpl::
 connection_reset(const PT(Connection) &connection, bool) {
   if (connection == _tcp_connection) {
-    _client->client_disconnect();
+    client_disconnect();
   } else if (connection == _udp_connection) {
     pstats_cat.warning()
       << "Trouble sending UDP; switching to TCP only.\n";
