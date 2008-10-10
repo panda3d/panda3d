@@ -91,6 +91,9 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
 
         self.activateSmoothing(GlobalSmoothing, GlobalPrediction)
 
+        # clear stopped flag for re-generate
+        self.stopped = False
+
     def disable(self):
         DistributedSmoothNodeBase.DistributedSmoothNodeBase.disable(self)
         DistributedNode.DistributedNode.disable(self)
@@ -243,6 +246,16 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.setComponentP(p)
         self.setComponentR(r)
         self.setComponentTLive(timestamp)
+    def setSmPosHprL(self, l, x, y, z, h, p, r, timestamp=None):
+        self._checkResume()
+        self.setComponentL(l)
+        self.setComponentX(x)
+        self.setComponentY(y)
+        self.setComponentZ(z)
+        self.setComponentH(h)
+        self.setComponentP(p)
+        self.setComponentR(r)
+        self.setComponentTLive(timestamp)
 
     ### component set pos and hpr functions ###
 
@@ -261,6 +274,10 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.smoother.setP(p)
     def setComponentR(self, r):
         self.smoother.setR(r)
+    def setComponentL(self, l):
+        if (l != self.zoneId):
+            # only perform set location if location is different
+            self.setLocation(self.parentId,l)
     def setComponentT(self, timestamp):
         # This is a little bit hacky.  If *this* function is called,
         # it must have been called directly by the server, for

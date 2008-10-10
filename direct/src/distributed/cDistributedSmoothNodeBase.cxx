@@ -36,6 +36,8 @@ PyObject *CDistributedSmoothNodeBase::_clock_delta = NULL;
 ////////////////////////////////////////////////////////////////////
 CDistributedSmoothNodeBase::
 CDistributedSmoothNodeBase() {
+  _currL[0] = 0;
+  _currL[1] = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,7 +126,16 @@ broadcast_pos_hpr_full() {
     flags |= F_new_r;
   }
 
-  if (flags == 0) {
+  if (_currL[0] != _currL[1]) {
+    // location (zoneId) has changed, send out all info
+    // copy over 'set' location over to 'sent' location
+    _currL[0] = _currL[1];
+    // Any other change
+    _store_stop = false;
+    d_setSmPosHprL(_store_xyz[0], _store_xyz[1], _store_xyz[2], 
+                   _store_hpr[0], _store_hpr[1], _store_hpr[2], _currL[0]);
+
+  } else if (flags == 0) {
     // No change.  Send one and only one "stop" message.
     if (!_store_stop) {
       _store_stop = true;
@@ -335,7 +346,8 @@ finish_send_update(DCPacker &packer) {
       ostringstream error;
       error << "Node position out of range for DC file: "
             << _node_path << " pos = " << _store_xyz
-            << " hpr = " << _store_hpr;
+            << " hpr = " << _store_hpr
+            << " zoneId = " << _currL[0];
       nassert_raise(error.str());
 
     } else {
@@ -343,5 +355,18 @@ finish_send_update(DCPacker &packer) {
     }
 #endif
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CDistributedSmoothNodeBase::set_curr_l
+//                 published function to set current location for
+//                 this object, this location is then sent out along
+//                 with the next position broadcast
+//       Access: Private
+//  Description: Appends the timestamp and sends the update.
+////////////////////////////////////////////////////////////////////
+void CDistributedSmoothNodeBase::
+set_curr_l(PN_uint64 l) {
+  _currL[1] = l;
 }
 

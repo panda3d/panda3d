@@ -207,3 +207,25 @@ d_setSmPosHpr(float x, float y, float z, float h, float p, float r) {
   packer.pack_double(r);
   finish_send_update(packer);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CDistributedSmoothNodeBase::d_setSmPosHprL
+//                 send out pos, hpr, and location info (zoneId)
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE void CDistributedSmoothNodeBase::
+d_setSmPosHprL(float x, float y, float z, float h, float p, float r, PN_uint64 l) {
+  //cout << "d_setSmPosHprL: " << x << ", " << y << ", " << z << ", " << h << ", " << p << ", " << r << l << endl;
+  DCPacker packer;
+  begin_send_update(packer, "setSmPosHprL");
+  packer.pack_uint64(_currL[0]);
+  packer.pack_double(x);
+  packer.pack_double(y);
+  packer.pack_double(z);
+  packer.pack_double(h);
+  packer.pack_double(p);
+  packer.pack_double(r);
+  finish_send_update(packer);
+}
+
