@@ -29,6 +29,8 @@
 #include "sceneGraphReducer.h"
 #include "renderState.h"
 #include "bamFile.h"
+#include "configVariableInt.h"
+#include "configVariableEnum.h"
 
 bool Loader::_file_types_loaded = false;
 PT(Loader) Loader::_global_ptr;
@@ -59,8 +61,14 @@ Loader(const string &name) :
                 "asychronous thread.  You can set this higher, particularly if "
                 "you have many CPU's available, to allow loading multiple models "
                 "simultaneously."));
-    
     chain->set_num_threads(loader_num_threads);
+
+    ConfigVariableEnum<ThreadPriority> loader_thread_priority
+      ("loader-thread-priority", TP_low,
+       PRC_DESC("The default thread priority to assign to the threads created "
+                "for asynchronous loading.  The default is 'low'; you may "
+                "also specify 'normal', 'high', or 'urgent'."));
+    chain->set_thread_priority(loader_thread_priority);
   }
 }
 

@@ -35,3 +35,29 @@ operator << (ostream &out, ThreadPriority pri) {
   nassertr(false, out);
   return out;
 }
+
+istream &
+operator >> (istream &in, ThreadPriority &pri) {
+  string word;
+  in >> word;
+  if (word == "low") {
+    pri = TP_low;
+
+  } else if (word == "normal") {
+    pri = TP_normal;
+
+  } else if (word == "high") {
+    pri = TP_high;
+
+  } else if (word == "urgent") {
+    pri = TP_urgent;
+
+  } else {
+    pri = TP_normal;
+    pipeline_cat->error()
+      << "Invalid ThreadPriority string: " << word << "\n";
+    nassertr(false, in);
+  }
+
+  return in;
+}

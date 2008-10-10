@@ -108,19 +108,19 @@ consider_yield() {
 INLINE void ThreadSimpleImpl::
 consider_yield_this() {
   double now = _manager->get_current_time();
-  if (now - _start_time > _time_per_epoch) {
+  if (now >= _stop_time) {
     yield_this();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ThreadSimpleImpl::get_start_time
+//     Function: ThreadSimpleImpl::get_wake_time
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE double ThreadSimpleImpl::
-get_start_time() const {
-  return _start_time;
+get_wake_time() const {
+  return _wake_time;
 }
 
 ////////////////////////////////////////////////////////////////////

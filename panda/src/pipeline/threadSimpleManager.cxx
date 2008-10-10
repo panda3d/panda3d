@@ -34,7 +34,36 @@ ThreadSimpleManager *ThreadSimpleManager::_global_ptr;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 ThreadSimpleManager::
-ThreadSimpleManager() {
+ThreadSimpleManager() :
+  _simple_thread_epoch_timeslice
+  ("simple-thread-epoch-timeslice", 0.01,
+   PRC_DESC("When SIMPLE_THREADS is defined, this defines the amount of time, "
+            "in seconds, that should be considered the "
+            "typical timeslice for one epoch (to run all threads once).")),
+  _simple_thread_window
+  ("simple-thread-window", 1.0,
+   PRC_DESC("When SIMPLE_THREADS is defined, this defines the amount of time, "
+            "in seconds, over which to average all the threads' runtimes, "
+            "for the purpose of scheduling threads.")),
+  _simple_thread_low_weight
+  ("simple-thread-low-weight", 0.1,
+   PRC_DESC("When SIMPLE_THREADS is defined, this determines the relative "
+            "amount of time that is given to threads with priority TP_low.")),
+  _simple_thread_normal_weight
+  ("simple-thread-normal-weight", 1.0,
+   PRC_DESC("When SIMPLE_THREADS is defined, this determines the relative "
+            "amount of time that is given to threads with priority TP_normal.")),
+  _simple_thread_high_weight
+  ("simple-thread-high-weight", 5.0,
+   PRC_DESC("When SIMPLE_THREADS is defined, this determines the relative "
+            "amount of time that is given to threads with priority TP_high.")),
+  _simple_thread_urgent_weight
+  ("simple-thread-urgent-weight", 10.0,
+   PRC_DESC("When SIMPLE_THREADS is defined, this determines the relative "
+            "amount of time that is given to threads with priority TP_urgent."))
+{
+  _tick_scale = 1000000.0;
+  _total_ticks = 0;
   _current_thread = NULL;
   _clock = TrueClock::get_global_ptr();
   _waiting_for_exit = NULL;
@@ -84,7 +113,7 @@ enqueue_sleep(ThreadSimpleImpl *thread, double seconds) {
   }
 
   double now = get_current_time();
-  thread->_start_time = now + seconds;
+  thread->_wake_time = now + seconds;
   _sleeping.push_back(thread);
   push_heap(_sleeping.begin(), _sleeping.end(), CompareStartTime());
 }
@@ -301,6 +330,30 @@ set_current_thread(ThreadSimpleImpl *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::remove_thread
+//       Access: Public
+//  Description: Removes the indicated thread from the accounting, for
+//               instance just before the thread destructs.
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleManager::
+remove_thread(ThreadSimpleImpl *thread) {
+  TickRecords new_records;
+  TickRecords::iterator ri;
+  for (ri = _tick_records.begin(); ri != _tick_records.end(); ++ri) {
+    if ((*ri)._thread != thread) {
+      // Keep this record.
+      new_records.push_back(*ri);
+    } else {
+      // Lose this record.
+      nassertv(_total_ticks >= (*ri)._tick_count);
+      _total_ticks -= (*ri)._tick_count;
+    }
+  }
+
+  _tick_records.swap(new_records);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadSimpleManager::system_sleep
 //       Access: Public, Static
 //  Description: Calls the appropriate system sleep function to sleep
@@ -346,7 +399,7 @@ write_status(ostream &out) const {
   sort(s2.begin(), s2.end(), CompareStartTime());
   Sleeping::const_iterator si;
   for (si = s2.begin(); si != s2.end(); ++si) {
-    out << " " << *(*si)->_parent_obj << "(" << (*si)->_start_time - now
+    out << " " << *(*si)->_parent_obj << "(" << (*si)->_wake_time - now
         << "s)";
   }
   out << "\n";
@@ -430,64 +483,99 @@ st_choose_next_context(void *data) {
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 choose_next_context() {
-  _current_thread = NULL;
-
   double now = get_current_time();
+
+  do_timeslice_accounting(_current_thread, now);
+  _current_thread = NULL;
 
   if (!_sleeping.empty()) {
     wake_sleepers(now);
   }
 
+  bool new_epoch = !_ready.empty() && _next_ready.empty();
+
   // Choose a new thread to execute.
-  while (_ready.empty()) {
-    if (!_next_ready.empty()) {
-      // We've finished an epoch.
-      _ready.swap(_next_ready);
-      system_yield();
+  while (true) {
+    // If there are no threads, sleep.
+    while (_ready.empty()) {
+      if (!_next_ready.empty()) {
+        // We've finished an epoch.
+        _ready.swap(_next_ready);
 
-    } else if (!_sleeping.empty()) {
-      // All threads are sleeping.
-      double wait = _sleeping.front()->_start_time - now;
-      if (wait > 0.0) {
-        if (thread_cat->is_debug()) {
-          thread_cat.debug()
-            << "Sleeping all threads " << wait << " seconds\n";
+        if (new_epoch && !_tick_records.empty()) {
+          // Pop the oldest timeslice record off when we finish an
+          // epoch without executing any threads, to ensure we don't
+          // get caught in an "all threads reached budget" loop.
+          if (thread_cat->is_debug()) {
+            thread_cat.debug()
+              << "All threads exceeded budget.\n";
+          }
+          TickRecord &record = _tick_records.front();
+          _total_ticks -= record._tick_count;
+          nassertv(record._thread->_run_ticks >= record._tick_count);
+          record._thread->_run_ticks -= record._tick_count;
+          _tick_records.pop_front();
+
+        } else {
+          // Otherwise, we're legitimately at the end of an epoch.
+          // Yield, to give some time back to the system.
+          system_yield();
         }
-        system_sleep(wait);
-      }
-      now = get_current_time();
-      wake_sleepers(now);
-
-    } else {
-      // No threads are ready!
-      if (!_blocked.empty()) {
+        new_epoch = true;
+        
+      } else if (!_sleeping.empty()) {
+        // All threads are sleeping.
+        double wait = _sleeping.front()->_wake_time - now;
+        if (wait > 0.0) {
+          if (thread_cat->is_debug()) {
+            thread_cat.debug()
+              << "Sleeping all threads " << wait << " seconds\n";
+          }
+          system_sleep(wait);
+        }
+        now = get_current_time();
+        wake_sleepers(now);
+        
+      } else {
+        // No threads are ready!
+        if (!_blocked.empty()) {
+          thread_cat->error()
+            << "Deadlock!  All threads blocked.\n";
+          report_deadlock();
+          abort();
+        }
+        
+        // All threads have finished execution.
+        if (_waiting_for_exit != NULL) {
+          // And one thread--presumably the main thread--was waiting for
+          // that.
+          _ready.push_back(_waiting_for_exit);
+          _waiting_for_exit = NULL;
+          break;
+        }
+        
+        // No threads are queued anywhere.  This is some kind of
+        // internal error, since normally the main thread, at least,
+        // should be queued somewhere.
         thread_cat->error()
-          << "Deadlock!  All threads blocked.\n";
-        report_deadlock();
-        abort();
+          << "All threads disappeared!\n";
+        exit(0);
       }
-
-      // All threads have finished execution.
-      if (_waiting_for_exit != NULL) {
-        // And one thread--presumably the main thread--was waiting for
-        // that.
-        _ready.push_back(_waiting_for_exit);
-        _waiting_for_exit = NULL;
-        break;
-      }
-
-      // No threads are queued anywhere.  This is some kind of
-      // internal error, since normally the main thread, at least,
-      // should be queued somewhere.
-      thread_cat->error()
-        << "All threads disappeared!\n";
-      exit(0);
     }
-  }
 
-  _current_thread = _ready.front();
-  _ready.pop_front();
-  _current_thread->_start_time = now;
+    ThreadSimpleImpl *chosen_thread = _ready.front();
+    _ready.pop_front();
+    
+    double timeslice = determine_timeslice(chosen_thread);
+    if (timeslice > 0.0) {
+      // This thread is ready to roll.  Break out of the loop.
+      chosen_thread->_start_time = now;
+      chosen_thread->_stop_time = now + timeslice;
+      _current_thread = chosen_thread;
+      break;
+    }
+    _next_ready.push_back(chosen_thread);
+  }
 
   // All right, the thread is ready to roll.  Begin.
   if (thread_cat->is_debug()) {
@@ -497,10 +585,12 @@ choose_next_context() {
       const FifoThreads &threads = (*bi).second;
       blocked_count += threads.size();
     }
-    
+
+    double timeslice = _current_thread->_stop_time - _current_thread->_start_time;
     thread_cat.debug()
       << "Switching to " << *_current_thread->_parent_obj
-      << " (" << _ready.size() + _next_ready.size()
+      << " for " << timeslice << " s ("
+      << _ready.size() + _next_ready.size()
       << " other threads ready, " << blocked_count
       << " blocked, " << _sleeping.size() << " sleeping)\n";
   }
@@ -513,6 +603,45 @@ choose_next_context() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::do_timeslice_accounting
+//       Access: Private
+//  Description: Records the amount of time the indicated thread has
+//               run, and updates the moving average.
+////////////////////////////////////////////////////////////////////
+void ThreadSimpleManager::
+do_timeslice_accounting(ThreadSimpleImpl *thread, double now) {
+  double elapsed = now - thread->_start_time;
+  if (thread_cat.is_debug()) {
+    thread_cat.debug()
+      << *thread->_parent_obj << " ran for " << elapsed << " s of "
+      << thread->_stop_time - thread->_start_time << " requested.\n";
+  }
+    
+  nassertv(elapsed >= 0.0);
+  unsigned int ticks = (unsigned int)(elapsed * _tick_scale + 0.5);
+  thread->_run_ticks += ticks;
+
+  // Now remove any old records.
+  unsigned int ticks_window = (unsigned int)(_simple_thread_window * _tick_scale + 0.5);
+  while (_total_ticks > ticks_window) {
+    nassertv(!_tick_records.empty());
+    TickRecord &record = _tick_records.front();
+    _total_ticks -= record._tick_count;
+    nassertv(record._thread->_run_ticks >= record._tick_count);
+    record._thread->_run_ticks -= record._tick_count;
+    _tick_records.pop_front();
+  }
+
+  // Finally, record the new record.
+  TickRecord record;
+  record._tick_count = ticks;
+  record._thread = thread;
+  _tick_records.push_back(record);
+  _total_ticks += ticks;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: ThreadSimpleManager::wake_sleepers
 //       Access: Private
 //  Description: Moves any threads due to wake up from the sleeping
@@ -520,7 +649,7 @@ choose_next_context() {
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 wake_sleepers(double now) {
-  while (!_sleeping.empty() && _sleeping.front()->_start_time <= now) {
+  while (!_sleeping.empty() && _sleeping.front()->_wake_time <= now) {
     ThreadSimpleImpl *thread = _sleeping.front();
     pop_heap(_sleeping.begin(), _sleeping.end(), CompareStartTime());
     _sleeping.pop_back();
@@ -554,6 +683,61 @@ report_deadlock() {
       thread_cat.info(false) << "\n";
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ThreadSimpleManager::determine_timeslice
+//       Access: Private
+//  Description: Determines the amount of time that should be
+//               allocated to the next timeslice of this thread, based
+//               on its priority weight and the amount of time it has
+//               run recently relative to other threads.
+////////////////////////////////////////////////////////////////////
+double ThreadSimpleManager::
+determine_timeslice(ThreadSimpleImpl *chosen_thread) {
+  if (_ready.empty() && _next_ready.empty()) {
+    // This is the only ready thread.  It gets the full timeslice.
+    return _simple_thread_epoch_timeslice;
+  }
+
+  // Count up the total runtime and weight of all ready threads.
+  unsigned int total_ticks = chosen_thread->_run_ticks;
+  double total_weight = chosen_thread->_priority_weight;
+
+  FifoThreads::const_iterator ti;
+  for (ti = _ready.begin(); ti != _ready.end(); ++ti) {
+    total_ticks += (*ti)->_run_ticks;
+    total_weight += (*ti)->_priority_weight;
+  }
+  for (ti = _next_ready.begin(); ti != _next_ready.end(); ++ti) {
+    total_ticks += (*ti)->_run_ticks;
+    total_weight += (*ti)->_priority_weight;
+  }
+
+  nassertr(total_weight != 0.0, 0.0);
+  double budget_ratio = chosen_thread->_priority_weight / total_weight;
+
+  if (total_ticks == 0) {
+    // This must be the first thread.  Special case.
+    return budget_ratio * _simple_thread_epoch_timeslice;
+  }
+
+  double run_ratio = (double)chosen_thread->_run_ticks / (double)total_ticks;
+  double remaining_ratio = budget_ratio - run_ratio;
+
+  if (thread_cat->is_debug()) {
+    thread_cat.debug()
+      << *chosen_thread->_parent_obj << " accrued "
+      << chosen_thread->_run_ticks / _tick_scale << " s of "
+      << total_ticks / _tick_scale << "; budget is "
+      << budget_ratio * total_ticks / _tick_scale << ".\n";
+    if (remaining_ratio <= 0.0) {
+      thread_cat.debug()
+        << "Exceeded budget.\n";
+    }
+  }
+
+  return remaining_ratio * _simple_thread_epoch_timeslice;
 }
 
 ////////////////////////////////////////////////////////////////////

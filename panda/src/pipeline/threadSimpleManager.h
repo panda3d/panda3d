@@ -24,6 +24,7 @@
 #include "pmap.h"
 #include "pvector.h"
 #include "trueClock.h"
+#include "configVariableDouble.h"
 #include <algorithm>
 
 #ifdef HAVE_POSIX_THREADS
@@ -71,6 +72,7 @@ public:
   INLINE ThreadSimpleImpl *get_current_thread();
   void set_current_thread(ThreadSimpleImpl *current_thread);
   INLINE bool is_same_system_thread() const;
+  void remove_thread(ThreadSimpleImpl *thread);
   static void system_sleep(double seconds);
   static void system_yield();
 
@@ -84,8 +86,10 @@ private:
 
   static void st_choose_next_context(void *data);
   void choose_next_context();
+  void do_timeslice_accounting(ThreadSimpleImpl *thread, double now);
   void wake_sleepers(double now);
   void report_deadlock();
+  double determine_timeslice(ThreadSimpleImpl *chosen_thread);
 
   // STL function object to sort the priority queue of sleeping threads.
   class CompareStartTime {
@@ -98,6 +102,15 @@ private:
 
   void kill_non_joinable(FifoThreads &threads);
   void kill_non_joinable(Sleeping &threads);
+
+public:
+  // Defined within the class to avoid static-init ordering problems.
+  ConfigVariableDouble _simple_thread_epoch_timeslice;
+  ConfigVariableDouble _simple_thread_window;
+  ConfigVariableDouble _simple_thread_low_weight;
+  ConfigVariableDouble _simple_thread_normal_weight;
+  ConfigVariableDouble _simple_thread_high_weight;
+  ConfigVariableDouble _simple_thread_urgent_weight;
 
 private:
   ThreadSimpleImpl *volatile _current_thread;
@@ -117,6 +130,17 @@ private:
   ThreadSimpleImpl *_waiting_for_exit;
 
   TrueClock *_clock;
+
+  double _tick_scale;
+
+  class TickRecord {
+  public:
+    unsigned int _tick_count;
+    ThreadSimpleImpl *_thread;
+  };
+  typedef pdeque<TickRecord> TickRecords;
+  TickRecords _tick_records;
+  unsigned int _total_ticks;
 
   // We may not mix-and-match OS threads with Panda's SIMPLE_THREADS.
   // If we ever get a Panda context switch request from a different OS

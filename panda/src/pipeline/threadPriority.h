@@ -32,6 +32,8 @@ END_PUBLISH
 
 EXPCL_PANDA_PIPELINE ostream &
 operator << (ostream &out, ThreadPriority pri);
+EXPCL_PANDA_PIPELINE istream &
+operator >> (istream &in, ThreadPriority &pri);
 
 
 #endif

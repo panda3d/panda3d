@@ -1406,6 +1406,7 @@ void AsyncTaskChain::AsyncTaskChainThread::
 thread_main() {
   MutexHolder holder(_chain->_manager->_lock);
   while (_chain->_state != S_shutdown && _chain->_state != S_aborting) {
+    thread_consider_yield();
     if (!_chain->_active.empty() &&
         _chain->_active.front()->get_sort() == _chain->_current_sort) {
 

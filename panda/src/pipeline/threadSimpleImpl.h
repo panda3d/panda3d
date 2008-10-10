@@ -84,7 +84,7 @@ public:
   void yield_this();
   INLINE void consider_yield_this();
 
-  INLINE double get_start_time() const;
+  INLINE double get_wake_time() const;
 
   INLINE static void write_status(ostream &out);
 
@@ -106,14 +106,23 @@ private:
   bool _joinable;
   Status _status;
 
-  // The (approx) amount of time this thread is allowed to run each
-  // epoch.
-  double _time_per_epoch;
+  // The relative weight of this thread, relative to other threads, in
+  // priority.
+  double _priority_weight;
 
-  // This serves both as the time at which the current thread started
-  // to run, and also records the time at which a sleeping thread
-  // should wake up.
+  // The amount of time this thread has run recently.
+  unsigned int _run_ticks;
+
+  // This is the time at which the currently-running thread started
+  // execution.
   double _start_time;
+
+  // This is the time at which the currently-running thread should
+  // yield.
+  double _stop_time;
+
+  // This records the time at which a sleeping thread should wake up.
+  double _wake_time;
 
   ThreadContext _context;
   unsigned char *_stack;

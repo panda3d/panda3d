@@ -38,8 +38,11 @@ ThreadSimpleImpl(Thread *parent_obj) :
 
   _status = S_new;
   _joinable = false;
-  _time_per_epoch = 0.0;
+  _priority_weight = 1.0;
+  _run_ticks = 0;
   _start_time = 0.0;
+  _stop_time = 0.0;
+  _wake_time = 0.0;
 
   _stack = NULL;
   _stack_size = 0;
@@ -64,6 +67,7 @@ ThreadSimpleImpl::
   if (_stack != (void *)NULL) {
     memory_hook->mmap_free(_stack, _stack_size);
   }
+  _manager->remove_thread(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,7 +80,7 @@ ThreadSimpleImpl::
 void ThreadSimpleImpl::
 setup_main_thread() {
   _status = S_running;
-  _time_per_epoch = 0.05;
+  _priority_weight = _manager->_simple_thread_normal_weight;
 
   _manager->set_current_thread(this);
 }
@@ -103,19 +107,19 @@ start(ThreadPriority priority, bool joinable) {
 
   switch (priority) {
   case TP_low:
-    _time_per_epoch = 0.02;
+    _priority_weight = _manager->_simple_thread_low_weight;
     break;
     
   case TP_normal:
-    _time_per_epoch = 0.05;
+    _priority_weight = _manager->_simple_thread_normal_weight;
     break;
     
   case TP_high:
-    _time_per_epoch = 0.20;
+    _priority_weight = _manager->_simple_thread_high_weight;
     break;
 
   case TP_urgent:
-    _time_per_epoch = 0.50;
+    _priority_weight = _manager->_simple_thread_urgent_weight;
     break;
   }
 
