@@ -540,7 +540,7 @@ get_pixel_value(int x, int y) {
   if (_heightfield.is_grayscale()) {
     return double(_heightfield.get_bright(x, y));
   } else {
-    return double(_heightfield.get_red(x, y));
+    return double(_heightfield.get_red(x, y))
          + double(_heightfield.get_green(x, y)) / 256.0;
          + double(_heightfield.get_blue(x, y)) / 65536.0;
   }
