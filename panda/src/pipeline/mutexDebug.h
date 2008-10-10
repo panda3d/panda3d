@@ -62,6 +62,7 @@ private:
   bool _lightweight;
   Thread *_locking_thread;
   int _lock_count;
+  char *_deleted_name; // To help I.D. a destructed mutex.
 
   // For _lightweight mutexes.
   typedef pmap<Thread *, int> MissedThreads;

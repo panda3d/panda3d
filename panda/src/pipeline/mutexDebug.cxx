@@ -32,6 +32,7 @@ MutexDebug(const string &name, bool allow_recursion, bool lightweight) :
   _lightweight(lightweight),
   _locking_thread(NULL),
   _lock_count(0),
+  _deleted_name(NULL),
   _cvar_impl(*get_global_lock())
 {
 #ifndef SIMPLE_THREADS
@@ -49,6 +50,16 @@ MutexDebug(const string &name, bool allow_recursion, bool lightweight) :
 MutexDebug::
 ~MutexDebug() {
   nassertv(_locking_thread == NULL && _lock_count == 0);
+
+  // If the config variable says to, allocate (and leak) a string name
+  // for the mutex, so we can report which mutex it is that has
+  // destructed after the fact.
+  if (name_deleted_mutexes) {
+    ostringstream strm;
+    strm << *this;
+    string name = strm.str();
+    _deleted_name = strdup((char *)name.c_str());
+  }
 
   // Put a distinctive, bogus lock count in upon destruction, so we'll
   // be more likely to notice a floating pointer.
@@ -83,7 +94,18 @@ void MutexDebug::
 do_lock() {
   // If this assertion is triggered, you tried to lock a
   // recently-destructed mutex.
-  nassertv(_lock_count != -100);
+  nassertd(_lock_count != -100) {
+    pipeline_cat.error()
+      << "Destructed mutex: " << (void *)this << "\n";
+    if (name_deleted_mutexes && _deleted_name != NULL) {
+      pipeline_cat.error()
+        << _deleted_name << "\n";
+    } else {
+      pipeline_cat.error()
+        << "Configure name-deleted-mutexes 1 to see the mutex name.\n";
+    }
+    return;
+  }
 
   Thread *this_thread = Thread::get_current_thread();
 
@@ -189,7 +211,18 @@ void MutexDebug::
 do_release() {
   // If this assertion is triggered, you tried to release a
   // recently-destructed mutex.
-  nassertv(_lock_count != -100);
+  nassertd(_lock_count != -100) {
+    pipeline_cat.error()
+      << "Destructed mutex: " << (void *)this << "\n";
+    if (name_deleted_mutexes && _deleted_name != NULL) {
+      pipeline_cat.error()
+        << _deleted_name << "\n";
+    } else {
+      pipeline_cat.error()
+        << "Configure name-deleted-mutexes 1 to see the mutex name.\n";
+    }
+    return;
+  }
 
   Thread *this_thread = Thread::get_current_thread();
 

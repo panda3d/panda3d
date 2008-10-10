@@ -53,7 +53,11 @@ ConfigVariableInt max_disk_vertex_data
           "limit."));
 
 PT(VertexDataPage::PageThreadManager) VertexDataPage::_thread_mgr;
-Mutex VertexDataPage::_tlock;
+
+// This is a reference to an allocated Mutex, instead of just a static
+// Mutex, to protect against ordering issues when the application
+// shuts down.
+Mutex &VertexDataPage::_tlock = *(new Mutex("VertexDataPage::_tlock"));
 
 SimpleLru VertexDataPage::_resident_lru("resident", max_resident_vertex_data);
 SimpleLru VertexDataPage::_compressed_lru("compressed", max_compressed_vertex_data);

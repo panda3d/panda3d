@@ -36,6 +36,17 @@ ConfigVariableBool support_threads
           "does not affect the operation of mutexes and other synchronization "
           "primitives, just the creation of threads."));
 
+ConfigVariableBool name_deleted_mutexes
+("name-deleted-mutexes", false,
+ PRC_DESC("Set this true to allocate a name to each Mutex object that "
+          "destructs, so if the Mutex is locked after destruction, we can "
+          "print out its name to aid debugging.  This is only available "
+          "when compiled with DEBUG_THREADS.  Enabling this variable will "
+          "cause a memory leak, so you should only enable it when you are "
+          "specifically tracking down an operation on a deleted Mutex.  "
+          "It is not guaranteed to work, of course, because the memory "
+          "for a deleted Mutex may become reused for some other purpose."));
+
 ConfigVariableInt thread_stack_size
 ("thread-stack-size", 4194304,
  PRC_DESC("Specifies the minimum size, in bytes, of the stack that will be "

@@ -160,7 +160,7 @@ private:
   };
 
   static PT(PageThreadManager) _thread_mgr;
-  static Mutex _tlock;  // Protects _thread_mgr and all of its members.
+  static Mutex &_tlock;  // Protects _thread_mgr and all of its members.
 
   unsigned char *_page_data;
   size_t _size, _allocated_size, _uncompressed_size;
