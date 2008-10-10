@@ -3,6 +3,7 @@ from DirectUtil import *
 from DirectGeometry import *
 from DirectGlobals import *
 from direct.interval.IntervalGlobal import Sequence, Func
+from direct.directnotify import DirectNotifyGlobal
 from direct.task import Task
 
 CAM_MOVE_DURATION = 1.2
@@ -10,6 +11,9 @@ COA_MARKER_SF = 0.0075
 Y_AXIS = Vec3(0, 1, 0)
 
 class DirectCameraControl(DirectObject):
+    
+    notify = DirectNotifyGlobal.directNotify.newCategory('DirectCameraControl')
+    
     def __init__(self):
         # Create the grid
         self.startT = 0.0
@@ -33,18 +37,18 @@ class DirectCameraControl(DirectObject):
         t = CAM_MOVE_DURATION
         self.actionEvents = [
             ['DIRECT-mouse1', self.mouseRotateStart],
-            ['DIRECT-mouse1Up', self.mouseFlyStop],
+            ['DIRECT-mouse1Up', self.mouseDollyStop],
             ['DIRECT-mouse2', self.mouseFlyStart],
             ['DIRECT-mouse2Up', self.mouseFlyStop],
             ['DIRECT-mouse3', self.mouseDollyStart],
-            ['DIRECT-mouse3Up', self.mouseFlyStop],
+            ['DIRECT-mouse3Up', self.mouseDollyStop],
             ]
         self.keyEvents = [
             ['c', self.centerCamIn, 0.5],
-            ['f', self.fitOnWidget],
+            # ['f', self.fitOnWidget],                  # Note: This function doesn't work as intended
             ['h', self.homeCam],
-            ['shift-v', self.toggleMarkerVis],
-            ['m', self.moveToFit],
+            ['shift-v', self.toggleMarkerVis],          
+            # ['m', self.moveToFit],                      # Note: This function doesn't work as intended; the object dissappears and screen flashes
             ['n', self.pickNextCOA],
             ['u', self.orbitUprightCam],
             ['shift-u', self.uprightCam],
@@ -68,16 +72,22 @@ class DirectCameraControl(DirectObject):
         self.lockRoll = False
         # NIK - flag to determine whether to use maya camera controls
         self.useMayaCamControls = 0
+        self.altDown = 0
 
     def toggleMarkerVis(self):
-        if base.direct.cameraControl.coaMarker.isHidden():
-            base.direct.cameraControl.coaMarker.show()
+##        if base.direct.cameraControl.coaMarker.isHidden():
+##            base.direct.cameraControl.coaMarker.show()
+##        else:
+##            base.direct.cameraControl.coaMarker.hide()
+            
+        if self.coaMarker.isHidden():
+            self.coaMarker.show()
         else:
-            base.direct.cameraControl.coaMarker.hide()
+            self.coaMarker.hide()
 
     def mouseRotateStart(self, modifiers):
-        if self.useMayaCamControls and modifiers == 4: # alt is pressed - use maya controls
-            base.direct.pushUndo([base.direct.camera])
+        if self.useMayaCamControls and modifiers == 4:          # alt is pressed - use maya controls
+            # base.direct.pushUndo([base.direct.camera])        # Wasteful use of undo
             self.spawnMouseRotateTask()
 
     def mouseDollyStart(self, modifiers):
@@ -89,11 +99,14 @@ class DirectCameraControl(DirectObject):
             self.startF = globalClock.getFrameCount()
             # Start manipulation
             self.spawnHPanYZoom()
+            
+    def mouseDollyStop(self):
+        taskMgr.remove('manipulateCamera')
 
     def mouseFlyStart(self, modifiers):
         # Record undo point
-        base.direct.pushUndo([base.direct.camera])
-        if self.useMayaCamControls and modifiers == 4: # alt is down, use maya controls
+        # base.direct.pushUndo([base.direct.camera])            # Wasteful use of undo
+        if self.useMayaCamControls and modifiers == 4:          # alt is down, use maya controls
             # Hide the marker for this kind of motion
             self.coaMarker.hide()
             # Record time of start of mouse interaction
@@ -101,7 +114,8 @@ class DirectCameraControl(DirectObject):
             self.startF = globalClock.getFrameCount()
             # Start manipulation
             self.spawnXZTranslate()
-        else:
+            self.altDown = 1
+        elif not self.useMayaCamControls:
             # Where are we in the display region?
             if ((abs(base.direct.dr.mouseX) < 0.9) and (abs(base.direct.dr.mouseY) < 0.9)):
                 # MOUSE IS IN CENTRAL REGION
@@ -121,6 +135,8 @@ class DirectCameraControl(DirectObject):
                 else:
                     # Mouse is in outer frame, spawn mouseRotateTask
                     self.spawnMouseRotateTask()
+        if not modifiers == 4:
+            self.altDown = 0
 
     def mouseFlyStop(self):
         taskMgr.remove('manipulateCamera')
@@ -128,7 +144,11 @@ class DirectCameraControl(DirectObject):
         deltaT = stopT - self.startT
         stopF = globalClock.getFrameCount()
         deltaF = stopF - self.startF
-        if not self.useMayaCamControls and (deltaT <= 0.25) or (deltaF <= 1):
+        ## No reason this shouldn't work with Maya cam on
+        # if not self.useMayaCamControls and (deltaT <= 0.25) or (deltaF <= 1):
+
+        # Do this when not trying to manipulate camera
+        if not self.altDown:
             # Check for a hit point based on
             # current mouse position
             # Allow intersection with unpickable objects
@@ -658,9 +678,12 @@ class DirectCameraControl(DirectObject):
 
         # How far do you move the camera to be this distance from the node?
         deltaMove = vWidget2Camera - centerVec
-
+        
         # Move a target there
-        self.camManipRef.setPos(base.direct.camera, deltaMove)
+        try:
+            self.camManipRef.setPos(base.direct.camera, deltaMove)
+        except Exception:
+            self.notify.debug
 
         parent = base.direct.camera.getParent()
         base.direct.camera.wrtReparentTo(self.camManipRef)
@@ -673,7 +696,7 @@ class DirectCameraControl(DirectObject):
         fitTask.uponDeath = self.reparentCam
 
     def moveToFit(self):
-        # How bit is the active widget?
+        # How big is the active widget?
         widgetScale = base.direct.widget.scalingNode.getScale(render)
         maxScale = max(widgetScale[0], widgetScale[1], widgetScale[2])
         # At what distance does the widget fill 50% of the screen?
