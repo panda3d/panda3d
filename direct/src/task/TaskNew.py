@@ -114,6 +114,13 @@ class TaskManager:
         self.mgr.setClock(clockObject)
         self.globalClock = clockObject
 
+    def invokeDefaultHandler(self, signalNumber, stackFrame):
+        print '*** allowing mid-frame keyboard interrupt.'
+        # Restore default interrupt handler
+        signal.signal(signal.SIGINT, signal.default_int_handler)
+        # and invoke it
+        raise KeyboardInterrupt
+
     def keyboardInterruptHandler(self, signalNumber, stackFrame):
         self.fKeyboardInterrupt = 1
         self.interruptCount += 1
