@@ -19,11 +19,11 @@
 
 #ifdef HAVE_PNG
 
+#include <png.h>
+
 #include "pnmFileType.h"
 #include "pnmReader.h"
 #include "pnmWriter.h"
-
-#include <png.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PNMFileTypePNG

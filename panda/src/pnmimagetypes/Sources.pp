@@ -13,12 +13,13 @@
   #define SOURCES  \
      config_pnmimagetypes.h pnmFileTypeAlias.h pnmFileTypeBMP.h  \
      pnmFileTypeIMG.h  \
-     pnmFileTypePNG.h \
      pnmFileTypePNM.h \
      pnmFileTypeSGI.h pnmFileTypeSoftImage.h  \
      pnmFileTypeTGA.h \
      pnmFileTypeTIFF.h \
-     pnmFileTypeJPG.h
+     pnmFileTypeJPG.h \
+    // These are separate because of png's silly setjmp problem.
+     pnmFileTypePNG.h pnmFileTypePNG.cxx
 
   #define INCLUDED_SOURCES  \
      config_pnmimagetypes.cxx pnmFileTypeAlias.cxx  \
@@ -26,7 +27,6 @@
      pnmFileTypeBMP.cxx \
      pnmFileTypeIMG.cxx \
      pnmFileTypeJPG.cxx pnmFileTypeJPGReader.cxx pnmFileTypeJPGWriter.cxx \
-     pnmFileTypePNG.cxx \
      pnmFileTypePNM.cxx \
      pnmFileTypeSGI.cxx \
      pnmFileTypeSGIReader.cxx pnmFileTypeSGIWriter.cxx  \
