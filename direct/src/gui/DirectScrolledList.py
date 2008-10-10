@@ -83,6 +83,8 @@ class DirectScrolledList(DirectFrame):
             ('numItemsVisible',    1,         self.setNumItemsVisible),
             ('scrollSpeed',        8,         self.setScrollSpeed),
             ('forceHeight',        None,      self.setForceHeight),
+            ('incButtonCallback',  None,      self.setIncButtonCallback),
+            ('decButtonCallback',  None,      self.setDecButtonCallback),
             )
         # Merge keyword options with default options
         self.defineoptions(kw, optiondefs)
@@ -312,6 +314,8 @@ class DirectScrolledList(DirectFrame):
         taskMgr.add(task, taskName)
         self.scrollBy(task.delta)
         messenger.send('wakeup')
+        if self.incButtonCallback:
+            self.incButtonCallback()
         
     def __decButtonDown(self, event):
         assert self.notify.debugStateCall(self)
@@ -324,6 +328,8 @@ class DirectScrolledList(DirectFrame):
         taskMgr.add(task, taskName)
         self.scrollBy(task.delta)
         messenger.send('wakeup')
+        if self.decButtonCallback:
+            self.decButtonCallback()        
                
     def __buttonUp(self, event):
         assert self.notify.debugStateCall(self)
@@ -455,6 +461,13 @@ class DirectScrolledList(DirectFrame):
         else:
           return self['items'][self.index]['text']
 
+    def setIncButtonCallback(self):
+        assert self.notify.debugStateCall(self)
+        self.incButtonCallback = self["incButtonCallback"]
+
+    def setDecButtonCallback(self):
+        assert self.notify.debugStateCall(self)
+        self.decButtonCallback = self["decButtonCallback"]        
 
 
 """
