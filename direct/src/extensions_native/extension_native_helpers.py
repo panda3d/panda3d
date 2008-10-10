@@ -41,7 +41,7 @@ if sys.platform == "win32":
             target = dir
     if target == None:
         message = "Cannot find %s" % (filename)
-        raise message
+        raise ImportError, message
 
     # And add that directory to the system path.
     path = os.environ["PATH"]
@@ -62,7 +62,7 @@ def Dtool_PreloadDLL(module):
             break
     if target == None:
         message = "DLL loader cannot find %s." % (module)
-        raise message
+        raise ImportError, message
 
     # Now import the file explicitly.
     pathname = os.path.join(target, filename)
