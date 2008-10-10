@@ -424,8 +424,9 @@ is_runnable() {
 //               DS_pause: delay the task for set_delay() seconds,
 //               then stop it.  This is only useful within a sequence.
 //
-//               DS_abort: stop the task, and interrupt the whole
-//               AsyncTaskManager.
+//               DS_interrupt: Interrupt the whole AsyncTaskManager.
+//               The task will continue again next epoch, as if it had
+//               returned DS_cont.
 //
 //               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////

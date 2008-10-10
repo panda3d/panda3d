@@ -160,10 +160,10 @@ protected:
   ConditionVarFull _cvar;  // signaled when one of the task heaps, _state, or _current_sort changes, or a task finishes.
 
   enum State {
-    S_initial,  // no threads yet
-    S_started,  // threads have been started
-    S_aborting, // task returned DS_abort, shutdown requested from sub-thread.
-    S_shutdown  // waiting for thread shutdown, requested from main thread
+    S_initial,     // no threads yet
+    S_started,     // threads have been started
+    S_interrupted, // task returned DS_interrupt, requested from sub-thread.
+    S_shutdown     // waiting for thread shutdown, requested from main thread
   };
 
   bool _tick_clock;

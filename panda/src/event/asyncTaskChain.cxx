@@ -264,7 +264,7 @@ get_timeslice_priority() const {
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
 stop_threads() {
-  if (_state == S_started || _state == S_aborting) {
+  if (_state == S_started || _state == S_interrupted) {
     // Clean up all of the threads.
     MutexHolder holder(_manager->_lock);
     do_stop_threads();
@@ -280,7 +280,7 @@ stop_threads() {
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
 start_threads() {
-  if (_state == S_initial || _state == S_aborting) {
+  if (_state == S_initial || _state == S_interrupted) {
     MutexHolder holder(_manager->_lock);
     do_start_threads();
   }
@@ -563,7 +563,7 @@ do_wait_for_tasks() {
   if (_threads.empty()) {
     // Non-threaded case.
     while (_num_tasks > 0) {
-      if (_state == S_shutdown || _state == S_aborting) {
+      if (_state == S_shutdown || _state == S_interrupted) {
         return;
       }
       do_poll();
@@ -572,7 +572,7 @@ do_wait_for_tasks() {
   } else {
     // Threaded case.
     while (_num_tasks > 0) {
-      if (_state == S_shutdown || _state == S_aborting) {
+      if (_state == S_shutdown || _state == S_interrupted) {
         return;
       }
       
@@ -746,14 +746,16 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
           _cvar.signal_all();
           break;
 
-        case AsyncTask::DS_abort:
+        case AsyncTask::DS_interrupt:
           // The task had an exception and wants to raise a big flag.
-          cleanup_task(task, true, false);
+          task->_state = AsyncTask::S_active;
+          _next_active.push_back(task);
           if (_state == S_started) {
-            _state = S_aborting;
+            _state = S_interrupted;
             _cvar.signal_all();
           }
           break;
+
           
         default:
           // The task has finished.
@@ -1019,7 +1021,7 @@ filter_timeslice_priority() {
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
 do_stop_threads() {
-  if (_state == S_started || _state == S_aborting) {
+  if (_state == S_started || _state == S_interrupted) {
     if (task_cat.is_debug() && !_threads.empty()) {
       task_cat.debug()
         << "Stopping " << _threads.size() 
@@ -1062,7 +1064,7 @@ do_stop_threads() {
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
 do_start_threads() {
-  if (_state == S_aborting) {
+  if (_state == S_interrupted) {
     do_stop_threads();
   }
 
@@ -1166,7 +1168,7 @@ do_poll() {
 
   do {
     while (!_active.empty()) {
-      if (_state == S_shutdown || _state == S_aborting) {
+      if (_state == S_shutdown || _state == S_interrupted) {
         return;
       }
       int frame = _manager->_clock->get_frame_count();
@@ -1405,7 +1407,7 @@ AsyncTaskChainThread(const string &name, AsyncTaskChain *chain) :
 void AsyncTaskChain::AsyncTaskChainThread::
 thread_main() {
   MutexHolder holder(_chain->_manager->_lock);
-  while (_chain->_state != S_shutdown && _chain->_state != S_aborting) {
+  while (_chain->_state != S_shutdown && _chain->_state != S_interrupted) {
     thread_consider_yield();
     if (!_chain->_active.empty() &&
         _chain->_active.front()->get_sort() == _chain->_current_sort) {
@@ -1420,7 +1422,7 @@ thread_main() {
       // frame.
       if (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget) {
         while (_chain->_frame_budget >= 0.0 && _chain->_time_in_frame >= _chain->_frame_budget &&
-               _chain->_state != S_shutdown && _chain->_state != S_aborting) {
+               _chain->_state != S_shutdown && _chain->_state != S_interrupted) {
           _chain->cleanup_pickup_mode();
           _chain->_manager->_frame_cvar.wait();
           frame = _chain->_manager->_clock->get_frame_count();

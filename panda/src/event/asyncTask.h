@@ -50,13 +50,13 @@ PUBLISHED:
   virtual ~AsyncTask();
 
   enum DoneStatus {
-    DS_done,    // normal task completion
-    DS_cont,    // run task again next epoch
-    DS_again,   // start the task over from the beginning
-    DS_pickup,  // run task again this frame, if frame budget allows
-    DS_exit,    // stop the enclosing sequence
-    DS_pause,   // pause, then exit (useful within a sequence)
-    DS_abort,   // interrupt the task manager
+    DS_done,      // normal task completion
+    DS_cont,      // run task again next epoch
+    DS_again,     // start the task over from the beginning
+    DS_pickup,    // run task again this frame, if frame budget allows
+    DS_exit,      // stop the enclosing sequence
+    DS_pause,     // pause, then exit (useful within a sequence)
+    DS_interrupt, // interrupt the task manager, but run task again
   };
 
   enum State {

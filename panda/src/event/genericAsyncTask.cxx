@@ -72,7 +72,7 @@ is_runnable() {
 ////////////////////////////////////////////////////////////////////
 AsyncTask::DoneStatus GenericAsyncTask::
 do_task() {
-  nassertr(_function != NULL, DS_abort);
+  nassertr(_function != NULL, DS_interrupt);
   return (*_function)(this, _user_data);
 }
 

@@ -400,7 +400,7 @@ do_python_task() {
   if (_generator != (PyObject *)NULL) {
     // We are calling a generator.
     PyObject *func = PyObject_GetAttrString(_generator, "next");
-    nassertr(func != (PyObject *)NULL, DS_abort);
+    nassertr(func != (PyObject *)NULL, DS_interrupt);
 
     result = PyObject_CallObject(func, NULL);
     Py_DECREF(func);
@@ -418,7 +418,7 @@ do_python_task() {
   if (result == (PyObject *)NULL) {
     task_cat.error()
       << "Exception occurred in " << *this << "\n";
-    return DS_abort;
+    return DS_interrupt;
   }
 
   if (result == Py_None) {
@@ -463,7 +463,7 @@ do_python_task() {
   string message = strm.str();
   nassert_raise(message);
 
-  return DS_abort;
+  return DS_interrupt;
 }
 
 ////////////////////////////////////////////////////////////////////
