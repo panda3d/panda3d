@@ -2540,7 +2540,7 @@ get_internal_vertices(int pipeline_stage, Thread *current_thread) const {
     int internal_vertices;
     compute_internal_bounds(internal_bounds, internal_vertices,
                             pipeline_stage, current_thread);
-    nassertr(!internal_bounds.is_null(), NULL);
+    nassertr(!internal_bounds.is_null(), 0);
     
     // Now, acquire the lock, and apply the above-computed bounds.
     CDStageWriter cdataw(((PandaNode *)this)->_cycler, pipeline_stage);
