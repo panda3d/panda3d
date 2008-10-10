@@ -1,3 +1,4 @@
+#include "pnmFileTypePNG.cxx"
 #include "pnmFileTypeTIFF.cxx"
 #include "pnmFileTypePNM.cxx"
 #include "pnmFileTypeSGI.cxx"
