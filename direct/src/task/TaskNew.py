@@ -492,6 +492,10 @@ class TaskManager:
             numFound += self.__tryReplaceTaskMethod(task, oldMethod, newFunction)
         return numFound
 
+    def popupControls(self):
+        from direct.tkpanels import TaskManagerPanel
+        return TaskManagerPanel.TaskManagerPanel(self)
+
     def __repr__(self):
         return str(self.mgr)
 

@@ -162,6 +162,12 @@ class Task:
         TaskManager.notify.error("deprecated task.setPriority() called; use setSort() instead")
         pass
 
+    def getName(self):
+        return self.name
+
+    def setName(self, name):
+        self.name = name
+
     def getDelay(self):
         return self.delayTime
 
@@ -202,13 +208,12 @@ class Task:
                 self.pstatCollector = PStatCollector("Tasks:" + name)
             self.pstatCollector.addLevelNow(1)
 
-    def finishTask(self, verbose):
+    def finishTask(self):
         if hasattr(self, "uponDeath"):
             self.uponDeath(self)
-            if verbose:
-                # We regret to announce...
-                messenger.send('TaskManager-removeTask', sentArgs = [self, self.name])
             del self.uponDeath
+        # We regret to announce...
+        messenger.send('TaskManager-removeTask', sentArgs = [self])
 
     def __repr__(self):
         if hasattr(self, 'name'):
@@ -429,7 +434,6 @@ class TaskManager:
         self.fKeyboardInterrupt = 0
         self.interruptCount = 0
         self.resumeFunc = None
-        self.fVerbose = 0
         # Dictionary of task name to list of tasks with that name
         self.nameDict = {}
 
@@ -450,10 +454,6 @@ class TaskManager:
 
     def setStepping(self, value):
         self.stepping = value
-
-    def setVerbose(self, value):
-        self.fVerbose = value
-        messenger.send('TaskManager-setVerbose', sentArgs = [value])
 
     def getTaskDurationWarningThreshold(self):
         return self.taskDurationWarningThreshold
@@ -605,10 +605,9 @@ class TaskManager:
         task.wakeTime = currentTime + delayTime
         # Push this onto the doLaterList. The heap maintains the sorting.
         heappush(self.__doLaterList, task)
-        if self.fVerbose:
-            # Alert the world, a new task is born!
-            messenger.send('TaskManager-spawnDoLater',
-                           sentArgs = [task, task.name, task.id])
+
+        # Alert the world, a new task is born!
+        #messenger.send('TaskManager-spawnDoLater', sentArgs = [task])
 
         if task.owner:
             task.owner._addTask(task)
@@ -709,10 +708,9 @@ class TaskManager:
         if __debug__:
             if self.pStatsTasks and task.name != "igLoop":                
                 task.setupPStats()
-        if self.fVerbose:
-            # Alert the world, a new task is born!
-            messenger.send(
-                'TaskManager-spawnTask', sentArgs = [task, task.name, index])
+
+        # Alert the world, a new task is born!
+        messenger.send('TaskManager-spawnTask', sentArgs = [task])
         return task
 
     def remove(self, taskOrName):
@@ -745,7 +743,7 @@ class TaskManager:
             #    '__removeTasksEqual: removing task: %s' % (task))
             # Flag the task for removal from the real list
             task.remove()
-            task.finishTask(self.fVerbose)
+            task.finishTask()
             return 1
         else:
             return 0
@@ -759,7 +757,7 @@ class TaskManager:
         for task in tasks:
             # Flag for removal
             task.remove()
-            task.finishTask(self.fVerbose)
+            task.finishTask()
         # Record the number of tasks removed
         num = len(tasks)
         # Blow away the nameDict entry completely
@@ -875,10 +873,9 @@ class TaskManager:
             task.wakeTime = currentTime + task.delayTime
             # Push this onto the doLaterList. The heap maintains the sorting.
             heappush(self.__doLaterList, task)
-            if self.fVerbose:
-                # Alert the world, a new task is born!
-                messenger.send('TaskManager-againDoLater',
-                               sentArgs = [task, task.name, task.id])
+
+            # Alert the world, a new task is born!
+            #messenger.send('TaskManager-againDoLater', sentArgs = [task])
 
     def __stepThroughList(self, taskPriList):
         # Traverse the taskPriList with an iterator
@@ -895,7 +892,7 @@ class TaskManager:
                 # If it was removed in show code, it will need finishTask run
                 # If it was removed by the taskMgr, it will not, but that is ok
                 # because finishTask is safe to call twice
-                task.finishTask(self.fVerbose)
+                task.finishTask()
                 taskPriList.remove(i)
                 self.__removeTaskFromNameDict(task)
                 # Do not increment the iterator
@@ -921,7 +918,7 @@ class TaskManager:
                     task.remove()
                     # Note: Should not need to remove from doLaterList here
                     # because this task is not in the doLaterList
-                    task.finishTask(self.fVerbose)
+                    task.finishTask()
                     self.__removeTaskFromNameDict(task)
                 else:
                     # assert TaskManager.notify.debug(

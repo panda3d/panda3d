@@ -38,7 +38,6 @@ class TaskManagerPanel(AppShell):
 
 
     def onDestroy(self, event):
-        self.ignore('TaskManager-setVerbose')
         self.taskMgrWidget.onDestroy()
 
 class TaskManagerWidget(DirectObject):
@@ -58,8 +57,6 @@ class TaskManagerWidget(DirectObject):
         self.parent = parent
         # Record taskManager
         self.taskMgr = taskMgr
-        # Enable sending of spawn and remove messages
-        self.taskMgr.setVerbose(1)
         # Init current task
         self.currentTask = None
         self.__taskDict = {}
@@ -119,7 +116,6 @@ class TaskManagerWidget(DirectObject):
         # Add hook to spawnTaskEvents
         self.accept('TaskManager-spawnTask', self.spawnTaskHook)
         self.accept('TaskManager-removeTask', self.removeTaskHook)
-        self.accept('TaskManager-setVerbose', self.updateTaskMgrVerbose)
         # Get listbox
         listbox = self.taskListBox.component('listbox')
         # Bind updates to arrow buttons
@@ -155,13 +151,14 @@ class TaskManagerWidget(DirectObject):
         # Get a list of task names
         taskNames = []
         self.__taskDict = {}
+        tasks = self.taskMgr.getTasks()
+        tasks.sort(key = lambda t: t.getName())
         count = 0
-        for taskPriList in self.taskMgr.taskList:
-            for task in taskPriList:
-                if ((task is not None) and (not task.isRemoved())):
-                    taskNames.append(task.name)
-                    self.__taskDict[count] = task
-                    count += 1
+        for task in tasks:
+            taskNames.append(task.getName())
+            self.__taskDict[count] = task
+            count += 1
+        print taskNames
         if taskNames:
             self.taskListBox.setlist(taskNames)
             # And set current index (so keypresses will start with index 0)
@@ -171,18 +168,16 @@ class TaskManagerWidget(DirectObject):
             self.setCurrentTask()
 
     def toggleTaskMgrVerbose(self):
-        taskMgr.setVerbose(self.taskMgrVerbose.get())
         if self.taskMgrVerbose.get():
             self.updateTaskListBox()
 
-    def updateTaskMgrVerbose(self, value):
-        self.taskMgrVerbose.set(value)
+    def spawnTaskHook(self, task):
+        if self.taskMgrVerbose.get():
+            self.updateTaskListBox()
 
-    def spawnTaskHook(self, task, name, index):
-        self.updateTaskListBox()
-
-    def removeTaskHook(self, task, name):
-        self.updateTaskListBox()
+    def removeTaskHook(self, task):
+        if self.taskMgrVerbose.get():
+            self.updateTaskListBox()
 
     def removeCurrentTask(self):
         if self.currentTask:
