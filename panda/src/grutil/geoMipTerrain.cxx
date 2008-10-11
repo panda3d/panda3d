@@ -320,9 +320,11 @@ get_normal(int x, int y) {
 //     Function: GeoMipTerrain::make_slope_image
 //       Access: Published
 //  Description: Returns a new grayscale image containing the slope
-//               angles. A pixel value of 1.0 will mean 90 degrees,
-//               meaning, horizontal, a pixel value of 0.0 will
-//               mean 0 degrees, or entirely vertical.
+//               angles. A white pixel value means a vertical slope,
+//               while a black pixel will mean that the terrain is
+//               entirely flat at that pixel.
+//               You can translate it to degrees by mapping the
+//               greyscale values from 0 to 90 degrees.
 //               The resulting image will have the same size as the
 //               heightfield image.
 //               The scale will be taken into respect -- meaning,
