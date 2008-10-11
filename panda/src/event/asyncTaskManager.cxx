@@ -66,6 +66,12 @@ void AsyncTaskManager::
 cleanup() {
   MutexHolder holder(_lock);
 
+  if (task_cat.is_spam()) {
+    do_output(task_cat.spam());
+    task_cat.spam(false)
+      << ": cleanup()\n";
+  }
+
   // Iterate carefully in case the tasks adjust the chain list within
   // cleanup().
   while (!_task_chains.empty()) {
