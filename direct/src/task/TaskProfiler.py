@@ -5,14 +5,14 @@ from direct.showbase.PythonUtil import Averager
 class TaskTracker:
     # call it TaskProfiler to avoid confusion for the user
     notify = directNotify.newCategory("TaskProfiler")
-    def __init__(self, namePattern):
-        self._namePattern = namePattern
-        self._durationAverager = Averager('%s-durationAverager' % namePattern)
+    def __init__(self, namePrefix):
+        self._namePrefix = namePrefix
+        self._durationAverager = Averager('%s-durationAverager' % namePrefix)
         self._avgSession = None
         self._maxNonSpikeSession = None
     def destroy(self):
         self.flush()
-        del self._namePattern
+        del self._namePrefix
         del self._durationAverager
     def flush(self):
         self._durationAverager.reset()
@@ -22,8 +22,8 @@ class TaskTracker:
             self._maxNonSpikeSession.release()
         self._avgSession = None
         self._maxNonSpikeSession = None
-    def getNamePattern(self, namePattern):
-        return self._namePattern
+    def getNamePrefix(self, namePrefix):
+        return self._namePrefix
     def addProfileSession(self, session, isSpike):
         duration = session.getWallClockDuration()
         self._durationAverager.addValue(duration)
@@ -66,14 +66,14 @@ class TaskTracker:
             self.notify.info('task CPU profile (%s):\n'
                              '== AVERAGE (%s wall-clock seconds)\n%s\n'
                              '== LONGEST NON-SPIKE (%s wall-clock seconds)\n%s' % (
-                self._namePattern,
+                self._namePrefix,
                 self._avgSession.getWallClockDuration(),
                 self._avgSession.getResults(),
                 self._maxNonSpikeSession.getWallClockDuration(),
                 self._maxNonSpikeSession.getResults(),
                 ))
         else:
-            self.notify.info('task CPU profile (%s): no data collected' % self._namePattern)
+            self.notify.info('task CPU profile (%s): no data collected' % self._namePrefix)
 
 class TaskProfiler:
     # this does intermittent profiling of tasks running on the system
@@ -83,7 +83,7 @@ class TaskProfiler:
     def __init__(self):
         self._enableFC = FunctionCall(self._setEnabled, taskMgr.getProfileTasksSV())
         # table of task name pattern to TaskTracker
-        self._namePattern2tracker = {}
+        self._namePrefix2tracker = {}
         self._task = None
         # number of samples required before spikes start getting identified
         self._minSamples = config.GetInt('profile-task-spike-min-samples', 30)
@@ -94,16 +94,16 @@ class TaskProfiler:
         if taskMgr.getProfileTasks():
             self._setEnabled(False)
         self._enableFC.destroy()
-        for tracker in self._namePattern2tracker.itervalues():
+        for tracker in self._namePrefix2tracker.itervalues():
             tracker.destroy()
-        del self._namePattern2tracker
+        del self._namePrefix2tracker
         del self._task
 
     def logProfiles(self, name=None):
         if name:
             name = name.lower()
-        for namePattern, tracker in self._namePattern2tracker.iteritems():
-            if (name and (name not in namePattern.lower())):
+        for namePrefix, tracker in self._namePrefix2tracker.iteritems():
+            if (name and (name not in namePrefix.lower())):
                 continue
             tracker.log()
 
@@ -111,8 +111,8 @@ class TaskProfiler:
         if name:
             name = name.lower()
         # flush stored task profiles
-        for namePattern, tracker in self._namePattern2tracker.iteritems():
-            if (name and (name not in namePattern.lower())):
+        for namePrefix, tracker in self._namePrefix2tracker.iteritems():
+            if (name and (name not in namePrefix.lower())):
                 continue
             tracker.flush()
 
@@ -132,10 +132,10 @@ class TaskProfiler:
             # if we couldn't profile, throw this result out
             if session.profileSucceeded():
                 sessionDur = session.getWallClockDuration()
-                namePattern = self._task.getNamePattern()
-                if namePattern not in self._namePattern2tracker:
-                    self._namePattern2tracker[namePattern] = TaskTracker(namePattern)
-                tracker = self._namePattern2tracker[namePattern]
+                namePrefix = self._task.getNamePrefix()
+                if namePrefix not in self._namePrefix2tracker:
+                    self._namePrefix2tracker[namePrefix] = TaskTracker(namePrefix)
+                tracker = self._namePrefix2tracker[namePrefix]
                 isSpike = False
                 # do we have enough samples?
                 if tracker.getNumDurationSamples() > self._minSamples:
@@ -150,7 +150,7 @@ class TaskProfiler:
                                          '== AVERAGE (%s wall-clock seconds)\n%s\n'
                                          '== LONGEST NON-SPIKE (%s wall-clock seconds)\n%s\n'
                                          '== SPIKE (%s wall-clock seconds)\n%s' % (
-                            namePattern,
+                            namePrefix,
                             avgSession.getWallClockDuration(), avgSession.getResults(),
                             maxNSSession.getWallClockDuration(), maxNSSession.getResults(),
                             sessionDur, session.getResults()))

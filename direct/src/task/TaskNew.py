@@ -8,9 +8,13 @@ __all__ = ['Task', 'TaskManager',
 
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import ExceptionVarDump
+from direct.showbase.PythonUtil import *
+from direct.showbase.ProfileSession import ProfileSession
 import signal
 import types
 import time
+import random
+import string
 
 from pandac.PandaModules import *
 
@@ -106,6 +110,24 @@ class TaskManager:
         self.running = False
         self.fKeyboardInterrupt = False
         self.interruptCount = 0
+
+        self._profileFrames = False
+
+        # this will be set when it's safe to import StateVar
+        self._profileTasks = None
+        self._taskProfiler = None
+        self._profileInfo = ScratchPad(
+            taskId = None,
+            profiled = False,
+            session = None,
+            )
+
+    def finalInit(self):
+        # This function should be called once during startup, after
+        # most things are imported.
+        from direct.fsm.StatePush import StateVar
+        self._profileTasks = StateVar(False)
+        self.setProfileTasks(ConfigVariableBool('profile-task-spikes', 0).getValue())
 
     def destroy(self):
         self.mgr.cleanup()
@@ -419,7 +441,11 @@ class TaskManager:
             self.running = True
             while self.running:
                 try:
-                    self.step()
+                    if self._profileFrames:
+                        self._profileFrames = False
+                        self._doProfiledFrames()
+                    else:
+                        self.step()
                 except KeyboardInterrupt:
                     self.stop()
                 except IOError, ioError:
@@ -495,6 +521,125 @@ class TaskManager:
     def popupControls(self):
         from direct.tkpanels import TaskManagerPanel
         return TaskManagerPanel.TaskManagerPanel(self)
+
+    def profileFrames(self, num=None):
+        self._profileFrames = True
+        if num is None:
+            num = 1
+        self._profileFrameCount = num
+
+    @profiled()
+    def _doProfiledFrames(self, *args, **kArgs):
+        print '** profiling %s frames' % self._profileFrameCount
+        for i in xrange(self._profileFrameCount):
+            result = self.step(*args, **kArgs)
+        return result
+
+    def getProfileTasks(self):
+        return self._profileTasks.get()
+
+    def getProfileTasksSV(self):
+        return self._profileTasks
+
+    def setProfileTasks(self, profileTasks):
+        self._profileTasks.set(profileTasks)
+        if (not self._taskProfiler) and profileTasks:
+            # import here due to import dependencies
+            from direct.task.TaskProfiler import TaskProfiler
+            self._taskProfiler = TaskProfiler()
+
+    def logTaskProfiles(self, name=None):
+        if self._taskProfiler:
+            self._taskProfiler.logProfiles(name)
+
+    def flushTaskProfiles(self, name=None):
+        if self._taskProfiler:
+            self._taskProfiler.flush(name)
+
+    def _setProfileTask(self, task):
+        if self._profileInfo.session:
+            self._profileInfo.session.release()
+            self._profileInfo.session = None
+        self._profileInfo = ScratchPad(
+            taskFunc = task.getFunction(),
+            taskArgs = task.getArgs(),
+            task = task,
+            profiled = False,
+            session = None,
+            )
+
+        # Temporarily replace the task's own function with our
+        # _profileTask method.
+        task.setFunction(self._profileTask)
+        task.setArgs([self._profileInfo], True)
+
+    def _profileTask(self, profileInfo, task):
+        # This is called instead of the task function when we have
+        # decided to profile a task.
+
+        assert profileInfo.task == task
+        # don't profile the same task twice in a row
+        assert not profileInfo.profiled
+
+        # Restore the task's proper function for next time.
+        appendTask = False
+        taskArgs = profileInfo.taskArgs
+        if taskArgs and taskArgs[-1] == task:
+            appendTask = True
+            taskArgs = taskArgs[:-1]
+        task.setArgs(taskArgs, appendTask)
+        task.setFunction(profileInfo.taskFunc)
+
+        profileSession = ProfileSession(Functor(profileInfo.taskFunc, *profileInfo.taskArgs),
+                                        'profiled-task-%s' % task.getName())
+        ret = profileSession.run()
+
+        # set these values *after* profiling in case we're profiling the TaskProfiler
+        profileInfo.session = profileSession
+        profileInfo.profiled = True
+
+        return ret
+
+    def _hasProfiledDesignatedTask(self):
+        # have we run a profile of the designated task yet?
+        return self._profileInfo.profiled
+
+    def _getLastProfileSession(self):
+        return self._profileInfo.session
+
+    def _getRandomTask(self):
+        tasks = self.mgr.getActiveTasks()
+        numTasks = tasks.getNumTasks()
+        doLaters = self.mgr.getSleepingTasks()
+        numDoLaters = doLaters.getNumTasks()
+        if random.random() < (numDoLaters / float(numTasks + numDoLaters)):
+            # grab a doLater that will most likely trigger in the next frame
+            tNow = globalClock.getFrameTime()
+            avgFrameRate = globalClock.getAverageFrameRate()
+            if avgFrameRate < .00001:
+                avgFrameDur = 0.
+            else:
+                avgFrameDur = (1. / globalClock.getAverageFrameRate())
+            tNext = tNow + avgFrameDur
+            # binary search to find doLaters that are likely to trigger on the next frame
+            curIndex = int(numDoLaters / 2)
+            rangeStart = 0
+            rangeEnd = numDoLaters
+            while True:
+                if tNext < doLaters[curIndex].wakeTime:
+                    rangeEnd = curIndex
+                else:
+                    rangeStart = curIndex
+                prevIndex = curIndex
+                curIndex = int((rangeStart + rangeEnd) / 2)
+                if curIndex == prevIndex:
+                    break
+            index = curIndex
+            task = doLaters[random.randrange(index+1)]
+        else:
+            # grab a task
+            task = tasks[random.randint(0, numTasks - 1)]
+        return task
 
     def __repr__(self):
         return str(self.mgr)

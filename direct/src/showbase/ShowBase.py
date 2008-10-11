@@ -367,12 +367,11 @@ class ShowBase(DirectObject.DirectObject):
         if self.windowType != 'none':
             self.__doStartDirect()
 
-
-        self._wantGcTask = config.GetBool('want-garbage-collect-task', 1)
-        self._gcTask = None
-        if self._wantGcTask:
+        if config.GetBool('want-garbage-collect-task', 1):
             # manual garbage-collect task
-            self._gcTask = taskMgr.add(self._garbageCollect, self.GarbageCollectTaskName, 200)
+            taskMgr.add(self._garbageCollect, self.GarbageCollectTaskName, 200)
+            
+        taskMgr.finalInit()
 
         # Start IGLOOP
         self.restart()
@@ -416,10 +415,6 @@ class ShowBase(DirectObject.DirectObject):
         automatically.
 
         This function is designed to be safe to call multiple times."""
-
-        if self._gcTask:
-            self._gcTask.remove()
-            self._gcTask = None
 
         taskMgr.destroy()
 

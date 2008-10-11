@@ -190,6 +190,25 @@ class Task:
             taskName = self.name
         return ''.join([c for c in taskName if c not in digits])
 
+    def getNamePrefix(self):
+        # get a version of the task name, omitting a hyphen or
+        # underscore followed by a string of digits at the end of the
+        # name.
+        name = self.name
+        trimmed = len(name)
+        p = trimmed
+        while True:
+            while p > 0 and name[p - 1] in string.digits:
+                p -= 1
+            if p > 0 and name[p - 1] in '-_':
+                p -= 1
+                trimmed = p
+            else:
+                p = trimmed
+                break
+
+        return name[:trimmed]
+
     def setupPStats(self):
         if __debug__ and TaskManager.taskTimerVerbose and not self.pstats:
             # Get the PStats name for the task.  By convention,
@@ -439,6 +458,11 @@ class TaskManager:
 
         # A default task.
         self._doLaterTask = self.add(self.__doLaterProcessor, "doLaterProcessor", -10)
+
+    def finalInit(self):
+        # This function should be called once during startup, after
+        # most things are imported.
+        pass
 
     def destroy(self):
         if self._doLaterTask:
