@@ -86,6 +86,7 @@ PUBLISHED:
 
   void set_name(const string &name);
   INLINE void clear_name();
+  string get_name_prefix() const;
 
   INLINE AtomicAdjust::Integer get_task_id() const;
 

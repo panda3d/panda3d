@@ -178,6 +178,34 @@ set_name(const string &name) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::get_name_prefix
+//       Access: Published
+//  Description: Returns the initial part of the name, up to but not
+//               including any trailing digits following a hyphen or
+//               underscore.
+////////////////////////////////////////////////////////////////////
+string AsyncTask::
+get_name_prefix() const {
+  string name = get_name();
+  size_t trimmed = name.size();
+  size_t p = trimmed;
+  while (true) {
+    while (p > 0 && isdigit(name[p - 1])) {
+      --p;
+    }
+    if (p > 0 && (name[p - 1] == '-' || name[p - 1] == '_')) {
+      --p;
+      trimmed = p;
+    } else {
+      p = trimmed;
+      break;
+    }
+  }
+
+  return name.substr(0, trimmed);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::set_task_chain
 //       Access: Published
 //  Description: Specifies the AsyncTaskChain on which this task will
