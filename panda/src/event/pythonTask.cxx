@@ -205,7 +205,7 @@ get_upon_death() {
 void PythonTask::
 set_owner(PyObject *owner) {
   if (_owner != NULL && _owner != Py_None && _state != S_inactive) {
-    upon_death(false);
+    unregister_from_owner();
   }
 
   Py_XDECREF(_owner);
@@ -213,7 +213,7 @@ set_owner(PyObject *owner) {
   Py_INCREF(_owner);
 
   if (_owner != Py_None && _state != S_inactive) {
-    upon_birth();
+    register_to_owner();
   }
 }
 
@@ -477,7 +477,54 @@ do_python_task() {
 void PythonTask::
 upon_birth() {
   AsyncTask::upon_birth();
+  register_to_owner();
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: PythonTask::upon_death
+//       Access: Protected, Virtual
+//  Description: Override this function to do something useful when the
+//               task has been removed from the active queue.  The
+//               parameter clean_exit is true if the task has been
+//               removed because it exited normally (returning
+//               DS_done), or false if it was removed for some other
+//               reason (e.g. AsyncTaskManager::remove()).  By the
+//               time this method is called, _manager has been
+//               cleared, so the parameter manager indicates the
+//               original AsyncTaskManager that owned this task.
+//
+//               The normal behavior is to throw the done_event only
+//               if clean_exit is true.
+//
+//               This function is called with the lock *not* held.
+////////////////////////////////////////////////////////////////////
+void PythonTask::
+upon_death(AsyncTaskManager *manager, bool clean_exit) {
+  AsyncTask::upon_death(manager, clean_exit);
+
+  if (_upon_death != Py_None) {
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+    // Use PyGILState to protect this asynchronous call.
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure();
+#endif
+    
+    call_function(_upon_death);
+    
+#if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
+    PyGILState_Release(gstate);
+#endif
+  }
+  unregister_from_owner();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PythonTask::register_to_owner
+//       Access: Private
+//  Description: Tells the owner we are now his task.
+////////////////////////////////////////////////////////////////////
+void PythonTask::
+register_to_owner() {
   if (_owner != Py_None) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     // Use PyGILState to protect this asynchronous call.
@@ -494,25 +541,13 @@ upon_birth() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PythonTask::upon_death
-//       Access: Protected, Virtual
-//  Description: Override this function to do something useful when the
-//               task has been removed from the active queue.  The
-//               parameter clean_exit is true if the task has been
-//               removed because it exited normally (returning
-//               DS_done), or false if it was removed for some other
-//               reason (e.g. AsyncTaskManager::remove()).
-//
-//               The normal behavior is to throw the done_event only
-//               if clean_exit is true.
-//
-//               This function is called with the lock *not* held.
+//     Function: PythonTask::unregister_from_owner
+//       Access: Private
+//  Description: Tells the owner we are no longer his task.
 ////////////////////////////////////////////////////////////////////
 void PythonTask::
-upon_death(bool clean_exit) {
-  AsyncTask::upon_death(clean_exit);
-
-  if (_owner != Py_None && _upon_death != Py_None) {
+unregister_from_owner() {
+  if (_owner != Py_None) {
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     // Use PyGILState to protect this asynchronous call.
     PyGILState_STATE gstate;
@@ -520,7 +555,6 @@ upon_death(bool clean_exit) {
 #endif
     
     call_owner_method("_clearTask");
-    call_function(_upon_death);
     
 #if defined(HAVE_THREADS) && !defined(SIMPLE_THREADS)
     PyGILState_Release(gstate);
@@ -530,7 +564,7 @@ upon_death(bool clean_exit) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PythonTask::call_owner_method
-//       Access: Protected
+//       Access: Private
 //  Description: Calls the indicated method name on the given object,
 //               if defined, passing in the task object as the only
 //               parameter.
@@ -555,7 +589,7 @@ call_owner_method(const char *method_name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PythonTask::call_function
-//       Access: Protected
+//       Access: Private
 //  Description: Calls the indicated Python function, passing in the
 //               task object as the only parameter.
 ////////////////////////////////////////////////////////////////////

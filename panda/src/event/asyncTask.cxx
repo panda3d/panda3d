@@ -445,6 +445,11 @@ do_task() {
 ////////////////////////////////////////////////////////////////////
 void AsyncTask::
 upon_birth() {
+  // Throw a generic add event for the manager.
+  string add_name = _manager->get_name() + "-addTask";
+  PT_Event event = new Event(add_name);
+  event->add_parameter(EventParameter(this));
+  throw_event(event);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -455,7 +460,10 @@ upon_birth() {
 //               parameter clean_exit is true if the task has been
 //               removed because it exited normally (returning
 //               DS_done), or false if it was removed for some other
-//               reason (e.g. AsyncTaskManager::remove()).
+//               reason (e.g. AsyncTaskManager::remove()).  By the
+//               time this method is called, _manager has been
+//               cleared, so the parameter manager indicates the
+//               original AsyncTaskManager that owned this task.
 //
 //               The normal behavior is to throw the done_event only
 //               if clean_exit is true.
@@ -463,9 +471,17 @@ upon_birth() {
 //               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 void AsyncTask::
-upon_death(bool clean_exit) {
+upon_death(AsyncTaskManager *manager, bool clean_exit) {
   if (clean_exit && !_done_event.empty()) {
     PT_Event event = new Event(_done_event);
+    event->add_parameter(EventParameter(this));
+    throw_event(event);
+  }
+
+  // Also throw a generic remove event for the manager.
+  if (manager != (AsyncTaskManager *)NULL) {
+    string remove_name = manager->get_name() + "-removeTask";
+    PT_Event event = new Event(remove_name);
     event->add_parameter(EventParameter(this));
     throw_event(event);
   }

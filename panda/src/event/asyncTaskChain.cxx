@@ -645,7 +645,7 @@ do_cleanup() {
   // Now go back and call the upon_death functions.
   _manager->_lock.release();
   for (ti = dead.begin(); ti != dead.end(); ++ti) {
-    (*ti)->upon_death(false);
+    (*ti)->upon_death(_manager, false);
   }
   _manager->_lock.lock();
 
@@ -843,7 +843,7 @@ cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
 
   if (upon_death) {
     _manager->_lock.release();
-    task->upon_death(clean_exit);
+    task->upon_death(_manager, clean_exit);
     _manager->_lock.lock();
   }
 }

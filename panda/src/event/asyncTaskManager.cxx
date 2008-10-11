@@ -15,8 +15,6 @@
 #include "asyncTaskManager.h"
 #include "event.h"
 #include "pt_Event.h"
-#include "throw_event.h"
-#include "eventParameter.h"
 #include "mutexHolder.h"
 #include "indent.h"
 #include "pStatClient.h"
@@ -375,7 +373,7 @@ remove(const AsyncTaskCollection &tasks) {
       }
       if (task->_chain->do_remove(task)) {
         _lock.release();
-        task->upon_death(false);
+        task->upon_death(this, false);
         _lock.lock();
         ++num_removed;
       } else {
@@ -727,5 +725,5 @@ void AsyncTaskManager::
 make_global_ptr() {
   nassertv(_global_ptr == (AsyncTaskManager *)NULL);
 
-  _global_ptr = new AsyncTaskManager("taskMgr");
+  _global_ptr = new AsyncTaskManager("TaskManager");
 }

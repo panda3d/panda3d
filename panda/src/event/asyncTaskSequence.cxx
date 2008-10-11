@@ -146,7 +146,10 @@ upon_birth() {
 //               parameter clean_exit is true if the task has been
 //               removed because it exited normally (returning
 //               DS_done), or false if it was removed for some other
-//               reason (e.g. AsyncTaskManager::remove()).
+//               reason (e.g. AsyncTaskManager::remove()).  By the
+//               time this method is called, _manager has been
+//               cleared, so the parameter manager indicates the
+//               original AsyncTaskManager that owned this task.
 //
 //               The normal behavior is to throw the done_event only
 //               if clean_exit is true.
@@ -156,8 +159,8 @@ upon_birth() {
 //               return with it held.
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskSequence::
-upon_death(bool clean_exit) {
-  AsyncTask::upon_death(clean_exit);
+upon_death(AsyncTaskManager *manager, bool clean_exit) {
+  AsyncTask::upon_death(manager, clean_exit);
   set_current_task(NULL, clean_exit);
 }
 
@@ -177,7 +180,7 @@ set_current_task(AsyncTask *task, bool clean_exit) {
     nassertv(_current_task->_state == S_active_nested);
     nassertv(_current_task->_manager == _manager || _manager == NULL);
     _current_task->_state = S_inactive;
-    _current_task->upon_death(clean_exit);
+    _current_task->upon_death(_manager, clean_exit);
     _current_task->_manager = NULL;
   }
 

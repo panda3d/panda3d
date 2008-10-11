@@ -52,8 +52,11 @@ protected:
   virtual DoneStatus do_task();
   DoneStatus do_python_task();
   virtual void upon_birth();
-  virtual void upon_death(bool clean_exit);
+  virtual void upon_death(AsyncTaskManager *manager, bool clean_exit);
 
+private:
+  void register_to_owner();
+  void unregister_from_owner();
   void call_owner_method(const char *method_name);
   void call_function(PyObject *function);
 
