@@ -105,6 +105,7 @@ PUBLISHED:
                                             unsigned short my);
   INLINE LVecBase2f get_block_from_pos(double x, double y);
   
+  PNMImage make_slope_image();
   void generate();
   bool update();
   

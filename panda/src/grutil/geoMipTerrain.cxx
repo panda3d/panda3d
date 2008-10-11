@@ -292,10 +292,10 @@ get_elevation(double x, double y) {
 //               accurate normals, please divide it by the
 //               terrain scale and normalize it again, like this:
 //
-//               LVector3f normal (terr.get_normal(mx, my, x, y));
-//               normal.set(normal.get_x() / terr.get_sx(),
-//                          normal.get_y() / terr.get_sy(),
-//                          normal.get_z() / terr.get_sz());
+//               LVector3f normal (terr.get_normal(x, y));
+//               normal.set(normal.get_x() / root.get_sx(),
+//                          normal.get_y() / root.get_sy(),
+//                          normal.get_z() / root.get_sz());
 //               normal.normalize();
 ////////////////////////////////////////////////////////////////////
 LVector3f GeoMipTerrain::
@@ -314,6 +314,36 @@ get_normal(int x, int y) {
   normal.normalize();
 
   return normal;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeoMipTerrain::make_slope_image
+//       Access: Published
+//  Description: Returns a new grayscale image containing the slope
+//               angles. A pixel value of 1.0 will mean 90 degrees,
+//               meaning, horizontal, a pixel value of 0.0 will
+//               mean 0 degrees, or entirely vertical.
+//               The resulting image will have the same size as the
+//               heightfield image.
+//               The scale will be taken into respect -- meaning,
+//               if you change the terrain scale, the slope image
+//               will need to be regenerated in order to be correct.
+////////////////////////////////////////////////////////////////////
+PNMImage GeoMipTerrain::
+make_slope_image() {
+  PNMImage result (_xsize, _ysize);
+  result.make_grayscale();
+  for (int x = 0; x < _xsize; ++x) {
+    for (int y = 0; y < _ysize; ++y) {
+      LVector3f normal (get_normal(x, y));
+      normal.set(normal.get_x() / _root.get_sx(),
+                 normal.get_y() / _root.get_sy(),
+                 normal.get_z() / _root.get_sz());
+      normal.normalize();
+      result.set_gray(x, y, normal.angle_deg(LVector3f::up()) / 90.0);
+    }
+  }
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
