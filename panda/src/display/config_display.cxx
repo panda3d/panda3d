@@ -132,6 +132,17 @@ ConfigVariableBool prefer_single_buffer
           "false (since in that case the buffer can share a graphics context "
           "with the window)."));
 
+ConfigVariableInt max_texture_stages
+("max-texture-stages", -1,
+ PRC_DESC("Set this to a positive integer to limit the number of "
+          "texture stages reported by the GSG.  This can be used to limit "
+          "the amount of multitexturing Panda will attempt to use.  "
+          "If this is zero or less, the GSG will report its honest number "
+          "of texture stages, allowing Panda the full use of the graphics "
+          "card; if it is 1 or more, then Panda will never allow more than "
+          "this number of texture stages simultaneously, regardless of "
+          "what the GSG says it can do."));
+
 ConfigVariableBool support_render_texture
 ("support-render-texture", true,
  PRC_DESC("Set this true allow use of the render-to-a-texture feature, if it "

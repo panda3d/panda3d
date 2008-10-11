@@ -49,6 +49,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableBool prefer_texture_buffer;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool prefer_parasite_buffer;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool prefer_single_buffer;
 
+extern EXPCL_PANDA_DISPLAY ConfigVariableInt max_texture_stages;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool support_render_texture;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool support_rescale_normal;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool copy_texture_inverted;

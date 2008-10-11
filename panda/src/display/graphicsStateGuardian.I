@@ -277,6 +277,9 @@ get_max_vertices_per_primitive() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int GraphicsStateGuardian::
 get_max_texture_stages() const {
+  if (max_texture_stages > 0) {
+    return min(_max_texture_stages, (int)max_texture_stages);
+  }
   return _max_texture_stages;
 }
 

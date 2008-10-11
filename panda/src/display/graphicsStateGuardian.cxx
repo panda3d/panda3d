@@ -2068,7 +2068,8 @@ void GraphicsStateGuardian::
 determine_effective_texture() {
   nassertv(_target._texture != (TextureAttrib *)NULL &&
            _target._tex_gen != (TexGenAttrib *)NULL);
-  _effective_texture = _target._texture->filter_to_max(_max_texture_stages);
+  int max_texture_stages = get_max_texture_stages();
+  _effective_texture = _target._texture->filter_to_max(max_texture_stages);
   _effective_tex_gen = _target._tex_gen;
   
   if (_has_texture_alpha_scale) {
@@ -2080,7 +2081,7 @@ determine_effective_texture() {
                                (stage, TexGenAttrib::M_constant, TexCoord3f(_current_color_scale[3], 0.0f, 0.0f)));
   }
 
-  nassertv(_effective_texture->get_num_on_stages() <= _max_texture_stages);
+  nassertv(_effective_texture->get_num_on_stages() <= max_texture_stages);
 }
 
 ////////////////////////////////////////////////////////////////////
