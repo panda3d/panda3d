@@ -359,6 +359,10 @@ make_slope_image() {
 ////////////////////////////////////////////////////////////////////
 void GeoMipTerrain::
 generate() {
+  if (_xsize < 3 || _ysize < 3) {
+    grutil_cat.error() << "No valid heightfield image has been set!\n";
+    return;
+  }
   calc_levels();
   _root.node()->remove_all_children();
   _blocks.clear();
@@ -400,6 +404,10 @@ generate() {
 ////////////////////////////////////////////////////////////////////
 bool GeoMipTerrain::
 update() {
+  if (_xsize < 3 || _ysize < 3) {
+    grutil_cat.error() << "No valid heightfield image has been set!\n";
+    return false;
+  }
   if (_is_dirty) {
     generate();
     return true;
@@ -488,7 +496,7 @@ root_flattened() {
   if (total != _root.node()->get_num_children()) {
     grutil_cat.error() << "GeoMipTerrain: root node unexpectedly mangled: " << total << " vs " << (_root.node()->get_num_children()) << "\n";
     return true;
-  }    
+  }
   
   // The default.
   return false;
@@ -530,6 +538,7 @@ auto_flatten() {
 ////////////////////////////////////////////////////////////////////
 void GeoMipTerrain::
 calc_levels() {
+  nassertv(_xsize >= 3 && _ysize >= 3);
   _levels.clear();
   for (unsigned int mx = 0; mx < (_xsize - 1) / _block_size; mx++) {
     pvector<unsigned short> tvector; //create temporary row
