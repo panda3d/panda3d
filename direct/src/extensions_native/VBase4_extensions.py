@@ -14,3 +14,11 @@ def pPrintValues(self):
     return "% 10.4f, % 10.4f, % 10.4f, % 10.4f" % (self[0], self[1], self[2], self[3])
 Dtool_funcToMethod(pPrintValues, VBase4)
 del pPrintValues
+
+def asTuple(self):
+    """
+    Returns the vector as a tuple.
+    """
+    return (self[0], self[1], self[2], self[3])
+Dtool_funcToMethod(asTuple, VBase4)
+del asTuple
