@@ -37,6 +37,10 @@ class ParticleEffect(NodePath):
             del self.particlesDict
         del self.renderParent
 
+    def getName(self):
+        # override NodePath.getName()
+        return self.name
+    
     def reset(self):
         self.removeAllForces()
         self.removeAllParticles()
