@@ -99,6 +99,11 @@ class DistributedSmoothNodeAI(DistributedNodeAI.DistributedNodeAI,
     def getComponentR(self):
         return self.getR()
     def getComponentL(self):
-        pass
+        if (self.zoneId):
+            return self.zoneId
+        else:
+            # we can't send None over the wire which self.zoneId can sometimes be
+            return 0
     def getComponentT(self):
-        pass
+        return 0
+

@@ -55,6 +55,7 @@ PUBLISHED:
   void broadcast_pos_hpr_xy();
 
   void set_curr_l(PN_uint64 l);
+  void print_curr_l();
 
 private:
   INLINE static bool only_changed(int flags, int compare);

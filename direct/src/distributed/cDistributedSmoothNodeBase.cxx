@@ -78,8 +78,9 @@ initialize(const NodePath &node_path, DCClass *dclass, CHANNEL_TYPE do_id) {
 ////////////////////////////////////////////////////////////////////
 void CDistributedSmoothNodeBase::
 send_everything() {
-  d_setSmPosHpr(_store_xyz[0], _store_xyz[1], _store_xyz[2], 
-                _store_hpr[0], _store_hpr[1], _store_hpr[2]);
+  _currL[0] = _currL[1];
+  d_setSmPosHprL(_store_xyz[0], _store_xyz[1], _store_xyz[2], 
+                 _store_hpr[0], _store_hpr[1], _store_hpr[2], _currL[0]);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -368,5 +369,10 @@ finish_send_update(DCPacker &packer) {
 void CDistributedSmoothNodeBase::
 set_curr_l(PN_uint64 l) {
   _currL[1] = l;
+}
+
+void CDistributedSmoothNodeBase::
+print_curr_l() {
+  cout << "printCurrL: sent l: " << _currL[1] << " last set l: " << _currL[0] << "\n";
 }
 
