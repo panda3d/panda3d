@@ -519,7 +519,9 @@ choose_next_context() {
         } else {
           // Otherwise, we're legitimately at the end of an epoch.
           // Yield, to give some time back to the system.
-          system_yield();
+
+          // On second thought, this might yield too much.
+          //system_yield();
         }
         new_epoch = true;
         
