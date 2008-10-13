@@ -132,8 +132,8 @@ do_task() {
 //               return with it held.
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskSequence::
-upon_birth() {
-  AsyncTask::upon_birth();
+upon_birth(AsyncTaskManager *manager) {
+  AsyncTask::upon_birth(manager);
   _task_index = 0;
   set_current_task(NULL, true);
 }
@@ -180,8 +180,8 @@ set_current_task(AsyncTask *task, bool clean_exit) {
     nassertv(_current_task->_state == S_active_nested);
     nassertv(_current_task->_manager == _manager || _manager == NULL);
     _current_task->_state = S_inactive;
-    _current_task->upon_death(_manager, clean_exit);
     _current_task->_manager = NULL;
+    _current_task->upon_death(_manager, clean_exit);
   }
 
   _current_task = task;
@@ -189,8 +189,10 @@ set_current_task(AsyncTask *task, bool clean_exit) {
   if (_current_task != (AsyncTask *)NULL) {
     nassertv(_current_task->_state == S_inactive);
     nassertv(_current_task->_manager == NULL);
+    _current_task->upon_birth(_manager);
+    nassertv(_current_task->_state == S_inactive);
+    nassertv(_current_task->_manager == NULL);
     _current_task->_manager = _manager;
     _current_task->_state = S_active_nested;
-    _current_task->upon_birth();
   }
 }

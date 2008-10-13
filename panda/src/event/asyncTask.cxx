@@ -472,9 +472,9 @@ do_task() {
 //               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 void AsyncTask::
-upon_birth() {
+upon_birth(AsyncTaskManager *manager) {
   // Throw a generic add event for the manager.
-  string add_name = _manager->get_name() + "-addTask";
+  string add_name = manager->get_name() + "-addTask";
   PT_Event event = new Event(add_name);
   event->add_parameter(EventParameter(this));
   throw_event(event);

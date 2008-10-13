@@ -48,7 +48,7 @@ PUBLISHED:
 protected:
   virtual bool is_runnable();
   virtual DoneStatus do_task();
-  virtual void upon_birth();
+  virtual void upon_birth(AsyncTaskManager *manager);
   virtual void upon_death(AsyncTaskManager *manager, bool clean_exit);
 
 private:

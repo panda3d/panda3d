@@ -85,8 +85,8 @@ do_task() {
 //               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 void GenericAsyncTask::
-upon_birth() {
-  AsyncTask::upon_birth();
+upon_birth(AsyncTaskManager *manager) {
+  AsyncTask::upon_birth(manager);
 
   if (_upon_birth != NULL) {
     (*_upon_birth)(this, _user_data);

@@ -223,6 +223,13 @@ add(AsyncTask *task) {
     nassertv(task->_manager == NULL &&
              task->_state == AsyncTask::S_inactive);
     nassertv(!do_has_task(task));
+
+    _lock.release();
+    task->upon_birth(this);
+    _lock.lock();
+    nassertv(task->_manager == NULL &&
+             task->_state == AsyncTask::S_inactive);
+    nassertv(!do_has_task(task));
     
     AsyncTaskChain *chain = do_find_task_chain(task->_chain_name);
     if (chain == (AsyncTaskChain *)NULL) {
@@ -233,8 +240,6 @@ add(AsyncTask *task) {
     }
     chain->do_add(task);
   }
-
-  task->upon_birth();
 }
 
 ////////////////////////////////////////////////////////////////////

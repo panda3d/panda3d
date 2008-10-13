@@ -475,8 +475,8 @@ do_python_task() {
 //               This function is called with the lock *not* held.
 ////////////////////////////////////////////////////////////////////
 void PythonTask::
-upon_birth() {
-  AsyncTask::upon_birth();
+upon_birth(AsyncTaskManager *manager) {
+  AsyncTask::upon_birth(manager);
   register_to_owner();
 }
 
