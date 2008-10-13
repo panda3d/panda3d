@@ -21,7 +21,7 @@ ESNum2Str = {
     ESNew: 'ESNew',
     ESDeleted: 'ESDeleted',
     ESDisabling: 'ESDisabling',
-    ESDisabled: 'ESDisabed',
+    ESDisabled: 'ESDisabled',
     ESGenerating: 'ESGenerating',
     ESGenerated: 'ESGenerated',
     }
