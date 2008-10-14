@@ -38,7 +38,7 @@ INLINE ConditionVarSpinlockImpl::
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarSpinlockImpl::
-signal() {
+notify() {
   // This will wake up all waiters on the lock.  But that's allowed.
   AtomicAdjust::inc(_event);
 }
@@ -49,6 +49,6 @@ signal() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarSpinlockImpl::
-signal_all() {
+notify_all() {
   AtomicAdjust::inc(_event);
 }

@@ -14,36 +14,36 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::lock
+//     Function: PipelineCyclerTrueImpl::acquire
 //       Access: Public
 //  Description: Grabs an overall lock on the cycler.  Release it with
 //               a call to release().  This lock should be held while
 //               walking the list of stages.
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
-lock() {
-  TAU_PROFILE("void PipelineCyclerTrueImpl::lock()", " ", TAU_USER);
-  _lock.lock();
+acquire() {
+  TAU_PROFILE("void PipelineCyclerTrueImpl::acquire()", " ", TAU_USER);
+  _lock.acquire();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrueImpl::lock
+//     Function: PipelineCyclerTrueImpl::acquire
 //       Access: Public
 //  Description: Grabs an overall lock on the cycler.  Release it with
 //               a call to release().  This lock should be held while
 //               walking the list of stages.
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
-lock(Thread *current_thread) {
-  TAU_PROFILE("void PipelineCyclerTrueImpl::lock(Thread *)", " ", TAU_USER);
-  _lock.lock(current_thread);
+acquire(Thread *current_thread) {
+  TAU_PROFILE("void PipelineCyclerTrueImpl::acquire(Thread *)", " ", TAU_USER);
+  _lock.acquire(current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrueImpl::release
 //       Access: Public
 //  Description: Release the overall lock on the cycler that was
-//               grabbed via lock().
+//               grabbed via acquire().
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrueImpl::
 release() {
@@ -93,7 +93,7 @@ read(Thread *current_thread) const {
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
 #endif
-  _lock.lock(current_thread);
+  _lock.acquire(current_thread);
   return _data[pipeline_stage];
 }
 
@@ -312,7 +312,7 @@ read_stage(int pipeline_stage, Thread *current_thread) const {
 #ifdef _DEBUG
   nassertr(pipeline_stage >= 0 && pipeline_stage < _num_stages, NULL);
 #endif
-  _lock.lock(current_thread);
+  _lock.acquire(current_thread);
   return _data[pipeline_stage];
 }
 

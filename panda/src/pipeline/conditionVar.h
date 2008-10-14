@@ -56,13 +56,13 @@ private:
 
   // These methods are inherited from the base class.
   // INLINE void wait();
-  // INLINE void signal();
+  // INLINE void notify();
 
 private:
-  // The signal_all() method is specifically *not* provided by
+  // The notify_all() method is specifically *not* provided by
   // ConditionVar.  Use ConditionVarFull if you need to call this
   // method.
-  INLINE void signal_all();
+  INLINE void notify_all();
 
 PUBLISHED:
   INLINE Mutex &get_mutex() const;

@@ -22,7 +22,7 @@ INLINE LightReMutexHolder::
 LightReMutexHolder(const LightReMutex &mutex) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex = &mutex;
-  _mutex->lock();
+  _mutex->acquire();
 #endif
 }
 
@@ -37,7 +37,7 @@ INLINE LightReMutexHolder::
 LightReMutexHolder(const LightReMutex &mutex, Thread *current_thread) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex = &mutex;
-  _mutex->lock(current_thread);
+  _mutex->acquire(current_thread);
 #endif
 }
 
@@ -59,7 +59,7 @@ LightReMutexHolder(LightReMutex *&mutex) {
     mutex = new LightReMutex;
   }
   _mutex = mutex;
-  _mutex->lock();
+  _mutex->acquire();
 #endif
 }
 

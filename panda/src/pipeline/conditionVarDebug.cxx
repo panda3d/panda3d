@@ -53,13 +53,13 @@ ConditionVarDebug::
 //               variable before calling this function.
 //
 //               wait() will release the lock, then go to sleep until
-//               some other thread calls signal() on this condition
+//               some other thread calls notify() on this condition
 //               variable.  At that time at least one thread waiting
 //               on the same ConditionVarDebug will grab the lock again,
 //               and then return from wait().
 //
 //               It is possible that wait() will return even if no one
-//               has called signal().  It is the responsibility of the
+//               has called notify().  It is the responsibility of the
 //               calling process to verify the condition on return
 //               from wait, and possibly loop back to wait again if
 //               necessary.
@@ -72,7 +72,7 @@ ConditionVarDebug::
 ////////////////////////////////////////////////////////////////////
 void ConditionVarDebug::
 wait() {
-  _mutex._global_lock->lock();
+  _mutex._global_lock->acquire();
 
   Thread *this_thread = Thread::get_current_thread();
 
@@ -124,7 +124,7 @@ wait() {
 ////////////////////////////////////////////////////////////////////
 void ConditionVarDebug::
 wait(double timeout) {
-  _mutex._global_lock->lock();
+  _mutex._global_lock->acquire();
 
   Thread *this_thread = Thread::get_current_thread();
 
@@ -182,8 +182,8 @@ wait(double timeout) {
 //               signal is lost.
 ////////////////////////////////////////////////////////////////////
 void ConditionVarDebug::
-signal() {
-  _mutex._global_lock->lock();
+notify() {
+  _mutex._global_lock->acquire();
 
   Thread *this_thread = Thread::get_current_thread();
 
@@ -201,7 +201,7 @@ signal() {
       << *this_thread << " signalling " << *this << "\n";
   }
 
-  _impl.signal();
+  _impl.notify();
   _mutex._global_lock->release();
 }
 

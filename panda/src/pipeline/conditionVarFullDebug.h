@@ -46,8 +46,8 @@ PUBLISHED:
 
   void wait();
   void wait(double timeout);
-  void signal();
-  void signal_all();
+  void notify();
+  void notify_all();
   virtual void output(ostream &out) const;
 
 private:

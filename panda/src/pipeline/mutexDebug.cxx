@@ -85,13 +85,13 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexDebug::do_lock
+//     Function: MutexDebug::do_acquire
 //       Access: Private
-//  Description: The private implementation of lock() assumes that
+//  Description: The private implementation of acquire() assumes that
 //               _lock_impl is held.
 ////////////////////////////////////////////////////////////////////
 void MutexDebug::
-do_lock() {
+do_acquire(Thread *current_thread) {
   // If this assertion is triggered, you tried to lock a
   // recently-destructed mutex.
   nassertd(_lock_count != -100) {
@@ -107,21 +107,19 @@ do_lock() {
     return;
   }
 
-  Thread *this_thread = Thread::get_current_thread();
-
   if (_locking_thread == (Thread *)NULL) {
     // The mutex is not already locked by anyone.  Lock it.
-    _locking_thread = this_thread;
+    _locking_thread = current_thread;
     ++_lock_count;
     nassertv(_lock_count == 1);
 
-  } else if (_locking_thread == this_thread) {
+  } else if (_locking_thread == current_thread) {
     // The mutex is already locked by this thread.  Increment the lock
     // count.
     nassertv(_lock_count > 0);
     if (!_allow_recursion) {
       ostringstream ostr;
-      ostr << *this_thread << " attempted to double-lock non-reentrant "
+      ostr << *current_thread << " attempted to double-lock non-reentrant "
            << *this;
       nassert_raise(ostr.str());
     }
@@ -132,15 +130,15 @@ do_lock() {
 
     if (_lightweight) {
       // In this case, it's not a real mutex.  Just watch it go by.
-      MissedThreads::iterator mi = _missed_threads.insert(MissedThreads::value_type(this_thread, 0)).first;
+      MissedThreads::iterator mi = _missed_threads.insert(MissedThreads::value_type(current_thread, 0)).first;
       if ((*mi).second == 0) {
         thread_cat.info()
-          << *this_thread << " not stopped by " << *this << " (held by "
+          << *current_thread << " not stopped by " << *this << " (held by "
           << *_locking_thread << ")\n";
       } else {
         if (!_allow_recursion) {
           ostringstream ostr;
-          ostr << *this_thread << " attempted to double-lock non-reentrant "
+          ostr << *current_thread << " attempted to double-lock non-reentrant "
                << *this;
           nassert_raise(ostr.str());
         }
@@ -153,9 +151,9 @@ do_lock() {
       // Check for deadlock.
       MutexDebug *next_mutex = this;
       while (next_mutex != NULL) {
-        if (next_mutex->_locking_thread == this_thread) {
+        if (next_mutex->_locking_thread == current_thread) {
           // Whoops, the thread is blocked on me!  Deadlock!
-          report_deadlock(this_thread);
+          report_deadlock(current_thread);
           nassert_raise("Deadlock");
           return;
         }
@@ -173,13 +171,13 @@ do_lock() {
       }
       
       // OK, no deadlock detected.  Carry on.
-      this_thread->_blocked_on_mutex = this;
+      current_thread->_blocked_on_mutex = this;
       
       // Go to sleep on the condition variable until it's unlocked.
       
       if (thread_cat->is_debug()) {
         thread_cat.debug()
-          << *this_thread << " blocking on " << *this << " (held by "
+          << *current_thread << " blocking on " << *this << " (held by "
           << *_locking_thread << ")\n";
       }
       
@@ -189,12 +187,12 @@ do_lock() {
       
       if (thread_cat.is_debug()) {
         thread_cat.debug()
-          << *this_thread << " awake on " << *this << "\n";
+          << *current_thread << " awake on " << *this << "\n";
       }
       
-      this_thread->_blocked_on_mutex = NULL;
+      current_thread->_blocked_on_mutex = NULL;
       
-      _locking_thread = this_thread;
+      _locking_thread = current_thread;
       ++_lock_count;
       nassertv(_lock_count == 1);
     }
@@ -202,9 +200,80 @@ do_lock() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MutexDebug::do_try_acquire
+//       Access: Private
+//  Description: The private implementation of acquire(false) assumes
+//               that _lock_impl is held.
+////////////////////////////////////////////////////////////////////
+bool MutexDebug::
+do_try_acquire(Thread *current_thread) {
+  // If this assertion is triggered, you tried to lock a
+  // recently-destructed mutex.
+  nassertd(_lock_count != -100) {
+    pipeline_cat.error()
+      << "Destructed mutex: " << (void *)this << "\n";
+    if (name_deleted_mutexes && _deleted_name != NULL) {
+      pipeline_cat.error()
+        << _deleted_name << "\n";
+    } else {
+      pipeline_cat.error()
+        << "Configure name-deleted-mutexes 1 to see the mutex name.\n";
+    }
+    return;
+  }
+
+  bool acquired = true;
+  if (_locking_thread == (Thread *)NULL) {
+    // The mutex is not already locked by anyone.  Lock it.
+    _locking_thread = current_thread;
+    ++_lock_count;
+    nassertv(_lock_count == 1);
+
+  } else if (_locking_thread == current_thread) {
+    // The mutex is already locked by this thread.  Increment the lock
+    // count.
+    nassertv(_lock_count > 0);
+    if (!_allow_recursion) {
+      ostringstream ostr;
+      ostr << *current_thread << " attempted to double-lock non-reentrant "
+           << *this;
+      nassert_raise(ostr.str());
+    }
+    ++_lock_count;
+
+  } else {
+    // The mutex is locked by some other thread.  Return false.
+
+    if (_lightweight) {
+      // In this case, it's not a real mutex.  Just watch it go by.
+      MissedThreads::iterator mi = _missed_threads.insert(MissedThreads::value_type(current_thread, 0)).first;
+      if ((*mi).second == 0) {
+        thread_cat.info()
+          << *current_thread << " not stopped by " << *this << " (held by "
+          << *_locking_thread << ")\n";
+      } else {
+        if (!_allow_recursion) {
+          ostringstream ostr;
+          ostr << *current_thread << " attempted to double-lock non-reentrant "
+               << *this;
+          nassert_raise(ostr.str());
+        }
+      }
+      ++((*mi).second);
+
+    } else {
+      // This is the real case.
+      acquired = false;
+    }
+  }
+
+  return acquired;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::do_release
 //       Access: Private
-//  Description: The private implementation of lock() assumes that
+//  Description: The private implementation of acquire() assumes that
 //               _lock_impl is held.
 ////////////////////////////////////////////////////////////////////
 void MutexDebug::
@@ -224,16 +293,16 @@ do_release() {
     return;
   }
 
-  Thread *this_thread = Thread::get_current_thread();
+  Thread *current_thread = Thread::get_current_thread();
 
-  if (_locking_thread != this_thread) {
+  if (_locking_thread != current_thread) {
     // We're not holding this mutex.
 
     if (_lightweight) {
       // Not a real mutex.  This just means we blew past a mutex
       // without locking it, above.
 
-      MissedThreads::iterator mi = _missed_threads.find(this_thread);
+      MissedThreads::iterator mi = _missed_threads.find(current_thread);
       nassertv(mi != _missed_threads.end());
       nassertv((*mi).second > 0);
       --((*mi).second);
@@ -245,7 +314,7 @@ do_release() {
     } else {
       // In the real-mutex case, this is an error condition.
       ostringstream ostr;
-      ostr << *this_thread << " attempted to release "
+      ostr << *current_thread << " attempted to release "
            << *this << " which it does not own";
       nassert_raise(ostr.str());
     }
@@ -269,7 +338,7 @@ do_release() {
         nassertv(_lock_count > 0);
       }
     } else {
-      _cvar_impl.signal();
+      _cvar_impl.notify();
     }
   }
 }
@@ -282,13 +351,13 @@ do_release() {
 ////////////////////////////////////////////////////////////////////
 bool MutexDebug::
 do_debug_is_locked() const {
-  Thread *this_thread = Thread::get_current_thread();
-  if (_locking_thread == this_thread) {
+  Thread *current_thread = Thread::get_current_thread();
+  if (_locking_thread == current_thread) {
     return true;
   }
 
   if (_lightweight) {
-    MissedThreads::const_iterator mi = _missed_threads.find(this_thread);
+    MissedThreads::const_iterator mi = _missed_threads.find(current_thread);
     if (mi != _missed_threads.end()) {
       nassertr((*mi).second > 0, false);
       return true;
@@ -305,7 +374,7 @@ do_debug_is_locked() const {
 //               should be already held.
 ////////////////////////////////////////////////////////////////////
 void MutexDebug::
-report_deadlock(Thread *this_thread) {
+report_deadlock(Thread *current_thread) {
   thread_cat->error()
     << "\n\n"
     << "****************************************************************\n"
@@ -314,7 +383,7 @@ report_deadlock(Thread *this_thread) {
     << "\n";
 
   thread_cat.error()
-    << *this_thread << " attempted to lock " << *this
+    << *current_thread << " attempted to lock " << *this
     << " which is held by " << *_locking_thread << "\n";
 
   MutexDebug *next_mutex = this;

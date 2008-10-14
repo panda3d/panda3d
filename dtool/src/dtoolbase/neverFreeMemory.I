@@ -57,7 +57,7 @@ get_total_used() {
 INLINE size_t NeverFreeMemory::
 get_total_unused() {
   NeverFreeMemory *global_ptr = get_global_ptr();
-  global_ptr->_lock.lock();
+  global_ptr->_lock.acquire();
   size_t total_unused = global_ptr->_total_alloc - global_ptr->_total_used;
   global_ptr->_lock.release();
   return total_unused;

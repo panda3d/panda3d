@@ -33,7 +33,7 @@ WeakReferenceList() {
 ////////////////////////////////////////////////////////////////////
 WeakReferenceList::
 ~WeakReferenceList() {
-  _lock.lock();
+  _lock.acquire();
   Pointers::iterator pi;
   for (pi = _pointers.begin(); pi != _pointers.end(); ++pi) {
     (*pi)->mark_deleted();
@@ -56,7 +56,7 @@ WeakReferenceList::
 ////////////////////////////////////////////////////////////////////
 void WeakReferenceList::
 add_reference(WeakPointerToVoid *ptv) {
-  _lock.lock();
+  _lock.acquire();
   bool inserted = _pointers.insert(ptv).second;
   _lock.release();
   nassertv(inserted);
@@ -73,7 +73,7 @@ add_reference(WeakPointerToVoid *ptv) {
 ////////////////////////////////////////////////////////////////////
 void WeakReferenceList::
 clear_reference(WeakPointerToVoid *ptv) {
-  _lock.lock();
+  _lock.acquire();
   Pointers::iterator pi = _pointers.find(ptv);
   bool valid = (pi != _pointers.end());
   if (valid) {

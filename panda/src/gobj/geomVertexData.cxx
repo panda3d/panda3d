@@ -754,7 +754,7 @@ convert_to(const GeomVertexFormat *new_format) const {
 
   CacheKey key(new_format);
 
-  _cache_lock.lock();
+  _cache_lock.acquire();
   Cache::const_iterator ci = _cache.find(&key);
   if (ci == _cache.end()) {
     _cache_lock.release();

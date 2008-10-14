@@ -33,8 +33,8 @@ public:
   INLINE MutexPosixImpl();
   INLINE ~MutexPosixImpl();
 
-  INLINE void lock();
-  INLINE bool try_lock();
+  INLINE void acquire();
+  INLINE bool try_acquire();
   INLINE void release();
 
 private:
@@ -51,8 +51,8 @@ public:
   INLINE ReMutexPosixImpl();
   INLINE ~ReMutexPosixImpl();
 
-  INLINE void lock();
-  INLINE bool try_lock();
+  INLINE void acquire();
+  INLINE bool try_acquire();
   INLINE void release();
 
 private:

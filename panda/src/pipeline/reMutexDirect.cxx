@@ -30,17 +30,17 @@ output(ostream &out) const {
 
 #ifndef HAVE_REMUTEXTRUEIMPL
 ////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::do_lock
+//     Function: ReMutexDirect::do_acquire
 //       Access: Private
-//  Description: The private implementation of lock(), for the case in
+//  Description: The private implementation of acquire(), for the case in
 //               which the underlying lock system does not provide a
 //               reentrant mutex (and therefore we have to build this
 //               functionality on top of the existing non-reentrant
 //               mutex).
 ////////////////////////////////////////////////////////////////////
 void ReMutexDirect::
-do_lock(Thread *current_thread) {
-  _lock_impl.lock();
+do_acquire(Thread *current_thread) {
+  _lock_impl.acquire();
 
   if (_locking_thread == (Thread *)NULL) {
     // The mutex is not already locked by anyone.  Lock it.
@@ -74,9 +74,48 @@ do_lock(Thread *current_thread) {
 
 #ifndef HAVE_REMUTEXTRUEIMPL
 ////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::do_try_acquire
+//       Access: Private
+//  Description: The private implementation of acquire(false), for the
+//               case in which the underlying lock system does not
+//               provide a reentrant mutex (and therefore we have to
+//               build this functionality on top of the existing
+//               non-reentrant mutex).
+////////////////////////////////////////////////////////////////////
+bool ReMutexDirect::
+do_try_acquire(Thread *current_thread) {
+  bool acquired = true;
+  _lock_impl.acquire();
+
+  if (_locking_thread == (Thread *)NULL) {
+    // The mutex is not already locked by anyone.  Lock it.
+    _locking_thread = current_thread;
+    ++_lock_count;
+    nassertd(_lock_count == 1) {
+    }
+
+  } else if (_locking_thread == current_thread) {
+    // The mutex is already locked by this thread.  Increment the lock
+    // count.
+    ++_lock_count;
+    nassertd(_lock_count > 0) {
+    }
+    
+  } else {
+    // The mutex is locked by some other thread.  Return false.
+    acquired = false;
+  }
+  _lock_impl.release();
+
+  return acquired;
+}
+#endif  // !HAVE_REMUTEXTRUEIMPL
+
+#ifndef HAVE_REMUTEXTRUEIMPL
+////////////////////////////////////////////////////////////////////
 //     Function: ReMutexDirect::do_elevate_lock
 //       Access: Private
-//  Description: The private implementation of lock(), for the case in
+//  Description: The private implementation of acquire(), for the case in
 //               which the underlying lock system does not provide a
 //               reentrant mutex (and therefore we have to build this
 //               functionality on top of the existing non-reentrant
@@ -84,7 +123,7 @@ do_lock(Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void ReMutexDirect::
 do_elevate_lock() {
-  _lock_impl.lock();
+  _lock_impl.acquire();
 
 #ifdef _DEBUG
   nassertd(_locking_thread == Thread::get_current_thread()) {
@@ -120,7 +159,7 @@ do_elevate_lock() {
 ////////////////////////////////////////////////////////////////////
 void ReMutexDirect::
 do_release() {
-  _lock_impl.lock();
+  _lock_impl.acquire();
 
 #ifdef _DEBUG
   if (_locking_thread != Thread::get_current_thread()) {
@@ -140,7 +179,7 @@ do_release() {
   if (_lock_count == 0) {
     // That was the last lock held by this thread.  Release the lock.
     _locking_thread = (Thread *)NULL;
-    _cvar_impl.signal();
+    _cvar_impl.notify();
   }
   _lock_impl.release();
 }

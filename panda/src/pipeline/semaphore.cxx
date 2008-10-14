@@ -1,5 +1,5 @@
-// Filename: conditionVarSpinlockImpl.cxx
-// Created by:  drose (11Apr06)
+// Filename: semaphore.cxx
+// Created by:  drose (13Oct08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,26 +12,15 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "selectThreadImpl.h"
-
-#ifdef MUTEX_SPINLOCK
-
-#include "conditionVarSpinlockImpl.h"
+#include "semaphore.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSpinlockImpl::wait
-//       Access: Public
+//     Function: Semaphore::output
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-void ConditionVarSpinlockImpl::
-wait() {
-  AtomicAdjust::Integer current = _event;
-  _mutex.release();
-
-  while (AtomicAdjust::get(_event) == current) {
-  }
-
-  _mutex.acquire();
+INLINE void Semaphore::
+output(ostream &out) const {
+  MutexHolder holder(_lock);
+  out << "Semaphore, count = " << _count;
 }
-
-#endif  // MUTEX_SPINLOCK

@@ -43,7 +43,7 @@ NeverFreeMemory() {
 ////////////////////////////////////////////////////////////////////
 void *NeverFreeMemory::
 ns_alloc(size_t size) {
-  _lock.lock();
+  _lock.acquire();
 
   _total_used += size;
   

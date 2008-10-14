@@ -44,7 +44,7 @@ is_valid() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int AnalogNode::
 get_num_controls() const {
-  _analog->lock();
+  _analog->acquire();
   int result = _analog->get_num_controls();
   _analog->unlock();
   return result;
@@ -60,7 +60,7 @@ get_num_controls() const {
 ////////////////////////////////////////////////////////////////////
 INLINE double AnalogNode::
 get_control_state(int index) const {
-  _analog->lock();
+  _analog->acquire();
   double result = _analog->get_control_state(index);
   _analog->unlock();
   return result;
@@ -75,7 +75,7 @@ get_control_state(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool AnalogNode::
 is_control_known(int index) const {
-  _analog->lock();
+  _analog->acquire();
   bool result = _analog->is_control_known(index);
   _analog->unlock();
   return result;

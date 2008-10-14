@@ -54,8 +54,8 @@ public:
   void operator = (const PipelineCyclerTrueImpl &copy);
   ~PipelineCyclerTrueImpl();
 
-  INLINE void lock();
-  INLINE void lock(Thread *current_thread);
+  INLINE void acquire();
+  INLINE void acquire(Thread *current_thread);
   INLINE void release();
 
   INLINE const CycleData *read_unlocked(Thread *current_thread) const;

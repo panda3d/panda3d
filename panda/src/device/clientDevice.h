@@ -48,7 +48,7 @@ public:
   void disconnect();
 
   void poll();
-  INLINE void lock();
+  INLINE void acquire();
   INLINE void unlock();
 
   virtual void output(ostream &out) const;

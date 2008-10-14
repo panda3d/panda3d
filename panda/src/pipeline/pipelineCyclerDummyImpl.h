@@ -48,7 +48,7 @@ public:
   INLINE void operator = (const PipelineCyclerDummyImpl &copy);
   INLINE ~PipelineCyclerDummyImpl();
 
-  INLINE void lock(Thread *current_thread = NULL);
+  INLINE void acquire(Thread *current_thread = NULL);
   INLINE void release();
 
   INLINE const CycleData *read_unlocked(Thread *current_thread) const;

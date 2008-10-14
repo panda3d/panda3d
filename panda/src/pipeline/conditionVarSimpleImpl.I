@@ -37,7 +37,7 @@ INLINE ConditionVarSimpleImpl::
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarSimpleImpl::
-signal() {
+notify() {
   if (_flags & F_has_waiters) {
     do_signal();
   }
@@ -49,7 +49,7 @@ signal() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarSimpleImpl::
-signal_all() {
+notify_all() {
   if (_flags & F_has_waiters) {
     do_signal_all();
   }

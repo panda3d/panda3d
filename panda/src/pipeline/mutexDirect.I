@@ -52,7 +52,7 @@ operator = (const MutexDirect &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexDirect::lock
+//     Function: MutexDirect::acquire
 //       Access: Published
 //  Description: Grabs the mutex if it is available.  If it is not
 //               available, blocks until it becomes available, then
@@ -67,9 +67,22 @@ operator = (const MutexDirect &copy) {
 //               Also see MutexHolder.
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexDirect::
-lock() const {
-  TAU_PROFILE("void MutexDirect::lock()", " ", TAU_USER);
-  ((MutexDirect *)this)->_impl.lock();
+acquire() const {
+  TAU_PROFILE("void MutexDirect::acquire()", " ", TAU_USER);
+  ((MutexDirect *)this)->_impl.acquire();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexDirect::try_acquire
+//       Access: Published
+//  Description: Returns immediately, with a true value indicating the
+//               mutex has been acquired, and false indicating it has
+//               not.
+////////////////////////////////////////////////////////////////////
+INLINE bool MutexDirect::
+try_acquire() const {
+  TAU_PROFILE("void MutexDirect::acquire(bool)", " ", TAU_USER);
+  return ((MutexDirect *)this)->_impl.try_acquire();
 }
 
 ////////////////////////////////////////////////////////////////////

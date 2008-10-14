@@ -226,7 +226,7 @@ add(AsyncTask *task) {
 
     _lock.release();
     task->upon_birth(this);
-    _lock.lock();
+    _lock.acquire();
     nassertv(task->_manager == NULL &&
              task->_state == AsyncTask::S_inactive);
     nassertv(!do_has_task(task));
@@ -379,7 +379,7 @@ remove(const AsyncTaskCollection &tasks) {
       if (task->_chain->do_remove(task)) {
         _lock.release();
         task->upon_death(this, false);
-        _lock.lock();
+        _lock.acquire();
         ++num_removed;
       } else {
         if (task_cat.is_debug()) {
@@ -548,7 +548,7 @@ poll() {
 
   // Just in case the clock was ticked explicitly by one of our
   // polling chains.
-  _frame_cvar.signal_all();
+  _frame_cvar.notify_all();
 }
 
 ////////////////////////////////////////////////////////////////////

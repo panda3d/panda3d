@@ -33,7 +33,7 @@ is_valid() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int DialNode::
 get_num_dials() const {
-  _dial->lock();
+  _dial->acquire();
   int result = _dial->get_num_dials();
   _dial->unlock();
   return result;
@@ -49,7 +49,7 @@ get_num_dials() const {
 ////////////////////////////////////////////////////////////////////
 INLINE double DialNode::
 read_dial(int index) {
-  _dial->lock();
+  _dial->acquire();
   double result = _dial->read_dial(index);
   _dial->unlock();
   return result;
@@ -64,7 +64,7 @@ read_dial(int index) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DialNode::
 is_dial_known(int index) const {
-  _dial->lock();
+  _dial->acquire();
   bool result = _dial->is_dial_known(index);
   _dial->unlock();
   return result;

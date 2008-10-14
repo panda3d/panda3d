@@ -74,21 +74,21 @@ INLINE PipelineCyclerTrivialImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerTrivialImpl::lock
+//     Function: PipelineCyclerTrivialImpl::acquire
 //       Access: Public
 //  Description: Grabs an overall lock on the cycler.  Release it with
 //               a call to release().  This lock should be held while
 //               walking the list of stages.
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrivialImpl::
-lock(Thread *) {
+acquire(Thread *) {
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PipelineCyclerTrivialImpl::release
 //       Access: Public
 //  Description: Release the overall lock on the cycler that was
-//               grabbed via lock().
+//               grabbed via acquire().
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerTrivialImpl::
 release() {

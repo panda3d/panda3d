@@ -118,7 +118,7 @@ munge_geom(CPT(Geom) &geom, CPT(GeomVertexData) &data,
 
   Geom::CacheKey key(source_data, this);
 
-  geom->_cache_lock.lock();
+  geom->_cache_lock.acquire();
   Geom::Cache::const_iterator ci = geom->_cache.find(&key);
   if (ci == geom->_cache.end()) {
     geom->_cache_lock.release();

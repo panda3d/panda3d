@@ -41,8 +41,8 @@ public:
   INLINE ~ConditionVarSpinlockImpl();
 
   void wait();
-  INLINE void signal();
-  INLINE void signal_all();
+  INLINE void notify();
+  INLINE void notify_all();
 
 private:
   MutexSpinlockImpl &_mutex;

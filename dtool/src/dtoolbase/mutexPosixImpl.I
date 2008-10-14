@@ -42,25 +42,25 @@ INLINE MutexPosixImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexPosixImpl::lock
+//     Function: MutexPosixImpl::acquire
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexPosixImpl::
-lock() {
-  TAU_PROFILE("void MutexPosixImpl::lock", " ", TAU_USER);
+acquire() {
+  TAU_PROFILE("void MutexPosixImpl::acquire", " ", TAU_USER);
   int result = pthread_mutex_lock(&_lock);
   assert(result == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexPosixImpl::try_lock
+//     Function: MutexPosixImpl::try_acquire
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool MutexPosixImpl::
-try_lock() {
-  TAU_PROFILE("bool MutexPosixImpl::try_lock", " ", TAU_USER);
+try_acquire() {
+  TAU_PROFILE("bool MutexPosixImpl::try_acquire", " ", TAU_USER);
   int result = pthread_mutex_trylock(&_lock);
   assert(result == 0 || result == EBUSY);
   return (result == 0);
@@ -107,25 +107,25 @@ INLINE ReMutexPosixImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReMutexPosixImpl::lock
+//     Function: ReMutexPosixImpl::acquire
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexPosixImpl::
-lock() {
-  TAU_PROFILE("void ReMutexPosixImpl::lock", " ", TAU_USER);
+acquire() {
+  TAU_PROFILE("void ReMutexPosixImpl::acquire", " ", TAU_USER);
   int result = pthread_mutex_lock(&_lock);
   assert(result == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReMutexPosixImpl::try_lock
+//     Function: ReMutexPosixImpl::try_acquire
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool ReMutexPosixImpl::
-try_lock() {
-  TAU_PROFILE("bool ReMutexPosixImpl::try_lock", " ", TAU_USER);
+try_acquire() {
+  TAU_PROFILE("bool ReMutexPosixImpl::try_acquire", " ", TAU_USER);
   int result = pthread_mutex_trylock(&_lock);
   assert(result == 0 || result == EBUSY);
   return (result == 0);

@@ -33,24 +33,24 @@ INLINE MutexSpinlockImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexSpinlockImpl::lock
+//     Function: MutexSpinlockImpl::acquire
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexSpinlockImpl::
-lock() {
-  if (!try_lock()) {
+acquire() {
+  if (!try_acquire()) {
     do_lock();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexSpinlockImpl::try_lock
+//     Function: MutexSpinlockImpl::try_acquire
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool MutexSpinlockImpl::
-try_lock() {
+try_acquire() {
   return (AtomicAdjust::compare_and_exchange(_lock, 0, 1) == 0);
 }
 

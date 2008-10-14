@@ -62,8 +62,8 @@ wait() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarPosixImpl::
-signal() {
-  TAU_PROFILE("ConditionVarPosixImpl::signal()", " ", TAU_USER);
+notify() {
+  TAU_PROFILE("ConditionVarPosixImpl::notify()", " ", TAU_USER);
   int result = pthread_cond_signal(&_cvar);
   nassertv(result == 0);
 }
@@ -74,8 +74,8 @@ signal() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarPosixImpl::
-signal_all() {
-  TAU_PROFILE("ConditionVarPosixImpl::signal()", " ", TAU_USER);
+notify_all() {
+  TAU_PROFILE("ConditionVarPosixImpl::notify()", " ", TAU_USER);
   int result = pthread_cond_broadcast(&_cvar);
   nassertv(result == 0);
 }

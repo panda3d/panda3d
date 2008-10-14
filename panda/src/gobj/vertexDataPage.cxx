@@ -864,7 +864,7 @@ add_page(VertexDataPage *page, RamClass ram_class) {
     } else {
       _pending_writes.push_back(page);
     }
-    _pending_cvar.signal();
+    _pending_cvar.notify();
   }
 }
 
@@ -891,7 +891,7 @@ remove_page(VertexDataPage *page) {
       while (page == thread->_working_page) {
         thread->_working_cvar.wait();
       }
-      page->_lock.lock();
+      page->_lock.acquire();
       return;
     }
   }
@@ -980,7 +980,7 @@ stop_threads() {
   {
     MutexHolder holder(_tlock);
     _shutdown = true;
-    _pending_cvar.signal_all();
+    _pending_cvar.notify_all();
     threads.swap(_threads);
   }
 
@@ -1013,7 +1013,7 @@ PageThread(PageThreadManager *manager, const string &name) :
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::PageThread::
 thread_main() {
-  _tlock.lock();
+  _tlock.acquire();
 
   while (true) {
     PStatClient::thread_tick(get_sync_name());
@@ -1060,10 +1060,10 @@ thread_main() {
       }
     }
     
-    _tlock.lock();
+    _tlock.acquire();
 
     _working_page = NULL;
-    _working_cvar.signal();
+    _working_cvar.notify();
 
     Thread::consider_yield();
   }

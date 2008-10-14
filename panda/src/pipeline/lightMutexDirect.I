@@ -52,7 +52,7 @@ operator = (const LightMutexDirect &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightMutexDirect::lock
+//     Function: LightMutexDirect::acquire
 //       Access: Published
 //  Description: Grabs the lightMutex if it is available.  If it is not
 //               available, blocks until it becomes available, then
@@ -67,9 +67,9 @@ operator = (const LightMutexDirect &copy) {
 //               Also see LightMutexHolder.
 ////////////////////////////////////////////////////////////////////
 INLINE void LightMutexDirect::
-lock() const {
-  TAU_PROFILE("void LightMutexDirect::lock()", " ", TAU_USER);
-  ((LightMutexDirect *)this)->_impl.lock();
+acquire() const {
+  TAU_PROFILE("void LightMutexDirect::acquire()", " ", TAU_USER);
+  ((LightMutexDirect *)this)->_impl.acquire();
 }
 
 ////////////////////////////////////////////////////////////////////

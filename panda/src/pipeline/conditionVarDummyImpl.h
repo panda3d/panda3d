@@ -36,8 +36,8 @@ public:
 
   INLINE void wait();
   INLINE void wait(double timeout);
-  INLINE void signal();
-  INLINE void signal_all();
+  INLINE void notify();
+  INLINE void notify_all();
 };
 
 #include "conditionVarDummyImpl.I"

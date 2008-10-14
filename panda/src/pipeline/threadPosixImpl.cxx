@@ -37,7 +37,7 @@ ThreadPosixImpl::
       << "Deleting thread " << _parent_obj->get_name() << "\n";
   }
 
-  _mutex.lock();
+  _mutex.acquire();
 
   if (!_detached) {
     pthread_detach(_thread);
@@ -66,7 +66,7 @@ setup_main_thread() {
 ////////////////////////////////////////////////////////////////////
 bool ThreadPosixImpl::
 start(ThreadPriority priority, bool joinable) {
-  _mutex.lock();
+  _mutex.acquire();
   if (thread_cat->is_debug()) {
     thread_cat.debug() << "Starting " << *_parent_obj << "\n";
   }
@@ -168,7 +168,7 @@ start(ThreadPriority priority, bool joinable) {
 ////////////////////////////////////////////////////////////////////
 void ThreadPosixImpl::
 join() {
-  _mutex.lock();
+  _mutex.acquire();
   if (!_detached) {
     _mutex.release();
     void *return_val;
@@ -208,7 +208,7 @@ root_func(void *data) {
     nassertr(result == 0, NULL);
     
     {
-      self->_mutex.lock();
+      self->_mutex.acquire();
       nassertd(self->_status == S_start_called) {
         self->_mutex.release();
         return NULL;
@@ -227,7 +227,7 @@ root_func(void *data) {
     }
     
     {
-      self->_mutex.lock();
+      self->_mutex.acquire();
       nassertd(self->_status == S_running) {
         self->_mutex.release();
         return NULL;

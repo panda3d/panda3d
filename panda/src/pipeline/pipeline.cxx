@@ -176,7 +176,7 @@ set_num_stages(int num_stages) {
     PipelineCyclerLinks *links;
     for (links = this->_next; links != this; links = links->_next) {
       PipelineCyclerTrueImpl *cycler = (PipelineCyclerTrueImpl *)links;
-      cycler->_lock.lock();
+      cycler->_lock.acquire();
     }
 
     _num_stages = num_stages;

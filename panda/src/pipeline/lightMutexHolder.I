@@ -22,7 +22,7 @@ INLINE LightMutexHolder::
 LightMutexHolder(const LightMutex &mutex) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex = &mutex;
-  _mutex->lock();
+  _mutex->acquire();
 #endif
 }
 
@@ -44,7 +44,7 @@ LightMutexHolder(LightMutex *&mutex) {
     mutex = new LightMutex;
   }
   _mutex = mutex;
-  _mutex->lock();
+  _mutex->acquire();
 #endif
 }
 

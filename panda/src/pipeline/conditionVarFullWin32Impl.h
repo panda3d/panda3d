@@ -33,15 +33,15 @@ class MutexWin32Impl;
 //
 //               We follow the "SetEvent" implementation suggested by
 //               http://www.cs.wustl.edu/~schmidt/win32-cv-1.html .
-//               This allows us to implement both signal() and
-//               signal_all(), but it has more overhead than the
+//               This allows us to implement both notify() and
+//               notify_all(), but it has more overhead than the
 //               simpler implementation of ConditionVarWin32Impl.
 //
 //               As described by the above reference, this
 //               implementation suffers from a few weaknesses; in
 //               particular, it does not necessarily wake up all
 //               threads fairly; and it may sometimes incorrectly wake
-//               up a thread that was not waiting at the time signal()
+//               up a thread that was not waiting at the time notify()
 //               was called.  But we figure it's good enough for our
 //               purposes.
 ////////////////////////////////////////////////////////////////////
@@ -52,8 +52,8 @@ public:
 
   INLINE void wait();
   INLINE void wait(double timeout);
-  INLINE void signal();
-  INLINE void signal_all();
+  INLINE void notify();
+  INLINE void notify_all();
 
 private:
   CRITICAL_SECTION *_external_mutex;

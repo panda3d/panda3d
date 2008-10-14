@@ -25,21 +25,21 @@
 //               ConditionVar for a brief introduction to this class.
 //               The ConditionVarFull class provides a more complete
 //               implementation than ConditionVar; in particular, it
-//               provides the signal_all() method, which is guaranteed
+//               provides the notify_all() method, which is guaranteed
 //               to wake up all threads currently waiting on the
-//               condition (whereas signal() is guaranteed to wake up
+//               condition (whereas notify() is guaranteed to wake up
 //               at least one thread, but may or may not wake up all
 //               of them).
 //
 //               This class exists because on certain platforms
-//               (e.g. Win32), implementing signal_all() requires more
+//               (e.g. Win32), implementing notify_all() requires more
 //               overhead, so you should use ConditionVar for cases
-//               when you do not require the signal_all() semantics.
+//               when you do not require the notify_all() semantics.
 //
 //               There are still some minor semantics that POSIX
 //               condition variables provide which this implementation
 //               does not.  For instance, it is required (not
-//               optional) that the caller of signal() or signal_all()
+//               optional) that the caller of notify() or notify_all()
 //               is holding the condition variable's mutex before the
 //               call.
 //

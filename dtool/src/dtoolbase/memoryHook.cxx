@@ -152,7 +152,7 @@ MemoryHook(const MemoryHook &copy) :
   _max_heap_size = copy._max_heap_size;
 #endif
 
-  ((MutexImpl &)copy._lock).lock();
+  ((MutexImpl &)copy._lock).acquire();
   _deleted_chains = copy._deleted_chains;
   ((MutexImpl &)copy._lock).release();
 }
@@ -182,7 +182,7 @@ MemoryHook::
 void *MemoryHook::
 heap_alloc_single(size_t size) {
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.lock();
+  _lock.acquire();
   void *alloc = call_malloc(inflate_size(size));
   _lock.release();
 #else
@@ -225,7 +225,7 @@ heap_free_single(void *ptr) {
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.lock();
+  _lock.acquire();
   call_free(alloc);
   _lock.release();
 #else
@@ -248,7 +248,7 @@ heap_free_single(void *ptr) {
 void *MemoryHook::
 heap_alloc_array(size_t size) {
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.lock();
+  _lock.acquire();
   void *alloc = call_malloc(inflate_size(size));
   _lock.release();
 #else
@@ -291,7 +291,7 @@ heap_realloc_array(void *ptr, size_t size) {
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.lock();
+  _lock.acquire();
   alloc = call_realloc(alloc, inflate_size(size));
   _lock.release();
 #else
@@ -323,7 +323,7 @@ heap_free_array(void *ptr) {
 #endif  // DO_MEMORY_USAGE
 
 #ifdef MEMORY_HOOK_MALLOC_LOCK
-  _lock.lock();
+  _lock.acquire();
   call_free(alloc);
   _lock.release();
 #else
@@ -353,7 +353,7 @@ heap_trim(size_t pad) {
   // Since malloc_trim() isn't standard C, we can't be sure it exists
   // on a given platform.  But if we're using dlmalloc, we know we
   // have dlmalloc_trim.
-  _lock.lock();
+  _lock.acquire();
   if (dlmalloc_trim(pad)) {
     trimmed = true;
   }
@@ -485,7 +485,7 @@ DeletedBufferChain *MemoryHook::
 get_deleted_chain(size_t buffer_size) {
   DeletedBufferChain *chain;
 
-  _lock.lock();
+  _lock.acquire();
   DeletedChains::iterator dci = _deleted_chains.find(buffer_size);
   if (dci != _deleted_chains.end()) {
     chain = (*dci).second;

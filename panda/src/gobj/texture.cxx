@@ -2869,10 +2869,10 @@ do_write_txo(ostream &out, const string &filename) const {
   // will need to grab the lock).
   _lock.release();
   if (!writer.write_object(this)) {
-    _lock.lock();
+    _lock.acquire();
     return false;
   }
-  _lock.lock();
+  _lock.acquire();
 
   if (!do_has_ram_image()) {
     gobj_cat.error()
@@ -2918,7 +2918,7 @@ do_unlock_and_reload_ram_image(bool allow_compression) {
     // own mutex is left unlocked.
     tex->do_reload_ram_image(allow_compression);
 
-    _lock.lock();
+    _lock.acquire();
     do_assign(*tex);
 
     nassertv(_reloading);
@@ -2931,7 +2931,7 @@ do_unlock_and_reload_ram_image(bool allow_compression) {
     ++_image_modified;
     ++_properties_modified;
 
-    _cvar.signal_all();
+    _cvar.notify_all();
   }
 }
 

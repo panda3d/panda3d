@@ -13,6 +13,7 @@
 #include "reMutex.cxx"
 #include "reMutexDirect.cxx"
 #include "reMutexHolder.cxx"
+#include "semaphore.cxx"
 #include "thread.cxx"
 #include "threadDummyImpl.cxx"
 #include "threadPosixImpl.cxx"

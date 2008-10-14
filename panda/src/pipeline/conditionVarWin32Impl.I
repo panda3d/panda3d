@@ -72,6 +72,6 @@ wait(double timeout) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarWin32Impl::
-signal() {
+notify() {
   SetEvent(_event_signal);
 }

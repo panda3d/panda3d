@@ -25,7 +25,7 @@ get_short_time() {
   bool is_paranoid_clock = get_paranoid_clock();
 
   if (is_paranoid_clock) {
-    _lock.lock();
+    _lock.acquire();
   }
 
   double time = get_short_raw_time();

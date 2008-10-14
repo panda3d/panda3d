@@ -51,7 +51,7 @@ allocate(size_t size, TypeHandle type_handle) {
 
   ObjectNode *obj;
 
-  _lock.lock();
+  _lock.acquire();
   if (_deleted_chain != (ObjectNode *)NULL) {
     obj = _deleted_chain;
     _deleted_chain = _deleted_chain->_next;
@@ -121,7 +121,7 @@ deallocate(void *ptr, TypeHandle type_handle) {
   assert(orig_flag == (AtomicAdjust::Integer)DCF_alive);
 #endif  // NDEBUG
 
-  _lock.lock();
+  _lock.acquire();
 
   obj->_next = _deleted_chain;
   _deleted_chain = obj;

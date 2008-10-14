@@ -64,7 +64,7 @@ operator = (const ReMutexDirect &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::lock
+//     Function: ReMutexDirect::acquire
 //       Access: Published
 //  Description: Grabs the reMutex if it is available.  If it is not
 //               available, blocks until it becomes available, then
@@ -79,29 +79,63 @@ operator = (const ReMutexDirect &copy) {
 //               Also see ReMutexHolder.
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexDirect::
-lock() const {
-  TAU_PROFILE("void ReMutexDirect::lock()", " ", TAU_USER);
+acquire() const {
+  TAU_PROFILE("void ReMutexDirect::acquire()", " ", TAU_USER);
 #ifdef HAVE_REMUTEXTRUEIMPL
-  ((ReMutexDirect *)this)->_impl.lock();
+  ((ReMutexDirect *)this)->_impl.acquire();
 #else
-  ((ReMutexDirect *)this)->do_lock();
+  ((ReMutexDirect *)this)->do_acquire();
 #endif  // HAVE_REMUTEXTRUEIMPL
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::lock
+//     Function: ReMutexDirect::acquire
 //       Access: Published
-//  Description: This variant on lock() accepts the current thread as
+//  Description: This variant on acquire() accepts the current thread as
 //               a parameter, if it is already known, as an
 //               optimization.
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexDirect::
-lock(Thread *current_thread) const {
-  TAU_PROFILE("void ReMutexDirect::lock(Thread *)", " ", TAU_USER);
+acquire(Thread *current_thread) const {
+  TAU_PROFILE("void ReMutexDirect::acquire(Thread *)", " ", TAU_USER);
 #ifdef HAVE_REMUTEXTRUEIMPL
-  ((ReMutexDirect *)this)->_impl.lock();
+  ((ReMutexDirect *)this)->_impl.acquire();
 #else
-  ((ReMutexDirect *)this)->do_lock(current_thread);
+  ((ReMutexDirect *)this)->do_acquire(current_thread);
+#endif  // HAVE_REMUTEXTRUEIMPL
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::try_acquire
+//       Access: Published
+//  Description: Returns immediately, with a true value indicating the
+//               mutex has been acquired, and false indicating it has
+//               not.
+////////////////////////////////////////////////////////////////////
+INLINE bool ReMutexDirect::
+try_acquire() const {
+  TAU_PROFILE("void ReMutexDirect::acquire(bool)", " ", TAU_USER);
+#ifdef HAVE_REMUTEXTRUEIMPL
+  return ((ReMutexDirect *)this)->_impl.try_acquire();
+#else
+  return ((ReMutexDirect *)this)->do_try_acquire();
+#endif  // HAVE_REMUTEXTRUEIMPL
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::try_acquire
+//       Access: Published
+//  Description: Returns immediately, with a true value indicating the
+//               mutex has been acquired, and false indicating it has
+//               not.
+////////////////////////////////////////////////////////////////////
+INLINE bool ReMutexDirect::
+try_acquire(Thread *current_thread) const {
+  TAU_PROFILE("void ReMutexDirect::acquire(bool)", " ", TAU_USER);
+#ifdef HAVE_REMUTEXTRUEIMPL
+  return ((ReMutexDirect *)this)->_impl.try_acquire();
+#else
+  return ((ReMutexDirect *)this)->do_try_acquire(current_thread);
 #endif  // HAVE_REMUTEXTRUEIMPL
 }
 
@@ -114,7 +148,7 @@ lock(Thread *current_thread) const {
 //               time to release the lock.
 //
 //               This method really performs the same function as
-//               lock(), but it offers a potential (slight)
+//               acquire(), but it offers a potential (slight)
 //               performance benefit when the calling thread knows
 //               that it already holds the lock.  It is an error to
 //               call this when the calling thread does not hold the
@@ -124,7 +158,7 @@ INLINE void ReMutexDirect::
 elevate_lock() const {
   TAU_PROFILE("void ReMutexDirect::elevate_lock()", " ", TAU_USER);
 #ifdef HAVE_REMUTEXTRUEIMPL
-  ((ReMutexDirect *)this)->_impl.lock();
+  ((ReMutexDirect *)this)->_impl.acquire();
 #else
   ((ReMutexDirect *)this)->do_elevate_lock();
 #endif  // HAVE_REMUTEXTRUEIMPL
@@ -209,17 +243,33 @@ get_name() const {
 
 #ifndef HAVE_REMUTEXTRUEIMPL
 ////////////////////////////////////////////////////////////////////
-//     Function: ReMutexDirect::do_lock
+//     Function: ReMutexDirect::do_acquire
 //       Access: Private
-//  Description: The private implementation of lock(), for the case in
+//  Description: The private implementation of acquire(), for the case in
 //               which the underlying lock system does not provide a
 //               reentrant mutex (and therefore we have to build this
 //               functionality on top of the existing non-reentrant
 //               mutex).
 ////////////////////////////////////////////////////////////////////
 INLINE void ReMutexDirect::
-do_lock() {
-  do_lock(Thread::get_current_thread());
+do_acquire() {
+  do_acquire(Thread::get_current_thread());
+}
+#endif
+
+#ifndef HAVE_REMUTEXTRUEIMPL
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexDirect::do_try_acquire
+//       Access: Private
+//  Description: The private implementation of acquire(false), for the
+//               case in which the underlying lock system does not
+//               provide a reentrant mutex (and therefore we have to
+//               build this functionality on top of the existing
+//               non-reentrant mutex).
+////////////////////////////////////////////////////////////////////
+INLINE bool ReMutexDirect::
+do_try_acquire() {
+  return do_try_acquire(Thread::get_current_thread());
 }
 #endif
 

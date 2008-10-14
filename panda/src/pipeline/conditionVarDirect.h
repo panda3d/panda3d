@@ -46,7 +46,7 @@ PUBLISHED:
 
   BLOCKING INLINE void wait();
   BLOCKING INLINE void wait(double timeout);
-  INLINE void signal();
+  INLINE void notify();
   void output(ostream &out) const;
 
 private:

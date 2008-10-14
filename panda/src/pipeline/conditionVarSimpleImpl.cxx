@@ -33,7 +33,7 @@ wait() {
   manager->enqueue_block(thread, this);
   manager->next_context();
 
-  _mutex.lock();
+  _mutex.acquire();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ wait(double timeout) {
   manager->enqueue_ready(thread);
   manager->next_context();
 
-  _mutex.lock();
+  _mutex.acquire();
 }
 
 ////////////////////////////////////////////////////////////////////

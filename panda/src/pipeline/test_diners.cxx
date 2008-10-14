@@ -77,7 +77,7 @@ private:
   int _id;
   void thread_main() {
 #ifdef WIN32_VC
-    rand_mutex.lock();
+    rand_mutex.acquire();
     srand(last_rand);
     rand_mutex.release();
     random_f(1.0);
@@ -95,9 +95,9 @@ private:
              << "\n");
     int count = (int)random_f(10.0) + 1;
     while (--count) {
-      chopsticks[r].lock();
+      chopsticks[r].acquire();
       Thread::sleep(1);
-      chopsticks[l].lock();
+      chopsticks[l].acquire();
       PRINTMSG(cerr << "Philosopher #" << _id
                << " is eating spaghetti now.\n");
       Thread::sleep(random_f(3.0));
@@ -107,11 +107,11 @@ private:
                << " is pondering about life.\n");
       Thread::sleep(random_f(3.0));
     }
-    room_mutex.lock();
+    room_mutex.acquire();
     --room_occupancy;
     cerr << "clearing philosopher " << _id << "\n";
     phils[_id] = (philosopher*)0L;
-    room_condition.signal();
+    room_condition.notify();
     room_mutex.release();
     PRINTMSG(cerr << "Philosopher #" << _id << " has left the room ("
              << room_occupancy << " left).\n");
@@ -141,7 +141,7 @@ main(int argc, char *argv[]) {
   }
 
   int i;
-  room_mutex.lock();
+  room_mutex.acquire();
   for (i=0; i<N_DINERS; ++i) {
     chopsticks[i]._n = i;
   }
@@ -169,7 +169,7 @@ main(int argc, char *argv[]) {
     PRINTMSG(cerr << "main thread sleep\n");
     Thread::sleep(2.0);
     PRINTMSG(cerr << "main thread wake up\n");
-    room_mutex.lock();
+    room_mutex.acquire();
     for (i=0; i<N_DINERS; ++i)
       if (phils[i] == (philosopher*)0L)
         break;

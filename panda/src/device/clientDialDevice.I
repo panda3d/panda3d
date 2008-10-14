@@ -52,7 +52,7 @@ get_num_dials() const {
 //       Access: Public
 //  Description: Marks that the dial has been offset by the indicated
 //               amount.  It is the user's responsibility to ensure
-//               that this call is protected within lock().
+//               that this call is protected within acquire().
 ////////////////////////////////////////////////////////////////////
 INLINE void ClientDialDevice::
 push_dial(int index, double offset) {
@@ -71,7 +71,7 @@ push_dial(int index, double offset) {
 //               to read the dial without resetting the counter.
 //
 //               It is the user's responsibility to ensure that this
-//               call is protected within lock().
+//               call is protected within acquire().
 ////////////////////////////////////////////////////////////////////
 INLINE double ClientDialDevice::
 read_dial(int index) {

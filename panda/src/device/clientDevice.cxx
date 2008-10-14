@@ -73,7 +73,7 @@ ClientDevice::
 void ClientDevice::
 disconnect() {
   if (_is_connected) {
-    lock();
+    acquire();
     bool disconnected =
       _client->disconnect_device(_device_type, _device_name, this);
     _is_connected = false;

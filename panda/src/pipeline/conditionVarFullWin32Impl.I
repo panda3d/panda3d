@@ -54,14 +54,14 @@ wait() {
   // This avoids the "lost wakeup" bug...
   LeaveCriticalSection(_external_mutex);
 
-  // Wait for either event to become signaled due to signal() being
-  // called or signal_all() being called.
+  // Wait for either event to become signaled due to notify() being
+  // called or notify_all() being called.
   int result = WaitForMultipleObjects(2, &_event_signal, FALSE, INFINITE);
 
   bool nonzero = AtomicAdjust::dec(_waiters_count);
   bool last_waiter = (result == WAIT_OBJECT_0 + 1 && !nonzero);
 
-  // Some thread called signal_all().
+  // Some thread called notify_all().
   if (last_waiter) {
     // We're the last waiter to be notified or to stop waiting, so
     // reset the manual event. 
@@ -86,14 +86,14 @@ wait(double timeout) {
   // This avoids the "lost wakeup" bug...
   LeaveCriticalSection(_external_mutex);
 
-  // Wait for either event to become signaled due to signal() being
-  // called or signal_all() being called.
+  // Wait for either event to become signaled due to notify() being
+  // called or notify_all() being called.
   int result = WaitForMultipleObjects(2, &_event_signal, FALSE, (DWORD)(timeout * 1000.0));
 
   bool nonzero = AtomicAdjust::dec(_waiters_count);
   bool last_waiter = (result == WAIT_OBJECT_0 + 1 && !nonzero);
 
-  // Some thread called signal_all().
+  // Some thread called notify_all().
   if (last_waiter) {
     // We're the last waiter to be notified or to stop waiting, so
     // reset the manual event. 
@@ -110,7 +110,7 @@ wait(double timeout) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarFullWin32Impl::
-signal() {
+notify() {
   bool have_waiters = AtomicAdjust::get(_waiters_count) > 0;
 
   if (have_waiters) {
@@ -124,7 +124,7 @@ signal() {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarFullWin32Impl::
-signal_all() {
+notify_all() {
   bool have_waiters = AtomicAdjust::get(_waiters_count) > 0;
 
   if (have_waiters) {

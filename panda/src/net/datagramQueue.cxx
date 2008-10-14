@@ -56,7 +56,7 @@ shutdown() {
   MutexHolder holder(_cvlock);
 
   _shutdown = true;
-  _cv.signal_all();
+  _cv.notify_all();
 }
 
 
@@ -88,7 +88,7 @@ insert(const NetDatagram &data, bool block) {
   if (enqueue_ok) {
     _queue.push_back(data);
   }
-  _cv.signal();  // Only need to wake up one thread.
+  _cv.notify();  // Only need to wake up one thread.
 
   return enqueue_ok;
 }
@@ -133,7 +133,7 @@ extract(NetDatagram &result) {
   _queue.pop_front();
 
   // Wake up any threads waiting to stuff things into the queue.
-  _cv.signal_all();
+  _cv.notify_all();
 
   return true;
 }

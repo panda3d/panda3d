@@ -120,7 +120,7 @@ vrpn_dial_callback(void *userdata, const vrpn_DIALCB info) {
   Devices::iterator di;
   for (di = self->_devices.begin(); di != self->_devices.end(); ++di) {
     VrpnDialDevice *device = (*di);
-    device->lock();
+    device->acquire();
     device->push_dial(info.dial, info.change);
     device->unlock();
   }

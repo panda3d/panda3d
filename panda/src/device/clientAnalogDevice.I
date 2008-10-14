@@ -52,7 +52,7 @@ get_num_controls() const {
 //     Function: ClientAnalogDevice::set_control_state
 //       Access: Public
 //  Description: Sets the state of the indicated analog index.  The
-//               caller should ensure that lock() is in effect while
+//               caller should ensure that acquire() is in effect while
 //               this call is made.  This should be a number in the
 //               range -1.0 to 1.0, representing the current position
 //               of the control within its total range of movement.

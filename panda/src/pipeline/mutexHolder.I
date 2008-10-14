@@ -22,7 +22,7 @@ INLINE MutexHolder::
 MutexHolder(const Mutex &mutex) {
 #if defined(HAVE_THREADS) || defined(DEBUG_THREADS)
   _mutex = &mutex;
-  _mutex->lock();
+  _mutex->acquire();
 #endif
 }
 
@@ -44,7 +44,7 @@ MutexHolder(Mutex *&mutex) {
     mutex = new Mutex;
   }
   _mutex = mutex;
-  _mutex->lock();
+  _mutex->acquire();
 #endif
 }
 

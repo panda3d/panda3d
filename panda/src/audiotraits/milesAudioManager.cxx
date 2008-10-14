@@ -523,7 +523,7 @@ cleanup() {
       MutexHolder holder(_streams_lock);
       nassertv(!_stream_thread.is_null());
       _stream_thread->_keep_running = false;
-      _streams_cvar.signal();
+      _streams_cvar.notify();
       old_thread = _stream_thread;
       _stream_thread.clear();
     }
@@ -658,7 +658,7 @@ start_service_stream(HSTREAM stream) {
   MutexHolder holder(_streams_lock);
   nassertv(find(_streams.begin(), _streams.end(), stream) == _streams.end());
   _streams.push_back(stream);
-  _streams_cvar.signal();
+  _streams_cvar.notify();
 
   if (_stream_thread.is_null() && Thread::is_threading_supported()) {
     milesAudio_cat.info()
@@ -901,7 +901,7 @@ thread_main(volatile bool &keep_running) {
     // Now yield to be polite to the main application.
     _streams_lock.release();
     Thread::force_yield();
-    _streams_lock.lock();
+    _streams_lock.acquire();
   }
 }
 
@@ -921,7 +921,7 @@ do_service_streams() {
     _streams_lock.release();
     AIL_service_stream(stream, 0);
     Thread::consider_yield();
-    _streams_lock.lock();
+    _streams_lock.acquire();
     
     ++i;
   }

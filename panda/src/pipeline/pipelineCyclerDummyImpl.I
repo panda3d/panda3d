@@ -69,15 +69,15 @@ INLINE PipelineCyclerDummyImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PipelineCyclerDummyImpl::lock
+//     Function: PipelineCyclerDummyImpl::acquire
 //       Access: Public
 //  Description: Grabs an overall lock on the cycler.  Release it with
 //               a call to release().  This lock should be held while
 //               walking the list of stages.
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
-lock(Thread *) {
-  TAU_PROFILE("void PipelineCyclerDummyImpl::lock(Thread *)", " ", TAU_USER);
+acquire(Thread *) {
+  TAU_PROFILE("void PipelineCyclerDummyImpl::acquire(Thread *)", " ", TAU_USER);
   nassertv(!_locked);
   _locked = true;
 }
@@ -86,7 +86,7 @@ lock(Thread *) {
 //     Function: PipelineCyclerDummyImpl::release
 //       Access: Public
 //  Description: Release the overall lock on the cycler that was
-//               grabbed via lock().
+//               grabbed via acquire().
 ////////////////////////////////////////////////////////////////////
 INLINE void PipelineCyclerDummyImpl::
 release() {

@@ -673,7 +673,7 @@ render_frame() {
       Threads::const_iterator ti;
       for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
         RenderThread *thread = (*ti).second;
-        thread->_cv_mutex.lock();
+        thread->_cv_mutex.acquire();
         
         while (thread->_thread_state != TS_wait) {
           thread->_cv_done.wait();
@@ -789,7 +789,7 @@ render_frame() {
       RenderThread *thread = (*ti).second;
       if (thread->_thread_state == TS_wait) {
         thread->_thread_state = TS_do_frame;
-        thread->_cv_start.signal();
+        thread->_cv_start.notify();
       }
       thread->_cv_mutex.release();
     }
@@ -849,14 +849,14 @@ open_windows() {
     Threads::const_iterator ti;
     for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
       RenderThread *thread = (*ti).second;
-      thread->_cv_mutex.lock();
+      thread->_cv_mutex.acquire();
       
       while (thread->_thread_state != TS_wait) {
         thread->_cv_done.wait();
       }
       
       thread->_thread_state = TS_do_windows;
-      thread->_cv_start.signal();
+      thread->_cv_start.notify();
       thread->_cv_mutex.release();
     }
   }
@@ -1476,7 +1476,7 @@ do_sync_frame(Thread *current_thread) {
   Threads::const_iterator ti;
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
-    thread->_cv_mutex.lock();
+    thread->_cv_mutex.acquire();
     thread->_cv_mutex.release();
   }
 
@@ -1506,7 +1506,7 @@ do_flip_frame(Thread *current_thread) {
     Threads::const_iterator ti;
     for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
       RenderThread *thread = (*ti).second;
-      thread->_cv_mutex.lock();
+      thread->_cv_mutex.acquire();
 
       while (thread->_thread_state != TS_wait) {
         thread->_cv_done.wait();
@@ -1523,7 +1523,7 @@ do_flip_frame(Thread *current_thread) {
       RenderThread *thread = (*ti).second;
       nassertv(thread->_thread_state == TS_wait);
       thread->_thread_state = TS_do_flip;
-      thread->_cv_start.signal();
+      thread->_cv_start.notify();
       thread->_cv_mutex.release();
     }
   }
@@ -2083,14 +2083,14 @@ terminate_threads(Thread *current_thread) {
   Threads::const_iterator ti;
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
-    thread->_cv_mutex.lock();
+    thread->_cv_mutex.acquire();
   }
   
   // Now tell them to close their windows and terminate.
   for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
     RenderThread *thread = (*ti).second;
     thread->_thread_state = TS_terminate;
-    thread->_cv_start.signal();
+    thread->_cv_start.notify();
     thread->_cv_mutex.release();
   }
 
@@ -2578,7 +2578,7 @@ thread_main() {
       do_pending(_engine, current_thread);
       do_close(_engine, current_thread);
       _thread_state = TS_done;
-      _cv_done.signal();
+      _cv_done.notify();
       return;
 
     case TS_done:
@@ -2588,7 +2588,7 @@ thread_main() {
     }
 
     _thread_state = TS_wait;
-    _cv_done.signal();
+    _cv_done.notify();
 
     {
       PStatTimer timer(_wait_pcollector, current_thread);

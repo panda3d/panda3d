@@ -64,7 +64,7 @@ get_device_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClientDevice::lock
+//     Function: ClientDevice::acquire
 //       Access: Public
 //  Description: Grabs the mutex associated with this particular
 //               device.  The device will not update asynchronously
@@ -73,9 +73,9 @@ get_device_name() const {
 //               during the copy.
 ////////////////////////////////////////////////////////////////////
 INLINE void ClientDevice::
-lock() {
+acquire() {
 #ifdef OLD_HAVE_IPC
-  _lock.lock();
+  _lock.acquire();
 #endif
 }
 
@@ -84,7 +84,7 @@ lock() {
 //       Access: Public
 //  Description: Releases the mutex associated with this particular
 //               device.  This should be called after all the data has
-//               been successfully copied out.  See lock().
+//               been successfully copied out.  See acquire().
 ////////////////////////////////////////////////////////////////////
 INLINE void ClientDevice::
 unlock() {

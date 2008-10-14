@@ -24,22 +24,22 @@ INLINE MutexWin32Impl::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexWin32Impl::lock
+//     Function: MutexWin32Impl::acquire
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexWin32Impl::
-lock() {
+acquire() {
   EnterCriticalSection(&_lock);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexWin32Impl::try_lock
+//     Function: MutexWin32Impl::try_acquire
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool MutexWin32Impl::
-try_lock() {
+try_acquire() {
   return (TryEnterCriticalSection(&_lock) != 0);
 }
 

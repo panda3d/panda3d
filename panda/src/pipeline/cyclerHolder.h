@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : CyclerHolder
 // Description : A lightweight C++ object whose constructor calls
-//               lock() and whose destructor calls release() on a
+//               acquire() and whose destructor calls release() on a
 //               PipelineCyclerBase object.  This is similar to a
 //               MutexHolder.
 ////////////////////////////////////////////////////////////////////

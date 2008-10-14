@@ -138,7 +138,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode mode) {
     if (_end == (streampos)0) {
       // If the end of the file is unspecified, we have to seek to
       // find it.
-      _lock.lock();
+      _lock.acquire();
       _source->seekg(off, ios::end);
       new_pos = _source->tellg();
       _lock.release();
@@ -239,7 +239,7 @@ underflow() {
     gbump(-(int)num_bytes);
     nassertr(gptr() + num_bytes <= egptr(), EOF);
 
-    _lock.lock();
+    _lock.acquire();
     _source->seekg(_cur);
     _source->read(gptr(), num_bytes);
     size_t read_count = _source->gcount();

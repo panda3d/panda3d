@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : MutexHolder
 // Description : A lightweight C++ object whose constructor calls
-//               lock() and whose destructor calls release() on a
+//               acquire() and whose destructor calls release() on a
 //               mutex.  It is a C++ convenience wrapper to call
 //               release() automatically when a block exits (for
 //               instance, on return).

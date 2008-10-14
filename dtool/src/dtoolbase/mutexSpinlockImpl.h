@@ -36,8 +36,8 @@ public:
   INLINE MutexSpinlockImpl();
   INLINE ~MutexSpinlockImpl();
 
-  INLINE void lock();
-  INLINE bool try_lock();
+  INLINE void acquire();
+  INLINE bool try_acquire();
   INLINE void release();
 
 private:

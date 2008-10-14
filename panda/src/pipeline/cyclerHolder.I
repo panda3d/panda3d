@@ -22,7 +22,7 @@ INLINE CyclerHolder::
 CyclerHolder(PipelineCyclerBase &cycler) {
 #ifdef DO_PIPELINING
   _cycler = &cycler;
-  _cycler->lock();
+  _cycler->acquire();
 #endif
 }
 

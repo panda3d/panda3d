@@ -34,7 +34,7 @@ operator = (const MutexDebug &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexDebug::lock
+//     Function: MutexDebug::acquire
 //       Access: Published
 //  Description: Grabs the mutex if it is available.  If it is not
 //               available, blocks until it becomes available, then
@@ -48,29 +48,31 @@ operator = (const MutexDebug &copy) {
 //
 //               Also see MutexHolder.
 ////////////////////////////////////////////////////////////////////
-INLINE void MutexDebug::
-lock() const {
-  TAU_PROFILE("void MutexDebug::lock()", " ", TAU_USER);
-  _global_lock->lock();
-  ((MutexDebug *)this)->do_lock();
-  _global_lock->release();
+INLINE bool MutexDebug::
+acquire(Thread *current_thread) const {
+  TAU_PROFILE("void MutexDebug::acquire(Thread *)", " ", TAU_USER);
+  nassertv(current_thread == Thread::get_current_thread());
+  _global_lock->acquire();
+  ((MutexDebug *)this)->do_acquire();
+  _global_lock->release(current_thread);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexDebug::lock
+//     Function: MutexDebug::try_acquire
 //       Access: Published
-//  Description: This variant on lock() accepts the current thread as
-//               a parameter, if it is already known, as an
-//               optimization.
+//  Description: Returns immediately, with a true value indicating the
+//               mutex has been acquired, and false indicating it has
+//               not.
 ////////////////////////////////////////////////////////////////////
-INLINE void MutexDebug::
-lock(Thread *current_thread) const {
-  TAU_PROFILE("void MutexDebug::lock(Thread *)", " ", TAU_USER);
+INLINE bool MutexDebug::
+try_acquire(Thread *current_thread) const {
+  TAU_PROFILE("void MutexDebug::acquire(Thread *)", " ", TAU_USER);
   nassertv(current_thread == Thread::get_current_thread());
-  // You may only pass a Thread parameter to a ReMutex--that is, to a
-  // mutex whose _allow_recursion flag is true.
-  nassertv(_allow_recursion);
-  lock();
+  _global_lock->acquire();
+  bool acquired = ((MutexDebug *)this)->do_try_acquire(current_thread);
+  _global_lock->release();
+  return acquired;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -82,7 +84,7 @@ lock(Thread *current_thread) const {
 //               time to release the lock.
 //
 //               This method really performs the same function as
-//               lock(), but it offers a potential (slight)
+//               acquire(), but it offers a potential (slight)
 //               performance benefit when the calling thread knows
 //               that it already holds the lock.  It is an error to
 //               call this when the calling thread does not hold the
@@ -98,7 +100,7 @@ elevate_lock() const {
   // Also, it's an error to call this if the lock is not already held.
   nassertv(debug_is_locked());
 
-  lock();
+  acquire();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,7 +116,7 @@ elevate_lock() const {
 INLINE void MutexDebug::
 release() const {
   TAU_PROFILE("void MutexDebug::release()", " ", TAU_USER);
-  _global_lock->lock();
+  _global_lock->acquire();
   ((MutexDebug *)this)->do_release();
   _global_lock->release();
 }
@@ -132,7 +134,7 @@ release() const {
 INLINE bool MutexDebug::
 debug_is_locked() const {
   TAU_PROFILE("bool MutexDebug::debug_is_locked()", " ", TAU_USER);
-  _global_lock->lock();
+  _global_lock->acquire();
   bool is_locked = do_debug_is_locked();
   _global_lock->release();
   return is_locked;

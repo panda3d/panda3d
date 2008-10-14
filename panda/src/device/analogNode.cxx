@@ -74,7 +74,7 @@ write(ostream &out, int indent_level) const {
   DataNode::write(out, indent_level);
 
   if (_analog != (ClientAnalogDevice *)NULL) {
-    _analog->lock();
+    _analog->acquire();
     _analog->write_controls(out, indent_level + 2);
     _analog->unlock();
   }
@@ -101,7 +101,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
 
     LPoint2f out(0.0f, 0.0f);
 
-    _analog->lock();
+    _analog->acquire();
     for (int i = 0; i < max_outputs; i++) {
       if (_outputs[i]._index >= 0 &&
           _analog->is_control_known(_outputs[i]._index)) {

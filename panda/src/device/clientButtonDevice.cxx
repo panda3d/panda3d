@@ -39,7 +39,7 @@ ClientButtonDevice(ClientBase *client, const string &device_name):
 //               true indicates down, and false indicates up.  This
 //               may generate a ButtonEvent if the button has an
 //               associated ButtonHandle.  The caller should ensure
-//               that lock() is in effect while this call is made.
+//               that acquire() is in effect while this call is made.
 ////////////////////////////////////////////////////////////////////
 void ClientButtonDevice::
 set_button_state(int index, bool down) {

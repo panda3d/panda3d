@@ -84,7 +84,7 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &,
                  DataNodeTransmit &output) {
   if (is_valid()) {
     _tracker->poll();
-    _tracker->lock();
+    _tracker->acquire();
     _data = _tracker->get_data();
     _tracker->unlock();
 

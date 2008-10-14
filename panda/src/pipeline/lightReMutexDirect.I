@@ -64,7 +64,7 @@ operator = (const LightReMutexDirect &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightReMutexDirect::lock
+//     Function: LightReMutexDirect::acquire
 //       Access: Published
 //  Description: Grabs the lightReMutex if it is available.  If it is not
 //               available, blocks until it becomes available, then
@@ -79,23 +79,23 @@ operator = (const LightReMutexDirect &copy) {
 //               Also see LightReMutexHolder.
 ////////////////////////////////////////////////////////////////////
 INLINE void LightReMutexDirect::
-lock() const {
-  TAU_PROFILE("void LightReMutexDirect::lock()", " ", TAU_USER);
-  ((LightReMutexDirect *)this)->_impl.lock();
+acquire() const {
+  TAU_PROFILE("void LightReMutexDirect::acquire()", " ", TAU_USER);
+  ((LightReMutexDirect *)this)->_impl.acquire();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightReMutexDirect::lock
+//     Function: LightReMutexDirect::acquire
 //       Access: Published
-//  Description: This variant on lock() accepts the current thread as
+//  Description: This variant on acquire() accepts the current thread as
 //               a parameter, if it is already known, as an
 //               optimization.
 ////////////////////////////////////////////////////////////////////
 INLINE void LightReMutexDirect::
-lock(Thread *current_thread) const {
-  TAU_PROFILE("void LightReMutexDirect::lock(Thread *)", " ", TAU_USER);
+acquire(Thread *current_thread) const {
+  TAU_PROFILE("void LightReMutexDirect::acquire(Thread *)", " ", TAU_USER);
 #ifdef HAVE_REMUTEXIMPL
-  ((LightReMutexDirect *)this)->_impl.lock();
+  ((LightReMutexDirect *)this)->_impl.acquire();
 #else
   ((LightReMutexDirect *)this)->_impl.do_lock(current_thread);
 #endif  // HAVE_REMUTEXIMPL
@@ -110,7 +110,7 @@ lock(Thread *current_thread) const {
 //               time to release the lock.
 //
 //               This method really performs the same function as
-//               lock(), but it offers a potential (slight)
+//               acquire(), but it offers a potential (slight)
 //               performance benefit when the calling thread knows
 //               that it already holds the lock.  It is an error to
 //               call this when the calling thread does not hold the
@@ -120,7 +120,7 @@ INLINE void LightReMutexDirect::
 elevate_lock() const {
   TAU_PROFILE("void LightReMutexDirect::elevate_lock()", " ", TAU_USER);
 #ifdef HAVE_REMUTEXIMPL
-  ((LightReMutexDirect *)this)->_impl.lock();
+  ((LightReMutexDirect *)this)->_impl.acquire();
 #else
   ((LightReMutexDirect *)this)->_impl.do_elevate_lock();
 #endif  // HAVE_REMUTEXIMPL

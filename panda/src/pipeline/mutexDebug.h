@@ -38,8 +38,8 @@ private:
   INLINE void operator = (const MutexDebug &copy);
 
 PUBLISHED:
-  BLOCKING INLINE void lock() const;
-  BLOCKING INLINE void lock(Thread *current_thread) const;
+  BLOCKING INLINE void acquire(Thread *current_thread = Thread::get_current_thread()) const;
+  BLOCKING INLINE bool try_acquire(Thread *current_thread = Thread::get_current_thread()) const;
   INLINE void elevate_lock() const;
   INLINE void release() const;
   INLINE bool debug_is_locked() const;
@@ -49,11 +49,12 @@ PUBLISHED:
   typedef void VoidFunc();
 
 private:
-  void do_lock();
+  void do_acquire(Thread *current_thread);
+  bool do_try_acquire(Thread *current_thread);
   void do_release();
   bool do_debug_is_locked() const;
 
-  void report_deadlock(Thread *this_thread);
+  void report_deadlock(Thread *current_thread);
 
 private:
   INLINE static MutexTrueImpl *get_global_lock();

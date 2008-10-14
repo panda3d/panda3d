@@ -33,9 +33,9 @@ class MutexWin32Impl;
 //               The Windows native synchronization primitives don't
 //               actually implement a full POSIX-style condition
 //               variable, but the Event primitive does a fair job if
-//               we disallow signal_all() (POSIX broadcast).  See
+//               we disallow notify_all() (POSIX broadcast).  See
 //               ConditionVarFullWin32Impl for a full implementation
-//               that includes signal_all().  This class is much
+//               that includes notify_all().  This class is much
 //               simpler than that full implementation, so we can
 //               avoid the overhead required to support broadcast.
 ////////////////////////////////////////////////////////////////////
@@ -46,7 +46,7 @@ public:
 
   INLINE void wait();
   INLINE void wait(double timeout);
-  INLINE void signal();
+  INLINE void notify();
 
 private:
   CRITICAL_SECTION *_external_mutex;

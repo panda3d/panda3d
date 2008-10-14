@@ -81,13 +81,13 @@ get_mutex() const {
 //               variable before calling this function.
 //
 //               wait() will release the lock, then go to sleep until
-//               some other thread calls signal() on this condition
+//               some other thread calls notify() on this condition
 //               variable.  At that time at least one thread waiting
 //               on the same ConditionVarDirect will grab the lock again,
 //               and then return from wait().
 //
 //               It is possible that wait() will return even if no one
-//               has called signal().  It is the responsibility of the
+//               has called notify().  It is the responsibility of the
 //               calling process to verify the condition on return
 //               from wait, and possibly loop back to wait again if
 //               necessary.
@@ -139,7 +139,7 @@ wait(double timeout) {
 //               signal is lost.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarDirect::
-signal() {
-  TAU_PROFILE("ConditionVarDirect::signal()", " ", TAU_USER);
-  _impl.signal();
+notify() {
+  TAU_PROFILE("ConditionVarDirect::notify()", " ", TAU_USER);
+  _impl.notify();
 }

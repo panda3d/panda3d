@@ -71,12 +71,12 @@ operator = (const ConditionVar &copy) {
 ////////////////////////////////////////////////////////////////////
 //     Function: ConditionVar::signal_all
 //       Access: Private
-//  Description: The signal_all() method is specifically *not*
+//  Description: The notify_all() method is specifically *not*
 //               provided by ConditionVar.  Use ConditionVarFull if
 //               you need to call this method.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVar::
-signal_all() {
+notify_all() {
   nassertv(false);
 }
 

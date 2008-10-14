@@ -37,7 +37,7 @@ private:
   INLINE void operator = (const LightMutexDirect &copy);
 
 PUBLISHED:
-  BLOCKING INLINE void lock() const;
+  BLOCKING INLINE void acquire() const;
   INLINE void release() const;
   INLINE bool debug_is_locked() const;
 

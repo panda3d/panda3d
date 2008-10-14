@@ -32,24 +32,24 @@ INLINE MutexSimpleImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::lock
+//     Function: MutexSimpleImpl::acquire
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexSimpleImpl::
-lock() {
-  if (!try_lock()) {
+acquire() {
+  if (!try_acquire()) {
     do_lock();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::try_lock
+//     Function: MutexSimpleImpl::try_acquire
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool MutexSimpleImpl::
-try_lock() {
+try_acquire() {
   if ((_flags & F_lock_count) != 0) {
     return false;
   }

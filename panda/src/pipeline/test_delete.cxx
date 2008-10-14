@@ -90,7 +90,7 @@ public:
     OUTPUT(nout << *this << " beginning.\n");
 
 #ifdef WIN32_VC
-    rand_mutex.lock();
+    rand_mutex.acquire();
     srand(last_rand);
     rand_mutex.release();
     random_f(1.0);

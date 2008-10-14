@@ -137,7 +137,7 @@ PipelineCyclerTrueImpl::
 ////////////////////////////////////////////////////////////////////
 CycleData *PipelineCyclerTrueImpl::
 write_stage(int pipeline_stage, Thread *current_thread) {
-  _lock.lock(current_thread);
+  _lock.acquire(current_thread);
 
 #ifndef NDEBUG
   nassertd(pipeline_stage >= 0 && pipeline_stage < _num_stages) {
@@ -175,7 +175,7 @@ write_stage(int pipeline_stage, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 CycleData *PipelineCyclerTrueImpl::
 write_stage_upstream(int pipeline_stage, bool force_to_0, Thread *current_thread) {
-  _lock.lock(current_thread);
+  _lock.acquire(current_thread);
 
 #ifndef NDEBUG
   nassertd(pipeline_stage >= 0 && pipeline_stage < _num_stages) {

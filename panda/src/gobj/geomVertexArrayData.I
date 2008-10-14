@@ -300,7 +300,7 @@ GeomVertexArrayDataHandle(const GeomVertexArrayData *object,
 #endif  // DO_PIPELINING
   // We must grab the lock *after* we have incremented the reference
   // count, above.
-  _cdata->_rw_lock.lock();
+  _cdata->_rw_lock.acquire();
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, get_class_type());
 #endif

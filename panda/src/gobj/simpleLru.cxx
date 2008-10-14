@@ -190,7 +190,7 @@ do_evict_to(size_t target_size, bool hard_evict) {
     // We must release the lock while we call evict_lru().
     _global_lock.release();
     node->evict_lru();
-    _global_lock.lock();
+    _global_lock.acquire();
 
     if (node == end || node == _prev) {
       // If we reach the original tail of the list, stop.

@@ -391,7 +391,7 @@ do_evict_to(size_t target_size, bool hard_evict) {
           // We must release the lock while we call evict_lru().
           _lock.release();
           page->evict_lru();
-          _lock.lock();
+          _lock.acquire();
 
           if (_total_size <= target_size) {
             // We've evicted enough to satisfy our target.

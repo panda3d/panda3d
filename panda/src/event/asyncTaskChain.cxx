@@ -492,7 +492,7 @@ do_add(AsyncTask *task) {
   ++(_manager->_num_tasks);
   _needs_cleanup = true;
 
-  _cvar.signal_all();
+  _cvar.notify_all();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -647,7 +647,7 @@ do_cleanup() {
   for (ti = dead.begin(); ti != dead.end(); ++ti) {
     (*ti)->upon_death(_manager, false);
   }
-  _manager->_lock.lock();
+  _manager->_lock.acquire();
 
   if (task_cat.is_spam()) {
     do_output(task_cat.spam());
@@ -750,7 +750,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
           // queue.
           task->_state = AsyncTask::S_active;
           _next_active.push_back(task);
-          _cvar.signal_all();
+          _cvar.notify_all();
           break;
           
         case AsyncTask::DS_again:
@@ -767,7 +767,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
                 << "Sleeping " << *task << ", wake time at " 
                 << task->get_wake_time() - now << "\n";
             }
-            _cvar.signal_all();
+            _cvar.notify_all();
           }
           break;
 
@@ -775,7 +775,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
           // The task wants to run again this frame if possible.
           task->_state = AsyncTask::S_active;
           _this_active.push_back(task);
-          _cvar.signal_all();
+          _cvar.notify_all();
           break;
 
         case AsyncTask::DS_interrupt:
@@ -784,7 +784,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
           _next_active.push_back(task);
           if (_state == S_started) {
             _state = S_interrupted;
-            _cvar.signal_all();
+            _cvar.notify_all();
           }
           break;
           
@@ -844,7 +844,7 @@ cleanup_task(AsyncTask *task, bool upon_death, bool clean_exit) {
   if (upon_death) {
     _manager->_lock.release();
     task->upon_death(_manager, clean_exit);
-    _manager->_lock.lock();
+    _manager->_lock.acquire();
   }
 }
 
@@ -872,7 +872,7 @@ finish_sort_group() {
     // There are more tasks; just set the next sort value.
     nassertr(_current_sort < _active.front()->get_sort(), true);
     _current_sort = _active.front()->get_sort();
-    _cvar.signal_all();
+    _cvar.notify_all();
     return true;
   }
 
@@ -922,7 +922,7 @@ finish_sort_group() {
           << ": tick clock\n";
       }
       _manager->_clock->tick();
-      _manager->_frame_cvar.signal_all();
+      _manager->_frame_cvar.notify_all();
     }
     
     // Check for any sleeping tasks that need to be woken.
@@ -972,7 +972,7 @@ finish_sort_group() {
 
   if (!_active.empty()) {
     // Signal the threads to start executing the first task again.
-    _cvar.signal_all();
+    _cvar.notify_all();
     return true;
   }
 
@@ -1079,8 +1079,8 @@ do_stop_threads() {
     }
 
     _state = S_shutdown;
-    _cvar.signal_all();
-    _manager->_frame_cvar.signal_all();
+    _cvar.notify_all();
+    _manager->_frame_cvar.notify_all();
     
     Threads wait_threads;
     wait_threads.swap(_threads);
@@ -1102,7 +1102,7 @@ do_stop_threads() {
           << *Thread::get_current_thread() << "\n";
       }
     }
-    _manager->_lock.lock();
+    _manager->_lock.acquire();
     
     _state = S_initial;
 
@@ -1246,7 +1246,7 @@ do_poll() {
       _num_busy_threads++;
       service_one_task(NULL);
       _num_busy_threads--;
-      _cvar.signal_all();
+      _cvar.notify_all();
 
       if (!_threads.empty()) {
         return;
@@ -1505,7 +1505,7 @@ thread_main() {
       _chain->_num_busy_threads++;
       _chain->service_one_task(this);
       _chain->_num_busy_threads--;
-      _chain->_cvar.signal_all();
+      _chain->_cvar.notify_all();
 
     } else {
       // We've finished all the available tasks of the current sort

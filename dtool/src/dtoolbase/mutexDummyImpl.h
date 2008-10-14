@@ -29,7 +29,8 @@ public:
   INLINE MutexDummyImpl();
   INLINE ~MutexDummyImpl();
 
-  INLINE void lock();
+  INLINE void acquire();
+  INLINE bool try_acquire();
   INLINE void release();
 };
 

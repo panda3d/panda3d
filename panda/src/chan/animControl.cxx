@@ -75,7 +75,7 @@ setup_anim(PartBundle *part, AnimBundle *anim, int channel_index,
   // Now the AnimControl is fully set up.
   _marked_frame = -1;
   _pending = false;
-  _pending_cvar.signal_all();
+  _pending_cvar.notify_all();
   if (!_pending_done_event.empty()) {
     throw_event(_pending_done_event);
   }
@@ -105,7 +105,7 @@ fail_anim(PartBundle *part) {
   MutexHolder holder(_pending_lock);
   nassertv(_pending && part == _part);
   _pending = false;
-  _pending_cvar.signal_all();
+  _pending_cvar.notify_all();
   if (!_pending_done_event.empty()) {
     throw_event(_pending_done_event);
   }

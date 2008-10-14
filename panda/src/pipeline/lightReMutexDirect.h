@@ -36,8 +36,8 @@ private:
   INLINE void operator = (const LightReMutexDirect &copy);
 
 PUBLISHED:
-  BLOCKING INLINE void lock() const;
-  BLOCKING INLINE void lock(Thread *current_thread) const;
+  BLOCKING INLINE void acquire() const;
+  BLOCKING INLINE void acquire(Thread *current_thread) const;
   INLINE void elevate_lock() const;
   INLINE void release() const;
 

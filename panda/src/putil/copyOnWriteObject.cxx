@@ -36,7 +36,7 @@ unref() const {
   if (get_ref_count() == get_cache_ref_count()) {
     ((CopyOnWriteObject *)this)->_lock_status = LS_unlocked;
     ((CopyOnWriteObject *)this)->_locking_thread = NULL;
-    ((CopyOnWriteObject *)this)->_lock_cvar.signal();
+    ((CopyOnWriteObject *)this)->_lock_cvar.notify();
   }
   return is_zero;
 }

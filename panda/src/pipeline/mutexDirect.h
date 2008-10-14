@@ -38,7 +38,8 @@ private:
   INLINE void operator = (const MutexDirect &copy);
 
 PUBLISHED:
-  BLOCKING INLINE void lock() const;
+  BLOCKING INLINE void acquire() const;
+  BLOCKING INLINE bool try_acquire() const;
   INLINE void release() const;
   INLINE bool debug_is_locked() const;
 

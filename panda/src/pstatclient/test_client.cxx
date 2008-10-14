@@ -104,7 +104,7 @@ main(int argc, char *argv[]) {
     exit(1);
   }
 
-  signal(SIGINT, &signal_handler);
+  notify(SIGINT, &signal_handler);
 
   PStatClient *client = PStatClient::get_global_pstats();
   client->set_client_name("Bogus Stats");
