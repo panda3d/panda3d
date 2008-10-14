@@ -117,7 +117,8 @@ protected:
   AsyncTaskCollection do_get_sleeping_tasks() const;
   void do_poll();
   void cleanup_pickup_mode();
-  double do_get_next_wake_time() const;
+  INLINE double do_get_next_wake_time() const;
+  static INLINE double get_wake_time(AsyncTask *task);
   void do_output(ostream &out) const;
   void do_write(ostream &out, int indent_level) const;
 
@@ -136,7 +137,7 @@ protected:
   class AsyncTaskSortWakeTime {
   public:
     bool operator () (AsyncTask *a, AsyncTask *b) const {
-      return a->get_wake_time() > b->get_wake_time();
+      return AsyncTaskChain::get_wake_time(a) > AsyncTaskChain::get_wake_time(b);
     }
   };
   
@@ -209,6 +210,7 @@ private:
   friend class AsyncTaskChainThread;
   friend class AsyncTask;
   friend class AsyncTaskManager;
+  friend class AsyncTaskSortWakeTime;
 };
 
 INLINE ostream &operator << (ostream &out, const AsyncTaskChain &chain) {

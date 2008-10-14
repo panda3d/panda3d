@@ -108,7 +108,7 @@ wait() {
 //     Function: ConditionVarFullDirect::wait
 //       Access: Published
 //  Description: Waits on the condition, with a timeout.  The function
-//               will return when the condition variable is signaled,
+//               will return when the condition variable is notified,
 //               or the timeout occurs.  There is no way to directly
 //               tell which happened, and it is possible that neither
 //               in fact happened (spurious wakeups are possible).
@@ -122,7 +122,7 @@ wait(double timeout) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullDirect::signal
+//     Function: ConditionVarFullDirect::notify
 //       Access: Published
 //  Description: Informs one of the other threads who are currently
 //               blocked on wait() that the relevant condition has
@@ -136,7 +136,7 @@ wait(double timeout) {
 //               will not release the mutex.
 //
 //               If no threads are waiting, this is a no-op: the
-//               signal is lost.
+//               notify is lost.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarFullDirect::
 notify() {
@@ -145,7 +145,7 @@ notify() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullDirect::signal_all
+//     Function: ConditionVarFullDirect::notify_all
 //       Access: Published
 //  Description: Informs all of the other threads who are currently
 //               blocked on wait() that the relevant condition has
@@ -156,7 +156,7 @@ notify() {
 //               will not release the mutex.
 //
 //               If no threads are waiting, this is a no-op: the
-//               signal is lost.
+//               notify event is lost.
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarFullDirect::
 notify_all() {

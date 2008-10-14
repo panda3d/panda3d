@@ -235,6 +235,28 @@ get_task(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskCollection::remove_task
+//       Access: Published
+//  Description: Removes the nth AsyncTask from the collection.
+////////////////////////////////////////////////////////////////////
+void AsyncTaskCollection::
+remove_task(int index) {
+  // If the pointer to our internal array is shared by any other
+  // AsyncTaskCollections, we have to copy the array now so we won't
+  // inadvertently modify any of our brethren AsyncTaskCollection
+  // objects.
+
+  if (_tasks.get_ref_count() > 1) {
+    AsyncTasks old_tasks = _tasks;
+    _tasks = AsyncTasks::empty_array(0);
+    _tasks.v() = old_tasks.v();
+  }
+
+  nassertv(index >= 0 && index < (int)_tasks.size());
+  _tasks.erase(_tasks.begin() + index);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskCollection::operator []
 //       Access: Published
 //  Description: Returns the nth AsyncTask in the collection.  This is

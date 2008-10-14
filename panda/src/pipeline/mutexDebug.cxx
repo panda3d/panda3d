@@ -219,7 +219,7 @@ do_try_acquire(Thread *current_thread) {
       pipeline_cat.error()
         << "Configure name-deleted-mutexes 1 to see the mutex name.\n";
     }
-    return;
+    return false;
   }
 
   bool acquired = true;
@@ -227,12 +227,12 @@ do_try_acquire(Thread *current_thread) {
     // The mutex is not already locked by anyone.  Lock it.
     _locking_thread = current_thread;
     ++_lock_count;
-    nassertv(_lock_count == 1);
+    nassertr(_lock_count == 1, false);
 
   } else if (_locking_thread == current_thread) {
     // The mutex is already locked by this thread.  Increment the lock
     // count.
-    nassertv(_lock_count > 0);
+    nassertr(_lock_count > 0, false);
     if (!_allow_recursion) {
       ostringstream ostr;
       ostr << *current_thread << " attempted to double-lock non-reentrant "

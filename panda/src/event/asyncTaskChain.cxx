@@ -765,7 +765,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
             if (task_cat.is_spam()) {
               task_cat.spam()
                 << "Sleeping " << *task << ", wake time at " 
-                << task->get_wake_time() - now << "\n";
+                << task->_wake_time - now << "\n";
             }
             _cvar.notify_all();
           }
@@ -927,12 +927,12 @@ finish_sort_group() {
     
     // Check for any sleeping tasks that need to be woken.
     double now = _manager->_clock->get_frame_time();
-    while (!_sleeping.empty() && _sleeping.front()->get_wake_time() <= now) {
+    while (!_sleeping.empty() && _sleeping.front()->_wake_time <= now) {
       PT(AsyncTask) task = _sleeping.front();
       if (task_cat.is_spam()) {
         task_cat.spam()
           << "Waking " << *task << ", wake time at " 
-          << task->get_wake_time() - now << "\n";
+          << task->_wake_time - now << "\n";
       }
       pop_heap(_sleeping.begin(), _sleeping.end(), AsyncTaskSortWakeTime());
       _sleeping.pop_back();
@@ -948,7 +948,7 @@ finish_sort_group() {
       } else {
         task_cat.spam()
           << "Next sleeper: " << *_sleeping.front() << ", wake time at " 
-          << _sleeping.front()->get_wake_time() - now << "\n";
+          << _sleeping.front()->_wake_time - now << "\n";
       }
     }
 
@@ -1282,20 +1282,6 @@ cleanup_pickup_mode() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AsyncTaskChain::do_get_next_wake_time
-//       Access: Protected
-//  Description: 
-////////////////////////////////////////////////////////////////////
-double AsyncTaskChain::
-do_get_next_wake_time() const {
-  if (!_sleeping.empty()) {
-    PT(AsyncTask) task = _sleeping.front();
-    return task->_wake_time;
-  }
-  return -1.0;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskChain::do_output
 //       Access: Protected
 //  Description: The private implementation of output(), this assumes
@@ -1519,7 +1505,7 @@ thread_main() {
             PStatTimer timer(_wait_pcollector);
             _chain->_cvar.wait();
           } else {
-            double wake_time = _chain->_sleeping.front()->get_wake_time();
+            double wake_time = _chain->do_get_next_wake_time();
             double now = _chain->_manager->_clock->get_frame_time();
             double timeout = max(wake_time - now, 0.0);
             PStatTimer timer(_wait_pcollector);

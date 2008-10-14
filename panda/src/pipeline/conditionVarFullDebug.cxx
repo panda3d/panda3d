@@ -74,11 +74,11 @@ void ConditionVarFullDebug::
 wait() {
   _mutex._global_lock->acquire();
 
-  Thread *this_thread = Thread::get_current_thread();
+  Thread *current_thread = Thread::get_current_thread();
 
   if (!_mutex.do_debug_is_locked()) {
     ostringstream ostr;
-    ostr << *this_thread << " attempted to wait on "
+    ostr << *current_thread << " attempted to wait on "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
     _mutex._global_lock->release();
@@ -87,25 +87,25 @@ wait() {
 
   if (thread_cat->is_spam()) {
     thread_cat.spam()
-      << *this_thread << " waiting on " << *this << "\n";
+      << *current_thread << " waiting on " << *this << "\n";
   }
 
-  nassertd(this_thread->_waiting_on_cvar == NULL &&
-           this_thread->_waiting_on_cvar_full == NULL) {
+  nassertd(current_thread->_waiting_on_cvar == NULL &&
+           current_thread->_waiting_on_cvar_full == NULL) {
   }
-  this_thread->_waiting_on_cvar_full = this;
+  current_thread->_waiting_on_cvar_full = this;
   
   _mutex.do_release();
   _impl.wait();  // temporarily releases _global_lock
-  _mutex.do_lock();
+  _mutex.do_acquire(current_thread);
 
-  nassertd(this_thread->_waiting_on_cvar_full == this) {
+  nassertd(current_thread->_waiting_on_cvar_full == this) {
   }
-  this_thread->_waiting_on_cvar_full = NULL;
+  current_thread->_waiting_on_cvar_full = NULL;
 
   if (thread_cat.is_spam()) {
     thread_cat.spam()
-      << *this_thread << " awake on " << *this << "\n";
+      << *current_thread << " awake on " << *this << "\n";
   }
 
   _mutex._global_lock->release();
@@ -115,7 +115,7 @@ wait() {
 //     Function: ConditionVarFullDebug::wait
 //       Access: Published
 //  Description: Waits on the condition, with a timeout.  The function
-//               will return when the condition variable is signaled,
+//               will return when the condition variable is notified,
 //               or the timeout occurs.  There is no way to directly
 //               tell which happened, and it is possible that neither
 //               in fact happened (spurious wakeups are possible).
@@ -126,11 +126,11 @@ void ConditionVarFullDebug::
 wait(double timeout) {
   _mutex._global_lock->acquire();
 
-  Thread *this_thread = Thread::get_current_thread();
+  Thread *current_thread = Thread::get_current_thread();
 
   if (!_mutex.do_debug_is_locked()) {
     ostringstream ostr;
-    ostr << *this_thread << " attempted to wait on "
+    ostr << *current_thread << " attempted to wait on "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
     _mutex._global_lock->release();
@@ -139,33 +139,33 @@ wait(double timeout) {
 
   if (thread_cat.is_spam()) {
     thread_cat.spam()
-      << *this_thread << " waiting on " << *this 
+      << *current_thread << " waiting on " << *this 
       << ", with timeout " << timeout << "\n";
   }
 
-  nassertd(this_thread->_waiting_on_cvar == NULL &&
-           this_thread->_waiting_on_cvar_full == NULL) {
+  nassertd(current_thread->_waiting_on_cvar == NULL &&
+           current_thread->_waiting_on_cvar_full == NULL) {
   }
-  this_thread->_waiting_on_cvar_full = this;
+  current_thread->_waiting_on_cvar_full = this;
   
   _mutex.do_release();
   _impl.wait(timeout);  // temporarily releases _global_lock
-  _mutex.do_lock();
+  _mutex.do_acquire(current_thread);
 
-  nassertd(this_thread->_waiting_on_cvar_full == this) {
+  nassertd(current_thread->_waiting_on_cvar_full == this) {
   }
-  this_thread->_waiting_on_cvar_full = NULL;
+  current_thread->_waiting_on_cvar_full = NULL;
 
   if (thread_cat.is_spam()) {
     thread_cat.spam()
-      << *this_thread << " awake on " << *this << "\n";
+      << *current_thread << " awake on " << *this << "\n";
   }
 
   _mutex._global_lock->release();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullDebug::signal
+//     Function: ConditionVarFullDebug::notify
 //       Access: Published
 //  Description: Informs one of the other threads who are currently
 //               blocked on wait() that the relevant condition has
@@ -179,17 +179,17 @@ wait(double timeout) {
 //               will not release the mutex.
 //
 //               If no threads are waiting, this is a no-op: the
-//               signal is lost.
+//               notify event is lost.
 ////////////////////////////////////////////////////////////////////
 void ConditionVarFullDebug::
 notify() {
   _mutex._global_lock->acquire();
 
-  Thread *this_thread = Thread::get_current_thread();
+  Thread *current_thread = Thread::get_current_thread();
 
   if (!_mutex.do_debug_is_locked()) {
     ostringstream ostr;
-    ostr << *this_thread << " attempted to signal "
+    ostr << *current_thread << " attempted to notify "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
     _mutex._global_lock->release();
@@ -198,7 +198,7 @@ notify() {
 
   if (thread_cat->is_spam()) {
     thread_cat.spam()
-      << *this_thread << " signalling " << *this << "\n";
+      << *current_thread << " notifying " << *this << "\n";
   }
 
   _impl.notify();
@@ -206,7 +206,7 @@ notify() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarFullDebug::signal
+//     Function: ConditionVarFullDebug::notify
 //       Access: Published
 //  Description: Informs all of the other threads who are currently
 //               blocked on wait() that the relevant condition has
@@ -217,17 +217,17 @@ notify() {
 //               will not release the mutex.
 //
 //               If no threads are waiting, this is a no-op: the
-//               signal is lost.
+//               notify event is lost.
 ////////////////////////////////////////////////////////////////////
 void ConditionVarFullDebug::
 notify_all() {
   _mutex._global_lock->acquire();
 
-  Thread *this_thread = Thread::get_current_thread();
+  Thread *current_thread = Thread::get_current_thread();
 
   if (!_mutex.do_debug_is_locked()) {
     ostringstream ostr;
-    ostr << *this_thread << " attempted to signal "
+    ostr << *current_thread << " attempted to notify "
          << *this << " without holding " << _mutex;
     nassert_raise(ostr.str());
     _mutex._global_lock->release();
@@ -236,7 +236,7 @@ notify_all() {
 
   if (thread_cat->is_spam()) {
     thread_cat.spam()
-      << *this_thread << " signalling all " << *this << "\n";
+      << *current_thread << " notifying all " << *this << "\n";
   }
 
   _impl.notify_all();

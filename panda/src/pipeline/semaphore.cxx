@@ -19,7 +19,7 @@
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE void Semaphore::
+void Semaphore::
 output(ostream &out) const {
   MutexHolder holder(_lock);
   out << "Semaphore, count = " << _count;

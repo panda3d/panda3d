@@ -305,9 +305,6 @@ __getattr__(const string &attr_name) const {
   } else if (attr_name == "name") {
     return PyString_FromString(get_name().c_str());
   } else if (attr_name == "wakeTime") {
-    if (get_state() != S_sleeping) {
-      Py_RETURN_NONE;
-    }
     return PyFloat_FromDouble(get_wake_time());
   } else if (attr_name == "delayTime") {
     if (!has_delay()) {

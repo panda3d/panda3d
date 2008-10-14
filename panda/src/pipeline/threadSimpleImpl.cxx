@@ -151,8 +151,10 @@ join() {
   nassertv(_joinable);
   if (_status == S_running) {
     ThreadSimpleImpl *thread = _manager->get_current_thread();
-    _joining_threads.push_back(thread);
-    _manager->next_context();
+    if (thread != this) {
+      _joining_threads.push_back(thread);
+      _manager->next_context();
+    }
   }
 }
 

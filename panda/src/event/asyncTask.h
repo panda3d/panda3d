@@ -77,7 +77,7 @@ PUBLISHED:
   INLINE void clear_delay();
   INLINE bool has_delay() const;
   INLINE double get_delay() const;
-  INLINE double get_wake_time() const;
+  double get_wake_time() const;
   
   INLINE double get_start_time() const;
   double get_elapsed_time() const;

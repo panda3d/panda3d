@@ -88,6 +88,33 @@ remove() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::get_wake_time
+//       Access: Published
+//  Description: If this task has been added to an AsyncTaskManager
+//               with a delay in effect, this returns the time at
+//               which the task is expected to awaken.  It has no
+//               meaning if the task has not yet been added to a
+//               queue, or if there was no delay in effect at the time
+//               the task was added.
+//
+//               If the task's status is not S_sleeping, this returns
+//               0.0.
+////////////////////////////////////////////////////////////////////
+double AsyncTask::
+get_wake_time() const {
+  if (_manager != (AsyncTaskManager *)NULL) {
+    MutexHolder holder(_manager->_lock);
+    if (_state == S_sleeping) {
+      return _wake_time;
+    }
+  }
+
+  // If it's not on any manager, or it's not sleeping, the wake time
+  // is 0.0.
+  return 0.0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::get_elapsed_time
 //       Access: Published
 //  Description: Returns the amount of time that has elapsed since

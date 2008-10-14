@@ -25,3 +25,29 @@ INLINE bool AsyncTaskChain::
 is_started() const {
   return (_state == S_started);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::do_get_next_wake_time
+//       Access: Protected
+//  Description: Returns the time at which the next sleeping thread
+//               will awaken, or -1 if there are no sleeping threads.
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+INLINE double AsyncTaskChain::
+do_get_next_wake_time() const {
+  if (!_sleeping.empty()) {
+    return _sleeping.front()->_wake_time;
+  }
+  return -1.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskChain::get_wake_time
+//       Access: Protected, Static
+//  Description: Returns the time at which the indicated thread
+//               will awaken. Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+INLINE double AsyncTaskChain::
+get_wake_time(AsyncTask *task) {
+  return task->_wake_time;
+}

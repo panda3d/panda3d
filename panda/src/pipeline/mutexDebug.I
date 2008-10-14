@@ -48,14 +48,13 @@ operator = (const MutexDebug &copy) {
 //
 //               Also see MutexHolder.
 ////////////////////////////////////////////////////////////////////
-INLINE bool MutexDebug::
+INLINE void MutexDebug::
 acquire(Thread *current_thread) const {
   TAU_PROFILE("void MutexDebug::acquire(Thread *)", " ", TAU_USER);
   nassertv(current_thread == Thread::get_current_thread());
   _global_lock->acquire();
-  ((MutexDebug *)this)->do_acquire();
-  _global_lock->release(current_thread);
-  return true;
+  ((MutexDebug *)this)->do_acquire(current_thread);
+  _global_lock->release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,7 +67,7 @@ acquire(Thread *current_thread) const {
 INLINE bool MutexDebug::
 try_acquire(Thread *current_thread) const {
   TAU_PROFILE("void MutexDebug::acquire(Thread *)", " ", TAU_USER);
-  nassertv(current_thread == Thread::get_current_thread());
+  nassertr(current_thread == Thread::get_current_thread(), false);
   _global_lock->acquire();
   bool acquired = ((MutexDebug *)this)->do_try_acquire(current_thread);
   _global_lock->release();
