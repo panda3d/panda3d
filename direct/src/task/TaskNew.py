@@ -608,37 +608,25 @@ class TaskManager:
         return self._profileInfo.session
 
     def _getRandomTask(self):
-        tasks = self.mgr.getActiveTasks()
-        numTasks = tasks.getNumTasks()
-        doLaters = self.mgr.getSleepingTasks()
-        numDoLaters = doLaters.getNumTasks()
-        if random.random() < (numDoLaters / float(numTasks + numDoLaters)):
-            # grab a doLater that will most likely trigger in the next frame
-            tNow = globalClock.getFrameTime()
-            avgFrameRate = globalClock.getAverageFrameRate()
-            if avgFrameRate < .00001:
-                avgFrameDur = 0.
-            else:
-                avgFrameDur = (1. / globalClock.getAverageFrameRate())
-            tNext = tNow + avgFrameDur
-            # binary search to find doLaters that are likely to trigger on the next frame
-            curIndex = int(numDoLaters / 2)
-            rangeStart = 0
-            rangeEnd = numDoLaters
-            while True:
-                if tNext < doLaters[curIndex].wakeTime:
-                    rangeEnd = curIndex
-                else:
-                    rangeStart = curIndex
-                prevIndex = curIndex
-                curIndex = int((rangeStart + rangeEnd) / 2)
-                if curIndex == prevIndex:
-                    break
-            index = curIndex
-            task = doLaters[random.randrange(index+1)]
+        # Figure out when the next frame is likely to expire, so we
+        # won't grab any tasks that are sleeping for a long time.
+        now = globalClock.getFrameTime()
+        avgFrameRate = globalClock.getAverageFrameRate()
+        if avgFrameRate < .00001:
+            avgFrameDur = 0.
         else:
-            # grab a task
-            task = tasks[random.randint(0, numTasks - 1)]
+            avgFrameDur = (1. / globalClock.getAverageFrameRate())
+        next = now + avgFrameDur
+
+        # Now grab a task at random, until we find one that we like.
+        tasks = self.mgr.getTasks()
+        i = random.randrange(tasks.getNumTasks())
+        task = tasks.getTask(i)
+        while not isinstance(task, PythonTask) or \
+              task.getWakeTime() > next:
+            tasks.removeTask(i)
+            i = random.randrange(tasks.getNumTasks())
+            task = tasks.getTask(i)
         return task
 
     def __repr__(self):
