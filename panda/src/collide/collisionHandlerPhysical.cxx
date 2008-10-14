@@ -114,7 +114,7 @@ end_group() {
 void CollisionHandlerPhysical::
 add_collider(const NodePath &collider, const NodePath &target) {
   nassertv(!collider.is_empty() && collider.node()->is_of_type(CollisionNode::get_class_type()));
-  nassertv(!target.is_empty());
+  nassertv(validate_target(target));
   _colliders[collider].set_target(target);
 }
 
@@ -135,7 +135,7 @@ void CollisionHandlerPhysical::
 add_collider(const NodePath &collider, const NodePath &target,
              DriveInterface *drive_interface) {
   nassertv(!collider.is_empty() && collider.node()->is_of_type(CollisionNode::get_class_type()));
-  nassertv(!target.is_empty());
+  nassertv(validate_target(target));
   _colliders[collider].set_target(target, drive_interface);
 }
 
@@ -176,4 +176,17 @@ has_collider(const NodePath &target) const {
 void CollisionHandlerPhysical::
 clear_colliders() {
   _colliders.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionHandlerPhysical::validate_target
+//       Access: Protected, Virtual
+//  Description: Called internally to validate the target passed to
+//               add_collider().  Returns true if acceptable, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool CollisionHandlerPhysical::
+validate_target(const NodePath &target) {
+  nassertr_always(!target.is_empty(), false);
+  return true;
 }

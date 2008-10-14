@@ -53,6 +53,8 @@ protected:
       const LVector3f &force_normal);
   virtual void apply_linear_force(ColliderDef &def, const LVector3f &force);
 
+  virtual bool validate_target(const NodePath &target);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -83,15 +83,6 @@ apply_friction(ColliderDef &def, LVector3f& vel, const LVector3f& force,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PhysicsCollisionHandler::apply_linear_force
-//       Access: Protected, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void PhysicsCollisionHandler::
-apply_linear_force(ColliderDef &def, const LVector3f &force) {
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PhysicsCollisionHandler::apply_net_shove
 //       Access: Protected, Virtual
 //  Description: 
@@ -195,4 +186,29 @@ apply_net_shove(ColliderDef &def, const LVector3f& net_shove,
   physics_debug("}");
   actor->set_contact_vector(adjustment);
   actor->get_physics_object()->set_velocity(vel);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysicsCollisionHandler::apply_linear_force
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void PhysicsCollisionHandler::
+apply_linear_force(ColliderDef &def, const LVector3f &force) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PhysicsCollisionHandler::validate_target
+//       Access: Protected, Virtual
+//  Description: Called internally to validate the target passed to
+//               add_collider().  Returns true if acceptable, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool PhysicsCollisionHandler::
+validate_target(const NodePath &target) {
+  if (!CollisionHandlerPhysical::validate_target(target)) {
+    return false;
+  }
+  nassertr_always(target.node()->is_of_type(ActorNode::get_class_type()), false);
+  return true;
 }
