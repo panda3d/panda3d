@@ -37,7 +37,7 @@ class TaskTracker:
                 isSpike = True
                 avgSession = self.getAvgSession()
                 s = '\n%s task CPU spike profile (%s) %s\n' % ('=' * 30, self._namePrefix, '=' * 30)
-                s += ('~' * 60) + '\n'
+                s += ('|' * 80) + '\n'
                 for sorts in (['cumulative'], ['time'], ['calls']):
                     s += ('-- AVERAGE --\n%s'
                           '-- SPIKE --\n%s' % (
@@ -73,7 +73,7 @@ class TaskTracker:
     def log(self):
         if self._avgSession:
             s = 'task CPU profile (%s):\n' % self._namePrefix
-            s += ('~' * 60) + '\n'
+            s += ('|' * 80) + '\n'
             for sorts in (['cumulative'], ['time'], ['calls']):
                 s += self._avgSession.getResults(sorts=sorts)
             self.notify.info(s)
