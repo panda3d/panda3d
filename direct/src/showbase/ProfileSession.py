@@ -9,6 +9,61 @@ import pstats
 from StringIO import StringIO
 import marshal
 
+class PercentStats(pstats.Stats):
+    # prints more useful output when sampled durations are shorter than a millisecond
+    # lots of this is copied from Python's pstats.py
+    def print_stats(self, *amount):
+        for filename in self.files:
+            print filename
+        if self.files: print
+        indent = ' ' * 8
+        for func in self.top_level:
+            print indent, func_get_function_name(func)
+
+        print indent, self.total_calls, "function calls",
+        if self.total_calls != self.prim_calls:
+            print "(%d primitive calls)" % self.prim_calls,
+        # DCR
+        #print "in %.3f CPU seconds" % self.total_tt
+        print "in %s CPU milliseconds" % (self.total_tt * 1000.)
+        print
+        width, list = self.get_print_list(amount)
+        if list:
+            self.print_title()
+            for func in list:
+                self.print_line(func)
+            print
+            print
+        return self
+
+    @staticmethod
+    def f8(x):
+        return "%7.2f%%" % (x*100.)
+
+    @staticmethod
+    def func_std_string(func_name): # match what old profile produced
+        return "%s:%d(%s)" % func_name
+
+    def print_line(self, func):
+        cc, nc, tt, ct, callers = self.stats[func]
+        c = str(nc)
+        d = self.total_tt
+        f8 = PercentStats.f8
+        if nc != cc:
+            c = c + '/' + str(cc)
+        print c.rjust(9),
+        print f8(tt/d),
+        if nc == 0:
+            print ' '*8,
+        else:
+            print f8((tt/nc)/d),
+        print f8(ct/d),
+        if cc == 0:
+            print ' '*8,
+        else:
+            print f8((ct/cc)/d),
+        print PercentStats.func_std_string(func)
+
 class ProfileSession:
     # class that encapsulates a profile of a single callable using Python's standard
     # 'profile' module
@@ -161,7 +216,7 @@ class ProfileSession:
             if self._stats is None:
                 for filename in self._filenames:
                     self._restoreRamFile(filename)
-                self._stats = pstats.Stats(*self._filenames)
+                self._stats = PercentStats(*self._filenames)
                 self._statFileCounter = len(self._filenames)
                 for filename in self._filenames:
                     self._discardRamFile(filename)
