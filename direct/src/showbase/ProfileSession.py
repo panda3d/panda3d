@@ -12,6 +12,11 @@ import marshal
 class PercentStats(pstats.Stats):
     # prints more useful output when sampled durations are shorter than a millisecond
     # lots of this is copied from Python's pstats.py
+    def setTotalTime(self, tt):
+        # use this to set 'total time' to base time percentages on
+        # allows profiles to show timing based on percentages of duration of another profile
+        self._totalTime = tt
+
     def print_stats(self, *amount):
         for filename in self.files:
             print filename
@@ -26,6 +31,8 @@ class PercentStats(pstats.Stats):
         # DCR
         #print "in %.3f CPU seconds" % self.total_tt
         print "in %s CPU milliseconds" % (self.total_tt * 1000.)
+        if self._totalTime != self.total_tt:
+            print indent, 'percentages are of %s CPU milliseconds' % (self._totalTime * 1000)
         print
         width, list = self.get_print_list(amount)
         if list:
@@ -33,12 +40,15 @@ class PercentStats(pstats.Stats):
             for func in list:
                 self.print_line(func)
             print
-            print
+            # DCR
+            #print
         return self
 
-    @staticmethod
-    def f8(x):
-        return "%7.2f%%" % (x*100.)
+    def f8(self, x):
+        if self._totalTime == 0.:
+            # profiling was too quick for clock resolution...
+            return '    Inf%'
+        return "%7.2f%%" % ((x*100.) / self._totalTime)
 
     @staticmethod
     def func_std_string(func_name): # match what old profile produced
@@ -47,21 +57,23 @@ class PercentStats(pstats.Stats):
     def print_line(self, func):
         cc, nc, tt, ct, callers = self.stats[func]
         c = str(nc)
-        d = self.total_tt
-        f8 = PercentStats.f8
+        # DCR
+        f8 = self.f8
         if nc != cc:
             c = c + '/' + str(cc)
         print c.rjust(9),
-        print f8(tt/d),
+        print f8(tt),
         if nc == 0:
             print ' '*8,
         else:
-            print f8((tt/nc)/d),
-        print f8(ct/d),
+            print f8(tt/nc),
+        print f8(ct),
         if cc == 0:
             print ' '*8,
         else:
-            print f8((ct/cc)/d),
+            print f8(ct/cc),
+        # DCR
+        #print func_std_string(func)
         print PercentStats.func_std_string(func)
 
 class ProfileSession:
@@ -204,9 +216,10 @@ class ProfileSession:
         del self._filename2ramFile[filename]
     
     def getResults(self,
-                   lines=80,
+                   lines=200,
                    sorts=['cumulative', 'time', 'calls'],
-                   callInfo=False):
+                   callInfo=False,
+                   totalTime=None):
         if not self.profileSucceeded():
             output = '%s: profiler already running, could not profile' % self._name
         else:
@@ -232,11 +245,15 @@ class ProfileSession:
                 # throw out any cached result strings
                 self._resultCache = {}
 
+            if totalTime is None:
+                totalTime = self._stats.total_tt
+
             # make sure the arguments will hash efficiently if callers provide different types
             lines = int(lines)
             sorts = list(sorts)
             callInfo = bool(callInfo)
-            k = str((lines, sorts, callInfo))
+            totalTime = float(totalTime)
+            k = str((lines, sorts, callInfo, totalTime))
             if k in self._resultCache:
                 # we've already created this output string, get it from the cache
                 output = self._resultCache[k]
@@ -248,6 +265,8 @@ class ProfileSession:
 
                 # print the info to stdout
                 s = self._stats
+                # make sure our percentages are relative to the correct total time
+                s.setTotalTime(totalTime)
                 for sort in sorts:
                     s.sort_stats(sort)
                     s.print_stats(lines)
