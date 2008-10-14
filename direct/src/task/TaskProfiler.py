@@ -5,11 +5,18 @@ from direct.showbase.PythonUtil import Averager
 class TaskTracker:
     # call it TaskProfiler to avoid confusion for the user
     notify = directNotify.newCategory("TaskProfiler")
+    MinSamples = None
+    SpikeThreshold = None
     def __init__(self, namePrefix):
         self._namePrefix = namePrefix
         self._durationAverager = Averager('%s-durationAverager' % namePrefix)
         self._avgSession = None
         self._maxNonSpikeSession = None
+        if TaskTracker.MinSamples is None:
+            # number of samples required before spikes start getting identified
+            TaskTracker.MinSamples = config.GetInt('profile-task-spike-min-samples', 30)
+            # defines spike as longer than this multiple of avg task duration
+            TaskTracker.SpikeThreshold = config.GetFloat('profile-task-spike-threshold', 10.)
     def destroy(self):
         self.flush()
         del self._namePrefix
@@ -24,14 +31,43 @@ class TaskTracker:
         self._maxNonSpikeSession = None
     def getNamePrefix(self, namePrefix):
         return self._namePrefix
-    def addProfileSession(self, session, isSpike):
-        duration = session.getWallClockDuration()
+    def _checkSpike(self, session):
+        duration = session.getDuration()
+        isSpike = False
+        # was it long enough to show up on a printout?
+        if duration >= .001:
+            # do we have enough samples?
+            if self.getNumDurationSamples() > self.MinSamples:
+                # was this a spike?
+                if duration > (self.getAvgDuration() * self.SpikeThreshold):
+                    isSpike = True
+                    avgSession = self.getAvgSession()
+                    maxNSSession = self.getMaxNonSpikeSession()
+                    self.notify.info('task CPU spike profile (%s):\n'
+                                     '== AVERAGE (%s seconds)\n%s\n'
+                                     '== LONGEST NON-SPIKE (%s seconds)\n%s\n'
+                                     '== SPIKE (%s seconds)\n%s' % (
+                        self._namePrefix,
+                        avgSession.getDuration(), avgSession.getResults(),
+                        maxNSSession.getDuration(), maxNSSession.getResults(),
+                        duration, session.getResults()))
+        return isSpike
+    def addProfileSession(self, session):
+        isSpike = self._checkSpike(session)
+        duration = session.getDuration()
         self._durationAverager.addValue(duration)
+        if self.getNumDurationSamples() == self.MinSamples:
+            # if we just collected enough samples to check for spikes, see if
+            # our max 'non-spike' session collected so far counts as a spike
+            # and if so, log it
+            if self._checkSpike(self._maxNonSpikeSession):
+                self._maxNonSpikeSession = self._avgSession
+
         storeAvg = True
         storeMaxNS = True
         if self._avgSession is not None:
             avgDur = self.getAvgDuration()
-            if abs(self._avgSession.getWallClockDuration() - avgDur) < abs(duration - avgDur):
+            if abs(self._avgSession.getDuration() - avgDur) < abs(duration - avgDur):
                 # current avg data is more average than this new sample, keep the data we've
                 # already got stored
                 storeAvg = False
@@ -39,7 +75,7 @@ class TaskTracker:
             storeMaxNS = False
         else:
             if (self._maxNonSpikeSession is not None and
-                self._maxNonSpikeSession.getWallClockDuration() > duration):
+                self._maxNonSpikeSession.getDuration() > duration):
                 storeMaxNS = False
         if storeAvg:
             if self._avgSession:
@@ -64,12 +100,12 @@ class TaskTracker:
     def log(self):
         if self._avgSession:
             self.notify.info('task CPU profile (%s):\n'
-                             '== AVERAGE (%s wall-clock seconds)\n%s\n'
-                             '== LONGEST NON-SPIKE (%s wall-clock seconds)\n%s' % (
+                             '== AVERAGE (%s seconds)\n%s\n'
+                             '== LONGEST NON-SPIKE (%s seconds)\n%s' % (
                 self._namePrefix,
-                self._avgSession.getWallClockDuration(),
+                self._avgSession.getDuration(),
                 self._avgSession.getResults(),
-                self._maxNonSpikeSession.getWallClockDuration(),
+                self._maxNonSpikeSession.getDuration(),
                 self._maxNonSpikeSession.getResults(),
                 ))
         else:
@@ -85,10 +121,6 @@ class TaskProfiler:
         # table of task name pattern to TaskTracker
         self._namePrefix2tracker = {}
         self._task = None
-        # number of samples required before spikes start getting identified
-        self._minSamples = config.GetInt('profile-task-spike-min-samples', 30)
-        # defines spike as longer than this multiple of avg task duration
-        self._spikeThreshold = config.GetFloat('profile-task-spike-threshold', 10.)
 
     def destroy(self):
         if taskMgr.getProfileTasks():
@@ -131,30 +163,11 @@ class TaskProfiler:
             session = taskMgr._getLastProfileSession()
             # if we couldn't profile, throw this result out
             if session.profileSucceeded():
-                sessionDur = session.getWallClockDuration()
                 namePrefix = self._task.getNamePrefix()
                 if namePrefix not in self._namePrefix2tracker:
                     self._namePrefix2tracker[namePrefix] = TaskTracker(namePrefix)
                 tracker = self._namePrefix2tracker[namePrefix]
-                isSpike = False
-                # do we have enough samples?
-                if tracker.getNumDurationSamples() > self._minSamples:
-                    # was this a spike?
-                    if sessionDur > (tracker.getAvgDuration() * self._spikeThreshold):
-                        print 'sessionDur=%s' % sessionDur
-                        print 'avgDur=%s' % tracker.getAvgDuration()
-                        isSpike = True
-                        avgSession = tracker.getAvgSession()
-                        maxNSSession = tracker.getMaxNonSpikeSession()
-                        self.notify.info('task CPU spike profile (%s):\n'
-                                         '== AVERAGE (%s wall-clock seconds)\n%s\n'
-                                         '== LONGEST NON-SPIKE (%s wall-clock seconds)\n%s\n'
-                                         '== SPIKE (%s wall-clock seconds)\n%s' % (
-                            namePrefix,
-                            avgSession.getWallClockDuration(), avgSession.getResults(),
-                            maxNSSession.getWallClockDuration(), maxNSSession.getResults(),
-                            sessionDur, session.getResults()))
-                tracker.addProfileSession(session, isSpike)
+                tracker.addProfileSession(session)
 
         # set up the next task
         self._task = taskMgr._getRandomTask()

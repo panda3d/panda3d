@@ -26,12 +26,9 @@ class ProfileSession:
     def __init__(self, func, name):
         self._func = func
         self._name = name
-        self._filename = 'profileData-%s-%s' % (self._name, id(self))
-        self._profileSucceeded = False
-        self._wallClockDur = None
-        self._ramFile = None
+        self._filenameBase = 'profileData-%s-%s' % (self._name, id(self))
         self._refCount = 0
-        self._resultCache = {}
+        self._reset()
         self.acquire()
 
     def acquire(self):
@@ -44,28 +41,51 @@ class ProfileSession:
     def _destroy(self):
         del self._func
         del self._name
-        del self._filename
-        del self._wallClockDur
-        del self._ramFile
+        del self._filenameBase
+        del self._filenameCounter
+        del self._filenames
+        del self._duration
+        del self._filename2ramFile
         del self._resultCache
+        del self._successfulProfiles
 
-    def run(self):
+    def _reset(self):
+        self._filenameCounter = 0
+        self._filenames = []
+        # index of next file to be added to stats object
+        self._statFileCounter = 0
+        self._successfulProfiles = 0
+        self._duration = None
+        self._filename2ramFile = {}
+        self._stats = None
+        self._resultCache = {}
+
+    def _getNextFilename(self):
+        filename = '%s-%s' % (self._filenameBase, self._filenameCounter)
+        self._filenameCounter += 1
+        return filename
+
+    def run(self, aggregate=True):
         # make sure this instance doesn't get destroyed inside self._func
         self.acquire()
 
-        self._profileSucceeded = False
+        if not aggregate:
+            self._reset()
 
         # if we're already profiling, just run the func and don't profile
         if 'globalProfileFunc' in __builtin__.__dict__:
             result = self._func()
-            self._wallClockDur = 0.
+            if self._duration is None:
+                self._duration = 0.
         else:
             # put the function in the global namespace so that profile can find it
             __builtin__.globalProfileFunc = self._func
             __builtin__.globalProfileResult = [None]
 
             # set up the RAM file
-            _installProfileCustomFuncs(self._filename)
+            self._filenames.append(self._getNextFilename())
+            filename = self._filenames[-1]
+            _installProfileCustomFuncs(filename)
 
             # do the profiling
             Profile = profile.Profile
@@ -76,55 +96,87 @@ class ProfileSession:
             # this is based on profile.run, the code is replicated here to allow us to
             # eliminate a memory leak
             prof = Profile()
-            # try to get wall-clock duration that is as accurate as possible
-            startT = self.TrueClock.getShortTime()
             try:
                 prof = prof.run(statement)
             except SystemExit:
                 pass
-            # try to get wall-clock duration that is as accurate as possible
-            endT = self.TrueClock.getShortTime()
             # this has to be run immediately after profiling for the timings to be accurate
             # tell the Profile object to generate output to the RAM file
-            prof.dump_stats(self._filename)
-
-            dur = endT - startT
+            prof.dump_stats(filename)
 
             # eliminate the memory leak
             del prof.dispatcher
 
-            # and store the results
-            self._wallClockDur = dur
-
             # store the RAM file for later
-            self._ramFile = _getProfileResultFileInfo(self._filename)
+            profData = _getProfileResultFileInfo(filename)
+            self._filename2ramFile[filename] = profData
+            # calculate the duration (this is dependent on the internal Python profile data format.
+            # see profile.py and pstats.py, this was copied from pstats.Stats.strip_dirs)
+            maxTime = 0.
+            for cc, nc, tt, ct, callers in profData[1].itervalues():
+                if ct > maxTime:
+                    maxTime = ct
+            self._duration = maxTime
             # clean up the RAM file support
-            _removeProfileCustomFuncs(self._filename)
+            _removeProfileCustomFuncs(filename)
 
             # clean up the globals
             result = globalProfileResult[0]
             del __builtin__.__dict__['globalProfileFunc']
             del __builtin__.__dict__['globalProfileResult']
 
-            self._profileSucceeded = True
+            self._successfulProfiles += 1
             
         self.release()
         return result
 
-    def getWallClockDuration(self):
-        # this might not be accurate, it may include time taken up by other processes
-        return self._wallClockDur
+    def getDuration(self):
+        return self._duration
 
     def profileSucceeded(self):
-        return self._profileSucceeded
+        return self._successfulProfiles > 0
+
+    def _restoreRamFile(self, filename):
+        # set up the RAM file
+        _installProfileCustomFuncs(filename)
+        # install the stored RAM file from self.run()
+        _setProfileResultsFileInfo(filename, self._filename2ramFile[filename])
+
+    def _discardRamFile(self, filename):
+        # take down the RAM file
+        _removeProfileCustomFuncs(filename)
+        # and discard it
+        del self._filename2ramFile[filename]
     
     def getResults(self,
                    lines=80,
                    sorts=['cumulative', 'time', 'calls'],
                    callInfo=False):
-        if not self._profileSucceeded:
+        if not self.profileSucceeded():
             output = '%s: profiler already running, could not profile' % self._name
         else:
+            # make sure our stats object exists and is up-to-date
+            statsChanged = (self._statFileCounter < len(self._filenames))
+
+            if self._stats is None:
+                for filename in self._filenames:
+                    self._restoreRamFile(filename)
+                self._stats = pstats.Stats(*self._filenames)
+                self._statFileCounter = len(self._filenames)
+                for filename in self._filenames:
+                    self._discardRamFile(filename)
+            else:
+                while self._statFileCounter < len(self._filenames):
+                    filename = self._filenames[self._statFileCounter]
+                    self._restoreRamFile(filename)
+                    self._stats.add(filename)
+                    self._discardRamFile(filename)
+
+            if statsChanged:
+                self._stats.strip_dirs()
+                # throw out any cached result strings
+                self._resultCache = {}
+
             # make sure the arguments will hash efficiently if callers provide different types
             lines = int(lines)
             sorts = list(sorts)
@@ -134,19 +186,13 @@ class ProfileSession:
                 # we've already created this output string, get it from the cache
                 output = self._resultCache[k]
             else:
-                # set up the RAM file
-                _installProfileCustomFuncs(self._filename)
-                # install the stored RAM file from self.run()
-                _setProfileResultsFileInfo(self._filename, self._ramFile)
-
-                # now extract human-readable output from the RAM file
+                # now get human-readable output from the profile stats
 
                 # capture print output to a string
                 sc = StdoutCapture()
 
                 # print the info to stdout
-                s = pstats.Stats(self._filename)
-                s.strip_dirs()
+                s = self._stats
                 for sort in sorts:
                     s.sort_stats(sort)
                     s.print_stats(lines)
@@ -159,9 +205,6 @@ class ProfileSession:
 
                 # restore stdout to what it was before
                 sc.destroy()
-
-                # clean up the RAM file support
-                _removeProfileCustomFuncs(self._filename)
 
                 # cache this result
                 self._resultCache[k] = output
