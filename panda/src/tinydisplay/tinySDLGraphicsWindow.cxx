@@ -47,7 +47,7 @@ TinySDLGraphicsWindow(GraphicsPipe *pipe,
   update_pixel_factor();
 
   GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
+    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
 }
 

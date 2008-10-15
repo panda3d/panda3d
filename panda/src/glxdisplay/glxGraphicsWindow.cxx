@@ -75,7 +75,7 @@ glxGraphicsWindow(GraphicsPipe *pipe,
   _net_wm_state_remove = glx_pipe->_net_wm_state_remove;
 
   GraphicsWindowInputDevice device =
-    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
+    GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard_mouse");
   add_input_device(device);
 }
 
