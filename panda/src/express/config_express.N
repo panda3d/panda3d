@@ -13,6 +13,9 @@ forcetype TypeRegistry
 forcetype StreamReader
 forcetype StreamWriter
 forcetype NeverFreeMemory
+forcetype IFileStream
+forcetype OFileStream
+forcetype FileStream
 
 forcetype ConfigExpress
 renametype ConfigExpress ConfigExpress

@@ -23,6 +23,7 @@
 // interrogate.
 #include "pandaSystem.h"
 #include "globPattern.h"
+#include "pandaFileStream.h"
 #include "configFlags.h"
 #include "configPage.h"
 #include "configPageManager.h"

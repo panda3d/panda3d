@@ -31,7 +31,7 @@
 //               entire process, on I/O waits).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL IFileStream : public istream {
-public:
+PUBLISHED:
   INLINE IFileStream();
   INLINE IFileStream(const char *filename, ios::openmode mode = ios::in);
   INLINE ~IFileStream();
@@ -53,7 +53,7 @@ private:
 //               entire process, on I/O waits).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL OFileStream : public ostream {
-public:
+PUBLISHED:
   INLINE OFileStream();
   INLINE OFileStream(const char *filename, ios::openmode mode = ios::out);
   INLINE ~OFileStream();
@@ -75,7 +75,7 @@ private:
 //               rather than the entire process, on I/O waits).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOL FileStream : public iostream {
-public:
+PUBLISHED:
   INLINE FileStream();
   INLINE FileStream(const char *filename, ios::openmode mode = ios::in);
   INLINE ~FileStream();
