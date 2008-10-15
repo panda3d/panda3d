@@ -45,6 +45,7 @@ PUBLISHED:
   INLINE bool debug_is_locked() const;
 
   virtual void output(ostream &out) const;
+  void output_with_holder(ostream &out) const;
 
   typedef void VoidFunc();
 

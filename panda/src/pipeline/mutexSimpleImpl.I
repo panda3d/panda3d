@@ -39,7 +39,7 @@ INLINE MutexSimpleImpl::
 INLINE void MutexSimpleImpl::
 acquire() {
   if (!try_acquire()) {
-    do_lock();
+    do_acquire();
   }
 }
 
@@ -60,7 +60,8 @@ try_acquire() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MutexSimpleImpl::release
 //       Access: Public
-//  Description: 
+//  Description: Releases the mutex.  An immediate context switch
+//               might occur if there were waiters on the mutex.
 ////////////////////////////////////////////////////////////////////
 INLINE void MutexSimpleImpl::
 release() {
@@ -69,5 +70,21 @@ release() {
 
   if (_flags & F_has_waiters) {
     do_release();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexSimpleImpl::release_quietly
+//       Access: Public
+//  Description: Releases the mutex, without allowing a context switch
+//               to occur.
+////////////////////////////////////////////////////////////////////
+INLINE void MutexSimpleImpl::
+release_quietly() {
+  nassertv((_flags & F_lock_count) != 0);
+  _flags &= ~F_lock_count;
+
+  if (_flags & F_has_waiters) {
+    do_release_quietly();
   }
 }

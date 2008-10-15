@@ -30,7 +30,7 @@
 //               The ConditionVar class does not support the full
 //               semantics of POSIX condition variables.  In
 //               particular, it does not support the broadcast or
-//               signal_all function.  See ConditionVarFull for a more
+//               notify_all function.  See ConditionVarFull for a more
 //               complete (but possibly more expensive) API.
 //
 //               A condition variable is associated with a single

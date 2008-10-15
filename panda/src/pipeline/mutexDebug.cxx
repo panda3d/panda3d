@@ -85,6 +85,22 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MutexDebug::output_with_holder
+//       Access: Public
+//  Description: Reports the mutex as well as the thread that is
+//               currently holding it, if any.
+////////////////////////////////////////////////////////////////////
+void MutexDebug::
+output_with_holder(ostream &out) const {
+  _global_lock->acquire();
+  output(out);
+  if (_locking_thread != (Thread *)NULL) {
+    out << " (held by " << *_locking_thread << ")\n";
+  }
+  _global_lock->release();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::do_acquire
 //       Access: Private
 //  Description: The private implementation of acquire() assumes that
@@ -182,12 +198,15 @@ do_acquire(Thread *current_thread) {
       }
       
       while (_locking_thread != (Thread *)NULL) {
+        thread_cat.debug()
+          << *current_thread << " still blocking on " << *this << " (held by "
+          << *_locking_thread << ")\n";
         _cvar_impl.wait();
       }
       
       if (thread_cat.is_debug()) {
         thread_cat.debug()
-          << *current_thread << " awake on " << *this << "\n";
+          << *current_thread << " acquired " << *this << "\n";
       }
       
       current_thread->_blocked_on_mutex = NULL;
@@ -234,12 +253,11 @@ do_try_acquire(Thread *current_thread) {
     // count.
     nassertr(_lock_count > 0, false);
     if (!_allow_recursion) {
-      ostringstream ostr;
-      ostr << *current_thread << " attempted to double-lock non-reentrant "
-           << *this;
-      nassert_raise(ostr.str());
+      // Non-recursive lock; return false.
+      acquired = false;
+    } else {
+      ++_lock_count;
     }
-    ++_lock_count;
 
   } else {
     // The mutex is locked by some other thread.  Return false.
@@ -338,6 +356,11 @@ do_release() {
         nassertv(_lock_count > 0);
       }
     } else {
+      
+      if (thread_cat.is_debug()) {
+        thread_cat.debug()
+          << *current_thread << " releasing " << *this << "\n";
+      }
       _cvar_impl.notify();
     }
   }

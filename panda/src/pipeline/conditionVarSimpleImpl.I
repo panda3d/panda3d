@@ -32,25 +32,25 @@ INLINE ConditionVarSimpleImpl::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::signal
+//     Function: ConditionVarSimpleImpl::notify
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarSimpleImpl::
 notify() {
   if (_flags & F_has_waiters) {
-    do_signal();
+    do_notify();
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::signal_all
+//     Function: ConditionVarSimpleImpl::notify_all
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE void ConditionVarSimpleImpl::
 notify_all() {
   if (_flags & F_has_waiters) {
-    do_signal_all();
+    do_notify_all();
   }
 }

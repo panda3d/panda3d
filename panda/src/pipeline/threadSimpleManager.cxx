@@ -153,6 +153,7 @@ unblock_one(BlockerSimple *blocker) {
       blocker->_flags &= ~BlockerSimple::F_has_waiters;
       _blocked.erase(bi);
     }
+
     return true;
   }
 

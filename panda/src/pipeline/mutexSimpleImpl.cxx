@@ -21,12 +21,12 @@
 #include "threadSimpleManager.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MutexSimpleImpl::do_lock
+//     Function: MutexSimpleImpl::do_acquire
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void MutexSimpleImpl::
-do_lock() {
+do_acquire() {
   // By the time we get here, we already know that someone else is
   // holding the lock: (_flags & F_lock_count) != 0.
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
@@ -57,6 +57,17 @@ do_release() {
     manager->enqueue_ready(thread);
     manager->next_context();
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexSimpleImpl::do_release_quietly
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void MutexSimpleImpl::
+do_release_quietly() {
+  ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
+  manager->unblock_one(this);
 }
 
 #endif  // THREAD_SIMPLE_IMPL

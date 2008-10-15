@@ -44,7 +44,7 @@ TypeHandle Thread::_type_handle;
 ////////////////////////////////////////////////////////////////////
 Thread::
 Thread(const string &name, const string &sync_name) : 
-  _name(name), 
+  Namable(name), 
   _sync_name(sync_name), 
   _impl(this) 
 {
@@ -52,6 +52,12 @@ Thread(const string &name, const string &sync_name) :
   _pstats_index = -1;
   _pstats_callback = NULL;
   _pipeline_stage = 0;
+  _joinable = false;
+
+#ifdef HAVE_PYTHON
+  _python_data = Py_None;
+  Py_INCREF(_python_data);
+#endif
 
 #ifdef DEBUG_THREADS
   _blocked_on_mutex = NULL;
@@ -73,6 +79,10 @@ Thread(const string &name, const string &sync_name) :
 ////////////////////////////////////////////////////////////////////
 Thread::
 ~Thread() {
+#ifdef HAVE_PYTHON
+  Py_DECREF(_python_data);
+#endif
+
 #ifdef DEBUG_THREADS
   nassertv(_blocked_on_mutex == NULL &&
            _waiting_on_cvar == NULL &&
@@ -172,7 +182,7 @@ void Thread::
 output_blocker(ostream &out) const {
 #ifdef DEBUG_THREADS
   if (_blocked_on_mutex != (MutexDebug *)NULL) {
-    out << *_blocked_on_mutex;
+    _blocked_on_mutex->output_with_holder(out);
   } else if (_waiting_on_cvar != (ConditionVarDebug *)NULL) {
     out << *_waiting_on_cvar;
   } else if (_waiting_on_cvar_full != (ConditionVarFullDebug *)NULL) {
@@ -224,6 +234,7 @@ start(ThreadPriority priority, bool joinable) {
     return false;
   }
 
+  _joinable = joinable;
   _started = _impl.start(priority, joinable);
 
   if (!_started) {
@@ -233,6 +244,38 @@ start(ThreadPriority priority, bool joinable) {
 
   return _started;
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::set_python_data
+//       Access: Published
+//  Description: Sets an arbitrary Python object that may be
+//               associated with this thread object.  This is just for
+//               the purposes of associated arbitrary Python data with
+//               the C++ object; other than managing the reference
+//               count, the C++ code does nothing with this object.
+////////////////////////////////////////////////////////////////////
+void Thread::
+set_python_data(PyObject *python_data) {
+  Py_DECREF(_python_data);
+  _python_data = python_data;
+  Py_INCREF(_python_data);
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::get_python_data
+//       Access: Published
+//  Description: Returns the Python object that was set with
+//               set_python_data().
+////////////////////////////////////////////////////////////////////
+PyObject *Thread::
+get_python_data() const {
+  Py_INCREF(_python_data);
+  return _python_data;
+}
+#endif  // HAVE_PYTHON
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////

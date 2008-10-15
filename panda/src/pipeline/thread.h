@@ -16,6 +16,7 @@
 #define THREAD_H
 
 #include "pandabase.h"
+#include "namable.h"
 #include "typedReferenceCount.h"
 #include "pointerTo.h"
 #include "threadPriority.h"
@@ -46,7 +47,7 @@ class ConditionVarFullDebug;
 //               will automatically be destructed if no other pointers
 //               are referencing it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount {
+class EXPCL_PANDA_PIPELINE Thread : public TypedReferenceCount, public Namable {
 protected:
   Thread(const string &name, const string &sync_name);
 
@@ -63,7 +64,6 @@ protected:
 PUBLISHED:
   static PT(Thread) bind_thread(const string &name, const string &sync_name);
 
-  INLINE const string &get_name() const;
   INLINE const string &get_sync_name() const;
 
   INLINE int get_pstats_index() const;
@@ -89,10 +89,16 @@ PUBLISHED:
   static void write_status(ostream &out);
 
   INLINE bool is_started() const;
+  INLINE bool is_joinable() const;
 
   bool start(ThreadPriority priority, bool joinable);
   BLOCKING INLINE void join();
   INLINE void preempt();
+
+#ifdef HAVE_PYTHON
+  void set_python_data(PyObject *python_data);
+  PyObject *get_python_data() const;
+#endif
 
   INLINE static void prepare_for_exit();
 
@@ -124,12 +130,16 @@ protected:
   bool _started;
 
 private:
-  string _name;
   string _sync_name;
   ThreadImpl _impl;
   int _pstats_index;
   int _pipeline_stage;
   PStatsCallback *_pstats_callback;
+  bool _joinable;
+
+#ifdef HAVE_PYTHON
+  PyObject *_python_data;
+#endif
 
 #ifdef DEBUG_THREADS
   MutexDebug *_blocked_on_mutex;
@@ -147,8 +157,10 @@ public:
   }
   static void init_type() {
     TypedReferenceCount::init_type();
+    Namable::init_type(),
     register_type(_type_handle, "Thread",
-                  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type(),
+                  Namable::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

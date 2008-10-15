@@ -49,10 +49,12 @@ public:
   INLINE void acquire();
   INLINE bool try_acquire();
   INLINE void release();
+  INLINE void release_quietly();
 
 private:
-  void do_lock();
+  void do_acquire();
   void do_release();
+  void do_release_quietly();
 
   friend class ThreadSimpleManager;
 };

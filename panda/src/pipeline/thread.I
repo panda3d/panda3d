@@ -34,18 +34,6 @@ operator = (const Thread &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Thread::get_name
-//       Access: Published
-//  Description: Returns the name of the thread.  Each thread should
-//               probably have a unique name, but this is not enforced
-//               (and not strictly required).
-////////////////////////////////////////////////////////////////////
-INLINE const string &Thread::
-get_name() const {
-  return _name;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Thread::get_sync_name
 //       Access: Published
 //  Description: Returns the sync name of the thread.  This name
@@ -266,6 +254,17 @@ consider_yield() {
 INLINE bool Thread::
 is_started() const {
   return _started;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Thread::is_joinable
+//       Access: Published
+//  Description: Returns the value of joinable that was passed to the
+//               start() call.
+////////////////////////////////////////////////////////////////////
+INLINE bool Thread::
+is_joinable() const {
+  return _joinable;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -39,8 +39,8 @@ public:
   INLINE void notify_all();
 
 private:
-  void do_signal();
-  void do_signal_all();
+  void do_notify();
+  void do_notify_all();
 
   MutexTrueImpl &_mutex;
 };

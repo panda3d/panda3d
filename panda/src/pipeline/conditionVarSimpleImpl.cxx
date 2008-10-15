@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 void ConditionVarSimpleImpl::
 wait() {
-  _mutex.release();
+  _mutex.release_quietly();
 
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   ThreadSimpleImpl *thread = manager->get_current_thread();
@@ -43,7 +43,7 @@ wait() {
 ////////////////////////////////////////////////////////////////////
 void ConditionVarSimpleImpl::
 wait(double timeout) {
-  _mutex.release();
+  _mutex.release_quietly();
 
   // TODO.  For now this will release every frame, since we don't have
   // an interface yet on ThreadSimpleManager to do a timed wait.
@@ -58,12 +58,12 @@ wait(double timeout) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::do_signal
+//     Function: ConditionVarSimpleImpl::do_notify
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void ConditionVarSimpleImpl::
-do_signal() {
+do_notify() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   if (manager->unblock_one(this)) {
     // There had been a thread waiting on this condition variable.
@@ -75,12 +75,12 @@ do_signal() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVarSimpleImpl::do_signal_all
+//     Function: ConditionVarSimpleImpl::do_notify_all
 //       Access: Private
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void ConditionVarSimpleImpl::
-do_signal_all() {
+do_notify_all() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   if (manager->unblock_all(this)) {
     // There had been a thread waiting on this condition variable.
