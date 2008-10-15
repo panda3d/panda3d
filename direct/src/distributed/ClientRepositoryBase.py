@@ -67,6 +67,8 @@ class ClientRepositoryBase(ConnectionRepository):
         self.lastHeartbeat = 0
 
         self._delayDeletedDOs = {}
+        
+        self.specialNameNumber = 0
 
     def setDeferInterval(self, deferInterval):
         """Specifies the minimum amount of time, in seconds, that must
@@ -99,6 +101,11 @@ class ClientRepositoryBase(ConnectionRepository):
     # Define uniqueName
     def uniqueName(self, desc):
         return desc
+        
+    def specialName(self, label):
+        name = ("SpecialName %s %s" % (self.specialNameNumber, label))
+        self.specialNameNumber += 1
+        return name
 
     def getTables(self, ownerView):
         if ownerView:
