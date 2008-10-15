@@ -63,11 +63,20 @@ main(int argc, char *argv[]) {
   maya_location = Filename::from_os_specific(maya_location.to_os_long_name());
   
   // Look for OpenMaya.dll as a sanity check.
+#ifdef IS_OSX
+  Filename openMaya = Filename::dso_filename(Filename(maya_location, "MacOS/libOpenMaya.dylib"));
+  if (!openMaya.is_regular_file()) {
+    cerr << "Could not find $MAYA_LOCATION/MacOS/" << openMaya.get_basename() << "!\n";
+    exit(1); 
+  }
+
+#else  // IS_OSX
   Filename openMaya = Filename::dso_filename(Filename(maya_location, "bin/OpenMaya.so"));
   if (!openMaya.is_regular_file()) {
     cerr << "Could not find $MAYA_LOCATION/bin/" << Filename(openMaya.get_basename()).to_os_specific() << "!\n";
     exit(1);
   }
+#endif
 
   // Re-set MAYA_LOCATION to its properly sanitized form.
   {
@@ -109,6 +118,36 @@ main(int argc, char *argv[]) {
     char *putenv_cstr = strdup(putenv_str.c_str());
     putenv(putenv_cstr);
   }
+
+#ifdef IS_OSX
+  // And on DYLD_LIBRARY_PATH.
+  Filename bin = Filename(maya_location, "bin");
+  if (bin.is_directory()) {
+    char *path = getenv("DYLD_LIBRARY_PATH");
+    if (path == NULL) {
+      path = "";
+    }
+    string sep = ":";
+    string putenv_str = "DYLD_LIBRARY_PATH=" + bin.to_os_specific() + sep + path;
+    char *putenv_cstr = strdup(putenv_str.c_str());
+    putenv(putenv_cstr);
+  }
+
+#elif !defined(_WIN32)
+  // Linux (or other non-Windows OS) gets it added to LD_LIBRARY_PATH.
+  Filename bin = Filename(maya_location, "bin");
+  if (bin.is_directory()) {
+    char *path = getenv("LD_LIBRARY_PATH");
+    if (path == NULL) {
+      path = "";
+    }
+    string sep = ":";
+    string putenv_str = "LD_LIBRARY_PATH=" + bin.to_os_specific() + sep + path;
+    char *putenv_cstr = strdup(putenv_str.c_str());
+    putenv(putenv_cstr);
+  }
+
+#endif // IS_OSX
 
   // Now that we have set up the environment variables properly, chain
   // to the actual maya2egg_bin (or whichever) executable.
