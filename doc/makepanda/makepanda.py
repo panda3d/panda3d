@@ -3617,7 +3617,7 @@ def MakeInstallerOSX():
       oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/etc" % VERSION)
       oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib" % VERSION)
       oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/bin" % VERSION)
-      oscmd("cat direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command")
+      oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
       oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/Applications/Panda3D/%s@' < built/etc/Config.prc > Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % (VERSION, VERSION))
       oscmd("cp built/etc/Confauto.prc   Panda3D-tpl-rw/Panda3D/%s/etc/Confauto.prc" % VERSION)
       oscmd("cp -R built/include         Panda3D-tpl-rw/Panda3D/%s/include" % VERSION)
