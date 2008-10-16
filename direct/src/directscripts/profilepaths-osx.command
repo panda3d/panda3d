@@ -47,7 +47,7 @@ then
     $(touch $PROFILE)
 fi
 
-if [ "$(grep -i panda $PROFILE)" != "" ]
+if [ "$(grep -i panda3d $PROFILE)" != "" ]
 then
     echo "It looks like you might already have the paths set up. If you're"
     echo "upgrading, might just need to change PANDA_VERSION to $PANDA_VERSION"
@@ -69,7 +69,7 @@ then
     else
         clear
         echo "Cowardly refusing to touch your profile because you already"
-        echo "have some reference to 'panda'. Here is what needs to be in"
+        echo "have some reference to 'panda3d'. Here is what needs to be in"
         echo "$PROFILE :"
         echo ""
         echo "$BASH_BLOCK"
