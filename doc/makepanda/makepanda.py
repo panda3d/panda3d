@@ -547,9 +547,9 @@ def CompileImod(wobj, wsrc, opts):
         CompileCxx(wobj,woutc,opts)
         return
     if (COMPILER=="MSVC"):
-	woutc = wobj[:-4]+".cxx"
+        woutc = wobj[:-4]+".cxx"
     if (COMPILER=="LINUX"):
-	woutc = wobj[:-2]+".cxx"
+        woutc = wobj[:-2]+".cxx"
     cmd = 'built/bin/interrogate_module '
     cmd = cmd + ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
     for x in wsrc: cmd = cmd + ' ' + x
@@ -3585,9 +3585,9 @@ def MakeInstallerLinux():
         oscmd("cd linuxroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
         WriteFile("linuxroot/DEBIAN/conffiles","/etc/Config.prc\n")
         WriteFile("linuxroot/DEBIAN/control",txt)
-	WriteFile("linuxroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
-	oscmd("chmod 755 linuxroot/DEBIAN/postinst")
-	oscmd("cp linuxroot/DEBIAN/postinst linuxroot/DEBIAN/postrm")
+        WriteFile("linuxroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
+        oscmd("chmod 755 linuxroot/DEBIAN/postinst")
+        oscmd("cp linuxroot/DEBIAN/postinst linuxroot/DEBIAN/postrm")
         oscmd("dpkg-deb -b linuxroot panda3d_"+VERSION+"_"+ARCH+".deb")
         oscmd("chmod -R 755 linuxroot")
 
