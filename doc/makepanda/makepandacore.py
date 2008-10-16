@@ -726,6 +726,9 @@ def SdkLocateMSPlatform():
     if (platsdk == 0):
         platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.1","InstallationFolder")
 		
+    if (platsdk == 0 and os.path.isdir("C:\\Program Files\\Microsoft Visual Studio 8\\VC\\PlatformSDK")):
+      platsdk = "C:\\Program Files\\Microsoft Visual Studio 8\\VC\\PlatformSDK\\"
+		
     if (platsdk != 0):
         SDK["MSPLATFORM"] = platsdk
 
