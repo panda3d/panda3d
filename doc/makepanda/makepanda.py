@@ -3463,7 +3463,7 @@ if (PkgSkip("PYTHON")==0):
 #
 # Under windows, we can build an 'exe' package using NSIS
 # Under linux, we can build a 'deb' package or an 'rpm' package.
-# Under OSX, we can build a 'pkg' file and pack that into a 'dmg' package.
+# Under OSX, we can make a 'dmg' package.
 #
 ##########################################################################################
 
@@ -3610,39 +3610,44 @@ def MakeInstallerOSX():
     if (os.path.isfile("Panda3D-tpl-rw.dmg")): oscmd("rm -f Panda3D-tpl-rw.dmg")
     if (os.path.isdir("Panda3D-tpl-rw")): oscmd("rm -rf Panda3D-tpl-rw")
     if (os.path.isfile("Panda3D-%s.dmg" % VERSION)): oscmd("rm -f Panda3D-%s.dmg" % VERSION)
-    oscmd("hdiutil convert -format UDRW -o Panda3D-tpl-rw.dmg Panda3D-tpl.dmg")
+    oscmd("hdiutil convert -format UDRW -o Panda3D-tpl-rw.dmg makepanda/Panda3D-tpl.dmg")
     oscmd("mkdir Panda3D-tpl-rw")
     oscmd("hdiutil attach Panda3D-tpl-rw.dmg -noautoopen -quiet -mountpoint Panda3D-tpl-rw")
-    oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/etc" % VERSION)
-    oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib" % VERSION)
-    oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/bin" % VERSION)
-    oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/Applications/Panda3D/%s@' < built/etc/Config.prc > Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % (VERSION, VERSION))
-    oscmd("cp built/etc/Confauto.prc   Panda3D-tpl-rw/Panda3D/%s/etc/Confauto.prc" % VERSION)
-    oscmd("cp -R built/include         Panda3D-tpl-rw/Panda3D/%s/include" % VERSION)
-    oscmd("cp -R direct                Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
-    oscmd("cp -R built/pandac          Panda3D-tpl-rw/Panda3D/%s/lib/pandac" % VERSION)
-    oscmd("cp -R built/Pmw             Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % VERSION)
-    oscmd("cp built/direct/__init__.py Panda3D-tpl-rw/Panda3D/%s/lib/direct/__init__.py" % VERSION)
-    oscmd("cp -R built/models          Panda3D-tpl-rw/Panda3D/%s/models" % VERSION)
-    oscmd("cp -R samples               Panda3D-tpl-rw/Panda3D/%s/samples" % VERSION)
-    oscmd("cp -R doc/LICENSE           Panda3D-tpl-rw/Panda3D/%s/LICENSE" % VERSION)
-    oscmd("cp -R doc/ReleaseNotes      Panda3D-tpl-rw/Panda3D/%s/ReleaseNotes" % VERSION)
-    oscmd("cp -R built/bin/*           Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION)
-    for base in os.listdir("built/lib"):
-        oscmd("cp built/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
-    for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src"):
-        if ((base != "extensions") and (base != "extensions_native")):
-            compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src/"+base)
-    compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
-    oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/samples")
-    oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct")
-    oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/pandac")
-    oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
+    try:
+      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/etc" % VERSION)
+      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib" % VERSION)
+      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/bin" % VERSION)
+      oscmd("cat direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command")
+      oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/Applications/Panda3D/%s@' < built/etc/Config.prc > Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % (VERSION, VERSION))
+      oscmd("cp built/etc/Confauto.prc   Panda3D-tpl-rw/Panda3D/%s/etc/Confauto.prc" % VERSION)
+      oscmd("cp -R built/include         Panda3D-tpl-rw/Panda3D/%s/include" % VERSION)
+      oscmd("cp -R direct                Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
+      oscmd("cp -R built/pandac          Panda3D-tpl-rw/Panda3D/%s/lib/pandac" % VERSION)
+      oscmd("cp -R built/Pmw             Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % VERSION)
+      oscmd("cp built/direct/__init__.py Panda3D-tpl-rw/Panda3D/%s/lib/direct/__init__.py" % VERSION)
+      oscmd("cp -R built/models          Panda3D-tpl-rw/Panda3D/%s/models" % VERSION)
+      oscmd("cp -R samples               Panda3D-tpl-rw/Panda3D/%s/samples" % VERSION)
+      oscmd("cp -R doc/LICENSE           Panda3D-tpl-rw/Panda3D/%s/LICENSE" % VERSION)
+      oscmd("cp -R doc/ReleaseNotes      Panda3D-tpl-rw/Panda3D/%s/ReleaseNotes" % VERSION)
+      oscmd("cp -R built/bin/*           Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION)
+      for base in os.listdir("built/lib"):
+          oscmd("cp built/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
+      for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src"):
+          if ((base != "extensions") and (base != "extensions_native")):
+              compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src/"+base)
+      compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
+      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/samples")
+      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct")
+      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/pandac")
+      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
+    except: # Make sure the dmg gets unmounted even when error occurs
+      oscmd("hdiutil detach Panda3D-tpl-rw -quiet -force")
+      oscmd("rm -f Panda3D-tpl-rw.dmg")
+      raise
     oscmd("hdiutil detach Panda3D-tpl-rw -quiet -force")
     oscmd("hdiutil convert -format UDBZ -o Panda3D-"+VERSION+".dmg Panda3D-tpl-rw.dmg")
     oscmd("rm -f Panda3D-tpl-rw.dmg")
     oscmd("rm -rf Panda3D-tpl-rw")
-    #TODO: install_name_tool -change /Users/pro-rsoft/build/lib /Applications/Panda3D/1.6.0/lib/ built/lib/libpanda.so
 
 if (INSTALLER != 0):
     if (sys.platform == "win32"):
