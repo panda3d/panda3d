@@ -11,7 +11,7 @@
 
 import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil
 
-SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx"]
+SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx",".mm"]
 SUFFIX_DLL=[".dll",".dlo",".dle",".dli",".dlm",".mll",".exe"]
 SUFFIX_LIB=[".lib",".ilb"]
 STARTTIME=time.time()
@@ -28,7 +28,7 @@ MAYAVERSIONINFO=[("MAYA6",   "6.0"),
                  ("MAYA7",   "7.0"),
                  ("MAYA8",   "8.0"),
                  ("MAYA85",  "8.5"),
-		 ("MAYA2008","2008"),
+                 ("MAYA2008","2008"),
 ]
 
 MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "maxsdk\\cssdk\\include"),
@@ -693,7 +693,16 @@ def SdkLocatePython():
     if (PkgSkip("PYTHON")==0):
         if (sys.platform == "win32"):
             SDK["PYTHON"]="thirdparty/win-python"
-	    SDK["PYTHONVERSION"]="python2.5"
+            SDK["PYTHONVERSION"]="python2.5"
+        elif (sys.platform == "darwin"):
+            if not SDK.has_key("MACOSX"): SdkLocateMacOSX()
+            if (os.path.isdir("%s/System/Library/Frameworks/Python.framework" % SDK["MACOSX"])):
+                os.system("readlink %s/System/Library/Frameworks/Python.framework/Versions/Current > built/tmp/pythonversion 2>&1" % SDK["MACOSX"])
+                pv = ReadFile("built/tmp/pythonversion")
+                SDK["PYTHON"] = SDK["MACOSX"]+"/System/Library/Frameworks/Python.framework/Headers"
+                SDK["PYTHONVERSION"] = "python"+pv
+            else:
+                exit("Could not find the python framework!")
         else:
             os.system("python -V > built/tmp/pythonversion 2>&1")
             pv=ReadFile("built/tmp/pythonversion")
@@ -709,7 +718,7 @@ def SdkLocateVisualStudio():
     if (sys.platform != "win32"): return
     vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", "8.0")
     if (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
-	vcdir = vcdir[:-3]
+        vcdir = vcdir[:-3]
         SDK["VISUALSTUDIO"] = vcdir
 
 def SdkLocateMSPlatform():
@@ -717,11 +726,17 @@ def SdkLocateMSPlatform():
     if (platsdk == 0):
         platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.1","InstallationFolder")
 		
-    if (platsdk == 0 and os.path.isdir("C:\\Program Files\\Microsoft Visual Studio 8\\VC\\PlatformSDK")):
-		    platsdk = "C:\\Program Files\\Microsoft Visual Studio 8\\VC\\PlatformSDK\\"
-		
     if (platsdk != 0):
         SDK["MSPLATFORM"] = platsdk
+
+def SdkLocateMacOSX():
+    if (sys.platform != "darwin"): return
+    if (os.path.exists("/Developer/SDKs/MacOSX10.5.sdk")):
+        SDK["MACOSX"] = "/Developer/SDKs/MacOSX10.5.sdk"
+    elif (os.path.exists("/Developer/SDKs/MacOSX10.4u.sdk")):
+        SDK["MACOSX"] = "/Developer/SDKs/MacOSX10.4u.sdk"
+    else:
+        exit("Could not find any MacOSX SDK")
 
 ########################################################################
 ##
@@ -886,7 +901,7 @@ def CopyTree(dstdir,srcdir):
     if (sys.platform == "win32"):
         cmd = 'xcopy /I/Y/E/Q "' + srcdir + '" "' + dstdir + '"'
     else:
-        cmd = 'cp --recursive --force ' + srcdir + ' ' + dstdir
+        cmd = 'cp -R -f ' + srcdir + ' ' + dstdir
     oscmd(cmd)
 
 ########################################################################
@@ -921,13 +936,14 @@ def GetOrigExt(x):
 
 def CalcLocation(fn, ipath):
     if (fn.count("/")): return fn
+    
+    if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
+    if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
+    if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
+    if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
+    if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
+    if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
     if (sys.platform == "win32"):
-        if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
-        if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
-        if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
-        if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
-        if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
-        if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".def")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")): return "built/tmp/"+fn
         if (fn.endswith(".dll")): return "built/bin/"+fn
@@ -940,13 +956,16 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".ilb")): return "built/tmp/"+fn[:-4]+".lib"
         if (fn.endswith(".dat")): return "built/tmp/"+fn
         if (fn.endswith(".in")):  return "built/pandac/input/"+fn
+    elif (sys.platform == "darwin"):
+        if (fn.endswith(".mm")):  return CxxFindSource(fn, ipath)
+        if (fn.endswith(".obj")): return "built/tmp/"+fn[:-4]+".o"
+        if (fn.endswith(".dll")): return "built/lib/"+fn[:-4]+".dylib"
+        if (fn.endswith(".exe")): return "built/bin/"+fn[:-4]
+        if (fn.endswith(".lib")): return "built/lib/"+fn[:-4]+".a"
+        if (fn.endswith(".ilb")): return "built/tmp/"+fn[:-4]+".a"
+        if (fn.endswith(".dat")): return "built/tmp/"+fn
+        if (fn.endswith(".in")):  return "built/pandac/input/"+fn
     else:
-        if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
-        if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
-        if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
-        if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
-        if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
-        if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")): return "built/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")): return "built/lib/"+fn[:-4]+".so"
         if (fn.endswith(".exe")): return "built/bin/"+fn[:-4]
