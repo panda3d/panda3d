@@ -145,6 +145,7 @@ MakeBuildTree()
 SdkLocateDirectX()
 SdkLocateMaya()
 SdkLocateMax()
+SdkLocateMacOSX()
 SdkLocatePython()
 SdkLocateVisualStudio()
 SdkLocateMSPlatform()
@@ -170,7 +171,9 @@ if (sys.platform == "win32"):
 else:
     CheckLinkerLibraryPath()
     COMPILER="LINUX"
-    if (platform.architecture()[0] == "64bit"):
+    if (sys.platform == "darwin"):
+        THIRDPARTYLIBS="thirdparty/darwin-libs-a/"
+    elif (platform.architecture()[0] == "64bit"):
         THIRDPARTYLIBS="thirdparty/linux-libs-x64/"
     else:
         THIRDPARTYLIBS="thirdparty/linux-libs-a/"
@@ -281,20 +284,30 @@ if (COMPILER=="MSVC"):
 if (COMPILER=="LINUX"):
     if (PkgSkip("PYTHON")==0):
         IncDirectory("ALWAYS", SDK["PYTHON"])
-    if (PkgSkip("FREETYPE")==0):  IncDirectory("FREETYPE",   '/usr/include/freetype2')
-    IncDirectory("GTK2", "/usr/include/gtk-2.0")
-    IncDirectory("GTK2", "/usr/include/cairo")
-    IncDirectory("GTK2", "/usr/include/glib-2.0")
-    IncDirectory("GTK2", "/usr/lib/glib-2.0/include")
-    IncDirectory("GTK2", "/usr/include/pango-1.0")
-    IncDirectory("GTK2", "/usr/lib/gtk-2.0/include")
-    IncDirectory("GTK2", "/usr/include/atk-1.0")
-    if (platform.architecture()[0] == "64bit"):
-        IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
-        IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
+    if (sys.platform == "darwin"):
+        if (PkgSkip("FREETYPE")==0):
+          IncDirectory("FREETYPE", "/usr/X11R6/include")
+          IncDirectory("FREETYPE", "/usr/X11/include/freetype2/")
+        IncDirectory("GLUT", "/usr/X11R6/include")
+    else:
+        if (PkgSkip("FREETYPE")==0): IncDirectory("FREETYPE", "/usr/include/freetype2")
+        IncDirectory("GTK2", "/usr/include/gtk-2.0")
+        IncDirectory("GTK2", "/usr/include/cairo")
+        IncDirectory("GTK2", "/usr/include/glib-2.0")
+        IncDirectory("GTK2", "/usr/lib/glib-2.0/include")
+        IncDirectory("GTK2", "/usr/include/pango-1.0")
+        IncDirectory("GTK2", "/usr/lib/gtk-2.0/include")
+        IncDirectory("GTK2", "/usr/include/atk-1.0")
+        if (platform.architecture()[0] == "64bit"):
+            IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
+            IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
     LibName("GTK2", "-lgtk-x11-2.0")
 
-    for pkg in ["VRPN", "FFTW", "FMOD", "FMODEX", "OPENAL", "NVIDIACG", "FFMPEG", "ARTOOLKIT", "ODE"]:
+    if (sys.platform == "darwin"):
+        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "FFMPEG", "PNG", "JPEG", "TIFF"]
+    else:
+        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "NVIDIACG", "FFMPEG", "OPENAL"]
+    for pkg in pkgs:
         if (PkgSkip(pkg)==0):
             if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
                 IncDirectory(pkg, THIRDPARTYLIBS + pkg.lower() + "/include")
@@ -304,31 +317,45 @@ if (COMPILER=="LINUX"):
                 WARNINGS.append("I have automatically added this command-line option: --no-"+pkg.lower())
                 PkgDisable(pkg)
     
-    if (PkgSkip("FMOD")==0):     LibName("FMOD", "-lfmod")
-    if (PkgSkip("FMODEX")==0):   LibName("FMODEX", "-lfmodex")
-    if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lpandaopenal")
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavutil")
-    if (PkgSkip("NVIDIACG")==0): LibName("CGGL", "-lCgGL")
-    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCg")
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavformat")
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavcodec")
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavformat")
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG", "-lavutil")
-    if (PkgSkip("ZLIB")==0):     LibName("ZLIB", "-lz")
-    if (PkgSkip("PNG")==0):      LibName("PNG", "-lpng")
-    if (PkgSkip("JPEG")==0):     LibName("JPEG", "-ljpeg")
-    if (PkgSkip("TIFF")==0):     LibName("TIFF", "-ltiff")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "-lssl")
-    if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", "-lfreetype")
-    if (PkgSkip("VRPN")==0):     LibName("VRPN", "-lvrpn")
-    if (PkgSkip("VRPN")==0):     LibName("VRPN", "-lquat")
-    if (PkgSkip("FFTW")==0):     LibName("FFTW", "-lrfftw")
-    if (PkgSkip("FFTW")==0):     LibName("FFTW", "-lfftw")
-    if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT", "-lAR")
-    if (PkgSkip("ODE")==0):      LibName("ODE", "-lode")
-    LibName("GLUT", "-lGL")
-    LibName("GLUT", "-lGLU")
-
+    if (sys.platform == "darwin"):
+      if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-framework Cg")
+      if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-framework OpenAL")
+      if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "-lcrypto")
+      if (PkgSkip("TIFF")==0):     LibName("TIFF",  "-lpandatiff")
+    else:
+      if (PkgSkip("NVIDIACG")==0): LibName("CGGL", "-lCgGL")
+      if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCg")
+      if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lpandaopenal")
+      if (PkgSkip("TIFF")==0):     LibName("TIFF", "-ltiff")
+    if (PkgSkip("FMOD")==0):       LibName("FMOD", "-lfmod")
+    if (PkgSkip("FMODEX")==0):     LibName("FMODEX", "-lfmodex")
+    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavutil")
+    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavformat")
+    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavcodec")
+    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavformat")
+    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavutil")
+    if (PkgSkip("ZLIB")==0):       LibName("ZLIB", "-lz")
+    if (PkgSkip("PNG")==0):        LibName("PNG", "-lpng")
+    if (PkgSkip("JPEG")==0):       LibName("JPEG", "-ljpeg")
+    if (PkgSkip("OPENSSL")==0):    LibName("OPENSSL",  "-lssl")
+    if (PkgSkip("FREETYPE")==0):   LibName("FREETYPE", "-lfreetype")
+    if (PkgSkip("VRPN")==0):       LibName("VRPN", "-lvrpn")
+    if (PkgSkip("VRPN")==0):       LibName("VRPN", "-lquat")
+    if (PkgSkip("FFTW")==0):       LibName("FFTW", "-lrfftw")
+    if (PkgSkip("FFTW")==0):       LibName("FFTW", "-lfftw")
+    if (PkgSkip("ARTOOLKIT")==0):  LibName("ARTOOLKIT", "-lAR")
+    if (PkgSkip("ODE")==0):        LibName("ODE", "-lode")
+    if (sys.platform == "darwin"):
+      LibName("AGL", "-framework AGL")
+      LibName("CARBON", "-framework Carbon")
+      LibName("COCOA", "-framework Cocoa")
+      LibName("GLUT", "-framework OpenGL")
+      LibName("GLUT", "-lOSMesa")
+      # Fix for a bug in OSX:
+      LibName("GLUT", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+    else:
+      LibName("GLUT", "-lGL")
+      LibName("GLUT", "-lGLU")
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 IncDirectory("ALWAYS", "built/tmp")
@@ -404,6 +431,8 @@ def CompileCxx(obj,src,opts):
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -D' + var + '=' + val
         for x in ipath: cmd = cmd + ' -I' + x
+        if (sys.platform == "darwin"):
+            cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -arch i386 -arch ppc"
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " -g"
         if (optlevel==2): cmd = cmd + " -O1"
@@ -540,7 +569,10 @@ def CompileLib(lib, obj, opts):
         for x in obj: cmd = cmd + ' ' + x
         oscmd(cmd)
     if (COMPILER=="LINUX"):
-        cmd = 'ar cru ' + lib
+        if sys.platform == 'darwin':
+            cmd = 'libtool -static -o ' + lib
+        else:
+            cmd = 'ar cru ' + lib
         for x in obj: cmd=cmd + ' ' + x
         oscmd(cmd)
 
@@ -580,7 +612,7 @@ def CompileLink(dll, obj, opts):
                 pass
             else: cmd = cmd + ' ' + x
         if (GetOrigExt(dll)==".exe"):
-	    cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
+            cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
         oscmd(cmd)
@@ -591,9 +623,13 @@ def CompileLink(dll, obj, opts):
         oscmd(mtcmd)
     if (COMPILER=="LINUX"):
         if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -Lbuilt/lib -L/usr/X11R6/lib'
-        else:                         cmd = 'g++ -shared -o ' + dll + ' -Lbuilt/lib -L/usr/X11R6/lib'
+        else:
+            if (sys.platform == "darwin"):
+                cmd = 'g++ -undefined dynamic_lookup -dynamic -dynamiclib -o ' + dll + ' -install_name built/lib/' + os.path.basename(dll) + ' -Lbuilt/lib -L/usr/X11R6/lib'
+            else:
+                cmd = 'g++ -shared -o ' + dll + ' -Lbuilt/lib -L/usr/X11R6/lib'
         for x in obj:
-	    if (GetOrigExt(x) != ".dat"):
+            if (GetOrigExt(x) != ".dat"):
                 base = os.path.basename(x)
                 if (base[-3:]==".so") and (base[:3]=="lib"):
                     cmd = cmd + ' -l' + base[3:-3]
@@ -604,7 +640,31 @@ def CompileLink(dll, obj, opts):
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
         cmd = cmd + " -lpthread -ldl"
+        if (sys.platform == "darwin"):
+            if (PkgSkip("PYTHON")==0): cmd = cmd + " -framework Python"
+            cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch ppc -arch i386"
+        
         oscmd(cmd)
+        
+        # On OSX, we need to link again, but creating a .so this time.
+        if (sys.platform == "darwin" and GetOrigExt(dll) != ".exe"):
+            cmd = 'g++ -undefined dynamic_lookup -bundle -o ' + dll.replace('.dylib', '.so') + ' ' + dll + ' -Lbuilt/lib -L/usr/X11R6/lib'
+            for x in obj:
+                if (GetOrigExt(x) != ".dat"):
+                    base = os.path.basename(x)
+                    if (base[-3:]==".so") and (base[:3]=="lib"):
+                        cmd = cmd + ' -l' + base[3:-3]
+                    else:
+                        cmd = cmd + ' ' + x
+            for (opt, dir) in LIBDIRECTORIES:
+                if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -L"' + dir + '"'
+            for (opt, name) in LIBNAMES:
+                if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
+            cmd = cmd + " -lpthread -ldl"
+            if (PkgSkip("PYTHON")==0): cmd = cmd + " -framework Python"
+            cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch ppc -arch i386"
+            
+            oscmd(cmd)
 
 ##########################################################################################
 #
@@ -641,7 +701,7 @@ def CompileAnything(target, inputs, opts):
     elif (origsuffix==".pz"):
         return CompileEggPZ(target, infile, opts)
     elif (origsuffix==".obj"):
-        if (infile.endswith(".cxx") or infile.endswith(".c")):
+        if (infile.endswith(".cxx") or infile.endswith(".c") or infile.endswith(".mm")):
             return CompileCxx(target, infile, opts)
         elif (infile.endswith(".yxx")):
             return CompileBison(target, infile, opts)
@@ -738,6 +798,7 @@ DTOOL_CONFIG=[
     ("HAVE_SYS_SOUNDCARD_H",           'UNDEF',                  '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
+    ("IS_OSX",                         'UNDEF',                  'UNDEF'),
     ("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
     ("USE_STL_ALLOCATOR",              '1',                      '1'),
     ("USE_MEMORY_DLMALLOC",            '1',                      'UNDEF'),
@@ -763,6 +824,7 @@ DTOOL_CONFIG=[
     ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
     ("HAVE_ODE",                       'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
+    ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 ]
 
@@ -807,6 +869,16 @@ def WriteConfigSettings():
         dtool_config["HAVE_CG"] = '1'
         dtool_config["HAVE_CGGL"] = '1'
         dtool_config["HAVE_CGDX9"] = '1'
+    
+    if (sys.platform == "darwin"):
+        dtool_config["HAVE_MALLOC_H"] = 'UNDEF'
+        dtool_config["HAVE_SYS_MALLOC_H"] = '1'
+        dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
+        dtool_config["IS_OSX"] = '1'
+        dtool_config["HAVE_PROC_SELF_EXE"] = 'UNDEF'
+        dtool_config["HAVE_PROC_SELF_MAPS"] = 'UNDEF'
+        dtool_config["HAVE_PROC_SELF_CMDLINE"] = 'UNDEF'
+        dtool_config["HAVE_PROC_SELF_ENVIRON"] = 'UNDEF'
     
     if (OPTIMIZE <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):
@@ -1077,10 +1149,12 @@ CopyAllHeaders('panda/metalibs/pandafx')
 CopyAllHeaders('panda/src/glstuff')
 CopyAllHeaders('panda/src/glgsg')
 CopyAllHeaders('panda/metalibs/pandaegg')
-if (sys.platform != "win32"):
-    CopyAllHeaders('panda/src/glxdisplay')
-else:
+if (sys.platform == "win32"):
     CopyAllHeaders('panda/src/wgldisplay')
+elif (sys.platform == "darwin"):
+    CopyAllHeaders('panda/src/osxdisplay')
+else:
+    CopyAllHeaders('panda/src/glxdisplay')
 CopyAllHeaders('panda/metalibs/pandagl')
 
 CopyAllHeaders('panda/src/physics')
@@ -2028,7 +2102,6 @@ if (sys.platform == "win32"):
     TargetAdd('libp3windisplay.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libp3windisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
 
-
 #
 # DIRECTORY: panda/metalibs/pandadx8/
 #
@@ -2201,7 +2274,7 @@ if (sys.platform != "win32"):
 # DIRECTORY: panda/src/glxdisplay/
 #
 
-if (sys.platform != "win32"):
+if (sys.platform != "win32" and sys.platform != "darwin"):
     OPTS=['DIR:panda/src/glxdisplay', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
     TargetAdd('glxdisplay_composite.obj', opts=OPTS, input='glxdisplay_composite.cxx')
     OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
@@ -2214,6 +2287,24 @@ if (sys.platform != "win32"):
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
     TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
     TargetAdd('libpandagl.dll', opts=['GLUT', 'NVIDIACG', 'CGGL'])
+
+#
+# DIRECTORY: panda/src/osxdisplay/
+#
+
+if (sys.platform == 'darwin'):
+    OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
+    TargetAdd('osxdisplay_composite.obj', opts=OPTS, input='osxdisplay_composite.mm')
+    OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
+    TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
+    TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
+    TargetAdd('libpandagl.dll', input='glgsg_config_glgsg.obj')
+    TargetAdd('libpandagl.dll', input='glgsg_glgsg.obj')
+    TargetAdd('libpandagl.dll', input='osxdisplay_composite.obj')
+    TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
+    TargetAdd('libpandagl.dll', input='libpandafx.dll')
+    TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
+    TargetAdd('libpandagl.dll', opts=['GLUT', 'NVIDIACG', 'CGGL', 'CARBON', 'AGL', 'COCOA'])
 
 #
 # DIRECTORY: panda/src/wgldisplay/
@@ -3176,7 +3267,7 @@ if (PkgSkip("PANDATOOL")==0):
 # DIRECTORY: pandatool/src/gtk-stats/
 #
 
-if (PkgSkip("PANDATOOL")==0):
+if (PkgSkip("PANDATOOL")==0 and sys.platform != "darwin"):
     if (sys.platform == "win32"):
       OPTS=['DIR:pandatool/src/win-stats']
       TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
@@ -3372,6 +3463,7 @@ if (PkgSkip("PYTHON")==0):
 #
 # Under windows, we can build an 'exe' package using NSIS
 # Under linux, we can build a 'deb' package or an 'rpm' package.
+# Under OSX, we can build a 'pkg' file and pack that into a 'dmg' package.
 #
 ##########################################################################################
 
@@ -3493,9 +3585,9 @@ def MakeInstallerLinux():
         oscmd("cd linuxroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
         WriteFile("linuxroot/DEBIAN/conffiles","/etc/Config.prc\n")
         WriteFile("linuxroot/DEBIAN/control",txt)
-        WriteFile("linuxroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
-        oscmd("chmod 755 linuxroot/DEBIAN/postinst")
-        oscmd("cp linuxroot/DEBIAN/postinst linuxroot/DEBIAN/postrm")
+	WriteFile("linuxroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
+	oscmd("chmod 755 linuxroot/DEBIAN/postinst")
+	oscmd("cp linuxroot/DEBIAN/postinst linuxroot/DEBIAN/postrm")
         oscmd("dpkg-deb -b linuxroot panda3d_"+VERSION+"_"+ARCH+".deb")
         oscmd("chmod -R 755 linuxroot")
 
@@ -3511,13 +3603,54 @@ def MakeInstallerLinux():
     
 #    oscmd("chmod -R 755 linuxroot")
 #    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec "+ARCH)
-    
-        
+
+def MakeInstallerOSX():
+    import compileall
+    PYTHONV=SDK["PYTHONVERSION"].replace("python", "").strip()
+    if (os.path.isfile("Panda3D-tpl-rw.dmg")): oscmd("rm -f Panda3D-tpl-rw.dmg")
+    if (os.path.isdir("Panda3D-tpl-rw")): oscmd("rm -rf Panda3D-tpl-rw")
+    if (os.path.isfile("Panda3D-%s.dmg" % VERSION)): oscmd("rm -f Panda3D-%s.dmg" % VERSION)
+    oscmd("hdiutil convert -format UDRW -o Panda3D-tpl-rw.dmg Panda3D-tpl.dmg")
+    oscmd("mkdir Panda3D-tpl-rw")
+    oscmd("hdiutil attach Panda3D-tpl-rw.dmg -noautoopen -quiet -mountpoint Panda3D-tpl-rw")
+    oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/etc" % VERSION)
+    oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib" % VERSION)
+    oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/bin" % VERSION)
+    oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/Applications/Panda3D/%s@' < built/etc/Config.prc > Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % (VERSION, VERSION))
+    oscmd("cp built/etc/Confauto.prc   Panda3D-tpl-rw/Panda3D/%s/etc/Confauto.prc" % VERSION)
+    oscmd("cp -R built/include         Panda3D-tpl-rw/Panda3D/%s/include" % VERSION)
+    oscmd("cp -R direct                Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
+    oscmd("cp -R built/pandac          Panda3D-tpl-rw/Panda3D/%s/lib/pandac" % VERSION)
+    oscmd("cp -R built/Pmw             Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % VERSION)
+    oscmd("cp built/direct/__init__.py Panda3D-tpl-rw/Panda3D/%s/lib/direct/__init__.py" % VERSION)
+    oscmd("cp -R built/models          Panda3D-tpl-rw/Panda3D/%s/models" % VERSION)
+    oscmd("cp -R samples               Panda3D-tpl-rw/Panda3D/%s/samples" % VERSION)
+    oscmd("cp -R doc/LICENSE           Panda3D-tpl-rw/Panda3D/%s/LICENSE" % VERSION)
+    oscmd("cp -R doc/ReleaseNotes      Panda3D-tpl-rw/Panda3D/%s/ReleaseNotes" % VERSION)
+    oscmd("cp -R built/bin/*           Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION)
+    for base in os.listdir("built/lib"):
+        oscmd("cp built/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
+    for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src"):
+        if ((base != "extensions") and (base != "extensions_native")):
+            compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src/"+base)
+    compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
+    oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/samples")
+    oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct")
+    oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/pandac")
+    oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
+    oscmd("hdiutil detach Panda3D-tpl-rw -quiet -force")
+    oscmd("hdiutil convert -format UDBZ -o Panda3D-"+VERSION+".dmg Panda3D-tpl-rw.dmg")
+    oscmd("rm -f Panda3D-tpl-rw.dmg")
+    oscmd("rm -rf Panda3D-tpl-rw")
+    #TODO: install_name_tool -change /Users/pro-rsoft/build/lib /Applications/Panda3D/1.6.0/lib/ built/lib/libpanda.so
+
 if (INSTALLER != 0):
     if (sys.platform == "win32"):
         MakeInstallerNSIS("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
     elif (sys.platform == "linux2"):
         MakeInstallerLinux()
+    elif (sys.platform == "darwin"):
+        MakeInstallerOSX()
     else:
         exit("Do not know how to make an installer for this platform")
 
