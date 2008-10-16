@@ -183,13 +183,6 @@ class Task:
         self.time = currentTime - self.starttime
         self.frame = currentFrame - self.startframe
 
-    def getNamePattern(self, taskName=None):
-        # get a version of the task name that doesn't contain any numbers
-        digits = '0123456789'
-        if taskName is None:
-            taskName = self.name
-        return ''.join([c for c in taskName if c not in digits])
-
     def getNamePrefix(self):
         # get a version of the task name, omitting a hyphen or
         # underscore followed by a string of digits at the end of the
