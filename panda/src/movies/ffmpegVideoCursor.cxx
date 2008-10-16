@@ -16,8 +16,10 @@
 
 #include "ffmpegVideoCursor.h"
 #include "config_movies.h"
-#include "avcodec.h"
-#include "avformat.h"
+extern "C" {
+  #include "avcodec.h"
+  #include "avformat.h"
+}
 #include "pStatCollector.h"
 #include "pStatTimer.h"
 

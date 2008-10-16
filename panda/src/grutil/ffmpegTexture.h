@@ -20,8 +20,10 @@
 
 #include "videoTexture.h"
 
-#include "avcodec.h"
-#include "avformat.h"
+extern "C" {
+  #include "avcodec.h"
+  #include "avformat.h"
+}
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OpenCVTexture

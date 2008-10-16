@@ -15,8 +15,10 @@
 #ifdef HAVE_FFMPEG
 
 #include "ffmpegAudioCursor.h"
-#include "avcodec.h"
-#include "avformat.h"
+extern "C" {
+  #include "avcodec.h"
+  #include "avformat.h"
+}
 
 TypeHandle FfmpegAudioCursor::_type_handle;
 

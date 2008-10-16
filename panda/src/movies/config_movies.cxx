@@ -17,7 +17,9 @@
 #include "webcamVideo.h"
 
 #ifdef HAVE_FFMPEG
-#include "avcodec.h"
+extern "C" {
+  #include "avcodec.h"
+}
 #endif
 
 ConfigureDef(config_movies);
