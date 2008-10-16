@@ -1055,7 +1055,7 @@ CopyFile("built/", "doc/LICENSE")
 CopyFile("built/", "doc/ReleaseNotes")
 CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".mel")
 CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".ms")
-if (PkgSkip("PYTHON")==0):
+if (PkgSkip("PYTHON")==0 and os.path.isdir("thirdparty/Pmw")):
     CopyTree('built/Pmw',         'thirdparty/Pmw')
 ConditionalWriteFile('built/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
