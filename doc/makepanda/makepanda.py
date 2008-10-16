@@ -874,6 +874,7 @@ def WriteConfigSettings():
         dtool_config["HAVE_MALLOC_H"] = 'UNDEF'
         dtool_config["HAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
+        dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
         dtool_config["HAVE_PROC_SELF_EXE"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_MAPS"] = 'UNDEF'
@@ -3623,13 +3624,13 @@ def MakeInstallerOSX():
       oscmd("cp -R built/include         Panda3D-tpl-rw/Panda3D/%s/include" % VERSION)
       oscmd("cp -R direct                Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
       oscmd("cp -R built/pandac          Panda3D-tpl-rw/Panda3D/%s/lib/pandac" % VERSION)
-      oscmd("cp -R built/Pmw             Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % VERSION)
       oscmd("cp built/direct/__init__.py Panda3D-tpl-rw/Panda3D/%s/lib/direct/__init__.py" % VERSION)
       oscmd("cp -R built/models          Panda3D-tpl-rw/Panda3D/%s/models" % VERSION)
-      oscmd("cp -R samples               Panda3D-tpl-rw/Panda3D/%s/samples" % VERSION)
       oscmd("cp -R doc/LICENSE           Panda3D-tpl-rw/Panda3D/%s/LICENSE" % VERSION)
       oscmd("cp -R doc/ReleaseNotes      Panda3D-tpl-rw/Panda3D/%s/ReleaseNotes" % VERSION)
       oscmd("cp -R built/bin/*           Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION)
+      if os.path.isdir("samples"):   oscmd("cp -R samples   Panda3D-tpl-rw/Panda3D/%s/samples" % VERSION)
+      if os.path.isdir("built/Pmw"): oscmd("cp -R built/Pmw Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % VERSION)
       for base in os.listdir("built/lib"):
           oscmd("cp built/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
       for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src"):
