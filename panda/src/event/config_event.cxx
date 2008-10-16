@@ -49,7 +49,9 @@ ConfigureFn(config_event) {
   EventStoreWstring::init_type("EventStoreWstring");
   EventStoreTypedRefCount::init_type();
   GenericAsyncTask::init_type();
+#ifdef HAVE_PYTHON
   PythonTask::init_type();
+#endif
 
   ButtonEventList::register_with_read_factory();
   EventStoreInt::register_with_read_factory();
