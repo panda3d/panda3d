@@ -861,7 +861,7 @@ def WriteConfigSettings():
         dtool_config["HAVE_PROC_SELF_CMDLINE"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_ENVIRON"] = 'UNDEF'
         # OSX still doesn't always recognize the <auto> correctly.
-        prc_parameters["DEFAULT_PRC_DIR"] = '"/Applications/Panda3D/' + VERSION + '/lib"'
+        prc_parameters["DEFAULT_PRC_DIR"] = '"/Applications/Panda3D/' + VERSION + '/etc"'
     
     if (OPTIMIZE <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):
