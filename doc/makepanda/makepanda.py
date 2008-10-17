@@ -645,26 +645,6 @@ def CompileLink(dll, obj, opts):
             cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch ppc -arch i386"
         
         oscmd(cmd)
-        
-        # On OSX, we need to link again, but creating a .so this time.
-        if (sys.platform == "darwin" and GetOrigExt(dll) != ".exe"):
-            cmd = 'g++ -undefined dynamic_lookup -bundle -o ' + dll.replace('.dylib', '.so') + ' ' + dll + ' -Lbuilt/lib -L/usr/X11R6/lib'
-            for x in obj:
-                if (GetOrigExt(x) != ".dat"):
-                    base = os.path.basename(x)
-                    if (base[-3:]==".so") and (base[:3]=="lib"):
-                        cmd = cmd + ' -l' + base[3:-3]
-                    else:
-                        cmd = cmd + ' ' + x
-            for (opt, dir) in LIBDIRECTORIES:
-                if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -L"' + dir + '"'
-            for (opt, name) in LIBNAMES:
-                if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
-            cmd = cmd + " -lpthread -ldl"
-            if (PkgSkip("PYTHON")==0): cmd = cmd + " -framework Python"
-            cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch ppc -arch i386"
-            
-            oscmd(cmd)
 
 ##########################################################################################
 #
@@ -3612,7 +3592,7 @@ def MakeInstallerOSX():
     PYTHONV=SDK["PYTHONVERSION"].replace("python", "").strip()
     if (os.path.isfile("Panda3D-tpl-rw.dmg")): oscmd("rm -f Panda3D-tpl-rw.dmg")
     if (os.path.isdir("Panda3D-tpl-rw")):
-        oscmd("hdiutil detach Panda3D-tpl-rw -quiet -force")
+        oscmd("hdiutil detach Panda3D-tpl-rw -quiet -force", True)
         oscmd("rm -rf Panda3D-tpl-rw")
     if (os.path.isfile("Panda3D-%s.dmg" % VERSION)): oscmd("rm -f Panda3D-%s.dmg" % VERSION)
     oscmd("hdiutil convert -format UDRW -o Panda3D-tpl-rw.dmg makepanda/Panda3D-tpl.dmg")
@@ -3625,7 +3605,7 @@ def MakeInstallerOSX():
       oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
       oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/Applications/Panda3D/%s@' < built/etc/Config.prc > Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % (VERSION, VERSION))
       # Append the plugin-path to the Config.prc.
-      f = open("Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % VERSION)
+      f = open("Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % VERSION, "w")
       f.write("plugin-path /Applications/Panda3D/%s/lib\n\n" % VERSION)
       f.close()
       oscmd("cp built/etc/Confauto.prc   Panda3D-tpl-rw/Panda3D/%s/etc/Confauto.prc" % VERSION)

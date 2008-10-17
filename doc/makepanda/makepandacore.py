@@ -97,7 +97,7 @@ def exit(msg):
 ##
 ########################################################################
 
-def oscmd(cmd):
+def oscmd(cmd, ignoreError = False):
     print cmd
     sys.stdout.flush()
     if sys.platform == "win32":
@@ -112,7 +112,7 @@ def oscmd(cmd):
         res = os.spawnl(os.P_WAIT, exe, cmd)
     else:
         res = os.system(cmd)
-    if res != 0:
+    if res != 0 and not ignoreError:
         exit("")
 
 ########################################################################
