@@ -158,7 +158,7 @@ class TaskManagerWidget(DirectObject):
             taskNames.append(task.getName())
             self.__taskDict[count] = task
             count += 1
-        print taskNames
+        
         if taskNames:
             self.taskListBox.setlist(taskNames)
             # And set current index (so keypresses will start with index 0)
