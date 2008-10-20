@@ -238,7 +238,7 @@ Section -post
         StrCmp $0 "" RegPath 0
 
         MessageBox MB_YESNO|MB_ICONQUESTION \
-                "Python add-on installers use a registry key to locate the Python directory.  The registry key is already pointing to a copy of Python.  Do you want to change the registry key to point to Panda's copy?" \
+                "Your system already has a copy of Python installed. Panda3D installs its own copy of Python, which will install alongside your existing copy. Would you like to make Panda's copy the default Python? If you choose 'No', you will have to configure your existing copy of Python to use the Panda3D libraries." \
                 IDNO SkipRegPath
 
         RegPath:
