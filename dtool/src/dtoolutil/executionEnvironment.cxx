@@ -26,6 +26,13 @@
 #include <windows.h>
 #endif
 
+#ifdef __APPLE__
+// This is for _NSGetExecutablePath() and _NSGetEnviron().
+#include <mach-o/dyld.h>
+#include <crt_externs.h>
+#define environ (*_NSGetEnviron())
+#endif
+
 // We define the symbol PREREAD_ENVIRONMENT if we cannot rely on
 // getenv() to read environment variables at static init time.  In
 // this case, we must read all of the environment variables directly
@@ -373,6 +380,29 @@ read_environment_variables() {
     }
     ch = proc.get();
   }
+#elif defined(IS_OSX)
+  // In the case of Mac, there's always _NSGetEnviron() which we can read.
+  
+  char **envp;
+  for (envp = environ; envp && *envp; envp++) {
+    string variable;
+    string value;
+    
+    char *envc;
+    for (envc = *envp; envc && *envc && strncmp(envc, "=", 1) != 0; envc++) {
+      variable += (char) *envc;
+    }
+    
+    if (strncmp(envc, "=", 1) == 0) {
+      for (envc++; envc && *envc; envc++) {
+        value += (char) *envc;
+      }
+    }
+    
+    if (!variable.empty()) {
+      _variables[variable] = value;
+    }
+  }
 #else
   cerr << "Warning: environment variables unavailable to dconfig.\n";
 #endif
@@ -439,6 +469,18 @@ read_args() {
       readlinkbuf[pathlen] = 0;
       _binary_name = readlinkbuf;
     }
+  }
+#endif
+
+#if defined(__APPLE__)
+  // And on Mac, we have _NSGetExecutablePath.
+  if (_binary_name.empty()) {
+    char *pathbuf = new char[PATH_MAX];
+    uint32_t *bufsize;
+    if (_NSGetExecutablePath(pathbuf, bufsize) == 0) {
+      _binary_name = pathbuf;
+    }
+    delete[] pathbuf;
   }
 #endif
 
