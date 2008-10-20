@@ -28,6 +28,9 @@ class EggGroupNode;
 class EggVertexPool;
 class EggTexture;
 class LODNode;
+class SequenceNode;
+class SwitchNode;
+class CollisionNode;
 class GeomNode;
 class GeomTri;
 class GeomVertexData;
@@ -52,6 +55,12 @@ private:
   void convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
                     bool has_decal);
   void convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
+                        EggGroupNode *egg_parent, bool has_decal);
+  void convert_sequence_node(SequenceNode *node, const WorkingNodePath &node_path,
+                        EggGroupNode *egg_parent, bool has_decal);
+  void convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
+                        EggGroupNode *egg_parent, bool has_decal);
+  void convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
                         EggGroupNode *egg_parent, bool has_decal);
   void convert_geom_node(GeomNode *node, const WorkingNodePath &node_path, 
                          EggGroupNode *egg_parent, bool has_decal);

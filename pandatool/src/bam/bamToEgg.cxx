@@ -25,6 +25,9 @@
 #include "textureAttrib.h"
 #include "cullFaceAttrib.h"
 #include "lodNode.h"
+#include "switchNode.h"
+#include "sequenceNode.h"
+#include "collisionNode.h"
 #include "geomNode.h"
 #include "geom.h"
 #include "geomTriangles.h"
@@ -150,6 +153,15 @@ convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
   } else if (node->is_of_type(LODNode::get_class_type())) {
     convert_lod_node(DCAST(LODNode, node), node_path, egg_parent, has_decal);
 
+  } else if (node->is_of_type(SequenceNode::get_class_type())) {
+    convert_sequence_node(DCAST(SequenceNode, node), node_path, egg_parent, has_decal);
+
+  } else if (node->is_of_type(SwitchNode::get_class_type())) {
+    convert_switch_node(DCAST(SwitchNode, node), node_path, egg_parent, has_decal);
+
+  } else if (node->is_of_type(CollisionNode::get_class_type())) {
+    convert_collision_node(DCAST(CollisionNode, node), node_path, egg_parent, has_decal);
+
   } else {
     // Just a generic node.
     EggGroup *egg_group = new EggGroup(node->get_name());
@@ -206,6 +218,97 @@ convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
     next_group->set_lod(dist);
     egg_group->add_child(next_group.p());
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::convert_sequence_node
+//       Access: Private
+//  Description: Converts the indicated SequenceNode to the corresponding
+//               Egg constructs.
+////////////////////////////////////////////////////////////////////
+void BamToEgg::
+convert_sequence_node(SequenceNode *node, const WorkingNodePath &node_path,
+                 EggGroupNode *egg_parent, bool has_decal) {
+  // A sequence node gets converted to an ordinary EggGroup, we only apply
+  // the appropriate switch attributes to turn it into a sequence
+  EggGroup *egg_group = new EggGroup(node->get_name());
+  egg_parent->add_child(egg_group);
+  apply_node_properties(egg_group, node);
+
+  // turn it into a sequence with the right frame-rate
+  egg_group->set_switch_flag(true);
+  egg_group->set_switch_fps(node->get_frame_rate());
+
+  int num_children = node->get_num_children();
+
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = node->get_child(i);
+
+    // Convert just this one node to an EggGroup.
+    PT(EggGroup) next_group = new EggGroup;
+    convert_node(WorkingNodePath(node_path, child), next_group, has_decal);
+
+    egg_group->add_child(next_group.p());
+  }
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::convert_switch_node
+//       Access: Private
+//  Description: Converts the indicated SwitchNode to the corresponding
+//               Egg constructs.
+////////////////////////////////////////////////////////////////////
+void BamToEgg::
+convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
+                 EggGroupNode *egg_parent, bool has_decal) {
+  // A sequence node gets converted to an ordinary EggGroup, we only apply
+  // the appropriate switch attributes to turn it into a sequence
+  EggGroup *egg_group = new EggGroup(node->get_name());
+  egg_parent->add_child(egg_group);
+  apply_node_properties(egg_group, node);
+
+  // turn it into a switch..
+  egg_group->set_switch_flag(true);
+
+  recurse_nodes(node_path, egg_group, has_decal);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::convert_collision_node
+//       Access: Private
+//  Description: Converts the indicated CollisionNode to the corresponding
+//               Egg constructs.
+////////////////////////////////////////////////////////////////////
+void BamToEgg::
+convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
+                 EggGroupNode *egg_parent, bool has_decal) {
+  // A sequence node gets converted to an ordinary EggGroup, we only apply
+  // the appropriate switch attributes to turn it into a sequence
+  EggGroup *egg_group = new EggGroup(node->get_name());
+  egg_parent->add_child(egg_group);
+  apply_node_properties(egg_group, node);
+
+  // turn it into a collision node
+  egg_group->set_cs_type(EggGroup::CST_polyset);
+  egg_group->set_collide_flags(EggGroup::CF_descend);
+
+  /*
+  int num_solids = node->get_num_solids();
+
+  // traverse solids
+  for (int i = 0; i < num_solids; i++) {
+    PandaNode *child = node->get_solid(i);
+
+    // Convert just this one node to an EggGroup.
+    PT(EggGroup) next_group = new EggGroup;
+    convert_node(WorkingNodePath(node_path, child), next_group, has_decal);
+
+    egg_group->add_child(next_group.p());
+  }*/
+
+  // recurse over children - hm. do I need to do this?
+  recurse_nodes(node_path, egg_group, has_decal);
 }
 
 ////////////////////////////////////////////////////////////////////
