@@ -25,6 +25,7 @@
 
 #include "referenceCount.h"
 #include "httpEnum.h"
+#include "pmap.h"
 
 class URLSpec;
 
