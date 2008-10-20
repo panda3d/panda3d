@@ -21,8 +21,9 @@ if sys.platform == "win32":
     if sys.executable.endswith('_d.exe'):
         dll_suffix = '_d'
 elif sys.platform == "darwin":
-    # On OSX, the dynamic libraries usually end in .dylib.
-    dll_ext = '.dylib'
+    # On OSX, the dynamic libraries usually end in .dylib, but
+    # sometimes we need .so.
+    from extensions_darwin import dll_ext
 else:
     # On most other UNIX systems (including linux), .so is used.
     dll_ext = '.so'
