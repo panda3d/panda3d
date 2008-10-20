@@ -23,7 +23,10 @@ if sys.platform == "win32":
 elif sys.platform == "darwin":
     # On OSX, the dynamic libraries usually end in .dylib, but
     # sometimes we need .so.
-    from extensions_darwin import dll_ext
+    try:
+        from direct.extensions_native.extensions_darwin import dll_ext
+    except ImportError:
+        dll_ext = '.dylib'
 else:
     # On most other UNIX systems (including linux), .so is used.
     dll_ext = '.so'
