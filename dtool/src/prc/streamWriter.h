@@ -41,38 +41,40 @@ PUBLISHED:
 
   INLINE ostream *get_ostream() const;
 
-  INLINE void add_bool(bool value);
-  INLINE void add_int8(PN_int8 value);
-  INLINE void add_uint8(PN_uint8 value);
+  BLOCKING INLINE void add_bool(bool value);
+  BLOCKING INLINE void add_int8(PN_int8 value);
+  BLOCKING INLINE void add_uint8(PN_uint8 value);
 
   // The default numeric packing is little-endian.
-  INLINE void add_int16(PN_int16 value);
-  INLINE void add_int32(PN_int32 value);
-  INLINE void add_int64(PN_int64 value);
-  INLINE void add_uint16(PN_uint16 value);
-  INLINE void add_uint32(PN_uint32 value);
-  INLINE void add_uint64(PN_uint64 value);
-  INLINE void add_float32(float value);
-  INLINE void add_float64(PN_float64 value);
+  BLOCKING INLINE void add_int16(PN_int16 value);
+  BLOCKING INLINE void add_int32(PN_int32 value);
+  BLOCKING INLINE void add_int64(PN_int64 value);
+  BLOCKING INLINE void add_uint16(PN_uint16 value);
+  BLOCKING INLINE void add_uint32(PN_uint32 value);
+  BLOCKING INLINE void add_uint64(PN_uint64 value);
+  BLOCKING INLINE void add_float32(float value);
+  BLOCKING INLINE void add_float64(PN_float64 value);
 
   // These functions pack numbers big-endian, in case that's desired.
-  INLINE void add_be_int16(PN_int16 value);
-  INLINE void add_be_int32(PN_int32 value);
-  INLINE void add_be_int64(PN_int64 value);
-  INLINE void add_be_uint16(PN_uint16 value);
-  INLINE void add_be_uint32(PN_uint32 value);
-  INLINE void add_be_uint64(PN_uint64 value);
-  INLINE void add_be_float32(float value);
-  INLINE void add_be_float64(PN_float64 value);
+  BLOCKING INLINE void add_be_int16(PN_int16 value);
+  BLOCKING INLINE void add_be_int32(PN_int32 value);
+  BLOCKING INLINE void add_be_int64(PN_int64 value);
+  BLOCKING INLINE void add_be_uint16(PN_uint16 value);
+  BLOCKING INLINE void add_be_uint32(PN_uint32 value);
+  BLOCKING INLINE void add_be_uint64(PN_uint64 value);
+  BLOCKING INLINE void add_be_float32(float value);
+  BLOCKING INLINE void add_be_float64(PN_float64 value);
 
-  INLINE void add_string(const string &str);
-  INLINE void add_string32(const string &str);
-  INLINE void add_z_string(string str);
-  INLINE void add_fixed_string(const string &str, size_t size);
+  BLOCKING INLINE void add_string(const string &str);
+  BLOCKING INLINE void add_string32(const string &str);
+  BLOCKING INLINE void add_z_string(string str);
+  BLOCKING INLINE void add_fixed_string(const string &str, size_t size);
 
-  void pad_bytes(size_t size);
-  INLINE void append_data(const void *data, size_t size);
-  INLINE void append_data(const string &data);
+  BLOCKING void pad_bytes(size_t size);
+  BLOCKING INLINE void append_data(const void *data, size_t size);
+  BLOCKING INLINE void append_data(const string &data);
+
+  BLOCKING INLINE void flush();
 
 private:
   ostream *_out;

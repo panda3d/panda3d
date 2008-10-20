@@ -19,25 +19,8 @@
 #include "notifyCategoryProxy.h"
 #include "dconfig.h"
 
-// We include these files to force them to be instrumented by
-// interrogate.
-#include "pandaSystem.h"
-#include "globPattern.h"
-#include "pandaFileStream.h"
-#include "configFlags.h"
-#include "configPage.h"
-#include "configPageManager.h"
-#include "configVariable.h"
-#include "configVariableBase.h"
 #include "configVariableBool.h"
-#include "configVariableDouble.h"
-#include "configVariableFilename.h"
 #include "configVariableInt.h"
-#include "configVariableInt64.h"
-#include "configVariableList.h"
-#include "configVariableManager.h"
-#include "configVariableSearchPath.h"
-#include "configVariableString.h"
 
 ConfigureDecl(config_express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);

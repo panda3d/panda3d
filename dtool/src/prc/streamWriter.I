@@ -27,7 +27,7 @@ StreamWriter(ostream &out) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE StreamWriter::
@@ -39,7 +39,7 @@ StreamWriter(ostream *out, bool owns_stream) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description: The copy constructor does not copy ownership of the
 //               stream.
 ////////////////////////////////////////////////////////////////////
@@ -52,7 +52,7 @@ StreamWriter(const StreamWriter &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::Copy Assignment Operator
-//       Access: Public
+//       Access: Published
 //  Description: The copy constructor does not copy ownership of the
 //               stream.
 ////////////////////////////////////////////////////////////////////
@@ -67,7 +67,7 @@ operator = (const StreamWriter &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::Destructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE StreamWriter::
@@ -79,7 +79,7 @@ INLINE StreamWriter::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::get_ostream
-//       Access: Public
+//       Access: Published
 //  Description: Returns the stream in use.
 ////////////////////////////////////////////////////////////////////
 INLINE ostream *StreamWriter::
@@ -89,7 +89,7 @@ get_ostream() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_bool
-//       Access: Public
+//       Access: Published
 //  Description: Adds a boolean value to the stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
@@ -99,7 +99,7 @@ add_bool(bool b) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_int8
-//       Access: Public
+//       Access: Published
 //  Description: Adds a signed 8-bit integer to the stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
@@ -109,7 +109,7 @@ add_int8(PN_int8 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_uint8
-//       Access: Public
+//       Access: Published
 //  Description: Adds an unsigned 8-bit integer to the stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
@@ -119,7 +119,7 @@ add_uint8(PN_uint8 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_int16
-//       Access: Public
+//       Access: Published
 //  Description: Adds a signed 16-bit integer to the stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
@@ -130,7 +130,7 @@ add_int16(PN_int16 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_int32
-//       Access: Public
+//       Access: Published
 //  Description: Adds a signed 32-bit integer to the stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
@@ -141,7 +141,7 @@ add_int32(PN_int32 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_int64
-//       Access: Public
+//       Access: Published
 //  Description: Adds a signed 64-bit integer to the stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
@@ -152,7 +152,7 @@ add_int64(PN_int64 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_uint16
-//       Access: Public
+//       Access: Published
 //  Description: Adds an unsigned 16-bit integer to the stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
@@ -163,7 +163,7 @@ add_uint16(PN_uint16 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_uint32
-//       Access: Public
+//       Access: Published
 //  Description: Adds an unsigned 32-bit integer to the stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
@@ -174,7 +174,7 @@ add_uint32(PN_uint32 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_uint64
-//       Access: Public
+//       Access: Published
 //  Description: Adds an unsigned 64-bit integer to the stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
@@ -185,7 +185,7 @@ add_uint64(PN_uint64 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_float32
-//       Access: Public
+//       Access: Published
 //  Description: Adds a 32-bit single-precision floating-point number
 //               to the stream.  Since this kind of float is not
 //               necessarily portable across different architectures,
@@ -203,7 +203,7 @@ add_float32(float value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_float64
-//       Access: Public
+//       Access: Published
 //  Description: Adds a 64-bit floating-point number to the stream.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
@@ -214,7 +214,7 @@ add_float64(PN_float64 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_be_int16
-//       Access: Public
+//       Access: Published
 //  Description: Adds a signed 16-bit big-endian integer to the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////
@@ -226,7 +226,7 @@ add_be_int16(PN_int16 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_be_int32
-//       Access: Public
+//       Access: Published
 //  Description: Adds a signed 32-bit big-endian integer to the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////
@@ -238,7 +238,7 @@ add_be_int32(PN_int32 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_be_int64
-//       Access: Public
+//       Access: Published
 //  Description: Adds a signed 64-bit big-endian integer to the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////
@@ -250,7 +250,7 @@ add_be_int64(PN_int64 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_be_uint16
-//       Access: Public
+//       Access: Published
 //  Description: Adds an unsigned 16-bit big-endian integer to the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////
@@ -262,7 +262,7 @@ add_be_uint16(PN_uint16 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_be_uint32
-//       Access: Public
+//       Access: Published
 //  Description: Adds an unsigned 32-bit big-endian integer to the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////
@@ -274,7 +274,7 @@ add_be_uint32(PN_uint32 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_be_uint64
-//       Access: Public
+//       Access: Published
 //  Description: Adds an unsigned 64-bit big-endian integer to the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////
@@ -286,7 +286,7 @@ add_be_uint64(PN_uint64 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_be_float32
-//       Access: Public
+//       Access: Published
 //  Description: Adds a 32-bit single-precision big-endian
 //               floating-point number to the stream.  Since this
 //               kind of float is not necessarily portable across
@@ -304,7 +304,7 @@ add_be_float32(float value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_be_float64
-//       Access: Public
+//       Access: Published
 //  Description: Adds a 64-bit big-endian floating-point number to the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////
@@ -316,7 +316,7 @@ add_be_float64(PN_float64 value) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_string
-//       Access: Public
+//       Access: Published
 //  Description: Adds a variable-length string to the stream.  This
 //               actually adds a count followed by n bytes.
 ////////////////////////////////////////////////////////////////////
@@ -334,7 +334,7 @@ add_string(const string &str) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_string32
-//       Access: Public
+//       Access: Published
 //  Description: Adds a variable-length string to the stream, using a
 //               32-bit length field.
 ////////////////////////////////////////////////////////////////////
@@ -349,7 +349,7 @@ add_string32(const string &str) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_z_string
-//       Access: Public
+//       Access: Published
 //  Description: Adds a variable-length string to the stream, as a
 //               NULL-terminated string.
 ////////////////////////////////////////////////////////////////////
@@ -366,7 +366,7 @@ add_z_string(string str) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::add_fixed_string
-//       Access: Public
+//       Access: Published
 //  Description: Adds a fixed-length string to the stream.  If the
 //               string given is less than the requested size, this
 //               will pad the string out with zeroes; if it is greater
@@ -386,7 +386,7 @@ add_fixed_string(const string &str, size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::append_data
-//       Access: Public
+//       Access: Published
 //  Description: Appends some more raw data to the end of the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////
@@ -397,11 +397,21 @@ append_data(const void *data, size_t size) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: StreamWriter::append_data
-//       Access: Public
+//       Access: Published
 //  Description: Appends some more raw data to the end of the
 //               streamWriter.
 ////////////////////////////////////////////////////////////////////
 INLINE void StreamWriter::
 append_data(const string &data) {
   append_data(data.data(), data.length());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: StreamWriter::flush
+//       Access: Published
+//  Description: Calls flush() on the underlying stream.
+////////////////////////////////////////////////////////////////////
+INLINE void StreamWriter::
+flush() {
+  _out->flush();
 }

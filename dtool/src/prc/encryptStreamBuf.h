@@ -28,7 +28,7 @@
 //               IDecompressStream and OCompressStream.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG EncryptStreamBuf : public streambuf {
-public:
+PUBLISHED:
   EncryptStreamBuf();
   virtual ~EncryptStreamBuf();
 

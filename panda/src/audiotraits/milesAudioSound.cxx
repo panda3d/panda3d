@@ -170,6 +170,8 @@ set_active(bool active) {
           // ...we're pausing a looping sound.
           _paused = true;
         }
+        _start_time = get_time();
+        _got_start_time = true;
         stop();
       }
     }

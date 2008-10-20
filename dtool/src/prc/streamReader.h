@@ -38,37 +38,37 @@ PUBLISHED:
 
   INLINE istream *get_istream() const;
 
-  INLINE bool get_bool();
-  INLINE PN_int8 get_int8();
-  INLINE PN_uint8 get_uint8();
+  BLOCKING INLINE bool get_bool();
+  BLOCKING INLINE PN_int8 get_int8();
+  BLOCKING INLINE PN_uint8 get_uint8();
 
-  INLINE PN_int16 get_int16();
-  INLINE PN_int32 get_int32();
-  INLINE PN_int64 get_int64();
-  INLINE PN_uint16 get_uint16();
-  INLINE PN_uint32 get_uint32();
-  INLINE PN_uint64 get_uint64();
-  INLINE float get_float32();
-  INLINE PN_float64 get_float64();
+  BLOCKING INLINE PN_int16 get_int16();
+  BLOCKING INLINE PN_int32 get_int32();
+  BLOCKING INLINE PN_int64 get_int64();
+  BLOCKING INLINE PN_uint16 get_uint16();
+  BLOCKING INLINE PN_uint32 get_uint32();
+  BLOCKING INLINE PN_uint64 get_uint64();
+  BLOCKING INLINE float get_float32();
+  BLOCKING INLINE PN_float64 get_float64();
 
-  INLINE PN_int16 get_be_int16();
-  INLINE PN_int32 get_be_int32();
-  INLINE PN_int64 get_be_int64();
-  INLINE PN_uint16 get_be_uint16();
-  INLINE PN_uint32 get_be_uint32();
-  INLINE PN_uint64 get_be_uint64();
-  INLINE float get_be_float32();
-  INLINE PN_float64 get_be_float64();
+  BLOCKING INLINE PN_int16 get_be_int16();
+  BLOCKING INLINE PN_int32 get_be_int32();
+  BLOCKING INLINE PN_int64 get_be_int64();
+  BLOCKING INLINE PN_uint16 get_be_uint16();
+  BLOCKING INLINE PN_uint32 get_be_uint32();
+  BLOCKING INLINE PN_uint64 get_be_uint64();
+  BLOCKING INLINE float get_be_float32();
+  BLOCKING INLINE PN_float64 get_be_float64();
 
-  string get_string();
-  string get_string32();
-  string get_z_string();
-  string get_fixed_string(size_t size);
+  BLOCKING string get_string();
+  BLOCKING string get_string32();
+  BLOCKING string get_z_string();
+  BLOCKING string get_fixed_string(size_t size);
 
-  void skip_bytes(size_t size);
-  string extract_bytes(size_t size);
+  BLOCKING void skip_bytes(size_t size);
+  BLOCKING string extract_bytes(size_t size);
 
-  string readline();
+  BLOCKING string readline();
 
 private:
   istream *_in;

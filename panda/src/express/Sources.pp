@@ -19,6 +19,7 @@
     dcast.T dcast.h \
     encrypt_string.h \
     error_utils.h \
+    export_dtool.h \
     hashGeneratorBase.I hashGeneratorBase.h \
     hashVal.I hashVal.h \
     indirectLess.I indirectLess.h \

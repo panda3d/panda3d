@@ -178,13 +178,15 @@ PUBLISHED:
   bool open_read(ifstream &stream) const;
   bool open_write(ofstream &stream, bool truncate = true) const;
   bool open_append(ofstream &stream) const;
-  bool open_read_write(fstream &stream) const;
+  bool open_read_write(fstream &stream, bool truncate = false) const;
+  bool open_read_append(fstream &stream) const;
 
 #ifdef USE_PANDAFILESTREAM
   bool open_read(pifstream &stream) const;
   bool open_write(pofstream &stream, bool truncate = true) const;
   bool open_append(pofstream &stream) const;
-  bool open_read_write(pfstream &stream) const;
+  bool open_read_write(pfstream &stream, bool truncate = false) const;
+  bool open_read_append(pfstream &stream) const;
 #endif  // USE_PANDAFILESTREAM
 
   bool chdir() const;

@@ -35,7 +35,7 @@
 //               Seeking is not supported.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS IDecompressStream : public istream {
-public:
+PUBLISHED:
   INLINE IDecompressStream();
   INLINE IDecompressStream(istream *source, bool owns_source);
 
@@ -59,7 +59,7 @@ private:
 //               Seeking is not supported.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS OCompressStream : public ostream {
-public:
+PUBLISHED:
   INLINE OCompressStream();
   INLINE OCompressStream(ostream *dest, bool owns_dest, 
                            int compression_level = 6);

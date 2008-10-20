@@ -23,6 +23,7 @@
 #include "string_utils.h"
 #include "configVariableInt.h"
 #include "configVariableString.h"
+#include "configVariableFilename.h"
 
 BamCache *BamCache::_global_ptr = NULL;
 

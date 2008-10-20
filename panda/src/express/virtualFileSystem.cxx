@@ -285,6 +285,9 @@ get_file(const Filename &filename) const {
   Filename pathname(filename);
   if (pathname.is_local()) {
     pathname = Filename(_cwd, filename);
+    if (filename.is_text()) {
+      pathname.set_text();
+    }
   }
   pathname.standardize();
   string strpath = pathname.get_filename_index(0).get_fullpath().substr(1);
@@ -720,7 +723,11 @@ found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
             const Filename &original_filename, bool implicit_pz_file) const {
   if (found_file == (VirtualFile *)NULL) {
     // This was our first match.  Save it.
-    found_file = new VirtualFileSimple(mount, local_filename, implicit_pz_file);
+    Filename local(local_filename);
+    if (original_filename.is_text()) {
+      local.set_text();
+    }
+    found_file = new VirtualFileSimple(mount, local, implicit_pz_file);
     found_file->set_original_filename(original_filename);
     if (!mount->is_directory(local_filename)) {
       // If it's not a directory, we're done.

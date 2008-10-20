@@ -28,7 +28,7 @@
 #include "pandaSystem.h"
 #include "numeric_types.h"
 #include "namable.h"
-
+#include "export_dtool.h"
 #include "dconfig.h"
 
 ConfigureDef(config_express);

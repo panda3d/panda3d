@@ -16,6 +16,8 @@ forcetype NeverFreeMemory
 forcetype IFileStream
 forcetype OFileStream
 forcetype FileStream
+forcetype IDecryptStream
+forcetype OEncryptStream
 
 forcetype ConfigExpress
 renametype ConfigExpress ConfigExpress

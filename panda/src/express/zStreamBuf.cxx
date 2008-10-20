@@ -219,6 +219,7 @@ sync() {
     pbump(-(int)n);
   }
 
+  _dest->flush();
   return 0;
 }
 

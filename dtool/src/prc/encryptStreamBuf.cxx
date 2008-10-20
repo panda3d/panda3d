@@ -372,7 +372,8 @@ sync() {
     write_chars(pbase(), n);
     pbump(-(int)n);
   }
-
+  
+  _dest->flush();
   return 0;
 }
 
