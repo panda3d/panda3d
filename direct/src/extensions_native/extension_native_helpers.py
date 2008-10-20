@@ -20,11 +20,11 @@ if sys.platform == "win32":
     # libpanda_d.dll, etc.
     if sys.executable.endswith('_d.exe'):
         dll_suffix = '_d'
-
+elif sys.platform == "darwin":
+    # On OSX, the dynamic libraries usually end in .dylib.
+    dll_ext = '.dylib'
 else:
-    # On OSX or Linux, dynamic libraries end in ".so".  OSX also
-    # provides *.dylib files, but these are apparently not intended to
-    # be imported directly.
+    # On most other UNIX systems (including linux), .so is used.
     dll_ext = '.so'
 
 if sys.platform == "win32":
