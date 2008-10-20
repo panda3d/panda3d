@@ -169,3 +169,8 @@
 
 // The dynamic library file extension (usually .so .dll or .dylib):
 #define DYNAMIC_LIB_EXT .dylib
+
+// If you need to build .so files in addition to .dylibs, declare this
+// too.  Python 2.4 on OSX 10.4 seems to require this (it won't import
+// a .dylib file directly).
+//#define BUNDLE_EXT .so
