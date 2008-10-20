@@ -555,6 +555,7 @@ class ClientRepositoryBase(ConnectionRepository):
         else:
             # This object has been fully generated.  It's OK to update.
             self.__doUpdate(doId, di, ovUpdated)
+            
 
     def __doUpdate(self, doId, di, ovUpdated):
         # Find the DO
@@ -563,8 +564,22 @@ class ClientRepositoryBase(ConnectionRepository):
             # Let the dclass finish the job
             do.dclass.receiveUpdate(do, di)
         elif not ovUpdated:
-            self.notify.warning(
-                "Asked to update non-existent DistObj " + str(doId))
+            # this next bit is looking for friend handles so that if you get an update 
+            # for an avatar that isn't in your doId2do table but there is a 
+            # friend handle for that object then it's messages will be forwarded to that 
+            # object. We are currently using that for whisper echoing
+            # if you need a more general perpose system consider registering proxy objects on
+            # a dict and adding the friend handles to that dict when they are created
+            # then change/remove the old method. I didn't do that because I couldn't think
+            # of a use for it. -JML
+            handle = self.identifyAvatar(doId)
+            if handle:
+                dclass = self.dclassesByName[handle.dclassName]
+                dclass.receiveUpdate(handle, di)
+                
+            else:
+                self.notify.warning(
+                    "Asked to update non-existent DistObj " + str(doId))
             
     def __doUpdateOwner(self, doId, di):
         ovObj = self.doId2ownerView.get(doId)
