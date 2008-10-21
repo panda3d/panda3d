@@ -342,7 +342,7 @@ generate() {
     gr.apply_attribs(root);
     gr.flatten(root, ~SceneGraphReducer::CS_within_radius);
     gr.collect_vertex_data(root);
-    gr.unify(root, false);
+    gr.unify(root, true);
   }
 
   // Now deal with the decorations.
