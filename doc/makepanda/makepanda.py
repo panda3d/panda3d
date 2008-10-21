@@ -304,9 +304,9 @@ if (COMPILER=="LINUX"):
     LibName("GTK2", "-lgtk-x11-2.0")
 
     if (sys.platform == "darwin"):
-        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "FFMPEG", "PNG", "JPEG", "TIFF"]
+        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FFMPEG", "PNG", "JPEG", "TIFF"]
     else:
-        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "NVIDIACG", "FFMPEG", "OPENAL"]
+        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "NVIDIACG", "FFMPEG", "OPENAL"]
     for pkg in pkgs:
         if (PkgSkip(pkg)==0):
             if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
