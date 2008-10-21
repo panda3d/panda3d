@@ -20,7 +20,7 @@
 #include "pStatClientData.h"
 #include "pStatThreadData.h"
 #include "pStatViewLevel.h"
-
+#include "pmap.h"
 #include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
