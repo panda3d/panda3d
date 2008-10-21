@@ -46,8 +46,13 @@ class TaskTracker:
                 self.notify.info(s)
         return isSpike
     def addProfileSession(self, session):
-        isSpike = self._checkSpike(session)
         duration = session.getDuration()
+        if duration == 0.:
+            # profiled code was too fast for the clock, throw this result out
+            # if we keep it we may get many false positive spike detects
+            return
+
+        isSpike = self._checkSpike(session)
         self._durationAverager.addValue(duration)
 
         storeAvg = True
