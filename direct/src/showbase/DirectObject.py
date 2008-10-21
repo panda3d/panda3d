@@ -3,6 +3,7 @@
 __all__ = ['DirectObject']
 
 
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from MessengerGlobal import messenger
 from direct.showbase.PythonUtil import ClassTree
 
@@ -81,3 +82,22 @@ class DirectObject:
     def _clearTask(self, task):
         del self._taskList[task.id]        
         
+    def detectLeaks(self):
+        # call this after the DirectObject instance has been destroyed
+        # if it's leaking, will notify user
+        
+        # make sure we're not still listening for messenger events
+        events = messenger.getAllAccepting(self)
+        # make sure we're not leaking tasks
+        # TODO: include tasks that were added directly to the taskMgr
+        tasks = []
+        if hasattr(self, '_taskList'):
+            tasks = [task.name for task in self._taskList.values()]
+        if len(events) or len(tasks):
+            estr = choice(len(events), 'listening to events: %s' % events, '')
+            andStr = choice(len(events) and len(tasks), ' and ', '')
+            tstr = choice(len(tasks), '%srunning tasks: %s' % (andStr, tasks), '')
+            notify = directNotify.newCategory('LeakDetect')
+            func = choice(getRepository()._crashOnProactiveLeakDetect,
+                          self.notify.error, self.notify.warning)
+            func('destroyed %s instance is still %s%s' % (self.__class__.__name__, estr, tstr))
