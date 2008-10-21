@@ -92,14 +92,14 @@ do_assign(const OpenCVTexture &copy) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenCVTexture::from_camera
-//       Access: Published, Virtual
+//       Access: Published
 //  Description: Sets up the OpenCVTexture (or the indicated page, if z
 //               is specified) to accept its input from the camera
 //               with the given index number, or the default camera if
 //               the index number is -1 or unspecified.
 ////////////////////////////////////////////////////////////////////
 bool OpenCVTexture::
-from_camera(int camera_index, int z) {
+from_camera(int camera_index, int z, const LoaderOptions &options) {
   if (!do_reconsider_z_size(z)) {
     return false;
   }
@@ -111,7 +111,7 @@ from_camera(int camera_index, int z) {
     return false;
   }
 
-  if (!do_reconsider_video_properties(page._color, 3, z)) {
+  if (!do_reconsider_video_properties(page._color, 3, z, options)) {
     page._color.clear();
     return false;
   }
@@ -148,7 +148,8 @@ modify_page(int z) {
 ////////////////////////////////////////////////////////////////////
 bool OpenCVTexture::
 do_reconsider_video_properties(const OpenCVTexture::VideoStream &stream, 
-                            int num_components, int z) {
+                               int num_components, int z, 
+                               const LoaderOptions &options) {
   double frame_rate = 0.0f;
   int num_frames = 0;
 
@@ -308,7 +309,8 @@ update_frame(int frame) {
 bool OpenCVTexture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
-            BamCacheRecord *record) {
+            const LoaderOptions &options,
+            bool header_only, BamCacheRecord *record) {
   if (record != (BamCacheRecord *)NULL) {
     record->add_dependent_file(fullpath);
   }
@@ -349,7 +351,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 
   if (alpha_fullpath.empty()) {
     // Only one RGB movie.
-    if (!do_reconsider_video_properties(page._color, 3, z)) {
+    if (!do_reconsider_video_properties(page._color, 3, z, options)) {
       page._color.clear();
       return false;
     }
@@ -358,13 +360,13 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     // An RGB movie combined with an alpha movie.
     _alpha_file_channel = alpha_file_channel;
 
-    if (!do_reconsider_video_properties(page._color, 4, z)) {
+    if (!do_reconsider_video_properties(page._color, 4, z, options)) {
       page._color.clear();
       page._alpha.clear();
       return false;
     }
     
-    if (!do_reconsider_video_properties(page._alpha, 4, z)) {
+    if (!do_reconsider_video_properties(page._alpha, 4, z, options)) {
       page._color.clear();
       page._alpha.clear();
       return false;
@@ -384,14 +386,15 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 //               texture) to the indicated static image.
 ////////////////////////////////////////////////////////////////////
 bool OpenCVTexture::
-do_load_one(const PNMImage &pnmimage, const string &name, int z, int n) {
+do_load_one(const PNMImage &pnmimage, const string &name,
+            int z, int n, const LoaderOptions &options) {
   if (z <= (int)_pages.size()) {
     VideoPage &page = modify_page(z);
     page._color.clear();
     page._alpha.clear();
   }
 
-  return Texture::do_load_one(pnmimage, name, z, n);
+  return Texture::do_load_one(pnmimage, name, z, n, options);
 }
 
 ////////////////////////////////////////////////////////////////////

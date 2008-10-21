@@ -39,7 +39,8 @@ protected:
 PUBLISHED:
   virtual ~OpenCVTexture();
 
-  bool from_camera(int camera_index = -1, int z = 0);
+  bool from_camera(int camera_index = -1, int z = 0,
+                   const LoaderOptions &options = LoaderOptions());
 
 public:
   static PT(Texture) make_texture();
@@ -52,9 +53,10 @@ protected:
 
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
-                           BamCacheRecord *record);
+                           const LoaderOptions &options,
+                           bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
-                           int z, int n);
+                           int z, int n, const LoaderOptions &options);
 
 private:    
   class VideoPage;
@@ -62,7 +64,8 @@ private:
 
   VideoPage &modify_page(int z);
   bool do_reconsider_video_properties(const VideoStream &stream, 
-                                      int num_components, int z);
+                                      int num_components, int z, 
+                                      const LoaderOptions &options);
   void do_update();
 
   class VideoStream {
