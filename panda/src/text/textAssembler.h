@@ -195,7 +195,7 @@ private:
   void assemble_row(TextRow &row,
                     PlacedGlyphs &row_placed_glyphs,
                     float &row_width, float &line_height, 
-                    TextProperties::Alignment &align);
+                    TextProperties::Alignment &align, float &wordwrap);
 
   // These interfaces are for implementing cheesy accent marks and
   // ligatures when the font doesn't support them.

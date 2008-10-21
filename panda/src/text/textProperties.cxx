@@ -50,6 +50,7 @@ TextProperties() {
   _tab_width = text_tab_width;
   _glyph_scale = 1.0f;
   _glyph_shift = 0.0f;
+  _text_scale = 1.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -89,6 +90,7 @@ operator = (const TextProperties &copy) {
   _tab_width = copy._tab_width;
   _glyph_scale = copy._glyph_scale;
   _glyph_shift = copy._glyph_shift;
+  _text_scale = copy._text_scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -159,6 +161,9 @@ operator == (const TextProperties &other) const {
   if ((_specified & F_has_glyph_shift) && _glyph_shift != other._glyph_shift) {
     return false;
   }
+  if ((_specified & F_has_text_scale) && _text_scale != other._text_scale) {
+    return false;
+  }
   return true;
 }
 
@@ -227,14 +232,18 @@ add_properties(const TextProperties &other) {
     set_tab_width(other.get_tab_width());
   }
 
-
   // The glyph scale and shift are a special case: rather than
-  // replacing the previous value, they modify it.
+  // replacing the previous value, they modify it, so that they apply
+  // cumulatively to nested TextProperties.
   if (other.has_glyph_shift()) {
     set_glyph_shift(other.get_glyph_shift() * get_glyph_scale() + get_glyph_shift());
   }
   if (other.has_glyph_scale()) {
     set_glyph_scale(other.get_glyph_scale() * get_glyph_scale());
+  }
+
+  if (other.has_text_scale()) {
+    set_text_scale(other.get_text_scale());
   }
 }
 
@@ -343,6 +352,11 @@ write(ostream &out, int indent_level) const {
   if (has_glyph_shift()) {
     indent(out, indent_level)
       << "glyph shift is " << get_glyph_shift() << "\n";
+  }
+
+  if (has_text_scale()) {
+    indent(out, indent_level)
+      << "text scale is " << get_text_scale() << "\n";
   }
 }
 
