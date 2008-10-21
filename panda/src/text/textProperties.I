@@ -850,18 +850,9 @@ get_tab_width() const {
 //     Function: TextProperties::set_glyph_scale
 //       Access: Published
 //  Description: Specifies the factor by which to scale each letter of
-//               the text as it is placed, in addition to any scales
-//               inherited from the node or from set_text_scale().
-//               This can be used (possibly in conjunction with
-//               set_glyph_shift()) to implement superscripting or
-//               subscripting.
-//
-//               The glyph scale is cumulative when applied to nested
-//               TextProperties.  It is intended primarily for
-//               implementing superscripts, not for scaling the text
-//               in general.  See also set_text_scale(), which is
-//               intended primarily for scaling the text in general,
-//               and is not cumulative.
+//               the text as it is placed.  This can be used (possibly
+//               in conjunction with set_glyph_shift()) to implement
+//               superscripting or subscripting.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextProperties::
 set_glyph_scale(float glyph_scale) {
@@ -945,53 +936,4 @@ has_glyph_shift() const {
 INLINE float TextProperties::
 get_glyph_shift() const {
   return _glyph_shift;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::set_text_scale
-//       Access: Published
-//  Description: Specifies the factor by which to scale the text, in
-//               addition to any scalings imposed by the node, as well
-//               as in addition to the glyph scale.
-//
-//               The text scale is not cumulative when applied to
-//               nested TextProperties.  See also set_glyph_scale(),
-//               which is cumulative.
-////////////////////////////////////////////////////////////////////
-INLINE void TextProperties::
-set_text_scale(float text_scale) {
-  _text_scale = text_scale;
-  _specified |= F_has_text_scale;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::clear_text_scale
-//       Access: Published
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void TextProperties::
-clear_text_scale() {
-  _specified &= ~F_has_text_scale;
-  _text_scale = 0.0f;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::has_text_scale
-//       Access: Published
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE bool TextProperties::
-has_text_scale() const {
-  return (_specified & F_has_text_scale) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextProperties::get_text_scale
-//       Access: Published
-//  Description: Returns the scale factor of the text as specified
-//               by set_text_scale().
-////////////////////////////////////////////////////////////////////
-INLINE float TextProperties::
-get_text_scale() const {
-  return _text_scale;
 }

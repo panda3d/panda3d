@@ -636,7 +636,7 @@ calc_width(wchar_t character, const TextProperties &properties) {
     // A space is a special case.
     TextFont *font = properties.get_font();
     nassertr(font != (TextFont *)NULL, 0.0f);
-    return font->get_space_advance() * properties.get_glyph_scale() * properties.get_text_scale();
+    return font->get_space_advance();
   }
 
   bool got_glyph;
@@ -659,7 +659,7 @@ calc_width(wchar_t character, const TextProperties &properties) {
     advance += second_glyph->get_advance();
   }
 
-  glyph_scale *= properties.get_glyph_scale() * properties.get_text_scale();
+  glyph_scale *= properties.get_glyph_scale();
 
   return advance * glyph_scale;
 }
@@ -672,7 +672,7 @@ calc_width(wchar_t character, const TextProperties &properties) {
 float TextAssembler::
 calc_width(const TextGraphic *graphic, const TextProperties &properties) {
   LVecBase4f frame = graphic->get_frame();
-  return (frame[1] - frame[0]) * properties.get_glyph_scale() * properties.get_text_scale();
+  return (frame[1] - frame[0]) * properties.get_glyph_scale();
 }
 
 #ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.
@@ -1079,10 +1079,11 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
 
     // First, assemble all the glyphs of this row.
     PlacedGlyphs row_placed_glyphs;
-    float row_width, line_height, wordwrap;
+    float row_width, line_height;
     TextProperties::Alignment align;
     assemble_row(row, row_placed_glyphs,
-                 row_width, line_height, align, wordwrap);
+                 row_width, line_height, align);
+
     // Now move the row to its appropriate position.  This might
     // involve a horizontal as well as a vertical translation.
     LMatrix4f mat = LMatrix4f::ident_mat();
@@ -1099,23 +1100,20 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
     _lr[1] = ypos - 0.2f * line_height;
 
     // Apply the requested horizontal alignment to the row.
-    //[fabius] now we put wordwrap into the calculations
     float xpos;
     switch (align) {
     case TextProperties::A_left:
       xpos = 0.0f;
-      _lr[0] = max(_lr[0], max(row_width, wordwrap));
+      _lr[0] = max(_lr[0], row_width);
       break;
 
     case TextProperties::A_right:
       xpos = -row_width;
-      if (wordwrap > row_width) xpos += wordwrap;
       _ul[0] = min(_ul[0], xpos);
       break;
 
     case TextProperties::A_center:
       xpos = -0.5f * row_width;
-      if (wordwrap > row_width) xpos += (wordwrap * 0.5f);
       _ul[0] = min(_ul[0], xpos);
       _lr[0] = max(_lr[0], -xpos);
       break;
@@ -1155,7 +1153,7 @@ void TextAssembler::
 assemble_row(TextAssembler::TextRow &row,
              TextAssembler::PlacedGlyphs &row_placed_glyphs,
              float &row_width, float &line_height, 
-             TextProperties::Alignment &align, float &wordwrap) {
+             TextProperties::Alignment &align) {
   Thread *current_thread = Thread::get_current_thread();
 
   line_height = 0.0f;
@@ -1191,11 +1189,6 @@ assemble_row(TextAssembler::TextRow &row,
 
     // We get the row's alignment property from that of the last
     // character to be placed in the row (or the newline character).
-    //[fabius] differently as stated above this is not a sure way to get it so we'll set it as soon as we found it
-    if (
-      (align == TextProperties::A_left) &&
-      (properties->get_align() != TextProperties::A_left)
-      )
     align = properties->get_align();
 
     // And the height of the row is the maximum of all the fonts used
@@ -1204,8 +1197,7 @@ assemble_row(TextAssembler::TextRow &row,
       LVecBase4f frame = graphic->get_frame();
       line_height = max(line_height, frame[3] - frame[2]);
     } else {
-      //[fabius] this is not the right place to calc line height (see below)
-//       line_height = max(line_height, font->get_line_height());
+      line_height = max(line_height, font->get_line_height());
     }
 
     if (character == ' ') {
@@ -1228,7 +1220,7 @@ assemble_row(TextAssembler::TextRow &row,
       placement->_graphic_model = graphic->get_model().node();
 
       LVecBase4f frame = graphic->get_frame();
-      float glyph_scale = properties->get_glyph_scale() * properties->get_text_scale();
+      float glyph_scale = properties->get_glyph_scale();
 
       float advance = (frame[1] - frame[0]);
 
@@ -1302,11 +1294,8 @@ assemble_row(TextAssembler::TextRow &row,
         advance += second_glyph->get_advance();
       }
 
-      glyph_scale *= properties->get_glyph_scale() * properties->get_text_scale();
-      //[fabius] a good place to take wordwrap size
-      if (properties->get_wordwrap() > 0.0f) {
-        wordwrap = properties->get_wordwrap();
-      }
+      glyph_scale *= properties->get_glyph_scale();
+
       // Now compute the matrix that will transform the glyph (or
       // glyphs) into position.
       LMatrix4f glyph_xform = LMatrix4f::scale_mat(glyph_scale);
@@ -1361,8 +1350,6 @@ assemble_row(TextAssembler::TextRow &row,
       placement->_properties = properties;
 
       xpos += advance * glyph_scale;
-      //[fabius] the line height is calculated char by char here
-      line_height = max(line_height, font->get_line_height()*glyph_scale);
     }
   }
 
@@ -1382,9 +1369,8 @@ assemble_row(TextAssembler::TextRow &row,
     TextFont *font = properties->get_font();
     nassertv(font != (TextFont *)NULL);
 
-    //[fabius] not here but above
-/*     align = properties->get_align();
-    line_height = max(line_height, font->get_line_height());*/
+    align = properties->get_align();
+    line_height = max(line_height, font->get_line_height());
   }
 }
   
