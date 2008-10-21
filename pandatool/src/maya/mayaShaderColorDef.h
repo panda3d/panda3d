@@ -19,6 +19,8 @@
 
 #include "luse.h"
 #include "lmatrix.h"
+#include "pmap.h"
+#include "pvector.h"
 
 class MObject;
 class MPlug;
