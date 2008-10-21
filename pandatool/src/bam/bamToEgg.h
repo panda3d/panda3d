@@ -71,7 +71,7 @@ private:
 
   void recurse_nodes(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
                      bool has_decal);
-  bool apply_node_properties(EggGroup *egg_group, PandaNode *node);
+  bool apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage = true);
 
   EggTexture *get_egg_texture(Texture *tex);
 

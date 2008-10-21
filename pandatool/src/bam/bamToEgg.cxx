@@ -28,6 +28,10 @@
 #include "switchNode.h"
 #include "sequenceNode.h"
 #include "collisionNode.h"
+#include "collisionPolygon.h"
+#include "collisionPlane.h"
+#include "collisionSphere.h"
+#include "collisionInvSphere.h"
 #include "geomNode.h"
 #include "geom.h"
 #include "geomTriangles.h"
@@ -228,7 +232,7 @@ convert_lod_node(LODNode *node, const WorkingNodePath &node_path,
 ////////////////////////////////////////////////////////////////////
 void BamToEgg::
 convert_sequence_node(SequenceNode *node, const WorkingNodePath &node_path,
-                 EggGroupNode *egg_parent, bool has_decal) {
+                      EggGroupNode *egg_parent, bool has_decal) {
   // A sequence node gets converted to an ordinary EggGroup, we only apply
   // the appropriate switch attributes to turn it into a sequence
   EggGroup *egg_group = new EggGroup(node->get_name());
@@ -261,7 +265,7 @@ convert_sequence_node(SequenceNode *node, const WorkingNodePath &node_path,
 ////////////////////////////////////////////////////////////////////
 void BamToEgg::
 convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
-                 EggGroupNode *egg_parent, bool has_decal) {
+                    EggGroupNode *egg_parent, bool has_decal) {
   // A sequence node gets converted to an ordinary EggGroup, we only apply
   // the appropriate switch attributes to turn it into a sequence
   EggGroup *egg_group = new EggGroup(node->get_name());
@@ -271,7 +275,17 @@ convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
   // turn it into a switch..
   egg_group->set_switch_flag(true);
 
-  recurse_nodes(node_path, egg_group, has_decal);
+  int num_children = node->get_num_children();
+
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = node->get_child(i);
+
+    // Convert just this one node to an EggGroup.
+    PT(EggGroup) next_group = new EggGroup;
+    convert_node(WorkingNodePath(node_path, child), next_group, has_decal);
+
+    egg_group->add_child(next_group.p());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -282,30 +296,52 @@ convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
 ////////////////////////////////////////////////////////////////////
 void BamToEgg::
 convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
-                 EggGroupNode *egg_parent, bool has_decal) {
+                       EggGroupNode *egg_parent, bool has_decal) {
   // A sequence node gets converted to an ordinary EggGroup, we only apply
   // the appropriate switch attributes to turn it into a sequence
   EggGroup *egg_group = new EggGroup(node->get_name());
   egg_parent->add_child(egg_group);
-  apply_node_properties(egg_group, node);
+  apply_node_properties(egg_group, node, false);
 
   // turn it into a collision node
   egg_group->set_cs_type(EggGroup::CST_polyset);
   egg_group->set_collide_flags(EggGroup::CF_descend);
 
-  /*
   int num_solids = node->get_num_solids();
 
-  // traverse solids
-  for (int i = 0; i < num_solids; i++) {
-    PandaNode *child = node->get_solid(i);
+  if (num_solids > 0) {
+    // create vertex pool for collisions
+    EggVertexPool *cvpool = new EggVertexPool("vpool-collision");
+    egg_group->add_child(cvpool);
 
-    // Convert just this one node to an EggGroup.
-    PT(EggGroup) next_group = new EggGroup;
-    convert_node(WorkingNodePath(node_path, child), next_group, has_decal);
+    // traverse solids
+    for (int i = 0; i < num_solids; i++) {
+      CPT(CollisionSolid) child = node->get_solid(i);
+      if (child->is_of_type(CollisionPolygon::get_class_type())) {
+        EggPolygon *egg_poly = new EggPolygon;
+        egg_group->add_child(egg_poly);
 
-    egg_group->add_child(next_group.p());
-  }*/
+        CPT(CollisionPolygon) poly = DCAST(CollisionPolygon, child);
+        int num_points = poly->get_num_points();
+        for (int j = 0; j < num_points; j++) {
+          EggVertex egg_vert;
+          egg_vert.set_pos(LCAST(double, poly->get_point(j)));
+          egg_vert.set_normal(LCAST(double, poly->get_normal()));
+
+          EggVertex *new_egg_vert = cvpool->create_unique_vertex(egg_vert);
+          egg_poly->add_vertex(new_egg_vert);
+        }
+      } else if (child->is_of_type(CollisionPlane::get_class_type())) {
+        nout << "Encountered unhandled collsion type: CollisionPlane" << "\n";
+      } else if (child->is_of_type(CollisionSphere::get_class_type())) {
+        nout << "Encountered unhandled collsion type: CollisionSphere" << "\n";
+      } else if (child->is_of_type(CollisionInvSphere::get_class_type())) {
+        nout << "Encountered unhandled collsion type: CollisionInvSphere" << "\n";
+      } else {
+        nout << "Encountered unknown CollisionSolid" << "\n";
+      }
+    }
+  }
 
   // recurse over children - hm. do I need to do this?
   recurse_nodes(node_path, egg_group, has_decal);
@@ -504,12 +540,13 @@ recurse_nodes(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
 //               were applied, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool BamToEgg::
-apply_node_properties(EggGroup *egg_group, PandaNode *node) {
+apply_node_properties(EggGroup *egg_group, PandaNode *node, bool allow_backstage) {
   bool any_applied = false;
 
-  if (node->is_overall_hidden()) {
+  if (node->is_overall_hidden() && allow_backstage) {
     // This node is hidden.  We'll go ahead and convert it, but we'll
     // put in the "backstage" flag to mean it's not real geometry.
+    // unless the caller wants to keep it (by setting allow_backstage to false)
     egg_group->add_object_type("backstage");
   }
 
