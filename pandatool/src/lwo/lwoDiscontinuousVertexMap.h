@@ -20,6 +20,7 @@
 #include "lwoChunk.h"
 
 #include "pta_float.h"
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LwoDiscontinuousVertexMap
