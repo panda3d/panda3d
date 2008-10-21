@@ -345,7 +345,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("FFTW")==0):       LibName("FFTW", "-lfftw")
     if (PkgSkip("ARTOOLKIT")==0):  LibName("ARTOOLKIT", "-lAR")
     if (PkgSkip("ODE")==0):        LibName("ODE", "-lode")
-    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcv -lcvaux -lcvcore -lhighgui -lml")
+    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcv -lcvaux -lcxcore -lhighgui -lml")
     if (sys.platform == "darwin"):
       LibName("AGL", "-framework AGL")
       LibName("CARBON", "-framework Carbon")
