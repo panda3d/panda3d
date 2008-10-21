@@ -47,7 +47,7 @@ public:
 
 protected:
   virtual PT(Texture) do_make_copy();
-  void do_assign(const FFMpegTexture &copy);
+  void do_assign(const OpenCVTexture &copy);
 
   virtual void update_frame(int frame);
 

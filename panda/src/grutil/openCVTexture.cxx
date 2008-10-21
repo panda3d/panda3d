@@ -181,7 +181,7 @@ do_reconsider_video_properties(const OpenCVTexture::VideoStream &stream,
   }
 
   if (!do_reconsider_image_properties(x_size, y_size, num_components,
-                                   T_unsigned_byte, z)) {
+                                      T_unsigned_byte, z, options)) {
     return false;
   }
 
