@@ -40,7 +40,7 @@ THREADCOUNT=0
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","FMODEX",
   "OPENAL","NVIDIACG","OPENSSL","FREETYPE","FFTW","ARTOOLKIT",
-  "ODE","DIRECTCAM","FFMPEG","PANDATOOL"
+  "ODE","DIRECTCAM","OPENCV", "FFMPEG","PANDATOOL"
 ])
 
 CheckPandaSourceTree()
@@ -345,6 +345,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("FFTW")==0):       LibName("FFTW", "-lfftw")
     if (PkgSkip("ARTOOLKIT")==0):  LibName("ARTOOLKIT", "-lAR")
     if (PkgSkip("ODE")==0):        LibName("ODE", "-lode")
+    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcv -lcvaux -lcvcore -lhighgui -lml")
     if (sys.platform == "darwin"):
       LibName("AGL", "-framework AGL")
       LibName("CARBON", "-framework Carbon")
@@ -803,6 +804,7 @@ DTOOL_CONFIG=[
     ("HAVE_FFMPEG",                    'UNDEF',                  'UNDEF'),
     ("HAVE_ARTOOLKIT",                 'UNDEF',                  'UNDEF'),
     ("HAVE_ODE",                       'UNDEF',                  'UNDEF'),
+    ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
@@ -1703,7 +1705,7 @@ TargetAdd('libmovies_igate.obj', input='libmovies.in', opts=["DEPENDENCYONLY"])
 # DIRECTORY: panda/src/grutil/
 #
 
-OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA',  'FFMPEG', 'ARTOOLKIT']
+OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA',  'FFMPEG', 'ARTOOLKIT', 'OPENCV']
 TargetAdd('grutil_multitexReducer.obj', opts=OPTS, input='multitexReducer.cxx')
 TargetAdd('grutil_composite1.obj', opts=OPTS, input='grutil_composite1.cxx')
 TargetAdd('grutil_composite2.obj', opts=OPTS, input='grutil_composite2.cxx')
