@@ -494,8 +494,9 @@ receive_update(PyObject *distobj, DatagramIterator &di) const {
   PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
 #endif
     DCPacker packer;
-    packer.set_unpack_data(di.get_remaining_bytes());
-
+    const char *data = (const char *)di.get_datagram().get_data();
+    packer.set_unpack_data(data + di.get_current_index(),
+                           di.get_remaining_size(), false);
 
     int field_id = packer.raw_unpack_uint16();
     DCField *field = get_field_by_index(field_id);
@@ -532,7 +533,9 @@ receive_update_broadcast_required(PyObject *distobj, DatagramIterator &di) const
   PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
 #endif
   DCPacker packer;
-  packer.set_unpack_data(di.get_remaining_bytes());
+  const char *data = (const char *)di.get_datagram().get_data();
+  packer.set_unpack_data(data + di.get_current_index(),
+                         di.get_remaining_size(), false);
 
   int num_fields = get_num_inherited_fields();
   for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
@@ -568,7 +571,9 @@ receive_update_broadcast_required_owner(PyObject *distobj,
   PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
 #endif
   DCPacker packer;
-  packer.set_unpack_data(di.get_remaining_bytes());
+  const char *data = (const char *)di.get_datagram().get_data();
+  packer.set_unpack_data(data + di.get_current_index(),
+                         di.get_remaining_size(), false);
 
   int num_fields = get_num_inherited_fields();
   for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {
@@ -608,7 +613,9 @@ receive_update_all_required(PyObject *distobj, DatagramIterator &di) const {
   PStatTimer timer(((DCClass *)this)->_class_update_pcollector);
 #endif
   DCPacker packer;
-  packer.set_unpack_data(di.get_remaining_bytes());
+  const char *data = (const char *)di.get_datagram().get_data();
+  packer.set_unpack_data(data + di.get_current_index(),
+                         di.get_remaining_size(), false);
 
   int num_fields = get_num_inherited_fields();
   for (int i = 0; i < num_fields && !PyErr_Occurred(); ++i) {

@@ -123,6 +123,8 @@ PUBLISHED:
 
   INLINE size_t get_length() const;
   INLINE string get_string() const;
+  INLINE size_t get_unpack_length() const;
+  INLINE string get_unpack_string() const;
 public:
   INLINE void get_string(string &data) const;
   INLINE const char *get_data() const;
@@ -130,6 +132,8 @@ public:
 
   INLINE void append_data(const char *buffer, size_t size);
   INLINE char *get_write_pointer(size_t size);
+
+  INLINE const char *get_unpack_data() const;
 
 PUBLISHED:
   INLINE static int get_num_stack_elements_ever_allocated();

@@ -665,6 +665,33 @@ get_string() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_unpack_length
+//       Access: Published
+//  Description: Returns the total number of bytes in the unpack data
+//               buffer.  This is the buffer used when unpacking; it
+//               is separate from the pack data returned by
+//               get_length(), which is filled during packing.
+////////////////////////////////////////////////////////////////////
+INLINE size_t DCPacker::
+get_unpack_length() const {
+  return _unpack_length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_unpack_string
+//       Access: Published
+//  Description: Returns the unpack data buffer, as a string.
+//               This is the buffer used when unpacking; it is
+//               separate from the pack data returned by get_string(),
+//               which is filled during packing.  Also see
+//               get_unpack_data().
+////////////////////////////////////////////////////////////////////
+INLINE string DCPacker::
+get_unpack_string() const {
+  return string(_unpack_data, _unpack_length);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DCPacker::get_string
 //       Access: Published
 //  Description: Copies the packed data into the indicated string.
@@ -734,6 +761,19 @@ INLINE char *DCPacker::
 get_write_pointer(size_t size) {
   nassertr(_mode == M_idle, NULL);
   return _pack_data.get_write_pointer(size);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DCPacker::get_unpack_data
+//       Access: Public
+//  Description: Returns a read pointer to the unpack data buffer.
+//               This is the buffer used when unpacking; it is
+//               separate from the pack data returned by get_data(),
+//               which is filled during packing.
+////////////////////////////////////////////////////////////////////
+INLINE const char *DCPacker::
+get_unpack_data() const {
+  return _unpack_data;
 }
 
 ////////////////////////////////////////////////////////////////////

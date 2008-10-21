@@ -344,6 +344,7 @@ unpack_args(DCPacker &packer) const {
   nassertr(!packer.had_error(), NULL);
   nassertr(packer.get_current_field() == this, NULL);
 
+  size_t start_byte = packer.get_num_unpacked_bytes();
   PyObject *object = packer.unpack_object();
 
   if (!packer.had_error()) {
@@ -356,23 +357,35 @@ unpack_args(DCPacker &packer) const {
 
     return object;
   }
-  
-  ostringstream strm;
-  if (packer.had_pack_error()) {
-    strm << "Error unpacking to field " << get_name();
-  } else {
-    PyObject *str = PyObject_Str(object);
-    strm << "Found value outside specified range when unpacking field " 
-         << get_name() << ": " << PyString_AsString(str);
-    Py_DECREF(str);
+
+  if (!Notify::ptr()->has_assert_failed()) {
+    ostringstream strm;
+    PyObject *exc_type = PyExc_StandardError;
+
+    if (packer.had_pack_error()) {
+      strm << "Data error unpacking field ";
+      output(strm, true);
+      size_t length = packer.get_unpack_length() - start_byte;
+      strm << "\nGot data (" << (int)length << " bytes):\n";
+      Datagram dg(packer.get_unpack_data() + start_byte, length);
+      dg.dump_hex(strm);
+      size_t error_byte = packer.get_num_unpacked_bytes() - start_byte;
+      strm << "Error detected on byte " << error_byte
+           << " (" << hex << error_byte << dec << " hex)";
+
+      exc_type = PyExc_RuntimeError;
+    } else {
+      PyObject *str = PyObject_Str(object);
+      strm << "Value outside specified range when unpacking field " 
+           << get_name() << ": " << PyString_AsString(str);
+      Py_DECREF(str);
+      exc_type = PyExc_ValueError;
+    }
+    
+    string message = strm.str();
+    PyErr_SetString(exc_type, message.c_str());
   }
 
-  /*
-  Datagram dg(data.data(), packer.get_num_unpacked_bytes());
-  dg.dump_hex(cerr);
-  */
-    
-  nassert_raise(strm.str());
   Py_XDECREF(object);
   return NULL;
 }
