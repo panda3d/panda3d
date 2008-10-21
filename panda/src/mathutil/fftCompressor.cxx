@@ -19,6 +19,7 @@
 #include "datagram.h"
 #include "datagramIterator.h"
 #include "compose_matrix.h"
+#include "pmap.h"
 #include <math.h>
 
 #ifdef HAVE_FFTW
