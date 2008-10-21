@@ -32,6 +32,9 @@ class CRCache:
             distObj.deleteOrDelay()
             if distObj.getDelayDeleteCount() != 0:
                 delayDeleted.append(distObj)
+            if distObj.getDelayDeleteCount() <= 0:
+                # make sure we're not leaking
+                distObj.detectLeaks()
         # now that all objects have had a chance to delete, are there any objects left
         # that are still delayDeleted?
         delayDeleteLeaks = []
@@ -76,6 +79,9 @@ class CRCache:
                 del(self.dict[oldestDistObj.getDoId()])
                 # and delete it
                 oldestDistObj.deleteOrDelay()
+                if oldestDistObj.getDelayDeleteCount() <= 0:
+                    # make sure we're not leaking
+                    oldestDistObj.detectLeaks()
 
         # Make sure that the fifo and the dictionary are sane
         assert len(self.dict) == len(self.fifo)
@@ -109,6 +115,9 @@ class CRCache:
         self.fifo.remove(distObj)
         # and delete it
         distObj.deleteOrDelay()
+        if distObj.getDelayDeleteCount() <= 0:
+            # make sure we're not leaking
+            distObj.detectLeaks()
 
     def checkCache(self):
         # For debugging; this verifies that the cache is sensible and

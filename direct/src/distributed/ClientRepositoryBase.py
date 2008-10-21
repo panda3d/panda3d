@@ -490,12 +490,14 @@ class ClientRepositoryBase(ConnectionRepository):
             # object; this way we don't clutter up the caches with
             # trivial objects that don't benefit from caching.
             # also don't try to cache an object that is delayDeleted
+            cached = False
             if distObj.getCacheable() and distObj.getDelayDeleteCount() <= 0:
                 cached = cache.cache(distObj)
-                if not cached:
-                    distObj.deleteOrDelay()
-            else:
+            if not cached:
                 distObj.deleteOrDelay()
+                if distObj.getDelayDeleteCount() <= 0:
+                    # make sure we're not leaking
+                    distObj.detectLeaks()
 
         elif self.deferredDoIds.has_key(doId):
             # The object had been deferred.  Great; we don't even have
