@@ -23,6 +23,7 @@
 #include "indirectCompareNames.h"
 #include "ordered_vector.h"
 #include "pset.h"
+#include "pmap.h"
 
 class MayaToEggConverter;
 class EggData;
