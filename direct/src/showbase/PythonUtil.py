@@ -31,7 +31,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index',
 'pandaBreak','pandaTrace','formatTimeCompact','DestructiveScratchPad',
 'deeptype','getProfileResultString','StdoutCapture','StdoutPassthrough',
-'Averager',]
+'Averager', 'getRepository', ]
 
 import types
 import string
@@ -3188,6 +3188,12 @@ def getBase():
     except:
         return simbase
 
+def getRepository():
+    try:
+        return base.cr
+    except:
+        return simbase.air
+
 def superFlattenShip(ship):
 
     #PHASE 1: remove characters
@@ -3781,6 +3787,7 @@ __builtin__.ClassTree = ClassTree
 __builtin__.invertDict = invertDict
 __builtin__.invertDictLossless = invertDictLossless
 __builtin__.getBase = getBase
+__builtin__.getRepository = getRepository
 __builtin__.safeRepr = safeRepr
 __builtin__.fastRepr = fastRepr
 __builtin__.nullGen = nullGen
