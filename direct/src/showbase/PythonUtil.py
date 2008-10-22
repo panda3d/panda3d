@@ -25,7 +25,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'getNumberedTypedSortedStringWithReferrersGen',
 'printNumberedTyped', 'DelayedCall', 'DelayedFunctor',
 'FrameDelayedCall', 'SubframeCall', 'ArgumentEater', 'ClassTree', 'getBase',
-'superFlattenShip','HotkeyBreaker','logMethodCalls','GoldenRatio',
+'HotkeyBreaker','logMethodCalls','GoldenRatio',
 'GoldenRectangle', 'pivotScalar', 'rad90', 'rad180', 'rad270', 'rad360',
 'nullGen', 'loopGen', 'makeFlywheelGen', 'flywheel', 'choice',
 'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index',
@@ -3193,34 +3193,6 @@ def getRepository():
         return base.cr
     except:
         return simbase.air
-
-def superFlattenShip(ship):
-
-    #PHASE 1: remove characters
-    characterNodes=ship.findAllMatches("**/+Character")
-    for i in range(characterNodes.getNumPaths()):
-        character=characterNodes.getPath(i)
-        children=character.getChildrenAsList()
-        for child in children:
-            child.copyTo(character.getParent())
-        character.reparentTo(hidden)
-
-    #PHASE 2: remove textures
-    tex=ship.findAllTextures().getTexture(0)
-    ship.setTexture(tex,1000)
-
-    #PHASE 3: stop rocking task
-    taskMgr.remove("shipRocking-%d"%(ship.getDoId()))
-
-    #PHASE 4: kill lamp effects
-    from pirates.shipparts.DistributedShipDecor import DistributedShipDecor
-    for DO in base.cr.doId2do.values():
-        if(type(DO) == DistributedShipDecor):
-            if (hasattr(DO.prop, 'lanternGlowEffect')):
-                DO.prop.lanternGlowEffect.destroy()
-            
-    #PHASE 5: flatten strong!
-    return ship.flattenStrong()
 
 exceptionLoggedNotify = None
 
