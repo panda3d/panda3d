@@ -1170,7 +1170,6 @@ class TaskManager:
                         def _profileFunc(numFrames=numFrames):
                             self._doProfiledFrames(numFrames)
                         session.setFunc(_profileFunc)
-                        print '** profiling %s frames' % numFrames
                         session.run()
                         _profileFunc = None
                     else:
