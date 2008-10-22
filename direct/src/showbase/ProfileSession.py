@@ -1,4 +1,5 @@
 from pandac.libpandaexpressModules import TrueClock
+from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import (
     StdoutCapture, _installProfileCustomFuncs,_removeProfileCustomFuncs,
     _profileWithoutGarbageLeak, _getProfileResultFileInfo, _setProfileResultsFileInfo,
@@ -84,15 +85,14 @@ class ProfileSession:
     # 
     # implementation sidesteps memory leak in Python profile module,
     # and redirects file output to RAM file for efficiency
-    DefaultFilename = 'profilesession'
-    DefaultLines = 80
-    DefaultSorts = ['cumulative', 'time', 'calls']
-
     TrueClock = TrueClock.getGlobalPtr()
     
-    def __init__(self, func, name):
+    notify = directNotify.newCategory("ProfileSession")
+
+    def __init__(self, name, func=None, logAfterProfile=False):
         self._func = func
         self._name = name
+        self._logAfterProfile = logAfterProfile
         self._filenameBase = 'profileData-%s-%s' % (self._name, id(self))
         self._refCount = 0
         self._reset()
@@ -126,17 +126,24 @@ class ProfileSession:
         self._filename2ramFile = {}
         self._stats = None
         self._resultCache = {}
+        # if true, accumulate profile results every time we run
+        # if false, throw out old results every time we run
+        self._aggregate = False
+        self._lines = 200
+        self._sorts = ['cumulative', 'time', 'calls']
+        self._callInfo = False
+        self._totalTime = None
 
     def _getNextFilename(self):
         filename = '%s-%s' % (self._filenameBase, self._filenameCounter)
         self._filenameCounter += 1
         return filename
 
-    def run(self, aggregate=True):
+    def run(self):
         # make sure this instance doesn't get destroyed inside self._func
         self.acquire()
 
-        if not aggregate:
+        if not self._aggregate:
             self._reset()
 
         # if we're already profiling, just run the func and don't profile
@@ -146,6 +153,7 @@ class ProfileSession:
                 self._duration = 0.
         else:
             # put the function in the global namespace so that profile can find it
+            assert callable(self._func)
             __builtin__.globalProfileFunc = self._func
             __builtin__.globalProfileResult = [None]
 
@@ -194,6 +202,9 @@ class ProfileSession:
 
             self._successfulProfiles += 1
             
+            if self._logAfterProfile:
+                self.notify.info(self.getResults())
+
         self.release()
         return result
 
@@ -214,15 +225,66 @@ class ProfileSession:
         _removeProfileCustomFuncs(filename)
         # and discard it
         del self._filename2ramFile[filename]
+
+    def setName(self, name):
+        self._name = name
+    def getName(self):
+        return self._name
+
+    def setFunc(self, func):
+        self._func = func
+    def getFunc(self):
+        return self._func
+
+    def setAggregate(self, aggregate):
+        self._aggregate = aggregate
+    def getAggregate(self):
+        return self._aggregate
+
+    def setLogAfterProfile(self, logAfterProfile):
+        self._logAfterProfile = logAfterProfile
+    def getLogAfterProfile(self):
+        return self._logAfterProfile
     
+    def setLines(self, lines):
+        self._lines = lines
+    def getLines(self):
+        return self._lines
+
+    def setSorts(self, sorts):
+        self._sorts = sorts
+    def getSorts(self):
+        return self._sorts
+
+    def setShowCallInfo(self, showCallInfo):
+        self._showCallInfo = showCallInfo
+    def getShowCallInfo(self):
+        return self._showCallInfo
+
+    def setTotalTime(self, totalTime=None):
+        self._totalTime = totalTime
+    def resetTotalTime(self):
+        self._totalTime = None
+    def getTotalTime(self):
+        return self._totalTime
+
     def getResults(self,
-                   lines=200,
-                   sorts=['cumulative', 'time', 'calls'],
-                   callInfo=False,
-                   totalTime=None):
+                   lines=Default,
+                   sorts=Default,
+                   callInfo=Default,
+                   totalTime=Default):
         if not self.profileSucceeded():
             output = '%s: profiler already running, could not profile' % self._name
         else:
+            if lines is Default:
+                lines = self._lines
+            if sorts is Default:
+                sorts = self._sorts
+            if callInfo is Default:
+                callInfo = self._callInfo
+            if totalTime is Default:
+                totalTime = self._totalTime
+            
             # make sure our stats object exists and is up-to-date
             statsChanged = (self._statFileCounter < len(self._filenames))
 

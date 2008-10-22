@@ -111,12 +111,12 @@ class TaskManager:
         self.fKeyboardInterrupt = False
         self.interruptCount = 0
 
-        self._profileFrames = False
+        self._frameProfileQueue = Queue()
 
-        # this will be set when it's safe to import StateVar
+        # this will be set when it's safe to import StateVar 
         self._profileTasks = None
         self._taskProfiler = None
-        self._profileInfo = ScratchPad(
+        self._taskProfileInfo = ScratchPad(
             taskId = None,
             profiled = False,
             session = None,
@@ -130,6 +130,7 @@ class TaskManager:
         self.setProfileTasks(ConfigVariableBool('profile-task-spikes', 0).getValue())
 
     def destroy(self):
+        self._frameProfileQueue.clear()
         self.mgr.cleanup()
 
     def setClock(self, clockObject):
@@ -441,9 +442,14 @@ class TaskManager:
             self.running = True
             while self.running:
                 try:
-                    if self._profileFrames:
-                        self._profileFrames = False
-                        self._doProfiledFrames()
+                    if len(self._frameProfileQueue):
+                        numFrames, session = self._frameProfileQueue.pop()
+                        def _profileFunc(numFrames=numFrames):
+                            self._doProfiledFrames(numFrames)
+                        session.setFunc(_profileFunc)
+                        print '** profiling %s frames' % numFrames
+                        session.run()
+                        _profileFunc = None
                     else:
                         self.step()
                 except KeyboardInterrupt:
@@ -522,17 +528,22 @@ class TaskManager:
         from direct.tkpanels import TaskManagerPanel
         return TaskManagerPanel.TaskManagerPanel(self)
 
-    def profileFrames(self, num=None):
-        self._profileFrames = True
+    def getProfileSession(self, name=None):
+        # call to get a profile session that you can modify before passing to profileFrames()
+        if name is None:
+            name = 'taskMgrFrameProfile'
+        return ProfileSession(name)
+
+    def profileFrames(self, num=None, session=None):
         if num is None:
             num = 1
-        self._profileFrameCount = num
+        if session is None:
+            session = self.getProfileSession()
+        self._frameProfileQueue.push((num, session))
 
-    @profiled()
-    def _doProfiledFrames(self, *args, **kArgs):
-        print '** profiling %s frames' % self._profileFrameCount
-        for i in xrange(self._profileFrameCount):
-            result = self.step(*args, **kArgs)
+    def _doProfiledFrames(self, numFrames):
+        for i in xrange(numFrames):
+            result = self.step()
         return result
 
     def getProfileTasks(self):
@@ -557,10 +568,10 @@ class TaskManager:
             self._taskProfiler.flush(name)
 
     def _setProfileTask(self, task):
-        if self._profileInfo.session:
-            self._profileInfo.session.release()
-            self._profileInfo.session = None
-        self._profileInfo = ScratchPad(
+        if self._taskProfileInfo.session:
+            self._taskProfileInfo.session.release()
+            self._taskProfileInfo.session = None
+        self._taskProfileInfo = ScratchPad(
             taskFunc = task.getFunction(),
             taskArgs = task.getArgs(),
             task = task,
@@ -571,7 +582,7 @@ class TaskManager:
         # Temporarily replace the task's own function with our
         # _profileTask method.
         task.setFunction(self._profileTask)
-        task.setArgs([self._profileInfo], True)
+        task.setArgs([self._taskProfileInfo], True)
 
     def _profileTask(self, profileInfo, task):
         # This is called instead of the task function when we have
@@ -590,8 +601,8 @@ class TaskManager:
         task.setArgs(taskArgs, appendTask)
         task.setFunction(profileInfo.taskFunc)
 
-        profileSession = ProfileSession(Functor(profileInfo.taskFunc, *profileInfo.taskArgs),
-                                        'profiled-task-%s' % task.getName())
+        profileSession = ProfileSession('profiled-task-%s' % task.getName(),
+                                        Functor(profileInfo.taskFunc, *profileInfo.taskArgs))
         ret = profileSession.run()
 
         # set these values *after* profiling in case we're profiling the TaskProfiler
@@ -602,10 +613,10 @@ class TaskManager:
 
     def _hasProfiledDesignatedTask(self):
         # have we run a profile of the designated task yet?
-        return self._profileInfo.profiled
+        return self._taskProfileInfo.profiled
 
-    def _getLastProfileSession(self):
-        return self._profileInfo.session
+    def _getLastTaskProfileSession(self):
+        return self._taskProfileInfo.session
 
     def _getRandomTask(self):
         # Figure out when the next frame is likely to expire, so we

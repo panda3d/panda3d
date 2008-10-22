@@ -134,7 +134,7 @@ class TaskProfiler:
         # gather data from the previous frame
         # set up for the next frame
         if (self._task is not None) and taskMgr._hasProfiledDesignatedTask():
-            session = taskMgr._getLastProfileSession()
+            session = taskMgr._getLastTaskProfileSession()
             # if we couldn't profile, throw this result out
             if session.profileSucceeded():
                 namePrefix = self._task.getNamePrefix()

@@ -3751,6 +3751,10 @@ def pandaBreak(dotpath, linenum, temporary = 0, cond = None):
             filename="%s\\%s"%(filename,d)
         globalPdb.set_break(filename+".py", linenum, temporary, cond)
             
+class Default:
+    # represents 'use the default value'
+    # useful for keyword arguments to virtual methods
+    pass
 
 import __builtin__
 __builtin__.Functor = Functor
@@ -3802,3 +3806,4 @@ __builtin__.logBlock = logBlock
 __builtin__.HierarchyException = HierarchyException
 __builtin__.pdir = pdir
 __builtin__.deeptype = deeptype
+__builtin__.Default = Default
