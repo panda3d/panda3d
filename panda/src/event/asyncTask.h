@@ -69,6 +69,7 @@ PUBLISHED:
   };
 
   INLINE State get_state() const;
+  INLINE bool is_alive() const;
   INLINE AsyncTaskManager *get_manager() const;
 
   void remove();

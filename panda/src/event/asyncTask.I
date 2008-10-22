@@ -24,6 +24,31 @@ get_state() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::is_alive
+//       Access: Published
+//  Description: Returns true if the task is currently active or
+//               sleeping on some task chain, meaning that it will be
+//               executed in its turn, or false if it is not active.
+//               If the task has recently been removed while it is in
+//               the middle of execution, this will return false,
+//               because the task will not run again once it finishes.
+////////////////////////////////////////////////////////////////////
+INLINE bool AsyncTask::
+is_alive() const {
+  switch (_state) {
+  case S_active:
+  case S_servicing:
+  case S_sleeping:
+  case S_active_nested:
+    return true;
+
+  case S_inactive:
+  case S_servicing_removed:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::get_manager
 //       Access: Published
 //  Description: Returns the AsyncTaskManager that this task is active
