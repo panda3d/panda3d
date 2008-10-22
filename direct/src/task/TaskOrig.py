@@ -149,6 +149,14 @@ class Task:
     def isRemoved(self):
         return self._removed
 
+    def isAlive(self):
+        """ Returns true if the task is alive; that is, it has never
+        been removed and it has not finished.  This method may
+        inaccurately return true before the task has been initially
+        added to the task manager. """
+        
+        return not self._removed
+
     def getSort(self):
         return self._sort
 
