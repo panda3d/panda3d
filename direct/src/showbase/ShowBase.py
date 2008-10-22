@@ -2275,10 +2275,6 @@ class ShowBase(DirectObject.DirectObject):
         # Set fWantTk to 0 to avoid starting Tk with this call
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)
 
-    def profileFrames(self, num=1):
-        # profile the next 'num' frames and log the results
-        self.taskMgr.profileFrames(num)
-
     def run(self):
         self.taskMgr.run()
 
