@@ -61,25 +61,6 @@ ConfigVariableEnum<BamTextureMode> bam_texture_mode
  PRC_DESC("Set this to specify how textures should be written into Bam files."
           "See the panda source or documentation for available options."));
 
-ConfigVariableSearchPath model_path
-("model-path", 
- PRC_DESC("The default directories to search for all models and general "
-          "files loaded into Panda."));
-
-ConfigVariableSearchPath texture_path
-("texture-path", 
- PRC_DESC("A special directory path to search for textures only.  "
-          "Textures are also searched for along the model-path, so the "
-          "use of texture-path is only useful if you have special "
-          "directories that only contain textures."));
-
-ConfigVariableSearchPath sound_path
-("sound-path", 
- PRC_DESC("The directories to search for sound and music files to be loaded."));
-ConfigVariableSearchPath plugin_path
-("plugin-path", "<auto>",
- PRC_DESC("The directories to search for plugin shared libraries."));
-
 
 
 ConfigureFn(config_util) {
@@ -96,27 +77,56 @@ ConfigureFn(config_util) {
 //
 // ConfigVariableBool track_memory_usage("track-memory-usage", false);
 
-// There is no longer any need for C++ code to call these functions to
-// access the various path variables; instead, new C++ code should
-// just access the path variables directly.
 ConfigVariableSearchPath &
 get_model_path() {
-  return model_path;
+  static ConfigVariableSearchPath *model_path = NULL;
+  if (model_path == NULL) {
+    model_path = new ConfigVariableSearchPath
+      ("model-path", 
+       PRC_DESC("The default directories to search for all models and general "
+                "files loaded into Panda."));
+  }
+
+  return *model_path;
 }
 
 ConfigVariableSearchPath &
 get_texture_path() {
-  return texture_path;
+  static ConfigVariableSearchPath *texture_path = NULL;
+  if (texture_path == NULL) {
+    texture_path = new ConfigVariableSearchPath
+      ("texture-path", 
+       PRC_DESC("A special directory path to search for textures only.  "
+                "Textures are also searched for along the model-path, so the "
+                "use of texture-path is only useful if you have special "
+                "directories that only contain textures."));
+  }
+
+  return *texture_path;
 }
 
 ConfigVariableSearchPath &
 get_sound_path() {
-  return sound_path;
+  static ConfigVariableSearchPath *sound_path = NULL;
+  if (sound_path == NULL) {
+    sound_path = new ConfigVariableSearchPath
+      ("sound-path", 
+       PRC_DESC("The directories to search for sound and music files to be loaded."));
+  }
+
+  return *sound_path;
 }
 
 ConfigVariableSearchPath &
 get_plugin_path() {
-  return plugin_path;
+  static ConfigVariableSearchPath *plugin_path = NULL;
+  if (plugin_path == NULL) {
+    plugin_path = new ConfigVariableSearchPath
+      ("plugin-path", "<auto>",
+       PRC_DESC("The directories to search for plugin shared libraries."));
+  }
+
+  return *plugin_path;
 }
 
 ConfigVariableDouble sleep_precision

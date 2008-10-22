@@ -2279,7 +2279,7 @@ get_icon(const Filename &filename) {
   // filename, we can't load a virtual file and we can't use the
   // virtual file system.
   Filename resolved = filename;
-  if (!resolved.resolve_filename(model_path)) {
+  if (!resolved.resolve_filename(get_model_path())) {
     // The filename doesn't exist.
     windisplay_cat.warning()
       << "Could not find icon filename " << filename << "\n";
@@ -2326,7 +2326,7 @@ get_cursor(const Filename &filename) {
   // filename, we can't load a virtual file and we can't use the
   // virtual file system.
   Filename resolved = filename;
-  if (!resolved.resolve_filename(model_path)) {
+  if (!resolved.resolve_filename(get_model_path())) {
     // The filename doesn't exist.
     windisplay_cat.warning()
       << "Could not find cursor filename " << filename << "\n";

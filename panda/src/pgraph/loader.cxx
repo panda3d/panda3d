@@ -199,6 +199,7 @@ load_file(const Filename &filename, const LoaderOptions &options) const {
 
   if (search) {
     // Look for the file along the model path.
+    const ConfigVariableSearchPath &model_path = get_model_path();
     int num_dirs = model_path.get_num_directories();
     for (int i = 0; i < num_dirs; ++i) {
       Filename pathname(model_path.get_directory(i), this_filename);
@@ -348,7 +349,7 @@ load_file_types() {
         Filename dlname = Filename::dso_filename("lib" + name + ".so");
         loader_cat.info()
           << "loading file type module: " << name << endl;
-        void *tmp = load_dso(plugin_path.get_value(), dlname);
+        void *tmp = load_dso(get_plugin_path().get_value(), dlname);
         if (tmp == (void *)NULL) {
           loader_cat.warning()
             << "Unable to load " << dlname.to_os_specific()

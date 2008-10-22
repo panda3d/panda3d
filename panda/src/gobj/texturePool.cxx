@@ -946,8 +946,8 @@ report_texture_unreadable(const Filename &filename) const {
       // search path.
       gobj_cat.error()
         << "Unable to find texture \"" << filename << "\""
-        << " on texture_path " << texture_path
-        << " or model_path " << model_path <<"\n";
+        << " on texture_path " << get_texture_path()
+        << " or model_path " << get_model_path() <<"\n";
     } else {
       // A fully-specified filename is not searched along the path, so
       // don't mislead the user with the error message.
@@ -1046,7 +1046,7 @@ load_filters() {
     Filename dlname = Filename::dso_filename("lib" + name + ".so");
     gobj_cat->info()
       << "loading texture filter: " << dlname.to_os_specific() << endl;
-    void *tmp = load_dso(plugin_path.get_value(), dlname);
+    void *tmp = load_dso(get_plugin_path().get_value(), dlname);
     if (tmp == (void *)NULL) {
       gobj_cat.info()
         << "Unable to load: " << load_dso_error() << endl;
