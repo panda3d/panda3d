@@ -95,6 +95,11 @@ open(const char *filename, ios::openmode mode) {
   _open_mode = mode;
   _is_open = false;
 
+  if (_open_mode & ios::app) {
+    // ios::app implies ios::out.
+    _open_mode |= ios::out;
+  }
+
 #ifdef _WIN32
   // Windows case.
   DWORD access = 0;
