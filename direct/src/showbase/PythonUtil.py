@@ -48,8 +48,6 @@ import gc
 #if __debug__:
 import traceback
 import __builtin__
-import profile
-import pstats
 from StringIO import StringIO
 import marshal
 
@@ -1128,6 +1126,10 @@ def _removeProfileCustomFuncs(filename):
 #        del __builtin__.func
 #
 def _profileWithoutGarbageLeak(cmd, filename):
+    # The profile module isn't necessarily installed on every Python
+    # installation, so we import it here, instead of in the module
+    # scope.
+    import profile
     # this is necessary because the profile module creates a memory leak
     Profile = profile.Profile
     statement = cmd
@@ -1177,6 +1179,7 @@ def printProfile(filename=PyUtilProfileDefaultFilename,
                  lines=PyUtilProfileDefaultLines,
                  sorts=PyUtilProfileDefaultSorts,
                  callInfo=1):
+    import pstats
     s = pstats.Stats(filename)
     s.strip_dirs()
     for sort in sorts:
@@ -3466,6 +3469,7 @@ if __debug__:
     assert obj2count[4] == 4 * 3                  
 
 def quickProfile(name="unnamed"):    
+    import pstats
     def profileDecorator(f):
         if(not config.GetBool("use-profiler",0)):
             return f
