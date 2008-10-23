@@ -448,7 +448,7 @@ underflow() {
 ////////////////////////////////////////////////////////////////////
 size_t PandaFileStreamBuf::
 read_chars(char *start, size_t length) {
-  if (length == 0) {
+  if (length == 0 || !_is_open) {
     // Trivial no-op.
     return 0;
   }
@@ -641,7 +641,7 @@ read_chars_raw(char *start, size_t length) {
 ////////////////////////////////////////////////////////////////////
 size_t PandaFileStreamBuf::
 write_chars_raw(const char *start, size_t length) {
-  if (length == 0) {
+  if (length == 0 || !_is_open) {
     return 0;
   }
   
