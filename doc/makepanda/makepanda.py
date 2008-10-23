@@ -858,6 +858,7 @@ def WriteConfigSettings():
         dtool_config["HAVE_CGDX9"] = '1'
     
     if (sys.platform == "darwin"):
+        dtool_config["PYTHON_FRAMEWORK"] = '"Python"'
         dtool_config["HAVE_MALLOC_H"] = 'UNDEF'
         dtool_config["HAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
@@ -3634,8 +3635,8 @@ def MakeInstallerOSX():
           if ((base != "extensions") and (base != "extensions_native")):
               compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src/"+base)
       compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
-      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct", True)
-      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/pandac", True)
+      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct")
+      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/pandac")
       if os.path.isdir("samples"):   oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/samples")
       if os.path.isdir("built/Pmw"): oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
     except: # Make sure the dmg gets unmounted even when error occurs
