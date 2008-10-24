@@ -49,6 +49,9 @@ PUBLISHED:
     A_left,
     A_right,
     A_center,
+    A_boxed_left,
+    A_boxed_right,
+    A_boxed_center
   };
 
   TextProperties();
@@ -157,6 +160,11 @@ PUBLISHED:
   INLINE bool has_glyph_shift() const;
   INLINE float get_glyph_shift() const;
 
+  INLINE void set_text_scale(float text_scale);
+  INLINE void clear_text_scale();
+  INLINE bool has_text_scale() const;
+  INLINE float get_text_scale() const;
+
   void add_properties(const TextProperties &other);
 
   void write(ostream &out, int indent_level = 0) const;
@@ -183,6 +191,7 @@ private:
     F_has_glyph_shift                  = 0x00008000,
     F_has_underscore                   = 0x00010000,
     F_has_underscore_height            = 0x00020000,
+    F_has_text_scale                   = 0x00040000,
   };
 
   int _specified;
@@ -205,6 +214,7 @@ private:
   float _tab_width;
   float _glyph_scale;
   float _glyph_shift;
+  float _text_scale;
 
   static PT(TextFont) _default_font;
   static bool _loaded_default_font;
