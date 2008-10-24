@@ -802,8 +802,9 @@ class LerpFunctionInterval(Interval.Interval):
         self.extraArgs = extraArgs
         # Generate unique name if necessary
         if (name == None):
-            name = ('LerpFunctionInterval-%d' %
-                    LerpFunctionInterval.lerpFunctionIntervalNum)
+            name = ('LerpFunctionInterval-%s-%d' %
+                    (function.__name__,
+                     LerpFunctionInterval.lerpFunctionIntervalNum))
             LerpFunctionInterval.lerpFunctionIntervalNum += 1
         else:
             # Allow the user to pass in a %d in the name and we'll go ahead
