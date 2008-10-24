@@ -29,6 +29,7 @@ extern HINSTANCE hInstance;
 #define CHUNK_FILENAME        0x1106
 #define CHUNK_SHORTNAME       0x1107
 #define CHUNK_EXPORT_FULL     0x1108
+#define CHUNK_ALL_FRAMES      0x1109
 #define CHUNK_NODE_LIST       0x1200
 #define CHUNK_NODE_HANDLE     0x1201
 
@@ -61,7 +62,9 @@ struct MaxEggOptions
     int _start_frame;
     int _end_frame;
     bool _double_sided;
+    bool _successful;
     bool _export_whole_scene;
+    bool _export_all_frames;
     char _file_name[2048];
     char _short_name[256];
     PT(PathReplace) _path_replace;
@@ -76,7 +79,6 @@ class MaxOptionsDialog : public MaxEggOptions
     int _min_frame, _max_frame;
     bool _checked;
     bool _choosing_nodes;
-    bool _successful;
     MaxEggOptions::Anim_Type _prev_type;
 
     MaxOptionsDialog();

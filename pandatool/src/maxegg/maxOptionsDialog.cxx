@@ -237,6 +237,8 @@ MaxEggOptions::MaxEggOptions() {
     _path_replace = new PathReplace;
     _path_replace->_path_store = PS_relative;
     _export_whole_scene = true;
+    _export_all_frames = true;
+    _successful = false;
 }
 
 BOOL CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) 
@@ -419,7 +421,6 @@ MaxOptionsDialog::MaxOptionsDialog() :
     _max_frame(0),
     _checked(true),
     _choosing_nodes(false),
-    _successful(false),
     _prev_type(AT_model)
 {
 }
@@ -431,7 +432,7 @@ MaxOptionsDialog::~MaxOptionsDialog ()
 
 void MaxOptionsDialog::UpdateUI(HWND hWnd) {
     int typeButton = IDC_MODEL;
-    int anim_exp = _start_frame == INT_MIN ? IDC_EXP_ALL_FRAMES : IDC_EXP_SEL_FRAMES;
+    int anim_exp = _export_all_frames ? IDC_EXP_ALL_FRAMES : IDC_EXP_SEL_FRAMES;
     int model_exp = _export_whole_scene ? IDC_EXPORT_ALL : IDC_EXPORT_SELECTED;
     
     switch (_anim_type) {
@@ -553,6 +554,7 @@ bool MaxOptionsDialog::UpdateFromUI(HWND hWnd) {
   _anim_type = newAnimType;
   _double_sided = IsDlgButtonChecked(hWnd, IDC_CHECK1);
   _export_whole_scene = IsDlgButtonChecked(hWnd, IDC_EXPORT_ALL);
+  _export_all_frames = IsDlgButtonChecked(hWnd, IDC_EXP_ALL_FRAMES);
 
   return true;
 }
@@ -607,6 +609,7 @@ IOResult MaxOptionsDialog::Save(ISave *isave) {
     ChunkSave(isave, CHUNK_DBL_SIDED, _double_sided);
     ChunkSave(isave, CHUNK_EGG_CHECKED, _checked);
     ChunkSave(isave, CHUNK_EXPORT_FULL, _export_whole_scene);
+    ChunkSave(isave, CHUNK_ALL_FRAMES, _export_all_frames);
     isave->BeginChunk(CHUNK_NODE_LIST);
     for (int i = 0; i < _node_list.size(); i++)
         ChunkSave(isave, CHUNK_NODE_HANDLE, _node_list[i]);
@@ -628,6 +631,7 @@ IOResult MaxOptionsDialog::Load(ILoad *iload) {
         case CHUNK_DBL_SIDED: _double_sided = ChunkLoadBool(iload); break;
         case CHUNK_EGG_CHECKED: _checked = ChunkLoadBool(iload); break;
         case CHUNK_EXPORT_FULL: _export_whole_scene = ChunkLoadBool(iload); break;
+        case CHUNK_ALL_FRAMES: _export_all_frames = ChunkLoadBool(iload); break;
         case CHUNK_NODE_LIST:
             res = iload->OpenChunk();
             while (res == IO_OK) {

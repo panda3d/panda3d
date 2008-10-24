@@ -75,11 +75,15 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
     int start_frame = anim_range.Start()/GetTicksPerFrame();
     int end_frame = anim_range.End()/GetTicksPerFrame();
     
-    if (_options->_start_frame < start_frame) _options->_start_frame = start_frame;
-    if (_options->_start_frame > end_frame)   _options->_start_frame = end_frame;
-    if (_options->_end_frame < start_frame)   _options->_end_frame = start_frame;
-    if (_options->_end_frame > end_frame)     _options->_end_frame = end_frame;
-    if (_options->_end_frame < _options->_start_frame)  _options->_end_frame = _options->_start_frame;
+    if (!_options->_export_all_frames) {
+        if (_options->_start_frame < start_frame) _options->_start_frame = start_frame;
+        if (_options->_start_frame > end_frame)   _options->_start_frame = end_frame;
+        if (_options->_end_frame < start_frame)   _options->_end_frame = start_frame;
+        if (_options->_end_frame > end_frame)     _options->_end_frame = end_frame;
+        if (_options->_end_frame < _options->_start_frame)  _options->_end_frame = _options->_start_frame;
+        start_frame = _options->_start_frame;
+        end_frame = _options->_end_frame;
+    }
     
     int frame_inc = 1;
     int output_frame_rate = GetFrameRate();
@@ -116,7 +120,7 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
             break;
             
         case AC_both:
-            
+            // both: Put a model and its animation into the same egg file.
             _options->_anim_type = MaxEggOptions::AT_model;
             if (!convert_char_model()) {
                 all_ok = false;
@@ -136,7 +140,9 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
         _egg_data->recompute_tangent_binormal_auto();
         _egg_data->remove_unused_vertices(true);
     }
-
+    
+    _options->_successful = all_ok;
+    
     if (all_ok) {
         Filename fn = Filename::from_os_specific(_options->_file_name);
         return _egg_data->write_egg(fn);

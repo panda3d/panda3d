@@ -538,10 +538,16 @@ void MaxEggPlugin::DoExport() {
     }
     
     UINT mask = MB_OK;
-    if (bad > 0) mask |= MB_ICONEXCLAMATION;
-    else mask |= MB_ICONINFORMATION;
     
-    MessageBox(hMaxEggParams, status.str().c_str(), "Panda3D Export results", mask);
+    if (good == 0 && bad == 0) {
+        mask |= MB_ICONEXCLAMATION;
+        MessageBox(hMaxEggParams, "Nothing to export!", "Panda3D Export results", mask);
+    } else {
+        if (bad > 0) mask |= MB_ICONEXCLAMATION;
+        else mask |= MB_ICONINFORMATION;
+        
+        MessageBox(hMaxEggParams, status.str().c_str(), "Panda3D Export results", mask);
+    }
     
     int pviewed = 0;
     if (pview && good > 0) {
