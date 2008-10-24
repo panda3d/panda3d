@@ -22,6 +22,7 @@ class ControlManager:
     wantWASD = config.GetBool('want-WASD', 0)
 
     def __init__(self, enable=True, passMessagesThrough = False):
+        assert self.notify.debug("init control manager %s" % (passMessagesThrough))
         assert self.notify.debugCall(id(self))
         self.passMessagesThrough = passMessagesThrough
         self.inputStateTokens = []
@@ -64,7 +65,7 @@ class ControlManager:
         assert controls is not None
         oldControls = self.controls.get(name)
         if oldControls is not None:
-            print "Replacing controls:", name
+            assert self.notify.debug("Replacing controls: %s" % name)
             oldControls.disableAvatarControls()
             oldControls.setCollisionsActive(0)
             oldControls.delete()
@@ -89,7 +90,7 @@ class ControlManager:
         assert self.notify.debugCall(id(self))
         oldControls = self.controls.pop(name,None)
         if oldControls is not None:
-            print "Removing controls:", name
+            assert self.notify.debug("Removing controls: %s" % name)
             oldControls.disableAvatarControls()
             oldControls.setCollisionsActive(0)
 
@@ -130,7 +131,7 @@ class ControlManager:
             #else:
             #    print "Controls are already", name
         else:
-            print "Unkown controls:", name
+            assert self.notify.debug("Unkown controls: %s" % name)
 
     def setSpeeds(self, forwardSpeed, jumpForce,
             reverseSpeed, rotateSpeed, strafeLeft=0, strafeRight=0):
