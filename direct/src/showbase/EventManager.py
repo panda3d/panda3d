@@ -212,4 +212,6 @@ class EventManager:
         taskMgr.add(self.eventLoopTask, 'eventManager')
 
     def shutdown(self):
+        # Should be safe to import the global taskMgr by now.
+        from direct.task.TaskManagerGlobal import taskMgr
         taskMgr.remove('eventManager')
