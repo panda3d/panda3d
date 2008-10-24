@@ -4,9 +4,7 @@ __all__ = ['EventManager']
 
 
 from MessengerGlobal import *
-from direct.task.TaskManagerGlobal import taskMgr
 from direct.directnotify.DirectNotifyGlobal import *
-from direct.task.Task import Task
 
 # This module may not import pandac.PandaModules, since it is imported
 # by the Toontown Launcher before the complete PandaModules have been
@@ -62,7 +60,7 @@ class EventManager:
         """
         self.doEvents()
         messenger.send("event-loop-done")
-        return Task.cont
+        return task.cont
 
     def parseEventParameter(self, eventParameter):
         """
@@ -209,6 +207,8 @@ class EventManager:
                 # Otherwise, we need our own event handler.
                 self.eventHandler = EventManager.EventHandler(self.eventQueue)
 
+        # Should be safe to import the global taskMgr by now.
+        from direct.task.TaskManagerGlobal import taskMgr
         taskMgr.add(self.eventLoopTask, 'eventManager')
 
     def shutdown(self):

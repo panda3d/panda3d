@@ -10,6 +10,11 @@ __all__ = ['Task', 'TaskSortList', 'TaskManager',
 # subset of PandaModules that we know is available immediately.
 # Methods that require more advanced C++ methods may import the
 # appropriate files within their own scope.
+
+# Actually, the above is no longer true.  The Task module is no longer
+# imported before PandaModules is available.  Instead, we make use of
+# the much more limited MiniTask.py for initial startup.
+
 from pandac.libpandaexpressModules import *
 
 from direct.directnotify.DirectNotifyGlobal import *
