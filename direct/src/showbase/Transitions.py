@@ -162,9 +162,9 @@ class Transitions:
             self.fade.reparentTo(aspect2d, FADE_SORT_INDEX)
             self.fade.setColor(self.alphaOn)
         elif base.config.GetBool('no-loading-screen',0):
-            self.transitionIval = finishIval
-            if self.transitionIval:
-                self.transitionIval.start()       
+            if finishIval:
+                self.transitionIval = finishIval
+                self.transitionIval.start()               
         else:
             # Create a sequence that lerps the color out, then
             # parents the fade to hidden
