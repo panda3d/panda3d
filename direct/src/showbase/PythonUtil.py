@@ -3181,6 +3181,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
         wrap.func_name = f.func_name
         wrap.func_dict = f.func_dict
         wrap.func_doc = f.func_doc
+        wrap.__module__ = f.__module__
         return wrap
     
     return decorator
