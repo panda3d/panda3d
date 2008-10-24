@@ -357,7 +357,7 @@ class DistributedObject(DistributedObjectBase):
                 fieldName, sendToId or self.doId, args)
             self.cr.send(dg)
         else:
-            self.notify.warning("sendUpdate failed, because self.cr is not set")
+            assert self.notify.error("sendUpdate failed, because self.cr is not set")
 
     def sendDisableMsg(self):
         self.cr.sendDisableMsg(self.doId)
