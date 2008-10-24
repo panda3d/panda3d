@@ -409,6 +409,7 @@ class TaskManager:
     _DidTests = False
 
     def __init__(self):
+        self._destroyed = False
         self.running = 0
         self.stepping = 0
         self.taskList = []
@@ -466,6 +467,9 @@ class TaskManager:
         pass
 
     def destroy(self):
+        if self._destroyed:
+            return
+
         self._frameProfileQueue.clear()
         if self._doLaterTask:
             self._doLaterTask.remove()
@@ -477,6 +481,7 @@ class TaskManager:
         del self.__doLaterList
         del self.pendingTaskDict
         del self.taskList
+        self._destroyed = True
 
     def setStepping(self, value):
         self.stepping = value

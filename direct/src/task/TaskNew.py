@@ -130,6 +130,8 @@ class TaskManager:
         self.setProfileTasks(ConfigVariableBool('profile-task-spikes', 0).getValue())
 
     def destroy(self):
+        # This should be safe to call multiple times.
+        
         self._frameProfileQueue.clear()
         self.mgr.cleanup()
 
