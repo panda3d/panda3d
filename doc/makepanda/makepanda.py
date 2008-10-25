@@ -858,7 +858,7 @@ def WriteConfigSettings():
         dtool_config["HAVE_CGDX9"] = '1'
     
     if (sys.platform == "darwin"):
-        dtool_config["PYTHON_FRAMEWORK"] = '"Python"'
+        dtool_config["PYTHON_FRAMEWORK"] = 'Python'
         dtool_config["HAVE_MALLOC_H"] = 'UNDEF'
         dtool_config["HAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
