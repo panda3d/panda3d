@@ -94,15 +94,25 @@ is_regular_file() const {
 ////////////////////////////////////////////////////////////////////
 istream *VirtualFileSimple::
 open_read_file(bool auto_unwrap) const {
-  istream *result = _mount->open_read_file(_local_filename);
+
+  // Will we be automatically unwrapping a .pz file?
+  bool do_unwrap = (_implicit_pz_file || (auto_unwrap && _local_filename.get_extension() == "pz"));
+
+  Filename local_filename(_local_filename);
+  if (do_unwrap) {
+    // .pz files are always binary, of course.
+    local_filename.set_binary();
+  }
+
+  istream *result = _mount->open_read_file(local_filename);
 #ifdef HAVE_ZLIB
-  if (result != (istream *)NULL && 
-      (_implicit_pz_file || (auto_unwrap && _local_filename.get_extension() == "pz"))) {
+  if (result != (istream *)NULL && do_unwrap) {
     // We have to slip in a layer to decompress the file on the fly.
     IDecompressStream *wrapper = new IDecompressStream(result, true);
     result = wrapper;
   }
 #endif  // HAVE_ZLIB
+
   return result;
 }
 
