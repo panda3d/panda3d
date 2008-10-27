@@ -464,6 +464,11 @@ read_chars(char *start, size_t length) {
 
   // The file is opened in text mode.  We have to decode newline
   // characters in the file.
+  if (_newline_mode == NM_binary) {
+    // Unless we're configured to always use binary mode.
+    return read_chars_raw(start, length);
+  }
+
   char *buffer = (char *)alloca(length);
 
   size_t read_length;
