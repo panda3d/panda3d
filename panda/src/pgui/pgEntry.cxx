@@ -60,7 +60,7 @@ PGEntry(const string &name) :
 
   _text_render_root = NodePath("text_root");
   _cursor_scale = _text_render_root.attach_new_node("cursor_scale");
-  _cursor_def = _cursor_def.attach_new_node("cursor");
+  _cursor_def = _cursor_scale.attach_new_node("cursor");
   _cursor_visible = true;
 
   // These strings are used to specify the TextProperties to apply to
@@ -100,8 +100,16 @@ PGEntry(const PGEntry &copy) :
   _text(copy._text),
   _obscure_text(copy._obscure_text),
   _cursor_position(copy._cursor_position),
+  _cursor_visible(copy._cursor_visible),
+  _candidate_highlight_start(copy._candidate_highlight_start),
+  _candidate_highlight_end(copy._candidate_highlight_end),
+  _candidate_cursor_pos(copy._candidate_cursor_pos),
   _max_chars(copy._max_chars),
   _max_width(copy._max_width),
+  _num_lines(copy._num_lines),
+  _accept_enabled(copy._accept_enabled),
+  _candidate_active(copy._candidate_active),
+  _candidate_inactive(copy._candidate_inactive),
   _text_defs(copy._text_defs),
   _blink_start(copy._blink_start),
   _blink_rate(copy._blink_rate),
@@ -112,6 +120,11 @@ PGEntry(const PGEntry &copy) :
   _last_text_def = (TextNode *)NULL;
   _text_geom_stale = true;
   _text_geom_flattened = true;
+
+  _text_render_root = NodePath("text_root");
+  _cursor_scale = _text_render_root.attach_new_node("cursor_scale");
+  _cursor_scale.set_transform(copy._cursor_scale.get_transform());
+  _cursor_def = copy._cursor_def.copy_to(_cursor_scale);
 }
 
 ////////////////////////////////////////////////////////////////////
