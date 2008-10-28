@@ -46,6 +46,9 @@ is_alive() const {
   case S_servicing_removed:
     return false;
   }
+
+  // Shouldn't get here.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
