@@ -98,6 +98,9 @@ get_num_nodes(Thread *current_thread) const {
 //               return the same thing as get_node(0) (since the
 //               bottom node is the most important node in the
 //               NodePath, and is the one most frequently referenced).
+//
+//               Note that this function returns the same thing as
+//               get_ancestor(index).node().
 ////////////////////////////////////////////////////////////////////
 PandaNode *NodePath::
 get_node(int index, Thread *current_thread) const {
@@ -121,6 +124,40 @@ get_node(int index, Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_ancestor
+//       Access: Published
+//  Description: Returns the nth ancestor of the path, where 0 is the
+//               NodePath itself and get_num_nodes() - 1 is get_top().
+//               This requires iterating through the path.
+//
+//               Also see get_node(), which returns the same thing as
+//               a PandaNode pointer, not a NodePath.
+////////////////////////////////////////////////////////////////////
+NodePath NodePath::
+get_ancestor(int index, Thread *current_thread) const {
+  nassertr(index >= 0 && index < get_num_nodes(), NodePath::fail());
+
+  int pipeline_stage = current_thread->get_pipeline_stage();
+
+  NodePathComponent *comp = _head;
+  while (index > 0) {
+    // If this assertion fails, the index was out of range; the
+    // component's length must have been invalid.
+    nassertr(comp != (NodePathComponent *)NULL, NodePath::fail());
+    comp = comp->get_next(pipeline_stage, current_thread);
+    index--;
+  }
+
+  // If this assertion fails, the index was out of range; the
+  // component's length must have been invalid.
+  nassertr(comp != (NodePathComponent *)NULL, NodePath::fail());
+
+  NodePath result;
+  result._head = comp;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_top
 //       Access: Published
 //  Description: Returns a singleton NodePath that represents the top
@@ -137,7 +174,7 @@ get_top(Thread *current_thread) const {
   NodePathComponent *comp = _head;
   while (!comp->is_top_node(pipeline_stage, current_thread)) {
     comp = comp->get_next(pipeline_stage, current_thread);
-    nassertr(comp != (NodePathComponent *)NULL, NULL);
+    nassertr(comp != (NodePathComponent *)NULL, NodePath::fail());
   }
 
   NodePath top;

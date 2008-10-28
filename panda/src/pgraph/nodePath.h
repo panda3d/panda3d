@@ -180,6 +180,7 @@ PUBLISHED:
   INLINE bool is_singleton(Thread *current_thread = Thread::get_current_thread()) const;
   int get_num_nodes(Thread *current_thread = Thread::get_current_thread()) const;
   PandaNode *get_node(int index, Thread *current_thread = Thread::get_current_thread()) const;
+  NodePath get_ancestor(int index, Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE ErrorType get_error_type() const;
 
