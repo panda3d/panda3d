@@ -194,5 +194,9 @@ set_current_task(AsyncTask *task, bool clean_exit) {
     nassertv(_current_task->_manager == NULL);
     _current_task->_manager = _manager;
     _current_task->_state = S_active_nested;
+
+    double now = _manager->_clock->get_frame_time();
+    task->_start_time = now;
+    task->_start_frame = _manager->_clock->get_frame_count();
   }
 }
