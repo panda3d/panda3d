@@ -526,13 +526,26 @@ void MaxEggPlugin::DoExport() {
     
     for (int i = 0; i < numEggs; i++) {
         if (eggList[i]->_checked) {
-            MaxToEggConverter converter;
-            if (converter.convert((MaxEggOptions*)eggList[i])) {
-                good += 1;
-                status << "Successfully created " << eggList[i]->_short_name << ".egg\n";
+            // If "auto overwrite" was not checked and the file exists,
+            // ask if the user wishes to overwrite the file
+            bool do_write = true;
+            if (!autoOverwrite && Filename::from_os_specific(eggList[i]->_file_name).exists()) {
+                char msg[1024];
+                sprintf(msg, "Overwrite file \"%s.egg\"?", eggList[i]->_short_name);
+                do_write = (MessageBox(hMaxEggParams, msg, "Panda3D Exporter", MB_YESNO | MB_ICONQUESTION) == IDYES);
+            }
+            if (do_write) {
+                MaxToEggConverter converter;
+                if (converter.convert((MaxEggOptions*)eggList[i])) {
+                    good += 1;
+                    status << "Successfully created " << eggList[i]->_short_name << ".egg\n";
+                } else {
+                    bad += 1;
+                    status << "Could not export " << eggList[i]->_short_name << ".egg\n";
+                }
             } else {
                 bad += 1;
-                status << "Could not export " << eggList[i]->_short_name << ".egg\n";
+                status << "Skipped file " << eggList[i]->_short_name << ".egg\n";
             }
         }
     }
@@ -544,8 +557,7 @@ void MaxEggPlugin::DoExport() {
         MessageBox(hMaxEggParams, "Nothing to export!", "Panda3D Export results", mask);
     } else {
         if (bad > 0) mask |= MB_ICONEXCLAMATION;
-        else mask |= MB_ICONINFORMATION;
-        
+        else mask |= MB_ICONINFORMATION;        
         MessageBox(hMaxEggParams, status.str().c_str(), "Panda3D Export results", mask);
     }
     
@@ -554,16 +566,21 @@ void MaxEggPlugin::DoExport() {
         for (i = 0; i < numEggs; i++) {
             if (eggList[i]->_checked && eggList[i]->_successful) {
                 if (eggList[i]->_anim_type != MaxEggOptions::AT_chan) {
-                    char buf[1024];
                     PROCESS_INFORMATION pi;
                     STARTUPINFO si;
                     
                     memset(&si,0,sizeof(si));
                     si.cb= sizeof(si);
                     
-                    sprintf(buf, "pview %s.egg?", eggList[i]->_short_name);
                     char cmdLine[2048];
-                    sprintf(cmdLine, "pview \"%s\"", eggList[i]->_file_name);
+                    // If we have just one model and animation file, pview them both
+                    if (numEggs == 2 && eggList[i]->_anim_type == MaxEggOptions::AT_model &&
+                        eggList[1-i]->_checked && eggList[1-i]->_successful &&
+                        eggList[1-i]->_anim_type == MaxEggOptions::AT_chan) {
+                        sprintf(cmdLine, "pview \"%s\" \"%s\"", eggList[i]->_file_name, eggList[1-i]->_file_name);
+                    } else {
+                        sprintf(cmdLine, "pview \"%s\"", eggList[i]->_file_name);
+                    }
                     CreateProcess(NULL, cmdLine, NULL, NULL, FALSE, CREATE_NEW_CONSOLE,
                                   NULL, NULL, &si, &pi);
                     pviewed += 1;

@@ -95,7 +95,7 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
     } else {
         all_ok = _tree.build_complete_hierarchy(_options->_max_interface->GetRootNode(), &_options->_node_list.front(), _options->_node_list.size());
     }
-
+    
     if (all_ok) {
         switch (_options->_anim_type) {
         case MaxEggOptions::AT_pose:
@@ -119,7 +119,7 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
                                        output_frame_rate);
             break;
             
-        case AC_both:
+        case MaxEggOptions::AT_both:
             // both: Put a model and its animation into the same egg file.
             _options->_anim_type = MaxEggOptions::AT_model;
             if (!convert_char_model()) {
@@ -130,12 +130,17 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
                                    output_frame_rate)) {
                 all_ok = false;
             }
+            // Set the type back to AT_both
+            _options->_anim_type = MaxEggOptions::AT_both;
             break;
+          
+          default:
+            all_ok = false;
         };
         
         reparent_decals(_egg_data);
     }
-
+    
     if (all_ok) {
         _egg_data->recompute_tangent_binormal_auto();
         _egg_data->remove_unused_vertices(true);
