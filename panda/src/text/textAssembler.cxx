@@ -27,6 +27,7 @@
 #include "geomVertexFormat.h"
 #include "geomVertexData.h"
 #include "geom.h"
+#include "modelNode.h"
 
 #include <ctype.h>
   
@@ -1208,12 +1209,13 @@ assemble_row(TextAssembler::TextRow &row,
 
     // We get the row's alignment property from that of the last
     // character to be placed in the row (or the newline character).
-    //[fabius] differently as stated above this is not a sure way to get it so we'll set it as soon as we found it
-    if (
-      (align == TextProperties::A_left) &&
-      (properties->get_align() != TextProperties::A_left)
-      )
-    align = properties->get_align();
+    
+    //[fabius] differently as stated above this is not a sure way to
+    //get it so we'll set it as soon as we found it
+    if ((align == TextProperties::A_left) &&
+        (properties->get_align() != TextProperties::A_left)) {
+      align = properties->get_align();
+    }
 
     // And the height of the row is the maximum of all the fonts used
     // within the row.
@@ -1242,7 +1244,20 @@ assemble_row(TextAssembler::TextRow &row,
       GlyphPlacement *placement = new GlyphPlacement;
       row_placed_glyphs.push_back(placement);
 
-      placement->_graphic_model = graphic->get_model().node();
+      PT(PandaNode) model = graphic->get_model().node();
+      if (graphic->get_instance_flag()) {
+        // Instance the model in.  Create a ModelNode so it doesn't
+        // get flattened.
+        PT(ModelNode) model_node = new ModelNode("");
+        model_node->set_preserve_transform(ModelNode::PT_no_touch);
+        model_node->add_child(model);
+        placement->_graphic_model = model_node.p();
+      } else {
+        // Copy the model in.  This the preferred way; it's a little
+        // cheaper to render than instancing (because flattening is
+        // more effective).
+        placement->_graphic_model = model->copy_subgraph();
+      }
 
       LVecBase4f frame = graphic->get_frame();
       float glyph_scale = properties->get_glyph_scale() * properties->get_text_scale();
@@ -2061,7 +2076,7 @@ copy_graphic_to(PandaNode *node, const RenderState *state,
 
     intermediate_node->set_transform(TransformState::make_mat(new_xform));
     intermediate_node->set_state(state);
-    intermediate_node->add_child(_graphic_model->copy_subgraph());
+    intermediate_node->add_child(_graphic_model);
   }
 }
 

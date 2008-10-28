@@ -43,6 +43,7 @@ public:
 
   virtual PandaNode *combine_with(PandaNode *other); 
   virtual bool safe_to_flatten() const;
+  virtual bool safe_to_flatten_below() const;
   virtual bool safe_to_transform() const;
   virtual bool safe_to_modify_transform() const;
   virtual bool safe_to_combine() const;
@@ -55,6 +56,7 @@ PUBLISHED:
     PT_local,
     PT_net,
     PT_drop_node,
+    PT_no_touch,
   };
 
   INLINE void set_preserve_transform(PreserveTransform preserve_transform);

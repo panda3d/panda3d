@@ -32,21 +32,34 @@ ModelNode(const string &name) :
 //       Access: Public
 //  Description: Sets the preserve_transform flag.  This restricts the
 //               ability of a flatten operation to affect the
-//               transform stored on this node.  If the flag is:
+//               transform stored on this node, and/or the node
+//               itself.  In the order from weakest to strongest
+//               restrictions, the possible flags are:
 //
-//               PT_none - the transform may be adjusted at will.
+//               PT_drop_node - This node should be removed at the
+//               next flatten call.
 //
-//               PT_local - the local (and net) transform should not
+//               PT_none - The transform may be adjusted at will.  The
+//               node itself will not be removed.  This is the
+//               default.
+//
+//               PT_net - Preserve the net transform from the root,
+//               but it's acceptable to modify the local transform
+//               stored on this particular node if necessary, so long
+//               as the net transform is not changed.  This eliminates
+//               the need to drop an extra transform on the node
+//               above.
+//
+//               PT_local - The local (and net) transform should not
 //               be changed in any way.  If necessary, an extra
 //               transform will be left on the node above to guarantee
-//               this.  This is the strongest restriction.
+//               this.  This is a stronger restriction than PT_net.
 //
-//               PT_net - preserve the net transform from the
-//               root, but it's acceptable to modify the local
-//               transform stored on this particular node if
-//               necessary, so long as the net transform is not
-//               changed.  This eliminates the need to drop an extra
-//               transform on the node above.
+//               PT_no_touch - The local transform will not be
+//               changed, the node will not be removed, and
+//               furthermore any flatten operation will not continue
+//               below this node--this node and all descendents are
+//               protected from the effects of flatten.
 ////////////////////////////////////////////////////////////////////
 INLINE void ModelNode::
 set_preserve_transform(ModelNode::PreserveTransform preserve_transform) {

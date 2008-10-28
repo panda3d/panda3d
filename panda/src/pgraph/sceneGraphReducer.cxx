@@ -290,6 +290,16 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
 
   // Check to see if we can't propagate any of these attribs past
   // this node for some reason.
+  if (!node->safe_to_flatten_below()) {
+    if (pgraph_cat.is_spam()) {
+      pgraph_cat.spam()
+        << "Not applying further; " << *node
+        << " doesn't allow flattening below itself.\n";
+    }
+    next_attribs.apply_to_node(node, attrib_types);
+    return;
+  }
+
   int apply_types = 0;
 
   const RenderEffects *effects = node->get_effects();
@@ -414,7 +424,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
   if (!parent_node->safe_to_flatten_below()) {
     if (pgraph_cat.is_spam()) {
       pgraph_cat.spam()
-        << "Not traversing farther; " << *parent_node
+        << "Not traversing further; " << *parent_node
         << " doesn't allow flattening below itself.\n";
     }
     

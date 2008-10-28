@@ -21,6 +21,7 @@
 INLINE TextGraphic::
 TextGraphic() {
   _frame = LVecBase4f::zero();
+  _instance_flag = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -31,7 +32,8 @@ TextGraphic() {
 INLINE TextGraphic::
 TextGraphic(const NodePath &model, const LVecBase4f &frame) :
   _model(model),
-  _frame(frame)
+  _frame(frame),
+  _instance_flag(false)
 {
 }
 
@@ -43,7 +45,8 @@ TextGraphic(const NodePath &model, const LVecBase4f &frame) :
 INLINE TextGraphic::
 TextGraphic(const NodePath &model, float left, float right, float bottom, float top) :
   _model(model),
-  _frame(left, right, bottom, top)
+  _frame(left, right, bottom, top),
+  _instance_flag(false)
 {
 }
 
@@ -109,4 +112,30 @@ set_frame(const LVecBase4f &frame) {
 INLINE void TextGraphic::
 set_frame(float left, float right, float bottom, float top) {
   _frame.set(left, right, bottom, top);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextGraphic::get_instance_flag
+//       Access: Published
+//  Description: Returns the instance_flag.  See set_instance_flag().
+////////////////////////////////////////////////////////////////////
+INLINE bool TextGraphic::
+get_instance_flag() const {
+  return _instance_flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextGraphic::set_instance_flag
+//       Access: Published
+//  Description: Sets the instance_flag.  When this is true, the
+//               graphic is directly instanced to the scene graph
+//               whenever it appears; when it is false, the graphic is
+//               copied.  The default is false, which is best for most
+//               applications.  You might need to set it true for
+//               special kinds of "graphics" like interactive
+//               elements, for instance a PGEntry.
+////////////////////////////////////////////////////////////////////
+INLINE void TextGraphic::
+set_instance_flag(bool instance_flag) {
+  _instance_flag = instance_flag;
 }

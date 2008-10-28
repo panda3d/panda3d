@@ -53,9 +53,13 @@ PUBLISHED:
   INLINE void set_frame(const LVecBase4f &frame);
   INLINE void set_frame(float left, float right, float bottom, float top);
 
+  INLINE bool get_instance_flag() const;
+  INLINE void set_instance_flag(bool instance_flag);
+
 private:
   NodePath _model;
   LVecBase4f _frame;
+  bool _instance_flag;
 };
 
 #include "textGraphic.I"

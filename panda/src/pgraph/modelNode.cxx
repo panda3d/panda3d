@@ -75,6 +75,18 @@ safe_to_flatten() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelNode::safe_to_flatten_below
+//       Access: Public, Virtual
+//  Description: Returns true if a flatten operation may safely
+//               continue past this node, or false if nodes below this
+//               node may not be molested.
+////////////////////////////////////////////////////////////////////
+bool ModelNode::
+safe_to_flatten_below() const {
+  return _preserve_transform != PT_no_touch;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelNode::safe_to_transform
 //       Access: Public, Virtual
 //  Description: Returns true if it is generally safe to transform
@@ -101,7 +113,7 @@ safe_to_transform() const {
 ////////////////////////////////////////////////////////////////////
 bool ModelNode::
 safe_to_modify_transform() const {
-  return _preserve_transform != PT_local;
+  return _preserve_transform != PT_local && _preserve_transform != PT_no_touch;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -128,7 +140,7 @@ safe_to_combine() const {
 ////////////////////////////////////////////////////////////////////
 bool ModelNode::
 preserve_name() const {
-  return _preserve_transform != PT_drop_node;
+  return _preserve_transform != PT_drop_node && _preserve_transform != PT_no_touch;
 }
 
 ////////////////////////////////////////////////////////////////////
