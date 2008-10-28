@@ -544,7 +544,7 @@ bool TinyOsxGraphicsWindow::set_icon_filename(const Filename &icon_filename)
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   Filename icon_pathname = icon_filename;
-  if (!vfs->resolve_filename(icon_pathname, model_path)) {
+  if (!vfs->resolve_filename(icon_pathname, get_model_path())) {
     // The filename doesn't exist.
     tinydisplay_cat.warning()
       << "Could not find icon filename " << icon_filename << "\n";
