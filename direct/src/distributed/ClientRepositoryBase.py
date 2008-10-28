@@ -566,22 +566,26 @@ class ClientRepositoryBase(ConnectionRepository):
             # Let the dclass finish the job
             do.dclass.receiveUpdate(do, di)
         elif not ovUpdated:
-            # this next bit is looking for friend handles so that if you get an update 
+            # this next bit is looking for avatar handles so that if you get an update 
             # for an avatar that isn't in your doId2do table but there is a 
-            # friend handle for that object then it's messages will be forwarded to that 
+            # avatar handle for that object then it's messages will be forwarded to that 
             # object. We are currently using that for whisper echoing
             # if you need a more general perpose system consider registering proxy objects on
-            # a dict and adding the friend handles to that dict when they are created
+            # a dict and adding the avatar handles to that dict when they are created
             # then change/remove the old method. I didn't do that because I couldn't think
             # of a use for it. -JML
-            handle = self.identifyAvatar(doId)
-            if handle:
-                dclass = self.dclassesByName[handle.dclassName]
-                dclass.receiveUpdate(handle, di)
-                
-            else:
+            try :
+                handle = self.identifyAvatar(doId)
+                if handle:
+                    dclass = self.dclassesByName[handle.dclassName]
+                    dclass.receiveUpdate(handle, di)
+                    
+                else:
+                    self.notify.warning(
+                        "Asked to update non-existent DistObj " + str(doId))
+            except:
                 self.notify.warning(
-                    "Asked to update non-existent DistObj " + str(doId))
+                        "Asked to update non-existent DistObj " + str(doId) + "and failed to find it")
             
     def __doUpdateOwner(self, doId, di):
         ovObj = self.doId2ownerView.get(doId)
