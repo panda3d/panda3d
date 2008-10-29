@@ -112,10 +112,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         smoothed position.  This may be overridden by a derived class
         to specialize the behavior.
         """
-        if hasattr(self.smoother, 'computeAndApplySmoothPosHpr'):
-            self.smoother.computeAndApplySmoothPosHpr(self, self)
-        else:
-            self.smoother.computeAndApplySmoothMat(self)
+        self.smoother.computeAndApplySmoothPosHpr(self, self)
             
     def doSmoothTask(self, task):
         self.smoothPosition()
@@ -167,10 +164,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         #printStack()
         if (not self.isLocal()) and \
            self.smoother.getLatestPosition():
-            if hasattr(self.smoother, 'applySmoothPosHpr'):
-                self.smoother.applySmoothPosHpr(self, self)
-            else:
-                self.smoother.applySmoothMat(self)
+            self.smoother.applySmoothPosHpr(self, self)
         self.smoother.clearPositions(1)
 
     def reloadPosition(self):
@@ -181,10 +175,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         it to stick.
         """
         self.smoother.clearPositions(0)
-        if hasattr(self.smoother, 'setPosHpr'):
-            self.smoother.setPosHpr(self.getPos(), self.getHpr())
-        else:
-            self.smoother.setMat(self.getMat())
+        self.smoother.setPosHpr(self.getPos(), self.getHpr())
         self.smoother.setPhonyTimestamp()
         self.smoother.markPosition()
 
@@ -367,10 +358,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
 
         if not self.localControl and not self.smoothStarted and \
            self.smoother.getLatestPosition():
-            if hasattr(self.smoother, 'applySmoothPosHpr'):
-                self.smoother.applySmoothPosHpr(self, self)
-            else:
-                self.smoother.applyMat(self)
+            self.smoother.applySmoothPosHpr(self, self)
                 
     @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
     def clearSmoothing(self, bogus = None):
