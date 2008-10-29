@@ -49,15 +49,6 @@ PUBLISHED:
   SmoothMover();
   ~SmoothMover();
 
-  // This method is just used to specify a scale which is only used
-  // when composing the matrix for return by get_smooth_mat().  It
-  // might change from time to time, but it is not smoothed.
-  INLINE bool set_scale(const LVecBase3f &scale);
-  INLINE bool set_scale(float sx, float sy, float sz);
-  INLINE bool set_sx(float sx);
-  INLINE bool set_sy(float sy);
-  INLINE bool set_sz(float sz);
-
   // These methods are used to specify each position update.  Call the
   // appropriate set_* function(s), as needed, and then call
   // mark_position().  The return value of each function is true if
@@ -75,10 +66,11 @@ PUBLISHED:
   INLINE bool set_p(float p);
   INLINE bool set_r(float r);
 
+  INLINE bool set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr);
+  INLINE bool set_pos_hpr(float x, float y, float z, float h, float p, float r);
+
   INLINE const LPoint3f &get_sample_pos() const;
   INLINE const LVecBase3f &get_sample_hpr() const;
-
-  bool set_mat(const LMatrix4f &mat);
 
   INLINE void set_phony_timestamp();
   INLINE void set_timestamp(double timestamp);
@@ -95,16 +87,14 @@ PUBLISHED:
 
   INLINE const LPoint3f &get_smooth_pos() const;
   INLINE const LVecBase3f &get_smooth_hpr() const;
-  INLINE const LMatrix4f &get_smooth_mat();
 
   INLINE void apply_smooth_pos(NodePath &node) const;
+  INLINE void apply_smooth_pos_hpr(NodePath &pos_node, NodePath &hpr_node) const;
   INLINE void apply_smooth_hpr(NodePath &node) const;
-  INLINE void apply_smooth_mat(NodePath &node);
 
   INLINE void compute_and_apply_smooth_pos(NodePath &node);
   INLINE void compute_and_apply_smooth_pos_hpr(NodePath &pos_node, NodePath &hpr_node);
   INLINE void compute_and_apply_smooth_hpr(NodePath &hpr_node);
-  INLINE void compute_and_apply_smooth_mat(NodePath &node);
 
   INLINE float get_smooth_forward_velocity() const;
   INLINE float get_smooth_lateral_velocity() const;
@@ -160,7 +150,6 @@ PUBLISHED:
 private:
   void set_smooth_pos(const LPoint3f &pos, const LVecBase3f &hpr,
                       double timestamp);
-  void compose_smooth_mat();
   void linear_interpolate(int point_before, int point_after, double timestamp);
   void compute_velocity(const LVector3f &pos_delta, 
                         const LVecBase3f &hpr_delta,
@@ -168,8 +157,6 @@ private:
 
   void record_timestamp_delay(double timestamp);
   INLINE double get_avg_timestamp_delay() const;
-
-  LVecBase3f _scale;
 
 public:
   // This internal class is declared public to work around compiler
@@ -186,12 +173,10 @@ private:
 
   LPoint3f _smooth_pos;
   LVecBase3f _smooth_hpr;
-  LMatrix4f _smooth_mat;
   LVector3f _forward_axis;
   double _smooth_timestamp;
   bool _smooth_position_known;
   bool _smooth_position_changed;
-  bool _computed_smooth_mat;
   bool _computed_forward_axis;
 
   double _smooth_forward_velocity;

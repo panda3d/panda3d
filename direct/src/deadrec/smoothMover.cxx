@@ -14,7 +14,6 @@
 
 #include "smoothMover.h"
 #include "pnotify.h"
-#include "compose_matrix.h"
 #include "config_deadrec.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -24,19 +23,16 @@
 ////////////////////////////////////////////////////////////////////
 SmoothMover::
 SmoothMover() {
-  _scale.set(1.0, 1.0, 1.0);
   _sample._pos.set(0.0, 0.0, 0.0);
   _sample._hpr.set(0.0, 0.0, 0.0);
   _sample._timestamp = 0.0;
 
   _smooth_pos.set(0.0, 0.0, 0.0);
   _smooth_hpr.set(0.0, 0.0, 0.0);
-  _smooth_mat = LMatrix4f::ident_mat();
   _forward_axis.set(0.0, 1.0, 0.0);
   _smooth_timestamp = 0.0;
   _smooth_position_known = false;
   _smooth_position_changed = true;
-  _computed_smooth_mat = true;
   _computed_forward_axis = true;
 
   _smooth_forward_velocity = 0.0;
@@ -73,23 +69,6 @@ SmoothMover() {
 ////////////////////////////////////////////////////////////////////
 SmoothMover::
 ~SmoothMover() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::set_mat
-//       Access: Published
-//  Description: Specifies the scale, hpr, and pos for the SmoothMover
-//               at some particular point, based on the matrix.
-////////////////////////////////////////////////////////////////////
-bool SmoothMover::
-set_mat(const LMatrix4f &mat) {
-  bool result = false;
-
-  LVecBase3f scale, hpr, pos;
-  if (decompose_matrix(mat, scale, hpr, pos)) {
-    result = set_scale(scale) | set_hpr(hpr) | set_pos(pos);
-  }
-  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -615,29 +594,15 @@ set_smooth_pos(const LPoint3f &pos, const LVecBase3f &hpr,
   if (_smooth_pos != pos) {
     _smooth_pos = pos;
     _smooth_position_changed = true;
-    _computed_smooth_mat = false;
   }
   if (_smooth_hpr != hpr) {
     _smooth_hpr = hpr;
     _smooth_position_changed = true;
-    _computed_smooth_mat = false;
     _computed_forward_axis = false;
   }
 
   _smooth_timestamp = timestamp;
   _smooth_position_known = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::compose_smooth_mat
-//       Access: Private
-//  Description: Computes the smooth_mat based on smooth_pos and
-//               smooth_hpr.
-////////////////////////////////////////////////////////////////////
-void SmoothMover::
-compose_smooth_mat() {
-  compose_matrix(_smooth_mat, _scale, _smooth_hpr, _smooth_pos);
-  _computed_smooth_mat = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -809,8 +774,6 @@ handle_wrt_reparent(NodePath &old_parent, NodePath &new_parent) {
   np.set_pos_hpr(_smooth_pos, _smooth_hpr);
   _smooth_pos = np.get_pos(new_parent);
   _smooth_hpr = np.get_hpr(new_parent);
-
-  compose_smooth_mat();
 
   _computed_forward_axis = false;
 

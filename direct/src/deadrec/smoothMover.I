@@ -14,73 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::set_scale
-//       Access: Published
-//  Description: Specifies the current scale that should be applied to
-//               the transform.  This is not smoothed along with pos
-//               and hpr, but rather takes effect immediately; it is
-//               only here at all so we can return a complete matrix
-//               in get_smooth_mat().
-////////////////////////////////////////////////////////////////////
-INLINE bool SmoothMover::
-set_scale(const LVecBase3f &scale) {
-  return set_sx(scale[0]) | set_sy(scale[1]) | set_sz(scale[2]);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::set_scale
-//       Access: Published
-//  Description: Specifies the current scale that should be applied to
-//               the transform.  This is not smoothed along with pos
-//               and hpr, but rather takes effect immediately; it is
-//               only here at all so we can return a complete matrix
-//               in get_smooth_mat().
-////////////////////////////////////////////////////////////////////
-INLINE bool SmoothMover::
-set_scale(float sx, float sy, float sz) {
-  return set_sx(sx) | set_sy(sy) | set_sz(sz);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::set_sx
-//       Access: Published
-//  Description: Sets the X-axis scale only.  See set_scale().
-////////////////////////////////////////////////////////////////////
-INLINE bool SmoothMover::
-set_sx(float sx) {
-  bool result = (sx != _scale[0]);
-  _scale[0] = sx;
-  _computed_smooth_mat = _computed_smooth_mat && !result;
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::set_sy
-//       Access: Published
-//  Description: Sets the Y-axis scale only.  See set_scale().
-////////////////////////////////////////////////////////////////////
-INLINE bool SmoothMover::
-set_sy(float sy) {
-  bool result = (sy != _scale[1]);
-  _scale[1] = sy;
-  _computed_smooth_mat = _computed_smooth_mat && !result;
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::set_sz
-//       Access: Published
-//  Description: Sets the Z-axis scale only.  See set_scale().
-////////////////////////////////////////////////////////////////////
-INLINE bool SmoothMover::
-set_sz(float sz) {
-  bool result = (sz != _scale[2]);
-  _scale[2] = sz;
-  _computed_smooth_mat = _computed_smooth_mat && !result;
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::set_pos
 //       Access: Published
 //  Description: Specifies the position of the SmoothMover at a
@@ -263,6 +196,47 @@ set_r(float r) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_pos_hpr
+//       Access: Published
+//  Description: Specifies the position and orientation of the SmoothMover at a
+//               particular time in the past.  When mark_position() is
+//               called, this will be recorded (along with
+//               timestamp) in a position report, which will then be
+//               used along with all other position reports to
+//               determine the smooth position at any particular
+//               instant.
+//
+//               The return value is true if any parameter has changed
+//               since the last call to set_pos_hpr(), or false if they
+//               are the same.
+////////////////////////////////////////////////////////////////////
+INLINE bool SmoothMover::
+set_pos_hpr(const LVecBase3f &pos, const LVecBase3f &hpr) {
+  return (set_x(pos[0]) | set_y(pos[1]) | set_z(pos[2]) |
+          set_h(hpr[0]) | set_p(hpr[1]) | set_r(hpr[2]));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::set_pos_hpr
+//       Access: Published
+//  Description: Specifies the position of the SmoothMover at a
+//               particular time in the past.  When mark_position() is
+//               called, this will be recorded (along with
+//               timestamp) in a position report, which will then be
+//               used along with all other position reports to
+//               determine the smooth position at any particular
+//               instant.
+//
+//               The return value is true if any parameter has changed
+//               since the last call to set_pos_hpr(), or false if they
+//               are the same.
+////////////////////////////////////////////////////////////////////
+INLINE bool SmoothMover::
+set_pos_hpr(float x, float y, float z, float h, float p, float r) {
+  return set_x(x) | set_y(y) | set_z(z) | set_h(h) | set_p(p) | set_r(r);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::get_sample_pos
 //       Access: Published
 //  Description: Returns the current position of the working sample
@@ -413,6 +387,22 @@ apply_smooth_pos(NodePath &node) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SmoothMover::apply_smooth_pos_hpr
+//       Access: Published
+//  Description: Applies the smoothed position and orientation to the
+//               indicated NodePath.  This is equivalent to calling
+//               node.set_pos_hpr(smooth_mover->get_smooth_pos(),
+//               smooth_mover->get_smooth_hpr()).  It exists as an
+//               optimization only, to avoid the overhead of passing
+//               the return value through Python.
+////////////////////////////////////////////////////////////////////
+INLINE void SmoothMover::
+apply_smooth_pos_hpr(NodePath &pos_node, NodePath &hpr_node) const {
+  pos_node.set_pos(get_smooth_pos());
+  hpr_node.set_hpr(get_smooth_hpr());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SmoothMover::apply_smooth_hpr
 //       Access: Published
 //  Description: Applies the smoothed orientation to the indicated
@@ -424,20 +414,6 @@ apply_smooth_pos(NodePath &node) const {
 INLINE void SmoothMover::
 apply_smooth_hpr(NodePath &node) const {
   node.set_hpr(get_smooth_hpr());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::apply_smooth_mat
-//       Access: Published
-//  Description: Applies the smoothed transform to the indicated
-//               NodePath.  This is equivalent to calling
-//               node.set_mat(smooth_mover->get_smooth_mat()).  It
-//               exists as an optimization only, to avoid the overhead
-//               of passing the return value through Python.
-////////////////////////////////////////////////////////////////////
-INLINE void SmoothMover::
-apply_smooth_mat(NodePath &node) {
-  node.set_mat(get_smooth_mat());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -483,35 +459,6 @@ compute_and_apply_smooth_hpr(NodePath &hpr_node) {
   if (compute_smooth_position()) {
     apply_smooth_hpr(hpr_node);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::compute_and_apply_smooth_mat
-//       Access: Published
-//  Description: A further optimization to reduce Python calls.  This
-//               computes the smooth position and applies it to the
-//               indicated node in one call.
-////////////////////////////////////////////////////////////////////
-INLINE void SmoothMover::
-compute_and_apply_smooth_mat(NodePath &node) {
-  if (compute_smooth_position()) {
-    apply_smooth_mat(node);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: SmoothMover::get_smooth_mat
-//       Access: Published
-//  Description: Returns the complete smoothed transformation matrix
-//               as computed by a previous call to
-//               compute_smooth_position().
-////////////////////////////////////////////////////////////////////
-INLINE const LMatrix4f &SmoothMover::
-get_smooth_mat() {
-  if (!_computed_smooth_mat) {
-    compose_smooth_mat();
-  }
-  return _smooth_mat;
 }
 
 ////////////////////////////////////////////////////////////////////
