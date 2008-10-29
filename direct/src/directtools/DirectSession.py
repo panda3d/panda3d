@@ -626,11 +626,11 @@ class DirectSession(DirectObject):
             t = taskMgr.doMethodLater(DIRECT_FLASH_DURATION,
                                       # This is just a dummy task
                                       self.flashDummy,
-                                      'flashNodePath')
+                                      'flashNodePath',)
             t.nodePath = nodePath
             t.doneColor = doneColor
             # This really does all the work
-            t.uponDeath = self.flashDone
+            t.setUponDeath(self.flashDone)
 
     def flashDummy(self, state):
         # Real work is done in upon death function
