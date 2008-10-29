@@ -360,6 +360,215 @@ bool isInplaceFunction(InterfaceMaker::Function *func)
 
     return false;
 }
+////////////////////////////////////////////////////////////////////
+/// Function : GetSlotedFunctinDef
+//
+//  This function is used to define special behavior for class functions.. 
+//      main use is to encode the slot pointer logic and function call 
+//      conventions for the slaot interface..
+////////////////////////////////////////////////////////////////////
+bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_location, int &wraper_type)
+{                
+    wraper_type = -1;
+
+    if(thimputstring.size() > 4 && thimputstring[0] == '_' && thimputstring[1] == '_')
+    {
+        if(thimputstring == "__add__")
+        {
+            answer_location = "tp_as_number->nb_add";
+            wraper_type = 6;
+            return true;
+        }
+
+        if(thimputstring == "__sub__")
+        {
+            answer_location = "tp_as_number->nb_subtract";
+            wraper_type = 6;
+            return true;        
+        }
+
+        if(thimputstring == "__neg__")
+        {
+            answer_location = "tp_as_number->nb_negative";
+            wraper_type = 2;
+            return true;        
+        }
+
+        if(thimputstring == "__mul__")
+        {
+            answer_location = "tp_as_number->nb_multiply";
+            wraper_type = 6;
+            return true;
+        }
+
+        if(thimputstring == "__div__")
+        {
+            answer_location = "tp_as_number->nb_divide";
+            wraper_type = 6;
+            return true;
+        }
+
+        if(thimputstring == "__mod__")
+        {
+            answer_location = "tp_as_number->nb_remainder";
+            wraper_type = 6;
+            return true;
+        }
+
+        if(thimputstring == "__lshift__")
+        {
+            answer_location = "tp_as_number->nb_lshift";
+            wraper_type = 6;
+            return true;
+        }
+
+        if(thimputstring == "__rshift__")
+        {
+            answer_location = "tp_as_number->nb_rshift";
+            wraper_type = 6;
+            return true;
+        }
+
+
+        if(thimputstring == "__xor__")
+        {
+            answer_location = "tp_as_number->nb_xor";
+            wraper_type = 6;
+            return true;
+        }
+
+        if(thimputstring == "__invert__")
+        {
+            answer_location = "tp_as_number->nb_invert";
+            wraper_type = 2;
+            return true;
+        }
+
+
+        if(thimputstring == "__and__")
+        {
+            answer_location = "tp_as_number->nb_and";
+            wraper_type = 6;
+            return true;
+        }
+
+        if(thimputstring == "__or__")
+        {
+            answer_location = "tp_as_number->nb_or";
+            wraper_type = 6;
+            return true;
+        }
+
+
+        if(thimputstring == "__iadd__")
+        {
+            answer_location = "tp_as_number->nb_inplace_add";
+            wraper_type = 3;
+            return true;
+        }
+
+        if(thimputstring == "__isub__")
+        {
+            answer_location = "tp_as_number->nb_inplace_subtract";
+            wraper_type = 3;
+            return true;
+        }
+
+        if(thimputstring == "__imul__")
+        {
+            answer_location = "tp_as_number->nb_inplace_multiply";
+            wraper_type = 3;
+            return true;
+        }
+
+        if(thimputstring == "__idiv__")
+        {
+            answer_location = "tp_as_number->nb_inplace_divide";
+            wraper_type = 3;
+            return true;
+        }
+
+        if(thimputstring == "__imod__")
+        {
+            answer_location = ".tp_as_number->nb_inplace_remainder";
+            wraper_type = 3;
+            return true;
+        }
+
+
+        if(thimputstring == "__ilshift__")
+        {
+            answer_location = "tp_as_number->nb_inplace_lshift";
+            wraper_type = 3;
+            return true;
+        }
+
+        if(thimputstring == "__irshift__")
+        {
+            answer_location = "tp_as_number->nb_inplace_rshift";
+            wraper_type = 3;
+            return true;
+        }
+
+        if(thimputstring == "__iand__")
+        {
+            answer_location = "tp_as_number->nb_inplace_and";
+            wraper_type = 3;
+            return true;
+        }
+
+        if(thimputstring == "__ixor__")
+        {
+            answer_location = "tp_as_number->nb_inplace_xor";
+            wraper_type = 3;
+            return true;
+        }
+
+        if(thimputstring == "__int__")
+        {
+            answer_location = "tp_as_number->nb_int";
+            wraper_type = 2;
+            return true;
+        }
+
+//        if(thimputstring == "__coerce__")
+//        {
+//            answer_location = "tp_as_number->nb_coerce";
+//            return true;
+//        }
+
+        // mapping methods
+        if(thimputstring == "__getitem__")
+        {
+            answer_location = "tp_as_mapping->mp_subscript";
+            wraper_type = 3;
+            return true;
+        }
+
+        //Direct methods
+        if(thimputstring == "__call__")
+        {
+            answer_location = "tp_call";
+            //wraper_type = 1;
+            return true;
+        }
+
+        if(thimputstring == "__getattr__")
+        {
+            answer_location = "tp_getattro";
+            wraper_type = 5;
+            return true;
+        }
+
+        if(thimputstring == "__setattr__")
+        {
+            answer_location = "tp_setattro";
+            wraper_type = 4;
+            return true;
+        }
+    }
+    return false;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -630,6 +839,7 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
     //std::string cClassName = obj->_itype.get_scoped_name();
     std::string ClassName = make_safe_name(obj->_itype.get_scoped_name());
     std::string cClassName =  obj->_itype.get_true_name();
+    std::string export_class_name = classNameFromCppName(obj->_itype.get_name());
 
     out << "//********************************************************************\n";
     out << "//*** Functions for .. "<< cClassName <<" \n" ;
@@ -640,15 +850,30 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
         Function *func = (*fi);
         if( (func))
         {
-            ostringstream GetThis;
-            GetThis << "    "<<cClassName  << " * local_this = NULL;\n";
-            GetThis << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
-            GetThis << "    if(local_this == NULL) {\n";
+          string answer_location;
+          int wrapper_type;
+          GetSlotedFunctinDef( methodNameFromCppName(func, export_class_name), answer_location, wrapper_type);
+
+          ostringstream GetThis;
+          GetThis << "    "<<cClassName  << " * local_this = NULL;\n";
+          GetThis << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
+          GetThis << "    if(local_this == NULL) {\n";
+          if (wrapper_type == 6) {
+            // wrapper_type 6 means we must return NotImplemented,
+            // instead of raising an exception, if the this pointer
+            // doesn't match.  This is for things like __sub__, which
+            // Python likes to call on the wrong-type objects.
+            GetThis << "       Py_INCREF(Py_NotImplemented);\n";
+            GetThis << "       return Py_NotImplemented;\n";
+
+          } else {
+            // Other functions should raise an exception if the this
+            // pointer isn't set or is the wrong type.
             GetThis << "       PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
             GetThis << "       return NULL;\n";
-            GetThis << "    }\n";
-
-            write_function_for_top(out, func,GetThis.str());
+          }
+          GetThis << "    }\n";
+          write_function_for_top(out, func,GetThis.str());
         }
     }
 
@@ -922,215 +1147,6 @@ void InterfaceMakerPythonNative::write_module(ostream &out,ostream *out_h, Inter
     out << "    Dtool_PyModuleInitHelper(refs,\"" << moduledefdef->module_name << "\");\n";
     out << "}\n\n";
 }
-////////////////////////////////////////////////////////////////////
-/// Function : GetSlotedFunctinDef
-//
-//  This function is used to define special behavior for class functions.. 
-//      main use is to encode the slot pointer logic and function call 
-//      conventions for the slaot interface..
-////////////////////////////////////////////////////////////////////
-bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_location, int &wraper_type)
-{                
-    wraper_type = -1;
-
-    if(thimputstring.size() > 4 && thimputstring[0] == '_' && thimputstring[1] == '_')
-    {
-        if(thimputstring == "__add__")
-        {
-            answer_location = "tp_as_number->nb_add";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__sub__")
-        {
-            answer_location = "tp_as_number->nb_subtract";
-            wraper_type = 3;
-            return true;        
-        }
-
-        if(thimputstring == "__neg__")
-        {
-            answer_location = "tp_as_number->nb_negative";
-            wraper_type = 2;
-            return true;        
-        }
-
-        if(thimputstring == "__mul__")
-        {
-            answer_location = "tp_as_number->nb_multiply";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__div__")
-        {
-            answer_location = "tp_as_number->nb_divide";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__mod__")
-        {
-            answer_location = "tp_as_number->nb_remainder";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__lshift__")
-        {
-            answer_location = "tp_as_number->nb_lshift";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__rshift__")
-        {
-            answer_location = "tp_as_number->nb_rshift";
-            wraper_type = 3;
-            return true;
-        }
-
-
-        if(thimputstring == "__xor__")
-        {
-            answer_location = "tp_as_number->nb_xor";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__invert__")
-        {
-            answer_location = "tp_as_number->nb_invert";
-            wraper_type = 2;
-            return true;
-        }
-
-
-        if(thimputstring == "__and__")
-        {
-            answer_location = "tp_as_number->nb_and";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__or__")
-        {
-            answer_location = "tp_as_number->nb_or";
-            wraper_type = 3;
-            return true;
-        }
-
-
-        if(thimputstring == "__iadd__")
-        {
-            answer_location = "tp_as_number->nb_inplace_add";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__isub__")
-        {
-            answer_location = "tp_as_number->nb_inplace_subtract";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__imul__")
-        {
-            answer_location = "tp_as_number->nb_inplace_multiply";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__idiv__")
-        {
-            answer_location = "tp_as_number->nb_inplace_divide";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__imod__")
-        {
-            answer_location = ".tp_as_number->nb_inplace_remainder";
-            wraper_type = 3;
-            return true;
-        }
-
-
-        if(thimputstring == "__ilshift__")
-        {
-            answer_location = "tp_as_number->nb_inplace_lshift";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__irshift__")
-        {
-            answer_location = "tp_as_number->nb_inplace_rshift";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__iand__")
-        {
-            answer_location = "tp_as_number->nb_inplace_and";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__ixor__")
-        {
-            answer_location = "tp_as_number->nb_inplace_xor";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__int__")
-        {
-            answer_location = "tp_as_number->nb_int";
-            wraper_type = 2;
-            return true;
-        }
-
-//        if(thimputstring == "__coerce__")
-//        {
-//            answer_location = "tp_as_number->nb_coerce";
-//            return true;
-//        }
-
-        // mapping methods
-        if(thimputstring == "__getitem__")
-        {
-            answer_location = "tp_as_mapping->mp_subscript";
-            wraper_type = 3;
-            return true;
-        }
-
-        //Direct methods
-        if(thimputstring == "__call__")
-        {
-            answer_location = "tp_call";
-            //wraper_type = 1;
-            return true;
-        }
-
-        if(thimputstring == "__getattr__")
-        {
-            answer_location = "tp_getattro";
-            wraper_type = 5;
-            return true;
-        }
-
-        if(thimputstring == "__setattr__")
-        {
-            answer_location = "tp_setattro";
-            wraper_type = 4;
-            return true;
-        }
-    }
-    return false;
-};
 /////////////////////////////////////////////////////////////////////////////////////////////
 // Function :write_module_class
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -1282,7 +1298,7 @@ write_module_class(ostream &out,  Object *obj) {
             out << "}\n\n";
           }
 
-        if(rfi->second.second == 3)
+        if(rfi->second.second == 3 || rfi->second.second == 6)
           {
             Function *func = rfi->first;
             out << "//////////////////\n";
