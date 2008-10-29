@@ -1302,7 +1302,7 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
     nassertv(ci != _colliders.end());
 
     if (geom->get_primitive_type() == Geom::PT_polygons) {
-      const GeomVertexData *data =geom->get_vertex_data();
+      const GeomVertexData *data = geom->get_vertex_data();
       GeomVertexReader vertex(data, InternalName::get_vertex());
       
       int num_primitives = geom->get_num_primitives();
@@ -1311,33 +1311,66 @@ compare_collider_to_geom(CollisionEntry &entry, const Geom *geom,
         CPT(GeomPrimitive) tris = primitive->decompose();
         nassertv(tris->is_of_type(GeomTriangles::get_class_type()));
 
-        GeomVertexReader index(tris->get_vertices(), 0);
-        while (!index.is_at_end()) {
-          Vertexf v[3];
-
-          vertex.set_row(index.get_data1i());
-          v[0] = vertex.get_data3f();
-          vertex.set_row(index.get_data1i());
-          v[1] = vertex.get_data3f();
-          vertex.set_row(index.get_data1i());
-          v[2] = vertex.get_data3f();
-          
-          // Generate a temporary CollisionGeom on the fly for each
-          // triangle in the Geom.
-          if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
-            bool within_solid_bounds = true;
-            if (from_node_gbv != (GeometricBoundingVolume *)NULL) {
-              PT(BoundingSphere) sphere = new BoundingSphere;
-              sphere->around(v, v + 3);
-              within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
-              #ifdef DO_PSTATS
-              CollisionGeom::_volume_pcollector.add_level(1);
-              #endif  // DO_PSTATS
+        if (tris->is_indexed()) {
+          // Indexed case.
+          GeomVertexReader index(tris->get_vertices(), 0);
+          while (!index.is_at_end()) {
+            Vertexf v[3];
+            
+            vertex.set_row(index.get_data1i());
+            v[0] = vertex.get_data3f();
+            vertex.set_row(index.get_data1i());
+            v[1] = vertex.get_data3f();
+            vertex.set_row(index.get_data1i());
+            v[2] = vertex.get_data3f();
+            
+            // Generate a temporary CollisionGeom on the fly for each
+            // triangle in the Geom.
+            if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
+              bool within_solid_bounds = true;
+              if (from_node_gbv != (GeometricBoundingVolume *)NULL) {
+                PT(BoundingSphere) sphere = new BoundingSphere;
+                sphere->around(v, v + 3);
+                within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
+#ifdef DO_PSTATS
+                CollisionGeom::_volume_pcollector.add_level(1);
+#endif  // DO_PSTATS
+              }
+              if (within_solid_bounds) {
+                PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
+                entry._into = cgeom;
+                entry.test_intersection((*ci).second, this);
+              }
             }
-            if (within_solid_bounds) {
-              PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
-              entry._into = cgeom;
-              entry.test_intersection((*ci).second, this);
+          }
+        } else {
+          // Non-indexed case.
+          vertex.set_row(primitive->get_first_vertex());
+          int num_vertices = primitive->get_num_vertices();
+          for (int i = 0; i < num_vertices; i += 3) {
+            Vertexf v[3];
+            
+            v[0] = vertex.get_data3f();
+            v[1] = vertex.get_data3f();
+            v[2] = vertex.get_data3f();
+            
+            // Generate a temporary CollisionGeom on the fly for each
+            // triangle in the Geom.
+            if (CollisionPolygon::verify_points(v[0], v[1], v[2])) {
+              bool within_solid_bounds = true;
+              if (from_node_gbv != (GeometricBoundingVolume *)NULL) {
+                PT(BoundingSphere) sphere = new BoundingSphere;
+                sphere->around(v, v + 3);
+                within_solid_bounds = (sphere->contains(from_node_gbv) != 0);
+#ifdef DO_PSTATS
+                CollisionGeom::_volume_pcollector.add_level(1);
+#endif  // DO_PSTATS
+              }
+              if (within_solid_bounds) {
+                PT(CollisionGeom) cgeom = new CollisionGeom(v[0], v[1], v[2]);
+                entry._into = cgeom;
+                entry.test_intersection((*ci).second, this);
+              }
             }
           }
         }

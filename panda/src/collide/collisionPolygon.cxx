@@ -97,7 +97,7 @@ verify_points(const LPoint3f *begin, const LPoint3f *end) {
       // Make sure no points are repeated.
       const LPoint3f *pj;
       for (pj = begin; pj != pi && all_ok; ++pj) {
-        if ((*pj).almost_equal(*pi)) {
+        if ((*pj) == (*pi)) {
           all_ok = false;
         }
       }
@@ -1198,7 +1198,7 @@ setup_points(const LPoint3f *begin, const LPoint3f *end) {
     normal[2] += p0[0] * p1[1] - p0[1] * p1[0];
   }
 
-  if (IS_NEARLY_ZERO(normal.length_squared())) {
+  if (normal.length_squared() == 0.0f) {
     // The polygon has no area.
     return;
   }
