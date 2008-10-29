@@ -143,7 +143,7 @@ class FSM(DirectObject):
     defaultTransitions = None
 
     def __init__(self, name):
-        self.lock = RLock()
+        self.fsmLock = RLock()
         self.name = name
         self._serialNum = FSM.SerialNum
         FSM.SerialNum += 1
@@ -168,13 +168,13 @@ class FSM(DirectObject):
     def cleanup(self):
         # A convenience function to force the FSM to clean itself up
         # by transitioning to the "Off" state.
-        self.lock.acquire()
+        self.fsmLock.acquire()
         try:
             assert self.state
             if self.state != 'Off':
                 self.__setState('Off')
         finally:
-            self.lock.release()
+            self.fsmLock.release()
 
     def setBroadcastStateChanges(self, doBroadcast):
         self._broadcastStateChanges = doBroadcast
@@ -189,27 +189,27 @@ class FSM(DirectObject):
         # Returns the current state if we are in a state now, or the
         # state we are transitioning into if we are currently within
         # the enter or exit function for a state.
-        self.lock.acquire()
+        self.fsmLock.acquire()
         try:
             if self.state:
                 return self.state
             return self.newState
         finally:
-            self.lock.release()
+            self.fsmLock.release()
 
     def isInTransition(self):
-        self.lock.acquire()
+        self.fsmLock.acquire()
         try:
             return self.state == None
         finally:
-            self.lock.release()
+            self.fsmLock.release()
     
     def forceTransition(self, request, *args):
         """Changes unconditionally to the indicated state.  This
         bypasses the filterState() function, and just calls
         exitState() followed by enterState()."""
 
-        self.lock.acquire()
+        self.fsmLock.acquire()
         try:
             assert isinstance(request, types.StringTypes)
             self.notify.debug("%s.forceTransition(%s, %s" % (
@@ -223,7 +223,7 @@ class FSM(DirectObject):
 
             self.__setState(request, *args)
         finally:
-            self.lock.release()
+            self.fsmLock.release()
 
     def demand(self, request, *args):
         """Requests a state transition, by code that does not expect
@@ -237,7 +237,7 @@ class FSM(DirectObject):
         sequence.
         """
 
-        self.lock.acquire()
+        self.fsmLock.acquire()
         try:
             assert isinstance(request, types.StringTypes)
             self.notify.debug("%s.demand(%s, %s" % (
@@ -251,7 +251,7 @@ class FSM(DirectObject):
             if not self.request(request, *args):
                 raise RequestDenied, "%s (from state: %s)" % (request, self.state)
         finally:
-            self.lock.release()
+            self.fsmLock.release()
 
     def request(self, request, *args):
         """Requests a state transition (or other behavior).  The
@@ -276,7 +276,7 @@ class FSM(DirectObject):
         which will queue these requests up and apply when the
         transition is complete)."""
 
-        self.lock.acquire()
+        self.fsmLock.acquire()
         try:
             assert isinstance(request, types.StringTypes)
             self.notify.debug("%s.request(%s, %s" % (
@@ -303,7 +303,7 @@ class FSM(DirectObject):
 
             return result
         finally:
-            self.lock.release()
+            self.fsmLock.release()
 
     def defaultEnter(self, *args):
         """ This is the default function that is called if there is no
@@ -379,15 +379,15 @@ class FSM(DirectObject):
 
     def setStateArray(self, stateArray):
         """array of unique states to iterate through"""
-        self.lock.acquire()
+        self.fsmLock.acquire()
         try:
             self.stateArray = stateArray
         finally:
-            self.lock.release()
+            self.fsmLock.release()
 
     def requestNext(self, *args):
         """request the 'next' state in the predefined state array"""
-        self.lock.acquire()
+        self.fsmLock.acquire()
         try:
             assert self.state in self.stateArray
 
@@ -396,11 +396,11 @@ class FSM(DirectObject):
 
             self.request(self.stateArray[newIndex], args)
         finally:
-            self.lock.release()
+            self.fsmLock.release()
 
     def requestPrev(self, *args):
         """request the 'previous' state in the predefined state array"""
-        self.lock.acquire()
+        self.fsmLock.acquire()
         try:
             assert self.state in self.stateArray
 
@@ -409,7 +409,7 @@ class FSM(DirectObject):
 
             self.request(self.stateArray[newIndex], args)
         finally:
-            self.lock.release()
+            self.fsmLock.release()
         
 
     def __setState(self, newState, *args):
@@ -479,7 +479,7 @@ class FSM(DirectObject):
         """
         Print out something useful about the fsm
         """
-        self.lock.acquire()
+        self.fsmLock.acquire()
         try:
             className = self.__class__.__name__
             if self.state:
@@ -488,4 +488,4 @@ class FSM(DirectObject):
                 str = ('%s FSM:%s not in any state' % (className, self.name))
             return str
         finally:
-            self.lock.release()
+            self.fsmLock.release()
