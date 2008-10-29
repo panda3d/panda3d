@@ -644,9 +644,8 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
             GetThis << "    "<<cClassName  << " * local_this = NULL;\n";
             GetThis << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
             GetThis << "    if(local_this == NULL) {\n";
-            GetThis << "      // This might happen if Python called a reverse operator like __rsub__().\n";
-            GetThis << "      Py_INCREF(Py_NotImplemented);\n";
-            GetThis << "      return Py_NotImplemented;\n";
+            GetThis << "       PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
+            GetThis << "       return NULL;\n";
             GetThis << "    }\n";
 
             write_function_for_top(out, func,GetThis.str());
@@ -1348,7 +1347,7 @@ write_module_class(ostream &out,  Object *obj) {
     if(HasAGetKeyFunction(obj->_itype)) 
       {
         out << "//////////////////\n";
-        out << "//  A LocalHash(getKey) Function for this type";
+        out << "//  A LocalHash(getKey) Function for this type\n";
         out << "//     " <<ClassName << "\n";
         out << "//////////////////\n";
         out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
@@ -1357,6 +1356,7 @@ write_module_class(ostream &out,  Object *obj) {
         out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
         out << "    if(local_this == NULL)\n";
         out << "    {\n";
+        out << "       PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
         out << "       return -1;\n";
         out << "    };\n";
         out << "    return local_this->get_key();\n";
@@ -1368,7 +1368,7 @@ write_module_class(ostream &out,  Object *obj) {
         if(bases.size() == 0)
           {
             out << "//////////////////\n";
-            out << "//  A LocalHash(This Pointer) Function for this type";
+            out << "//  A LocalHash(This Pointer) Function for this type\n";
             out << "//     " <<ClassName << "\n";
             out << "//////////////////\n";
             out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
@@ -1377,6 +1377,7 @@ write_module_class(ostream &out,  Object *obj) {
             out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
             out << "    if(local_this == NULL)\n";
             out << "    {\n";
+            out << "       PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
             out << "       return -1;\n";
             out << "    };\n";
             out << "    return (long)local_this;\n";
@@ -1396,19 +1397,20 @@ write_module_class(ostream &out,  Object *obj) {
         out << "{\n";
         out << "    "<<cClassName  << " * local_this = NULL;\n";
         out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
-        out << "    if(local_this != NULL)\n";
+        out << "    if(local_this == NULL)\n";
         out << "    {\n";
-        out << "       ostringstream os;\n";
+        out << "       PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
+        out << "       return NULL;\n";
+        out << "    };\n";
+        out << "     ostringstream os;\n";
         if (need_repr == 2) {
-          out << "       local_this->output(os);\n";
+          out << "     local_this->output(os);\n";
         } else {
-          out << "       local_this->python_repr(os, \""
+          out << "     local_this->python_repr(os, \""
               << classNameFromCppName(ClassName) << "\");\n";
         }
-        out << "       std::string ss = os.str();\n";
-        out << "       return PyString_FromStringAndSize(ss.data(),ss.length());\n";
-        out << "    };\n";
-        out << "    return Py_BuildValue(\"\");\n";
+        out << "     std::string ss = os.str();\n";
+        out << "     return PyString_FromStringAndSize(ss.data(),ss.length());\n";
         out << "}\n";   
         has_local_repr = true;
       }
@@ -1424,17 +1426,18 @@ write_module_class(ostream &out,  Object *obj) {
         out << "{\n";
         out << "    "<<cClassName  << " * local_this = NULL;\n";
         out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
-        out << "    if(local_this != NULL)\n";
+        out << "    if(local_this == NULL)\n";
         out << "    {\n";
-        out << "       ostringstream os;\n";
-        if(need_str == 2)
-          out << "       local_this->write(os,0);\n";
-        else
-          out << "       local_this->write(os);\n";
-        out << "       std::string ss = os.str();\n";
-        out << "       return PyString_FromStringAndSize(ss.data(),ss.length());\n";
+        out << "       PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
+        out << "       return NULL;\n";
         out << "    };\n";
-        out << "    return Py_BuildValue(\"\");\n";
+        out << "     ostringstream os;\n";
+        if(need_str == 2)
+          out << "     local_this->write(os,0);\n";
+        else
+          out << "     local_this->write(os);\n";
+        out << "     std::string ss = os.str();\n";
+        out << "     return PyString_FromStringAndSize(ss.data(),ss.length());\n";
         out << "}\n";   
         has_local_str = true;
       }

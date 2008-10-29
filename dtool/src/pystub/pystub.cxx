@@ -121,6 +121,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int _Py_RefTotal(...);
 
   EXPCL_DTOOLCONFIG extern void *PyExc_AssertionError;
+  EXPCL_DTOOLCONFIG extern void *PyExc_AttributeError;
   EXPCL_DTOOLCONFIG extern void *PyExc_RuntimeError;
   EXPCL_DTOOLCONFIG extern void *PyExc_StopIteration;
   EXPCL_DTOOLCONFIG extern void *PyExc_TypeError;
@@ -237,6 +238,7 @@ int _Py_RefTotal(...) { return 0; };
 
 
 void *PyExc_AssertionError = (void *)NULL;
+void *PyExc_AttributeError = (void *)NULL;
 void *PyExc_RuntimeError = (void *)NULL;
 void *PyExc_StopIteration = (void *)NULL;
 void *PyExc_TypeError = (void *)NULL;
