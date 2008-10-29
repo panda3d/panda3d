@@ -222,6 +222,13 @@ class TaskManager:
         indicated name. """
         return self.__makeTaskList(self.mgr.findTasks(taskName))
 
+    def getTasksMatching(self, taskPattern):
+        """Returns a list of all tasks, active or sleeping, with a
+        name that matches the pattern, which can include standard
+        shell globbing characters like *, ?, and []. """
+        
+        return self.__makeTaskList(self.mgr.findTasksMatching(GlobPattern(taskPattern)))
+
     def getAllTasks(self):
         """Returns list of all tasks, active and sleeping, in
         arbitrary order. """

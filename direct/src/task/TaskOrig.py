@@ -536,6 +536,23 @@ class TaskManager:
         return [task for task in self.nameDict.get(taskName, []) #grab all tasks with name
                    if not task._removed] #filter removed tasks
 
+    def getTasksMatching(self, taskPattern):
+        """getTasksMatching(self, string taskPattern)
+
+        Returns tasks whose names match the pattern, which can include
+        standard shell globbing characters like *, ?, and [].
+        """
+        keyList = filter(
+            lambda key: fnmatch.fnmatchcase(key, taskPattern),
+            self.nameDict.keys())
+
+        result = []
+        for key in keyList:
+            for task in self.nameDict.get(key, []):
+                if not task._removed:
+                    result.append(task)
+        return result
+
     def __doLaterFilter(self):
         # Filter out all the tasks that have been removed like a mark and
         # sweep garbage collector. Returns the number of tasks that have
