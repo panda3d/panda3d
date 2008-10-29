@@ -22,6 +22,7 @@ INLINE NodePath::
 NodePath() :
   _error_type(ET_ok)
 {
+  _backup_key = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
