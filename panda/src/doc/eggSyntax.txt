@@ -1541,7 +1541,7 @@ GROUPING ENTRIES
   local coordinates.  In principle, similar geometry can be created
   under several different <Instance> nodes, and thus can be positioned
   in a different place in the scene each instance.  This doesn't
-  necessarily imply the use of shared geometry in the Performer scene
+  necessarily imply the use of shared geometry in the Panda3D scene
   graph, but see the <Ref> syntax, below.
 
   This is particularly useful in conjunction with a <File> entry, to
@@ -1562,7 +1562,12 @@ GROUPING ENTRIES
 
   In this case, the referenced group name will appear as a duplicate
   instance in this part of the tree.  Local transforms can be applied
-  and are relative to the reference group's transform.
+  and are relative to the referencing group's transform.  The
+  referenced group must appear preceding this point in the egg file,
+  and it will also be a part of the scene in the point at which it
+  first appears.  The referenced group may be either a <Group> or an
+  <Instance> of its own; usually, it is a <Group> nested within an
+  earlier <Instance> entry.
 
 
 <Joint> name { [transform] [ref-list] [joint-list] }
