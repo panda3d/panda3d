@@ -96,9 +96,13 @@ class DoCollectionManager:
             return -1
         return 1
 
-    def doByDistance(self):
+    def dosByDistance(self):
         objs = self.doId2do.values()
         objs.sort(cmp=self._compareDistance)
+        return objs
+
+    def doByDistance(self):
+        objs = self.dosByDistance()
         for obj in objs:
             print '%s\t%s\t%s' % (obj.doId, self._getDistanceFromLA(obj),
                                   obj.dclass.getName())
