@@ -1,6 +1,6 @@
 // Filename: geoMipTerrain.I
 // Created by:  pro-rsoft (29jun07)
-// Last updated by: pro-rsoft (03mar08)
+// Last updated by: pro-rsoft (30oct08)
 //
 ////////////////////////////////////////////////////////////////////
 //
