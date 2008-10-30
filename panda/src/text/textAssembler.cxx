@@ -1105,8 +1105,9 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
     float xpos;
     switch (align) {
     case TextProperties::A_left:
+    case TextProperties::A_boxed_left:
       xpos = 0.0f;
-      _lr[0] = max(_lr[0], row_width);
+      _lr[0] = max(_lr[0], max(row_width, wordwrap));
       break;
 
     case TextProperties::A_right:
@@ -1120,22 +1121,16 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
       _lr[0] = max(_lr[0], -xpos);
       break;
 
-    case TextProperties::A_boxed_left:
-      xpos = 0.0f;
-      _lr[0] = max(_lr[0], max(row_width, wordwrap));
-      break;
-
     case TextProperties::A_boxed_right:
-      xpos = -row_width;
-      if (wordwrap > row_width) xpos += wordwrap;
+      xpos = wordwrap - row_width;
       _ul[0] = min(_ul[0], xpos);
       break;
 
     case TextProperties::A_boxed_center:
       xpos = -0.5f * row_width;
       if (wordwrap > row_width) xpos += (wordwrap * 0.5f);
-      _ul[0] = min(_ul[0], xpos);
-      _lr[0] = max(_lr[0], -xpos);
+      _ul[0] = min(_ul[0], max(xpos,(wordwrap * 0.5f)));
+      _lr[0] = max(_lr[0], min(-xpos,-(wordwrap * 0.5f)));
       break;
     }
 
@@ -1207,11 +1202,7 @@ assemble_row(TextAssembler::TextRow &row,
     TextFont *font = properties->get_font();
     nassertv(font != (TextFont *)NULL);
 
-    // We get the row's alignment property from that of the last
-    // character to be placed in the row (or the newline character).
-    
-    //[fabius] differently as stated above this is not a sure way to
-    //get it so we'll set it as soon as we found it
+    // We get the row's alignment property from the first character of the row
     if ((align == TextProperties::A_left) &&
         (properties->get_align() != TextProperties::A_left)) {
       align = properties->get_align();
@@ -1393,8 +1384,7 @@ assemble_row(TextAssembler::TextRow &row,
       placement->_properties = properties;
 
       xpos += advance * glyph_scale;
-      //[fabius] the line height is calculated char by char here
-      line_height = max(line_height, font->get_line_height()*glyph_scale);
+      line_height = max(line_height, font->get_line_height() * glyph_scale);
     }
   }
 
@@ -1414,7 +1404,10 @@ assemble_row(TextAssembler::TextRow &row,
     TextFont *font = properties->get_font();
     nassertv(font != (TextFont *)NULL);
 
-    line_height = max(line_height, font->get_line_height());
+    if (line_height == 0.0f) {
+      float glyph_scale = properties->get_glyph_scale() * properties->get_text_scale();
+      line_height = max(line_height, font->get_line_height() * glyph_scale);
+    }
   }
 }
   
@@ -1433,6 +1426,7 @@ draw_underscore(TextAssembler::PlacedGlyphs &row_placed_glyphs,
     new GeomVertexData("text", format, Geom::UH_static);
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
   GeomVertexWriter color(vdata, InternalName::get_color());
+
   float y = underscore_properties->get_underscore_height();
   vertex.add_data3f(underscore_start, 0.0f, y);
   color.add_data4f(underscore_properties->get_text_color());
