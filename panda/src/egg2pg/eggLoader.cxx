@@ -1758,6 +1758,7 @@ make_lod(EggBin *egg_bin, PandaNode *parent) {
     lod_node->add_switch(instance._d->_switch_in, instance._d->_switch_out);
   }
 
+  _groups[egg_bin] = lod_node;
   return create_group_arc(egg_bin, parent, lod_node);
 }
 
@@ -1897,6 +1898,19 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
   if (node == (PandaNode *)NULL) {
     return NULL;
   }
+
+  // Associate any instances with this node.
+  int num_group_refs = egg_group->get_num_group_refs();
+  for (int gri = 0; gri < num_group_refs; ++gri) {
+    EggGroup *group_ref = egg_group->get_group_ref(gri);
+    Groups::const_iterator gi = _groups.find(group_ref);
+    if (gi != _groups.end()) {
+      PandaNode *node_ref = (*gi).second;
+      node->add_child(node_ref);
+    }
+  }
+
+  _groups[egg_group] = node;
   return create_group_arc(egg_group, parent, node);
 }
 

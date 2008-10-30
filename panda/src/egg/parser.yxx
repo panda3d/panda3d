@@ -79,6 +79,10 @@ static Textures textures;
 typedef pmap<string,  PT_EggMaterial > Materials;
 static Materials materials;
 
+// Group names to groups.
+typedef pmap<string,  PT(EggGroup) > Groups;
+static Groups groups;
+
 // We need to be able to save the index number requested for a vertex
 // temporarily.
 static int vertex_index;
@@ -101,6 +105,7 @@ egg_init_parser(istream &in, const string &filename,
   vertex_pools.clear();
   textures.clear();
   materials.clear();
+  groups.clear();
 
   egg_stack.push_back(tos);
   egg_top_node = top_node;
@@ -140,6 +145,7 @@ egg_cleanup_parser() {
   vertex_pools.clear();
   textures.clear();
   materials.clear();
+  groups.clear();
 }
 
 %}
@@ -208,6 +214,7 @@ egg_cleanup_parser() {
 %type <_egg> texture_name
 %type <_egg> material_name
 %type <_egg> vertex_pool_name
+%type <_egg> group_name
 
 %type <_number> real
 %type <_number> integer
@@ -1137,8 +1144,12 @@ group:
 }
         '{' group_body '}'
 {
-  $$ = egg_stack.back();
+  EggGroup *group = DCAST(EggGroup, egg_stack.back());
+  $$ = group;
   egg_stack.pop_back();
+  if (group->has_name()) {
+    groups[group->get_name()] = group;
+  }
   Thread::consider_yield();
 }
         ;
@@ -1180,8 +1191,12 @@ instance:
 }
         '{' group_body '}'
 {
-  $$ = egg_stack.back();
+  EggGroup *group = DCAST(EggGroup, egg_stack.back());
+  $$ = group;
   egg_stack.pop_back();
+  if (group->has_name()) {
+    groups[group->get_name()] = group;
+  }
 }
         ;
 
@@ -1419,6 +1434,15 @@ group_body:
         | group_body transform
         | group_body group_vertex_ref
         | group_body switchcondition
+        | group_body REF '{' group_name '}'
+{
+  EggGroup *group = DCAST(EggGroup, egg_stack.back());
+  if (group->get_group_type() != EggGroup::GT_instance) {
+    eggyyerror("<Ref> valid only within <Instance>");
+  } else if ($4 != (EggObject *)NULL) {
+    group->add_group_ref(DCAST(EggGroup, $4));
+  }
+}
         | group_body node
 {
   DCAST(EggGroup, egg_stack.back())->add_child(DCAST(EggNode, $2));
@@ -2825,6 +2849,26 @@ vertex_pool_name:
 }
         ;
 
+/*
+ * group_name
+ *
+ * enter: 
+ * exit: Returns an EggGroup pointer, or NULL.
+ *
+ */
+group_name:
+        required_name
+{
+  string name = $1;
+  Groups::iterator vpi = groups.find(name);
+  if (vpi == groups.end()) {
+    eggyyerror("Unknown group " + name);
+    $$ = PT(EggObject)();
+  } else {
+    $$ = (*vpi).second;
+  }
+}
+        ;
 
 /*
  * required_name

@@ -285,6 +285,12 @@ PUBLISHED:
   void test_vref_integrity() const { }
 #endif  // NDEBUG
 
+  void add_group_ref(EggGroup *group);
+  int get_num_group_refs() const;
+  EggGroup *get_group_ref(int n) const;
+  void remove_group_ref(int n);
+  void clear_group_refs();
+
   static GroupType string_group_type(const string &strval);
   static DartType string_dart_type(const string &strval);
   static DCSType string_dcs_type(const string &strval);
@@ -352,6 +358,9 @@ private:
   PT(EggSwitchCondition) _lod;
   TagData _tag_data;
   VertexRef _vref;
+
+  typedef pvector< PT(EggGroup) > GroupRefs;
+  GroupRefs _group_refs;
 
 
 public:

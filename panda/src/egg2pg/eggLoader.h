@@ -224,6 +224,9 @@ private:
   Materials _materials;
   Materials _materials_bface;
 
+  typedef pmap<PT(EggGroup), PT(PandaNode) > Groups;
+  Groups _groups;
+
   typedef pset<PandaNode *> ExtraNodes;
   ExtraNodes _decals;
   ExtraNodes _sequences;

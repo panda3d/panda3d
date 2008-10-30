@@ -121,6 +121,14 @@ EggGroup::
 void EggGroup::
 set_group_type(GroupType type) {
   if (type != get_group_type()) {
+#ifndef NDEBUG
+    if (type != GT_instance) {
+      // Only valid to change to a non-instance type if we have no
+      // group refs.
+      nassertv(_group_refs.empty());
+    }
+#endif 
+
     // Make sure the user didn't give us any stray bits.
     nassertv((type & ~F_group_type)==0);
     _flags = (_flags & ~F_group_type) | type;
@@ -257,6 +265,13 @@ write(ostream &out, int indent_level) const {
       << "<Scalar> blendb { " << c[2] << " }\n";
     indent(out, indent_level)
       << "<Scalar> blenda { " << c[3] << " }\n";
+  }
+
+  GroupRefs::const_iterator gri;
+  for (gri = _group_refs.begin(); gri != _group_refs.end(); ++gri) {
+    EggGroup *group_ref = (*gri);
+    indent(out, indent_level + 2)
+      << "<Ref> { " << group_ref->get_name() << " }\n";
   }
 
   // We have to write the children nodes before we write the vertex
@@ -767,6 +782,65 @@ test_vref_integrity() const {
 
 #endif  // NDEBUG
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::add_group_ref
+//       Access: Published
+//  Description: Adds a new <Ref> entry to the group.  This declares
+//               an internal reference to another node, and is used to
+//               implement scene-graph instancing; it is only valid if
+//               the group_type is GT_instance.
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+add_group_ref(EggGroup *group) {
+  nassertv(get_group_type() == GT_instance);
+  _group_refs.push_back(group);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::get_num_group_refs
+//       Access: Published
+//  Description: Returns the number of <Ref> entries within this
+//               group.  See add_group_ref().
+////////////////////////////////////////////////////////////////////
+int EggGroup::
+get_num_group_refs() const {
+  return _group_refs.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::get_group_ref
+//       Access: Published
+//  Description: Returns the nth <Ref> entry within this group.  See
+//               add_group_ref().
+////////////////////////////////////////////////////////////////////
+EggGroup *EggGroup::
+get_group_ref(int n) const {
+  nassertr(n >= 0 && n < (int)_group_refs.size(), NULL);
+  return _group_refs[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::remove_group_ref
+//       Access: Published
+//  Description: Removes the nth <Ref> entry within this group.  See
+//               add_group_ref().
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+remove_group_ref(int n) {
+  nassertv(n >= 0 && n < (int)_group_refs.size());
+  _group_refs.erase(_group_refs.begin() + n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::clear_group_refs
+//       Access: Published
+//  Description: Removes all of the <Ref> entries within this group.
+//               See add_group_ref().
+////////////////////////////////////////////////////////////////////
+void EggGroup::
+clear_group_refs() {
+  _group_refs.clear();
+}
 
 
 
