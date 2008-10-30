@@ -47,6 +47,7 @@ extern wstring get_text_soft_hyphen_output();
 extern ConfigVariableDouble text_hyphen_ratio;
 extern wstring get_text_never_break_before();
 extern ConfigVariableInt text_max_never_break;
+extern ConfigVariableDouble text_default_underscore_height;
 
 extern ConfigVariableEnum<Texture::FilterType> text_minfilter;
 extern ConfigVariableEnum<Texture::FilterType> text_magfilter;

@@ -346,7 +346,7 @@ has_underscore_height() const {
 ////////////////////////////////////////////////////////////////////
 INLINE float TextProperties::
 get_underscore_height() const {
-  return _underscore_height;
+  return has_underscore_height() ? _underscore_height : text_default_underscore_height;
 }
 
 ////////////////////////////////////////////////////////////////////

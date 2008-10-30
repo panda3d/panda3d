@@ -168,6 +168,11 @@ ConfigVariableInt text_max_never_break
           "characters in a row, do not treat any of them as special and "
           "instead break the line wherever we can."));
 
+ConfigVariableDouble text_default_underscore_height
+("text-default-underscore-height", -0.2,
+ PRC_DESC("Specifies the default height of the underscore line, relative "
+          "to the text baseline, when underscoring is enabled."));
+
 ConfigVariableEnum<Texture::FilterType> text_minfilter
 ("text-minfilter", Texture::FT_linear_mipmap_linear,
  PRC_DESC("The default texture minfilter type for dynamic text fonts"));
