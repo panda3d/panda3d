@@ -1407,16 +1407,14 @@ assemble_row(TextAssembler::TextRow &row,
 
   if (row._eol_cprops != (ComputedProperties *)NULL) {
     // If there's an _eol_cprops, it represents the cprops of the
-    // newline character that ended the line, which should define the
-    // line_height and the alignment.
+    // newline character that ended the line, which should also
+    // contribute towards the line_height.
 
     const TextProperties *properties = &(row._eol_cprops->_properties);
     TextFont *font = properties->get_font();
     nassertv(font != (TextFont *)NULL);
 
-    //[fabius] not here but above
-/*     align = properties->get_align();
-    line_height = max(line_height, font->get_line_height());*/
+    line_height = max(line_height, font->get_line_height());
   }
 }
   
