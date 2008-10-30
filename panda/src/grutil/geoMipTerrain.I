@@ -258,11 +258,11 @@ set_block_size(unsigned short newbs) {
         _block_size = newbs + 1;
       } else {
         _block_size = (unsigned short) pow(2.0,
-                            floor(log(float(newbs)) / log(2.0) + 0.5));
+                            floor(log((double) newbs) / log(2.0) + 0.5));
       }
     }
   }
-  _max_level = (unsigned short) (log(float(_block_size)) / log(2.0));
+  _max_level = (unsigned short) (log((double) _block_size) / log(2.0));
   _is_dirty = true;
 }
 
@@ -392,7 +392,7 @@ lod_decide(unsigned short mx, unsigned short my) {
   float d;
   if (_use_near_far) {
     d = sqrt(pow(_focal_point.get_x(_root) - cx, 2) +
-            pow(_focal_point.get_y(_root) - cy, 2));
+             pow(_focal_point.get_y(_root) - cy, 2));
     if (d < _near) {
       return 0;
     } else if (d > _far) {
@@ -422,45 +422,55 @@ lod_decide(unsigned short mx, unsigned short my) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeoMipTerrain::
 set_heightfield(const Filename &filename, PNMFileType *ftype) {
-  PNMImage image;
-  if (image.read(filename, ftype)) {
-    _is_dirty = true;
-    _heightfield = PNMImage(
-              max(3, (int) pow(2.0, ceil(log(float(max(2, image.get_x_size() - 1)))
-                                                             / log(2.0))) + 1),
-              max(3, (int) pow(2.0, ceil(log(float(max(2, image.get_y_size() - 1)))
-                                                             / log(2.0))) + 1));
-    // Make sure not to apply gaussian when it's already the right size
-    if (_heightfield.get_x_size() == image.get_x_size() &&
-        _heightfield.get_y_size() == image.get_y_size()) {
-      _heightfield.copy_from(image);
-    } else {
-      _heightfield.gaussian_filter_from(1.0, image);
+  // First, we need to load the header to determine the size and format.
+  PNMImageHeader imgheader;
+  if (imgheader.read_header(filename, ftype)) {
+    // Copy over the header to the heightfield image.
+    _heightfield.copy_header_from(imgheader);
+    
+    if(!is_power_of_two(imgheader.get_x_size() - 1) || !is_power_of_two(imgheader.get_y_size() - 1)) {
+      // Calculate the nearest power-of-two-plus-one size.
+      unsigned int reqx, reqy;
+      reqx = max(3, (int) pow(2.0, ceil(log((double) max(2, imgheader.get_x_size() - 1)) / log(2.0))) + 1);
+      reqy = max(3, (int) pow(2.0, ceil(log((double) max(2, imgheader.get_y_size() - 1)) / log(2.0))) + 1);
+      
+      // If it's not a valid size, tell PNMImage to resize it.
+      if (reqx != imgheader.get_x_size() || reqy != imgheader.get_y_size()) {
+        grutil_cat.warning() << "Rescaling heightfield image " << filename << " to "
+                                             << reqx << " by " << reqy << " pixels\n";
+        _heightfield.set_read_size(reqx, reqy);
+      }
     }
+    
+    // Read the real image now
+    if (!_heightfield.read(filename, ftype)) {
+      _heightfield.clear_read_size();
+      grutil_cat.error() << "Failed to read heightfield image " << filename << "!\n";
+      return false;
+    }
+    
+    _is_dirty = true;
     _xsize = _heightfield.get_x_size();
     _ysize = _heightfield.get_y_size();
     return true;
+  } else {
+    grutil_cat.error() << "Failed to load heightfield image " << filename << "!\n";
   }
   return false;
 }
 INLINE bool GeoMipTerrain::
 set_heightfield(const PNMImage &image) {
-  _heightfield = PNMImage(
-            max(3, (int) pow(2.0, ceil(log(float(max(2, image.get_x_size() - 1)))
-                                                           / log(2.0))) + 1),
-            max(3, (int) pow(2.0, ceil(log(float(max(2, image.get_y_size() - 1)))
-                                                           / log(2.0))) + 1));
-  // Make sure not to apply gaussian when it's already the right size
-  if (_heightfield.get_x_size() == image.get_x_size() &&
-      _heightfield.get_y_size() == image.get_y_size()) {
-    _heightfield.copy_from(image);
+  // Before we apply anything, validate the size.
+  if(is_power_of_two(image.get_x_size() - 1) && is_power_of_two(image.get_y_size() - 1)) {
+    _heightfield = image;
+    _is_dirty = true;
+    _xsize = _heightfield.get_x_size();
+    _ysize = _heightfield.get_y_size();
+    return true;
   } else {
-    _heightfield.gaussian_filter_from(1.0, image);
+    grutil_cat.error() << "Specified image does not have a power-of-two-plus-one size!\n";
   }
-  _is_dirty = true;
-  _xsize = _heightfield.get_x_size();
-  _ysize = _heightfield.get_y_size();
-  return true;
+  return false;
 }
 INLINE bool GeoMipTerrain::
 set_heightfield(const string &path) {
@@ -634,9 +644,9 @@ f_part(double i) {
 INLINE int GeoMipTerrain::
 sfav(int n, int powlevel, int mypowlevel) {
   double t = n - 1;
-  t /= float(pow(2.0, powlevel - mypowlevel));
+  t /= pow(2.0, powlevel - mypowlevel);
   t = double(int(t > 0.0 ? t + 0.5 : t - 0.5));
-  t *= float(pow(2.0, powlevel - mypowlevel));
+  t *= pow(2.0, powlevel - mypowlevel);
   return int(t);
 }
 
