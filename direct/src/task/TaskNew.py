@@ -114,6 +114,8 @@ class TaskManager:
         self._frameProfileQueue = Queue()
 
         # this will be set when it's safe to import StateVar 
+        self._profileFrames = None
+        self._frameProfiler = None
         self._profileTasks = None
         self._taskProfiler = None
         self._taskProfileInfo = ScratchPad(
@@ -128,6 +130,8 @@ class TaskManager:
         from direct.fsm.StatePush import StateVar
         self._profileTasks = StateVar(False)
         self.setProfileTasks(ConfigVariableBool('profile-task-spikes', 0).getValue())
+        self._profileFrames = StateVar(False)
+        self.setProfileFrames(ConfigVariableBool('profile-frame-spikes', 0).getValue())
 
     def destroy(self):
         # This should be safe to call multiple times.
@@ -553,6 +557,19 @@ class TaskManager:
         for i in xrange(numFrames):
             result = self.step()
         return result
+
+    def getProfileFrames(self):
+        return self._profileFrames.get()
+
+    def getProfileFramesSV(self):
+        return self._profileFrames
+
+    def setProfileFrames(self, profileFrames):
+        self._profileFrames.set(profileFrames)
+        if (not self._frameProfiler) and profileFrames:
+            # import here due to import dependencies
+            from direct.task.FrameProfiler import FrameProfiler
+            self._frameProfiler = FrameProfiler()
 
     def getProfileTasks(self):
         return self._profileTasks.get()

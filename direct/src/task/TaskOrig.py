@@ -427,6 +427,8 @@ class TaskManager:
         self.MaxEpockSpeed = 1.0/30.0;   
 
         # this will be set when it's safe to import StateVar
+        self._profileFrames = None
+        self._frameProfiler = None
         self._profileTasks = None
         self._taskProfiler = None
         self._taskProfileInfo = ScratchPad(
@@ -1035,6 +1037,19 @@ class TaskManager:
             result = self.step()
         return result
 
+    def getProfileFrames(self):
+        return self._profileFrames.get()
+
+    def getProfileFramesSV(self):
+        return self._profileFrames
+
+    def setProfileFrames(self, profileFrames):
+        self._profileFrames.set(profileFrames)
+        if (not self._frameProfiler) and profileFrames:
+            # import here due to import dependencies
+            from direct.task.FrameProfiler import FrameProfiler
+            self._frameProfiler = FrameProfiler()
+
     def getProfileTasks(self):
         return self._profileTasks.get()
 
@@ -1182,6 +1197,8 @@ class TaskManager:
                 from direct.fsm.StatePush import StateVar
                 self._profileTasks = StateVar(False)
                 self.setProfileTasks(getBase().config.GetBool('profile-task-spikes', 0))
+                self._profileFrames = StateVar(False)
+                self.setProfileFrames(ConfigVariableBool('profile-frame-spikes', 0).getValue())
 
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time
