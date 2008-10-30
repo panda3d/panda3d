@@ -1198,7 +1198,7 @@ class TaskManager:
                 self._profileTasks = StateVar(False)
                 self.setProfileTasks(getBase().config.GetBool('profile-task-spikes', 0))
                 self._profileFrames = StateVar(False)
-                self.setProfileFrames(ConfigVariableBool('profile-frame-spikes', 0).getValue())
+                self.setProfileFrames(ConfigVariableBool('profile-frames', 0).getValue())
 
         # Set the clock to have last frame's time in case we were
         # Paused at the prompt for a long time

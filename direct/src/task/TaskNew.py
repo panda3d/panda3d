@@ -131,7 +131,7 @@ class TaskManager:
         self._profileTasks = StateVar(False)
         self.setProfileTasks(ConfigVariableBool('profile-task-spikes', 0).getValue())
         self._profileFrames = StateVar(False)
-        self.setProfileFrames(ConfigVariableBool('profile-frame-spikes', 0).getValue())
+        self.setProfileFrames(ConfigVariableBool('profile-frames', 0).getValue())
 
     def destroy(self):
         # This should be safe to call multiple times.
