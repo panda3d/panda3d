@@ -1292,6 +1292,9 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     }
     */
     EggPolygon *poly = DCAST(EggPolygon, node);
+    if (poly->empty()) {
+      return;
+    }
 
     MayaEggTex *tex = 0;
     LMatrix3d uvtrans = LMatrix3d::ident_mat();
@@ -1329,7 +1332,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     if (mayaloader_cat.is_spam()) {
       mayaloader_cat.spam() << "num vertices: " << vertIndices.size() << "\n";
     }
-    for (unsigned int i=1; i<vertIndices.size()-1; i++) {
+    for (int i = 1; i < numVertices - 1; i++) {
       if (poly->has_color()) {
         if (mayaloader_cat.is_spam()) {
           mayaloader_cat.spam() << "found a face color of " << poly->get_color() << endl;
