@@ -1549,11 +1549,7 @@ GROUPING ENTRIES
 
 
   A special syntax of <Instance> entries does actually create shared
-  geometry in the scene graph.  However, please note that this special
-  syntax is not supported by Panda3D at this time.  It is documented
-  here against the day that it will be supported.
-
-  The syntax is:
+  geometry in the scene graph.  The syntax is:
 
 <Instance> name {
   <Ref> { group-name } 
