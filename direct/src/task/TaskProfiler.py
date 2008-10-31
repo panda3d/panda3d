@@ -65,8 +65,7 @@ class TaskTracker:
         if storeAvg:
             if self._avgSession:
                 self._avgSession.release()
-            session.acquire()
-            self._avgSession = session
+            self._avgSession = session.getReference()
 
     def getAvgDuration(self):
         return self._durationAverager.getAverage()

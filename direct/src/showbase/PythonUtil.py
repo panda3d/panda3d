@@ -31,7 +31,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index',
 'pandaBreak','pandaTrace','formatTimeCompact','DestructiveScratchPad',
 'deeptype','getProfileResultString','StdoutCapture','StdoutPassthrough',
-'Averager', 'getRepository', ]
+'Averager', 'getRepository', 'formatTimeExact', ]
 
 import types
 import string
@@ -2188,7 +2188,11 @@ def normalDistrib(a, b, gauss=random.gauss):
 
     Returns random number between a and b, using gaussian distribution, with
     mean=avg(a, b), and a standard deviation that fits ~99.7% of the curve
-    between a and b. Outlying results are clipped to a and b.
+    between a and b.
+
+    For ease of use, outlying results are re-computed until result is in [a, b]
+    This should fit the remaining .3% of the curve that lies outside [a, b]
+    uniformly onto the curve inside [a, b]
 
     ------------------------------------------------------------------------
     http://www-stat.stanford.edu/~naras/jsm/NormalDensity/NormalDensity.html
@@ -2208,7 +2212,10 @@ def normalDistrib(a, b, gauss=random.gauss):
     In calculating our standard deviation, we divide (b-a) by 6, since the
     99.7% figure includes 3 standard deviations _on_either_side_ of the mean.
     """
-    return max(a, min(b, gauss((a+b)*.5, (b-a)/6.)))
+    while True:
+        r = gauss((a+b)*.5, (b-a)/6.)
+        if (r >= a) and (r <= b):
+            return r
 
 def weightedRand(valDict, rng=random.random):
     """
@@ -3629,6 +3636,54 @@ def formatTimeCompact(seconds):
     result += '%ss' % seconds
     return result
 
+if __debug__:
+    ftc = formatTimeCompact
+    assert ftc(0) == '0s'
+    assert ftc(1) == '1s'
+    assert ftc(60) == '1m0s'
+    assert ftc(64) == '1m4s'
+    assert ftc(60*60) == '1h0m0s'
+    assert ftc(24*60*60) == '1d0h0m0s'
+    assert ftc(24*60*60 + 2*60*60 + 34*60 + 12) == '1d2h34m12s'
+    del ftc
+
+def formatTimeExact(seconds):
+    # like formatTimeCompact but leaves off '0 seconds', '0 minutes' etc. for
+    # times that are e.g. 1 hour, 3 days etc.
+    # returns string in format '1d3h22m43s'
+    result = ''
+    a = int(seconds)
+    seconds = a % 60
+    a /= 60
+    if a > 0:
+        minutes = a % 60
+        a /= 60
+        if a > 0:
+            hours = a % 24
+            a /= 24
+            if a > 0:
+                days = a
+                result += '%sd' % days
+            if hours or minutes or seconds:
+                result += '%sh' % hours
+        if minutes or seconds:
+            result += '%sm' % minutes
+    if seconds or result == '':
+        result += '%ss' % seconds
+    return result
+
+if __debug__:
+    fte = formatTimeExact
+    assert fte(0) == '0s'
+    assert fte(1) == '1s'
+    assert fte(2) == '2s'
+    assert fte(61) == '1m1s'
+    assert fte(60) == '1m'
+    assert fte(60*60) == '1h'
+    assert fte(24*60*60) == '1d'
+    assert fte((24*60*60) + (2 * 60)) == '1d0h2m'
+    del fte
+
 class AlphabetCounter:
     # object that produces 'A', 'B', 'C', ... 'AA', 'AB', etc.
     def __init__(self):
@@ -3733,6 +3788,9 @@ class Default:
     # useful for keyword arguments to virtual methods
     pass
 
+def isInteger(n):
+    return type(n) in (types.IntType, types.LongType)
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
@@ -3784,3 +3842,4 @@ __builtin__.HierarchyException = HierarchyException
 __builtin__.pdir = pdir
 __builtin__.deeptype = deeptype
 __builtin__.Default = Default
+__builtin__.isInteger = isInteger
