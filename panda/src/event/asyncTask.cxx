@@ -115,6 +115,35 @@ get_wake_time() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTask::recalc_wake_time
+//       Access: Published
+//  Description: If the task is currently sleeping on a task
+//               chain, this resets its wake time to the current time
+//               + get_delay().  It is as if the task had suddenly
+//               returned DS_again.  The task will sleep for its
+//               current delay seconds before running again.  This
+//               method may therefore be used to make the task wake up
+//               sooner or later than it would have otherwise.
+//
+//               If the task is not already sleeping, this method has
+//               no effect.
+////////////////////////////////////////////////////////////////////
+void AsyncTask::
+recalc_wake_time() {
+  if (_manager != (AsyncTaskManager *)NULL) {
+    MutexHolder holder(_manager->_lock);
+    if (_state == S_sleeping) {
+      double now = _manager->_clock->get_frame_time();
+      _wake_time = now + _delay;
+      _start_time = _wake_time;
+
+      make_heap(_chain->_sleeping.begin(), _chain->_sleeping.end(), 
+                AsyncTaskChain::AsyncTaskSortWakeTime());
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTask::get_elapsed_time
 //       Access: Published
 //  Description: Returns the amount of time that has elapsed since

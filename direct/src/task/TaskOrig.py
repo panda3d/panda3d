@@ -187,6 +187,29 @@ class Task:
     def setDelay(self, delay):
         self.delayTime = delay
 
+    def recalcWakeTime(self):
+        """If the task is currently sleeping, this resets its wake
+        time to the current time + self.delayTime.  It is as if the
+        task had suddenly returned task.again.  The task will sleep
+        for its current delay seconds before running again.  This
+        method may therefore be used to make the task wake up sooner
+        or later than it would have otherwise.
+
+        If the task is not already sleeping, this method has no
+        effect."""
+
+        # This is a little bit hacky--we're poking around in global
+        # space more than we should--but this code will be going away
+        # soon in favor of the new task manager anyway.
+        
+        now = globalClock.getFrameTime()
+        self.wakeTime = now + self.delayTime
+
+        # Very important that we re-sort the priority queue after
+        # monkeying with the wake times.
+        heapify(taskMgr._TaskManager__doLaterList)
+        
+
     def setStartTimeFrame(self, startTime, startFrame):
         self.starttime = startTime
         self.startframe = startFrame
