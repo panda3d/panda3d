@@ -102,6 +102,7 @@ load_dso_error() {
     case 18: return "No more files";
     case 126: return "Module not found";
     case 127: return "The specified procedure could not be found";
+    case 193: return "Not a valid Win32 application";
     case 998: return "Invalid access to memory location";
   }
 
