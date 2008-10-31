@@ -3638,7 +3638,8 @@ def MakeInstallerOSX():
       compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
       oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct")
       oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/pandac")
-      if os.path.isdir("samples"):   oscmd("chmod -R 444 Panda3D-tpl-rw/Panda3D/"+VERSION+"/samples")
+      oscmd("chmod -R 444 Panda3D-tpl-rw/Panda3D/"+VERSION+"/models")
+      if os.path.isdir("samples"):   oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/samples")
       if os.path.isdir("built/Pmw"): oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
     except: # Make sure the dmg gets unmounted even when error occurs
       oscmd("hdiutil detach Panda3D-tpl-rw -quiet -force", True)
