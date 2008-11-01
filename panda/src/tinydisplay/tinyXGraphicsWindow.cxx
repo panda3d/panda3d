@@ -712,7 +712,12 @@ open_window() {
     _properties.set_size(100, 100);
   }
 
-  Window root_window = tinyx_pipe->get_root();
+  Window root_window;
+  if (!_properties.has_parent_window()) {
+    root_window = tinyx_pipe->get_root();
+  } else {
+    root_window = (Window) (int) _properties.get_parent_window();
+  }
   setup_colormap(visual_info);
 
   _event_mask =
