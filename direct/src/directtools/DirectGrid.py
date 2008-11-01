@@ -63,11 +63,11 @@ class DirectGrid(NodePath, DirectObject):
         self.detachNode()
         self.fEnabled = 0
 
-    def toggleGrid(self):
+    def toggleGrid(self, parent = None):
         if self.fEnabled:
             self.disable()
         else:
-            self.enable()
+            self.enable(parent = parent)
 
     def isEnabled(self):
         return self.fEnabled
