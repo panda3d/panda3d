@@ -98,9 +98,9 @@ class WxAppShell(wx.Frame):
         self.menuHelp = wx.Menu()
         self.menuBar.Append(self.menuHelp, "&Help")
 
-        menuItem = self.menuFile.Append(-1, "&Quit")
+        menuItem = self.menuFile.Append(wx.ID_EXIT, "&Quit")
         self.Bind(wx.EVT_MENU, self.quit, menuItem)
 
-        menuItem = self.menuHelp.Append(-1, "&About...")
+        menuItem = self.menuHelp.Append(wx.ID_ABOUT, "&About...")
         self.Bind(wx.EVT_MENU, self.showAbout, menuItem)
 
