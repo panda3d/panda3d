@@ -103,9 +103,9 @@ class ProfileSession:
         # if true, accumulate profile results every time we run
         # if false, throw out old results every time we run
         self._aggregate = False
-        self._lines = 200
+        self._lines = 500
         self._sorts = ['cumulative', 'time', 'calls']
-        self._callInfo = False
+        self._callInfo = True
         self._totalTime = None
         self._reset()
         self.acquire()

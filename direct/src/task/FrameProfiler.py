@@ -42,6 +42,7 @@ class FrameProfiler:
         
     def _setEnabled(self, enabled):
         if enabled:
+            self.notify.info('frame profiler started')
             self._startTime = globalClock.getFrameTime()
             self._profileCounter = 0
             self._jitter = None
@@ -59,6 +60,7 @@ class FrameProfiler:
             if self._lastSession:
                 self._lastSession.release()
             del self._lastSession
+            self.notify.info('frame profiler stopped')
 
     def _startProfiling(self, task):
         self._scheduleNextProfile()
@@ -89,27 +91,40 @@ class FrameProfiler:
                                            'FrameProfiler-%s' % serialNum())
 
     def _frameProfileTask(self, task):
+        p2ap = self._period2aggregateProfile
+
         if self._lastSession:
-            p2ap = self._period2aggregateProfile
-            # always add this profile to the first aggregated profile
-            period = self._logSchedule[0]
-            if period not in self._period2aggregateProfile:
-                self._lastSession.setLines(500)
-                p2ap[period] = self._lastSession.getReference()
+            if self._lastSession.profileSucceeded():
+                # always add this profile to the first aggregated profile
+                period = self._logSchedule[0]
+                if period not in self._period2aggregateProfile:
+                    p2ap[period] = self._lastSession.getReference()
+                else:
+                    p2ap[period].aggregate(self._lastSession)
             else:
-                p2ap[period].aggregate(self._lastSession)
-            # log profiles when it's time, and aggregate them upwards into the
-            # next-larger profile
-            for period in self._logSchedule:
-                if (self._timeElapsed % period) == 0:
-                    ap = p2ap[period]
+                self.notify.warning('frame profile did not succeed')
+
+        # always release the last-recorded profile
+        self._lastSession.release()
+        self._lastSession = None
+
+        # log profiles when it's time, and aggregate them upwards into the
+        # next-longer profile
+        for pi in xrange(len(self._logSchedule)):
+            period = self._logSchedule[pi]
+            if (self._timeElapsed % period) == 0:
+                if period in p2ap:
                     self.notify.info('aggregate profile of sampled frames over last %s\n%s' %
-                                     (formatTimeExact(period), ap.getResults()))
+                                     (formatTimeExact(period), p2ap[period].getResults()))
                     # aggregate this profile into the next larger profile
-                    nextPeriod = period * 2
-                    # make sure the next larger log period is in the schedule
-                    if period == self._logSchedule[-1]:
+                    nextIndex = pi + 1
+                    if nextIndex >= len(self._logSchedule):
+                        # if we're adding a new period to the end of the log period table,
+                        # set it to double the duration of the current longest period
+                        nextPeriod = period * 2
                         self._logSchedule.append(nextPeriod)
+                    else:
+                        nextPeriod = self._logSchedule[nextIndex]
                     if nextPeriod not in p2ap:
                         p2ap[nextPeriod] = p2ap[period].getReference()
                     else:
@@ -118,14 +133,10 @@ class FrameProfiler:
                     # throw it out
                     p2ap[period].release()
                     del p2ap[period]
-                else:
-                    # current time is not divisible evenly into selected period, and all higher
-                    # periods are multiples of this one
-                    break
-
-            # always release the last-recorded profile
-            self._lastSession.release()
-            self._lastSession = None
+            else:
+                # current time is not divisible evenly into selected period, and all higher
+                # periods are multiples of this one
+                break
 
         self._scheduleNextProfile()
         return task.done

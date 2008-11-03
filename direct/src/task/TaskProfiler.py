@@ -123,11 +123,13 @@ class TaskProfiler:
 
     def _setEnabled(self, enabled):
         if enabled:
+            self.notify.info('task profiler started')
             self._taskName = 'profile-tasks-%s' % id(self)
             taskMgr.add(self._doProfileTasks, self._taskName, priority=-200)
         else:
             taskMgr.remove(self._taskName)
             del self._taskName
+            self.notify.info('task profiler stopped')
         
     def _doProfileTasks(self, task=None):
         # gather data from the previous frame
