@@ -110,6 +110,7 @@ private:
     SoundData();
     ~SoundData();
     float get_length();
+    void set_length(float length);
 
     Filename _basename;
     S32 _file_type;

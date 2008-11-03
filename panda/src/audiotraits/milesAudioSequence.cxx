@@ -228,6 +228,20 @@ set_play_rate(float play_rate) {
 ////////////////////////////////////////////////////////////////////
 float MilesAudioSequence::
 length() const {
+  if (_sequence == 0) {
+    // The MIDI file hasn't been started yet.  See if the length is
+    // cached in the SoundData.
+    if (!_sd->_has_length) {
+      // It isn't cached, so load the sequence temporarily to
+      // determine its length.
+      ((MilesAudioSequence *)this)->determine_length();
+    }
+     
+    return _sd->get_length();
+  }
+
+  // The MIDI file has already been started, so we can ask it
+  // directly.
   S32 length_ms;
   AIL_sequence_ms_position(_sequence, &length_ms, NULL);
   float time = (float)length_ms * 0.001f;
@@ -319,6 +333,35 @@ do_set_time(float time) {
   time_ms = min(time_ms, length_ms);
   
   AIL_set_sequence_ms_position(_sequence, time_ms);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioSequence::determine_length
+//       Access: Private
+//  Description: Temporarily loads the sequence to determine its
+//               length.  Stores the result on the _sd.
+////////////////////////////////////////////////////////////////////
+void MilesAudioSequence::
+determine_length() {
+  nassertv(_sequence == 0);
+
+  GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+  if (!mgr->get_sequence(_sequence, _sequence_index, this)){ 
+    milesAudio_cat.warning()
+      << "Could not determine length of " << _file_name << ": too many open sequences\n";
+    _sequence = 0;
+  } else {
+    AIL_init_sequence(_sequence, &_sd->_raw_data[0], 0);
+    S32 length_ms;
+    AIL_sequence_ms_position(_sequence, &length_ms, NULL);
+    float time = (float)length_ms * 0.001f;
+    mgr->release_sequence(_sequence_index, this);
+    _sequence = 0;
+    _sequence_index = 0;
+    
+    _sd->set_length(time);
+  }
 }
 
 #endif //]

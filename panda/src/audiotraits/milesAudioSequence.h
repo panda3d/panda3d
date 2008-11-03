@@ -55,6 +55,7 @@ private:
   void internal_stop();
   static void AILCALLBACK finish_callback(HSEQUENCE sequence);
   void do_set_time(float time);
+  void determine_length();
 
   PT(MilesAudioManager::SoundData) _sd;
   HSEQUENCE _sequence;

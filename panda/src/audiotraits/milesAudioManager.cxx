@@ -958,7 +958,8 @@ thread_main() {
 MilesAudioManager::SoundData::
 SoundData() :
   _raw_data(MilesAudioManager::get_class_type()),
-  _has_length(false)
+  _has_length(false),
+  _length(0.0f)
 {
 }
 
@@ -972,7 +973,7 @@ MilesAudioManager::SoundData::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MilesAudioManager::SoundData::Destructor
+//     Function: MilesAudioManager::SoundData::get_length
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
@@ -1013,7 +1014,19 @@ get_length() {
     }
   }
 
+  nassertr(_has_length, 0.0f);
   return _length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::SoundData::set_length
+//       Access: Public
+//  Description: Records the sample length, as determined externally.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::SoundData::
+set_length(float length) {
+  _length = length;
+  _has_length = true;
 }
 
 #endif //]
