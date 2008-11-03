@@ -31,6 +31,8 @@ class Messenger:
         """
         self.__callbacks = {}
         self.__objectEvents = {}
+        self._messengerIdGen = 0
+        self._id2object = {}
 
         if __debug__:
             self.__isWatching=0
@@ -41,6 +43,35 @@ class Messenger:
         # under __debug__.
         self.quieting={"NewFrame":1, "avatarMoving":1} # see def quiet()
 
+    def _getMessengerId(self, object):
+        # TODO: allocate this id in DirectObject.__init__ and get derived
+        # classes to call down (speed optimization, assuming objects
+        # accept/ignore more than once over their lifetime)
+        # get unique messenger id for this object
+        if not hasattr(object, '_messengerId'):
+            object._messengerId = self._messengerIdGen
+            self._messengerIdGen += 1
+        return object._messengerId
+
+    def _storeObject(self, object):
+        # store reference-counted reference to object in case we need to
+        # retrieve it later
+        id = self._getMessengerId(object)
+        if id not in self._id2object:
+            self._id2object[id] = [1, object]
+        else:
+            self._id2object[id][0] += 1
+
+    def _getObject(self, id):
+        return self._id2object[id][1]
+
+    def _releaseObject(self, object):
+        id = self._getMessengerId(object)
+        if id in self._id2object:
+            record = self._id2object[id]
+            record[0] -= 1
+            if record[0] <= 0:
+                del self._id2object[id]
 
     def accept(self, event, object, method, extraArgs=[], persistent=1):
         """ accept(self, string, DirectObject, Function, List, Boolean)
@@ -65,11 +96,13 @@ class Messenger:
 
         acceptorDict = self.__callbacks.setdefault(event, {})
 
+        id = self._getMessengerId(object)
+
         # Make sure we are not inadvertently overwriting an existing event
         # on this particular object.
         if notifyDebug:        
-            if acceptorDict.has_key(object):
-                oldMethod = acceptorDict[object][0]
+            if acceptorDict.has_key(id):
+                oldMethod = acceptorDict[id][0]
                 if oldMethod == method:
                     self.notify.warning(
                         "object: %s was already accepting: \"%s\" with same callback: %s()" %
@@ -79,12 +112,12 @@ class Messenger:
                         "object: %s accept: \"%s\" new callback: %s() supplanting old callback: %s()" %
                         (object.__class__.__name__, event, method.__name__, oldMethod.__name__))
 
-        acceptorDict[object] = [method, extraArgs, persistent]
+        acceptorDict[id] = [method, extraArgs, persistent]
 
         # Remember that this object is listening for this event
-        # TODO: can we really guarantee that all DirectObjects are valid dict keys?
-        eventDict = self.__objectEvents.setdefault(object, {})
+        eventDict = self.__objectEvents.setdefault(id, {})
         eventDict.setdefault(event, None)
+        self._storeObject(object)
 
     def ignore(self, event, object):
         """ ignore(self, string, DirectObject)
@@ -94,22 +127,26 @@ class Messenger:
         if Messenger.notify.getDebug():
             Messenger.notify.debug(`object` + '\n now ignoring: ' + `event`)
 
+        id = self._getMessengerId(object)
+
         # Find the dictionary of all the objects accepting this event
         acceptorDict = self.__callbacks.get(event)
         # If this object is there, delete it from the dictionary
-        if acceptorDict and acceptorDict.has_key(object):
-            del acceptorDict[object]
+        if acceptorDict and acceptorDict.has_key(id):
+            del acceptorDict[id]
             # If this dictionary is now empty, remove the event
             # entry from the Messenger alltogether
             if (len(acceptorDict) == 0):
                 del self.__callbacks[event]
 
         # This object is no longer listening for this event
-        eventDict = self.__objectEvents.get(object)
+        eventDict = self.__objectEvents.get(id)
         if eventDict and eventDict.has_key(event):
             del eventDict[event]
             if (len(eventDict) == 0):
-                del self.__objectEvents[object]
+                del self.__objectEvents[id]
+
+        self._releaseObject(object)
 
     def ignoreAll(self, object):
         """
@@ -118,27 +155,32 @@ class Messenger:
         """
         if Messenger.notify.getDebug():
             Messenger.notify.debug(`object` + '\n now ignoring all events')
+        id = self._getMessengerId(object)
         # Get the list of events this object is listening to
-        eventDict = self.__objectEvents.get(object)
+        eventDict = self.__objectEvents.get(id)
         if eventDict:
             for event in eventDict.keys():
                 # Find the dictionary of all the objects accepting this event
                 acceptorDict = self.__callbacks.get(event)
                 # If this object is there, delete it from the dictionary
-                if acceptorDict and acceptorDict.has_key(object):
-                    del acceptorDict[object]
+                if acceptorDict and acceptorDict.has_key(id):
+                    del acceptorDict[id]
                     # If this dictionary is now empty, remove the event
                     # entry from the Messenger alltogether
                     if (len(acceptorDict) == 0):
                         del self.__callbacks[event]
-            del self.__objectEvents[object]
+            del self.__objectEvents[id]
+        if id in self._id2object:
+            del self._id2object[id]
 
     def getAllAccepting(self, object):
         """
         Returns the list of all events accepted by the indicated object.
         """
+        id = self._getMessengerId(object)
+
         # Get the list of events this object is listening to
-        eventDict = self.__objectEvents.get(object)
+        eventDict = self.__objectEvents.get(id)
         if eventDict:
             return eventDict.keys()
         return []
@@ -148,7 +190,8 @@ class Messenger:
         Is this object accepting this event?
         """
         acceptorDict = self.__callbacks.get(event)
-        if acceptorDict and acceptorDict.has_key(object):
+        id = self._getMessengerId(object)
+        if acceptorDict and acceptorDict.has_key(id):
             # Found it, return true
             return 1
         # If we looked in both dictionaries and made it here
@@ -191,7 +234,7 @@ class Messenger:
                 if foundWatch:
                     print "Messenger: \"%s\" was sent, but no function in Python listened."%(event,)
             return
-        for object in acceptorDict.keys():
+        for id in acceptorDict.keys():
             # We have to make this apparently redundant check, because
             # it is possible that one object removes its own hooks
             # in response to a handler called by a previous object.
@@ -200,20 +243,20 @@ class Messenger:
             # modifications to acceptorDict, since the for..in above
             # iterates over a list of objects that is created once at
             # the start
-            callInfo = acceptorDict.get(object)
+            callInfo = acceptorDict.get(id)
             if callInfo:
                 method, extraArgs, persistent = callInfo
                 # If this object was only accepting this event once,
                 # remove it from the dictionary
                 if not persistent:
                     # This object is no longer listening for this event
-                    eventDict = self.__objectEvents.get(object)
+                    eventDict = self.__objectEvents.get(id)
                     if eventDict and eventDict.has_key(event):
                         del eventDict[event]
                         if (len(eventDict) == 0):
-                            del self.__objectEvents[object]
+                            del self.__objectEvents[id]
 
-                    del acceptorDict[object]
+                    del acceptorDict[id]
                     # If the dictionary at this event is now empty, remove
                     # the event entry from the Messenger altogether
                     if (self.__callbacks.has_key(event) \
@@ -395,7 +438,7 @@ class Messenger:
         """
         str = event.ljust(32) + '\t'
         acceptorDict = self.__callbacks[event]
-        for object, (method, extraArgs, persistent) in acceptorDict.items():
+        for key, (method, extraArgs, persistent) in acceptorDict.items():
             str = str + self.__methodRepr(method) + ' '
         str = str + '\n'
         return str
@@ -411,7 +454,8 @@ class Messenger:
             str += self.__eventRepr(event)
         # Print out the object: event dictionary too
         str += "="*64 + "\n"
-        for object, eventDict in self.__objectEvents.items():
+        for key, eventDict in self.__objectEvents.items():
+            object = self._getObject(key)
             str += "%s:\n" % repr(object)
             for event in eventDict.keys():
                 str += "     %s\n" % repr(event)
@@ -431,8 +475,9 @@ class Messenger:
         for event in keys:
             acceptorDict = self.__callbacks[event]
             str = str + 'Event: ' + event + '\n'
-            for object in acceptorDict.keys():
-                function, extraArgs, persistent = acceptorDict[object]
+            for key in acceptorDict.keys():
+                function, extraArgs, persistent = acceptorDict[key]
+                object = self._getObject(key)
                 if (type(object) == types.InstanceType):
                     className = object.__class__.__name__
                 else:
