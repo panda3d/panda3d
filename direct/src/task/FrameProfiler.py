@@ -14,6 +14,8 @@ class FrameProfiler:
         Hour = FrameProfiler.Hour
         # how long to wait between frame profiles
         self._period = 2 * FrameProfiler.Minute
+        if config.GetBool('frame-profiler-debug', 0):
+            self._period = 1 * FrameProfiler.Minute
         # used to prevent profile from being taken exactly every 'period' seconds
         self._jitterMagnitude = self._period * .75
         # when to log output
@@ -24,6 +26,12 @@ class FrameProfiler:
                              12 * FrameProfiler.Hour,
                               1 * FrameProfiler.Day,
                               ] # day schedule proceeds as 1, 2, 4, 8 days, etc.
+        if config.GetBool('frame-profiler-debug', 0):
+            self._logSchedule = [ 1  * FrameProfiler.Minute,
+                                  4  * FrameProfiler.Minute,
+                                  12 * FrameProfiler.Minute,
+                                  24 * FrameProfiler.Minute,
+                                  ]
         for t in self._logSchedule:
             assert isInteger(t)
             # make sure the period is evenly divisible into each element of the log schedule
@@ -47,9 +55,10 @@ class FrameProfiler:
             self._profileCounter = 0
             self._jitter = None
             self._period2aggregateProfile = {}
-            self._lastSession = None
+            self._id2session = {}
+            self._id2task = {}
             # don't profile process startup
-            self._task = taskMgr.doMethodLater(self._period, self._startProfiling,
+            self._task = taskMgr.doMethodLater(self._period, self._scheduleNextProfileDoLater,
                                                'FrameProfilerStart-%s' % serialNum())
         else:
             self._task.remove()
@@ -57,12 +66,15 @@ class FrameProfiler:
             for session in self._period2aggregateProfile.itervalues:
                 session.release()
             del self._period2aggregateProfile
-            if self._lastSession:
-                self._lastSession.release()
-            del self._lastSession
+            for task in self._id2task.itervalues():
+                task.remove()
+            del self._id2task
+            for session in self._id2session.itervalues():
+                session.release()
+            del self._id2session
             self.notify.info('frame profiler stopped')
 
-    def _startProfiling(self, task):
+    def _scheduleNextProfileDoLater(self, task):
         self._scheduleNextProfile()
         return task.done
 
@@ -83,30 +95,41 @@ class FrameProfiler:
             jitter = None
         self._jitter = jitter
             
-        self._lastSession = taskMgr.getProfileSession('FrameProfile-%s' % serialNum())
-        taskMgr.profileFrames(num=1, session=self._lastSession)
+        sessionId = serialNum()
+        session = taskMgr.getProfileSession('FrameProfile-%s' % sessionId)
+        self._id2session[sessionId] = session
+        taskMgr.profileFrames(num=1, session=session, callback=Functor(
+            self._analyzeResults, sessionId))
 
+        # schedule the next profile
         delay = max(time - globalClock.getFrameTime(), 0.)
-        self._task = taskMgr.doMethodLater(delay, self._frameProfileTask,
+        self._task = taskMgr.doMethodLater(delay, self._scheduleNextProfileDoLater,
                                            'FrameProfiler-%s' % serialNum())
 
-    def _frameProfileTask(self, task):
+    def _analyzeResults(self, sessionId):
+        # do the analysis in a task 1) to separate the processing from the profiled frame,
+        # and 2) to get the processing to show up in a named task instead of in the taskMgr
+        self._id2task[sessionId] = taskMgr.add(
+            Functor(self._doAnalysis, sessionId), 'FrameProfilerAnalysis-%s' % sessionId)
+
+    def _doAnalysis(self, sessionId, task):
         p2ap = self._period2aggregateProfile
 
-        if self._lastSession:
-            if self._lastSession.profileSucceeded():
-                # always add this profile to the first aggregated profile
-                period = self._logSchedule[0]
-                if period not in self._period2aggregateProfile:
-                    p2ap[period] = self._lastSession.getReference()
-                else:
-                    p2ap[period].aggregate(self._lastSession)
-            else:
-                self.notify.warning('frame profile did not succeed')
+        self._id2task.pop(sessionId)
+        session = self._id2session.pop(sessionId)
 
-        # always release the last-recorded profile
-        self._lastSession.release()
-        self._lastSession = None
+        if session.profileSucceeded():
+            # always add this profile to the first aggregated profile
+            period = self._logSchedule[0]
+            if period not in self._period2aggregateProfile:
+                p2ap[period] = session.getReference()
+            else:
+                p2ap[period].aggregate(session)
+        else:
+            self.notify.warning('frame profile did not succeed')
+
+        session.release()
+        session = None
 
         # log profiles when it's time, and aggregate them upwards into the
         # next-longer profile
@@ -138,5 +161,5 @@ class FrameProfiler:
                 # periods are multiples of this one
                 break
 
-        self._scheduleNextProfile()
         return task.done
+    

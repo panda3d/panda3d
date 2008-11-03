@@ -306,6 +306,8 @@ class ProfileSession:
         
         if statsChanged:
             self._stats.strip_dirs()
+            # throw out any cached result strings
+            self._resultCache = {}
 
         return statsChanged
 
@@ -326,10 +328,7 @@ class ProfileSession:
             if totalTime is Default:
                 totalTime = self._totalTime
             
-            statsChanged = self._compileStats()
-            if statsChanged:
-                # throw out any cached result strings
-                self._resultCache = {}
+            self._compileStats()
 
             if totalTime is None:
                 totalTime = self._stats.total_tt

@@ -1030,12 +1030,14 @@ class TaskManager:
             name = 'taskMgrFrameProfile'
         return ProfileSession(name)
 
-    def profileFrames(self, num=None, session=None):
+    def profileFrames(self, num=None, session=None, callback=None):
         if num is None:
             num = 1
         if session is None:
             session = self.getProfileSession()
-        self._frameProfileQueue.push((num, session))
+        # make sure the profile session doesn't get destroyed before we're done with it
+        session.acquire()
+        self._frameProfileQueue.push((num, session, callback))
     
 
     # in the event we want to do frame time managment.. this is the function to 
@@ -1241,12 +1243,15 @@ class TaskManager:
             while self.running:
                 try:
                     if len(self._frameProfileQueue):
-                        numFrames, session = self._frameProfileQueue.pop()
+                        numFrames, session, callback = self._frameProfileQueue.pop()
                         def _profileFunc(numFrames=numFrames):
                             self._doProfiledFrames(numFrames)
                         session.setFunc(_profileFunc)
                         session.run()
                         _profileFunc = None
+                        if callback:
+                            callback()
+                        session.release()
                     else:
                         self.step()
                 except KeyboardInterrupt:
