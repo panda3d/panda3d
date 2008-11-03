@@ -31,7 +31,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'printStack', 'printReverseStack', 'listToIndex2item', 'listToItem2index',
 'pandaBreak','pandaTrace','formatTimeCompact','DestructiveScratchPad',
 'deeptype','getProfileResultString','StdoutCapture','StdoutPassthrough',
-'Averager', 'getRepository', 'formatTimeExact', ]
+'Averager', 'getRepository', 'formatTimeExact', 'startSuperLog', 'endSuperLog' ]
 
 import types
 import string
@@ -2484,6 +2484,25 @@ def safeRepr(obj):
     except:
         return '<** FAILED REPR OF %s instance at %s **>' % (obj.__class__.__name__, hex(id(obj)))
 
+def safeReprTypeOnFail(obj):
+    global dtoolSuperBase
+    if dtoolSuperBase is None:
+        _getDtoolSuperBase()
+
+    global safeReprNotify
+    if safeReprNotify is None:
+        _getSafeReprNotify()
+
+    if isinstance(obj, dtoolSuperBase):
+        return type(obj)
+
+    try:
+        return repr(obj)
+    except:
+        return '<** FAILED REPR OF %s instance at %s **>' % (obj.__class__.__name__, hex(id(obj)))
+
+
+
 def fastRepr(obj, maxLen=200, strFactor=10, _visitedIds=None):
     """ caps the length of iterable types, so very large objects will print faster.
     also prevents infinite recursion """
@@ -3781,6 +3800,7 @@ def pandaBreak(dotpath, linenum, temporary = 0, cond = None):
         filename = root + "\\src"
         for d in dirs[1:]:
             filename="%s\\%s"%(filename,d)
+        print filename
         globalPdb.set_break(filename+".py", linenum, temporary, cond)
             
 class Default:
@@ -3788,6 +3808,33 @@ class Default:
     # useful for keyword arguments to virtual methods
     pass
 
+superLogFile = None
+def startSuperLog():
+    global superLogFile
+    
+    if(not superLogFile):
+        superLogFile = open("c:\\temp\\superLog.txt", "w")
+        def trace_dispatch(a,b,c):
+            if(b=='call' and a.f_code.co_name != '?' and a.f_code.co_name.find("safeRepr")<0):
+                vars = dict(a.f_locals)
+                if(vars.has_key('self')):
+                    del vars['self']
+                if(vars.has_key('__builtins__')):
+                    del vars['__builtins__']
+                for i in vars:
+                    vars[i] = safeReprTypeOnFail(vars[i]) 
+                superLogFile.write( "%s(%s):%s:%s\n"%(a.f_code.co_filename.split("\\")[-1],a.f_code.co_firstlineno, a.f_code.co_name, vars))
+
+                return trace_dispatch
+        sys.settrace(trace_dispatch)
+      
+def endSuperLog():
+    global superLogFile
+    if(superLogFile):
+        sys.settrace(None)
+        superLogFile.close()
+        superLogFile = None
+    
 def isInteger(n):
     return type(n) in (types.IntType, types.LongType)
 
