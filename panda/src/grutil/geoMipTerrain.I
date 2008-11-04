@@ -398,7 +398,7 @@ lod_decide(unsigned short mx, unsigned short my) {
     } else if (d > _far) {
       return _max_level;
     } else {
-      return (d - _near) / (_far - _near) * _max_level * (1.0 - (_min_level / _max_level)) + _min_level;
+      return (unsigned short)((d - _near) / (_far - _near) * _max_level * (1.0 - (_min_level / _max_level)) + _min_level);
     }
   } else {
     if (_factor > 0.0) {
