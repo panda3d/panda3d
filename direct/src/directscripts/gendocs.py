@@ -60,6 +60,20 @@ SECHEADER = re.compile("^[A-Z][a-z]+\s*:")
 JUNKHEADER = re.compile("^((Function)|(Access))\s*:")
 IMPORTSTAR = re.compile("^from\s+([a-zA-Z0-9_.]+)\s+import\s+[*]\s*$")
 IDENTIFIER = re.compile("[a-zA-Z0-9_]+")
+FILEHEADER = re.compile(
+r"""^// Filename: [a-zA-Z.]+
+// Created by:  [a-zA-Z. ()0-9]+(
+//)?
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright \(c\) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////""")
 
 def readFile(fn):
     try:
@@ -150,6 +164,10 @@ def convertToPythonFn(fn):
                 result = result + c
         lastc = c
     return result
+
+def removeFileLicense(content):
+    # Removes the license part at the top of a file.
+    return re.sub(FILEHEADER, "", content).strip()
 
 ########################################################################
 #
@@ -692,7 +710,7 @@ class CodeDatabase:
     def getFunctionComment(self, fn):
         func = self.funcs.get(fn)
         if (isinstance(func, InterrogateFunction)):
-            return textToHTML(func.comment, "/", JUNKHEADER)
+            return textToHTML(removeFileLicense(func.comment), "/", JUNKHEADER)
         elif (isinstance(func, ParseTreeInfo)):
             return textToHTML(func.docstring, "#")
         return fn
