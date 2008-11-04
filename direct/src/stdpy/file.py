@@ -41,6 +41,14 @@ class file:
             readMode = isinstance(filename, pm.Istream)
             writeMode = isinstance(filename, pm.Ostream)
 
+        elif isinstance(filename, pm.VirtualFile):
+            # We can also "open" a VirtualFile object for reading.
+            self.__stream = filename.openReadFile(autoUnwrap)
+            if not self.__stream:
+                raise IOError
+            self.__needsVfsClose = True
+            readMode = True
+
         else:
             # Otherwise, we must have been given a filename.  Open it.
             if isinstance(filename, types.StringTypes):
