@@ -33,6 +33,7 @@ public:
                            bool implicit_pz_file);
 
   virtual VirtualFileSystem *get_file_system() const;
+  INLINE VirtualFileMount *get_mount() const;
   virtual Filename get_filename() const;
 
   virtual bool has_file() const;

@@ -40,14 +40,15 @@ private:
 
 PUBLISHED:
   BLOCKING bool open_read(const Filename &multifile_name);
-  BLOCKING bool open_read(istream *multifile_stream);
+  BLOCKING bool open_read(istream *multifile_stream, bool owns_pointer = false);
   BLOCKING bool open_write(const Filename &multifile_name);
-  BLOCKING bool open_write(ostream *multifile_stream);
+  BLOCKING bool open_write(ostream *multifile_stream, bool owns_pointer = false);
   BLOCKING bool open_read_write(const Filename &multifile_name);
-  BLOCKING bool open_read_write(iostream *multifile_stream);
+  BLOCKING bool open_read_write(iostream *multifile_stream, bool owns_pointer = false);
   BLOCKING void close();
 
   INLINE const Filename &get_multifile_name() const;
+  INLINE void set_multifile_name(const Filename &multifile_name);
 
   INLINE bool is_read_valid() const;
   INLINE bool is_write_valid() const;
@@ -164,6 +165,7 @@ private:
 
   istream *_read;
   ostream *_write;
+  bool _owns_stream;
   streampos _next_index;
   streampos _last_index;
 

@@ -25,6 +25,19 @@ get_multifile_name() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::set_multifile_name
+//       Access: Published
+//  Description: Replaces the filename of the Multifile.  This is
+//               primarily used for documentation purposes only;
+//               changing this name does not open the indicated file.
+//               See open_read() or open_write() for that.
+////////////////////////////////////////////////////////////////////
+INLINE void Multifile::
+set_multifile_name(const Filename &multifile_name) {
+  _multifile_name = multifile_name;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::is_read_valid
 //       Access: Published
 //  Description: Returns true if the Multifile has been opened for

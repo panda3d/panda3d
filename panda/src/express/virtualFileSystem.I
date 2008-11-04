@@ -33,7 +33,7 @@ exists(const Filename &filename) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool VirtualFileSystem::
 is_directory(const Filename &filename) const {
-  PT(VirtualFile) file = get_file(filename);
+  PT(VirtualFile) file = get_file(filename, true);
   return (file != (VirtualFile *)NULL && file->is_directory());
 }
 
@@ -45,7 +45,7 @@ is_directory(const Filename &filename) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool VirtualFileSystem::
 is_regular_file(const Filename &filename) const {
-  PT(VirtualFile) file = get_file(filename);
+  PT(VirtualFile) file = get_file(filename, true);
   return (file != (VirtualFile *)NULL && file->is_regular_file());
 }
 
@@ -59,7 +59,7 @@ is_regular_file(const Filename &filename) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void VirtualFileSystem::
 ls(const string &filename) const {
-  PT(VirtualFile) file = get_file(filename);
+  PT(VirtualFile) file = get_file(filename, true);
   if (file == (VirtualFile *)NULL) {
     express_cat.info()
       << "Not found: " << filename << "\n";
@@ -79,7 +79,7 @@ ls(const string &filename) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void VirtualFileSystem::
 ls_all(const string &filename) const {
-  PT(VirtualFile) file = get_file(filename);
+  PT(VirtualFile) file = get_file(filename, true);
   if (file == (VirtualFile *)NULL) {
     express_cat.info()
       << "Not found: " << filename << "\n";
@@ -123,7 +123,7 @@ read_file(const Filename &filename, bool auto_unwrap) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool VirtualFileSystem::
 read_file(const Filename &filename, string &result, bool auto_unwrap) const {
-  PT(VirtualFile) file = get_file(filename);
+  PT(VirtualFile) file = get_file(filename, false);
   return (file != (VirtualFile *)NULL && file->read_file(result, auto_unwrap));
 }
 
@@ -142,6 +142,6 @@ read_file(const Filename &filename, string &result, bool auto_unwrap) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool VirtualFileSystem::
 read_file(const Filename &filename, pvector<unsigned char> &result, bool auto_unwrap) const {
-  PT(VirtualFile) file = get_file(filename);
+  PT(VirtualFile) file = get_file(filename, false);
   return (file != (VirtualFile *)NULL && file->read_file(result, auto_unwrap));
 }

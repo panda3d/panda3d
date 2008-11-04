@@ -28,6 +28,17 @@ VirtualFileSimple(VirtualFileMount *mount, const Filename &local_filename,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::get_mount
+//       Access: Published, Virtual
+//  Description: Returns the VirtualFileMount this file is associated
+//               with.
+////////////////////////////////////////////////////////////////////
+INLINE VirtualFileMount *VirtualFileSimple::
+get_mount() const {
+  return _mount;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSimple::is_implicit_pz_file
 //       Access: Published
 //  Description: Returns true if this file is a .pz file that should

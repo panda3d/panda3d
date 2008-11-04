@@ -35,6 +35,7 @@ VirtualFileSystem *VirtualFileSystem::_global_ptr = NULL;
 VirtualFileSystem::
 VirtualFileSystem() {
   _cwd = "/";
+  _mount_seq = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,7 +56,7 @@ VirtualFileSystem::
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 mount(Multifile *multifile, const string &mount_point, int flags) {
-  VirtualFileMountMultifile *new_mount = 
+  PT(VirtualFileMountMultifile) new_mount = 
     new VirtualFileMountMultifile(multifile);
   return mount(new_mount, mount_point, flags);
 }
@@ -91,7 +92,7 @@ mount(const Filename &physical_filename, const string &mount_point,
   }
 
   if (physical_filename.is_directory()) {
-    VirtualFileMountSystem *new_mount =
+    PT(VirtualFileMountSystem) new_mount =
       new VirtualFileMountSystem(physical_filename);
     return mount(new_mount, mount_point, flags);
   } else {
@@ -120,12 +121,10 @@ mount(const Filename &physical_filename, const string &mount_point,
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 mount(VirtualFileMount *mount, const string &mount_point, int flags) {
-  nassertr(mount->_file_system == NULL, false);
-  mount->_file_system = this;
-  mount->_mount_point = normalize_mount_point(mount_point);
-  mount->_mount_flags = flags;
-  _mounts.push_back(mount);
-  return true;
+  _lock.acquire();
+  bool result = do_mount(mount, mount_point, flags);
+  _lock.release();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,6 +136,7 @@ mount(VirtualFileMount *mount, const string &mount_point, int flags) {
 ////////////////////////////////////////////////////////////////////
 int VirtualFileSystem::
 unmount(Multifile *multifile) {
+  _lock.acquire();
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
   while (ri != _mounts.end()) {
@@ -163,6 +163,8 @@ unmount(Multifile *multifile) {
 
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
+  ++_mount_seq;
+  _lock.release();
   return num_removed;
 }
 
@@ -175,6 +177,7 @@ unmount(Multifile *multifile) {
 ////////////////////////////////////////////////////////////////////
 int VirtualFileSystem::
 unmount(const Filename &physical_filename) {
+  _lock.acquire();
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
   while (ri != _mounts.end()) {
@@ -214,6 +217,8 @@ unmount(const Filename &physical_filename) {
 
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
+  ++_mount_seq;
+  _lock.release();
   return num_removed;
 }
 
@@ -226,6 +231,7 @@ unmount(const Filename &physical_filename) {
 ////////////////////////////////////////////////////////////////////
 int VirtualFileSystem::
 unmount(VirtualFileMount *mount) {
+  _lock.acquire();
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
   while (ri != _mounts.end()) {
@@ -243,6 +249,8 @@ unmount(VirtualFileMount *mount) {
 
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
+  ++_mount_seq;
+  _lock.release();
   return num_removed;
 }
 
@@ -255,6 +263,7 @@ unmount(VirtualFileMount *mount) {
 ////////////////////////////////////////////////////////////////////
 int VirtualFileSystem::
 unmount_point(const string &mount_point) {
+  _lock.acquire();
   Filename nmp = normalize_mount_point(mount_point);
   Mounts::iterator ri, wi;
   wi = ri = _mounts.begin();
@@ -275,6 +284,8 @@ unmount_point(const string &mount_point) {
 
   int num_removed = _mounts.end() - wi;
   _mounts.erase(wi, _mounts.end());
+  ++_mount_seq;
+  _lock.release();
   return num_removed;
 }
 
@@ -286,6 +297,7 @@ unmount_point(const string &mount_point) {
 ////////////////////////////////////////////////////////////////////
 int VirtualFileSystem::
 unmount_all() {
+  _lock.acquire();
   Mounts::iterator ri;
   for (ri = _mounts.begin(); ri != _mounts.end(); ++ri) {
     (*ri)->_file_system = NULL;
@@ -293,6 +305,8 @@ unmount_all() {
 
   int num_removed = _mounts.size();
   _mounts.clear();
+  ++_mount_seq;
+  _lock.release();
   return num_removed;
 }
 
@@ -304,7 +318,10 @@ unmount_all() {
 ////////////////////////////////////////////////////////////////////
 int VirtualFileSystem::
 get_num_mounts() const {
-  return _mounts.size();
+  ((VirtualFileSystem *)this)->_lock.acquire();
+  int result = _mounts.size();
+  ((VirtualFileSystem *)this)->_lock.release();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -312,10 +329,16 @@ get_num_mounts() const {
 //       Access: Published
 //  Description: Returns the nth mount in the system.
 ////////////////////////////////////////////////////////////////////
-VirtualFileMount *VirtualFileSystem::
+PT(VirtualFileMount) VirtualFileSystem::
 get_mount(int n) const {
-  nassertr(n >= 0 && n < (int)_mounts.size(), NULL);
-  return _mounts[n];
+  ((VirtualFileSystem *)this)->_lock.acquire();
+  nassertd(n >= 0 && n < (int)_mounts.size()) {
+    ((VirtualFileSystem *)this)->_lock.release();
+    return NULL;
+  }
+  PT(VirtualFileMount) result = _mounts[n];
+  ((VirtualFileSystem *)this)->_lock.release();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -331,17 +354,21 @@ get_mount(int n) const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 chdir(const string &new_directory) {
+  _lock.acquire();
   if (new_directory == "/") {
     // We can always return to the root.
     _cwd = new_directory;
+    _lock.release();
     return true;
   }
 
-  PT(VirtualFile) file = get_file(new_directory, true);
+  PT(VirtualFile) file = do_get_file(new_directory, true);
   if (file != (VirtualFile *)NULL && file->is_directory()) {
     _cwd = file->get_filename();
+    _lock.release();
     return true;
   }
+  _lock.release();
   return false;
 }
 
@@ -350,9 +377,12 @@ chdir(const string &new_directory) {
 //       Access: Published
 //  Description: Returns the current directory name.  See chdir().
 ////////////////////////////////////////////////////////////////////
-const Filename &VirtualFileSystem::
+Filename VirtualFileSystem::
 get_cwd() const {
-  return _cwd;
+  ((VirtualFileSystem *)this)->_lock.acquire();
+  Filename result = _cwd;
+  ((VirtualFileSystem *)this)->_lock.release();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -373,72 +403,10 @@ get_cwd() const {
 ////////////////////////////////////////////////////////////////////
 PT(VirtualFile) VirtualFileSystem::
 get_file(const Filename &filename, bool status_only) const {
-  nassertr(!filename.empty(), NULL);
-  Filename pathname(filename);
-  if (pathname.is_local()) {
-    pathname = Filename(_cwd, filename);
-    if (filename.is_text()) {
-      pathname.set_text();
-    }
-  }
-  pathname.standardize();
-  string strpath = pathname.get_filename_index(0).get_fullpath().substr(1);
-  // Also transparently look for a regular file suffixed .pz.
-  string strpath_pz = strpath + ".pz";
-
-  // Now scan all the mount points, from the back (since later mounts
-  // override more recent ones), until a match is found.
-  PT(VirtualFile) found_file = NULL;
-  VirtualFileComposite *composite_file = NULL;
-
-  Mounts::const_reverse_iterator rmi;
-  for (rmi = _mounts.rbegin(); rmi != _mounts.rend(); ++rmi) {
-    VirtualFileMount *mount = (*rmi);
-    string mount_point = mount->get_mount_point();
-    if (strpath == mount_point) {
-      // Here's an exact match on the mount point.  This filename is
-      // the root directory of this mount object.
-      if (consider_match(found_file, composite_file, mount, "", pathname,
-                         false, status_only)) {
-        return found_file;
-      }
-    } else if (mount_point.empty()) {
-      // This is the root mount point; all files are in here.
-      if (consider_match(found_file, composite_file, mount, strpath, 
-                         pathname, false, status_only)) {
-        return found_file;
-      }
-#ifdef HAVE_ZLIB
-      if (vfs_implicit_pz) {
-        if (consider_match(found_file, composite_file, mount, strpath_pz, 
-                           pathname, true, status_only)) {
-          return found_file;
-        }
-      }
-#endif  // HAVE_ZLIB
-
-    } else if (strpath.length() > mount_point.length() &&
-               strpath.substr(0, mount_point.length()) == mount_point &&
-               strpath[mount_point.length()] == '/') {
-      // This pathname falls within this mount system.
-      Filename local_filename = strpath.substr(mount_point.length() + 1);
-      Filename local_filename_pz = strpath_pz.substr(mount_point.length() + 1);
-      if (consider_match(found_file, composite_file, mount, local_filename, 
-                         pathname, false, status_only)) {
-        return found_file;
-      }
-#ifdef HAVE_ZLIB
-      if (vfs_implicit_pz) {
-        // Bingo!
-        if (consider_match(found_file, composite_file, mount, local_filename_pz,
-                           pathname, true, status_only)) {
-          return found_file;
-        }
-      }
-#endif  // HAVE_ZLIB
-    }
-  }
-  return found_file;
+  ((VirtualFileSystem *)this)->_lock.acquire();
+  PT(VirtualFile) result = do_get_file(filename, status_only);
+  ((VirtualFileSystem *)this)->_lock.release();
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -575,12 +543,14 @@ find_all_files(const Filename &filename, const DSearchPath &searchpath,
 ////////////////////////////////////////////////////////////////////
 void VirtualFileSystem::
 write(ostream &out) const {
+  ((VirtualFileSystem *)this)->_lock.acquire();
   out << "_cwd" << _cwd << "\n_mounts:\n";
   Mounts::const_iterator mi;
   for (mi = _mounts.begin(); mi != _mounts.end(); ++mi) {
     VirtualFileMount *mount = (*mi);
     mount->write(out);
   }
+  ((VirtualFileSystem *)this)->_lock.release();
 }
 
 
@@ -708,7 +678,7 @@ open_read_file(const Filename &filename, bool auto_unwrap) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::close_read_file
-//       Access: Published
+//       Access: Published, Static
 //  Description: Closes a file opened by a previous call to
 //               open_read_file().  This really just deletes the
 //               istream pointer, but it is recommended to use this
@@ -716,7 +686,7 @@ open_read_file(const Filename &filename, bool auto_unwrap) const {
 //               work around compiler issues.
 ////////////////////////////////////////////////////////////////////
 void VirtualFileSystem::
-close_read_file(istream *stream) const {
+close_read_file(istream *stream) {
   if (stream != (istream *)NULL) {
     // For some reason--compiler bug in gcc 3.2?--explicitly deleting
     // the stream pointer does not call the appropriate global delete
@@ -782,6 +752,8 @@ scan_mount_points(vector_string &names, const Filename &path) const {
 //               to standard form (relative to the current directory,
 //               with no double slashes, and not terminating with a
 //               slash).  The initial slash is removed.
+//
+//               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 Filename VirtualFileSystem::
 normalize_mount_point(const string &mount_point) const {
@@ -792,6 +764,125 @@ normalize_mount_point(const string &mount_point) const {
   nmp.standardize();
   nassertr(!nmp.empty() && nmp[0] == '/', nmp);
   return nmp.get_fullpath().substr(1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::do_mount
+//       Access: Private
+//  Description: The private implementation of mount().  Assumes the
+//               lock is already held.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+do_mount(VirtualFileMount *mount, const string &mount_point, int flags) {
+  nassertr(mount->_file_system == NULL, false);
+  mount->_file_system = this;
+  mount->_mount_point = normalize_mount_point(mount_point);
+  mount->_mount_flags = flags;
+  _mounts.push_back(mount);
+  ++_mount_seq;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::do_get_file
+//       Access: Private
+//  Description: The private implementation of get_file().  Assumes
+//               the lock is already held.
+////////////////////////////////////////////////////////////////////
+PT(VirtualFile) VirtualFileSystem::
+do_get_file(const Filename &filename, bool status_only) const {
+  nassertr(!filename.empty(), NULL);
+  Filename pathname(filename);
+  if (pathname.is_local()) {
+    pathname = Filename(_cwd, filename);
+    if (filename.is_text()) {
+      pathname.set_text();
+    }
+  }
+  pathname.standardize();
+  string strpath = pathname.get_filename_index(0).get_fullpath().substr(1);
+  // Also transparently look for a regular file suffixed .pz.
+  string strpath_pz = strpath + ".pz";
+
+  // Now scan all the mount points, from the back (since later mounts
+  // override more recent ones), until a match is found.
+  PT(VirtualFile) found_file = NULL;
+  VirtualFileComposite *composite_file = NULL;
+
+  // We use an index instead of an iterator, since the vector might
+  // change if implicit mounts are added during this loop.
+  unsigned int start_seq = _mount_seq;
+
+  size_t i = _mounts.size();
+  while (i > 0) {
+    --i;
+    VirtualFileMount *mount = _mounts[i];
+    string mount_point = mount->get_mount_point();
+    if (strpath == mount_point) {
+      // Here's an exact match on the mount point.  This filename is
+      // the root directory of this mount object.
+      if (consider_match(found_file, composite_file, mount, "", pathname,
+                         false, status_only)) {
+        return found_file;
+      }
+    } else if (mount_point.empty()) {
+      // This is the root mount point; all files are in here.
+      if (consider_match(found_file, composite_file, mount, strpath, 
+                         pathname, false, status_only)) {
+        return found_file;
+      }
+#ifdef HAVE_ZLIB
+      if (vfs_implicit_pz) {
+        if (consider_match(found_file, composite_file, mount, strpath_pz, 
+                           pathname, true, status_only)) {
+          return found_file;
+        }
+      }
+#endif  // HAVE_ZLIB
+
+    } else if (strpath.length() > mount_point.length() &&
+               strpath.substr(0, mount_point.length()) == mount_point &&
+               strpath[mount_point.length()] == '/') {
+      // This pathname falls within this mount system.
+      Filename local_filename = strpath.substr(mount_point.length() + 1);
+      Filename local_filename_pz = strpath_pz.substr(mount_point.length() + 1);
+      if (consider_match(found_file, composite_file, mount, local_filename, 
+                         pathname, false, status_only)) {
+        return found_file;
+      }
+#ifdef HAVE_ZLIB
+      if (vfs_implicit_pz) {
+        // Bingo!
+        if (consider_match(found_file, composite_file, mount, local_filename_pz,
+                           pathname, true, status_only)) {
+          return found_file;
+        }
+      }
+#endif  // HAVE_ZLIB
+    }
+
+    // If we discover that a file has been implicitly mounted during
+    // one of the above operations, start over from the beginning of
+    // the loop.
+    if (start_seq != _mount_seq) {
+      start_seq = _mount_seq;
+      i = _mounts.size();
+    }
+  }
+
+  if (found_file == (VirtualFile *)NULL && vfs_implicit_mf) {
+    // The file wasn't found, as-is.  Does it appear to be an implicit
+    // .mf file reference?
+    ((VirtualFileSystem *)this)->consider_mount_mf(filename);
+
+    if (start_seq != _mount_seq) {
+      // Yes, it was, or some nested file was.  Now that we've
+      // implicitly mounted the .mf file, go back and look again.
+      return do_get_file(filename, status_only);
+    }
+  }
+
+  return found_file;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -857,6 +948,65 @@ consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_fil
 
   // Keep going, looking for more directories.
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::consider_mount_mf
+//       Access: Private
+//  Description: The indicated filename was not found.  Check to see
+//               if it is using an implicit reference to a .mf file as
+//               a directory, that hasn't already been mounted.  If it
+//               is, mount the .mf file in-place, and return true; if
+//               it is not, or if its .mf file is already mounted
+//               in-place, return false.
+//
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+consider_mount_mf(const Filename &filename) {
+  Filename dirname = filename.get_dirname();
+  if (dirname.empty()) {
+    // Reached the top directory; no .mf file references.
+    return false;
+  }
+  if (is_directory(dirname)) {
+    // Reached a real (or already-mounted) directory; no unmounted .mf
+    // file references.
+    return false;
+  }
+  if (dirname.get_extension() == "mf") {
+    // Hey, here's a multifile reference!
+    dirname.set_binary();
+    PT(VirtualFile) file = do_get_file(dirname, false);
+    if (file == (VirtualFile *)NULL || !file->is_regular_file()) {
+      // Oh, never mind.  Not a real file.
+      return false;
+    }
+
+    PT(Multifile) multifile = new Multifile;
+   
+    istream *stream = file->open_read_file(false);
+    if (stream == (istream *)NULL) {
+      // Couldn't read file.
+      return false;
+    }
+
+    if (!multifile->open_read(stream, true)) {
+      // Invalid multifile.
+      return false;
+    }
+
+    multifile->set_multifile_name(dirname.get_basename());
+    express_cat.info()
+      << "Implicitly mounting " << dirname << "\n";
+
+    PT(VirtualFileMountMultifile) new_mount = 
+      new VirtualFileMountMultifile(multifile);
+    return do_mount(new_mount, dirname, MF_read_only);
+  }
+
+  // Recurse.
+  return consider_mount_mf(dirname);
 }
 
 ////////////////////////////////////////////////////////////////////

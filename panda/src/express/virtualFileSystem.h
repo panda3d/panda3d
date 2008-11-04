@@ -23,6 +23,7 @@
 #include "dSearchPath.h"
 #include "pointerTo.h"
 #include "config_express.h"
+#include "mutexImpl.h"
 #include "pvector.h"
 
 class Multifile;
@@ -59,10 +60,10 @@ PUBLISHED:
   BLOCKING int unmount_all();
 
   int get_num_mounts() const;
-  VirtualFileMount *get_mount(int n) const;
+  PT(VirtualFileMount) get_mount(int n) const;
 
   BLOCKING bool chdir(const string &new_directory);
-  BLOCKING const Filename &get_cwd() const;
+  BLOCKING Filename get_cwd() const;
 
   BLOCKING PT(VirtualFile) get_file(const Filename &filename, bool status_only = false) const;
   BLOCKING PT(VirtualFile) find_file(const Filename &filename, 
@@ -86,7 +87,7 @@ PUBLISHED:
 
   BLOCKING INLINE string read_file(const Filename &filename, bool auto_unwrap) const;
   BLOCKING istream *open_read_file(const Filename &filename, bool auto_unwrap) const;
-  BLOCKING void close_read_file(istream *stream) const;
+  BLOCKING static void close_read_file(istream *stream);
 
 public:
   INLINE bool read_file(const Filename &filename, string &result, bool auto_unwrap) const;
@@ -96,15 +97,21 @@ public:
 
 private:
   Filename normalize_mount_point(const string &mount_point) const;
+  bool do_mount(VirtualFileMount *mount, const string &mount_point, int flags);
+  PT(VirtualFile) do_get_file(const Filename &filename, bool status_only) const;
   bool consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
                       VirtualFileMount *mount, const string &local_filename,
                       const Filename &original_filename, bool implicit_pz_file,
                       bool status_only) const;
+  bool consider_mount_mf(const Filename &filename);
   static void parse_option(const string &option,
                            int &flags, string &password);
 
+  MutexImpl _lock;
   typedef pvector<PT(VirtualFileMount) > Mounts;
   Mounts _mounts;
+  unsigned int _mount_seq;
+
   Filename _cwd;
 
   static VirtualFileSystem *_global_ptr;

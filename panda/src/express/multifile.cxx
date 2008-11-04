@@ -102,6 +102,7 @@ Multifile::
 Multifile() {
   _read = (istream *)NULL;
   _write = (ostream *)NULL;
+  _owns_stream = false;
   _next_index = 0;
   _last_index = 0;
   _needs_repack = false;
@@ -179,18 +180,18 @@ open_read(const Filename &multifile_name) {
 //               istream.  There must be seek functionality via
 //               seekg() and tellg() on the istream.
 //
-//               The Multifile does *not* close or delete the istream
-//               when Multifile.close() is called.  It is the caller's
-//               responsibility to ensure that the istream pointer
-//               does not destruct during the lifetime of the
-//               Multifile.
+//               If owns_pointer is true, then the Multifile assumes
+//               ownership of the stream pointer and will delete it
+//               when the multifile is closed, including if this
+//               function returns false.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-open_read(istream *multifile_stream) {
+open_read(istream *multifile_stream, bool owns_pointer) {
   close();
   _timestamp = time(NULL);
   _timestamp_dirty = true;
   _read = multifile_stream;
+  _owns_stream = owns_pointer;
   _read->seekg(0, ios::beg);
   return read_index();
 }
@@ -230,18 +231,18 @@ open_write(const Filename &multifile_name) {
 //               ostream.  There must be seek functionality via
 //               seekp() and tellp() on the pstream.
 //
-//               The Multifile does *not* close or delete the ostream
-//               when Multifile.close() is called.  It is the caller's
-//               responsibility to ensure that the ostream pointer
-//               does not destruct during the lifetime of the
-//               Multifile.
+//               If owns_pointer is true, then the Multifile assumes
+//               ownership of the stream pointer and will delete it
+//               when the multifile is closed, including if this
+//               function returns false.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-open_write(ostream *multifile_stream) {
+open_write(ostream *multifile_stream, bool owns_pointer) {
   close();
   _timestamp = time(NULL);
   _timestamp_dirty = true;
   _write = multifile_stream;
+  _owns_stream = owns_pointer;
   _write->seekp(0, ios::beg);
   return true;
 }
@@ -293,19 +294,19 @@ open_read_write(const Filename &multifile_name) {
 //               via seekg()/seekp() and tellg()/tellp() on the
 //               iostream.
 //
-//               The Multifile does *not* close or delete the iostream
-//               when Multifile.close() is called.  It is the caller's
-//               responsibility to ensure that the iostream pointer
-//               does not destruct during the lifetime of the
-//               Multifile.
+//               If owns_pointer is true, then the Multifile assumes
+//               ownership of the stream pointer and will delete it
+//               when the multifile is closed, including if this
+//               function returns false.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-open_read_write(iostream *multifile_stream) {
+open_read_write(iostream *multifile_stream, bool owns_pointer) {
   close();
   _timestamp = time(NULL);
   _timestamp_dirty = true;
   _read = multifile_stream;
   _write = multifile_stream;
+  _owns_stream = owns_pointer;
   _write->seekp(0, ios::beg);
 
   // Check whether the read stream is empty.
@@ -338,8 +339,17 @@ close() {
     flush();
   }
 
+  if (_owns_stream) {
+    if (_read != (istream *)NULL) {
+      VirtualFileSystem::close_read_file(_read);
+    } else if (_write != (ostream *)NULL) {
+      delete _write;
+    }
+  }
+
   _read = (istream *)NULL;
   _write = (ostream *)NULL;
+  _owns_stream = false;
   _next_index = 0;
   _last_index = 0;
   _needs_repack = false;
