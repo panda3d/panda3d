@@ -1,11 +1,13 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.fsm.StatePush import FunctionCall
 from direct.showbase.PythonUtil import formatTimeExact, normalDistrib
+from direct.task import Task
 
 class FrameProfiler:
     notify = directNotify.newCategory('FrameProfiler')
 
-    # for precision, all times related to the profile/log schedule are stored as integers
+    # because of precision requirements, all times related to the profile/log
+    # schedule are stored as integers
     Minute = 60
     Hour = 60 * Minute
     Day = 24 * Hour
@@ -14,7 +16,7 @@ class FrameProfiler:
         Hour = FrameProfiler.Hour
         # how long to wait between frame profiles
         self._period = 2 * FrameProfiler.Minute
-        if config.GetBool('frame-profiler-debug', 0):
+        if config.GetBool('frequent-frame-profiles', 0):
             self._period = 1 * FrameProfiler.Minute
         # used to prevent profile from being taken exactly every 'period' seconds
         self._jitterMagnitude = self._period * .75
@@ -26,7 +28,7 @@ class FrameProfiler:
                              12 * FrameProfiler.Hour,
                               1 * FrameProfiler.Day,
                               ] # day schedule proceeds as 1, 2, 4, 8 days, etc.
-        if config.GetBool('frame-profiler-debug', 0):
+        if config.GetBool('frequent-frame-profiles', 0):
             self._logSchedule = [ 1  * FrameProfiler.Minute,
                                   4  * FrameProfiler.Minute,
                                   12 * FrameProfiler.Minute,
@@ -113,6 +115,18 @@ class FrameProfiler:
             Functor(self._doAnalysis, sessionId), 'FrameProfilerAnalysis-%s' % sessionId)
 
     def _doAnalysis(self, sessionId, task):
+        if hasattr(task, '_generator'):
+            gen = task._generator
+        else:
+            gen = self._doAnalysisGen(sessionId)
+            task._generator = gen
+        result = gen.next()
+        if result == Task.done:
+            del task._generator
+        return result
+
+    def _doAnalysisGen(self, sessionId):
+        # generator to limit max number of profile loggings per frame
         p2ap = self._period2aggregateProfile
 
         self._id2task.pop(sessionId)
@@ -131,14 +145,21 @@ class FrameProfiler:
         session.release()
         session = None
 
+        counter = 0
+
         # log profiles when it's time, and aggregate them upwards into the
         # next-longer profile
         for pi in xrange(len(self._logSchedule)):
             period = self._logSchedule[pi]
             if (self._timeElapsed % period) == 0:
                 if period in p2ap:
+                    # delay until the next frame if we've already processed N profiles this frame
+                    if counter >= 3:
+                        counter = 0
+                        yield Task.cont
                     self.notify.info('aggregate profile of sampled frames over last %s\n%s' %
                                      (formatTimeExact(period), p2ap[period].getResults()))
+                    counter += 1
                     # aggregate this profile into the next larger profile
                     nextIndex = pi + 1
                     if nextIndex >= len(self._logSchedule):
@@ -161,5 +182,4 @@ class FrameProfiler:
                 # periods are multiples of this one
                 break
 
-        return task.done
-    
+        yield Task.done
