@@ -335,8 +335,8 @@ PNMImage GeoMipTerrain::
 make_slope_image() {
   PNMImage result (_xsize, _ysize);
   result.make_grayscale();
-  for (int x = 0; x < _xsize; ++x) {
-    for (int y = 0; y < _ysize; ++y) {
+  for (unsigned int x = 0; x < _xsize; ++x) {
+    for (unsigned int y = 0; y < _ysize; ++y) {
       LVector3f normal (get_normal(x, y));
       normal.set(normal.get_x() / _root.get_sx(),
                  normal.get_y() / _root.get_sy(),
