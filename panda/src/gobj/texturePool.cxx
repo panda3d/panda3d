@@ -850,8 +850,7 @@ resolve_filename(Filename &new_filename, const Filename &orig_filename) {
 
   new_filename = orig_filename;
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(new_filename, get_texture_path()) ||
-    vfs->resolve_filename(new_filename, get_model_path());
+  vfs->resolve_filename(new_filename, get_model_path());
 
   _relpath_lookup[orig_filename] = new_filename;
 }
@@ -958,8 +957,7 @@ report_texture_unreadable(const Filename &filename) const {
       // search path.
       gobj_cat.error()
         << "Unable to find texture \"" << filename << "\""
-        << " on texture_path " << get_texture_path()
-        << " or model_path " << get_model_path() <<"\n";
+        << " on model-path " << get_model_path() <<"\n";
     } else {
       // A fully-specified filename is not searched along the path, so
       // don't mislead the user with the error message.

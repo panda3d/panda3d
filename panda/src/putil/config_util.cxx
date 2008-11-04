@@ -91,33 +91,6 @@ get_model_path() {
 }
 
 ConfigVariableSearchPath &
-get_texture_path() {
-  static ConfigVariableSearchPath *texture_path = NULL;
-  if (texture_path == NULL) {
-    texture_path = new ConfigVariableSearchPath
-      ("texture-path", 
-       PRC_DESC("A special directory path to search for textures only.  "
-                "Textures are also searched for along the model-path, so the "
-                "use of texture-path is only useful if you have special "
-                "directories that only contain textures."));
-  }
-
-  return *texture_path;
-}
-
-ConfigVariableSearchPath &
-get_sound_path() {
-  static ConfigVariableSearchPath *sound_path = NULL;
-  if (sound_path == NULL) {
-    sound_path = new ConfigVariableSearchPath
-      ("sound-path", 
-       PRC_DESC("The directories to search for sound and music files to be loaded."));
-  }
-
-  return *sound_path;
-}
-
-ConfigVariableSearchPath &
 get_plugin_path() {
   static ConfigVariableSearchPath *plugin_path = NULL;
   if (plugin_path == NULL) {

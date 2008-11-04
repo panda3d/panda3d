@@ -410,8 +410,7 @@ get_sound(const string &file_name, bool positional, int) {
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(path, get_sound_path()) ||
-    vfs->resolve_filename(path, get_model_path());
+  vfs->resolve_filename(path, get_model_path());
 
   // Build a new AudioSound from the audio data.
   PT(AudioSound) audioSound = 0;

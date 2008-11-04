@@ -64,11 +64,6 @@ ConfigureFn(config_egg) {
   init_libegg();
 }
 
-ConfigVariableSearchPath egg_path
-("egg-path", 
- PRC_DESC("The search path along which only egg files are searched.  Generally, you "
-          "should use model-path instead of egg-path."));
-
 ConfigVariableBool egg_support_old_anims
 ("egg-support-old-anims", true,
  PRC_DESC("Set this true to support loading of old character animation files, which "

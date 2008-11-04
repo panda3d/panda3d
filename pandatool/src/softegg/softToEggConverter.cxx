@@ -2030,7 +2030,7 @@ set_shader_attributes(SoftNodeDesc *node_desc, EggPrimitive &primitive, int idx)
   EggTexture tex(texName, "");
 
   Filename filename = Filename::from_os_specific(texName);
-  Filename fullpath = _path_replace->match_path(filename, get_texture_path());
+  Filename fullpath = _path_replace->match_path(filename, get_model_path());
   tex.set_filename(_path_replace->store_path(fullpath));
   tex.set_fullpath(fullpath);
   //  tex.set_format(EggTexture::F_rgb);

@@ -280,9 +280,7 @@ copy_textures() {
     EggTexture *tex = (*ti);
     Filename orig_filename = tex->get_filename();
     if (!orig_filename.exists()) {
-      bool found = 
-        orig_filename.resolve_filename(get_texture_path()) ||
-        orig_filename.resolve_filename(get_model_path());
+      bool found = orig_filename.resolve_filename(get_model_path());
       if (!found) {
         nout << "Cannot find " << orig_filename << "\n";
         success = false;

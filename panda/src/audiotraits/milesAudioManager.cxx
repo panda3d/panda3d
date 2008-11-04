@@ -147,8 +147,7 @@ get_sound(const string &file_name, bool, int) {
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(path, get_sound_path()) ||
-    vfs->resolve_filename(path, get_model_path());
+  vfs->resolve_filename(path, get_model_path());
   audio_debug("  resolved file_name is '"<<path<<"'");
 
   PT(SoundData) sd;
@@ -244,8 +243,7 @@ uncache_sound(const string &file_name) {
   Filename path = file_name;
 
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(path, get_sound_path()) ||
-    vfs->resolve_filename(path, get_model_path());
+  vfs->resolve_filename(path, get_model_path());
 
   audio_debug("  path=\""<<path<<"\"");
   SoundMap::iterator i = _sounds.find(path);

@@ -25,7 +25,6 @@
 
 NotifyCategoryDecl(egg, EXPCL_PANDAEGG, EXPTP_PANDAEGG);
 
-extern ConfigVariableSearchPath egg_path;
 extern ConfigVariableBool egg_support_old_anims;
 
 extern EXPCL_PANDAEGG ConfigVariableBool egg_mesh;

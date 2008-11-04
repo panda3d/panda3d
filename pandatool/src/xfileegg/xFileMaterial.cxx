@@ -99,7 +99,7 @@ void XFileMaterial::
 apply_to_egg(EggPrimitive *egg_prim, XFileToEggConverter *converter) {
   // Is there a texture?
   if (_has_texture) {
-    Filename texture = converter->convert_texture_path(_texture);
+    Filename texture = converter->convert_model_path(_texture);
     EggTexture temp("", texture);
     EggTexture *egg_tex = converter->create_unique_texture(temp);
     egg_prim->set_texture(egg_tex);

@@ -412,9 +412,9 @@ has_absolute_pathnames() const {
 //     Function: EggGroupNode::resolve_filenames
 //       Access: Published
 //  Description: Walks the tree and attempts to resolve any filenames
-//               encountered.  This looks up filenames in the search
-//               path, etc.  It does not automatically search the
-//               egg_path for missing files.
+//               encountered.  This looks up filenames along the
+//               specified search path; it does not automatically
+//               search the model_path for missing files.
 ////////////////////////////////////////////////////////////////////
 void EggGroupNode::
 resolve_filenames(const DSearchPath &searchpath) {

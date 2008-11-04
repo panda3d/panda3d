@@ -386,8 +386,7 @@ get_sound(const string &file_name, bool positional, int mode) {
   
   Filename path = file_name;
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(path, get_sound_path()) ||
-    vfs->resolve_filename(path, get_model_path());
+  vfs->resolve_filename(path, get_model_path());
   
   if (path.empty()) {
     audio_error("get_sound - invalid filename");
@@ -417,8 +416,7 @@ uncache_sound(const string& file_name) {
   Filename path = file_name;
   
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(path, get_sound_path()) ||
-    vfs->resolve_filename(path, get_model_path());
+  vfs->resolve_filename(path, get_model_path());
 
   SampleCache::iterator sci = _sample_cache.find(path);
   if (sci != _sample_cache.end()) {

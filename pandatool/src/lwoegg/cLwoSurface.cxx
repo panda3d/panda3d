@@ -244,7 +244,7 @@ check_texture() {
     return false;
   }
 
-  Filename pathname = _converter->convert_texture_path(clip->_filename);
+  Filename pathname = _converter->convert_model_path(clip->_filename);
 
   _egg_texture = new EggTexture("clip" + format_string(clip_index), pathname);
 

@@ -18,7 +18,7 @@
 #include "pandatoolbase.h"
 
 #include "filename.h"
-#include "config_util.h"  // for get_texture_path() and get_model_path()
+#include "config_util.h"  // for get_model_path()
 #include "animationConvert.h"
 #include "pathReplace.h"
 #include "pointerTo.h"
@@ -110,7 +110,6 @@ public:
   bool handle_external_reference(EggGroupNode *egg_parent,
                                  const Filename &ref_filename);
 
-  INLINE Filename convert_texture_path(const Filename &orig_filename);
   INLINE Filename convert_model_path(const Filename &orig_filename);
 
   // Set this true to treat errors as warnings and generate output

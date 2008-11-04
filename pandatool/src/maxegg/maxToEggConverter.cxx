@@ -959,7 +959,7 @@ void MaxToEggConverter::analyze_diffuse_maps(PandaMaterial &pandaMat, Texmap *ma
 
         Filename fullpath, outpath;
         Filename filename = Filename::from_os_specific(diffuseTex->GetMapName());
-        _options->_path_replace->full_convert_path(filename, get_texture_path(),
+        _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
         tex->set_filename(outpath);
         tex->set_fullpath(fullpath);
@@ -1000,7 +1000,7 @@ void MaxToEggConverter::analyze_opacity_maps(PandaMaterial &pandaMat, Texmap *ma
 
         Filename fullpath, outpath;
         Filename filename = Filename::from_os_specific(transTex->GetMapName());
-        _options->_path_replace->full_convert_path(filename, get_texture_path(),
+        _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 
         // See if this opacity map already showed up.
@@ -1052,7 +1052,7 @@ void MaxToEggConverter::analyze_glow_maps(PandaMaterial &pandaMat, Texmap *mat) 
 
         Filename fullpath, outpath;
         Filename filename = Filename::from_os_specific(gtex->GetMapName());
-        _options->_path_replace->full_convert_path(filename, get_texture_path(),
+        _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 
         // Try to find a diffuse map to pair this with as an alpha-texture.
@@ -1097,7 +1097,7 @@ void MaxToEggConverter::analyze_gloss_maps(PandaMaterial &pandaMat, Texmap *mat)
 
         Filename fullpath, outpath;
         Filename filename = Filename::from_os_specific(gtex->GetMapName());
-        _options->_path_replace->full_convert_path(filename, get_texture_path(),
+        _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 
         // Try to find a diffuse map to pair this with as an alpha-texture.
@@ -1142,7 +1142,7 @@ void MaxToEggConverter::analyze_normal_maps(PandaMaterial &pandaMat, Texmap *mat
 
         Filename fullpath, outpath;
         Filename filename = Filename::from_os_specific(ntex->GetMapName());
-        _options->_path_replace->full_convert_path(filename, get_texture_path(),
+        _options->_path_replace->full_convert_path(filename, get_model_path(),
                                                    fullpath, outpath);
 
         PT(EggTexture) tex = new EggTexture(generate_tex_name(), "");

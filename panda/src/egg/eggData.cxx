@@ -37,10 +37,9 @@ TypeHandle EggData::_type_handle;
 //     Function: EggData::resolve_egg_filename
 //       Access: Public, Static
 //  Description: Looks for the indicated filename, first along the
-//               indicated searchpath, and then along the egg_path and
-//               finally along the model_path.  If found, updates the
-//               filename to the full path and returns true;
-//               otherwise, returns false.
+//               indicated searchpath, and then along the model_path.
+//               If found, updates the filename to the full path and
+//               returns true; otherwise, returns false.
 ////////////////////////////////////////////////////////////////////
 bool EggData::
 resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
@@ -51,7 +50,6 @@ resolve_egg_filename(Filename &egg_filename, const DSearchPath &searchpath) {
   }
   
   vfs->resolve_filename(egg_filename, searchpath, "egg") ||
-    vfs->resolve_filename(egg_filename, egg_path, "egg") ||
     vfs->resolve_filename(egg_filename, get_model_path(), "egg");
   
   return vfs->exists(egg_filename);

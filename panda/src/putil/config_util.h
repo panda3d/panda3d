@@ -41,8 +41,6 @@ extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamTextureMode> bam_texture_mode;
 
 BEGIN_PUBLISH
 EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_model_path();
-EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_texture_path();
-EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_sound_path();
 EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_plugin_path();
 END_PUBLISH
 

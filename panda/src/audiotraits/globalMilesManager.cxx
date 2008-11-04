@@ -318,8 +318,7 @@ open_api() {
       Filename dls_pathname = AudioManager::get_dls_pathname();
 
       VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-      vfs->resolve_filename(dls_pathname, get_sound_path()) ||
-        vfs->resolve_filename(dls_pathname, get_model_path());
+      vfs->resolve_filename(dls_pathname, get_model_path());
 
       _dls_data.clear();
       PT(VirtualFile) file = vfs->get_file(dls_pathname);

@@ -232,20 +232,4 @@ ISocketStream::
   nassertv(_channel == NULL);
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: ISocketStream::set_hold_ptr
-//       Access: Published
-//  Description: Associates a reference-counting pointer with the
-//               stream.  The stream does nothing with the pointer
-//               other than hold its reference count for its own
-//               lifetime (or until set_hold_ptr() is called again).
-//
-//               At the moment, this is used only by VirtualFileHTTP.
-////////////////////////////////////////////////////////////////////
-void ISocketStream::
-set_hold_ptr(const TypedReferenceCount *ptr) {
-  _hold_ptr = ptr;
-}
-
 #endif  // HAVE_OPENSSL

@@ -138,14 +138,10 @@ PUBLISHED:
   virtual void close() = 0;
   virtual ReadState get_read_state() = 0;
 
-  void set_hold_ptr(const TypedReferenceCount *ptr);
-
 protected:
   HTTPChannel *_channel;
 
 private:
-  CPT(TypedReferenceCount) _hold_ptr;
-
   friend class HTTPChannel;
 };
 

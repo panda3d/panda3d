@@ -132,7 +132,6 @@ read_txa_file() {
               "is in effect."));
 
   Filename filename = txa_file;
-  vfs->resolve_filename(filename, get_texture_path());
   vfs->resolve_filename(filename, get_model_path());
 
   if (!vfs->exists(filename)) {

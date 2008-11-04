@@ -2565,7 +2565,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
         //}
         Filename filename = Filename::from_os_specific(color_def->_texture_filename);
         Filename fullpath, outpath;
-        _path_replace->full_convert_path(filename, get_texture_path(), fullpath, outpath);
+        _path_replace->full_convert_path(filename, get_model_path(), fullpath, outpath);
         tex.set_filename(outpath);
         tex.set_fullpath(fullpath);
         apply_texture_uvprops(tex, *color_def);
@@ -2609,7 +2609,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
             // set_alpha_file_channel()), but for now we assume it comes
             // from the grayscale data.
             filename = Filename::from_os_specific(trans_def._texture_filename);
-            _path_replace->full_convert_path(filename, get_texture_path(),
+            _path_replace->full_convert_path(filename, get_model_path(),
                                              fullpath, outpath);
             tex.set_alpha_filename(outpath);
             tex.set_alpha_fullpath(fullpath);
@@ -2708,7 +2708,7 @@ set_shader_legacy(EggPrimitive &primitive, const MayaShader &shader,
         // primary filename, and set the format accordingly.
         Filename filename = Filename::from_os_specific(trans_def._texture_filename);
         Filename fullpath,outpath;
-        _path_replace->full_convert_path(filename, get_texture_path(),
+        _path_replace->full_convert_path(filename, get_model_path(),
                                          fullpath, outpath);
         tex.set_filename(outpath);
         tex.set_fullpath(fullpath);
@@ -2874,7 +2874,7 @@ void MayaToEggConverter::
 apply_texture_filename(EggTexture &tex, const MayaShaderColorDef &def) {
   Filename filename = Filename::from_os_specific(def._texture_filename);
   Filename fullpath, outpath;
-  _path_replace->full_convert_path(filename, get_texture_path(), fullpath, outpath);
+  _path_replace->full_convert_path(filename, get_model_path(), fullpath, outpath);
   tex.set_filename(outpath);
   tex.set_fullpath(fullpath);
 }
@@ -2891,7 +2891,7 @@ apply_texture_alpha_filename(EggTexture &tex, const MayaShaderColorDef &def) {
     if (def._opposite->_texture_filename != def._texture_filename) {
       Filename filename = Filename::from_os_specific(def._opposite->_texture_filename);
       Filename fullpath, outpath;
-      _path_replace->full_convert_path(filename, get_texture_path(), fullpath, outpath);
+      _path_replace->full_convert_path(filename, get_model_path(), fullpath, outpath);
       tex.set_alpha_filename(outpath);
       tex.set_alpha_fullpath(fullpath);
     }

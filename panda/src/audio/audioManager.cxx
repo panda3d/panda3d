@@ -287,8 +287,7 @@ get_dls_pathname() {
   Filename dls_filename = audio_dls_file;
   if (!dls_filename.empty()) {
     VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-    vfs->resolve_filename(dls_filename, get_sound_path()) ||
-      vfs->resolve_filename(dls_filename, get_model_path());
+    vfs->resolve_filename(dls_filename, get_model_path());
     
     return dls_filename;
   }

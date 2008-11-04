@@ -5223,9 +5223,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
     alpha_filename = _alpha_fullpath;
     bam_dir.make_absolute();
     if (!has_bam_dir || !filename.make_relative_to(bam_dir, true)) {
-      if (filename.find_on_searchpath(get_texture_path()) == -1) {
-        filename.find_on_searchpath(get_model_path());
-      }
+      filename.find_on_searchpath(get_model_path());
     }
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
@@ -5233,9 +5231,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
         << " found as " << filename << "\n";
     }
     if (!has_bam_dir || !alpha_filename.make_relative_to(bam_dir, true)) {
-      if (alpha_filename.find_on_searchpath(get_texture_path()) == -1) {
-        alpha_filename.find_on_searchpath(get_model_path());
-      }
+      alpha_filename.find_on_searchpath(get_model_path());
     }
     if (gobj_cat.is_debug()) {
       gobj_cat.debug()
