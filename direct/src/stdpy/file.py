@@ -57,6 +57,7 @@ class file:
             binary = False
             if 'b' in mode:
                 # Strip 'b'.  This means a binary file.
+                i = mode.index('b')
                 mode = mode[:i] + mode[i + 1:]
                 binary = True
 
