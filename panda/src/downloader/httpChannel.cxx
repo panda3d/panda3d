@@ -20,6 +20,7 @@
 #include "chunkedStream.h"
 #include "identityStream.h"
 #include "config_downloader.h"
+#include "virtualFileMountHTTP.h"
 #include "ramfile.h"
 
 #ifdef HAVE_OPENSSL
@@ -48,6 +49,8 @@ HTTPChannel(HTTPClient *client) :
   _proxy_tunnel = http_proxy_tunnel;
   _connect_timeout = http_connect_timeout;
   _http_timeout = http_timeout;
+  _skip_body_size = http_skip_body_size;
+  _idle_timeout = http_idle_timeout;
   _blocking_connect = false;
   _download_throttle = false;
   _max_bytes_per_second = downloader_byte_rate;
@@ -89,6 +92,7 @@ HTTPChannel(HTTPClient *client) :
   _started_download = false;
   _sent_so_far = 0;
   _body_stream = NULL;
+  _owns_body_stream = false;
   _sbio = NULL;
   _last_status_code = 0;
   _last_run_time = 0.0f;
@@ -104,108 +108,6 @@ HTTPChannel::
 ~HTTPChannel() {
   close_connection();
   reset_download_to();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_file_system
-//       Access: Published, Virtual
-//  Description: Returns the VirtualFileSystem this file is associated
-//               with.
-////////////////////////////////////////////////////////////////////
-VirtualFileSystem *HTTPChannel::
-get_file_system() const {
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_filename
-//       Access: Published, Virtual
-//  Description: Returns the full pathname to this file within the
-//               virtual file system.
-////////////////////////////////////////////////////////////////////
-Filename HTTPChannel::
-get_filename() const {
-  return Filename();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::is_regular_file
-//       Access: Published, Virtual
-//  Description: Returns true if this file represents a regular file
-//               (and read_file() may be called), false otherwise.
-////////////////////////////////////////////////////////////////////
-bool HTTPChannel::
-is_regular_file() const {
-  return is_valid();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::will_close_connection
-//       Access: Public
-//  Description: Returns true if the server has indicated it will
-//               close the connection after this document has been
-//               read, or false if it will remain open (and future
-//               documents may be requested on the same connection).
-////////////////////////////////////////////////////////////////////
-bool HTTPChannel::
-will_close_connection() const {
-  if (get_http_version() < HTTPEnum::HV_11) {
-    // pre-HTTP 1.1 always closes.
-    return true;
-  }
-
-  string connection = get_header_value("Connection");
-  if (downcase(connection) == "close") {
-    // The server says it will close.
-    return true;
-  }
-
-  if (connection.empty() && !get_persistent_connection()) {
-    // The server didn't say, but we asked it to close.
-    return true;
-  }
-
-  // Assume the server will keep it open.
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::open_read_file
-//       Access: Public, Virtual
-//  Description: Opens the document for reading.  Returns a newly
-//               allocated istream on success (which you should
-//               pass to close_read_file() when you are done reading).
-//               Returns NULL on failure.  This may only be called
-//               once for a particular HTTPChannel.
-////////////////////////////////////////////////////////////////////
-istream *HTTPChannel::
-open_read_file(bool auto_unwrap) const {
-  return ((HTTPChannel *)this)->read_body();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::close_read_file
-//       Access: Public
-//  Description: Closes a file opened by a previous call to
-//               open_read_file().  This really just deletes the
-//               istream pointer, but it is recommended to use this
-//               interface instead of deleting it explicitly, to help
-//               work around compiler issues.
-////////////////////////////////////////////////////////////////////
-void HTTPChannel::
-close_read_file(istream *stream) const {
-  if (stream != (istream *)NULL) {
-    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
-    // the stream pointer does not call the appropriate global delete
-    // function; instead apparently calling the system delete
-    // function.  So we call the delete function by hand instead.
-#if !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
-    stream->~istream();
-    (*global_operator_delete)(stream);
-#else
-    delete stream;
-#endif
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,6 +199,36 @@ get_header_value(const string &key) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::will_close_connection
+//       Access: Published
+//  Description: Returns true if the server has indicated it will
+//               close the connection after this document has been
+//               read, or false if it will remain open (and future
+//               documents may be requested on the same connection).
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+will_close_connection() const {
+  if (get_http_version() < HTTPEnum::HV_11) {
+    // pre-HTTP 1.1 always closes.
+    return true;
+  }
+
+  string connection = get_header_value("Connection");
+  if (downcase(connection) == "close") {
+    // The server says it will close.
+    return true;
+  }
+
+  if (connection.empty() && !get_persistent_connection()) {
+    // The server didn't say, but we asked it to close.
+    return true;
+  }
+
+  // Assume the server will keep it open.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::get_file_size
 //       Access: Published, Virtual
 //  Description: Returns the size of the file, if it is known.
@@ -306,7 +238,7 @@ get_header_value(const string &key) const {
 //
 //               If the file is dynamically generated, the size may
 //               not be available until a read has started
-//               (e.g. open_read_file() has been called); and even
+//               (e.g. open_read_body() has been called); and even
 //               then it may increase as more of the file is read due
 //               to the nature of HTTP/1.1 requests which can change
 //               their minds midstream about how much data they're
@@ -393,6 +325,10 @@ run() {
 
     case DD_ram:
       repeat_later = run_download_to_ram();
+      break;
+
+    case DD_stream:
+      repeat_later = run_download_to_stream();
       break;
     }
     if (repeat_later) {
@@ -573,7 +509,7 @@ run() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::read_body
+//     Function: HTTPChannel::open_read_body
 //       Access: Published
 //  Description: Returns a newly-allocated istream suitable for
 //               reading the body of the document.  This may only be
@@ -581,11 +517,19 @@ run() {
 //               post_form(), or after a call to run() has returned
 //               false.
 //
-//               The user is responsible for deleting the returned
-//               istream later.
+//               Note that, in nonblocking mode, the returned stream
+//               may report an early EOF, even before the actual end
+//               of file.  When this happens, you should call
+//               stream->is_closed() to determine whether you should
+//               attempt to read some more later.
+//
+//               The user is responsible for passing the returned
+//               istream to close_read_body() later.
 ////////////////////////////////////////////////////////////////////
 ISocketStream *HTTPChannel::
-read_body() {
+open_read_body() {
+  reset_body_stream();
+
   if ((_state != S_read_header && _state != S_begin_body) || _source.is_null()) {
     return NULL;
   }
@@ -611,7 +555,36 @@ read_body() {
     result = new IIdentityStream(_source, this, _got_file_size, _file_size);
   }
 
+  result->_channel = this;
+  _body_stream = result;
+  _owns_body_stream = false;
+
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::close_read_body
+//       Access: Public
+//  Description: Closes a file opened by a previous call to
+//               open_read_body().  This really just deletes the
+//               istream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+close_read_body(istream *stream) const {
+  if (stream != (istream *)NULL) {
+    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
+    // the stream pointer does not call the appropriate global delete
+    // function; instead apparently calling the system delete
+    // function.  So we call the delete function by hand instead.
+#if !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+    stream->~istream();
+    (*global_operator_delete)(stream);
+#else
+    delete stream;
+#endif
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -734,6 +707,66 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::download_to_stream
+//       Access: Published
+//  Description: Specifies the name of an ostream to download the
+//               resulting document to.  This should be called
+//               immediately after get_document() or
+//               begin_get_document() or related functions.
+//
+//               In the case of the blocking I/O methods like
+//               get_document(), this function will download the
+//               entire document to the file and return true if it was
+//               successfully downloaded, false otherwise.
+//
+//               In the case of non-blocking I/O methods like
+//               begin_get_document(), this function simply indicates an
+//               intention to download to the indicated file.  It
+//               returns true if the file can be opened for writing,
+//               false otherwise, but the contents will not be
+//               completely downloaded until run() has returned false.
+//               At this time, it is possible that a communications
+//               error will have left a partial file, so
+//               is_download_complete() may be called to test this.
+//
+//               If subdocument_resumes is true and the document in
+//               question was previously requested as a subdocument
+//               (i.e. get_subdocument() with a first_byte value
+//               greater than zero), this will automatically seek to
+//               the appropriate byte within the file for writing the
+//               output.  In this case, the file must already exist
+//               and must have at least first_byte bytes in it.  If
+//               subdocument_resumes is false, a subdocument will
+//               always be downloaded beginning at the first byte of
+//               the file.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+download_to_stream(ostream *strm, bool subdocument_resumes) {
+  reset_download_to();
+  _download_to_stream = strm;
+  _download_to_stream->clear();
+  _subdocument_resumes = subdocument_resumes;
+
+  _download_dest = DD_stream;
+
+  if (_wanted_nonblocking) {
+    // In nonblocking mode, we can't start the download yet; that will
+    // be done later as run() is called.
+    return true;
+  }
+
+  // In normal, blocking mode, go ahead and do the download.
+  if (!open_download_file()) {
+    reset_download_to();
+    return false;
+  }
+
+  while (run()) {
+  }
+  return is_download_complete();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::get_connection
 //       Access: Published
 //  Description: Returns the connection that was established via a
@@ -754,7 +787,11 @@ get_connection() {
   BioStream *stream = _source->get_stream();
   _source->set_stream(NULL);
 
-  // We're now passing ownership of the connection to the user.
+  // We're now passing ownership of the connection to the caller.
+  if (downloader_cat.is_debug()) {
+    downloader_cat.debug()
+      << "passing ownership of connection to caller.\n";
+  }
   reset_to_new();
 
   return stream;
@@ -775,6 +812,35 @@ downcase(const string &s) {
     result += tolower(*p);
   }
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::body_stream_destructs
+//       Access: Public
+//  Description: Called by ISocketStream destructor when _body_stream
+//               is destructing.
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+body_stream_destructs(ISocketStream *stream) {
+  if (stream == _body_stream) {
+    if (_state == S_reading_body) {
+      switch (_body_stream->get_read_state()) {
+      case ISocketStream::RS_complete:
+        finished_body(false);
+        break;
+        
+      case ISocketStream::RS_error:
+        _state = HTTPChannel::S_failure;
+        _status_entry._status_code = HTTPChannel::SC_lost_connection;
+        break;
+    
+      default:
+        break;
+      }
+    }
+    _body_stream = NULL;
+    _owns_body_stream = false;
+  }
 }
 
 
@@ -842,13 +908,7 @@ reached_done_state() {
     
   } else {
     // Oops, we have to download the body now.
-    // We shouldn't already be in the middle of reading some other
-    // body when we come here.
-    if (_body_stream != NULL) {
-      delete _body_stream;
-      _body_stream = (ISocketStream *)NULL;
-    }
-    _body_stream = read_body();
+    open_read_body();
     if (_body_stream == (ISocketStream *)NULL) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
@@ -857,8 +917,9 @@ reached_done_state() {
       return false;
 
     } else {
+      _owns_body_stream = true;
       if (_state != S_reading_body) {
-        _body_stream = NULL;
+        reset_body_stream();
       }
       _started_download = true;
 
@@ -940,7 +1001,11 @@ run_connecting() {
     }
 
   } else {
-    _state = _want_ssl ? S_setup_ssl : S_ready;
+    if (_want_ssl) {
+      _state = S_setup_ssl;
+    } else {
+      _state = S_ready;
+    }
   }
   return false;
 }
@@ -1124,7 +1189,12 @@ run_http_proxy_reading_header() {
   // Now we have a tunnel opened through the proxy.
   make_request_text();
 
-  _state = _want_ssl ? S_setup_ssl : S_ready;
+  if (_want_ssl) {
+    _state = S_setup_ssl;
+  } else {
+    _state = S_ready;
+  }
+
   return false;
 }
 
@@ -1370,7 +1440,12 @@ run_socks_proxy_connect_reply() {
       << connect_port << "\n";
   }
 
-  _state = _want_ssl ? S_setup_ssl : S_ready;
+  if (_want_ssl) {
+    _state = S_setup_ssl;
+  } else {
+    _state = S_ready;
+  }
+
   return false;
 }
 
@@ -1927,6 +2002,10 @@ run_begin_body() {
   if (will_close_connection()) {
     // If the socket will close anyway, no point in skipping past the
     // previous body; just reset.
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "resetting to begin body; server would close anyway.\n";
+    }
     reset_to_new();
     return false;
   }
@@ -1935,11 +2014,10 @@ run_begin_body() {
     // We have already "read" the nonexistent body.
     _state = S_read_trailer;
 
-  } else if (get_file_size() > 8192) {
+  } else if (get_file_size() > _skip_body_size) {
     // If we know the size of the body we are about to skip and it's
-    // too large (and here we arbitrarily say 8KB is too large), then
-    // don't bother skipping it--just drop the connection and get a
-    // new one.
+    // too large, then don't bother skipping it--just drop the
+    // connection and get a new one.
     if (downloader_cat.is_debug()) {
       downloader_cat.debug()
         << "Dropping connection rather than skipping past " 
@@ -1948,13 +2026,7 @@ run_begin_body() {
     reset_to_new();
 
   } else {
-    // We shouldn't already be in the middle of reading some other
-    // body when we come here.
-    if (_body_stream != NULL) {
-      delete _body_stream;
-      _body_stream = (ISocketStream *)NULL;
-    }
-    _body_stream = read_body();
+    open_read_body();
     if (_body_stream == (ISocketStream *)NULL) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
@@ -1963,8 +2035,9 @@ run_begin_body() {
       reset_to_new();
       
     } else {
+      _owns_body_stream = true;
       if (_state != S_reading_body) {
-        _body_stream = NULL;
+        reset_body_stream();
       }
     }
   }
@@ -1978,8 +2051,7 @@ run_begin_body() {
 //  Description: In this state we are in the process of reading the
 //               response's body.  We will only come to this function
 //               if the user did not choose to read the entire body
-//               himself (by calling read_body(), for instance, or
-//               open_read_file()).
+//               himself (by calling open_read_body()).
 //
 //               In this case we should skip past the body to reset
 //               the connection for making a new request.
@@ -1989,13 +2061,21 @@ run_reading_body() {
   if (will_close_connection()) {
     // If the socket will close anyway, no point in skipping past the
     // previous body; just reset.
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "resetting to read body; server would close anyway.\n";
+    }
     reset_to_new();
     return false;
   }
 
   // Skip the body we've already started.
-  if (_body_stream == NULL) {
+  if (_body_stream == NULL || !_owns_body_stream) {
     // Whoops, we're not in skip-body mode.  Better reset.
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "resetting, not in skip-body mode.\n";
+    }
     reset_to_new();
     return false;
   }
@@ -2009,29 +2089,14 @@ run_reading_body() {
     getline(*_body_stream, line);
   }
 
-  switch (_body_stream->get_read_state()) {
-  case ISocketStream::RS_complete:
-    finished_body(false);
-    break;
-
-  case ISocketStream::RS_error:
-    _state = HTTPChannel::S_failure;
-    _status_entry._status_code = HTTPChannel::SC_lost_connection;
-    break;
-
-  default:
-    break;
-  }
-
   if (!_body_stream->is_closed()) {
     // There's more to come later.
     return true;
   }
 
-  delete _body_stream;
-  _body_stream = NULL;
+  reset_body_stream();
 
-  // This should have been set by the _body_stream finishing.
+  // This should have been set by the call to finished_body(), above.
   nassertr(_state != S_reading_body, false);
   return false;
 }
@@ -2055,6 +2120,10 @@ run_read_body() {
   if (will_close_connection()) {
     // If the socket will close anyway, no point in skipping past the
     // previous body; just reset.
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "resetting to read body; server would close anyway.\n";
+    }
     reset_to_new();
     return false;
   }
@@ -2086,6 +2155,10 @@ run_read_trailer() {
   if (will_close_connection()) {
     // If the socket will close anyway, no point in skipping past the
     // previous body; just reset.
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "resetting to read trailer; server would close anyway.\n";
+    }
     reset_to_new();
     return false;
   }
@@ -2102,7 +2175,7 @@ run_read_trailer() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run_download_to_file() {
-  nassertr(_body_stream != (ISocketStream *)NULL, false);
+  nassertr(_body_stream != (ISocketStream *)NULL && _owns_body_stream, false);
 
   bool do_throttle = _wanted_nonblocking && _download_throttle;
 
@@ -2143,22 +2216,9 @@ run_download_to_file() {
 
   _download_to_file.flush();
 
-  switch (_body_stream->get_read_state()) {
-  case ISocketStream::RS_complete:
-    finished_body(false);
-    break;
-
-  case ISocketStream::RS_error:
-    _state = HTTPChannel::S_failure;
-    _status_entry._status_code = HTTPChannel::SC_lost_connection;
-    break;
-
-  default:
-    break;
-  }
-
   if (_body_stream->is_closed()) {
     // Done.
+    reset_body_stream();
     _download_to_file.close();
     _started_download = false;
     return false;
@@ -2176,7 +2236,7 @@ run_download_to_file() {
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 run_download_to_ram() {
-  nassertr(_body_stream != (ISocketStream *)NULL, false);
+  nassertr(_body_stream != (ISocketStream *)NULL && _owns_body_stream, false);
   nassertr(_download_to_ramfile != (Ramfile *)NULL, false);
 
   bool do_throttle = _wanted_nonblocking && _download_throttle;
@@ -2207,22 +2267,70 @@ run_download_to_ram() {
     count = _body_stream->gcount();
   }
 
-  switch (_body_stream->get_read_state()) {
-  case ISocketStream::RS_complete:
-    finished_body(false);
-    break;
-
-  case ISocketStream::RS_error:
-    _state = HTTPChannel::S_failure;
-    _status_entry._status_code = HTTPChannel::SC_lost_connection;
-    break;
-
-  default:
-    break;
+  if (_body_stream->is_closed()) {
+    // Done.
+    reset_body_stream();
+    _started_download = false;
+    return false;
+  } else {
+    // More to come.
+    return true;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::run_download_to_stream
+//       Access: Private
+//  Description: After the headers, etc. have been read, this streams
+//               the download to the named file.
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+run_download_to_stream() {
+  nassertr(_body_stream != (ISocketStream *)NULL && _owns_body_stream, false);
+
+  bool do_throttle = _wanted_nonblocking && _download_throttle;
+
+  static const size_t buffer_size = 1024;
+  char buffer[buffer_size];
+
+  size_t remaining_this_pass = buffer_size;
+  if (do_throttle) {
+    remaining_this_pass = _bytes_per_update;
+  }
+
+  _body_stream->read(buffer, min(buffer_size, remaining_this_pass));
+  size_t count = _body_stream->gcount();
+  while (count != 0) {
+    _download_to_stream->write(buffer, count);
+    _bytes_downloaded += count;
+    if (do_throttle) {
+      nassertr(count <= remaining_this_pass, false);
+      remaining_this_pass -= count;
+      if (remaining_this_pass == 0) {
+        // That's enough for now.
+        return true;
+      }
+    }
+
+    _body_stream->read(buffer, min(buffer_size, remaining_this_pass));
+    count = _body_stream->gcount();
+  }
+
+  if (_download_to_stream->fail()) {
+    downloader_cat.warning()
+      << "Error writing to stream\n";
+    _status_entry._status_code = SC_download_write_error;
+    _state = S_failure;
+    reset_download_to();
+    return false;
+  }
+
+  _download_to_stream->flush();
 
   if (_body_stream->is_closed()) {
     // Done.
+    reset_body_stream();
+    _download_to_stream = NULL;
     _started_download = false;
     return false;
   } else {
@@ -2281,12 +2389,20 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
   if (_proxy != new_proxy) {
     _proxy = new_proxy;
     _proxy_auth = (HTTPAuthorization *)NULL;
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "resetting to change proxy to " << _proxy << "\n";
+    }
     reset_to_new();
   }
 
   // Ditto with changing the nonblocking state.
   if (_nonblocking != nonblocking) {
     _nonblocking = nonblocking;
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "resetting to change nonblocking state to " << _nonblocking << ".\n";
+    }
     reset_to_new();
   }
 
@@ -2308,6 +2424,19 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
 
   // Also, reset from whatever previous request might still be pending.
   if (_state == S_failure || (_state < S_read_header && _state != S_ready)) {
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "resetting to clear previous request.\n";
+    }
+    reset_to_new();
+
+  } else if (TrueClock::get_global_ptr()->get_short_time() - _last_run_time >= _idle_timeout) {
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "resetting old connection: " 
+        << TrueClock::get_global_ptr()->get_short_time() - _last_run_time
+        << " s old.\n";
+    }
     reset_to_new();
 
   } else if (_state == S_read_header) {
@@ -2316,7 +2445,11 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
     _state = S_begin_body;
   }
 
-  _done_state = (_method == HTTPEnum::M_connect) ? S_ready : S_read_header;
+  if (_method == HTTPEnum::M_connect) {
+    _done_state = S_ready;
+  } else {
+    _done_state = S_read_header;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2381,6 +2514,7 @@ reconsider_proxy() {
 void HTTPChannel::
 reset_for_new_request() {
   reset_download_to();
+  reset_body_stream();
 
   _last_status_code = 0;
   _status_entry = StatusEntry();
@@ -2406,6 +2540,10 @@ reset_for_new_request() {
 void HTTPChannel::
 finished_body(bool has_trailer) {
   if (will_close_connection() && _download_dest == DD_none) {
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "resetting to finish body; server would close anyway.\n";
+    }
     reset_to_new();
 
   } else {
@@ -2421,12 +2559,12 @@ finished_body(bool has_trailer) {
 //     Function: HTTPChannel::open_download_file
 //       Access: Private
 //  Description: If a download has been requested, opens the file on
-//               disk (or prepares the RamFile) and seeks within it to
-//               the appropriate _first_byte_delivered position, so
-//               that downloaded bytes will be written to the
-//               appropriate point within the file.  Returns true if
-//               the starting position is valid, false otherwise (in
-//               which case the state is set to S_failure).
+//               disk (or prepares the RamFile or stream) and seeks
+//               within it to the appropriate _first_byte_delivered
+//               position, so that downloaded bytes will be written to
+//               the appropriate point within the file.  Returns true
+//               if the starting position is valid, false otherwise
+//               (in which case the state is set to S_failure).
 ////////////////////////////////////////////////////////////////////
 bool HTTPChannel::
 open_download_file() {
@@ -2479,6 +2617,24 @@ open_download_file() {
         _download_to_ramfile->_data = 
           _download_to_ramfile->_data.substr(0, _first_byte_delivered);
       }
+    } else if (_download_dest == DD_stream) {
+      // Windows doesn't complain if you try to seek past the end of
+      // file--it happily appends enough zero bytes to make the
+      // difference.  Blecch.  That means we need to get the file size
+      // first to check it ourselves.
+      _download_to_stream->seekp(0, ios::end);
+      if (_first_byte_delivered > (size_t)_download_to_stream->tellp()) {
+        downloader_cat.info()
+          << "Invalid starting position of byte " << _first_byte_delivered
+          << " within stream (which has " 
+          << _download_to_stream->tellp() << " bytes)\n";
+        _download_to_stream = NULL;
+        _status_entry._status_code = SC_download_invalid_range;
+        _state = S_failure;
+        return false;
+      }
+      
+      _download_to_stream->seekp(_first_byte_delivered);
     }
 
   } else {
@@ -2489,6 +2645,8 @@ open_download_file() {
       _download_to_file.seekp(0);
     } else if (_download_dest == DD_ram) {
       _download_to_ramfile->_data = string();
+    } else if (_download_dest == DD_stream) {
+      _download_to_stream->seekp(0);
     }
   }
 
@@ -2523,8 +2681,8 @@ server_getline(string &str) {
         }
         str = str.substr(0, p);
       }
-      if (downloader_cat.is_spam()) {
-        downloader_cat.spam() << "recv: " << str << "\n";
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug() << "recv: " << str << "\n";
       }
       return true;
 
@@ -2697,9 +2855,14 @@ server_send(const string &str, bool secret) {
     reset_to_new();
     return false;
   }
+
+  if (downloader_cat.is_spam()) {
+    downloader_cat.spam()
+      << "wrote " << write_count << " bytes to " << _bio << "\n";
+  }
   
 #ifndef NDEBUG
-  if (!secret && downloader_cat.is_spam()) {
+  if (!secret && downloader_cat.is_debug()) {
     show_send(str.substr(0, write_count));
   }
 #endif
@@ -2736,6 +2899,10 @@ parse_http_response(const string &line) {
     } else {
       // Maybe we were just in some bad state.  Drop the connection
       // and try again, once.
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug()
+          << "got non-HTTP response, resetting.\n";
+      }
       reset_to_new();
       _response_type = RT_non_http;
     }
@@ -3416,6 +3583,11 @@ reset_url(const URLSpec &old_url, const URLSpec &new_url) {
   if (new_url.get_scheme() != old_url.get_scheme() ||
       (_proxy.empty() && (new_url.get_server() != old_url.get_server() || 
                           new_url.get_port() != old_url.get_port()))) {
+    if (downloader_cat.is_debug()) {
+      downloader_cat.debug()
+        << "resetting for new server " 
+        << new_url.get_server_and_port() << "\n";
+    }
     reset_to_new();
   }
 }
@@ -3458,14 +3630,14 @@ show_send(const string &message) {
   size_t newline = message.find('\n', start);
   while (newline != string::npos) {
     // Assume every \n is preceded by a \r.
-    downloader_cat.spam()
+    downloader_cat.debug()
       << "send: " << message.substr(start, newline - start - 1) << "\n";
     start = newline + 1;
     newline = message.find('\n', start);
   }
 
   if (start < message.length()) {
-    downloader_cat.spam()
+    downloader_cat.debug()
       << "send: " << message.substr(start) << " (no newline)\n";
   }
 }
@@ -3483,6 +3655,7 @@ reset_download_to() {
   _started_download = false;
   _download_to_file.close();
   _download_to_ramfile = (Ramfile *)NULL;
+  _download_to_stream = NULL;
   _download_dest = DD_none;
 }
 
@@ -3498,6 +3671,24 @@ reset_to_new() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::reset_body_stream
+//       Access: Private
+//  Description: Clears the _body_stream pointer, if it is set.
+////////////////////////////////////////////////////////////////////
+void HTTPChannel::
+reset_body_stream() {
+  if (_owns_body_stream) {
+    if (_body_stream != (ISocketStream *)NULL) {
+      close_read_body(_body_stream);
+      nassertv(_body_stream == (ISocketStream *)NULL && !_owns_body_stream);
+    }
+  } else {
+    _body_stream = NULL;
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::close_connection
 //       Access: Private
 //  Description: Closes the connection but leaves the _state
@@ -3505,10 +3696,7 @@ reset_to_new() {
 ////////////////////////////////////////////////////////////////////
 void HTTPChannel::
 close_connection() {
-  if (_body_stream != (ISocketStream *)NULL) {
-    delete _body_stream;
-    _body_stream = (ISocketStream *)NULL;
-  }
+  reset_body_stream();
   _source.clear();
   _bio.clear();
   _working_get = string();

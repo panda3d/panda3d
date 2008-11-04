@@ -36,7 +36,11 @@
     patcher.h patcher.I \
     socketStream.h socketStream.I \
     ssl_utils.h \
-    urlSpec.I urlSpec.h
+    stringStreamBuf.I stringStreamBuf.h \
+    stringStream.I stringStream.h \
+    urlSpec.I urlSpec.h \
+    virtualFileHTTP.I virtualFileHTTP.h \
+    virtualFileMountHTTP.I virtualFileMountHTTP.h
     
   #define INCLUDED_SOURCES                 \
     config_downloader.cxx \
@@ -63,7 +67,11 @@
     patcher.cxx \
     socketStream.cxx \
     ssl_utils.cxx \
-    urlSpec.cxx
+    stringStreamBuf.cxx \
+    stringStream.cxx \
+    urlSpec.cxx \
+    virtualFileHTTP.cxx \
+    virtualFileMountHTTP.cxx
 
   #define INSTALL_HEADERS \
     bioPtr.I bioPtr.h \
@@ -92,7 +100,11 @@
     patcher.h patcher.I \
     socketStream.h socketStream.I \
     ssl_utils.h \
-    urlSpec.h urlSpec.I
+    stringStreamBuf.I stringStreamBuf.h \
+    stringStream.I stringStream.h \
+    urlSpec.h urlSpec.I \
+    virtualFileHTTP.I virtualFileHTTP.h \
+    virtualFileMountHTTP.I virtualFileMountHTTP.h
     
   #define IGATESCAN all
 

@@ -34,6 +34,7 @@
 #include "pvector.h"
 #include "pmap.h"
 #include "pset.h"
+#include "referenceCount.h"
 
 #include "openssl/ssl.h"
 
@@ -49,12 +50,18 @@ class HTTPChannel;
 //       Class : HTTPClient
 // Description : Handles contacting an HTTP server and retrieving a
 //               document.  Each HTTPClient object represents a
-//               separate context; it is up to the programmer whether
-//               one HTTPClient should be used to retrieve all
-//               documents, or a separate one should be created each
-//               time.
+//               separate context, and stores its own list of cookies,
+//               passwords, and certificates; however, a given
+//               HTTPClient is capable of making multiple simultaneous
+//               requests to the same or different servers.
+//
+//               It is up to the programmer whether one HTTPClient
+//               should be used to retrieve all documents, or a
+//               separate one should be created each time.  There is a
+//               default, global HTTPClient available in
+//               HTTPClient::get_global_ptr().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS HTTPClient {
+class EXPCL_PANDAEXPRESS HTTPClient : public ReferenceCount {
 PUBLISHED:
   HTTPClient();
   HTTPClient(const HTTPClient &copy);
@@ -128,6 +135,8 @@ PUBLISHED:
   INLINE static string base64_encode(const string &s);
   INLINE static string base64_decode(const string &s);
 
+  static HTTPClient *get_global_ptr();
+
 public:
   SSL_CTX *get_ssl_ctx();
 
@@ -199,6 +208,9 @@ private:
 
   static bool _ssl_initialized;
   static X509_STORE *_x509_store;
+
+  static PT(HTTPClient) _global_ptr;
+
   friend class HTTPChannel;
 };
 

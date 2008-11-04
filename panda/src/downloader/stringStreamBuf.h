@@ -25,7 +25,7 @@
 //               contents can be appended to or extracted at any time
 //               by application code.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PUTIL StringStreamBuf : public streambuf {
+class EXPCL_PANDAEXPRESS StringStreamBuf : public streambuf {
 public:
   StringStreamBuf();
   virtual ~StringStreamBuf();

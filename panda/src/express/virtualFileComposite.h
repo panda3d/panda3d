@@ -36,6 +36,7 @@ public:
   virtual VirtualFileSystem *get_file_system() const;
   virtual Filename get_filename() const;
 
+  virtual bool has_file() const;
   virtual bool is_directory() const;
 
 protected:

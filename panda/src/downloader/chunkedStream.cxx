@@ -18,6 +18,19 @@
 #ifdef HAVE_OPENSSL
 
 ////////////////////////////////////////////////////////////////////
+//     Function: IChunkedStream::Destructor
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+IChunkedStream::
+~IChunkedStream() {
+  if (_channel != (HTTPChannel *)NULL) {
+    _channel->body_stream_destructs(this);
+    _channel = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: IChunkedStream::is_closed
 //       Access: Public, Virtual
 //  Description: Returns true if the last eof condition was triggered

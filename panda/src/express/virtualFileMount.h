@@ -17,9 +17,10 @@
 
 #include "pandabase.h"
 
+#include "virtualFile.h"
 #include "filename.h"
 #include "pointerTo.h"
-#include "typedObject.h"
+#include "typedReferenceCount.h"
 
 class VirtualFileSystem;
 
@@ -29,18 +30,20 @@ class VirtualFileSystem;
 //               within a VirtualFileSystem.  Normally users don't
 //               need to monkey with this class directly.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS VirtualFileMount : public TypedObject {
-public:
-  INLINE VirtualFileMount(VirtualFileSystem *file_system,
-                          const Filename &physical_filename,
-                          const Filename &mount_point,
-                          int mount_flags);
+class EXPCL_PANDAEXPRESS VirtualFileMount : public TypedReferenceCount {
+PUBLISHED:
+  INLINE VirtualFileMount();
   virtual ~VirtualFileMount();
 
   INLINE VirtualFileSystem *get_file_system() const;
-  INLINE const Filename &get_physical_filename() const;
   INLINE const Filename &get_mount_point() const;
   INLINE int get_mount_flags() const;
+
+public:
+  virtual PT(VirtualFile) make_virtual_file(const string &local_filename,
+                                            const Filename &original_filename,
+                                            bool implicit_pz_file,
+                                            bool status_only);
 
   virtual bool has_file(const Filename &file) const=0;
   virtual bool is_directory(const Filename &file) const=0;
@@ -55,13 +58,12 @@ public:
   virtual bool scan_directory(vector_string &contents, 
                               const Filename &dir) const=0;
 
-
+PUBLISHED:
   virtual void output(ostream &out) const;
   virtual void write(ostream &out) const;
 
 protected:
   VirtualFileSystem *_file_system;
-  Filename _physical_filename;
   Filename _mount_point;
   int _mount_flags;
 
@@ -75,13 +77,15 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedObject::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "VirtualFileMount",
-                  TypedObject::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
 
 private:
   static TypeHandle _type_handle;
+
+  friend class VirtualFileSystem;
 };
 
 INLINE ostream &operator << (ostream &out, const VirtualFileMount &mount);

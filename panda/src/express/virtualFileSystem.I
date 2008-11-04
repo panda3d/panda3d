@@ -21,7 +21,8 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool VirtualFileSystem::
 exists(const Filename &filename) const {
-  return get_file(filename) != (VirtualFile *)NULL;
+  cerr << "exists: " << filename << "\n";
+  return get_file(filename, true) != (VirtualFile *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -135,7 +135,7 @@ start(ThreadPriority priority, bool joinable) {
 
   init_thread_context(&_context, _stack, _stack_size, st_begin_thread, this);
 
-  _manager->enqueue_ready(this);
+  _manager->enqueue_ready(this, false);
   return true;
 }
 
@@ -215,8 +215,8 @@ sleep_this(double seconds) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleImpl::
-yield_this() {
-  _manager->enqueue_ready(this);
+yield_this(bool volunteer) {
+  _manager->enqueue_ready(this, true);
   _manager->next_context();
 }
 
@@ -254,7 +254,7 @@ begin_thread() {
   // Any threads that were waiting to join with this thread now become ready.
   JoiningThreads::iterator jti;
   for (jti = _joining_threads.begin(); jti != _joining_threads.end(); ++jti) {
-    _manager->enqueue_ready(*jti);
+    _manager->enqueue_ready(*jti, false);
   }
   _joining_threads.clear();
 

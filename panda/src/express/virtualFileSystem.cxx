@@ -55,12 +55,9 @@ VirtualFileSystem::
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 mount(Multifile *multifile, const string &mount_point, int flags) {
-  VirtualFileMountMultifile *mount = 
-    new VirtualFileMountMultifile(this, multifile, 
-                                  normalize_mount_point(mount_point),
-                                  flags);
-  _mounts.push_back(mount);
-  return true;
+  VirtualFileMountMultifile *new_mount = 
+    new VirtualFileMountMultifile(multifile);
+  return mount(new_mount, mount_point, flags);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -94,16 +91,12 @@ mount(const Filename &physical_filename, const string &mount_point,
   }
 
   if (physical_filename.is_directory()) {
-    VirtualFileMountSystem *mount =
-      new VirtualFileMountSystem(this, physical_filename, 
-                                 normalize_mount_point(mount_point),
-                                 flags);
-    _mounts.push_back(mount);
-    return true;
+    VirtualFileMountSystem *new_mount =
+      new VirtualFileMountSystem(physical_filename);
+    return mount(new_mount, mount_point, flags);
   } else {
     // It's not a directory; it must be a Multifile.
     PT(Multifile) multifile = new Multifile;
-
     multifile->set_encryption_password(password);
 
     // For now these are always opened read only.  Maybe later we'll
@@ -115,6 +108,24 @@ mount(const Filename &physical_filename, const string &mount_point,
 
     return mount(multifile, mount_point, flags);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::mount
+//       Access: Published
+//  Description: Adds the given VirtualFileMount object to the mount
+//               list.  This is a lower-level function that the other
+//               flavors of mount(); it requires you to create a
+//               VirtualFileMount object specifically.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSystem::
+mount(VirtualFileMount *mount, const string &mount_point, int flags) {
+  nassertr(mount->_file_system == NULL, false);
+  mount->_file_system = this;
+  mount->_mount_point = normalize_mount_point(mount_point);
+  mount->_mount_flags = flags;
+  _mounts.push_back(mount);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -137,7 +148,8 @@ unmount(Multifile *multifile) {
         DCAST(VirtualFileMountMultifile, mount);
       if (mmount->get_multifile() == multifile) {
         // Remove this one.  Don't increment wi.
-        delete mount;
+        mount->_file_system = NULL;
+
       } else {
         // Don't remove this one.
         ++wi;
@@ -157,10 +169,9 @@ unmount(Multifile *multifile) {
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::unmount
 //       Access: Published
-//  Description: Unmounts all appearances of the indicated physical
-//               filename (either a directory name or a Multifile
-//               name) from the file system.  Returns the number of
-//               appearances unmounted.
+//  Description: Unmounts all appearances of the indicated directory
+//               name or multifile name from the file system.  Returns
+//               the number of appearances unmounted.
 ////////////////////////////////////////////////////////////////////
 int VirtualFileSystem::
 unmount(const Filename &physical_filename) {
@@ -170,9 +181,59 @@ unmount(const Filename &physical_filename) {
     VirtualFileMount *mount = (*ri);
     (*wi) = mount;
 
-    if (mount->get_physical_filename() == physical_filename) {
+    if (mount->is_exact_type(VirtualFileMountSystem::get_class_type())) {
+      VirtualFileMountSystem *smount = 
+        DCAST(VirtualFileMountSystem, mount);
+      if (smount->get_physical_filename() == physical_filename) {
+        // Remove this one.  Don't increment wi.
+        mount->_file_system = NULL;
+        
+      } else {
+        // Don't remove this one.
+        ++wi;
+      }
+
+    } else if (mount->is_exact_type(VirtualFileMountMultifile::get_class_type())) {
+      VirtualFileMountMultifile *mmount = 
+        DCAST(VirtualFileMountMultifile, mount);
+      if (mmount->get_multifile()->get_multifile_name() == physical_filename) {
+        // Remove this one.  Don't increment wi.
+        mount->_file_system = NULL;
+
+      } else {
+        // Don't remove this one.
+        ++wi;
+      }
+
+    } else {
+      // Don't remove this one.
+      ++wi;
+    }
+    ++ri;
+  }
+
+  int num_removed = _mounts.end() - wi;
+  _mounts.erase(wi, _mounts.end());
+  return num_removed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::unmount
+//       Access: Published
+//  Description: Unmounts the indicated VirtualFileMount object
+//               from the file system.  Returns the number of
+//               appearances unmounted.
+////////////////////////////////////////////////////////////////////
+int VirtualFileSystem::
+unmount(VirtualFileMount *mount) {
+  Mounts::iterator ri, wi;
+  wi = ri = _mounts.begin();
+  while (ri != _mounts.end()) {
+    (*wi) = (*ri);
+    if ((*ri) == mount) {
       // Remove this one.  Don't increment wi.
-      delete mount;
+      (*ri)->_file_system = NULL;
+
     } else {
       // Don't remove this one.
       ++wi;
@@ -203,7 +264,8 @@ unmount_point(const string &mount_point) {
 
     if (mount->get_mount_point() == nmp) {
       // Remove this one.  Don't increment wi.
-      delete mount;
+      mount->_file_system = NULL;
+
     } else {
       // Don't remove this one.
       ++wi;
@@ -224,15 +286,36 @@ unmount_point(const string &mount_point) {
 ////////////////////////////////////////////////////////////////////
 int VirtualFileSystem::
 unmount_all() {
-  Mounts::iterator mi;
-  for (mi = _mounts.begin(); mi != _mounts.end(); ++mi) {
-    VirtualFileMount *mount = (*mi);
-    delete mount;
+  Mounts::iterator ri;
+  for (ri = _mounts.begin(); ri != _mounts.end(); ++ri) {
+    (*ri)->_file_system = NULL;
   }
 
   int num_removed = _mounts.size();
   _mounts.clear();
   return num_removed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::get_num_mounts
+//       Access: Published
+//  Description: Returns the number of individual mounts in the
+//               system.
+////////////////////////////////////////////////////////////////////
+int VirtualFileSystem::
+get_num_mounts() const {
+  return _mounts.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::get_mount
+//       Access: Published
+//  Description: Returns the nth mount in the system.
+////////////////////////////////////////////////////////////////////
+VirtualFileMount *VirtualFileSystem::
+get_mount(int n) const {
+  nassertr(n >= 0 && n < (int)_mounts.size(), NULL);
+  return _mounts[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -254,7 +337,7 @@ chdir(const string &new_directory) {
     return true;
   }
 
-  PT(VirtualFile) file = get_file(new_directory);
+  PT(VirtualFile) file = get_file(new_directory, true);
   if (file != (VirtualFile *)NULL && file->is_directory()) {
     _cwd = file->get_filename();
     return true;
@@ -278,9 +361,18 @@ get_cwd() const {
 //  Description: Looks up the file by the indicated name in the file
 //               system.  Returns a VirtualFile pointer representing
 //               the file if it is found, or NULL if it is not.
+//
+//               If status_only is true, the file will be checked for
+//               existence and length and so on, but the returned
+//               file's contents cannot be read.  This is an
+//               optimization which is especially important for
+//               certain mount types, for instance HTTP, for which
+//               opening a file to determine its status is
+//               substantially less expensive than opening it to read
+//               its contents.
 ////////////////////////////////////////////////////////////////////
 PT(VirtualFile) VirtualFileSystem::
-get_file(const Filename &filename) const {
+get_file(const Filename &filename, bool status_only) const {
   nassertr(!filename.empty(), NULL);
   Filename pathname(filename);
   if (pathname.is_local()) {
@@ -306,26 +398,24 @@ get_file(const Filename &filename) const {
     if (strpath == mount_point) {
       // Here's an exact match on the mount point.  This filename is
       // the root directory of this mount object.
-      if (found_match(found_file, composite_file, mount, "", pathname,
-                      false)) {
+      if (consider_match(found_file, composite_file, mount, "", pathname,
+                         false, status_only)) {
         return found_file;
       }
     } else if (mount_point.empty()) {
       // This is the root mount point; all files are in here.
-      if (mount->has_file(strpath)) {
-        // Bingo!
-        if (found_match(found_file, composite_file, mount, strpath, 
-                        pathname, false)) {
-          return found_file;
-        }
-#ifdef HAVE_ZLIB
-      } else if (vfs_implicit_pz && mount->has_file(strpath_pz)) {
-        if (found_match(found_file, composite_file, mount, strpath_pz, 
-                        pathname, true)) {
-          return found_file;
-        }
-#endif  // HAVE_ZLIB
+      if (consider_match(found_file, composite_file, mount, strpath, 
+                         pathname, false, status_only)) {
+        return found_file;
       }
+#ifdef HAVE_ZLIB
+      if (vfs_implicit_pz) {
+        if (consider_match(found_file, composite_file, mount, strpath_pz, 
+                           pathname, true, status_only)) {
+          return found_file;
+        }
+      }
+#endif  // HAVE_ZLIB
 
     } else if (strpath.length() > mount_point.length() &&
                strpath.substr(0, mount_point.length()) == mount_point &&
@@ -333,21 +423,19 @@ get_file(const Filename &filename) const {
       // This pathname falls within this mount system.
       Filename local_filename = strpath.substr(mount_point.length() + 1);
       Filename local_filename_pz = strpath_pz.substr(mount_point.length() + 1);
-      if (mount->has_file(local_filename)) {
-        // Bingo!
-        if (found_match(found_file, composite_file, mount, local_filename, 
-                        pathname, false)) {
-          return found_file;
-        }
+      if (consider_match(found_file, composite_file, mount, local_filename, 
+                         pathname, false, status_only)) {
+        return found_file;
+      }
 #ifdef HAVE_ZLIB
-      } else if (vfs_implicit_pz && mount->has_file(local_filename_pz)) {
+      if (vfs_implicit_pz) {
         // Bingo!
-        if (found_match(found_file, composite_file, mount, local_filename_pz,
-                        pathname, true)) {
+        if (consider_match(found_file, composite_file, mount, local_filename_pz,
+                           pathname, true, status_only)) {
           return found_file;
         }
+      }
 #endif  // HAVE_ZLIB
-      }            
     }
   }
   return found_file;
@@ -362,9 +450,10 @@ get_file(const Filename &filename) const {
 //               found.
 ////////////////////////////////////////////////////////////////////
 PT(VirtualFile) VirtualFileSystem::
-find_file(const Filename &filename, const DSearchPath &searchpath) const {
+find_file(const Filename &filename, const DSearchPath &searchpath,
+          bool status_only) const {
   if (!filename.is_local()) {
-    return get_file(filename);
+    return get_file(filename, status_only);
   }
 
   int num_directories = searchpath.get_num_directories();
@@ -378,7 +467,7 @@ find_file(const Filename &filename, const DSearchPath &searchpath) const {
       // true), we don't prefix another one.
       match = filename;
     }
-    PT(VirtualFile) found_file = get_file(match);
+    PT(VirtualFile) found_file = get_file(match, status_only);
     if (found_file != (VirtualFile *)NULL) {
       return found_file;
     }
@@ -403,7 +492,7 @@ resolve_filename(Filename &filename,
   PT(VirtualFile) found;
 
   if (filename.is_local()) {
-    found = find_file(filename, searchpath);
+    found = find_file(filename, searchpath, true);
 
     if (found.is_null()) {
       // We didn't find it with the given extension; can we try the
@@ -411,7 +500,7 @@ resolve_filename(Filename &filename,
       if (filename.get_extension().empty() && !default_extension.empty()) {
         Filename try_ext = filename;
         try_ext.set_extension(default_extension);
-        found = find_file(try_ext, searchpath);
+        found = find_file(try_ext, searchpath, true);
       }
     }
   } else {
@@ -424,7 +513,7 @@ resolve_filename(Filename &filename,
       if (filename.get_extension().empty() && !default_extension.empty()) {
         Filename try_ext = filename;
         try_ext.set_extension(default_extension);
-        found = get_file(try_ext);
+        found = get_file(try_ext, true);
       }
     }
   }
@@ -605,7 +694,7 @@ get_global_ptr() {
 ////////////////////////////////////////////////////////////////////
 istream *VirtualFileSystem::
 open_read_file(const Filename &filename, bool auto_unwrap) const {
-  PT(VirtualFile) file = get_file(filename);
+  PT(VirtualFile) file = get_file(filename, false);
   if (file == (VirtualFile *)NULL) {
     return NULL;
   }
@@ -706,30 +795,34 @@ normalize_mount_point(const string &mount_point) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileSystem::found_match
+//     Function: VirtualFileSystem::consider_match
 //       Access: Private
-//  Description: Evaluates one match found during a get_file()
-//               operation.  There may be multiple matches for a
-//               particular filename due to the ambiguities introduced
-//               by allowing multiple mount points, so we may have to
-//               keep searching even after the first match is found.
+//  Description: Evaluates one possible filename match found during a
+//               get_file() operation.  There may be multiple matches
+//               for a particular filename due to the ambiguities
+//               introduced by allowing multiple mount points, so we
+//               may have to keep searching even after the first match
+//               is found.
 //
 //               Returns true if the search should terminate now, or
 //               false if it should keep iterating.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
-found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
-            VirtualFileMount *mount, const string &local_filename,
-            const Filename &original_filename, bool implicit_pz_file) const {
+consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
+               VirtualFileMount *mount, const string &local_filename,
+               const Filename &original_filename, bool implicit_pz_file,
+               bool status_only) const {
+  PT(VirtualFile) vfile = 
+    mount->make_virtual_file(local_filename, original_filename, false, status_only);
+  if (!vfile->has_file()) {
+    // Keep looking.
+    return false;
+  }
+
   if (found_file == (VirtualFile *)NULL) {
     // This was our first match.  Save it.
-    Filename local(local_filename);
-    if (original_filename.is_text()) {
-      local.set_text();
-    }
-    found_file = new VirtualFileSimple(mount, local, implicit_pz_file);
-    found_file->set_original_filename(original_filename);
-    if (!mount->is_directory(local_filename)) {
+    found_file = vfile;
+    if (!found_file->is_directory()) {
       // If it's not a directory, we're done.
       return true;
     }
@@ -742,10 +835,11 @@ found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
   } else {
     // This was our second match.  The previous match(es) must
     // have been directories.
-    if (!mount->is_directory(local_filename)) {
+    if (!vfile->is_directory()) {
       // However, this one isn't a directory.  We're done.
       return true;
     }
+
     if (!implicit_pz_file) {
       // At least two directories matched to the same path.  We
       // need a composite directory.
@@ -756,8 +850,8 @@ found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
         composite_file->add_component(found_file);
         found_file = composite_file;
       }
-      composite_file->add_component
-        (new VirtualFileSimple(mount, local_filename, false));
+
+      composite_file->add_component(vfile);
     }
   }
 

@@ -203,6 +203,18 @@ release_all_textures() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::rehash
+//       Access: Published, Static
+//  Description: Should be called when the model-path changes, to blow
+//               away the cache of texture pathnames found along the
+//               model-path.
+////////////////////////////////////////////////////////////////////
+INLINE void TexturePool::
+rehash() {
+  get_global_ptr()->_relpath_lookup.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::garbage_collect
 //       Access: Published, Static
 //  Description: Releases only those textures in the pool that have a

@@ -50,6 +50,8 @@ extern ConfigVariableString http_proxy_username;
 extern ConfigVariableBool http_proxy_tunnel;
 extern ConfigVariableDouble http_connect_timeout;
 extern ConfigVariableDouble http_timeout;
+extern ConfigVariableInt http_skip_body_size;
+extern ConfigVariableDouble http_idle_timeout;
 extern ConfigVariableInt http_max_connect_count;
 extern ConfigVariableFilename http_client_certificate_filename;
 extern ConfigVariableString http_client_certificate_passphrase;

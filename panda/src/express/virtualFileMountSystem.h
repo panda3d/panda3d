@@ -25,13 +25,12 @@
 //               VirtualFileSystem.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS VirtualFileMountSystem : public VirtualFileMount {
+PUBLISHED:
+  INLINE VirtualFileMountSystem(const Filename &physical_filename);
+
+  INLINE const Filename &get_physical_filename() const;
+
 public:
-  INLINE VirtualFileMountSystem(VirtualFileSystem *file_system,
-                                const Filename &physical_filename,
-                                const Filename &mount_point,
-                                int mount_flags);
-
-
   virtual bool has_file(const Filename &file) const;
   virtual bool is_directory(const Filename &file) const;
   virtual bool is_regular_file(const Filename &file) const;
@@ -43,6 +42,11 @@ public:
 
   virtual bool scan_directory(vector_string &contents, 
                               const Filename &dir) const;
+
+  virtual void output(ostream &out) const;
+
+private:
+  Filename _physical_filename;
 
 public:
   virtual TypeHandle get_type() const {

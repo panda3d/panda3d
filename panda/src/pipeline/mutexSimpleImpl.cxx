@@ -54,7 +54,7 @@ do_release() {
     // There had been a thread waiting on this mutex.  Switch contexts
     // immediately, to make fairness more likely.
     ThreadSimpleImpl *thread = manager->get_current_thread();
-    manager->enqueue_ready(thread);
+    manager->enqueue_ready(thread, false);
     manager->next_context();
   }
 }

@@ -15,6 +15,7 @@
 #include "socketStream.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "httpChannel.h"
 
 #ifdef HAVE_OPENSSL
 
@@ -218,6 +219,33 @@ send_datagram(const Datagram &dg) {
   flush();
 
   return !is_closed();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ISocketStream::Destructor
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+ISocketStream::
+~ISocketStream() {
+  // This should already have been cleared by the subclass destructor.
+  nassertv(_channel == NULL);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: ISocketStream::set_hold_ptr
+//       Access: Published
+//  Description: Associates a reference-counting pointer with the
+//               stream.  The stream does nothing with the pointer
+//               other than hold its reference count for its own
+//               lifetime (or until set_hold_ptr() is called again).
+//
+//               At the moment, this is used only by VirtualFileHTTP.
+////////////////////////////////////////////////////////////////////
+void ISocketStream::
+set_hold_ptr(const TypedReferenceCount *ptr) {
+  _hold_ptr = ptr;
 }
 
 #endif  // HAVE_OPENSSL

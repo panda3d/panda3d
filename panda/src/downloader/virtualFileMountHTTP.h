@@ -1,5 +1,5 @@
-// Filename: virtualFileMountMultifile.h
-// Created by:  drose (03Aug02)
+// Filename: virtualFileMountHTTP.h
+// Created by:  drose (30Oct08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,28 +12,39 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef VIRTUALFILEMOUNTMULTIFILE_H
-#define VIRTUALFILEMOUNTMULTIFILE_H
+#ifndef VIRTUALFILEMOUNTHTTP_H
+#define VIRTUALFILEMOUNTHTTP_H
 
 #include "pandabase.h"
 
+#ifdef HAVE_OPENSSL
+
 #include "virtualFileMount.h"
-#include "multifile.h"
+#include "httpClient.h"
+#include "httpChannel.h"
+#include "urlSpec.h"
 #include "pointerTo.h"
+#include "mutexImpl.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileMountMultifile
-// Description : Maps a Multifile's contents into the
+//       Class : VirtualFileMountHTTP
+// Description : Maps a web page (URL root) into the
 //               VirtualFileSystem.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS VirtualFileMountMultifile : public VirtualFileMount {
+class EXPCL_PANDAEXPRESS VirtualFileMountHTTP : public VirtualFileMount {
 PUBLISHED:
-  INLINE VirtualFileMountMultifile(Multifile *multifile);
-  virtual ~VirtualFileMountMultifile();
+  VirtualFileMountHTTP(const URLSpec &root, HTTPClient *http = HTTPClient::get_global_ptr());
+  virtual ~VirtualFileMountHTTP();
 
-  INLINE Multifile *get_multifile() const;
+  INLINE HTTPClient *get_http_client() const;
+  INLINE const URLSpec &get_root() const;
 
 public:
+  virtual PT(VirtualFile) make_virtual_file(const string &local_filename,
+                                            const Filename &original_filename, 
+                                            bool implicit_pz_file,
+                                            bool status_only);
+
   virtual bool has_file(const Filename &file) const;
   virtual bool is_directory(const Filename &file) const;
   virtual bool is_regular_file(const Filename &file) const;
@@ -48,9 +59,16 @@ public:
 
   virtual void output(ostream &out) const;
 
-private:
-  PT(Multifile) _multifile;
+  PT(HTTPChannel) get_channel();
+  void recycle_channel(HTTPChannel *channel);
 
+private:
+  PT(HTTPClient) _http;
+  URLSpec _root;
+
+  MutexImpl _channels_lock;
+  typedef pvector< PT(HTTPChannel) > Channels;
+  Channels _channels;
 
 public:
   virtual TypeHandle get_type() const {
@@ -62,7 +80,7 @@ public:
   }
   static void init_type() {
     VirtualFileMount::init_type();
-    register_type(_type_handle, "VirtualFileMountMultifile",
+    register_type(_type_handle, "VirtualFileMountHTTP",
                   VirtualFileMount::get_class_type());
   }
 
@@ -70,6 +88,8 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "virtualFileMountMultifile.I"
+#include "virtualFileMountHTTP.I"
+
+#endif  // HAVE_OPENSSL
 
 #endif

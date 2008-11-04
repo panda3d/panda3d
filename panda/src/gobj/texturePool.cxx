@@ -24,7 +24,7 @@
 #include "texturePoolFilter.h"
 #include "configVariableList.h"
 #include "load_dso.h"
-#include "lightMutexHolder.h"
+#include "mutexHolder.h"
 
 TexturePool *TexturePool::_global_ptr;
 
@@ -51,7 +51,7 @@ write(ostream &out) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 register_texture_type(MakeTextureFunc *func, const string &extensions) {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   vector_string words;
   extract_words(downcase(extensions), words);
@@ -70,7 +70,7 @@ register_texture_type(MakeTextureFunc *func, const string &extensions) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 register_filter(TexturePoolFilter *filter) {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   gobj_cat.info()
     << "Registering Texture filter " << *filter << "\n";
@@ -87,7 +87,7 @@ register_filter(TexturePoolFilter *filter) {
 ////////////////////////////////////////////////////////////////////
 TexturePool::MakeTextureFunc *TexturePool::
 get_texture_type(const string &extension) const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   string c = downcase(extension);
   TypeRegistry::const_iterator ti;
@@ -139,7 +139,7 @@ make_texture(const string &extension) const {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 write_texture_types(ostream &out, int indent_level) const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   PNMFileTypeRegistry *pnm_reg = PNMFileTypeRegistry::get_global_ptr();
   pnm_reg->write(out, indent_level);
@@ -206,17 +206,10 @@ TexturePool() {
 ////////////////////////////////////////////////////////////////////
 bool TexturePool::
 ns_has_texture(const Filename &orig_filename) {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
-  Filename filename(orig_filename);
-
-  if (!_fake_texture_image.empty()) {
-    filename = _fake_texture_image;
-  }
-
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(filename, get_texture_path());
-  vfs->resolve_filename(filename, get_model_path());
+  Filename filename;
+  resolve_filename(filename, orig_filename);
 
   Textures::const_iterator ti;
   ti = _textures.find(filename);
@@ -236,18 +229,11 @@ ns_has_texture(const Filename &orig_filename) {
 Texture *TexturePool::
 ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
                 bool read_mipmaps, const LoaderOptions &options) {
-  Filename filename(orig_filename);
-
-  if (!_fake_texture_image.empty()) {
-    filename = _fake_texture_image;
-  }
-
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(filename, get_texture_path()) ||
-    vfs->resolve_filename(filename, get_model_path());
+  Filename filename;
 
   {
-    LightMutexHolder holder(_lock);
+    MutexHolder holder(_lock);
+    resolve_filename(filename, orig_filename);
     Textures::const_iterator ti;
     ti = _textures.find(filename);
     if (ti != _textures.end()) {
@@ -312,7 +298,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   tex->_texture_pool_key = filename;
 
   {
-    LightMutexHolder holder(_lock);
+    MutexHolder holder(_lock);
 
     // Now look again--someone may have just loaded this texture in
     // another thread.
@@ -359,23 +345,18 @@ ns_load_texture(const Filename &orig_filename,
                 int primary_file_num_channels,
                 int alpha_file_channel,
                 bool read_mipmaps, const LoaderOptions &options) {
-  Filename filename(orig_filename);
-  Filename alpha_filename(orig_alpha_filename);
-
   if (!_fake_texture_image.empty()) {
     return ns_load_texture(_fake_texture_image, primary_file_num_channels,
                            read_mipmaps, options);
   }
 
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(filename, get_texture_path()) ||
-    vfs->resolve_filename(filename, get_model_path());
-  
-  vfs->resolve_filename(alpha_filename, get_texture_path()) ||
-    vfs->resolve_filename(alpha_filename, get_model_path());
+  Filename filename;
+  Filename alpha_filename;
 
   {
-    LightMutexHolder holder(_lock);
+    MutexHolder holder(_lock);
+    resolve_filename(filename, orig_filename);
+    resolve_filename(alpha_filename, orig_alpha_filename);
 
     Textures::const_iterator ti;
     ti = _textures.find(filename);
@@ -444,7 +425,7 @@ ns_load_texture(const Filename &orig_filename,
   tex->_texture_pool_key = filename;
 
   {
-    LightMutexHolder holder(_lock);
+    MutexHolder holder(_lock);
 
     // Now look again.
     Textures::const_iterator ti;
@@ -486,15 +467,13 @@ ns_load_texture(const Filename &orig_filename,
 Texture *TexturePool::
 ns_load_3d_texture(const Filename &filename_pattern,
                    bool read_mipmaps, const LoaderOptions &options) {
-  Filename filename(filename_pattern);
-  filename.set_pattern(true);
+  Filename orig_filename(filename_pattern);
+  orig_filename.set_pattern(true);
 
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(filename, get_texture_path()) ||
-    vfs->resolve_filename(filename, get_model_path());
-
+  Filename filename;
   {
-    LightMutexHolder holder(_lock);
+    MutexHolder holder(_lock);
+    resolve_filename(filename, orig_filename);
 
     Textures::const_iterator ti;
     ti = _textures.find(filename);
@@ -549,7 +528,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
   tex->_texture_pool_key = filename;
 
   {
-    LightMutexHolder holder(_lock);
+    MutexHolder holder(_lock);
 
     // Now look again.
     Textures::const_iterator ti;
@@ -580,15 +559,13 @@ ns_load_3d_texture(const Filename &filename_pattern,
 Texture *TexturePool::
 ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps, 
                  const LoaderOptions &options) {
-  Filename filename(filename_pattern);
-  filename.set_pattern(true);
+  Filename orig_filename(filename_pattern);
+  orig_filename.set_pattern(true);
 
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(filename, get_texture_path()) ||
-    vfs->resolve_filename(filename, get_model_path());
-
+  Filename filename;
   {
-    LightMutexHolder holder(_lock);
+    MutexHolder holder(_lock);
+    resolve_filename(filename, orig_filename);
 
     Textures::const_iterator ti;
     ti = _textures.find(filename);
@@ -643,7 +620,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   tex->_texture_pool_key = filename;
 
   {
-    LightMutexHolder holder(_lock);
+    MutexHolder holder(_lock);
 
     // Now look again.
     Textures::const_iterator ti;
@@ -673,7 +650,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_get_normalization_cube_map(int size) {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   if (_normalization_cube_map == (Texture *)NULL) {
     _normalization_cube_map = new Texture("normalization_cube_map");
@@ -693,7 +670,7 @@ ns_get_normalization_cube_map(int size) {
 ////////////////////////////////////////////////////////////////////
 Texture *TexturePool::
 ns_get_alpha_scale_map() {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   if (_alpha_scale_map == (Texture *)NULL) {
     _alpha_scale_map = new Texture("alpha_scale_map");
@@ -711,7 +688,7 @@ ns_get_alpha_scale_map() {
 void TexturePool::
 ns_add_texture(Texture *tex) {
   PT(Texture) keep = tex;
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   if (!tex->_texture_pool_key.empty()) {
     ns_release_texture(tex);
@@ -734,7 +711,7 @@ ns_add_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_release_texture(Texture *tex) {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   if (!tex->_texture_pool_key.empty()) {
     Textures::iterator ti;
@@ -744,6 +721,9 @@ ns_release_texture(Texture *tex) {
     }
     tex->_texture_pool_key = string();
   }
+
+  // Blow away the cache of resolved relative filenames.
+  _relpath_lookup.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -753,7 +733,7 @@ ns_release_texture(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_release_all_textures() {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   Textures::iterator ti;
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
@@ -763,6 +743,9 @@ ns_release_all_textures() {
 
   _textures.clear();
   _normalization_cube_map = NULL;
+
+  // Blow away the cache of resolved relative filenames.
+  _relpath_lookup.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -772,7 +755,7 @@ ns_release_all_textures() {
 ////////////////////////////////////////////////////////////////////
 int TexturePool::
 ns_garbage_collect() {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   int num_released = 0;
   Textures new_set;
@@ -814,7 +797,7 @@ ns_garbage_collect() {
 ////////////////////////////////////////////////////////////////////
 void TexturePool::
 ns_list_contents(ostream &out) const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   int total_size;
   int total_ram_size;
@@ -842,6 +825,35 @@ ns_list_contents(ostream &out) const {
   out << "texture pool ram : " << total_ram_size << "\n";
   out << "texture pool size: " << total_size << "\n";
   out << "texture pool size - texture pool ram: " << total_size - total_ram_size << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::resolve_filename
+//       Access: Private
+//  Description: Searches for the indicated filename along the texture
+//               and model path.  If the filename was previously
+//               searched for, doesn't search again, as an
+//               optimization.  Assumes _lock is held.
+////////////////////////////////////////////////////////////////////
+void TexturePool::
+resolve_filename(Filename &new_filename, const Filename &orig_filename) {
+  if (!_fake_texture_image.empty()) {
+    new_filename = _fake_texture_image;
+    return;
+  }
+
+  RelpathLookup::iterator rpi = _relpath_lookup.find(orig_filename);
+  if (rpi != _relpath_lookup.end()) {
+    new_filename = (*rpi).second;
+    return;
+  }
+
+  new_filename = orig_filename;
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  vfs->resolve_filename(new_filename, get_texture_path()) ||
+    vfs->resolve_filename(new_filename, get_model_path());
+
+  _relpath_lookup[orig_filename] = new_filename;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -985,7 +997,7 @@ pre_load(const Filename &orig_filename, const Filename &orig_alpha_filename,
          bool read_mipmaps, const LoaderOptions &options) {
   PT(Texture) tex;
 
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   FilterRegistry::iterator fi;
   for (fi = _filter_registry.begin();
@@ -1011,7 +1023,7 @@ PT(Texture) TexturePool::
 post_load(Texture *tex) {
   PT(Texture) result = tex;
 
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   FilterRegistry::iterator fi;
   for (fi = _filter_registry.begin();

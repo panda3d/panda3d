@@ -48,6 +48,7 @@ public:
 
   INLINE IIdentityStream &open(BioStreamPtr *source, HTTPChannel *doc,
                                bool has_content_length, size_t content_length);
+  virtual ~IIdentityStream();
 
   virtual bool is_closed();
   virtual void close();

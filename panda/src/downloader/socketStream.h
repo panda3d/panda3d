@@ -20,12 +20,16 @@
 #include "config_express.h" // for collect_tcp
 #include "datagram.h"
 #include "pdeque.h"
+#include "typedReferenceCount.h"
+#include "pointerTo.h"
 
 // At the present, this module is not compiled if OpenSSL is not
 // available, since the only current use for it is to implement
 // OpenSSL-defined constructs (like ISocketStream).
 
 #ifdef HAVE_OPENSSL
+
+class HTTPChannel;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SSReader
@@ -120,6 +124,7 @@ private:
 class EXPCL_PANDAEXPRESS ISocketStream : public istream, public SSReader {
 public:
   INLINE ISocketStream(streambuf *buf);
+  virtual ~ISocketStream();
 
 PUBLISHED:
   enum ReadState {
@@ -132,6 +137,16 @@ PUBLISHED:
   virtual bool is_closed() = 0;
   virtual void close() = 0;
   virtual ReadState get_read_state() = 0;
+
+  void set_hold_ptr(const TypedReferenceCount *ptr);
+
+protected:
+  HTTPChannel *_channel;
+
+private:
+  CPT(TypedReferenceCount) _hold_ptr;
+
+  friend class HTTPChannel;
 };
 
 ////////////////////////////////////////////////////////////////////

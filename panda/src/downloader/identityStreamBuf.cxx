@@ -31,6 +31,7 @@ IdentityStreamBuf::
 IdentityStreamBuf() {
   _has_content_length = true;
   _bytes_remaining = 0;
+  _wanted_nonblocking = false;
   _read_state = ISocketStream::RS_initial;
 
 #ifdef HAVE_IOSTREAM
@@ -67,10 +68,11 @@ IdentityStreamBuf::
 //               from the identity encoding.
 ////////////////////////////////////////////////////////////////////
 void IdentityStreamBuf::
-open_read(BioStreamPtr *source, 
+open_read(BioStreamPtr *source, HTTPChannel *doc,
           bool has_content_length, size_t content_length) {
   _source = source;
   _has_content_length = has_content_length;
+  _wanted_nonblocking = doc->_wanted_nonblocking;
   _bytes_remaining = content_length;
   _read_state = ISocketStream::RS_reading;
 }
@@ -134,6 +136,15 @@ read_chars(char *start, size_t length) {
     // file.
     (*_source)->read(start, length);
     read_count = (*_source)->gcount();
+
+    if (!_wanted_nonblocking) {
+      while (read_count == 0 && !(*_source)->is_closed()) {
+        // Simulate blocking.
+        thread_yield();
+        (*_source)->read(start, length);
+        read_count = (*_source)->gcount();
+      }
+    }
   
     if (read_count == 0) {
       if ((*_source)->is_closed()) {
@@ -144,12 +155,21 @@ read_chars(char *start, size_t length) {
     }
 
   } else {
-    // Extract some of the bytes remaining in the chunk.
+    // Extract some of the remaining bytes, but do not read past the
+    // content_length restriction.
 
     if (_bytes_remaining != 0) {
       length = min(length, _bytes_remaining);
       (*_source)->read(start, length);
       read_count = (*_source)->gcount();
+      if (!_wanted_nonblocking) {
+        while (read_count == 0 && !(*_source)->is_closed()) {
+          // Simulate blocking.
+          thread_yield();
+          (*_source)->read(start, length);
+          read_count = (*_source)->gcount();
+        }
+      }
       nassertr(read_count <= _bytes_remaining, 0);
       _bytes_remaining -= read_count;
   

@@ -195,3 +195,13 @@ scan_directory(vector_string &contents, const Filename &dir) const {
   return pathname.scan_directory(contents);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountSystem::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void VirtualFileMountSystem::
+output(ostream &out) const {
+  out << get_physical_filename();
+}

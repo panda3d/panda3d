@@ -24,6 +24,8 @@
 #include "pointerTo.h"
 #include "socketStream.h"
 
+class HTTPChannel;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : IdentityStreamBuf
 // Description : The streambuf object that implements
@@ -34,7 +36,7 @@ public:
   IdentityStreamBuf();
   virtual ~IdentityStreamBuf();
 
-  void open_read(BioStreamPtr *source,
+  void open_read(BioStreamPtr *source, HTTPChannel *doc,
                  bool has_content_length, size_t content_length);
   void close_read();
 
@@ -50,6 +52,7 @@ private:
   PT(BioStreamPtr) _source;
   bool _has_content_length;
   size_t _bytes_remaining;
+  bool _wanted_nonblocking;
   ISocketStream::ReadState _read_state;
   char *_buffer;
 

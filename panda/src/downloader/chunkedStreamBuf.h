@@ -51,6 +51,7 @@ private:
   PT(BioStreamPtr) _source;
   size_t _chunk_remaining;
   bool _done;
+  bool _wanted_nonblocking;
   string _working_getline;
   ISocketStream::ReadState _read_state;
 

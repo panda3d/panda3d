@@ -80,7 +80,7 @@ yield() {
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   if (manager->is_same_system_thread()) {
     ThreadSimpleImpl *thread = manager->get_current_thread();
-    thread->yield_this();
+    thread->yield_this(true);
   } else {
     manager->system_yield();
   }
@@ -109,7 +109,7 @@ INLINE void ThreadSimpleImpl::
 consider_yield_this() {
   double now = _manager->get_current_time();
   if (now >= _stop_time) {
-    yield_this();
+    yield_this(false);
   }
 }
 

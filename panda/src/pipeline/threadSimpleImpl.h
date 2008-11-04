@@ -81,7 +81,7 @@ public:
   INLINE static void consider_yield();
 
   void sleep_this(double seconds);
-  void yield_this();
+  void yield_this(bool volunteer);
   INLINE void consider_yield_this();
 
   INLINE double get_wake_time() const;

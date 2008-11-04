@@ -21,6 +21,16 @@
 TypeHandle VirtualFile::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::has_file
+//       Access: Published, Virtual
+//  Description: Returns true if this file exists, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+has_file() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFile::is_directory
 //       Access: Published, Virtual
 //  Description: Returns true if this file represents a directory (and
@@ -170,7 +180,7 @@ open_read_file(bool auto_unwrap) const {
 ////////////////////////////////////////////////////////////////////
 off_t VirtualFile::
 get_file_size(istream *stream) const {
-  return 0;
+  return get_file_size();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -226,6 +236,21 @@ close_read_file(istream *stream) const {
     delete stream;
 #endif
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFile::was_read_successful
+//       Access: Public
+//  Description: Call this method after a reading the istream returned
+//               by open_read_file() to completion.  If it returns
+//               true, the file was read completely and without error;
+//               if it returns false, there may have been some errors
+//               or a truncated file read.  This is particularly
+//               likely if the stream is a VirtualFileHTTP.
+////////////////////////////////////////////////////////////////////
+bool VirtualFile::
+was_read_successful() const {
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

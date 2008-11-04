@@ -39,6 +39,7 @@ bool HTTPClient::_ssl_initialized = false;
 // This is created once and never freed.
 X509_STORE *HTTPClient::_x509_store = NULL;
 
+PT(HTTPClient) HTTPClient::_global_ptr;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: trim_blanks
@@ -1078,6 +1079,19 @@ get_header(const URLSpec &url) {
   PT(HTTPChannel) doc = new HTTPChannel(this);
   doc->get_header(url);
   return doc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPClient::get_global_ptr
+//       Access: Published, Static
+//  Description: Returns the default global HTTPClient.
+////////////////////////////////////////////////////////////////////
+HTTPClient *HTTPClient::
+get_global_ptr() {
+  if (_global_ptr == NULL) {
+    _global_ptr = new HTTPClient;
+  }
+  return _global_ptr;
 }
 
 

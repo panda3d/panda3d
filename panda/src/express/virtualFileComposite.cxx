@@ -40,6 +40,16 @@ get_filename() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileComposite::has_file
+//       Access: Published, Virtual
+//  Description: Returns true if this file exists, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileComposite::
+has_file() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileComposite::is_directory
 //       Access: Published, Virtual
 //  Description: Returns true if this file represents a directory (and

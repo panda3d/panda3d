@@ -19,14 +19,9 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE VirtualFileMount::
-VirtualFileMount(VirtualFileSystem *file_system,
-                 const Filename &physical_filename,
-                 const Filename &mount_point,
-                 int mount_flags) :
-  _file_system(file_system),
-  _physical_filename(physical_filename),
-  _mount_point(mount_point),
-  _mount_flags(mount_flags)
+VirtualFileMount() :
+  _file_system(NULL),
+  _mount_flags(0)
 {
 }
 
@@ -41,17 +36,6 @@ get_file_system() const {
   return _file_system;
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileMount::get_physical_filename
-//       Access: Public
-//  Description: Returns the name of the source file on the OS
-//               filesystem of the directory or file that is mounted.
-////////////////////////////////////////////////////////////////////
-INLINE const Filename &VirtualFileMount::
-get_physical_filename() const {
-  return _physical_filename;
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMount::get_mount_point

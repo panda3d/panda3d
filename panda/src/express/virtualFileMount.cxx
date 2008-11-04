@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "virtualFileMount.h"
+#include "virtualFileSimple.h"
 
 TypeHandle VirtualFileMount::_type_handle;
 
@@ -24,6 +25,32 @@ TypeHandle VirtualFileMount::_type_handle;
 ////////////////////////////////////////////////////////////////////
 VirtualFileMount::
 ~VirtualFileMount() {
+  nassertv(_file_system == NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMount::make_virtual_file
+//       Access: Public, Virtual
+//  Description: Constructs and returns a new VirtualFile instance
+//               that corresponds to the indicated filename within
+//               this mount point.  The returned VirtualFile object
+//               does not imply that the given file actually exists;
+//               but if the file does exist, then the handle can be
+//               used to read it.
+////////////////////////////////////////////////////////////////////
+PT(VirtualFile) VirtualFileMount::
+make_virtual_file(const string &local_filename,
+                  const Filename &original_filename, bool implicit_pz_file,
+                  bool) {
+  Filename local(local_filename);
+  if (original_filename.is_text()) {
+    local.set_text();
+  }
+  PT(VirtualFileSimple) file =
+    new VirtualFileSimple(this, local, implicit_pz_file);
+  file->set_original_filename(original_filename);
+
+  return file.p();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -58,7 +85,7 @@ close_read_file(istream *stream) const {
 ////////////////////////////////////////////////////////////////////
 void VirtualFileMount::
 output(ostream &out) const {
-  out << get_physical_filename();
+  out << get_type();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,5 +95,5 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void VirtualFileMount::
 write(ostream &out) const {
-  out << get_physical_filename() << " on /" << get_mount_point() << "\n";
+  out << *this << " on /" << get_mount_point() << "\n";
 }

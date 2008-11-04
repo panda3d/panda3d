@@ -29,7 +29,6 @@
 #include "httpEnum.h"
 #include "urlSpec.h"
 #include "documentSpec.h"
-#include "virtualFile.h"
 #include "bioPtr.h"
 #include "bioStreamPtr.h"
 #include "pmap.h"
@@ -38,6 +37,7 @@
 #include "config_downloader.h"
 #include "filename.h"
 #include "openssl/ssl.h"
+#include "typedReferenceCount.h"
 
 class Ramfile;
 class HTTPClient;
@@ -57,21 +57,12 @@ class HTTPClient;
 //               requested from the same HTTPChannel until the first
 //               document has been fully retrieved.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS HTTPChannel : public VirtualFile {
+class EXPCL_PANDAEXPRESS HTTPChannel : public TypedReferenceCount {
 private:
   HTTPChannel(HTTPClient *client);
 
 public:
   virtual ~HTTPChannel();
-
-  virtual VirtualFileSystem *get_file_system() const;
-  virtual Filename get_filename() const;
-
-  virtual bool is_regular_file() const;
-  virtual istream *open_read_file(bool auto_unwrap) const;
-  void close_read_file(istream *stream) const;
-
-  bool will_close_connection() const;
 
 PUBLISHED:
   // get_status_code() will either return an HTTP-style status code >=
@@ -99,8 +90,8 @@ PUBLISHED:
     SC_ssl_invalid_server_certificate,
     SC_ssl_unexpected_server,
     
-    // These errors are only generated after a download_to_ram() or
-    // download_to_file() call has been issued.
+    // These errors are only generated after a download_to_*() call
+    // been issued.
     SC_download_open_error,
     SC_download_write_error,
     SC_download_invalid_range,
@@ -108,6 +99,7 @@ PUBLISHED:
 
   INLINE bool is_valid() const;
   INLINE bool is_connection_ready() const;
+
   INLINE const URLSpec &get_url() const;
   INLINE const DocumentSpec &get_document_spec() const;
   INLINE HTTPEnum::HTTPVersion get_http_version() const;
@@ -124,6 +116,7 @@ PUBLISHED:
 
   INLINE void set_persistent_connection(bool persistent_connection);
   INLINE bool get_persistent_connection() const;
+  bool will_close_connection() const;
 
   INLINE void set_allow_proxy(bool allow_proxy);
   INLINE bool get_allow_proxy() const;
@@ -138,6 +131,11 @@ PUBLISHED:
   INLINE void set_http_timeout(double timeout_seconds);
   INLINE double get_http_timeout() const;
 
+  INLINE void set_skip_body_size(size_t skip_body_size);
+  INLINE size_t get_skip_body_size() const;
+  INLINE void set_idle_timeout(double idle_timeout);
+  INLINE double get_idle_timeout() const;
+
   INLINE void set_download_throttle(bool download_throttle);
   INLINE bool get_download_throttle() const;
 
@@ -148,7 +146,7 @@ PUBLISHED:
   INLINE double get_max_updates_per_second() const;
 
   INLINE void set_expected_file_size(size_t file_size);
-  virtual off_t get_file_size() const;
+  off_t get_file_size() const;
   INLINE bool is_file_size_known() const;
 
   INLINE size_t get_first_byte_requested() const;
@@ -183,9 +181,12 @@ PUBLISHED:
   bool run();
   INLINE void begin_connect_to(const DocumentSpec &url);
 
-  ISocketStream *read_body();
+  ISocketStream *open_read_body();
+  void close_read_body(istream *stream) const;
+
   BLOCKING bool download_to_file(const Filename &filename, bool subdocument_resumes = true);
   BLOCKING bool download_to_ram(Ramfile *ramfile, bool subdocument_resumes = true);
+  BLOCKING bool download_to_stream(ostream *strm, bool subdocument_resumes = true);
   SocketStream *get_connection();
 
   INLINE size_t get_bytes_downloaded() const;
@@ -194,6 +195,7 @@ PUBLISHED:
 
 public:
   static string downcase(const string &s);
+  void body_stream_destructs(ISocketStream *stream);
 
 private:
   bool reached_done_state();
@@ -220,6 +222,7 @@ private:
 
   bool run_download_to_file();
   bool run_download_to_ram();
+  bool run_download_to_stream();
 
   void begin_request(HTTPEnum::Method method, const DocumentSpec &url, 
                      const string &body, bool nonblocking,
@@ -258,6 +261,7 @@ private:
 
   void reset_download_to();
   void reset_to_new();
+  void reset_body_stream();
   void close_connection();
 
   static bool more_useful_status_code(int a, int b);
@@ -312,6 +316,8 @@ private:
   bool _proxy_tunnel;
   double _connect_timeout;
   double _http_timeout;
+  size_t _skip_body_size;
+  double _idle_timeout;
   bool _blocking_connect;
   bool _download_throttle;
   double _max_bytes_per_second;
@@ -342,12 +348,14 @@ private:
     DD_none,
     DD_file,
     DD_ram,
+    DD_stream,
   };
   DownloadDest _download_dest;
   bool _subdocument_resumes;
   Filename _download_to_filename;
   pofstream _download_to_file;
   Ramfile *_download_to_ramfile;
+  ostream *_download_to_stream;
 
   int _read_index;
 
@@ -406,6 +414,7 @@ private:
   string _current_field_name;
   string _current_field_value;
   ISocketStream *_body_stream;
+  bool _owns_body_stream;
   BIO *_sbio;
   pvector<URLSpec> _redirect_trail;
   int _last_status_code;
@@ -420,9 +429,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    VirtualFile::init_type();
+    TypedReferenceCount::init_type();
     register_type(_type_handle, "HTTPChannel",
-                  VirtualFile::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
 
 private:

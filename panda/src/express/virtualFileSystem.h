@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "virtualFile.h"
+#include "virtualFileMount.h"
 #include "filename.h"
 #include "dSearchPath.h"
 #include "pointerTo.h"
@@ -25,7 +26,6 @@
 #include "pvector.h"
 
 class Multifile;
-class VirtualFileMount;
 class VirtualFileComposite;
 
 ////////////////////////////////////////////////////////////////////
@@ -45,24 +45,29 @@ PUBLISHED:
   ~VirtualFileSystem();
 
   enum MountFlags {
-    MF_owns_pointer   = 0x0001,    // This flag is no longer used.
     MF_read_only      = 0x0002,
   };
 
   BLOCKING bool mount(Multifile *multifile, const string &mount_point, int flags);
   BLOCKING bool mount(const Filename &physical_filename, const string &mount_point, 
                       int flags, const string &password = "");
+  bool mount(VirtualFileMount *mount, const string &mount_point, int flags);
   BLOCKING int unmount(Multifile *multifile);
   BLOCKING int unmount(const Filename &physical_filename);
+  int unmount(VirtualFileMount *mount);
   BLOCKING int unmount_point(const string &mount_point);
   BLOCKING int unmount_all();
+
+  int get_num_mounts() const;
+  VirtualFileMount *get_mount(int n) const;
 
   BLOCKING bool chdir(const string &new_directory);
   BLOCKING const Filename &get_cwd() const;
 
-  BLOCKING PT(VirtualFile) get_file(const Filename &filename) const;
+  BLOCKING PT(VirtualFile) get_file(const Filename &filename, bool status_only = false) const;
   BLOCKING PT(VirtualFile) find_file(const Filename &filename, 
-                                     const DSearchPath &searchpath) const;
+                                     const DSearchPath &searchpath,
+                                     bool status_only = false) const;
   BLOCKING bool resolve_filename(Filename &filename, const DSearchPath &searchpath,
                                  const string &default_extension = string()) const;
   BLOCKING int find_all_files(const Filename &filename, const DSearchPath &searchpath,
@@ -91,13 +96,14 @@ public:
 
 private:
   Filename normalize_mount_point(const string &mount_point) const;
-  bool found_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
-                   VirtualFileMount *mount, const string &local_filename,
-                   const Filename &original_filename, bool implicit_pz_file) const;
+  bool consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
+                      VirtualFileMount *mount, const string &local_filename,
+                      const Filename &original_filename, bool implicit_pz_file,
+                      bool status_only) const;
   static void parse_option(const string &option,
                            int &flags, string &password);
 
-  typedef pvector<VirtualFileMount *> Mounts;
+  typedef pvector<PT(VirtualFileMount) > Mounts;
   Mounts _mounts;
   Filename _cwd;
 

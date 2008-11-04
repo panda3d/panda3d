@@ -58,7 +58,7 @@ private:
   ThreadSimpleManager();
 
 public:
-  void enqueue_ready(ThreadSimpleImpl *thread);
+  void enqueue_ready(ThreadSimpleImpl *thread, bool volunteer);
   void enqueue_sleep(ThreadSimpleImpl *thread, double seconds);
   void enqueue_block(ThreadSimpleImpl *thread, BlockerSimple *blocker);
   bool unblock_one(BlockerSimple *blocker);
@@ -118,6 +118,7 @@ private:
   // FIFO list of ready threads.
   FifoThreads _ready;
   FifoThreads _next_ready;
+  int _num_next_ready_volunteers;
 
   typedef pmap<BlockerSimple *, FifoThreads> Blocked;
   Blocked _blocked;

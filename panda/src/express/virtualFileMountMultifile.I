@@ -19,12 +19,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE VirtualFileMountMultifile::
-VirtualFileMountMultifile(VirtualFileSystem *file_system,
-                          Multifile *multifile,
-                          const Filename &mount_point,
-                          int mount_flags) :
-  VirtualFileMount(file_system, multifile->get_multifile_name(),
-                   mount_point, mount_flags),
+VirtualFileMountMultifile(Multifile *multifile) :
   _multifile(multifile)
 {
 }

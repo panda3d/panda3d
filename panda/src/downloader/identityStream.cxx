@@ -18,6 +18,19 @@
 #ifdef HAVE_OPENSSL
 
 ////////////////////////////////////////////////////////////////////
+//     Function: IIdentityStream::Destructor
+//       Access: Published, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+IIdentityStream::
+~IIdentityStream() {
+  if (_channel != (HTTPChannel *)NULL) {
+    _channel->body_stream_destructs(this);
+    _channel = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: IIdentityStream::is_closed
 //       Access: Public, Virtual
 //  Description: Returns true if the last eof condition was triggered

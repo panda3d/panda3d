@@ -44,6 +44,6 @@ INLINE IIdentityStream &IIdentityStream::
 open(BioStreamPtr *source, HTTPChannel *doc, 
      bool has_content_length, size_t content_length) {
   clear((ios_iostate)0);
-  _buf.open_read(source, has_content_length, content_length);
+  _buf.open_read(source, doc, has_content_length, content_length);
   return *this;
 }

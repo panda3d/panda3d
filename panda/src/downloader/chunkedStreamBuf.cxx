@@ -33,6 +33,7 @@ ChunkedStreamBuf::
 ChunkedStreamBuf() {
   _chunk_remaining = 0;
   _done = true;
+  _wanted_nonblocking = false;
   _read_state = ISocketStream::RS_initial;
 
 #ifdef HAVE_IOSTREAM
@@ -74,6 +75,7 @@ open_read(BioStreamPtr *source, HTTPChannel *doc) {
   nassertv(!_source.is_null());
   _chunk_remaining = 0;
   _done = false;
+  _wanted_nonblocking = doc->_wanted_nonblocking;
   _read_state = ISocketStream::RS_reading;
   _doc = doc;
 
@@ -141,64 +143,87 @@ underflow() {
 ////////////////////////////////////////////////////////////////////
 size_t ChunkedStreamBuf::
 read_chars(char *start, size_t length) {
-  nassertr(!_source.is_null(), 0);
-  if (_done) {
-    return 0;
-  }
-
-  if (_chunk_remaining != 0) {
-    // Extract some of the bytes remaining in the chunk.
-    length = min(length, _chunk_remaining);
-    (*_source)->read(start, length);
-    size_t read_count = (*_source)->gcount();
-    _chunk_remaining -= read_count;
-
-    if (read_count == 0 && (*_source)->is_closed()) {
-      // Whoops, the socket closed while we were downloading.
-      _read_state = ISocketStream::RS_error;
+  while (true) {
+    nassertr(!_source.is_null(), 0);
+    if (_done) {
+      return 0;
     }
-
-    return read_count;
-  }
-
-  // Read the next chunk.
-  string line;
-  bool got_line = http_getline(line);
-  while (got_line && line.empty()) {
-    // Skip blank lines.  There really should be exactly one blank
-    // line, but who's counting?  It's tricky to count and maintain
-    // reentry for nonblocking I/O.
-    got_line = http_getline(line);
-  }
-  if (!got_line) {
-    // EOF (or data unavailable) while trying to read the chunk size.
-    if ((*_source)->is_closed()) {
-      // Whoops, the socket closed while we were downloading.
-      _read_state = ISocketStream::RS_error;
+    
+    if (_chunk_remaining != 0) {
+      // Extract some of the bytes remaining in the chunk.
+      length = min(length, _chunk_remaining);
+      (*_source)->read(start, length);
+      size_t read_count = (*_source)->gcount();
+      if (!_wanted_nonblocking) {
+        while (read_count == 0 && !(*_source)->is_closed()) {
+          // Simulate blocking.
+          thread_yield();
+          (*_source)->read(start, length);
+          read_count = (*_source)->gcount();
+        }
+      }
+      _chunk_remaining -= read_count;
+      
+      if (read_count == 0 && (*_source)->is_closed()) {
+        // Whoops, the socket closed while we were downloading.
+        _read_state = ISocketStream::RS_error;
+      }
+      
+      return read_count;
     }
-    return 0;
-  }
-  size_t chunk_size = (size_t)strtol(line.c_str(), NULL, 16);
-  if (downloader_cat.is_spam()) {
-    downloader_cat.spam()
-      << "Got chunk of size " << chunk_size << " bytes.\n";
+    
+    // Read the next chunk.
+    string line;
+    bool got_line = http_getline(line);
+    while (got_line && line.empty()) {
+      // Skip blank lines.  There really should be exactly one blank
+      // line, but who's counting?  It's tricky to count and maintain
+      // reentry for nonblocking I/O.
+      got_line = http_getline(line);
+    }
+    if (!got_line) {
+      // EOF (or data unavailable) while trying to read the chunk size.
+      if ((*_source)->is_closed()) {
+        // Whoops, the socket closed while we were downloading.
+        _read_state = ISocketStream::RS_error;
+      }
+      
+      if (!_wanted_nonblocking) {
+        // Simulate blocking.
+        thread_yield();
+        continue;  // back to the top.
+      }
+
+      return 0;
+    }
+    size_t chunk_size = (size_t)strtol(line.c_str(), NULL, 16);
+    if (downloader_cat.is_spam()) {
+      downloader_cat.spam()
+        << "Got chunk of size " << chunk_size << " bytes.\n";
+    }
+    
+    if (chunk_size == 0) {
+      // Last chunk; we're done.
+      _done = true;
+      if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
+        _doc->_file_size = _doc->_transfer_file_size;
+        _doc->_got_file_size = true;
+      }
+      _read_state = ISocketStream::RS_complete;
+      return 0;
+    }
+    
+    if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
+      _doc->_transfer_file_size += chunk_size;
+    }
+    
+    _chunk_remaining = chunk_size;
+
+    // Back to the top.
   }
 
-  if (chunk_size == 0) {
-    // Last chunk; we're done.
-    _done = true;
-    _doc->_file_size = _doc->_transfer_file_size;
-    _doc->_got_file_size = true;
-    _read_state = ISocketStream::RS_complete;
-    return 0;
-  }
-
-  if (_doc != (HTTPChannel *)NULL && _read_index == _doc->_read_index) {
-    _doc->_transfer_file_size += chunk_size;
-  }
-
-  _chunk_remaining = chunk_size;
-  return read_chars(start, length);
+  // Never gets here.
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////

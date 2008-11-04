@@ -15,6 +15,8 @@
 #include "dconfig.h"
 #include "config_downloader.h"
 #include "httpChannel.h"
+#include "virtualFileHTTP.h"
+#include "virtualFileMountHTTP.h"
 #include "pandaSystem.h"
 
 
@@ -114,6 +116,23 @@ ConfigVariableDouble http_timeout
           "It starts counting after the TCP connection has been established "
           "(http_connect_timeout, above) and the request has been sent."));
 
+ConfigVariableInt http_skip_body_size
+("http-skip-body-size", 8192,
+ PRC_DESC("This is the maximum number of bytes in a received "
+          "(but unwanted) body that will be skipped past, in "
+          "order to reset to a new request.  "
+          "See HTTPChannel::set_skip_body_size()."));
+
+ConfigVariableDouble http_idle_timeout
+("http-idle-timeout", 5.0,
+ PRC_DESC("This the amount of time, in seconds, in which a "
+          "previously-established connection is allowed to remain open "
+          "and unused.  If a previous connection has remained unused for "
+          "at least this number of seconds, it will be closed and a new "
+          "connection will be opened; otherwise, the same connection "
+          "will be reused for the next request (for a particular "
+          "HTTPChannel)."));
+
 ConfigVariableInt http_max_connect_count
 ("http-max-connect-count", 10,
  PRC_DESC("This is the maximum number of times to try reconnecting to the "
@@ -166,6 +185,8 @@ init_libdownloader() {
 
 #ifdef HAVE_OPENSSL
   HTTPChannel::init_type();
+  VirtualFileHTTP::init_type();
+  VirtualFileMountHTTP::init_type();
 
   // We need to define this here, rather than above, to guarantee that
   // it has been initialized by the time we check it.

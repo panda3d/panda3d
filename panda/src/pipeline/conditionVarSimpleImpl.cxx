@@ -51,7 +51,7 @@ wait(double timeout) {
   // variable semantics, after all).
   ThreadSimpleManager *manager = ThreadSimpleManager::get_global_ptr();
   ThreadSimpleImpl *thread = manager->get_current_thread();
-  manager->enqueue_ready(thread);
+  manager->enqueue_ready(thread, true);
   manager->next_context();
 
   _mutex.acquire();
@@ -69,7 +69,7 @@ do_notify() {
     // There had been a thread waiting on this condition variable.
     // Switch contexts immediately, to make fairness more likely.
     ThreadSimpleImpl *thread = manager->get_current_thread();
-    manager->enqueue_ready(thread);
+    manager->enqueue_ready(thread, false);
     manager->next_context();
   }
 }
@@ -86,7 +86,7 @@ do_notify_all() {
     // There had been a thread waiting on this condition variable.
     // Switch contexts immediately, to make fairness more likely.
     ThreadSimpleImpl *thread = manager->get_current_thread();
-    manager->enqueue_ready(thread);
+    manager->enqueue_ready(thread, false);
     manager->next_context();
   }
 }

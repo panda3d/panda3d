@@ -57,6 +57,16 @@ get_filename() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSimple::has_file
+//       Access: Published, Virtual
+//  Description: Returns true if this file exists, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool VirtualFileSimple::
+has_file() const {
+  return _mount->has_file(_local_filename);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSimple::is_directory
 //       Access: Published, Virtual
 //  Description: Returns true if this file represents a directory (and

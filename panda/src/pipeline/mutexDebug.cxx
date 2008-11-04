@@ -356,11 +356,13 @@ do_release() {
         nassertv(_lock_count > 0);
       }
     } else {
-      
+
+      /*
       if (thread_cat.is_debug()) {
         thread_cat.debug()
           << *current_thread << " releasing " << *this << "\n";
       }
+      */
       _cvar_impl.notify();
     }
   }

@@ -42,6 +42,7 @@ PUBLISHED:
   virtual Filename get_filename() const=0;
   INLINE const Filename &get_original_filename() const;
 
+  virtual bool has_file() const;
   virtual bool is_directory() const;
   virtual bool is_regular_file() const;
 
@@ -54,6 +55,7 @@ PUBLISHED:
   BLOCKING INLINE string read_file(bool auto_unwrap) const;
   BLOCKING virtual istream *open_read_file(bool auto_unwrap) const;
   BLOCKING void close_read_file(istream *stream) const;
+  virtual bool was_read_successful() const;
   BLOCKING virtual off_t get_file_size(istream *stream) const;
   BLOCKING virtual off_t get_file_size() const;
   BLOCKING virtual time_t get_timestamp() const;

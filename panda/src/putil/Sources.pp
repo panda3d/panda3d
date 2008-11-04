@@ -59,8 +59,6 @@
     simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.N string_utils.h \
-    stringStreamBuf.I stringStreamBuf.h \
-    stringStream.I stringStream.h \
     timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
@@ -107,8 +105,6 @@
     simpleHashMap.cxx \
     sparseArray.cxx \
     string_utils.cxx \
-    stringStreamBuf.cxx \
-    stringStream.cxx \
     timedCycle.cxx typedWritable.cxx \
     typedWritableReferenceCount.cxx updateSeq.cxx \
     uniqueIdAllocator.cxx \
@@ -167,8 +163,6 @@
     simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.h \
-    stringStreamBuf.I stringStreamBuf.h \
-    stringStream.I stringStream.h \
     timedCycle.I timedCycle.h typedWritable.I \
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \

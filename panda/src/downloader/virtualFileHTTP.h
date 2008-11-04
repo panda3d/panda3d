@@ -1,5 +1,5 @@
-// Filename: virtualFileSimple.h
-// Created by:  drose (03Aug02)
+// Filename: virtualFileHTTP.h
+// Created by:  drose (31Oct08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,25 +12,30 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef VIRTUALFILESIMPLE_H
-#define VIRTUALFILESIMPLE_H
+#ifndef VIRTUALFILEHTTP_H
+#define VIRTUALFILEHTTP_H
 
 #include "pandabase.h"
 
 #include "virtualFile.h"
+#include "httpChannel.h"
+#include "urlSpec.h"
+
+class VirtualFileMountHTTP;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : VirtualFileSimple
-// Description : A simple file or directory within the
-//               VirtualFileSystem: this maps to exactly one file on
-//               one mount point.  Most directories, and all regular
-//               files, are of this kind.
+//       Class : VirtualFileHTTP
+// Description : This maps a document retrieved from an HTTPClient
+//               into the VirtualFileSystem, allowing models etc. to
+//               be loaded directly from a web page.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS VirtualFileSimple : public VirtualFile {
+class EXPCL_PANDAEXPRESS VirtualFileHTTP : public VirtualFile {
 public:
-  INLINE VirtualFileSimple(VirtualFileMount *mount,
-                           const Filename &local_filename,
-                           bool implicit_pz_file);
+  VirtualFileHTTP(VirtualFileMountHTTP *mount,
+                  const Filename &local_filename,
+                  bool implicit_pz_file,
+                  bool status_only);
+  virtual ~VirtualFileHTTP();
 
   virtual VirtualFileSystem *get_file_system() const;
   virtual Filename get_filename() const;
@@ -41,18 +46,21 @@ public:
   INLINE bool is_implicit_pz_file() const;
 
   virtual istream *open_read_file(bool auto_unwrap) const;
+  virtual bool was_read_successful() const;
   virtual off_t get_file_size(istream *stream) const;
   virtual off_t get_file_size() const;
   virtual time_t get_timestamp() const;
 
-protected:
-  virtual bool scan_local_directory(VirtualFileList *file_list, 
-                                    const ov_set<string> &mount_points) const;
-
 private:
-  VirtualFileMount *_mount;
+  bool fetch_file(ostream *buffer_stream) const;
+  istream *return_file(istream *buffer_stream, bool auto_unwrap) const;
+
+  VirtualFileMountHTTP *_mount;
   Filename _local_filename;
   bool _implicit_pz_file;
+  bool _status_only;
+  URLSpec _url;
+  PT(HTTPChannel) _channel;
 
 public:
   virtual TypeHandle get_type() const {
@@ -68,7 +76,7 @@ PUBLISHED:
 public:
   static void init_type() {
     VirtualFile::init_type();
-    register_type(_type_handle, "VirtualFileSimple",
+    register_type(_type_handle, "VirtualFileHTTP",
                   VirtualFile::get_class_type());
   }
 
@@ -76,6 +84,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-#include "virtualFileSimple.I"
+#include "virtualFileHTTP.I"
 
 #endif

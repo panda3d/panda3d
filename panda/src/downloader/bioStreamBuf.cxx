@@ -184,11 +184,11 @@ underflow() {
         int os_error = errno;
 #endif  // WIN32_VC
 
-        // if not EOF, there may be more data on the way even if BIO
-        // indicates that no retry is necessary
-        //_is_closed = !BIO_should_retry(*_source);
-        //_is_closed = !BIO_should_read(*_source);
-        _is_closed = (BIO_eof(*_source) != 0);
+        // Though BIO_eof() is tempting, it appears there are cases in
+        // which that never returns true, if the socket is closed by
+        // the server.  But BIO_should_retry() *appears* to be
+        // reliable.
+        _is_closed = !BIO_should_retry(*_source);
         if (_is_closed) {
           downloader_cat.info()
             << "Lost connection to "
@@ -214,19 +214,18 @@ underflow() {
         }
         gbump(num_bytes);
         return EOF;
-
       } 
         
-      if (downloader_cat.is_spam()) {
-        downloader_cat.spam()
-          << "read " << read_count << " bytes from " << _source << "\n";
-      }
-
       // Slide what we did read to the top of the buffer.
       nassertr(read_count < (int)num_bytes, EOF);
       size_t delta = (int)num_bytes - read_count;
       memmove(gptr() + delta, gptr(), read_count);
       gbump(delta);
+    }
+
+    if (downloader_cat.is_spam()) {
+      downloader_cat.spam()
+        << "read " << read_count << " bytes from " << _source << "\n";
     }
   }
 
@@ -246,10 +245,6 @@ write_chars(const char *start, size_t length) {
     size_t wrote_so_far = 0;
 
     int write_count = BIO_write(*_source, start, length);
-    if (downloader_cat.is_spam()) {
-      downloader_cat.spam()
-        << "wrote " << write_count << " bytes to " << _source << "\n";
-    }
     thread_consider_yield();
     while (write_count != (int)(length - wrote_so_far)) {
       if (write_count <= 0) {
@@ -295,6 +290,10 @@ write_chars(const char *start, size_t length) {
       } else {
         // wrote some characters.
         wrote_so_far += write_count;
+        if (downloader_cat.is_spam()) {
+          downloader_cat.spam()
+            << "wrote " << write_count << " bytes to " << _source << "\n";
+        }
       }
       
       // Try to write some more.
@@ -304,6 +303,10 @@ write_chars(const char *start, size_t length) {
           << "continued, wrote " << write_count << " bytes.\n";
       }
       thread_consider_yield();
+    }
+    if (downloader_cat.is_spam()) {
+      downloader_cat.spam()
+        << "wrote " << write_count << " bytes to " << _source << "\n";
     }
   }
 

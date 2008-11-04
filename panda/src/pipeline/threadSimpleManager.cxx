@@ -88,12 +88,20 @@ ThreadSimpleManager() :
 //               thread will be executed when its turn comes.  If the
 //               thread is not the currently executing thread, its
 //               _jmp_context should be filled appropriately.
+//
+//               If volunteer is true, the thread is volunteering to
+//               sleep before its timeslice has been used up.  If
+//               volunteer is false, the thread would still be running
+//               if it could.
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
-enqueue_ready(ThreadSimpleImpl *thread) {
+enqueue_ready(ThreadSimpleImpl *thread, bool volunteer) {
   // We actually add it to _next_ready, so that we can tell when we
   // have processed every thread in a given epoch.
   _next_ready.push_back(thread);
+  if (volunteer) {
+    ++_num_next_ready_volunteers;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -501,7 +509,9 @@ choose_next_context() {
     while (_ready.empty()) {
       if (!_next_ready.empty()) {
         // We've finished an epoch.
+        bool all_volunteers = (_num_next_ready_volunteers == (int)_next_ready.size());
         _ready.swap(_next_ready);
+        _num_next_ready_volunteers = 0;
 
         if (new_epoch && !_tick_records.empty()) {
           // Pop the oldest timeslice record off when we finish an
@@ -519,10 +529,12 @@ choose_next_context() {
 
         } else {
           // Otherwise, we're legitimately at the end of an epoch.
-          // Yield, to give some time back to the system.
-
-          // On second thought, this might yield too much.
-          //system_yield();
+          if (all_volunteers) {
+            // All of our non-blocked, non-sleeping threads have
+            // voluntarily yielded.  Therefore, yield the whole
+            // process.
+            system_yield();
+          }
         }
         new_epoch = true;
         
@@ -577,6 +589,10 @@ choose_next_context() {
       _current_thread = chosen_thread;
       break;
     }
+
+    // This thread is not ready to wake up yet.  Put it back for next
+    // epoch.  It doesn't count as a volunteer, though--its timeslice
+    // was used up.
     _next_ready.push_back(chosen_thread);
   }
 

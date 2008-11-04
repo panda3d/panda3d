@@ -149,3 +149,13 @@ scan_directory(vector_string &contents, const Filename &dir) const {
   return _multifile->scan_directory(contents, dir);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountMultifile::output
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void VirtualFileMountMultifile::
+output(ostream &out) const {
+  out << _multifile->get_multifile_name();
+}

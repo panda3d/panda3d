@@ -618,7 +618,7 @@ protected:
   Filename _alpha_filename;
   Filename _fullpath;
   Filename _alpha_fullpath;
-  string _texture_pool_key;
+  Filename _texture_pool_key;
 
   // The number of channels of the primary file we use.  1, 2, 3, or 4.
   int _primary_file_num_channels;

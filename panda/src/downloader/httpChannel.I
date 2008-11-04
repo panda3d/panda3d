@@ -392,6 +392,71 @@ get_http_timeout() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::set_skip_body_size
+//       Access: Published
+//  Description: Specifies the maximum number of bytes in a received
+//               (but unwanted) body that will be skipped past, in
+//               order to reset to a new request.
+//
+//               That is, if this HTTPChannel requests a file via
+//               get_document(), but does not call download_to_ram(),
+//               download_to_file(), or open_read_body(), and instead
+//               immediately requests a new file, then the HTTPChannel
+//               has a choice whether to skip past the unwanted
+//               document, or to close the connection and open a new
+//               one.  If the number of bytes to skip is more than
+//               this threshold, the connection will be closed;
+//               otherwise, the data will simply be read and
+//               discarded.
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+set_skip_body_size(size_t skip_body_size) {
+  _skip_body_size = skip_body_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_skip_body_size
+//       Access: Published
+//  Description: Returns the maximum number of bytes in a received
+//               (but unwanted) body that will be skipped past, in
+//               order to reset to a new request.  See
+//               set_skip_body_size().
+////////////////////////////////////////////////////////////////////
+INLINE size_t HTTPChannel::
+get_skip_body_size() const {
+  return _skip_body_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::set_idle_timeout
+//       Access: Published
+//  Description: Specifies the amount of time, in seconds, in which a
+//               previously-established connection is allowed to
+//               remain open and unused.  If a previous connection has
+//               remained unused for at least this number of seconds,
+//               it will be closed and a new connection will be
+//               opened; otherwise, the same connection will be reused
+//               for the next request (for this particular
+//               HTTPChannel).
+////////////////////////////////////////////////////////////////////
+INLINE void HTTPChannel::
+set_idle_timeout(double idle_timeout) {
+  _idle_timeout = idle_timeout;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_idle_timeout
+//       Access: Published
+//  Description: Returns the amount of time, in seconds, in which an
+//               previously-established connection is allowed to
+//               remain open and unused.  See set_idle_timeout().
+////////////////////////////////////////////////////////////////////
+INLINE double HTTPChannel::
+get_idle_timeout() const {
+  return _idle_timeout;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::set_download_throttle
 //       Access: Published
 //  Description: Specifies whether nonblocking downloads (via

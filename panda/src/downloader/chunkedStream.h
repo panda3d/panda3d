@@ -41,6 +41,7 @@ public:
   INLINE IChunkedStream(BioStreamPtr *source, HTTPChannel *doc);
 
   INLINE IChunkedStream &open(BioStreamPtr *source, HTTPChannel *doc);
+  virtual ~IChunkedStream();
 
   virtual bool is_closed();
   virtual void close();

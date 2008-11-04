@@ -20,7 +20,7 @@
 #include "filename.h"
 #include "config_gobj.h"
 #include "loaderOptions.h"
-#include "lightMutex.h"
+#include "pmutex.h"
 #include "pmap.h"
 
 class TexturePoolFilter;
@@ -65,6 +65,7 @@ PUBLISHED:
   INLINE static void add_texture(Texture *texture);
   INLINE static void release_texture(Texture *texture);
   INLINE static void release_all_textures();
+  INLINE static void rehash();
 
   INLINE static int garbage_collect();
 
@@ -118,6 +119,8 @@ private:
   int ns_garbage_collect();
   void ns_list_contents(ostream &out) const;
 
+  void resolve_filename(Filename &new_filename, const Filename &orig_filename);
+
   void try_load_cache(PT(Texture) &tex, BamCache *cache, 
                       const Filename &filename, PT(BamCacheRecord) &record, 
                       bool &compressed_cache_record,
@@ -136,9 +139,12 @@ private:
 
   static TexturePool *_global_ptr;
 
-  LightMutex _lock;
-  typedef phash_map<string,  PT(Texture), string_hash> Textures;
-  Textures _textures;
+  Mutex _lock;
+  typedef pmap<Filename, PT(Texture)> Textures;
+  Textures _textures;  // indexed by fullpath
+  typedef pmap<Filename, Filename> RelpathLookup;
+  RelpathLookup _relpath_lookup;
+
   string _fake_texture_image;
 
   PT(Texture) _normalization_cube_map;
