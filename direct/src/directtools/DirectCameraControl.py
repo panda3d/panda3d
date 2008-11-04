@@ -45,10 +45,10 @@ class DirectCameraControl(DirectObject):
             ]
         self.keyEvents = [
             ['c', self.centerCamIn, 0.5],
-            # ['f', self.fitOnWidget],                  # Note: This function doesn't work as intended
+            ['f', self.fitOnWidget],                  # Note: This function doesn't work as intended
             ['h', self.homeCam],
             ['shift-v', self.toggleMarkerVis],          
-            # ['m', self.moveToFit],                      # Note: This function doesn't work as intended; the object dissappears and screen flashes
+            ['m', self.moveToFit],                      # Note: This function doesn't work as intended; the object dissappears and screen flashes
             ['n', self.pickNextCOA],
             ['u', self.orbitUprightCam],
             ['shift-u', self.uprightCam],
