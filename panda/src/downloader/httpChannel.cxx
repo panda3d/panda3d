@@ -1118,6 +1118,13 @@ run_http_proxy_request_sent() {
     return true;
   }
 
+  // Skip unexpected blank lines.  We're just being generous here.
+  while (line.empty()) {
+    if (!server_getline_failsafe(line)) {
+      return true;
+    }
+  }
+
   if (!parse_http_response(line)) {
     return false;
   }
@@ -1702,6 +1709,13 @@ run_request_sent() {
   string line;
   if (!server_getline_failsafe(line)) {
     return true;
+  }
+
+  // Skip unexpected blank lines.  We're just being generous here.
+  while (line.empty()) {
+    if (!server_getline_failsafe(line)) {
+      return true;
+    }
   }
 
   if (!parse_http_response(line)) {
