@@ -1011,6 +1011,11 @@ if (sys.platform != "win32"):
     confautoprc = confautoprc.replace("aux-display pandadx8","")
     confautoprc = confautoprc.replace("aux-display pandadx7","")
 
+if (sys.platform != "win32" and sys.platform != "darwin"):
+    # OpenAL is not yet reliable on Linux.
+    confautoprc = confautoprc.replace("p3openal","p3fmod")
+    confautoprc = confautoprc.replace("OpenAL","FMOD")
+
 ConditionalWriteFile("built/etc/Config.prc", configprc)
 ConditionalWriteFile("built/etc/Confauto.prc", confautoprc)
 
