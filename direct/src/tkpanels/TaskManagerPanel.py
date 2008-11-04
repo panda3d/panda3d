@@ -94,7 +94,7 @@ class TaskManagerWidget(DirectObject):
         self.removeMatchingButton.grid(row = 0, column = 1, sticky = EW)
 
         self.taskMgrVerbose = IntVar()
-        self.taskMgrVerbose.set(1)
+        self.taskMgrVerbose.set(0)
         self.update = Button(
             controlsFrame,
             text = 'Update',
