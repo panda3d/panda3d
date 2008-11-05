@@ -120,6 +120,7 @@ set_table(const CPTA_float &table) {
   if (table.size() > 1 && (int)table.size() < num_frames) {
     // The new table has an invalid number of frames--it doesn't match
     // the bundle's requirement.
+    nassertv(false);
     return;
   }
 

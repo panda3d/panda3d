@@ -33,7 +33,7 @@ protected:
   CharacterSlider();
   CharacterSlider(const CharacterSlider &copy);
 
-public:
+PUBLISHED:
   CharacterSlider(PartGroup *parent, const string &name);
   virtual ~CharacterSlider();
 

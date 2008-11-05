@@ -57,11 +57,10 @@ protected:
   // The copy constructor is protected; use make_copy() or copy_subgraph().
   PartBundle(const PartBundle &copy);
 
-public:
+PUBLISHED:
   PartBundle(const string &name = "");
   virtual PartGroup *make_copy() const;
 
-PUBLISHED:
   INLINE CPT(AnimPreloadTable) get_anim_preload() const;
   INLINE PT(AnimPreloadTable) modify_anim_preload();
   INLINE void set_anim_preload(AnimPreloadTable *table);

@@ -55,7 +55,7 @@
     pbitops.I pbitops.h \
     portalMask.h \
     pta_double.h \
-    pta_float.h pta_int.h \
+    pta_int.h \
     simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.N string_utils.h \
@@ -63,7 +63,7 @@
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     uniqueIdAllocator.h \
-    vector_double.h vector_float.h vector_typedWritable.h \
+    vector_double.h vector_typedWritable.h \
     vector_ushort.h vector_writable.h \
     writableConfigurable.h \
     writableParam.I writableParam.h 
@@ -100,7 +100,7 @@
     nameUniquifier.cxx \
     nodeCachedReferenceCount.cxx \
     pbitops.cxx \
-    pta_double.cxx pta_float.cxx \
+    pta_double.cxx \
     pta_int.cxx pta_ushort.cxx \
     simpleHashMap.cxx \
     sparseArray.cxx \
@@ -108,7 +108,7 @@
     timedCycle.cxx typedWritable.cxx \
     typedWritableReferenceCount.cxx updateSeq.cxx \
     uniqueIdAllocator.cxx \
-    vector_double.cxx vector_float.cxx \
+    vector_double.cxx \
     vector_typedWritable.cxx \
     vector_ushort.cxx vector_writable.cxx \
     writableConfigurable.cxx writableParam.cxx 
@@ -159,7 +159,7 @@
     portalMask.h \
     pbitops.I pbitops.h \
     pta_double.h \
-    pta_float.h pta_int.h pta_ushort.h \
+    pta_int.h pta_ushort.h \
     simpleHashMap.I simpleHashMap.h \
     sparseArray.I sparseArray.h \
     string_utils.I string_utils.h \
@@ -167,7 +167,7 @@
     typedWritable.h typedWritableReferenceCount.I \
     typedWritableReferenceCount.h updateSeq.I updateSeq.h \
     uniqueIdAllocator.h \
-    vector_double.h vector_float.h vector_typedWritable.h \
+    vector_double.h vector_typedWritable.h \
     vector_ushort.h vector_writable.h \
     writableConfigurable.h writableParam.I \
     writableParam.h

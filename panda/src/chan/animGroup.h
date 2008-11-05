@@ -38,19 +38,17 @@ protected:
   AnimGroup(const string &name = "");
   AnimGroup(AnimGroup *parent, const AnimGroup &copy);
 
-public:
+PUBLISHED:
   // This is the normal AnimGroup constructor.
   AnimGroup(AnimGroup *parent, const string &name);
   virtual ~AnimGroup();
 
-PUBLISHED:
   int get_num_children() const;
   AnimGroup *get_child(int n) const;
   AnimGroup *find_child(const string &name) const;
 
 public:
   virtual TypeHandle get_value_type() const;
-
   void sort_descendants();
 
 PUBLISHED:

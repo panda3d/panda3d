@@ -1,4 +1,4 @@
-// Filename: pta_float.h
+// Filename: vector_float.h
 // Created by:  drose (10May00)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,30 +12,28 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PTA_FLOAT_H
-#define PTA_FLOAT_H
+#ifndef VECTOR_FLOAT_H
+#define VECTOR_FLOAT_H
 
 #include "pandabase.h"
 
-#include "pointerToArray.h"
-#include "vector_float.h"
+#include "pvector.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PTA_float
-// Description : A pta of floats.  This class is defined once here,
+//       Class : vector_float
+// Description : A vector of floats.  This class is defined once here,
 //               and exported to PANDA.DLL; other packages that want
-//               to use a pta of this type (whether they need to
+//               to use a vector of this type (whether they need to
 //               export it or not) should include this header file,
-//               rather than defining the pta again.
+//               rather than defining the vector again.
 ////////////////////////////////////////////////////////////////////
 
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, RefCountObj<vector_float>);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToBase<RefCountObj<vector_float> >);
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, PointerToArray<float>)
-EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL, ConstPointerToArray<float>)
+#define EXPCL EXPCL_PANDAEXPRESS
+#define EXPTP EXPTP_PANDAEXPRESS
+#define TYPE float
+#define NAME vector_float
 
-typedef PointerToArray<float> PTA_float;
-typedef ConstPointerToArray<float> CPTA_float;
+#include "vector_src.h"
 
 // Tell GCC that we'll take care of the instantiation explicitly here.
 #ifdef __GNUC__

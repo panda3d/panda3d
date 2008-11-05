@@ -57,12 +57,12 @@ public:
 protected:
   // The default constructor is protected: don't try to create a
   // PartGroup without a parent.  To create a PartGroup hierarchy, you
-  // must first create a PartBundle, and use that to create any
+  // must first create a PartBundle, and use that as the parent of any
   // subsequent children.
   INLINE PartGroup(const string &name = "");
   INLINE PartGroup(const PartGroup &copy);
 
-public:
+PUBLISHED:
   // This is the normal PartGroup constructor.
   PartGroup(PartGroup *parent, const string &name);
   virtual ~PartGroup();
@@ -70,7 +70,6 @@ public:
   virtual PartGroup *make_copy() const;
   PartGroup *copy_subgraph() const;
 
-PUBLISHED:
   int get_num_children() const;
   PartGroup *get_child(int n) const;
   PartGroup *find_child(const string &name) const;

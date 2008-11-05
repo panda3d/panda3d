@@ -14,6 +14,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelScalarTable::get_table
+//       Access: Public
+//  Description: Returns a pointer to the table's data,
+//               if it exists, or NULL if it does not.
+////////////////////////////////////////////////////////////////////
+INLINE CPTA_float AnimChannelScalarTable::
+get_table() const {
+  return _table;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AnimChannelScalarTable::has_table
 //       Access: Published
 //  Description: Returns true if the data table has been assigned.

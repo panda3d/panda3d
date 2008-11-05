@@ -34,12 +34,13 @@ protected:
   CharacterJoint();
   CharacterJoint(const CharacterJoint &copy);
 
-public:
+PUBLISHED:
   CharacterJoint(Character *character,
                  PartBundle *root, PartGroup *parent, const string &name,
                  const LMatrix4f &initial_value);
   virtual ~CharacterJoint();
 
+public:
   virtual PartGroup *make_copy() const;
 
   virtual bool update_internals(PartBundle *root, PartGroup *parent, 

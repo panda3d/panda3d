@@ -43,7 +43,7 @@
     pointerToVoid.I pointerToVoid.h \
     profileTimer.I profileTimer.h \
     pStatCollectorForwardBase.h \
-    pta_uchar.h \
+    pta_uchar.h pta_float.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
     stringDecoder.h stringDecoder.I \
@@ -54,7 +54,7 @@
     trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
     unicodeLatinMap.h \
-    vector_uchar.h \
+    vector_uchar.h vector_float.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \
     virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
     virtualFileMount.I virtualFileMountMultifile.h \
@@ -93,7 +93,7 @@
     pointerToVoid.cxx \
     profileTimer.cxx \
     pStatCollectorForwardBase.cxx \
-    pta_uchar.cxx \
+    pta_uchar.cxx pta_float.cxx \
     ramfile.cxx \
     referenceCount.cxx \
     stringDecoder.cxx \
@@ -104,7 +104,7 @@
     trueClock.cxx \
     typedReferenceCount.cxx \
     unicodeLatinMap.cxx \
-    vector_uchar.cxx \
+    vector_uchar.cxx vector_float.cxx \
     virtualFileComposite.cxx virtualFile.cxx virtualFileList.cxx \
     virtualFileMount.cxx \
     virtualFileMountMultifile.cxx virtualFileMountSystem.cxx \
@@ -151,7 +151,7 @@
     pointerToVoid.I pointerToVoid.h \
     profileTimer.I profileTimer.h \
     pStatCollectorForwardBase.h \
-    pta_uchar.h \
+    pta_uchar.h pta_float.h \
     ramfile.I ramfile.h \
     referenceCount.I referenceCount.h \
     stringDecoder.h stringDecoder.I \
@@ -162,7 +162,7 @@
     trueClock.I trueClock.h \
     typedReferenceCount.I typedReferenceCount.h typedef.h \
     unicodeLatinMap.h \
-    vector_uchar.h \
+    vector_uchar.h vector_float.h \
     virtualFileComposite.h virtualFileComposite.I virtualFile.h \
     virtualFile.I virtualFileList.I virtualFileList.h virtualFileMount.h \
     virtualFileMount.I virtualFileMountMultifile.h \

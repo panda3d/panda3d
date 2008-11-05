@@ -40,9 +40,10 @@ public:
                            int this_frame, double this_frac);
   virtual void get_value(int frame, float &value);
 
-  void set_table(const CPTA_float &table);
-
 PUBLISHED:
+  void set_table(const CPTA_float &table);
+  INLINE CPTA_float get_table() const;
+
   INLINE bool has_table() const;
   INLINE void clear_table();
 

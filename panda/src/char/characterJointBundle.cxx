@@ -23,7 +23,9 @@ TypeHandle CharacterJointBundle::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterJointBundle::Constructor
 //       Access: Public
-//  Description:
+//  Description: Normally, there is no need to create a
+//               CharacterJointBundle directly.  The Character node
+//               will automatically create one for itself.
 ////////////////////////////////////////////////////////////////////
 CharacterJointBundle::
 CharacterJointBundle(const string &name) : PartBundle(name) {

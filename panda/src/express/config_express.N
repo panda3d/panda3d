@@ -45,6 +45,10 @@ forcetype iostream
 
 forcetype PointerToArray<unsigned char>
 forcetype ConstPointerToArray<unsigned char>
-
 renametype PointerToArray<unsigned char> PTAUchar
 renametype ConstPointerToArray<unsigned char> CPTAUchar
+
+forcetype PointerToArray<float>
+forcetype ConstPointerToArray<float>
+renametype PointerToArray<float> PTAFloat
+renametype ConstPointerToArray<float> CPTAFloat

@@ -31,7 +31,7 @@
 //               make it easy to store PartBundles in the scene graph.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_CHAN PartBundleNode : public PandaNode {
-public:
+PUBLISHED:
   INLINE PartBundleNode(const string &name, PartBundle *bundle);
 
 protected:

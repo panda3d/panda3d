@@ -42,10 +42,11 @@ class EXPCL_PANDA_CHAR Character : public PartBundleNode {
 protected:
   Character(const Character &copy, bool copy_bundles);
 
-public:
+PUBLISHED:
   Character(const string &name);
   virtual ~Character();
 
+public:
   virtual PandaNode *make_copy() const;
   virtual PandaNode *dupe_for_flatten() const;
 
@@ -163,8 +164,6 @@ public:
 
 private:
   static TypeHandle _type_handle;
-
-  friend class CharacterMaker;
 };
 
 #include "character.I"

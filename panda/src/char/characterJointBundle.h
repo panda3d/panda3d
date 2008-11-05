@@ -32,7 +32,7 @@ class EXPCL_PANDA_CHAR CharacterJointBundle : public PartBundle {
 protected:
   INLINE CharacterJointBundle(const CharacterJointBundle &copy);
 
-public:
+PUBLISHED:
   CharacterJointBundle(const string &name = "");
   virtual ~CharacterJointBundle();
 

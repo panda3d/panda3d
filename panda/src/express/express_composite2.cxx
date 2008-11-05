@@ -1,4 +1,5 @@
 #include "pta_uchar.cxx"
+#include "pta_float.cxx"
 #include "ramfile.cxx"
 #include "referenceCount.cxx"
 #include "stringDecoder.cxx"
@@ -11,6 +12,7 @@
 #include "typedReferenceCount.cxx"
 #include "unicodeLatinMap.cxx"
 #include "vector_uchar.cxx"
+#include "vector_float.cxx"
 #include "virtualFile.cxx"
 #include "virtualFileComposite.cxx"
 #include "virtualFileList.cxx"

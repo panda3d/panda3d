@@ -36,11 +36,11 @@ protected:
   AnimChannelMatrixXfmTable();
   AnimChannelMatrixXfmTable(AnimGroup *parent, const AnimChannelMatrixXfmTable &copy);
 
-public:
+PUBLISHED:
   AnimChannelMatrixXfmTable(AnimGroup *parent, const string &name);
   virtual ~AnimChannelMatrixXfmTable();
   
-
+public:
   virtual bool has_changed(int last_frame, double last_frac, 
                            int this_frame, double this_frac);
   virtual void get_value(int frame, LMatrix4f &mat);
@@ -52,12 +52,12 @@ public:
   virtual void get_pos(int frame, LVecBase3f &pos);
   virtual void get_shear(int frame, LVecBase3f &shear);
 
+PUBLISHED:
   static INLINE bool is_valid_id(char table_id);
 
   void set_table(char table_id, const CPTA_float &table);
   INLINE CPTA_float get_table(char table_id) const;
 
-PUBLISHED:
   void clear_all_tables();
   INLINE bool has_table(char table_id) const;
   INLINE void clear_table(char table_id);
