@@ -76,8 +76,8 @@ public:
     };
     
     // formatting using "C" strftime
-    std::string Format(char * pFormat) const;
-    std::string FormatGmt(char * pFormat) const;
+    std::string Format(const char * pFormat) const;
+    std::string FormatGmt(const char * pFormat) const;
     const timeval & GetTval()
     {
         return _my_time;
@@ -228,7 +228,7 @@ inline struct tm* Time_Clock::GetLocalTm(struct tm* ptm) const
 // Return type  : std::string
 // Argument         : char * pFormat
 //////////////////////////////////////////////////////////
-inline std::string Time_Clock::Format(char * pFormat) const
+inline std::string Time_Clock::Format(const char * pFormat) const
 {
     
     char szBuffer[maxTimeBufferSize];
@@ -276,7 +276,7 @@ inline std::string Time_Clock::Format(char * pFormat) const
 // Return type  : inline std::string
 // Argument         : char * pFormat
 //////////////////////////////////////////////////////////////
-inline std::string Time_Clock::FormatGmt(char * pFormat) const
+inline std::string Time_Clock::FormatGmt(const char * pFormat) const
 {
     
     char szBuffer[maxTimeBufferSize];
