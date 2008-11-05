@@ -55,12 +55,13 @@ class Actor(DirectObject, NodePath):
         There is a different AnimDef for each different part or
         sub-part, times each different animation in the AnimDict. """
         
-        def __init__(self, filename):
+        def __init__(self, filename = None, animBundle = None):
             self.filename = filename
+            self.animBundle = None
             self.animControl = None
 
         def makeCopy(self):
-            return Actor.AnimDef(self.filename)
+            return Actor.AnimDef(self.filename, self.animBundle)
 
         def __repr__(self):
             return 'Actor.AnimDef(%s)' % (repr(self.filename))
@@ -1793,10 +1794,7 @@ class Actor(DirectObject, NodePath):
                     animControl = acc.getAnim(i)
                     animName = acc.getAnimName(i)
 
-                    # Now we've already bound the animation, but we
-                    # have no associated filename.  So store the
-                    # animControl, but put None in for the filename.
-                    animDef = Actor.AnimDef(None)
+                    animDef = Actor.AnimDef()
                     animDef.animControl = animControl
                     self.__animControlDict[lodName][partName][animName] = animDef
 
@@ -1942,12 +1940,25 @@ class Actor(DirectObject, NodePath):
         for animName, filename in anims.items():
             # make sure this lod is in anim control dict
             for lName in lodNames:
-                # store the file path only; we will bind it (and produce
-                # an AnimControl) when it is played
-                if not firstLoad:
-                    self.__animControlDict[lName][partName][animName].filename = filename
+                if firstLoad:
+                    self.__animControlDict[lName][partName][animName] = Actor.AnimDef()
+
+                if isinstance(filename, NodePath):
+                    # We were given a pre-load anim bundle, not a filename.
+                    assert not filename.isEmpty()
+                    if filename.node().isOfType(AnimBundleNode.getClassType()):
+                        animBundleNP = filename
+                    else:
+                        animBundleNP = filename.find('**/+AnimBundleNode')
+                    assert not animBundleNP.isEmpty()
+                    self.__animControlDict[lName][partName][animName].animBundle = animBundleNP.node().getBundle()
+
                 else:
-                    self.__animControlDict[lName][partName][animName] = Actor.AnimDef(filename)
+                    # We were given a filename that must be loaded.
+                    # Store the filename only; we will load and bind
+                    # it (and produce an AnimControl) when it is
+                    # played.
+                    self.__animControlDict[lName][partName][animName].filename = filename
 
     def initAnimsOnAllLODs(self,partNames):
         if self.mergeLODBundles:
@@ -2143,12 +2154,17 @@ class Actor(DirectObject, NodePath):
         else:
             bundle = self.__partBundleDict[lodName][subpartDef.truePartName].getBundle()
 
-        # Load and bind the anim.  This might be an asynchronous
-        # operation that will complete in the background, but if so it
-        # will still return a usable AnimControl.
-        animControl = bundle.loadBindAnim(
-            loader.loader, Filename(anim.filename), -1,
-            subpartDef.subset, allowAsyncBind and self.allowAsyncBind)
+        if anim.animBundle:
+            # We already have a bundle; just bind it.
+            animControl = bundle.bindAnim(anim.animBundle, -1, subpartDef.subset)
+
+        else:
+            # Load and bind the anim.  This might be an asynchronous
+            # operation that will complete in the background, but if so it
+            # will still return a usable AnimControl.
+            animControl = bundle.loadBindAnim(
+                loader.loader, Filename(anim.filename), -1,
+                subpartDef.subset, allowAsyncBind and self.allowAsyncBind)
 
         if not animControl:
             # Couldn't bind.  (This implies the binding operation was
