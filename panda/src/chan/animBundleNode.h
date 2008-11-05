@@ -25,11 +25,11 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : AnimBundleNode
 // Description : This is a node that contains a pointer to an
-//               AnimBundle.  Like AnimBundleNode, it exists solely to
+//               AnimBundle.  Like PartBundleNode, it exists solely to
 //               make it easy to store AnimBundles in the scene graph.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_CHAN AnimBundleNode : public PandaNode {
-public:
+PUBLISHED:
   INLINE AnimBundleNode(const string &name, AnimBundle *bundle);
 
 protected:

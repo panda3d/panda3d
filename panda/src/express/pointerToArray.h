@@ -245,6 +245,8 @@ public:
   // exportable interface here.
 #ifdef CPPPARSER
 PUBLISHED:
+  INLINE ConstPointerToArray(const PointerToArray<Element> &copy);
+  INLINE ConstPointerToArray(const ConstPointerToArray<Element> &copy);
   typedef TYPENAME pvector<Element>::size_type size_type;
   INLINE size_type size() const;
   INLINE const Element &get_element(size_type n) const;

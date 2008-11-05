@@ -30,7 +30,7 @@
 //               contained by this entry.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG EggCoordinateSystem : public EggNode {
-public:
+PUBLISHED:
   INLINE EggCoordinateSystem(CoordinateSystem value = CS_default);
   INLINE EggCoordinateSystem(const EggCoordinateSystem &copy);
 
