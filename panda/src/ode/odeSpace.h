@@ -26,6 +26,11 @@
 
 #include "ode_includes.h"
 
+#ifdef HAVE_PYTHON
+  #include "py_panda.h"
+  #include "Python.h"
+#endif
+
 class OdeGeom;
 class OdeTriMeshGeom;
 class OdeSimpleSpace;
@@ -85,11 +90,15 @@ PUBLISHED:
   OdeHashSpace convert_to_hash_space() const;
   OdeQuadTreeSpace convert_to_quad_tree_space() const;
   
-  int autoCollide();
-  static void autoCallback(void*, dGeomID, dGeomID);
+  int auto_collide();
+  static void auto_callback(void*, dGeomID, dGeomID);
+#ifdef HAVE_PYTHON
+  int collide(PyObject* arg, PyObject* near_callback);
+  static void near_callback(void*, dGeomID, dGeomID);
+#endif
   static double get_contact_data(int data_index);
   int get_contact_id(int data_index, int first = 0);
-  int set_collide_id( int collide_id, dGeomID id);
+  int set_collide_id(int collide_id, dGeomID id);
   int set_collide_id(OdeGeom& geom, int collide_id);
   void set_surface_type( int surface_type, dGeomID id);
   void set_surface_type(OdeGeom& geom, int surface_type);
@@ -104,6 +113,9 @@ public:
   static OdeWorld* _collide_world;
   static OdeSpace* _collide_space;
   static dJointGroupID _collide_joint_group;
+#ifdef HAVE_PYTHON
+  static PyObject* _python_callback;
+#endif
   static int contactCount;
 
   static double contact_data[192]; // 64 times three

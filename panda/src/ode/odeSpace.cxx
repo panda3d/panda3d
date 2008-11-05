@@ -15,6 +15,13 @@
 #include "config_ode.h"
 #include "odeSpace.h"
 
+#ifdef HAVE_PYTHON
+  #include "py_panda.h"
+  #include "typedReferenceCount.h"
+  #ifndef CPPPARSER
+    extern EXPCL_PANDAODE Dtool_PyTypedObject Dtool_OdeGeom;
+  #endif
+#endif
 
 TypeHandle OdeSpace::_type_handle;
 // this data is used in auto_collide
@@ -25,6 +32,9 @@ dJointGroupID OdeSpace::_collide_joint_group;
 int OdeSpace::contactCount = 0;
 double OdeSpace::contact_data[192];
 int OdeSpace::contact_ids[128];
+#ifdef HAVE_PYTHON
+PyObject* OdeSpace::_python_callback = NULL;
+#endif
 
 OdeSpace::
 OdeSpace(dSpaceID id) : 
@@ -103,7 +113,7 @@ set_auto_collide_joint_group(OdeJointGroup &joint_group)
 }
 
 int OdeSpace::
-autoCollide()
+auto_collide()
 {
     if (my_world == NULL) {
       odespace_cat.error() << "No collide world has been set!\n";
@@ -112,7 +122,7 @@ autoCollide()
       OdeSpace::contactCount = 0;
       _collide_space = this;
       _collide_world = my_world;
-      dSpaceCollide(_id, this, &autoCallback);
+      dSpaceCollide(_id, this, &auto_callback);
       return OdeSpace::contactCount;
     }
 }
@@ -144,11 +154,8 @@ get_contact_id(int data_index, int first)
     }
 }
 
-
-
-
 void OdeSpace::
-autoCallback(void *data, dGeomID o1, dGeomID o2)
+auto_callback(void *data, dGeomID o1, dGeomID o2)
 // uses data stored on the world to resolve collisions so you don't have to use near_callbacks in python
 {
     int i;
@@ -209,6 +216,37 @@ autoCallback(void *data, dGeomID o1, dGeomID o2)
     }
 
 }
+
+#ifdef HAVE_PYTHON
+int OdeSpace::
+collide(PyObject* arg, PyObject* callback) {
+    nassertr(callback != NULL, -1);
+    if (!PyCallable_Check(callback)) {
+        PyErr_Format(PyExc_TypeError, "'%s' object is not callable", callback->ob_type->tp_name);
+        return -1;
+    } else {
+        OdeSpace::_python_callback = (PyObject*) callback;
+        Py_XINCREF(OdeSpace::_python_callback);
+        dSpaceCollide(_id, (void*) arg, &near_callback);
+        Py_XDECREF(OdeSpace::_python_callback);
+        return 0;
+    }
+}
+
+void OdeSpace::
+near_callback(void *data, dGeomID o1, dGeomID o2) {
+    odespace_cat.spam() << "near_callback called, data: " << data << ", dGeomID1: " << o1 << ", dGeomID2: " << o2 << "\n";
+    OdeGeom g1 (o1);
+    OdeGeom g2 (o2);
+    PyObject* p1 = DTool_CreatePyInstanceTyped(&g1, Dtool_OdeGeom, true, false, g1.get_type_index());
+    PyObject* p2 = DTool_CreatePyInstanceTyped(&g2, Dtool_OdeGeom, true, false, g2.get_type_index());
+    PyObject* result = PyEval_CallFunction(_python_callback, "OOO", (PyObject*) data, p1, p2);
+    if (!result) {
+        odespace_cat.error() << "An error occurred while calling python function!\n";
+        PyErr_Print();
+    }
+}
+#endif
 
 OdeSimpleSpace OdeSpace::
 convert_to_simple_space() const {
