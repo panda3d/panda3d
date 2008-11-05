@@ -119,6 +119,10 @@ do_task() {
     // Just return these results through.
     return result;
   }
+
+  // Shouldn't get here.
+  nassertr(false, DS_exit);
+  return DS_exit;
 }
 
 ////////////////////////////////////////////////////////////////////
