@@ -115,11 +115,14 @@ skip_bytes(size_t size) {
 //     Function: StreamReader::extract_bytes
 //       Access: Published
 //  Description: Extracts the indicated number of bytes in the
-//               stream and returns them as a string.
+//               stream and returns them as a string.  Returns empty
+//               string at end-of-file.
 ////////////////////////////////////////////////////////////////////
 string StreamReader::
 extract_bytes(size_t size) {
-  nassertr(!_in->eof() && !_in->fail(), string());
+  if (_in->eof() || _in->fail()) {
+    return string();
+  }
 
   char *buffer = (char *)alloca(size);
   _in->read(buffer, size);

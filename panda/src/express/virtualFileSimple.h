@@ -32,6 +32,7 @@ public:
                            const Filename &local_filename,
                            bool implicit_pz_file);
 
+PUBLISHED:
   virtual VirtualFileSystem *get_file_system() const;
   INLINE VirtualFileMount *get_mount() const;
   virtual Filename get_filename() const;
