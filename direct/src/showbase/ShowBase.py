@@ -2132,7 +2132,7 @@ class ShowBase(DirectObject.DirectObject):
         t.numFrames = int(duration * fps)
         t.source = source
         t.outputString = namePrefix + '_%0' + `sd` + 'd.' + format
-        t.uponDeath = lambda state: globalClock.setMode(ClockObject.MNormal)
+        t.setUponDeath(lambda state: globalClock.setMode(ClockObject.MNormal))
 
     def _movieTask(self, state):
         if state.frameIndex != 0:

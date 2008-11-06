@@ -352,7 +352,7 @@
         lerpTask.functorFunc = functorFunc
         lerpTask.duration = duration
         lerpTask.blendType = LerpBlendHelpers.getBlend(blendType)
-        lerpTask.uponDeath = lerpUponDeath
+        lerpTask.setUponDeath(lerpUponDeath)
 
         if (taskName == None):
             # don't spawn a task, return one instead

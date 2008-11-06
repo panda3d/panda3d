@@ -214,7 +214,7 @@ class DirectJoybox(DirectObject):
         # Update display
         self.readout.setText(modeText)
         t = taskMgr.doMethodLater(3.0, hideText, self.name + '-showMode')
-        t.uponDeath = hideText
+        t.setUponDeath(hideText)
 
     def acceptUprightCameraEvent(self, button = L_UPPER):
         self.accept(self.getEventName(button),

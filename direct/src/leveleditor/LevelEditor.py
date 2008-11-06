@@ -2499,7 +2499,7 @@ class LevelEditor(NodePath, DirectObject):
                 t.deltaPos = deltaPos
                 t.deltaHpr = deltaHpr
                 t.selectedNode = selectedNode
-                t.uponDeath = self.autoPositionCleanup
+                t.setUponDeath(self.autoPositionCleanup)
             else:
                 base.direct.grid.setPosHpr(selectedNode, deltaPos, deltaHpr)
 
