@@ -1104,6 +1104,7 @@ CopyAllHeaders('panda/src/pstatclient')
 CopyAllHeaders('panda/src/gobj')
 CopyAllHeaders('panda/src/movies')
 CopyAllHeaders('panda/src/lerp')
+CopyAllHeaders('panda/src/pgraphnodes')
 CopyAllHeaders('panda/src/pgraph')
 CopyAllHeaders('panda/src/cull')
 CopyAllHeaders('panda/src/effects')
@@ -1594,6 +1595,18 @@ TargetAdd('liblerp.in', opts=['IMOD:panda', 'ILIB:liblerp', 'SRCDIR:panda/src/le
 TargetAdd('liblerp_igate.obj', input='liblerp.in', opts=["DEPENDENCYONLY"])
 
 #
+# DIRECTORY: panda/src/pgraphnodes/
+#
+
+OPTS=['DIR:panda/src/pgraphnodes', 'BUILDING:PANDA']
+TargetAdd('pgraphnodes_composite1.obj', opts=OPTS, input='pgraphnodes_composite1.cxx')
+TargetAdd('pgraphnodes_composite2.obj', opts=OPTS, input='pgraphnodes_composite2.cxx')
+IGATEFILES=GetDirectoryContents('panda/src/pgraphnodes', ["*.h", "*_composite.cxx"])
+TargetAdd('libpgraphnodes.in', opts=OPTS, input=IGATEFILES)
+TargetAdd('libpgraphnodes.in', opts=['IMOD:panda', 'ILIB:libpgraphnodes', 'SRCDIR:panda/src/pgraphnodes'])
+TargetAdd('libpgraphnodes_igate.obj', input='libpgraphnodes.in', opts=["DEPENDENCYONLY"])
+
+#
 # DIRECTORY: panda/src/pgraph/
 #
 
@@ -1810,6 +1823,7 @@ OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'VRPN', 'JPEG', 'PNG',
 TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
 
 TargetAdd('libpanda_module.obj', input='librecorder.in')
+TargetAdd('libpanda_module.obj', input='libpgraphnodes.in')
 TargetAdd('libpanda_module.obj', input='libpgraph.in')
 TargetAdd('libpanda_module.obj', input='libcull.in')
 TargetAdd('libpanda_module.obj', input='libgrutil.in')
@@ -1842,6 +1856,9 @@ TargetAdd('libpanda.dll', input='panda_panda.obj')
 TargetAdd('libpanda.dll', input='libpanda_module.obj')
 TargetAdd('libpanda.dll', input='recorder_composite.obj')
 TargetAdd('libpanda.dll', input='librecorder_igate.obj')
+TargetAdd('libpanda.dll', input='pgraphnodes_composite1.obj')
+TargetAdd('libpanda.dll', input='pgraphnodes_composite2.obj')
+TargetAdd('libpanda.dll', input='libpgraphnodes_igate.obj')
 TargetAdd('libpanda.dll', input='pgraph_nodePath.obj')
 TargetAdd('libpanda.dll', input='pgraph_composite1.obj')
 TargetAdd('libpanda.dll', input='pgraph_composite2.obj')
