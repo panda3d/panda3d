@@ -57,8 +57,8 @@ source tree and type this:
 
 	makepanda\makepanda.bat
 
-To invoke it under Linux, change directory to the root of the panda
-source tree and type this:
+To invoke it under Linux or OSX, change directory to the root of
+the panda source tree and type this:
 
 	makepanda/makepanda.py
 
@@ -107,10 +107,17 @@ to continue with the installation process.
 
 INSTALLING PANDA
 
-The first step is to copy 'samples' into the built subdirectory, and
-'direct/src' into 'built/direct/src'.  Then, move the built directory
-anywhere you like on your system.  For example, Linux users might want
-to do this:
+If you are using Windows, OSX or Linux distribution that supports DEB or
+RPM packages, the recommended way to install Panda3D is to run makepanda
+with the --installer option and then install the resulting .exe, .deb, .rpm
+or .dmg package. This is a safe solution that makes sure all the files are
+installed in the correct places and all the paths are configured correctly.
+More information can be found below.
+
+If you want to install Panda3D manually, however, the first step is to
+copy 'samples' into the built subdirectory, and 'direct/src' into
+'built/direct/src'.  Then, move the built directory anywhere you like
+on your system.  For example, Linux users might want to do this:
 
   cp --recursive samples built/samples
   cp --recursive direct/src built/direct/src
@@ -128,17 +135,17 @@ path.  It is usually possible to do so by editing the
 file /etc/ld.so.conf.
 
 
-INSTALLATION AND THE LINUX STANDARD FILESYSTEM LAYOUT
+INSTALLATION AND THE UNIX STANDARD FILESYSTEM LAYOUT
 
 The installation instructions above will produce a fully-functional
 installation of panda with a minimum number of steps.  However, the
-installation will not conform to the Linux standards for filesystem
+installation will not conform to the Unix standards for filesystem
 layout.
 
 If you want a conformant installation, the most sensible approach is
-to build a redhat RPM or a debian DEB, and then install the package.
-The installation process will distribute the files properly.
-Instructions for building a package can be found below.
+to build a redhat RPM, debian DEB or MacOSX DMG, and then install
+the package. The installation process will distribute the files
+properly. Instructions for building a package can be found below.
 
 
 MAKEPANDA COMMAND-LINE OPTIONS
@@ -152,42 +159,53 @@ command-line options to makepanda.  If you invoke:
 
 it will show you the available command-line options:
 
-  --compiler X      (currently, compiler can only be MSVC7,LINUXA)
+  --help            (print the help message you're reading now)
   --optimize X      (optimization level can be 1,2,3,4)
-  --thirdparty X    (directory containing third-party software)
-  --complete        (copy models, samples, direct into the build)
   --installer       (build an installer)
-  --v1 X            (set the major version number)
-  --v2 X            (set the minor version number)
-  --v3 X            (set the sequence version number)
+  --version         (set the panda version number)
   --lzma            (use lzma compression when building installer)
+  --threads N       (use the multithreaded build system. see manual)
 
-  --use-zlib       --no-zlib     (enable/disable use of ZLIB)
-  --use-png        --no-png      (enable/disable use of PNG)
-  --use-jpeg       --no-jpeg     (enable/disable use of JPEG)
-  --use-tiff       --no-tiff     (enable/disable use of TIFF)
-  --use-vrpn       --no-vrpn     (enable/disable use of VRPN)
-  --use-fmod       --no-fmod     (enable/disable use of FMOD)
-  --use-nvidiacg   --no-nvidiacg (enable/disable use of NVIDIACG)
-  --use-helix      --no-helix    (enable/disable use of HELIX)
-  --use-nspr       --no-nspr     (enable/disable use of NSPR)
-  --use-openssl    --no-openssl  (enable/disable use of OPENSSL)
-  --use-freetype   --no-freetype (enable/disable use of FREETYPE)
-  --use-fftw       --no-fftw     (enable/disable use of FFTW)
-  --use-miles      --no-miles    (enable/disable use of MILES)
-  --use-maya5      --no-maya5    (enable/disable use of MAYA5)
-  --use-maya6      --no-maya6    (enable/disable use of MAYA6)
-  --use-max5       --no-max5     (enable/disable use of MAX5)
-  --use-max6       --no-max6     (enable/disable use of MAX6)
-  --use-max7       --no-max7     (enable/disable use of MAX7)
+  --use-maya6       --no-maya6     (enable/disable use of MAYA6)
+  --use-maya65      --no-maya65    (enable/disable use of MAYA65)
+  --use-maya7       --no-maya7     (enable/disable use of MAYA7)
+  --use-maya8       --no-maya8     (enable/disable use of MAYA8)
+  --use-maya85      --no-maya85    (enable/disable use of MAYA85)
+  --use-maya2008    --no-maya2008  (enable/disable use of MAYA2008)
+  --use-max6        --no-max6      (enable/disable use of MAX6)
+  --use-max7        --no-max7      (enable/disable use of MAX7)
+  --use-max8        --no-max8      (enable/disable use of MAX8)
+  --use-max9        --no-max9      (enable/disable use of MAX9)
+  --use-max2009     --no-max2009   (enable/disable use of MAX2009)
+  --use-dx8         --no-dx8       (enable/disable use of DX8)
+  --use-dx9         --no-dx9       (enable/disable use of DX9)
+  --use-python      --no-python    (enable/disable use of PYTHON)
+  --use-zlib        --no-zlib      (enable/disable use of ZLIB)
+  --use-png         --no-png       (enable/disable use of PNG)
+  --use-jpeg        --no-jpeg      (enable/disable use of JPEG)
+  --use-tiff        --no-tiff      (enable/disable use of TIFF)
+  --use-vrpn        --no-vrpn      (enable/disable use of VRPN)
+  --use-fmod        --no-fmod      (enable/disable use of FMOD)
+  --use-fmodex      --no-fmodex    (enable/disable use of FMODEX)
+  --use-openal      --no-openal    (enable/disable use of OPENAL)
+  --use-nvidiacg    --no-nvidiacg  (enable/disable use of NVIDIACG)
+  --use-openssl     --no-openssl   (enable/disable use of OPENSSL)
+  --use-freetype    --no-freetype  (enable/disable use of FREETYPE)
+  --use-fftw        --no-fftw      (enable/disable use of FFTW)
+  --use-artoolkit   --no-artoolkit (enable/disable use of ARTOOLKIT)
+  --use-ode         --no-ode       (enable/disable use of ODE)
+  --use-directcam   --no-directcam (enable/disable use of DIRECTCAM)
+  --use-opencv      --no-opencv    (enable/disable use of OPENCV)
+  --use-ffmpeg      --no-ffmpeg    (enable/disable use of FFMPEG)
+  --use-pandatool   --no-pandatool (enable/disable use of PANDATOOL)
 
   --nothing         (disable every third-party lib)
   --everything      (enable every third-party lib)
 
 Makepanda shows you all the available options, not all of which may be
 relevant to your operating system.  For example, makepanda can build a
-plugin for 3D Studio Max 5.  However, there is no 3D Studio Max for
-Linux, so the option --use-max5 is irrelevant under Linux.
+plugin for 3D Studio Max.  However, there is no 3D Studio Max for
+Linux, so the options --use-max# are irrelevant under Linux.
 
 
 SELECTING PANDA FEATURES
@@ -268,31 +286,6 @@ This helps me avoid accidentally typing makepanda with the wrong
 options.
 
 
-BUILDING THE SOURCE TAR-BALL AND ZIP-FILE
-
-If you want to distribute panda sources, it is convenient to package
-them up into a tar-ball or a zip-file.  There is a utility to do this
-in the makepanda directory.  You will need to give your version of
-panda a version number.  The version number can be any three integers
-separated by dots:
-
-	makepanda/maketarball.py 58.23.95
-
-This will create both the tar-ball and the zip-file.  The version
-number will be hardcoded into both.
-
-
-BUILDING A LINUX RPM PACKAGE
-
-To build an RPM, first you need the tar-ball.  Once you have the
-tar-ball, the command to turn it into a binary RPM is as follows:
-
-	rpmbuild -tb panda3d-58.23.95.tar.gz
-
-Before you use rpmbuild, you need to set up an RPM workspace.  Doing
-so is beyond the scope of this document.
-
-
 BUILDING A WINDOWS INSTALLER
 
 Under Windows, makepanda can create an executable installer.  All you
@@ -302,10 +295,21 @@ compression, which is better, but it takes a long time to do the
 compression.
 
 
-BUILDING A LINUX DEB PACKAGE
+BUILDING A LINUX DEB OR RPM PACKAGE
 
 Under Linux, passing the --installer option to makepanda will
-cause makepanda to try to build a deb package.  For this to work,
-you have to be using a Linux distribution that includes the deb
-utilities.
+cause makepanda to try to build a deb or rpm package.  For this to
+work, you have to be using a Linux distribution that includes either
+the dpkg-deb or rpmbuild binary.
+
+
+BUILDING A MACOSX DMG PACKAGE
+
+Under Mac OSX, you can also use the --installer option, which will
+generate a .dmg archive containing the Panda3D installation, which
+needs to be placed in your /Applications/ directory.
+The .dmg also contains a shell script that automatically sets up the
+library and python search paths in your .bash_profile file so you don't
+have to do that yourself every time you want to use Panda3D.
+
 
