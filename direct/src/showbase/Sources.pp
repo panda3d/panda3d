@@ -3,7 +3,7 @@
   #define LOCAL_LIBS \
     directbase
   #define OTHER_LIBS \
-    pgraph:c gsgbase:c gobj:c mathutil:c pstatclient:c \
+    pgraph:c pgraphnodes:c gsgbase:c gobj:c mathutil:c pstatclient:c \
     lerp:c downloader:c pandabase:c pnmimage:c prc:c \
     pipeline:c cull:c \
     $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
