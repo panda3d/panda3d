@@ -1,5 +1,4 @@
 #include "accumulatedAttribs.cxx"
-#include "ambientLight.cxx"
 #include "antialiasAttrib.cxx"
 #include "attribNodeRegistry.cxx"
 #include "audioVolumeAttrib.cxx"

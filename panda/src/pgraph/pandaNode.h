@@ -280,6 +280,7 @@ PUBLISHED:
   virtual bool is_geom_node() const;
   virtual bool is_lod_node() const;
   virtual Light *as_light();
+  virtual bool is_ambient_light() const;
 
   enum FancyBits {
     FB_transform            = 0x0001,

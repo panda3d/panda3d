@@ -1,0 +1,5 @@
+#include "selectiveChildNode.cxx"
+#include "sequenceNode.cxx"
+#include "shaderGenerator.cxx"
+#include "spotlight.cxx"
+#include "switchNode.cxx"

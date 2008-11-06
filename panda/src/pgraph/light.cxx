@@ -66,6 +66,17 @@ Light::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Light::is_ambient_light
+//       Access: Published, Virtual
+//  Description: Returns true if this is an AmbientLight, false if it
+//               is some other kind of light.
+////////////////////////////////////////////////////////////////////
+bool Light::
+is_ambient_light() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Light::get_vector_to_light
 //       Access: Public, Virtual
 //  Description: Computes the vector from a particular vertex to this

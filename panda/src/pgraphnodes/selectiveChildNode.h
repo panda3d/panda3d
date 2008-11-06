@@ -24,7 +24,7 @@
 // Description : A base class for nodes like LODNode and SequenceNode
 //               that select only one visible child at a time.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH SelectiveChildNode : public PandaNode {
+class EXPCL_PANDA_PGRAPHNODES SelectiveChildNode : public PandaNode {
 PUBLISHED:
   INLINE SelectiveChildNode(const string &name);
 

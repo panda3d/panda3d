@@ -13,11 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullableObject.h"
-#include "ambientLight.h"
 #include "lightAttrib.h"
 #include "nodePath.h"
-#include "material.h"
-#include "materialAttrib.h"
 #include "texGenAttrib.h"
 #include "renderState.h"
 #include "clockObject.h"
@@ -701,20 +698,10 @@ get_flash_cpu_state() {
   // and never free it.
   static CPT(RenderState) flash_cpu_state = (const RenderState *)NULL;
   if (flash_cpu_state == (const RenderState *)NULL) {
-    PT(AmbientLight) ambient_light = new AmbientLight("alight");
-    ambient_light->set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
-    NodePath alight(ambient_light);
-
-    CPT(LightAttrib) light_attrib = DCAST(LightAttrib, LightAttrib::make_all_off());
-    light_attrib = DCAST(LightAttrib, light_attrib->add_on_light(alight));
-
-    PT(Material) material = new Material;
-    material->set_ambient(flash_cpu_color);
-    material->set_diffuse(flash_cpu_color);
-
     flash_cpu_state = RenderState::make
-      (light_attrib, 
-       MaterialAttrib::make(material));
+      (LightAttrib::make_all_off(),
+       TextureAttrib::make_off(),
+       ColorAttrib::make_flat(flash_cpu_color));
   }
 
   return flash_cpu_state;
@@ -735,20 +722,10 @@ get_flash_hardware_state() {
   // and never free it.
   static CPT(RenderState) flash_hardware_state = (const RenderState *)NULL;
   if (flash_hardware_state == (const RenderState *)NULL) {
-    PT(AmbientLight) ambient_light = new AmbientLight("alight");
-    ambient_light->set_color(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
-    NodePath alight(ambient_light);
-
-    CPT(LightAttrib) light_attrib = DCAST(LightAttrib, LightAttrib::make_all_off());
-    light_attrib = DCAST(LightAttrib, light_attrib->add_on_light(alight));
-
-    PT(Material) material = new Material;
-    material->set_ambient(flash_hardware_color);
-    material->set_diffuse(flash_hardware_color);
-
     flash_hardware_state = RenderState::make
-      (light_attrib, 
-       MaterialAttrib::make(material));
+      (LightAttrib::make_all_off(),
+       TextureAttrib::make_off(),
+       ColorAttrib::make_flat(flash_hardware_color));
   }
 
   return flash_hardware_state;

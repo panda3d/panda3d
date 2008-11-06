@@ -1,4 +1,4 @@
-// Filename: pointLight.h
+// Filename: spotlight.h
 // Created by:  mike (09Jan97)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,24 +12,35 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef POINTLIGHT_H
-#define POINTLIGHT_H
+#ifndef SPOTLIGHT_H
+#define SPOTLIGHT_H
 
 #include "pandabase.h"
 
-#include "lightNode.h"
+#include "lightLensNode.h"
+
+class Texture;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PointLight
+//       Class : Spotlight
 // Description : A light originating from a single point in space, and
-//               shining in all directions.
+//               shining in a particular direction, with a cone-shaped
+//               falloff.
+//
+//               The Spotlight frustum is defined using a Lens, so it
+//               can have any of the properties that a camera lens can
+//               have.
+//
+//               Note that the class is named Spotlight instead of
+//               SpotLight, because "spotlight" is a single English
+//               word, instead of two words.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH PointLight : public LightNode {
+class EXPCL_PANDA_PGRAPHNODES Spotlight : public LightLensNode {
 PUBLISHED:
-  PointLight(const string &name);
+  Spotlight(const string &name);
 
 protected:
-  PointLight(const PointLight &copy);
+  Spotlight(const Spotlight &copy);
 
 public:
   virtual PandaNode *make_copy() const;
@@ -41,24 +52,33 @@ public:
                                    const LMatrix4f &to_object_space);
 
 PUBLISHED:
+  INLINE float get_exponent() const;
+  INLINE void set_exponent(float exponent);
+  
   INLINE const Colorf &get_specular_color() const;
   INLINE void set_specular_color(const Colorf &color);
   
   INLINE const LVecBase3f &get_attenuation() const;
   INLINE void set_attenuation(const LVecBase3f &attenuation);
-  
-  INLINE const LPoint3f &get_point() const;
-  INLINE void set_point(const LPoint3f &point);
 
   virtual int get_class_priority() const;
+
+  static PT(Texture) make_spot(int pixel_width, float full_radius,
+                               Colorf &fg, Colorf &bg);
   
 public:
   virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
                     int light_id);
 
+protected:
+  virtual void fill_viz_geom(GeomNode *viz_geom);
+
+private:
+  CPT(RenderState) get_viz_state();
+
 private:
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA_PGRAPH CData : public CycleData {
+  class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);
@@ -66,12 +86,12 @@ private:
     virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
     virtual TypeHandle get_parent_type() const {
-      return PointLight::get_class_type();
+      return Spotlight::get_class_type();
     }
 
+    float _exponent;
     Colorf _specular_color;
     LVecBase3f _attenuation;
-    LPoint3f _point;
   };
 
   PipelineCycler<CData> _cycler;
@@ -91,9 +111,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    LightNode::init_type();
-    register_type(_type_handle, "PointLight",
-                  LightNode::get_class_type());
+    LightLensNode::init_type();
+    register_type(_type_handle, "Spotlight",
+                  LightLensNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -104,11 +124,11 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const PointLight &light) {
+INLINE ostream &operator << (ostream &out, const Spotlight &light) {
   light.output(out);
   return out;
 }
 
-#include "pointLight.I"
+#include "spotlight.I"
 
 #endif

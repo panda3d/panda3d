@@ -16,8 +16,10 @@
 #define SHADERGENERATOR_H
 
 #include "pandabase.h"
-#include "typedWritableReferenceCount.h"
+#include "shaderGeneratorBase.h"
+#include "attribSlots.h"
 #include "nodePath.h"
+
 class AmbientLight;
 class DirectionalLight;
 class PointLight;
@@ -58,15 +60,10 @@ class ShaderAttrib;
 //
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA_PGRAPH ShaderGenerator : public TypedWritableReferenceCount {
-private:
-  static PT(ShaderGenerator) _default_generator;
-
+class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public ShaderGeneratorBase {
 PUBLISHED:
   ShaderGenerator();
   virtual ~ShaderGenerator();
-  static ShaderGenerator *get_default();
-  static void set_default(ShaderGenerator *generator);
   virtual CPT(RenderAttrib) synthesize_shader(const RenderState *rs);
   
 protected:
@@ -135,9 +132,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedReferenceCount::init_type();
+    ShaderGeneratorBase::init_type();
     register_type(_type_handle, "ShaderGenerator",
-                  TypedReferenceCount::get_class_type());
+                  ShaderGeneratorBase::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

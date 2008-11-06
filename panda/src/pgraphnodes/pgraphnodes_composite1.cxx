@@ -1,0 +1,6 @@
+#include "ambientLight.cxx"
+#include "config_pgraphnodes.cxx"
+#include "directionalLight.cxx"
+#include "lightLensNode.cxx"
+#include "lightNode.cxx"
+#include "pointLight.cxx"

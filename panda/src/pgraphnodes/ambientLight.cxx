@@ -86,6 +86,17 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AmbientLight::is_ambient_light
+//       Access: Published, Virtual
+//  Description: Returns true if this is an AmbientLight, false if it
+//               is some other kind of light.
+////////////////////////////////////////////////////////////////////
+bool AmbientLight::
+is_ambient_light() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AmbientLight::bind
 //       Access: Public, Virtual
 //  Description:

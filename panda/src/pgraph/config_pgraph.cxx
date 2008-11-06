@@ -17,7 +17,6 @@
 #include "alphaTestAttrib.h"
 #include "audioVolumeAttrib.h"
 #include "auxBitplaneAttrib.h"
-#include "ambientLight.h"
 #include "antialiasAttrib.h"
 #include "auxSceneData.h"
 #include "billboardEffect.h"
@@ -37,12 +36,11 @@
 #include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
-#include "directionalLight.h"
 #include "drawMaskAttrib.h"
 #include "eventStorePandaNode.h"
+#include "findApproxLevelEntry.h"
 #include "fadeLodNode.h"
 #include "fadeLodNodeData.h"
-#include "findApproxLevelEntry.h"
 #include "fog.h"
 #include "fogAttrib.h"
 #include "geomNode.h"
@@ -51,8 +49,6 @@
 #include "light.h"
 #include "lightAttrib.h"
 #include "lightRampAttrib.h"
-#include "lightLensNode.h"
-#include "lightNode.h"
 #include "loader.h"
 #include "loaderFileType.h"
 #include "loaderFileTypeBam.h"
@@ -67,9 +63,8 @@
 #include "nodePathComponent.h"
 #include "pandaNode.h"
 #include "planeNode.h"
-#include "pointLight.h"
-#include "polylightNode.h"
 #include "polylightEffect.h"
+#include "polylightNode.h"
 #include "portalNode.h"
 #include "portalClipper.h"
 #include "renderAttrib.h"
@@ -78,8 +73,6 @@
 #include "renderModeAttrib.h"
 #include "renderState.h"
 #include "rescaleNormalAttrib.h"
-#include "selectiveChildNode.h"
-#include "sequenceNode.h"
 #include "scissorAttrib.h"
 #include "scissorEffect.h"
 #include "shadeModelAttrib.h"
@@ -88,9 +81,7 @@
 #include "shader.h"
 #include "showBoundsEffect.h"
 #include "stencilAttrib.h"
-#include "spotlight.h"
 #include "stateMunger.h"
-#include "switchNode.h"
 #include "texMatrixAttrib.h"
 #include "texProjectorEffect.h"
 #include "textureAttrib.h"
@@ -98,7 +89,7 @@
 #include "transformState.h"
 #include "transparencyAttrib.h"
 #include "nodePathLerps.h"
-#include "shaderGenerator.h"
+#include "shaderGeneratorBase.h"
 
 #include "dconfig.h"
 
@@ -379,7 +370,6 @@ init_libpgraph() {
   initialized = true;
 
   AlphaTestAttrib::init_type();
-  AmbientLight::init_type();
   AntialiasAttrib::init_type();
   AudioVolumeAttrib::init_type();
   AuxBitplaneAttrib::init_type();
@@ -401,7 +391,6 @@ init_libpgraph() {
   DepthOffsetAttrib::init_type();
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
-  DirectionalLight::init_type();
   DrawMaskAttrib::init_type();
   EventStorePandaNode::init_type();
   FadeLODNode::init_type();
@@ -415,8 +404,6 @@ init_libpgraph() {
   Light::init_type();
   LightAttrib::init_type();
   LightRampAttrib::init_type();
-  LightLensNode::init_type();
-  LightNode::init_type();
   Loader::init_type();
   LODNode::init_type();
   LoaderFileType::init_type();
@@ -431,7 +418,6 @@ init_libpgraph() {
   PandaNode::init_type();
   PandaNodePipelineReader::init_type();
   PlaneNode::init_type();
-  PointLight::init_type();
   PolylightNode::init_type();
   PolylightEffect::init_type();
   PortalNode::init_type();
@@ -442,19 +428,15 @@ init_libpgraph() {
   RenderModeAttrib::init_type();
   RenderState::init_type();
   RescaleNormalAttrib::init_type();
-  SelectiveChildNode::init_type();
-  SequenceNode::init_type();
   ScissorAttrib::init_type();
   ScissorEffect::init_type();
   ShadeModelAttrib::init_type();
   ShaderInput::init_type();
   ShaderAttrib::init_type();
-  ShaderGenerator::init_type();
+  ShaderGeneratorBase::init_type();
   ShowBoundsEffect::init_type();
-  Spotlight::init_type();
   StateMunger::init_type();
   StencilAttrib::init_type();
-  SwitchNode::init_type();
   TexMatrixAttrib::init_type();
   TexProjectorEffect::init_type();
   TextureAttrib::init_type();
@@ -471,7 +453,6 @@ init_libpgraph() {
   ColorScaleLerpFunctor::init_type();
 
   AlphaTestAttrib::register_with_read_factory();
-  AmbientLight::register_with_read_factory();
   AntialiasAttrib::register_with_read_factory();
   AudioVolumeAttrib::register_with_read_factory();
   AuxBitplaneAttrib::register_with_read_factory();
@@ -489,7 +470,6 @@ init_libpgraph() {
   DepthOffsetAttrib::register_with_read_factory();
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();
-  DirectionalLight::register_with_read_factory();
   DrawMaskAttrib::register_with_read_factory();
   FadeLODNode::register_with_read_factory();
   Fog::register_with_read_factory();
@@ -504,14 +484,12 @@ init_libpgraph() {
   ModelRoot::register_with_read_factory();
   PandaNode::register_with_read_factory();
   PlaneNode::register_with_read_factory();
-  PointLight::register_with_read_factory();
   PolylightNode::register_with_read_factory();
   PortalNode::register_with_read_factory();
   RenderEffects::register_with_read_factory();
   RenderModeAttrib::register_with_read_factory();
   RenderState::register_with_read_factory();
   RescaleNormalAttrib::register_with_read_factory();
-  SequenceNode::register_with_read_factory();
   ScissorAttrib::register_with_read_factory();
   ScissorEffect::register_with_read_factory();
   ShadeModelAttrib::register_with_read_factory();
@@ -519,8 +497,6 @@ init_libpgraph() {
   ShaderAttrib::register_with_read_factory();
   Shader::register_with_read_factory();
   ShowBoundsEffect::register_with_read_factory();
-  Spotlight::register_with_read_factory();
-  SwitchNode::register_with_read_factory();
   TexMatrixAttrib::register_with_read_factory();
   TexProjectorEffect::register_with_read_factory();
   TextureAttrib::register_with_read_factory();

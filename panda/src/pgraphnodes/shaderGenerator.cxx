@@ -22,7 +22,6 @@
 #include "spotlight.h"
 
 TypeHandle ShaderGenerator::_type_handle;
-PT(ShaderGenerator) ShaderGenerator::_default_generator;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderGenerator::Constructor
@@ -104,29 +103,6 @@ alloc_freg() {
   case 1: _fcregs_used += 1; return "COLOR1";
   }
   return "UNKNOWN";
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::get_default
-//       Access: Published, Static
-//  Description: Get a pointer to the default shader generator.
-////////////////////////////////////////////////////////////////////
-ShaderGenerator *ShaderGenerator::
-get_default() {
-  if (_default_generator == (ShaderGenerator *)NULL) {
-    _default_generator = new ShaderGenerator;
-  }
-  return _default_generator;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ShaderGenerator::set_default
-//       Access: Published, Static
-//  Description: Set the default shader generator.
-////////////////////////////////////////////////////////////////////
-void ShaderGenerator::
-set_default(ShaderGenerator *generator) {
-  _default_generator = generator;
 }
 
 ////////////////////////////////////////////////////////////////////

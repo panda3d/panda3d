@@ -1,5 +1,5 @@
-// Filename: ambientLight.h
-// Created by:  mike (09Jan97)
+// Filename: sequenceNode.h
+// Created by:  drose (06Mar02)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,37 +12,40 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef AMBIENTLIGHT_H
-#define AMBIENTLIGHT_H
+#ifndef SEQUENCENODE_H
+#define SEQUENCENODE_H
 
 #include "pandabase.h"
 
-#include "lightNode.h"
+#include "selectiveChildNode.h"
+#include "animInterface.h"
+#include "clockObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : AmbientLight
-// Description : A light source that seems to illuminate all points in
-//               space at once.  This kind of light need not actually
-//               be part of the scene graph, since it has no meaningful
-//               position.
+//       Class : SequenceNode
+// Description : A node that automatically cycles through rendering
+//               each one of its children according to its frame rate.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH AmbientLight : public LightNode {
+class EXPCL_PANDA_PGRAPHNODES SequenceNode : public SelectiveChildNode, public AnimInterface {
 PUBLISHED:
-  AmbientLight(const string &name);
+  INLINE SequenceNode(const string &name);
 
 protected:
-  AmbientLight(const AmbientLight &copy);
+  SequenceNode(const SequenceNode &copy);
+
+PUBLISHED:
+  virtual int get_num_frames() const;
+  INLINE void set_frame_rate(double frame_rate);
 
 public:
   virtual PandaNode *make_copy() const;
-  virtual void write(ostream &out, int indent_level) const;
+  virtual bool safe_to_combine() const;
+  virtual bool safe_to_combine_children() const;
 
-PUBLISHED:
-  virtual int get_class_priority() const;
-  
-public:
-  virtual void bind(GraphicsStateGuardianBase *gsg, const NodePath &light,
-                    int light_id);
+  virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
+  virtual bool has_single_child_visibility() const;
+
+  virtual void output(ostream &out) const;
 
 public:
   static void register_with_read_factory();
@@ -57,9 +60,11 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    LightNode::init_type();
-    register_type(_type_handle, "AmbientLight",
-                  LightNode::get_class_type());
+    SelectiveChildNode::init_type();
+    AnimInterface::init_type();
+    register_type(_type_handle, "SequenceNode",
+                  SelectiveChildNode::get_class_type(),
+                  AnimInterface::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -70,11 +75,6 @@ private:
   static TypeHandle _type_handle;
 };
 
-INLINE ostream &operator << (ostream &out, const AmbientLight &light) {
-  light.output(out);
-  return out;
-}
-
-#include "ambientLight.I"
+#include "sequenceNode.I"
 
 #endif

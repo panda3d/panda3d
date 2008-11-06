@@ -24,7 +24,7 @@
 // Description : A light shining from infinitely far away in a
 //               particular direction, like sunlight.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH DirectionalLight : public LightNode {
+class EXPCL_PANDA_PGRAPHNODES DirectionalLight : public LightNode {
 PUBLISHED:
   DirectionalLight(const string &name);
 
@@ -58,7 +58,7 @@ public:
 
 private:
   // This is the data that must be cycled between pipeline stages.
-  class EXPCL_PANDA_PGRAPH CData : public CycleData {
+  class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

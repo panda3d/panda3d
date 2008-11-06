@@ -14,7 +14,6 @@
 
 #include "lightAttrib.h"
 #include "attribSlots.h"
-#include "ambientLight.h"
 #include "pandaNode.h"
 #include "nodePath.h"
 #include "graphicsStateGuardianBase.h"
@@ -506,7 +505,7 @@ filter_to_max(int max_lights) const {
   for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
     const NodePath &np = (*li);
     nassertr(!np.is_empty() && np.node()->as_light() != (Light *)NULL, this);
-    if (np.node()->is_exact_type(AmbientLight::get_class_type())) {
+    if (np.node()->is_ambient_light()) {
       ambient_lights.push_back(np);
     } else {
       priority_lights.push_back(np);
@@ -562,7 +561,7 @@ get_most_important_light() const {
   for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
     const NodePath &np = (*li);
     nassertr(!np.is_empty() && np.node()->as_light() != (Light *)NULL, NodePath());
-    if (!np.node()->is_exact_type(AmbientLight::get_class_type())) {
+    if (!np.node()->is_ambient_light()) {
       if (best.is_empty() || compare(np, best)) {
         best = np;
       }

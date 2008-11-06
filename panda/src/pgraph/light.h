@@ -50,6 +50,7 @@ PUBLISHED:
   virtual ~Light();
 
   virtual PandaNode *as_node()=0;
+  virtual bool is_ambient_light() const;
 
   INLINE const Colorf &get_color() const;
   INLINE void set_color(const Colorf &color);

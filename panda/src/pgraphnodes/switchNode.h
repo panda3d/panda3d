@@ -24,7 +24,7 @@
 // Description : A node that renders only one of its children,
 //               according to the user's indication.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH SwitchNode : public SelectiveChildNode {
+class EXPCL_PANDA_PGRAPHNODES SwitchNode : public SelectiveChildNode {
 PUBLISHED:
   INLINE SwitchNode(const string &name);
 
@@ -43,7 +43,7 @@ PUBLISHED:
   virtual int get_visible_child() const;
 
 private:
-  class EXPCL_PANDA_PGRAPH CData : public CycleData {
+  class EXPCL_PANDA_PGRAPHNODES CData : public CycleData {
   public:
     INLINE CData();
     INLINE CData(const CData &copy);

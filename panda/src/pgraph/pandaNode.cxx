@@ -2465,6 +2465,17 @@ as_light() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::is_ambient_light
+//       Access: Published, Virtual
+//  Description: Returns true if this is an AmbientLight, false if it
+//               is not a light, or it is some other kind of light.
+////////////////////////////////////////////////////////////////////
+bool PandaNode::
+is_ambient_light() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_internal_bounds
 //       Access: Protected
 //  Description: Returns the node's internal bounding volume.  This is

@@ -24,7 +24,7 @@
 //       Class : LightLensNode
 // Description : A derivative of Light and of LensNode.  
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH LightLensNode : public Light, public LensNode {
+class EXPCL_PANDA_PGRAPHNODES LightLensNode : public Light, public LensNode {
 PUBLISHED:
   LightLensNode(const string &name);
 

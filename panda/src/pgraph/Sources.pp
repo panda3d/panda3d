@@ -15,7 +15,6 @@
   #define SOURCES \
     accumulatedAttribs.I accumulatedAttribs.h \
     alphaTestAttrib.I alphaTestAttrib.h \  
-    ambientLight.I ambientLight.h \
     antialiasAttrib.I antialiasAttrib.h \
     attribNodeRegistry.I attribNodeRegistry.h \
     attribSlots.h attribSlots.I \
@@ -48,10 +47,10 @@
     depthOffsetAttrib.I depthOffsetAttrib.h \
     depthTestAttrib.I depthTestAttrib.h \
     depthWriteAttrib.I depthWriteAttrib.h \
-    directionalLight.I directionalLight.h \
     drawMaskAttrib.I drawMaskAttrib.h \
     eventStorePandaNode.I eventStorePandaNode.h \
-    fadeLodNode.I fadeLodNode.h fadeLodNodeData.h \
+    fadeLodNode.I fadeLodNode.h \
+    fadeLodNodeData.h \
     findApproxLevelEntry.I findApproxLevelEntry.h \
     findApproxPath.I findApproxPath.h \
     fog.I fog.h \
@@ -63,8 +62,6 @@
     light.I light.h \
     lightAttrib.I lightAttrib.h \
     lightRampAttrib.I lightRampAttrib.h \
-    lightLensNode.I lightLensNode.h \
-    lightNode.I lightNode.h \
     loader.I loader.h  \
     loaderFileType.h \
     loaderFileTypeBam.h  \
@@ -85,9 +82,8 @@
     pandaNode.I pandaNode.h \
     pandaNodeChain.I pandaNodeChain.h \
     planeNode.I planeNode.h \
-    pointLight.I pointLight.h \
-    polylightNode.I polylightNode.h \
     polylightEffect.I polylightEffect.h \
+    polylightNode.I polylightNode.h \
     portalNode.I portalNode.h \
     portalClipper.I portalClipper.h \
     renderAttrib.I renderAttrib.h \
@@ -101,18 +97,14 @@
     sceneSetup.I sceneSetup.h \
     scissorAttrib.I scissorAttrib.h \
     scissorEffect.I scissorEffect.h \
-    selectiveChildNode.I selectiveChildNode.h \
-    sequenceNode.I sequenceNode.h \
     shadeModelAttrib.I shadeModelAttrib.h \
     shaderAttrib.I shaderAttrib.h \
-    shaderGenerator.I shaderGenerator.h \
+    shaderGeneratorBase.I shaderGeneratorBase.h \
     shaderInput.I shaderInput.h \
     shaderPool.I shaderPool.h \
     showBoundsEffect.I showBoundsEffect.h \
-    spotlight.I spotlight.h \
     stateMunger.I stateMunger.h \
     stencilAttrib.I stencilAttrib.h \
-    switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     texProjectorEffect.I texProjectorEffect.h \
     textureAttrib.I textureAttrib.h \
@@ -130,7 +122,6 @@
   #define INCLUDED_SOURCES \
     accumulatedAttribs.cxx \
     alphaTestAttrib.cxx \  
-    ambientLight.cxx \
     antialiasAttrib.cxx \
     attribNodeRegistry.cxx \
     attribSlots.cxx \
@@ -161,10 +152,10 @@
     depthOffsetAttrib.cxx \
     depthTestAttrib.cxx \
     depthWriteAttrib.cxx \
-    directionalLight.cxx \
     drawMaskAttrib.cxx \
     eventStorePandaNode.cxx \
-    fadeLodNode.cxx fadeLodNodeData.cxx \
+    fadeLodNode.cxx \
+    fadeLodNodeData.cxx \
     findApproxLevelEntry.cxx \
     findApproxPath.cxx \
     fog.cxx \
@@ -176,8 +167,6 @@
     light.cxx \
     lightAttrib.cxx \
     lightRampAttrib.cxx \
-    lightLensNode.cxx \
-    lightNode.cxx \
     loader.cxx \
     loaderFileType.cxx  \
     loaderFileTypeBam.cxx \
@@ -197,9 +186,8 @@
     pandaNode.cxx \
     pandaNodeChain.cxx \
     planeNode.cxx \
-    pointLight.cxx \
-    polylightNode.cxx \
     polylightEffect.cxx \
+    polylightNode.cxx \
     portalNode.cxx \
     portalClipper.cxx \
     renderAttrib.cxx \
@@ -213,18 +201,14 @@
     sceneSetup.cxx \
     scissorAttrib.cxx \
     scissorEffect.cxx \
-    selectiveChildNode.cxx \
-    sequenceNode.cxx \
     shadeModelAttrib.cxx \
     shaderAttrib.cxx \
-    shaderGenerator.cxx \
+    shaderGeneratorBase.cxx \
     shaderInput.cxx \
     shaderPool.cxx \
     showBoundsEffect.cxx \
-    spotlight.cxx \
     stateMunger.cxx \
     stencilAttrib.cxx \
-    switchNode.cxx \
     texMatrixAttrib.cxx \
     texProjectorEffect.cxx \
     textureAttrib.cxx \
@@ -239,7 +223,6 @@
   #define INSTALL_HEADERS \
     accumulatedAttribs.I accumulatedAttribs.h \
     alphaTestAttrib.I alphaTestAttrib.h \  
-    ambientLight.I ambientLight.h \
     antialiasAttrib.I antialiasAttrib.h \
     attribNodeRegistry.I attribNodeRegistry.h \
     attribSlots.h attribSlots.I \
@@ -272,10 +255,10 @@
     depthOffsetAttrib.I depthOffsetAttrib.h \
     depthTestAttrib.I depthTestAttrib.h \
     depthWriteAttrib.I depthWriteAttrib.h \
-    directionalLight.I directionalLight.h \
     drawMaskAttrib.I drawMaskAttrib.h \
     eventStorePandaNode.I eventStorePandaNode.h \
-    fadeLodNode.I fadeLodNode.h fadeLodNodeData.h \
+    fadeLodNode.I fadeLodNode.h \
+    fadeLodNodeData.h \
     fog.I fog.h \
     fogAttrib.I fogAttrib.h \
     geomNode.I geomNode.h \
@@ -285,8 +268,6 @@
     light.I light.h \
     lightAttrib.I lightAttrib.h \
     lightRampAttrib.I lightRampAttrib.h \
-    lightLensNode.I lightLensNode.h \
-    lightNode.I lightNode.h \
     loader.I loader.h \
     loaderFileType.h \
     loaderFileTypeBam.h \
@@ -307,9 +288,8 @@
     pandaNode.I pandaNode.h \
     pandaNodeChain.I pandaNodeChain.h \
     planeNode.I planeNode.h \
-    pointLight.I pointLight.h \
-    polylightNode.I polylightNode.h \
     polylightEffect.I polylightEffect.h \
+    polylightNode.I polylightNode.h \
     portalNode.I portalNode.h \
     portalClipper.I portalClipper.h \
     renderAttrib.I renderAttrib.h \
@@ -323,18 +303,14 @@
     sceneSetup.I sceneSetup.h \
     scissorAttrib.I scissorAttrib.h \
     scissorEffect.I scissorEffect.h \
-    selectiveChildNode.I selectiveChildNode.h \
-    sequenceNode.I sequenceNode.h \
     shadeModelAttrib.I shadeModelAttrib.h \
     shaderAttrib.I shaderAttrib.h \
-    shaderGenerator.I shaderGenerator.h \
+    shaderGeneratorBase.I shaderGeneratorBase.h \
     shaderInput.I shaderInput.h \
     shaderPool.I shaderPool.h \
     showBoundsEffect.I showBoundsEffect.h \
-    spotlight.I spotlight.h \
     stateMunger.I stateMunger.h \
     stencilAttrib.I stencilAttrib.h \
-    switchNode.I switchNode.h \
     texMatrixAttrib.I texMatrixAttrib.h \
     texProjectorEffect.I texProjectorEffect.h \
     textureAttrib.I textureAttrib.h \
