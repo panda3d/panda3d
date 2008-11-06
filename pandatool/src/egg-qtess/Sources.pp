@@ -9,7 +9,7 @@
     chan:c char:c downloader:c event:c lerp:c \
     tform:c grutil:c text:c dgraph:c display:c gsgbase:c \
     collide:c gobj:c cull:c device:c \
-    parametrics:c pgraph:c pipeline:c pstatclient:c chan:c \
+    parametrics:c pgraph:c pgraphnodes:c pipeline:c pstatclient:c chan:c \
     pnmimagetypes:c pnmimage:c mathutil:c linmath:c putil:c \
     movies:c \
     $[if $[HAVE_FREETYPE],pnmtext:c] \
