@@ -537,7 +537,7 @@ class DirectCameraControl(DirectObject):
                                      task = 'manipulateCamera')
         # Upon death, reparent Cam to parent
         t.parent = parent
-        t.uponDeath = self.reparentCam
+        t.setUponDeath(self.reparentCam)
 
     def centerCam(self):
         self.centerCamIn(1.0)
@@ -560,7 +560,7 @@ class DirectCameraControl(DirectObject):
                                   other = self.camManipRef,
                                   blendType = 'easeInOut',
                                   task = 'manipulateCamera')
-        t.uponDeath = self.updateCoaMarkerSizeOnDeath
+        t.setUponDeath(self.updateCoaMarkerSizeOnDeath)
 
     def zoomCam(self, zoomFactor, t):
         taskMgr.remove('manipulateCamera')
@@ -577,7 +577,7 @@ class DirectCameraControl(DirectObject):
                                   other = self.camManipRef,
                                   blendType = 'easeInOut',
                                   task = 'manipulateCamera')
-        t.uponDeath = self.updateCoaMarkerSizeOnDeath
+        t.setUponDeath(self.updateCoaMarkerSizeOnDeath)
 
     def spawnMoveToView(self, view):
         # Kill any existing tasks
@@ -627,7 +627,7 @@ class DirectCameraControl(DirectObject):
                                      other = self.camManipRef,
                                      blendType = 'easeInOut',
                                      task = 'manipulateCamera')
-        t.uponDeath = self.updateCoaMarkerSizeOnDeath
+        t.setUponDeath(self.updateCoaMarkerSizeOnDeath)
 
 
     def swingCamAboutWidget(self, degrees, t):
@@ -651,7 +651,7 @@ class DirectCameraControl(DirectObject):
                                              task = 'manipulateCamera')
         # Upon death, reparent Cam to parent
         manipTask.parent = parent
-        manipTask.uponDeath = self.reparentCam
+        manipTask.setUponDeath(self.reparentCam)
 
     def reparentCam(self, state):
         base.direct.camera.wrtReparentTo(state.parent)
@@ -693,7 +693,7 @@ class DirectCameraControl(DirectObject):
                                         task = 'manipulateCamera')
         # Upon death, reparent Cam to parent
         fitTask.parent = parent
-        fitTask.uponDeath = self.reparentCam
+        fitTask.setUponDeath(self.reparentCam)
 
     def moveToFit(self):
         # How big is the active widget?
@@ -720,7 +720,7 @@ class DirectCameraControl(DirectObject):
                                   other = base.direct.camera,
                                   blendType = 'easeInOut',
                                   task = 'moveToFitTask')
-        t.uponDeath = lambda state: taskMgr.remove('stickToWidget')
+        t.setUponDeath(lambda state: taskMgr.remove('stickToWidget'))
 
     def stickToWidgetTask(self, state):
         # Move the objects with the widget

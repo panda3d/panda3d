@@ -297,7 +297,7 @@ class DirectSession(DirectObject):
                 task = 'manipulateCamera',
                 blendType = 'easeInOut')
             # When move is done, switch to oobe mode
-            t.uponDeath = self.endOOBE
+            t.setUponDeath(self.endOOBE)
         else:
             # Place camera marker at true camera location
             self.oobeVis.reparentTo(self.trueCamera)
@@ -320,7 +320,7 @@ class DirectSession(DirectObject):
                 task = 'manipulateCamera',
                 blendType = 'easeInOut')
             # When move is done, switch to oobe mode
-            t.uponDeath = self.beginOOBE
+            t.setUponDeath(self.beginOOBE)
 
     def beginOOBE(self, state):
         # Make sure we've reached our final destination
