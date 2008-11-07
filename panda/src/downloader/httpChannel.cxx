@@ -2028,7 +2028,7 @@ run_begin_body() {
     // We have already "read" the nonexistent body.
     _state = S_read_trailer;
 
-  } else if (get_file_size() > _skip_body_size) {
+  } else if (get_file_size() > (int)_skip_body_size) {
     // If we know the size of the body we are about to skip and it's
     // too large, then don't bother skipping it--just drop the
     // connection and get a new one.
