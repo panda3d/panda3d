@@ -101,7 +101,7 @@ public:
   void          CreateSkinCluster(MayaEggGeom *M);
 
   MayaAnim *GetAnim(EggXfmSAnim *pool);
-  MObject MayaEggLoader::GetDependencyNode(string givenName);
+  MObject GetDependencyNode(string givenName);
 
   MayaEggNurbsSurface  *GetSurface(EggVertexPool *pool, EggGroup *parent);
 
