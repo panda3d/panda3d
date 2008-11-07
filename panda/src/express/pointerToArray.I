@@ -459,6 +459,18 @@ set_element(size_type n, const Element &value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::__getitem__
+//       Access: Published
+//  Description: Same as get_element(), this returns the nth element
+//               of the array.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE const Element &PointerToArray<Element>::
+__getitem__(size_type n) const {
+  return (*this)[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::__setitem__
 //       Access: Published
 //  Description: Same as set_element(), this replaces the nth element
@@ -935,6 +947,18 @@ v() const {
 template<class Element>
 INLINE const Element &ConstPointerToArray<Element>::
 get_element(size_type n) const {
+  return (*this)[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::__getitem__
+//       Access: Published
+//  Description: Same as get_element(), this returns the nth element
+//               of the array.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE const Element &ConstPointerToArray<Element>::
+__getitem__(size_type n) const {
   return (*this)[n];
 }
 

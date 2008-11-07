@@ -113,7 +113,7 @@ PUBLISHED:
   INLINE void pop_back();
   INLINE const Element &get_element(size_type n) const;
   INLINE void set_element(size_type n, const Element &value);
-  INLINE const Element &operator [](size_type n) const;
+  INLINE const Element &__getitem__(size_type n) const;
   INLINE void __setitem__(size_type n, const Element &value);
   INLINE string get_data() const;
   INLINE void set_data(const string &data);
@@ -193,6 +193,7 @@ public:
   // Methods to help out Python and other high-level languages.
   INLINE const Element &get_element(size_type n) const;
   INLINE void set_element(size_type n, const Element &value);
+  INLINE const Element &__getitem__(size_type n) const;
   INLINE void __setitem__(size_type n, const Element &value);
   INLINE string get_data() const;
   INLINE void set_data(const string &data);
@@ -255,6 +256,7 @@ PUBLISHED:
   typedef TYPENAME pvector<Element>::size_type size_type;
   INLINE size_type size() const;
   INLINE const Element &get_element(size_type n) const;
+  INLINE const Element &__getitem__(size_type n) const;
   INLINE string get_data() const;
   INLINE string get_subdata(size_type n, size_type count) const;
   INLINE int get_ref_count() const;
@@ -312,6 +314,7 @@ PUBLISHED:
 
   // Methods to help out Python and other high-level languages.
   INLINE const Element &get_element(size_type n) const;
+  INLINE const Element &__getitem__(size_type n) const;
   INLINE string get_data() const;
   INLINE string get_subdata(size_type n, size_type count) const;
 
