@@ -45,6 +45,7 @@ PUBLISHED:
 
   INLINE int get_num_bins() const;
   INLINE int get_bin(int n) const;
+  MAKE_SEQ(get_bins, get_num_bins, get_bin);
   int find_bin(const string &name) const;
 
   INLINE string get_bin_name(int bin_index) const;

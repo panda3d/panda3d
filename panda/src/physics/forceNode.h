@@ -33,6 +33,7 @@ PUBLISHED:
   INLINE void clear();
   INLINE BaseForce *get_force(int index) const;
   INLINE int get_num_forces() const;
+  MAKE_SEQ(get_forces, get_num_forces, get_force);
   INLINE void add_force(BaseForce *force);
 
   void add_forces_from(const ForceNode &other);

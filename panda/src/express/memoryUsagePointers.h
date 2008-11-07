@@ -59,7 +59,10 @@ PUBLISHED:
 
   int get_num_pointers() const;
   ReferenceCount *get_pointer(int n) const;
+  MAKE_SEQ(get_pointers, get_num_pointers, get_pointer);
   TypedObject *get_typed_pointer(int n) const;
+  MAKE_SEQ(get_typed_pointers, get_num_pointers, get_typed_pointer);
+
   TypeHandle get_type(int n) const;
   string get_type_name(int n) const;
   double get_age(int n) const;

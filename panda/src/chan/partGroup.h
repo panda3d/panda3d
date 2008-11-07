@@ -72,6 +72,8 @@ PUBLISHED:
 
   int get_num_children() const;
   PartGroup *get_child(int n) const;
+  MAKE_SEQ(get_children, get_num_children, get_child);
+
   PartGroup *find_child(const string &name) const;
 
   virtual bool apply_freeze(const TransformState *transform);

@@ -291,11 +291,13 @@
 #define BEGIN_PUBLISH __begin_publish
 #define END_PUBLISH __end_publish
 #define BLOCKING __blocking
+#define MAKE_SEQ(seq_name, num_name, element_name) __make_seq(seq_name, num_name, element_name)
 #undef USE_STL_ALLOCATOR  // Don't try to parse these template classes in interrogate.
 #else
 #define BEGIN_PUBLISH
 #define END_PUBLISH
 #define BLOCKING
+#define MAKE_SEQ(seq_name, num_name, element_name)
 #endif
 
 #ifdef __cplusplus

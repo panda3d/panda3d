@@ -40,6 +40,7 @@ public:
 PUBLISHED:
   int get_num_types() const;
   PNMFileType *get_type(int n) const;
+  MAKE_SEQ(get_types, get_num_types, get_type);
 
   PNMFileType *get_type_from_extension(const string &filename) const;
   PNMFileType *get_type_from_magic_number(const string &magic_number) const;

@@ -66,6 +66,7 @@ PUBLISHED:
   void add_parameter(const EventParameter &obj);
   int get_num_parameters() const;
   EventParameter get_parameter(int n) const;
+  MAKE_SEQ(get_parameters, get_num_parameters, get_parameter);
 
   INLINE const ModifierButtons &get_modifier_buttons() const;
   INLINE void set_modifier_buttons(const ModifierButtons &mods);

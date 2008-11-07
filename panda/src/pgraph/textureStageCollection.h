@@ -42,7 +42,9 @@ PUBLISHED:
 
   int get_num_texture_stages() const;
   TextureStage *get_texture_stage(int index) const;
+  MAKE_SEQ(get_texture_stages, get_num_texture_stages, get_texture_stage);
   TextureStage *operator [] (int index) const;
+  int size() const;
 
   void sort();
 

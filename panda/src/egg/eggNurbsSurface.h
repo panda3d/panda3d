@@ -70,7 +70,9 @@ PUBLISHED:
   bool is_closed_v() const;
 
   INLINE double get_u_knot(int k) const;
+  MAKE_SEQ(get_u_knots, get_num_u_knots, get_u_knot);
   INLINE double get_v_knot(int k) const;
+  MAKE_SEQ(get_v_knots, get_num_v_knots, get_v_knot);
   INLINE EggVertex *get_cv(int ui, int vi) const;
 
   virtual void write(ostream &out, int indent_level) const;

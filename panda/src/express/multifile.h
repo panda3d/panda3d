@@ -83,6 +83,7 @@ PUBLISHED:
                       const string &subfile_name) const;
   void remove_subfile(int index);
   const string &get_subfile_name(int index) const;
+  MAKE_SEQ(get_subfile_names, get_num_subfiles, get_subfile_name);
   size_t get_subfile_length(int index) const;
   time_t get_subfile_timestamp(int index) const;
   bool is_subfile_compressed(int index) const;

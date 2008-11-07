@@ -47,6 +47,7 @@ class CPPExtensionType;
 class CPPStructType;
 class CPPEnumType;
 class CPPTypeProxy;
+class CPPMakeSeq;
 class CPPClassTemplateParameter;
 class CPPTBDType;
 class CPPScope;
@@ -68,6 +69,7 @@ public:
     ST_type,
     ST_namespace,
     ST_using,
+    ST_make_seq,
 
     // Subtypes of CPPType
     ST_simple,
@@ -134,6 +136,7 @@ public:
   virtual CPPEnumType *as_enum_type();
   virtual CPPTBDType *as_tbd_type();
   virtual CPPTypeProxy *as_type_proxy();
+  virtual CPPMakeSeq *as_make_seq();
 
   CPPVisibility _vis;
   CPPTemplateScope *_template_scope;

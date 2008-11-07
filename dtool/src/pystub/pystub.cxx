@@ -54,6 +54,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyList_Append(...);
   EXPCL_DTOOLCONFIG int PyList_AsTuple(...);
   EXPCL_DTOOLCONFIG int PyList_New(...);
+  EXPCL_DTOOLCONFIG int PyList_SetItem(...);
   EXPCL_DTOOLCONFIG int PyLong_AsLong(...);
   EXPCL_DTOOLCONFIG int PyLong_AsLongLong(...);
   EXPCL_DTOOLCONFIG int PyLong_AsUnsignedLong(...);
@@ -68,6 +69,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyModule_AddObject(...);
   EXPCL_DTOOLCONFIG int PyNumber_Long(...);
   EXPCL_DTOOLCONFIG int PyObject_Call(...);
+  EXPCL_DTOOLCONFIG int PyObject_CallMethod(...);
   EXPCL_DTOOLCONFIG int PyObject_CallMethodObjArgs(...);
   EXPCL_DTOOLCONFIG int PyObject_CallObject(...);
   EXPCL_DTOOLCONFIG int PyObject_Cmp(...);
@@ -120,8 +122,11 @@ extern "C" {
   EXPCL_DTOOLCONFIG int _Py_NegativeRefcount(...);
   EXPCL_DTOOLCONFIG int _Py_RefTotal(...);
 
+  EXPCL_DTOOLCONFIG int Py_IsInitialized();
+
   EXPCL_DTOOLCONFIG extern void *PyExc_AssertionError;
   EXPCL_DTOOLCONFIG extern void *PyExc_AttributeError;
+  EXPCL_DTOOLCONFIG extern void *PyExc_IndexError;
   EXPCL_DTOOLCONFIG extern void *PyExc_RuntimeError;
   EXPCL_DTOOLCONFIG extern void *PyExc_StopIteration;
   EXPCL_DTOOLCONFIG extern void *PyExc_TypeError;
@@ -170,6 +175,7 @@ int PyInt_Type(...) { return 0; }
 int PyList_Append(...) { return 0; }
 int PyList_AsTuple(...) { return 0; }
 int PyList_New(...) { return 0; }
+int PyList_SetItem(...) { return 0; }
 int PyLong_AsLong(...) { return 0; }
 int PyLong_AsLongLong(...) { return 0; }
 int PyLong_AsUnsignedLong(...) { return 0; }
@@ -184,6 +190,7 @@ int PyModule_AddIntConstant(...) { return 0; };
 int PyModule_AddObject(...) { return 0; };
 int PyNumber_Long(...) { return 0; }
 int PyObject_Call(...) { return 0; }
+int PyObject_CallMethod(...) { return 0; }
 int PyObject_CallMethodObjArgs(...) { return 0; }
 int PyObject_CallObject(...) { return 0; }
 int PyObject_Cmp(...) { return 0; }
@@ -236,9 +243,15 @@ int _Py_Dealloc(...) { return 0; };
 int _Py_NegativeRefcount(...) { return 0; };
 int _Py_RefTotal(...) { return 0; };
 
+// We actually might call this one.
+int Py_IsInitialized() {
+  return 0;
+}
+
 
 void *PyExc_AssertionError = (void *)NULL;
 void *PyExc_AttributeError = (void *)NULL;
+void *PyExc_IndexError = (void *)NULL;
 void *PyExc_RuntimeError = (void *)NULL;
 void *PyExc_StopIteration = (void *)NULL;
 void *PyExc_TypeError = (void *)NULL;

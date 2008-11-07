@@ -51,10 +51,12 @@ PUBLISHED:
   void add_triangle(unsigned int pointA, unsigned int pointB, unsigned int pointC);
 
   INLINE const unsigned int get_num_vertices() const;
+  INLINE const LPoint3f get_vertex(unsigned int index) const;
+  MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
   INLINE const unsigned int get_num_triangles() const;
   INLINE const LPoint3d get_triangle(unsigned int index) const;
-  INLINE const LPoint3f get_vertex(unsigned int index) const;
-  
+  MAKE_SEQ(get_triangles, get_num_triangles, get_triangle);
+
   virtual LPoint3f get_collision_origin() const;
 
 public:

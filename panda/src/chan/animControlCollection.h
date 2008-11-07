@@ -46,6 +46,9 @@ PUBLISHED:
   int get_num_anims() const;
   AnimControl *get_anim(int n) const;
   string get_anim_name(int n) const;
+  MAKE_SEQ(get_anims, get_num_anims, get_anim);
+  MAKE_SEQ(get_anim_names, get_num_anims, get_anim_name);
+
   void clear_anims();
 
   // The following functions are convenience functions that vector

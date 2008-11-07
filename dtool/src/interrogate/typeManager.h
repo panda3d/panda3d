@@ -60,6 +60,7 @@ public:
   static bool is_simple(CPPType *type);
   static bool is_const_simple(CPPType *type);
   static bool is_const_ref_to_simple(CPPType *type);
+  static bool is_ref_to_simple(CPPType *type);
   static bool is_pointable(CPPType *type);
   static bool is_char(CPPType *type);
   static bool is_char_pointer(CPPType *type);

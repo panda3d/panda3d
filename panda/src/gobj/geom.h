@@ -89,6 +89,7 @@ PUBLISHED:
 
   INLINE int get_num_primitives() const;
   INLINE CPT(GeomPrimitive) get_primitive(int i) const;
+  MAKE_SEQ(get_primitives, get_num_primitives, get_primitive);
   INLINE PT(GeomPrimitive) modify_primitive(int i);
   void set_primitive(int i, const GeomPrimitive *primitive);
   void add_primitive(const GeomPrimitive *primitive);

@@ -271,6 +271,17 @@ operator [] (int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskCollection::size
+//       Access: Published
+//  Description: Returns the number of tasks in the collection.  This
+//               is the same thing as get_num_tasks().
+////////////////////////////////////////////////////////////////////
+int AsyncTaskCollection::
+size() const {
+  return _tasks.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: AsyncTaskCollection::output
 //       Access: Published
 //  Description: Writes a brief one-line description of the

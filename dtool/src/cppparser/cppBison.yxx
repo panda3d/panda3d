@@ -14,6 +14,7 @@
 #include "cppEnumType.h"
 #include "cppFunctionType.h"
 #include "cppTBDType.h"
+#include "cppMakeSeq.h"
 #include "cppParameterList.h"
 #include "cppInstance.h"
 #include "cppClassTemplateParameter.h"
@@ -262,6 +263,7 @@ pop_struct() {
 %token KW_INT
 %token KW_LONG
 %token KW_LONGLONG
+%token KW_MAKE_SEQ
 %token KW_MUTABLE
 %token KW_NAMESPACE
 %token KW_NEW
@@ -471,6 +473,11 @@ declaration:
         | KW_PRIVATE ':'
 {
   current_scope->set_current_vis(V_private);
+}
+	| KW_MAKE_SEQ '(' name ',' name ',' name ')' ';'
+{
+  CPPMakeSeq *make_seq = new CPPMakeSeq($3->get_simple_name(), $5->get_simple_name(), $7->get_simple_name(), @1.file);
+  current_scope->add_declaration(make_seq, global_scope, current_lexer, @1);
 }
         ;
 

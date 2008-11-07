@@ -53,6 +53,7 @@ PUBLISHED:
 
   INLINE int get_num_buttons() const;
   INLINE ButtonHandle get_button(int index) const;
+  MAKE_SEQ(get_buttons, get_num_buttons, get_button);
 
   bool button_down(ButtonHandle button);
   bool button_up(ButtonHandle button);

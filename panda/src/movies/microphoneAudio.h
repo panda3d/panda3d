@@ -31,6 +31,7 @@ class EXPCL_PANDA_MOVIES MicrophoneAudio : public MovieAudio {
 
   static int                 get_num_options();
   static PT(MicrophoneAudio) get_option(int n);
+  MAKE_SEQ(get_options, get_num_options, get_option);
   
   INLINE int get_channels() const;
   INLINE int get_rate() const;

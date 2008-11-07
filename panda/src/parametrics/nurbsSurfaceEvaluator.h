@@ -66,11 +66,13 @@ PUBLISHED:
   INLINE int get_num_u_knots() const;
   void set_u_knot(int i, float knot);
   float get_u_knot(int i) const;
+  MAKE_SEQ(get_u_knots, get_num_u_knots, get_u_knot);
   void normalize_u_knots();
 
   INLINE int get_num_v_knots() const;
   void set_v_knot(int i, float knot);
   float get_v_knot(int i) const;
+  MAKE_SEQ(get_v_knots, get_num_v_knots, get_v_knot);
   void normalize_v_knots();
 
   INLINE int get_num_u_segments() const;

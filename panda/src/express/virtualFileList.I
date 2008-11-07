@@ -61,3 +61,24 @@ get_file(int n) const {
   nassertr(n >= 0 && n < (int)_files.size(), NULL);
   return _files[n];
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileList::operator []
+//       Access: Published
+//  Description: Returns the nth file in the list.
+////////////////////////////////////////////////////////////////////
+INLINE VirtualFile *VirtualFileList::
+operator [](int n) const {
+  nassertr(n >= 0 && n < (int)_files.size(), NULL);
+  return _files[n];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileList::size
+//       Access: Published
+//  Description: Returns the number of files in the list.
+////////////////////////////////////////////////////////////////////
+INLINE int VirtualFileList::
+size() const {
+  return _files.size();
+}

@@ -148,9 +148,11 @@ PUBLISHED:
 
   int get_num_display_regions() const;
   PT(DisplayRegion) get_display_region(int n) const;
+  MAKE_SEQ(get_display_regions, get_num_display_regions, get_display_region);
 
   int get_num_active_display_regions() const;
   PT(DisplayRegion) get_active_display_region(int n) const;
+  MAKE_SEQ(get_active_display_regions, get_num_active_display_regions, get_active_display_region);
 
   GraphicsOutput *make_texture_buffer(
       const string &name, int x_size, int y_size,

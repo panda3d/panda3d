@@ -57,12 +57,13 @@ PUBLISHED:
 
   // Functions to move the line vertices after they have been created.
   INLINE int get_num_vertices() const;
-
   Vertexf get_vertex(int n) const;
+  MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
   void set_vertex(int n, const Vertexf &vert);
   INLINE void set_vertex(int vertex, float x, float y, float z);
 
   Colorf get_vertex_color(int vertex) const;
+  MAKE_SEQ(get_vertex_colors, get_num_vertices, get_vertex_color);
   void set_vertex_color(int vertex, const Colorf &c);
   INLINE void set_vertex_color(int vertex, float r, float g, float b, float a = 1.0f);
 

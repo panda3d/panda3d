@@ -69,8 +69,10 @@ PUBLISHED:
 
   INLINE int get_num_geoms() const;
   INLINE CPT(Geom) get_geom(int n) const;
+  MAKE_SEQ(get_geoms, get_num_geoms, get_geom);
   INLINE PT(Geom) modify_geom(int n);
   INLINE const RenderState *get_geom_state(int n) const;
+  MAKE_SEQ(get_geom_states, get_num_geoms, get_geom_state);
   INLINE void set_geom_state(int n, const RenderState *state);
 
   void add_geom(Geom *geom, const RenderState *state = RenderState::make_empty());

@@ -56,9 +56,91 @@ void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * 
         answer = NULL;
 };
 
+////////////////////////////////////////////////////////////////////
+//     Function: attempt_coercion
+//  Description: A helper function for DTOOL_Call_GetPointerThisClass,
+//               below.  This attempts to coerce the given object to
+//               the indicated Panda object, by creating a temporary
+//               instance of the required Panda object.  If
+//               successful, returns the "this" pointer of the
+//               temporary object; otherwise, returns NULL.
+////////////////////////////////////////////////////////////////////
+static void *
+attempt_coercion(PyObject *self, Dtool_PyTypedObject *classdef,
+                 PyObject **coerced) {
+  // The supplied parameter is not the required type.
+  if (coerced != NULL) {
+    // Attempt coercion: try to create a temporary instance of the
+    // required class using the supplied parameter.
+    PyObject *obj = PyObject_Call((PyObject *)classdef, self, NULL);
+    if (obj != NULL) {
+      // Well, whaddaya know?  The supplied parameter(s) suited
+      // the object's constructor.  Now we have a temporary object
+      // that we can pass to the function.
+      Dtool_PyTypedObject *my_type = ((Dtool_PyInstDef *)obj)->_My_Type;
+      void *result = my_type->_Dtool_UpcastInterface(obj, classdef);
+      if (result != NULL) {
+        // Successfully coerced.  Store the newly-allocated
+        // pointer, so the caller can release the coerced object
+        // at his leisure.  We store it in a list, so that other
+        // parameters can accumulate there too.
+        if ((*coerced) == NULL) {
+          (*coerced) = PyList_New(0);
+        }
+        PyList_Append(*coerced, obj);
+        return result;
+      }
+      // Some problem getting the C++ pointer from our created
+      // temporary object.  Weird.
+      Py_DECREF(obj);
+    }
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DTOOL_Call_GetPointerThisClass
+//  Description: Extracts the C++ pointer for an object, given its
+//               Python wrapper object, for passing as the parameter
+//               to a C++ function.
+//
+//               self is the Python wrapper object in question.
+//
+//               classdef is the Python class wrapper for the C++
+//               class in which the this pointer should be returned.
+//               (This may require an upcast operation, if self is not
+//               already an instance of classdef.)
+//
+//               param and function_name are used for error reporting
+//               only, and describe the particular function and
+//               parameter index for this parameter.
+//
+//               const_ok is true if the function is declared const
+//               and can therefore be called with either a const or
+//               non-const "this" pointer, or false if the function is
+//               declared non-const, and can therefore be called with
+//               only a non-const "this" pointer.
+//
+//               If coerced is non-NULL, parameter coercion will be
+//               attempted.  This means the supplied parameter may not
+//               exactly match the required type, but will satisfy the
+//               require type's constructor; and we will create
+//               temporary object(s) of the required type instead.  In
+//               this case, coerced is a pointer to a PyList that will
+//               be filled with these temporary objects.  If coerced
+//               is a pointer to a NULL PyObject, a new PyList will be
+//               created on the first successful coercion.  If coerced
+//               itself is NULL, parameter coercion will not be
+//               attempted.
+//
+//               The return value is the C++ pointer that was
+//               extracted, or NULL if there was a problem (in which
+//               case the Python exception state will have been set).
+////////////////////////////////////////////////////////////////////
 void *
 DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
-                               int param, const string &function_name, bool const_ok) {
+                               int param, const string &function_name, bool const_ok,
+                               PyObject **coerced) {
   if (self != NULL) {
     if (DtoolCanThisBeAPandaInstance(self)) {
       Dtool_PyTypedObject *my_type = ((Dtool_PyInstDef *)self)->_My_Type;
@@ -99,6 +181,14 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
       }
 
     } else {
+      // The parameter was not a Panda type.  Can we coerce it to the
+      // appropriate type, by creating a temporary object?
+      void *result = attempt_coercion(self, classdef, coerced);
+      if (result != NULL) {
+        return result;
+      }
+
+      // Coercion failed.
       ostringstream str;
       str << function_name << "() argument " << param << " must be ";
 
@@ -560,5 +650,43 @@ int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
         return  1;
     return 0;   
 }
+
+
+PyObject *make_list_for_item(PyObject *self, const char *num_name,
+                             const char *element_name) {
+  PyObject *num_result = PyObject_CallMethod(self, (char *)num_name, "()");
+  if (num_result == NULL) {
+    return NULL;
+  }
+  Py_ssize_t num_elements = PyInt_AsSsize_t(num_result);
+  Py_DECREF(num_result);
+  
+  PyObject *list = PyList_New(num_elements);
+  for (int i = 0; i < num_elements; ++i) {
+    PyObject *element = PyObject_CallMethod(self, (char *)element_name, "(i)", i);
+    if (element == NULL) {
+      Py_DECREF(list);
+      return NULL;
+    }
+    PyList_SetItem(list, i, element);
+  }
+  return list;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PyLongOrInt_FromUnsignedLong
+//  Description: Similar to PyLong_FromUnsignedLong(), but returns
+//               either a regular integer or a long integer, according
+//               to whether the indicated value will fit.
+////////////////////////////////////////////////////////////////////
+EXPCL_DTOOLCONFIG PyObject *
+PyLongOrInt_FromUnsignedLong(unsigned long value) {
+  if ((long)value < 0) {
+    return PyLong_FromUnsignedLong(value);
+  } else {
+    return PyInt_FromLong((long)value);
+  }
+}
+
 
 #endif  // HAVE_PYTHON

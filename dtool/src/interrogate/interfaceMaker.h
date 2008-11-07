@@ -58,7 +58,7 @@ public:
 
   virtual void write_module(ostream &out, ostream *out_h,InterrogateModuleDef *def);
 
-  virtual ParameterRemap *  remap_parameter(CPPType *struct_type, CPPType *param_type);
+  virtual ParameterRemap *remap_parameter(CPPType *struct_type, CPPType *param_type);
 
   virtual bool synthesize_this_parameter();
   virtual bool separate_overloading();
@@ -81,20 +81,39 @@ public:
     typedef vector<FunctionRemap *> Remaps;
     Remaps _remaps;
     bool _has_this;
+    int _flags;
   };
   typedef vector<Function *> Functions;
   Functions _functions;
+
+  class MakeSeq {
+  public:
+    MakeSeq(const string &name, CPPMakeSeq *cpp_make_seq);
+
+    string _name;
+    string _seq_name;
+    string _num_name;
+    string _element_name;
+  };
+  typedef vector<MakeSeq *> MakeSeqs;
 
   class Object {
   public:
     Object(const InterrogateType &itype);
     ~Object();
 
-    void add_method(Function *method);
+    void check_protocols();
 
     const InterrogateType &_itype;
     Functions _constructors;
     Functions _methods;
+    MakeSeqs _make_seqs;
+
+    enum ProtocolTypes {
+      PT_sequence =   0x0001,
+      PT_mapping =    0x0002,
+    };
+    int _protocol_types;
   };
   typedef map<TypeIndex, Object *> Objects;
   Objects _objects;

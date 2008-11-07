@@ -243,6 +243,18 @@ operator [] (int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PhysicsObjectCollection::size
+//       Access: Published
+//  Description: Returns the number of physics objects in the
+//               collection.  This is the same thing as
+//               get_num_physics_objects().
+////////////////////////////////////////////////////////////////////
+int PhysicsObjectCollection::
+size() const {
+  return _physics_objects.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PhysicsObjectCollection::output
 //       Access: Published
 //  Description: Writes a brief one-line description of the

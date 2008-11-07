@@ -198,6 +198,7 @@ PUBLISHED:
   INLINE Texture *get_texture(const int anim, const int frame) const;
   INLINE int get_num_anims() const;
   INLINE SpriteAnim *get_anim(const int n) const;
+  MAKE_SEQ(get_anims, get_num_anims, get_anim);
   INLINE SpriteAnim *get_last_anim() const;
   INLINE ColorInterpolationManager* get_color_interpolation_manager() const;
   INLINE TexCoordf get_ll_uv() const;

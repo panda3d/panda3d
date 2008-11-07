@@ -75,10 +75,12 @@ PUBLISHED:
 
   INLINE int get_num_on_planes() const;
   INLINE NodePath get_on_plane(int n) const;
+  MAKE_SEQ(get_on_planes, get_num_on_planes, get_on_plane);
   INLINE bool has_on_plane(const NodePath &plane) const;
 
   INLINE int get_num_off_planes() const;
   INLINE NodePath get_off_plane(int n) const;
+  MAKE_SEQ(get_off_planes, get_num_off_planes, get_off_plane);
   INLINE bool has_off_plane(const NodePath &plane) const;
   INLINE bool has_all_off() const;
 

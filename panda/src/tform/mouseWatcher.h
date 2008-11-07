@@ -130,6 +130,7 @@ PUBLISHED:
   bool replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group);
   int get_num_groups() const;
   MouseWatcherGroup *get_group(int n) const;
+  MAKE_SEQ(get_groups, get_num_groups, get_group);
 
   INLINE void set_inactivity_timeout(double timeout);
   INLINE bool has_inactivity_timeout() const;

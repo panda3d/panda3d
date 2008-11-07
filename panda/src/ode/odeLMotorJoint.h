@@ -30,6 +30,7 @@ PUBLISHED:
 
   INLINE int get_num_axes() const;
   INLINE LVecBase3f get_axis(int anum) const;
+  MAKE_SEQ(get_axes, get_num_axes, get_axis);
   INLINE dReal get_param(int parameter) const;
 
 public:

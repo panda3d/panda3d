@@ -59,7 +59,9 @@ PUBLISHED:
 
   INLINE int get_num_switches() const;
   INLINE float get_in(int index) const;
+  MAKE_SEQ(get_ins, get_num_switches, get_in);
   INLINE float get_out(int index) const;
+  MAKE_SEQ(get_outs, get_num_switches, get_out);
 
   INLINE int get_lowest_switch() const;
   INLINE int get_highest_switch() const;

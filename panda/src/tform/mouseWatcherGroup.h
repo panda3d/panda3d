@@ -46,6 +46,7 @@ PUBLISHED:
 
   int get_num_regions() const;
   MouseWatcherRegion *get_region(int n) const;
+  MAKE_SEQ(get_regions, get_num_regions, get_region);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

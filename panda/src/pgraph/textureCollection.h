@@ -42,7 +42,9 @@ PUBLISHED:
 
   int get_num_textures() const;
   Texture *get_texture(int index) const;
+  MAKE_SEQ(get_textures, get_num_textures, get_texture);
   Texture *operator [] (int index) const;
+  int size() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

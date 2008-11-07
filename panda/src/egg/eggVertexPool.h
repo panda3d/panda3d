@@ -104,9 +104,10 @@ public:
   iterator begin() const;
   iterator end() const;
   bool empty() const;
-  size_type size() const;
 
 PUBLISHED:
+  size_type size() const;
+
   // add_vertex() adds a freshly-allocated vertex.  It is up to the
   // user to allocate the vertex.
   EggVertex *add_vertex(EggVertex *vertex, int index = -1);

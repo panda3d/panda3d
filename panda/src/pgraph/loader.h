@@ -63,7 +63,9 @@ PUBLISHED:
     INLINE void clear();
     INLINE int get_num_files() const;
     INLINE const Filename &get_file(int n) const;
+    MAKE_SEQ(get_files, get_num_files, get_file);
     INLINE LoaderFileType *get_file_type(int n) const;
+    MAKE_SEQ(get_file_types, get_num_files, get_file_type);
 
   public:
     INLINE void add_file(const Filename &file, LoaderFileType *type);

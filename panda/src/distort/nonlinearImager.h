@@ -101,7 +101,10 @@ PUBLISHED:
 
   int get_num_screens() const;
   NodePath get_screen(int index) const;
+  MAKE_SEQ(get_screens, get_num_screens, get_screen);
   GraphicsOutput *get_buffer(int index) const;
+  MAKE_SEQ(get_buffers, get_num_screens, get_buffer);
+
   void set_texture_size(int index, int width, int height);
   void set_source_camera(int index, const NodePath &source_camera);
 
@@ -119,6 +122,7 @@ PUBLISHED:
 
   int get_num_viewers() const;
   DisplayRegion *get_viewer(int index) const;
+  MAKE_SEQ(get_viewers, get_num_viewers, get_viewer);
 
   NodePath get_dark_room() const;
   GraphicsEngine *get_graphics_engine() const;

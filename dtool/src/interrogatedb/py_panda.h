@@ -55,6 +55,15 @@
 #undef HAVE_LONG_LONG
 #endif 
 
+#if PY_VERSION_HEX < 0x02050000
+
+// Prior to Python 2.5, we didn't have Py_ssize_t.
+typedef int Py_ssize_t;
+#define PyInt_FromSsize_t PyInt_FromLong
+#define PyInt_AsSsize_t PyInt_AsLong
+
+#endif  // PY_VERSION_HEX
+
 using namespace std;
 
 #define PY_PANDA_SMALLER_FOOTPRINT  1
@@ -189,6 +198,16 @@ static  PyNumberMethods     Dtool_PyNumberMethods_##CLASS_NAME ={\
         0,/*binaryfunc nb_inplace_floor_divide*/\
         0,/*binaryfunc nb_inplace_true_divide*/\
     };\
+static  PySequenceMethods    Dtool_PySequenceMethods_##CLASS_NAME ={\
+        0,/*lenfunc sq_length */\
+        0,/*binaryfunc sq_concat */\
+        0,/*ssizeargfunc sq_repeat */\
+        0,/*ssizeargfunc sq_item */\
+        0,/*ssizeargfunc sq_ass_item */\
+        0,/*objobjproc sq_contains */\
+        0,/*binaryfunc sq_inplace_concat */\
+        0,/*ssizeargfunc sq_inplace_repeat */\
+};\
 static  PyMappingMethods    Dtool_PyMappingMethods_##CLASS_NAME ={\
         0,/*inquiry mp_length */\
         0,/*binaryfunc mp_subscript */\
@@ -207,8 +226,8 @@ EXPORT_THIS Dtool_PyTypedObject Dtool_##CLASS_NAME =  {\
     0,              /*tp_setattr*/\
     0,              /*tp_compare*/\
     0,              /*tp_repr*/\
-    &Dtool_PyNumberMethods_##CLASS_NAME,              /*tp_as_number*/\
-    0,              /*tp_as_sequence*/\
+    &Dtool_PyNumberMethods_##CLASS_NAME,               /*tp_as_number*/\
+    &Dtool_PySequenceMethods_##CLASS_NAME,             /*tp_as_sequence*/\
     &Dtool_PyMappingMethods_##CLASS_NAME,              /*tp_as_mapping*/\
     0,     /*tp_hash */\
         0,                                      /* tp_call */\
@@ -326,7 +345,7 @@ EXPCL_DTOOLCONFIG bool DtoolCanThisBeAPandaInstance(PyObject *self);
 EXPCL_DTOOLCONFIG void DTOOL_Call_ExtractThisPointerForType(PyObject *self, Dtool_PyTypedObject * classdef, void ** answer);
 
 
-EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef, int param, const string &function_name, bool const_ok);
+EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject  *classdef, int param, const string &function_name, bool const_ok, PyObject **coerced);
 
 EXPCL_DTOOLCONFIG void * DTOOL_Call_GetPointerThis(PyObject *self);
 
@@ -494,6 +513,12 @@ EXPCL_DTOOLCONFIG long  DTool_HashKey(PyObject * inst)
 EXPCL_DTOOLCONFIG int DTOOL_PyObject_Compare_old(PyObject *v1, PyObject *v2);
 
 EXPCL_DTOOLCONFIG int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2);
+
+EXPCL_DTOOLCONFIG PyObject *
+make_list_for_item(PyObject *self, const char *num_name,
+                   const char *element_name);
+EXPCL_DTOOLCONFIG PyObject *
+PyLongOrInt_FromUnsignedLong(unsigned long value);
 
 EXPCL_DTOOLCONFIG extern struct   Dtool_PyTypedObject Dtool_DTOOL_SUPPER_BASE;
 

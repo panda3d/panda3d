@@ -39,7 +39,9 @@ PUBLISHED:
   bool is_empty() const;
   int get_num_joints() const;
   OdeJoint get_joint(int index) const;
+  MAKE_SEQ(get_joints, get_num_joints, get_joint);
   OdeJoint operator [] (int index) const;
+  int size() const;
   
 private:  
   typedef PTA(OdeJoint) Joints;

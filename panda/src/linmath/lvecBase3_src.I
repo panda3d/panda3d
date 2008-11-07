@@ -156,6 +156,29 @@ operator [](int i) {
   return _v.data[i];
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::__setitem__
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase3)::
+__setitem__(int i, FLOATTYPE v) {
+  nassertv(i >= 0 && i < 3);
+  _v.data[i] = v;
+}
+#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::size
+//       Access: Public, Static
+//  Description: Returns 3: the number of components of a LVecBase3.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LVecBase3)::
+size() {
+  return 3;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::is_nan
 //       Access: Public

@@ -23,6 +23,32 @@ public:
   typedef const FLOATTYPE *const_iterator;
 
 PUBLISHED:
+  // These helper classes are used to support two-level operator [].
+  class Row {
+  private:
+    INLINE_LINMATH Row(FLOATTYPE *row);
+  PUBLISHED:
+    INLINE_LINMATH FLOATTYPE operator [](int i) const;
+    INLINE_LINMATH FLOATTYPE &operator [](int i);
+#ifdef HAVE_PYTHON
+    INLINE_LINMATH void __setitem__(int i, FLOATTYPE v);
+#endif
+    INLINE_LINMATH static size_t size();
+  private:
+    FLOATTYPE *_row;
+    friend class FLOATNAME(LMatrix4);
+  };
+  class CRow {
+  private:
+    INLINE_LINMATH CRow(const FLOATTYPE *row);
+  PUBLISHED:
+    INLINE_LINMATH FLOATTYPE operator [](int i) const;
+    INLINE_LINMATH static size_t size();
+  private:
+    const FLOATTYPE *_row;
+    friend class FLOATNAME(LMatrix4);
+  };
+
   INLINE_LINMATH FLOATNAME(LMatrix4)();
   INLINE_LINMATH FLOATNAME(LMatrix4)(const FLOATNAME(LMatrix4) &other);
   INLINE_LINMATH FLOATNAME(LMatrix4) &operator = (const FLOATNAME(LMatrix4) &other);
@@ -57,8 +83,10 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(LVecBase4) get_row(int row) const;
   INLINE_LINMATH FLOATNAME(LVecBase4) get_col(int col) const;
-
   INLINE_LINMATH FLOATNAME(LVecBase3) get_row3(int row) const;
+  MAKE_SEQ(get_rows, size, get_row);
+  MAKE_SEQ(get_cols, size, get_col);
+  MAKE_SEQ(get_row3s, size, get_row3);
 
   // these versions inline better
   INLINE_LINMATH void get_row(FLOATNAME(LVecBase4) &result_vec, int row) const;
@@ -68,6 +96,10 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE &operator () (int row, int col);
   INLINE_LINMATH FLOATTYPE operator () (int row, int col) const;
+
+  INLINE_LINMATH CRow operator [](int i) const;
+  INLINE_LINMATH Row operator [](int i);
+  INLINE_LINMATH static size_t size();
 
   INLINE_LINMATH bool is_nan() const;
 

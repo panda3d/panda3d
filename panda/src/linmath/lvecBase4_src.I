@@ -170,6 +170,29 @@ operator [](int i) {
   return _v.data[i];
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::__setitem__
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LVecBase4)::
+__setitem__(int i, FLOATTYPE v) {
+  nassertv(i >= 0 && i < 4);
+  _v.data[i] = v;
+}
+#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVecBase4::size
+//       Access: Public, Static
+//  Description: Returns 4: the number of components of a LVecBase4.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
+size() {
+  return 4;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LVecBase4::is_nan
 //       Access: Public

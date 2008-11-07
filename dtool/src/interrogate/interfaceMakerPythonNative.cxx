@@ -98,9 +98,6 @@ RenameSet methodRenameDictionary[] = {
     { "operator ->"  , "dereference",          0 },
     { "operator <<=" , "__ilshift__",          1 },
     { "operator >>=" , "__irshift__",          1 },
-    { "__getitem__"  , "__getitem__",          0 },
-    { "__getattr__"  , "__getattr__",          0 },
-    { "__setattr__"  , "__setattr__",          0 },
     { "print"       , "Cprint",               0 },
     { "CInterval.set_t" , "_priv__cSetT",      0 },
     { NULL, NULL, -1 }
@@ -272,13 +269,7 @@ std::string nonClassNameFromCppName(const std::string &cppName_in)
 }
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
-std::string  methodNameFromCppName(InterfaceMaker::Function *func, const std::string &className)
-{
-    std::string cppName = func->_ifunc.get_name();
-    if (func->_ifunc.is_unary_op()) {
-      cppName += "unary";
-    }
-
+std::string  methodNameFromCppName(const std::string &cppName, const std::string &className) {
     std::string methodName;
     std::string badChars(" ");
     int nextCap = 0;
@@ -325,6 +316,16 @@ std::string  methodNameFromCppName(InterfaceMaker::Function *func, const std::st
     methodName = checkKeyword(methodName);
     return methodName;
 }
+
+std::string  methodNameFromCppName(InterfaceMaker::Function *func, const std::string &className)
+{
+    std::string cppName = func->_ifunc.get_name();
+    if (func->_ifunc.is_unary_op()) {
+      cppName += "unary";
+    }
+    return methodNameFromCppName(cppName, className);
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
@@ -360,215 +361,206 @@ bool isInplaceFunction(InterfaceMaker::Function *func)
 
     return false;
 }
+
 ////////////////////////////////////////////////////////////////////
-/// Function : GetSlotedFunctinDef
+//     Function: InterfaceMakerPythonNative::get_slotted_function_def
+//       Access: Private, Static
+//  Description: Determines whether this method should be mapped to
+//               one of Python's special slotted functions, those
+//               hard-coded functions that are assigned to particular
+//               function pointers within the object structure, for
+//               special functions like __getitem__ and __len__.
 //
-//  This function is used to define special behavior for class functions.. 
-//      main use is to encode the slot pointer logic and function call 
-//      conventions for the slaot interface..
+//               Returns true if it has such a mapping, false if it is
+//               just a normal method.  If it returns true, the
+//               SlottedFunctionDef structure is filled in with the
+//               important details.
 ////////////////////////////////////////////////////////////////////
-bool GetSlotedFunctinDef(const std::string &thimputstring, std::string &answer_location, int &wraper_type)
-{                
-    wraper_type = -1;
+bool InterfaceMakerPythonNative::
+get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
+  def._answer_location = string();
+  def._wrapper_type = WT_none;
 
-    if(thimputstring.size() > 4 && thimputstring[0] == '_' && thimputstring[1] == '_')
-    {
-        if(thimputstring == "__add__")
-        {
-            answer_location = "tp_as_number->nb_add";
-            wraper_type = 6;
-            return true;
-        }
+  string method_name = func->_ifunc.get_name();
+  bool is_unary_op = func->_ifunc.is_unary_op();
 
-        if(thimputstring == "__sub__")
-        {
-            answer_location = "tp_as_number->nb_subtract";
-            wraper_type = 6;
-            return true;        
-        }
+  if (method_name == "operator +") {
+    def._answer_location = "tp_as_number->nb_add";
+    def._wrapper_type = WT_numeric_operator;
+    return true;
+  }
 
-        if(thimputstring == "__neg__")
-        {
-            answer_location = "tp_as_number->nb_negative";
-            wraper_type = 2;
-            return true;        
-        }
+  if (method_name == "operator -" && is_unary_op) {
+    def._answer_location = "tp_as_number->nb_negative";
+    def._wrapper_type = WT_no_params;
+    return true;        
+  }
 
-        if(thimputstring == "__mul__")
-        {
-            answer_location = "tp_as_number->nb_multiply";
-            wraper_type = 6;
-            return true;
-        }
+  if (method_name == "operator -") {
+    def._answer_location = "tp_as_number->nb_subtract";
+    def._wrapper_type = WT_numeric_operator;
+    return true;        
+  }
 
-        if(thimputstring == "__div__")
-        {
-            answer_location = "tp_as_number->nb_divide";
-            wraper_type = 6;
-            return true;
-        }
+  if (method_name == "operator *") {
+    def._answer_location = "tp_as_number->nb_multiply";
+    def._wrapper_type = WT_numeric_operator;
+    return true;
+  }
 
-        if(thimputstring == "__mod__")
-        {
-            answer_location = "tp_as_number->nb_remainder";
-            wraper_type = 6;
-            return true;
-        }
+  if (method_name == "operator /") {
+    def._answer_location = "tp_as_number->nb_divide";
+    def._wrapper_type = WT_numeric_operator;
+    return true;
+  }
 
-        if(thimputstring == "__lshift__")
-        {
-            answer_location = "tp_as_number->nb_lshift";
-            wraper_type = 6;
-            return true;
-        }
+  if (method_name == "operator %") {
+    def._answer_location = "tp_as_number->nb_remainder";
+    def._wrapper_type = WT_numeric_operator;
+    return true;
+  }
 
-        if(thimputstring == "__rshift__")
-        {
-            answer_location = "tp_as_number->nb_rshift";
-            wraper_type = 6;
-            return true;
-        }
+  if (method_name == "operator <<") {
+    def._answer_location = "tp_as_number->nb_lshift";
+    def._wrapper_type = WT_numeric_operator;
+    return true;
+  }
 
+  if (method_name == "operator >>") {
+    def._answer_location = "tp_as_number->nb_rshift";
+    def._wrapper_type = WT_numeric_operator;
+    return true;
+  }
 
-        if(thimputstring == "__xor__")
-        {
-            answer_location = "tp_as_number->nb_xor";
-            wraper_type = 6;
-            return true;
-        }
+  if (method_name == "operator ^") {
+    def._answer_location = "tp_as_number->nb_xor";
+    def._wrapper_type = WT_numeric_operator;
+    return true;
+  }
 
-        if(thimputstring == "__invert__")
-        {
-            answer_location = "tp_as_number->nb_invert";
-            wraper_type = 2;
-            return true;
-        }
+  if (method_name == "operator ~" && is_unary_op) {
+    def._answer_location = "tp_as_number->nb_invert";
+    def._wrapper_type = WT_no_params;
+    return true;
+  }
 
+  if (method_name == "operator &") {
+    def._answer_location = "tp_as_number->nb_and";
+    def._wrapper_type = WT_numeric_operator;
+    return true;
+  }
 
-        if(thimputstring == "__and__")
-        {
-            answer_location = "tp_as_number->nb_and";
-            wraper_type = 6;
-            return true;
-        }
+  if (method_name == "operator |") {
+    def._answer_location = "tp_as_number->nb_or";
+    def._wrapper_type = WT_numeric_operator;
+    return true;
+  }
 
-        if(thimputstring == "__or__")
-        {
-            answer_location = "tp_as_number->nb_or";
-            wraper_type = 6;
-            return true;
-        }
+  if (method_name == "operator +=") {
+    def._answer_location = "tp_as_number->nb_inplace_add";
+    def._wrapper_type = WT_one_param;
+    return true;
+  }
 
+  if (method_name == "operator -=") {
+    def._answer_location = "tp_as_number->nb_inplace_subtract";
+    def._wrapper_type = WT_one_param;
+    return true;
+  }
 
-        if(thimputstring == "__iadd__")
-        {
-            answer_location = "tp_as_number->nb_inplace_add";
-            wraper_type = 3;
-            return true;
-        }
+  if (method_name == "operator *=") {
+    def._answer_location = "tp_as_number->nb_inplace_multiply";
+    def._wrapper_type = WT_one_param;
+    return true;
+  }
 
-        if(thimputstring == "__isub__")
-        {
-            answer_location = "tp_as_number->nb_inplace_subtract";
-            wraper_type = 3;
-            return true;
-        }
+  if (method_name == "operator /=") {
+    def._answer_location = "tp_as_number->nb_inplace_divide";
+    def._wrapper_type = WT_one_param;
+    return true;
+  }
 
-        if(thimputstring == "__imul__")
-        {
-            answer_location = "tp_as_number->nb_inplace_multiply";
-            wraper_type = 3;
-            return true;
-        }
+  if (method_name == "operator %=") {
+    def._answer_location = ".tp_as_number->nb_inplace_remainder";
+    def._wrapper_type = WT_one_param;
+    return true;
+  }
 
-        if(thimputstring == "__idiv__")
-        {
-            answer_location = "tp_as_number->nb_inplace_divide";
-            wraper_type = 3;
-            return true;
-        }
+  if (method_name == "operator <<=") {
+    def._answer_location = "tp_as_number->nb_inplace_lshift";
+    def._wrapper_type = WT_one_param;
+    return true;
+  }
 
-        if(thimputstring == "__imod__")
-        {
-            answer_location = ".tp_as_number->nb_inplace_remainder";
-            wraper_type = 3;
-            return true;
-        }
+  if (method_name == "operator >>=") {
+    def._answer_location = "tp_as_number->nb_inplace_rshift";
+    def._wrapper_type = WT_one_param;
+    return true;
+  }
 
+  if (method_name == "operator &=") {
+    def._answer_location = "tp_as_number->nb_inplace_and";
+    def._wrapper_type = WT_one_param;
+    return true;
+  }
 
-        if(thimputstring == "__ilshift__")
-        {
-            answer_location = "tp_as_number->nb_inplace_lshift";
-            wraper_type = 3;
-            return true;
-        }
+  if (method_name == "operator ^=") {
+    def._answer_location = "tp_as_number->nb_inplace_xor";
+    def._wrapper_type = WT_one_param;
+    return true;
+  }
 
-        if(thimputstring == "__irshift__")
-        {
-            answer_location = "tp_as_number->nb_inplace_rshift";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__iand__")
-        {
-            answer_location = "tp_as_number->nb_inplace_and";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__ixor__")
-        {
-            answer_location = "tp_as_number->nb_inplace_xor";
-            wraper_type = 3;
-            return true;
-        }
-
-        if(thimputstring == "__int__")
-        {
-            answer_location = "tp_as_number->nb_int";
-            wraper_type = 2;
-            return true;
-        }
-
-//        if(thimputstring == "__coerce__")
-//        {
-//            answer_location = "tp_as_number->nb_coerce";
-//            return true;
-//        }
-
-        // mapping methods
-        if(thimputstring == "__getitem__")
-        {
-            answer_location = "tp_as_mapping->mp_subscript";
-            wraper_type = 3;
-            return true;
-        }
-
-        //Direct methods
-        if(thimputstring == "__call__")
-        {
-            answer_location = "tp_call";
-            //wraper_type = 1;
-            return true;
-        }
-
-        if(thimputstring == "__getattr__")
-        {
-            answer_location = "tp_getattro";
-            wraper_type = 5;
-            return true;
-        }
-
-        if(thimputstring == "__setattr__")
-        {
-            answer_location = "tp_setattro";
-            wraper_type = 4;
-            return true;
-        }
+  if (obj->_protocol_types & Object::PT_sequence) {
+    if (func->_flags & FunctionRemap::F_getitem_int) {
+      def._answer_location = "tp_as_sequence->sq_item";
+      def._wrapper_type = WT_sequence_getitem;
+      return true;
     }
-    return false;
-};
+    if (func->_flags & FunctionRemap::F_setitem_int) {
+      def._answer_location = "tp_as_sequence->sq_ass_item";
+      def._wrapper_type = WT_sequence_setitem;
+      return true;
+    }
+    if (func->_flags & FunctionRemap::F_size) {
+      def._answer_location = "tp_as_sequence->sq_length";
+      def._wrapper_type = WT_sequence_size;
+      return true;
+    }
+  }
+  
+  if (obj->_protocol_types & Object::PT_mapping) {
+    if (func->_flags & FunctionRemap::F_getitem) {
+      def._answer_location = "tp_as_mapping->mp_subscript";
+      def._wrapper_type = WT_one_param;
+      return true;
+    }
+    if (func->_flags & FunctionRemap::F_setitem) {
+      def._answer_location = "tp_as_mapping->mp_ass_subscript";
+      def._wrapper_type = WT_mapping_setitem;
+      return true;
+    }
+  }
+
+  if (method_name == "operator ()") {
+    def._answer_location = "tp_call";
+    def._wrapper_type = WT_none;
+    return true;
+  }
+
+  if (method_name == "__getattr__") {
+    def._answer_location = "tp_getattro";
+    def._wrapper_type = WT_getattr;
+    return true;
+  }
+
+  if (method_name == "__setattr__") {
+    def._answer_location = "tp_setattro";
+    def._wrapper_type = WT_setattr;
+    return true;
+  }
+
+  return false;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -772,7 +764,7 @@ void InterfaceMakerPythonNative::write_prototypes_class(ostream &out_code,ostrea
     {
         Function *func = (*fi);
         std::string fname =     "int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds)";
-        write_prototype_for_name(out_code, func,fname);
+        write_prototype_for_name(out_code, obj, func,fname);
 
     }
     */
@@ -799,7 +791,7 @@ void InterfaceMakerPythonNative::write_functions(ostream &out)
         {
             Function *func = (*fi);
             if(!func->_itype.is_global() && isFunctionLegal(func))
-                write_function_for_top(out, func,"");
+                write_function_for_top(out, NULL, func,"");
         }
 
         Objects::iterator oi;
@@ -850,19 +842,18 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
         Function *func = (*fi);
         if( (func))
         {
-          string answer_location;
-          int wrapper_type;
-          GetSlotedFunctinDef( methodNameFromCppName(func, export_class_name), answer_location, wrapper_type);
+          SlottedFunctionDef def;
+          get_slotted_function_def(obj, func, def);
 
           ostringstream GetThis;
           GetThis << "    "<<cClassName  << " * local_this = NULL;\n";
           GetThis << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
           GetThis << "    if(local_this == NULL) {\n";
-          if (wrapper_type == 6) {
-            // wrapper_type 6 means we must return NotImplemented,
-            // instead of raising an exception, if the this pointer
-            // doesn't match.  This is for things like __sub__, which
-            // Python likes to call on the wrong-type objects.
+          if (def._wrapper_type == WT_numeric_operator) {
+            // WT_numeric_operator means we must return NotImplemented, instead
+            // of raising an exception, if the this pointer doesn't
+            // match.  This is for things like __sub__, which Python
+            // likes to call on the wrong-type objects.
             GetThis << "       Py_INCREF(Py_NotImplemented);\n";
             GetThis << "       return Py_NotImplemented;\n";
 
@@ -873,7 +864,7 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
             GetThis << "       return NULL;\n";
           }
           GetThis << "    }\n";
-          write_function_for_top(out, func,GetThis.str());
+          write_function_for_top(out, obj, func,GetThis.str());
         }
     }
 
@@ -896,14 +887,20 @@ void InterfaceMakerPythonNative::write_ClasseDetails(ostream &out, Object * obj)
             Function *func = (*fi);
             std::string fname =     "int  Dtool_Init_"+ClassName+"(PyObject *self, PyObject *args, PyObject *kwds) ";
 
-            write_function_for_name(out, func,fname,"",ClassName);
+            write_function_for_name(out, obj, func,fname,"",ClassName);
         }
     }
 
+    MakeSeqs::iterator msi;
+    for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
+      write_make_seq(out, obj, ClassName, *msi);
+    }
+
+    CPPType *cpptype = TypeManager::resolve_type(obj->_itype._cpptype);
     std::map< string ,CastDetails > details;
     std::map< string ,CastDetails >::iterator di;
-    builder.get_type(TypeManager::unwrap(TypeManager::resolve_type(obj->_itype._cpptype)),false);
-    GetValideChildClasses(details,obj->_itype._cpptype->as_struct_type());
+    builder.get_type(TypeManager::unwrap(cpptype),false);
+    GetValideChildClasses(details, cpptype->as_struct_type());
     for(di = details.begin(); di != details.end(); di++)
       {
         //InterrogateType ptype =idb->get_type(di->first);
@@ -1185,47 +1182,47 @@ write_module_class(ostream &out,  Object *obj) {
 
   std::map<int , Function * > static_functions;
   std::map<Function *, std::string >       normal_Operator_functions;
-  std::map<Function *, std::pair< std::string , int>  >          wraped_Operator_functions;
+  std::map<Function *, SlottedFunctionDef> wraped_Operator_functions;
   // function Table
   int x;
-  for (x = 0, fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi,x++) 
-    {
-      Function *func = (*fi);
-      std::string temp0;
-      int temp1;
-      if(!GetSlotedFunctinDef( methodNameFromCppName(func,export_calss_name),temp0,temp1))
-        {
-
-          out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
-              << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
-          if(!isFunctionWithThis(func))
-            static_functions[x] = func;
+  for (x = 0, fi = obj->_methods.begin(); fi != obj->_methods.end(); ++fi,x++) {
+    Function *func = (*fi);
+    SlottedFunctionDef slotted_def;
+    if (!get_slotted_function_def(obj, func, slotted_def)) {
+      out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
+          << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
+      if(!isFunctionWithThis(func)) {
+        static_functions[x] = func;
+      }
+        
+    } else {
+      if (slotted_def._wrapper_type != WT_none) {
+        wraped_Operator_functions[func] = slotted_def;
+        
+        out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
+            << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
+        if (!isFunctionWithThis(func)) {
+          static_functions[x] = func;
         }
-      else
-        {
-          if(temp1 > 0)
-            {
-              wraped_Operator_functions[func] = std::pair< std::string, int>(temp0,temp1);
-
-              out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
-                  << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
-              if(!isFunctionWithThis(func))
-                static_functions[x] = func;
-
-            }
-          else
-            {
-              normal_Operator_functions[func] = temp0;
-
-              out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
-                  << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
-              if(!isFunctionWithThis(func))
-                static_functions[x] = func;
-            }
+        
+      } else {
+        normal_Operator_functions[func] = slotted_def._answer_location;
+        
+        out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
+            << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
+        if (!isFunctionWithThis(func)) {
+          static_functions[x] = func;
         }
+      }
     }
+  }
 
-
+  MakeSeqs::iterator msi;
+  for (msi = obj->_make_seqs.begin(); msi != obj->_make_seqs.end(); ++msi) {
+    out << "  { \""
+        << methodNameFromCppName((*msi)->_seq_name, export_calss_name)
+        << "\",(PyCFunction) &" << (*msi)->_name << ", METH_NOARGS, NULL},\n";
+  }
 
   out << "  { NULL, NULL }\n"
       << "};\n\n";
@@ -1270,95 +1267,186 @@ write_module_class(ostream &out,  Object *obj) {
 
 
   {
-    std::map<Function *, std::pair< std::string , int>  >::iterator rfi; //          wraped_Operator_functions;
-    for(rfi = wraped_Operator_functions.begin(); rfi != wraped_Operator_functions.end(); rfi++)
-      {
-        if(rfi->second.second == 1)
-          {
-            Function *func = rfi->first;
-            out << "//////////////////\n";
-            out << "//  Required TO Convert the calling Conventions.. \n";
-            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
-            out << "//////////////////\n";
-            out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * args, PyObject *dict)\n";
-            out << "{\n";
-            out << "    return "<< func->_name <<"(self,args);\n";
-            out << "}\n\n";
-          }
-        else if(rfi->second.second == 2)
-          {
-            Function *func = rfi->first;
-            out << "//////////////////\n";
-            out << "//  Required TO Convert the calling Conventions.. \n";
-            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
-            out << "//////////////////\n";
-            out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self)\n";
-            out << "{\n";
-            out << "    return "<< func->_name <<"(self,Py_None,Py_None);\n";
-            out << "}\n\n";
-          }
+    std::map<Function *, SlottedFunctionDef>::iterator rfi; //          wraped_Operator_functions;
+    for(rfi = wraped_Operator_functions.begin(); rfi != wraped_Operator_functions.end(); rfi++) {
+      switch (rfi->second._wrapper_type) {
+      case WT_no_params:
+        // PyObject *func(PyObject *self)
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//////////////////\n";
+          out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self)\n";
+          out << "{\n";
+          out << "    PyObject *args = Py_BuildValue(\"()\");\n";
+          out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
+          out << "    Py_DECREF(args);\n";
+          out << "    return result;\n";
+          out << "}\n\n";
+        }
+        break;
+        
+      case WT_one_param:
+      case WT_numeric_operator:
+        // PyObject *func(PyObject *self, PyObject *one)
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//////////////////\n";
+          out << "static PyObject *" <<  func->_name << methodNameFromCppName(func,export_calss_name) << "(PyObject *self, PyObject *one)\n";
+          out << "{\n";
+          out << "    PyObject *args = Py_BuildValue(\"(O)\", one);\n";
+          out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
+          out << "    Py_DECREF(args);\n";
+          out << "    return result;\n";
+          out << "}\n\n";
+        }
+        break;
 
-        if(rfi->second.second == 3 || rfi->second.second == 6)
-          {
-            Function *func = rfi->first;
-            out << "//////////////////\n";
-            out << "//  Required TO Convert the calling Conventions.. \n";
-            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
-            out << "//////////////////\n";
-            out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * args)\n";
-            out << "{\n";
-            out << "    return "<< func->_name <<"(self,args,Py_None);\n";
-            out << "}\n\n";
-          }
+      case WT_setattr:
+        // int func(PyObject *self, PyObject *one, PyObject *two = NULL)
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//////////////////\n";
+          out << "static int " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * one, PyObject * two)\n";
+          out << "{\n";
+          out << "    PyObject *args;\n";
+          out << "    if (two == NULL) {\n";
+          out << "        args = Py_BuildValue(\"(O)\", one);\n";
+          out << "    } else {\n";
+          out << "        args = Py_BuildValue(\"(OO)\", one, two);\n";
+          out << "    }\n";
+          out << "    PyObject *py_result = " << func->_name <<"(self, args, NULL);\n";
+          out << "    Py_DECREF(args);\n";
+          out << "    if (py_result == NULL) return -1;\n";
+          out << "    int result = PyInt_AsLong(py_result);\n";
+          out << "    Py_DECREF(py_result);\n";
+          out << "    return result;\n";
+          out << "}\n\n";
+        }
+        break;
 
-        if(rfi->second.second == 4)
-          {
-            // __setattr__.  int func(PyObject *self, PyObject *one, PyObject *two = NULL)
-            Function *func = rfi->first;
-            out << "//////////////////\n";
-            out << "//  Required TO Convert the calling Conventions.. \n";
-            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
-            out << "//////////////////\n";
-            out << "static int " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * one, PyObject * two)\n";
-            out << "{\n";
-            out << "    PyObject *args;\n";
-            out << "    if (two == NULL) {\n";
-            out << "        args = PyTuple_Pack(1, one);\n";
-            out << "    } else {\n";
-            out << "        args = PyTuple_Pack(2, one, two);\n";
-            out << "    }\n";
-            out << "    PyObject *py_result = " << func->_name <<"(self, args, NULL);\n";
-            out << "    Py_DECREF(args);\n";
-            out << "    if (py_result == NULL) return -1;\n";
-            out << "    int result = PyInt_AsLong(py_result);\n";
-            out << "    Py_DECREF(py_result);\n";
-            out << "    return result;\n";
-            out << "}\n\n";
-          }
+      case WT_getattr:
+        // PyObject *func(PyObject *self, PyObject *one)
+        // Specifically to implement __getattr__.
+        // With special handling to pass up to
+        // PyObject_GenericGetAttr() if it returns NULL.
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//////////////////\n";
+          out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * one)\n";
+          out << "{\n";
+          out << "    PyObject *args = Py_BuildValue(\"(O)\", one);\n";
+          out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
+          out << "    Py_DECREF(args);\n";
+          out << "    if (result == NULL) {\n";
+          out << "        PyErr_Clear();\n";
+          out << "        return PyObject_GenericGetAttr(self, one);\n";
+          out << "    }\n";
+          out << "    return result;\n";
+          out << "}\n\n";
+        }
+        break;
 
-        if(rfi->second.second == 5)
-          {
-            // Specifically to implement __getattr__.
-            // PyObject *func(PyObject *self, PyObject *one)
-            // With special handling to pass up to
-            // PyObject_GenericGetAttr() if it returns NULL.
-            Function *func = rfi->first;
-            out << "//////////////////\n";
-            out << "//  Required TO Convert the calling Conventions.. \n";
-            out << "//     " <<ClassName<< " ..." << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
-            out << "//////////////////\n";
-            out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * one)\n";
-            out << "{\n";
-            out << "    PyObject *result = " << func->_name <<"(self, one, NULL);\n";
-            out << "    if (result == NULL) {\n";
-            out << "        PyErr_Clear();\n";
-            out << "        return PyObject_GenericGetAttr(self, one);\n";
-            out << "    }\n";
-            out << "    return result;\n";
-            out << "}\n\n";
-          }
+      case WT_sequence_getitem:
+        // PyObject *func(PyObject *self, Py_ssize_t index)
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//////////////////\n";
+          out << "static PyObject * " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, Py_ssize_t index)\n";
+          out << "{\n";
+          out << "    PyObject *args = Py_BuildValue(\"(i)\", index);\n";
+          out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
+          out << "    Py_DECREF(args);\n";
+          out << "    return result;\n";
+          out << "}\n\n";
+        }
+        break;
 
+      case WT_sequence_setitem:
+        // Py_ssize_t func(PyObject *self, Py_ssize_t index, PyObject *value)
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//////////////////\n";
+          out << "static Py_ssize_t " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, Py_ssize_t index, PyObject *value)\n";
+          out << "{\n";
+          out << "    PyObject *args = Py_BuildValue(\"(iO)\", index, value);\n";
+          out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
+          out << "    Py_DECREF(args);\n";
+          out << "    if (result == NULL) {\n";
+          out << "      return -1;\n";
+          out << "    }\n";
+          out << "    Py_DECREF(result);\n";
+          out << "    return 0;\n";
+          out << "}\n\n";
+        }
+        break;
+
+      case WT_sequence_size:
+        // Py_ssize_t func(PyObject *self)
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//////////////////\n";
+          out << "static Py_ssize_t " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "(PyObject *self)\n";
+          out << "{\n";
+          out << "    PyObject *args = Py_BuildValue(\"()\");\n";
+          out << "    PyObject *result = "<< func->_name <<"(self, args, NULL);\n";
+          out << "    Py_DECREF(args);\n";
+          out << "    if (result == NULL) {\n";
+          out << "      return -1;\n";
+          out << "    }\n";
+          out << "    Py_ssize_t num = PyInt_AsSsize_t(result);\n";
+          out << "    Py_DECREF(result);\n";
+          out << "    return num;\n";
+          out << "}\n\n";
+        }
+        break;
+
+      case WT_mapping_setitem:
+        // int func(PyObject *self, PyObject *one, PyObject *two)
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//////////////////\n";
+          out << "static int " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, PyObject * one, PyObject * two)\n";
+          out << "{\n";
+          out << "    PyObject *args = Py_BuildValue(\"(OO)\", one, two);\n";
+          out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
+          out << "    Py_DECREF(args);\n";
+          out << "    if (result == NULL) {\n";
+          out << "      return -1;\n";
+          out << "    }\n";
+          out << "    Py_DECREF(result);\n";
+          out << "    return 0;\n";
+          out << "}\n\n";
+        }
+        break;
+
+      case WT_none:
+        break;
       }
+    }
 
     if(HasAGetKeyFunction(obj->_itype)) 
       {
@@ -1519,12 +1607,12 @@ write_module_class(ostream &out,  Object *obj) {
 
   // wraped functions...
   {
-    std::map<Function *, std::pair< std::string , int>  >::iterator rfi; //          wraped_Operator_functions;
+    std::map<Function *, SlottedFunctionDef>::iterator rfi; //          wraped_Operator_functions;
     for(rfi = wraped_Operator_functions.begin(); rfi != wraped_Operator_functions.end(); rfi++)
       {
         Function *func = rfi->first;
-        out << "        // " << rfi->second.first <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
-        out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << rfi->second.first <<" = &" << func->_name << methodNameFromCppName(func,export_calss_name)<<";\n";
+        out << "        // " << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+        out << "        Dtool_" << ClassName <<".As_PyTypeObject()." << rfi->second._answer_location <<" = &" << func->_name << methodNameFromCppName(func,export_calss_name)<<";\n";
       }
   }
 
@@ -1712,19 +1800,20 @@ void InterfaceMakerPythonNative::write_prototype_for_name(ostream &out, Interfac
 //  Description: Writes the definition for a function that will call
 //               the indicated C++ function or method.
 ////////////////////////////////////////////////////////////////////
-void InterfaceMakerPythonNative::write_function_for_top(ostream &out, InterfaceMaker::Function *func, const std::string &PreProcess)
+void InterfaceMakerPythonNative::write_function_for_top(ostream &out, InterfaceMaker::Object *obj, InterfaceMaker::Function *func, const std::string &PreProcess)
 {
     std::string fname =     "static PyObject *"+func->_name+"(PyObject *self, PyObject *args,PyObject *kwds)";
 
-    write_function_for_name(out,func,fname,PreProcess,"");
+    write_function_for_name(out,obj,func,fname,PreProcess,"");
 }
+
 ////////////////////////////////////////////////////////////////////
 /// Function  : write_function_for_name
 //
 //   Wrap a complete name override function for Py.....
 ////////////////////////////////////////////////////////////////////
 void InterfaceMakerPythonNative::
-write_function_for_name(ostream &out1, InterfaceMaker::Function *func, 
+write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMaker::Function *func, 
                         const std::string &function_name, 
                         const std::string &PreProcess,
                         const std::string &ClassName) {
@@ -1794,7 +1883,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Function *func,
       indent(out,4) << "case(" << mii->first << "):\n";
       indent(out,8) << "{\n";
         
-      write_function_forset(out,func,mii->second,expected_params,8,forward_decl,ClassName + function_name, is_inplace);
+      write_function_forset(out,obj,func,mii->second,expected_params,8,forward_decl,ClassName + function_name, is_inplace);
       if ((*mii->second.begin())->_type == FunctionRemap::T_constructor) {
         constructor = true;
       }
@@ -1860,7 +1949,7 @@ write_function_for_name(ostream &out1, InterfaceMaker::Function *func,
   } else {
     string expected_params = "";
     for (mii = MapSets.begin(); mii != MapSets.end(); mii ++) {
-      write_function_forset(out,func,mii->second,expected_params,4,forward_decl,ClassName + function_name,is_inplace);
+      write_function_forset(out,obj,func,mii->second,expected_params,4,forward_decl,ClassName + function_name,is_inplace);
       if((*mii->second.begin())->_type == FunctionRemap::T_constructor) {
         constructor = true;
       }
@@ -2000,84 +2089,157 @@ std::vector< FunctionRemap * >  SortFunctionSet(std::set< FunctionRemap *> &rema
 //
 //  A set is defined as all remaps that have the same number of paramaters..
 ///////////////////////////////////////////////////////////
-void InterfaceMakerPythonNative::write_function_forset(ostream &out, InterfaceMaker::Function *func,
-                                                       std::set< FunctionRemap *> &remapsin, string &expected_params, int indent_level,ostream &forward_decl, const std::string &functionname, bool is_inplace)
-{
+void InterfaceMakerPythonNative::
+write_function_forset(ostream &out, InterfaceMaker::Object *obj, 
+                      InterfaceMaker::Function *func, 
+                      std::set< FunctionRemap *> &remapsin, 
+                      string &expected_params, int indent_level, 
+                      ostream &forward_decl, const std::string &functionname, 
+                      bool is_inplace) {
+  // Do we accept any parameters that are class objects?  If so, we
+  // might need to check for parameter coercion.
+  bool coercion_possible = false;
+  std::set<FunctionRemap *>::const_iterator sii;
+  for (sii = remapsin.begin(); sii != remapsin.end() && !coercion_possible; ++sii) {
+    FunctionRemap *remap = (*sii);
+    if (isRemapLegal(*remap)) {
+      int pn = 0;
+      if (remap->_has_this) {
+        // Skip the "this" parameter.  It's never coerceable.
+        ++pn;
+      }
+      while (pn < (int)remap->_parameters.size()) {
+        CPPType *type = remap->_parameters[pn]._remap->get_new_type();
 
-    if(remapsin.size() > 1)
-    {
-//        printf("---------------------------- Start Sort ----- %s , %s\n",func->_name.c_str(),functionname.c_str());
-        std::vector<FunctionRemap *> remaps =  SortFunctionSet(remapsin);
-
-        std::vector<FunctionRemap *>::iterator                      sii;
-        for(sii = remaps.begin(); sii != remaps.end(); sii ++)
-        {
-             FunctionRemap *remap = (*sii);
-             if(isRemapLegal(*remap))
-             {
-                 if (remap->_has_this && !remap->_const_method) {
-                   // If it's a non-const method, we only allow a
-                   // non-const this.
-                   indent(out,indent_level) 
-                     << "if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
-                 } else {
-                   indent(out, indent_level)
-                     << "{\n";
-                 }
-
-                 indent(out,indent_level) << "  // -2 " ;
-                 remap->write_orig_prototype(out, 0); out << "\n" ;
-
-                 write_function_instance(out, func, remap,expected_params,indent_level+4,false,forward_decl, func->_name, is_inplace);
-
-                 indent(out,indent_level+4)<< "PyErr_Clear(); \n";
-                 indent(out,indent_level)<< "}\n\n";            
-             }
+        if (TypeManager::is_char_pointer(type)) {
+        } else if (TypeManager::is_pointer_to_PyObject(type)) {
+        } else if (TypeManager::is_pointer(type)) {
+          // This is a pointer to an object, so we
+          // might be able to coerce a parameter to it.
+          coercion_possible = true;
+          break;
         }
+        ++pn;
+      }
     }
-    else
-    {
-        std::set<FunctionRemap *>::iterator                      sii;
-        for(sii = remapsin.begin(); sii != remapsin.end(); sii ++)
-        {
-             FunctionRemap *remap = (*sii);
-             if(isRemapLegal(*remap)) {
-               if (remap->_has_this && !remap->_const_method) {
-                 // If it's a non-const method, we only allow a
-                 // non-const this.
-                 indent(out, indent_level) 
-                   << "if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
-               } else {
-                 indent(out, indent_level)
-                   << "{\n";
-               }
+  }
 
-               indent(out,indent_level + 2) 
-                 << "// 1-" ;remap->write_orig_prototype(out, 0); out << "\n" ;
-               write_function_instance(out, func, remap,expected_params,indent_level+4,true,forward_decl, func->_name, is_inplace);
+  if (coercion_possible) {
+    // These objects keep track of whether we have attempted automatic
+    // parameter coercion.
+    indent(out, indent_level)
+      << "{\n";
+    indent_level += 2;
+    indent(out,indent_level) 
+      << "PyObject *coerced = NULL;\n";
+    indent(out,indent_level) 
+      << "PyObject **coerced_ptr = NULL;\n";
+    indent(out,indent_level) 
+      << "while (true) {\n";
+    indent_level += 2;
+  }
+    
+  if (remapsin.size() > 1) {
+    // There are multiple different overloads for this number of
+    // parameters.  Sort them all into order from most-specific to
+    // least-specific, then try them one at a time.
+    std::vector<FunctionRemap *> remaps = SortFunctionSet(remapsin);
 
-               if (remap->_has_this && !remap->_const_method) {
-                 indent(out, indent_level)
-                   << "} else {\n";
-                 indent(out, indent_level + 2)
-                   << "PyErr_SetString(PyExc_TypeError,\n";
-                 string class_name = remap->_cpptype->get_simple_name();
-                 indent(out, indent_level + 2)
-                   << "                \"Cannot call "
-                   << classNameFromCppName(class_name)
-                   << "." << methodNameFromCppName(func, class_name)
-                   << "() on a const object.\");\n";
-                 indent(out, indent_level + 2)
-                   << "return (PyObject *) NULL;\n";
-                 indent(out,indent_level)
-                   << "}\n\n";
-               } else {
-                 indent(out,indent_level)
-                   << "}\n\n";            
-               }
-             }
+    std::vector<FunctionRemap *>::iterator sii;
+    for (sii = remaps.begin(); sii != remaps.end(); sii ++) {
+      FunctionRemap *remap = (*sii);
+      if(isRemapLegal(*remap)) {
+        if (remap->_has_this && !remap->_const_method) {
+          // If it's a non-const method, we only allow a
+          // non-const this.
+          indent(out,indent_level) 
+            << "if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+        } else {
+          indent(out, indent_level)
+            << "{\n";
         }
+
+        indent(out,indent_level) << "  // -2 " ;
+        remap->write_orig_prototype(out, 0); out << "\n" ;
+
+        write_function_instance(out, obj, func, remap,expected_params,indent_level+4,false,forward_decl, func->_name, is_inplace, coercion_possible);
+
+        indent(out,indent_level+4)<< "PyErr_Clear(); \n";
+        indent(out,indent_level)<< "}\n\n";            
+      }
     }
+  } else {
+    // There is only one possible overload with this number of
+    // parameters.  Just call it.
+    std::set<FunctionRemap *>::iterator sii;
+    for(sii = remapsin.begin(); sii != remapsin.end(); sii ++) {
+      FunctionRemap *remap = (*sii);
+      if (isRemapLegal(*remap)) {
+        if (remap->_has_this && !remap->_const_method) {
+          // If it's a non-const method, we only allow a
+          // non-const this.
+          indent(out, indent_level) 
+            << "if (!((Dtool_PyInstDef *)self)->_is_const) {\n";
+        } else {
+          indent(out, indent_level)
+            << "{\n";
+        }
+
+        indent(out,indent_level + 2) 
+          << "// 1-" ;
+        remap->write_orig_prototype(out, 0); 
+        out << "\n" ;
+        write_function_instance(out, obj, func, remap,expected_params,indent_level+4,true,forward_decl, func->_name, is_inplace, coercion_possible);
+
+        if (remap->_has_this && !remap->_const_method) {
+          indent(out, indent_level)
+            << "} else {\n";
+          indent(out, indent_level + 2)
+            << "PyErr_SetString(PyExc_TypeError,\n";
+          string class_name = remap->_cpptype->get_simple_name();
+          indent(out, indent_level + 2)
+            << "                \"Cannot call "
+            << classNameFromCppName(class_name)
+            << "." << methodNameFromCppName(func, class_name)
+            << "() on a const object.\");\n";
+          indent(out, indent_level + 2)
+            << "return (PyObject *) NULL;\n";
+          indent(out,indent_level)
+            << "}\n\n";
+        } else {
+          indent(out,indent_level)
+            << "}\n\n";            
+        }
+      }
+    }
+  }
+
+  // Now we've tried all of the possible overloads, and had no luck.
+
+  if (coercion_possible) {
+    // Try again, this time with coercion enabled.
+    indent(out,indent_level) 
+      << "if (coerced_ptr != NULL) {\n";
+    indent(out,indent_level + 2) 
+      << "break;\n";
+    indent(out,indent_level) 
+      << "}\n";
+    
+    indent(out,indent_level) 
+      << "PyErr_Clear();\n";
+    indent(out,indent_level) 
+      << "coerced_ptr = &coerced;\n";
+    
+    indent_level -= 2;
+    indent(out,indent_level) 
+      << "}\n";
+    
+    indent(out,indent_level) 
+      << "Py_XDECREF(coerced);\n";
+    indent_level -= 2;
+    indent(out,indent_level) 
+      << "}\n";
+  }
 }
 
 
@@ -2087,9 +2249,14 @@ void InterfaceMakerPythonNative::write_function_forset(ostream &out, InterfaceMa
 //  Description: Writes out the particular function that handles a
 //               single instance of an overloaded function.
 ////////////////////////////////////////////////////////////////////
-void InterfaceMakerPythonNative::write_function_instance(ostream &out, InterfaceMaker::Function *func1,
-                                                         FunctionRemap *remap, string &expected_params, int indent_level, bool errors_fatal, ostream &ForwardDeclrs, const std::string &functionnamestr, bool is_inplace) 
-{
+void InterfaceMakerPythonNative::
+write_function_instance(ostream &out, InterfaceMaker::Object *obj, 
+                        InterfaceMaker::Function *func1,
+                        FunctionRemap *remap, string &expected_params, 
+                        int indent_level, bool errors_fatal, 
+                        ostream &ForwardDeclrs, 
+                        const std::string &functionnamestr, bool is_inplace,
+                        bool coercion_possible) {
   string format_specifiers;
   std::string keyword_list;
   string parameter_list;
@@ -2253,6 +2420,15 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
         InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
         const InterrogateType &p_itype = idb->get_type(p_type_index);    
 
+        bool is_copy_constructor = false;
+        if (is_constructor && remap->_parameters.size() == 1 && pn == 0) {
+          if (&p_itype == &obj->_itype) {
+            // If this is the only one parameter, and it's the same as
+            // the "this" type, this is a copy constructor.
+            is_copy_constructor = true;
+          }
+        }
+
         //make_safe_name(itype.get_scoped_name())
         extra_convert += p_itype.get_scoped_name()+" *" + param_name + "_this = ("+p_itype.get_scoped_name()+" *)";
         // need to a forward scope for this class..
@@ -2273,7 +2449,15 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
             << ", &Dtool_" << make_safe_name(p_itype.get_scoped_name()) 
             << ", " << pn << ", \"" 
             << method_prefix << methodNameFromCppName(func1, class_name)
-            << "\", " << const_ok << ");\n";
+            << "\", " << const_ok;
+        if (coercion_possible && !is_copy_constructor) {
+          // We never attempt to coerce a copy constructor parameter.
+          // That would lead to infinite recursion.
+          str << ", coerced_ptr";
+        } else {
+          str << ", NULL";
+        }
+        str << ");\n";
 
         extra_convert += str.str();
         extra_param_check += "|| (" + param_name + "_this == NULL)";
@@ -2295,6 +2479,10 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
 
     if (remap->_has_this && pn == 0) {
       container = "local_this";
+      if (remap->_const_method) {
+        string class_name = remap->_cpptype->get_local_name(&parser);
+        container = "(const " + class_name + "*)local_this";
+      }
     } else {
       out << ";\n";
     }
@@ -2351,6 +2539,28 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
     indent(out,extra_indent_level)
       <<"{\n";
     extra_indent_level+=4;
+  }
+
+  if ((remap->_flags & (FunctionRemap::F_getitem_int | FunctionRemap::F_setitem_int)) &&
+      (obj != (Object *)NULL && (obj->_protocol_types & Object::PT_sequence))) {
+    // This is a getitem or setitem of a sequence type.  This means we
+    // *need* to raise IndexError if we're out of bounds.  We have to
+    // assume the bounds are 0 .. this->size() (this is the same
+    // assumption that Python makes).
+    string pexpr_string = pexprs[1];
+    indent(out, extra_indent_level)
+      << "if ((" << pexpr_string << ") < 0 || (" << pexpr_string << ") >= ("
+      << container << ")->size()) {\n";
+    if (coercion_possible) {
+      indent(out, extra_indent_level + 2)
+        << "Py_XDECREF(coerced);\n";
+    }
+    indent(out, extra_indent_level + 2)
+      << "PyErr_SetString(PyExc_IndexError, \"Out of bounds.\");\n";
+    indent(out, extra_indent_level + 2)
+      << "return NULL;\n";
+    indent(out, extra_indent_level)
+      << "}\n";
   }
   
   if (!remap->_void_return && 
@@ -2409,6 +2619,10 @@ void InterfaceMakerPythonNative::write_function_instance(ostream &out, Interface
     }
 
     string return_expr = remap->call_function(out, extra_indent_level, true, container, pexprs);
+    if (coercion_possible) {
+      indent(out, extra_indent_level)
+        << "Py_XDECREF(coerced);\n";
+    }
     if (return_expr.empty()) {
       if (track_interpreter) {
         indent(out,extra_indent_level) << "in_interpreter = 1;\n";
@@ -2498,7 +2712,7 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
 
   }  else if(TypeManager::is_unsigned_integer(type)){
       indent(out, indent_level)
-          << "return PyLong_FromUnsignedLong(" << return_expr << ");\n";
+          << "return PyLongOrInt_FromUnsignedLong(" << return_expr << ");\n";
 
   }else if (TypeManager::is_integer(type)) {
       indent(out, indent_level)
@@ -2643,6 +2857,27 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMakerPythonName::write_make_seq
+//       Access: Public
+//  Description: Generates the synthetic method described by the
+//               MAKE_SEQ() macro.
+////////////////////////////////////////////////////////////////////
+void InterfaceMakerPythonNative::
+write_make_seq(ostream &out, Object *obj, const std::string &ClassName,
+               MakeSeq *make_seq) {
+  out << "/******************************************************************\n" << " * Python make_seq wrapper\n";
+  out << " *******************************************************************/\n";
+
+  out << "static PyObject *" << make_seq->_name + "(PyObject *self, PyObject *) {\n";
+  string num_name = methodNameFromCppName(make_seq->_num_name, ClassName);
+  string element_name = methodNameFromCppName(make_seq->_element_name, ClassName);
+
+  out << "  return make_list_for_item(self, \"" << num_name 
+      << "\", \"" << element_name << "\");\n";
+  out << "}\n";
+}
+
+////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMakerPythonNative::record_object
 //       Access: Protected
@@ -2750,6 +2985,8 @@ InterfaceMaker::Object *InterfaceMakerPythonNative::record_object(TypeIndex type
       record_function(itype, func_index);
     }
   }    
+
+  object->check_protocols();
 
   int num_nested = itype.number_of_nested_types();
   for (int ni = 0; ni < num_nested; ni++)

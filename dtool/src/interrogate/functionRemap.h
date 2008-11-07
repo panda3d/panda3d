@@ -75,7 +75,15 @@ public:
     T_assignment_method,
     T_typecast,
     T_getter,
-    T_setter
+    T_setter,
+  };
+
+  enum Flags {
+    F_getitem      = 0x0001,
+    F_getitem_int  = 0x0002,
+    F_size         = 0x0004,
+    F_setitem      = 0x0008,
+    F_setitem_int  = 0x0010,
   };
 
   typedef vector<Parameter> Parameters;
@@ -90,6 +98,7 @@ public:
   int _first_true_parameter;
   int _num_default_parameters;
   Type _type;
+  int _flags;
   string _expression;
   string _function_signature;
   string _hash;

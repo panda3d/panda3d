@@ -51,6 +51,7 @@ PUBLISHED:
 
   int get_num_stages() const;
   TextureStage *get_stage(int n) const;
+  MAKE_SEQ(get_stages, get_num_stages, get_stage);
 
   const LMatrix4f &get_mat() const;
   const LMatrix4f &get_mat(TextureStage *stage) const;

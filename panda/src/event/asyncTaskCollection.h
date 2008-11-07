@@ -46,8 +46,10 @@ PUBLISHED:
 
   int get_num_tasks() const;
   AsyncTask *get_task(int index) const;
+  MAKE_SEQ(get_tasks, get_num_tasks, get_task);
   void remove_task(int index);
   AsyncTask *operator [] (int index) const;
+  int size() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

@@ -132,6 +132,7 @@ PUBLISHED:
   void clear_state_def(int state);
   bool has_state_def(int state) const;
   NodePath &get_state_def(int state);
+  MAKE_SEQ(get_state_defs, get_num_state_defs, get_state_def);
   NodePath instance_to_state_def(int state, const NodePath &path);
 
   PGFrameStyle get_frame_style(int state);

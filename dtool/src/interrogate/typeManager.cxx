@@ -376,6 +376,24 @@ is_const_ref_to_simple(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_ref_to_simple
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is a non-const
+//               reference to something that a scripting language can
+//               handle directly as a concrete.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_ref_to_simple(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_reference:
+    return is_simple(type->as_reference_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_pointable
 //       Access: Public, Static
 //  Description: Returns true if the indicated type is something

@@ -49,6 +49,7 @@ PUBLISHED:
 
   int get_num_parameters() const;
   EventParameter get_parameter(int n) const;
+  MAKE_SEQ(get_parameters, get_num_parameters, get_parameter);
 
   bool has_receiver() const;
   EventReceiver *get_receiver() const;

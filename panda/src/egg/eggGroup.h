@@ -195,6 +195,7 @@ PUBLISHED:
   INLINE void clear_object_types();
   INLINE int get_num_object_types() const;
   INLINE string get_object_type(int index) const;
+  MAKE_SEQ(get_object_types, get_num_object_types, get_object_type);
   bool has_object_type(const string &object_type) const;
   bool remove_object_type(const string &object_type);
 
@@ -288,6 +289,7 @@ PUBLISHED:
   void add_group_ref(EggGroup *group);
   int get_num_group_refs() const;
   EggGroup *get_group_ref(int n) const;
+  MAKE_SEQ(get_group_refs, get_num_group_refs, get_group_ref);
   void remove_group_ref(int n);
   void clear_group_refs();
 

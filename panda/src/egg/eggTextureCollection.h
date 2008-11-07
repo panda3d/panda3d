@@ -63,6 +63,7 @@ PUBLISHED:
   bool is_empty() const;
   int get_num_textures() const;
   EggTexture *get_texture(int index) const;
+  MAKE_SEQ(get_textures, get_num_textures, get_texture);
 
 public:
   EggGroupNode::iterator insert_textures(EggGroupNode *node);

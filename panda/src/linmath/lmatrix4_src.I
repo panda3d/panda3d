@@ -12,6 +12,91 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::Row::Constructor
+//       Access: Private
+//  Description: Defines a row-level index accessor to the matrix.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix4)::Row::
+Row(FLOATTYPE *row) : _row(row) {
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::Row::operator []
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::Row::
+operator [](int i) const {
+  nassertr(i >= 0 && i < 4, 0.0);
+  return _row[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::Row::operator []
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE &FLOATNAME(LMatrix4)::Row::
+operator [](int i) {
+  nassertr(i >= 0 && i < 4, _row[0]);
+  return _row[i];
+}
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::Row::__setitem__
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix4)::Row::
+__setitem__(int i, FLOATTYPE v) {
+  nassertv(i >= 0 && i < 4);
+  _row[i] = v;
+}
+#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::Row::size
+//       Access: Public, Static
+//  Description: Returns 4: the number of columns of a LMatrix4.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix4)::Row::
+size() {
+  return 4;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::CRow::Constructor
+//       Access: Private
+//  Description: Defines a row-level constant accessor to the matrix.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix4)::CRow::
+CRow(const FLOATTYPE *row) : _row(row) {
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::CRow::operator []
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::CRow::
+operator [](int i) const {
+  nassertr(i >= 0 && i < 4, 0.0);
+  return _row[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::CRow::size
+//       Access: Public, Static
+//  Description: Returns 4: the number of columns of a LMatrix4.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix4)::CRow::
+size() {
+  return 4;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix4::ident_mat
 //       Access: Public, Static
@@ -411,6 +496,38 @@ INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix4)::
 operator () (int row, int col) const {
   nassertr(row >= 0 && row < 4 && col >= 0 && col < 4, 0.0f);
   return _m.data[row * 4 + col];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::Indexing Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix4)::CRow FLOATNAME(LMatrix4)::
+operator [](int i) const {
+  nassertr(i >= 0 && i < 4, CRow(&_m.data[0]));
+  return CRow(&_m.data[i * 4]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::Indexing Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix4)::Row FLOATNAME(LMatrix4)::
+operator [](int i) {
+  nassertr(i >= 0 && i < 4, Row(&_m.data[0]));
+  return Row(&_m.data[i * 4]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix4::size
+//       Access: Public, Static
+//  Description: Returns 4: the number of rows of a LMatrix4.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix4)::
+size() {
+  return 4;
 }
 
 ////////////////////////////////////////////////////////////////////

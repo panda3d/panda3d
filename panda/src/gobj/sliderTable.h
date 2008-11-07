@@ -51,6 +51,7 @@ PUBLISHED:
 
   INLINE int get_num_sliders() const;
   INLINE const VertexSlider *get_slider(int n) const;
+  MAKE_SEQ(get_sliders, get_num_sliders, get_slider);
   INLINE const SparseArray &get_slider_rows(int n) const;
 
   INLINE const SparseArray &find_sliders(const InternalName *name) const;

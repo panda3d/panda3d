@@ -98,6 +98,7 @@ PUBLISHED:
   INLINE void clear_texture();
   INLINE int get_num_textures() const;
   INLINE EggTexture *get_texture(int n) const;
+  MAKE_SEQ(get_textures, get_num_textures, get_texture);
 
   INLINE void set_material(EggMaterial *material);
   INLINE void clear_material();
@@ -174,6 +175,7 @@ PUBLISHED:
   INLINE int get_num_vertices() const;
   INLINE void set_vertex(int index, EggVertex *vertex);
   INLINE EggVertex *get_vertex(int index) const;
+  MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
   INLINE EggVertexPool *get_pool() const;
 

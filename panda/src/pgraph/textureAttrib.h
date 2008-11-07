@@ -53,8 +53,10 @@ PUBLISHED:
 
   INLINE int get_num_on_stages() const;
   INLINE TextureStage *get_on_stage(int n) const;
+  MAKE_SEQ(get_on_stages, get_num_on_stages, get_on_stage);
   INLINE int get_num_on_ff_stages() const;
   INLINE TextureStage *get_on_ff_stage(int n) const;
+  MAKE_SEQ(get_on_ff_stages, get_num_on_ff_stages, get_on_ff_stage);
   INLINE int get_ff_tc_index(int n) const;
   INLINE bool has_on_stage(TextureStage *stage) const;
   INLINE Texture *get_on_texture(TextureStage *stage) const;
@@ -63,6 +65,7 @@ PUBLISHED:
 
   INLINE int get_num_off_stages() const;
   INLINE TextureStage *get_off_stage(int n) const;
+  MAKE_SEQ(get_off_stages, get_num_off_stages, get_off_stage);
   INLINE bool has_off_stage(TextureStage *stage) const;
   INLINE bool has_all_off() const;
 

@@ -459,6 +459,19 @@ set_element(size_type n, const Element &value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::__setitem__
+//       Access: Published
+//  Description: Same as set_element(), this replaces the nth element
+//               of the array.
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE void PointerToArray<Element>::
+__setitem__(size_type n, const Element &value) {
+  nassertv(n < ((To *)(this->_void_ptr))->size());
+  (*this)[n] = value;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::get_data
 //       Access: Published
 //  Description: This method exists mainly to access the data of

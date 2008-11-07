@@ -35,6 +35,8 @@
 #include "interrogateElement.h"
 #include "cppFunctionType.h"
 #include "cppParameterList.h"
+#include "cppMakeSeq.h"
+#include "cppStructType.h"
 #include "pnotify.h"
 
  InterrogateType dummy_type;
@@ -54,6 +56,7 @@ Function(const string &name,
   _ifunc(ifunc)
 {
   _has_this = false;
+  _flags = 0;
 }
  
 ////////////////////////////////////////////////////////////////////
@@ -68,6 +71,20 @@ InterfaceMaker::Function::
     delete (*ri);
   }
 }
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMaker::MakeSeq::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+InterfaceMaker::MakeSeq::
+MakeSeq(const string &name, CPPMakeSeq *cpp_make_seq) :
+  _name(name),
+  _seq_name(cpp_make_seq->_seq_name),
+  _num_name(cpp_make_seq->_num_name),
+  _element_name(cpp_make_seq->_element_name)
+{
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InterfaceMaker::Object::Constructor
@@ -76,7 +93,8 @@ InterfaceMaker::Function::
 ////////////////////////////////////////////////////////////////////
 InterfaceMaker::Object::
 Object(const InterrogateType &itype) :
-  _itype(itype)
+  _itype(itype),
+  _protocol_types(0)
 {
 }
 
@@ -87,6 +105,58 @@ Object(const InterrogateType &itype) :
 ////////////////////////////////////////////////////////////////////
 InterfaceMaker::Object::
 ~Object() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterfaceMaker::Object::check_protocols
+//       Access: Public
+//  Description: To be called after all of the methods have been
+//               added, this checks which protocols this object
+//               appears to support (based on the methods it
+//               provides).
+////////////////////////////////////////////////////////////////////
+void InterfaceMaker::Object::
+check_protocols() {
+  InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
+
+  int flags = 0;
+
+  Functions::const_iterator fi;
+  for (fi = _methods.begin(); fi != _methods.end(); ++fi) {
+    Function *func = (*fi);
+    flags |= func->_flags;
+  }
+
+  if ((flags & (FunctionRemap::F_getitem_int | FunctionRemap::F_size)) == 
+      (FunctionRemap::F_getitem_int | FunctionRemap::F_size)) {
+    // If we have both a getitem that receives an int, and a size,
+    // then we implement the sequence protocol: you can iterate
+    // through the elements of this object.
+    _protocol_types |= PT_sequence;
+
+  } else if (flags & FunctionRemap::F_getitem) {
+    // If we have any getitem, then we implement the mapping protocol.
+    _protocol_types |= PT_mapping;
+  }
+
+  // Now are there any make_seq requests within this class?
+  CPPStructType *stype = _itype._cpptype->as_struct_type();
+  if (stype != (CPPStructType *)NULL) {
+    CPPScope *scope = stype->get_scope();
+    if (scope != (CPPScope *)NULL) {
+      CPPScope::Declarations::iterator di;
+      for (di = scope->_declarations.begin(); di != scope->_declarations.end(); ++di) {
+        CPPMakeSeq *cpp_make_seq = (*di)->as_make_seq();
+        if (cpp_make_seq != (CPPMakeSeq *)NULL) {
+          string class_name = _itype.get_scoped_name();
+          string clean_name = InterrogateBuilder::clean_identifier(class_name);
+          string wrapper_name = "MakeSeq_" + clean_name + "_" + cpp_make_seq->_seq_name;
+          MakeSeq *make_seq = new MakeSeq(wrapper_name, cpp_make_seq);
+          _make_seqs.push_back(make_seq);
+        }
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -548,6 +618,8 @@ record_function(const InterrogateType &itype, FunctionIndex func_index) {
           if (remap->_has_this) {
             func->_has_this = true;
           }
+
+          func->_flags |= remap->_flags;
           
           // Make a wrapper for the function.
           FunctionWrapperIndex wrapper_index = 
@@ -654,6 +726,8 @@ record_object(TypeIndex type_index) {
       record_function(itype, func_index);
     }
   }    
+
+  object->check_protocols();
 
   int num_nested = itype.number_of_nested_types();
   for (int ni = 0; ni < num_nested; ni++) 

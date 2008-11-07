@@ -59,6 +59,7 @@ PUBLISHED:
   bool has_collider(const NodePath &collider) const;
   int get_num_colliders() const;
   NodePath get_collider(int n) const;
+  MAKE_SEQ(get_colliders, get_num_colliders, get_collider);
   CollisionHandler *get_handler(const NodePath &collider) const;
   void clear_colliders();
 

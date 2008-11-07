@@ -65,6 +65,7 @@ PUBLISHED:
   // Mouse and keyboard routines
   int get_num_input_devices() const;
   string get_input_device_name(int device) const;
+  MAKE_SEQ(get_input_device_names, get_num_input_devices, get_input_device_name);
   bool has_pointer(int device) const;
   bool has_keyboard(int device) const;
   

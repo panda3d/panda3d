@@ -250,6 +250,17 @@ operator [] (int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MaterialCollection::size
+//       Access: Published
+//  Description: Returns the number of materials in the collection.  This
+//               is the same thing as get_num_materials().
+////////////////////////////////////////////////////////////////////
+int MaterialCollection::
+size() const {
+  return _materials.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MaterialCollection::output
 //       Access: Published
 //  Description: Writes a brief one-line description of the

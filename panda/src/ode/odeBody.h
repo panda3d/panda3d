@@ -124,6 +124,7 @@ PUBLISHED:
 
   INLINE int get_num_joints() const;
   OdeJoint get_joint(int index) const;
+  MAKE_SEQ(get_joints, get_num_joints, get_joint);
   INLINE void enable();
   INLINE void disable();
   INLINE int is_enabled() const;

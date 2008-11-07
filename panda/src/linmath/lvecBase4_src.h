@@ -40,6 +40,10 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE operator [](int i) const;
   INLINE_LINMATH FLOATTYPE &operator [](int i);
+#ifdef HAVE_PYTHON
+  INLINE_LINMATH void __setitem__(int i, FLOATTYPE v);
+#endif
+  INLINE_LINMATH static size_t size();
 
   INLINE_LINMATH bool is_nan() const;
 

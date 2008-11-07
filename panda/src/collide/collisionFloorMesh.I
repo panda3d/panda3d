@@ -61,6 +61,11 @@ get_num_vertices() const {
   return _vertices.size();
 }
 
+INLINE const LPoint3f CollisionFloorMesh::
+get_vertex(unsigned int index) const {
+  return _vertices[index];
+}
+
 INLINE const unsigned int  CollisionFloorMesh::
 get_num_triangles() const {
   return _triangles.size();
@@ -72,8 +77,3 @@ get_triangle(unsigned int index) const {
   return LPoint3d(tri.p1, tri.p2, tri.p3);
 }
 
-
-INLINE const LPoint3f CollisionFloorMesh::
-get_vertex(unsigned int index) const {
-  return _vertices[index];
-}

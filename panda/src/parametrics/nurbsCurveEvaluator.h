@@ -55,6 +55,7 @@ PUBLISHED:
   INLINE void set_vertex(int i, const LVecBase3f &vertex, float weight = 1.0);
   INLINE const LVecBase4f &get_vertex(int i) const;
   INLINE LVecBase4f get_vertex(int i, const NodePath &rel_to) const;
+  MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
   INLINE void set_vertex_space(int i, const NodePath &space);
   INLINE void set_vertex_space(int i, const string &space);
@@ -68,6 +69,7 @@ PUBLISHED:
   INLINE int get_num_knots() const;
   void set_knot(int i, float knot);
   float get_knot(int i) const;
+  MAKE_SEQ(get_knots, get_num_knots, get_knot);
   void normalize_knots();
 
   INLINE int get_num_segments() const;

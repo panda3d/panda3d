@@ -231,6 +231,17 @@ operator [] (int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InternalNameCollection::size
+//       Access: Published
+//  Description: Returns the number of names in the collection.  This
+//               is the same thing as get_num_names().
+////////////////////////////////////////////////////////////////////
+int InternalNameCollection::
+size() const {
+  return _names.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InternalNameCollection::output
 //       Access: Published
 //  Description: Writes a brief one-line description of the

@@ -48,6 +48,7 @@ FunctionRemap(const InterrogateType &itype, const InterrogateFunction &ifunc,
   _first_true_parameter = 0;
   _num_default_parameters = num_default_parameters;
   _type = T_normal;
+  _flags = 0;
   _wrapper_index = 0;
 
   _return_value_needs_management = false;
@@ -446,6 +447,8 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     _blocking = true;
   }
 
+  string fname = _cppfunc->get_simple_name();
+
   if (_cpptype != (CPPType *)NULL &&
       ((_cppfunc->_storage_class & CPPInstance::SC_static) == 0) &&
       _type != T_constructor) {
@@ -469,7 +472,6 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
       
     // Also check the name of the function.  If it's one of the
     // assignment-style operators, flag it as such.
-    string fname = _cppfunc->get_simple_name();
     if (fname == "operator =" ||
         fname == "operator *=" ||
         fname == "operator /=" ||
@@ -590,6 +592,40 @@ setup_properties(const InterrogateFunction &ifunc, InterfaceMaker *interface_mak
     // question fully defined here, particularly if the class is
     // defined in some other library.
     _return_value_destructor = builder.get_destructor_for(return_meat_type);
+  }
+
+  // Check for a special meaning by name and signature.
+  if (_type == T_normal) {
+    int first_param = 0;
+    if (_has_this) {
+      first_param = 1;
+    }
+
+    if (fname == "operator []" || fname == "__getitem__") {
+      _flags |= F_getitem;
+      if (_has_this && _parameters.size() == 2) {
+        if (TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
+          // It receives a single int parameter.
+          _flags |= F_getitem_int;
+        }
+      }
+
+    } else if (fname == "__setitem__") {
+      _flags |= F_setitem;
+      if (_has_this && _parameters.size() > 2) {
+        if (TypeManager::is_integer(_parameters[1]._remap->get_new_type())) {
+          // Its first parameter is an int parameter, presumably an index.
+          _flags |= F_setitem_int;
+        }
+      }
+
+    } else if (fname == "size" || fname == "__len__") {
+      if (_parameters.size() == first_param &&
+          TypeManager::is_integer(_return_type->get_new_type())) {
+        // It receives no parameters, and returns an integer.
+        _flags |= F_size;
+      }
+    }
   }
 
   return true;

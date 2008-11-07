@@ -43,6 +43,7 @@ PUBLISHED:
   int get_num_materials() const;
   Material *get_material(int index) const;
   Material *operator [] (int index) const;
+  int size() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

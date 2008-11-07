@@ -34,6 +34,7 @@ PUBLISHED:
   INLINE void clear();
   INLINE Physical *get_physical(int index) const;
   INLINE int get_num_physicals() const;
+  MAKE_SEQ(get_physicals, get_num_physicals, get_physical);
   INLINE void add_physical(Physical *physical);
 
   void add_physicals_from(const PhysicalNode &other);

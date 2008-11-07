@@ -252,6 +252,18 @@ operator [] (int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureStageCollection::size
+//       Access: Published
+//  Description: Returns the number of texture stages in the
+//               collection.  This is the same thing as
+//               get_num_texture_stages().
+////////////////////////////////////////////////////////////////////
+int TextureStageCollection::
+size() const {
+  return _texture_stages.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureStageCollection::sort
 //       Access: Published
 //  Description: Sorts the TextureStages in this collection into order

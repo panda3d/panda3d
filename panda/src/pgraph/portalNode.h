@@ -74,6 +74,7 @@ PUBLISHED:
 
   INLINE int get_num_vertices() const;
   INLINE const LPoint3f &get_vertex(int n) const;
+  MAKE_SEQ(get_vertices, get_num_vertices, get_vertex);
 
   INLINE void set_cell_in(const NodePath &cell);
   INLINE NodePath get_cell_in() const;

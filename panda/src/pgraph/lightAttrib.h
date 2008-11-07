@@ -73,10 +73,12 @@ PUBLISHED:
 
   INLINE int get_num_on_lights() const;
   INLINE NodePath get_on_light(int n) const;
+  MAKE_SEQ(get_on_lights, get_num_on_lights, get_on_light);
   INLINE bool has_on_light(const NodePath &light) const;
 
   INLINE int get_num_off_lights() const;
   INLINE NodePath get_off_light(int n) const;
+  MAKE_SEQ(get_off_lights, get_num_off_lights, get_off_light);
   INLINE bool has_off_light(const NodePath &light) const;
   INLINE bool has_all_off() const;
 

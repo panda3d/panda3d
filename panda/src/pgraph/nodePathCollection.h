@@ -44,7 +44,9 @@ PUBLISHED:
   bool is_empty() const;
   int get_num_paths() const;
   NodePath get_path(int index) const;
+  MAKE_SEQ(get_paths, get_num_paths, get_path);
   NodePath operator [] (int index) const;
+  int size() const;
 
   // Handy operations on many NodePaths at once.
   INLINE void ls() const;

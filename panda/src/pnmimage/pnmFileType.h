@@ -44,6 +44,7 @@ PUBLISHED:
 
   virtual int get_num_extensions() const;
   virtual string get_extension(int n) const;
+  MAKE_SEQ(get_extensions, get_num_extensions, get_extension);
   virtual string get_suggested_extension() const;
 
 public:

@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : VirtualFileList
 // Description : A list of VirtualFiles, as returned by 
-//               VirtualDirectory::scan().
+//               VirtualFile::scan_directory().
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS VirtualFileList : public ReferenceCount {
 public:
@@ -38,6 +38,10 @@ public:
 PUBLISHED:
   INLINE int get_num_files() const;
   INLINE VirtualFile *get_file(int n) const;
+  MAKE_SEQ(get_files, get_num_files, get_file);
+
+  INLINE VirtualFile *operator [](int n) const;
+  INLINE int size() const;
 
 private:
   typedef pvector< PT(VirtualFile) > Files;

@@ -250,6 +250,17 @@ operator [] (int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureCollection::size
+//       Access: Published
+//  Description: Returns the number of textures in the collection.  This
+//               is the same thing as get_num_textures().
+////////////////////////////////////////////////////////////////////
+int TextureCollection::
+size() const {
+  return _textures.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureCollection::output
 //       Access: Published
 //  Description: Writes a brief one-line description of the

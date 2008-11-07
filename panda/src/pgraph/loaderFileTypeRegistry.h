@@ -41,6 +41,7 @@ public:
 PUBLISHED:
   int get_num_types() const;
   LoaderFileType *get_type(int n) const;
+  MAKE_SEQ(get_types, get_num_types, get_type);
   LoaderFileType *get_type_from_extension(const string &extension);
 
   void write(ostream &out, int indent_level = 0) const;

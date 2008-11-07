@@ -46,6 +46,7 @@ PUBLISHED:
 
   int get_num_nodes() const;
   NodePath get_node(int n) const;
+  MAKE_SEQ(get_nodes, get_num_nodes, get_node);
   TypeHandle get_node_type(int n) const;
   string get_node_name(int n) const;
 

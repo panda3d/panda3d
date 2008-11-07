@@ -33,6 +33,7 @@ PUBLISHED:
 
   INLINE int get_num_axes() const;
   INLINE LVecBase3f get_axis(int anum) const;
+  MAKE_SEQ(get_axes, get_num_axes, get_axis);
   INLINE int get_axis_rel(int anum) const;
   INLINE dReal get_angle(int anum) const;
   INLINE dReal get_angle_rate(int anum) const;

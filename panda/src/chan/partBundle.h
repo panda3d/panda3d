@@ -116,6 +116,7 @@ PUBLISHED:
 
   INLINE int get_num_nodes() const;
   INLINE PartBundleNode *get_node(int n) const;
+  MAKE_SEQ(get_nodes, get_num_nodes, get_node);
 
   void clear_control_effects();
   INLINE void set_control_effect(AnimControl *control, float effect);

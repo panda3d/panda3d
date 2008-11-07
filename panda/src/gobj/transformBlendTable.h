@@ -59,6 +59,7 @@ PUBLISHED:
 
   INLINE int get_num_blends() const;
   INLINE const TransformBlend &get_blend(int n) const;
+  MAKE_SEQ(get_blends, get_num_blends, get_blend);
   INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
   void set_blend(int n, const TransformBlend &blend);

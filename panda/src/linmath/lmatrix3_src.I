@@ -12,6 +12,91 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::Row::Constructor
+//       Access: Private
+//  Description: Defines a row-level index accessor to the matrix.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3)::Row::
+Row(FLOATTYPE *row) : _row(row) {
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::Row::operator []
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::Row::
+operator [](int i) const {
+  nassertr(i >= 0 && i < 3, 0.0);
+  return _row[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::Row::operator []
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE &FLOATNAME(LMatrix3)::Row::
+operator [](int i) {
+  nassertr(i >= 0 && i < 3, _row[0]);
+  return _row[i];
+}
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::Row::__setitem__
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH void FLOATNAME(LMatrix3)::Row::
+__setitem__(int i, FLOATTYPE v) {
+  nassertv(i >= 0 && i < 3);
+  _row[i] = v;
+}
+#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::Row::size
+//       Access: Public, Static
+//  Description: Returns 3: the number of columns of a LMatrix3.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix3)::Row::
+size() {
+  return 3;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::CRow::Constructor
+//       Access: Private
+//  Description: Defines a row-level constant accessor to the matrix.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3)::CRow::
+CRow(const FLOATTYPE *row) : _row(row) {
+}
+    
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::CRow::operator []
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::CRow::
+operator [](int i) const {
+  nassertr(i >= 0 && i < 3, 0.0);
+  return _row[i];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::CRow::size
+//       Access: Public, Static
+//  Description: Returns 3: the number of columns of a LMatrix3.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix3)::CRow::
+size() {
+  return 3;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LMatrix3::ident_mat
 //       Access: Public, Static
@@ -233,6 +318,38 @@ INLINE_LINMATH FLOATTYPE FLOATNAME(LMatrix3)::
 operator () (int row, int col) const {
   nassertr(row >= 0 && row < 3 && col >= 0 && col < 3, 0.0);
   return _m.data[row * 3 + col];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::Indexing Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3)::CRow FLOATNAME(LMatrix3)::
+operator [](int i) const {
+  nassertr(i >= 0 && i < 3, CRow(&_m.data[0]));
+  return CRow(&_m.data[i * 3]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::Indexing Operator
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LMatrix3)::Row FLOATNAME(LMatrix3)::
+operator [](int i) {
+  nassertr(i >= 0 && i < 3, Row(&_m.data[0]));
+  return Row(&_m.data[i * 3]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LMatrix3::size
+//       Access: Public, Static
+//  Description: Returns 3: the number of rows of a LMatrix3.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH size_t FLOATNAME(LMatrix3)::
+size() {
+  return 3;
 }
 
 ////////////////////////////////////////////////////////////////////

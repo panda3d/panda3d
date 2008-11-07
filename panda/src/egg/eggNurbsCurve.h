@@ -48,6 +48,7 @@ PUBLISHED:
   bool is_closed() const;
 
   INLINE double get_knot(int k) const;
+  MAKE_SEQ(get_knots, get_num_knots, get_knot);
 
   virtual void write(ostream &out, int indent_level) const;
 

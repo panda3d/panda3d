@@ -51,6 +51,7 @@ PUBLISHED:
 
   INLINE int get_num_transforms() const;
   INLINE const VertexTransform *get_transform(int n) const;
+  MAKE_SEQ(get_transforms, get_num_transforms, get_transform);
   INLINE UpdateSeq get_modified(Thread *current_thread) const;
 
   void set_transform(int n, const VertexTransform *transform);

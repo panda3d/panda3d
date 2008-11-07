@@ -111,8 +111,9 @@ PUBLISHED:
   INLINE const URLSpec &get_redirect() const;
   string get_header_value(const string &key) const;
 
-  INLINE int get_num_redirect_trail() const;
-  INLINE const URLSpec &get_redirect_trail(int n) const;
+  INLINE int get_num_redirect_steps() const;
+  INLINE const URLSpec &get_redirect_step(int n) const;
+  MAKE_SEQ(get_redirect_steps, get_num_redirect_steps, get_redirect_step);
 
   INLINE void set_persistent_connection(bool persistent_connection);
   INLINE bool get_persistent_connection() const;

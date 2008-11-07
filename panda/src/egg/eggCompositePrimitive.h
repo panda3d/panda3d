@@ -38,6 +38,7 @@ PUBLISHED:
   INLINE int get_num_components() const;
   INLINE const EggAttributes *get_component(int i) const;
   INLINE EggAttributes *get_component(int i);
+  MAKE_SEQ(get_components, get_num_components, get_component);
   INLINE void set_component(int i, const EggAttributes *attrib);
 
   INLINE bool triangulate_into(EggGroupNode *container) const;

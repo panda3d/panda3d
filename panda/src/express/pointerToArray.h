@@ -109,8 +109,12 @@ PUBLISHED:
   INLINE static PointerToArray<Element> empty_array(size_type n, TypeHandle type_handle = get_type_handle(Element));
   INLINE PointerToArray(const PointerToArray<Element> &copy);
   INLINE size_type size() const;
+  INLINE void push_back(const Element &x);
+  INLINE void pop_back();
   INLINE const Element &get_element(size_type n) const;
   INLINE void set_element(size_type n, const Element &value);
+  INLINE const Element &operator [](size_type n) const;
+  INLINE void __setitem__(size_type n, const Element &value);
   INLINE string get_data() const;
   INLINE void set_data(const string &data);
   INLINE string get_subdata(size_type n, size_type count) const;
@@ -189,6 +193,7 @@ public:
   // Methods to help out Python and other high-level languages.
   INLINE const Element &get_element(size_type n) const;
   INLINE void set_element(size_type n, const Element &value);
+  INLINE void __setitem__(size_type n, const Element &value);
   INLINE string get_data() const;
   INLINE void set_data(const string &data);
   INLINE string get_subdata(size_type n, size_type count) const;

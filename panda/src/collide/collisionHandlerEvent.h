@@ -48,18 +48,21 @@ PUBLISHED:
   INLINE void set_in_pattern(const string &in_pattern);
   INLINE int get_num_in_patterns() const;
   INLINE string get_in_pattern(int n) const;
+  MAKE_SEQ(get_in_patterns, get_num_in_patterns, get_in_pattern);
 
   INLINE void clear_again_patterns();
   INLINE void add_again_pattern(const string &again_pattern);
   INLINE void set_again_pattern(const string &again_pattern);
   INLINE int get_num_again_patterns() const;
   INLINE string get_again_pattern(int n) const;
+  MAKE_SEQ(get_again_patterns, get_num_again_patterns, get_again_pattern);
 
   INLINE void clear_out_patterns();
   INLINE void add_out_pattern(const string &out_pattern);
   INLINE void set_out_pattern(const string &out_pattern);
   INLINE int get_num_out_patterns() const;
   INLINE string get_out_pattern(int n) const;
+  MAKE_SEQ(get_out_patterns, get_num_out_patterns, get_out_pattern);
 
   void clear();
   void flush();

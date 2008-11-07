@@ -53,7 +53,9 @@ PUBLISHED:
 
   INLINE int get_num_points() const;
   INLINE const LPoint3f &get_point(int n) const;
+  MAKE_SEQ(get_points, get_num_points, get_point);
   INLINE NodePath get_node(int n) const;
+  MAKE_SEQ(get_nodes, get_num_points, get_node);
 
   INLINE bool get_clip() const;
 

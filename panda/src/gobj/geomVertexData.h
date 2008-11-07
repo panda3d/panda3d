@@ -109,6 +109,7 @@ PUBLISHED:
 
   INLINE int get_num_arrays() const;
   INLINE CPT(GeomVertexArrayData) get_array(int i) const;
+  MAKE_SEQ(get_arrays, get_num_arrays, get_array);
   INLINE PT(GeomVertexArrayData) modify_array(int i);
   INLINE void set_array(int i, const GeomVertexArrayData *array);
 

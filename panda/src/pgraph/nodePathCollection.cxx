@@ -247,6 +247,17 @@ operator [] (int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::size
+//       Access: Published
+//  Description: Returns the number of paths in the collection.  This
+//               is the same thing as get_num_paths().
+////////////////////////////////////////////////////////////////////
+int NodePathCollection::
+size() const {
+  return _node_paths.size();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::ls
 //       Access: Published
 //  Description: Lists all the nodes at and below each node in the

@@ -66,8 +66,10 @@ PUBLISHED:
 
   INLINE int get_num_linear_forces() const;
   INLINE PT(LinearForce) get_linear_force(int index) const;
+  MAKE_SEQ(get_linear_forces, get_num_linear_forces, get_linear_force);
   INLINE int get_num_angular_forces() const;
   INLINE PT(AngularForce) get_angular_force(int index) const;
+  MAKE_SEQ(get_angular_forces, get_num_angular_forces, get_angular_force);
 
   INLINE void set_viscosity(float viscosity);
   INLINE float get_viscosity() const;

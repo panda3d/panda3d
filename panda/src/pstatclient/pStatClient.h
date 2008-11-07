@@ -67,12 +67,14 @@ PUBLISHED:
 
   INLINE int get_num_collectors() const;
   PStatCollector get_collector(int index) const;
+  MAKE_SEQ(get_collectors, get_num_collectors, get_collector);
   INLINE PStatCollectorDef *get_collector_def(int index) const;
   string get_collector_name(int index) const;
   string get_collector_fullname(int index) const;
 
   INLINE int get_num_threads() const;
   PStatThread get_thread(int index) const;
+  MAKE_SEQ(get_threads, get_num_threads, get_thread);
   INLINE string get_thread_name(int index) const;
   INLINE string get_thread_sync_name(int index) const;
   INLINE Thread *get_thread_object(int index) const;

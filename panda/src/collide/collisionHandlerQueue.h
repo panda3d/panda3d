@@ -43,6 +43,7 @@ PUBLISHED:
 
   int get_num_entries() const;
   CollisionEntry *get_entry(int n) const;
+  MAKE_SEQ(get_entries, get_num_entries, get_entry);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

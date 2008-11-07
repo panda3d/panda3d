@@ -60,6 +60,7 @@ PUBLISHED:
   INLINE void clear_solids();
   INLINE int get_num_solids() const;
   INLINE CPT(CollisionSolid) get_solid(int n) const;
+  MAKE_SEQ(get_solids, get_num_solids, get_solid);
   INLINE PT(CollisionSolid) modify_solid(int n);
   INLINE void set_solid(int n, CollisionSolid *solid);
   INLINE void remove_solid(int n);

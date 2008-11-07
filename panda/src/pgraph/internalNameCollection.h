@@ -40,7 +40,9 @@ PUBLISHED:
 
   int get_num_names() const;
   InternalName *get_name(int index) const;
+  MAKE_SEQ(get_names, get_num_names, get_name);
   InternalName *operator [] (int index) const;
+  int size() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

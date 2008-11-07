@@ -49,8 +49,10 @@ public:
 PUBLISHED:
   INLINE_MATHUTIL int get_num_points() const;
   INLINE_MATHUTIL LPoint3f get_point(int n) const;
+  MAKE_SEQ(get_points, get_num_points, get_point);
   INLINE_MATHUTIL int get_num_planes() const;
   INLINE_MATHUTIL Planef get_plane(int n) const;
+  MAKE_SEQ(get_planes, get_num_planes, get_plane);
 
 public:
   // Inline accessors for speed.

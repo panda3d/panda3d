@@ -66,6 +66,7 @@ PUBLISHED:
 
   int get_num_task_chains() const;
   AsyncTaskChain *get_task_chain(int n) const;
+  MAKE_SEQ(get_task_chains, get_num_task_chains, get_task_chain);
   AsyncTaskChain *make_task_chain(const string &name);
   AsyncTaskChain *find_task_chain(const string &name);
   BLOCKING bool remove_task_chain(const string &name);

@@ -162,29 +162,29 @@ get_redirect() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_num_redirect_trail
+//     Function: HTTPChannel::get_num_redirect_steps
 //       Access: Published
 //  Description: If the document automatically followed one or more
 //               redirects, this will return the number of redirects
 //               that were automatically followed.  Use
-//               get_redirect_trail() to retrieve each URL in
+//               get_redirect_step() to retrieve each URL in
 //               sequence.
 ////////////////////////////////////////////////////////////////////
 INLINE int HTTPChannel::
-get_num_redirect_trail() const {
+get_num_redirect_steps() const {
   return _redirect_trail.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: HTTPChannel::get_redirect_trail
+//     Function: HTTPChannel::get_redirect_step
 //       Access: Published
-//  Description: Use in conjunction with get_num_redirect_trail() to
+//  Description: Use in conjunction with get_num_redirect_steps() to
 //               extract the chain of URL's that the channel was
 //               automatically redirected through to arrive at the
 //               final document.
 ////////////////////////////////////////////////////////////////////
 INLINE const URLSpec &HTTPChannel::
-get_redirect_trail(int n) const {
+get_redirect_step(int n) const {
   nassertr(n >= 0 && n < (int)_redirect_trail.size(), _redirect_trail[0]);
   return _redirect_trail[n];
 }
