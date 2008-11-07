@@ -317,6 +317,12 @@ if (COMPILER=="LINUX"):
                 WARNINGS.append("I have automatically added this command-line option: --no-"+pkg.lower())
                 PkgDisable(pkg)
     
+    for pkg in MAYAVERSIONS:
+        if (PkgSkip(pkg)==0):
+            LibDirectory(pkg, SDK[pkg] + '/lib')
+            IncDirectory(pkg, SDK[pkg] + "/include")
+            DefSymbol(pkg, "MAYAVERSION", pkg)
+    
     if (sys.platform == "darwin"):
       if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-framework Cg")
       if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-framework OpenAL")
@@ -351,17 +357,43 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lhighgui")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lml")
     if (sys.platform == "darwin"):
-      if (PkgSkip("OPENCV")==0):   LibName("OPENCV", "-framework QuickTime")
-      LibName("AGL", "-framework AGL")
-      LibName("CARBON", "-framework Carbon")
-      LibName("COCOA", "-framework Cocoa")
-      LibName("GLUT", "-framework OpenGL")
-      LibName("GLUT", "-lOSMesa")
-      # Fix for a bug in OSX:
-      LibName("GLUT", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+        if (PkgSkip("OPENCV")==0):   LibName("OPENCV", "-framework QuickTime")
+        LibName("AGL", "-framework AGL")
+        LibName("CARBON", "-framework Carbon")
+        LibName("COCOA", "-framework Cocoa")
+        LibName("GLUT", "-framework OpenGL")
+        LibName("GLUT", "-lOSMesa")
+        # Fix for a bug in OSX:
+        LibName("GLUT", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
     else:
-      LibName("GLUT", "-lGL")
-      LibName("GLUT", "-lGLU")
+        LibName("GLUT", "-lGL")
+        LibName("GLUT", "-lGLU")
+    
+    for pkg in MAYAVERSIONS:
+        if (PkgSkip(pkg)==0):
+            LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/lib")
+            LibName(pkg, "-lOpenMayalib")
+            LibName(pkg, "-lOpenMaya")
+            LibName(pkg, "-lOpenMayaAnim")
+            LibName(pkg, "-lAnimSlice")
+            LibName(pkg, "-lDeformSlice")
+            LibName(pkg, "-lModifiers")
+            LibName(pkg, "-lDynSlice")
+            LibName(pkg, "-lKinSlice")
+            LibName(pkg, "-lModelSlice")
+            LibName(pkg, "-lNurbsSlice")
+            LibName(pkg, "-lPolySlice")
+            LibName(pkg, "-lProjectSlice")
+            LibName(pkg, "-lImage")
+            LibName(pkg, "-lShared")
+            LibName(pkg, "-lTranslators")
+            LibName(pkg, "-lDataModel")
+            LibName(pkg, "-lRenderModel")
+            LibName(pkg, "-lNurbsEngine")
+            LibName(pkg, "-lDependEngine")
+            LibName(pkg, "-lCommandEngine")
+            LibName(pkg, "-lFoundation")
+            LibName(pkg, "-lIMFbase")
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 IncDirectory("ALWAYS", "built/tmp")
@@ -3166,33 +3198,37 @@ for VER in MAYAVERSIONS:
     TargetAdd('libmayapview'+VNUM+'.mll', input='libp3framework.dll')
     TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('libmayapview'+VNUM+'.mll', opts=['ADVAPI', VER])
-
+    
+    # Temporary fix, until I get mayaWrapper.cxx working on non-windows systems.
+    if (sys.platform=="win32"): suffix = "-wrapped"
+    else: suffix = ""
+    
     TargetAdd('maya2egg'+VNUM+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
-    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='maya2egg'+VNUM+'_mayaToEgg.obj')
-    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='libmayaegg'+VNUM+'.lib')
-    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='libmaya'+VNUM+'.lib')
-    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
-    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
-
+    TargetAdd('maya2egg'+VNUM+suffix+'.exe', input='maya2egg'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('maya2egg'+VNUM+suffix+'.exe', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('maya2egg'+VNUM+suffix+'.exe', input='libmaya'+VNUM+'.lib')
+    TargetAdd('maya2egg'+VNUM+suffix+'.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('maya2egg'+VNUM+suffix+'.exe', opts=['ADVAPI', VER])
+    
     TargetAdd('mayacopy'+VNUM+'_mayaCopy.obj', opts=OPTS, input='mayaCopy.cxx')
-    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='mayacopy'+VNUM+'_mayaCopy.obj')
-    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='libcvscopy.lib')
-    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='libmaya'+VNUM+'.lib')
-    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
-    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
-
+    TargetAdd('mayacopy'+VNUM+suffix+'.exe', input='mayacopy'+VNUM+'_mayaCopy.obj')
+    TargetAdd('mayacopy'+VNUM+suffix+'.exe', input='libcvscopy.lib')
+    TargetAdd('mayacopy'+VNUM+suffix+'.exe', input='libmaya'+VNUM+'.lib')
+    TargetAdd('mayacopy'+VNUM+suffix+'.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('mayacopy'+VNUM+suffix+'.exe', opts=['ADVAPI', VER])
+    
     TargetAdd('mayasavepview'+VNUM+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
     TargetAdd('libmayasavepview'+VNUM+'.mll', input='mayasavepview'+VNUM+'_mayaSavePview.obj')
     TargetAdd('libmayasavepview'+VNUM+'.mll', opts=['ADVAPI',  VER])
-
-    TargetAdd('mayaWrapper'+VNUM+'.obj', opts=OPTS, input='mayaWrapper.cxx')
-
-    TargetAdd('maya2egg'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
-    TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI'])
-
-    TargetAdd('mayacopy'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
-    TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI'])
-
+    
+    if (sys.platform=="win32"):
+        TargetAdd('mayaWrapper'+VNUM+'.obj', opts=OPTS, input='mayaWrapper.cxx')
+        
+        TargetAdd('maya2egg'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
+        TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI'])
+    
+        TargetAdd('mayacopy'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
+        TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI'])
 
 
 #
@@ -3553,12 +3589,7 @@ def MakeInstallerLinux():
     import compileall
     PYTHONV=SDK["PYTHONVERSION"]
     if (os.path.isdir("linuxroot")): oscmd("chmod -R 755 linuxroot")
-    if (os.path.exists("/usr/bin/dpkg-deb")):
-        oscmd("dpkg --print-architecture > built/tmp/architecture.txt")
-    if (os.path.exists("/usr/bin/rpmbuild")):
-        oscmd("rpm -E '%_target_cpu' > built/tmp/architecture.txt")
-    ARCH=ReadFile("built/tmp/architecture.txt").strip()
-    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec "+ARCH)
+    oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec `dpkg --print-architecture` `rpm -E '%_target_cpu'`")
     oscmd("mkdir -p linuxroot/usr/bin")
     oscmd("mkdir -p linuxroot/usr/include")
     oscmd("mkdir -p linuxroot/usr/share/panda3d")
@@ -3573,8 +3604,9 @@ def MakeInstallerLinux():
     oscmd("cp --recursive built/pandac  linuxroot/usr/share/panda3d/pandac")
     oscmd("cp built/direct/__init__.py  linuxroot/usr/share/panda3d/direct/__init__.py")
     oscmd("cp --recursive built/models  linuxroot/usr/share/panda3d/models")
-    if (os.path.isdir("built/Pmw")): oscmd("cp --recursive built/Pmw     linuxroot/usr/share/panda3d/Pmw")
-    if (os.path.isdir("samples")):   oscmd("cp --recursive samples       linuxroot/usr/share/panda3d/samples")
+    if os.path.isdir("samples"):        oscmd("cp --recursive samples       linuxroot/usr/share/panda3d/samples")
+    if os.path.isdir("built/Pmw"):      oscmd("cp --recursive built/Pmw     linuxroot/usr/share/panda3d/Pmw")
+    if os.path.isdir("built/plugins"):  oscmd("cp --recursive built/plugins linuxroot/usr/share/panda3d/plugins")
     oscmd("cp doc/LICENSE               linuxroot/usr/share/panda3d/LICENSE")
     oscmd("cp doc/LICENSE               linuxroot/usr/include/panda3d/LICENSE")
     oscmd("cp doc/ReleaseNotes          linuxroot/usr/share/panda3d/ReleaseNotes")
@@ -3590,9 +3622,20 @@ def MakeInstallerLinux():
     compileall.compile_dir("linuxroot/usr/share/panda3d/Pmw")
     DeleteCVS("linuxroot")
     oscmd("chmod -R 555 linuxroot/usr/share/panda3d")
-    oscmd("chmod -R 444 linuxroot/usr/share/panda3d/models")
-
+    
+    if (os.path.exists("/usr/bin/rpmbuild")):
+        oscmd("rm -rf linuxroot/DEBIAN")
+        oscmd("rpm -E '%_target_cpu' > built/tmp/architecture.txt")
+        ARCH=ReadFile("built/tmp/architecture.txt").strip()
+        pandasource = os.path.abspath(os.getcwd())
+        txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",pandasource)
+        WriteFile("panda3d.spec", txt)
+        oscmd("rpmbuild --define '_rpmdir "+pandasource+"' -bb panda3d.spec")
+        oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
+    
     if (os.path.exists("/usr/bin/dpkg-deb")):
+        oscmd("dpkg --print-architecture > built/tmp/architecture.txt")
+        ARCH=ReadFile("built/tmp/architecture.txt").strip()
         txt = INSTALLER_DEB_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV).replace("ARCH",ARCH)
         oscmd("mkdir -p linuxroot/DEBIAN")
         oscmd("cd linuxroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
@@ -3604,13 +3647,6 @@ def MakeInstallerLinux():
         oscmd("cp linuxroot/DEBIAN/postinst linuxroot/DEBIAN/postrm")
         oscmd("dpkg-deb -b linuxroot panda3d_"+VERSION+"_"+ARCH+".deb")
         oscmd("chmod -R 755 linuxroot")
-
-    if (os.path.exists("/usr/bin/rpmbuild")):
-        pandasource = os.path.abspath(os.getcwd())
-        txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",pandasource)
-        WriteFile("panda3d.spec", txt)
-        oscmd("rpmbuild --define '_rpmdir "+pandasource+"' -bb panda3d.spec")
-        oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
     
     if not(os.path.exists("/usr/bin/rpmbuild") or os.path.exists("/usr/bin/dpkg-deb")):
         exit("To build an installer, either rpmbuild or dpkg-deb must be present on your system!")
@@ -3650,8 +3686,9 @@ def MakeInstallerOSX():
       oscmd("cp -R doc/LICENSE           Panda3D-tpl-rw/Panda3D/%s/LICENSE" % VERSION)
       oscmd("cp -R doc/ReleaseNotes      Panda3D-tpl-rw/Panda3D/%s/ReleaseNotes" % VERSION)
       oscmd("cp -R built/bin/*           Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION)
-      if os.path.isdir("samples"):   oscmd("cp -R samples   Panda3D-tpl-rw/Panda3D/%s/samples" % VERSION)
-      if os.path.isdir("built/Pmw"): oscmd("cp -R built/Pmw Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % VERSION)
+      if os.path.isdir("samples"):       oscmd("cp -R samples   Panda3D-tpl-rw/Panda3D/%s/samples" % VERSION)
+      if os.path.isdir("built/Pmw"):     oscmd("cp -R built/Pmw Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % VERSION)
+      if os.path.isdir("built/plugins"): oscmd("cp -R built/plugins Panda3D-tpl-rw/Panda3D/%s/plugins" % VERSION)
       for base in os.listdir("built/lib"):
           oscmd("cp built/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
       for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src"):
@@ -3660,7 +3697,7 @@ def MakeInstallerOSX():
       compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
       oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct")
       oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/pandac")
-      oscmd("chmod -R 444 Panda3D-tpl-rw/Panda3D/"+VERSION+"/models")
+      oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/models")
       if os.path.isdir("samples"):   oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/samples")
       if os.path.isdir("built/Pmw"): oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
     except: # Make sure the dmg gets unmounted even when error occurs

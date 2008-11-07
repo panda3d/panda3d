@@ -9,7 +9,7 @@
 ##
 ########################################################################
 
-import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil
+import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform
 
 SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx",".mm"]
 SUFFIX_DLL=[".dll",".dlo",".dle",".dli",".dlm",".mll",".exe"]
@@ -658,10 +658,9 @@ def SdkLocateDirectX():
         SDK["DIRECTCAM"] = SDK["DX9"]
 
 def SdkLocateMaya():
-    if (sys.platform != "win32"): return
     for (ver,key) in MAYAVERSIONINFO:
-        if (PkgSkip(ver)==0):
-            if (SDK.has_key(ver)==0):
+        if (PkgSkip(ver)==0 and SDK.has_key(ver)==0):
+            if (sys.platform == "win32"):
                 ddir = "sdks/"+ver.lower().replace("x","")
                 if (os.path.isdir(ddir)):
                     SDK[ver] = ddir
@@ -672,6 +671,32 @@ def SdkLocateMaya():
                         if (res != 0):
                             res = res.replace("\\", "/").rstrip("/")
                             SDK[res] = ver
+            elif (sys.platform == "darwin"):
+                ddir1 = "sdks/"+ver.lower().replace("x","")+"-osx"
+                if os.environ.has_key("MAYA_LOCATION"): ddir2 = os.environ["MAYA_LOCATION"].rstrip("/")
+                ddir3 = "/Applications/Autodesk/maya"+key+"/Maya.app/Contents"
+                if (os.path.isdir(ddir1)):
+                    SDK[ver] = ddir1
+                elif (os.environ.has_key("MAYA_LOCATION") and os.path.isdir(ddir2)):
+                    SDK[ver] = ddir2
+                elif (os.path.isdir(ddir3)):
+                    SDK[ver] = ddir3
+            else:
+                ddir1 = "sdks/"+ver.lower().replace("x","")+"-linux"+platform.architecture()[0].replace("bit","")
+                if os.environ.has_key("MAYA_LOCATION"): ddir2 = os.environ["MAYA_LOCATION"].rstrip("/")
+                if (platform.architecture()[0] == "64bit"):
+                    ddir3 = "/usr/autodesk/maya"+key+"-x64"
+                else:
+                    ddir3 = "/usr/autodesk/maya"+key
+                ddir4 = "/usr/autodesk/maya"
+                if (os.path.isdir(ddir1)):
+                    SDK[ver] = ddir1
+                elif (os.environ.has_key("MAYA_LOCATION") and os.path.isdir(ddir2)):
+                    SDK[ver] = ddir2
+                elif (os.path.isdir(ddir3)):
+                    SDK[ver] = ddir3
+                elif (os.path.isdir(ddir4)):
+                    SDK[ver] = ddir4
 
 def SdkLocateMax():
     if (sys.platform != "win32"): return
@@ -753,7 +778,10 @@ def SdkAutoDisableDirectX():
     for ver in ["DX8","DX9","DIRECTCAM"]:
         if (PkgSkip(ver)==0):
             if (SDK.has_key(ver)==0):
-                WARNINGS.append("I cannot locate SDK for "+ver)
+                if (sys.platform == "win32"):
+                    WARNINGS.append("I cannot locate SDK for "+ver)
+                else:
+                    WARNINGS.append(ver+" only supported on windows yet")
                 WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
                 PkgDisable(ver)
             else:
@@ -764,10 +792,9 @@ def SdkAutoDisableMaya():
         if (SDK.has_key(ver)==0) and (PkgSkip(ver)==0):
             if (sys.platform == "win32"):
                 WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
-                WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
             else:
-                WARNINGS.append(ver+" not yet supported under linux")
-                WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
+                WARNINGS.append("I cannot locate SDK for "+ver)
+            WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
             PkgDisable(ver)
 
 def SdkAutoDisableMax():
@@ -776,13 +803,11 @@ def SdkAutoDisableMax():
             if (sys.platform == "win32"):
                 if (SDK.has_key(version)):
                     WARNINGS.append("Your copy of "+version+" does not include the character studio SDK")
-                    WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
-                else:
+                else: 
                     WARNINGS.append("The registry does not appear to contain a pointer to "+version)
-                    WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
             else:
-                WARNINGS.append(version+" not yet supported under linux")
-                WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
+                WARNINGS.append(version+" only supported on windows yet")
+            WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
             PkgDisable(version)
 
 ########################################################################
@@ -946,6 +971,7 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
+    if (fn.endswith(".mll")): return "built/plugins/"+fn
     if (sys.platform == "win32"):
         if (fn.endswith(".def")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")): return "built/tmp/"+fn
@@ -953,7 +979,6 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".dlo")): return "built/plugins/"+fn
         if (fn.endswith(".dli")): return "built/plugins/"+fn
         if (fn.endswith(".dle")): return "built/plugins/"+fn
-        if (fn.endswith(".mll")): return "built/plugins/"+fn
         if (fn.endswith(".exe")): return "built/bin/"+fn
         if (fn.endswith(".lib")): return "built/lib/"+fn
         if (fn.endswith(".ilb")): return "built/tmp/"+fn[:-4]+".lib"
