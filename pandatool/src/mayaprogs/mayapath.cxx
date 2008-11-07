@@ -121,7 +121,6 @@ main(int argc, char *argv[]) {
 
 #ifdef IS_OSX
   // And on DYLD_LIBRARY_PATH.
-  Filename bin = Filename(maya_location, "bin");
   if (bin.is_directory()) {
     char *path = getenv("DYLD_LIBRARY_PATH");
     if (path == NULL) {
@@ -135,7 +134,6 @@ main(int argc, char *argv[]) {
 
 #elif !defined(_WIN32)
   // Linux (or other non-Windows OS) gets it added to LD_LIBRARY_PATH.
-  Filename bin = Filename(maya_location, "bin");
   if (bin.is_directory()) {
     char *path = getenv("LD_LIBRARY_PATH");
     if (path == NULL) {
