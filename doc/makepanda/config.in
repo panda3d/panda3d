@@ -36,7 +36,7 @@ multisamples 0
 
 # These control the amount of output Panda gives for some various
 # categories.  The severity levels, in order, are "spam", "debug",
-# "info", "warning", and "fatal"; the default is "info".  Uncomment
+# "info", "warning", and "error"; the default is "info".  Uncomment
 # one (or define a new one for the particular category you wish to
 # change) to control this output.
 
@@ -51,12 +51,6 @@ default-directnotify-level warning
 model-path    $MAIN_DIR
 model-path    $THIS_PRC_DIR/..
 model-path    $THIS_PRC_DIR/../models
-sound-path    $MAIN_DIR
-sound-path    $THIS_PRC_DIR/..
-sound-path    $THIS_PRC_DIR/../models
-texture-path  $MAIN_DIR
-texture-path  $THIS_PRC_DIR/..
-texture-path  $THIS_PRC_DIR/../models
 
 # This enable the automatic creation of a TK window when running
 # Direct.
