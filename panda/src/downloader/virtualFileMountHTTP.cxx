@@ -51,6 +51,92 @@ VirtualFileMountHTTP::
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileMountHTTP::reload_vfs_mount_url
+//       Access: Published, Static
+//  Description: Reads all of the vfs-mount-url lines in the
+//               Config.prc file and replaces the mount settings to
+//               match them.  
+//
+//               This will mount any url's mentioned in the config
+//               file, and unmount and unmount any url's no longer
+//               mentioned in the config file.  Normally, it is called
+//               automatically at startup, and need not be called
+//               again, unless you have fiddled with some config
+//               settings.
+////////////////////////////////////////////////////////////////////
+void VirtualFileMountHTTP::
+reload_vfs_mount_url() {
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  // First, unload the existing mounts.
+  int n = 0;
+  while (n < vfs->get_num_mounts()) {
+    PT(VirtualFileMount) mount = vfs->get_mount(n);
+    if (mount->is_of_type(VirtualFileMountHTTP::get_class_type())) {
+      vfs->unmount(mount);
+      // Don't increment n.
+    } else {
+      ++n;
+    }
+  }
+
+  // Now, reload the newly specified mounts.
+  ConfigVariableList mounts
+    ("vfs-mount-url",
+     PRC_DESC("vfs-mount-url http://site/path[:port] mount-point [options]"));
+
+  int num_unique_values = mounts.get_num_unique_values();
+  for (int i = 0; i < num_unique_values; i++) {
+    string mount_desc = mounts.get_unique_value(i);
+      
+    size_t space = mount_desc.rfind(' ');
+    if (space == string::npos) {
+      downloader_cat.warning()
+        << "No space in vfs-mount-url descriptor: " << mount_desc << "\n";
+        
+    } else {
+      string mount_point = mount_desc.substr(space + 1);
+      while (space > 0 && isspace(mount_desc[space - 1])) {
+        space--;
+      }
+      mount_desc = mount_desc.substr(0, space);
+      string options;
+        
+      space = mount_desc.rfind(' ');
+      if (space != string::npos) {
+        // If there's another space, we have the optional options field.
+        options = mount_point;
+        mount_point = mount_desc.substr(space + 1);
+        while (space > 0 && isspace(mount_desc[space - 1])) {
+          --space;
+        }
+        mount_desc = mount_desc.substr(0, space);
+      }
+        
+      mount_desc = ExecutionEnvironment::expand_string(mount_desc);
+      URLSpec root(mount_desc);
+        
+      int flags = 0;
+      string password;
+        
+      // Split the options up by commas.
+      size_t p = 0;
+      size_t q = options.find(',', p);
+      while (q != string::npos) {
+        vfs->parse_option(options.substr(p, q - p),
+                          flags, password);
+        p = q + 1;
+        q = options.find(',', p);
+      }
+      vfs->parse_option(options.substr(p), flags, password);
+
+      PT(VirtualFileMount) mount = new VirtualFileMountHTTP(root);
+      vfs->mount(mount, mount_point, flags);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileMountHTTP::has_file
 //       Access: Public, Virtual
 //  Description: Returns true if the indicated file exists within the

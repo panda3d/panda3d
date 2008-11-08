@@ -95,6 +95,9 @@ public:
 
   void scan_mount_points(vector_string &names, const Filename &path) const;
 
+  static void parse_option(const string &option,
+                           int &flags, string &password);
+
 private:
   Filename normalize_mount_point(const string &mount_point) const;
   bool do_mount(VirtualFileMount *mount, const string &mount_point, int flags);
@@ -104,8 +107,6 @@ private:
                       const Filename &original_filename, bool implicit_pz_file,
                       bool status_only) const;
   bool consider_mount_mf(const Filename &filename);
-  static void parse_option(const string &option,
-                           int &flags, string &password);
 
   MutexImpl _lock;
   typedef pvector<PT(VirtualFileMount) > Mounts;

@@ -61,43 +61,12 @@ ConfigVariableInt patcher_buffer_size
            "Patcher::run().  Increasing this may help the Patcher "
            "perform more work before returning."));
 
-ConfigVariableBool verify_ssl
-("verify-ssl", true,
- PRC_DESC("Configure this true (the default) to insist on verifying all SSL "
-          "(e.g. https) servers against a known certificate, or false to allow "
-          "an unverified connection.  This controls the default behavior; the "
-          "specific behavior for a particular HTTPClient can be adjusted at "
-          "runtime with set_verify_ssl()."));
-
-ConfigVariableString ssl_cipher_list
-("ssl-cipher-list", "DEFAULT",
- PRC_DESC("This is the default value for HTTPClient::set_cipher_list()."));
-
 ConfigVariableList expected_ssl_server
 ("expected-ssl-server");
 
 ConfigVariableList ssl_certificates
 ("ssl-certificates");
 
-ConfigVariableString http_proxy
-("http-proxy", "",
- PRC_DESC("This specifies the default value for HTTPClient::set_proxy_spec().  "
-          "It is a semicolon-delimited list of proxies that we use to contact "
-          "all HTTP hosts that don't specify otherwise.  See "
-          "set_proxy_spec() for more information."));
-ConfigVariableString http_direct_hosts
-("http-direct-hosts", "",
- PRC_DESC("This specifies the default value for HTTPClient::set_direct_host_spec().  "
-          "It is a semicolon-delimited list of host names that do not require a "
-          "proxy.  See set_direct_host_spec() for more information."));
-ConfigVariableBool http_try_all_direct
-("http-try-all-direct", true,
- PRC_DESC("This specifies the default value for HTTPClient::set_try_all_direct().  "
-          "If this is true, a direct connection will always be attempted after an "
-          "attempt to connect through a proxy fails."));
-ConfigVariableString http_proxy_username
-("http-proxy-username", "",
- PRC_DESC("This specifies a default username:password to pass to the proxy."));
 ConfigVariableBool http_proxy_tunnel
 ("http-proxy-tunnel", false,
  PRC_DESC("This specifies the default value for HTTPChannel::set_proxy_tunnel().  "
@@ -140,29 +109,6 @@ ConfigVariableInt http_max_connect_count
           "prevent the code from attempting runaway connections; this limit "
           "should never be reached in practice."));
 
-ConfigVariableFilename http_client_certificate_filename
-("http-client-certificate-filename", "",
- PRC_DESC("This provides a default client certificate to offer up should an "
-          "SSL server demand one.  The file names a PEM-formatted file "
-          "that includes a public and private key specification.  A "
-          "connection-specific certificate may also be specified at runtime on "
-          "the HTTPClient object, but this will require having a different "
-          "HTTPClient object for each differently-certificated connection."));
-
-ConfigVariableString http_client_certificate_passphrase
-("http-client-certificate-passphrase", "",
- PRC_DESC("This specifies the passphrase to use to decode the certificate named "
-          "by http-client-certificate-filename."));
-
-ConfigVariableList http_username
-("http-username",
- PRC_DESC("Adds one or more username/password pairs to all HTTP clients.  The client "
-          "will present this username/password when asked to authenticate a request "
-          "for a particular server and/or realm.  The username is of the form "
-          "server:realm:username:password, where either or both of server and "
-          "realm may be empty, or just realm:username:password or username:password.  "
-          "If the server or realm is empty, they will match anything."));
-
 ConfigureFn(config_downloader) {
   init_libdownloader();
 }
@@ -187,6 +133,8 @@ init_libdownloader() {
   HTTPChannel::init_type();
   VirtualFileHTTP::init_type();
   VirtualFileMountHTTP::init_type();
+
+  VirtualFileMountHTTP::reload_vfs_mount_url();
 
   // We need to define this here, rather than above, to guarantee that
   // it has been initialized by the time we check it.

@@ -544,7 +544,6 @@ find_all_files(const Filename &filename, const DSearchPath &searchpath,
 void VirtualFileSystem::
 write(ostream &out) const {
   ((VirtualFileSystem *)this)->_lock.acquire();
-  out << "_cwd" << _cwd << "\n_mounts:\n";
   Mounts::const_iterator mi;
   for (mi = _mounts.begin(); mi != _mounts.end(); ++mi) {
     VirtualFileMount *mount = (*mi);
@@ -742,6 +741,26 @@ scan_mount_points(vector_string &names, const Filename &path) const {
         }
       }
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::parse_option
+//       Access: Public, Static
+//  Description: Parses one of the option flags in the options list on
+//               the vfs-mount Config.prc line.
+////////////////////////////////////////////////////////////////////
+void VirtualFileSystem::
+parse_option(const string &option, int &flags, string &password) {
+  if (option == "0" || option.empty()) {
+    // 0 is the null option.
+  } else if (option == "ro") {
+    flags |= MF_read_only;
+  } else if (option.substr(0, 3) == "pw:") {
+    password = option.substr(3);
+  } else {
+    express_cat.warning()
+      << "Invalid option on vfs-mount: \"" << option << "\"\n";
   }
 }
 
@@ -1007,24 +1026,4 @@ consider_mount_mf(const Filename &filename) {
 
   // Recurse.
   return consider_mount_mf(dirname);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: VirtualFileSystem::parse_option
-//       Access: Private, Static
-//  Description: Parses one of the option flags in the options list on
-//               the vfs-mount Config.prc line.
-////////////////////////////////////////////////////////////////////
-void VirtualFileSystem::
-parse_option(const string &option, int &flags, string &password) {
-  if (option == "0" || option.empty()) {
-    // 0 is the null option.
-  } else if (option == "ro") {
-    flags |= MF_read_only;
-  } else if (option.substr(0, 3) == "pw:") {
-    password = option.substr(3);
-  } else {
-    express_cat.warning()
-      << "Invalid option on vfs-mount: \"" << option << "\"\n";
-  }
 }

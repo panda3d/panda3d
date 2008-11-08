@@ -38,24 +38,15 @@ extern ConfigVariableDouble decompressor_step_time;
 extern ConfigVariableDouble extractor_step_time;
 extern ConfigVariableInt patcher_buffer_size;
 
-extern ConfigVariableBool verify_ssl;
-extern ConfigVariableString ssl_cipher_list;
 extern ConfigVariableList expected_ssl_server;
 extern ConfigVariableList ssl_certificates;
 
-extern ConfigVariableString http_proxy;
-extern ConfigVariableString http_direct_hosts;
-extern ConfigVariableBool http_try_all_direct;
-extern ConfigVariableString http_proxy_username;
 extern ConfigVariableBool http_proxy_tunnel;
 extern ConfigVariableDouble http_connect_timeout;
 extern ConfigVariableDouble http_timeout;
 extern ConfigVariableInt http_skip_body_size;
 extern ConfigVariableDouble http_idle_timeout;
 extern ConfigVariableInt http_max_connect_count;
-extern ConfigVariableFilename http_client_certificate_filename;
-extern ConfigVariableString http_client_certificate_passphrase;
-extern ConfigVariableList http_username;
 
 extern EXPCL_PANDAEXPRESS void init_libdownloader();
 

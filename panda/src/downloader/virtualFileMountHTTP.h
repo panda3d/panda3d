@@ -39,6 +39,8 @@ PUBLISHED:
   INLINE HTTPClient *get_http_client() const;
   INLINE const URLSpec &get_root() const;
 
+  static void reload_vfs_mount_url();
+
 public:
   virtual PT(VirtualFile) make_virtual_file(const string &local_filename,
                                             const Filename &original_filename, 
