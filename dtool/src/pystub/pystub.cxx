@@ -49,6 +49,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyGILState_Ensure(...);
   EXPCL_DTOOLCONFIG int PyGILState_Release(...);
   EXPCL_DTOOLCONFIG int PyInt_AsLong(...);
+  EXPCL_DTOOLCONFIG int PyInt_AsSsize_t(...);
   EXPCL_DTOOLCONFIG int PyInt_FromLong(...);
   EXPCL_DTOOLCONFIG int PyInt_Type(...);
   EXPCL_DTOOLCONFIG int PyList_Append(...);
@@ -170,6 +171,7 @@ int PyGen_Type(...) { return 0; }
 int PyGILState_Ensure(...) { return 0; }
 int PyGILState_Release(...) { return 0; }
 int PyInt_AsLong(...) { return 0; }
+int PyInt_AsSsize_t(...) { return 0; }
 int PyInt_FromLong(...) { return 0; }
 int PyInt_Type(...) { return 0; }
 int PyList_Append(...) { return 0; }
