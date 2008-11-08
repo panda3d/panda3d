@@ -60,6 +60,7 @@ class SelectedNodePaths(DirectObject):
 
     def reset(self):
         self.selectedDict = {}
+        self.selectedList = [] # [gjeon] to maintain selected order
         self.deselectedDict = {}
         __builtins__["last"] = self.last = None
 
@@ -101,6 +102,7 @@ class SelectedNodePaths(DirectObject):
                 dnp.highlight(fRecompute = 0)
             # Add it to the selected dictionary
             self.selectedDict[dnp.id()] = dnp
+            self.selectedList.append(dnp) # [gjeon]
         # And update last
         __builtins__["last"] = self.last = dnp
         # Update cluster servers if this is a cluster client
@@ -120,6 +122,8 @@ class SelectedNodePaths(DirectObject):
             dnp.dehighlight()
             # Remove it from the selected dictionary
             del(self.selectedDict[id])
+            if dnp in self.selectedList: # [gjeon]
+                self.selectedList.remove(dnp)
             # And keep track of it in the deselected dictionary
             self.deselectedDict[id] = dnp
             # Send a message
@@ -134,7 +138,8 @@ class SelectedNodePaths(DirectObject):
         Return a list of all selected node paths.  No verification of
         connectivity is performed on the members of the list
         """
-        return self.selectedDict.values()[:]
+        #return self.selectedDict.values()[:]
+        return self.selectedList # [gjeon] now return the list with selected order
 
     def __getitem__(self, index):
         return self.getSelectedAsList()[index]
