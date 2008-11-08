@@ -22,15 +22,29 @@
 
 #define _CRT_SECURE_NO_DEPRECATE 1
 
-#include <windows.h>
-#include <winuser.h>
+#ifdef _WIN32
+  #include <windows.h>
+  #include <winuser.h>
+  #include <process.h>
+#else
+  #include <string.h>
+  #include <sys/types.h>
+  #include <sys/stat.h>
+  #include <unistd.h>
+  #define _putenv putenv
+#endif
 #include <stdlib.h>
-#include <process.h>
 #include <malloc.h>
 #include <stdio.h>
 #include <signal.h>
 #define PATH_MAX 1024
 
+#ifdef __APPLE__
+  // This is for _NSGetExecutablePath().
+  #include <mach-o/dyld.h>
+#endif
+
+#if defined(_WIN32)
 struct { char *ver, *key; } reg_keys[] = {
   { "MAYA6",    "6.0" },
   { "MAYA65",   "6.5" },
@@ -95,12 +109,36 @@ void getWrapperName(char *prog)
   }
   prog[len-4] = 0;
 }
+#elif defined(__APPLE__)
+void getWrapperName(char *prog)
+{
+  char *pathbuf = new char[PATH_MAX];
+  uint32_t *bufsize;
+  if (_NSGetExecutablePath(pathbuf, bufsize) == 0) {
+    strcpy(prog, pathbuf);
+  }
+  delete[] pathbuf;
+}
+#else
+void getWrapperName(char *prog)
+{
+  char readlinkbuf[PATH_MAX];
+  int pathlen = readlink("/proc/self/exe", readlinkbuf, PATH_MAX-1);
+  if (pathlen > 0) {
+    readlinkbuf[pathlen] = 0;
+    strcpy(prog, readlinkbuf);
+  }
+}
+#endif
 
 int main(int argc, char **argv)
 {
   char loc[1024], prog[1024];
-  char *key, *cmd, *path, *env1, *env2, *env3; int len;
+  char *path, *env1, *env2, *env3, *env4; int len;
+  
+#ifdef _WIN32
   STARTUPINFO si; PROCESS_INFORMATION pi;
+  char *key, *cmd;
   
   key = getRegistryKey(TOSTRING(MAYAVERSION));
   if (key == 0) {
@@ -119,19 +157,55 @@ int main(int argc, char **argv)
     exit(1);
   }
   strcat(prog, "-wrapped.exe");
+#else
+  char *mayaloc = getenv("MAYA_LOCATION");
+  if (mayaloc == NULL) {
+    printf("$MAYA_LOCATION is not set!\n");
+    exit(1);
+  }
+  struct stat st;
+  if(stat(mayaloc, &st) != 0) {
+    printf("The directory referred to by $MAYA_LOCATION does not exist!\n");
+    exit(1);
+  }
+
+  getWrapperName(prog);
+  if (prog[0]==0) {
+    printf("mayaWrapper cannot determine its own filename (bug)\n");
+    exit(1);
+  }  
+  strcat(prog, "-wrapped");
+#endif
 
   path = getenv("PATH");
   if (path == 0) path = "";
+#ifdef _WIN32
   env1 = (char*)malloc(100 + strlen(loc) + strlen(path));
   sprintf(env1, "PATH=%s\\bin;%s", loc, path);
   env2 = (char*)malloc(100 + strlen(loc));
   sprintf(env2, "MAYA_LOCATION=%s", loc);
   env3 = (char*)malloc(300 + 5*strlen(loc));
   sprintf(env3, "PYTHONPATH=%s\\bin;%s\\Python;%s\\Python\\DLLs;%s\\Python\\lib;%s\\Python\\lib\\site-packages", loc, loc, loc, loc, loc);
+#else
+  env1 = (char*)malloc(100 + strlen(loc) + strlen(path));
+  sprintf(env1, "PATH=%s/bin;%s", loc, path);
+  env2 = (char*)malloc(100 + strlen(loc));
+  sprintf(env2, "MAYA_LOCATION=%s", loc);
+  env3 = (char*)malloc(300 + 5*strlen(loc));
+  sprintf(env3, "PYTHONPATH=%s/bin;%s/Python;%s/Python/DLLs;%s/Python/lib;%s/Python/lib/site-packages", loc, loc, loc, loc, loc);
+  
+  path = getenv("LD_LIBRARY_PATH");
+  if (path == 0) path = "";
+  env4 = (char*)malloc(100 + strlen(loc) + strlen(path));
+  sprintf(env4, "LD_LIBRARY_PATH=%s/lib:%s", loc, path);
+  
+  _putenv(env4);
+#endif
   _putenv(env1);
   _putenv(env2);
   //  _putenv(env3);
-
+  
+#ifdef _WIN32
   cmd = GetCommandLine();
   memset(&si, 0, sizeof(si));
   si.cb = sizeof(STARTUPINFO);
@@ -142,5 +216,13 @@ int main(int argc, char **argv)
     printf("Could not launch %s\n", prog);
     exit(1);
   }
+#else
+  if (execvp(prog, argv) == 0) {
+    exit(0);
+  } else {
+    printf("Could not launch %s\n", prog);
+    exit(1);
+  }
+#endif
 }
 
