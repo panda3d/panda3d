@@ -688,15 +688,13 @@ def SdkLocateMaya():
                     ddir3 = "/usr/autodesk/maya"+key+"-x64"
                 else:
                     ddir3 = "/usr/autodesk/maya"+key
-                ddir4 = "/usr/autodesk/maya"
                 if (os.path.isdir(ddir1)):
                     SDK[ver] = ddir1
-                elif (os.environ.has_key("MAYA_LOCATION") and os.path.isdir(ddir2)):
+                elif (os.environ.has_key("MAYA_LOCATION") and os.path.isdir(ddir2) and
+                     ((ver.lower() in ddir2.lower()) or ("maya"+key in ddir2.lower()))):
                     SDK[ver] = ddir2
                 elif (os.path.isdir(ddir3)):
                     SDK[ver] = ddir3
-                elif (os.path.isdir(ddir4)):
-                    SDK[ver] = ddir4
 
 def SdkLocateMax():
     if (sys.platform != "win32"): return

@@ -3199,36 +3199,31 @@ for VER in MAYAVERSIONS:
     TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('libmayapview'+VNUM+'.mll', opts=['ADVAPI', VER])
     
-    # Temporary fix, until I get mayaWrapper.cxx working on non-windows systems.
-    if (sys.platform=="win32"): suffix = "-wrapped"
-    else: suffix = ""
-    
     TargetAdd('maya2egg'+VNUM+'_mayaToEgg.obj', opts=OPTS, input='mayaToEgg.cxx')
-    TargetAdd('maya2egg'+VNUM+suffix+'.exe', input='maya2egg'+VNUM+'_mayaToEgg.obj')
-    TargetAdd('maya2egg'+VNUM+suffix+'.exe', input='libmayaegg'+VNUM+'.lib')
-    TargetAdd('maya2egg'+VNUM+suffix+'.exe', input='libmaya'+VNUM+'.lib')
-    TargetAdd('maya2egg'+VNUM+suffix+'.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
-    TargetAdd('maya2egg'+VNUM+suffix+'.exe', opts=['ADVAPI', VER])
+    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='maya2egg'+VNUM+'_mayaToEgg.obj')
+    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='libmaya'+VNUM+'.lib')
+    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
     
     TargetAdd('mayacopy'+VNUM+'_mayaCopy.obj', opts=OPTS, input='mayaCopy.cxx')
-    TargetAdd('mayacopy'+VNUM+suffix+'.exe', input='mayacopy'+VNUM+'_mayaCopy.obj')
-    TargetAdd('mayacopy'+VNUM+suffix+'.exe', input='libcvscopy.lib')
-    TargetAdd('mayacopy'+VNUM+suffix+'.exe', input='libmaya'+VNUM+'.lib')
-    TargetAdd('mayacopy'+VNUM+suffix+'.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
-    TargetAdd('mayacopy'+VNUM+suffix+'.exe', opts=['ADVAPI', VER])
+    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='mayacopy'+VNUM+'_mayaCopy.obj')
+    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='libcvscopy.lib')
+    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='libmaya'+VNUM+'.lib')
+    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
     
     TargetAdd('mayasavepview'+VNUM+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
     TargetAdd('libmayasavepview'+VNUM+'.mll', input='mayasavepview'+VNUM+'_mayaSavePview.obj')
     TargetAdd('libmayasavepview'+VNUM+'.mll', opts=['ADVAPI',  VER])
     
-    if (sys.platform=="win32"):
-        TargetAdd('mayaWrapper'+VNUM+'.obj', opts=OPTS, input='mayaWrapper.cxx')
-        
-        TargetAdd('maya2egg'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
-        TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI'])
+    TargetAdd('mayaWrapper'+VNUM+'.obj', opts=OPTS, input='mayaWrapper.cxx')
     
-        TargetAdd('mayacopy'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
-        TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI'])
+    TargetAdd('maya2egg'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
+    TargetAdd('maya2egg'+VNUM+'.exe', opts=['ADVAPI'])
+    
+    TargetAdd('mayacopy'+VNUM+'.exe', input='mayaWrapper'+VNUM+'.obj')
+    TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI'])
 
 
 #
@@ -3691,6 +3686,20 @@ def MakeInstallerOSX():
       if os.path.isdir("built/plugins"): oscmd("cp -R built/plugins Panda3D-tpl-rw/Panda3D/%s/plugins" % VERSION)
       for base in os.listdir("built/lib"):
           oscmd("cp built/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
+      # Loop through the binaries and libraries and execute install_name_tool on them
+      #bindir = "Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION
+      #libdir = "Panda3D-tpl-rw/Panda3D/%s/lib/" % VERSION
+      #for fn in os.listdir(bindir):
+      #    if os.path.isfile(bindir + fn):
+      #        oscmd("install_name_tool -id %s %s%s" % (fn, bindir, fn))
+      #        oscmd("otool -L %s%s > built/tmp/otool-output.txt" % (bindir, fn))
+      #        for fn2 in os.listdir(libdir):
+      #            oscmd("install_name_tool -change built/lib/%s %s %s%s" % (fn2, fn2, bindir, fn))
+      #for fn in os.listdir(libdir):
+      #    oscmd("install_name_tool -id %s %s%s" % (fn, libdir, fn))
+      #    for fn2 in os.listdir(libdir):
+      #        oscmd("install_name_tool -change built/lib/%s %s %s%s" % (fn2, fn2, libdir, fn))
+      # Compile the python files
       for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src"):
           if ((base != "extensions") and (base != "extensions_native")):
               compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src/"+base)
