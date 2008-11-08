@@ -3687,18 +3687,23 @@ def MakeInstallerOSX():
       for base in os.listdir("built/lib"):
           oscmd("cp built/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
       # Loop through the binaries and libraries and execute install_name_tool on them
-      #bindir = "Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION
-      #libdir = "Panda3D-tpl-rw/Panda3D/%s/lib/" % VERSION
-      #for fn in os.listdir(bindir):
-      #    if os.path.isfile(bindir + fn):
-      #        oscmd("install_name_tool -id %s %s%s" % (fn, bindir, fn))
-      #        oscmd("otool -L %s%s > built/tmp/otool-output.txt" % (bindir, fn))
-      #        for fn2 in os.listdir(libdir):
-      #            oscmd("install_name_tool -change built/lib/%s %s %s%s" % (fn2, fn2, bindir, fn))
-      #for fn in os.listdir(libdir):
-      #    oscmd("install_name_tool -id %s %s%s" % (fn, libdir, fn))
-      #    for fn2 in os.listdir(libdir):
-      #        oscmd("install_name_tool -change built/lib/%s %s %s%s" % (fn2, fn2, libdir, fn))
+      bindir = "Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION
+      libdir = "Panda3D-tpl-rw/Panda3D/%s/lib/" % VERSION
+      for fn in os.listdir(bindir):
+          if os.path.isfile(bindir + fn):
+              oscmd("otool -L %s%s | grep built/lib/ > built/tmp/otool-libs.txt" % (bindir, fn), True)
+              for line in open(libdir, "r"):
+                  if len(line.strip()) > 0:
+                      libname = line.strip().split("built/lib/")[1].split(" ")[0]
+                      oscmd("install_name_tool -change built/lib/%s %s %s%s" % (libname, libname, bindir, fn), True)
+      for fn in os.listdir(libdir):
+          if os.path.isfile(libdir + fn):
+              oscmd("install_name_tool -id %s %s%s" % (fn, libdir, fn), True)
+              oscmd("otool -L %s%s | grep built/lib/ > built/tmp/otool-libs.txt" % (libdir, fn), True)
+              for line in open(libdir, "r"):
+                  if len(line.strip()) > 0:
+                      libname = line.strip().split("built/lib/")[1].split(" ")[0]
+                      oscmd("install_name_tool -change built/lib/%s %s %s%s" % (libname, libname, libdir, fn), True)
       # Compile the python files
       for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src"):
           if ((base != "extensions") and (base != "extensions_native")):
