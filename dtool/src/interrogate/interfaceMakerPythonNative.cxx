@@ -1377,14 +1377,14 @@ write_module_class(ostream &out,  Object *obj) {
         break;
 
       case WT_sequence_setitem:
-        // Py_ssize_t func(PyObject *self, Py_ssize_t index, PyObject *value)
+        // int_t func(PyObject *self, Py_ssize_t index, PyObject *value)
         {
           Function *func = rfi->first;
           out << "//////////////////\n";
           out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
           out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
           out << "//////////////////\n";
-          out << "static Py_ssize_t " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, Py_ssize_t index, PyObject *value)\n";
+          out << "static int " <<  func->_name << methodNameFromCppName(func,export_calss_name) << "( PyObject * self, Py_ssize_t index, PyObject *value)\n";
           out << "{\n";
           out << "    PyObject *args = Py_BuildValue(\"(iO)\", index, value);\n";
           out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
