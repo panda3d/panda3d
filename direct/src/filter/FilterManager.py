@@ -194,7 +194,8 @@ class FilterManager(DirectObject):
 
         cs = NodePath("dummy")
         cs.setState(self.caminit)
-        cs.setShaderAuto()
+        # Do we really need to turn on the Shader Generator?
+        #cs.setShaderAuto()
         if (auxbits):
             cs.setAttrib(AuxBitplaneAttrib.make(auxbits))
         self.camera.node().setInitialState(cs.getState())
