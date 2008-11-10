@@ -38,7 +38,7 @@ PUBLISHED:
 #ifdef HAVE_PYTHON
     INLINE_LINMATH void __setitem__(int i, FLOATTYPE v);
 #endif
-    INLINE_LINMATH static size_t size();
+    INLINE_LINMATH static int size();
   private:
     FLOATTYPE *_row;
     friend class FLOATNAME(LMatrix3);
@@ -48,7 +48,7 @@ PUBLISHED:
     INLINE_LINMATH CRow(const FLOATTYPE *row);
   PUBLISHED:
     INLINE_LINMATH FLOATTYPE operator [](int i) const;
-    INLINE_LINMATH static size_t size();
+    INLINE_LINMATH static int size();
   private:
     const FLOATTYPE *_row;
     friend class FLOATNAME(LMatrix3);
@@ -96,7 +96,7 @@ PUBLISHED:
 
   INLINE_LINMATH CRow operator [](int i) const;
   INLINE_LINMATH Row operator [](int i);
-  INLINE_LINMATH static size_t size();
+  INLINE_LINMATH static int size();
 
   INLINE_LINMATH bool is_nan() const;
 

@@ -188,7 +188,7 @@ __setitem__(int i, FLOATTYPE v) {
 //       Access: Public, Static
 //  Description: Returns 4: the number of components of a LVecBase4.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH size_t FLOATNAME(LVecBase4)::
+INLINE_LINMATH int FLOATNAME(LVecBase4)::
 size() {
   return 4;
 }

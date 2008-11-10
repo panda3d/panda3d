@@ -62,7 +62,7 @@ __setitem__(int i, FLOATTYPE v) {
 //       Access: Public, Static
 //  Description: Returns 3: the number of columns of a LMatrix3.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH size_t FLOATNAME(LMatrix3)::Row::
+INLINE_LINMATH int FLOATNAME(LMatrix3)::Row::
 size() {
   return 3;
 }
@@ -92,7 +92,7 @@ operator [](int i) const {
 //       Access: Public, Static
 //  Description: Returns 3: the number of columns of a LMatrix3.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH size_t FLOATNAME(LMatrix3)::CRow::
+INLINE_LINMATH int FLOATNAME(LMatrix3)::CRow::
 size() {
   return 3;
 }
@@ -347,7 +347,7 @@ operator [](int i) {
 //       Access: Public, Static
 //  Description: Returns 3: the number of rows of a LMatrix3.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH size_t FLOATNAME(LMatrix3)::
+INLINE_LINMATH int FLOATNAME(LMatrix3)::
 size() {
   return 3;
 }

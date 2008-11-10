@@ -62,7 +62,7 @@ __setitem__(int i, FLOATTYPE v) {
 //       Access: Public, Static
 //  Description: Returns 4: the number of columns of a LMatrix4.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH size_t FLOATNAME(LMatrix4)::Row::
+INLINE_LINMATH int FLOATNAME(LMatrix4)::Row::
 size() {
   return 4;
 }
@@ -92,7 +92,7 @@ operator [](int i) const {
 //       Access: Public, Static
 //  Description: Returns 4: the number of columns of a LMatrix4.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH size_t FLOATNAME(LMatrix4)::CRow::
+INLINE_LINMATH int FLOATNAME(LMatrix4)::CRow::
 size() {
   return 4;
 }
@@ -525,7 +525,7 @@ operator [](int i) {
 //       Access: Public, Static
 //  Description: Returns 4: the number of rows of a LMatrix4.
 ////////////////////////////////////////////////////////////////////
-INLINE_LINMATH size_t FLOATNAME(LMatrix4)::
+INLINE_LINMATH int FLOATNAME(LMatrix4)::
 size() {
   return 4;
 }
