@@ -23,6 +23,29 @@ INLINE NodePathCollection::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::operator +=
+//       Access: Published
+//  Description: Appends the other list onto the end of this one.
+////////////////////////////////////////////////////////////////////
+INLINE void NodePathCollection::
+operator += (const NodePathCollection &other) {
+  add_paths_from(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePathCollection::operator +
+//       Access: Published
+//  Description: Returns a NodePathCollection representing the
+//               concatenation of the two lists.
+////////////////////////////////////////////////////////////////////
+INLINE NodePathCollection NodePathCollection::
+operator + (const NodePathCollection &other) const {
+  NodePathCollection a(*this);
+  a += other;
+  return a;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: NodePathCollection::ls
 //       Access: Published
 //  Description: Lists all the nodes at and below each node in the

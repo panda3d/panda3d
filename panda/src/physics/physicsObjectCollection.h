@@ -46,6 +46,8 @@ PUBLISHED:
   MAKE_SEQ(get_physics_objects, get_num_physics_objects, get_physics_object);
   PT(PhysicsObject) operator [] (int index) const;
   int size() const;
+  INLINE void operator += (const PhysicsObjectCollection &other);
+  INLINE PhysicsObjectCollection operator + (const PhysicsObjectCollection &other) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

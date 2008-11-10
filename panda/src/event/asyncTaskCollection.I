@@ -21,3 +21,26 @@
 INLINE AsyncTaskCollection::
 ~AsyncTaskCollection() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskCollection::operator +=
+//       Access: Published
+//  Description: Appends the other list onto the end of this one.
+////////////////////////////////////////////////////////////////////
+INLINE void AsyncTaskCollection::
+operator += (const AsyncTaskCollection &other) {
+  add_tasks_from(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AsyncTaskCollection::operator +
+//       Access: Published
+//  Description: Returns a AsyncTaskCollection representing the
+//               concatenation of the two lists.
+////////////////////////////////////////////////////////////////////
+INLINE AsyncTaskCollection AsyncTaskCollection::
+operator + (const AsyncTaskCollection &other) const {
+  AsyncTaskCollection a(*this);
+  a += other;
+  return a;
+}

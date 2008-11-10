@@ -47,6 +47,8 @@ PUBLISHED:
   MAKE_SEQ(get_paths, get_num_paths, get_path);
   NodePath operator [] (int index) const;
   int size() const;
+  INLINE void operator += (const NodePathCollection &other);
+  INLINE NodePathCollection operator + (const NodePathCollection &other) const;
 
   // Handy operations on many NodePaths at once.
   INLINE void ls() const;

@@ -44,6 +44,8 @@ PUBLISHED:
   Material *get_material(int index) const;
   Material *operator [] (int index) const;
   int size() const;
+  INLINE void operator += (const MaterialCollection &other);
+  INLINE MaterialCollection operator + (const MaterialCollection &other) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

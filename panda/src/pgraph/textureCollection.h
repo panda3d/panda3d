@@ -45,6 +45,8 @@ PUBLISHED:
   MAKE_SEQ(get_textures, get_num_textures, get_texture);
   Texture *operator [] (int index) const;
   int size() const;
+  INLINE void operator += (const TextureCollection &other);
+  INLINE TextureCollection operator + (const TextureCollection &other) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

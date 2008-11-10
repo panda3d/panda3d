@@ -26,7 +26,7 @@ PUBLISHED:
   OdeJointCollection();
   OdeJointCollection(const OdeJointCollection &copy);
   void operator = (const OdeJointCollection &copy);
-  INLINE ~OdeJointCollection() {};
+  INLINE ~OdeJointCollection();
 
   void add_joint(const OdeJoint &joint);
   bool remove_joint(const OdeJoint &joint);
@@ -42,10 +42,14 @@ PUBLISHED:
   MAKE_SEQ(get_joints, get_num_joints, get_joint);
   OdeJoint operator [] (int index) const;
   int size() const;
+  INLINE void operator += (const OdeJointCollection &other);
+  INLINE OdeJointCollection operator + (const OdeJointCollection &other) const;
   
 private:  
   typedef PTA(OdeJoint) Joints;
   Joints _joints;
 };
+
+#include "odeJointCollection.I"
 
 #endif

@@ -50,6 +50,8 @@ PUBLISHED:
   void remove_task(int index);
   AsyncTask *operator [] (int index) const;
   int size() const;
+  INLINE void operator += (const AsyncTaskCollection &other);
+  INLINE AsyncTaskCollection operator + (const AsyncTaskCollection &other) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

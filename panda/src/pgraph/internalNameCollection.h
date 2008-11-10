@@ -43,6 +43,8 @@ PUBLISHED:
   MAKE_SEQ(get_names, get_num_names, get_name);
   InternalName *operator [] (int index) const;
   int size() const;
+  INLINE void operator += (const InternalNameCollection &other);
+  INLINE InternalNameCollection operator + (const InternalNameCollection &other) const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;

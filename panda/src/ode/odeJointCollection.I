@@ -1,5 +1,5 @@
-// Filename: materialCollection.I
-// Created by:  drose (16Mar02)
+// Filename: odeJointCollection.I
+// Created by:  drose (10Nov08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -14,33 +14,33 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::Destructor
+//     Function: OdeJointCollection::Destructor
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE MaterialCollection::
-~MaterialCollection() {
+INLINE OdeJointCollection::
+~OdeJointCollection() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::operator +=
+//     Function: OdeJointCollection::operator +=
 //       Access: Published
 //  Description: Appends the other list onto the end of this one.
 ////////////////////////////////////////////////////////////////////
-INLINE void MaterialCollection::
-operator += (const MaterialCollection &other) {
-  add_materials_from(other);
+INLINE void OdeJointCollection::
+operator += (const OdeJointCollection &other) {
+  add_joints_from(other);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MaterialCollection::operator +
+//     Function: OdeJointCollection::operator +
 //       Access: Published
-//  Description: Returns a MaterialCollection representing the
+//  Description: Returns a OdeJointCollection representing the
 //               concatenation of the two lists.
 ////////////////////////////////////////////////////////////////////
-INLINE MaterialCollection MaterialCollection::
-operator + (const MaterialCollection &other) const {
-  MaterialCollection a(*this);
+INLINE OdeJointCollection OdeJointCollection::
+operator + (const OdeJointCollection &other) const {
+  OdeJointCollection a(*this);
   a += other;
   return a;
 }

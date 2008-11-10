@@ -54,12 +54,14 @@ PUBLISHED:
 
   INLINE int get_num_curves() const;
   INLINE ParametricCurve *get_curve(int index) const;
+  MAKE_SEQ(get_curves, get_num_curves, get_curve);
 
   ParametricCurve *get_xyz_curve() const;
   ParametricCurve *get_hpr_curve() const;
   ParametricCurve *get_default_curve() const;
   int get_num_timewarps() const;
   ParametricCurve *get_timewarp_curve(int n) const;
+  MAKE_SEQ(get_timewarp_curves, get_num_timewarps, get_timewarp_curve);
 
   INLINE float get_max_t() const;
 

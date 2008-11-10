@@ -21,3 +21,26 @@
 INLINE TextureCollection::
 ~TextureCollection() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureCollection::operator +=
+//       Access: Published
+//  Description: Appends the other list onto the end of this one.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureCollection::
+operator += (const TextureCollection &other) {
+  add_textures_from(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureCollection::operator +
+//       Access: Published
+//  Description: Returns a TextureCollection representing the
+//               concatenation of the two lists.
+////////////////////////////////////////////////////////////////////
+INLINE TextureCollection TextureCollection::
+operator + (const TextureCollection &other) const {
+  TextureCollection a(*this);
+  a += other;
+  return a;
+}

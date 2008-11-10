@@ -21,3 +21,26 @@
 INLINE TextureStageCollection::
 ~TextureStageCollection() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStageCollection::operator +=
+//       Access: Published
+//  Description: Appends the other list onto the end of this one.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureStageCollection::
+operator += (const TextureStageCollection &other) {
+  add_texture_stages_from(other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStageCollection::operator +
+//       Access: Published
+//  Description: Returns a TextureStageCollection representing the
+//               concatenation of the two lists.
+////////////////////////////////////////////////////////////////////
+INLINE TextureStageCollection TextureStageCollection::
+operator + (const TextureStageCollection &other) const {
+  TextureStageCollection a(*this);
+  a += other;
+  return a;
+}

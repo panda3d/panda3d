@@ -45,6 +45,8 @@ PUBLISHED:
   MAKE_SEQ(get_texture_stages, get_num_texture_stages, get_texture_stage);
   TextureStage *operator [] (int index) const;
   int size() const;
+  INLINE void operator += (const TextureStageCollection &other);
+  INLINE TextureStageCollection operator + (const TextureStageCollection &other) const;
 
   void sort();
 
