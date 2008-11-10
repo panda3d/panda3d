@@ -66,41 +66,6 @@ ConfigVariableInt multifile_encryption_iteration_count
           "be loaded quickly, without paying the cost of an expensive hash on "
           "each subfile in order to decrypt it."));
 
-ConfigVariableBool vfs_case_sensitive
-("vfs-case-sensitive", true,
- PRC_DESC("Set this true to make the VirtualFileSystem present the native "
-          "OS-provided filesystem as if it were a case-sensitive file "
-          "system, even if it is not (e.g. on Windows).  This variable "
-          "has no effect if the native filesystem is already case-sensitive, "
-          "and it has no effect on mounted multifile systems, which are "
-          "always case-sensitive."));
-
-ConfigVariableBool vfs_implicit_pz
-("vfs-implicit-pz", true,
- PRC_DESC("When this is true, the VirtualFileSystem will pretend a named "
-          "file exists even if it doesn't, as long as a filename with the "
-          "same name and the additional extension .pz does exist.  In this "
-          "case, the VirtualFileSystem will implicitly open the .pz file "
-          "and decompress it on-the-fly."));
-
-ConfigVariableBool vfs_implicit_mf
-("vfs-implicit-mf", true,
- PRC_DESC("When this is true, the VirtualFileSystem will automatically "
-          "mount multifiles on-the-fly when they are used as directories.  "
-          "For instance, opening the file /c/files/foo.mf/dirname/mytex.jpg "
-          "will implicitly retrieve a file named 'dirname/mytex.jpg' "
-          "within the multifile /c/files/foo.mf, even if the multifile "
-          "has not already been mounted.  This makes all of your multifiles "
-          "act like directories."));
-
-ConfigVariableBool use_vfs
-("use-vfs", true,
- PRC_DESC("Set this true to use the VirtualFileSystem mechanism for loading "
-          "models, etc.  Since the VirtualFileSystem is now the de facto "
-          "filesystem for Panda, you should always keep this true, since "
-          "there is now code that assumes it to be true.  This variable "
-          "is now deprecated."));
-
 ConfigVariableBool collect_tcp
 ("collect-tcp", false,
  PRC_DESC("Set this true to enable accumulation of several small consecutive "

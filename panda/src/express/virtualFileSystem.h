@@ -98,6 +98,14 @@ public:
   static void parse_option(const string &option,
                            int &flags, string &password);
 
+public:
+  // These are declared as class instances, instead of as globals, to
+  // guarantee they will be initialized by the time the
+  // VirtualFileSystem's constructor runs.
+  ConfigVariableBool vfs_case_sensitive;
+  ConfigVariableBool vfs_implicit_pz;
+  ConfigVariableBool vfs_implicit_mf;
+
 private:
   Filename normalize_mount_point(const string &mount_point) const;
   bool do_mount(VirtualFileMount *mount, const string &mount_point, int flags);

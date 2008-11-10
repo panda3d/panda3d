@@ -33,7 +33,32 @@ VirtualFileSystem *VirtualFileSystem::_global_ptr = NULL;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 VirtualFileSystem::
-VirtualFileSystem() {
+VirtualFileSystem() :
+  vfs_case_sensitive
+("vfs-case-sensitive", true,
+ PRC_DESC("Set this true to make the VirtualFileSystem present the native "
+          "OS-provided filesystem as if it were a case-sensitive file "
+          "system, even if it is not (e.g. on Windows).  This variable "
+          "has no effect if the native filesystem is already case-sensitive, "
+          "and it has no effect on mounted multifile systems, which are "
+          "always case-sensitive.")),
+  vfs_implicit_pz
+  ("vfs-implicit-pz", true,
+   PRC_DESC("When this is true, the VirtualFileSystem will pretend a named "
+            "file exists even if it doesn't, as long as a filename with the "
+            "same name and the additional extension .pz does exist.  In this "
+            "case, the VirtualFileSystem will implicitly open the .pz file "
+            "and decompress it on-the-fly.")),
+  vfs_implicit_mf
+  ("vfs-implicit-mf", true,
+   PRC_DESC("When this is true, the VirtualFileSystem will automatically "
+            "mount multifiles on-the-fly when they are used as directories.  "
+            "For instance, opening the file /c/files/foo.mf/dirname/mytex.jpg "
+            "will implicitly retrieve a file named 'dirname/mytex.jpg' "
+            "within the multifile /c/files/foo.mf, even if the multifile "
+            "has not already been mounted.  This makes all of your multifiles "
+            "act like directories."))
+{
   _cwd = "/";
   _mount_seq = 0;
 }
@@ -570,6 +595,9 @@ write(ostream &out) const {
 VirtualFileSystem *VirtualFileSystem::
 get_global_ptr() {
   if (_global_ptr == (VirtualFileSystem *)NULL) {
+    // Make sure this is initialized.
+    init_libexpress();
+
     _global_ptr = new VirtualFileSystem;
     
     // Set up the default mounts.  First, there is always the root

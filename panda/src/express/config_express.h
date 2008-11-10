@@ -47,12 +47,6 @@ extern ConfigVariableBool keep_temporary_files;
 
 extern ConfigVariableInt multifile_encryption_iteration_count;
 
-extern ConfigVariableBool vfs_case_sensitive;
-extern ConfigVariableBool vfs_implicit_pz;
-extern ConfigVariableBool vfs_implicit_mf;
-
-extern EXPCL_PANDAEXPRESS ConfigVariableBool use_vfs;
-
 extern EXPCL_PANDAEXPRESS ConfigVariableBool collect_tcp;
 extern EXPCL_PANDAEXPRESS ConfigVariableDouble collect_tcp_interval;
 

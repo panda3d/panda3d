@@ -27,7 +27,7 @@ bool VirtualFileMountSystem::
 has_file(const Filename &file) const {
   Filename pathname(_physical_filename, file);
 #ifdef WIN32
-  if (vfs_case_sensitive) {
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     Filename case_pathname = pathname;
     if (!case_pathname.make_true_case()) {
       return false;
@@ -53,7 +53,7 @@ bool VirtualFileMountSystem::
 is_directory(const Filename &file) const {
 #ifdef WIN32
   // First ensure that the file exists to validate its case.
-  if (vfs_case_sensitive) {
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return false;
     }
@@ -73,7 +73,7 @@ bool VirtualFileMountSystem::
 is_regular_file(const Filename &file) const {
 #ifdef WIN32
   // First ensure that the file exists to validate its case.
-  if (vfs_case_sensitive) {
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return false;
     }
@@ -95,7 +95,7 @@ istream *VirtualFileMountSystem::
 open_read_file(const Filename &file) const {
 #ifdef WIN32
   // First ensure that the file exists to validate its case.
-  if (vfs_case_sensitive) {
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(file)) {
       return NULL;
     }
@@ -185,7 +185,7 @@ bool VirtualFileMountSystem::
 scan_directory(vector_string &contents, const Filename &dir) const {
 #ifdef WIN32
   // First ensure that the file exists to validate its case.
-  if (vfs_case_sensitive) {
+  if (VirtualFileSystem::get_global_ptr()->vfs_case_sensitive) {
     if (!has_file(dir)) {
       return false;
     }
