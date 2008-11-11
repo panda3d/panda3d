@@ -869,10 +869,10 @@ class Actor(DirectObject, NodePath):
 
     def getCurrentFrame(self, animName=None, partName=None):
         """
-        Return the current frame number of the anim current playing on
-        the actor. If part not specified return current anim of first
-        part in dictionary.
-        NOTE: only returns info for an arbitrary LOD
+        Return the current frame number of the named anim, or if no
+        anim is specified, then the anim current playing on the
+        actor. If part not specified return current anim of first part
+        in dictionary.  NOTE: only returns info for an arbitrary LOD
         """
         lodName, animControlDict = self.__animControlDict.items()[0]
         if partName == None:
@@ -884,10 +884,17 @@ class Actor(DirectObject, NodePath):
                 Actor.notify.warning("couldn't find part: %s" % (partName))
                 return None
 
-        # loop through all anims for named part and find if any are playing
-        for animName, anim in animDict.items():
-            if anim.animControl and anim.animControl.isPlaying():
+        if animName:
+            anim = animDict.get(animName)
+            if not anim:
+                Actor.notify.warning("couldn't find anim: %s" % (animName))
+            elif anim.animControl:
                 return anim.animControl.getFrame()
+        else:
+            # loop through all anims for named part and find if any are playing
+            for animName, anim in animDict.items():
+                if anim.animControl and anim.animControl.isPlaying():
+                    return anim.animControl.getFrame()
 
         # we must have found none, or gotten an error
         return None
