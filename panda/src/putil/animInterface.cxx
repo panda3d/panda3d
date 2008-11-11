@@ -270,10 +270,11 @@ loop(bool restart, double from, double to) {
   _paused_f = 0.0;
 
   if (!restart) {
+    fframe = min(max(fframe, from), to);
     if (_paused) {
       _paused_f = fframe - _start_frame;
     } else {
-      _start_time -= fframe / _effective_frame_rate;
+      _start_time -= (fframe - _start_frame) / _effective_frame_rate;
     }
   }
 }
@@ -303,10 +304,11 @@ pingpong(bool restart, double from, double to) {
   _paused_f = 0.0;
 
   if (!restart) {
+    fframe = min(max(fframe, from), to);
     if (_paused) {
       _paused_f = fframe - _start_frame;
     } else {
-      _start_time -= fframe / _effective_frame_rate;
+      _start_time -= (fframe - _start_frame) / _effective_frame_rate;
     }
   }
 }
