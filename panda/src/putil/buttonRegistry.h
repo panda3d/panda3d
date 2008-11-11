@@ -71,7 +71,7 @@ private:
   typedef pvector<RegistryNode *> HandleRegistry;
   HandleRegistry _handle_registry;
 
-  typedef phash_map<string, RegistryNode *, string_hash> NameRegistry;
+  typedef pmap<string, RegistryNode *> NameRegistry;
   NameRegistry _name_registry;
 
   static ButtonRegistry *_global_pointer;
