@@ -1012,7 +1012,7 @@ consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_fil
 bool VirtualFileSystem::
 consider_mount_mf(const Filename &filename) {
   Filename dirname = filename.get_dirname();
-  if (dirname.empty()) {
+  if (dirname.empty() || dirname == filename) {
     // Reached the top directory; no .mf file references.
     return false;
   }
