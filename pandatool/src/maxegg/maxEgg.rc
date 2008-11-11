@@ -58,7 +58,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION |
 CAPTION "Export Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Export Type:",IDC_STATIC,6,5,54,8
+    LTEXT           "Animation Type:",IDC_STATIC,6,5,54,8
     CONTROL         "Model",IDC_MODEL,"Button",BS_AUTORADIOBUTTON,54,4,38,12
     CONTROL         "Animation",IDC_ANIMATION,"Button",BS_AUTORADIOBUTTON,96,
                     4,50,12
