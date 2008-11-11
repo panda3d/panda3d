@@ -9,7 +9,7 @@
 #begin lib_target
   #define TARGET dxgsg9
   #define LOCAL_LIBS \
-    gsgmisc gsgbase gobj display windisplay \
+    gsgbase gobj display windisplay \
     putil linmath mathutil pnmimage event
     
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     

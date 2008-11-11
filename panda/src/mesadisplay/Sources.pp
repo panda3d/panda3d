@@ -8,7 +8,7 @@
 #begin lib_target
   #define TARGET mesadisplay
   #define LOCAL_LIBS \
-    glstuff gsgmisc gsgbase gobj display \
+    glstuff gsgbase gobj display \
     putil linmath mathutil pnmimage
 
   #define SOURCES \

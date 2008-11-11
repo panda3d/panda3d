@@ -7,7 +7,7 @@
 #begin lib_target
   #define TARGET glstuff
   #define LOCAL_LIBS \
-    gsgmisc gsgbase gobj display \
+    gsgbase gobj display \
     putil linmath mathutil pnmimage \
     effects
 

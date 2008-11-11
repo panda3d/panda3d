@@ -11,12 +11,12 @@
 #define COMPONENT_LIBS \
     recorder pgraph pgraphnodes pipeline \
     pvrpn grutil chan pstatclient \
-    char chat collide cull device \
-    dgraph display event gobj graph gsgbase \
-    gsgmisc light linmath mathutil movies net nativenet\
-    parametrics pnm \
-    pnmimagetypes pnmimage sgattrib sgmanip sgraph sgraphutil \
-    switchnode pnmtext text tform tiff lerp loader putil \
+    char collide cull device \
+    dgraph display event gobj gsgbase \
+    linmath mathutil movies net nativenet\
+    parametrics \
+    pnmimagetypes pnmimage \
+    pnmtext text tform lerp putil \
     audio pgui pandabase helix
 
 #define LOCAL_LIBS \
