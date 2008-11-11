@@ -1,11 +1,13 @@
 """ This module can serve as a startup script to play a Panda
 application packed within a .mf file.  Run via:
 
-python StartMF.py app.mf
+python RunAppMF.py app.mf
 
 This is currently experimental, but the intent is to work towards a
 prepackaged Panda distributable, designed to run applications exactly
 like this.
+
+Also see MakeAppMF.py.
 
 """
 
@@ -17,23 +19,22 @@ import __builtin__
 
 MultifileRoot = '/mf'
 
+class ArgumentError(AttributeError):
+    pass
+
 def runPackedApp(args):
     if not args:
-        print "No Panda app specified.  Use:"
-        print "python StartMF.py app.mf"
-        sys.exit(1)
+        raise ArgumentError, "No Panda app specified.  Use:\npython RunAppMF.py app.mf"
 
     vfs = VirtualFileSystem.getGlobalPtr()
 
     fname = Filename.fromOsSpecific(args[0])
     if not vfs.exists(fname):
-        print "No such file: %s" % (args[0])
-        sys.exit(1)
+        raise ArgumentError, "No such file: %s" % (args[0])
 
     mf = Multifile()
     if not mf.openRead(fname):
-        print "Not a Panda Multifile: %s" % (args[0])
-        sys.exit(1)
+        raise ArgumentError, "Not a Panda Multifile: %s" % (args[0])
 
     # Clear *all* the mount points, including "/", so that we no
     # longer access the disk directly.
@@ -78,5 +79,10 @@ def runPackedApp(args):
     import main
 
 if __name__ == '__main__':
-    runPackedApp(sys.argv[1:])
+    try:
+        runPackedApp(sys.argv[1:])
+    except ArgumentError, e:
+        print e.args[0]
+        sys.exit(1)
+        
     
