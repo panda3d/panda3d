@@ -180,7 +180,7 @@ is_regular_file(const Filename &) const {
 //               used to read it.
 ////////////////////////////////////////////////////////////////////
 PT(VirtualFile) VirtualFileMountHTTP::
-make_virtual_file(const string &local_filename,
+make_virtual_file(const Filename &local_filename,
                   const Filename &original_filename, bool implicit_pz_file,
                   bool status_only) {
   PT(VirtualFileHTTP) vfile = 

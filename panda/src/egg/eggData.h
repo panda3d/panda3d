@@ -66,7 +66,7 @@ PUBLISHED:
   void set_coordinate_system(CoordinateSystem coordsys);
   INLINE CoordinateSystem get_coordinate_system() const;
 
-  INLINE void set_egg_filename(const Filename &egg_filenamea);
+  INLINE void set_egg_filename(const Filename &egg_filename);
   INLINE const Filename &get_egg_filename() const;
 
   INLINE void recompute_vertex_normals(double threshold);

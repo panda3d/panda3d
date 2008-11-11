@@ -189,7 +189,7 @@ get_global_ptr() {
 ////////////////////////////////////////////////////////////////////
 TexturePool::
 TexturePool() {
-  ConfigVariableString fake_texture_image
+  ConfigVariableFilename fake_texture_image
     ("fake-texture-image", "",
      PRC_DESC("Set this to enable a speedy-load mode in which you don't care "
               "what the world looks like, you just want it to load in minimal "
@@ -830,8 +830,8 @@ ns_list_contents(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::resolve_filename
 //       Access: Private
-//  Description: Searches for the indicated filename along the texture
-//               and model path.  If the filename was previously
+//  Description: Searches for the indicated filename along the
+//               model path.  If the filename was previously
 //               searched for, doesn't search again, as an
 //               optimization.  Assumes _lock is held.
 ////////////////////////////////////////////////////////////////////

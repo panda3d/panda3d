@@ -230,6 +230,34 @@ substr(size_t begin, size_t end) const {
   return _filename.substr(begin, end);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::operator +=
+//       Access: Published
+//  Description: Appends the other filename onto the end of this one.
+//               This does not introduce an intervening slash, but see
+//               the Filename constructor that takes two parameters.
+////////////////////////////////////////////////////////////////////
+INLINE void Filename::
+operator += (const string &other) {
+  _filename += other;
+  locate_basename();
+  locate_extension();
+  locate_hash();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::operator +
+//       Access: Published
+//  Description: Returns a new Filename representing the concatenation
+//               of the two filenames.
+////////////////////////////////////////////////////////////////////
+INLINE Filename Filename::
+operator + (const string &other) const {
+  Filename a(*this);
+  a += other;
+  return a;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_fullpath

@@ -20,7 +20,7 @@
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ShaderPool::
-has_shader(const string &filename) {
+has_shader(const Filename &filename) {
   return get_ptr()->ns_has_shader(filename);
 }
 
@@ -35,7 +35,7 @@ has_shader(const string &filename) {
 //               return a valid Shader pointer.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ShaderPool::
-verify_shader(const string &filename) {
+verify_shader(const Filename &filename) {
   return load_shader(filename) != (Shader *)NULL;
 }
 
@@ -49,7 +49,7 @@ verify_shader(const string &filename) {
 //               file cannot be found, returns NULL.
 ////////////////////////////////////////////////////////////////////
 INLINE CPT(Shader) ShaderPool::
-load_shader(const string &filename) {
+load_shader(const Filename &filename) {
   return get_ptr()->ns_load_shader(filename);
 }
 
@@ -62,7 +62,7 @@ load_shader(const string &filename) {
 //               same filename.
 ////////////////////////////////////////////////////////////////////
 INLINE void ShaderPool::
-add_shader(const string &filename, Shader *shader) {
+add_shader(const Filename &filename, Shader *shader) {
   get_ptr()->ns_add_shader(filename, shader);
 }
 
@@ -76,7 +76,7 @@ add_shader(const string &filename, Shader *shader) {
 //               every loaded, and shaders will never be freed.
 ////////////////////////////////////////////////////////////////////
 INLINE void ShaderPool::
-release_shader(const string &filename) {
+release_shader(const Filename &filename) {
   get_ptr()->ns_release_shader(filename);
 }
 

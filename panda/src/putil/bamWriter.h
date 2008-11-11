@@ -72,11 +72,9 @@
 //               interface to read and write Bam files on disk.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PUTIL BamWriter {
-public:
+PUBLISHED:
   BamWriter(DatagramSink *sink, const Filename &name = "");
   ~BamWriter();
-
-  // The primary interface for a caller.
 
   bool init();
   INLINE const Filename &get_filename() const;

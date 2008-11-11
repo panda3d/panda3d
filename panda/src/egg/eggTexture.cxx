@@ -28,7 +28,7 @@ TypeHandle EggTexture::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 EggTexture::
-EggTexture(const string &tref_name, const string &filename)
+EggTexture(const string &tref_name, const Filename &filename)
   : EggFilenameNode(tref_name, filename)
 {
   _texture_type = TT_unspecified;

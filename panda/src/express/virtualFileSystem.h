@@ -19,6 +19,7 @@
 
 #include "virtualFile.h"
 #include "virtualFileMount.h"
+#include "virtualFileList.h"
 #include "filename.h"
 #include "dSearchPath.h"
 #include "pointerTo.h"
@@ -49,20 +50,20 @@ PUBLISHED:
     MF_read_only      = 0x0002,
   };
 
-  BLOCKING bool mount(Multifile *multifile, const string &mount_point, int flags);
-  BLOCKING bool mount(const Filename &physical_filename, const string &mount_point, 
+  BLOCKING bool mount(Multifile *multifile, const Filename &mount_point, int flags);
+  BLOCKING bool mount(const Filename &physical_filename, const Filename &mount_point, 
                       int flags, const string &password = "");
-  bool mount(VirtualFileMount *mount, const string &mount_point, int flags);
+  bool mount(VirtualFileMount *mount, const Filename &mount_point, int flags);
   BLOCKING int unmount(Multifile *multifile);
   BLOCKING int unmount(const Filename &physical_filename);
   int unmount(VirtualFileMount *mount);
-  BLOCKING int unmount_point(const string &mount_point);
+  BLOCKING int unmount_point(const Filename &mount_point);
   BLOCKING int unmount_all();
 
   int get_num_mounts() const;
   PT(VirtualFileMount) get_mount(int n) const;
 
-  BLOCKING bool chdir(const string &new_directory);
+  BLOCKING bool chdir(const Filename &new_directory);
   BLOCKING Filename get_cwd() const;
 
   BLOCKING PT(VirtualFile) get_file(const Filename &filename, bool status_only = false) const;
@@ -78,8 +79,10 @@ PUBLISHED:
   BLOCKING INLINE bool is_directory(const Filename &filename) const;
   BLOCKING INLINE bool is_regular_file(const Filename &filename) const;
 
-  INLINE void ls(const string &filename) const;
-  INLINE void ls_all(const string &filename) const;
+  BLOCKING INLINE PT(VirtualFileList) scan_directory(const Filename &filename) const;
+
+  INLINE void ls(const Filename &filename) const;
+  INLINE void ls_all(const Filename &filename) const;
 
   void write(ostream &out) const;
 
@@ -107,11 +110,11 @@ public:
   ConfigVariableBool vfs_implicit_mf;
 
 private:
-  Filename normalize_mount_point(const string &mount_point) const;
-  bool do_mount(VirtualFileMount *mount, const string &mount_point, int flags);
+  Filename normalize_mount_point(const Filename &mount_point) const;
+  bool do_mount(VirtualFileMount *mount, const Filename &mount_point, int flags);
   PT(VirtualFile) do_get_file(const Filename &filename, bool status_only) const;
   bool consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
-                      VirtualFileMount *mount, const string &local_filename,
+                      VirtualFileMount *mount, const Filename &local_filename,
                       const Filename &original_filename, bool implicit_pz_file,
                       bool status_only) const;
   bool consider_mount_mf(const Filename &filename);

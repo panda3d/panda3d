@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 
+BEGIN_PUBLISH
 // This enum is used to control how textures are written to a bam
 // stream.
 enum BamTextureMode {
@@ -26,6 +27,8 @@ enum BamTextureMode {
   BTM_basename,
   BTM_rawdata
 };
+END_PUBLISH
+
 EXPCL_PANDA_PUTIL ostream &operator << (ostream &out, BamTextureMode btm);
 EXPCL_PANDA_PUTIL istream &operator >> (istream &in, BamTextureMode &btm);
 

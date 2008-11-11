@@ -24,6 +24,7 @@
 #include "configVariableInt.h"
 #include "configVariableString.h"
 #include "configVariableFilename.h"
+#include "virtualFileSystem.h"
 
 BamCache *BamCache::_global_ptr = NULL;
 
@@ -159,9 +160,11 @@ set_root(const Filename &root) {
 PT(BamCacheRecord) BamCache::
 lookup(const Filename &source_filename, const string &cache_extension) {
   consider_flush_index();
+
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
   
   Filename source_pathname(source_filename);
-  source_pathname.make_absolute();
+  source_pathname.make_absolute(vfs->get_cwd());
 
   Filename rel_pathname(source_pathname);
   rel_pathname.make_relative_to(_root, false);

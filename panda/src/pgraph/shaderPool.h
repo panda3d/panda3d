@@ -30,14 +30,11 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH ShaderPool {
 PUBLISHED:
-  // These functions take string parameters instead of Filenames
-  // because that's somewhat more convenient to the scripting
-  // language.
-  INLINE static bool has_shader(const string &filename);
-  INLINE static bool verify_shader(const string &filename);
-  INLINE static CPT(Shader) load_shader(const string &filename);
-  INLINE static void add_shader(const string &filename, Shader *shader);
-  INLINE static void release_shader(const string &filename);
+  INLINE static bool has_shader(const Filename &filename);
+  INLINE static bool verify_shader(const Filename &filename);
+  INLINE static CPT(Shader) load_shader(const Filename &filename);
+  INLINE static void add_shader(const Filename &filename, Shader *shader);
+  INLINE static void release_shader(const Filename &filename);
   INLINE static void release_all_shaders();
 
   INLINE static int garbage_collect();
@@ -48,22 +45,21 @@ PUBLISHED:
 private:
   INLINE ShaderPool();
 
-  bool ns_has_shader(const string &str);
-  CPT(Shader) ns_load_shader(const string &str);
-  void ns_add_shader(const string &str, Shader *shader);
-  void ns_release_shader(const string &filename);
+  bool ns_has_shader(const Filename &orig_filename);
+  CPT(Shader) ns_load_shader(const Filename &orig_filename);
+  void ns_add_shader(const Filename &orig_filename, Shader *shader);
+  void ns_release_shader(const Filename &orig_filename);
   void ns_release_all_shaders();
   int ns_garbage_collect();
   void ns_list_contents(ostream &out) const;
 
-  static void lookup_filename(const string &str, string &index_str,
-                              Filename &filename, int &face_index);
+  void resolve_filename(Filename &new_filename, const Filename &orig_filename);
 
   static ShaderPool *get_ptr();
   static ShaderPool *_global_ptr;
 
   LightMutex _lock;
-  typedef pmap<string,  CPT(Shader) > Shaders;
+  typedef pmap<Filename,  CPT(Shader) > Shaders;
   Shaders _shaders;
 };
 

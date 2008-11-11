@@ -5208,6 +5208,8 @@ write_datagram(BamWriter *manager, Datagram &me) {
   Filename filename = _filename;
   Filename alpha_filename = _alpha_filename;
 
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
   switch (file_texture_mode) {
   case BTM_unchanged:
   case BTM_rawdata:
@@ -5221,7 +5223,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
   case BTM_relative:
     filename = _fullpath;
     alpha_filename = _alpha_fullpath;
-    bam_dir.make_absolute();
+    bam_dir.make_absolute(vfs->get_cwd());
     if (!has_bam_dir || !filename.make_relative_to(bam_dir, true)) {
       filename.find_on_searchpath(get_model_path());
     }

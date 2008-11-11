@@ -39,7 +39,7 @@ VirtualFileMount::
 //               used to read it.
 ////////////////////////////////////////////////////////////////////
 PT(VirtualFile) VirtualFileMount::
-make_virtual_file(const string &local_filename,
+make_virtual_file(const Filename &local_filename,
                   const Filename &original_filename, bool implicit_pz_file,
                   bool) {
   Filename local(local_filename);

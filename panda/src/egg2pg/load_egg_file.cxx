@@ -68,9 +68,10 @@ load_from_loader(EggLoader &loader) {
 //               required.
 ////////////////////////////////////////////////////////////////////
 PT(PandaNode)
-load_egg_file(const string &filename, CoordinateSystem cs,
+load_egg_file(const Filename &filename, CoordinateSystem cs,
               BamCacheRecord *record) {
-  Filename egg_filename = Filename::text_filename(filename);
+  Filename egg_filename = filename;
+  egg_filename.set_text();
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   if (record != (BamCacheRecord *)NULL) {

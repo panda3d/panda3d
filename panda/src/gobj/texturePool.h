@@ -37,25 +37,22 @@ class BamCacheRecord;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ TexturePool {
 PUBLISHED:
-  // These functions take string parameters instead of Filenames
-  // because that's somewhat more convenient to the scripting
-  // language.
-  INLINE static bool has_texture(const string &filename);
-  INLINE static bool verify_texture(const string &filename);
-  INLINE static Texture *load_texture(const string &filename, 
+  INLINE static bool has_texture(const Filename &filename);
+  INLINE static bool verify_texture(const Filename &filename);
+  INLINE static Texture *load_texture(const Filename &filename, 
                                       int primary_file_num_channels = 0,
                                       bool read_mipmaps = false,
                                       const LoaderOptions &options = LoaderOptions());
-  INLINE static Texture *load_texture(const string &filename,
-                                      const string &alpha_filename, 
+  INLINE static Texture *load_texture(const Filename &filename,
+                                      const Filename &alpha_filename, 
                                       int primary_file_num_channels = 0,
                                       int alpha_file_channel = 0,
                                       bool read_mipmaps = false,
                                       const LoaderOptions &options = LoaderOptions());
-  INLINE static Texture *load_3d_texture(const string &filename_pattern,
+  INLINE static Texture *load_3d_texture(const Filename &filename_pattern,
                                          bool read_mipmaps = false,
                                          const LoaderOptions &options = LoaderOptions());
-  INLINE static Texture *load_cube_map(const string &filename_pattern,
+  INLINE static Texture *load_cube_map(const Filename &filename_pattern,
                                        bool read_mipmaps = false,
                                        const LoaderOptions &options = LoaderOptions());
 
@@ -72,10 +69,10 @@ PUBLISHED:
   INLINE static void list_contents(ostream &out);
   INLINE static void list_contents();
 
-  INLINE static void set_fake_texture_image(const string &filename);
+  INLINE static void set_fake_texture_image(const Filename &filename);
   INLINE static void clear_fake_texture_image();
   INLINE static bool has_fake_texture_image();
-  INLINE static const string &get_fake_texture_image();
+  INLINE static const Filename &get_fake_texture_image();
 
   static void write(ostream &out);
 
@@ -145,7 +142,7 @@ private:
   typedef pmap<Filename, Filename> RelpathLookup;
   RelpathLookup _relpath_lookup;
 
-  string _fake_texture_image;
+  Filename _fake_texture_image;
 
   PT(Texture) _normalization_cube_map;
   PT(Texture) _alpha_scale_map;

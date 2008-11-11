@@ -38,16 +38,13 @@ write(ostream &out) {
 //  Description: The nonstatic implementation of has_shader().
 ////////////////////////////////////////////////////////////////////
 bool ShaderPool::
-ns_has_shader(const string &str) {
-  LightMutexHolder holder(_lock);
-
-  string index_str;
+ns_has_shader(const Filename &orig_filename) {
   Filename filename;
-  int face_index;
-  lookup_filename(str, index_str, filename, face_index);
+  resolve_filename(filename, orig_filename);
 
+  LightMutexHolder holder(_lock);
   Shaders::const_iterator ti;
-  ti = _shaders.find(index_str);
+  ti = _shaders.find(filename);
   if (ti != _shaders.end()) {
     // This shader was previously loaded.
     return true;
@@ -62,17 +59,15 @@ ns_has_shader(const string &str) {
 //  Description: The nonstatic implementation of load_shader().
 ////////////////////////////////////////////////////////////////////
 CPT(Shader) ShaderPool::
-ns_load_shader(const string &str) {
-  string index_str;
+ns_load_shader(const Filename &orig_filename) {
   Filename filename;
-  int face_index;
-  lookup_filename(str, index_str, filename, face_index);
+  resolve_filename(filename, orig_filename);
 
   {
     LightMutexHolder holder(_lock);
 
     Shaders::const_iterator ti;
-    ti = _shaders.find(index_str);
+    ti = _shaders.find(filename);
     if (ti != _shaders.end()) {
       // This shader was previously loaded.
       return (*ti).second;
@@ -93,8 +88,6 @@ ns_load_shader(const string &str) {
     // this does nothing for now
   }
 
-// ***** face_index ???
-
   if (shader == (CPT(Shader)) NULL) {
     shader = Shader::load (filename);
   }
@@ -110,13 +103,13 @@ ns_load_shader(const string &str) {
     // Now try again.  Someone may have loaded the shader in another
     // thread.
     Shaders::const_iterator ti;
-    ti = _shaders.find(index_str);
+    ti = _shaders.find(filename);
     if (ti != _shaders.end()) {
       // This shader was previously loaded.
       return (*ti).second;
     }
 
-    _shaders[index_str] = shader;
+    _shaders[filename] = shader;
   }
 
   return shader;
@@ -128,16 +121,13 @@ ns_load_shader(const string &str) {
 //  Description: The nonstatic implementation of add_shader().
 ////////////////////////////////////////////////////////////////////
 void ShaderPool::
-ns_add_shader(const string &str, Shader *shader) {
-  LightMutexHolder holder(_lock);
-
-  string index_str;
+ns_add_shader(const Filename &orig_filename, Shader *shader) {
   Filename filename;
-  int face_index;
-  lookup_filename(str, index_str, filename, face_index);
+  resolve_filename(filename, orig_filename);
 
+  LightMutexHolder holder(_lock);
   // We blow away whatever shader was there previously, if any.
-  _shaders[index_str] = shader;
+  _shaders[filename] = shader;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,7 +136,7 @@ ns_add_shader(const string &str, Shader *shader) {
 //  Description: The nonstatic implementation of release_shader().
 ////////////////////////////////////////////////////////////////////
 void ShaderPool::
-ns_release_shader(const string &filename) {
+ns_release_shader(const Filename &filename) {
   LightMutexHolder holder(_lock);
 
   Shaders::iterator ti;
@@ -218,43 +208,18 @@ ns_list_contents(ostream &out) const {
   }
 }
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: ShaderPool::lookup_filename
-//       Access: Private, Static
-//  Description: Accepts a shader "filename", which might consist of a
-//               filename followed by an optional colon and a face
-//               index, and splits it out into its two components.
-//               Then it looks up the filename on the model path.
-//               Sets the filename and face index accordingly.  Also
-//               sets index_str to be the concatenation of the
-//               found filename with the face index, thus restoring
-//               the original input (but normalized to contain the
-//               full path.)
+//     Function: ShaderPool::resolve_filename
+//       Access: Private
+//  Description: Searches for the indicated filename along the
+//               model path.
 ////////////////////////////////////////////////////////////////////
 void ShaderPool::
-lookup_filename(const string &str, string &index_str,
-                Filename &filename, int &face_index) {
-  int colon = (int)str.length() - 1;
-  // Scan backwards over digits for a colon.
-  while (colon >= 0 && isdigit(str[colon])) {
-    --colon;
-  }
-  if (colon >= 0 && str[colon] == ':') {
-    string digits = str.substr(colon + 1);
-    filename = str.substr(0, colon);
-    face_index = atoi(digits.c_str());
-  } else {
-    filename = str;
-    face_index = 0;
-  }
-
-  // Now look up the filename on the model path.
+resolve_filename(Filename &new_filename, const Filename &orig_filename) {
+  new_filename = orig_filename;
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  vfs->resolve_filename(filename, get_model_path());
-
-  ostringstream strm;
-  strm << filename << ":" << face_index;
-  index_str = strm.str();
+  vfs->resolve_filename(new_filename, get_model_path());
 }
 
 ////////////////////////////////////////////////////////////////////

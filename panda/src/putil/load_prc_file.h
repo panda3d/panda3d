@@ -16,6 +16,7 @@
 #define LOAD_PRC_FILE_H
 
 #include "pandabase.h"
+#include "filename.h"
 
 class ConfigPage;
 class HashVal;
@@ -40,7 +41,7 @@ BEGIN_PUBLISH
 //               putil).
 ////////////////////////////////////////////////////////////////////
 EXPCL_PANDA_PUTIL ConfigPage *
-load_prc_file(const string &filename);
+load_prc_file(const Filename &filename);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: load_prc_file_data

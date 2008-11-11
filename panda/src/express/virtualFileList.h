@@ -42,6 +42,8 @@ PUBLISHED:
 
   INLINE VirtualFile *operator [](int n) const;
   INLINE int size() const;
+  INLINE void operator += (const VirtualFileList &other);
+  INLINE VirtualFileList operator + (const VirtualFileList &other) const;
 
 private:
   typedef pvector< PT(VirtualFile) > Files;

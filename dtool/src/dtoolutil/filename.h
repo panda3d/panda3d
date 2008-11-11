@@ -101,6 +101,8 @@ PUBLISHED:
   INLINE char operator [] (int n) const;
 
   INLINE string substr(size_t begin, size_t end = string::npos) const;
+  INLINE void operator += (const string &other);
+  INLINE Filename operator + (const string &other) const;
 
   // Or, you can use any of these.
   INLINE string get_fullpath() const;

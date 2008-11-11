@@ -38,7 +38,7 @@ write(ostream &out) {
 //  Description: The nonstatic implementation of has_model().
 ////////////////////////////////////////////////////////////////////
 bool ModelPool::
-ns_has_model(const string &filename) {
+ns_has_model(const Filename &filename) {
   LightMutexHolder holder(_lock);
   Models::const_iterator ti;
   ti = _models.find(filename);
@@ -56,7 +56,7 @@ ns_has_model(const string &filename) {
 //  Description: The nonstatic implementation of load_model().
 ////////////////////////////////////////////////////////////////////
 ModelRoot *ModelPool::
-ns_load_model(const string &filename, const LoaderOptions &options) {
+ns_load_model(const Filename &filename, const LoaderOptions &options) {
   {
     LightMutexHolder holder(_lock);
     Models::const_iterator ti;
@@ -114,7 +114,7 @@ ns_load_model(const string &filename, const LoaderOptions &options) {
 //  Description: The nonstatic implementation of add_model().
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
-ns_add_model(const string &filename, ModelRoot *model) {
+ns_add_model(const Filename &filename, ModelRoot *model) {
   LightMutexHolder holder(_lock);
   // We blow away whatever model was there previously, if any.
   _models[filename] = model;
@@ -126,7 +126,7 @@ ns_add_model(const string &filename, ModelRoot *model) {
 //  Description: The nonstatic implementation of release_model().
 ////////////////////////////////////////////////////////////////////
 void ModelPool::
-ns_release_model(const string &filename) {
+ns_release_model(const Filename &filename) {
   LightMutexHolder holder(_lock);
   Models::iterator ti;
   ti = _models.find(filename);

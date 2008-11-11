@@ -20,7 +20,7 @@
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ModelPool::
-has_model(const string &filename) {
+has_model(const Filename &filename) {
   return get_ptr()->ns_has_model(filename);
 }
 
@@ -35,7 +35,7 @@ has_model(const string &filename) {
 //               return a valid Node pointer.
 ////////////////////////////////////////////////////////////////////
 INLINE bool ModelPool::
-verify_model(const string &filename) {
+verify_model(const Filename &filename) {
   return load_model(filename) != (ModelRoot *)NULL;
 }
 
@@ -49,7 +49,7 @@ verify_model(const string &filename) {
 //               file cannot be found, returns NULL.
 ////////////////////////////////////////////////////////////////////
 INLINE ModelRoot *ModelPool::
-load_model(const string &filename, const LoaderOptions &options) {
+load_model(const Filename &filename, const LoaderOptions &options) {
   return get_ptr()->ns_load_model(filename, options);
 }
 
@@ -66,7 +66,7 @@ load_model(const string &filename, const LoaderOptions &options) {
 //               instead.
 ////////////////////////////////////////////////////////////////////
 INLINE void ModelPool::
-add_model(const string &filename, ModelRoot *model) {
+add_model(const Filename &filename, ModelRoot *model) {
   get_ptr()->ns_add_model(filename, model);
 }
 
@@ -83,7 +83,7 @@ add_model(const string &filename, ModelRoot *model) {
 //               release_model(model) instead.
 ////////////////////////////////////////////////////////////////////
 INLINE void ModelPool::
-release_model(const string &filename) {
+release_model(const Filename &filename) {
   get_ptr()->ns_release_model(filename);
 }
 

@@ -80,7 +80,7 @@ VirtualFileSystem::
 //               point.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
-mount(Multifile *multifile, const string &mount_point, int flags) {
+mount(Multifile *multifile, const Filename &mount_point, int flags) {
   PT(VirtualFileMountMultifile) new_mount = 
     new VirtualFileMountMultifile(multifile);
   return mount(new_mount, mount_point, flags);
@@ -108,7 +108,7 @@ mount(Multifile *multifile, const string &mount_point, int flags) {
 //               file system with exactly the right case.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
-mount(const Filename &physical_filename, const string &mount_point, 
+mount(const Filename &physical_filename, const Filename &mount_point, 
       int flags, const string &password) {
   if (!physical_filename.exists()) {
     express_cat.warning()
@@ -145,7 +145,7 @@ mount(const Filename &physical_filename, const string &mount_point,
 //               VirtualFileMount object specifically.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
-mount(VirtualFileMount *mount, const string &mount_point, int flags) {
+mount(VirtualFileMount *mount, const Filename &mount_point, int flags) {
   _lock.acquire();
   bool result = do_mount(mount, mount_point, flags);
   _lock.release();
@@ -287,7 +287,7 @@ unmount(VirtualFileMount *mount) {
 //               appearances unmounted.
 ////////////////////////////////////////////////////////////////////
 int VirtualFileSystem::
-unmount_point(const string &mount_point) {
+unmount_point(const Filename &mount_point) {
   _lock.acquire();
   Filename nmp = normalize_mount_point(mount_point);
   Mounts::iterator ri, wi;
@@ -373,12 +373,9 @@ get_mount(int n) const {
 //               resolve relative pathnames in get_file() and/or
 //               find_file().  Returns true if successful, false
 //               otherwise.
-//
-//               This accepts a string rather than a Filename simply
-//               for programmer convenience from the Python prompt.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
-chdir(const string &new_directory) {
+chdir(const Filename &new_directory) {
   _lock.acquire();
   if (new_directory == "/") {
     // We can always return to the root.
@@ -803,7 +800,7 @@ parse_option(const string &option, int &flags, string &password) {
 //               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 Filename VirtualFileSystem::
-normalize_mount_point(const string &mount_point) const {
+normalize_mount_point(const Filename &mount_point) const {
   Filename nmp = mount_point;
   if (nmp.is_local()) {
     nmp = Filename(_cwd, mount_point);
@@ -820,7 +817,7 @@ normalize_mount_point(const string &mount_point) const {
 //               lock is already held.
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
-do_mount(VirtualFileMount *mount, const string &mount_point, int flags) {
+do_mount(VirtualFileMount *mount, const Filename &mount_point, int flags) {
   nassertr(mount->_file_system == NULL, false);
   mount->_file_system = this;
   mount->_mount_point = normalize_mount_point(mount_point);
@@ -847,9 +844,9 @@ do_get_file(const Filename &filename, bool status_only) const {
     }
   }
   pathname.standardize();
-  string strpath = pathname.get_filename_index(0).get_fullpath().substr(1);
+  Filename strpath = pathname.get_filename_index(0).get_fullpath().substr(1);
   // Also transparently look for a regular file suffixed .pz.
-  string strpath_pz = strpath + ".pz";
+  Filename strpath_pz = strpath + ".pz";
 
   // Now scan all the mount points, from the back (since later mounts
   // override more recent ones), until a match is found.
@@ -864,7 +861,7 @@ do_get_file(const Filename &filename, bool status_only) const {
   while (i > 0) {
     --i;
     VirtualFileMount *mount = _mounts[i];
-    string mount_point = mount->get_mount_point();
+    Filename mount_point = mount->get_mount_point();
     if (strpath == mount_point) {
       // Here's an exact match on the mount point.  This filename is
       // the root directory of this mount object.
@@ -888,7 +885,7 @@ do_get_file(const Filename &filename, bool status_only) const {
 #endif  // HAVE_ZLIB
 
     } else if (strpath.length() > mount_point.length() &&
-               strpath.substr(0, mount_point.length()) == mount_point &&
+               mount_point == strpath.substr(0, mount_point.length()) &&
                strpath[mount_point.length()] == '/') {
       // This pathname falls within this mount system.
       Filename local_filename = strpath.substr(mount_point.length() + 1);
@@ -947,7 +944,7 @@ do_get_file(const Filename &filename, bool status_only) const {
 ////////////////////////////////////////////////////////////////////
 bool VirtualFileSystem::
 consider_match(PT(VirtualFile) &found_file, VirtualFileComposite *&composite_file,
-               VirtualFileMount *mount, const string &local_filename,
+               VirtualFileMount *mount, const Filename &local_filename,
                const Filename &original_filename, bool implicit_pz_file,
                bool status_only) const {
   PT(VirtualFile) vfile = 

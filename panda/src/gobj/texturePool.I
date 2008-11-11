@@ -20,7 +20,7 @@
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
 INLINE bool TexturePool::
-has_texture(const string &filename) {
+has_texture(const Filename &filename) {
   return get_global_ptr()->ns_has_texture(filename);
 }
 
@@ -35,7 +35,7 @@ has_texture(const string &filename) {
 //               return a valid Texture pointer.
 ////////////////////////////////////////////////////////////////////
 INLINE bool TexturePool::
-verify_texture(const string &filename) {
+verify_texture(const Filename &filename) {
   return load_texture(filename) != (Texture *)NULL;
 }
 
@@ -54,7 +54,7 @@ verify_texture(const string &filename) {
 //               with a series of images, one for each mipmap level.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_texture(const string &filename, int primary_file_num_channels,
+load_texture(const Filename &filename, int primary_file_num_channels,
              bool read_mipmaps, const LoaderOptions &options) {
   return get_global_ptr()->ns_load_texture(filename, primary_file_num_channels,
                                            read_mipmaps, options);
@@ -76,7 +76,7 @@ load_texture(const string &filename, int primary_file_num_channels,
 //               level.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_texture(const string &filename, const string &alpha_filename,
+load_texture(const Filename &filename, const Filename &alpha_filename,
              int primary_file_num_channels, int alpha_file_channel,
              bool read_mipmaps, const LoaderOptions &options) {
   return get_global_ptr()->ns_load_texture(filename, alpha_filename, 
@@ -100,7 +100,7 @@ load_texture(const string &filename, const string &alpha_filename,
 //               second with the index number of each 3-d level.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_3d_texture(const string &filename_pattern, bool read_mipmaps, 
+load_3d_texture(const Filename &filename_pattern, bool read_mipmaps, 
                 const LoaderOptions &options) {
   return get_global_ptr()->ns_load_3d_texture(filename_pattern, read_mipmaps, 
                                               options);
@@ -121,7 +121,7 @@ load_3d_texture(const string &filename_pattern, bool read_mipmaps,
 //               second with the face number, 0 through 5.
 ////////////////////////////////////////////////////////////////////
 INLINE Texture *TexturePool::
-load_cube_map(const string &filename_pattern, bool read_mipmaps, 
+load_cube_map(const Filename &filename_pattern, bool read_mipmaps, 
               const LoaderOptions &options) {
   return get_global_ptr()->ns_load_cube_map(filename_pattern, read_mipmaps, 
                                             options);
@@ -255,7 +255,7 @@ list_contents() {
 //               any textures requested from this point on.
 ////////////////////////////////////////////////////////////////////
 INLINE void TexturePool::
-set_fake_texture_image(const string &filename) {
+set_fake_texture_image(const Filename &filename) {
   get_global_ptr()->_fake_texture_image = filename;
 }
 
@@ -287,7 +287,7 @@ has_fake_texture_image() {
 //  Description: Returns the filename that was specified with a
 //               previous call to set_fake_texture_image().
 ////////////////////////////////////////////////////////////////////
-INLINE const string &TexturePool::
+INLINE const Filename &TexturePool::
 get_fake_texture_image() {
   return get_global_ptr()->_fake_texture_image;
 }

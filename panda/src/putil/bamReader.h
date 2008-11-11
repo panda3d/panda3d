@@ -89,6 +89,7 @@ public:
   static BamReader *const Null;
   static WritableFactory *const NullFactory;
 
+PUBLISHED:
   // The primary interface for a caller.
   BamReader(DatagramGenerator *generator, const Filename &name = "");
   ~BamReader();

@@ -47,13 +47,13 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH ModelPool {
 PUBLISHED:
-  INLINE static bool has_model(const string &filename);
-  INLINE static bool verify_model(const string &filename);
-  INLINE static ModelRoot *load_model(const string &filename,
+  INLINE static bool has_model(const Filename &filename);
+  INLINE static bool verify_model(const Filename &filename);
+  INLINE static ModelRoot *load_model(const Filename &filename,
                                       const LoaderOptions &options = LoaderOptions());
 
-  INLINE static void add_model(const string &filename, ModelRoot *model);
-  INLINE static void release_model(const string &filename);
+  INLINE static void add_model(const Filename &filename, ModelRoot *model);
+  INLINE static void release_model(const Filename &filename);
 
   INLINE static void add_model(ModelRoot *model);
   INLINE static void release_model(ModelRoot *model);
@@ -69,11 +69,11 @@ PUBLISHED:
 private:
   INLINE ModelPool();
 
-  bool ns_has_model(const string &filename);
-  ModelRoot *ns_load_model(const string &filename,
+  bool ns_has_model(const Filename &filename);
+  ModelRoot *ns_load_model(const Filename &filename,
                            const LoaderOptions &options);
-  void ns_add_model(const string &filename, ModelRoot *model);
-  void ns_release_model(const string &filename);
+  void ns_add_model(const Filename &filename, ModelRoot *model);
+  void ns_release_model(const Filename &filename);
 
   void ns_add_model(ModelRoot *model);
   void ns_release_model(ModelRoot *model);
@@ -87,7 +87,7 @@ private:
   static ModelPool *_global_ptr;
 
   LightMutex _lock;
-  typedef pmap<string,  PT(ModelRoot) > Models;
+  typedef pmap<Filename,  PT(ModelRoot) > Models;
   Models _models;
 };
 

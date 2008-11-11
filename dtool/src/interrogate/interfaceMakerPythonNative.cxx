@@ -2658,8 +2658,10 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       if (!extra_cleanup.empty()) {
         indent(out,extra_indent_level) << extra_cleanup << "\n";
       }
-      
-      return_expr = manage_return_value(out, extra_indent_level, remap, "return_value");
+
+      if (!is_inplace) {
+        return_expr = manage_return_value(out, extra_indent_level, remap, "return_value");
+      }
       do_assert_init(out, extra_indent_level,is_constructor);
       pack_return_value(out, extra_indent_level, remap, remap->_return_type->temporary_to_return(return_expr),ForwardDeclrs,is_inplace);
     }

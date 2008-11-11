@@ -35,7 +35,7 @@ BEGIN_PUBLISH
 //               bit more manual control over the loading process.
 ////////////////////////////////////////////////////////////////////
 EXPCL_PANDAEGG PT(PandaNode)
-load_egg_file(const string &filename, CoordinateSystem cs = CS_default,
+load_egg_file(const Filename &filename, CoordinateSystem cs = CS_default,
               BamCacheRecord *record = NULL);
 
 ////////////////////////////////////////////////////////////////////

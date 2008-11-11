@@ -33,8 +33,9 @@
 class EXPCL_PANDA_TEXT FontPool {
 PUBLISHED:
   // These functions take string parameters instead of Filenames
-  // because that's somewhat more convenient to the scripting
-  // language.
+  // because the parameters may not be entirely an actual filename:
+  // they may be a filename followed by a face index.
+
   INLINE static bool has_font(const string &filename);
   INLINE static bool verify_font(const string &filename);
   INLINE static TextFont *load_font(const string &filename);

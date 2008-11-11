@@ -88,9 +88,11 @@ public:
   INLINE iterator begin() const;
   INLINE iterator end() const;
   INLINE bool empty() const;
-  INLINE size_type size() const;
 
 PUBLISHED:
+  INLINE EggTexture *operator [](size_type n) const;
+  INLINE size_type size() const;
+
   bool add_texture(EggTexture *texture);
   bool remove_texture(EggTexture *texture);
 

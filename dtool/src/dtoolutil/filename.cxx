@@ -1666,7 +1666,9 @@ scan_directory(vector_string &contents) const {
   }
   DIR *root = opendir(dirname.c_str());
   if (root == (DIR *)NULL) {
-    perror(dirname.c_str());
+    if (errno != ENOTDIR) {
+      perror(dirname.c_str());
+    }
     return false;
   }
 

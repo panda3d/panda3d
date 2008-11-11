@@ -49,15 +49,32 @@ is_regular_file(const Filename &filename) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: VirtualFileSystem::scan_directory
+//       Access: Published
+//  Description: If the file represents a directory (that is,
+//               is_directory() returns true), this returns the list
+//               of files within the directory at the current time.
+//               Returns NULL if the file is not a directory or if the
+//               directory cannot be read.
+////////////////////////////////////////////////////////////////////
+INLINE PT(VirtualFileList) VirtualFileSystem::
+scan_directory(const Filename &filename) const {
+  PT(VirtualFile) file = get_file(filename, true);
+  if (file == (VirtualFile *)NULL) {
+    return NULL;
+  }
+  
+  return file->scan_directory();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: VirtualFileSystem::ls
 //       Access: Published
 //  Description: Convenience function; lists the files within the
-//               indicated directory.  This accepts a string instead
-//               of a Filename purely for programmer convenience at
-//               the Python prompt.
+//               indicated directory.
 ////////////////////////////////////////////////////////////////////
 INLINE void VirtualFileSystem::
-ls(const string &filename) const {
+ls(const Filename &filename) const {
   PT(VirtualFile) file = get_file(filename, true);
   if (file == (VirtualFile *)NULL) {
     express_cat.info()
@@ -72,12 +89,10 @@ ls(const string &filename) const {
 //       Access: Published
 //  Description: Convenience function; lists the files within the
 //               indicated directory, and all files below,
-//               recursively.  This accepts a string instead of a
-//               Filename purely for programmer convenience at the
-//               Python prompt.
+//               recursively.
 ////////////////////////////////////////////////////////////////////
 INLINE void VirtualFileSystem::
-ls_all(const string &filename) const {
+ls_all(const Filename &filename) const {
   PT(VirtualFile) file = get_file(filename, true);
   if (file == (VirtualFile *)NULL) {
     express_cat.info()

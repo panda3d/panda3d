@@ -42,7 +42,7 @@ PUBLISHED:
   static void reload_vfs_mount_url();
 
 public:
-  virtual PT(VirtualFile) make_virtual_file(const string &local_filename,
+  virtual PT(VirtualFile) make_virtual_file(const Filename &local_filename,
                                             const Filename &original_filename, 
                                             bool implicit_pz_file,
                                             bool status_only);

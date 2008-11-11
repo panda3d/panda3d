@@ -39,7 +39,7 @@
 //               putil).
 ////////////////////////////////////////////////////////////////////
 ConfigPage *
-load_prc_file(const string &filename) {
+load_prc_file(const Filename &filename) {
   Filename path = filename;
   path.set_text();
 
