@@ -352,6 +352,13 @@ reload_implicit_pages() {
 #ifdef USE_PANDAFILESTREAM
   // Update this very low-level config variable here, for lack of any
   // better place.
+  ConfigVariableEnum<PandaFileStreamBuf::NewlineMode> newline_mode
+    ("newline-mode", PandaFileStreamBuf::NM_native,
+     PRC_DESC("Controls how newlines are written by Panda applications writing "
+              "to a text file.  The default, \"native\", means to write newlines "
+              "appropriate to the current platform.  You may also specify \"binary\", "
+              "to avoid molesting the file data, or one of \"msdos\", \"unix\", "
+              "or \"mac\"."));
   PandaFileStreamBuf::_newline_mode = newline_mode;
 #endif  // USE_PANDAFILESTREAM
 }

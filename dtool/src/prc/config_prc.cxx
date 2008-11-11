@@ -21,15 +21,3 @@ NotifyCategoryDef(prc, "");
 ConfigVariableBool assert_abort
 ("assert-abort", false,
  PRC_DESC("Set this true to trigger a core dump and/or stack trace when the first assertion fails"));
-
-#ifdef USE_PANDAFILESTREAM
-
-ConfigVariableEnum<PandaFileStreamBuf::NewlineMode> newline_mode
-("newline-mode", PandaFileStreamBuf::NM_native,
-  PRC_DESC("Controls how newlines are written by Panda applications writing "
-  "to a text file.  The default, \"native\", means to write newlines "
-  "appropriate to the current platform.  You may also specify \"binary\", "
-  "to avoid molesting the file data, or one of \"msdos\", \"unix\", "
-  "or \"mac\"."));
-  
-#endif  // USE_PANDAFILESTREAM

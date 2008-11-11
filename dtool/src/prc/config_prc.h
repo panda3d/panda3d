@@ -24,9 +24,5 @@ NotifyCategoryDecl(prc, EXPCL_DTOOLCONFIG, EXPTP_DTOOLCONFIG);
 
 extern ConfigVariableBool assert_abort;
 
-#ifdef USE_PANDAFILESTREAM
-extern ConfigVariableEnum<PandaFileStreamBuf::NewlineMode> newline_mode;
-#endif
-
 #endif
 
