@@ -237,7 +237,8 @@ underflow() {
     nassertr(gptr() + num_bytes <= egptr(), EOF);
 
     streamsize read_count;
-    _source->read(gptr(), num_bytes, read_count);
+    bool eof;
+    _source->seek_read(_cur, gptr(), num_bytes, read_count, eof);
 
     if (read_count != num_bytes) {
       // Oops, we didn't read what we thought we would.
