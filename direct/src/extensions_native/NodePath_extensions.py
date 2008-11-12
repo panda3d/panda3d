@@ -407,18 +407,6 @@ def __lerp(self, functorFunc, duration, blendType, taskName=None):
         from direct.showbase import LerpBlendHelpers
         from direct.task.TaskManagerGlobal import taskMgr
 
-        # upon death remove the functorFunc
-        def lerpUponDeath(task):
-            # Try to break circular references
-            try:
-                del task.functorFunc
-            except:
-                pass
-            try:
-                del task.lerp
-            except:
-                pass
-
         # make the task function
         def lerpTaskFunc(task):
             from pandac.PandaModules import Lerp
@@ -445,7 +433,6 @@ def __lerp(self, functorFunc, duration, blendType, taskName=None):
         lerpTask.functorFunc = functorFunc
         lerpTask.duration = duration
         lerpTask.blendType = LerpBlendHelpers.getBlend(blendType)
-        lerpTask.setUponDeath(lerpUponDeath)
 
         if (taskName == None):
             # don't spawn a task, return one instead
