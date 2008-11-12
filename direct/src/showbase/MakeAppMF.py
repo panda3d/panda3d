@@ -1,18 +1,32 @@
-""" This module will pack a Panda application, consisting of a
+"""
+This module will pack a Panda application, consisting of a
 directory tree of .py files and models, into a multifile for
 distribution and running with RunAppMF.py.  To run it, use:
 
-python MakeAppMF.py app.mf [application_root]
+python MakeAppMF.py [opts] app.mf
 
-where application_root is the root directory of the application.  If
-it is omitted, the default is the current directory.  The root
-directory should contain at a file named main.py, which is imported to
-start the application.  If main.py contains a function called main(),
-this function is called after importing it; otherwise, taskMgr.run()
-is called.
+Options:
+
+  -r application_root
+
+     Specify the root directory of the application source; this is a
+     directory tree that contains all of your .py files and models.
+     If this is omitted, the default is the current directory.
+
+  -m main.py
+  
+     Names the Python file that begins the application.  This should
+     be a file within the root directory. If this is omitted, the
+     default is a file named "main.py", or if there is only one Python
+     file present, it is used.  If this file contains a function
+     called main(), that function will be called after importing it
+     (this is preferable to having the module start itself immediately
+     upon importing).
+
 """
 
 import sys
+import getopt
 import direct
 from pandac.PandaModules import *
 
@@ -52,12 +66,36 @@ class AppPacker:
         for type in PNMFileTypeRegistry.getGlobalPtr().getTypes():
             self.image_extensions += type.getExtensions()
 
-    def scan(self, root):
+    def scan(self, root, main):
         self.root = Filename(root)
         self.root.makeAbsolute(vfs.getCwd())
+
+        # Check if there is just one .py file.
+        pyFiles = self.findPyFiles(self.root)
+        if main == None:
+            if len(pyFiles) == 1:
+                main = pyFiles[0]
+            else:
+                main = 'main.py'
+        if main not in pyFiles:
+            raise StandardError, 'No file %s in root directory.' % (main)
+        self.main = Filename(self.root, main)
+        
         self._recurse(self.root)
 
         self.multifile.repack()
+
+    def findPyFiles(self, dirname):
+        """ Returns a list of Python filenames at the root directory
+        level. """
+        
+        dirList = vfs.scanDirectory(dirname)
+        pyFiles = []
+        for file in dirList:
+            if file.getFilename().getExtension() == 'py':
+                pyFiles.append(file.getFilename().getBasename())
+
+        return pyFiles
 
     def _recurse(self, filename):
         dirList = vfs.scanDirectory(filename)
@@ -95,7 +133,12 @@ class AppPacker:
     def addPyFile(self, filename):
         # For now, just add it as an ordinary file.  Later we'll
         # precompile these to .pyo's.
-        self.addTextFile(filename)
+        if filename == self.main:
+            # This one is the "main.py"; the starter file.
+            self.multifile.addSubfile('main.py', filename, self.compression_level)
+        else:
+            # Any other Python file; add it normally.
+            self.addTextFile(filename)
 
     def addEggFile(self, filename, outFilename):
         # Precompile egg files to bam's.
@@ -140,7 +183,9 @@ class AppPacker:
         bamFile.getWriter().setFileTextureMode(BTMUnchanged)
         bamFile.writeObject(node)
         bamFile.close()
-        node = None
+
+        # Clean the node out of memory.
+        node.removeAllChildren()
 
         # Now we have an in-memory bam file.
         rel = self.makeRelFilename(filename)
@@ -223,6 +268,19 @@ class AppPacker:
 
 
 def makePackedApp(args):
+    opts, args = getopt.getopt(args, 'r:m:h')
+
+    root = '.'
+    main = None
+    for option, value in opts:
+        if option == '-r':
+            root = value
+        elif option == '-m':
+            main = value
+        elif option == '-h':
+            print __doc__
+            sys.exit(1)
+    
     if not args:
         raise ArgumentError, "No destination app specified.  Use:\npython MakeAppMF.py app.mf"
 
@@ -235,7 +293,7 @@ def makePackedApp(args):
         raise ArgumentError, "Too many arguments."
 
     p = AppPacker(multifile_name)
-    p.scan(root)
+    p.scan(root = root, main = main)
 
 if __name__ == '__main__':
     try:

@@ -34,7 +34,7 @@ class VFSImporter:
 
     def find_module(self, fullname):
         basename = fullname.split('.')[-1]
-        path = Filename(self.dir_path, Filename(basename))
+        path = Filename(self.dir_path, basename)
 
         # First, look for Python files.
         filename = path
@@ -66,12 +66,12 @@ class VFSImporter:
 
         # Finally, consider a package, i.e. a directory containing
         # __init__.py.
-        filename = Filename(path, Filename('__init__.py'))
+        filename = Filename(path, '__init__.py')
         vfile = vfs.getFile(filename, True)
         if vfile:
             return VFSLoader(self, vfile, filename, FTPythonSource,
                              package = True)
-        filename = Filename(path, Filename('__init__.' + pycExtension))
+        filename = Filename(path, '__init__.' + pycExtension)
         vfile = vfs.getFile(filename, True)
         if vfile:
             return VFSLoader(self, vfile, filename, FTPythonCompiled,
@@ -158,7 +158,8 @@ class VFSLoader:
         else:
             # It's a virtual file.  Dump it.
             filename = Filename.temporary('', self.filename.getBasenameWoExtension(),
-                                          '.' + self.filename.getExtension())
+                                          '.' + self.filename.getExtension(),
+                                          type = Filename.TDso)
             filename.setExtension(self.filename.getExtension())
             fin = open(vfile, 'rb')
             fout = open(filename, 'wb')

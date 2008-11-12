@@ -14,7 +14,8 @@ Also see MakeAppMF.py.
 import sys
 from direct.showbase import VFSImporter
 from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, ConfigPageManager, getModelPath
-from direct.stdpy.file import file, open
+from direct.stdpy import file
+import os
 import __builtin__
 
 MultifileRoot = '/mf'
@@ -70,13 +71,17 @@ def runPackedApp(args):
     cpMgr.getSearchPath().prependDirectory(MultifileRoot)
     cpMgr.reloadImplicitPages()
 
-    # Replace the builtin open and file symbols so code will get our
-    # versions by default, which can open and read files out of the
-    # multifile.
-    __builtin__.file = file
-    __builtin__.open = open
+    # Replace the builtin open and file symbols so user code will get
+    # our versions by default, which can open and read files out of
+    # the multifile.
+    __builtin__.file = file.file
+    __builtin__.open = file.open
+    os.listdir = file.listdir
+    os.walk = file.walk
 
     import main
+    if hasattr(main, 'main') and callable(main.main):
+        main.main()
 
 if __name__ == '__main__':
     try:
