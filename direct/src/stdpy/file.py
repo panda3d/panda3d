@@ -5,7 +5,7 @@ SIMPLE_THREADS model, by avoiding blocking all threads while waiting
 for I/O to complete. """
 
 __all__ = [
-    'file', 'open',
+    'file', 'open', 'listdir', 'walk'
     ]
 
 from pandac import PandaModules as pm
@@ -244,3 +244,39 @@ class file:
         self.__lastWrite = True
 
 open = file
+
+def listdir(path):
+    """ Implements os.listdir over vfs. """
+    files = []
+    for file in _vfs.scanDirectory(path):
+        files.append(file.getFilename().getBasename())
+    return files
+
+def walk(top, topdown = True, onerror = None, followlinks = True):
+    """ Implements os.walk over vfs.
+
+    Note: we don't support onerror or followlinks; errors are ignored
+    and links are always followed. """
+
+    dirnames = []
+    filenames = []
+
+    for file in _vfs.scanDirectory(top):
+        if file.isDirectory():
+            dirnames.append(file.getFilename().getBasename())
+        else:
+            filenames.append(file.getFilename().getBasename())
+
+    if topdown:
+        yield (top, dirnames, filenames)
+
+    for dir in dirnames:
+        next = '%s/%s' % (top, dir)
+        for tuple in walk(next, topdown = topdown):
+            yield tuple
+
+    if not topdown:
+        yield (top, dirnames, filenames)
+
+        
+    
