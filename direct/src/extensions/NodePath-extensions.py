@@ -14,16 +14,16 @@
     # For iterating over children
     def getChildrenAsList(self):
         """Converts a node path's child NodePathCollection into a list"""
-        return self.getChildren().asList()
+        return self.getChildren()
 
     def printChildren(self):
         """Prints out the children of the bottom node of a node path"""
-        for child in self.getChildrenAsList():
+        for child in self.getChildren():
             print child.getName()
 
     def removeChildren(self):
         """Deletes the children of the bottom node of a node path"""
-        for child in self.getChildrenAsList():
+        for child in self.getChildren():
             child.removeNode()
 
     def toggleVis(self):
@@ -37,20 +37,20 @@
 
     def showSiblings(self):
         """Show all the siblings of a node path"""
-        for sib in self.getParent().getChildrenAsList():
+        for sib in self.getParent().getChildren():
             if sib.node() != self.node():
                 sib.show()
 
     def hideSiblings(self):
         """Hide all the siblings of a node path"""
-        for sib in self.getParent().getChildrenAsList():
+        for sib in self.getParent().getChildren():
             if sib.node() != self.node():
                 sib.hide()
 
     def showAllDescendants(self):
         """Show the node path and all its children"""
         self.show()
-        for child in self.getChildrenAsList():
+        for child in self.getChildren():
             child.showAllDescendants()
 
     def isolate(self):
@@ -78,7 +78,7 @@
 
     def lsNamesRecurse(self, indentString=' '):
         """Walk down a tree and print out the path"""
-        for nodePath in self.getChildrenAsList():
+        for nodePath in self.getChildren():
             type = nodePath.node().getType().getName()
             name = nodePath.getName()
             print indentString + type + "  " + name
@@ -261,7 +261,7 @@
                     outputString = '%s.setScale(%s, %s, %s)' % (name, fmtStr, fmtStr, fmtStr)
                     print outputString % (scale[0], scale[1], scale[2])
         if fRecursive:
-            for child in self.getChildrenAsList():
+            for child in self.getChildren():
                 child.printTransform(other, sd, fRecursive)
 
     def iPos(self, other = None):

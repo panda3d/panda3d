@@ -7,13 +7,8 @@ from libpanda import *
 # For iterating over children
 def asList(self):
     """Converts a NodePathCollection into a list"""
-    if self.isEmpty():
-        return []
-    else:
-        npList = []
-        for nodePathIndex in range(self.getNumPaths()):
-            npList.append(self.getPath(nodePathIndex))
-        return npList
+    print "Warning: NodePathCollection is no longer needed and deprecated.  Iterate on the collection directly instead."
+    return list(self)
         
 Dtool_funcToMethod(asList, NodePathCollection)        
 del asList

@@ -132,7 +132,7 @@ class ParticleEffect(NodePath):
 
         # Remove all forces from the particles
         for fg in self.forceGroupDict.values():
-            for f in fg.asList():
+            for f in fg:
                 particles.removeForce(f)
 
     def removeAllParticles(self):

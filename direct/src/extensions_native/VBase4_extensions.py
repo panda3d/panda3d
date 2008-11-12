@@ -19,6 +19,8 @@ def asTuple(self):
     """
     Returns the vector as a tuple.
     """
-    return (self[0], self[1], self[2], self[3])
+    print "Warning: VBase4.asTuple() is no longer needed and deprecated.  Use the vector directly instead."
+    return tuple(self)
+
 Dtool_funcToMethod(asTuple, VBase4)
 del asTuple

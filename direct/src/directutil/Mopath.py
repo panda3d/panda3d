@@ -72,7 +72,7 @@ class Mopath(DirectObject):
                 self.tNurbsCurve.append(node)
         else:
             # Iterate over children if any
-            for child in nodePath.getChildrenAsList():
+            for child in nodePath.getChildren():
                 self.__extractCurves(child)
 
     def calcTime(self, tIn):

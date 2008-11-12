@@ -50,7 +50,7 @@ class DirectLights(NodePath):
         light.removeNode()
 
     def deleteAll(self):
-        for light in self.asList():
+        for light in self:
             self.delete(light)
 
     def asList(self):

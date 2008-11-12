@@ -176,7 +176,7 @@ class SceneGraphExplorerItem(TreeItem):
 
     def GetSubList(self):
         sublist = []
-        for nodePath in self.nodePath.getChildrenAsList():
+        for nodePath in self.nodePath.getChildren():
             item = SceneGraphExplorerItem(nodePath, self.isItemEditable)
             sublist.append(item)
         return sublist

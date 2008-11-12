@@ -379,7 +379,7 @@ class DirectBoundingBox:
         # Get a node path's bounds
         nodeBounds = BoundingSphere()
         nodeBounds.extendBy(self.nodePath.node().getInternalBound())
-        for child in self.nodePath.getChildrenAsList():
+        for child in self.nodePath.getChildren():
             nodeBounds.extendBy(child.getBounds())
         return nodeBounds.makeCopy()
 

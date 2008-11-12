@@ -28,7 +28,8 @@ del id
     # For iterating over children
 def getChildrenAsList(self):
         """Converts a node path's child NodePathCollection into a list"""
-        return self.getChildren().asList()
+        print "Warning: NodePath.getChildren() is deprecated.  Use getChildren() instead."
+        return list(self.getChildren())
 
 Dtool_funcToMethod(getChildrenAsList, NodePath)
 del getChildrenAsList
@@ -36,7 +37,7 @@ del getChildrenAsList
 
 def printChildren(self):
         """Prints out the children of the bottom node of a node path"""
-        for child in self.getChildrenAsList():
+        for child in self.getChildren():
             print child.getName()
 Dtool_funcToMethod(printChildren, NodePath)
 del printChildren
@@ -44,8 +45,7 @@ del printChildren
 
 def removeChildren(self):
         """Deletes the children of the bottom node of a node path"""
-        for child in self.getChildrenAsList():
-            child.removeNode()
+        self.getChildren().detach()
 Dtool_funcToMethod(removeChildren, NodePath)
 del removeChildren
 #####################################################################
@@ -64,7 +64,7 @@ del toggleVis
 
 def showSiblings(self):
         """Show all the siblings of a node path"""
-        for sib in self.getParent().getChildrenAsList():
+        for sib in self.getParent().getChildren():
             if sib.node() != self.node():
                 sib.show()
 Dtool_funcToMethod(showSiblings, NodePath)
@@ -73,7 +73,7 @@ del showSiblings
 
 def hideSiblings(self):
         """Hide all the siblings of a node path"""
-        for sib in self.getParent().getChildrenAsList():
+        for sib in self.getParent().getChildren():
             if sib.node() != self.node():
                 sib.hide()
 Dtool_funcToMethod(hideSiblings, NodePath)
@@ -83,7 +83,7 @@ del hideSiblings
 def showAllDescendants(self):
         """Show the node path and all its children"""
         self.show()
-        for child in self.getChildrenAsList():
+        for child in self.getChildren():
             child.showAllDescendants()
 Dtool_funcToMethod(showAllDescendants, NodePath)
 del showAllDescendants
@@ -123,7 +123,7 @@ del lsNames
 #####################################################################
 def lsNamesRecurse(self, indentString=' '):
         """Walk down a tree and print out the path"""
-        for nodePath in self.getChildrenAsList():
+        for nodePath in self.getChildren():
             type = nodePath.node().getType().getName()
             name = nodePath.getName()
             print indentString + type + "  " + name
@@ -147,13 +147,10 @@ del reverseLsNames
 #####################################################################
 def getAncestry(self):
         """Get a list of a node path's ancestors"""
-        node = self.node()
-        if (self.hasParent()):
-            ancestry = self.getParent().getAncestry()
-            ancestry.append(self)
-            return ancestry
-        else:
-            return [self]
+        print "NodePath.getAncestry() is deprecated.  Use getAncestors() instead."""
+        ancestors = list(self.getAncestors())
+        ancestors.reverse()
+        return ancestors
 
 Dtool_funcToMethod(getAncestry, NodePath)
 del getAncestry
@@ -337,7 +334,7 @@ def printTransform(self, other = None, sd = 2, fRecursive = 0):
                 outputString = '%s.setScale(%s, %s, %s)' % (name, fmtStr, fmtStr, fmtStr)
                 print outputString % (scale[0], scale[1], scale[2])
     if fRecursive:
-        for child in self.getChildrenAsList():
+        for child in self.getChildren():
             child.printTransform(other, sd, fRecursive)
 
 Dtool_funcToMethod(printTransform, NodePath)
@@ -1341,14 +1338,7 @@ Dtool_funcToMethod(flattenMultitex, NodePath)
 del flattenMultitex
 #####################################################################
 def getNumDescendants(self):
-        num = 0
-        stack = [self]
-        while len(stack):
-                np = stack.pop()
-                numChildren = np.getNumChildren()
-                num += numChildren
-                stack.extend(np.getChildrenAsList())
-        return num
+        return len(self.findAllMatches('**')) - 1
 Dtool_funcToMethod(getNumDescendants, NodePath)
 del getNumDescendants
 #####################################################################
@@ -1358,10 +1348,10 @@ def removeNonCollisions(self):
         while len(stack):
                 np = stack.pop()
                 # if there are no CollisionNodes under this node, remove it
-                if np.findAllMatches('**/+CollisionNode').getNumPaths() == 0:
+                if np.find('**/+CollisionNode').isEmpty():
                         np.detachNode()
                 else:
-                        stack.extend(np.getChildrenAsList())
+                        stack.extend(np.getChildren())
 Dtool_funcToMethod(removeNonCollisions, NodePath)
 del removeNonCollisions
 #####################################################################
@@ -1373,7 +1363,7 @@ def subdivideCollisions(self, numSolidsInLeaves):
         TODO: better splitting logic at each level of the tree wrt spatial separation
         and cost of bounding volume tests vs. cost of collision solid tests
         """
-        colNps = self.findAllMatches('**/+CollisionNode').asList()
+        colNps = self.findAllMatches('**/+CollisionNode')
         for colNp in colNps:
             node = colNp.node()
             numSolids = node.getNumSolids()

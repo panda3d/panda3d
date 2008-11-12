@@ -2351,7 +2351,7 @@ class LevelEditor(NodePath, DirectObject):
             if DNAClassEqual(dnaNode, DNA_VIS_GROUP):
                 return [[nodePath, dnaNode]]
         childVisGroups = []
-        children = nodePath.getChildrenAsList()
+        children = nodePath.getChildren()
         for child in children:
             childVisGroups = (childVisGroups + self.getDNAVisGroups(child))
         return childVisGroups
@@ -3492,14 +3492,14 @@ class LevelEditor(NodePath, DirectObject):
             if (DNAClassEqual(dnaNode, DNA_FLAT_BUILDING) or
                 DNAClassEqual(dnaNode, DNA_LANDMARK_BUILDING)):
                 base.direct.reparent(nodePath, fWrt = 1)
-        children = nodePath.getChildrenAsList()
+        children = nodePath.getChildren()
         for child in children:
             self.reparentStreetBuildings(child)
 
     def consolidateStreetBuildings(self):
         # First put everything under the ATR group so the leftover
         # can be easily deleted
-        originalChildren = self.NPToplevel.getChildrenAsList()
+        originalChildren = self.NPToplevel.getChildren()
         self.addGroup(self.NPToplevel)
         atrGroup = self.NPParent
         atrGroup.setName('ATR')
@@ -3543,7 +3543,7 @@ class LevelEditor(NodePath, DirectObject):
             self.updateBarricadeDict(side, int(origBarricadeNum),  sequenceNum)
 
     def adjustPropChildren(self, nodePath, maxPropOffset = -4):
-        for np in nodePath.getChildrenAsList():
+        for np in nodePath.getChildren():
             dnaNode = self.findDNANode(np)
             if dnaNode:
                 if DNAClassEqual(dnaNode, DNA_PROP):
@@ -3581,7 +3581,7 @@ class LevelEditor(NodePath, DirectObject):
 
     def makeLongStreet(self):
         bldgGroup = self.consolidateStreetBuildings()
-        bldgs = bldgGroup.getChildrenAsList()
+        bldgs = bldgGroup.getChildren()
         numBldgs = len(bldgs)
         streetLength = self.calcLongStreetLength(bldgs)/2.0
         ref = None
@@ -3615,19 +3615,19 @@ class LevelEditor(NodePath, DirectObject):
             parent = self.panel.component('hull'))
         if streetCurveFilename:
             modelFile = loader.loadModel(Filename.fromOsSpecific(streetCurveFilename))
-            #curves = modelFile.findAllMatches('**/+ClassicNurbsCurve').asList()
+            #curves = modelFile.findAllMatches('**/+ClassicNurbsCurve')
             curves = {'inner':[], 'outer':[],'innersidest':[], 'outersidest':[]}
-            curvesInner = modelFile.findAllMatches('**/*curve_inner*').asList()
+            curvesInner = modelFile.findAllMatches('**/*curve_inner*')
             print("-------------- curvesInner-----------------")
             print curvesInner
-            curvesOuter = modelFile.findAllMatches('**/*curve_outer*').asList()
+            curvesOuter = modelFile.findAllMatches('**/*curve_outer*')
             print("---------------- curvesOuter---------------")
             print curvesOuter
-            curveInnerSideSts = modelFile.findAllMatches('**/*curveside_inner*').asList()
+            curveInnerSideSts = modelFile.findAllMatches('**/*curveside_inner*')
             print("--------- curveInnerSideSts----------")
             print curveInnerSideSts
 
-            curveOuterSideSts = modelFile.findAllMatches('**/*curveside_outer*').asList()
+            curveOuterSideSts = modelFile.findAllMatches('**/*curveside_outer*')
             print("----------- curveOuterSideSits ----------")
             print curveOuterSideSts
 
@@ -3758,7 +3758,7 @@ class LevelEditor(NodePath, DirectObject):
         base.direct.grid.fHprSnap = 0
         self.panel.fPlaneSnap.set(0)
         bldgGroup = self.consolidateStreetBuildings()
-        bldgs = bldgGroup.getChildrenAsList()
+        bldgs = bldgGroup.getChildren()
 
         # streetWidth puts buildings on the edge of the street, not the middle
         currPoint = Point3(0)
@@ -3924,7 +3924,7 @@ class LevelEditor(NodePath, DirectObject):
         base.direct.grid.fHprSnap = 0
         self.panel.fPlaneSnap.set(0)
         bldgGroup = self.consolidateStreetBuildings()
-        bldgs = bldgGroup.getChildrenAsList()
+        bldgs = bldgGroup.getChildren()
 
         # streetWidth puts buildings on the edge of the street, not the middle
         currPoint = Point3(0)

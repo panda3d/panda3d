@@ -90,7 +90,7 @@ class DirectScrolledFrame(DirectFrame):
 
     def destroy(self):
         # Destroy children of the canvas
-        for child in self.canvas.getChildrenAsList():
+        for child in self.canvas.getChildren():
             childGui = self.guiDict.get(child.getName())
             if childGui:
                 childGui.destroy()

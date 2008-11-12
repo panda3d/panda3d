@@ -181,7 +181,7 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
                                                    self.rootItem.getVertexBytes())
 
         btIndex = 1
-        for item in self.rootItem.getChildrenAsList():
+        for item in self.rootItem.getChildren():
             self.buttons[btIndex]['width'] = self.getBTWidth(item.getVertexBytes(),
                                                              self.rootItem.getVertexBytes())
             btIndex += 1        
@@ -222,7 +222,7 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
         else:
             self.addSelfCtrl(item, item.getVertexBytes())
                                
-            for child in item.getChildrenAsList():
+            for child in item.getChildren():
                 self.addChildCtrl(child, item.getVertexBytes())
                 
             self.setTitle(item.getPathName(), item.getVertexBytes())
@@ -238,7 +238,7 @@ class MemoryExplorer(Pmw.MegaWidget, DirectObject):
         self.buildList(self.render2dItem)
 
     def buildList(self, parentItem):        
-        for nodePath in parentItem.nodePath.getChildrenAsList():
+        for nodePath in parentItem.nodePath.getChildren():
             item = MemoryExplorerItem(parentItem, nodePath)
             parentItem.addChild(item)
             self.buildList(item)
