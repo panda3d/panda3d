@@ -5,7 +5,7 @@ SIMPLE_THREADS model, by avoiding blocking all threads while waiting
 for I/O to complete. """
 
 __all__ = [
-    'file', 'open', 'listdir', 'walk'
+    'file', 'open', 'listdir', 'walk', 'join'
     ]
 
 from pandac import PandaModules as pm
@@ -271,12 +271,12 @@ def walk(top, topdown = True, onerror = None, followlinks = True):
         yield (top, dirnames, filenames)
 
     for dir in dirnames:
-        next = '%s/%s' % (top, dir)
+        next = join(top, dir)
         for tuple in walk(next, topdown = topdown):
             yield tuple
 
     if not topdown:
         yield (top, dirnames, filenames)
 
-        
-    
+def join(a, b):
+    return '%s/%s' % (a, b)
