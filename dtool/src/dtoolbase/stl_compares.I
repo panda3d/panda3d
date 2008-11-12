@@ -205,7 +205,9 @@ INLINE size_t sequence_hash<Key, Compare>::
 add_hash(size_t hash, const Key &key) {
 #ifdef _DEBUG
   // We assume that the sequence is laid out sequentially in memory.
-  assert(&(*key.end()) - &key[0] == key.size());
+  if (key.size() > 0) {
+    assert(&key[key.size() - 1] - &key[0] == key.size() - 1);
+  }
 #endif
   size_t num_bytes = (key.size() * sizeof(key[0]));
   return AddHash::add_hash(hash, (const PN_uint8 *)&key[0], num_bytes);
