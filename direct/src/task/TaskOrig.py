@@ -187,6 +187,12 @@ class Task:
     def setDelay(self, delay):
         self.delayTime = delay
 
+    def getUponDeath(self):
+        return self.uponDeath
+
+    def setUponDeath(self, uponDeath):
+        self.uponDeath = uponDeath
+
     def recalcWakeTime(self):
         """If the task is currently sleeping, this resets its wake
         time to the current time + self.delayTime.  It is as if the
