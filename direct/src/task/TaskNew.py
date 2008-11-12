@@ -516,7 +516,7 @@ class TaskManager:
 
     def __tryReplaceTaskMethod(self, task, oldMethod, newFunction):
         if not isinstance(task, PythonTask):
-            return
+            return 0
         
         method = task.getFunction()
         if (type(method) == types.MethodType):
