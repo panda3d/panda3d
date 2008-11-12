@@ -861,12 +861,12 @@ scan_directory(vector_string &contents, const string &subfile_name) const {
     if (!(subfile->_name.length() > prefix.length() &&
           subfile->_name.substr(0, prefix.length()) == prefix)) {
       // We've reached the end of the list of subfiles beneath the
-      // indicated direcotry prefix.
+      // indicated directory prefix.
       return true;
     }
 
     size_t slash = subfile->_name.find('/', prefix.length());
-    string basename = subfile->_name.substr(prefix.length(), slash);
+    string basename = subfile->_name.substr(prefix.length(), slash - prefix.length());
     if (basename != previous) {
       contents.push_back(basename);
       previous = basename;
