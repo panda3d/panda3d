@@ -252,6 +252,12 @@ protected:
   const DXIndexBufferContext8 *_active_ibuffer;
 
   int _num_active_texture_stages;
+  
+  // Cache the data necessary to bind each particular light each
+  // frame, so if we bind a given light multiple times, we only have
+  // to compute its data once.
+  typedef pmap<NodePath, D3DLIGHT8> DirectionalLights;
+  DirectionalLights _dlights;
 
   bool _overlay_windows_supported;
   bool _tex_stats_retrieval_impossible;

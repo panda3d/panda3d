@@ -1146,6 +1146,8 @@ end_scene() {
     _current_shader_context = (CLP(ShaderContext) *)NULL;
   }
 
+  _dlights.clear();
+
 /*
   HRESULT hr = _d3d_device->EndScene();
 
@@ -3382,35 +3384,41 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
-  // Get the light in "world coordinates" (actually, view
-  // coordinates).  This means the light in the coordinate space of
-  // the camera, converted to DX's coordinate system.
-  CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
-  const LMatrix4f &light_mat = transform->get_mat();
-  LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
-  LVector3f dir = light_obj->get_direction() * rel_mat;
+  static PStatCollector _draw_set_state_light_bind_directional_pcollector("Draw:Set State:Light:Bind:Directional");
+  PStatTimer timer(_draw_set_state_light_bind_directional_pcollector);
 
-  D3DCOLORVALUE black;
-  black.r = black.g = black.b = black.a = 0.0f;
+  pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, D3DLIGHT9()));
+  D3DLIGHT9 &fdata = (*lookup.first).second;
+  if (lookup.second) {
+    // Get the light in "world coordinates" (actually, view
+    // coordinates).  This means the light in the coordinate space of
+    // the camera, converted to DX's coordinate system.
+    CPT(TransformState) transform = light.get_transform(_scene_setup->get_camera_path());
+    const LMatrix4f &light_mat = transform->get_mat();
+    LMatrix4f rel_mat = light_mat * LMatrix4f::convert_mat(CS_yup_left, CS_default);
+    LVector3f dir = light_obj->get_direction() * rel_mat;
+    
+    D3DCOLORVALUE black;
+    black.r = black.g = black.b = black.a = 0.0f;
+    
+    ZeroMemory(&fdata, sizeof(D3DLIGHT9));
+    
+    fdata.Type =  D3DLIGHT_DIRECTIONAL;
+    fdata.Diffuse  = get_light_color(light_obj);
+    fdata.Ambient  =  black ;
+    fdata.Specular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
+    
+    fdata.Direction = *(D3DVECTOR *)dir.get_data();
+    
+    fdata.Range =  __D3DLIGHT_RANGE_MAX;
+    fdata.Falloff =  1.0f;
+    
+    fdata.Attenuation0 = 1.0f;       // constant
+    fdata.Attenuation1 = 0.0f;       // linear
+    fdata.Attenuation2 = 0.0f;       // quadratic
+  }
 
-  D3DLIGHT9 alight;
-  ZeroMemory(&alight, sizeof(D3DLIGHT9));
-
-  alight.Type =  D3DLIGHT_DIRECTIONAL;
-  alight.Diffuse  = get_light_color(light_obj);
-  alight.Ambient  =  black ;
-  alight.Specular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
-
-  alight.Direction = *(D3DVECTOR *)dir.get_data();
-
-  alight.Range =  __D3DLIGHT_RANGE_MAX;
-  alight.Falloff =  1.0f;
-
-  alight.Attenuation0 = 1.0f;       // constant
-  alight.Attenuation1 = 0.0f;       // linear
-  alight.Attenuation2 = 0.0f;       // quadratic
-
-  HRESULT hr = _d3d_device->SetLight(light_id, &alight);
+  HRESULT hr = _d3d_device->SetLight(light_id, &fdata);
   if (FAILED(hr)) {
     wdxdisplay9_cat.warning()
       << "Could not set light properties for " << light

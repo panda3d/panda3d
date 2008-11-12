@@ -395,6 +395,16 @@ protected:
   bool _use_sender;
 #endif  // SUPPORT_IMMEDIATE_MODE
 
+  // Cache the data necessary to bind each particular light each
+  // frame, so if we bind a given light multiple times, we only have
+  // to compute its data once.
+  class DirectionalLightFrameData {
+  public:
+    LVector4f _neg_dir;
+  };
+  typedef pmap<NodePath, DirectionalLightFrameData> DirectionalLights;
+  DirectionalLights _dlights;
+
   int _pass_number;
   bool _auto_rescale_normal;
   GLuint _geom_display_list;

@@ -316,6 +316,12 @@ protected:
 
   DWORD _last_fvf;
 
+  // Cache the data necessary to bind each particular light each
+  // frame, so if we bind a given light multiple times, we only have
+  // to compute its data once.
+  typedef pmap<NodePath, D3DLIGHT9> DirectionalLights;
+  DirectionalLights _dlights;
+
   #define MAXIMUM_TEXTURES 16
 
 

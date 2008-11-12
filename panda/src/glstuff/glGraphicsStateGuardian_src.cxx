@@ -1631,6 +1631,8 @@ end_scene() {
     _current_shader = (Shader *)NULL;
     _current_shader_context = (CLP(ShaderContext) *)NULL;
   }
+
+  _dlights.clear();
   report_my_gl_errors();
 }
 
@@ -4176,6 +4178,15 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   static PStatCollector _draw_set_state_light_bind_directional_pcollector("Draw:Set State:Light:Bind:Directional");
   PStatTimer timer(_draw_set_state_light_bind_directional_pcollector);
 
+  pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, DirectionalLightFrameData()));
+  DirectionalLightFrameData &fdata = (*lookup.first).second;
+  if (lookup.second) {
+    // The light was not computed yet this frame.  Compute it now.
+    CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+    LVector3f dir = light_obj->get_direction() * transform->get_mat();
+    fdata._neg_dir.set(-dir[0], -dir[1], -dir[2], 0);
+  }
+
   float light_color[4];
   GLenum id = get_light_id( light_id );
   static const Colorf black(0.0f, 0.0f, 0.0f, 1.0f);
@@ -4185,10 +4196,7 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 
   // Position needs to specify x, y, z, and w.
   // w == 0 implies light is at infinity
-  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-  LVector3f dir = light_obj->get_direction() * transform->get_mat();
-  LPoint4f fdir(-dir[0], -dir[1], -dir[2], 0);
-  GLP(Lightfv)(id, GL_POSITION, fdir.get_data());
+  GLP(Lightfv)(id, GL_POSITION, fdata._neg_dir.get_data());
 
   // GL_SPOT_DIRECTION is not significant when cutoff == 180
   // In this case, position x, y, z specifies direction
