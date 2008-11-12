@@ -746,7 +746,7 @@
 
 // Do you want to type-check downcasts?  This is a good idea during
 // development, but does impose some run-time overhead.
-#defer DO_DCAST $[< $[OPTIMIZE], 4]
+#defer DO_DCAST $[< $[OPTIMIZE], 3]
 
 // Do you want to build the debugging tools for recording and
 // visualizing intersection tests by the collision system?  Enabling
