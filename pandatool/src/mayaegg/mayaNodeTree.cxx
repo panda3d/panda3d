@@ -390,6 +390,13 @@ get_egg_group(MayaNodeDesc *node_desc) {
       if (get_enum_attribute(dag_object, "eggObjectTypes3", object_type)) {
         egg_group->add_object_type(object_type);
       }
+      pvector<string> tag_attribute_names;
+      get_tag_attribute_names(dag_object, tag_attribute_names);
+      for (uint ti=0; ti < tag_attribute_names.size(); ti++) {
+        if (get_enum_attribute(dag_object, tag_attribute_names[ti], object_type)) {
+          egg_group->set_tag(tag_attribute_names[ti].substr(3), object_type);
+        }
+      }
 
       // Is the node flagged to be invisible?  If it is, it is tagged
       // with the "hidden" visibility flag, so it won't get converted

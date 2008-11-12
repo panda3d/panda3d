@@ -376,6 +376,40 @@ get_mat4d_attribute(MObject &node, const string &attribute_name,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: get_tag_attribute_names
+//  Description: artists should be able to set arbitrary tags.
+//               Query all the attributes on this object and return
+//               the lists of attribute names that has "tag" prefix
+////////////////////////////////////////////////////////////////////
+void
+get_tag_attribute_names(MObject &node, pvector<string> &tag_names) {
+  MStatus status;
+  MFnDependencyNode node_fn(node, &status);
+  if (!status) {
+    maya_cat.warning()
+      << "Object is a " << node.apiTypeStr() << ", not a DependencyNode.\n";
+    return;
+  }
+
+  string name = node_fn.name().asChar();
+  unsigned i;
+
+  for (i = 0; i < node_fn.attributeCount(); i++) {
+    MObject attr = node_fn.attribute(i, &status);
+    if (status) {
+      MFnAttribute attrib(attr, &status);
+      if (status) {
+        string attribute_name = attrib.name().asChar();
+        if (attribute_name.find("tag", 0) != string::npos) {
+          maya_cat.info() << ":" << name << ":" << " is tagged with <" 
+                          << attribute_name << ">" << endl;
+          tag_names.push_back(attribute_name);
+        }
+      }
+    }
+  }
+}
+////////////////////////////////////////////////////////////////////
 //     Function: get_enum_attribute
 //  Description: Extracts the enum attribute from the MObject as a
 //               string value.

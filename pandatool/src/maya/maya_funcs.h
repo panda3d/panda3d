@@ -81,6 +81,9 @@ bool
 get_mat4d_attribute(MObject &node, const string &attribute_name,
                     LMatrix4d &value);
 
+void
+get_tag_attribute_names(MObject &node, pvector<string> &tag_names);
+
 bool
 get_enum_attribute(MObject &node, const string &attribute_name,
                    string &value);

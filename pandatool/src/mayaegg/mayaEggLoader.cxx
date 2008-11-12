@@ -1578,7 +1578,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
       mesh->_transNode = parent;
     }
 
-    // [gjeon] add eggFlag attributes it any exists
+    // [gjeon] add eggFlag attributes if any exists
     for (unsigned i = 0; i < mesh->_eggObjectTypes.length(); i++) {
       MString attrName = "eggObjectTypes";
       attrName += (int)(i + 1);
@@ -1675,7 +1675,7 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
       surface->_transNode = parent;
     }
 
-    // [gjeon] add eggFlag attributes it any exists   
+    // [gjeon] add eggFlag attributes if any exists   
     for (unsigned i = 0; i < surface->_eggObjectTypes.length(); i++) {
       MString attrName = "eggObjectTypes";
       attrName += (int)(i + 1);
