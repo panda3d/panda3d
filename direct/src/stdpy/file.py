@@ -261,11 +261,13 @@ def walk(top, topdown = True, onerror = None, followlinks = True):
     dirnames = []
     filenames = []
 
-    for file in _vfs.scanDirectory(top):
-        if file.isDirectory():
-            dirnames.append(file.getFilename().getBasename())
-        else:
-            filenames.append(file.getFilename().getBasename())
+    dirlist = _vfs.scanDirectory(top)
+    if dirlist:
+        for file in dirlist:
+            if file.isDirectory():
+                dirnames.append(file.getFilename().getBasename())
+            else:
+                filenames.append(file.getFilename().getBasename())
 
     if topdown:
         yield (top, dirnames, filenames)
