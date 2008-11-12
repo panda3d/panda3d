@@ -14,30 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InterrogateFunction::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE InterrogateFunction::
-InterrogateFunction(InterrogateModuleDef *def) :
-  InterrogateComponent(def)
-{
-  _flags = 0;
-  _class = 0;
-  _instances = (Instances *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateFunction::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE InterrogateFunction::
-InterrogateFunction(const InterrogateFunction &copy) {
-  (*this) = copy;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::is_global
 //       Access: Public
 //  Description: Returns true if the function is marked as 'global'.

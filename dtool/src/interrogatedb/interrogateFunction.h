@@ -31,8 +31,8 @@ class CPPInstance;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG InterrogateFunction : public InterrogateComponent {
 public:
-  INLINE InterrogateFunction(InterrogateModuleDef *def = NULL);
-  INLINE InterrogateFunction(const InterrogateFunction &copy);
+  InterrogateFunction(InterrogateModuleDef *def = NULL);
+  InterrogateFunction(const InterrogateFunction &copy);
   void operator = (const InterrogateFunction &copy);
 
   INLINE bool is_global() const;

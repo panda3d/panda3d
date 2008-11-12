@@ -18,6 +18,30 @@
 #include "interrogateDatabase.h"
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterrogateFunction::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+InterrogateFunction::
+InterrogateFunction(InterrogateModuleDef *def) :
+  InterrogateComponent(def)
+{
+  _flags = 0;
+  _class = 0;
+  _instances = (Instances *)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: InterrogateFunction::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+InterrogateFunction::
+InterrogateFunction(const InterrogateFunction &copy) {
+  (*this) = copy;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::Copy Assignment Operator
 //       Access: Public
 //  Description:

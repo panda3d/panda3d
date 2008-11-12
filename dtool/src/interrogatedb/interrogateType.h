@@ -31,8 +31,8 @@ class CPPScope;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_DTOOLCONFIG InterrogateType : public InterrogateComponent {
 public:
-  INLINE InterrogateType(InterrogateModuleDef *def = NULL);
-  INLINE InterrogateType(const InterrogateType &copy);
+  InterrogateType(InterrogateModuleDef *def = NULL);
+  InterrogateType(const InterrogateType &copy);
   void operator = (const InterrogateType &copy);
 
   INLINE bool is_global() const;

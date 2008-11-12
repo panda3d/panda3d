@@ -14,35 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE InterrogateType::
-InterrogateType(InterrogateModuleDef *def) :
-  InterrogateComponent(def)
-{
-  _flags = 0;
-  _outer_class = 0;
-  _atomic_token = AT_not_atomic;
-  _wrapped_type = 0;
-  _destructor = 0;
-
-  _cpptype = (CPPType *)NULL;
-  _cppscope = (CPPScope *)NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: InterrogateType::Copy Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-INLINE InterrogateType::
-InterrogateType(const InterrogateType &copy) {
-  (*this) = copy;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: InterrogateType::is_global
 //       Access: Public
 //  Description: Returns true if the type is marked as 'global'.  This
