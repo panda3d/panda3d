@@ -28,7 +28,7 @@ ISubStream() : istream(&_buf) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE ISubStream::
-ISubStream(istream *source, streampos start, streampos end) : istream(&_buf) {
+ISubStream(IStreamWrapper *source, streampos start, streampos end) : istream(&_buf) {
   open(source, start, end);
 }
 
@@ -46,7 +46,7 @@ ISubStream(istream *source, streampos start, streampos end) : istream(&_buf) {
 //               continue until the end of the source stream.
 ////////////////////////////////////////////////////////////////////
 INLINE ISubStream &ISubStream::
-open(istream *source, streampos start, streampos end) {
+open(IStreamWrapper *source, streampos start, streampos end) {
   clear((ios_iostate)0);
   _buf.open(source, start, end);
   return *this;

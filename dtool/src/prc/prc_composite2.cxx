@@ -11,4 +11,5 @@
 #include "prcKeyRegistry.cxx"
 #include "reversedNumericData.cxx"
 #include "streamReader.cxx"
+#include "streamWrapper.cxx"
 #include "streamWriter.cxx"

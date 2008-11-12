@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 #include "subStreamBuf.h"
+#include "streamWrapper.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ISubStream
@@ -33,9 +34,9 @@
 class EXPCL_PANDAEXPRESS ISubStream : public istream {
 public:
   INLINE ISubStream();
-  INLINE ISubStream(istream *source, streampos start, streampos end);
+  INLINE ISubStream(IStreamWrapper *source, streampos start, streampos end);
 
-  INLINE ISubStream &open(istream *source, streampos start, streampos end);
+  INLINE ISubStream &open(IStreamWrapper *source, streampos start, streampos end);
   INLINE ISubStream &close();
 
 private:

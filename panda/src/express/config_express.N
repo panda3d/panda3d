@@ -43,6 +43,11 @@ forcetype istream
 forcetype ostream
 forcetype iostream
 
+forcetype StreamWrapperBase
+forcetype IStreamWrapper
+forcetype OStreamWrapper
+forcetype StreamWrapper
+
 forcetype PointerToArray<unsigned char>
 forcetype ConstPointerToArray<unsigned char>
 renametype PointerToArray<unsigned char> PTAUchar

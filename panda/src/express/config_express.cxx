@@ -30,6 +30,7 @@
 #include "namable.h"
 #include "export_dtool.h"
 #include "dconfig.h"
+#include "streamWrapper.h"
 
 ConfigureDef(config_express);
 NotifyCategoryDef(express, "");

@@ -27,7 +27,7 @@ typedef int streamsize;
 ////////////////////////////////////////////////////////////////////
 SubStreamBuf::
 SubStreamBuf() {
-  _source = (istream *)NULL;
+  _source = (IStreamWrapper *)NULL;
 
   // _start is the streampos of the first byte of the SubStream within
   // its parent stream.
@@ -82,7 +82,7 @@ SubStreamBuf::
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void SubStreamBuf::
-open(istream *source, streampos start, streampos end) {
+open(IStreamWrapper *source, streampos start, streampos end) {
   _source = source;
   _start = start;
   _end = end;
@@ -99,7 +99,7 @@ open(istream *source, streampos start, streampos end) {
 ////////////////////////////////////////////////////////////////////
 void SubStreamBuf::
 close() {
-  _source = (istream *)NULL;
+  _source = (IStreamWrapper *)NULL;
   _start = 0;
   _end = 0;
   _cur = 0;
@@ -138,10 +138,7 @@ seekoff(streamoff off, ios_seekdir dir, ios_openmode mode) {
     if (_end == (streampos)0) {
       // If the end of the file is unspecified, we have to seek to
       // find it.
-      _lock.acquire();
-      _source->seekg(off, ios::end);
-      new_pos = _source->tellg();
-      _lock.release();
+      new_pos = _source->seek_gpos_eof() + off;
 
     } else {
       new_pos = _end + off;
@@ -239,11 +236,8 @@ underflow() {
     gbump(-(int)num_bytes);
     nassertr(gptr() + num_bytes <= egptr(), EOF);
 
-    _lock.acquire();
-    _source->seekg(_cur);
-    _source->read(gptr(), num_bytes);
-    size_t read_count = _source->gcount();
-    _lock.release();
+    streamsize read_count;
+    _source->read(gptr(), num_bytes, read_count);
 
     if (read_count != num_bytes) {
       // Oops, we didn't read what we thought we would.

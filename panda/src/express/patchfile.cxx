@@ -1100,8 +1100,10 @@ compute_mf_patches(ostream &write_stream,
                    PN_uint32 offset_orig, PN_uint32 offset_new,
                    istream &stream_orig, istream &stream_new) {
   Multifile mf_orig, mf_new;
-  if (!mf_orig.open_read(&stream_orig) ||
-      !mf_new.open_read(&stream_new)) {
+  IStreamWrapper stream_origw(stream_orig);
+  IStreamWrapper stream_neww(stream_new);
+  if (!mf_orig.open_read(&stream_origw) ||
+      !mf_new.open_read(&stream_neww)) {
     express_cat.error()
       << "Input multifiles appear to be corrupt.\n";
     return false;
@@ -1116,8 +1118,8 @@ compute_mf_patches(ostream &write_stream,
   // First, compute the patch for the header / index.
 
   {
-    ISubStream index_orig(&stream_orig, 0, mf_orig.get_index_end());
-    ISubStream index_new(&stream_new, 0, mf_new.get_index_end());
+    ISubStream index_orig(&stream_origw, 0, mf_orig.get_index_end());
+    ISubStream index_new(&stream_neww, 0, mf_new.get_index_end());
     if (!do_compute_patches("", "",
                             write_stream, offset_orig, offset_new,
                             index_orig, index_new)) {
@@ -1161,8 +1163,8 @@ compute_mf_patches(ostream &write_stream,
 
       if (!patch_subfile(write_stream, offset_orig, offset_new, 
                          mf_new.get_subfile_name(ni),
-                         stream_orig, orig_start, orig_start + (streampos)orig_size,
-                         stream_new, new_start, new_start + (streampos)new_size)) {
+                         stream_origw, orig_start, orig_start + (streampos)orig_size,
+                         stream_neww, new_start, new_start + (streampos)new_size)) {
         return false;
       }
     }
@@ -1264,6 +1266,9 @@ compute_tar_patches(ostream &write_stream,
   // subfile has been removed, we simply don't add it (we'll never
   // even notice this case).
 
+  IStreamWrapper stream_origw(stream_orig);
+  IStreamWrapper stream_neww(stream_new);
+
   TarDef::const_iterator ni;
   streampos last_pos = 0;
   for (ni = tar_new.begin(); ni != tar_new.end(); ++ni) {
@@ -1295,20 +1300,20 @@ compute_tar_patches(ostream &write_stream,
       // the end of the file (possibly introduced by a tar file's
       // blocking) is the footer, which is also patched separately.
       if (!patch_subfile(write_stream, offset_orig, offset_new, "", 
-                         stream_orig, sf_orig._header_start, sf_orig._data_start,
-                         stream_new, sf_new._header_start, sf_new._data_start)) {
+                         stream_origw, sf_orig._header_start, sf_orig._data_start,
+                         stream_neww, sf_new._header_start, sf_new._data_start)) {
         return false;
       }
 
       if (!patch_subfile(write_stream, offset_orig, offset_new, sf_new._name,
-                         stream_orig, sf_orig._data_start, sf_orig._data_end,
-                         stream_new, sf_new._data_start, sf_new._data_end)) {
+                         stream_origw, sf_orig._data_start, sf_orig._data_end,
+                         stream_neww, sf_new._data_start, sf_new._data_end)) {
         return false;
       }
 
       if (!patch_subfile(write_stream, offset_orig, offset_new, "",
-                         stream_orig, sf_orig._data_end, sf_orig._end,
-                         stream_new, sf_new._data_end, sf_new._end)) {
+                         stream_origw, sf_orig._data_end, sf_orig._end,
+                         stream_neww, sf_new._data_end, sf_new._end)) {
         return false;
       }
     }
@@ -1552,8 +1557,8 @@ bool Patchfile::
 patch_subfile(ostream &write_stream, 
               PN_uint32 offset_orig, PN_uint32 offset_new,
               const Filename &filename,
-              istream &stream_orig, streampos orig_start, streampos orig_end,
-              istream &stream_new, streampos new_start, streampos new_end) {
+              IStreamWrapper &stream_orig, streampos orig_start, streampos orig_end,
+              IStreamWrapper &stream_new, streampos new_start, streampos new_end) {
   nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new + new_start, false);
 
   size_t new_size = new_end - new_start;

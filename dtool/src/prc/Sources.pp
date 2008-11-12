@@ -36,7 +36,9 @@
     notifySeverity.h \
     prcKeyRegistry.h \
     reversedNumericData.I reversedNumericData.h \
-    streamReader.I streamReader.h streamWriter.I streamWriter.h
+    streamReader.I streamReader.h \
+    streamWrapper.I streamWrapper.h \
+    streamWriter.I streamWriter.h
   
   #define INCLUDED_SOURCES \
     config_prc.cxx \
@@ -65,7 +67,7 @@
     notifySeverity.cxx \
     prcKeyRegistry.cxx \
     reversedNumericData.cxx \
-    streamReader.cxx streamWriter.cxx
+    streamReader.cxx streamWrapper.cxx streamWriter.cxx
   
   #define INSTALL_HEADERS \
     bigEndian.h \
@@ -97,7 +99,9 @@
     notifySeverity.h \
     prcKeyRegistry.I prcKeyRegistry.h \
     reversedNumericData.I reversedNumericData.h \
-    streamReader.I streamReader.h streamWriter.I streamWriter.h
+    streamReader.I streamReader.h \
+    streamWrapper.I streamWrapper.h \
+    streamWriter.I streamWriter.h
 
 
 #end lib_target

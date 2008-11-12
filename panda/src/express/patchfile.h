@@ -29,6 +29,7 @@
 #include "pointerTo.h"
 #include "hashVal.h" // MD5 stuff
 #include "ordered_vector.h"
+#include "streamWrapper.h"
 
 #include <algorithm>
 
@@ -138,8 +139,8 @@ private:
   bool patch_subfile(ostream &write_stream, 
                      PN_uint32 offset_orig, PN_uint32 offset_new,
                      const Filename &filename,
-                     istream &stream_orig, streampos orig_start, streampos orig_end,
-                     istream &stream_new, streampos new_start, streampos new_end);
+                     IStreamWrapper &stream_orig, streampos orig_start, streampos orig_end,
+                     IStreamWrapper &stream_new, streampos new_start, streampos new_end);
 
   static const PN_uint32 _HASH_BITS;
   static const PN_uint32 _HASHTABLESIZE;

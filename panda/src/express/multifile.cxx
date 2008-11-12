@@ -99,8 +99,11 @@ const size_t Multifile::_encrypt_header_size = 6;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Multifile::
-Multifile() {
-  _read = (istream *)NULL;
+Multifile() :
+  _read_filew(_read_file),
+  _read_write_filew(_read_write_file)
+{
+  _read = (IStreamWrapper *)NULL;
   _write = (ostream *)NULL;
   _owns_stream = false;
   _next_index = 0;
@@ -132,7 +135,10 @@ Multifile::
 //  Description: Don't try to copy Multifiles.
 ////////////////////////////////////////////////////////////////////
 Multifile::
-Multifile(const Multifile &copy) {
+Multifile(const Multifile &copy) :
+  _read_filew(_read_file),
+  _read_write_filew(_read_write_file)
+{
   nassertv(false);
 }
 
@@ -168,7 +174,7 @@ open_read(const Filename &multifile_name) {
   }
   _timestamp = fname.get_timestamp();
   _timestamp_dirty = true;
-  _read = &_read_file;
+  _read = &_read_filew;
   _multifile_name = multifile_name;
   return read_index();
 }
@@ -186,13 +192,12 @@ open_read(const Filename &multifile_name) {
 //               function returns false.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-open_read(istream *multifile_stream, bool owns_pointer) {
+open_read(IStreamWrapper *multifile_stream, bool owns_pointer) {
   close();
   _timestamp = time(NULL);
   _timestamp_dirty = true;
   _read = multifile_stream;
   _owns_stream = owns_pointer;
-  _read->seekg(0, ios::beg);
   return read_index();
 }
 
@@ -275,7 +280,7 @@ open_read_write(const Filename &multifile_name) {
     _timestamp = time(NULL);
   }
   _timestamp_dirty = true;
-  _read = &_read_write_file;
+  _read = &_read_write_filew;
   _write = &_read_write_file;
   _multifile_name = multifile_name;
 
@@ -304,21 +309,25 @@ open_read_write(iostream *multifile_stream, bool owns_pointer) {
   close();
   _timestamp = time(NULL);
   _timestamp_dirty = true;
-  _read = multifile_stream;
+
+  // We don't support locking when opening a file in read-write mode,
+  // because we don't bother with locking on write.  But we need to
+  // have an IStreamWrapper to assign to the _read member, so we
+  // create one on-the-fly here.
+  _read = new StreamWrapper(multifile_stream, owns_pointer);
   _write = multifile_stream;
-  _owns_stream = owns_pointer;
+  _owns_stream = true;  // Because we own the StreamWrapper, above.
   _write->seekp(0, ios::beg);
 
   // Check whether the read stream is empty.
-  _read->seekg(0, ios::end);
-  if (_read->tellg() == (streampos)0) {
+  multifile_stream->seekg(0, ios::end);
+  if (multifile_stream->tellg() == (streampos)0) {
     // The read stream is empty, which is always valid.
     return true;
   }
 
   // The read stream is not empty, so we'd better have a valid
   // Multifile.
-  _read->seekg(0, ios::beg);
   return read_index();
 }
 
@@ -340,14 +349,16 @@ close() {
   }
 
   if (_owns_stream) {
-    if (_read != (istream *)NULL) {
-      VirtualFileSystem::close_read_file(_read);
+    // We prefer to delete the IStreamWrapper over the ostream, if
+    // possible.
+    if (_read != (IStreamWrapper *)NULL) {
+      delete _read;
     } else if (_write != (ostream *)NULL) {
       delete _write;
     }
   }
 
-  _read = (istream *)NULL;
+  _read = (IStreamWrapper *)NULL;
   _write = (ostream *)NULL;
   _owns_stream = false;
   _next_index = 0;
@@ -630,8 +641,10 @@ flush() {
     // All right, now write out each subfile's data.
     for (pi = _new_subfiles.begin(); pi != _new_subfiles.end(); ++pi) {
       Subfile *subfile = (*pi);
-      _next_index = subfile->write_data(*_write, _read, _next_index,
-                                        this);
+      _read->acquire();
+      _next_index = subfile->write_data(*_write, _read->get_istream(),
+                                        _next_index, this);
+      _read->release();
       nassertr(_next_index == _write->tellp(), false);
       _next_index = pad_to_streampos(_next_index);
       if (subfile->is_data_invalid()) {
@@ -1167,10 +1180,15 @@ extract_subfile_to(int index, ostream &out) {
     return false;
   }
 
-  int byte = in->get();
-  while (!in->fail() && !in->eof()) {
-    out.put(byte);
-    byte = in->get();
+  static const size_t buffer_size = 1024;
+  char buffer[buffer_size];
+
+  in->read(buffer, buffer_size);
+  size_t count = in->gcount();
+  while (count != 0) {
+    out.write(buffer, count);
+    in->read(buffer, buffer_size);
+    count = in->gcount();
   }
 
   bool failed = (in->fail() && !in->eof());
@@ -1315,7 +1333,6 @@ read_subfile(int index, pvector<unsigned char> &result) {
   in->read(buffer, buffer_size);
   size_t count = in->gcount();
   while (count != 0) {
-    thread_consider_yield();
     result.insert(result.end(), buffer, buffer + count);
     in->read(buffer, buffer_size);
     count = in->gcount();
@@ -1460,32 +1477,43 @@ clear_subfiles() {
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
 read_index() {
-  nassertr(_read != (istream *)NULL, false);
+  nassertr(_read != (IStreamWrapper *)NULL, false);
+
+  // We acquire the IStreamWrapper lock for the duration of this
+  // method.
+  _read->acquire();
+  istream *read = _read->get_istream();
 
   char this_header[_header_size];
-  _read->read(this_header, _header_size);
-  if (_read->fail() || _read->gcount() != (unsigned)_header_size) {
+  read->seekg(0);
+  read->read(this_header, _header_size);
+  if (read->fail() || read->gcount() != (unsigned)_header_size) {
     express_cat.info()
       << "Unable to read Multifile header " << _multifile_name << ".\n";
+    _read->release();
     close();
     return false;
   }
   if (memcmp(this_header, _header, _header_size) != 0) {
     express_cat.info()
       << _multifile_name << " is not a Multifile.\n";
+    _read->release();
+    close();
     return false;
   }
 
   // Now get the version numbers out.
-  StreamReader reader(_read, false);
+  StreamReader reader(read, false);
   _file_major_ver = reader.get_int16();
   _file_minor_ver = reader.get_int16();
   _scale_factor = reader.get_uint32();
   _new_scale_factor = _scale_factor;
 
-  if (_read->eof() || _read->fail()) {
+  if (read->eof() || read->fail()) {
     express_cat.info()
       << _multifile_name << " header is truncated.\n";
+    _read->release();
+    close();
     return false;
   }
 
@@ -1496,6 +1524,8 @@ read_index() {
       << _multifile_name << " has version " << _file_major_ver << "."
       << _file_minor_ver << ", expecting version " 
       << _current_major_ver << "." << _current_minor_ver << ".\n";
+    _read->release();
+    close();
     return false;
   }
 
@@ -1513,14 +1543,14 @@ read_index() {
   }
 
   // Now read the index out.
-  _next_index = _read->tellg();
+  _next_index = read->tellg();
   _next_index = normalize_streampos(_next_index);  
-  _read->seekg(_next_index);
+  read->seekg(_next_index);
   _last_index = 0;
   streampos index_forward;
 
   Subfile *subfile = new Subfile;
-  index_forward = subfile->read_index(*_read, _next_index, this);
+  index_forward = subfile->read_index(*read, _next_index, this);
   while (index_forward != (streampos)0) {
     _last_index = _next_index;
     if (subfile->is_deleted()) {
@@ -1530,19 +1560,20 @@ read_index() {
     } else {
       _subfiles.push_back(subfile);
     }
-    if (index_forward != normalize_streampos(_read->tellg())) {
+    if (index_forward != normalize_streampos(read->tellg())) {
       // If the index entries don't follow exactly sequentially, the
       // file ought to be repacked.
       _needs_repack = true;
     }
-    _read->seekg(index_forward);
+    read->seekg(index_forward);
     _next_index = index_forward;
     subfile = new Subfile;
-    index_forward = subfile->read_index(*_read, _next_index, this);
+    index_forward = subfile->read_index(*read, _next_index, this);
   }
   if (subfile->is_index_invalid()) {
     express_cat.info()
       << "Error reading index for " << _multifile_name << ".\n";
+    _read->release();
     close();
     delete subfile;
     return false;
@@ -1568,6 +1599,7 @@ read_index() {
   }
 
   delete subfile;
+  _read->release();
   return true;
 }  
 
@@ -1842,11 +1874,16 @@ write_data(ostream &write, istream *read, streampos fpos,
     streampos write_start = fpos;
     _uncompressed_length = 0;
 
-    int byte = source->get();
-    while (!source->eof() && !source->fail()) {
-      _uncompressed_length++;
-      putter->put(byte);
-      byte = source->get();
+    static const size_t buffer_size = 1024;
+    char buffer[buffer_size];
+    
+    source->read(buffer, buffer_size);
+    size_t count = source->gcount();
+    while (count != 0) {
+      _uncompressed_length += count;
+      putter->write(buffer, count);
+      source->read(buffer, buffer_size);
+      count = source->gcount();
     }
 
     if (delete_putter) {

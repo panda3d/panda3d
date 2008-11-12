@@ -46,7 +46,7 @@ set_multifile_name(const Filename &multifile_name) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Multifile::
 is_read_valid() const {
-  return (_read != (istream *)NULL && !_read->fail());
+  return (_read != (IStreamWrapper *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

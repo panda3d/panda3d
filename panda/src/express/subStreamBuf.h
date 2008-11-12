@@ -16,7 +16,7 @@
 #define SUBSTREAMBUF_H
 
 #include "pandabase.h"
-#include "mutexImpl.h"
+#include "streamWrapper.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SubStreamBuf
@@ -27,7 +27,7 @@ public:
   SubStreamBuf();
   virtual ~SubStreamBuf();
 
-  void open(istream *source, streampos start, streampos end);
+  void open(IStreamWrapper *source, streampos start, streampos end);
   void close();
 
   virtual streampos seekoff(streamoff off, ios_seekdir dir, ios_openmode mode);
@@ -39,13 +39,12 @@ protected:
   virtual int underflow();
 
 private:
-  istream *_source;
+  IStreamWrapper *_source;
   streampos _start;
   streampos _end;
   streampos _cur;
   size_t _unused;
   char *_buffer;
-  MutexImpl _lock;
 };
 
 #endif

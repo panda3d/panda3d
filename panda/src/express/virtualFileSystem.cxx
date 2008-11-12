@@ -18,6 +18,7 @@
 #include "virtualFileMount.h"
 #include "virtualFileMountMultifile.h"
 #include "virtualFileMountSystem.h"
+#include "streamWrapper.h"
 #include "dSearchPath.h"
 #include "dcast.h"
 #include "config_express.h"
@@ -1035,7 +1036,11 @@ consider_mount_mf(const Filename &filename) {
       return false;
     }
 
-    if (!multifile->open_read(stream, true)) {
+    // Wrap a thread-safe wrapper around that stream, so multiple
+    // threads can safely read the multifile simultaneously.
+    IStreamWrapper *streamw = new IStreamWrapper(stream, true);
+
+    if (!multifile->open_read(streamw, true)) {
       // Invalid multifile.
       return false;
     }

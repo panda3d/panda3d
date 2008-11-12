@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "config_express.h"
+#include "streamWrapper.h"
 #include "subStream.h"
 #include "filename.h"
 #include "ordered_vector.h"
@@ -40,7 +41,7 @@ private:
 
 PUBLISHED:
   BLOCKING bool open_read(const Filename &multifile_name);
-  BLOCKING bool open_read(istream *multifile_stream, bool owns_pointer = false);
+  BLOCKING bool open_read(IStreamWrapper *multifile_stream, bool owns_pointer = false);
   BLOCKING bool open_write(const Filename &multifile_name);
   BLOCKING bool open_write(ostream *multifile_stream, bool owns_pointer = false);
   BLOCKING bool open_read_write(const Filename &multifile_name);
@@ -164,7 +165,7 @@ private:
   PendingSubfiles _new_subfiles;
   PendingSubfiles _removed_subfiles;
 
-  istream *_read;
+  IStreamWrapper *_read;
   ostream *_write;
   bool _owns_stream;
   streampos _next_index;
@@ -181,8 +182,10 @@ private:
   string _encryption_password;
 
   pifstream _read_file;
+  IStreamWrapper _read_filew;
   pofstream _write_file;
   pfstream _read_write_file;
+  StreamWrapper _read_write_filew;
   Filename _multifile_name;
 
   int _file_major_ver;
