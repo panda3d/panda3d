@@ -396,6 +396,9 @@ class TaskManager:
             return self.mgr.remove(tasks)
         elif isinstance(taskOrName, AsyncTask):
             return self.mgr.remove(taskOrName)
+        elif isinstance(taskOrName, types.ListType):
+            for task in taskOrName:
+                self.remove(task)
         else:
             self.notify.error('remove takes a string or a Task')
 
