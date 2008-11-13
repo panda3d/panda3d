@@ -1892,11 +1892,13 @@ class ShowBase(DirectObject.DirectObject):
 
             # Tell the camera to cull from here instead of its own
             # origin.
-            self.camNode.setCullCenter(self.oobeCullFrustum)
+            for cam in base.camList:
+                cam.node().setCullCenter(self.oobeCullFrustum)
         else:
             # Disable OOBE culling.
 
-            self.camNode.setCullCenter(NodePath())
+            for cam in base.camList:
+                cam.node().setCullCenter(NodePath())
             self.oobeCullFrustum.removeNode()
             self.oobeCullFrustum = None
 
