@@ -51,7 +51,7 @@ VirtualFileSystem() :
             "case, the VirtualFileSystem will implicitly open the .pz file "
             "and decompress it on-the-fly.")),
   vfs_implicit_mf
-  ("vfs-implicit-mf", true,
+  ("vfs-implicit-mf", false,
    PRC_DESC("When this is true, the VirtualFileSystem will automatically "
             "mount multifiles on-the-fly when they are used as directories.  "
             "For instance, opening the file /c/files/foo.mf/dirname/mytex.jpg "
