@@ -112,7 +112,7 @@ bool VirtualFileSystem::
 mount(const Filename &physical_filename, const Filename &mount_point, 
       int flags, const string &password) {
   if (!physical_filename.exists()) {
-    express_cat.warning()
+    express_cat->warning()
       << "Attempt to mount " << physical_filename << ", not found.\n";
     return false;
   }
@@ -1046,7 +1046,7 @@ consider_mount_mf(const Filename &filename) {
     }
 
     multifile->set_multifile_name(dirname.get_basename());
-    express_cat.info()
+    express_cat->info()
       << "Implicitly mounting " << dirname << "\n";
 
     PT(VirtualFileMountMultifile) new_mount = 

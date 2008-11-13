@@ -252,7 +252,7 @@ underflow() {
       }
 
       // Slide what we did read to the top of the buffer.
-      nassertr(read_count < num_bytes, EOF);
+      nassertr(read_count < (int)num_bytes, EOF);
       size_t delta = num_bytes - read_count;
       memmove(gptr() + delta, gptr(), read_count);
       gbump(delta);
