@@ -1813,6 +1813,10 @@ class ShowBase(DirectObject.DirectObject):
             self.oobeCullFrustum = None
             self.oobeCullFrustumVis = None
 
+            self.accept('oobe-down', self.__oobeButton, extraArgs = [''])
+            self.accept('oobe-repeat', self.__oobeButton, extraArgs = ['-repeat'])
+            self.accept('oobe-up', self.__oobeButton, extraArgs = ['-up'])
+
         if self.oobeMode:
             # Disable OOBE mode.
             if self.oobeCullFrustum != None:
@@ -1826,6 +1830,12 @@ class ShowBase(DirectObject.DirectObject):
             # trackball from the data path.
             self.mouseInterfaceNode.clearButton(KeyboardButton.control())
             self.oobeTrackball.detachNode()
+
+            bt = self.buttonThrowers[0].node()
+            bt.setSpecificFlag(1)
+            bt.setButtonDownEvent('')
+            bt.setButtonRepeatEvent('')
+            bt.setButtonUpEvent('')
 
             self.cam.reparentTo(self.camera)
             self.camNode.setLens(self.camLens)
@@ -1857,12 +1867,28 @@ class ShowBase(DirectObject.DirectObject):
 
             self.cam.reparentTo(self.oobeCameraTrackball)
 
+            # Temporarily disable button events by routing them
+            # through the oobe filters.
+            bt = self.buttonThrowers[0].node()
+            bt.setSpecificFlag(0)
+            bt.setButtonDownEvent('oobe-down')
+            bt.setButtonRepeatEvent('oobe-repeat')
+            bt.setButtonUpEvent('oobe-up')
+
             # Don't change the camera lens--keep it with the original lens.
             #self.camNode.setLens(self.oobeLens)
 
             if self.oobeVis:
                 self.oobeVis.reparentTo(self.camera)
             self.oobeMode = 1
+
+    def __oobeButton(self, suffix, button):
+        if button.startswith('mouse'):
+            # Eat mouse buttons.
+            return
+
+        # Transmit other buttons.
+        messenger.send(button + suffix)
 
     def oobeCull(self):
         """
