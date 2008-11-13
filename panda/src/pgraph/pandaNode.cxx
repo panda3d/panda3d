@@ -3626,31 +3626,15 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
     UpdateSeq next_update = cdata->_next_update;
     nassertr(last_update != next_update, CDStageWriter(_cycler, pipeline_stage, cdata));
 
-    // Start with a clean slate, or at least with the contents of the
-    // node itself.
+    // Start with a clean slate.
     CollideMask net_collide_mask = cdata->_into_collide_mask;
     DrawMask net_draw_control_mask, net_draw_show_mask;
-    DrawMask draw_control_mask, draw_show_mask;
-    draw_control_mask = net_draw_control_mask = cdata->_draw_control_mask;
-    draw_show_mask = net_draw_show_mask = cdata->_draw_show_mask;
     bool renderable = is_renderable();
-
-    if (!renderable) {
-      // This is not a "renderable" node.  This means that this node
-      // does not itself contribute any bits to net_draw_show_mask or
-      // net_draw_control_mask, but it may contribute some bits to any
-      // renderable nodes from below.
-      net_draw_show_mask = DrawMask::all_off();
-      net_draw_control_mask = DrawMask::all_off();
-    }
-    draw_show_mask |= ~draw_control_mask;
 
     if (drawmask_cat.is_debug()) {
       drawmask_cat.debug(false)
         << "net_draw_control_mask = " << net_draw_control_mask
         << "\nnet_draw_show_mask = " << net_draw_show_mask
-        << "\ndraw_control_mask = " << draw_control_mask
-        << "\ndraw_show_mask = " << draw_show_mask
         << "\n";
     }
     CPT(RenderAttrib) off_clip_planes = cdata->_state->get_clip_plane();
@@ -3846,13 +3830,6 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
       }
     }
 
-    if (renderable) {
-      // This is a "renderable" node.  That means all draw_show_mask
-      // bits, not specifically set on or off, should be assumed to be
-      // on.
-      net_draw_show_mask |= ~net_draw_control_mask;
-    }
-
     {
       // Now grab the write lock on this node.
       CDStageWriter cdataw(_cycler, pipeline_stage, current_thread);
@@ -3863,6 +3840,18 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
         cdataw->_net_collide_mask = net_collide_mask;
 
         if (renderable) {
+          // Any explicit draw control mask on this node trumps anything
+          // inherited from below, except a show-through.
+          DrawMask draw_control_mask = cdataw->_draw_control_mask;
+          DrawMask draw_show_mask = cdataw->_draw_show_mask;
+
+          DrawMask show_through_mask = net_draw_control_mask & net_draw_show_mask;
+          
+          net_draw_control_mask |= draw_control_mask;
+          net_draw_show_mask = (net_draw_show_mask & ~draw_control_mask) | (draw_show_mask & draw_control_mask);
+
+          net_draw_show_mask |= show_through_mask;
+          
           // There are renderable nodes below, so the implicit draw
           // bits are all on.
           cdataw->_net_draw_control_mask = net_draw_control_mask;
@@ -3873,7 +3862,9 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
           }
         } else {
           // There are no renderable nodes below, so the implicit draw
-          // bits are all off.
+          // bits are all off.  Also, we don't care about the draw
+          // mask on this particular node (since nothing below it is
+          // renderable anyway).
           cdataw->_net_draw_control_mask = net_draw_control_mask;
           cdataw->_net_draw_show_mask = net_draw_show_mask;
           if (drawmask_cat.is_debug()) {
