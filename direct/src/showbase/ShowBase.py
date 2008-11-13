@@ -1806,8 +1806,10 @@ class ShowBase(DirectObject.DirectObject):
             self.oobe2cam.node().setNode(self.oobeCameraTrackball.node())
 
             self.oobeVis = loader.loadModel('models/misc/camera')
-            if self.oobeVis:
-                self.oobeVis.node().setFinal(1)
+            if not self.oobeVis:
+                self.oobeVis = NodePath('oobeVis')
+            self.oobeVis.node().setFinal(1)
+            self.oobeVis.setLightOff(1)
             self.oobeCullFrustum = None
             self.oobeCullFrustumVis = None
 
