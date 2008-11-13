@@ -1437,6 +1437,14 @@ compare_draw_mask(DrawMask running_draw_mask, DrawMask camera_mask) const {
   nassertr(_cdata != (PandaNode::CData *)NULL, false);
   nassertr(_cdata->_last_update == _cdata->_next_update, false);
 
+  // As a special case, if net_draw_show_mask is all 0, it means
+  // either that all nodes under this node are hidden to all cameras,
+  // or that none of them are renderable nodes (or some combination).
+  // In either case, we might as well short-circuit.
+  if (_cdata->_net_draw_show_mask.is_zero()) {
+    return false;
+  }
+
   DrawMask net_draw_control_mask, net_draw_show_mask;
   net_draw_control_mask = _cdata->_net_draw_control_mask;
   net_draw_show_mask = _cdata->_net_draw_show_mask;

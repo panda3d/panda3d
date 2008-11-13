@@ -1766,13 +1766,17 @@ do_issue_light() {
         cur_ambient_light += light_obj->get_color();
 
       } else {
-        enable_light(num_enabled, true);
-        if (num_enabled == 0) {
-          begin_bind_lights();
+        const Colorf &color = light_obj->get_color();
+        // Don't bother binding the light if it has no color to contribute.
+        if (color[0] != 0.0 || color[1] != 0.0 || color[2] != 0.0) {
+          enable_light(num_enabled, true);
+          if (num_enabled == 0) {
+            begin_bind_lights();
+          }
+          
+          light_obj->bind(this, light, num_enabled);
+          num_enabled++;
         }
-
-        light_obj->bind(this, light, num_enabled);
-        num_enabled++;
       }
     }
   }

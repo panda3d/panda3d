@@ -3710,29 +3710,68 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
       
         net_collide_mask |= child_cdataw->_net_collide_mask;
 
+        if (drawmask_cat.is_debug()) {
+          drawmask_cat.debug(false)
+            << "\nchild update " << *child << ":\n";
+        }
+
         DrawMask child_control_mask = child_cdataw->_net_draw_control_mask;
         DrawMask child_show_mask = child_cdataw->_net_draw_show_mask;
-        if (child_control_mask != DrawMask::all_off() ||
-            child_show_mask != DrawMask::all_off()) {
+        if (!(child_control_mask | child_show_mask).is_zero()) {
           // This child includes a renderable node or subtree.  Thus,
           // we should propagate its draw masks.
           renderable = true;
 
-          // Compute the set of control bits that are defined on this
-          // node, but not on the child node.
-          DrawMask new_control_mask = draw_control_mask & ~child_control_mask;
-          // Anywhere we have a control bit that our child does not,
-          // the child inherits our show bit.
-          DrawMask new_child_show_mask = (child_show_mask & ~new_control_mask) | (draw_show_mask & new_control_mask);
-          DrawMask new_child_control_mask = child_control_mask | new_control_mask;
-          // Now merge that result with our accumulated draw masks.
-          net_draw_control_mask |= new_child_control_mask;
-          net_draw_show_mask |= new_child_show_mask;
+          // For each bit position in the masks, we have assigned the
+          // following semantic meaning.  The number on the left
+          // represents the pairing of the corresponding bit from the
+          // control mask and from the show mask:
+          
+          //   00 : not a renderable node   (control 0, show 0)
+          //   01 : a normally visible node (control 0, show 1)
+          //   10 : a hidden node           (control 1, show 0)
+          //   11 : a show-through node     (control 1, show 1)
+
+          // Now, when we accumulate these masks, we want to do so
+          // according to the following table, for each bit position:
+
+          //          00   01   10   11     (child)
+          //        ---------------------
+          //     00 | 00   01   10   11
+          //     01 | 01   01   01*  11
+          //     10 | 10   01*  10   11
+          //     11 | 11   11   11   11
+          // (parent)
+
+          // This table is almost the same as the union of both masks,
+          // with one exception, marked with a * in the above table:
+          // if one is 10 and the other is 01--that is, one is hidden
+          // and the other is normally visible--then the result should
+          // be 01, normally visible.  This is because we only want to
+          // propagate the hidden bit upwards if *all* renderable
+          // nodes are hidden.
+
+          // Get the set of exception bits for which the above rule
+          // applies.  These are the bits for which both bits have
+          // flipped, but which were not the same in the original.
+          DrawMask exception_mask = (net_draw_control_mask ^ child_control_mask) & (net_draw_show_mask ^ child_show_mask);
+          exception_mask &= (net_draw_control_mask ^ net_draw_show_mask);
+
+          if (drawmask_cat.is_debug()) {
+            drawmask_cat.debug(false)
+              << "exception_mask = " << exception_mask << "\n";
+          }
+
+          // Now compute the union, applying the above exception.
+          net_draw_control_mask |= child_control_mask;
+          net_draw_show_mask |= child_show_mask;
+          
+          net_draw_control_mask &= ~exception_mask;
+          net_draw_show_mask |= exception_mask;
         }
 
         if (drawmask_cat.is_debug()) {
           drawmask_cat.debug(false)
-            << "\nchild update " << *child << ":\n"
             << "child_control_mask = " << child_control_mask
             << "\nchild_show_mask = " << child_show_mask
             << "\nnet_draw_control_mask = " << net_draw_control_mask
@@ -3758,21 +3797,33 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
         net_collide_mask |= child_cdata->_net_collide_mask;
 
         // See comments in similar block above.
+        if (drawmask_cat.is_debug()) {
+          drawmask_cat.debug(false)
+            << "\nchild fresh " << *child << ":\n";
+        }
         DrawMask child_control_mask = child_cdata->_net_draw_control_mask;
         DrawMask child_show_mask = child_cdata->_net_draw_show_mask;
-        if (child_control_mask != DrawMask::all_off() ||
-            child_show_mask != DrawMask::all_off()) {
+        if (!(child_control_mask | child_show_mask).is_zero()) {
           renderable = true;
-          DrawMask new_control_mask = draw_control_mask & ~child_control_mask;
-          DrawMask new_child_show_mask = (child_show_mask & ~new_control_mask) | (draw_show_mask & new_control_mask);
-          DrawMask new_child_control_mask = child_control_mask | new_control_mask;
-          net_draw_control_mask |= new_child_control_mask;
-          net_draw_show_mask |= new_child_show_mask;
+
+          DrawMask exception_mask = (net_draw_control_mask ^ child_control_mask) & (net_draw_show_mask ^ child_show_mask);
+          exception_mask &= (net_draw_control_mask ^ net_draw_show_mask);
+
+          if (drawmask_cat.is_debug()) {
+            drawmask_cat.debug(false)
+              << "exception_mask = " << exception_mask << "\n";
+          }
+
+          // Now compute the union, applying the above exception.
+          net_draw_control_mask |= child_control_mask;
+          net_draw_show_mask |= child_show_mask;
+          
+          net_draw_control_mask &= ~exception_mask;
+          net_draw_show_mask |= exception_mask;
         }
 
         if (drawmask_cat.is_debug()) {
           drawmask_cat.debug(false)
-            << "\nchild fresh " << *child << ":\n"
             << "child_control_mask = " << child_control_mask
             << "\nchild_show_mask = " << child_show_mask
             << "\nnet_draw_control_mask = " << net_draw_control_mask
