@@ -97,6 +97,7 @@ PStatCollector GraphicsStateGuardian::_draw_set_state_material_pcollector("Draw:
 PStatCollector GraphicsStateGuardian::_draw_set_state_light_pcollector("Draw:Set State:Light");
 PStatCollector GraphicsStateGuardian::_draw_set_state_stencil_pcollector("Draw:Set State:Stencil");
 PStatCollector GraphicsStateGuardian::_draw_set_state_fog_pcollector("Draw:Set State:Fog");
+PStatCollector GraphicsStateGuardian::_draw_set_state_scissor_pcollector("Draw:Set State:Scissor");
 
 
 PT(TextureStage) GraphicsStateGuardian::_alpha_scale_texture_stage = NULL;

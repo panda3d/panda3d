@@ -488,6 +488,7 @@ public:
   static PStatCollector _draw_set_state_light_pcollector;
   static PStatCollector _draw_set_state_stencil_pcollector;
   static PStatCollector _draw_set_state_fog_pcollector;
+  static PStatCollector _draw_set_state_scissor_pcollector;
 
 private:
   int _num_lights_enabled;

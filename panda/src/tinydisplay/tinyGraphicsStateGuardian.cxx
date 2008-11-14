@@ -1438,6 +1438,7 @@ set_state_and_transform(const RenderState *target,
   }
 
   if (_target._scissor != _state._scissor) {
+    PStatTimer timer(_draw_set_state_scissor_pcollector);
     do_issue_scissor();
     _state._scissor = _target._scissor;
   }
