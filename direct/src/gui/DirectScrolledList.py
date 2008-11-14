@@ -144,8 +144,12 @@ class DirectScrolledList(DirectFrame):
         taskMgr.remove(self.taskName("scroll"))
         if hasattr(self, "currentSelected"):
             del self.currentSelected
+        if self.incButtonCallback:
+            self.incButtonCallback = None
+        if self.decButtonCallback:
+            self.decButtonCallback = None
         self.incButton.destroy()
-        self.decButton.destroy()
+        self.decButton.destroy()       
         DirectFrame.destroy(self)
 
     def selectListItem(self, item):
