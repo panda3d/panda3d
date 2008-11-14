@@ -274,7 +274,7 @@ store(BamCacheRecord *record) {
   temp_file.close();
 
   // Now move the file into place.
-  if (!temp_pathname.rename_to(cache_pathname)) {
+  if (!temp_pathname.rename_to(cache_pathname) && temp_pathname.exists()) {
     cache_pathname.unlink();
     if (!temp_pathname.rename_to(cache_pathname)) {
       util_cat.error()
