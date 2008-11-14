@@ -438,6 +438,13 @@ end_scene() {
     }
     _c->zb = _current_frame_buffer;
   }
+
+  // Clear the lighting state.
+  clear_light_state();
+  _plights.clear();
+  _dlights.clear();
+  _slights.clear();
+
   GraphicsStateGuardian::end_scene();
 }
 
@@ -1571,15 +1578,7 @@ do_issue_light() {
   }
 
   // First, release all of the previously-assigned lights.
-  _c->lighting_enabled = false;
-
-  GLLight *gl_light = _c->first_light;
-  while (gl_light != (GLLight *)NULL) {
-    GLLight *next = gl_light->next;
-    gl_light->next = NULL;
-    gl_light = next;
-  }
-  _c->first_light = NULL;
+  clear_light_state();
 
   // Now, assign new lights.
   if (_target._light != (LightAttrib *)NULL) {
@@ -1604,21 +1603,18 @@ do_issue_light() {
 
       } else {
         // Other kinds of lights each get their own GLLight object.
-        nassertv(num_enabled < MAX_LIGHTS);
-        GLLight *gl_light = &_c->lights[num_enabled];
-        memset(gl_light, 0, sizeof(GLLight));
+        light_obj->bind(this, light, num_enabled);
+        num_enabled++;
 
-        gl_light->next = _c->first_light;
-        _c->first_light = gl_light;
-
+        // Handle the diffuse color here, since all lights have this
+        // property.
+        GLLight *gl_light = _c->first_light;
+        nassertv(gl_light != NULL);
         const Colorf &diffuse = light_obj->get_color();
         gl_light->diffuse.v[0] = diffuse[0];
         gl_light->diffuse.v[1] = diffuse[1];
         gl_light->diffuse.v[2] = diffuse[2];
         gl_light->diffuse.v[3] = diffuse[3];
-
-        light_obj->bind(this, light, num_enabled);
-        num_enabled++;
       }
     }
   }
@@ -1643,39 +1639,49 @@ do_issue_light() {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
-  GLLight *gl_light = _c->first_light;
-  nassertv(gl_light != (GLLight *)NULL);
+  pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
+  GLLight *gl_light = &(*lookup.first).second;
+  if (lookup.second) {
+    // It's a brand new light.  Define it.
+    memset(gl_light, 0, sizeof(GLLight));
 
-  const Colorf &specular = light_obj->get_specular_color();
-  gl_light->specular.v[0] = specular[0];
-  gl_light->specular.v[1] = specular[1];
-  gl_light->specular.v[2] = specular[2];
-  gl_light->specular.v[3] = specular[3];
+    const Colorf &specular = light_obj->get_specular_color();
+    gl_light->specular.v[0] = specular[0];
+    gl_light->specular.v[1] = specular[1];
+    gl_light->specular.v[2] = specular[2];
+    gl_light->specular.v[3] = specular[3];
 
-  // Position needs to specify x, y, z, and w
-  // w == 1 implies non-infinite position
-  CPT(TransformState) render_transform =
-    _cs_transform->compose(_scene_setup->get_world_transform());
+    // Position needs to specify x, y, z, and w
+    // w == 1 implies non-infinite position
+    CPT(TransformState) render_transform =
+      _cs_transform->compose(_scene_setup->get_world_transform());
 
-  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-  CPT(TransformState) net_transform = render_transform->compose(transform);
+    CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+    CPT(TransformState) net_transform = render_transform->compose(transform);
 
-  LPoint3f pos = light_obj->get_point() * net_transform->get_mat();
-  gl_light->position.v[0] = pos[0];
-  gl_light->position.v[1] = pos[1];
-  gl_light->position.v[2] = pos[2];
-  gl_light->position.v[3] = 1.0f;
+    LPoint3f pos = light_obj->get_point() * net_transform->get_mat();
+    gl_light->position.v[0] = pos[0];
+    gl_light->position.v[1] = pos[1];
+    gl_light->position.v[2] = pos[2];
+    gl_light->position.v[3] = 1.0f;
 
-  // Exponent == 0 implies uniform light distribution
-  gl_light->spot_exponent = 0.0f;
+    // Exponent == 0 implies uniform light distribution
+    gl_light->spot_exponent = 0.0f;
 
-  // Cutoff == 180 means uniform point light source
-  gl_light->spot_cutoff = 180.0f;
+    // Cutoff == 180 means uniform point light source
+    gl_light->spot_cutoff = 180.0f;
 
-  const LVecBase3f &att = light_obj->get_attenuation();
-  gl_light->attenuation[0] = att[0];
-  gl_light->attenuation[1] = att[1];
-  gl_light->attenuation[2] = att[2];
+    const LVecBase3f &att = light_obj->get_attenuation();
+    gl_light->attenuation[0] = att[0];
+    gl_light->attenuation[1] = att[1];
+    gl_light->attenuation[2] = att[2];
+  }
+
+  nassertv(gl_light->next == NULL);
+
+  // Add it to the linked list of active lights.
+  gl_light->next = _c->first_light;
+  _c->first_light = gl_light;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1688,46 +1694,56 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
-  GLLight *gl_light = _c->first_light;
-  nassertv(gl_light != (GLLight *)NULL);
+  pair<Lights::iterator, bool> lookup = _dlights.insert(Lights::value_type(light, GLLight()));
+  GLLight *gl_light = &(*lookup.first).second;
+  if (lookup.second) {
+    // It's a brand new light.  Define it.
+    memset(gl_light, 0, sizeof(GLLight));
 
-  const Colorf &specular = light_obj->get_specular_color();
-  gl_light->specular.v[0] = specular[0];
-  gl_light->specular.v[1] = specular[1];
-  gl_light->specular.v[2] = specular[2];
-  gl_light->specular.v[3] = specular[3];
+    const Colorf &specular = light_obj->get_specular_color();
+    gl_light->specular.v[0] = specular[0];
+    gl_light->specular.v[1] = specular[1];
+    gl_light->specular.v[2] = specular[2];
+    gl_light->specular.v[3] = specular[3];
 
-  // Position needs to specify x, y, z, and w
-  // w == 0 implies light is at infinity
-  CPT(TransformState) render_transform =
-    _cs_transform->compose(_scene_setup->get_world_transform());
+    // Position needs to specify x, y, z, and w
+    // w == 0 implies light is at infinity
+    CPT(TransformState) render_transform =
+      _cs_transform->compose(_scene_setup->get_world_transform());
 
-  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-  CPT(TransformState) net_transform = render_transform->compose(transform);
+    CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+    CPT(TransformState) net_transform = render_transform->compose(transform);
 
-  LVector3f dir = light_obj->get_direction() * net_transform->get_mat();
-  dir.normalize();
-  gl_light->position.v[0] = -dir[0];
-  gl_light->position.v[1] = -dir[1];
-  gl_light->position.v[2] = -dir[2];
-  gl_light->position.v[3] = 0.0f;
+    LVector3f dir = light_obj->get_direction() * net_transform->get_mat();
+    dir.normalize();
+    gl_light->position.v[0] = -dir[0];
+    gl_light->position.v[1] = -dir[1];
+    gl_light->position.v[2] = -dir[2];
+    gl_light->position.v[3] = 0.0f;
 
-  gl_light->norm_position.v[0] = -dir[0];
-  gl_light->norm_position.v[1] = -dir[1];
-  gl_light->norm_position.v[2] = -dir[2];
-  gl_V3_Norm(&gl_light->norm_position);
+    gl_light->norm_position.v[0] = -dir[0];
+    gl_light->norm_position.v[1] = -dir[1];
+    gl_light->norm_position.v[2] = -dir[2];
+    gl_V3_Norm(&gl_light->norm_position);
 
-  // Exponent == 0 implies uniform light distribution
-  gl_light->spot_exponent = 0.0f;
+    // Exponent == 0 implies uniform light distribution
+    gl_light->spot_exponent = 0.0f;
 
-  // Cutoff == 180 means uniform point light source
-  gl_light->spot_cutoff = 180.0f;
+    // Cutoff == 180 means uniform point light source
+    gl_light->spot_cutoff = 180.0f;
 
-  // Default attenuation values (only spotlight and point light can
-  // modify these)
-  gl_light->attenuation[0] = 1.0f;
-  gl_light->attenuation[1] = 0.0f;
-  gl_light->attenuation[2] = 0.0f;
+    // Default attenuation values (only spotlight and point light can
+    // modify these)
+    gl_light->attenuation[0] = 1.0f;
+    gl_light->attenuation[1] = 0.0f;
+    gl_light->attenuation[2] = 0.0f;
+  }
+
+  nassertv(gl_light->next == NULL);
+
+  // Add it to the linked list of active lights.
+  gl_light->next = _c->first_light;
+  _c->first_light = gl_light;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1740,52 +1756,62 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
-  GLLight *gl_light = _c->first_light;
-  nassertv(gl_light != (GLLight *)NULL);
+  pair<Lights::iterator, bool> lookup = _plights.insert(Lights::value_type(light, GLLight()));
+  GLLight *gl_light = &(*lookup.first).second;
+  if (lookup.second) {
+    // It's a brand new light.  Define it.
+    memset(gl_light, 0, sizeof(GLLight));
 
-  const Colorf &specular = light_obj->get_specular_color();
-  gl_light->specular.v[0] = specular[0];
-  gl_light->specular.v[1] = specular[1];
-  gl_light->specular.v[2] = specular[2];
-  gl_light->specular.v[3] = specular[3];
+    const Colorf &specular = light_obj->get_specular_color();
+    gl_light->specular.v[0] = specular[0];
+    gl_light->specular.v[1] = specular[1];
+    gl_light->specular.v[2] = specular[2];
+    gl_light->specular.v[3] = specular[3];
   
-  Lens *lens = light_obj->get_lens();
-  nassertv(lens != (Lens *)NULL);
+    Lens *lens = light_obj->get_lens();
+    nassertv(lens != (Lens *)NULL);
 
-  // Position needs to specify x, y, z, and w
-  // w == 1 implies non-infinite position
-  CPT(TransformState) render_transform =
-    _cs_transform->compose(_scene_setup->get_world_transform());
+    // Position needs to specify x, y, z, and w
+    // w == 1 implies non-infinite position
+    CPT(TransformState) render_transform =
+      _cs_transform->compose(_scene_setup->get_world_transform());
 
-  CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
-  CPT(TransformState) net_transform = render_transform->compose(transform);
+    CPT(TransformState) transform = light.get_transform(_scene_setup->get_scene_root().get_parent());
+    CPT(TransformState) net_transform = render_transform->compose(transform);
 
-  const LMatrix4f &light_mat = net_transform->get_mat();
-  LPoint3f pos = lens->get_nodal_point() * light_mat;
-  LVector3f dir = lens->get_view_vector() * light_mat;
-  dir.normalize();
+    const LMatrix4f &light_mat = net_transform->get_mat();
+    LPoint3f pos = lens->get_nodal_point() * light_mat;
+    LVector3f dir = lens->get_view_vector() * light_mat;
+    dir.normalize();
 
-  gl_light->position.v[0] = pos[0];
-  gl_light->position.v[1] = pos[1];
-  gl_light->position.v[2] = pos[2];
-  gl_light->position.v[3] = 1.0f;
+    gl_light->position.v[0] = pos[0];
+    gl_light->position.v[1] = pos[1];
+    gl_light->position.v[2] = pos[2];
+    gl_light->position.v[3] = 1.0f;
 
-  gl_light->spot_direction.v[0] = dir[0];
-  gl_light->spot_direction.v[1] = dir[1];
-  gl_light->spot_direction.v[2] = dir[2];
+    gl_light->spot_direction.v[0] = dir[0];
+    gl_light->spot_direction.v[1] = dir[1];
+    gl_light->spot_direction.v[2] = dir[2];
 
-  gl_light->norm_spot_direction.v[0] = dir[0];
-  gl_light->norm_spot_direction.v[1] = dir[1];
-  gl_light->norm_spot_direction.v[2] = dir[2];
-  gl_V3_Norm(&gl_light->norm_spot_direction);
+    gl_light->norm_spot_direction.v[0] = dir[0];
+    gl_light->norm_spot_direction.v[1] = dir[1];
+    gl_light->norm_spot_direction.v[2] = dir[2];
+    gl_V3_Norm(&gl_light->norm_spot_direction);
 
-  gl_light->spot_exponent = light_obj->get_exponent();
-  gl_light->spot_cutoff = lens->get_hfov() * 0.5f;
+    gl_light->spot_exponent = light_obj->get_exponent();
+    gl_light->spot_cutoff = lens->get_hfov() * 0.5f;
 
-  const LVecBase3f &att = light_obj->get_attenuation();
-  gl_light->attenuation[0] = att[0];
-  gl_light->attenuation[1] = att[1];
-  gl_light->attenuation[2] = att[2];
+    const LVecBase3f &att = light_obj->get_attenuation();
+    gl_light->attenuation[0] = att[0];
+    gl_light->attenuation[1] = att[1];
+    gl_light->attenuation[2] = att[2];
+  }
+
+  nassertv(gl_light->next == NULL);
+
+  // Add it to the linked list of active lights.
+  gl_light->next = _c->first_light;
+  _c->first_light = gl_light;
 }
 
 ////////////////////////////////////////////////////////////////////

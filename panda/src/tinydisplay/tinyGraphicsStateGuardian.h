@@ -22,12 +22,9 @@
 #include "simpleLru.h"
 #include "zmath.h"
 #include "zbuffer.h"
+#include "zgl.h"
 
 class TinyTextureContext;
-struct GLContext;
-struct GLVertex;
-struct GLMaterial;
-struct GLTexture;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyGraphicsStateGuardian
@@ -126,6 +123,8 @@ private:
   static int get_color_blend_op(ColorBlendAttrib::Operand operand);
   static ZB_lookupTextureFunc get_tex_filter_func(Texture::FilterType filter);
 
+  INLINE void clear_light_state();
+
 public:
   // Filled in by the Tiny*GraphicsWindow at begin_frame().
   ZBuffer *_current_frame_buffer;
@@ -149,6 +148,12 @@ private:
   bool _auto_rescale_normal;
 
   CPT(TransformState) _scissor_mat;
+
+  // Cache the data necessary to bind each particular light each
+  // frame, so if we bind a given light multiple times, we only have
+  // to compute its data once.
+  typedef pmap<NodePath, GLLight> Lights;
+  Lights _plights, _dlights, _slights;
 
   // Used during being_draw_primitives() .. end_draw_primitives().
   int _min_vertex;
