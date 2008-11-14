@@ -641,10 +641,17 @@ flush() {
     // All right, now write out each subfile's data.
     for (pi = _new_subfiles.begin(); pi != _new_subfiles.end(); ++pi) {
       Subfile *subfile = (*pi);
-      _read->acquire();
-      _next_index = subfile->write_data(*_write, _read->get_istream(),
-                                        _next_index, this);
-      _read->release();
+
+      if (_read != (IStreamWrapper *)NULL) {
+        _read->acquire();
+        _next_index = subfile->write_data(*_write, _read->get_istream(),
+                                          _next_index, this);
+        _read->release();
+
+      } else {
+        _next_index = subfile->write_data(*_write, NULL, _next_index, this);
+      }
+
       nassertr(_next_index == _write->tellp(), false);
       _next_index = pad_to_streampos(_next_index);
       if (subfile->is_data_invalid()) {
