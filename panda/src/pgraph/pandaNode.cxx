@@ -3631,6 +3631,13 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
     DrawMask net_draw_control_mask, net_draw_show_mask;
     bool renderable = is_renderable();
 
+    if (renderable) {
+      // If this node is itself renderable, it contributes to the net
+      // draw mask.
+      net_draw_control_mask = cdata->_draw_control_mask;
+      net_draw_show_mask = cdata->_draw_show_mask;
+    }
+
     if (drawmask_cat.is_debug()) {
       drawmask_cat.debug(false)
         << "net_draw_control_mask = " << net_draw_control_mask
