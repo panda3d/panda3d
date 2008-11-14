@@ -314,9 +314,8 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
     _textures[filename] = tex;
   }
 
-  if (store_record) {
+  if (store_record && tex->has_ram_image()) {
     // Store the on-disk cache record for next time.
-    nassertr(tex->has_ram_image(), tex);
     record->set_data(tex, false);
     cache->store(record);
   }
@@ -440,7 +439,7 @@ ns_load_texture(const Filename &orig_filename,
     _textures[filename] = tex;
   }
 
-  if (store_record) {
+  if (store_record && tex->has_ram_image()) {
     // Store the on-disk cache record for next time.
     record->set_data(tex, false);
     cache->store(record);
@@ -541,7 +540,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
     _textures[filename] = tex;
   }
 
-  if (store_record) {
+  if (store_record && tex->has_ram_image()) {
     // Store the on-disk cache record for next time.
     record->set_data(tex, false);
     cache->store(record);
@@ -633,7 +632,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
     _textures[filename] = tex;
   }
 
-  if (store_record) {
+  if (store_record && tex->has_ram_image()) {
     // Store the on-disk cache record for next time.
     record->set_data(tex, false);
     cache->store(record);
