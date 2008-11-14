@@ -2306,7 +2306,13 @@ class ShowBase(DirectObject.DirectObject):
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)
 
     def run(self):
-        self.taskMgr.run()
+        try:
+            self.taskMgr.run()
+        except:
+            # make sure gc is enabled when we break out to the prompt
+            gc.enable()
+        else:
+            gc.enable()
 
     def _garbageCollect(self, task=None):
         # enable automatic garbage collection
