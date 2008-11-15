@@ -192,19 +192,19 @@ int main(int argc, char **argv)
   sprintf(env1, "PATH=%s/bin:%s", loc, path);
   env2 = (char*)malloc(100 + strlen(loc));
   sprintf(env2, "MAYA_LOCATION=%s", loc);
-  env3 = (char*)malloc(200 + 5*strlen(loc));
-  sprintf(env3, "PYTHONPATH=%s/bin:%s/lib:%s/lib/python2.5/site-packages:%s/lib/python2.5/lib-dynload", loc, loc, loc, loc);
-  env4 = (char*)malloc(100 + 5*strlen(loc));
-  sprintf(env4, "PYTHONHOME=%s/lib/python2.5", loc);
+
+  path = getenv("PYTHONPATH");
+  if (path == 0) path = "";
+  env3 = (char*)malloc(300 + 5*strlen(loc) + strlen(path));
+  sprintf(env3, "PYTHONPATH=%s/bin:%s/lib:%s/lib/python2.5/site-packages:%s/lib/python2.5/lib-dynload:%s", loc, loc, loc, loc, path);
   
   path = getenv("LD_LIBRARY_PATH");
   if (path == 0) path = "";
-  env5 = (char*)malloc(100 + strlen(loc) + strlen(path));
-  sprintf(env5, "LD_LIBRARY_PATH=%s/lib:%s", loc, path);
+  env4 = (char*)malloc(100 + strlen(loc) + strlen(path));
+  sprintf(env4, "LD_LIBRARY_PATH=%s/lib:%s", loc, path);
   
-  //_putenv(env3);
-  //_putenv(env4);
-  _putenv(env5);
+  _putenv(env3);
+  _putenv(env4);
 #endif
   _putenv(env1);
   _putenv(env2);
