@@ -24,6 +24,7 @@ class DirectManipulationControl(DirectObject):
         self.fWidgetTop = 0
         self.fFreeManip = 1
         self.fScaling = 0
+        self.fMovable = 1
         self.mode = None
         self.actionEvents = [
             ['DIRECT-mouse1', self.manipulationStart],
@@ -189,14 +190,29 @@ class DirectManipulationControl(DirectObject):
         taskMgr.remove('resizeObjectHandles')
 
     def toggleObjectHandlesMode(self):
-        self.fSetCoa = 1 - self.fSetCoa
-        if self.fSetCoa:
-            self.objectHandles.coaModeColor()
+        if self.fMovable:
+            self.fSetCoa = 1 - self.fSetCoa
+
+            if self.fSetCoa:
+                self.objectHandles.coaModeColor()
+            else:
+                self.objectHandles.manipModeColor()
         else:
-            self.objectHandles.manipModeColor()
+            self.objectHandles.disabledModeColor()
 
     def removeManipulateObjectTask(self):
         taskMgr.remove('manipulateObject')
+
+    def enableWidgetMove(self):
+        self.fMovable = 1
+        if self.fSetCoa:
+            self.objectHandles.coaModeColor()            
+        else:
+            self.objectHandles.manipModeColor()
+
+    def disableWidgetMove(self):
+        self.fMovable = 0
+        self.objectHandles.disabledModeColor()        
 
     #--------------------------------------------------------------------------
     # Function:   get edit types list for specified objects which indicate
@@ -662,9 +678,12 @@ class ObjectHandles(NodePath, DirectObject):
     def coaModeColor(self):
         self.setColor(.5, .5, .5, 0.5, 1)
 
+    def disabledModeColor(self):
+        self.setColor(0.1,0.1,0.1,0.1,1)
+
     def manipModeColor(self):
         self.clearColor()
-
+            
     def toggleWidget(self):
         if self.fActive:
             self.deactivate()

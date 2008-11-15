@@ -520,6 +520,11 @@ class DirectSession(DirectObject):
                 'Selected:' + dnp.getName())
             # Show the manipulation widget
             self.widget.showWidget()
+            editTypes = self.manipulationControl.getEditTypes([dnp])
+            if (editTypes & EDIT_TYPE_UNEDITABLE == EDIT_TYPE_UNEDITABLE):
+                self.manipulationControl.disableWidgetMove()
+            else:
+                self.manipulationControl.enableWidgetMove()
             # Update camera controls coa to this point
             # Coa2Camera = Coa2Dnp * Dnp2Camera
             mCoa2Camera = dnp.mCoa2Dnp * dnp.getMat(self.camera)
