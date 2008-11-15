@@ -512,8 +512,7 @@ class DirectSession(DirectObject):
             messenger.send('DIRECT_preSelectNodePath', [dnp])
             if fResetAncestry:
                 # Update ancestry
-                self.ancestry = dnp.getAncestry()
-                self.ancestry.reverse()
+                self.ancestry = dnp.getAncestors()
                 self.ancestryIndex = 0
             # Update the selectedNPReadout
             self.selectedNPReadout.reparentTo(aspect2d)

@@ -134,7 +134,8 @@ del lsNamesRecurse
 #####################################################################
 def reverseLsNames(self):
         """Walk up a tree and print out the path to the root"""
-        ancestry = self.getAncestry()
+        ancestors = list(self.getAncestors())
+        ancestry = ancestors.reverse()
         indentString = ""
         for nodePath in ancestry:
             type = nodePath.node().getType().getName()

@@ -543,7 +543,7 @@ class SelectionQueue(CollisionHandlerQueue):
                 # Skip, if backfacing poly
                 pass
             elif ((skipFlags & SKIP_CAMERA) and
-                  (camera in nodePath.getAncestry())):
+                  (camera in nodePath.getAncestors())):
                 # Skip if parented to a camera.
                 pass
             # Can pick unpickable, use the first visible node
