@@ -159,11 +159,13 @@ int main(int argc, char **argv)
   }
   strcat(prog, "-wrapped.exe");
 #else
-  loc = getenv("MAYA_LOCATION");
-  if (loc == NULL) {
+  if (getenv("MAYA_LOCATION") == NULL) {
     printf("$MAYA_LOCATION is not set!\n");
     exit(1);
+  } else {
+    strcpy(loc, getenv("MAYA_LOCATION"));
   }
+  
   struct stat st;
   if(stat(loc, &st) != 0) {
     printf("The directory referred to by $MAYA_LOCATION does not exist!\n");
