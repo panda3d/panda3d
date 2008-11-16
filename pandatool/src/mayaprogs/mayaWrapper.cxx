@@ -159,13 +159,13 @@ int main(int argc, char **argv)
   }
   strcat(prog, "-wrapped.exe");
 #else
-  char *mayaloc = getenv("MAYA_LOCATION");
-  if (mayaloc == NULL) {
+  loc = getenv("MAYA_LOCATION");
+  if (loc == NULL) {
     printf("$MAYA_LOCATION is not set!\n");
     exit(1);
   }
   struct stat st;
-  if(stat(mayaloc, &st) != 0) {
+  if(stat(loc, &st) != 0) {
     printf("The directory referred to by $MAYA_LOCATION does not exist!\n");
     exit(1);
   }
@@ -192,16 +192,10 @@ int main(int argc, char **argv)
   sprintf(env1, "PATH=%s/bin:%s", loc, path);
   env2 = (char*)malloc(100 + strlen(loc));
   sprintf(env2, "MAYA_LOCATION=%s", loc);
-
-  path = getenv("PYTHONPATH");
-  if (path == 0) path = "";
-  env3 = (char*)malloc(300 + 5*strlen(loc) + strlen(path));
-  sprintf(env3, "PYTHONPATH=%s/bin:%s/lib:%s/lib/python2.5/site-packages:%s/lib/python2.5/lib-dynload:%s", loc, loc, loc, loc, path);
-  
-  path = getenv("LD_LIBRARY_PATH");
-  if (path == 0) path = "";
-  env4 = (char*)malloc(100 + strlen(loc) + strlen(path));
-  sprintf(env4, "LD_LIBRARY_PATH=%s/lib:%s", loc, path);
+  env3 = (char*)malloc(100 + strlen(loc));
+  sprintf(env3, "PYTHONHOME=%s", loc);
+  env4 = (char*)malloc(100 + strlen(loc));
+  sprintf(env4, "LD_LIBRARY_PATH=%s/lib", loc);
   
   _putenv(env3);
   _putenv(env4);
