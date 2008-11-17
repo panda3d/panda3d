@@ -137,10 +137,10 @@
       #push 1 $[generated_file]_obj
       #set cxx_sources $[cxx_sources] $[generated_file]
     #end source_file
-    #if $[get_igateoutput]
+    #if $[and $[build_directory],$[get_igateoutput]]
       #define generated_file $[get_igateoutput]
       #define $[generated_file]_obj $[get_igateoutput:%.cxx=%$[OBJ]]
-      #define $[generated_file]_sources $[get_igatescan]
+//      #define $[generated_file]_sources $[get_igatescan]
       #push 1 $[generated_file]_obj
      // We add this to cxx_sources instead of cxx_interrogate_sources,
      // even though it's an interrogate-generated file, because it's
