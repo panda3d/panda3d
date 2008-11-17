@@ -351,7 +351,7 @@ collect_textures(PandaNode *node) {
 ////////////////////////////////////////////////////////////////////
 void EggToBam::
 collect_textures(const RenderState *state) {
-  const TextureAttrib *tex_attrib = state->get_texture();
+  const TextureAttrib *tex_attrib = DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_type()));
   if (tex_attrib != (TextureAttrib *)NULL) {
     int num_on_stages = tex_attrib->get_num_on_stages();
     for (int i = 0; i < num_on_stages; ++i) {

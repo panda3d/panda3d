@@ -421,7 +421,7 @@ convert_triangles(const GeomVertexData *vertex_data,
 
   // Check for a color scale.
   LVecBase4f color_scale(1.0f, 1.0f, 1.0f, 1.0f);
-  const ColorScaleAttrib *csa = net_state->get_color_scale();
+  const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, net_state->get_attrib(ColorScaleAttrib::get_class_type()));
   if (csa != (const ColorScaleAttrib *)NULL) {
     color_scale = csa->get_scale();
   }
@@ -430,7 +430,7 @@ convert_triangles(const GeomVertexData *vertex_data,
   bool has_color_override = false;
   bool has_color_off = false;
   Colorf color_override;
-  const ColorAttrib *ca = net_state->get_color();
+  const ColorAttrib *ca = DCAST(ColorAttrib, net_state->get_attrib(ColorAttrib::get_class_type()));
   if (ca != (const ColorAttrib *)NULL) {
     if (ca->get_color_type() == ColorAttrib::T_flat) {
       has_color_override = true;
@@ -447,7 +447,7 @@ convert_triangles(const GeomVertexData *vertex_data,
 
   // Check for a texture.
   EggTexture *egg_tex = (EggTexture *)NULL;
-  const TextureAttrib *ta = net_state->get_texture();
+  const TextureAttrib *ta = DCAST(TextureAttrib, net_state->get_attrib(TextureAttrib::get_class_type()));
   if (ta != (const TextureAttrib *)NULL) {
     egg_tex = get_egg_texture(ta->get_texture());
   }
