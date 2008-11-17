@@ -1671,8 +1671,7 @@ bool TypeManager::IsLocal(CPPType *in_type)
     // IE a should actualy generate code for this objects....
    CPPType *base_type = resolve_type(unwrap(in_type));
 
-
-   if(base_type->_file._source == CPPFile::S_local)
+   if(base_type->_file._source == CPPFile::S_local && !base_type->is_incomplete())
        return true;
 
     return false;
