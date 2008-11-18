@@ -15,7 +15,7 @@ class TaskTracker:
             # number of samples required before spikes start getting identified
             TaskTracker.MinSamples = config.GetInt('profile-task-spike-min-samples', 30)
             # defines spike as longer than this multiple of avg task duration
-            TaskTracker.SpikeThreshold = config.GetFloat('profile-task-spike-threshold', 10.)
+            TaskTracker.SpikeThreshold = TaskProfiler.GetDefaultSpikeThreshold()
     def destroy(self):
         self.flush()
         del self._namePrefix
@@ -103,6 +103,17 @@ class TaskProfiler:
             tracker.destroy()
         del self._namePrefix2tracker
         del self._task
+        
+    @staticmethod
+    def GetDefaultSpikeThreshold():
+        return config.GetFloat('profile-task-spike-threshold', 10.)
+
+    @staticmethod
+    def SetSpikeThreshold(spikeThreshold):
+        TaskTracker.SpikeThreshold = spikeThreshold
+    @staticmethod
+    def GetSpikeThreshold():
+        return TaskTracker.SpikeThreshold
 
     def logProfiles(self, name=None):
         if name:
