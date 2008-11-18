@@ -112,6 +112,9 @@ private:
 friend class PStatClient;
 
 #else  // DO_PSTATS
+public:
+  INLINE PStatCollector();
+
 PUBLISHED:
   INLINE PStatCollector(const string &name,
                         PStatClient *client = NULL);
