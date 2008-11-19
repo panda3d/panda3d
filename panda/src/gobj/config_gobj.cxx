@@ -323,7 +323,7 @@ ConfigVariableDouble default_near
  PRC_DESC("The default near clipping distance for all cameras."));
 
 ConfigVariableDouble default_far
-("default-far", 1000.0,
+("default-far", 100000.0,
  PRC_DESC("The default far clipping distance for all cameras."));
 
 ConfigVariableDouble default_fov
