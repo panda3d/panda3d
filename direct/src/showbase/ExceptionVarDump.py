@@ -78,7 +78,8 @@ def _excepthookDumpVars(eType, eValue, tb):
     s = 'DUMPING STACK FRAME VARIABLES'
     origTb = tb
     #import pdb;pdb.set_trace()
-    foundRun = False
+    #foundRun = False
+    foundRun = True
     while tb is not None:
         frame = tb.tb_frame
         code = frame.f_code
