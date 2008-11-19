@@ -554,16 +554,6 @@ class Actor(DirectObject, NodePath):
     def __updateSortedLODNames(self):
         # Cache the sorted LOD names so we dont have to grab them
         # and sort them every time somebody asks for the list
-        if(self.__hasLOD):
-            lodnode = self.__LODNode.node()
-            switchRange = range(lodnode.getNumSwitches())
-            switchList = [lodnode.getIn(x) for x in switchRange]
-            nameList = [self.__LODNode.getChild(x).getName() for x in switchRange]
-            sortedList = zip(switchList, nameList)
-            sortedList.sort()
-            self.__sortedLODNames = [x[1] for x in sortedList]
-            return
-        
         self.__sortedLODNames = self.__partBundleDict.keys()
         # Reverse sort the doing a string->int
         def sortFunc(x, y):
@@ -647,8 +637,8 @@ class Actor(DirectObject, NodePath):
         # and pollute the the switches dictionary
 ##         sortedKeys = self.switches.keys()
 ##         sortedKeys.sort()
-        sortedKeys = self.__sortedLODNames
-        index = sortedKeys.index(str(lodName))
+        child = self.__LODNode.find(str(lodName))
+        index = self.__LODNode.node().findChild(child.node())        
         self.__LODNode.node().forceSwitch(index)
 
     def printLOD(self):
