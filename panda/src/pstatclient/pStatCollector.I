@@ -590,6 +590,19 @@ get_index() const {
 #else  // DO_PSTATS
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatCollector::Default Constructor
+//       Access: Public
+//  Description: Creates an invalid PStatCollector.  Any attempt to
+//               use this collector will crash messily.
+//
+//               You can reassign it to a different, valid one later.
+////////////////////////////////////////////////////////////////////
+INLINE PStatCollector::
+PStatCollector()
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatCollector::Constructor
 //       Access: Published
 //  Description: This bogus version of the function is only defined if
