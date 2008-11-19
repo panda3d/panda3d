@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "scissorAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -22,6 +21,7 @@
 #include "datagramIterator.h"
 
 TypeHandle ScissorAttrib::_type_handle;
+int ScissorAttrib::_attrib_slot;
 CPT(RenderAttrib) ScissorAttrib::_off;
 
 ////////////////////////////////////////////////////////////////////
@@ -69,6 +69,18 @@ CPT(RenderAttrib) ScissorAttrib::
 make(const LVecBase4f &frame) {
   ScissorAttrib *attrib = new ScissorAttrib(frame);
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ScissorAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ScissorAttrib::
+make_default() {
+  return return_new(new ScissorAttrib(LVecBase4f(0.0f, 1.0f, 0.0f, 1.0f)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -132,33 +144,6 @@ compose_impl(const RenderAttrib *other) const {
   
   ScissorAttrib *attrib = new ScissorAttrib(new_frame);
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived ScissorAttrib
-//               types to specify what the default property for a
-//               ScissorAttrib of this type should be.
-//
-//               This should return a newly-allocated ScissorAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of ScissorAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *ScissorAttrib::
-make_default_impl() const {
-  return new ScissorAttrib(LVecBase4f(0.0f, 1.0f, 0.0f, 1.0f));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ScissorAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void ScissorAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_scissor = this;
 }
 
 ////////////////////////////////////////////////////////////////////

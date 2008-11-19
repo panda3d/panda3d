@@ -2142,7 +2142,7 @@ set_color_off(int priority) {
 void NodePath::
 clear_color() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(ColorAttrib::get_class_type());
+  node()->clear_attrib(ColorAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2154,7 +2154,7 @@ clear_color() {
 bool NodePath::
 has_color() const {
   nassertr_always(!is_empty(), false);
-  return node()->has_attrib(ColorAttrib::get_class_type());
+  return node()->has_attrib(ColorAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2167,7 +2167,7 @@ Colorf NodePath::
 get_color() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
-    node()->get_attrib(ColorAttrib::get_class_type());
+    node()->get_attrib(ColorAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const ColorAttrib *ca = DCAST(ColorAttrib, attrib);
     if (ca->get_color_type() == ColorAttrib::T_flat) {
@@ -2192,7 +2192,7 @@ get_color() const {
 bool NodePath::
 has_color_scale() const {
   nassertr_always(!is_empty(), false);
-  return node()->has_attrib(ColorScaleAttrib::get_class_type());
+  return node()->has_attrib(ColorScaleAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2207,7 +2207,7 @@ has_color_scale() const {
 void NodePath::
 clear_color_scale() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(ColorScaleAttrib::get_class_type());
+  node()->clear_attrib(ColorScaleAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2222,10 +2222,10 @@ compose_color_scale(const LVecBase4f &scale, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(ColorScaleAttrib::get_class_type());
+    node()->get_attrib(ColorScaleAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(ColorScaleAttrib::get_class_type()));
+                   node()->get_state()->get_override(ColorScaleAttrib::get_class_slot()));
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
 
     // Modify the existing ColorScaleAttrib by multiplying with the 
@@ -2254,10 +2254,10 @@ set_color_scale(const LVecBase4f &scale, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(ColorScaleAttrib::get_class_type());
+    node()->get_attrib(ColorScaleAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(ColorScaleAttrib::get_class_type()));
+                   node()->get_state()->get_override(ColorScaleAttrib::get_class_slot()));
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
 
     // Modify the existing ColorScaleAttrib to add the indicated
@@ -2305,10 +2305,10 @@ set_alpha_scale(float scale, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(ColorScaleAttrib::get_class_type());
+    node()->get_attrib(ColorScaleAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(ColorScaleAttrib::get_class_type()));
+                   node()->get_state()->get_override(ColorScaleAttrib::get_class_slot()));
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
 
     // Modify the existing ColorScaleAttrib to add the indicated
@@ -2335,10 +2335,10 @@ set_all_color_scale(float scale, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(ColorScaleAttrib::get_class_type());
+    node()->get_attrib(ColorScaleAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(ColorScaleAttrib::get_class_type()));
+                   node()->get_state()->get_override(ColorScaleAttrib::get_class_slot()));
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
 
     // Modify the existing ColorScaleAttrib to add the indicated
@@ -2366,7 +2366,7 @@ get_color_scale() const {
   static const LVecBase4f ident_scale(1.0f, 1.0f, 1.0f, 1.0f);
   nassertr_always(!is_empty(), ident_scale);
   const RenderAttrib *attrib =
-    node()->get_attrib(ColorScaleAttrib::get_class_type());
+    node()->get_attrib(ColorScaleAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, attrib);
     return csa->get_scale();
@@ -2393,10 +2393,10 @@ set_light(const NodePath &light, int priority) {
     if (light_obj != (Light *)NULL) {
       // It's an actual Light object.
       const RenderAttrib *attrib =
-        node()->get_attrib(LightAttrib::get_class_type());
+        node()->get_attrib(LightAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         priority = max(priority,
-                       node()->get_state()->get_override(LightAttrib::get_class_type()));
+                       node()->get_state()->get_override(LightAttrib::get_class_slot()));
         const LightAttrib *la = DCAST(LightAttrib, attrib);
         
         // Modify the existing LightAttrib to add the indicated
@@ -2481,10 +2481,10 @@ set_light_off(const NodePath &light, int priority) {
     Light *light_obj = light.node()->as_light();
     if (light_obj != (Light *)NULL) {
       const RenderAttrib *attrib =
-        node()->get_attrib(LightAttrib::get_class_type());
+        node()->get_attrib(LightAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         priority = max(priority,
-                       node()->get_state()->get_override(LightAttrib::get_class_type()));
+                       node()->get_state()->get_override(LightAttrib::get_class_slot()));
         const LightAttrib *la = DCAST(LightAttrib, attrib);
         
         // Modify the existing LightAttrib to add the indicated light
@@ -2514,7 +2514,7 @@ set_light_off(const NodePath &light, int priority) {
 void NodePath::
 clear_light() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(LightAttrib::get_class_type());
+  node()->clear_attrib(LightAttrib::get_class_slot());
   node()->clear_effect(PolylightEffect::get_class_type());
 }
 
@@ -2532,17 +2532,17 @@ clear_light(const NodePath &light) {
     Light *light_obj = light.node()->as_light();
     if (light_obj != (Light *)NULL) {
       const RenderAttrib *attrib =
-        node()->get_attrib(LightAttrib::get_class_type());
+        node()->get_attrib(LightAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         CPT(LightAttrib) la = DCAST(LightAttrib, attrib);
         la = DCAST(LightAttrib, la->remove_on_light(light));
         la = DCAST(LightAttrib, la->remove_off_light(light));
         
         if (la->is_identity()) {
-          node()->clear_attrib(LightAttrib::get_class_type());
+          node()->clear_attrib(LightAttrib::get_class_slot());
           
         } else {
-          int priority = node()->get_state()->get_override(LightAttrib::get_class_type());
+          int priority = node()->get_state()->get_override(LightAttrib::get_class_slot());
           node()->set_attrib(la, priority);
         }
       }
@@ -2578,7 +2578,7 @@ has_light(const NodePath &light) const {
     Light *light_obj = light.node()->as_light();
     if (light_obj != (Light *)NULL) {
       const RenderAttrib *attrib =
-        node()->get_attrib(LightAttrib::get_class_type());
+        node()->get_attrib(LightAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         const LightAttrib *la = DCAST(LightAttrib, attrib);
         return la->has_on_light(light);
@@ -2612,7 +2612,7 @@ has_light_off() const {
   nassertr_always(!is_empty(), false);
 
   const RenderAttrib *attrib =
-    node()->get_attrib(LightAttrib::get_class_type());
+    node()->get_attrib(LightAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const LightAttrib *la = DCAST(LightAttrib, attrib);
     return la->has_all_off();
@@ -2639,7 +2639,7 @@ has_light_off(const NodePath &light) const {
     Light *light_obj = light.node()->as_light();
     if (light_obj != (Light *)NULL) {
       const RenderAttrib *attrib =
-        node()->get_attrib(LightAttrib::get_class_type());
+        node()->get_attrib(LightAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         const LightAttrib *la = DCAST(LightAttrib, attrib);
         return la->has_off_light(light);
@@ -2665,10 +2665,10 @@ set_clip_plane(const NodePath &clip_plane, int priority) {
   nassertv_always(!is_empty());
   if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
     const RenderAttrib *attrib =
-      node()->get_attrib(ClipPlaneAttrib::get_class_type());
+      node()->get_attrib(ClipPlaneAttrib::get_class_slot());
     if (attrib != (const RenderAttrib *)NULL) {
       priority = max(priority,
-                     node()->get_state()->get_override(ClipPlaneAttrib::get_class_type()));
+                     node()->get_state()->get_override(ClipPlaneAttrib::get_class_slot()));
       const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
       
       // Modify the existing ClipPlaneAttrib to add the indicated
@@ -2722,10 +2722,10 @@ set_clip_plane_off(const NodePath &clip_plane, int priority) {
 
   if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
     const RenderAttrib *attrib =
-      node()->get_attrib(ClipPlaneAttrib::get_class_type());
+      node()->get_attrib(ClipPlaneAttrib::get_class_slot());
     if (attrib != (const RenderAttrib *)NULL) {
       priority = max(priority,
-                     node()->get_state()->get_override(ClipPlaneAttrib::get_class_type()));
+                     node()->get_state()->get_override(ClipPlaneAttrib::get_class_slot()));
       const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
       
       // Modify the existing ClipPlaneAttrib to add the indicated clip_plane
@@ -2754,7 +2754,7 @@ set_clip_plane_off(const NodePath &clip_plane, int priority) {
 void NodePath::
 clear_clip_plane() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(ClipPlaneAttrib::get_class_type());
+  node()->clear_attrib(ClipPlaneAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2769,17 +2769,17 @@ clear_clip_plane(const NodePath &clip_plane) {
 
   if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
     const RenderAttrib *attrib =
-      node()->get_attrib(ClipPlaneAttrib::get_class_type());
+      node()->get_attrib(ClipPlaneAttrib::get_class_slot());
     if (attrib != (const RenderAttrib *)NULL) {
       CPT(ClipPlaneAttrib) la = DCAST(ClipPlaneAttrib, attrib);
       la = DCAST(ClipPlaneAttrib, la->remove_on_plane(clip_plane));
       la = DCAST(ClipPlaneAttrib, la->remove_off_plane(clip_plane));
         
       if (la->is_identity()) {
-        node()->clear_attrib(ClipPlaneAttrib::get_class_type());
+        node()->clear_attrib(ClipPlaneAttrib::get_class_slot());
           
       } else {
-        int priority = node()->get_state()->get_override(ClipPlaneAttrib::get_class_type());
+        int priority = node()->get_state()->get_override(ClipPlaneAttrib::get_class_slot());
         node()->set_attrib(la, priority);
       }
     }
@@ -2802,7 +2802,7 @@ has_clip_plane(const NodePath &clip_plane) const {
 
   if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
     const RenderAttrib *attrib =
-      node()->get_attrib(ClipPlaneAttrib::get_class_type());
+      node()->get_attrib(ClipPlaneAttrib::get_class_slot());
     if (attrib != (const RenderAttrib *)NULL) {
       const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
       return la->has_on_plane(clip_plane);
@@ -2826,7 +2826,7 @@ has_clip_plane_off() const {
   nassertr_always(!is_empty(), false);
 
   const RenderAttrib *attrib =
-    node()->get_attrib(ClipPlaneAttrib::get_class_type());
+    node()->get_attrib(ClipPlaneAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
     return la->has_all_off();
@@ -2848,7 +2848,7 @@ has_clip_plane_off(const NodePath &clip_plane) const {
   nassertr_always(!is_empty(), false);
   if (!clip_plane.is_empty() && clip_plane.node()->is_of_type(PlaneNode::get_class_type())) {
     const RenderAttrib *attrib =
-      node()->get_attrib(ClipPlaneAttrib::get_class_type());
+      node()->get_attrib(ClipPlaneAttrib::get_class_slot());
     if (attrib != (const RenderAttrib *)NULL) {
       const ClipPlaneAttrib *la = DCAST(ClipPlaneAttrib, attrib);
       return la->has_off_plane(clip_plane);
@@ -3004,7 +3004,7 @@ set_bin(const string &bin_name, int draw_order, int priority) {
 void NodePath::
 clear_bin() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(CullBinAttrib::get_class_type());
+  node()->clear_attrib(CullBinAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3017,7 +3017,7 @@ clear_bin() {
 bool NodePath::
 has_bin() const {
   nassertr_always(!is_empty(), false);
-  return node()->has_attrib(CullBinAttrib::get_class_type());
+  return node()->has_attrib(CullBinAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3031,7 +3031,7 @@ string NodePath::
 get_bin_name() const {
   nassertr_always(!is_empty(), string());
   const RenderAttrib *attrib =
-    node()->get_attrib(CullBinAttrib::get_class_type());
+    node()->get_attrib(CullBinAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const CullBinAttrib *ba = DCAST(CullBinAttrib, attrib);
     return ba->get_bin_name();
@@ -3052,7 +3052,7 @@ int NodePath::
 get_bin_draw_order() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
-    node()->get_attrib(CullBinAttrib::get_class_type());
+    node()->get_attrib(CullBinAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const CullBinAttrib *ba = DCAST(CullBinAttrib, attrib);
     return ba->get_draw_order();
@@ -3096,10 +3096,10 @@ set_texture(TextureStage *stage, Texture *tex, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TextureAttrib::get_class_type());
+    node()->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(TextureAttrib::get_class_type()));
+                   node()->get_state()->get_override(TextureAttrib::get_class_slot()));
     const TextureAttrib *tsa = DCAST(TextureAttrib, attrib);
 
     // Modify the existing TextureAttrib to add the indicated
@@ -3144,10 +3144,10 @@ set_texture_off(TextureStage *stage, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TextureAttrib::get_class_type());
+    node()->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(TextureAttrib::get_class_type()));
+                   node()->get_state()->get_override(TextureAttrib::get_class_slot()));
     const TextureAttrib *tsa = DCAST(TextureAttrib, attrib);
 
     // Modify the existing TextureAttrib to add the indicated texture
@@ -3175,7 +3175,7 @@ set_texture_off(TextureStage *stage, int priority) {
 void NodePath::
 clear_texture() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(TextureAttrib::get_class_type());
+  node()->clear_attrib(TextureAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3189,17 +3189,17 @@ clear_texture(TextureStage *stage) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TextureAttrib::get_class_type());
+    node()->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     CPT(TextureAttrib) tsa = DCAST(TextureAttrib, attrib);
     tsa = DCAST(TextureAttrib, tsa->remove_on_stage(stage));
     tsa = DCAST(TextureAttrib, tsa->remove_off_stage(stage));
 
     if (tsa->is_identity()) {
-      node()->clear_attrib(TextureAttrib::get_class_type());
+      node()->clear_attrib(TextureAttrib::get_class_slot());
 
     } else {
-      int priority = node()->get_state()->get_override(TextureAttrib::get_class_type());
+      int priority = node()->get_state()->get_override(TextureAttrib::get_class_slot());
       node()->set_attrib(tsa, priority);
     }
   }
@@ -3235,7 +3235,7 @@ has_texture(TextureStage *stage) const {
   nassertr_always(!is_empty(), false);
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TextureAttrib::get_class_type());
+    node()->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     return ta->has_on_stage(stage);
@@ -3258,7 +3258,7 @@ bool NodePath::
 has_texture_off() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
-    node()->get_attrib(TextureAttrib::get_class_type());
+    node()->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     return ta->has_all_off();
@@ -3282,7 +3282,7 @@ has_texture_off(TextureStage *stage) const {
   nassertr_always(!is_empty(), false);
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TextureAttrib::get_class_type());
+    node()->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     return ta->has_off_stage(stage);
@@ -3307,7 +3307,7 @@ Texture *NodePath::
 get_texture() const {
   nassertr_always(!is_empty(), NULL);
   const RenderAttrib *attrib =
-    node()->get_attrib(TextureAttrib::get_class_type());
+    node()->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     return ta->get_texture();
@@ -3327,7 +3327,7 @@ Texture *NodePath::
 get_texture(TextureStage *stage) const {
   nassertr_always(!is_empty(), NULL);
   const RenderAttrib *attrib =
-    node()->get_attrib(TextureAttrib::get_class_type());
+    node()->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     return ta->get_on_texture(stage);
@@ -3346,10 +3346,10 @@ set_shader(const Shader *sha, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(ShaderAttrib::get_class_type());
+    node()->get_attrib(ShaderAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(ShaderAttrib::get_class_type()));
+                   node()->get_state()->get_override(ShaderAttrib::get_class_slot()));
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     node()->set_attrib(sa->set_shader(sha, priority));
   } else {
@@ -3379,10 +3379,10 @@ set_shader_auto(int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(ShaderAttrib::get_class_type());
+    node()->get_attrib(ShaderAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(ShaderAttrib::get_class_type()));
+                   node()->get_state()->get_override(ShaderAttrib::get_class_slot()));
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     node()->set_attrib(sa->set_shader_auto(priority));
   } else {
@@ -3402,7 +3402,7 @@ clear_shader() {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(ShaderAttrib::get_class_type());
+    node()->get_attrib(ShaderAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     node()->set_attrib(sa->clear_shader());
@@ -3418,7 +3418,7 @@ const Shader *NodePath::
 get_shader() const {
   nassertr_always(!is_empty(), NULL);
   const RenderAttrib *attrib =
-    node()->get_attrib(ShaderAttrib::get_class_type());
+    node()->get_attrib(ShaderAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     return sa->get_shader();
@@ -3436,7 +3436,7 @@ set_shader_input(const ShaderInput *inp) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(ShaderAttrib::get_class_type());
+    node()->get_attrib(ShaderAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     node()->set_attrib(sa->set_shader_input(inp));
@@ -3457,7 +3457,7 @@ get_shader_input(InternalName *id) const {
   nassertr_always(!is_empty(), NULL);
   
   const RenderAttrib *attrib =
-    node()->get_attrib(ShaderAttrib::get_class_type());
+    node()->get_attrib(ShaderAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     return sa->get_shader_input(id);
@@ -3475,7 +3475,7 @@ clear_shader_input(InternalName *id) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(ShaderAttrib::get_class_type());
+    node()->get_attrib(ShaderAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const ShaderAttrib *sa = DCAST(ShaderAttrib, attrib);
     node()->set_attrib(sa->clear_shader_input(id));
@@ -3593,7 +3593,7 @@ set_tex_transform(TextureStage *stage, const TransformState *transform) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TexMatrixAttrib::get_class_type());
+    node()->get_attrib(TexMatrixAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
 
@@ -3615,7 +3615,7 @@ set_tex_transform(TextureStage *stage, const TransformState *transform) {
 void NodePath::
 clear_tex_transform() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(TexMatrixAttrib::get_class_type());
+  node()->clear_attrib(TexMatrixAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3629,13 +3629,13 @@ clear_tex_transform(TextureStage *stage) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TexMatrixAttrib::get_class_type());
+    node()->get_attrib(TexMatrixAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     CPT(TexMatrixAttrib) tma = DCAST(TexMatrixAttrib, attrib);
     tma = DCAST(TexMatrixAttrib, tma->remove_stage(stage));
 
     if (tma->is_empty()) {
-      node()->clear_attrib(TexMatrixAttrib::get_class_type());
+      node()->clear_attrib(TexMatrixAttrib::get_class_slot());
 
     } else {
       node()->set_attrib(tma);
@@ -3654,7 +3654,7 @@ has_tex_transform(TextureStage *stage) const {
   nassertr_always(!is_empty(), false);
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TexMatrixAttrib::get_class_type());
+    node()->get_attrib(TexMatrixAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
     return tma->has_stage(stage);
@@ -3675,7 +3675,7 @@ get_tex_transform(TextureStage *stage) const {
   nassertr_always(!is_empty(), NULL);
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TexMatrixAttrib::get_class_type());
+    node()->get_attrib(TexMatrixAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
     return tma->get_transform(stage);
@@ -3697,7 +3697,7 @@ set_tex_transform(const NodePath &other, TextureStage *stage, const TransformSta
 
   CPT(RenderState) state = get_state(other);
   const RenderAttrib *attrib =
-    state->get_attrib(TexMatrixAttrib::get_class_type());
+    state->get_attrib(TexMatrixAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
 
@@ -3721,7 +3721,7 @@ set_tex_transform(const NodePath &other, TextureStage *stage, const TransformSta
 
   // And apply only the TexMatrixAttrib to the current node, leaving
   // the others unchanged.
-  node()->set_attrib(new_state->get_attrib(TexMatrixAttrib::get_class_type()));
+  node()->set_attrib(new_state->get_attrib(TexMatrixAttrib::get_class_slot()));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3736,7 +3736,7 @@ get_tex_transform(const NodePath &other, TextureStage *stage) const {
 
   CPT(RenderState) state = get_state(other);
   const RenderAttrib *attrib =
-    state->get_attrib(TexMatrixAttrib::get_class_type());
+    state->get_attrib(TexMatrixAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, attrib);
     return tma->get_transform(stage);
@@ -3756,13 +3756,13 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TexGenAttrib::get_class_type());
+    node()->get_attrib(TexGenAttrib::get_class_slot());
 
   CPT(TexGenAttrib) tga;
 
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(TextureAttrib::get_class_type()));
+                   node()->get_state()->get_override(TextureAttrib::get_class_slot()));
     tga = DCAST(TexGenAttrib, attrib);
 
   } else {
@@ -3788,13 +3788,13 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TexGenAttrib::get_class_type());
+    node()->get_attrib(TexGenAttrib::get_class_slot());
 
   CPT(TexGenAttrib) tga;
 
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(TextureAttrib::get_class_type()));
+                   node()->get_state()->get_override(TextureAttrib::get_class_slot()));
     tga = DCAST(TexGenAttrib, attrib);
 
   } else {
@@ -3818,13 +3818,13 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TexGenAttrib::get_class_type());
+    node()->get_attrib(TexGenAttrib::get_class_slot());
 
   CPT(TexGenAttrib) tga;
 
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(TextureAttrib::get_class_type()));
+                   node()->get_state()->get_override(TextureAttrib::get_class_slot()));
     tga = DCAST(TexGenAttrib, attrib);
 
   } else {
@@ -3843,7 +3843,7 @@ set_tex_gen(TextureStage *stage, RenderAttrib::TexGenMode mode,
 void NodePath::
 clear_tex_gen() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(TexGenAttrib::get_class_type());
+  node()->clear_attrib(TexGenAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3857,13 +3857,13 @@ clear_tex_gen(TextureStage *stage) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TexGenAttrib::get_class_type());
+    node()->get_attrib(TexGenAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     CPT(TexGenAttrib) tga = DCAST(TexGenAttrib, attrib);
     tga = DCAST(TexGenAttrib, tga->remove_stage(stage));
 
     if (tga->is_empty()) {
-      node()->clear_attrib(TexGenAttrib::get_class_type());
+      node()->clear_attrib(TexGenAttrib::get_class_slot());
 
     } else {
       node()->set_attrib(tga);
@@ -3883,7 +3883,7 @@ has_tex_gen(TextureStage *stage) const {
   nassertr_always(!is_empty(), false);
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TexGenAttrib::get_class_type());
+    node()->get_attrib(TexGenAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TexGenAttrib *tga = DCAST(TexGenAttrib, attrib);
     return tga->has_stage(stage);
@@ -3904,7 +3904,7 @@ get_tex_gen(TextureStage *stage) const {
   nassertr_always(!is_empty(), TexGenAttrib::M_off);
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TexGenAttrib::get_class_type());
+    node()->get_attrib(TexGenAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TexGenAttrib *tga = DCAST(TexGenAttrib, attrib);
     return tga->get_mode(stage);
@@ -3926,7 +3926,7 @@ get_tex_gen_light(TextureStage *stage) const {
   nassertr_always(!is_empty(), NodePath::fail());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(TexGenAttrib::get_class_type());
+    node()->get_attrib(TexGenAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TexGenAttrib *tga = DCAST(TexGenAttrib, attrib);
     return tga->get_light(stage);
@@ -4158,7 +4158,7 @@ clear_normal_map() {
   // set_normal_map(), remove it from the state.
 
   CPT(RenderAttrib) attrib =
-    get_state()->get_attrib(TextureAttrib::get_class_type());
+    get_state()->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     for (int i = 0; i < ta->get_num_on_stages(); i++) {
@@ -4580,7 +4580,7 @@ set_material_off(int priority) {
 void NodePath::
 clear_material() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(MaterialAttrib::get_class_type());
+  node()->clear_attrib(MaterialAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4593,7 +4593,7 @@ bool NodePath::
 has_material() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
-    node()->get_attrib(MaterialAttrib::get_class_type());
+    node()->get_attrib(MaterialAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const MaterialAttrib *ma = DCAST(MaterialAttrib, attrib);
     return !ma->is_off();
@@ -4618,7 +4618,7 @@ PT(Material) NodePath::
 get_material() const {
   nassertr_always(!is_empty(), NULL);
   const RenderAttrib *attrib =
-    node()->get_attrib(MaterialAttrib::get_class_type());
+    node()->get_attrib(MaterialAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const MaterialAttrib *ma = DCAST(MaterialAttrib, attrib);
     return ma->get_material();
@@ -4667,7 +4667,7 @@ set_fog_off(int priority) {
 void NodePath::
 clear_fog() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(FogAttrib::get_class_type());
+  node()->clear_attrib(FogAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4684,7 +4684,7 @@ bool NodePath::
 has_fog() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
-    node()->get_attrib(FogAttrib::get_class_type());
+    node()->get_attrib(FogAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const FogAttrib *fa = DCAST(FogAttrib, attrib);
     return !fa->is_off();
@@ -4707,7 +4707,7 @@ bool NodePath::
 has_fog_off() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
-    node()->get_attrib(FogAttrib::get_class_type());
+    node()->get_attrib(FogAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const FogAttrib *fa = DCAST(FogAttrib, attrib);
     return fa->is_off();
@@ -4730,7 +4730,7 @@ Fog *NodePath::
 get_fog() const {
   nassertr_always(!is_empty(), NULL);
   const RenderAttrib *attrib =
-    node()->get_attrib(FogAttrib::get_class_type());
+    node()->get_attrib(FogAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const FogAttrib *fa = DCAST(FogAttrib, attrib);
     return fa->get_fog();
@@ -4837,7 +4837,7 @@ set_render_mode(RenderModeAttrib::Mode mode, float thickness, int priority) {
 void NodePath::
 clear_render_mode() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(RenderModeAttrib::get_class_type());
+  node()->clear_attrib(RenderModeAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4851,7 +4851,7 @@ clear_render_mode() {
 bool NodePath::
 has_render_mode() const {
   nassertr_always(!is_empty(), false);
-  return node()->has_attrib(RenderModeAttrib::get_class_type());
+  return node()->has_attrib(RenderModeAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4865,7 +4865,7 @@ RenderModeAttrib::Mode NodePath::
 get_render_mode() const {
   nassertr_always(!is_empty(), RenderModeAttrib::M_unchanged);
   const RenderAttrib *attrib =
-    node()->get_attrib(RenderModeAttrib::get_class_type());
+    node()->get_attrib(RenderModeAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const RenderModeAttrib *ta = DCAST(RenderModeAttrib, attrib);
     return ta->get_mode();
@@ -4885,7 +4885,7 @@ float NodePath::
 get_render_mode_thickness() const {
   nassertr_always(!is_empty(), 0.0f);
   const RenderAttrib *attrib =
-    node()->get_attrib(RenderModeAttrib::get_class_type());
+    node()->get_attrib(RenderModeAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const RenderModeAttrib *ta = DCAST(RenderModeAttrib, attrib);
     return ta->get_thickness();
@@ -4905,7 +4905,7 @@ bool NodePath::
 get_render_mode_perspective() const {
   nassertr_always(!is_empty(), 0.0f);
   const RenderAttrib *attrib =
-    node()->get_attrib(RenderModeAttrib::get_class_type());
+    node()->get_attrib(RenderModeAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const RenderModeAttrib *ta = DCAST(RenderModeAttrib, attrib);
     return ta->get_perspective();
@@ -4949,7 +4949,7 @@ set_two_sided(bool two_sided, int priority) {
 void NodePath::
 clear_two_sided() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(CullFaceAttrib::get_class_type());
+  node()->clear_attrib(CullFaceAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4964,7 +4964,7 @@ clear_two_sided() {
 bool NodePath::
 has_two_sided() const {
   nassertr_always(!is_empty(), false);
-  return node()->has_attrib(CullFaceAttrib::get_class_type());
+  return node()->has_attrib(CullFaceAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4982,7 +4982,7 @@ bool NodePath::
 get_two_sided() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
-    node()->get_attrib(CullFaceAttrib::get_class_type());
+    node()->get_attrib(CullFaceAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const CullFaceAttrib *cfa = DCAST(CullFaceAttrib, attrib);
     return (cfa->get_actual_mode() == CullFaceAttrib::M_cull_none);
@@ -5021,7 +5021,7 @@ set_depth_test(bool depth_test, int priority) {
 void NodePath::
 clear_depth_test() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(DepthTestAttrib::get_class_type());
+  node()->clear_attrib(DepthTestAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5036,7 +5036,7 @@ clear_depth_test() {
 bool NodePath::
 has_depth_test() const {
   nassertr_always(!is_empty(), false);
-  return node()->has_attrib(DepthTestAttrib::get_class_type());
+  return node()->has_attrib(DepthTestAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5052,7 +5052,7 @@ bool NodePath::
 get_depth_test() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
-    node()->get_attrib(DepthTestAttrib::get_class_type());
+    node()->get_attrib(DepthTestAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const DepthTestAttrib *dta = DCAST(DepthTestAttrib, attrib);
     return (dta->get_mode() != DepthTestAttrib::M_none);
@@ -5091,7 +5091,7 @@ set_depth_write(bool depth_write, int priority) {
 void NodePath::
 clear_depth_write() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(DepthWriteAttrib::get_class_type());
+  node()->clear_attrib(DepthWriteAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5106,7 +5106,7 @@ clear_depth_write() {
 bool NodePath::
 has_depth_write() const {
   nassertr_always(!is_empty(), false);
-  return node()->has_attrib(DepthWriteAttrib::get_class_type());
+  return node()->has_attrib(DepthWriteAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5122,7 +5122,7 @@ bool NodePath::
 get_depth_write() const {
   nassertr_always(!is_empty(), false);
   const RenderAttrib *attrib =
-    node()->get_attrib(DepthWriteAttrib::get_class_type());
+    node()->get_attrib(DepthWriteAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const DepthWriteAttrib *dta = DCAST(DepthWriteAttrib, attrib);
     return (dta->get_mode() != DepthWriteAttrib::M_off);
@@ -5366,7 +5366,7 @@ set_transparency(TransparencyAttrib::Mode mode, int priority) {
 void NodePath::
 clear_transparency() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(TransparencyAttrib::get_class_type());
+  node()->clear_attrib(TransparencyAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5382,7 +5382,7 @@ clear_transparency() {
 bool NodePath::
 has_transparency() const {
   nassertr_always(!is_empty(), false);
-  return node()->has_attrib(TransparencyAttrib::get_class_type());
+  return node()->has_attrib(TransparencyAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5400,7 +5400,7 @@ TransparencyAttrib::Mode NodePath::
 get_transparency() const {
   nassertr_always(!is_empty(), TransparencyAttrib::M_none);
   const RenderAttrib *attrib =
-    node()->get_attrib(TransparencyAttrib::get_class_type());
+    node()->get_attrib(TransparencyAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TransparencyAttrib *ta = DCAST(TransparencyAttrib, attrib);
     return ta->get_mode();
@@ -5431,7 +5431,7 @@ set_antialias(unsigned short mode, int priority) {
 void NodePath::
 clear_antialias() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(AntialiasAttrib::get_class_type());
+  node()->clear_attrib(AntialiasAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5446,7 +5446,7 @@ clear_antialias() {
 bool NodePath::
 has_antialias() const {
   nassertr_always(!is_empty(), false);
-  return node()->has_attrib(AntialiasAttrib::get_class_type());
+  return node()->has_attrib(AntialiasAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5460,7 +5460,7 @@ unsigned short NodePath::
 get_antialias() const {
   nassertr_always(!is_empty(), AntialiasAttrib::M_none);
   const RenderAttrib *attrib =
-    node()->get_attrib(AntialiasAttrib::get_class_type());
+    node()->get_attrib(AntialiasAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const AntialiasAttrib *ta = DCAST(AntialiasAttrib, attrib);
     return ta->get_mode();
@@ -5480,7 +5480,7 @@ get_antialias() const {
 bool NodePath::
 has_audio_volume() const {
   nassertr_always(!is_empty(), false);
-  return node()->has_attrib(AudioVolumeAttrib::get_class_type());
+  return node()->has_attrib(AudioVolumeAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5495,7 +5495,7 @@ has_audio_volume() const {
 void NodePath::
 clear_audio_volume() {
   nassertv_always(!is_empty());
-  node()->clear_attrib(AudioVolumeAttrib::get_class_type());
+  node()->clear_attrib(AudioVolumeAttrib::get_class_slot());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5508,10 +5508,10 @@ set_audio_volume(float volume, int priority) {
   nassertv_always(!is_empty());
 
   const RenderAttrib *attrib =
-    node()->get_attrib(AudioVolumeAttrib::get_class_type());
+    node()->get_attrib(AudioVolumeAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     priority = max(priority,
-                   node()->get_state()->get_override(AudioVolumeAttrib::get_class_type()));
+                   node()->get_state()->get_override(AudioVolumeAttrib::get_class_slot()));
     CPT(AudioVolumeAttrib) ava = DCAST(AudioVolumeAttrib, attrib);
 
     // Modify the existing AudioVolumeAttrib to add the indicated
@@ -5555,7 +5555,7 @@ set_audio_volume_off(int priority) {
 float NodePath::
 get_audio_volume() const {
   const RenderAttrib *attrib =
-    node()->get_attrib(AudioVolumeAttrib::get_class_type());
+    node()->get_attrib(AudioVolumeAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const AudioVolumeAttrib *ava = DCAST(AudioVolumeAttrib, attrib);
     return ava->get_volume();
@@ -5573,7 +5573,7 @@ get_audio_volume() const {
 float NodePath::
 get_net_audio_volume() const {
   CPT(RenderState) net_state = get_net_state();
-  const RenderAttrib *attrib = net_state->get_audio_volume();
+  const RenderAttrib *attrib = net_state->get_attrib(AudioVolumeAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const AudioVolumeAttrib *ava = DCAST(AudioVolumeAttrib, attrib);
     if (ava != (const AudioVolumeAttrib *)NULL) {
@@ -6693,7 +6693,7 @@ r_find_texture(PandaNode *node, const RenderState *state,
 
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
-        geom_state->get_attrib(TextureAttrib::get_class_type());
+        geom_state->get_attrib(TextureAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         for (int i = 0; i < ta->get_num_on_stages(); i++) {
@@ -6743,7 +6743,7 @@ r_find_all_textures(PandaNode *node, const RenderState *state,
 
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
-        geom_state->get_attrib(TextureAttrib::get_class_type());
+        geom_state->get_attrib(TextureAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         for (int i = 0; i < ta->get_num_on_stages(); i++) {
@@ -6775,7 +6775,7 @@ Texture * NodePath::
 r_find_texture(PandaNode *node, TextureStage *stage) const {
   // Look for a TextureAttrib on the node.
   const RenderAttrib *attrib =
-    node->get_attrib(TextureAttrib::get_class_type());
+    node->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     if (ta->has_on_stage(stage)) {
@@ -6793,7 +6793,7 @@ r_find_texture(PandaNode *node, TextureStage *stage) const {
 
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
-        geom_state->get_attrib(TextureAttrib::get_class_type());
+        geom_state->get_attrib(TextureAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         if (ta->has_on_stage(stage)) {
@@ -6828,7 +6828,7 @@ r_find_all_textures(PandaNode *node, TextureStage *stage,
                     NodePath::Textures &textures) const {
   // Look for a TextureAttrib on the node.
   const RenderAttrib *attrib =
-    node->get_attrib(TextureAttrib::get_class_type());
+    node->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     if (ta->has_on_stage(stage)) {
@@ -6846,7 +6846,7 @@ r_find_all_textures(PandaNode *node, TextureStage *stage,
 
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
-        geom_state->get_attrib(TextureAttrib::get_class_type());
+        geom_state->get_attrib(TextureAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         if (ta->has_on_stage(stage)) {
@@ -6884,7 +6884,7 @@ r_find_texture_stage(PandaNode *node, const RenderState *state,
 
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
-        geom_state->get_attrib(TextureAttrib::get_class_type());
+        geom_state->get_attrib(TextureAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         for (int i = 0; i < ta->get_num_on_stages(); i++) {
@@ -6934,7 +6934,7 @@ r_find_all_texture_stages(PandaNode *node, const RenderState *state,
 
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
-        geom_state->get_attrib(TextureAttrib::get_class_type());
+        geom_state->get_attrib(TextureAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         for (int i = 0; i < ta->get_num_on_stages(); i++) {
@@ -6966,7 +6966,7 @@ void NodePath::
 r_unify_texture_stages(PandaNode *node, TextureStage *stage) {
   // Look for a TextureAttrib on the state.
   const RenderAttrib *attrib =
-    node->get_attrib(TextureAttrib::get_class_type());
+    node->get_attrib(TextureAttrib::get_class_slot());
   if (attrib != (const RenderAttrib *)NULL) {
     const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
     CPT(RenderAttrib) new_attrib = ta->unify_texture_stages(stage);
@@ -6985,7 +6985,7 @@ r_unify_texture_stages(PandaNode *node, TextureStage *stage) {
 
       // Look for a TextureAttrib on the state.
       const RenderAttrib *attrib =
-        state->get_attrib(TextureAttrib::get_class_type());
+        state->get_attrib(TextureAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
         CPT(RenderAttrib) new_attrib = ta->unify_texture_stages(stage);
@@ -7025,7 +7025,7 @@ r_find_material(PandaNode *node, const RenderState *state,
 
       // Look for a MaterialAttrib on the state.
       const RenderAttrib *attrib =
-        geom_state->get_attrib(MaterialAttrib::get_class_type());
+        geom_state->get_attrib(MaterialAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         const MaterialAttrib *ta = DCAST(MaterialAttrib, attrib);
         if (!ta->is_off()) {
@@ -7073,7 +7073,7 @@ r_find_all_materials(PandaNode *node, const RenderState *state,
 
       // Look for a MaterialAttrib on the state.
       const RenderAttrib *attrib =
-        geom_state->get_attrib(MaterialAttrib::get_class_type());
+        geom_state->get_attrib(MaterialAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         const MaterialAttrib *ta = DCAST(MaterialAttrib, attrib);
         if (!ta->is_off()) {

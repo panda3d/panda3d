@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "alphaTestAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -22,6 +21,7 @@
 #include "datagramIterator.h"
 
 TypeHandle AlphaTestAttrib::_type_handle;
+int AlphaTestAttrib::_attrib_slot;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AlphaTestAttrib::make
@@ -33,6 +33,18 @@ make(PandaCompareFunc mode, float reference_value) {
   assert((reference_value >=0.0f) && (reference_value <=1.0f));
   AlphaTestAttrib *attrib = new AlphaTestAttrib(mode,reference_value);
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AlphaTestAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) AlphaTestAttrib::
+make_default() {
+  return return_new(new AlphaTestAttrib);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,33 +84,6 @@ compare_to_impl(const RenderAttrib *other) const {
   } else {
     return (int) (255.0f*(_reference_alpha - ta->_reference_alpha));
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AlphaTestAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived AlphaTestAttrib
-//               types to specify what the default property for a
-//               AlphaTestAttrib of this type should be.
-//
-//               This should return a newly-allocated AlphaTestAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of AlphaTestAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *AlphaTestAttrib::
-make_default_impl() const {
-  return new AlphaTestAttrib;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AlphaTestAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void AlphaTestAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_alpha_test = this;
 }
 
 ////////////////////////////////////////////////////////////////////

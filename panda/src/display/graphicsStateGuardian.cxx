@@ -18,7 +18,6 @@
 #include "vertexBufferContext.h"
 #include "indexBufferContext.h"
 #include "renderBuffer.h"
-#include "attribSlots.h"
 #include "light.h"
 #include "planeNode.h"
 #include "ambientLight.h"
@@ -41,6 +40,11 @@
 #include "pointLight.h"
 #include "spotlight.h"
 #include "textureReloadRequest.h"
+#include "shaderAttrib.h"
+#include "materialAttrib.h"
+#include "depthWriteAttrib.h"
+#include "lightAttrib.h"
+#include "texGenAttrib.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -810,7 +814,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     return &t;
   }
   case Shader::SMO_texpad_x: {
-    Texture *tex = _target._shader->get_shader_input_texture(name);
+    Texture *tex = _target_shader->get_shader_input_texture(name);
     nassertr(tex != 0, &LMatrix4f::zeros_mat());
     int sx = tex->get_x_size() - tex->get_pad_x_size();
     int sy = tex->get_y_size() - tex->get_pad_y_size();
@@ -822,7 +826,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     return &t;
   }
   case Shader::SMO_texpix_x: {
-    Texture *tex = _target._shader->get_shader_input_texture(name);
+    Texture *tex = _target_shader->get_shader_input_texture(name);
     nassertr(tex != 0, &LMatrix4f::zeros_mat());
     double px = 1.0 / tex->get_x_size();
     double py = 1.0 / tex->get_y_size();
@@ -831,12 +835,13 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     return &t;
   }
   case Shader::SMO_attr_material: {
+    const MaterialAttrib *target_material = DCAST(MaterialAttrib, _target_rs->get_attrib_def(MaterialAttrib::get_class_slot()));
     // Material matrix contains AMBIENT, DIFFUSE, EMISSION, SPECULAR+SHININESS
-    if (_target._material->is_off()) {
+    if (target_material->is_off()) {
       t = LMatrix4f(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0);
       return &t;
     }
-    Material *m = _target._material->get_material();
+    Material *m = target_material->get_material();
     LVecBase4f const &amb = m->get_ambient();
     LVecBase4f const &dif = m->get_diffuse();
     LVecBase4f const &emm = m->get_emission();
@@ -849,15 +854,16 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     return &t;
   }
   case Shader::SMO_attr_color: {
-    if (_target._color->get_color_type() != ColorAttrib::T_flat) {
+    const ColorAttrib *target_color = DCAST(ColorAttrib, _target_rs->get_attrib_def(ColorAttrib::get_class_slot()));
+    if (target_color->get_color_type() != ColorAttrib::T_flat) {
       return &LMatrix4f::ones_mat();
     }
-    LVecBase4f c = _target._color->get_color();
+    LVecBase4f c = target_color->get_color();
     t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,c[0],c[1],c[2],c[3]);
     return &t;
   }
   case Shader::SMO_alight_x: {
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::zeros_mat());
     AmbientLight *lt;
     DCAST_INTO_R(lt, np.node(), &LMatrix4f::zeros_mat());
@@ -866,7 +872,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     return &t;
   }
   case Shader::SMO_satten_x: {
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ones_mat());
     Spotlight *lt;
     DCAST_INTO_R(lt, np.node(), &LMatrix4f::ones_mat());
@@ -877,7 +883,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
   }
   case Shader::SMO_dlight_x: {
     // The dlight matrix contains COLOR, SPECULAR, DIRECTION, PSEUDOHALFANGLE
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::zeros_mat());
     DirectionalLight *lt;
     DCAST_INTO_R(lt, np.node(), &LMatrix4f::zeros_mat());
@@ -894,7 +900,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
   }
   case Shader::SMO_plight_x: {
     // The plight matrix contains COLOR, SPECULAR, POINT, ATTENUATION
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ones_mat());
     PointLight *lt;
     DCAST_INTO_R(lt, np.node(), &LMatrix4f::zeros_mat());
@@ -909,7 +915,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
   }
   case Shader::SMO_slight_x: {
     // The slight matrix contains COLOR, SPECULAR, POINT, DIRECTION
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::zeros_mat());
     Spotlight *lt;
     DCAST_INTO_R(lt, np.node(), &LMatrix4f::zeros_mat());
@@ -926,12 +932,12 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     return &t;
   }
   case Shader::SMO_mat_constant_x: {
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
     return &(np.node()->get_transform()->get_mat());
   }
   case Shader::SMO_vec_constant_x: {
-    const LVector4f &input = _target._shader->get_shader_input_vector(name);
+    const LVector4f &input = _target_shader->get_shader_input_vector(name);
     const float *data = input.get_data();
     t = LMatrix4f(data[0],data[1],data[2],data[3],
                   data[0],data[1],data[2],data[3],
@@ -987,21 +993,21 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     return &t;
   }
   case Shader::SMO_view_x_to_view: {
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
     t = np.get_net_transform()->get_mat() *
       get_scene()->get_world_transform()->get_mat();
     return &t;
   }
   case Shader::SMO_view_to_view_x: {
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
     t = get_scene()->get_camera_transform()->get_mat() *
       invert(np.get_net_transform()->get_mat());
     return &t;
   }
   case Shader::SMO_apiview_x_to_view: {
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
     t = LMatrix4f::convert_mat(_internal_coordinate_system, _coordinate_system) *
       np.get_net_transform()->get_mat() *
@@ -1009,7 +1015,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     return &t;
   }
   case Shader::SMO_view_to_apiview_x: {
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
     t = (get_scene()->get_camera_transform()->get_mat() *
          invert(np.get_net_transform()->get_mat()) *
@@ -1017,7 +1023,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     return &t;
   }
   case Shader::SMO_clip_x_to_view: {
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
     Lens *lens = DCAST(LensNode, np.node())->get_lens();
     t = lens->get_projection_mat_inv(_current_stereo_channel) *
@@ -1027,7 +1033,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     return &t;
   }
   case Shader::SMO_view_to_clip_x: {
-    const NodePath &np = _target._shader->get_shader_input_nodepath(name);
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
     Lens *lens = DCAST(LensNode, np.node())->get_lens();
     t = get_scene()->get_camera_transform()->get_mat() *
@@ -1151,8 +1157,8 @@ begin_frame(Thread *current_thread) {
   // have changed properties since last time without changing
   // attribute pointers--like textures, lighting, or fog--will still
   // be accurately updated.
-  _state_rs = 0;
-  _state.clear_to_zero();
+  _state_rs = RenderState::make_empty();
+  _state_mask.clear();
 
   return true;
 }
@@ -1210,8 +1216,8 @@ end_scene() {
   _num_clip_planes_enabled = 0;
 
   // Put the state into the 'unknown' state, forcing a reload.
-  _state_rs = 0;
-  _state.clear_to_zero();
+  _state_rs = RenderState::make_empty();
+  _state_mask.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1452,10 +1458,9 @@ reset() {
   _needs_reset = false;
   _is_valid = false;
 
-  _state_rs = NULL;
+  _state_rs = RenderState::make_empty();
   _target_rs = NULL;
-  _state.clear_to_zero();
-  _target.clear_to_defaults();
+  _state_mask.clear();
   _internal_transform = _cs_transform;
   _scene_null = new SceneSetup;
   _scene_setup = _scene_null;
@@ -1568,8 +1573,9 @@ do_issue_clip_plane() {
   int num_enabled = 0;
   int num_on_planes = 0;
 
-  if (_target._clip_plane != (ClipPlaneAttrib *)NULL) {
-    CPT(ClipPlaneAttrib) new_plane = _target._clip_plane->filter_to_max(_max_clip_planes);
+  const ClipPlaneAttrib *target_clip_plane = DCAST(ClipPlaneAttrib, _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
+  if (target_clip_plane != (ClipPlaneAttrib *)NULL) {
+    CPT(ClipPlaneAttrib) new_plane = target_clip_plane->filter_to_max(_max_clip_planes);
 
     num_on_planes = new_plane->get_num_on_planes();
     for (int li = 0; li < num_on_planes; li++) {
@@ -1627,12 +1633,12 @@ do_issue_clip_plane() {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 do_issue_color() {
-  const ColorAttrib *attrib = _target._color;
-  switch (attrib->get_color_type()) {
+  const ColorAttrib *target_color = DCAST(ColorAttrib, _target_rs->get_attrib_def(ColorAttrib::get_class_slot()));
+  switch (target_color->get_color_type()) {
   case ColorAttrib::T_flat:
     // Color attribute flat: it specifies a scene graph color that
     // overrides the vertex color.
-    _scene_graph_color = attrib->get_color();
+    _scene_graph_color = target_color->get_color();
     _has_scene_graph_color = true;
     _vertex_colors_enabled = false;
     break;
@@ -1655,9 +1661,8 @@ do_issue_color() {
   }
 
   if (_color_scale_via_lighting) {
-    _state_rs = 0;
-    _state._light = 0;
-    _state._material = 0;
+    _state_mask.clear_bit(LightAttrib::get_class_slot());
+    _state_mask.clear_bit(MaterialAttrib::get_class_slot());
 
     determine_light_color_scale();
   }
@@ -1673,36 +1678,33 @@ do_issue_color_scale() {
   // If the previous color scale had set a special texture, clear the
   // texture now.
   if (_has_texture_alpha_scale) {
-    _state._texture = 0;
+    _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
 
-  const ColorScaleAttrib *attrib = _target._color_scale;
-  _color_scale_enabled = attrib->has_scale();
-  _current_color_scale = attrib->get_scale();
+  const ColorScaleAttrib *target_color_scale = DCAST(ColorScaleAttrib, _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
+  _color_scale_enabled = target_color_scale->has_scale();
+  _current_color_scale = target_color_scale->get_scale();
   _has_texture_alpha_scale = false;
 
   if (_color_blend_involves_color_scale) {
-    _state_rs = 0;
-    _state._transparency = 0;
+    _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
   }
   if (_texture_involves_color_scale) {
-    _state_rs = 0;
-    _state._texture = 0;
+    _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
   if (_color_scale_via_lighting) {
-    _state_rs = 0;
-    _state._light = 0;
-    _state._material = 0;
+    _state_mask.clear_bit(LightAttrib::get_class_slot());
+    _state_mask.clear_bit(MaterialAttrib::get_class_slot());
 
     determine_light_color_scale();
   }
 
   if (_alpha_scale_via_texture && !_has_scene_graph_color &&
-      attrib->has_alpha_scale()) {
+      target_color_scale->has_alpha_scale()) {
     // This color scale will set a special texture--so again, clear
     // the texture.
-    _state._texture = 0;
-    _state._tex_matrix = 0;
+    _state_mask.clear_bit(TextureAttrib::get_class_slot());
+    _state_mask.clear_bit(TexMatrixAttrib::get_class_slot());
 
     _has_texture_alpha_scale = true;
   }
@@ -1738,12 +1740,13 @@ do_issue_light() {
   int num_enabled = 0;
   int num_on_lights = 0;
 
+  const LightAttrib *target_light = DCAST(LightAttrib, _target_rs->get_attrib_def(LightAttrib::get_class_slot()));
   if (display_cat.is_spam()) {
     display_cat.spam()
-      << "do_issue_light: " << _target._light << "\n";
+      << "do_issue_light: " << target_light << "\n";
   }
-  if (_target._light != (LightAttrib *)NULL) {
-    CPT(LightAttrib) new_light = _target._light->filter_to_max(_max_lights);
+  if (target_light != (LightAttrib *)NULL) {
+    CPT(LightAttrib) new_light = target_light->filter_to_max(_max_lights);
     if (display_cat.is_spam()) {
       new_light->write(display_cat.spam(false), 2);
     }
@@ -2063,30 +2066,32 @@ end_bind_clip_planes() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::determine_effective_texture
+//     Function: GraphicsStateGuardian::determine_target_texture
 //       Access: Protected
-//  Description: Assigns _effective_texture and _effective_tex_gen
-//               based on the current settings of _target._texture and
-//               _target._color_scale.
+//  Description: Assigns _target_texture and _target_tex_gen
+//               based on the _target_rs.
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
-determine_effective_texture() {
-  nassertv(_target._texture != (TextureAttrib *)NULL &&
-           _target._tex_gen != (TexGenAttrib *)NULL);
+determine_target_texture() {
+  const TextureAttrib *target_texture = DCAST(TextureAttrib, _target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
+  const TexGenAttrib *target_tex_gen = DCAST(TexGenAttrib, _target_rs->get_attrib_def(TexGenAttrib::get_class_slot()));
+
+  nassertv(target_texture != (TextureAttrib *)NULL &&
+           target_tex_gen != (TexGenAttrib *)NULL);
   int max_texture_stages = get_max_texture_stages();
-  _effective_texture = _target._texture->filter_to_max(max_texture_stages);
-  _effective_tex_gen = _target._tex_gen;
+  _target_texture = target_texture->filter_to_max(max_texture_stages);
+  _target_tex_gen = target_tex_gen;
   
   if (_has_texture_alpha_scale) {
     PT(TextureStage) stage = get_alpha_scale_texture_stage();
     PT(Texture) texture = TexturePool::get_alpha_scale_map();
     
-    _effective_texture = DCAST(TextureAttrib, _effective_texture->add_on_stage(stage, texture));
-    _effective_tex_gen = DCAST(TexGenAttrib, _effective_tex_gen->add_stage
+    _target_texture = DCAST(TextureAttrib, _target_texture->add_on_stage(stage, texture));
+    _target_tex_gen = DCAST(TexGenAttrib, _target_tex_gen->add_stage
                                (stage, TexGenAttrib::M_constant, TexCoord3f(_current_color_scale[3], 0.0f, 0.0f)));
   }
 
-  nassertv(_effective_texture->get_num_on_stages() <= max_texture_stages);
+  nassertv(_target_texture->get_num_on_stages() <= max_texture_stages);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -245,7 +245,7 @@ enable_multisample_alpha_mask(bool val) {
 INLINE void CLP(GraphicsStateGuardian)::
 enable_line_smooth(bool val) {
   if (_line_smooth_enabled != val) {
-    _state._transparency = 0;
+    _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _line_smooth_enabled = val;
     if (val) {
       GLP(Enable)(GL_LINE_SMOOTH);
@@ -263,7 +263,7 @@ enable_line_smooth(bool val) {
 INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
   if (_point_smooth_enabled != val) {
-    _state._transparency = 0;
+    _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _point_smooth_enabled = val;
     if (val) {
       GLP(Enable)(GL_POINT_SMOOTH);

@@ -27,6 +27,7 @@
 #include "textureStage.h"
 #include "antialiasAttrib.h"
 #include "renderModeAttrib.h"
+#include "colorBlendAttrib.h"
 #include "pointerToArray.h"
 #include "fog.h"
 #include "graphicsWindow.h"

@@ -45,29 +45,16 @@ ObjectData(CullableObject *object) :
 ////////////////////////////////////////////////////////////////////
 INLINE bool CullBinStateSorted::ObjectData::
 operator < (const ObjectData &other) const {
-  const RenderState *sa = _object->_state;
-  const RenderState *sb = other._object->_state;
-
-  if (sa != sb) {
-    // First, group objects by texture, since conventional wisdom is
-    // that texture changes are the most expensive state changes in a
-    // graphics context.
-    const TextureAttrib *ta = sa->get_texture();
-    const TextureAttrib *tb = sb->get_texture();
-    if (ta != tb) {
-      return ta < tb;
-    }
-  }
-
-  // Then group objects by transform, since these are supposed to be
-  // expensive too.
+  // First group objects by transform, since transform changes are
+  // supposed to be expensive.
   if (_object->_modelview_transform != other._object->_modelview_transform) {
     return _object->_modelview_transform < other._object->_modelview_transform;
   }
-      
-  // Then, sort by all the other states, in no particular order,
-  // just as long as objects with identical state are all grouped
-  // together.
-  return sa < sb;
+
+  // Then group by other state changes, in approximate order from
+  // heaviest change to lightest change.
+  const RenderState *sa = _object->_state;
+  const RenderState *sb = other._object->_state;
+  return sa->compare_sort(*sb) < 0;
 }
 

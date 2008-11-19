@@ -50,20 +50,6 @@ invert_compose(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderAttrib::make_default
-//       Access: Public
-//  Description: Returns a different (or possibly the same)
-//               RenderAttrib pointer of the same type as this one
-//               that corresponds to whatever the standard default
-//               properties for render attributes of this type ought
-//               to be.
-////////////////////////////////////////////////////////////////////
-INLINE CPT(RenderAttrib) RenderAttrib::
-make_default() const {
-  return return_new(make_default_impl());
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::always_reissue
 //       Access: Public
 //  Description: Returns true if the RenderAttrib should be reissued
@@ -101,4 +87,18 @@ compare_to(const RenderAttrib &other) const {
 
   // We only call compare_to_impl() if they have the same type.
   return compare_to_impl(&other);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::register_slot
+//       Access: Public, Static
+//  Description: Adds the indicated TypeHandle to the registry, if it
+//               is not there already, and returns a unique slot
+//               number.  See RenderAttribRegistry.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderAttrib::
+register_slot(TypeHandle type_handle, int sort,
+              RenderAttribRegistry::MakeDefaultFunc *make_default_func) {
+  RenderAttribRegistry *reg = RenderAttribRegistry::get_global_ptr();
+  return reg->register_slot(type_handle, sort, make_default_func);
 }

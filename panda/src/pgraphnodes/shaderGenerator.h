@@ -17,7 +17,6 @@
 
 #include "pandabase.h"
 #include "shaderGeneratorBase.h"
-#include "attribSlots.h"
 #include "nodePath.h"
 
 class AmbientLight;
@@ -81,7 +80,7 @@ protected:
 
   // RenderState analysis information.  Created by analyze_renderstate:
 
-  AttribSlots _attribs;
+  CPT(RenderState) _state;
   Material *_material;
   int _num_textures;
   

@@ -36,7 +36,6 @@
 #include "depthOffsetAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
-#include "drawMaskAttrib.h"
 #include "eventStorePandaNode.h"
 #include "findApproxLevelEntry.h"
 #include "fadeLodNode.h"
@@ -391,7 +390,6 @@ init_libpgraph() {
   DepthOffsetAttrib::init_type();
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
-  DrawMaskAttrib::init_type();
   EventStorePandaNode::init_type();
   FadeLODNode::init_type();
   FadeLODNodeData::init_type();
@@ -470,7 +468,6 @@ init_libpgraph() {
   DepthOffsetAttrib::register_with_read_factory();
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();
-  DrawMaskAttrib::register_with_read_factory();
   FadeLODNode::register_with_read_factory();
   Fog::register_with_read_factory();
   FogAttrib::register_with_read_factory();

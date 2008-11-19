@@ -653,15 +653,15 @@ apply_texture_colors(GeomNode *node, const RenderState *state) {
     GeomNode::GeomEntry &entry = (*gi);
     CPT(RenderState) geom_state = state->compose(entry._state);
 
-    const TextureAttrib *ta = geom_state->get_texture();
+    const TextureAttrib *ta = DCAST(TextureAttrib, geom_state->get_attrib(TextureAttrib::get_class_slot()));
     if (ta != (TextureAttrib *)NULL) {
       CPT(TextureAttrib) ta2 = ta->filter_to_max(1);
       if (ta2->get_num_on_stages() > 0) {
         TextureStage *ts = ta2->get_on_stage(0);
         Texture *tex = ta2->get_on_texture(ts);
-        const TexMatrixAttrib *tma = geom_state->get_tex_matrix();
+        const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, geom_state->get_attrib(TexMatrixAttrib::get_class_slot()));
 
-        const ColorAttrib *ca = geom_state->get_color();
+        const ColorAttrib *ca = DCAST(ColorAttrib, geom_state->get_attrib(ColorAttrib::get_class_slot()));
         Colorf base_color(1.0f, 1.0f, 1.0f, 1.0f);
         bool keep_vertex_color = true;
         if (ca != (ColorAttrib *)NULL && ca->get_color_type() == ColorAttrib::T_flat) {
@@ -685,7 +685,7 @@ apply_texture_colors(GeomNode *node, const RenderState *state) {
         }
 
         // Also remove any texture references from the GeomState.
-        CPT(RenderState) no_tex_state = entry._state->remove_attrib(TextureAttrib::get_class_type());
+        CPT(RenderState) no_tex_state = entry._state->remove_attrib(TextureAttrib::get_class_slot());
         if (entry._state != no_tex_state) {
           entry._state = no_tex_state;
           any_changed = true;
@@ -889,7 +889,7 @@ make_compatible_state(GeomNode *node) {
     const RenderState *canon_state = (*si).first;
     for (int i = 0; i < (int)indices.size(); i++) {
       GeomNode::GeomEntry &entry = geoms[indices[i]];
-      const RenderAttrib *ra = entry._state->get_attrib(ColorAttrib::get_class_type());
+      const RenderAttrib *ra = entry._state->get_attrib(ColorAttrib::get_class_slot());
       if (ra == (RenderAttrib *)NULL) {
         ra = ColorAttrib::make_off();
       }

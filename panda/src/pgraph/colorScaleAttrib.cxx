@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "colorScaleAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -23,6 +22,7 @@
 #include "config_pgraph.h"
 
 TypeHandle ColorScaleAttrib::_type_handle;
+int ColorScaleAttrib::_attrib_slot;
 CPT(RenderAttrib) ColorScaleAttrib::_identity_attrib;
 
 ////////////////////////////////////////////////////////////////////
@@ -84,6 +84,18 @@ make_off() {
   ColorScaleAttrib *attrib = 
     new ColorScaleAttrib(true, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorScaleAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ColorScaleAttrib::
+make_default() {
+  return return_new(new ColorScaleAttrib(false, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -254,33 +266,6 @@ invert_compose_impl(const RenderAttrib *other) const {
 
   ColorScaleAttrib *attrib = new ColorScaleAttrib(false, new_scale);
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColorScaleAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived ColorScaleAttrib
-//               types to specify what the default property for a
-//               ColorScaleAttrib of this type should be.
-//
-//               This should return a newly-allocated ColorScaleAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of ColorScaleAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *ColorScaleAttrib::
-make_default_impl() const {
-  return new ColorScaleAttrib(false, LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColorScaleAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void ColorScaleAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_color_scale = this;
 }
 
 ////////////////////////////////////////////////////////////////////

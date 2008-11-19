@@ -13,7 +13,6 @@
 #include "depthTestAttrib.cxx"
 #include "depthWriteAttrib.cxx"
 #include "alphaTestAttrib.cxx"
-#include "drawMaskAttrib.cxx"
 #include "eventStorePandaNode.cxx"
 #include "fadeLodNode.cxx"
 #include "fadeLodNodeData.cxx"

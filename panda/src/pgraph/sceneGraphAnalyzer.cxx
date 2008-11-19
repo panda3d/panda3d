@@ -280,7 +280,7 @@ collect_statistics(PandaNode *node, bool under_instance) {
   if (!node->get_state()->is_empty()) {
     _num_nodes_with_attribs++;
     const RenderAttrib *attrib = 
-      node->get_attrib(TextureAttrib::get_class_type());
+      node->get_attrib(TextureAttrib::get_class_slot());
     if (attrib != (RenderAttrib *)NULL) {
       const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
       for (int i = 0; i < ta->get_num_on_stages(); i++) {
@@ -350,7 +350,7 @@ collect_statistics(GeomNode *geom_node) {
     const RenderState *geom_state = geom_node->get_geom_state(i);
 
     const RenderAttrib *attrib = 
-      geom_state->get_attrib(TextureAttrib::get_class_type());
+      geom_state->get_attrib(TextureAttrib::get_class_slot());
     if (attrib != (RenderAttrib *)NULL) {
       const TextureAttrib *ta = DCAST(TextureAttrib, attrib);
       for (int i = 0; i < ta->get_num_on_stages(); i++) {

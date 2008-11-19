@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "transparencyAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -22,6 +21,7 @@
 #include "datagramIterator.h"
 
 TypeHandle TransparencyAttrib::_type_handle;
+int TransparencyAttrib::_attrib_slot;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TransparencyAttrib::make
@@ -32,6 +32,18 @@ CPT(RenderAttrib) TransparencyAttrib::
 make(TransparencyAttrib::Mode mode) {
   TransparencyAttrib *attrib = new TransparencyAttrib(mode);
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransparencyAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) TransparencyAttrib::
+make_default() {
+  return return_new(new TransparencyAttrib);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -92,33 +104,6 @@ compare_to_impl(const RenderAttrib *other) const {
   const TransparencyAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
   return (int)_mode - (int)ta->_mode;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TransparencyAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived TransparencyAttrib
-//               types to specify what the default property for a
-//               TransparencyAttrib of this type should be.
-//
-//               This should return a newly-allocated TransparencyAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of TransparencyAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *TransparencyAttrib::
-make_default_impl() const {
-  return new TransparencyAttrib;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TransparencyAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void TransparencyAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_transparency = this;
 }
 
 ////////////////////////////////////////////////////////////////////

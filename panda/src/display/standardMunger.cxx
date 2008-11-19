@@ -39,15 +39,15 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
   _numeric_type(numeric_type),
   _contents(contents)
 {
-  _render_mode = state->get_render_mode();
+  _render_mode = DCAST(RenderModeAttrib, state->get_attrib(RenderModeAttrib::get_class_slot()));
 
   _munge_color = false;
   _munge_color_scale = false;
 
   if (!get_gsg()->get_runtime_color_scale()) {
     // We might need to munge the colors.
-    CPT(ColorAttrib) color_attrib = state->get_color();
-    CPT(ColorScaleAttrib) color_scale_attrib = state->get_color_scale();
+    CPT(ColorAttrib) color_attrib = DCAST(ColorAttrib, state->get_attrib(ColorAttrib::get_class_slot()));
+    CPT(ColorScaleAttrib) color_scale_attrib = DCAST(ColorScaleAttrib, state->get_attrib(ColorScaleAttrib::get_class_slot()));
 
     if (color_attrib != (ColorAttrib *)NULL && 
         color_attrib->get_color_type() == ColorAttrib::T_flat) {
@@ -72,7 +72,7 @@ StandardMunger(GraphicsStateGuardianBase *gsg, const RenderState *state,
                color_scale_attrib->has_scale()) {
       _color_scale = color_scale_attrib->get_scale();
       
-      CPT(TextureAttrib) tex_attrib = state->get_texture();
+      CPT(TextureAttrib) tex_attrib = DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()));
       
       // If the GSG says it can't cheat this RGB or alpha scale, we have
       // to apply the color scale directly.
@@ -339,10 +339,10 @@ munge_state_impl(const RenderState *state) {
   CPT(RenderState) munged_state = state;
 
   if (_munge_color) {
-    munged_state = munged_state->remove_attrib(ColorAttrib::get_class_type());
-    munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_type());
+    munged_state = munged_state->remove_attrib(ColorAttrib::get_class_slot());
+    munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_slot());
   } else if (_munge_color_scale) {
-    munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_type());
+    munged_state = munged_state->remove_attrib(ColorScaleAttrib::get_class_slot());
   }
 
   return munged_state;

@@ -253,7 +253,7 @@ get_collision_origin() const {
 PT(PandaNode) CollisionPolygon::
 get_viz(const CullTraverser *trav, const CullTraverserData &data, 
         bool bounds_only) const {
-  const ClipPlaneAttrib *cpa = data._state->get_clip_plane();
+  const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, data._state->get_attrib(ClipPlaneAttrib::get_class_slot()));
   if (cpa == (const ClipPlaneAttrib *)NULL) {
     // Fortunately, the polygon is not clipped.  This is the normal,
     // easy case.

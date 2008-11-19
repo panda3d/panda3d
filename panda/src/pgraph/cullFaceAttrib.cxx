@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "cullFaceAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -22,6 +21,7 @@
 #include "datagramIterator.h"
 
 TypeHandle CullFaceAttrib::_type_handle;
+int CullFaceAttrib::_attrib_slot;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullFaceAttrib::make
@@ -51,13 +51,23 @@ make(CullFaceAttrib::Mode mode) {
 //               the scene graph.  M_cull_clockwise will be treated as
 //               M_cull_counter_clockwise, and vice-versa.
 //               M_cull_none is unchanged.
-
-
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) CullFaceAttrib::
 make_reverse() {
   CullFaceAttrib *attrib = new CullFaceAttrib(M_cull_unchanged, true);
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullFaceAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) CullFaceAttrib::
+make_default() {
+  return return_new(new CullFaceAttrib(M_cull_clockwise, false));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,33 +231,6 @@ invert_compose_impl(const RenderAttrib *other) const {
 
   CullFaceAttrib *attrib = new CullFaceAttrib(mode, reverse);
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullFaceAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived CullFaceAttrib
-//               types to specify what the default property for a
-//               CullFaceAttrib of this type should be.
-//
-//               This should return a newly-allocated CullFaceAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of CullFaceAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *CullFaceAttrib::
-make_default_impl() const {
-  return new CullFaceAttrib(M_cull_clockwise, false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: CullFaceAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void CullFaceAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_cull_face = this;
 }
 
 ////////////////////////////////////////////////////////////////////

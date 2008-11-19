@@ -114,7 +114,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
   const RenderState *state = object->_state;
   nassertv(state != (const RenderState *)NULL);
 
-  const TransparencyAttrib *trans = state->get_transparency();
+  const TransparencyAttrib *trans = DCAST(TransparencyAttrib, state->get_attrib(TransparencyAttrib::get_class_slot()));
   if (trans != (const TransparencyAttrib *)NULL) {
     switch (trans->get_mode()) {
     case TransparencyAttrib::M_alpha:
@@ -163,7 +163,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
       // explicit bin already applied; otherwise, M_dual falls back
       // to M_alpha. 
       {
-        const CullBinAttrib *bin_attrib = state->get_bin();
+        const CullBinAttrib *bin_attrib = DCAST(CullBinAttrib, state->get_attrib(CullBinAttrib::get_class_slot()));
         if (bin_attrib == (CullBinAttrib *)NULL || 
             bin_attrib->get_bin_name().empty()) {
           // We make a copy of the object to draw the transparent part
@@ -397,10 +397,10 @@ check_flash_bin(CPT(RenderState) &state, CullBin *bin) {
   if (bin->has_flash_color()) {
     int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
     if ((cycle & 1) == 0) {
-      state = state->remove_attrib(TextureAttrib::get_class_type());
-      state = state->remove_attrib(LightAttrib::get_class_type());
-      state = state->remove_attrib(ColorScaleAttrib::get_class_type());
-      state = state->remove_attrib(FogAttrib::get_class_type());
+      state = state->remove_attrib(TextureAttrib::get_class_slot());
+      state = state->remove_attrib(LightAttrib::get_class_slot());
+      state = state->remove_attrib(ColorScaleAttrib::get_class_slot());
+      state = state->remove_attrib(FogAttrib::get_class_slot());
       state = state->add_attrib(ColorAttrib::make_flat(bin->get_flash_color()),
                                 RenderState::get_max_priority());
     }
@@ -419,10 +419,10 @@ check_flash_transparency(CPT(RenderState) &state, const Colorf &transparency) {
   if (show_transparency) {
     int cycle = (int)(ClockObject::get_global_clock()->get_frame_time() * bin_color_flash_rate);
     if ((cycle & 1) == 0) {
-      state = state->remove_attrib(TextureAttrib::get_class_type());
-      state = state->remove_attrib(LightAttrib::get_class_type());
-      state = state->remove_attrib(ColorScaleAttrib::get_class_type());
-      state = state->remove_attrib(FogAttrib::get_class_type());
+      state = state->remove_attrib(TextureAttrib::get_class_slot());
+      state = state->remove_attrib(LightAttrib::get_class_slot());
+      state = state->remove_attrib(ColorScaleAttrib::get_class_slot());
+      state = state->remove_attrib(FogAttrib::get_class_slot());
       state = state->add_attrib(ColorAttrib::make_flat(transparency),
                                 RenderState::get_max_priority());
     }

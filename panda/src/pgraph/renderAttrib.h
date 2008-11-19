@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "typedWritableReferenceCount.h"
+#include "renderAttribRegistry.h"
 #include "pointerTo.h"
 #include "pset.h"
 #include "lightReMutex.h"
@@ -66,11 +67,9 @@ public:
 
   INLINE CPT(RenderAttrib) compose(const RenderAttrib *other) const;
   INLINE CPT(RenderAttrib) invert_compose(const RenderAttrib *other) const;
-  INLINE CPT(RenderAttrib) make_default() const;
   virtual bool lower_attrib_can_override() const;
 
   INLINE bool always_reissue() const;
-  virtual void store_into_slot(AttribSlots *slots) const=0;
 
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
@@ -86,6 +85,8 @@ PUBLISHED:
   static int get_num_attribs();
   static void list_attribs(ostream &out);
   static bool validate_attribs();
+
+  virtual int get_slot() const=0;
 
   enum PandaCompareFunc {   // intentionally defined to match D3DCMPFUNC
     M_none=0,           // alpha-test disabled (always-draw)
@@ -176,8 +177,11 @@ protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
-  virtual RenderAttrib *make_default_impl() const=0;
   void output_comparefunc(ostream &out, PandaCompareFunc fn) const;
+
+public:
+  INLINE static int register_slot(TypeHandle type_handle, int sort,
+                                  RenderAttribRegistry::MakeDefaultFunc *make_default_func);
 
 private:
   void release_new();

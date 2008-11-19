@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "texGenAttrib.h"
-#include "attribSlots.h"
 #include "texturePool.h"
 #include "graphicsStateGuardianBase.h"
 #include "bamReader.h"
@@ -24,6 +23,7 @@
 
 CPT(RenderAttrib) TexGenAttrib::_empty_attrib;
 TypeHandle TexGenAttrib::_type_handle;
+int TexGenAttrib::_attrib_slot;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttrib::Destructor
@@ -60,6 +60,18 @@ make() {
 CPT(RenderAttrib) TexGenAttrib::
 make(TextureStage *stage, TexGenAttrib::Mode mode) {
   return DCAST(TexGenAttrib, make())->add_stage(stage, mode);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexGenAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) TexGenAttrib::
+make_default() {
+  return return_new(new TexGenAttrib);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -524,22 +536,6 @@ invert_compose_impl(const RenderAttrib *other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived TexGenAttrib
-//               types to specify what the default property for a
-//               TexGenAttrib of this type should be.
-//
-//               This should return a newly-allocated TexGenAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of TexGenAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *TexGenAttrib::
-make_default_impl() const {
-  return new TexGenAttrib;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: TexGenAttrib::filled_stages
 //       Access: Private
 //  Description: This method is to be called after the _stages map has
@@ -600,17 +596,6 @@ record_stage(TextureStage *stage, TexGenAttrib::ModeDef &mode_def) {
   default:
     _no_texcoords.insert(stage);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TexGenAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void TexGenAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_tex_gen = this;
 }
 
 ////////////////////////////////////////////////////////////////////

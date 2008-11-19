@@ -12,10 +12,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
+#include "shaderGenerator.h"
 #include "renderState.h"
 #include "shaderAttrib.h"
-#include "shaderGenerator.h"
+#include "auxBitplaneAttrib.h"
+#include "alphaTestAttrib.h"
+#include "colorBlendAttrib.h"
+#include "transparencyAttrib.h"
+#include "textureAttrib.h"
+#include "colorAttrib.h"
+#include "lightAttrib.h"
+#include "materialAttrib.h"
+#include "lightRampAttrib.h"
+#include "texMatrixAttrib.h"
+#include "texGenAttrib.h"
+#include "colorScaleAttrib.h"
+#include "fogAttrib.h"
+#include "texture.h"
 #include "ambientLight.h"
 #include "directionalLight.h"
 #include "pointLight.h"
@@ -117,21 +130,24 @@ analyze_renderstate(const RenderState *rs) {
   clear_analysis();
 
   //  verify_enforce_attrib_lock();
-
-  rs->store_into_slots(&_attribs);
-  int outputs = _attribs._aux_bitplane->get_outputs();
+  _state = rs;
+  const AuxBitplaneAttrib *aux_bitplane = DCAST(AuxBitplaneAttrib, rs->get_attrib_def(AuxBitplaneAttrib::get_class_slot()));
+  int outputs = aux_bitplane->get_outputs();
 
   // Decide whether or not we need alpha testing or alpha blending.
   
-  if ((_attribs._alpha_test->get_mode() != RenderAttrib::M_none)&&
-      (_attribs._alpha_test->get_mode() != RenderAttrib::M_always)) {
+  const AlphaTestAttrib *alpha_test = DCAST(AlphaTestAttrib, rs->get_attrib_def(AlphaTestAttrib::get_class_slot()));
+  if ((alpha_test->get_mode() != RenderAttrib::M_none)&&
+      (alpha_test->get_mode() != RenderAttrib::M_always)) {
     _have_alpha_test = true;
   }
-  if (_attribs._color_blend->get_mode() != ColorBlendAttrib::M_none) {
+  const ColorBlendAttrib *color_blend = DCAST(ColorBlendAttrib, rs->get_attrib_def(ColorBlendAttrib::get_class_slot()));
+  if (color_blend->get_mode() != ColorBlendAttrib::M_none) {
     _have_alpha_blend = true;
   }
-  if ((_attribs._transparency->get_mode() == TransparencyAttrib::M_alpha)||
-      (_attribs._transparency->get_mode() == TransparencyAttrib::M_dual)) {
+  const TransparencyAttrib *transparency = DCAST(TransparencyAttrib, rs->get_attrib_def(TransparencyAttrib::get_class_slot()));
+  if ((transparency->get_mode() == TransparencyAttrib::M_alpha)||
+      (transparency->get_mode() == TransparencyAttrib::M_dual)) {
     _have_alpha_blend = true;
   }
   
@@ -164,22 +180,21 @@ analyze_renderstate(const RenderState *rs) {
   
   // Count number of textures.
 
-  _num_textures = 0;
-  if (_attribs._texture) {
-    _num_textures = _attribs._texture->get_num_on_stages();
-  }
+  const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
+  _num_textures = texture->get_num_on_stages();
   
   // Determine whether or not vertex colors or flat colors are present.
 
-  if (_attribs._color->get_color_type() == ColorAttrib::T_vertex) {
+  const ColorAttrib *color = DCAST(ColorAttrib, rs->get_attrib_def(ColorAttrib::get_class_slot()));
+  if (color->get_color_type() == ColorAttrib::T_vertex) {
     _vertex_colors = true;
-  } else if (_attribs._color->get_color_type() == ColorAttrib::T_flat) {
+  } else if (color->get_color_type() == ColorAttrib::T_flat) {
     _flat_colors = true;
   }
 
   // Break out the lights by type.
 
-  const LightAttrib *la = _attribs._light;
+  const LightAttrib *la = DCAST(LightAttrib, rs->get_attrib_def(LightAttrib::get_class_slot()));
   for (int i=0; i<la->get_num_on_lights(); i++) {
     NodePath light = la->get_on_light(i);
     nassertv(!light.is_empty());
@@ -207,7 +222,7 @@ analyze_renderstate(const RenderState *rs) {
   // See if there is a normal map, height map, gloss map, or glow map.
   
   for (int i=0; i<_num_textures; i++) {
-    TextureStage *stage = _attribs._texture->get_on_stage(i);
+    TextureStage *stage = texture->get_on_stage(i);
     TextureStage::Mode mode = stage->get_mode();
     if ((mode == TextureStage::M_normal)||(mode == TextureStage::M_normal_height)) {
       _map_index_normal = i;
@@ -225,14 +240,16 @@ analyze_renderstate(const RenderState *rs) {
   
   // Determine whether lighting is needed.
 
-  if (_attribs._light->get_num_on_lights() > 0) {
+  if (la->get_num_on_lights() > 0) {
     _lighting = true;
   }
   
   // Find the material.
 
-  if (!_attribs._material->is_off()) {
-    _material = _attribs._material->get_material();
+  const MaterialAttrib *material = DCAST(MaterialAttrib, rs->get_attrib_def(MaterialAttrib::get_class_slot()));
+  
+  if (!material->is_off()) {
+    _material = material->get_material();
   } else {
     _material = Material::get_default();
   }
@@ -297,8 +314,9 @@ analyze_renderstate(const RenderState *rs) {
     }
   }
 
+  const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
   if (_lighting && 
-      (_attribs._light_ramp->get_mode() != LightRampAttrib::LRT_identity)) {
+      (light_ramp->get_mode() != LightRampAttrib::LRT_identity)) {
     _separate_ambient_diffuse = true;
   }
   
@@ -312,16 +330,20 @@ analyze_renderstate(const RenderState *rs) {
 
   // Check for unimplemented features and issue warnings.
 
-  if (!_attribs._tex_matrix->is_empty()) {
+  const TexMatrixAttrib *tex_matrix = DCAST(TexMatrixAttrib, rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
+  if (!tex_matrix->is_empty()) {
     pgraph_cat.error() << "Shader Generator does not support TexMatrix yet.\n";
   }
-  if (!_attribs._tex_gen->is_empty()) {
+  const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, rs->get_attrib_def(TexGenAttrib::get_class_slot()));
+  if (!tex_gen->is_empty()) {
     pgraph_cat.error() << "Shader Generator does not support TexGen yet.\n";
   }
-  if (!_attribs._color_scale->is_identity()) {
+  const ColorScaleAttrib *color_scale = DCAST(ColorScaleAttrib, rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
+  if (!color_scale->is_identity()) {
     pgraph_cat.error() << "Shader Generator does not support ColorScale yet.\n";
   }
-  if (!_attribs._fog->is_off()) {
+  const FogAttrib *fog = DCAST(FogAttrib, rs->get_attrib_def(FogAttrib::get_class_slot()));
+  if (!fog->is_off()) {
     pgraph_cat.error() << "Shader Generator does not support Fog yet.\n";
   }
 }
@@ -358,7 +380,6 @@ clear_analysis() {
   _out_aux_normal = false;
   _out_aux_glow   = false;
   _out_aux_any    = false;
-  _attribs.clear_to_defaults();
   _material = (Material*)NULL;
   _need_material_props = false;
   _alights.clear();
@@ -700,11 +721,13 @@ synthesize_shader(const RenderState *rs) {
         text << "\t tot_specular += lspec;\n";
       }
     }
-    switch (_attribs._light_ramp->get_mode()) {
+
+    const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
+    switch (light_ramp->get_mode()) {
     case LightRampAttrib::LRT_single_threshold:
       {
-        float t = _attribs._light_ramp->get_threshold(0);
-        float l0 = _attribs._light_ramp->get_level(0);
+        float t = light_ramp->get_threshold(0);
+        float l0 = light_ramp->get_level(0);
         text << "\t // Single-threshold light ramp\n";
         text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
         text << "\t float lr_scale = (lr_in < " << t << ") ? 0.0 : (" << l0 << "/lr_in);\n";
@@ -713,11 +736,11 @@ synthesize_shader(const RenderState *rs) {
       }
     case LightRampAttrib::LRT_double_threshold:
       {
-        float t0 = _attribs._light_ramp->get_threshold(0);
-        float t1 = _attribs._light_ramp->get_threshold(1);
-        float l0 = _attribs._light_ramp->get_level(0);
-        float l1 = _attribs._light_ramp->get_level(1);
-        float l2 = _attribs._light_ramp->get_level(2);
+        float t0 = light_ramp->get_threshold(0);
+        float t1 = light_ramp->get_threshold(1);
+        float l0 = light_ramp->get_level(0);
+        float l1 = light_ramp->get_level(1);
+        float l2 = light_ramp->get_level(2);
         text << "\t // Double-threshold light ramp\n";
         text << "\t float lr_in = dot(tot_diffuse.rgb, float3(0.33,0.34,0.33));\n";
         text << "\t float lr_out = " << l0 << "\n";
@@ -763,7 +786,7 @@ synthesize_shader(const RenderState *rs) {
         text << "\t result += tot_diffuse;\n";
       }
     }
-    if (_attribs._light_ramp->get_mode() == LightRampAttrib::LRT_default) {
+    if (light_ramp->get_mode() == LightRampAttrib::LRT_default) {
       text << "\t result = saturate(result);\n";
     }
     text << "\t // End view-space light calculations\n";
@@ -789,8 +812,9 @@ synthesize_shader(const RenderState *rs) {
     }
   }
 
+  const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
   for (int i=0; i<_num_textures; i++) {
-    TextureStage *stage = _attribs._texture->get_on_stage(i);
+    TextureStage *stage = texture->get_on_stage(i);
     switch (stage->get_mode()) {
     case TextureStage::M_modulate:
     case TextureStage::M_modulate_glow:
@@ -824,9 +848,10 @@ synthesize_shader(const RenderState *rs) {
   }
 
   if (_subsume_alpha_test) {
+    const AlphaTestAttrib *alpha_test = DCAST(AlphaTestAttrib, rs->get_attrib_def(AlphaTestAttrib::get_class_slot()));
     text << "\t // Shader includes alpha test:\n";
-    double ref = _attribs._alpha_test->get_reference_alpha();
-    switch (_attribs._alpha_test->get_mode()) {
+    double ref = alpha_test->get_reference_alpha();
+    switch (alpha_test->get_mode()) {
     case RenderAttrib::M_never:          text<<"\t discard;\n";
     case RenderAttrib::M_less:           text<<"\t if (result.a >= "<<ref<<") discard;\n";
     case RenderAttrib::M_equal:          text<<"\t if (result.a != "<<ref<<") discard;\n";
@@ -864,7 +889,8 @@ synthesize_shader(const RenderState *rs) {
     }
   }
   
-  switch (_attribs._light_ramp->get_mode()) {
+  const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
+  switch (light_ramp->get_mode()) {
   case LightRampAttrib::LRT_hdr0:
     text << "\t result.rgb = (result*result*result + result*result + result) / (result*result*result + result*result + result + 1);\n";
     break;

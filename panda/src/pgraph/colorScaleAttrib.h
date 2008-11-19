@@ -36,6 +36,7 @@ PUBLISHED:
   static CPT(RenderAttrib) make_identity();
   static CPT(RenderAttrib) make(const LVecBase4f &scale);
   static CPT(RenderAttrib) make_off();
+  static CPT(RenderAttrib) make_default();
 
   INLINE bool is_off() const;
   INLINE bool is_identity() const;
@@ -48,13 +49,11 @@ PUBLISHED:
 public:
   virtual bool lower_attrib_can_override() const;
   virtual void output(ostream &out) const;
-  virtual void store_into_slot(AttribSlots *slots) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
-  virtual RenderAttrib *make_default_impl() const;
 
 private:
   void quantize_scale();
@@ -66,6 +65,14 @@ private:
   bool _has_alpha_scale;
   LVecBase4f _scale;
   static CPT(RenderAttrib) _identity_attrib;
+
+PUBLISHED:
+  static int get_class_slot() {
+    return _attrib_slot;
+  }
+  virtual int get_slot() const {
+    return get_class_slot();
+  }
 
 public:
   static void register_with_read_factory();
@@ -83,6 +90,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ColorScaleAttrib",
                   RenderAttrib::get_class_type());
+    _attrib_slot = register_slot(_type_handle, 100, make_default);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -91,6 +99,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
+  static int _attrib_slot;
 };
 
 #include "colorScaleAttrib.I"

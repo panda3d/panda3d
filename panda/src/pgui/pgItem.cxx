@@ -258,8 +258,9 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       // which only provides one.
       sort = (bin_sort << 16) | ((sort + 0x8000) & 0xffff);
 
-      if (activate_region(transform, sort, data._state->get_clip_plane(),
-                          data._state->get_scissor())) {
+      if (activate_region(transform, sort, 
+                          DCAST(ClipPlaneAttrib, data._state->get_attrib(ClipPlaneAttrib::get_class_slot())),
+                          DCAST(ScissorAttrib, data._state->get_attrib(ScissorAttrib::get_class_slot())))) {
         pg_trav->_top->add_region(get_region());
       }
     }

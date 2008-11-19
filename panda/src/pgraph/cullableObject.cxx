@@ -238,7 +238,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   bool has_aspect_ratio = (aspect_ratio.has_column());
 
   bool sprite_texcoord = false;
-  const TexGenAttrib *tex_gen = _state->get_tex_gen();
+  const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, _state->get_attrib(TexGenAttrib::get_class_slot()));
   if (tex_gen != (TexGenAttrib *)NULL) {
     if (tex_gen->get_mode(TextureStage::get_default()) == TexGenAttrib::M_point_sprite) {
       sprite_texcoord = true;
@@ -250,7 +250,7 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
 
   float point_size = 1.0f;
   bool perspective = false;
-  const RenderModeAttrib *render_mode = _state->get_render_mode();
+  const RenderModeAttrib *render_mode = DCAST(RenderModeAttrib, _state->get_attrib(RenderModeAttrib::get_class_slot()));
   if (render_mode != (RenderModeAttrib *)NULL) {
     point_size = render_mode->get_thickness();
     perspective = render_mode->get_perspective();
@@ -604,7 +604,7 @@ munge_texcoord_light_vector(const CullTraverser *traverser, bool force) {
     return true;
   }
 
-  CPT(TexGenAttrib) tex_gen = _state->get_tex_gen();
+  CPT(TexGenAttrib) tex_gen = DCAST(TexGenAttrib, _state->get_attrib(TexGenAttrib::get_class_slot()));
   nassertr(tex_gen != (TexGenAttrib *)NULL, false);
 
   const TexGenAttrib::LightVectors &light_vectors = tex_gen->get_light_vectors();
@@ -617,7 +617,7 @@ munge_texcoord_light_vector(const CullTraverser *traverser, bool force) {
     if (light.is_empty()) {
       // If a particular light isn't specified in the TexGenAttrib,
       // use the most important light in the current state.
-      CPT(RenderAttrib) attrib = _state->get_attrib(LightAttrib::get_class_type());
+      CPT(RenderAttrib) attrib = _state->get_attrib(LightAttrib::get_class_slot());
       if (attrib != (RenderAttrib *)NULL) {
         CPT(LightAttrib) la = DCAST(LightAttrib, attrib);
         light = la->get_most_important_light();

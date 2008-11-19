@@ -22,6 +22,16 @@
 #include "pointLight.h"
 #include "directionalLight.h"
 #include "spotlight.h"
+#include "depthWriteAttrib.h"
+#include "colorWriteAttrib.h"
+#include "alphaTestAttrib.h"
+#include "depthTestAttrib.h"
+#include "shadeModelAttrib.h"
+#include "cullFaceAttrib.h"
+#include "rescaleNormalAttrib.h"
+#include "materialAttrib.h"
+#include "lightAttrib.h"
+#include "scissorAttrib.h"
 #include "bitMask.h"
 #include "zgl.h"
 #include "zmath.h"
@@ -589,17 +599,20 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   bool needs_texmat = false;
   LMatrix4f texmat;
   const InternalName *texcoord_name = InternalName::get_texcoord();
-  int max_stage_index = _effective_texture->get_num_on_ff_stages();
+  int max_stage_index = _target_texture->get_num_on_ff_stages();
   if (max_stage_index > 0) {
-    TextureStage *stage = _effective_texture->get_on_ff_stage(0);
+    TextureStage *stage = _target_texture->get_on_ff_stage(0);
     rtexcoord = GeomVertexReader(data_reader, stage->get_texcoord_name(),
                                  force);
     rtexcoord.set_row(_min_vertex);
     needs_texcoord = rtexcoord.has_column();
 
-    if (needs_texcoord && _target._tex_matrix->has_stage(stage)) {
-      needs_texmat = true;
-      texmat = _target._tex_matrix->get_mat(stage);
+    if (needs_texcoord) {
+      const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
+      if (target_tex_matrix->has_stage(stage)) {
+        needs_texmat = true;
+        texmat = target_tex_matrix->get_mat(stage);
+      }
     }
   }
 
@@ -723,12 +736,14 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   // according to the current state.
 
   int depth_write_state = 0;  // zon
-  if (_target._depth_write->get_mode() != DepthWriteAttrib::M_on) {
+  const DepthWriteAttrib *target_depth_write = DCAST(DepthWriteAttrib, _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot()));
+  if (target_depth_write->get_mode() != DepthWriteAttrib::M_on) {
     depth_write_state = 1;  // zoff
   }
 
   int color_write_state = 0;  // cstore
-  switch (_target._transparency->get_mode()) {
+  const TransparencyAttrib *target_transparency = DCAST(TransparencyAttrib, _target_rs->get_attrib_def(TransparencyAttrib::get_class_slot()));
+  switch (target_transparency->get_mode()) {
   case TransparencyAttrib::M_alpha:
   case TransparencyAttrib::M_dual:
     color_write_state = 1;    // cblend
@@ -738,13 +753,14 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     break;
   }
 
-  if (_target._color_blend->get_mode() == ColorBlendAttrib::M_add) {
+  const ColorBlendAttrib *target_color_blend = DCAST(ColorBlendAttrib, _target_rs->get_attrib_def(ColorBlendAttrib::get_class_slot()));
+  if (target_color_blend->get_mode() == ColorBlendAttrib::M_add) {
     // If we have a color blend set that we can support, it overrides
     // the transparency set.
-    int op_a = get_color_blend_op(_target._color_blend->get_operand_a());
-    int op_b = get_color_blend_op(_target._color_blend->get_operand_b());
+    int op_a = get_color_blend_op(target_color_blend->get_operand_a());
+    int op_b = get_color_blend_op(target_color_blend->get_operand_b());
     _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b];
-    Colorf c = _target._color_blend->get_color();
+    Colorf c = target_color_blend->get_color();
     _c->zb->blend_r = (int)(c[0] * ZB_POINT_RED_MAX);
     _c->zb->blend_g = (int)(c[1] * ZB_POINT_GREEN_MAX);
     _c->zb->blend_b = (int)(c[2] * ZB_POINT_BLUE_MAX);
@@ -753,14 +769,16 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     color_write_state = 2;     // cgeneral
   }
 
+  const ColorWriteAttrib *target_color_write = DCAST(ColorWriteAttrib, _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot()));
   unsigned int color_channels =
-    _target._color_write->get_channels() & _color_write_mask;
+    target_color_write->get_channels() & _color_write_mask;
   if (color_channels == ColorWriteAttrib::C_off) {
     color_write_state = 3;    // coff
   }
 
   int alpha_test_state = 0;   // anone
-  switch (_target._alpha_test->get_mode()) {
+  const AlphaTestAttrib *target_alpha_test = DCAST(AlphaTestAttrib, _target_rs->get_attrib_def(AlphaTestAttrib::get_class_slot()));
+  switch (target_alpha_test->get_mode()) {
   case AlphaTestAttrib::M_none:
   case AlphaTestAttrib::M_never:
   case AlphaTestAttrib::M_always:
@@ -772,24 +790,26 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   case AlphaTestAttrib::M_less:
   case AlphaTestAttrib::M_less_equal:
     alpha_test_state = 1;    // aless
-    _c->zb->reference_alpha = (int)(_target._alpha_test->get_reference_alpha() * ZB_POINT_ALPHA_MAX);
+    _c->zb->reference_alpha = (int)(target_alpha_test->get_reference_alpha() * ZB_POINT_ALPHA_MAX);
     break;
 
   case AlphaTestAttrib::M_greater:
   case AlphaTestAttrib::M_greater_equal:
     alpha_test_state = 2;    // amore
-    _c->zb->reference_alpha = (int)(_target._alpha_test->get_reference_alpha() * ZB_POINT_ALPHA_MAX);
+    _c->zb->reference_alpha = (int)(target_alpha_test->get_reference_alpha() * ZB_POINT_ALPHA_MAX);
     break;
   }
 
   int depth_test_state = 1;    // zless
   _c->depth_test = 1;  // set this for ZB_line
-  if (_target._depth_test->get_mode() == DepthTestAttrib::M_none) {
+  const DepthTestAttrib *target_depth_test = DCAST(DepthTestAttrib, _target_rs->get_attrib_def(DepthTestAttrib::get_class_slot()));
+  if (target_depth_test->get_mode() == DepthTestAttrib::M_none) {
     depth_test_state = 0;      // zless
     _c->depth_test = 0;
   }
   
-  ShadeModelAttrib::Mode shade_model = _target._shade_model->get_mode();
+  const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot()));
+  ShadeModelAttrib::Mode shade_model = target_shade_model->get_mode();
   if (!needs_normal && !needs_color) {
     // With no per-vertex lighting, and no per-vertex colors, we might
     // as well use the flat shading model.
@@ -1387,60 +1407,75 @@ set_state_and_transform(const RenderState *target,
     return;
   }
   _target_rs = target;
-  _target.clear_to_defaults();
-  target->store_into_slots(&_target);
-  _state_rs = 0;
 
-  if (_target._color != _state._color ||
-      _target._color_scale != _state._color_scale) {
+  int color_slot = ColorAttrib::get_class_slot();
+  int color_scale_slot = ColorScaleAttrib::get_class_slot();
+  if (_target_rs->get_attrib(color_slot) != _state_rs->get_attrib(color_slot) ||
+      _target_rs->get_attrib(color_scale_slot) != _state_rs->get_attrib(color_scale_slot) ||
+      !_state_mask.get_bit(color_slot) ||
+      !_state_mask.get_bit(color_scale_slot)) {
     PStatTimer timer(_draw_set_state_color_pcollector);
     do_issue_color();
     do_issue_color_scale();
-    _state._color = _target._color;
-    _state._color_scale = _target._color_scale;
+    _state_mask.set_bit(color_slot);
+    _state_mask.set_bit(color_scale_slot);
   }
 
-  if (_target._cull_face != _state._cull_face) {
+  int cull_face_slot = CullFaceAttrib::get_class_slot();
+  if (_target_rs->get_attrib(cull_face_slot) != _state_rs->get_attrib(cull_face_slot) ||
+      !_state_mask.get_bit(cull_face_slot)) {
     PStatTimer timer(_draw_set_state_cull_face_pcollector);
     do_issue_cull_face();
-    _state._cull_face = _target._cull_face;
+    _state_mask.set_bit(cull_face_slot);
   }
-  
-  if (_target._rescale_normal != _state._rescale_normal) {
+
+  int rescale_normal_slot = RescaleNormalAttrib::get_class_slot();
+  if (_target_rs->get_attrib(rescale_normal_slot) != _state_rs->get_attrib(rescale_normal_slot) ||
+      !_state_mask.get_bit(rescale_normal_slot)) {
     PStatTimer timer(_draw_set_state_rescale_normal_pcollector);
     do_issue_rescale_normal();
-    _state._rescale_normal = _target._rescale_normal;
+    _state_mask.set_bit(rescale_normal_slot);
   }
 
-  if (_target._render_mode != _state._render_mode) {
+  int render_mode_slot = RenderModeAttrib::get_class_slot();
+  if (_target_rs->get_attrib(render_mode_slot) != _state_rs->get_attrib(render_mode_slot) ||
+      !_state_mask.get_bit(render_mode_slot)) {
     PStatTimer timer(_draw_set_state_render_mode_pcollector);
     do_issue_render_mode();
-    _state._render_mode = _target._render_mode;
+    _state_mask.set_bit(render_mode_slot);
   }
 
-  if (_target._texture != _state._texture) {
+  int texture_slot = TextureAttrib::get_class_slot();
+  if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
+      !_state_mask.get_bit(texture_slot)) {
     PStatTimer timer(_draw_set_state_texture_pcollector);
-    determine_effective_texture();
+    determine_target_texture();
     do_issue_texture();
-    _state._texture = _target._texture;
+    _state_mask.set_bit(texture_slot);
   }
-  
-  if (_target._material != _state._material) {
+
+  int material_slot = MaterialAttrib::get_class_slot();
+  if (_target_rs->get_attrib(material_slot) != _state_rs->get_attrib(material_slot) ||
+      !_state_mask.get_bit(material_slot)) {
     PStatTimer timer(_draw_set_state_material_pcollector);
     do_issue_material();
-    _state._material = _target._material;
+    _state_mask.set_bit(material_slot);
   }
 
-  if (_target._light != _state._light) {
+  int light_slot = LightAttrib::get_class_slot();
+  if (_target_rs->get_attrib(light_slot) != _state_rs->get_attrib(light_slot) ||
+      !_state_mask.get_bit(light_slot)) {
     PStatTimer timer(_draw_set_state_light_pcollector);
     do_issue_light();
-    _state._light = _target._light;
+    _state_mask.set_bit(light_slot);
   }
 
-  if (_target._scissor != _state._scissor) {
+  int scissor_slot = ScissorAttrib::get_class_slot();
+  if (_target_rs->get_attrib(scissor_slot) != _state_rs->get_attrib(scissor_slot) ||
+      !_state_mask.get_bit(scissor_slot)) {
     PStatTimer timer(_draw_set_state_scissor_pcollector);
     do_issue_scissor();
-    _state._scissor = _target._scissor;
+    _state_mask.set_bit(scissor_slot);
   }
 
   _state_rs = _target_rs;
@@ -1573,17 +1608,18 @@ do_issue_light() {
   int num_enabled = 0;
   int num_on_lights = 0;
 
+  const LightAttrib *target_light = DCAST(LightAttrib, _target_rs->get_attrib_def(LightAttrib::get_class_slot()));
   if (display_cat.is_spam()) {
     display_cat.spam()
-      << "do_issue_light: " << _target._light << "\n";
+      << "do_issue_light: " << target_light << "\n";
   }
 
   // First, release all of the previously-assigned lights.
   clear_light_state();
 
   // Now, assign new lights.
-  if (_target._light != (LightAttrib *)NULL) {
-    CPT(LightAttrib) new_light = _target._light->filter_to_max(_max_lights);
+  if (target_light != (LightAttrib *)NULL) {
+    CPT(LightAttrib) new_light = target_light->filter_to_max(_max_lights);
     if (display_cat.is_spam()) {
       new_light->write(display_cat.spam(false), 2);
     }
@@ -1841,11 +1877,11 @@ do_issue_transform() {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 do_issue_render_mode() {
-  const RenderModeAttrib *attrib = _target._render_mode;
+  const RenderModeAttrib *target_render_mode = DCAST(RenderModeAttrib, _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot()));
 
   _filled_flat = false;
 
-  switch (attrib->get_mode()) {
+  switch (target_render_mode->get_mode()) {
   case RenderModeAttrib::M_unchanged:
   case RenderModeAttrib::M_filled:
     _c->draw_triangle_front = gl_draw_triangle_fill;
@@ -1870,7 +1906,7 @@ do_issue_render_mode() {
 
   default:
     tinydisplay_cat.error()
-      << "Unknown render mode " << (int)attrib->get_mode() << endl;
+      << "Unknown render mode " << (int)target_render_mode->get_mode() << endl;
   }
 }
 
@@ -1881,8 +1917,8 @@ do_issue_render_mode() {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 do_issue_rescale_normal() {
-  const RescaleNormalAttrib *attrib = _target._rescale_normal;
-  RescaleNormalAttrib::Mode mode = attrib->get_mode();
+  const RescaleNormalAttrib *target_rescale_normal = DCAST(RescaleNormalAttrib, _target_rs->get_attrib_def(RescaleNormalAttrib::get_class_slot()));
+  RescaleNormalAttrib::Mode mode = target_rescale_normal->get_mode();
 
   _auto_rescale_normal = false;
 
@@ -1916,8 +1952,8 @@ do_issue_rescale_normal() {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 do_issue_cull_face() {
-  const CullFaceAttrib *attrib = _target._cull_face;
-  CullFaceAttrib::Mode mode = attrib->get_effective_mode();
+  const CullFaceAttrib *target_cull_face = DCAST(CullFaceAttrib, _target_rs->get_attrib_def(CullFaceAttrib::get_class_slot()));
+  CullFaceAttrib::Mode mode = target_cull_face->get_effective_mode();
 
   switch (mode) {
   case CullFaceAttrib::M_cull_none:
@@ -1946,12 +1982,15 @@ do_issue_cull_face() {
 void TinyGraphicsStateGuardian::
 do_issue_material() {
   static Material empty;
+
+  const MaterialAttrib *target_material = DCAST(MaterialAttrib, _target_rs->get_attrib_def(MaterialAttrib::get_class_slot()));
+
   const Material *material;
-  if (_target._material == (MaterialAttrib *)NULL ||
-      _target._material->is_off()) {
+  if (target_material == (MaterialAttrib *)NULL ||
+      target_material->is_off()) {
     material = &empty;
   } else {
-    material = _target._material->get_material();
+    material = target_material->get_material();
   }
 
   // Apply the material parameters to the front face.
@@ -1976,15 +2015,15 @@ do_issue_texture() {
   _texturing_state = 0;   // untextured
   _c->texture_2d_enabled = false;
 
-  int num_stages = _effective_texture->get_num_on_ff_stages();
+  int num_stages = _target_texture->get_num_on_ff_stages();
   if (num_stages == 0) {
     // No texturing.
     return;
   }
   nassertv(num_stages == 1);
 
-  TextureStage *stage = _effective_texture->get_on_ff_stage(0);
-  Texture *texture = _effective_texture->get_on_texture(stage);
+  TextureStage *stage = _target_texture->get_on_ff_stage(0);
+  Texture *texture = _target_texture->get_on_texture(stage);
   nassertv(texture != (Texture *)NULL);
     
   TextureContext *tc = texture->prepare_now(_prepared_objects, this);
@@ -2058,7 +2097,8 @@ do_issue_texture() {
 ////////////////////////////////////////////////////////////////////
 void TinyGraphicsStateGuardian::
 do_issue_scissor() {
-  const LVecBase4f &frame = _target._scissor->get_frame();
+  const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
+  const LVecBase4f &frame = target_scissor->get_frame();
   set_scissor(frame[0], frame[1], frame[2], frame[3]);
 }
 

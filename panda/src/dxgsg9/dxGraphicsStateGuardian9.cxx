@@ -39,6 +39,9 @@
 #include "rescaleNormalAttrib.h"
 #include "fogAttrib.h"
 #include "depthOffsetAttrib.h"
+#include "lightAttrib.h"
+#include "stencilAttrib.h"
+#include "scissorAttrib.h"
 #include "fog.h"
 #include "throw_event.h"
 #include "geomVertexFormat.h"
@@ -1471,7 +1474,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
 draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  //PStatTimer timer(_draw_primitive_pcollector);
 
   _vertices_tri_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_tri_pcollector.add_level(1);
@@ -1546,7 +1549,7 @@ draw_triangles(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
 draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  //PStatTimer timer(_draw_primitive_pcollector);
 
   if (connect_triangle_strips && _current_fill_mode != RenderModeAttrib::M_wireframe) {
     // One long triangle strip, connected by the degenerate vertices
@@ -1731,7 +1734,7 @@ draw_tristrips(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
 draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  //PStatTimer timer(_draw_primitive_pcollector);
 
   CPTA_int ends = reader->get_ends();
   _primitive_batches_trifan_pcollector.add_level(ends.size());
@@ -1843,7 +1846,7 @@ draw_trifans(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
 draw_lines(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  //PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
@@ -1924,7 +1927,7 @@ draw_linestrips(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian9::
 draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
-  PStatTimer timer(_draw_primitive_pcollector);
+  //PStatTimer timer(_draw_primitive_pcollector);
   _vertices_other_pcollector.add_level(reader->get_num_vertices());
   _primitive_batches_other_pcollector.add_level(1);
 
@@ -2878,17 +2881,17 @@ do_issue_transform() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_alpha_test() {
-  if (_target._shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
+  if (_target_shader->get_flag(ShaderAttrib::F_subsume_alpha_test)) {
     set_render_state(D3DRS_ALPHATESTENABLE, FALSE);
   } else {
-    const AlphaTestAttrib *attrib = _target._alpha_test;
-    AlphaTestAttrib::PandaCompareFunc mode = attrib->get_mode();
+    const AlphaTestAttrib *target_alpha_test = DCAST(AlphaTestAttrib, _target_rs->get_attrib_def(AlphaTestAttrib::get_class_slot()));
+    AlphaTestAttrib::PandaCompareFunc mode = target_alpha_test->get_mode();
     if (mode == AlphaTestAttrib::M_none) {
       set_render_state(D3DRS_ALPHATESTENABLE, FALSE);
     } else {
       //  AlphaTestAttrib::PandaCompareFunc === D3DCMPFUNC
       set_render_state(D3DRS_ALPHAFUNC, (D3DCMPFUNC)mode);
-      set_render_state(D3DRS_ALPHAREF, (UINT) (attrib->get_reference_alpha()*255.0f));  //d3d uses 0x0-0xFF, not a float
+      set_render_state(D3DRS_ALPHAREF, (UINT) (target_alpha_test->get_reference_alpha()*255.0f));  //d3d uses 0x0-0xFF, not a float
       set_render_state(D3DRS_ALPHATESTENABLE, TRUE);
     }
   }
@@ -2904,8 +2907,8 @@ do_issue_shader() {
 
   CLP(ShaderContext) *context = 0;
   Shader *shader = 0;
-  if (_target._shader) {
-    shader = (Shader *)(_target._shader->get_shader());
+  if (_target_shader) {
+    shader = (Shader *)(_target_shader->get_shader());
   }
   if (shader) {
     context = (CLP(ShaderContext) *)(shader->prepare_now(get_prepared_objects(), this));
@@ -2948,8 +2951,8 @@ do_issue_shader() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_render_mode() {
-  const RenderModeAttrib *attrib = _target._render_mode;
-  RenderModeAttrib::Mode mode = attrib->get_mode();
+  const RenderModeAttrib *target_render_mode = DCAST(RenderModeAttrib, _target_rs->get_attrib_def(RenderModeAttrib::get_class_slot()));
+  RenderModeAttrib::Mode mode = target_render_mode->get_mode();
 
   switch (mode) {
   case RenderModeAttrib::M_unchanged:
@@ -2972,10 +2975,10 @@ do_issue_render_mode() {
   }
 
   // This might also specify the point size.
-  float point_size = attrib->get_thickness();
+  float point_size = target_render_mode->get_thickness();
   set_render_state(D3DRS_POINTSIZE, *((DWORD*)&point_size));
 
-  if (attrib->get_perspective()) {
+  if (target_render_mode->get_perspective()) {
     set_render_state(D3DRS_POINTSCALEENABLE, TRUE);
 
     LVector3f height(0.0f, point_size, 1.0f);
@@ -3002,8 +3005,8 @@ do_issue_render_mode() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_rescale_normal() {
-  const RescaleNormalAttrib *attrib = _target._rescale_normal;
-  RescaleNormalAttrib::Mode mode = attrib->get_mode();
+  const RescaleNormalAttrib *target_rescale_normal = DCAST(RescaleNormalAttrib, _target_rs->get_attrib_def(RescaleNormalAttrib::get_class_slot()));
+  RescaleNormalAttrib::Mode mode = target_rescale_normal->get_mode();
 
   _auto_rescale_normal = false;
 
@@ -3035,8 +3038,8 @@ do_issue_rescale_normal() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_depth_test() {
-  const DepthTestAttrib *attrib = _target._depth_test;
-  DepthTestAttrib::PandaCompareFunc mode = attrib->get_mode();
+  const DepthTestAttrib *target_depth_test = DCAST(DepthTestAttrib, _target_rs->get_attrib_def(DepthTestAttrib::get_class_slot()));
+  DepthTestAttrib::PandaCompareFunc mode = target_depth_test->get_mode();
   if (mode == DepthTestAttrib::M_none) {
     set_render_state(D3DRS_ZENABLE, D3DZB_FALSE);
   } else {
@@ -3052,8 +3055,9 @@ do_issue_depth_test() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_depth_write() {
-  const DepthWriteAttrib *attrib = _target._depth_write;
-  if (attrib->get_mode() == DepthWriteAttrib::M_on) {
+  const DepthWriteAttrib *target_depth_write = DCAST(DepthWriteAttrib, _target_rs->get_attrib_def(DepthWriteAttrib::get_class_slot()));
+  DepthWriteAttrib::Mode mode = target_depth_write->get_mode();
+  if (mode == DepthWriteAttrib::M_on) {
     set_render_state(D3DRS_ZWRITEENABLE, TRUE);
   } else {
     set_render_state(D3DRS_ZWRITEENABLE, FALSE);
@@ -3067,8 +3071,8 @@ do_issue_depth_write() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_cull_face() {
-  const CullFaceAttrib *attrib = _target._cull_face;
-  _cull_face_mode = attrib->get_effective_mode();
+  const CullFaceAttrib *target_cull_face = DCAST(CullFaceAttrib, _target_rs->get_attrib_def(CullFaceAttrib::get_class_slot()));
+  _cull_face_mode = target_cull_face->get_effective_mode();
 
   switch (_cull_face_mode) {
   case CullFaceAttrib::M_cull_none:
@@ -3103,10 +3107,10 @@ do_issue_cull_face() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_fog() {
-  const FogAttrib *attrib = _target._fog;
-  if (!attrib->is_off()) {
+  const FogAttrib *target_fog = DCAST(FogAttrib, _target_rs->get_attrib_def(FogAttrib::get_class_slot()));
+  if (!target_fog->is_off()) {
     set_render_state(D3DRS_FOGENABLE, TRUE);
-    Fog *fog = attrib->get_fog();
+    Fog *fog = target_fog->get_fog();
     nassertv(fog != (Fog *)NULL);
     apply_fog(fog);
   } else {
@@ -3121,8 +3125,8 @@ do_issue_fog() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_depth_offset() {
-  const DepthOffsetAttrib *attrib = _target._depth_offset;
-  int offset = attrib->get_offset();
+  const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot()));
+  int offset = target_depth_offset->get_offset();
 
   if (_supports_depth_bias) {
     set_render_state(D3DRS_DEPTHBIAS, offset);
@@ -3146,8 +3150,8 @@ do_issue_depth_offset() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_shade_model() {
-  const ShadeModelAttrib *attrib = _target._shade_model;
-  switch (attrib->get_mode()) {
+  const ShadeModelAttrib *target_shade_model = DCAST(ShadeModelAttrib, _target_rs->get_attrib_def(ShadeModelAttrib::get_class_slot()));
+  switch (target_shade_model->get_mode()) {
   case ShadeModelAttrib::M_smooth:
     set_render_state(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
     break;
@@ -3185,8 +3189,10 @@ set_state_and_transform(const RenderState *target,
   }
 #endif
   _state_pcollector.add_level(1);
+  PStatTimer timer1(_draw_set_state_pcollector);
 
   if (transform != _internal_transform) {
+    //PStatTimer timer(_draw_set_state_transform_pcollector);
     _state_pcollector.add_level(1);
     _internal_transform = transform;
     do_issue_transform();
@@ -3196,133 +3202,184 @@ set_state_and_transform(const RenderState *target,
     return;
   }
   _target_rs = target;
-  _target.clear_to_defaults();
-  target->store_into_slots(&_target);
-  _state_rs = 0;
 
-  if (_target._shader && (_target._shader->auto_shader())) {
-    _target._shader = _target_rs->get_generated_shader();
+  _target_shader = DCAST(ShaderAttrib, _target_rs->get_attrib_def(ShaderAttrib::get_class_slot()));
+  if (_target_shader->auto_shader()) {
+    _target_shader = _target_rs->get_generated_shader();
   }
-  
-  if ((_target._alpha_test != _state._alpha_test)||
-      (_target._shader->get_flag(ShaderAttrib::F_subsume_alpha_test) != 
-       _state._shader->get_flag(ShaderAttrib::F_subsume_alpha_test))) {
+
+  int alpha_test_slot = AlphaTestAttrib::get_class_slot();
+  if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||
+      !_state_mask.get_bit(alpha_test_slot)) {
+    //PStatTimer timer(_draw_set_state_alpha_test_pcollector);
     do_issue_alpha_test();
-    _state._alpha_test = _target._alpha_test;
+    _state_mask.set_bit(alpha_test_slot);
   }
 
-  if (_target._antialias != _state._antialias) {
-    // Antialias not implemented under DX8
-    _state._antialias = _target._antialias;
-  }
-
-  if (_target._clip_plane != _state._clip_plane) {
+  int clip_plane_slot = ClipPlaneAttrib::get_class_slot();
+  if (_target_rs->get_attrib(clip_plane_slot) != _state_rs->get_attrib(clip_plane_slot) ||
+      !_state_mask.get_bit(clip_plane_slot)) {
+    //PStatTimer timer(_draw_set_state_clip_plane_pcollector);
     do_issue_clip_plane();
-    _state._clip_plane = _target._clip_plane;
+    _state_mask.set_bit(clip_plane_slot);
   }
 
-  if (_target._color != _state._color ||
-      _target._color_scale != _state._color_scale) {
+  int color_slot = ColorAttrib::get_class_slot();
+  int color_scale_slot = ColorScaleAttrib::get_class_slot();
+  if (_target_rs->get_attrib(color_slot) != _state_rs->get_attrib(color_slot) ||
+      _target_rs->get_attrib(color_scale_slot) != _state_rs->get_attrib(color_scale_slot) ||
+      !_state_mask.get_bit(color_slot) ||
+      !_state_mask.get_bit(color_scale_slot)) {
+    //PStatTimer timer(_draw_set_state_color_pcollector);
     do_issue_color();
     do_issue_color_scale();
-    _state._color = _target._color;
-    _state._color_scale = _target._color_scale;
-    if (_current_shader_context) {
-      _current_shader_context->issue_parameters(this, Shader::SSD_color);
-    }
+    _state_mask.set_bit(color_slot);
+    _state_mask.set_bit(color_scale_slot);
   }
 
-  if (_target._cull_face != _state._cull_face) {
+  int cull_face_slot = CullFaceAttrib::get_class_slot();
+  if (_target_rs->get_attrib(cull_face_slot) != _state_rs->get_attrib(cull_face_slot) ||
+      !_state_mask.get_bit(cull_face_slot)) {
+    //PStatTimer timer(_draw_set_state_cull_face_pcollector);
     do_issue_cull_face();
-    _state._cull_face = _target._cull_face;
+    _state_mask.set_bit(cull_face_slot);
   }
 
-  if (_target._depth_offset != _state._depth_offset) {
+  int depth_offset_slot = DepthOffsetAttrib::get_class_slot();
+  if (_target_rs->get_attrib(depth_offset_slot) != _state_rs->get_attrib(depth_offset_slot) ||
+      !_state_mask.get_bit(depth_offset_slot)) {
+    //PStatTimer timer(_draw_set_state_depth_offset_pcollector);
     do_issue_depth_offset();
-    _state._depth_offset = _target._depth_offset;
+    _state_mask.set_bit(depth_offset_slot);
   }
 
-  if (_target._depth_test != _state._depth_test) {
+  int depth_test_slot = DepthTestAttrib::get_class_slot();
+  if (_target_rs->get_attrib(depth_test_slot) != _state_rs->get_attrib(depth_test_slot) ||
+      !_state_mask.get_bit(depth_test_slot)) {
+    //PStatTimer timer(_draw_set_state_depth_test_pcollector);
     do_issue_depth_test();
-    _state._depth_test = _target._depth_test;
+    _state_mask.set_bit(depth_test_slot);
   }
 
-  if (_target._depth_write != _state._depth_write) {
+  int depth_write_slot = DepthWriteAttrib::get_class_slot();
+  if (_target_rs->get_attrib(depth_write_slot) != _state_rs->get_attrib(depth_write_slot) ||
+      !_state_mask.get_bit(depth_write_slot)) {
+    //PStatTimer timer(_draw_set_state_depth_write_pcollector);
     do_issue_depth_write();
-    _state._depth_write = _target._depth_write;
+    _state_mask.set_bit(depth_write_slot);
   }
 
-  if (_target._fog != _state._fog) {
-    do_issue_fog();
-    _state._fog = _target._fog;
-  }
-
-  if (_target._render_mode != _state._render_mode) {
+  int render_mode_slot = RenderModeAttrib::get_class_slot();
+  if (_target_rs->get_attrib(render_mode_slot) != _state_rs->get_attrib(render_mode_slot) ||
+      !_state_mask.get_bit(render_mode_slot)) {
+    //PStatTimer timer(_draw_set_state_render_mode_pcollector);
     do_issue_render_mode();
-    _state._render_mode = _target._render_mode;
+    _state_mask.set_bit(render_mode_slot);
   }
 
-  if (_target._rescale_normal != _state._rescale_normal) {
+  int rescale_normal_slot = RescaleNormalAttrib::get_class_slot();
+  if (_target_rs->get_attrib(rescale_normal_slot) != _state_rs->get_attrib(rescale_normal_slot) ||
+      !_state_mask.get_bit(rescale_normal_slot)) {
+    //PStatTimer timer(_draw_set_state_rescale_normal_pcollector);
     do_issue_rescale_normal();
-    _state._rescale_normal = _target._rescale_normal;
+    _state_mask.set_bit(rescale_normal_slot);
   }
 
-  if (_target._shade_model != _state._shade_model) {
+  int shade_model_slot = ShadeModelAttrib::get_class_slot();
+  if (_target_rs->get_attrib(shade_model_slot) != _state_rs->get_attrib(shade_model_slot) ||
+      !_state_mask.get_bit(shade_model_slot)) {
+    //PStatTimer timer(_draw_set_state_shade_model_pcollector);
     do_issue_shade_model();
-    _state._shade_model = _target._shade_model;
+    _state_mask.set_bit(shade_model_slot);
   }
 
-  if ((_target._transparency != _state._transparency)||
-      (_target._color_write != _state._color_write)||
-      (_target._color_blend != _state._color_blend)||
-      (_target._shader->get_flag(ShaderAttrib::F_disable_alpha_write) != 
-       _state._shader->get_flag(ShaderAttrib::F_disable_alpha_write))) {
+  int transparency_slot = TransparencyAttrib::get_class_slot();
+  int color_write_slot = ColorWriteAttrib::get_class_slot();
+  int color_blend_slot = ColorBlendAttrib::get_class_slot();
+  if (_target_rs->get_attrib(transparency_slot) != _state_rs->get_attrib(transparency_slot) ||
+      _target_rs->get_attrib(color_write_slot) != _state_rs->get_attrib(color_write_slot) ||
+      _target_rs->get_attrib(color_blend_slot) != _state_rs->get_attrib(color_blend_slot) ||
+      !_state_mask.get_bit(transparency_slot) ||
+      !_state_mask.get_bit(color_write_slot) ||
+      !_state_mask.get_bit(color_blend_slot) ||
+      (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write) != 
+       _state_shader->get_flag(ShaderAttrib::F_disable_alpha_write))) {
+    //PStatTimer timer(_draw_set_state_blending_pcollector);
     do_issue_blending();
-    _state._transparency = _target._transparency;
-    _state._color_write = _target._color_write;
-    _state._color_blend = _target._color_blend;
+    _state_mask.set_bit(transparency_slot);
+    _state_mask.set_bit(color_write_slot);
+    _state_mask.set_bit(color_blend_slot);
   }
 
-  if (_target._shader != _state._shader) {
+  if (_target_shader != _state_shader) {
+    //PStatTimer timer(_draw_set_state_shader_pcollector);
     do_issue_shader();
-    _state._shader = _target._shader;
-    _state._texture = 0;
+    _state_shader = _target_shader;
+    _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
 
-  if (_target._tex_matrix != _state._tex_matrix) {
-    _state._texture = 0;
-    _state._tex_matrix = _target._tex_matrix;
-  }
-
-  if (_target._texture != _state._texture ||
-      _target._tex_gen != _state._tex_gen) {
-    determine_effective_texture();
+  int texture_slot = TextureAttrib::get_class_slot();
+  int tex_matrix_slot = TexMatrixAttrib::get_class_slot();
+  int tex_gen_slot = TexGenAttrib::get_class_slot();
+  if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
+      _target_rs->get_attrib(tex_matrix_slot) != _state_rs->get_attrib(tex_matrix_slot) ||
+      _target_rs->get_attrib(tex_gen_slot) != _state_rs->get_attrib(tex_gen_slot) ||
+      !_state_mask.get_bit(texture_slot) ||
+      !_state_mask.get_bit(tex_matrix_slot) ||
+      !_state_mask.get_bit(tex_gen_slot)) {
+    //PStatTimer timer(_draw_set_state_texture_pcollector);
+    determine_target_texture();
     do_issue_texture();
-    _state._texture = _target._texture;
-    _state._tex_gen = _target._tex_gen;
+
+    _state_texture = _target_texture;
+    _state_mask.set_bit(texture_slot);
+    _state_mask.set_bit(tex_matrix_slot);
+    _state_mask.set_bit(tex_gen_slot);
   }
 
-  if (_target._material != _state._material) {
+  int material_slot = MaterialAttrib::get_class_slot();
+  if (_target_rs->get_attrib(material_slot) != _state_rs->get_attrib(material_slot) ||
+      !_state_mask.get_bit(material_slot)) {
+    //PStatTimer timer(_draw_set_state_material_pcollector);
     do_issue_material();
-    _state._material = _target._material;
+    _state_mask.set_bit(material_slot);
     if (_current_shader_context) {
       _current_shader_context->issue_parameters(this, Shader::SSD_material);
     }
   }
 
-  if (_target._light != _state._light) {
+  int light_slot = LightAttrib::get_class_slot();
+  if (_target_rs->get_attrib(light_slot) != _state_rs->get_attrib(light_slot) ||
+      !_state_mask.get_bit(light_slot)) {
+    //PStatTimer timer(_draw_set_state_light_pcollector);
     do_issue_light();
-    _state._light = _target._light;
+    _state_mask.set_bit(light_slot);
   }
 
-  if (_target._stencil != _state._stencil) {
+  int stencil_slot = StencilAttrib::get_class_slot();
+  if (_target_rs->get_attrib(stencil_slot) != _state_rs->get_attrib(stencil_slot) ||
+      !_state_mask.get_bit(stencil_slot)) {
+    //PStatTimer timer(_draw_set_state_stencil_pcollector);
     do_issue_stencil();
-    _state._stencil = _target._stencil;
+    _state_mask.set_bit(stencil_slot);
+  }
+     
+  if (_current_shader_context == 0) {
+    int fog_slot = FogAttrib::get_class_slot();
+    if (_target_rs->get_attrib(fog_slot) != _state_rs->get_attrib(fog_slot) ||
+        !_state_mask.get_bit(fog_slot)) {
+      //PStatTimer timer(_draw_set_state_fog_pcollector);
+      do_issue_fog();
+      _state_mask.set_bit(fog_slot);
+    }
   }
 
-  if (_target._scissor != _state._scissor) {
+  int scissor_slot = ScissorAttrib::get_class_slot();
+  if (_target_rs->get_attrib(scissor_slot) != _state_rs->get_attrib(scissor_slot) ||
+      !_state_mask.get_bit(scissor_slot)) {
+    //PStatTimer timer(_draw_set_state_scissor_pcollector);
     do_issue_scissor();
-    _state._scissor = _target._scissor;
+    _state_mask.set_bit(scissor_slot);
   }
 
   _state_rs = _target_rs;
@@ -3385,7 +3442,7 @@ bind_light(PointLight *light_obj, const NodePath &light, int light_id) {
 void DXGraphicsStateGuardian9::
 bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
   static PStatCollector _draw_set_state_light_bind_directional_pcollector("Draw:Set State:Light:Bind:Directional");
-  PStatTimer timer(_draw_set_state_light_bind_directional_pcollector);
+  //PStatTimer timer(_draw_set_state_light_bind_directional_pcollector);
 
   pair<DirectionalLights::iterator, bool> lookup = _dlights.insert(DirectionalLights::value_type(light, D3DLIGHT9()));
   D3DLIGHT9 &fdata = (*lookup.first).second;
@@ -3517,11 +3574,11 @@ void DXGraphicsStateGuardian9::
 do_issue_material() {
   static Material empty;
   const Material *material;
-  if (_target._material == (MaterialAttrib *)NULL ||
-      _target._material->is_off()) {
+  const MaterialAttrib *target_material = DCAST(MaterialAttrib, _target_rs->get_attrib_def(MaterialAttrib::get_class_slot()));
+  if (target_material->is_off()) {
     material = &empty;
   } else {
-    material = _target._material->get_material();
+    material = target_material->get_material();
   }
 
   D3DMATERIAL9 cur_material;
@@ -3634,10 +3691,10 @@ void DXGraphicsStateGuardian9::
 update_standard_texture_bindings() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
-  int num_stages = _effective_texture->get_num_on_ff_stages();
+  int num_stages = _target_texture->get_num_on_ff_stages();
   int num_old_stages = _max_texture_stages;
-  if (_state._texture != (TextureAttrib *)NULL) {
-    num_old_stages = _state._texture->get_num_on_ff_stages();
+  if (_state_texture != (TextureAttrib *)NULL) {
+    num_old_stages = _state_texture->get_num_on_ff_stages();
   }
 
   nassertv(num_stages <= _max_texture_stages &&
@@ -3651,10 +3708,10 @@ update_standard_texture_bindings() {
 
   int si;
   for (si = 0; si < num_stages; si++) {
-    TextureStage *stage = _effective_texture->get_on_ff_stage(si);
-    int texcoord_index = _effective_texture->get_ff_tc_index(si);
+    TextureStage *stage = _target_texture->get_on_ff_stage(si);
+    int texcoord_index = _target_texture->get_ff_tc_index(si);
 
-    Texture *texture = _effective_texture->get_on_texture(stage);
+    Texture *texture = _target_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
 
     // We always reissue every stage in DX, just in case the texcoord
@@ -3666,12 +3723,13 @@ update_standard_texture_bindings() {
     int texcoord_dimensions = 2;
 
     CPT(TransformState) tex_mat = TransformState::make_identity();
-    if (_state._tex_matrix->has_stage(stage)) {
-      tex_mat = _state._tex_matrix->get_transform(stage);
+    const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
+    if (target_tex_matrix->has_stage(stage)) {
+      tex_mat = target_tex_matrix->get_transform(stage);
     }
 
     // Issue the texgen mode.
-    TexGenAttrib::Mode mode = _effective_tex_gen->get_mode(stage);
+    TexGenAttrib::Mode mode = _target_tex_gen->get_mode(stage);
     bool any_point_sprite = false;
 
     switch (mode) {
@@ -3780,7 +3838,7 @@ update_standard_texture_bindings() {
                                 texcoord_index | D3DTSS_TCI_CAMERASPACEPOSITION);
         texcoord_dimensions = 3;
 
-        const TexCoord3f &v = _effective_tex_gen->get_constant_value(stage);
+        const TexCoord3f &v = _target_tex_gen->get_constant_value(stage);
         CPT(TransformState) squash =
           TransformState::make_pos_hpr_scale(v, LVecBase3f::zero(),
                                              LVecBase3f::zero());
@@ -3849,36 +3907,34 @@ do_issue_blending() {
   // all the other blending-related stuff doesn't matter.  If the
   // device doesn't support color-write, we use blending tricks
   // to effectively disable color write.
+  const ColorWriteAttrib *target_color_write = DCAST(ColorWriteAttrib, _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot()));
   unsigned int color_channels =
-    _target._color_write->get_channels() & _color_write_mask;
-  if (_target._shader->get_flag(ShaderAttrib::F_disable_alpha_write)) {
+    target_color_write->get_channels() & _color_write_mask;
+  if (_target_shader->get_flag(ShaderAttrib::F_disable_alpha_write)) {
     color_channels &= ~(ColorWriteAttrib::C_alpha);
   }
   if (color_channels == ColorWriteAttrib::C_off) {
-    if (_target._color_write != _state._color_write) {
-      if (_screen->_can_direct_disable_color_writes) {
-        set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
-        set_render_state(D3DRS_COLORWRITEENABLE, (DWORD)0x0);
-      } else {
-        set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
-        set_render_state(D3DRS_SRCBLEND, D3DBLEND_ZERO);
-        set_render_state(D3DRS_DESTBLEND, D3DBLEND_ONE);
-      }
+    if (_screen->_can_direct_disable_color_writes) {
+      set_render_state(D3DRS_ALPHABLENDENABLE, FALSE);
+      set_render_state(D3DRS_COLORWRITEENABLE, (DWORD)0x0);
+    } else {
+      set_render_state(D3DRS_ALPHABLENDENABLE, TRUE);
+      set_render_state(D3DRS_SRCBLEND, D3DBLEND_ZERO);
+      set_render_state(D3DRS_DESTBLEND, D3DBLEND_ONE);
     }
     return;
   } else {
-    if ((_target._color_write != _state._color_write)||
-        (_target._shader->get_flag(ShaderAttrib::F_disable_alpha_write) != 
-         _state._shader->get_flag(ShaderAttrib::F_disable_alpha_write))) {
-      if (_screen->_can_direct_disable_color_writes) {
-        set_render_state(D3DRS_COLORWRITEENABLE, color_channels);
-      }
+    if (_screen->_can_direct_disable_color_writes) {
+      set_render_state(D3DRS_COLORWRITEENABLE, color_channels);
     }
   }
 
-  CPT(ColorBlendAttrib) color_blend = _target._color_blend;
-  ColorBlendAttrib::Mode color_blend_mode = _target._color_blend->get_mode();
-  TransparencyAttrib::Mode transparency_mode = _target._transparency->get_mode();
+  const ColorBlendAttrib *target_color_blend = DCAST(ColorBlendAttrib, _target_rs->get_attrib_def(ColorBlendAttrib::get_class_slot()));
+  CPT(ColorBlendAttrib) color_blend = target_color_blend;
+  ColorBlendAttrib::Mode color_blend_mode = target_color_blend->get_mode();
+
+  const TransparencyAttrib *target_transparency = DCAST(TransparencyAttrib, _target_rs->get_attrib_def(TransparencyAttrib::get_class_slot()));
+  TransparencyAttrib::Mode transparency_mode = target_transparency->get_mode();
 
   // Is there a color blend set?
   if (color_blend_mode != ColorBlendAttrib::M_none) {
@@ -4085,8 +4141,9 @@ free_nondx_resources() {
 void DXGraphicsStateGuardian9::
 free_d3d_device() {
   // dont want a full reset of gsg, just a state clear
-  _state_rs = 0;
-  _state.clear_to_zero();
+  _state_rs = RenderState::make_empty();
+  _state_mask.clear();
+
   // want gsg to pass all state settings through
 
   _dx_is_ready = false;
@@ -5286,10 +5343,8 @@ void dx_set_stencil_functions (StencilRenderStates *stencil_render_states) {
 void DXGraphicsStateGuardian9::
 do_issue_stencil() {
 
-  const StencilAttrib *stencil;
   StencilRenderStates *stencil_render_states;
-
-  stencil = _target._stencil;
+  const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib_def(StencilAttrib::get_class_slot()));
   stencil_render_states = this -> _stencil_render_states;
   if (stencil && stencil_render_states) {
 
@@ -5362,7 +5417,8 @@ do_issue_stencil() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_scissor() {
-  const LVecBase4f &frame = _target._scissor->get_frame();
+  const ScissorAttrib *target_scissor = DCAST(ScissorAttrib, _target_rs->get_attrib_def(ScissorAttrib::get_class_slot()));
+  const LVecBase4f &frame = target_scissor->get_frame();
 
   RECT r;
   r.left = _current_viewport.X + _current_viewport.Width * frame[0];

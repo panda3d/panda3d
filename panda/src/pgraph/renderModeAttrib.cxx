@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "renderModeAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -22,6 +21,7 @@
 #include "datagramIterator.h"
 
 TypeHandle RenderModeAttrib::_type_handle;
+int RenderModeAttrib::_attrib_slot;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderModeAttrib::make
@@ -49,6 +49,18 @@ CPT(RenderAttrib) RenderModeAttrib::
 make(RenderModeAttrib::Mode mode, float thickness, bool perspective) {
   RenderModeAttrib *attrib = new RenderModeAttrib(mode, thickness, perspective);
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderModeAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) RenderModeAttrib::
+make_default() {
+  return return_new(new RenderModeAttrib(M_filled, 1.0f, false));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -146,33 +158,6 @@ compose_impl(const RenderAttrib *other) const {
   }
 
   return make(mode, ta->get_thickness(), ta->get_perspective());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderModeAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderModeAttrib
-//               types to specify what the default property for a
-//               RenderModeAttrib of this type should be.
-//
-//               This should return a newly-allocated RenderModeAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of RenderModeAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *RenderModeAttrib::
-make_default_impl() const {
-  return new RenderModeAttrib(M_filled, 1.0f, false);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderModeAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void RenderModeAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_render_mode = this;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "depthWriteAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -22,6 +21,7 @@
 #include "datagramIterator.h"
 
 TypeHandle DepthWriteAttrib::_type_handle;
+int DepthWriteAttrib::_attrib_slot;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DepthWriteAttrib::make
@@ -32,6 +32,18 @@ CPT(RenderAttrib) DepthWriteAttrib::
 make(DepthWriteAttrib::Mode mode) {
   DepthWriteAttrib *attrib = new DepthWriteAttrib(mode);
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DepthWriteAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) DepthWriteAttrib::
+make_default() {
+  return return_new(new DepthWriteAttrib);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,33 +84,6 @@ compare_to_impl(const RenderAttrib *other) const {
   const DepthWriteAttrib *ta;
   DCAST_INTO_R(ta, other, 0);
   return (int)_mode - (int)ta->_mode;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DepthWriteAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived DepthWriteAttrib
-//               types to specify what the default property for a
-//               DepthWriteAttrib of this type should be.
-//
-//               This should return a newly-allocated DepthWriteAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of DepthWriteAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *DepthWriteAttrib::
-make_default_impl() const {
-  return new DepthWriteAttrib;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DepthWriteAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void DepthWriteAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_depth_write = this;
 }
 
 ////////////////////////////////////////////////////////////////////

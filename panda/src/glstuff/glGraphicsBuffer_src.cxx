@@ -523,7 +523,7 @@ generate_mipmaps() {
   for (int slot=0; slot<RTP_COUNT; slot++) {
     Texture *tex = _tex[slot];
     if ((tex != 0) && (tex->uses_mipmaps())) {
-      glgsg->_state._texture = 0;
+      glgsg->_state_texture = 0;
       TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
       nassertv(tc != (TextureContext *)NULL);
       CLP(TextureContext) *gtc = DCAST(CLP(TextureContext), tc);

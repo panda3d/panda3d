@@ -26,8 +26,8 @@ ALLOC_DELETED_CHAIN_DEF(CLP(GeomMunger));
 CLP(GeomMunger)::
 CLP(GeomMunger)(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 4, NT_uint8, C_color),
-  _texture(state->get_texture()),
-  _tex_gen(state->get_tex_gen())
+  _texture(DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()))),
+  _tex_gen(DCAST(TexGenAttrib, state->get_attrib(TexGenAttrib::get_class_slot())))
 {
   // Set a callback to unregister ourselves when either the Texture or
   // the TexGen object gets deleted.

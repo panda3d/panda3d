@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "audioVolumeAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -22,8 +21,9 @@
 #include "datagramIterator.h"
 #include "config_pgraph.h"
 
-TypeHandle AudioVolumeAttrib::_type_handle;
 CPT(RenderAttrib) AudioVolumeAttrib::_identity_attrib;
+TypeHandle AudioVolumeAttrib::_type_handle;
+int AudioVolumeAttrib::_attrib_slot;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AudioVolumeAttrib::Constructor
@@ -82,6 +82,18 @@ make_off() {
   AudioVolumeAttrib *attrib = 
     new AudioVolumeAttrib(true, 1.0f);
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioVolumeAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) AudioVolumeAttrib::
+make_default() {
+  return return_new(new AudioVolumeAttrib(false, 1.0f));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,33 +220,6 @@ invert_compose_impl(const RenderAttrib *other) const {
 
   AudioVolumeAttrib *attrib = new AudioVolumeAttrib(false, new_volume);
   return return_new(attrib);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived AudioVolumeAttrib
-//               types to specify what the default property for a
-//               AudioVolumeAttrib of this type should be.
-//
-//               This should return a newly-allocated AudioVolumeAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of AudioVolumeAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *AudioVolumeAttrib::
-make_default_impl() const {
-  return new AudioVolumeAttrib(false, 1.0f);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AudioVolumeAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void AudioVolumeAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_audio_volume = this;
 }
 
 ////////////////////////////////////////////////////////////////////

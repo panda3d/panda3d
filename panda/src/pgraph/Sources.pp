@@ -17,7 +17,6 @@
     alphaTestAttrib.I alphaTestAttrib.h \  
     antialiasAttrib.I antialiasAttrib.h \
     attribNodeRegistry.I attribNodeRegistry.h \
-    attribSlots.h attribSlots.I \
     audioVolumeAttrib.I audioVolumeAttrib.h \
     auxSceneData.I auxSceneData.h \
     auxBitplaneAttrib.I auxBitplaneAttrib.h \
@@ -47,7 +46,6 @@
     depthOffsetAttrib.I depthOffsetAttrib.h \
     depthTestAttrib.I depthTestAttrib.h \
     depthWriteAttrib.I depthWriteAttrib.h \
-    drawMaskAttrib.I drawMaskAttrib.h \
     eventStorePandaNode.I eventStorePandaNode.h \
     fadeLodNode.I fadeLodNode.h \
     fadeLodNodeData.h \
@@ -87,6 +85,7 @@
     portalNode.I portalNode.h \
     portalClipper.I portalClipper.h \
     renderAttrib.I renderAttrib.h \
+    renderAttribRegistry.I renderAttribRegistry.h \
     renderEffect.I renderEffect.h \
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \
@@ -124,7 +123,6 @@
     alphaTestAttrib.cxx \  
     antialiasAttrib.cxx \
     attribNodeRegistry.cxx \
-    attribSlots.cxx \
     audioVolumeAttrib.cxx \
     auxSceneData.cxx \
     bamFile.cxx \
@@ -152,7 +150,6 @@
     depthOffsetAttrib.cxx \
     depthTestAttrib.cxx \
     depthWriteAttrib.cxx \
-    drawMaskAttrib.cxx \
     eventStorePandaNode.cxx \
     fadeLodNode.cxx \
     fadeLodNodeData.cxx \
@@ -191,6 +188,7 @@
     portalNode.cxx \
     portalClipper.cxx \
     renderAttrib.cxx \
+    renderAttribRegistry.cxx \
     renderEffect.cxx \
     renderEffects.cxx \
     renderModeAttrib.cxx \
@@ -225,7 +223,6 @@
     alphaTestAttrib.I alphaTestAttrib.h \  
     antialiasAttrib.I antialiasAttrib.h \
     attribNodeRegistry.I attribNodeRegistry.h \
-    attribSlots.h attribSlots.I \
     audioVolumeAttrib.I audioVolumeAttrib.h \
     auxSceneData.I auxSceneData.h \
     auxBitplaneAttrib.I auxBitplaneAttrib.h \
@@ -255,7 +252,6 @@
     depthOffsetAttrib.I depthOffsetAttrib.h \
     depthTestAttrib.I depthTestAttrib.h \
     depthWriteAttrib.I depthWriteAttrib.h \
-    drawMaskAttrib.I drawMaskAttrib.h \
     eventStorePandaNode.I eventStorePandaNode.h \
     fadeLodNode.I fadeLodNode.h \
     fadeLodNodeData.h \
@@ -293,6 +289,7 @@
     portalNode.I portalNode.h \
     portalClipper.I portalClipper.h \
     renderAttrib.I renderAttrib.h \
+    renderAttribRegistry.I renderAttribRegistry.h \
     renderEffect.I renderEffect.h \
     renderEffects.I renderEffects.h \
     renderModeAttrib.I renderModeAttrib.h \

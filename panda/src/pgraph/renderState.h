@@ -20,7 +20,7 @@
 #include "renderAttrib.h"
 #include "nodeCachedReferenceCount.h"
 #include "pointerTo.h"
-#include "ordered_vector.h"
+#include "pvector.h"
 #include "updateSeq.h"
 #include "pStatCollector.h"
 #include "renderModeAttrib.h"
@@ -32,20 +32,11 @@
 #include "deletedChain.h"
 #include "simpleHashMap.h"
 #include "cacheStats.h"
+#include "renderAttribRegistry.h"
 
 class GraphicsStateGuardianBase;
-class FogAttrib;
-class CullBinAttrib;
-class TransparencyAttrib;
-class ColorAttrib;
-class ColorScaleAttrib;
-class TextureAttrib;
-class TexGenAttrib;
-class ClipPlaneAttrib;
-class ScissorAttrib;
-class ShaderAttrib;
 class FactoryParams;
-class AudioVolumeAttrib;
+class ShaderAttrib;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : RenderState
@@ -71,21 +62,20 @@ public:
   virtual ~RenderState();
   ALLOC_DELETED_CHAIN(RenderState);
 
+  typedef RenderAttribRegistry::SlotMask SlotMask;
+
 PUBLISHED:
   bool operator < (const RenderState &other) const;
+  int compare_sort(const RenderState &other) const;
   size_t get_hash() const;
 
   INLINE bool is_empty() const;
-  INLINE int get_num_attribs() const;
-  INLINE const RenderAttrib *get_attrib(int n) const;
-  INLINE int get_override(int n) const;
 
   INLINE bool has_cull_callback() const;
   bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;
 
-  int find_attrib(TypeHandle type) const;
-
   static CPT(RenderState) make_empty();
+  static CPT(RenderState) make_full_default();
   static CPT(RenderState) make(const RenderAttrib *attrib, int override = 0);
   static CPT(RenderState) make(const RenderAttrib *attrib1,
                                const RenderAttrib *attrib2, int override = 0);
@@ -98,7 +88,6 @@ PUBLISHED:
                                const RenderAttrib *attrib4, int override = 0);
   static CPT(RenderState) make(const RenderAttrib * const *attrib,
                                int num_attribs, int override = 0);
-  static CPT(RenderState) make(const AttribSlots *slots, int override = 0);
   
   CPT(RenderState) compose(const RenderState *other) const;
   CPT(RenderState) invert_compose(const RenderState *other) const;
@@ -106,12 +95,18 @@ PUBLISHED:
   CPT(RenderState) add_attrib(const RenderAttrib *attrib, int override = 0) const;
   CPT(RenderState) set_attrib(const RenderAttrib *attrib) const;
   CPT(RenderState) set_attrib(const RenderAttrib *attrib, int override) const;
-  CPT(RenderState) remove_attrib(TypeHandle type) const;
+  INLINE CPT(RenderState) remove_attrib(TypeHandle type) const;
+  CPT(RenderState) remove_attrib(int slot) const;
 
   CPT(RenderState) adjust_all_priorities(int adjustment) const;
 
-  const RenderAttrib *get_attrib(TypeHandle type) const;
-  int get_override(TypeHandle type) const;
+  INLINE bool has_attrib(TypeHandle type) const;
+  INLINE bool has_attrib(int slot) const;
+  INLINE const RenderAttrib *get_attrib(TypeHandle type) const;
+  INLINE const RenderAttrib *get_attrib(int slot) const;
+  INLINE const RenderAttrib *get_attrib_def(int slot) const;
+  INLINE int get_override(TypeHandle type) const;
+  INLINE int get_override(int slot) const;
 
   bool unref() const;
 
@@ -137,33 +132,18 @@ PUBLISHED:
   // These methods are intended for use by low-level code, but they're
   // also handy enough to expose to high-level users.
   INLINE int get_draw_order() const;
-  INLINE const FogAttrib *get_fog() const;
-  INLINE const CullBinAttrib *get_bin() const;
-  INLINE const TransparencyAttrib *get_transparency() const;
   INLINE int get_bin_index() const;
-  INLINE const ColorAttrib *get_color() const;
-  INLINE const ColorScaleAttrib *get_color_scale() const;
-  INLINE const TextureAttrib *get_texture() const;
-  INLINE const TexGenAttrib *get_tex_gen() const;
-  INLINE const TexMatrixAttrib *get_tex_matrix() const;
-  INLINE const RenderModeAttrib *get_render_mode() const;
-  INLINE const ClipPlaneAttrib *get_clip_plane() const;
-  INLINE const ScissorAttrib *get_scissor() const;
-  INLINE const ShaderAttrib *get_shader() const;
-  INLINE const AudioVolumeAttrib *get_audio_volume() const;
-  
   int get_geom_rendering(int geom_rendering) const;
-
   const ShaderAttrib *get_generated_shader() const;
   
 public:
-  void store_into_slots(AttribSlots *slots) const;
-  
   static void bin_removed(int bin_index);
   
   INLINE static void flush_level();
 
 private:
+  void determine_filled_slots();
+  bool validate_filled_slots() const;
   INLINE bool do_cache_unref() const;
   INLINE bool do_node_unref() const;
 
@@ -191,22 +171,8 @@ private:
   void remove_cache_pointers();
 
   void determine_bin_index();
-  void determine_fog();
-  INLINE void determine_bin();
-  void do_determine_bin();
-  INLINE void determine_transparency();
-  void do_determine_transparency();
-  void determine_color();
-  void determine_color_scale();
-  void determine_texture();
-  void determine_tex_gen();
-  void determine_tex_matrix();
-  void determine_render_mode();
-  void determine_clip_plane();
-  void determine_scissor();
-  void determine_shader();
   void determine_cull_callback();
-  void determine_audio_volume();
+  void fill_default();
 
   INLINE void set_destructing();
   INLINE bool is_destructing() const;
@@ -225,6 +191,7 @@ private:
   typedef phash_set<const RenderState *, indirect_less_hash<const RenderState *> > States;
   static States *_states;
   static CPT(RenderState) _empty_state;
+  static CPT(RenderState) _full_default_state;
 
   // This iterator records the entry corresponding to this RenderState
   // object in the above global set.  We keep the iterator around so
@@ -277,23 +244,24 @@ private:
 
 private:
   // This is the actual data within the RenderState: a set of
-  // RenderAttribs.
+  // max_slots RenderAttribs.
   class Attribute {
   public:
     INLINE Attribute(const RenderAttrib *attrib, int override);
-    INLINE Attribute(int override);
-    INLINE Attribute(TypeHandle type);
+    INLINE Attribute(int override = 0);
     INLINE Attribute(const Attribute &copy);
     INLINE void operator = (const Attribute &copy);
-    INLINE bool operator < (const Attribute &other) const;
+    INLINE void set(const RenderAttrib *attrib, int override);
     INLINE int compare_to(const Attribute &other) const;
 
-    TypeHandle _type;
     CPT(RenderAttrib) _attrib;
     int _override;
   };
-  typedef ov_set<Attribute> Attributes;
-  Attributes _attributes;
+  Attribute *_attributes;
+
+  // We also store a bitmask of the non-NULL attributes in the above
+  // array.  This is redundant, but it is a useful cache.
+  SlotMask _filled_slots;
 
   // We cache the index to the associated CullBin, if there happens to
   // be a CullBinAttrib in the state.
@@ -305,43 +273,16 @@ private:
   // I can't declare this as a ShaderAttrib because that would create
   // a circular include-file dependency problem.  Aaargh.
   CPT(RenderAttrib) _generated_shader;
-  
-  // We also cache the pointer to some critical attribs stored in the
-  // state, if they exist.
-  const FogAttrib *_fog;
-  const CullBinAttrib *_bin;
-  const TransparencyAttrib *_transparency;
-  const ColorAttrib *_color;
-  const ColorScaleAttrib *_color_scale;
-  const TextureAttrib *_texture;
-  const TexGenAttrib *_tex_gen;
-  const TexMatrixAttrib *_tex_matrix;
-  const RenderModeAttrib *_render_mode;
-  const ClipPlaneAttrib *_clip_plane;
-  const ScissorAttrib *_scissor;
-  const ShaderAttrib *_shader;
-  const AudioVolumeAttrib *_audio_volume;
-  
+
   enum Flags {
     F_checked_bin_index     = 0x000001,
-    F_checked_fog           = 0x000002,
-    F_checked_bin           = 0x000004,
-    F_checked_transparency  = 0x000008,
-    F_checked_color         = 0x000010,
-    F_checked_color_scale   = 0x000020,
-    F_checked_texture       = 0x000040,
-    F_checked_tex_gen       = 0x000080,
-    F_checked_tex_matrix    = 0x000100,
-    F_checked_render_mode   = 0x000200,
-    F_checked_clip_plane    = 0x000400,
-    F_checked_shader        = 0x000800,
-    F_checked_cull_callback = 0x001000,
-    F_checked_audio_volume  = 0x002000,
-    F_has_cull_callback     = 0x004000,
-    F_is_destructing        = 0x008000,
-    F_checked_scissor       = 0x010000,
+    F_checked_cull_callback = 0x000002,
+    F_has_cull_callback     = 0x000004,
+    F_is_destructing        = 0x000008,
   };
   unsigned int _flags;
+
+  vector_int *_read_overrides;  // Only used during bam reading.
 
   // This mutex protects _flags, and all of the above computed values.
   LightMutex _lock;
@@ -377,6 +318,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class GraphicsStateGuardian;
+  friend class RenderAttribRegistry;
 };
 
 INLINE ostream &operator << (ostream &out, const RenderState &state) {

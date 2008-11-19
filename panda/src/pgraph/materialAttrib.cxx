@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "materialAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "bamReader.h"
 #include "bamWriter.h"
@@ -21,6 +20,7 @@
 #include "datagramIterator.h"
 
 TypeHandle MaterialAttrib::_type_handle;
+int MaterialAttrib::_attrib_slot;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MaterialAttrib::make
@@ -46,6 +46,18 @@ CPT(RenderAttrib) MaterialAttrib::
 make_off() {
   MaterialAttrib *attrib = new MaterialAttrib;
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MaterialAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) MaterialAttrib::
+make_default() {
+  return return_new(new MaterialAttrib);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,33 +102,6 @@ compare_to_impl(const RenderAttrib *other) const {
     return _material < ta->_material ? -1 : 1;
   }
   return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived MaterialAttrib
-//               types to specify what the default property for a
-//               MaterialAttrib of this type should be.
-//
-//               This should return a newly-allocated MaterialAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of MaterialAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *MaterialAttrib::
-make_default_impl() const {
-  return new MaterialAttrib;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: MaterialAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void MaterialAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_material = this;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -38,13 +38,15 @@
 #include "geomVertexData.h"
 #include "pnotify.h"
 #include "pvector.h"
-#include "attribSlots.h"
 #include "shaderContext.h"
 #include "bitMask.h"
 #include "texture.h"
 #include "occlusionQueryContext.h"
 #include "stencilRenderStates.h"
 #include "loader.h"
+#include "textureAttrib.h"
+#include "texGenAttrib.h"
+#include "shaderAttrib.h"
 
 class DrawableRegion;
 class GraphicsEngine;
@@ -291,7 +293,7 @@ protected:
   virtual void bind_clip_plane(const NodePath &plane, int plane_id);
   virtual void end_bind_clip_planes();
 
-  void determine_effective_texture();
+  void determine_target_texture();
 
   virtual void free_pointers();
   virtual void close_gsg();
@@ -309,18 +311,36 @@ protected:
   PT(SceneSetup) _scene_null;
   PT(SceneSetup) _scene_setup;
 
-  AttribSlots _state;
-  AttribSlots _target;
+  // The current state of the graphics context, as of the last call to
+  // set_state_and_transform().
   CPT(RenderState) _state_rs;
+
+  // The desired state of the graphics context, during processing of
+  // set_state_and_transform().
   CPT(RenderState) _target_rs;
+
+  // This bitmask contains a 1 bit everywhere that _state_rs has a
+  // known value.  If a bit is 0, the corresponding state must be
+  // re-sent.
+  RenderState::SlotMask _state_mask;
+
+  // The current transform, as of the last call to
+  // set_state_and_transform().
   CPT(TransformState) _internal_transform;
 
   // The current TextureAttrib is a special case; we may further
   // restrict it (according to graphics cards limits) or extend it
   // (according to ColorScaleAttribs in effect) beyond what is
   // specifically requested in the scene graph.
-  CPT(TextureAttrib) _effective_texture;
-  CPT(TexGenAttrib) _effective_tex_gen;
+  CPT(TextureAttrib) _target_texture;
+  CPT(TextureAttrib) _state_texture;
+  CPT(TexGenAttrib) _target_tex_gen;
+  CPT(TexGenAttrib) _state_tex_gen;
+
+  // Also, the shader might be the explicitly-requested shader, or it
+  // might be an auto-generated one.
+  CPT(ShaderAttrib) _state_shader;
+  CPT(ShaderAttrib) _target_shader;
 
   // These are set by begin_draw_primitives(), and are only valid
   // between begin_draw_primitives() and end_draw_primitives().

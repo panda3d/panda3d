@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "textureAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "internalName.h"
 #include "bamReader.h"
@@ -25,6 +24,7 @@
 CPT(RenderAttrib) TextureAttrib::_empty_attrib;
 CPT(RenderAttrib) TextureAttrib::_all_off_attrib;
 TypeHandle TextureAttrib::_type_handle;
+int TextureAttrib::_attrib_slot;
 
 
 ////////////////////////////////////////////////////////////////////
@@ -84,6 +84,18 @@ make_all_off() {
   }
 
   return _all_off_attrib;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) TextureAttrib::
+make_default() {
+  return return_new(new TextureAttrib);
 }
 
 
@@ -758,33 +770,6 @@ invert_compose_impl(const RenderAttrib *other) const {
   // needs a bit more thought.  It's hard to imagine that it's even
   // important to compute this properly.
   return other;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived TextureAttrib
-//               types to specify what the default property for a
-//               TextureAttrib of this type should be.
-//
-//               This should return a newly-allocated TextureAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of TextureAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *TextureAttrib::
-make_default_impl() const {
-  return new TextureAttrib;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: TextureAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void TextureAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_texture = this;
 }
 
 ////////////////////////////////////////////////////////////////////

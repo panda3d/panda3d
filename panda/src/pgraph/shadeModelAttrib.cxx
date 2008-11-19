@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "shadeModelAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -22,6 +21,7 @@
 #include "datagramIterator.h"
 
 TypeHandle ShadeModelAttrib::_type_handle;
+int ShadeModelAttrib::_attrib_slot;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ShadeModelAttrib::make
@@ -34,6 +34,18 @@ CPT(RenderAttrib) ShadeModelAttrib::
 make(ShadeModelAttrib::Mode mode) {
   ShadeModelAttrib *attrib = new ShadeModelAttrib(mode);
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShadeModelAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ShadeModelAttrib::
+make_default() {
+  return return_new(new ShadeModelAttrib(M_smooth));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -101,33 +113,6 @@ compose_impl(const RenderAttrib *other) const {
 
   Mode mode = ta->get_mode();
   return make(mode);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ShadeModelAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived ShadeModelAttrib
-//               types to specify what the default property for a
-//               ShadeModelAttrib of this type should be.
-//
-//               This should return a newly-allocated ShadeModelAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of ShadeModelAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *ShadeModelAttrib::
-make_default_impl() const {
-  return new ShadeModelAttrib(M_smooth);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ShadeModelAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void ShadeModelAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_shade_model = this;
 }
 
 ////////////////////////////////////////////////////////////////////

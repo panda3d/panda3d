@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "colorAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -22,6 +21,7 @@
 #include "datagramIterator.h"
 
 TypeHandle ColorAttrib::_type_handle;
+int ColorAttrib::_attrib_slot;
 CPT(RenderAttrib) ColorAttrib::_off;
 CPT(RenderAttrib) ColorAttrib::_vertex;
 
@@ -69,6 +69,18 @@ make_off() {
   ColorAttrib *attrib = new ColorAttrib(T_off);
   _off = return_new(attrib);
   return _off;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ColorAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ColorAttrib::
+make_default() {
+  return return_new(new ColorAttrib);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,33 +132,6 @@ compare_to_impl(const RenderAttrib *other) const {
     return _color.compare_to(ta->_color);
   }
   return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived ColorAttrib
-//               types to specify what the default property for a
-//               ColorAttrib of this type should be.
-//
-//               This should return a newly-allocated ColorAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of ColorAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *ColorAttrib::
-make_default_impl() const {
-  return new ColorAttrib;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: ColorAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void ColorAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_color = this;
 }
 
 ////////////////////////////////////////////////////////////////////

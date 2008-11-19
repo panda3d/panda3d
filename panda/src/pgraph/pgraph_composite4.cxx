@@ -1,4 +1,5 @@
 #include "renderAttrib.cxx"
+#include "renderAttribRegistry.cxx"
 #include "renderEffect.cxx"
 #include "renderEffects.cxx"
 #include "renderModeAttrib.cxx"

@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "renderAttrib.h"
-#include "attribSlots.h"
 #include "bamReader.h"
 #include "indent.h"
 #include "config_pgraph.h"
@@ -459,22 +458,6 @@ release_new() {
     _attribs->erase(_saved_entry);
     _saved_entry = _attribs->end();
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: RenderAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived RenderAttrib
-//               types to specify what the default property for a
-//               RenderAttrib of this type should be.
-//
-//               This should return a newly-allocated RenderAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of RenderAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *RenderAttrib::
-make_default_impl() const {
-  return (RenderAttrib *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

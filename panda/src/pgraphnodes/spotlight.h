@@ -18,8 +18,7 @@
 #include "pandabase.h"
 
 #include "lightLensNode.h"
-
-class Texture;
+#include "texture.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Spotlight

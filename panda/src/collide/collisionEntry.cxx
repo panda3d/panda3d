@@ -300,6 +300,6 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void CollisionEntry::
 check_clip_planes() {
-  _into_clip_planes = _into_node_path.get_net_state()->get_clip_plane();
+  _into_clip_planes = DCAST(ClipPlaneAttrib, _into_node_path.get_net_state()->get_attrib(ClipPlaneAttrib::get_class_slot()));
   _flags |= F_checked_clip_planes;
 }

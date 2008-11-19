@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "antialiasAttrib.h"
-#include "attribSlots.h"
 #include "graphicsStateGuardianBase.h"
 #include "dcast.h"
 #include "bamReader.h"
@@ -22,6 +21,7 @@
 #include "datagramIterator.h"
 
 TypeHandle AntialiasAttrib::_type_handle;
+int AntialiasAttrib::_attrib_slot;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: AntialiasAttrib::make
@@ -63,6 +63,18 @@ CPT(RenderAttrib) AntialiasAttrib::
 make(unsigned short mode) {
   AntialiasAttrib *attrib = new AntialiasAttrib(mode);
   return return_new(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AntialiasAttrib::make_default
+//       Access: Published, Static
+//  Description: Returns a RenderAttrib that corresponds to whatever
+//               the standard default properties for render attributes
+//               of this type ought to be.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) AntialiasAttrib::
+make_default() {
+  return return_new(new AntialiasAttrib(M_none));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,33 +196,6 @@ compose_impl(const RenderAttrib *other) const {
   }
 
   return make(mode_type | mode_quality);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AntialiasAttrib::make_default_impl
-//       Access: Protected, Virtual
-//  Description: Intended to be overridden by derived AntialiasAttrib
-//               types to specify what the default property for a
-//               AntialiasAttrib of this type should be.
-//
-//               This should return a newly-allocated AntialiasAttrib of
-//               the same type that corresponds to whatever the
-//               standard default for this kind of AntialiasAttrib is.
-////////////////////////////////////////////////////////////////////
-RenderAttrib *AntialiasAttrib::
-make_default_impl() const {
-  return new AntialiasAttrib(M_none);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: AntialiasAttrib::store_into_slot
-//       Access: Public, Virtual
-//  Description: Stores this attrib into the appropriate slot of
-//               an object of class AttribSlots.
-////////////////////////////////////////////////////////////////////
-void AntialiasAttrib::
-store_into_slot(AttribSlots *slots) const {
-  slots->_antialias = this;
 }
 
 ////////////////////////////////////////////////////////////////////

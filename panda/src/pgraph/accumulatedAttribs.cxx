@@ -172,9 +172,9 @@ collect(const RenderState *state, int attrib_types) {
 
   if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
     const RenderAttrib *node_attrib = 
-      new_state->get_attrib(ColorAttrib::get_class_type());
+      new_state->get_attrib(ColorAttrib::get_class_slot());
     if (node_attrib != (const RenderAttrib *)NULL) {
-      int color_override = new_state->get_override(ColorAttrib::get_class_type());
+      int color_override = new_state->get_override(ColorAttrib::get_class_slot());
       if (color_override >= _color_override || 
           _color == (const RenderAttrib *)NULL) {
         // The node has a color attribute; apply it.
@@ -185,15 +185,15 @@ collect(const RenderState *state, int attrib_types) {
         }
         _color_override = color_override;
       }
-      new_state = new_state->remove_attrib(ColorAttrib::get_class_type());
+      new_state = new_state->remove_attrib(ColorAttrib::get_class_slot());
     }
   }
 
   if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
     const RenderAttrib *node_attrib = 
-      new_state->get_attrib(ColorScaleAttrib::get_class_type());
+      new_state->get_attrib(ColorScaleAttrib::get_class_slot());
     if (node_attrib != (const RenderAttrib *)NULL) {
-      int color_scale_override = new_state->get_override(ColorScaleAttrib::get_class_type());
+      int color_scale_override = new_state->get_override(ColorScaleAttrib::get_class_slot());
       if (color_scale_override >= _color_scale_override ||
           _color_scale == (const RenderAttrib *)NULL) {
         if (_color_scale == (const RenderAttrib *)NULL) {
@@ -203,15 +203,15 @@ collect(const RenderState *state, int attrib_types) {
         }
         _color_scale_override = color_scale_override;
       }
-      new_state = new_state->remove_attrib(ColorScaleAttrib::get_class_type());
+      new_state = new_state->remove_attrib(ColorScaleAttrib::get_class_slot());
     }
   }
 
   if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
     const RenderAttrib *node_attrib = 
-      new_state->get_attrib(TexMatrixAttrib::get_class_type());
+      new_state->get_attrib(TexMatrixAttrib::get_class_slot());
     if (node_attrib != (const RenderAttrib *)NULL) {
-      int tex_matrix_override = new_state->get_override(TexMatrixAttrib::get_class_type());
+      int tex_matrix_override = new_state->get_override(TexMatrixAttrib::get_class_slot());
       if (tex_matrix_override >= _tex_matrix_override ||
           _tex_matrix == (const RenderAttrib *)NULL) {
         if (_tex_matrix == (const RenderAttrib *)NULL) {
@@ -221,15 +221,15 @@ collect(const RenderState *state, int attrib_types) {
         }
         _tex_matrix_override = tex_matrix_override;
       }
-      new_state = new_state->remove_attrib(TexMatrixAttrib::get_class_type());
+      new_state = new_state->remove_attrib(TexMatrixAttrib::get_class_slot());
     }
 
     // We also need to accumulate the texture state if we are
     // accumulating texture matrix.
     const RenderAttrib *tex_attrib = 
-      new_state->get_attrib(TextureAttrib::get_class_type());
+      new_state->get_attrib(TextureAttrib::get_class_slot());
     if (tex_attrib != (const RenderAttrib *)NULL) {
-      int texture_override = new_state->get_override(TextureAttrib::get_class_type());
+      int texture_override = new_state->get_override(TextureAttrib::get_class_slot());
       if (texture_override >= _texture_override || 
           _texture == (const RenderAttrib *)NULL) {
         if (_texture == (const RenderAttrib *)NULL) {
@@ -248,9 +248,9 @@ collect(const RenderState *state, int attrib_types) {
 
   if ((attrib_types & SceneGraphReducer::TT_clip_plane) != 0) {
     const RenderAttrib *node_attrib = 
-      new_state->get_attrib(ClipPlaneAttrib::get_class_type());
+      new_state->get_attrib(ClipPlaneAttrib::get_class_slot());
     if (node_attrib != (const RenderAttrib *)NULL) {
-      int clip_plane_override = new_state->get_override(ClipPlaneAttrib::get_class_type());
+      int clip_plane_override = new_state->get_override(ClipPlaneAttrib::get_class_slot());
       if (clip_plane_override >= _clip_plane_override || 
           _clip_plane == (const RenderAttrib *)NULL) {
         if (_clip_plane == (const RenderAttrib *)NULL) {
@@ -260,15 +260,15 @@ collect(const RenderState *state, int attrib_types) {
         }
         _clip_plane_override = clip_plane_override;
       }
-      new_state = new_state->remove_attrib(ClipPlaneAttrib::get_class_type());
+      new_state = new_state->remove_attrib(ClipPlaneAttrib::get_class_slot());
     }
   }
 
   if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
     const RenderAttrib *node_attrib = 
-      new_state->get_attrib(CullFaceAttrib::get_class_type());
+      new_state->get_attrib(CullFaceAttrib::get_class_slot());
     if (node_attrib != (const RenderAttrib *)NULL) {
-      int cull_face_override = new_state->get_override(CullFaceAttrib::get_class_type());
+      int cull_face_override = new_state->get_override(CullFaceAttrib::get_class_slot());
       if (cull_face_override >= _cull_face_override ||
           _cull_face == (const RenderAttrib *)NULL) {
         if (_cull_face == (const RenderAttrib *)NULL) {
@@ -278,7 +278,7 @@ collect(const RenderState *state, int attrib_types) {
         }
         _cull_face_override = cull_face_override;
       }
-      new_state = new_state->remove_attrib(CullFaceAttrib::get_class_type());
+      new_state = new_state->remove_attrib(CullFaceAttrib::get_class_slot());
     }
   }
 
@@ -312,7 +312,7 @@ apply_to_node(PandaNode *node, int attrib_types) {
   if ((attrib_types & SceneGraphReducer::TT_color) != 0) {
     if (_color != (RenderAttrib *)NULL) {
       const RenderAttrib *node_attrib =
-        node->get_attrib(ColorAttrib::get_class_type());
+        node->get_attrib(ColorAttrib::get_class_slot());
       if (node_attrib != (RenderAttrib *)NULL) {
         node->set_attrib(_color->compose(node_attrib));
       } else {
@@ -325,7 +325,7 @@ apply_to_node(PandaNode *node, int attrib_types) {
   if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
     if (_color_scale != (RenderAttrib *)NULL) {
       const RenderAttrib *node_attrib =
-        node->get_attrib(ColorScaleAttrib::get_class_type());
+        node->get_attrib(ColorScaleAttrib::get_class_slot());
       if (node_attrib != (RenderAttrib *)NULL) {
         node->set_attrib(_color_scale->compose(node_attrib));
       } else {
@@ -338,7 +338,7 @@ apply_to_node(PandaNode *node, int attrib_types) {
   if ((attrib_types & SceneGraphReducer::TT_tex_matrix) != 0) {
     if (_tex_matrix != (RenderAttrib *)NULL) {
       const RenderAttrib *node_attrib =
-        node->get_attrib(TexMatrixAttrib::get_class_type());
+        node->get_attrib(TexMatrixAttrib::get_class_slot());
       if (node_attrib != (RenderAttrib *)NULL) {
         node->set_attrib(_tex_matrix->compose(node_attrib));
       } else {
@@ -351,7 +351,7 @@ apply_to_node(PandaNode *node, int attrib_types) {
   if ((attrib_types & SceneGraphReducer::TT_clip_plane) != 0) {
     if (_clip_plane != (RenderAttrib *)NULL) {
       const RenderAttrib *node_attrib =
-        node->get_attrib(ClipPlaneAttrib::get_class_type());
+        node->get_attrib(ClipPlaneAttrib::get_class_slot());
       if (node_attrib != (RenderAttrib *)NULL) {
         node->set_attrib(_clip_plane->compose(node_attrib));
       } else {
@@ -364,7 +364,7 @@ apply_to_node(PandaNode *node, int attrib_types) {
   if ((attrib_types & SceneGraphReducer::TT_cull_face) != 0) {
     if (_cull_face != (RenderAttrib *)NULL) {
       const RenderAttrib *node_attrib =
-        node->get_attrib(CullFaceAttrib::get_class_type());
+        node->get_attrib(CullFaceAttrib::get_class_slot());
       if (node_attrib != (RenderAttrib *)NULL) {
         node->set_attrib(_cull_face->compose(node_attrib));
       } else {

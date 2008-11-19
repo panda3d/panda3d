@@ -13,6 +13,9 @@
 #include "osxGraphicsBuffer.h"
 #include "string_utils.h"
 #include "config_osxdisplay.h"
+#include "depthWriteAttrib.h"
+#include "depthTestAttrib.h"
+#include "textureAttrib.h"
 #include "pnmImage.h"
 
 #include <OpenGL/gl.h>

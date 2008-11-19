@@ -235,11 +235,22 @@ find_stashed(PandaNode *node, Thread *current_thread) const {
 INLINE const RenderAttrib *PandaNode::
 get_attrib(TypeHandle type) const {
   CDReader cdata(_cycler);
-  int index = cdata->_state->find_attrib(type);
-  if (index >= 0) {
-    return cdata->_state->get_attrib(index);
-  }
-  return NULL;
+  return cdata->_state->get_attrib(type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_attrib
+//       Access: Published
+//  Description: Returns the render attribute of the indicated type,
+//               if it is defined on the node, or NULL if it is not.
+//               This checks only what is set on this particular node
+//               level, and has nothing to do with what render
+//               attributes may be inherited from parent nodes.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderAttrib *PandaNode::
+get_attrib(int slot) const {
+  CDReader cdata(_cycler);
+  return cdata->_state->get_attrib(slot);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -252,8 +263,35 @@ get_attrib(TypeHandle type) const {
 INLINE bool PandaNode::
 has_attrib(TypeHandle type) const {
   CDReader cdata(_cycler);
-  int index = cdata->_state->find_attrib(type);
-  return (index >= 0);
+  return cdata->_state->has_attrib(type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::has_attrib
+//       Access: Published
+//  Description: Returns true if there is a render attribute of the
+//               indicated type defined on this node, or false if
+//               there is not.
+////////////////////////////////////////////////////////////////////
+INLINE bool PandaNode::
+has_attrib(int slot) const {
+  CDReader cdata(_cycler);
+  return cdata->_state->has_attrib(slot);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::clear_attrib
+//       Access: Published
+//  Description: Removes the render attribute of the given type from
+//               this node.  This node, and the subgraph below, will
+//               now inherit the indicated render attribute from the
+//               nodes above this one.
+////////////////////////////////////////////////////////////////////
+INLINE void PandaNode::
+clear_attrib(TypeHandle type) {
+  RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
+  int slot = reg->get_slot(type);
+  clear_attrib(slot);
 }
 
 ////////////////////////////////////////////////////////////////////

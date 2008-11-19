@@ -21,8 +21,8 @@
 INLINE DXGeomMunger9::
 DXGeomMunger9(GraphicsStateGuardian *gsg, const RenderState *state) :
   StandardMunger(gsg, state, 1, NT_packed_dabc, C_color),
-  _texture(state->get_texture()),
-  _tex_gen(state->get_tex_gen())
+  _texture(DCAST(TextureAttrib, state->get_attrib(TextureAttrib::get_class_slot()))),
+  _tex_gen(DCAST(TexGenAttrib, state->get_attrib(TexGenAttrib::get_class_slot())))
 {
   _filtered_texture = (TextureAttrib *)NULL;
   _reffed_filtered_texture = false;

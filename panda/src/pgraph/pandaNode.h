@@ -157,8 +157,11 @@ PUBLISHED:
 
   void set_attrib(const RenderAttrib *attrib, int override = 0);
   INLINE const RenderAttrib *get_attrib(TypeHandle type) const;
+  INLINE const RenderAttrib *get_attrib(int slot) const;
   INLINE bool has_attrib(TypeHandle type) const;
-  void clear_attrib(TypeHandle type);
+  INLINE bool has_attrib(int slot) const;
+  INLINE void clear_attrib(TypeHandle type);
+  void clear_attrib(int slot);
 
   void set_effect(const RenderEffect *effect);
   INLINE const RenderEffect *get_effect(TypeHandle type) const;

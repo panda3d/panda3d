@@ -26,6 +26,7 @@
 #include "depthTestAttrib.h"
 #include "cullFaceAttrib.h"
 #include "renderModeAttrib.h"
+#include "colorBlendAttrib.h"
 #include "fog.h"
 #include "pointerToArray.h"
 

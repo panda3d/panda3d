@@ -24,6 +24,8 @@
 #include "lens.h"
 #include "pointerTo.h"
 
+class DisplayRegion;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : SceneSetup
 // Description : This object holds the camera position, etc., and

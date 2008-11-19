@@ -136,7 +136,7 @@ do_cull(int &result, CPT(RenderState) &state,
   result = 
     BoundingVolume::IF_all | BoundingVolume::IF_possible | BoundingVolume::IF_some;
 
-  CPT(ClipPlaneAttrib) orig_cpa = state->get_clip_plane();
+  CPT(ClipPlaneAttrib) orig_cpa = DCAST(ClipPlaneAttrib, state->get_attrib(ClipPlaneAttrib::get_class_slot()));
   
   // If there are no clip planes in the state, the node is completely
   // in front of all zero of the clip planes.  (This can happen if
@@ -172,7 +172,7 @@ do_cull(int &result, CPT(RenderState) &state,
 
   if (new_cpa != orig_cpa) {
     if (new_cpa->is_identity()) {
-      state = state->remove_attrib(ClipPlaneAttrib::get_class_type());
+      state = state->remove_attrib(ClipPlaneAttrib::get_class_slot());
     } else {
       state = state->add_attrib(new_cpa);
     }

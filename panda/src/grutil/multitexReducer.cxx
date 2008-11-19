@@ -29,6 +29,7 @@
 #include "colorAttrib.h"
 #include "colorScaleAttrib.h"
 #include "colorBlendAttrib.h"
+#include "alphaTestAttrib.h"
 #include "textureAttrib.h"
 #include "config_grutil.h"
 #include "config_gobj.h"
@@ -99,7 +100,7 @@ scan(PandaNode *node, const RenderState *state, const TransformState *transform)
   // operation, since the flattened texture will be applied to the
   // Geoms after the flatten() operation, and we don't want to still
   // have a multitexture specified.
-  node->set_state(node->get_state()->remove_attrib(TextureAttrib::get_class_type()));
+  node->set_state(node->get_state()->remove_attrib(TextureAttrib::get_class_slot()));
 
   if (node->is_geom_node()) {
     scan_geom_node(DCAST(GeomNode, node), next_state, next_transform);
@@ -376,7 +377,7 @@ flatten(GraphicsOutput *window) {
       
       CPT(RenderState) geom_state = 
         geom_info._geom_node->get_geom_state(geom_info._index);
-      int override = geom_info._geom_net_state->get_override(TextureAttrib::get_class_type());
+      int override = geom_info._geom_net_state->get_override(TextureAttrib::get_class_slot());
       geom_state = geom_state->add_attrib(new_ta, override);
 
       if (bake_in_color) {
@@ -389,7 +390,7 @@ flatten(GraphicsOutput *window) {
         // thing as a ColorScaleAttrib::make_off(), since that would
         // prohibit any future changes to the color scale.
         const RenderAttrib *attrib = 
-          geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_type());
+          geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_slot());
 
         if (attrib != (const RenderAttrib *)NULL) {
           geom_state = geom_state->add_attrib
@@ -400,7 +401,7 @@ flatten(GraphicsOutput *window) {
       // Determine what tex matrix should be on the Geom.
       CPT(TransformState) tex_mat = TransformState::make_identity();
 
-      const RenderAttrib *ra = geom_info._state->get_attrib(TexMatrixAttrib::get_class_type());
+      const RenderAttrib *ra = geom_info._state->get_attrib(TexMatrixAttrib::get_class_slot());
       if (ra != (const RenderAttrib *)NULL) {
         // There is a texture matrix inherited from above; put an
         // inverse matrix on the Geom to compensate.
@@ -415,7 +416,7 @@ flatten(GraphicsOutput *window) {
 
       if (tex_mat->is_identity()) {
         // There should be no texture matrix on the Geom.
-        geom_state = geom_state->remove_attrib(TexMatrixAttrib::get_class_type());
+        geom_state = geom_state->remove_attrib(TexMatrixAttrib::get_class_slot());
       } else {
         // The texture matrix should be as computed.
         CPT(RenderAttrib) new_tma = TexMatrixAttrib::make
@@ -437,7 +438,7 @@ flatten(GraphicsOutput *window) {
     const GeomNodeInfo &geom_node_info = (*gni);
     AccumulatedAttribs attribs;
     attribs._texture = 
-      geom_node_info._state->get_attrib(TextureAttrib::get_class_type());
+      geom_node_info._state->get_attrib(TextureAttrib::get_class_slot());
     geom_node_info._geom_node->apply_attribs_to_vertices
       (attribs, SceneGraphReducer::TT_tex_matrix, transformer);
   }
@@ -475,7 +476,7 @@ scan_geom_node(GeomNode *node, const RenderState *state,
     const RenderAttrib *attrib;
     const TextureAttrib *ta = NULL;
 
-    attrib = geom_net_state->get_attrib(TextureAttrib::get_class_type());
+    attrib = geom_net_state->get_attrib(TextureAttrib::get_class_slot());
     if (attrib != (const RenderAttrib *)NULL) {
       ta = DCAST(TextureAttrib, attrib);
     }
@@ -483,14 +484,14 @@ scan_geom_node(GeomNode *node, const RenderState *state,
     if (ta == (TextureAttrib *)NULL) {
       // No texture should be on the Geom.
       CPT(RenderState) geom_state = node->get_geom_state(gi);
-      geom_state = geom_state->remove_attrib(TextureAttrib::get_class_type());
+      geom_state = geom_state->remove_attrib(TextureAttrib::get_class_slot());
       node->set_geom_state(gi, geom_state);
 
     } else if (ta->get_num_on_stages() < 2) {
       // Just a single texture on the Geom; we don't really need to do
       // anything to flatten the textures, then.  But we should ensure
       // that the correct TextureAttrib is applied to the Geom.
-      int override = geom_net_state->get_override(TextureAttrib::get_class_type());
+      int override = geom_net_state->get_override(TextureAttrib::get_class_slot());
       CPT(RenderState) geom_state = node->get_geom_state(gi);
       geom_state = geom_state->add_attrib(ta, override);
       node->set_geom_state(gi, geom_state);
@@ -498,7 +499,7 @@ scan_geom_node(GeomNode *node, const RenderState *state,
     } else {
       // Ok, we have multitexture.  Record the Geom.
       CPT(TexMatrixAttrib) tma = DCAST(TexMatrixAttrib, TexMatrixAttrib::make());
-      attrib = geom_net_state->get_attrib(TexMatrixAttrib::get_class_type());
+      attrib = geom_net_state->get_attrib(TexMatrixAttrib::get_class_slot());
       if (attrib != (const RenderAttrib *)NULL) {
         tma = DCAST(TexMatrixAttrib, attrib);
       }
@@ -963,11 +964,11 @@ transfer_geom(GeomNode *geom_node, const InternalName *texcoord_name,
     CPT(RenderState) geom_state = RenderState::make_empty();
     if (preserve_color) {
       // Be sure to preserve whatever colors are on the geom.
-      const RenderAttrib *ca = geom_info._geom_net_state->get_attrib(ColorAttrib::get_class_type());
+      const RenderAttrib *ca = geom_info._geom_net_state->get_attrib(ColorAttrib::get_class_slot());
       if (ca != (const RenderAttrib *)NULL) {
         geom_state = geom_state->add_attrib(ca);
       }
-      const RenderAttrib *csa = geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_type());
+      const RenderAttrib *csa = geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_slot());
       if (csa != (const RenderAttrib *)NULL) {
         geom_state = geom_state->add_attrib(csa);
       }
@@ -1002,7 +1003,7 @@ scan_color(const MultitexReducer::GeomList &geom_list, Colorf &geom_color,
     bool has_vertex_color = false;
 
     Colorf color_scale(1.0f, 1.0f, 1.0f, 1.0f);
-    const RenderAttrib *csa = geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_type());
+    const RenderAttrib *csa = geom_info._geom_net_state->get_attrib(ColorScaleAttrib::get_class_slot());
     if (csa != (const RenderAttrib *)NULL) {
       const ColorScaleAttrib *a = DCAST(ColorScaleAttrib, csa);
       if (a->has_scale()) {
@@ -1011,7 +1012,7 @@ scan_color(const MultitexReducer::GeomList &geom_list, Colorf &geom_color,
     }
 
     ColorAttrib::Type color_type = ColorAttrib::T_vertex;
-    const RenderAttrib *ca = geom_info._geom_net_state->get_attrib(ColorAttrib::get_class_type());
+    const RenderAttrib *ca = geom_info._geom_net_state->get_attrib(ColorAttrib::get_class_slot());
     if (ca != (const RenderAttrib *)NULL) {
       color_type = DCAST(ColorAttrib, ca)->get_color_type();
     }

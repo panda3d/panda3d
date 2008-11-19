@@ -1090,14 +1090,14 @@ set_attrib(const RenderAttrib *attrib, int override) {
 //               nodes above this one.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
-clear_attrib(TypeHandle type) {
+clear_attrib(int slot) {
   bool any_changed = false;
 
   Thread *current_thread = Thread::get_current_thread();
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     
-    CPT(RenderState) new_state = cdata->_state->remove_attrib(type);
+    CPT(RenderState) new_state = cdata->_state->remove_attrib(slot);
     if (cdata->_state != new_state) {
       cdata->_state = new_state;
       cdata->set_fancy_bit(FB_state, !new_state->is_empty());
@@ -3644,7 +3644,7 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
         << "\nnet_draw_show_mask = " << net_draw_show_mask
         << "\n";
     }
-    CPT(RenderAttrib) off_clip_planes = cdata->_state->get_clip_plane();
+    CPT(RenderAttrib) off_clip_planes = cdata->_state->get_attrib(ClipPlaneAttrib::get_class_slot());
     if (off_clip_planes == (RenderAttrib *)NULL) {
       off_clip_planes = ClipPlaneAttrib::make();
     }

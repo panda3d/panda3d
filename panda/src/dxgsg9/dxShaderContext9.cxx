@@ -469,8 +469,8 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg)
           }        
           InternalName *name = _shader->_var_spec[i]._name;
           int texslot = _shader->_var_spec[i]._append_uv;
-          if (texslot >= 0 && texslot < gsg->_state._texture->get_num_on_stages()) {
-            TextureStage *stage = gsg->_state._texture->get_on_stage(texslot);
+          if (texslot >= 0 && texslot < gsg->_state_texture->get_num_on_stages()) {
+            TextureStage *stage = gsg->_state_texture->get_on_stage(texslot);
             InternalName *texname = stage->get_texcoord_name();
             if (name == InternalName::get_texcoord()) {
               name = texname;
@@ -697,14 +697,14 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg)
       Texture *tex = 0;
       InternalName *id = _shader->_tex_spec[i]._name;
       if (id != 0) {
-        const ShaderInput *input = gsg->_target._shader->get_shader_input(id);
+        const ShaderInput *input = gsg->_target_shader->get_shader_input(id);
         tex = input->get_texture();
       } else {
-        if (_shader->_tex_spec[i]._stage >= gsg->_target._texture->get_num_on_stages()) {
+        if (_shader->_tex_spec[i]._stage >= gsg->_target_texture->get_num_on_stages()) {
           continue;
         }
-        TextureStage *stage = gsg->_target._texture->get_on_stage(_shader->_tex_spec[i]._stage);
-        tex = gsg->_target._texture->get_on_texture(stage);
+        TextureStage *stage = gsg->_target_texture->get_on_stage(_shader->_tex_spec[i]._stage);
+        tex = gsg->_target_texture->get_on_texture(stage);
       }
       if (_shader->_tex_spec[i]._suffix != 0) {
         // The suffix feature is inefficient. It is a temporary hack.

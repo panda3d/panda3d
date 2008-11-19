@@ -35,6 +35,7 @@ private:
 PUBLISHED:
   static CPT(RenderAttrib) make();
   static CPT(RenderAttrib) make_off();
+  static CPT(RenderAttrib) make_default();
   
   enum {
     F_disable_alpha_write = 0,  // Suppress writes to color buffer alpha channel.
@@ -80,10 +81,8 @@ PUBLISHED:
   static void register_with_read_factory();
   
 public:
-  virtual void store_into_slot(AttribSlots *slots) const;
 
 protected:
-  virtual RenderAttrib *make_default_impl() const;
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   
@@ -98,6 +97,14 @@ private:
   typedef pmap < CPT(InternalName), CPT(ShaderInput) > Inputs;
   Inputs _inputs;
 
+PUBLISHED:
+  static int get_class_slot() {
+    return _attrib_slot;
+  }
+  virtual int get_slot() const {
+    return get_class_slot();
+  }
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
@@ -106,6 +113,7 @@ public:
     RenderAttrib::init_type();
     register_type(_type_handle, "ShaderAttrib",
                   RenderAttrib::get_class_type());
+    _attrib_slot = register_slot(_type_handle, 10, make_default);
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -114,6 +122,7 @@ public:
 
 private:
   static TypeHandle _type_handle;
+  static int _attrib_slot;
 };
 
 

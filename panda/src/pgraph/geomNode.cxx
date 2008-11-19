@@ -144,7 +144,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
         }
         entry._state = entry._state->add_attrib(ra, override);
 
-        ra = entry._state->get_attrib(ColorAttrib::get_class_type());
+        ra = entry._state->get_attrib(ColorAttrib::get_class_slot());
         const ColorAttrib *ca = DCAST(ColorAttrib, ra);
         if (ca->get_color_type() != ColorAttrib::T_vertex) {
           if (transformer.remove_column(new_geom, InternalName::get_color())) {
@@ -160,7 +160,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
             // Now, if we have an "off" or "flat" color attribute, we
             // simply modify the color attribute, and leave the
             // vertices alone.
-            const RenderAttrib *ra = entry._state->get_attrib(ColorAttrib::get_class_type());
+            const RenderAttrib *ra = entry._state->get_attrib(ColorAttrib::get_class_slot());
             if (ra != (const RenderAttrib *)NULL) {
               const ColorAttrib *ca = DCAST(ColorAttrib, ra);
               if (ca->get_color_type() == ColorAttrib::T_off) {
@@ -374,7 +374,7 @@ r_prepare_scene(const RenderState *state,
   for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     CPT(RenderState) geom_state = state->compose((*gi)._state);
     const RenderAttrib *attrib = 
-      geom_state->get_attrib(TextureAttrib::get_class_type());
+      geom_state->get_attrib(TextureAttrib::get_class_slot());
     if (attrib != (const RenderAttrib *)NULL) {
       const TextureAttrib *ta;
       DCAST_INTO_V(ta, attrib);
@@ -767,25 +767,19 @@ output(ostream &out) const {
   pset<TypeHandle> attrib_types;
 
   GeomList::const_iterator gi;
+  CPT(RenderState) common = RenderState::make_empty();
+
   CPT(GeomList) geoms = cdata->get_geoms();
   for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     const GeomEntry &entry = (*gi);
-    int num_attribs = entry._state->get_num_attribs();
-    for (int i = 0; i < num_attribs; i++) {
-      const RenderAttrib *attrib = entry._state->get_attrib(i);
-      attrib_types.insert(attrib->get_type());
-    }
+    common = common->compose(entry._state);
   }
 
   PandaNode::output(out);
   out << " (" << geoms->size() << " geoms";
 
-  if (!attrib_types.empty()) {
-    out << ":";
-    pset<TypeHandle>::const_iterator ai;
-    for (ai = attrib_types.begin(); ai != attrib_types.end(); ++ai) {
-      out << " " << (*ai);
-    }
+  if (!common->is_empty()) {
+    out << ": " << *common;    
   }
 
   out << ")";
@@ -964,7 +958,7 @@ finalize(BamReader *manager) {
         }
 
         if (vdata->has_column(color) &&
-            entry._state->get_color() == (ColorAttrib *)NULL) {
+            !entry._state->has_attrib(ColorAttrib::get_class_slot())) {
           // We'll be reassigning the RenderState.  Therefore, save it
           // temporarily to increment its reference count.
           PT(BamAuxData) aux_data = new BamAuxData;
