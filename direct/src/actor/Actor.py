@@ -21,6 +21,9 @@ class Actor(DirectObject, NodePath):
     animLoaderOptions =  LoaderOptions(LoaderOptions.LFSearch |
                                        LoaderOptions.LFReportErrors |
                                        LoaderOptions.LFConvertAnim)
+
+    validateSubparts = ConfigVariableBool('validate-subparts', True)
+    
     class PartDef:
 
         """Instances of this class are stored within the
@@ -1078,18 +1081,89 @@ class Actor(DirectObject, NodePath):
         else:
             Actor.notify.warning("no joint named %s!" % (jointName))
 
-    def getJoints(self, jointName):
+    def getJoints(self, partName = None, jointName = '*', lodName = None):
+        """ Returns the list of all joints, from the named part or
+        from all parts, that match the indicated jointName.  The
+        jointName may include pattern characters like *. """
+        
         joints=[]
-        for lod in self.__partBundleDict.values():
-            for part in lod.values():
-                partBundle=part.getBundle()
-                joint=partBundle.findChild(jointName)
-                if(joint):
-                    joints.append(joint)
+        pattern = GlobPattern(jointName)
+
+        if lodName == None:
+            # Get all LOD's
+            partBundleDicts = self.__partBundleDict.values()
+        else:
+            # Get one LOD.
+            partBundleDict = self.__partBundleDict.get(lodName)
+            if not partBundleDict:
+                Actor.notify.warning("couldn't find lod: %s" % (lodName))
+                return []
+            partBundleDicts = [partBundleDict]
+
+        for partBundleDict in partBundleDicts:
+            parts = []
+            if partName:
+                subpartDef = self.__subpartDict.get(partName, None)
+                if not subpartDef:
+                    # Whole part
+                    subset = None
+                    partDef = partBundleDict.get(partName)
+                else:
+                    # Sub-part
+                    subset = subpartDef.subset
+                    partDef = partBundleDict.get(subpartDef.truePartName)
+                if not partDef:
+                    Actor.notify.warning("no part named %s!" % (partName))
+                    return []
+                parts = [partDef]
+            else:
+                subset = None
+                parts = partBundleDict.values()
+
+            for partData in parts:
+                partBundle = partData.getBundle()
+
+                if not pattern.hasGlobCharacters() and not subset:
+                    # The simple case.
+                    joint = partBundle.findChild(jointName)
+                    if joint:
+                        joints.append(joint)
+                else:
+                    # The more complex case.
+                    isIncluded = True
+                    if subset:
+                        isIncluded = subset.isIncludeEmpty()
+                    self.__getPartJoints(joints, pattern, partBundle, subset, isIncluded)
 
         return joints
+
+    def getOverlappingJoints(self, partNameA, partNameB, jointName = '*', lodName = None):
+        """ Returns the set of joints, matching jointName, that are
+        shared between partNameA and partNameB. """
+        jointsA = set(self.getJoints(partName = partNameA, jointName = jointName, lodName = lodName))
+        jointsB = set(self.getJoints(partName = partNameB, jointName = jointName, lodName = lodName))
+
+        return jointsA & jointsB
+
+    def __getPartJoints(self, joints, pattern, partNode, subset, isIncluded):
+        """ Recursively walks the joint hierarchy to look for matching
+        joint names, implementing getJoints(). """
+
+        name = partNode.getName()
+        if subset:
+            # Constrain the traversal just to the named subset.
+            if subset.matchesInclude(name):
+                isIncluded = True
+            elif subset.matchesExclude(name):
+                isIncluded = False
+
+        if isIncluded and pattern.matches(name):
+            joints.append(partNode)
+
+        for child in partNode.getChildren():
+            self.__getPartJoints(joints, pattern, child, subset, isIncluded)
     
-    def getJointTransform(self,partName, jointName, lodName='lodRoot'):
+    def getJointTransform(self, partName, jointName, lodName='lodRoot'):
         partBundleDict=self.__partBundleDict.get(lodName)
         if not partBundleDict:
             Actor.notify.warning("no lod named: %s" % (lodName))
@@ -1845,7 +1919,7 @@ class Actor(DirectObject, NodePath):
 
 
     def makeSubpart(self, partName, includeJoints, excludeJoints = [],
-                    parent="modelRoot"):
+                    parent="modelRoot", overlapping = False):
 
         """Defines a new "part" of the Actor that corresponds to the
         same geometry as the named parent part, but animates only a
@@ -1868,6 +1942,10 @@ class Actor(DirectObject, NodePath):
         of its descendents), even if a parent joint was named by
         includeJoints.
 
+        if overlapping is False, an error is raised (in the dev build)
+        if this subpart shares joints with any other subparts.  If
+        overlapping is True, no such error is raised.
+
         parent is the actual partName that this subpart is based
         on."""
 
@@ -1883,6 +1961,15 @@ class Actor(DirectObject, NodePath):
 
         self.__subpartDict[partName] = Actor.SubpartDef(parent, subset)
 
+        if __dev__ and not overlapping and self.validateSubparts.getValue():
+            # Without the overlapping flag True, we're not allowed to
+            # define overlapping sub-parts.  Verify that we haven't.
+            for otherPartName, otherPartDef in self.__subpartDict.items():
+                if otherPartName != partName and otherPartDef.truePartName == parent:
+                    joints = self.getOverlappingJoints(partName, otherPartName)
+                    if joints:
+                        raise StandardError, 'Overlapping joints: %s and %s' % (partName, otherPartName)
+        
     def setSubpartsComplete(self, flag):
 
         """Sets the subpartsComplete flag.  This affects the behavior
@@ -1907,10 +1994,48 @@ class Actor(DirectObject, NodePath):
         
         self.__subpartsComplete = flag
 
+        if __dev__ and self.__subpartsComplete and self.validateSubparts.getValue():
+            # If we've specified any parts at all so far, make sure we've
+            # specified all of them.
+            if self.__subpartDict:
+                self.verifySubpartsComplete()
+        
+
     def getSubpartsComplete(self):
         """See setSubpartsComplete()."""
         
         return self.__subpartsComplete
+
+    def verifySubpartsComplete(self, partName = None, lodName = None):
+        """ Ensures that each joint is defined by at least one
+        subPart.  Prints a warning if this is not the case. """
+
+        if partName:
+            assert partName not in self.__subpartDict
+            partNames = [partName]
+        else:
+            if lodName:
+                partNames = self.__partBundleDict[lodName].keys()
+            else:
+                partNames = self.__partBundleDict.values()[0].keys()
+
+        for partName in partNames:
+            subJoints = set()
+            for subPartName, subPartDef in self.__subpartDict.items():
+                if subPartName != partName and subPartDef.truePartName == partName:
+                    subJoints |= set(self.getJoints(partName = subPartName, lodName = lodName))
+
+            allJoints = set(self.getJoints(partName = partName, lodName = lodName))
+            diff = allJoints.difference(subJoints)
+            for joint in list(diff):
+                if joint.getName() == '<skeleton>' or joint.getName() == 'morph' or isinstance(joint, PartBundle):
+                    # We'll allow these special-case joints, which are
+                    # usually unanimated root nodes, to remain
+                    # uncovered without complaining.
+                    diff.remove(joint)
+                    
+            if diff:
+                self.notify.warning('Uncovered joints: %s' % (list(diff)))
 
     def loadAnims(self, anims, partName="modelRoot", lodName="lodRoot"):
         """loadAnims(self, string:string{}, string='modelRoot',
