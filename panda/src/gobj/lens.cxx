@@ -726,7 +726,7 @@ clear_view_mat() {
 //               matrix that will compensate for keystoning of a
 //               projected image; this can be used to compensate for a
 //               projector that for physical reasons cannot be aimed
-//               directly at it screen.  
+//               directly at its screen.  
 //
 //               The default value is taken from the default-keystone
 //               Config variable.  0, 0 indicates no keystone
