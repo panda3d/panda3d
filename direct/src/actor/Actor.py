@@ -1089,8 +1089,12 @@ class Actor(DirectObject, NodePath):
         joints=[]
         pattern = GlobPattern(jointName)
 
+        if lodName == None and self.mergeLODBundles:
+            # Get any LOD.
+            lodName = self.__partBundleDict.keys()[0]
+
         if lodName == None:
-            # Get all LOD's
+            # Get all LOD's.
             partBundleDicts = self.__partBundleDict.values()
         else:
             # Get one LOD.
@@ -1157,7 +1161,7 @@ class Actor(DirectObject, NodePath):
             elif subset.matchesExclude(name):
                 isIncluded = False
 
-        if isIncluded and pattern.matches(name):
+        if isIncluded and pattern.matches(name) and isinstance(partNode, MovingPartBase):
             joints.append(partNode)
 
         for child in partNode.getChildren():
@@ -2027,13 +2031,6 @@ class Actor(DirectObject, NodePath):
 
             allJoints = set(self.getJoints(partName = partName, lodName = lodName))
             diff = allJoints.difference(subJoints)
-            for joint in list(diff):
-                if joint.getName() == '<skeleton>' or joint.getName() == 'morph' or isinstance(joint, PartBundle):
-                    # We'll allow these special-case joints, which are
-                    # usually unanimated root nodes, to remain
-                    # uncovered without complaining.
-                    diff.remove(joint)
-                    
             if diff:
                 self.notify.warning('Uncovered joints: %s' % (list(diff)))
 
