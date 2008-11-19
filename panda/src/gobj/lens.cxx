@@ -627,13 +627,14 @@ get_interocular_distance() const {
 //               PerspectiveLens.
 //
 //               This parameter must be greater than 0, but may be as
-//               large as you like.  It controls the degree to which
+//               large as you like.  It controls the amount to which
 //               the two eyes are directed inwards towards each other,
-//               which is a normal property of stereo vision.
-//               Normally this should be set to the distance from the
-//               camera to the area of interest in your scene.  If you
-//               want to simulate parallel stereo, set this value to a
-//               very large number.
+//               which is a normal property of stereo vision.  It is a
+//               distance, not an angle; normally this should be set
+//               to the distance from the camera to the area of
+//               interest in your scene.  If you want to simulate
+//               parallel stereo, set this value to a very large
+//               number.
 //
 //               Also see set_interocular_distance(), which relates.
 ////////////////////////////////////////////////////////////////////
