@@ -123,9 +123,9 @@ class Notifier:
         """
         message = str(errorString)
         if Notifier.showTime:
-            string = (self.getTime() + str(exception) + ": " + self.__name + ": " + message)
+            string = (self.getTime() + str(exception) + ": " + self.__name + "(error): " + message)
         else:
-            string = (str(exception) + ": " + self.__name + ": " + message)
+            string = (str(exception) + ": " + self.__name + "(error): " + message)
         self.__log(string)
         raise exception(errorString)
 
@@ -139,7 +139,7 @@ class Notifier:
             if Notifier.showTime:
                 string = (self.getTime() + self.__name + '(warning): ' + message)
             else:
-                string = (":" + self.__name + 'warning: ' + message)
+                string = (":" + self.__name + '(warning): ' + message)
             self.__log(string)
             self.__print(string)
         return 1 # to allow assert myNotify.warning("blah")
@@ -164,9 +164,9 @@ class Notifier:
         if self.__debug:
             message = str(debugString)
             if Notifier.showTime:
-                string = (self.getTime() + self.__name + ':debug: ' + message)
+                string = (self.getTime() + self.__name + '(debug): ' + message)
             else:
-                string = (':' + self.__name + ':debug: ' + message)
+                string = (':' + self.__name + '(debug): ' + message)
             self.__log(string)
             self.__print(string)
         return 1 # to allow assert myNotify.debug("blah")
@@ -191,9 +191,9 @@ class Notifier:
         if self.__info:
             message = str(infoString)
             if Notifier.showTime:
-                string = (self.getTime() + self.__name + ':info: ' + message)
+                string = (self.getTime() + self.__name + ': ' + message)
             else:
-                string = (':' + self.__name + ':info: ' + message)
+                string = (':' + self.__name + ': ' + message)
             self.__log(string)
             self.__print(string)
         return 1 # to allow assert myNotify.info("blah")
