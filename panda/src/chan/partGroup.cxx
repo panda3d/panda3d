@@ -54,6 +54,18 @@ PartGroup::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::is_character_joint
+//       Access: Public, Virtual
+//  Description: Returns true if this part is a CharacterJoint, false
+//               otherwise.  This is a tiny optimization over
+//               is_of_type(CharacterType::get_class_type()).
+////////////////////////////////////////////////////////////////////
+bool PartGroup::
+is_character_joint() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::make_copy
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new copy of the node.
@@ -447,6 +459,21 @@ do_xform(const LMatrix4f &mat, const LMatrix4f &inv_mat) {
 
   for (ci = _children.begin(); ci != _children.end(); ++ci) {
     (*ci)->do_xform(mat, inv_mat);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::determine_effective_channels
+//       Access: Public, Virtual
+//  Description: Should be called whenever the ChannelBlend values
+//               have changed, this recursively updates the
+//               _effective_channel member in each part.
+////////////////////////////////////////////////////////////////////
+void PartGroup::
+determine_effective_channels(const CycleData *root_cdata) {
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    (*ci)->determine_effective_channels(root_cdata);
   }
 }
 

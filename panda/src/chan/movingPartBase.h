@@ -75,9 +75,26 @@ protected:
   virtual void find_bound_joints(int &joint_index, bool is_included, 
                                  BitArray &bound_joints,
                                  const PartSubset &subset);
+  virtual void determine_effective_channels(const CycleData *root_cdata);
 
+  // This is the vector of all channels bound to this part.
   typedef pvector< PT(AnimChannelBase) > Channels;
   Channels _channels;
+
+  // This is the number of channels in the above _channels vector that
+  // actually have an effect on this part.
+  int _num_effective_channels;
+
+  // This is the single channel that has an effect on this part, as
+  // determined by determine_effective_channels().  It is only set if
+  // there is exactly one channel that affects this part
+  // (i.e. _num_effective_channels is 1).  If there are multiple
+  // channels, or no channels at all, it is NULL.
+  AnimControl *_effective_control;
+  PT(AnimChannelBase) _effective_channel;
+
+  // This is the particular channel that's been forced to this part,
+  // via set_forced_channel().  It overrides all of the above if set.
   PT(AnimChannelBase) _forced_channel;
 
 public:

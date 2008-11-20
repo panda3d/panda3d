@@ -84,6 +84,18 @@ CharacterJoint::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CharacterJoint::is_character_joint
+//       Access: Public, Virtual
+//  Description: Returns true if this part is a CharacterJoint, false
+//               otherwise.  This is a tiny optimization over
+//               is_of_type(CharacterType::get_class_type()).
+////////////////////////////////////////////////////////////////////
+bool CharacterJoint::
+is_character_joint() const {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CharacterJoint::make_copy
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new copy of the node.
@@ -112,11 +124,10 @@ make_copy() const {
 bool CharacterJoint::
 update_internals(PartBundle *root, PartGroup *parent, bool self_changed, 
                  bool parent_changed, Thread *current_thread) {
-
   nassertr(parent != (PartGroup *)NULL, false);
 
   bool net_changed = false;
-  if (parent->is_of_type(CharacterJoint::get_class_type())) {
+  if (parent->is_character_joint()) {
     // The joint is not a toplevel joint; its parent therefore affects
     // its net transform.
     if (parent_changed || self_changed) {
@@ -140,11 +151,11 @@ update_internals(PartBundle *root, PartGroup *parent, bool self_changed,
       CPT(TransformState) t = TransformState::make_mat(_net_transform);
       
       NodeList::iterator ai;
-      ai = _net_transform_nodes.begin();
-      while (ai != _net_transform_nodes.end()) {
+      for (ai = _net_transform_nodes.begin();
+           ai != _net_transform_nodes.end();
+           ++ai) {
         PandaNode *node = *ai;
         node->set_transform(t, current_thread);
-        ++ai;
       }
     }
 
@@ -161,11 +172,11 @@ update_internals(PartBundle *root, PartGroup *parent, bool self_changed,
     CPT(TransformState) t = TransformState::make_mat(_value);
 
     NodeList::iterator ai;
-    ai = _local_transform_nodes.begin();
-    while (ai != _local_transform_nodes.end()) {
+    for (ai = _local_transform_nodes.begin();
+         ai != _local_transform_nodes.end();
+         ++ai) {
       PandaNode *node = *ai;
       node->set_transform(t, current_thread);
-      ++ai;
     }
   }
 

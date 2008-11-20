@@ -20,6 +20,7 @@
 #include "movingPartMatrix.h"
 #include "pandaNode.h"
 #include "nodePathCollection.h"
+#include "ordered_vector.h"
 
 class JointVertexTransform;
 class Character;
@@ -41,6 +42,7 @@ PUBLISHED:
   virtual ~CharacterJoint();
 
 public:
+  virtual bool is_character_joint() const;
   virtual PartGroup *make_copy() const;
 
   virtual bool update_internals(PartBundle *root, PartGroup *parent, 
@@ -73,11 +75,11 @@ private:
   // Not a reference-counted pointer.
   Character *_character;
 
-  typedef pset< PT(PandaNode) > NodeList;
+  typedef ov_set< PT(PandaNode) > NodeList;
   NodeList _net_transform_nodes;
   NodeList _local_transform_nodes;
 
-  typedef pset<JointVertexTransform *> VertexTransforms;
+  typedef ov_set<JointVertexTransform *> VertexTransforms;
   VertexTransforms _vertex_transforms;
 
 public:

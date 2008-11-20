@@ -66,6 +66,7 @@ PUBLISHED:
   // This is the normal PartGroup constructor.
   PartGroup(PartGroup *parent, const string &name);
   virtual ~PartGroup();
+  virtual bool is_character_joint() const;
 
   virtual PartGroup *make_copy() const;
   PartGroup *copy_subgraph() const;
@@ -96,6 +97,7 @@ public:
                          PartGroup *parent, bool parent_changed, 
                          bool anim_changed, Thread *current_thread);
   virtual void do_xform(const LMatrix4f &mat, const LMatrix4f &inv_mat);
+  virtual void determine_effective_channels(const CycleData *root_cdata);
 
 protected:
   void write_descendants(ostream &out, int indent_level) const;

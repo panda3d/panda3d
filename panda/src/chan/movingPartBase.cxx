@@ -29,8 +29,11 @@ TypeHandle MovingPartBase::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MovingPartBase::
-MovingPartBase(PartGroup *parent, const string &name)
-  : PartGroup(parent, name) {
+MovingPartBase(PartGroup *parent, const string &name) :
+  PartGroup(parent, name),
+  _num_effective_channels(0),
+  _effective_control(NULL)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,7 +42,10 @@ MovingPartBase(PartGroup *parent, const string &name)
 //  Description:
 ////////////////////////////////////////////////////////////////////
 MovingPartBase::
-MovingPartBase() {
+MovingPartBase() :
+  _num_effective_channels(0),
+  _effective_control(NULL)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,6 +141,10 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *parent,
     if (!needs_update) {
       needs_update = _forced_channel->has_changed(0, 0.0, 0, 0.0);
     }
+
+  } else if (_effective_control != (AnimControl *)NULL) {
+    const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;
+    needs_update = _effective_control->channel_has_changed(_effective_channel, cdata->_frame_blend_flag);
 
   } else {
     const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;
@@ -314,4 +324,46 @@ find_bound_joints(int &joint_index, bool is_included, BitArray &bound_joints,
   ++joint_index;
 
   PartGroup::find_bound_joints(joint_index, is_included, bound_joints, subset);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovingPartBase::determine_effective_channels
+//       Access: Protected, Virtual
+//  Description: Should be called whenever the ChannelBlend values
+//               have changed, this recursively updates the
+//               _effective_channel member in each part.
+////////////////////////////////////////////////////////////////////
+void MovingPartBase::
+determine_effective_channels(const CycleData *root_cdata) {
+  _effective_control = NULL;
+  _effective_channel = NULL;
+  _num_effective_channels = 0;
+
+  AnimControl *effective_control = NULL;
+  AnimChannelBase *effective_channel = NULL;
+  int num_effective_channels = 0;
+
+  const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;
+  PartBundle::ChannelBlend::const_iterator cbi;
+  for (cbi = cdata->_blend.begin(); 
+       cbi != cdata->_blend.end(); 
+       ++cbi) {
+    AnimControl *control = (*cbi).first;
+    int channel_index = control->get_channel_index();
+    if (channel_index >= 0 && channel_index < (int)_channels.size()) {
+      if (_channels[channel_index] != (AnimChannelBase *)NULL) {
+        effective_control = control;
+        effective_channel = _channels[channel_index];
+        ++num_effective_channels;
+      }
+    }
+  }
+
+  _num_effective_channels = num_effective_channels;
+  if (num_effective_channels == 1) {
+    _effective_control = effective_control;
+    _effective_channel = effective_channel;
+  }
+
+  PartGroup::determine_effective_channels(root_cdata);
 }

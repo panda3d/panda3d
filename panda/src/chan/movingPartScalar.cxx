@@ -62,33 +62,11 @@ get_blend_value(const PartBundle *root) {
       _value = _initial_value;
     }
 
-  } else if ((cdata->_blend.size() == 1 || !cdata->_anim_blend_flag) && 
+  } else if (_effective_control != (AnimControl *)NULL &&
              !cdata->_frame_blend_flag) {
     // A single value, the normal case.
-    AnimControl *bound_control = NULL;
-    ChannelType *bound_channel = NULL;
-
-    PartBundle::ChannelBlend::const_iterator cbi;
-    for (cbi = cdata->_blend.begin(); 
-         cbi != cdata->_blend.end() && bound_channel == (ChannelType *)NULL; 
-         ++cbi) {
-      AnimControl *control = (*cbi).first;
-      int channel_index = control->get_channel_index();
-      if (channel_index >= 0 && channel_index < (int)_channels.size()) {
-        bound_control = control;
-        bound_channel = DCAST(ChannelType, _channels[channel_index]);
-      }
-    }
-
-    if (bound_channel == NULL) {
-      // Nothing is actually bound here.
-      if (restore_initial_pose) {
-        _value = _initial_value;
-      }
-
-    } else {
-      bound_channel->get_value(bound_control->get_frame(), _value);
-    }
+    ChannelType *channel = DCAST(ChannelType, _effective_channel);
+    channel->get_value(_effective_control->get_frame(), _value);
 
   } else {
     // A blend of two or more values.

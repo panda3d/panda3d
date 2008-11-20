@@ -603,6 +603,10 @@ do_bind_anim(AnimControl *control, AnimBundle *anim,
   bind_hierarchy(ptanim, channel_index, joint_index, 
                  subset.is_include_empty(), bound_joints, subset);
   control->setup_anim(this, anim, channel_index, bound_joints);
+
+  CDReader cdata(_cycler);
+  determine_effective_channels(cdata);
+
   return true;
 }
 
@@ -706,6 +710,7 @@ recompute_net_blend(CData *cdata) {
   for (bti = cdata->_blend.begin(); bti != cdata->_blend.end(); ++bti) {
     cdata->_net_blend += (*bti).second;
   }
+  determine_effective_channels(cdata);
 }
 
 ////////////////////////////////////////////////////////////////////

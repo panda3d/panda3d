@@ -19,7 +19,7 @@
 #include "typedWritableReferenceCount.h"
 #include "updateSeq.h"
 #include "luse.h"
-#include "pset.h"
+#include "ordered_vector.h"
 #include "cycleData.h"
 #include "cycleDataReader.h"
 #include "cycleDataWriter.h"
@@ -57,7 +57,7 @@ protected:
   void mark_modified(Thread *current_thread);
 
 private:
-  typedef pset<TransformTable *> Palettes;
+  typedef ov_set<TransformTable *> Palettes;
   Palettes _tables;
 
   // This is the data that must be cycled between pipeline stages.
