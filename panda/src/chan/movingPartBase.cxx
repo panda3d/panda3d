@@ -137,30 +137,30 @@ do_update(PartBundle *root, const CycleData *root_cdata, PartGroup *parent,
 
   // See if any of the channel values have changed since last time.
 
-  if (_forced_channel != (AnimChannelBase *)NULL) {
-    if (!needs_update) {
+  if (!needs_update) {
+    if (_forced_channel != (AnimChannelBase *)NULL) {
       needs_update = _forced_channel->has_changed(0, 0.0, 0, 0.0);
-    }
-
-  } else if (_effective_control != (AnimControl *)NULL) {
-    const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;
-    needs_update = _effective_control->channel_has_changed(_effective_channel, cdata->_frame_blend_flag);
-
-  } else {
-    const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;
-    PartBundle::ChannelBlend::const_iterator bci;
-    for (bci = cdata->_blend.begin();
-         !needs_update && bci != cdata->_blend.end();
-         ++bci) {
-      AnimControl *control = (*bci).first;
-
-      AnimChannelBase *channel = NULL;
-      int channel_index = control->get_channel_index();
-      if (channel_index >= 0 && channel_index < (int)_channels.size()) {
-        channel = _channels[channel_index];
-      }
-      if (channel != (AnimChannelBase*)NULL) {
-        needs_update = control->channel_has_changed(channel, cdata->_frame_blend_flag);
+    
+    } else if (_effective_control != (AnimControl *)NULL) {
+      const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;
+      needs_update = _effective_control->channel_has_changed(_effective_channel, cdata->_frame_blend_flag);
+      
+    } else {
+      const PartBundle::CData *cdata = (const PartBundle::CData *)root_cdata;
+      PartBundle::ChannelBlend::const_iterator bci;
+      for (bci = cdata->_blend.begin();
+           !needs_update && bci != cdata->_blend.end();
+           ++bci) {
+        AnimControl *control = (*bci).first;
+        
+        AnimChannelBase *channel = NULL;
+        int channel_index = control->get_channel_index();
+        if (channel_index >= 0 && channel_index < (int)_channels.size()) {
+          channel = _channels[channel_index];
+        }
+        if (channel != (AnimChannelBase*)NULL) {
+          needs_update = control->channel_has_changed(channel, cdata->_frame_blend_flag);
+        }
       }
     }
   }
