@@ -11,8 +11,8 @@
 
   #define SOURCES \
     character.I character.h \
-    characterJoint.h characterJointBundle.I  \
-    characterJointBundle.h \
+    characterJoint.I characterJoint.h \
+    characterJointBundle.I characterJointBundle.h \
     characterJointEffect.h characterJointEffect.I \
     characterSlider.h \
     characterVertexSlider.I characterVertexSlider.h \
@@ -30,8 +30,8 @@
 
   #define INSTALL_HEADERS \
     character.I character.h \
-    characterJoint.h characterJointBundle.I \
-    characterJointBundle.h \
+    characterJoint.I characterJoint.h \
+    characterJointBundle.I characterJointBundle.h \
     characterJointEffect.h characterJointEffect.I \
     characterSlider.h \
     characterVertexSlider.I characterVertexSlider.h \

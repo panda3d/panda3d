@@ -129,6 +129,8 @@ private:
   friend class JointVertexTransform;
 };
 
+#include "characterJoint.I"
+
 #endif
 
 
