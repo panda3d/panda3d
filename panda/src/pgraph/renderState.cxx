@@ -677,15 +677,14 @@ remove_attrib(int slot) const {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::
 adjust_all_priorities(int adjustment) const {
-  RenderState *new_state = new RenderState;
+  RenderState *new_state = new RenderState(*this);
 
   SlotMask mask = _filled_slots;
   int slot = mask.get_lowest_on_bit();
   while (slot >= 0) {
     Attribute &attrib = new_state->_attributes[slot];
-    if (attrib._attrib != (RenderAttrib *)NULL) {
-      attrib._override = max(attrib._override + adjustment, 0);
-    }
+    nassertr(attrib._attrib != (RenderAttrib *)NULL, this);
+    attrib._override = max(attrib._override + adjustment, 0);
 
     mask.clear_bit(slot);
     slot = mask.get_lowest_on_bit();
