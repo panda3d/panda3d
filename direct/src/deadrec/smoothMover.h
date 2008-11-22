@@ -72,7 +72,8 @@ PUBLISHED:
   INLINE const LPoint3f &get_sample_pos() const;
   INLINE const LVecBase3f &get_sample_hpr() const;
 
-  INLINE void set_phony_timestamp();
+  INLINE void set_phony_timestamp(double timestamp = 0.0, bool period_adjust = false);
+
   INLINE void set_timestamp(double timestamp);
   
   INLINE bool has_most_recent_timestamp() const;

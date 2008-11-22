@@ -179,15 +179,32 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.smoother.setPhonyTimestamp()
         self.smoother.markPosition()
 
-    def _checkResume(self):
+    def _checkResume(self,timestamp):
         """
         Determine if we were previously stopped and now need to
         resume movement by making sure any old stored positions
         reflect the node's current position
         """
         if (self.stopped):
-            self.reloadPosition()
-            self.stopped = False
+            currTime = globalClock.getFrameTime()
+            now = currTime - self.smoother.getExpectedBroadcastPeriod()
+            last = self.smoother.getMostRecentTimestamp()
+            if (now > last):
+                # only set a new timestamp postion if we still have
+                # a position being smoothed to (so we don't interrupt
+                # any current smoothing and only do this if the object
+                # is actually locally stopped)
+                if (timestamp == None):
+                    # no timestamp, use current time
+                    local = 0.0
+                else:
+                    local = globalClockDelta.networkToLocalTime(
+                        timestamp, currTime)
+
+                self.smoother.setPhonyTimestamp(local,True)
+                self.smoother.markPosition()
+
+        self.stopped = False
         
     # distributed set pos and hpr functions
     # 'send' versions are inherited from DistributedSmoothNodeBase
@@ -195,50 +212,50 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.setComponentTLive(timestamp)
         self.stopped = True
     def setSmH(self, h, timestamp=None):
-        self._checkResume()
+        self._checkResume(timestamp)
         self.setComponentH(h)
         self.setComponentTLive(timestamp)
     def setSmZ(self, z, timestamp=None):
-        self._checkResume()
+        self._checkResume(timestamp)
         self.setComponentZ(z)
         self.setComponentTLive(timestamp)
     def setSmXY(self, x, y, timestamp=None):
-        self._checkResume()
+        self._checkResume(timestamp)
         self.setComponentX(x)
         self.setComponentY(y)
         self.setComponentTLive(timestamp)
     def setSmXZ(self, x, z, timestamp=None):
-        self._checkResume()
+        self._checkResume(timestamp)
         self.setComponentX(x)
         self.setComponentZ(z)
         self.setComponentTLive(timestamp)
     def setSmPos(self, x, y, z, timestamp=None):
-        self._checkResume()
+        self._checkResume(timestamp)
         self.setComponentX(x)
         self.setComponentY(y)
         self.setComponentZ(z)
         self.setComponentTLive(timestamp)
     def setSmHpr(self, h, p, r, timestamp=None):
-        self._checkResume()
+        self._checkResume(timestamp)
         self.setComponentH(h)
         self.setComponentP(p)
         self.setComponentR(r)
         self.setComponentTLive(timestamp)
     def setSmXYH(self, x, y, h, timestamp):
-        self._checkResume()
+        self._checkResume(timestamp)
         self.setComponentX(x)
         self.setComponentY(y)
         self.setComponentH(h)
         self.setComponentTLive(timestamp)
     def setSmXYZH(self, x, y, z, h, timestamp=None):
-        self._checkResume()
+        self._checkResume(timestamp)
         self.setComponentX(x)
         self.setComponentY(y)
         self.setComponentZ(z)
         self.setComponentH(h)
         self.setComponentTLive(timestamp)
     def setSmPosHpr(self, x, y, z, h, p, r, timestamp=None):
-        self._checkResume()
+        self._checkResume(timestamp)
         self.setComponentX(x)
         self.setComponentY(y)
         self.setComponentZ(z)
@@ -246,8 +263,9 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.setComponentP(p)
         self.setComponentR(r)
         self.setComponentTLive(timestamp)
+
     def setSmPosHprL(self, l, x, y, z, h, p, r, timestamp=None):
-        self._checkResume()
+        self._checkResume(timestamp)
         self.setComponentL(l)
         self.setComponentX(x)
         self.setComponentY(y)
@@ -304,10 +322,11 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.smoother.clearPositions(1)
         self.smoother.markPosition()
 
-        # jbutler: took this out, appears it is not needed since
-        # markPosition above stored the node's position, and this
-        # just reapplies the poition to the node
-        #self.forceToTruePosition()
+        # mark position only takes most recent position sent over the wire
+        # and applies it to the smoother's sample points, but we still
+        # need to make sure and apply that position to the actual node
+        # path
+        self.forceToTruePosition()
 
     @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
     def setComponentTLive(self, timestamp):

@@ -273,13 +273,23 @@ get_sample_hpr() const {
 //               actual receipt time.
 ////////////////////////////////////////////////////////////////////
 INLINE void SmoothMover::
-set_phony_timestamp() {
+set_phony_timestamp(double timestamp, bool period_adjust) {
   double now = ClockObject::get_global_clock()->get_frame_time();
+  if (timestamp != 0.0)
+    // we were given a specific timestamp to use
+    now = timestamp;
+
   // adjust by _delay when creating the timestamp since other
   // timestamps received from network updates are adjusted by this
-  _sample._timestamp = now - _delay;
+  if (period_adjust) {
+    _sample._timestamp = now - _expected_broadcast_period;
+  }
+  else
+    _sample._timestamp = now;
+
   _has_most_recent_timestamp = true;
-  _most_recent_timestamp = now;
+  _most_recent_timestamp = _sample._timestamp;
+
 }
 
 ////////////////////////////////////////////////////////////////////

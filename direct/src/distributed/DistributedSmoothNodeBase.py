@@ -16,7 +16,7 @@ class DistributedSmoothNodeBase:
     BroadcastTypes = Enum('FULL, XYH, XY')
 
     def __init__(self):
-        pass
+        self.__broadcastPeriod = None
 
     def generate(self):
         self.cnode = CDistributedSmoothNodeBase()
@@ -46,6 +46,10 @@ class DistributedSmoothNodeBase:
     def setPosHprBroadcastPeriod(self, period):
         # call this at any time to change the delay between broadcasts
         self.__broadcastPeriod = period
+
+    def getPosHprBroadcastPeriod(self):
+        # query the current delay between broadcasts
+        return self.__broadcastPeriod
 
     def stopPosHprBroadcast(self):
         taskMgr.remove(self.getPosHprBroadcastTaskName())
