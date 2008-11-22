@@ -83,6 +83,13 @@ def PrettyTime(t):
 def exit(msg):
     if (threading.currentThread() == MAINTHREAD):
         SaveDependencyCache()
+        # Move any files we've moved away back.
+        if os.path.isfile("dtool/src/dtoolutil/pandaVersion.h.moved"):
+          os.rename("dtool/src/dtoolutil/pandaVersion.h.moved", "dtool/src/dtoolutil/pandaVersion.h")
+        if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.h.moved"):
+          os.rename("dtool/src/dtoolutil/checkPandaVersion.h.moved", "dtool/src/dtoolutil/checkPandaVersion.h")
+        if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.cxx.moved"):
+          os.rename("dtool/src/dtoolutil/checkPandaVersion.cxx.moved", "dtool/src/dtoolutil/checkPandaVersion.cxx")
         print "Elapsed Time: "+PrettyTime(time.time() - STARTTIME)
         print msg
         sys.stdout.flush()
