@@ -142,7 +142,6 @@ make_invalid_glyph() {
 
   _invalid_glyph = new TextGlyph(0, geom, RenderState::make_empty(),
                                  _line_height * 0.7f);
-  cerr << "made invalid glyph: " << _invalid_glyph << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

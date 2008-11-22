@@ -30,6 +30,7 @@
 #include "modelNode.h"
 
 #include <ctype.h>
+#include <stdio.h>  // for sprintf
   
 // This is the factor by which CT_small scales the character down.
 static const float small_accent_scale = 0.6f;
@@ -1289,9 +1290,11 @@ assemble_row(TextAssembler::TextRow &row,
                            additional_flags, glyph_scale, advance_scale);
 
       if (!got_glyph) {
+        char buffer[512];
+        sprintf(buffer, "U+%04x", character);
         text_cat.warning()
           << "No definition in " << font->get_name() 
-          << " for character " << character;
+          << " for character " << buffer;
         if (character < 128 && isprint((unsigned int)character)) {
           text_cat.warning(false)
             << " ('" << (char)character << "')";
