@@ -978,8 +978,15 @@ extern EXPCL_DTOOL int panda_version_VERSION1_VERSION2_VERSION3;
 static int check_panda_version = panda_version_VERSION1_VERSION2_VERSION3;
 # endif
 """
-
 def CreatePandaVersionFiles():
+    # First, move any conflicting files out of the way.
+    if os.path.isfile("dtool/src/dtoolutil/pandaVersion.h"):
+      os.rename("dtool/src/dtoolutil/pandaVersion.h", "dtool/src/dtoolutil/pandaVersion.h.moved")
+    if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.h"):
+      os.rename("dtool/src/dtoolutil/checkPandaVersion.h", "dtool/src/dtoolutil/checkPandaVersion.h.moved")
+    if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.cxx"):
+      os.rename("dtool/src/dtoolutil/checkPandaVersion.cxx", "dtool/src/dtoolutil/checkPandaVersion.cxx.moved")
+    
     version1=int(VERSION.split(".")[0])
     version2=int(VERSION.split(".")[1])
     version3=int(VERSION.split(".")[2])
@@ -2465,6 +2472,19 @@ TargetAdd('pview.exe', input='libp3framework.dll')
 TargetAdd('pview.exe', input='libpandafx.dll')
 TargetAdd('pview.exe', input=COMMON_PANDA_LIBS_PYSTUB)
 TargetAdd('pview.exe', opts=['ADVAPI'])
+
+#
+# DIRECTORY: panda/src/tinydisplay/
+#
+
+OPTS=['DIR:panda/src/tinydisplay', 'BUILDING:TINYDISPLAY']
+TargetAdd('tinydisplay_composite1.obj', opts=OPTS, input='tinydisplay_composite1.cxx')
+TargetAdd('tinydisplay_composite2.obj', opts=OPTS, input='tinydisplay_composite2.cxx')
+TargetAdd('tinydisplay_ztriangle.obj', opts=OPTS, input='ztriangle.cxx')
+TargetAdd('libtinydisplay.dll', input='tinydisplay_composite1.obj')
+TargetAdd('libtinydisplay.dll', input='tinydisplay_composite2.obj')
+TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle.obj')
+TargetAdd('libtinydisplay.dll', input=COMMON_PANDA_LIBS)
 
 #
 # DIRECTORY: direct/src/directbase/
