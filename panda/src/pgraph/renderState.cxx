@@ -228,10 +228,10 @@ get_hash() const {
   int slot = mask.get_lowest_on_bit();
   while (slot >= 0) {
     const Attribute &attrib = _attributes[slot];
-    if (attrib._attrib != (RenderAttrib *)NULL) {
-      hash = pointer_hash::add_hash(hash, attrib._attrib);
-      hash = int_hash::add_hash(hash, attrib._override);
-    }
+    nassertr(attrib._attrib != (RenderAttrib *)NULL, 0);
+    hash = pointer_hash::add_hash(hash, attrib._attrib);
+    hash = int_hash::add_hash(hash, attrib._override);
+
     mask.clear_bit(slot);
     slot = mask.get_lowest_on_bit();
   }
@@ -592,7 +592,7 @@ invert_compose(const RenderState *other) const {
 CPT(RenderState) RenderState::
 add_attrib(const RenderAttrib *attrib, int override) const {
   int slot = attrib->get_slot();
-  if (_attributes[slot]._attrib != (RenderAttrib *)NULL &&
+  if (_filled_slots.get_bit(slot) &&
       _attributes[slot]._override > override) {
     // The existing attribute overrides.
     return this;
@@ -1248,25 +1248,6 @@ bin_removed(int bin_index) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::determine_filled_slots
-//       Access: Private
-//  Description: Examines all of the slots to determine the
-//               appropriate bitmask to put in _filled_slots.
-////////////////////////////////////////////////////////////////////
-void RenderState::
-determine_filled_slots() {
-  _filled_slots.clear();
-  RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
-  int max_slots = reg->get_max_slots();
-  for (int slot = 1; slot < max_slots; ++slot) {
-    const Attribute &attribute = _attributes[slot];
-    if (attribute._attrib != (RenderAttrib *)NULL) {
-      _filled_slots.set_bit(slot);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderState::validate_filled_slots
 //       Access: Private
 //  Description: Returns true if the _filled_slots bitmask is
@@ -1330,9 +1311,7 @@ return_new(RenderState *state) {
   state->_filled_slots.clear_bit(0);
 
 #ifndef NDEBUG
-  nassertd(state->validate_filled_slots()) {
-    state->determine_filled_slots();
-  }
+  nassertr(state->validate_filled_slots(), state);
 #endif
 
   static ConfigVariableBool uniquify_states("uniquify-states", true);
@@ -1407,17 +1386,25 @@ do_compose(const RenderState *other) const {
       // A wins.
       result = a;
 
-    } else if (a._override < b._override) {
-      // B overrides.
-      result = b;
-
     } else if (b._override < a._override) {
-      // A overrides.
+      // A, the higher RenderAttrib, overrides.
       result = a;
 
+    } else if (a._override < b._override &&
+               a._attrib->lower_attrib_can_override()) {
+      // B, the lower RenderAttrib, overrides.  This is a special
+      // case; normally, a lower RenderAttrib does not override a
+      // higher one, even if it has a higher override value.  But
+      // certain kinds of RenderAttribs redefine
+      // lower_attrib_can_override() to return true, allowing this
+      // override.
+      result = b;
+
     } else {
-      // Both attribs compose.
-      result.set(a._attrib->compose(b._attrib), a._override);
+      // Either they have the same override value, or B is higher.
+      // In either case, the result is the composition of the two,
+      // with B's override value.
+      result.set(a._attrib->compose(b._attrib), b._override);
     }
     
     mask.clear_bit(slot);
@@ -1760,8 +1747,8 @@ determine_cull_callback() {
   int slot = mask.get_lowest_on_bit();
   while (slot >= 0) {
     const Attribute &attrib = _attributes[slot];
-    if (attrib._attrib != (RenderAttrib *)NULL &&
-        attrib._attrib->has_cull_callback()) {
+    nassertv(attrib._attrib != (RenderAttrib *)NULL);
+    if (attrib._attrib->has_cull_callback()) {
       _flags |= F_has_cull_callback;
       break;
     }

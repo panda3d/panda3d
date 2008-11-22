@@ -95,7 +95,7 @@ make_all_off() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) TextureAttrib::
 make_default() {
-  return return_new(new TextureAttrib);
+  return make();
 }
 
 

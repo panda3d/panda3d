@@ -142,7 +142,6 @@ public:
   INLINE static void flush_level();
 
 private:
-  void determine_filled_slots();
   bool validate_filled_slots() const;
   INLINE bool do_cache_unref() const;
   INLINE bool do_node_unref() const;
