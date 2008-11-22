@@ -246,7 +246,12 @@ get_glyph(int character, const TextGlyph *&glyph) {
     glyph = dynamic_glyph;
   }
 
-  return (glyph_index != 0 && glyph != (DynamicTextGlyph *)NULL);
+  if (glyph == (DynamicTextGlyph *)NULL) {
+    glyph = get_invalid_glyph();
+    glyph_index = 0;
+  }
+    
+  return (glyph_index != 0);
 }
 
 
@@ -314,6 +319,15 @@ make_glyph(int character, int glyph_index) {
 
   FT_GlyphSlot slot = _face->glyph;
   FT_Bitmap &bitmap = slot->bitmap;
+
+  if ((bitmap.width == 0 || bitmap.rows == 0) && (glyph_index == 0)) {
+    // Here's a special case: a glyph_index of 0 means an invalid
+    // glyph.  Some fonts define a symbol to represent an invalid
+    // glyph, but if that symbol is the empty bitmap, we return NULL,
+    // and use Panda's invalid glyph in its place.  We do this to
+    // guarantee that every invalid glyph is visible as *something*.
+    return NULL;
+  }
 
   float advance = slot->advance.x / 64.0;
 
@@ -406,6 +420,7 @@ make_glyph(int character, int glyph_index) {
 
   if (bitmap.width == 0 || bitmap.rows == 0) {
     // If we got an empty bitmap, it's a special case.
+
     PT(DynamicTextGlyph) glyph = 
       new DynamicTextGlyph(character, advance / _font_pixels_per_unit);
     _empty_glyphs.push_back(glyph);

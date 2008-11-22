@@ -180,7 +180,7 @@ get_glyph(int character, const TextGlyph *&glyph) {
   Glyphs::const_iterator gi = _glyphs.find(character);
   if (gi == _glyphs.end()) {
     // No definition for this character.
-    glyph = (TextGlyph *)NULL;
+    glyph = get_invalid_glyph();
     return false;
   }
 

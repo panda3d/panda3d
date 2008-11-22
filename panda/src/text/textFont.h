@@ -81,14 +81,19 @@ PUBLISHED:
 
 public:
   virtual bool get_glyph(int character, const TextGlyph *&glyph)=0;
+  TextGlyph *get_invalid_glyph();
 
   static RenderMode string_render_mode(const string &string);
   static WindingOrder string_winding_order(const string &string);
+
+private:
+  void make_invalid_glyph();
 
 protected:
   bool _is_valid;
   float _line_height;
   float _space_advance;
+  PT(TextGlyph) _invalid_glyph;
 
 public:
   static TypeHandle get_class_type() {

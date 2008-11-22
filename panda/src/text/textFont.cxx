@@ -15,6 +15,11 @@
 #include "textFont.h"
 #include "config_text.h"
 #include "string_utils.h"
+#include "geomVertexData.h"
+#include "geomVertexFormat.h"
+#include "geomVertexWriter.h"
+#include "geomLinestrips.h"
+#include "geom.h"
 #include <ctype.h>
 
 TypeHandle TextFont::_type_handle;
@@ -49,6 +54,20 @@ void TextFont::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level)
     << "TextFont " << get_name() << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextFont::get_invalid_glyph
+//       Access: Public
+//  Description: Returns a special glyph that should be used as a
+//               placeholder for any character not in the font.
+////////////////////////////////////////////////////////////////////
+TextGlyph *TextFont::
+get_invalid_glyph() {
+  if (_invalid_glyph == (TextGlyph *)NULL) {
+    make_invalid_glyph();
+  }
+  return _invalid_glyph;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,6 +112,37 @@ string_winding_order(const string &string) {
   } else {
     return WO_invalid;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextFont::make_invalid_glyph
+//       Access: Private
+//  Description: Constructs the special glyph used to represent a
+//               character not in the font.
+////////////////////////////////////////////////////////////////////
+void TextFont::
+make_invalid_glyph() {
+  CPT(GeomVertexFormat) vformat = GeomVertexFormat::get_v3();
+  PT(GeomVertexData) vdata = 
+    new GeomVertexData("invalid_glyph", vformat, GeomEnums::UH_static);
+
+  GeomVertexWriter vertex(vdata, InternalName::get_vertex());
+  vertex.add_data3f(_line_height * 0.2f, 0.0f, _line_height * 0.1f);
+  vertex.add_data3f(_line_height * 0.5f, 0.0f, _line_height * 0.1f);
+  vertex.add_data3f(_line_height * 0.5f, 0.0f, _line_height * 0.7f);
+  vertex.add_data3f(_line_height * 0.2f, 0.0f, _line_height * 0.7f);
+
+  PT(GeomPrimitive) prim = new GeomLinestrips(GeomEnums::UH_static);
+  prim->add_consecutive_vertices(0, 4);
+  prim->add_vertex(0);
+  prim->close_primitive();
+
+  PT(Geom) geom = new Geom(vdata);
+  geom->add_primitive(prim);
+
+  _invalid_glyph = new TextGlyph(0, geom, RenderState::make_empty(),
+                                 _line_height * 0.7f);
+  cerr << "made invalid glyph: " << _invalid_glyph << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
