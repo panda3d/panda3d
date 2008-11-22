@@ -17,7 +17,9 @@
 #include "cvsSourceDirectory.h"
 #include "mayaShader.h"
 #include "dcast.h"
-#include "pystub.h"
+#ifdef _WIN32
+  #include "pystub.h"
+#endif
 
 #include "pre_maya_include.h"
 #include <maya/MStringArray.h>
@@ -463,11 +465,15 @@ collect_shader_for_node(const MDagPath &dag_path) {
 
 
 int main(int argc, char *argv[]) {
+  // We don't want pystub on linux, since it gives problems with Maya's python.
+#ifdef _WIN32
   // A call to pystub() to force libpystub.so to be linked in.
   pystub();
+#endif
 
   MayaCopy prog;
   prog.parse_command_line(argc, argv);
   prog.run();
   return 0;
 }
+
