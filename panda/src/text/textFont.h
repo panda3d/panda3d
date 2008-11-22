@@ -17,12 +17,11 @@
 
 #include "pandabase.h"
 
+#include "textGlyph.h"
 #include "typedReferenceCount.h"
 #include "namable.h"
 #include "pmap.h"
-
-class Node;
-class TextGlyph;
+#include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextFont
