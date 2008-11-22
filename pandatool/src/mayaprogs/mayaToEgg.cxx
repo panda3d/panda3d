@@ -17,7 +17,9 @@
 #include "config_mayaegg.h"
 #include "config_maya.h"  // for maya_cat
 #include "globPattern.h"
-#include "pystub.h"
+#ifdef _WIN32
+  #include "pystub.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MayaToEgg::Constructor
@@ -282,11 +284,15 @@ dispatch_transform_type(const string &opt, const string &arg, void *var) {
 }
 
 int main(int argc, char *argv[]) {
+  // We don't want pystub on linux, since it gives problems with Maya's python.
+#ifdef _WIN32
   // A call to pystub() to force libpystub.so to be linked in.
   pystub();
+#endif
 
   MayaToEgg prog;
   prog.parse_command_line(argc, argv);
   prog.run();
   return 0;
 }
+
