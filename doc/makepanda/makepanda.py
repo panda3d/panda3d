@@ -3777,6 +3777,14 @@ if (INSTALLER != 0):
 
 SaveDependencyCache()
 
+# Move any files we've moved away back.
+if os.path.isfile("dtool/src/dtoolutil/pandaVersion.h.moved"):
+  os.rename("dtool/src/dtoolutil/pandaVersion.h.moved", "dtool/src/dtoolutil/pandaVersion.h")
+if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.h.moved"):
+  os.rename("dtool/src/dtoolutil/checkPandaVersion.h.moved", "dtool/src/dtoolutil/checkPandaVersion.h")
+if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.cxx.moved"):
+  os.rename("dtool/src/dtoolutil/checkPandaVersion.cxx.moved", "dtool/src/dtoolutil/checkPandaVersion.cxx")
+
 WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
 
 printStatus("Makepanda Final Status Report", WARNINGS)
