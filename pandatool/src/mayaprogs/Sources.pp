@@ -17,7 +17,7 @@
     egg:c pandaegg:m \
     linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
     pipeline:c pnmimage:c
 
   // Irix requires this to be named explicitly.
@@ -46,7 +46,7 @@
     egg:c pandaegg:m \
     linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
     pipeline:c pnmimage:c
 
   // Irix requires this to be named explicitly.
@@ -76,7 +76,7 @@
     egg:c pandaegg:m \
     linmath:c panda:m \
     express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
     putil:c pipeline:c pnmimage:c
 
   // Irix requires this to be named explicitly.
@@ -99,7 +99,7 @@
     framework:m \
     linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
     pipeline:c
 
   #define BUILDING_DLL BUILDING_MISC
@@ -139,7 +139,7 @@
     framework:m \
     linmath:c putil:c panda:m \
     express:c pandaexpress:m \
-    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub \
+    interrogatedb:c dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m $[if $[WINDOWS_PLATFORM],pystub,] \
     pipeline:c
 
   #define BUILDING_DLL BUILDING_MISC
