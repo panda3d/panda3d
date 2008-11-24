@@ -89,6 +89,19 @@ reset() {
   free_pointers();
   GraphicsStateGuardian::reset();
 
+  // Build _inv_state_mask as a mask of 1's where we don't care, and
+  // 0's where we do care, about the state.
+  _inv_state_mask = RenderState::SlotMask::all_on();
+  _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(ColorScaleAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(CullFaceAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(RenderModeAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(TextureAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(ScissorAttrib::get_class_slot());
+
   if (_c != (GLContext *)NULL) {
     glClose(_c);
     _c = NULL;
@@ -1403,7 +1416,7 @@ set_state_and_transform(const RenderState *target,
     do_issue_transform();
   }
 
-  if (target == _state_rs) {
+  if (target == _state_rs && (_state_mask | _inv_state_mask).is_all_on()) {
     return;
   }
   _target_rs = target;

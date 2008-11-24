@@ -519,6 +519,8 @@ public:
   DeletedDisplayLists _deleted_display_lists;
   DeletedDisplayLists _deleted_queries;
 
+  RenderState::SlotMask _inv_state_mask;
+
   static PStatCollector _load_display_list_pcollector;
   static PStatCollector _primitive_batches_display_list_pcollector;
   static PStatCollector _vertices_display_list_pcollector;
