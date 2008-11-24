@@ -139,7 +139,7 @@ class SelectedNodePaths(DirectObject):
         connectivity is performed on the members of the list
         """
         #return self.selectedDict.values()[:]
-        return self.selectedList # [gjeon] now return the list with selected order
+        return self.selectedList[:] # [gjeon] now return the list with selected order
 
     def __getitem__(self, index):
         return self.getSelectedAsList()[index]
