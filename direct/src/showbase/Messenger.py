@@ -41,7 +41,10 @@ class Messenger:
         # want this in a release build.  If you're sure that that will not be
         # then please remove this comment and put the quiet/verbose stuff
         # under __debug__.
-        self.quieting={"NewFrame":1, "avatarMoving":1} # see def quiet()
+        self.quieting={"NewFrame":1,
+                       "avatarMoving":1,
+                       "event-loop-done":1,
+                       } # see def quiet()
 
     def _getMessengerId(self, object):
         # TODO: allocate this id in DirectObject.__init__ and get derived
