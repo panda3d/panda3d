@@ -59,8 +59,17 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextFont::get_invalid_glyph
 //       Access: Public
-//  Description: Returns a special glyph that should be used as a
-//               placeholder for any character not in the font.
+//  Description: Returns a special glyph that can be used as a
+//               placeholder for any character not in the font.  Note
+//               that it is not guaranteed that a font will return
+//               this particular glyph for a missing character (it may
+//               return a glyph of its own devising instead).  
+//
+//               Also note that even if a particular accented letter
+//               is missing from the font, Panda may still be able to
+//               render a suitable replacement by composing different
+//               glyphs together to simulate accent marks; this
+//               happens automatically behind the scenes.
 ////////////////////////////////////////////////////////////////////
 TextGlyph *TextFont::
 get_invalid_glyph() {
