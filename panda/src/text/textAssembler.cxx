@@ -626,7 +626,7 @@ assemble_text() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::calc_width
-//       Access: Private, Static
+//       Access: Published, Static
 //  Description: Returns the width of a single character, according to
 //               its associated font.  This also correctly calculates
 //               the width of cheesy ligatures and accented
@@ -668,13 +668,120 @@ calc_width(wchar_t character, const TextProperties &properties) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::calc_width
-//       Access: Private, Static
+//       Access: Published, Static
 //  Description: Returns the width of a single TextGraphic image.
 ////////////////////////////////////////////////////////////////////
 float TextAssembler::
 calc_width(const TextGraphic *graphic, const TextProperties &properties) {
   LVecBase4f frame = graphic->get_frame();
   return (frame[1] - frame[0]) * properties.get_glyph_scale() * properties.get_text_scale();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::has_exact_character
+//       Access: Published, Static
+//  Description: Returns true if the named character exists in the
+//               font exactly as named, false otherwise.  Note that
+//               because Panda can assemble glyphs together
+//               automatically using cheesy accent marks, this is not
+//               a reliable indicator of whether a suitable glyph can
+//               be rendered for the character.  For that, use
+//               has_character() instead.
+//
+//               This returns true for whitespace and Unicode
+//               whitespace characters (if they exist in the font),
+//               but returns false for characters that would render
+//               with the "invalid glyph".  It also returns false for
+//               characters that would be synthesized within Panda,
+//               but see has_character().
+////////////////////////////////////////////////////////////////////
+bool TextAssembler::
+has_exact_character(wchar_t character, const TextProperties &properties) {
+  if (character == ' ' || character == '\n') {
+    // A space is a special case.  Every font implicitly has a space.
+    // We also treat newlines specially.
+    return true;
+  }
+
+  TextFont *font = properties.get_font();
+  nassertr(font != (TextFont *)NULL, false);
+
+  const TextGlyph *glyph = NULL;
+  return font->get_glyph(character, glyph);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::has_character
+//       Access: Published, Static
+//  Description: Returns true if the named character exists in the
+//               font or can be synthesized by Panda, false otherwise.
+//               (Panda can synthesize some accented characters by
+//               combining similar-looking glyphs from the font.)
+//
+//               This returns true for whitespace and Unicode
+//               whitespace characters (if they exist in the font),
+//               but returns false for characters that would render
+//               with the "invalid glyph".
+////////////////////////////////////////////////////////////////////
+bool TextAssembler::
+has_character(wchar_t character, const TextProperties &properties) {
+  if (character == ' ' || character == '\n') {
+    // A space is a special case.  Every font implicitly has a space.
+    // We also treat newlines specially.
+    return true;
+  }
+
+  bool got_glyph;
+  const TextGlyph *first_glyph = NULL;
+  const TextGlyph *second_glyph = NULL;
+  UnicodeLatinMap::AccentType accent_type;
+  int additional_flags;
+  float glyph_scale;
+  float advance_scale;
+  get_character_glyphs(character, &properties, 
+                       got_glyph, first_glyph, second_glyph, accent_type,
+                       additional_flags, glyph_scale, advance_scale);
+  return got_glyph;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::is_whitespace
+//       Access: Published, Static
+//  Description: Returns true if the indicated character represents
+//               whitespace in the font, or false if anything visible
+//               will be rendered for it.
+//
+//               This returns true for whitespace and Unicode
+//               whitespace characters (if they exist in the font),
+//               and returns false for any other characters, including
+//               characters that do not exist in the font (these would
+//               be rendered with the "invalid glyph", which is
+//               visible).
+//
+//               Note that this function can be reliably used to
+//               identify Unicode whitespace characters only if the
+//               font has all of the whitespace characters defined.
+//               It will return false for any character not in the
+//               font, even if it is an official Unicode whitespace
+//               character.
+////////////////////////////////////////////////////////////////////
+bool TextAssembler::
+is_whitespace(wchar_t character, const TextProperties &properties) {
+  if (character == ' ' || character == '\n') {
+    // A space or a newline is a special case.
+    return true;
+  }
+
+
+  TextFont *font = properties.get_font();
+  nassertr(font != (TextFont *)NULL, false);
+
+  const TextGlyph *glyph = NULL;
+  if (!font->get_glyph(character, glyph)) {
+    return false;
+  }
+
+  return glyph->is_whitespace();
 }
 
 #ifndef CPPPARSER  // interrogate has a bit of trouble with wstring.

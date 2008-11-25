@@ -183,7 +183,7 @@ PUBLISHED:
   INLINE void set_text(const string &text, Encoding encoding);
   INLINE void clear_text();
   INLINE void append_text(const string &text);
-  INLINE void append_unicode_char(int character);
+  INLINE void append_unicode_char(wchar_t character);
 
   // After the text has been set, you can query this to determine how
   // it will be wordwrapped.
@@ -191,8 +191,12 @@ PUBLISHED:
 
   // These methods calculate the width of a single character or a line
   // of text in the current font.
-  float calc_width(int character) const;
+  float calc_width(wchar_t character) const;
   INLINE float calc_width(const string &line) const;
+  
+  bool has_exact_character(wchar_t character) const;
+  bool has_character(wchar_t character) const;
+  bool is_whitespace(wchar_t character) const;
 
   // Direct support for wide-character strings.
   INLINE void set_wtext(const wstring &wtext);

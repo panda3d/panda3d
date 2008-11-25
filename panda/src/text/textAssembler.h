@@ -93,6 +93,10 @@ PUBLISHED:
   static float calc_width(wchar_t character, const TextProperties &properties);
   static float calc_width(const TextGraphic *graphic, const TextProperties &properties);
 
+  static bool has_exact_character(wchar_t character, const TextProperties &properties);
+  static bool has_character(wchar_t character, const TextProperties &properties);
+  static bool is_whitespace(wchar_t character, const TextProperties &properties);
+
 private:
   class ComputedProperties : public ReferenceCount {
   public:

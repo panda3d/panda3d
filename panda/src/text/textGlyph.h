@@ -42,6 +42,8 @@ public:
   INLINE const RenderState *get_state() const;
   INLINE float get_advance() const;
 
+  virtual bool is_whitespace() const;
+
 protected:
   int _character;
   CPT(Geom) _geom;

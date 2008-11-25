@@ -179,13 +179,95 @@ TextNode::
 //               wide character (greater than 255).
 ////////////////////////////////////////////////////////////////////
 float TextNode::
-calc_width(int character) const {
+calc_width(wchar_t character) const {
   TextFont *font = get_font();
   if (font == (TextFont *)NULL) {
     return 0.0f;
   }
 
   return TextAssembler::calc_width(character, *this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::has_exact_character
+//       Access: Published
+//  Description: Returns true if the named character exists in the
+//               font exactly as named, false otherwise.  Note that
+//               because Panda can assemble glyphs together
+//               automatically using cheesy accent marks, this is not
+//               a reliable indicator of whether a suitable glyph can
+//               be rendered for the character.  For that, use
+//               has_character() instead.
+//
+//               This returns true for whitespace and Unicode
+//               whitespace characters (if they exist in the font),
+//               but returns false for characters that would render
+//               with the "invalid glyph".  It also returns false for
+//               characters that would be synthesized within Panda,
+//               but see has_character().
+////////////////////////////////////////////////////////////////////
+bool TextNode::
+has_exact_character(wchar_t character) const {
+  TextFont *font = get_font();
+  if (font == (TextFont *)NULL) {
+    return false;
+  }
+
+  return TextAssembler::has_exact_character(character, *this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::has_character
+//       Access: Published
+//  Description: Returns true if the named character exists in the
+//               font or can be synthesized by Panda, false otherwise.
+//               (Panda can synthesize some accented characters by
+//               combining similar-looking glyphs from the font.)
+//
+//               This returns true for whitespace and Unicode
+//               whitespace characters (if they exist in the font),
+//               but returns false for characters that would render
+//               with the "invalid glyph".
+////////////////////////////////////////////////////////////////////
+bool TextNode::
+has_character(wchar_t character) const {
+  TextFont *font = get_font();
+  if (font == (TextFont *)NULL) {
+    return false;
+  }
+
+  return TextAssembler::has_character(character, *this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::is_whitespace
+//       Access: Published
+//  Description: Returns true if the indicated character represents
+//               whitespace in the font, or false if anything visible
+//               will be rendered for it.
+//
+//               This returns true for whitespace and Unicode
+//               whitespace characters (if they exist in the font),
+//               and returns false for any other characters, including
+//               characters that do not exist in the font (these would
+//               be rendered with the "invalid glyph", which is
+//               visible).
+//
+//               Note that this function can be reliably used to
+//               identify Unicode whitespace characters only if the
+//               font has all of the whitespace characters defined.
+//               It will return false for any character not in the
+//               font, even if it is an official Unicode whitespace
+//               character.
+////////////////////////////////////////////////////////////////////
+bool TextNode::
+is_whitespace(wchar_t character) const {
+  TextFont *font = get_font();
+  if (font == (TextFont *)NULL) {
+    return false;
+  }
+
+  return TextAssembler::is_whitespace(character, *this);
 }
 
 ////////////////////////////////////////////////////////////////////

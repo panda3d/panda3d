@@ -191,5 +191,17 @@ set_geom(GeomVertexData *vdata, GeomPrimitive *prim,
   _state = state;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextGlyph::is_whitespace
+//       Access: Public, Virtual
+//  Description: Returns true if this glyph represents invisible
+//               whitespace, or false if it corresponds to some
+//               visible character.
+////////////////////////////////////////////////////////////////////
+bool DynamicTextGlyph::
+is_whitespace() const {
+  return (_page == (DynamicTextPage *)NULL);
+}
+
 
 #endif  // HAVE_FREETYPE

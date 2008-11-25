@@ -1161,7 +1161,7 @@ append_text(const string &text) {
 //               Unicode.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextNode::
-append_unicode_char(int character) {
+append_unicode_char(wchar_t character) {
   TextEncoder::append_unicode_char(character);
   invalidate_with_measure();
 }

@@ -22,3 +22,17 @@
 TextGlyph::
 ~TextGlyph() {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextGlyph::is_whitespace
+//       Access: Public, Virtual
+//  Description: Returns true if this glyph represents invisible
+//               whitespace, or false if it corresponds to some
+//               visible character.
+////////////////////////////////////////////////////////////////////
+bool TextGlyph::
+is_whitespace() const {
+  // In a static font, there is no explicit glyph for whitespace, so
+  // all glyphs are non-whitespace.
+  return false;
+}

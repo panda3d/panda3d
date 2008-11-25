@@ -16,7 +16,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::Constructor
-//       Access: Publiic
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE DynamicTextGlyph::
@@ -33,7 +33,7 @@ DynamicTextGlyph(int character, DynamicTextPage *page, int x, int y,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextGlyph::Constructor
-//       Access: Publiic
+//       Access: Public
 //  Description: This constructor makes an empty glyph, whose only
 //               purpose is to remember its width.  It has no bitmap
 //               and no Geom.

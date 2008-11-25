@@ -51,6 +51,7 @@ public:
                  float font_pixels_per_unit, float tex_pixels_per_unit);
   void set_geom(GeomVertexData *vdata, GeomPrimitive *prim, 
                 const RenderState *state);
+  virtual bool is_whitespace() const;
 
   DynamicTextPage *_page;
   int _geom_count;
