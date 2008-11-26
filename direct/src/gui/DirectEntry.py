@@ -297,6 +297,9 @@ class DirectEntry(DirectFrame):
         self.set(text)
         self.setCursorPosition(self.guiItem.getNumCharacters())
 
+    def getFont(self):
+        return self.onscreenText.getFont()
+
     def getBounds(self, state = 0):
         # Compute the width and height for the entry itself, ignoring
         # geometry etc.
