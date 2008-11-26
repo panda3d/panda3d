@@ -61,7 +61,7 @@ class Loader(DirectObject):
 
     # model loading funcs
     def loadModel(self, modelPath, loaderOptions = None, noCache = None,
-                  allowInstance = False,
+                  allowInstance = False, okMissing = None,
                   callback = None, extraArgs = []):
         """
         Attempts to load a model or models from one or more relative
@@ -81,6 +81,20 @@ class Loader(DirectObject):
         variable), then that will be consulted next, and if both
         caches fail, the file will be loaded from disk.  If noCache is
         True, then neither cache will be consulted or updated.
+
+        If allowInstance is True, a shared instance may be returned
+        from the ModelPool.  This is dangerous, since it is easy to
+        accidentally modify the shared instance, and invalidate future
+        load attempts of the same model.  Normally, you should leave
+        allowInstance set to False, which will always return a unique
+        copy.
+
+        If okMissing is True, None is returned if the model is not
+        found or cannot be read, and no error message is printed.
+        Otherwise, an IOError is raised if the model is not found or
+        cannot be read (similar to attempting to open a nonexistent
+        file).  (If modelPath is a list of filenames, then IOError is
+        raised if *any* of the models could be loaded.)
 
         If callback is not None, then the model load will be performed
         asynchronously.  In this case, loadModel() will initiate a
@@ -110,11 +124,20 @@ class Loader(DirectObject):
         else:
             loaderOptions = LoaderOptions(loaderOptions)
 
+        if okMissing is not None:
+            if okMissing:
+                loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFReportErrors)
+            else:
+                loaderOptions.setFlags(loaderOptions.getFlags() | LoaderOptions.LFReportErrors)
+        else:
+            okMissing = ((loaderOptions.getFlags() & LoaderOptions.LFReportErrors) == 0)
+
         if noCache is not None:
             if noCache:
                 loaderOptions.setFlags(loaderOptions.getFlags() | LoaderOptions.LFNoCache)
             else:
                 loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFNoCache)
+
         if allowInstance:
             loaderOptions.setFlags(loaderOptions.getFlags() | LoaderOptions.LFAllowInstance)
 
@@ -140,6 +163,10 @@ class Loader(DirectObject):
                     nodePath = None
 
                 result.append(nodePath)
+
+            if not okMissing and None in result:
+                message = 'Could not load model file(s): %s' % (modelList,)
+                raise IOError, message
 
             if gotList:
                 return result
@@ -270,7 +297,7 @@ class Loader(DirectObject):
                  textureMargin = None, polyMargin = None,
                  minFilter = None, magFilter = None,
                  anisotropicDegree = None,
-                 lineHeight = None):
+                 lineHeight = None, okMissing = False):
         """
         modelPath is a string.
 
@@ -286,6 +313,9 @@ class Loader(DirectObject):
 
         font = FontPool.loadFont(modelPath)
         if font == None:
+            if not okMissing:
+                message = 'Could not load font file: %s' % (modelPath)
+                raise IOError, message
             # If we couldn't load the model, at least return an
             # empty font.
             font = StaticTextFont(PandaNode("empty"))
@@ -324,7 +354,7 @@ class Loader(DirectObject):
 
     # texture loading funcs
     def loadTexture(self, texturePath, alphaPath = None,
-                    readMipmaps = False):
+                    readMipmaps = False, okMissing = False):
         """
         texturePath is a string.
 
@@ -341,9 +371,12 @@ class Loader(DirectObject):
             if phaseChecker:
                 phaseChecker(texturePath)
             texture = TexturePool.loadTexture(texturePath, alphaPath, 0, 0, readMipmaps)
+        if not texture and not okMissing:
+            message = 'Could not load texture: %s' % (texturePath)
+            raise IOError, message
         return texture
 
-    def load3DTexture(self, texturePattern, readMipmaps = False):
+    def load3DTexture(self, texturePattern, readMipmaps = False, okMissing = False):
         """
         texturePattern is a string that contains a sequence of one or
         more '#' characters, which will be filled in with the sequence
@@ -356,9 +389,12 @@ class Loader(DirectObject):
         if phaseChecker:
             phaseChecker(texturePattern)
         texture = TexturePool.load3dTexture(texturePattern, readMipmaps)
+        if not texture and not okMissing:
+            message = 'Could not load 3-D texture: %s' % (texturePattern)
+            raise IOError, message
         return texture
 
-    def loadCubeMap(self, texturePattern, readMipmaps = False):
+    def loadCubeMap(self, texturePattern, readMipmaps = False, okMissing = False):
         """
         texturePattern is a string that contains a sequence of one or
         more '#' characters, which will be filled in with the sequence
@@ -372,6 +408,9 @@ class Loader(DirectObject):
         if phaseChecker:
             phaseChecker(texturePattern)
         texture = TexturePool.loadCubeMap(texturePattern, readMipmaps)
+        if not texture and not okMissing:
+            message = 'Could not load cube map: %s' % (texturePattern)
+            raise IOError, message
         return texture
 
     def unloadTexture(self, texture):
@@ -485,10 +524,11 @@ class Loader(DirectObject):
 ##             nodeCount += 1
 ##             self.makeNodeNamesUnique(nodePath.getChild(i), nodeCount)
 
-    def loadShader (self, shaderPath):
+    def loadShader (self, shaderPath, okMissing = False):
         shader = ShaderPool.loadShader (shaderPath)
-        if (shader == None):
-            Loader.notify.warning("Could not load shader file %s." % shaderPath)
+        if not shader and not okMissing:
+            message = 'Could not shader file: %s' % (shaderPath)
+            raise IOError, message
         return shader
 
     def unloadShader(self, shaderPath):
