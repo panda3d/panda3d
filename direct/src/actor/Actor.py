@@ -392,9 +392,12 @@ class Actor(DirectObject, NodePath):
         """Handy utility function to list the joint hierarchy of the
         actor. """
 
-        partBundleDict = self.__partBundleDict.get(lodName)
-        if not partBundleDict:
-            Actor.notify.error("no lod named: %s" % (lodName))
+        if self.mergeLODBundles:
+            partBundleDict = self.__commonBundleHandles
+        else:
+            partBundleDict = self.__partBundleDict.get(lodName)
+            if not partBundleDict:
+                Actor.notify.error("no lod named: %s" % (lodName))
 
         subpartDef = self.__subpartDict.get(partName, Actor.SubpartDef(partName))
 
@@ -1090,10 +1093,10 @@ class Actor(DirectObject, NodePath):
         pattern = GlobPattern(jointName)
 
         if lodName == None and self.mergeLODBundles:
-            # Get any LOD.
-            lodName = self.__partBundleDict.keys()[0]
+            # Get the common bundle.
+            partBundleDicts = [self.__commonBundleHandles]
 
-        if lodName == None:
+        elif lodName == None:
             # Get all LOD's.
             partBundleDicts = self.__partBundleDict.values()
         else:
@@ -2396,6 +2399,8 @@ class Actor(DirectObject, NodePath):
 
         if lodName is None:
             lodNames = self.getLODNames()
+            if self.mergeLODBundles:
+                lodNames = lodNames[:1]
         else:
             lodNames = [lodName]
 
