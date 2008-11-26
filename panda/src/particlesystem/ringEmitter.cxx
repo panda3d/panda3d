@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 RingEmitter::
 RingEmitter() :
-  _radius(1.0f), _radius_spread(0.0f), _aoe(0.0f)
+  _radius(1.0f), _radius_spread(0.0f), _aoe(0.0f), _uniform_emission(0), _theta(0.0f)
 {
 }
 
@@ -36,7 +36,9 @@ RingEmitter(const RingEmitter &copy) :
   _radius = copy._radius;
   _aoe = copy._aoe;
   _radius_spread = copy._radius_spread;
+  _uniform_emission = copy._uniform_emission;
 
+  _theta = copy._theta;
   _sin_theta = copy._sin_theta;
   _cos_theta = copy._cos_theta;
 }
@@ -67,9 +69,19 @@ make_copy() {
 ////////////////////////////////////////////////////////////////////
 void RingEmitter::
 assign_initial_position(LPoint3f& pos) {
-  float theta = NORMALIZED_RAND() * 2.0f * MathNumbers::pi_f;
-  _cos_theta = cosf(theta);
-  _sin_theta = sinf(theta);
+  if (_uniform_emission > 0)
+  {
+    _theta = _theta + 1.0/_uniform_emission;
+    if (_theta > 1.0)
+      _theta = _theta - 1.0;
+  }
+  else 
+  {
+    _theta = NORMALIZED_RAND();
+  }
+
+  _cos_theta = cosf(_theta * 2.0f * MathNumbers::pi_f);
+  _sin_theta = sinf(_theta * 2.0f * MathNumbers::pi_f);
 
   float new_radius_spread = SPREAD(_radius_spread);
   float new_x = _cos_theta * (_radius + new_radius_spread);

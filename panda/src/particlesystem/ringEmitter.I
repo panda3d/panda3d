@@ -46,6 +46,17 @@ set_radius_spread(float spread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//    Function : set_uniform_emission
+//      Access : public
+// Description : uniform_emission set               
+////////////////////////////////////////////////////////////////////
+
+INLINE void RingEmitter::
+set_uniform_emission(int uniform_emission) {
+  _uniform_emission = uniform_emission;
+}
+
+////////////////////////////////////////////////////////////////////
 //    Function : get_radius
 //      Access : public
 // Description : radius get
@@ -77,4 +88,17 @@ INLINE float RingEmitter::
 get_radius_spread() const {
   return _radius_spread;
 }
+
+////////////////////////////////////////////////////////////////////
+//    Function : get_uniform_emission
+//      Access : public
+// Description : uniform_emission get               
+////////////////////////////////////////////////////////////////////
+
+INLINE int RingEmitter::
+get_uniform_emission() const {
+  return _uniform_emission;
+}
+
+
 

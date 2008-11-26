@@ -33,10 +33,12 @@ PUBLISHED:
   INLINE void set_radius(float r);
   INLINE void set_angle(float angle);
   INLINE void set_radius_spread(float spread);
+  INLINE void set_uniform_emission(int uniform_emission);
 
   INLINE float get_radius() const;
   INLINE float get_angle() const;
   INLINE float get_radius_spread() const;
+  INLINE int get_uniform_emission() const;
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent=0) const;
@@ -47,6 +49,10 @@ protected:
 
   // CUSTOM EMISSION PARAMETERS
   float _aoe;  // angle of elevation
+
+  // viariables used for uniform particle emission
+  int _uniform_emission;
+  float _theta;
 
   ///////////////////////////////
   // scratch variables that carry over from position calc to velocity calc
