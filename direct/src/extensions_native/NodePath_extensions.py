@@ -28,7 +28,7 @@ del id
     # For iterating over children
 def getChildrenAsList(self):
         """Converts a node path's child NodePathCollection into a list"""
-        print "Warning: NodePath.getChildren() is deprecated.  Use getChildren() instead."
+        print "Warning: NodePath.getChildrenAsList() is deprecated.  Use getChildren() instead."
         return list(self.getChildren())
 
 Dtool_funcToMethod(getChildrenAsList, NodePath)
