@@ -56,7 +56,12 @@ get_severity() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void NotifyCategory::
 set_severity(NotifySeverity severity) {
+#if defined(NOTIFY_DEBUG)
   _severity = severity;
+#else
+  // enforce the no-debug, no-spam rule.
+  _severity = max(severity, NS_info);
+#endif
   invalidate_cache();
 }
 
@@ -167,7 +172,11 @@ is_fatal() const {
 ////////////////////////////////////////////////////////////////////
 INLINE ostream &NotifyCategory::
 spam(bool prefix) const {
+#if defined(NOTIFY_DEBUG)
   return out(NS_spam, prefix);
+#else
+  return Notify::null();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -177,7 +186,11 @@ spam(bool prefix) const {
 ////////////////////////////////////////////////////////////////////
 INLINE ostream &NotifyCategory::
 debug(bool prefix) const {
+#if defined(NOTIFY_DEBUG)
   return out(NS_debug, prefix);
+#else
+  return Notify::null();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
