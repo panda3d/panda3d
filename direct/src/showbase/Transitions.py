@@ -323,13 +323,9 @@ class Transitions:
             # Allow a custom look to the letterbox graphic.
 
             # TODO: This model isn't available everywhere.  We should
-            # pass it in as a parameter.  In the meantime, at least
-            # set the LoaderOptions so there will be no error message
-            # if it fails to load.
-            options = LoaderOptions()
-            options.setFlags(options.getFlags() & ~options.LFReportErrors)
+            # pass it in as a parameter.
             button = loader.loadModel('models/gui/toplevel_gui',
-                                      loaderOptions = options)
+                                      okMissing = True)
             
             barImage = None
             if button:

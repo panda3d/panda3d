@@ -89,9 +89,10 @@ class Actor(DirectObject, NodePath):
         def __repr__(self):
             return 'Actor.SubpartDef(%s, %s)' % (repr(self.truePartName), repr(self.subset))
 
-    def __init__(self, models=None, anims=None, other=None, copy=1,
-                 lodNode = None, flattenable = 1, setFinal = 0,
-                 mergeLODBundles = None, allowAsyncBind = None):
+    def __init__(self, models=None, anims=None, other=None, copy=True,
+                 lodNode = None, flattenable = True, setFinal = False,
+                 mergeLODBundles = None, allowAsyncBind = None,
+                 okMissing = None):
         """__init__(self, string | string:string{}, string:string{} |
         string:(string:string{}){}, Actor=None)
         Actor constructor: can be used to create single or multipart
@@ -156,8 +157,6 @@ class Actor(DirectObject, NodePath):
 
         # initialize our NodePath essence
         NodePath.__init__(self)
-
-        self.__autoCopy = copy
 
         # Set the mergeLODBundles flag.  If this is true, all
         # different LOD's will be merged into a single common bundle
@@ -251,13 +250,15 @@ class Actor(DirectObject, NodePath):
                             # iterate over both dicts
                             for modelName in models[lodName].keys():
                                 self.loadModel(models[lodName][modelName],
-                                               modelName, lodName, copy = copy)
+                                               modelName, lodName, copy = copy,
+                                               okMissing = okMissing)
                     # then if there is a dictionary of dictionaries of anims
                     elif (type(anims[anims.keys()[0]])==type({})):
                         # then this is a multipart actor w/o LOD
                         for partName in models.keys():
                             # pass in each part
-                            self.loadModel(models[partName], partName, copy = copy)
+                            self.loadModel(models[partName], partName,
+                                           copy = copy, okMissing = okMissing)
                     else:
                         # it is a single part actor w/LOD
                         self.setLODNode(node = lodNode)
@@ -267,10 +268,11 @@ class Actor(DirectObject, NodePath):
                         for lodName in sortedKeys:
                             self.addLOD(str(lodName))
                             # pass in dictionary of parts
-                            self.loadModel(models[lodName], lodName=lodName, copy = copy)
+                            self.loadModel(models[lodName], lodName=lodName,
+                                           copy = copy, okMissing = okMissing)
                 else:
                     # else it is a single part actor
-                    self.loadModel(models, copy = copy)
+                    self.loadModel(models, copy = copy, okMissing = okMissing)
 
             # load anims
             # make sure the actor has animations
@@ -1805,12 +1807,10 @@ class Actor(DirectObject, NodePath):
 
         return controls
 
-    def loadModel(self, modelPath, partName="modelRoot", lodName="lodRoot", copy = 1):
-        """loadModel(self, string, string="modelRoot", string="lodRoot",
-        bool = 0)
-        Actor model loader. Takes a model name (ie file path), a part
+    def loadModel(self, modelPath, partName="modelRoot", lodName="lodRoot",
+                  copy = True, okMissing = None):
+        """Actor model loader. Takes a model name (ie file path), a part
         name(defaults to "modelRoot") and an lod name(defaults to "lodRoot").
-        If copy is set to 0, do a loadModel instead of a loadModelCopy.
         """
         assert partName not in self.__subpartDict
 
@@ -1836,7 +1836,7 @@ class Actor(DirectObject, NodePath):
             # get the skeleton model.  This only matters to model
             # files (like .mb) for which we can choose to extract
             # either the skeleton or animation, or neither.
-            model = loader.loadModel(modelPath, loaderOptions = loaderOptions)
+            model = loader.loadModel(modelPath, loaderOptions = loaderOptions, okMissing = okMissing)
 
         if (model == None):
             raise StandardError, "Could not load Actor model %s" % (modelPath)
