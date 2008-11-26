@@ -270,10 +270,14 @@ handle_entries() {
           _impact_velocity = _current_velocity;
           // These values are used by is_on_ground().
           _current_velocity = _airborne_height = 0.0f;
+        }
+/*      //ZAC - Commented out, until someone can give me a good reason why we
+        //need such wierd behaviour
         } else {
           // ...we're airborne.
           _current_colliding.clear();
         }
+*/
 
         CPT(TransformState) trans = def._target.get_transform();
         LVecBase3f pos = trans->get_pos();
