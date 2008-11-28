@@ -678,7 +678,7 @@ def SdkLocateMaya():
                         res = GetRegistryKey(fullkey, "MAYA_INSTALL_LOCATION")
                         if (res != 0):
                             res = res.replace("\\", "/").rstrip("/")
-                            SDK[res] = ver
+                            SDK[ver] = res
             elif (sys.platform == "darwin"):
                 ddir1 = "sdks/"+ver.lower().replace("x","")+"-osx"
                 if os.environ.has_key("MAYA_LOCATION"): ddir2 = os.environ["MAYA_LOCATION"].rstrip("/")
