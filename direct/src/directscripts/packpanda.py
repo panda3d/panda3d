@@ -287,7 +287,7 @@ DeleteFiles(".")
 #
 ##############################################################################
 
-CMD=NSIS+"\\makensis.exe /V2 "
+CMD="\""+NSIS+"\\makensis.exe\" /V2 "
 CMD=CMD+'/DCOMPRESSOR="'+COMPRESS+'" '
 CMD=CMD+'/DNAME="'+NAME+'" '
 CMD=CMD+'/DSMDIRECTORY="'+SMDIRECTORY+'" '
