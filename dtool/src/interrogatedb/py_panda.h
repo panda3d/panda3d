@@ -64,6 +64,25 @@ typedef int Py_ssize_t;
 
 #endif  // PY_VERSION_HEX
 
+// 2.4 macros which aren't available in 2.3
+#ifndef Py_RETURN_NONE
+inline PyObject* doPy_RETURN_NONE()
+{	Py_INCREF(Py_None); return Py_None; }
+#define Py_RETURN_NONE return doPy_RETURN_NONE()
+#endif
+
+#ifndef Py_RETURN_TRUE
+inline PyObject* doPy_RETURN_TRUE()
+{Py_INCREF(Py_True); return Py_True;}
+#define Py_RETURN_TRUE return doPy_RETURN_TRUE()
+#endif
+
+#ifndef Py_RETURN_FALSE
+inline PyObject* doPy_RETURN_FALSE()
+{Py_INCREF(Py_False); return Py_False;}
+#define Py_RETURN_FALSE return doPy_RETURN_FALSE()
+#endif
+
 using namespace std;
 
 #define PY_PANDA_SMALLER_FOOTPRINT  1

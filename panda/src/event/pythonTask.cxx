@@ -378,6 +378,7 @@ do_python_task() {
       Thread::get_current_thread()->call_python_func(_function, args);
     Py_DECREF(args);
 
+#ifdef PyGen_Check
     if (result != (PyObject *)NULL && PyGen_Check(result)) {
       // The function has yielded a generator.  We will call into that
       // henceforth, instead of calling the function from the top
@@ -392,6 +393,7 @@ do_python_task() {
       _generator = result;
       result = NULL;
     }
+#endif
   }
 
   if (_generator != (PyObject *)NULL) {
@@ -597,7 +599,7 @@ call_function(PyObject *function) {
     PyObject *self = 
       DTool_CreatePyInstanceTyped(this, Dtool_TypedReferenceCount,
                                   true, false, get_type_index());
-    PyObject *args = PyTuple_Pack(1, self);
+    PyObject *args = Py_BuildValue("(O)", self);
     Py_DECREF(self);
     
     PyObject *result = PyObject_CallObject(function, args);
