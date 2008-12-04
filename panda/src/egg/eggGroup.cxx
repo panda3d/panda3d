@@ -899,6 +899,8 @@ string_dcs_type(const string &strval) {
     return DC_local;
   } else if (cmp_nocase_uh(strval, "net") == 0) {
     return DC_net;
+  } else if (cmp_nocase_uh(strval, "no_touch") == 0) {
+    return DC_no_touch;
   } else if (cmp_nocase_uh(strval, "default") == 0) {
     return DC_default;
   } else {
@@ -1369,6 +1371,8 @@ ostream &operator << (ostream &out, EggGroup::DCSType t) {
     return out << "local";
   case EggGroup::DC_net:
     return out << "net";
+  case EggGroup::DC_no_touch:
+    return out << "no_touch";
   case EggGroup::DC_default:
     return out << "1";
   }

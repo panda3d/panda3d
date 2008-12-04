@@ -62,9 +62,12 @@ egg-object-type-indexed         <Scalar> indexed { 1 }
 # indicate nodes that should not be flattened out of the hierarchy
 # during the conversion process.  DCS goes one step further and
 # indicates that the node's transform is important and should be
-# preserved (DCS stands for Dynamic Coordinate System).
+# preserved (DCS stands for Dynamic Coordinate System).  Notouch is
+# even stronger, and means not to do any flattening below the node at
+# all.
 egg-object-type-model           <Model> { 1 }
 egg-object-type-dcs             <DCS> { 1 }
+egg-object-type-notouch         <DCS> { no_touch }
 
 # The following define various kinds of collision geometry.  These
 # mark the geometry at this level and below as invisible collision

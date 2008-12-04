@@ -1854,6 +1854,10 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       DCAST(ModelNode, node)->set_preserve_transform(ModelNode::PT_net);
       break;
 
+    case EggGroup::DC_no_touch:
+      DCAST(ModelNode, node)->set_preserve_transform(ModelNode::PT_no_touch);
+      break;
+
     case EggGroup::DC_local:
     case EggGroup::DC_default:
       DCAST(ModelNode, node)->set_preserve_transform(ModelNode::PT_local);

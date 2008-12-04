@@ -59,7 +59,8 @@ PUBLISHED:
     DC_none                  = 0x00000010,
     DC_local                 = 0x00000020,
     DC_net                   = 0x00000030,
-    DC_default               = 0x00000040,
+    DC_no_touch              = 0x00000040,
+    DC_default               = 0x00000050,
   };
   enum BillboardType {
     // The bits here must correspond to those in Flags, below.
