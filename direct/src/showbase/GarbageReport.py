@@ -3,14 +3,15 @@
 __all__ = ['FakeObject', '_createGarbage', 'GarbageReport', 'GarbageLogger']
 
 from direct.directnotify.DirectNotifyGlobal import directNotify
-from direct.showbase.PythonUtil import gcDebugOn, safeRepr, fastRepr, printListEnumGen, printNumberedTypesGen
+from direct.showbase.PythonUtil import safeRepr, fastRepr, printListEnumGen, printNumberedTypesGen
 from direct.showbase.PythonUtil import AlphabetCounter
 from direct.showbase.Job import Job
 import gc
 import types
 
 class FakeObject:
-    pass
+    def __del__(self):
+        pass
 
 def _createGarbage(num=1):
     for i in xrange(num):
@@ -46,12 +47,39 @@ class GarbageReport(Job):
 
     def run(self):
         # do the garbage collection
-        wasOn = gcDebugOn()
         oldFlags = gc.get_debug()
-        if not wasOn:
-            gc.set_debug(gc.DEBUG_SAVEALL)
+
+        # do a collect without SAVEALL, to get the instances that define __del__
+        # cycles that do not involve any instances that define __del__ are cleaned up
+        # automatically by Python, but they also appear in gc.garbage when SAVEALL is set
+        gc.set_debug(0)
         gc.collect()
-        self.garbage = list(gc.garbage)
+        garbageInstances = gc.garbage[:]
+        del gc.garbage[:]
+        # only yield if there's more time-consuming work to do,
+        # if there's no garbage, give instant feedback
+        if len(garbageInstances) > 0:
+            yield None
+        # don't repr the garbage list if we don't have to
+        if self.notify.getDebug():
+            self.notify.debug('garbageInstances == %s' % fastRepr(garbageInstances))
+
+        self.numGarbageInstances = len(garbageInstances)
+        # grab the ids of the garbage instances (objects with __del__)
+        self.garbageInstanceIds = set()
+        for i in xrange(len(garbageInstances)):
+            self.garbageInstanceIds.add(id(garbageInstances[i]))
+            if not (i % 20):
+                yield None
+        # then release the list of instances so that it doesn't interfere with the gc.collect() below
+        del garbageInstances
+
+        # do a SAVEALL pass so that we have all of the objects involved in legitimate garbage cycles
+        # without SAVEALL, gc.garbage only contains objects with __del__ methods
+        gc.set_debug(gc.DEBUG_SAVEALL)
+        gc.collect()
+        self.garbage = gc.garbage[:]
+        del gc.garbage[:]
         # only yield if there's more time-consuming work to do,
         # if there's no garbage, give instant feedback
         if len(self.garbage) > 0:
@@ -59,9 +87,7 @@ class GarbageReport(Job):
         # don't repr the garbage list if we don't have to
         if self.notify.getDebug():
             self.notify.debug('self.garbage == %s' % fastRepr(self.garbage))
-        del gc.garbage[:]
-        if not wasOn:
-            gc.set_debug(oldFlags)
+        gc.set_debug(oldFlags)
 
         self.numGarbage = len(self.garbage)
         # only yield if there's more time-consuming work to do,
@@ -70,7 +96,7 @@ class GarbageReport(Job):
             yield None
 
         if self._args.verbose:
-            self.notify.info('found %s garbage items' % self.numGarbage)
+            self.notify.info('found %s garbage instances' % self.numGarbageInstances)
 
         """ spammy
         # print the types of the garbage first, in case the repr of an object
@@ -102,7 +128,7 @@ class GarbageReport(Job):
                 yield None
 
         # grab the referrers (pointing to garbage)
-        if self._args.fullReport and (self.numGarbage != 0):
+        if self._args.fullReport and (self.numGarbageInstances != 0):
             if self._args.verbose:
                 self.notify.info('getting referrers...')
             for i in xrange(self.numGarbage):
@@ -114,7 +140,7 @@ class GarbageReport(Job):
                 self.referrersByReference[i] = byRef
 
         # grab the referents (pointed to by garbage)
-        if self.numGarbage > 0:
+        if self.numGarbageInstances > 0:
             if self._args.verbose:
                 self.notify.info('getting referents...')
             for i in xrange(self.numGarbage):
@@ -126,7 +152,7 @@ class GarbageReport(Job):
                 self.referentsByReference[i] = byRef
 
         # find the cycles
-        if self._args.findCycles and self.numGarbage > 0:
+        if self._args.findCycles and self.numGarbageInstances > 0:
             if self._args.verbose:
                 self.notify.info('detecting cycles...')
             for i in xrange(self.numGarbage):
@@ -221,12 +247,13 @@ class GarbageReport(Job):
                         self.cycleIds.update(set(cycle))
 
         if self._args.findCycles:
-            s = ['===== GarbageReport: \'%s\' (%s items, %s cycles) =====' % (
-                self._args.name, self.numGarbage, len(self.cycles))]
+            s = ['===== GarbageReport: \'%s\' (%s %s) =====' % (
+                self._args.name, len(self.cycles),
+                choice(len(self.cycles) == 1, 'cycle', 'cycles'))]
         else:
-            s = ['===== GarbageReport: \'%s\' (%s items) =====' % (
-                self._args.name, self.numGarbage)]
-        if self.numGarbage > 0:
+            s = ['===== GarbageReport: \'%s\' =====' % (
+                self._args.name)]
+        if self.numGarbageInstances > 0:
             # make a list of the ids we will actually be printing
             if self._args.fullReport:
                 garbageIndices = range(self.numGarbage)
@@ -277,14 +304,14 @@ class GarbageReport(Job):
                 s.append(format % (idx, itype(self.garbage[idx]), objStr))
 
             if self._args.findCycles:
-                s.append('===== Garbage Cycles By Index =====')
+                s.append('===== Garbage Cycles (Garbage Item Numbers) =====')
                 ac = AlphabetCounter()
                 for i in xrange(len(self.cycles)):
                     yield None
                     s.append('%s:%s' % (ac.next(), self.cycles[i]))
 
             if self._args.findCycles:
-                s.append('===== Garbage Cycles By Python Syntax =====')
+                s.append('===== Garbage Cycles (Python Syntax) =====')
                 ac = AlphabetCounter()
                 for i in xrange(len(self.cyclesBySyntax)):
                     yield None
@@ -314,7 +341,7 @@ class GarbageReport(Job):
         if self._args.log:
             self.printingBegin()
             for i in xrange(len(self._report)):
-                if self.numGarbage > 0:
+                if self.numGarbageInstances > 0:
                     yield None
                 self.notify.info(self._report[i])
             self.printingEnd()
@@ -418,15 +445,18 @@ class GarbageReport(Job):
             uniqueCycleSets = set()
         stateStack = Stack()
         rootId = index
-        stateStack.push(([rootId], rootId, 0))
+        # check if the root object is one of the garbage instances (has __del__)
+        objId = id(self.garbage[rootId])
+        numDelInstances = choice(objId in self.garbageInstanceIds, 1, 0)
+        stateStack.push(([rootId], rootId, numDelInstances, 0))
         while True:
             yield None
             if len(stateStack) == 0:
                 break
-            candidateCycle, curId, resumeIndex = stateStack.pop()
+            candidateCycle, curId, numDelInstances, resumeIndex = stateStack.pop()
             if self.notify.getDebug():
-                print 'restart: %s root=%s cur=%s resume=%s' % (
-                    candidateCycle, rootId, curId, resumeIndex)
+                print 'restart: %s root=%s cur=%s numDelInstances=%s resume=%s' % (
+                    candidateCycle, rootId, curId, numDelInstances, resumeIndex)
             for index in xrange(resumeIndex, len(self.referentsByNumber[curId])):
                 yield None
                 refId = self.referentsByNumber[curId][index]
@@ -437,18 +467,24 @@ class GarbageReport(Job):
                     normCandidateCycle = self._getNormalizedCycle(candidateCycle)
                     normCandidateCycleTuple = tuple(normCandidateCycle)
                     if not normCandidateCycleTuple in uniqueCycleSets:
-                        if self.notify.getDebug():
-                            print '  FOUND: ', normCandidateCycle + [normCandidateCycle[0],]
-                        cycles.append(normCandidateCycle + [normCandidateCycle[0],])
-                        uniqueCycleSets.add(normCandidateCycleTuple)
+                        # cycles with no instances that define __del__ will be
+                        # cleaned up by Python
+                        if numDelInstances >= 1:
+                            if self.notify.getDebug():
+                                print '  FOUND: ', normCandidateCycle + [normCandidateCycle[0],]
+                            cycles.append(normCandidateCycle + [normCandidateCycle[0],])
+                            uniqueCycleSets.add(normCandidateCycleTuple)
                 elif refId in candidateCycle:
                     pass
                 elif refId is not None:
+                    # check if this object is one of the garbage instances (has __del__)
+                    objId = id(self.garbage[refId])
+                    numDelInstances += choice(objId in self.garbageInstanceIds, 1, 0)
                     # this refId does not complete a cycle. Mark down
                     # where we are in this list of referents, then
                     # start looking through the referents of the new refId
-                    stateStack.push((list(candidateCycle), curId, index+1))
-                    stateStack.push((list(candidateCycle) + [refId], refId, 0))
+                    stateStack.push((list(candidateCycle), curId, numDelInstances, index+1))
+                    stateStack.push((list(candidateCycle) + [refId], refId, numDelInstances, 0))
                     break
         yield cycles
 

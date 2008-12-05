@@ -18,7 +18,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'clampScalar', 'weightedChoice', 'randFloat', 'normalDistrib',
 'weightedRand', 'randUint31', 'randInt32', 'randUint32',
 'SerialNumGen', 'serialNum', 'uniqueName', 'Enum', 'Singleton',
-'SingletonError', 'printListEnum', 'gcDebugOn', 'safeRepr',
+'SingletonError', 'printListEnum', 'safeRepr',
 'fastRepr', 'tagRepr', 'tagWithCaller', 'isDefaultValue', 'set_trace', 'pm',
 'ScratchPad', 'Sync', 'RefCounter', 'itype', 'getNumberedTypedString',
 'getNumberedTypedSortedString', 'getNumberedTypedSortedStringWithReferrers',
@@ -2443,10 +2443,6 @@ def printListEnumGen(l):
 def printListEnum(l):
     for result in printListEnumGen(l):
         pass
-
-def gcDebugOn():
-    import gc
-    return (gc.get_debug() & gc.DEBUG_SAVEALL) == gc.DEBUG_SAVEALL
 
 # base class for all Panda C++ objects
 # libdtoolconfig doesn't seem to have this, grab it off of PandaNode
