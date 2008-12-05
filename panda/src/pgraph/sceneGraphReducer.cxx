@@ -438,7 +438,7 @@ r_flatten(PandaNode *grandparent_node, PandaNode *parent_node,
             << "considering radius of " << *parent_node
             << ": " << *bs << " vs. " << _combine_radius << "\n";
         }
-        if (bs->is_empty() || bs->get_radius() <= _combine_radius) {
+        if (!bs->is_infinite() && (bs->is_empty() || bs->get_radius() <= _combine_radius)) {
           // This node fits within the specified radius; from here on
           // down, we will have CS_other set, instead of
           // CS_within_radius.
