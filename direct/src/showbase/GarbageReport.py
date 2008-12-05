@@ -246,10 +246,12 @@ class GarbageReport(Job):
                         yield None
                         self.cycleIds.update(set(cycle))
 
+        self.numCycles = len(self.cycles)
+
         if self._args.findCycles:
             s = ['===== GarbageReport: \'%s\' (%s %s) =====' % (
-                self._args.name, len(self.cycles),
-                choice(len(self.cycles) == 1, 'cycle', 'cycles'))]
+                self._args.name, self.numCycles,
+                choice(self.numCycles == 1, 'cycle', 'cycles'))]
         else:
             s = ['===== GarbageReport: \'%s\' =====' % (
                 self._args.name)]
@@ -306,7 +308,7 @@ class GarbageReport(Job):
             if self._args.findCycles:
                 s.append('===== Garbage Cycles (Garbage Item Numbers) =====')
                 ac = AlphabetCounter()
-                for i in xrange(len(self.cycles)):
+                for i in xrange(self.numCycles):
                     yield None
                     s.append('%s:%s' % (ac.next(), self.cycles[i]))
 
@@ -358,8 +360,9 @@ class GarbageReport(Job):
         #print 'GarbageReport.destroy'
         del self._args
         del self.garbage
-        # don't get rid of this, we might need it
+        # don't get rid of these, we might need them
         #del self.numGarbage
+        #del self.numCycles
         del self.referrersByReference
         del self.referrersByNumber
         del self.referentsByReference
@@ -371,9 +374,9 @@ class GarbageReport(Job):
             del self._reportStr
         Job.destroy(self)
 
-    def getNumItems(self):
-        # if the job hasn't run yet, we don't have a numGarbage yet
-        return self.numGarbage
+    def getNumCycles(self):
+        # if the job hasn't run yet, we don't have a numCycles yet
+        return self.numCycles
 
     def getGarbage(self):
         return self.garbage
