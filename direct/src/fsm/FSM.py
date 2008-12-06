@@ -161,10 +161,6 @@ class FSM(DirectObject):
             import weakref
             _debugFsms[name]=weakref.ref(self)
 
-    def __del__(self):
-        self.cleanup()
-        # DirectObject.__del__(self)
-
     def cleanup(self):
         # A convenience function to force the FSM to clean itself up
         # by transitioning to the "Off" state.
