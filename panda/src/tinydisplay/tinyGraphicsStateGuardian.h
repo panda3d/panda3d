@@ -82,6 +82,7 @@ public:
                                        const TransformState *transform);
 
   virtual TextureContext *prepare_texture(Texture *tex);
+  virtual bool update_texture(TextureContext *tc, bool force);
   bool update_texture(TextureContext *tc, bool force, int stage_index);
   virtual void release_texture(TextureContext *tc);
 

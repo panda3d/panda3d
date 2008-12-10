@@ -1559,7 +1559,7 @@ prepare_texture(Texture *tex) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::update_texture
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Ensures that the current Texture data is refreshed
 //               onto the GSG.  This means updating the texture
 //               properties and/or re-uploading the texture image, if
@@ -1574,7 +1574,7 @@ prepare_texture(Texture *tex) {
 //               true).
 ////////////////////////////////////////////////////////////////////
 bool TinyGraphicsStateGuardian::
-update_texture(TextureContext *tc, bool force, int stage_index) {
+update_texture(TextureContext *tc, bool force) {
   apply_texture(tc);
 
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
@@ -1591,6 +1591,34 @@ update_texture(TextureContext *tc, bool force, int stage_index) {
     }
   }
   gtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::update_texture
+//       Access: Public
+//  Description: Ensures that the current Texture data is refreshed
+//               onto the GSG.  This means updating the texture
+//               properties and/or re-uploading the texture image, if
+//               necessary.  This should only be called within the
+//               draw thread.
+//
+//               If force is true, this function will not return until
+//               the texture has been fully uploaded.  If force is
+//               false, the function may choose to upload a simple
+//               version of the texture instead, if the texture is not
+//               fully resident (and if get_incomplete_render() is
+//               true).
+////////////////////////////////////////////////////////////////////
+bool TinyGraphicsStateGuardian::
+update_texture(TextureContext *tc, bool force, int stage_index) {
+  if (!update_texture(tc, force)) {
+    return false;
+  }
+
+  TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
+  GLTexture *gltex = &gtc->_gltex;
 
   _c->current_textures[stage_index] = gltex;
   _c->zb->current_textures[stage_index] = gltex->levels;
