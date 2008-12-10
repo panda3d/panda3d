@@ -124,11 +124,11 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     // nodes during the traversal.
     size_t num_geoms = geoms->size();
     for (size_t i = 0; i < num_geoms; ++i) {
-      GeomEntry &entry = (*geoms)[i];
-      PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
+      GeomEntry *entry = &(*geoms)[i];
+      PT(Geom) new_geom = entry->_geom.get_read_pointer()->make_copy();
 
       AccumulatedAttribs geom_attribs = attribs;
-      entry._state = geom_attribs.collect(entry._state, attrib_types);
+      entry->_state = geom_attribs.collect(entry->_state, attrib_types);
       
       bool any_changed = false;
 
@@ -142,9 +142,9 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
           ra = ColorAttrib::make_off();
           override = -1;
         }
-        entry._state = entry._state->add_attrib(ra, override);
+        entry->_state = entry->_state->add_attrib(ra, override);
 
-        ra = entry._state->get_attrib(ColorAttrib::get_class_slot());
+        ra = entry->_state->get_attrib(ColorAttrib::get_class_slot());
         const ColorAttrib *ca = DCAST(ColorAttrib, ra);
         if (ca->get_color_type() != ColorAttrib::T_vertex) {
           if (transformer.remove_column(new_geom, InternalName::get_color())) {
@@ -160,14 +160,14 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
             // Now, if we have an "off" or "flat" color attribute, we
             // simply modify the color attribute, and leave the
             // vertices alone.
-            const RenderAttrib *ra = entry._state->get_attrib(ColorAttrib::get_class_slot());
+            const RenderAttrib *ra = entry->_state->get_attrib(ColorAttrib::get_class_slot());
             if (ra != (const RenderAttrib *)NULL) {
               const ColorAttrib *ca = DCAST(ColorAttrib, ra);
               if (ca->get_color_type() == ColorAttrib::T_off) {
-                entry._state = entry._state->set_attrib(ColorAttrib::make_vertex());
+                entry->_state = entry->_state->set_attrib(ColorAttrib::make_vertex());
                 // ColorAttrib::T_off means the color scale becomes
                 // the new color.
-                entry._state = entry._state->set_attrib(ColorAttrib::make_flat(csa->get_scale()));
+                entry->_state = entry->_state->set_attrib(ColorAttrib::make_flat(csa->get_scale()));
 
               } else if (ca->get_color_type() == ColorAttrib::T_flat) {
                 // ColorAttrib::T_flat means the color scale modulates
@@ -176,7 +176,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                 const LVecBase4f &c2 = csa->get_scale();
                 Colorf color(c1[0] * c2[0], c1[1] * c2[1], 
                              c1[2] * c2[2], c1[3] * c2[3]);
-                entry._state = entry._state->set_attrib(ColorAttrib::make_flat(color));
+                entry->_state = entry->_state->set_attrib(ColorAttrib::make_flat(color));
 
               } else {
                 // Otherwise, we have vertex color, and we just scale
@@ -234,13 +234,13 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
           }
           
           if (!new_tma->is_empty()) {
-            entry._state = entry._state->add_attrib(new_tma);
+            entry->_state = entry->_state->add_attrib(new_tma);
           }
         }
       }
 
       if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
-        entry._state = geom_attribs._other->compose(entry._state);
+        entry->_state = geom_attribs._other->compose(entry->_state);
       }
 
       // We handle cull_face last, since that might involve
@@ -261,7 +261,13 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
                 // it to reverse the normals on the duplicate copy.
                 PT(Geom) dup_geom = new_geom->reverse();
                 transformer.reverse_normals(dup_geom);
-                geoms->push_back(GeomEntry(dup_geom, entry._state));
+
+                geoms->push_back(GeomEntry(dup_geom, entry->_state));
+
+                // The above push_back() operation might have
+                // invalidated our old pointer into the list, so we
+                // reassign it now.
+                entry = &(*geoms)[i];
                 
               } else {
                 // If there are no normals, we can just doubleside it in
@@ -286,7 +292,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       }
 
       if (any_changed) {
-        entry._geom = new_geom;
+        entry->_geom = new_geom;
       }
     }
   }

@@ -101,8 +101,8 @@ register_vertices(GeomNode *node, bool might_have_unused) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler, current_thread) {
     GeomNode::CDStageWriter cdata(node->_cycler, pipeline_stage, current_thread);
     GeomNode::GeomList::iterator gi;
-    GeomNode::GeomList &geoms = *(cdata->modify_geoms());
-    for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+    PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
+    for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
       GeomNode::GeomEntry &entry = (*gi);
       PT(Geom) geom = entry._geom.get_write_pointer();
       register_vertices(geom, might_have_unused);
@@ -182,8 +182,8 @@ transform_vertices(GeomNode *node, const LMatrix4f &mat) {
   OPEN_ITERATE_CURRENT_AND_UPSTREAM(node->_cycler, current_thread) {
     GeomNode::CDStageWriter cdata(node->_cycler, pipeline_stage, current_thread);
     GeomNode::GeomList::iterator gi;
-    GeomNode::GeomList &geoms = *(cdata->modify_geoms());
-    for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+    PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
+    for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
       GeomNode::GeomEntry &entry = (*gi);
       PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
       if (transform_vertices(new_geom, mat)) {
@@ -284,8 +284,8 @@ transform_texcoords(GeomNode *node, const InternalName *from_name,
 
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
-  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+  PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
     if (transform_texcoords(new_geom, from_name, to_name, mat)) {
@@ -349,8 +349,8 @@ set_color(GeomNode *node, const Colorf &color) {
 
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
-  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+  PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
     if (set_color(new_geom, color)) {
@@ -417,8 +417,8 @@ transform_colors(GeomNode *node, const LVecBase4f &scale) {
 
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
-  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+  PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
     if (transform_colors(new_geom, scale)) {
@@ -648,8 +648,8 @@ apply_texture_colors(GeomNode *node, const RenderState *state) {
 
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
-  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+  PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     CPT(RenderState) geom_state = state->compose(entry._state);
 
@@ -710,8 +710,8 @@ apply_state(GeomNode *node, const RenderState *state) {
 
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
-  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+  PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     CPT(RenderState) new_state = state->compose(entry._state);
     if (entry._state != new_state) {
@@ -798,8 +798,8 @@ remove_column(GeomNode *node, const InternalName *column) {
 
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
-  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+  PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
     if (remove_column(new_geom, column)) {
@@ -848,7 +848,7 @@ make_compatible_state(GeomNode *node) {
   
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
-  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
+  PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
 
   // For each geom, calculate a canonicalized RenderState, and 
   // classify all the geoms according to that.
@@ -856,8 +856,8 @@ make_compatible_state(GeomNode *node) {
   typedef pmap <CPT(RenderState), pvector<int> > StateTable;
   StateTable state_table;
   
-  for (int i = 0; i < (int)geoms.size(); i++) {
-    GeomNode::GeomEntry &entry = geoms[i];
+  for (int i = 0; i < (int)geoms->size(); i++) {
+    GeomNode::GeomEntry &entry = (*geoms)[i];
     CPT(RenderState) canon = entry._state->add_attrib(ColorAttrib::make_vertex(), -1);
     state_table[canon].push_back(i);
   }
@@ -874,7 +874,7 @@ make_compatible_state(GeomNode *node) {
     pvector<int> &indices = (*si).second;
     bool mismatch = false;
     for (int i = 1; i < (int)indices.size(); i++) {
-      if (geoms[indices[i]]._state != geoms[indices[0]]._state) {
+      if ((*geoms)[indices[i]]._state != (*geoms)[indices[0]]._state) {
         mismatch = true;
         break;
       }
@@ -888,7 +888,7 @@ make_compatible_state(GeomNode *node) {
     
     const RenderState *canon_state = (*si).first;
     for (int i = 0; i < (int)indices.size(); i++) {
-      GeomNode::GeomEntry &entry = geoms[indices[i]];
+      GeomNode::GeomEntry &entry = (*geoms)[indices[i]];
       const RenderAttrib *ra = entry._state->get_attrib(ColorAttrib::get_class_slot());
       if (ra == (RenderAttrib *)NULL) {
         ra = ColorAttrib::make_off();
@@ -1190,8 +1190,8 @@ collect_vertex_data(GeomNode *node, int collect_bits, bool format_only) {
 
   GeomNode::CDWriter cdata(node->_cycler);
   GeomNode::GeomList::iterator gi;
-  GeomNode::GeomList &geoms = *(cdata->modify_geoms());
-  for (gi = geoms.begin(); gi != geoms.end(); ++gi) {
+  PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
+  for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     GeomNode::GeomEntry &entry = (*gi);
     PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
     entry._geom = new_geom;
