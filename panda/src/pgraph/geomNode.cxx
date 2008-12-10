@@ -384,9 +384,12 @@ r_prepare_scene(const RenderState *state,
     if (attrib != (const RenderAttrib *)NULL) {
       const TextureAttrib *ta;
       DCAST_INTO_V(ta, attrib);
-      Texture *texture = ta->get_texture();
-      if (texture != (Texture *)NULL) {
-        texture->prepare(prepared_objects);
+      int num_stages = ta->get_num_on_stages();
+      for (int i = 0; i < num_stages; ++i) {
+        Texture *texture = ta->get_on_texture(ta->get_on_stage(i));
+        if (texture != (Texture *)NULL) {
+          texture->prepare(prepared_objects);
+        }
       }
     }
   }
