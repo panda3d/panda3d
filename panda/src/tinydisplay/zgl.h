@@ -105,7 +105,7 @@ typedef struct GLVertex {
   int edge_flag;
   V3 normal;
   V4 coord;
-  V4 tex_coord;
+  V4 tex_coord[MAX_TEXTURE_STAGES];
   V4 color;
   
   /* computed values */
@@ -151,8 +151,8 @@ typedef struct GLContext {
   GLMaterial materials[2];
 
   /* textures */
-  GLTexture *current_texture;
-  int texture_2d_enabled;
+  GLTexture *current_textures[MAX_TEXTURE_STAGES];
+  int num_textures_enabled;
  
   /* matrix */
   M4 matrix_projection;
@@ -180,7 +180,6 @@ typedef struct GLContext {
   /* current vertex state */
   V4 current_color;
   V4 current_normal;
-  V4 current_tex_coord;
 
   /* depth test */
   int depth_test;

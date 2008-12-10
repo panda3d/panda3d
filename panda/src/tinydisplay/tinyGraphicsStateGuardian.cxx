@@ -51,6 +51,9 @@ PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_textured_pcollecto
 PStatCollector TinyGraphicsStateGuardian::_pixel_count_white_perspective_pcollector("Pixels:White perspective");
 PStatCollector TinyGraphicsStateGuardian::_pixel_count_flat_perspective_pcollector("Pixels:Flat perspective");
 PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_perspective_pcollector("Pixels:Smooth perspective");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_white_multitex_pcollector("Pixels:White multitex");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_flat_multitex_pcollector("Pixels:Flat multitex");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_multitex_pcollector("Pixels:Smooth multitex");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::Constructor
@@ -120,6 +123,7 @@ reset() {
     Geom::GR_flat_last_vertex;
 
   _max_texture_dimension = (1 << ZB_POINT_ST_FRAC_BITS);
+  _max_texture_stages = MAX_TEXTURE_STAGES;
   _max_lights = MAX_LIGHTS;
 
   _color_scale_via_lighting = false;
@@ -392,6 +396,9 @@ begin_frame(Thread *current_thread) {
   _pixel_count_white_perspective_pcollector.clear_level();
   _pixel_count_flat_perspective_pcollector.clear_level();
   _pixel_count_smooth_perspective_pcollector.clear_level();
+  _pixel_count_white_multitex_pcollector.clear_level();
+  _pixel_count_flat_multitex_pcollector.clear_level();
+  _pixel_count_smooth_multitex_pcollector.clear_level();
 #endif
 
   return true;
@@ -495,6 +502,9 @@ end_frame(Thread *current_thread) {
   _pixel_count_white_perspective_pcollector.flush_level();
   _pixel_count_flat_perspective_pcollector.flush_level();
   _pixel_count_smooth_perspective_pcollector.flush_level();
+  _pixel_count_white_multitex_pcollector.flush_level();
+  _pixel_count_flat_multitex_pcollector.flush_level();
+  _pixel_count_smooth_multitex_pcollector.flush_level();
 #endif  // DO_PSTATS
 }
 
@@ -604,27 +614,29 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     _vertices = (GLVertex *)PANDA_MALLOC_ARRAY(_vertices_size * sizeof(GLVertex));
   }
 
-  GeomVertexReader rtexcoord, rcolor, rnormal;
+  GeomVertexReader  rcolor, rnormal;
 
-  // We only support single-texturing, so only bother with the first
-  // texture stage.
-  bool needs_texcoord = false;
-  bool needs_texmat = false;
-  LMatrix4f texmat;
-  const InternalName *texcoord_name = InternalName::get_texcoord();
+  // We now support up to 2-stage multitexturing.
+  GeomVertexReader rtexcoord[MAX_TEXTURE_STAGES];
+  bool needs_texcoord[MAX_TEXTURE_STAGES] = { false, false };
+  bool needs_texmat[MAX_TEXTURE_STAGES] = { false, false };
+  LMatrix4f texmat[MAX_TEXTURE_STAGES];
+  const InternalName *texcoord_name[MAX_TEXTURE_STAGES] = { 
+    InternalName::get_texcoord(), InternalName::get_texcoord()
+  };
   int max_stage_index = _target_texture->get_num_on_ff_stages();
-  if (max_stage_index > 0) {
-    TextureStage *stage = _target_texture->get_on_ff_stage(0);
-    rtexcoord = GeomVertexReader(data_reader, stage->get_texcoord_name(),
+  for (int si = 0; si < max_stage_index; ++si) {
+    TextureStage *stage = _target_texture->get_on_ff_stage(si);
+    rtexcoord[si] = GeomVertexReader(data_reader, stage->get_texcoord_name(),
                                  force);
-    rtexcoord.set_row(_min_vertex);
-    needs_texcoord = rtexcoord.has_column();
+    rtexcoord[si].set_row(_min_vertex);
+    needs_texcoord[si] = rtexcoord[si].has_column();
 
-    if (needs_texcoord) {
+    if (needs_texcoord[si]) {
       const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
       if (target_tex_matrix->has_stage(stage)) {
-        needs_texmat = true;
-        texmat = target_tex_matrix->get_mat(stage);
+        needs_texmat[si] = true;
+        texmat[si] = target_tex_matrix->get_mat(stage);
       }
     }
   }
@@ -689,17 +701,20 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     v->coord.v[2] = d[2];
     v->coord.v[3] = d[3];
 
-    if (needs_texmat) {
-      // Transform texcoords as a four-component vector for most generality.
-      LVecBase4f d = rtexcoord.get_data4f() * texmat;
-      v->tex_coord.v[0] = d[0];
-      v->tex_coord.v[1] = d[1];
-
-    } else if (needs_texcoord) {
-      // No need to transform, so just extract as two-component.
-      const LVecBase2f &d = rtexcoord.get_data2f();
-      v->tex_coord.v[0] = d[0];
-      v->tex_coord.v[1] = d[1];
+    // Texture coordinates.
+    for (int si = 0; si < max_stage_index; ++si) {
+      if (needs_texmat[si]) {
+        // Transform texcoords as a four-component vector for most generality.
+        LVecBase4f d = rtexcoord[si].get_data4f() * texmat[si];
+        v->tex_coord[si].v[0] = d[0];
+        v->tex_coord[si].v[1] = d[1];
+        
+      } else if (needs_texcoord[si]) {
+        // No need to transform, so just extract as two-component.
+        const LVecBase2f &d = rtexcoord[si].get_data2f();
+        v->tex_coord[si].v[0] = d[0];
+        v->tex_coord[si].v[1] = d[1];
+      }
     }
 
     if (needs_color) {
@@ -846,8 +861,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   int texfilter_state = 0;  // tnearest
   if (texturing_state > 0) {
     texfilter_state = _texfilter_state;
-    if (_c->matrix_model_projection_no_w_transform ||
-        _filled_flat) {
+
+    if (texturing_state < 3 &&
+        (_c->matrix_model_projection_no_w_transform || _filled_flat)) {
       // Don't bother with the perspective-correct algorithm if we're
       // under an orthonormal lens, e.g. render2d; or if
       // RenderMode::M_filled_flat is in effect.
@@ -873,6 +889,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   pixel_count_white_perspective = 0;
   pixel_count_flat_perspective = 0;
   pixel_count_smooth_perspective = 0;
+  pixel_count_white_multitex = 0;
+  pixel_count_flat_multitex = 0;
+  pixel_count_smooth_multitex = 0;
 #endif  // DO_PSTATS
   
   return true;
@@ -1268,6 +1287,9 @@ end_draw_primitives() {
   _pixel_count_white_perspective_pcollector.add_level(pixel_count_white_perspective);
   _pixel_count_flat_perspective_pcollector.add_level(pixel_count_flat_perspective);
   _pixel_count_smooth_perspective_pcollector.add_level(pixel_count_smooth_perspective);
+  _pixel_count_white_multitex_pcollector.add_level(pixel_count_white_multitex);
+  _pixel_count_flat_multitex_pcollector.add_level(pixel_count_flat_multitex);
+  _pixel_count_smooth_multitex_pcollector.add_level(pixel_count_smooth_multitex);
 #endif  // DO_PSTATS
 
   GraphicsStateGuardian::end_draw_primitives();
@@ -1537,7 +1559,7 @@ prepare_texture(Texture *tex) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::update_texture
-//       Access: Public, Virtual
+//       Access: Public
 //  Description: Ensures that the current Texture data is refreshed
 //               onto the GSG.  This means updating the texture
 //               properties and/or re-uploading the texture image, if
@@ -1552,7 +1574,7 @@ prepare_texture(Texture *tex) {
 //               true).
 ////////////////////////////////////////////////////////////////////
 bool TinyGraphicsStateGuardian::
-update_texture(TextureContext *tc, bool force) {
+update_texture(TextureContext *tc, bool force, int stage_index) {
   apply_texture(tc);
 
   TinyTextureContext *gtc = DCAST(TinyTextureContext, tc);
@@ -1570,8 +1592,8 @@ update_texture(TextureContext *tc, bool force) {
   }
   gtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
 
-  _c->current_texture = gltex;
-  _c->zb->current_texture = gltex->levels;
+  _c->current_textures[stage_index] = gltex;
+  _c->zb->current_textures[stage_index] = gltex->levels;
 
   return true;
 }
@@ -2026,35 +2048,44 @@ do_issue_material() {
 void TinyGraphicsStateGuardian::
 do_issue_texture() {
   _texturing_state = 0;   // untextured
-  _c->texture_2d_enabled = false;
+  _c->num_textures_enabled = 0;
 
   int num_stages = _target_texture->get_num_on_ff_stages();
   if (num_stages == 0) {
     // No texturing.
     return;
   }
-  nassertv(num_stages == 1);
+  nassertv(num_stages <= MAX_TEXTURE_STAGES);
 
-  TextureStage *stage = _target_texture->get_on_ff_stage(0);
-  Texture *texture = _target_texture->get_on_texture(stage);
-  nassertv(texture != (Texture *)NULL);
+  Texture *texture = NULL;
+  for (int si = 0; si < num_stages; ++si) {
+    TextureStage *stage = _target_texture->get_on_ff_stage(si);
+    texture = _target_texture->get_on_texture(stage);
+    nassertv(texture != (Texture *)NULL);
     
-  TextureContext *tc = texture->prepare_now(_prepared_objects, this);
-  if (tc == (TextureContext *)NULL) {
-    // Something wrong with this texture; skip it.
-    return;
-  }
+    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+    if (tc == (TextureContext *)NULL) {
+      // Something wrong with this texture; skip it.
+      return;
+    }
     
-  // Then, turn on the current texture mode.
-  if (!update_texture(tc, false)) {
-    return;
+    // Then, turn on the current texture mode.
+    if (!update_texture(tc, false, si)) {
+      return;
+    }
+
+    // M_replace means M_replace; anything else is treated the same as
+    // M_modulate.
+    _texture_replace = (stage->get_mode() == TextureStage::M_replace);
   }
 
   // Set a few state cache values.
-  _c->texture_2d_enabled = true;
+  _c->num_textures_enabled = num_stages;
 
   _texturing_state = 2;   // perspective (perspective-correct texturing)
-  if (!td_perspective_textures) {
+  if (num_stages >= 2) {
+    _texturing_state = 3;  // multitexture
+  } else if (!td_perspective_textures) {
     _texturing_state = 1;    // textured (not perspective correct)
   }
 
@@ -2086,7 +2117,7 @@ do_issue_texture() {
     // This is the cheapest texture filter.  We disallow mipmaps and
     // perspective correctness.
     _texfilter_state = 0;    // tnearest
-    _texturing_state = 1;    // textured (not perspective correct)
+    _texturing_state = 1;    // textured (not perspective correct, no multitexture)
   
   } else {
     // This is the default texture filter.  We use nearest sampling if
@@ -2097,10 +2128,6 @@ do_issue_texture() {
       _texfilter_state = 1;  // tmipmap
     }
   }
-
-  // M_replace means M_replace; anything else is treated the same as
-  // M_modulate.
-  _texture_replace = (stage->get_mode() == TextureStage::M_replace);
 }
 
 ////////////////////////////////////////////////////////////////////

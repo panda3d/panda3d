@@ -36,4 +36,7 @@
 #define TGL_FEATURE_24_BITS        1
 #define TGL_FEATURE_32_BITS        1
 
+/* Number of simultaneous texture stages supported (multitexture). */
+#define MAX_TEXTURE_STAGES 2
+
 #endif /* _tgl_features_h_ */

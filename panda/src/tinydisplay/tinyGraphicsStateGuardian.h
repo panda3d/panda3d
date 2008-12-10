@@ -82,7 +82,7 @@ public:
                                        const TransformState *transform);
 
   virtual TextureContext *prepare_texture(Texture *tex);
-  virtual bool update_texture(TextureContext *tc, bool force);
+  bool update_texture(TextureContext *tc, bool force, int stage_index);
   virtual void release_texture(TextureContext *tc);
 
   virtual void do_issue_light();
@@ -173,6 +173,9 @@ private:
   static PStatCollector _pixel_count_white_perspective_pcollector;
   static PStatCollector _pixel_count_flat_perspective_pcollector;
   static PStatCollector _pixel_count_smooth_perspective_pcollector;
+  static PStatCollector _pixel_count_white_multitex_pcollector;
+  static PStatCollector _pixel_count_flat_multitex_pcollector;
+  static PStatCollector _pixel_count_smooth_multitex_pcollector;
 
 public:
   static TypeHandle get_class_type() {

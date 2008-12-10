@@ -33,8 +33,15 @@
   float sz1,dszdx,dszdy,dszdl_min,dszdl_max;
   float tz1,dtzdx,dtzdy,dtzdl_min,dtzdl_max;
 #endif
+#ifdef INTERP_STZA
+  float sza1,dszadx,dszady,dszadl_min,dszadl_max;
+  float tza1,dtzadx,dtzady,dtzadl_min,dtzadl_max;
+#endif
 #if defined(INTERP_MIPMAP) && (defined(INTERP_ST) || defined(INTERP_STZ))
   unsigned int mipmap_dx, mipmap_level;
+#endif
+#ifdef INTERP_STZA
+  unsigned int mipmap_dxa, mipmap_levela;
 #endif
 
   EARLY_OUT();
@@ -117,7 +124,7 @@
   dtdx = (int) (fdy2 * d1 - fdy1 * d2);
   dtdy = (int) (fdx1 * d2 - fdx2 * d1);
 
-  CALC_MIPMAP_LEVEL;
+  CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);
 #endif
 
 #ifdef INTERP_STZ
@@ -142,6 +149,31 @@
     d2 = p2->tz - p0->tz;
     dtzdx = (fdy2 * d1 - fdy1 * d2);
     dtzdy = (fdx1 * d2 - fdx2 * d1);
+  }
+#endif
+
+#ifdef INTERP_STZA
+  {
+    float zz;
+    zz=(float) p0->z;
+    p0->sza= (float) p0->sa * zz;
+    p0->tza= (float) p0->ta * zz;
+    zz=(float) p1->z;
+    p1->sza= (float) p1->sa * zz;
+    p1->tza= (float) p1->ta * zz;
+    zz=(float) p2->z;
+    p2->sza= (float) p2->sa * zz;
+    p2->tza= (float) p2->ta * zz;
+
+    d1 = p1->sza - p0->sza;
+    d2 = p2->sza - p0->sza;
+    dszadx = (fdy2 * d1 - fdy1 * d2);
+    dszady = (fdx1 * d2 - fdx2 * d1);
+    
+    d1 = p1->tza - p0->tza;
+    d2 = p2->tza - p0->tza;
+    dtzadx = (fdy2 * d1 - fdy1 * d2);
+    dtzady = (fdx1 * d2 - fdx2 * d1);
   }
 #endif
 
@@ -241,6 +273,15 @@
       dtzdl_min=(dtzdy + dtzdx * dxdy_min);
       dtzdl_max=dtzdl_min + dtzdx;
 #endif
+#ifdef INTERP_STZA
+      sza1=l1->sza;
+      dszadl_min=(dszady + dszadx * dxdy_min);
+      dszadl_max=dszadl_min + dszadx;
+      
+      tza1=l1->tza;
+      dtzadl_min=(dtzady + dtzadx * dxdy_min);
+      dtzadl_max=dtzadl_min + dtzadx;
+#endif
     }
 
     /* compute values for the right edge */
@@ -277,6 +318,9 @@
 #ifdef INTERP_STZ
           float sz,tz;
 #endif
+#ifdef INTERP_STZA
+          float sza,tza;
+#endif
 
           n=(x2 >> 16) - x1;
           pp=(PIXEL *)((char *)pp1 + x1 * PSZB);
@@ -297,6 +341,10 @@
 #ifdef INTERP_STZ
           sz=sz1;
           tz=tz1;
+#endif
+#ifdef INTERP_STZA
+          sza=sza1;
+          tza=tza1;
 #endif
           while (n>=3) {
               PUT_PIXEL(0);
@@ -344,6 +392,10 @@
 	sz1+=dszdl_max;
 	tz1+=dtzdl_max;
 #endif
+#ifdef INTERP_STZA
+	sza1+=dszadl_max;
+	tza1+=dtzadl_max;
+#endif
       } else {
 	x1+=dxdy_min;
 #ifdef INTERP_Z
@@ -363,6 +415,10 @@
 	sz1+=dszdl_min;
 	tz1+=dtzdl_min;
 #endif
+#ifdef INTERP_STZA
+	sza1+=dszadl_min;
+	tza1+=dtzadl_min;
+#endif
       } 
       
       /* right edge */
@@ -379,6 +435,7 @@
 #undef INTERP_RGB
 #undef INTERP_ST
 #undef INTERP_STZ
+#undef INTERP_STZA
 
 #undef EARLY_OUT
 #undef EARLY_OUT_FZ

@@ -43,11 +43,11 @@ typedef unsigned short ZPOINT;
    already doing the right thing.  Is msvc? */
 //#define FAST_ABS(v) (((v) ^ ((v) >> (sizeof(v) * 8 - 1))) - ((v) >> (sizeof(v) * 8 - 1)))
 
-#define DO_CALC_MIPMAP_LEVEL \
+#define DO_CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx) \
   { \
-    mipmap_dx = ((unsigned int)abs(dsdx) + (unsigned int)abs(dtdx)); \
-    mipmap_level = get_next_higher_bit(mipmap_dx >> ZB_POINT_ST_FRAC_BITS); \
-    mipmap_dx &= ((1 << ((mipmap_level - 1) + ZB_POINT_ST_FRAC_BITS)) - 1); \
+    (mipmap_dx) = ((unsigned int)abs(dsdx) + (unsigned int)abs(dtdx)); \
+    (mipmap_level) = get_next_higher_bit((mipmap_dx) >> ZB_POINT_ST_FRAC_BITS); \
+    (mipmap_dx) &= ((1 << (((mipmap_level) - 1) + ZB_POINT_ST_FRAC_BITS)) - 1); \
   }
 
 #define ZB_POINT_RED_MIN   0x0000
@@ -81,6 +81,8 @@ typedef unsigned int PIXEL;
 // Returns an unsigned product of c1 * c2
 #define PCOMPONENT_MULT(c1, c2) \
   ((((unsigned int)(c1) * (unsigned int)(c2))) >> 16)
+#define PCOMPONENT_MULT3(c1, c2, c3) \
+  PCOMPONENT_MULT(c1, PCOMPONENT_MULT(c2, c3))
 
 // Returns a signed product of c1 * c2, where c1 is initially signed.
 // We leave 2 bits on the top to differentiate between c1 < 0 and c1 >
@@ -126,7 +128,7 @@ struct ZBuffer {
   int nb_colors;
   unsigned char *dctable;
   int *ctable;
-  ZTextureLevel *current_texture;  // This is actually an array of texture levels.
+  ZTextureLevel *current_textures[MAX_TEXTURE_STAGES];  // This is actually an array of texture levels for each stage.
   int reference_alpha;
   int blend_r, blend_g, blend_b, blend_a;
   ZB_storePixelFunc store_pix_func;
@@ -140,6 +142,9 @@ struct ZBufferPoint {
   int r,g,b,a;     /* color indexes */
   
   float sz,tz;   /* temporary coordinates for mapping */
+
+  int sa, ta;   /* mapping coordinates for optional second texture stage */
+  float sza,tza; 
 };
 
 /* zbuffer.c */
@@ -154,6 +159,9 @@ extern int pixel_count_smooth_textured;
 extern int pixel_count_white_perspective;
 extern int pixel_count_flat_perspective;
 extern int pixel_count_smooth_perspective;
+extern int pixel_count_white_multitex;
+extern int pixel_count_flat_multitex;
+extern int pixel_count_smooth_multitex;
 
 #define COUNT_PIXELS(pixel_count, p0, p1, p2) \
   (pixel_count) += abs((p0)->x * ((p1)->y - (p2)->y) + (p1)->x * ((p2)->y - (p0)->y) + (p2)->x * ((p0)->y - (p1)->y)) / 2

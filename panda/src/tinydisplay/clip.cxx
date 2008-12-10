@@ -33,9 +33,15 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
                 + ZB_POINT_ALPHA_MIN);
   
   /* texture */
-  if (c->texture_2d_enabled) {
-    v->zp.s = (int)(v->tex_coord.v[0] * c->current_texture->s_max); 
-    v->zp.t = (int)(v->tex_coord.v[1] * c->current_texture->t_max);
+  if (c->num_textures_enabled >= 1) {
+    static const int si = 0;
+    v->zp.s = (int)(v->tex_coord[si].v[0] * c->current_textures[si]->s_max); 
+    v->zp.t = (int)(v->tex_coord[si].v[1] * c->current_textures[si]->t_max);
+  }
+  if (c->num_textures_enabled >= 2) {
+    static const int si = 1;
+    v->zp.sa = (int)(v->tex_coord[si].v[0] * c->current_textures[si]->s_max); 
+    v->zp.ta = (int)(v->tex_coord[si].v[1] * c->current_textures[si]->t_max);
   }
 }
 
@@ -201,14 +207,15 @@ static inline void updateTmp(GLContext *c,
     q->color.v[3]=p0->color.v[3];
   }
 
-  if (c->texture_2d_enabled) {
-    q->tex_coord.v[0]=p0->tex_coord.v[0] + (p1->tex_coord.v[0]-p0->tex_coord.v[0])*t;
-    q->tex_coord.v[1]=p0->tex_coord.v[1] + (p1->tex_coord.v[1]-p0->tex_coord.v[1])*t;
+  for (int si = 0; si < c->num_textures_enabled; ++si) {
+    q->tex_coord[si].v[0]=p0->tex_coord[si].v[0] + (p1->tex_coord[si].v[0]-p0->tex_coord[si].v[0])*t;
+    q->tex_coord[si].v[1]=p0->tex_coord[si].v[1] + (p1->tex_coord[si].v[1]-p0->tex_coord[si].v[1])*t;
   }
 
   q->clip_code=gl_clipcode(q->pc.v[0],q->pc.v[1],q->pc.v[2],q->pc.v[3]);
-  if (q->clip_code==0)
+  if (q->clip_code==0) {
     gl_transform_to_viewport(c,q);
+  }
 }
 
 static void gl_draw_triangle_clip(GLContext *c,
@@ -368,7 +375,7 @@ void gl_draw_triangle_fill(GLContext *c,
 #endif
     
 #ifdef PROFILE
-  if (c->texture_2d_enabled) {
+  if (c->num_textures_enabled != 0) {
     count_triangles_textured++;
   }
 #endif

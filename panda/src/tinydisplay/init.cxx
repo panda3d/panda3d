@@ -47,11 +47,6 @@ void glInit(GLContext *c, ZBuffer *zbuffer)
   c->current_normal.v[2]=0.0f;
   c->current_normal.v[3]=0.0f;
 
-  c->current_tex_coord.v[0]=0.0f;
-  c->current_tex_coord.v[1]=0.0f;
-  c->current_tex_coord.v[2]=0.0f;
-  c->current_tex_coord.v[3]=1.0f;
-
   c->cull_face_enabled=0;
   
   /* specular buffer */
