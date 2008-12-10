@@ -2057,10 +2057,15 @@ do_issue_texture() {
   }
   nassertv(num_stages <= MAX_TEXTURE_STAGES);
 
-  Texture *texture = NULL;
+  Texture::QualityLevel quality_level = _texture_quality_override;
+  Texture::FilterType minfilter = Texture::FT_nearest;
+  Texture::FilterType magfilter = Texture::FT_nearest;
+  bool all_use_mipmaps = true;
+  bool all_replace = true;
+
   for (int si = 0; si < num_stages; ++si) {
     TextureStage *stage = _target_texture->get_on_ff_stage(si);
-    texture = _target_texture->get_on_texture(stage);
+    Texture *texture = _target_texture->get_on_texture(stage);
     nassertv(texture != (Texture *)NULL);
     
     TextureContext *tc = texture->prepare_now(_prepared_objects, this);
@@ -2076,11 +2081,27 @@ do_issue_texture() {
 
     // M_replace means M_replace; anything else is treated the same as
     // M_modulate.
-    _texture_replace = (stage->get_mode() == TextureStage::M_replace);
+    if (stage->get_mode() != TextureStage::M_replace) {
+      all_replace = false;
+    }
+
+    if (quality_level < texture->get_quality_level()) {
+      quality_level = texture->get_quality_level();
+    }
+    if (minfilter < texture->get_minfilter()) {
+      minfilter = texture->get_minfilter();
+    }
+    if (magfilter < texture->get_magfilter()) {
+      magfilter = texture->get_magfilter();
+    }
+    if (!texture->uses_mipmaps()) {
+      all_use_mipmaps = false;
+    }
   }
 
   // Set a few state cache values.
   _c->num_textures_enabled = num_stages;
+  _texture_replace = all_replace;
 
   _texturing_state = 2;   // perspective (perspective-correct texturing)
   if (num_stages >= 2) {
@@ -2089,26 +2110,28 @@ do_issue_texture() {
     _texturing_state = 1;    // textured (not perspective correct)
   }
 
-  Texture::QualityLevel quality_level = _texture_quality_override;
   if (quality_level == Texture::QL_default) {
-    quality_level = texture->get_quality_level();
-    if (quality_level == Texture::QL_default) {
-      quality_level = texture_quality_level;
-    }
+    quality_level = texture_quality_level;
   }
 
   if (quality_level == Texture::QL_best) {
     // This is the most generic texture filter.  Slow, but pretty.
     _texfilter_state = 2;  // tgeneral
-    _c->zb->tex_minfilter_func = get_tex_filter_func(texture->get_minfilter());
-    _c->zb->tex_magfilter_func = get_tex_filter_func(texture->get_magfilter());
 
-    if (texture->get_minfilter() == Texture::FT_nearest &&
-        texture->get_magfilter() == Texture::FT_nearest) {
+    if (!all_use_mipmaps && Texture::is_mipmap(minfilter)) {
+      // We can't enable mipmaps unless all the textures in the stack
+      // enable mipmaps.
+      minfilter = Texture::FT_linear;
+    }
+
+    _c->zb->tex_minfilter_func = get_tex_filter_func(minfilter);
+    _c->zb->tex_magfilter_func = get_tex_filter_func(magfilter);
+
+    if (minfilter == Texture::FT_nearest && magfilter == Texture::FT_nearest) {
       // This case is inlined.
       _texfilter_state = 0;    // tnearest
-    } else if (texture->get_minfilter() == Texture::FT_nearest_mipmap_nearest &&
-               texture->get_magfilter() == Texture::FT_nearest) {
+    } else if (minfilter == Texture::FT_nearest_mipmap_nearest &&
+               magfilter == Texture::FT_nearest) {
       // So is this case.
       _texfilter_state = 1;  // tmipmap
     }
@@ -2124,7 +2147,7 @@ do_issue_texture() {
     // there are no mipmaps, and mipmap_nearest if there are any
     // mipmaps--these are the two inlined filters.
     _texfilter_state = 0;    // tnearest
-    if (texture->uses_mipmaps() && !td_ignore_mipmaps) {
+    if (all_use_mipmaps && !td_ignore_mipmaps) {
       _texfilter_state = 1;  // tmipmap
     }
   }
