@@ -106,7 +106,7 @@ class TaskProfiler:
         
     @staticmethod
     def GetDefaultSpikeThreshold():
-        return config.GetFloat('profile-task-spike-threshold', 10.)
+        return config.GetFloat('profile-task-spike-threshold', 5.)
 
     @staticmethod
     def SetSpikeThreshold(spikeThreshold):
