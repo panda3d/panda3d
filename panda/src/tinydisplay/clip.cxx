@@ -22,6 +22,8 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
                    + c->viewport.trans.v[1] );
   v->zp.z= (int) ( v->pc.v[2] * winv * c->viewport.scale.v[2] 
                    + c->viewport.trans.v[2] );
+  v->zp.z += (c->zbias << (ZB_Z_BITS - 8));
+
   /* color */
   v->zp.r=(int)(v->color.v[0] * (ZB_POINT_RED_MAX - ZB_POINT_RED_MIN) 
                 + ZB_POINT_RED_MIN);

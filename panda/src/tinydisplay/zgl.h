@@ -183,6 +183,7 @@ typedef struct GLContext {
 
   /* depth test */
   int depth_test;
+  int zbias;
   
   /* specular buffer. could probably be shared between contexts, 
     but that wouldn't be 100% thread safe */

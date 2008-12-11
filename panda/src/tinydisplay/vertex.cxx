@@ -9,7 +9,7 @@ void gl_eval_viewport(GLContext * c) {
   float xmin = v->xmin + v->xsize * s->left;
   float ysize = v->ysize * (s->top - s->bottom);
   float ymin = v->ymin + v->ysize * (1.0f - s->top);
-  float zsize = (1 << (ZB_Z_BITS + ZB_POINT_Z_FRAC_BITS));
+  float zsize = (float)(1 << (ZB_Z_BITS + ZB_POINT_Z_FRAC_BITS));
 
   v->trans.v[0] = ((xsize - 0.5f) / 2.0f) + xmin;
   v->trans.v[1] = ((ysize - 0.5f) / 2.0f) + ymin;

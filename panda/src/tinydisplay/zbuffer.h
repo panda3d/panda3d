@@ -8,9 +8,9 @@
 #include "zfeatures.h"
 #include "pbitops.h"
 
-typedef unsigned short ZPOINT;
-#define ZB_Z_BITS 16
-#define ZB_POINT_Z_FRAC_BITS 14
+typedef unsigned int ZPOINT;
+#define ZB_Z_BITS 20
+#define ZB_POINT_Z_FRAC_BITS 10  // These must add to < 32.
 
 /* The number of fractional bits below the S and T texture coords.
    The more we have, the more precise the texel calculation will be

@@ -23,6 +23,7 @@
 #include "directionalLight.h"
 #include "spotlight.h"
 #include "depthWriteAttrib.h"
+#include "depthOffsetAttrib.h"
 #include "colorWriteAttrib.h"
 #include "alphaTestAttrib.h"
 #include "depthTestAttrib.h"
@@ -98,8 +99,9 @@ reset() {
   _inv_state_mask.clear_bit(ColorAttrib::get_class_slot());
   _inv_state_mask.clear_bit(ColorScaleAttrib::get_class_slot());
   _inv_state_mask.clear_bit(CullFaceAttrib::get_class_slot());
-  _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(DepthOffsetAttrib::get_class_slot());
   _inv_state_mask.clear_bit(RenderModeAttrib::get_class_slot());
+  _inv_state_mask.clear_bit(RescaleNormalAttrib::get_class_slot());
   _inv_state_mask.clear_bit(TextureAttrib::get_class_slot());
   _inv_state_mask.clear_bit(MaterialAttrib::get_class_slot());
   _inv_state_mask.clear_bit(LightAttrib::get_class_slot());
@@ -1464,6 +1466,14 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(cull_face_slot);
   }
 
+  int depth_offset_slot = DepthOffsetAttrib::get_class_slot();
+  if (_target_rs->get_attrib(depth_offset_slot) != _state_rs->get_attrib(depth_offset_slot) ||
+      !_state_mask.get_bit(depth_offset_slot)) {
+    //PStatTimer timer(_draw_set_state_depth_offset_pcollector);
+    do_issue_depth_offset();
+    _state_mask.set_bit(depth_offset_slot);
+  }
+
   int rescale_normal_slot = RescaleNormalAttrib::get_class_slot();
   if (_target_rs->get_attrib(rescale_normal_slot) != _state_rs->get_attrib(rescale_normal_slot) ||
       !_state_mask.get_bit(rescale_normal_slot)) {
@@ -2006,6 +2016,18 @@ do_issue_rescale_normal() {
     tinydisplay_cat.error()
       << "Unknown rescale_normal mode " << (int)mode << endl;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::do_issue_depth_offset
+//       Access: Protected
+//  Description:
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+do_issue_depth_offset() {
+  const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot()));
+  int offset = target_depth_offset->get_offset();
+  _c->zbias = offset;
 }
 
 ////////////////////////////////////////////////////////////////////

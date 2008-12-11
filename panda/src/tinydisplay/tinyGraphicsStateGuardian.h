@@ -99,6 +99,7 @@ private:
   void do_issue_render_mode();
   void do_issue_cull_face();
   void do_issue_rescale_normal();
+  void do_issue_depth_offset();
   void do_issue_material();
   void do_issue_texture();
   void do_issue_scissor();
