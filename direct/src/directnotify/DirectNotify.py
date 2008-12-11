@@ -51,9 +51,6 @@ class DirectNotify:
         if (not self.__categories.has_key(categoryName)):
             self.__categories[categoryName] = Notifier.Notifier(categoryName, logger)
             self.setDconfigLevel(categoryName)
-        else:
-            print "Warning: DirectNotify: category '%s' already exists" % \
-                  (categoryName)
         return (self.getCategory(categoryName))
 
     def setDconfigLevel(self, categoryName):
