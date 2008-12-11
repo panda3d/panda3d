@@ -679,7 +679,6 @@ def CompileLink(dll, obj, opts):
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
         cmd = cmd + " -lpthread -ldl"
         if (sys.platform == "darwin"):
-            if (PkgSkip("PYTHON")==0): cmd = cmd + " -framework Python"
             cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch ppc -arch i386"
         
         oscmd(cmd)
@@ -1050,11 +1049,6 @@ if (sys.platform != "win32"):
     confautoprc = confautoprc.replace("aux-display pandadx9","")
     confautoprc = confautoprc.replace("aux-display pandadx8","")
     confautoprc = confautoprc.replace("aux-display pandadx7","")
-
-if (sys.platform != "win32" and sys.platform != "darwin"):
-    # OpenAL is not yet reliable on Linux.
-    confautoprc = confautoprc.replace("p3openal","p3fmod")
-    confautoprc = confautoprc.replace("OpenAL","FMOD")
 
 ConditionalWriteFile("built/etc/Config.prc", configprc)
 ConditionalWriteFile("built/etc/Confauto.prc", confautoprc)
@@ -3727,7 +3721,7 @@ def MakeInstallerOSX():
       for fn in os.listdir(bindir):
           if os.path.isfile(bindir + fn):
               oscmd("otool -L %s%s | grep built/lib/ > built/tmp/otool-libs.txt" % (bindir, fn), True)
-              for line in open(libdir, "r"):
+              for line in open("built/tmp/otool-libs.txt", "r"):
                   if len(line.strip()) > 0:
                       libname = line.strip().split("built/lib/")[1].split(" ")[0]
                       oscmd("install_name_tool -change built/lib/%s %s %s%s" % (libname, libname, bindir, fn), True)
@@ -3735,7 +3729,7 @@ def MakeInstallerOSX():
           if os.path.isfile(libdir + fn):
               oscmd("install_name_tool -id %s %s%s" % (fn, libdir, fn), True)
               oscmd("otool -L %s%s | grep built/lib/ > built/tmp/otool-libs.txt" % (libdir, fn), True)
-              for line in open(libdir, "r"):
+              for line in open("built/tmp/otool-libs.txt", "r"):
                   if len(line.strip()) > 0:
                       libname = line.strip().split("built/lib/")[1].split(" ")[0]
                       oscmd("install_name_tool -change built/lib/%s %s %s%s" % (libname, libname, libdir, fn), True)
