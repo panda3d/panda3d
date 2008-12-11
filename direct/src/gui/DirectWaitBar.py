@@ -57,12 +57,17 @@ class DirectWaitBar(DirectFrame):
         DirectFrame.destroy(self)
 
     def setRange(self):
+        """Updates the bar range which you can set using bar['range'].
+        This is the value at which the WaitBar indicates 100%."""
         self.guiItem.setRange(self['range'])
 
     def setValue(self):
+        """Updates the bar value which you can set using bar['value'].
+        The value should range between 0 and bar['range']."""
         self.guiItem.setValue(self['value'])
 
     def getPercent(self):
+        """Returns the percentage complete."""
         return self.guiItem.getPercent()
 
     def updateBarStyle(self):
@@ -70,19 +75,23 @@ class DirectWaitBar(DirectFrame):
             self.guiItem.setBarStyle(self.barStyle)
 
     def setBarRelief(self):
+        """Updates the bar relief, which you can set using bar['barRelief']."""
         self.barStyle.setType(self['barRelief'])
         self.updateBarStyle()
 
     def setBarBorderWidth(self):
+        """Updates the bar's border width, which you can set using bar['barBorderWidth']."""
         self.barStyle.setWidth(*self['barBorderWidth'])
         self.updateBarStyle()
 
     def setBarColor(self):
+        """Updates the bar color, which you can set using bar['barColor']."""
         color = self['barColor']
         self.barStyle.setColor(color[0], color[1], color[2], color[3])
         self.updateBarStyle()
 
     def setBarTexture(self):
+        """Updates the bar texture, which you can set using bar['barTexture']."""
         # this must be a single texture (or a string).
         texture = self['barTexture']
         if isinstance(texture, types.StringTypes):
@@ -94,6 +103,7 @@ class DirectWaitBar(DirectFrame):
         self.updateBarStyle()
 
     def update(self, value):
+        """Updates the bar with the given value and renders a frame."""
         self['value'] = value
 
         # Render a frame out-of-sync with the igLoop to update the
@@ -101,9 +111,8 @@ class DirectWaitBar(DirectFrame):
         # even though we are not normally rendering frames.
         base.graphicsEngine.renderFrame()
 
-    def finish(self):
-        # Fill the bar in N frames
-        N = 10 # take 10 frames
+    def finish(self, N = 10):
+        """Fill the bar in N frames. This call is blocking."""
         remaining = self['range'] - self['value']
         if remaining:
             step = max(1, int(remaining / N))
