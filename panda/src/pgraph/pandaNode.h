@@ -325,7 +325,7 @@ protected:
                                Thread *current_thread);
 
   void set_cull_callback();
-
+  void disable_cull_callback();
 public:
   virtual void r_prepare_scene(const RenderState *state,
                                PreparedGraphicsObjects *prepared_objects,

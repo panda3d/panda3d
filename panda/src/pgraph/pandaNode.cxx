@@ -2836,6 +2836,21 @@ set_cull_callback() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::disable_cull_callback
+//       Access: Protected
+//  Description: disables the call back
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+disable_cull_callback() {
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    cdata->set_fancy_bit(FB_cull_callback, false);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::stage_remove_child
 //       Access: Private
 //  Description: The private implementation of remove_child(), for a
