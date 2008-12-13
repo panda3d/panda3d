@@ -491,6 +491,23 @@ void TinyGraphicsStateGuardian::
 end_frame(Thread *current_thread) {
   GraphicsStateGuardian::end_frame(current_thread);
 
+#ifndef NDEBUG
+  static ConfigVariableBool td_show_zbuffer
+    ("td-show-zbuffer", false,
+     PRC_DESC("Set this true to draw the ZBuffer instead of the visible buffer, when rendering with tinydisplay.  This is useful to aid debugging the ZBuffer"));
+  if (td_show_zbuffer) {
+    PIXEL *tp = _current_frame_buffer->pbuf;
+    ZPOINT *tz = _current_frame_buffer->zbuf;
+    for (int yi = 0; yi < _current_frame_buffer->ysize; ++yi) {
+      for (int xi = 0; xi < _current_frame_buffer->xsize; ++xi) {
+        (*tp) = (int)(*tz);
+        ++tz;
+        ++tp;
+      }
+    }
+  }
+#endif // NDEBUG
+
 #ifdef DO_PSTATS
   // Flush any PCollectors specific to this kind of GSG.
   _vertices_immediate_pcollector.flush_level();

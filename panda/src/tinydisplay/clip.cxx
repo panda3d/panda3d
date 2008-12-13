@@ -1,4 +1,5 @@
 #include "zgl.h"
+#include <limits.h>
 
 /* fill triangle profile */
 /* #define PROFILE */
@@ -22,7 +23,16 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
                    + c->viewport.trans.v[1] );
   v->zp.z= (int) ( v->pc.v[2] * winv * c->viewport.scale.v[2] 
                    + c->viewport.trans.v[2] );
-  v->zp.z += (c->zbias << (ZB_Z_BITS - 8));
+
+  // Add the z-bias, if any.  Be careful not to overflow the int.
+  int z = v->zp.z + (c->zbias << (ZB_POINT_Z_FRAC_BITS + 4));
+  if (z < v->zp.z && c->zbias > 0) {
+    v->zp.z = INT_MAX;
+  } else if (z > v->zp.z && c->zbias < 0) {
+    v->zp.z = -INT_MAX;
+  } else {
+    v->zp.z = z;
+  }
 
   /* color */
   v->zp.r=(int)(v->color.v[0] * (ZB_POINT_RED_MAX - ZB_POINT_RED_MIN) 
