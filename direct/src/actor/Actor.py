@@ -196,6 +196,8 @@ class Actor(DirectObject, NodePath):
         self.__subpartsComplete = False
 
         self.__LODNode = None
+        self.__LODAnimation = None
+        self.__LODCenter = Point3(0, 0, 0)
         self.switches = None
 
         if (other == None):
@@ -723,8 +725,60 @@ class Actor(DirectObject, NodePath):
         return self.__hasLOD
 
     def setCenter(self, center):
-        if center != None:
-            self.__LODNode.node().setCenter(center)
+        if center == None:
+            center = Point3(0, 0, 0)
+        self.__LODCenter = center
+        if self.__LODNode:
+            self.__LODNode.node().setCenter(self.__LODCenter)
+        if self.__LODAnimation:
+            self.setLODAnimation(*self.__LODAnimation)
+
+    def setLODAnimation(self, farDistance, nearDistance, delayFactor):
+        """ Activates a special mode in which the Actor animates less
+        frequently as it gets further from the camera.  This is
+        intended as a simple optimization to minimize the effort of
+        computing animation for lots of characters that may not
+        necessarily be very important to animate every frame.
+
+        If the character is closer to the camera than near_distance,
+        then it is animated its normal rate, every frame.  If the
+        character is exactly far_distance away, it is animated only
+        every delay_factor seconds (which should be a number greater
+        than 0).  If the character is between near_distance and
+        far_distance, its animation rate is linearly interpolated
+        according to its distance between the two.  The interpolation
+        function continues beyond far_distance, so that the character
+        is animated increasingly less frequently as it gets farther
+        away. """
+
+        self.__LODAnimation = (farDistance, nearDistance, delayFactor)
+
+        # Temporary hasattr for old Panda.
+        if not hasattr(Character, 'setLodAnimation'):
+            return
+        
+        for lodData in self.__partBundleDict.values():
+            for partData in lodData.values():
+                char = partData.partBundleNP
+                char.node().setLodAnimation(self.__LODCenter, farDistance, nearDistance, delayFactor)
+
+    def clearLODAnimation(self):
+        """ Description: Undoes the effect of a recent call to
+        set_lod_animation().  Henceforth, the character will animate
+        every frame, regardless of its distance from the camera.
+        """
+
+        self.__LODAnimation = None
+
+        # Temporary hasattr for old Panda.
+        if not hasattr(Character, 'setLodAnimation'):
+            return
+
+        for lodData in self.__partBundleDict.values():
+            for partData in lodData.values():
+                char = partData.partBundleNP
+                char.node().clearLodAnimation()
+
 
     def update(self, lod=0, partName=None, lodName=None, force=False):
         """ Updates all of the Actor's joints in the indicated LOD.

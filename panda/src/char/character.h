@@ -66,6 +66,11 @@ PUBLISHED:
   void merge_bundles(PartBundleHandle *old_bundle_handle, 
                      PartBundleHandle *other_bundle_handle);
 
+  void set_lod_animation(const LPoint3f &center, 
+                         float far_distance, float near_distance,
+                         float delay_factor);
+  void clear_lod_animation();
+
   CharacterJoint *find_joint(const string &name) const;
   CharacterSlider *find_slider(const string &name) const;
 
@@ -81,9 +86,11 @@ protected:
                                Thread *current_thread);
   virtual void update_bundle(PartBundleHandle *old_bundle_handle, 
                              PartBundle *new_bundle);
+  CPT(TransformState) get_rel_transform(CullTraverser *trav, CullTraverserData &data);
 
 private:
   void do_update();
+  void set_lod_current_delay(double delay);
 
   typedef pmap<const PandaNode *, PandaNode *> NodeMap;
   typedef pmap<const PartGroup *, PartGroup *> JointMap;
@@ -128,6 +135,15 @@ private:
   //Parts _parts;
 
   double _last_auto_update;
+
+  int _view_frame;
+  double _view_distance2;
+
+  LPoint3f _lod_center;
+  float _lod_far_distance;
+  float _lod_near_distance;
+  float _lod_delay_factor;
+  bool _do_lod_animation;
 
   // Statistics
   PStatCollector _joints_pcollector;

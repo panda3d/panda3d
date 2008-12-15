@@ -248,3 +248,17 @@ get_control_effect(AnimControl *control) const {
   CDReader cdata(_cycler);
   return do_get_control_effect(control, cdata);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::set_update_delay
+//       Access: Public
+//  Description: Specifies the minimum amount of time, in seconds,
+//               that should elapse between any two consecutive
+//               updates.  This is normally used by
+//               Character::set_lod_animation(), and should not be
+//               called directly.
+////////////////////////////////////////////////////////////////////
+INLINE void PartBundle::
+set_update_delay(double delay) {
+  _update_delay = delay;
+}

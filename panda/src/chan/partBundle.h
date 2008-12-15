@@ -147,6 +147,7 @@ public:
   // interface; they're just public so we don't have to declare a
   // bunch of friends.
   virtual void control_activated(AnimControl *control);
+  INLINE void set_update_delay(double delay);
 
   bool do_bind_anim(AnimControl *control, AnimBundle *anim,
                     int hierarchy_match_flags, const PartSubset &subset);
@@ -171,6 +172,8 @@ private:
   typedef pmap<WCPT(TransformState), WPT(PartBundle) > AppliedTransforms;
   AppliedTransforms _applied_transforms;
 
+  double _update_delay;
+
   // This is the data that must be cycled between pipeline stages.
   class CData : public CycleData {
   public:
@@ -192,6 +195,7 @@ private:
     ChannelBlend _blend;
     float _net_blend;
     bool _anim_changed;
+    double _last_update;
   };
 
   PipelineCycler<CData> _cycler;

@@ -25,6 +25,9 @@
 #include "animControl.h"
 #include "clockObject.h"
 #include "pStatTimer.h"
+#include "camera.h"
+#include "cullTraverser.h"
+#include "cullTraverserData.h"
 
 TypeHandle Character::_type_handle;
 
@@ -38,6 +41,11 @@ PStatCollector Character::_animation_pcollector("*:Animation");
 Character::
 Character(const Character &copy, bool copy_bundles) :
   PartBundleNode(copy),
+  _lod_center(copy._lod_center),
+  _lod_far_distance(copy._lod_far_distance),
+  _lod_near_distance(copy._lod_near_distance),
+  _lod_delay_factor(copy._lod_delay_factor),
+  _do_lod_animation(copy._do_lod_animation),
   _joints_pcollector(copy._joints_pcollector),
   _skinning_pcollector(copy._skinning_pcollector)
 {
@@ -60,6 +68,8 @@ Character(const Character &copy, bool copy_bundles) :
     }
   }    
   _last_auto_update = -1.0;
+  _view_frame = -1;
+  _view_distance2 = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,6 +84,10 @@ Character(const string &name) :
   _skinning_pcollector(PStatCollector(_animation_pcollector, name), "Vertices")
 {
   set_cull_callback();
+  clear_lod_animation();
+  _last_auto_update = -1.0;
+  _view_frame = -1;
+  _view_distance2 = 0.0f;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,12 +188,42 @@ combine_with(PandaNode *other) {
 //               visible, or false if it should be culled.
 ////////////////////////////////////////////////////////////////////
 bool Character::
-cull_callback(CullTraverser *, CullTraverserData &) {
+cull_callback(CullTraverser *trav, CullTraverserData &data) {
   // For now, we update the character during the cull traversal; this
   // prevents us from needlessly updating characters that aren't in
   // the view frustum.  We may need a better way to do this
   // optimization later, to handle characters that might animate
   // themselves in front of the view frustum.
+
+  if (_do_lod_animation) {
+    int this_frame = ClockObject::get_global_clock()->get_frame_count();
+
+    CPT(TransformState) rel_transform = get_rel_transform(trav, data);
+    LPoint3f center = _lod_center * rel_transform->get_mat();
+    float dist2 = center.dot(center);
+
+    if (this_frame != _view_frame || dist2 < _view_distance2) {
+      _view_frame = this_frame;
+      _view_distance2 = dist2;
+
+      // Now compute the lod delay.
+      float dist = sqrt(dist2);
+      double delay = 0.0;
+      if (dist > _lod_near_distance) {
+        delay = _lod_delay_factor * (dist - _lod_near_distance) / (_lod_far_distance - _lod_near_distance);
+        nassertr(delay > 0.0, false);
+      }
+      set_lod_current_delay(delay);
+
+      if (char_cat.is_spam()) {
+        char_cat.spam() 
+          << "Distance to " << NodePath::any_path(this) << " in frame "
+          << this_frame << " is " << dist << ", computed delay is " << delay
+          << "\n";
+      }
+    }
+  }
+
   update();
   return true;
 }
@@ -289,6 +333,71 @@ merge_bundles(PartBundleHandle *old_bundle_handle,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Character::set_lod_animation
+//       Access: Published
+//  Description: Activates a special mode in which the character
+//               animates less frequently as it gets further from the
+//               camera.  This is intended as a simple optimization to
+//               minimize the effort of computing animation for lots
+//               of characters that may not necessarily be very
+//               important to animate every frame.
+//
+//               If the character is closer to the camera than
+//               near_distance, then it is animated its normal rate,
+//               every frame.  If the character is exactly
+//               far_distance away, it is animated only every
+//               delay_factor seconds (which should be a number
+//               greater than 0).  If the character is between
+//               near_distance and far_distance, its animation rate is
+//               linearly interpolated according to its distance
+//               between the two.  The interpolation function
+//               continues beyond far_distance, so that the character
+//               is animated increasingly less frequently as it gets
+//               farther away.
+//
+//               The distance calculations are made from center, which
+//               is a fixed point relative to the character node, to
+//               the camera's lod center or cull center node (or to
+//               the camera node itself).
+//
+//               If multiple cameras are viewing the character in any
+//               given frame, the closest one counts.
+////////////////////////////////////////////////////////////////////
+void Character::
+set_lod_animation(const LPoint3f &center,
+                  float far_distance, float near_distance,
+                  float delay_factor) {
+  nassertv(far_distance >= near_distance);
+  nassertv(delay_factor >= 0.0f);
+  _lod_center = center;
+  _lod_far_distance = far_distance;
+  _lod_near_distance = near_distance;
+  _lod_delay_factor = delay_factor;
+  _do_lod_animation = (_lod_far_distance > _lod_near_distance && _lod_delay_factor > 0.0);
+  if (!_do_lod_animation) {
+    set_lod_current_delay(0.0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::clear_lod_animation
+//       Access: Published
+//  Description: Undoes the effect of a recent call to
+//               set_lod_animation().  Henceforth, the character will
+//               animate every frame, regardless of its distance from
+//               the camera.
+////////////////////////////////////////////////////////////////////
+void Character::
+clear_lod_animation() {
+  _lod_center = LPoint3f::zero();
+  _lod_far_distance = 0.0f;
+  _lod_near_distance = 0.0f;
+  _lod_delay_factor = 0.0f;
+  _do_lod_animation = false;
+  set_lod_current_delay(0.0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Character::find_joint
 //       Access: Published
 //  Description: Returns a pointer to the joint with the given name,
@@ -390,13 +499,13 @@ update() {
   if (now != _last_auto_update) {
     _last_auto_update = now;
 
-    PStatTimer timer(_joints_pcollector);
     if (char_cat.is_spam()) {
       char_cat.spam() 
         << "Animating " << NodePath::any_path(this)
         << " at time " << now << "\n";
     }
     
+    PStatTimer timer(_joints_pcollector);
     do_update();
   }
 }
@@ -496,6 +605,37 @@ update_bundle(PartBundleHandle *old_bundle_handle, PartBundle *new_bundle) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Character::get_rel_transform
+//       Access: Protected
+//  Description: Returns the relative transform to convert from the
+//               LODNode space to the camera space.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) Character::
+get_rel_transform(CullTraverser *trav, CullTraverserData &data) {
+  // Get a pointer to the camera node.
+  Camera *camera = trav->get_scene()->get_camera_node();
+  
+  // Get the camera space transform.
+  CPT(TransformState) rel_transform;
+
+  NodePath lod_center = camera->get_lod_center();
+  if (!lod_center.is_empty()) {
+    rel_transform = 
+      lod_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
+  } else {
+    NodePath cull_center = camera->get_cull_center();
+    if (!cull_center.is_empty()) {
+      rel_transform = 
+        cull_center.get_net_transform()->invert_compose(data.get_net_transform(trav));
+    } else {
+      rel_transform = data.get_modelview_transform(trav);
+    }
+  }
+
+  return rel_transform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Character::do_update
 //       Access: Private
 //  Description: The actual implementation of update().  Assumes the
@@ -514,6 +654,20 @@ do_update() {
     for (int i = 0; i < num_bundles; ++i) {
       get_bundle(i)->update();
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Character::set_lod_current_delay
+//       Access: Private
+//  Description: Changes the amount of delay we should impose due to
+//               the LOD animation setting.
+////////////////////////////////////////////////////////////////////
+void Character::
+set_lod_current_delay(double delay) {
+  int num_bundles = get_num_bundles();
+  for (int i = 0; i < num_bundles; ++i) {
+    get_bundle(i)->set_update_delay(delay);
   }
 }
 

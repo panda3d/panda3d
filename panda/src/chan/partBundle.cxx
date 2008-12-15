@@ -54,6 +54,7 @@ PartBundle(const PartBundle &copy) :
   PartGroup(copy)
 {
   _anim_preload = copy._anim_preload;
+  _update_delay = 0.0;
 
   CDWriter cdata(_cycler, true);
   CDReader cdata_from(copy._cycler);
@@ -74,6 +75,7 @@ PartBundle::
 PartBundle(const string &name) : 
   PartGroup(name)
 {
+  _update_delay = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -483,24 +485,27 @@ release_joint(const string &joint_name) {
 bool PartBundle::
 update() {
   Thread *current_thread = Thread::get_current_thread();
-  bool anim_changed;
-  bool frame_blend_flag;
   CDWriter cdata(_cycler, false, current_thread);
-  anim_changed = cdata->_anim_changed;
-  frame_blend_flag = cdata->_frame_blend_flag;
+  bool any_changed = false;
 
-  bool any_changed = do_update(this, cdata, NULL, false, anim_changed, 
-                               current_thread);
+  double now = ClockObject::get_global_clock()->get_frame_time(current_thread);
+  if (now > cdata->_last_update + _update_delay || cdata->_anim_changed) {
+    bool anim_changed = cdata->_anim_changed;
+    bool frame_blend_flag = cdata->_frame_blend_flag;
 
-  // Now update all the controls for next time.
-  //  CDWriter cdata(_cycler, false, current_thread);
-  ChannelBlend::const_iterator cbi;
-  for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
-    AnimControl *control = (*cbi).first;
-    control->mark_channels(frame_blend_flag);
+    any_changed = do_update(this, cdata, NULL, false, anim_changed, 
+                            current_thread);
+    
+    // Now update all the controls for next time.
+    ChannelBlend::const_iterator cbi;
+    for (cbi = cdata->_blend.begin(); cbi != cdata->_blend.end(); ++cbi) {
+      AnimControl *control = (*cbi).first;
+      control->mark_channels(frame_blend_flag);
+    }
+    
+    cdata->_anim_changed = false;
+    cdata->_last_update = now;
   }
-  
-  cdata->_anim_changed = false;
 
   return any_changed;
 }
@@ -860,6 +865,7 @@ CData() {
   _last_control_set = NULL;
   _net_blend = 0.0f;
   _anim_changed = false;
+  _last_update = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -876,7 +882,8 @@ CData(const PartBundle::CData &copy) :
   _last_control_set(copy._last_control_set),
   _blend(copy._blend),
   _net_blend(copy._net_blend),
-  _anim_changed(copy._anim_changed)
+  _anim_changed(copy._anim_changed),
+  _last_update(copy._last_update)
 {
   // Note that this copy constructor is not used by the PartBundle
   // copy constructor!  Any elements that must be copied between
