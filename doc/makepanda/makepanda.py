@@ -3587,6 +3587,7 @@ Release: 1
 License: Panda3D License
 Group: Development/Libraries
 BuildRoot: PANDASOURCE/linuxroot
+BuildRequires: PYTHONV
 %description
 The Panda3D engine.
 %post
@@ -3652,7 +3653,7 @@ def MakeInstallerLinux():
         oscmd("rpm -E '%_target_cpu' > built/tmp/architecture.txt")
         ARCH=ReadFile("built/tmp/architecture.txt").strip()
         pandasource = os.path.abspath(os.getcwd())
-        txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",pandasource)
+        txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",pandasource).replace("PYTHONV",PYTHONV)
         WriteFile("panda3d.spec", txt)
         oscmd("rpmbuild --define '_rpmdir "+pandasource+"' -bb panda3d.spec")
         oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
