@@ -402,6 +402,7 @@ r_apply_attribs(PandaNode *node, const AccumulatedAttribs &attribs,
     PandaNode *child_node = node->get_child(i);
     r_apply_attribs(child_node, next_attribs, attrib_types, transformer);
   }
+  Thread::consider_yield();
 }
 
 
