@@ -689,7 +689,7 @@ class Actor(DirectObject, NodePath):
         # add the switch distance info
         self.__LODNode.node().addSwitch(inDist, outDist)
         if center != None:
-            self.__LODNode.node().setCenter(center)
+            self.setCenter(center)
 
     def setLOD(self, lodName, inDist=0, outDist=0):
         """setLOD(self, string)
@@ -1862,7 +1862,7 @@ class Actor(DirectObject, NodePath):
         return controls
 
     def loadModel(self, modelPath, partName="modelRoot", lodName="lodRoot",
-                  copy = True, okMissing = None):
+                  copy = True, okMissing = None, autoBindAnims = True):
         """Actor model loader. Takes a model name (ie file path), a part
         name(defaults to "modelRoot") and an lod name(defaults to "lodRoot").
         """
@@ -1907,9 +1907,12 @@ class Actor(DirectObject, NodePath):
             # Maybe the model file also included some animations.  If
             # so, try to bind them immediately and put them into the
             # animControlDict.
-            acc = AnimControlCollection()
-            autoBind(model.node(), acc, ~0)
-            numAnims = acc.getNumAnims()
+            if autoBindAnims:
+                acc = AnimControlCollection()
+                autoBind(model.node(), acc, ~0)
+                numAnims = acc.getNumAnims()
+            else:
+                numAnims = 0
 
             # Now extract out the Character and integrate it with
             # the Actor.
