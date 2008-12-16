@@ -534,7 +534,7 @@ apply_texture_colors(Geom *geom, TextureStage *ts, Texture *tex,
     } else {
       // Create a color column where there wasn't one before.
       vdata = new GeomVertexData(*stc._vertex_data->set_color
-                                           (Colorf(1.0f, 1.0f, 1.0f, 1.0f), 1, Geom::NT_packed_dabc, Geom::C_color));
+                                 (Colorf(1.0f, 1.0f, 1.0f, 1.0f), 1, Geom::NT_packed_dabc, Geom::C_color));
       keep_vertex_color = false;
     }
     
