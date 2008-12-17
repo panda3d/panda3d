@@ -3573,10 +3573,10 @@ Section: libdevel
 Priority: optional
 Architecture: ARCH
 Essential: no
-Depends: PYTHONV
+Depends: PYTHONV, python-profiler (>= PV)
 Provides: panda3d
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
-Description: The panda3D free 3D engine
+Description: The Panda3D free 3D engine
 """
 
 INSTALLER_SPEC_FILE="""
@@ -3584,7 +3584,7 @@ Summary: Panda 3D Engine
 Name: panda3d
 Version: VERSION
 Release: 1
-License: Panda3D License
+License: BSD License
 Group: Development/Libraries
 BuildRoot: PANDASOURCE/linuxroot
 BuildRequires: PYTHONV
@@ -3661,7 +3661,7 @@ def MakeInstallerLinux():
     if (os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("dpkg --print-architecture > built/tmp/architecture.txt")
         ARCH=ReadFile("built/tmp/architecture.txt").strip()
-        txt = INSTALLER_DEB_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV).replace("ARCH",ARCH)
+        txt = INSTALLER_DEB_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV).replace("ARCH",ARCH).replace("PV",PYTHONV.replace("python", ""))
         oscmd("mkdir -p linuxroot/DEBIAN")
         oscmd("cd linuxroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
         oscmd("cd linuxroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
