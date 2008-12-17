@@ -36,7 +36,7 @@ class OnscreenText(DirectObject, NodePath):
                  font = None,
                  parent = None,
                  sort = 0,
-                 mayChange = 0):
+                 mayChange = True):
         """
         Make a text node from string, put it into the 2d sg and set it
         up with all the indicated parameters.
