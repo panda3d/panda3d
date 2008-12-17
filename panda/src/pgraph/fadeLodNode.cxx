@@ -114,7 +114,7 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // This is the first time we have rendered this instance of this
     // LOD node in a while.
     ldata = new FadeLODNodeData;
-    ldata->_fade_mode = false;
+    ldata->_fade_mode = FadeLODNodeData::FM_solid;
     ldata->_fade_out = -1;
     ldata->_fade_in = compute_child(trav, data);
     camera->set_aux_scene_data(this_np, ldata);
@@ -123,13 +123,22 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
     // We had rendered this LOD node last frame (or not too long ago,
     // at least).
 
-    if (!ldata->_fade_mode) {
+    if (ldata->_fade_mode == FadeLODNodeData::FM_solid) {
       // We were drawing just one solid child last frame; check whether
       // it's time to begin a transition.
       int index = compute_child(trav, data);
       if (index != ldata->_fade_in) {
         // Start a transition.
-        ldata->_fade_mode = true;
+        if (index >= 0 && ldata->_fade_in >= 0 &&
+            get_out(index) > get_out(ldata->_fade_in)) {
+          // We are fading from a more-detailed model to a
+          // less-detailed model.
+          ldata->_fade_mode = FadeLODNodeData::FM_less_detail;
+        } else {
+          // We are fading from a less-detailed model to a
+          // more-detailed model.
+          ldata->_fade_mode = FadeLODNodeData::FM_more_detail;
+        }
         
         // We start the fade as of the last frame we actually rendered;
         // that way, if the object happened to be offscreen for a large
@@ -141,74 +150,90 @@ cull_callback(CullTraverser *trav, CullTraverserData &data) {
       }
     }
 
-    if (ldata->_fade_mode) {
+    if (ldata->_fade_mode != FadeLODNodeData::FM_solid) {
       // Play the transition.
 
       float elapsed = now - ldata->_fade_start;
-      float half_fade_time = _fade_time * 0.5f;
-
-      if (elapsed < half_fade_time) { 
-        // FIRST HALF OF FADE
-        // Fade the new LOD in with z writing off
-        // Keep drawing the old LOD opaque with z writing on
-        if (ldata->_fade_out >= 0 && ldata->_fade_out < get_num_children()) {
-          PandaNode *child = get_child(ldata->_fade_out);
-          if (child != (PandaNode *)NULL) {
-            CullTraverserData next_data_out(data, child);
-            next_data_out._state = 
-              next_data_out._state->compose(get_fade_1_old_state());
-            trav->traverse(next_data_out);
-          }
-        }
         
-        if (ldata->_fade_in >= 0 && ldata->_fade_in < get_num_children()) {
-          PandaNode *child = get_child(ldata->_fade_in);
-          if (child != (PandaNode *)NULL) {
-            CullTraverserData next_data_in(data, child);
-            
-            float in_alpha = elapsed / half_fade_time;
-            next_data_in._state = 
-              next_data_in._state->compose(get_fade_1_new_state(in_alpha));
-            
-            trav->traverse(next_data_in);
-          }
-        }
-        
-      } else if (elapsed < _fade_time) {
-        // SECOND HALF OF FADE:
-        // Fade out the old LOD with z write off and 
-        // draw the opaque new LOD with z write on
-        if (ldata->_fade_in >= 0 && ldata->_fade_in < get_num_children()) {
-          PandaNode *child = get_child(ldata->_fade_in);
-          if (child != (PandaNode *)NULL) {
-            CullTraverserData next_data_in(data, child);
-            next_data_in._state = 
-              next_data_in._state->compose(get_fade_2_new_state());
-            trav->traverse(next_data_in);
-          }
-        }
-        
-        if (ldata->_fade_out >= 0 && ldata->_fade_out < get_num_children()) {
-          PandaNode *child = get_child(ldata->_fade_out);
-          if (child != (PandaNode *)NULL) {
-            CullTraverserData next_data_out(data, child);
-          
-            float out_alpha = 1.0f - (elapsed - half_fade_time) / half_fade_time;  
-            next_data_out._state = 
-              next_data_out._state->compose(get_fade_2_old_state(out_alpha));
-            
-            trav->traverse(next_data_out);
-          }
-        }
-        
-      } else {
+      if (elapsed >= _fade_time) {
         // Transition complete.
-        ldata->_fade_mode = false;
+        ldata->_fade_mode = FadeLODNodeData::FM_solid;
+
+      } else {
+        float half_fade_time = _fade_time * 0.5f;
+
+        int in_child = ldata->_fade_in;
+        int out_child = ldata->_fade_out;
+        
+        if (ldata->_fade_mode == FadeLODNodeData::FM_less_detail) {
+          // If we're fading from a more-detailed model to a
+          // less-detailed model, reverse the fade effect for best
+          // visual quality.
+          elapsed = _fade_time - elapsed;
+          int t = in_child;
+          in_child = out_child;
+          out_child = t;
+        }
+
+        nassertr(elapsed >= 0.0f && elapsed <= _fade_time, false);
+        
+        if (elapsed < half_fade_time) {
+          // FIRST HALF OF FADE
+          // Fade the new LOD in with z writing off
+          // Keep drawing the old LOD opaque with z writing on
+          if (out_child >= 0 && out_child < get_num_children()) {
+            PandaNode *child = get_child(out_child);
+            if (child != (PandaNode *)NULL) {
+              CullTraverserData next_data_out(data, child);
+              next_data_out._state = 
+                next_data_out._state->compose(get_fade_1_old_state());
+              trav->traverse(next_data_out);
+            }
+          }
+          
+          if (in_child >= 0 && in_child < get_num_children()) {
+            PandaNode *child = get_child(in_child);
+            if (child != (PandaNode *)NULL) {
+              CullTraverserData next_data_in(data, child);
+              
+              float in_alpha = elapsed / half_fade_time;
+              next_data_in._state = 
+                next_data_in._state->compose(get_fade_1_new_state(in_alpha));
+              trav->traverse(next_data_in);
+            }
+          }
+          
+        } else {
+          // SECOND HALF OF FADE:
+          // Fade out the old LOD with z write off and 
+          // draw the opaque new LOD with z write on
+          if (in_child >= 0 && in_child < get_num_children()) {
+            PandaNode *child = get_child(in_child);
+            if (child != (PandaNode *)NULL) {
+              CullTraverserData next_data_in(data, child);
+              next_data_in._state = 
+                next_data_in._state->compose(get_fade_2_new_state());
+              trav->traverse(next_data_in);
+            }
+          }
+          
+          if (out_child >= 0 && out_child < get_num_children()) {
+            PandaNode *child = get_child(out_child);
+            if (child != (PandaNode *)NULL) {
+              CullTraverserData next_data_out(data, child);
+              
+              float out_alpha = 1.0f - (elapsed - half_fade_time) / half_fade_time;  
+              next_data_out._state = 
+                next_data_out._state->compose(get_fade_2_old_state(out_alpha));
+              trav->traverse(next_data_out);
+            }
+          }
+        }
       }
     }
   }
 
-  if (!ldata->_fade_mode) {
+  if (ldata->_fade_mode == FadeLODNodeData::FM_solid) {
     // This is the normal case: we're not in the middle of a
     // transition; we're just drawing one child of the LOD.
     int index = ldata->_fade_in;
@@ -261,7 +286,13 @@ set_fade_bin(const string &name, int draw_order) {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) FadeLODNode::
 get_fade_1_old_state() {
-  return RenderState::make_empty();
+  static CPT(RenderState) state = (const RenderState *)NULL;
+  if (state == (const RenderState *)NULL) {
+    state = RenderState::make
+      (DepthOffsetAttrib::make());
+  }
+
+  return state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -275,7 +306,6 @@ get_fade_1_new_state(float in_alpha) {
   if (_fade_1_new_state == (const RenderState *)NULL) {
     _fade_1_new_state = RenderState::make
       (TransparencyAttrib::make(TransparencyAttrib::M_alpha),
-       DepthWriteAttrib::make(DepthWriteAttrib::M_off),
        CullBinAttrib::make(_fade_bin_name, _fade_bin_draw_order),
        DepthOffsetAttrib::make());
   }

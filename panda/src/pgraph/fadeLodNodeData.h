@@ -26,7 +26,12 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH FadeLODNodeData : public AuxSceneData {
 public:
-  bool _fade_mode;
+  enum FadeMode {
+    FM_solid,
+    FM_more_detail,
+    FM_less_detail,
+  };
+  FadeMode _fade_mode;
   float _fade_start;
   int _fade_out;
   int _fade_in;
