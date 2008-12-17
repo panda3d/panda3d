@@ -266,8 +266,8 @@ class Messenger:
 
         self.lock.acquire()
         try:
+            foundWatch=0
             if __debug__:
-                foundWatch=0
                 if self.__isWatching:
                     for i in self.__watching.keys():
                         if str(event).find(i) >= 0:
