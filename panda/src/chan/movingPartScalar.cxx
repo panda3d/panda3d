@@ -115,7 +115,7 @@ get_blend_value(const PartBundle *root) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovingPartScalar::apply_freeze
+//     Function: MovingPartScalar::apply_freeze_scalar
 //       Access: Public, Virtual
 //  Description: Freezes this particular joint so that it will always
 //               hold the specified transform.  Returns true if this
@@ -124,8 +124,8 @@ get_blend_value(const PartBundle *root) {
 //               PartBundle::freeze_joint().
 ////////////////////////////////////////////////////////////////////
 bool MovingPartScalar::
-apply_freeze(const TransformState *transform) {
-  _forced_channel = new AnimChannelFixed<ACScalarSwitchType>(get_name(), transform->get_pos()[0]);
+apply_freeze_scalar(float value) {
+  _forced_channel = new AnimChannelFixed<ACScalarSwitchType>(get_name(), value);
   return true;
 }
 

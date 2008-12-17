@@ -77,7 +77,9 @@ PUBLISHED:
 
   PartGroup *find_child(const string &name) const;
 
-  virtual bool apply_freeze(const TransformState *transform);
+  bool apply_freeze(const TransformState *transform);
+  virtual bool apply_freeze_matrix(const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale);
+  virtual bool apply_freeze_scalar(float value);
   virtual bool apply_control(PandaNode *node);
   virtual bool clear_forced_channel();
   virtual AnimChannelBase *get_forced_channel() const;

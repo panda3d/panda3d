@@ -148,7 +148,7 @@ find_child(const string &name) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::apply_freeze
-//       Access: Published, Virtual
+//       Access: Published
 //  Description: Freezes this particular joint so that it will always
 //               hold the specified transform.  Returns true if this
 //               is a joint that can be so frozen, false otherwise.
@@ -159,8 +159,41 @@ find_child(const string &name) const {
 ////////////////////////////////////////////////////////////////////
 bool PartGroup::
 apply_freeze(const TransformState *transform) {
+  return apply_freeze_matrix(transform->get_pos(), transform->get_hpr(), transform->get_scale()) || apply_freeze_scalar(transform->get_pos()[0]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::apply_freeze_matrix
+//       Access: Published, Virtual
+//  Description: Freezes this particular joint so that it will always
+//               hold the specified transform.  Returns true if this
+//               is a joint that can be so frozen, false otherwise.
+//
+//               This is normally only called internally by
+//               PartBundle::freeze_joint(), but you may also call it
+//               directly.
+////////////////////////////////////////////////////////////////////
+bool PartGroup::
+apply_freeze_matrix(const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale) {
   return false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartGroup::apply_freeze_scalar
+//       Access: Published, Virtual
+//  Description: Freezes this particular joint so that it will always
+//               hold the specified transform.  Returns true if this
+//               is a joint that can be so frozen, false otherwise.
+//
+//               This is normally only called internally by
+//               PartBundle::freeze_joint(), but you may also call it
+//               directly.
+////////////////////////////////////////////////////////////////////
+bool PartGroup::
+apply_freeze_scalar(float value) {
+  return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PartGroup::apply_control

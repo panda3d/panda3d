@@ -42,7 +42,7 @@ public:
   virtual AnimChannelBase *make_initial_channel() const;
   virtual void get_blend_value(const PartBundle *root);
 
-  virtual bool apply_freeze(const TransformState *transform);
+  virtual bool apply_freeze_matrix(const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale);
   virtual bool apply_control(PandaNode *node);
 
 protected:

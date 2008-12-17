@@ -32,7 +32,7 @@ protected:
   AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy);
 
 public:
-  AnimChannelMatrixFixed(const string &name, const TransformState *transform);
+  AnimChannelMatrixFixed(const string &name, const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale);
 
   virtual bool has_changed(int last_frame, double last_frac, 
                            int this_frame, double this_frac);
@@ -47,7 +47,7 @@ public:
   virtual void output(ostream &out) const;
 
 private:
-  CPT(TransformState) _transform;
+  LVecBase3f _pos, _hpr, _scale;
 
 public:
   virtual TypeHandle get_type() const {

@@ -28,7 +28,9 @@ TypeHandle AnimChannelMatrixFixed::_type_handle;
 AnimChannelMatrixFixed::
 AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy) : 
   AnimChannel<ACMatrixSwitchType>(parent, copy),
-  _transform(copy._transform)
+  _pos(copy._pos),
+  _hpr(copy._hpr),
+  _scale(copy._scale)
 {
 }
 
@@ -38,9 +40,9 @@ AnimChannelMatrixFixed(AnimGroup *parent, const AnimChannelMatrixFixed &copy) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 AnimChannelMatrixFixed::
-AnimChannelMatrixFixed(const string &name, const TransformState *transform) :
+AnimChannelMatrixFixed(const string &name, const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale) :
   AnimChannel<ACMatrixSwitchType>(name),
-  _transform(transform)
+  _pos(pos), _hpr(hpr), _scale(scale)
 {
 }
 
@@ -62,7 +64,7 @@ has_changed(int, double, int, double) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_value(int, LMatrix4f &value) {
-  value = _transform->get_mat();
+  compose_matrix(value, _scale, LVecBase3f::zero(), _hpr, _pos);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -72,13 +74,9 @@ get_value(int, LMatrix4f &value) {
 //               without any scale or shear information.
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
-get_value_no_scale_shear(int frame, LMatrix4f &mat) {
-  if (_transform->has_scale() || _transform->has_shear()) {
-    compose_matrix(mat, LVecBase3f(1.0f, 1.0f, 1.0f),
-                   _transform->get_hpr(), _transform->get_pos());
-  } else {
-    mat = _transform->get_mat();
-  }
+get_value_no_scale_shear(int, LMatrix4f &mat) {
+  compose_matrix(mat, LVecBase3f(1.0f, 1.0f, 1.0f), LVecBase3f::zero(),
+                 _hpr, _pos);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -88,7 +86,7 @@ get_value_no_scale_shear(int frame, LMatrix4f &mat) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_scale(int, LVecBase3f &scale) {
-  scale = _transform->get_scale();
+  scale = _scale;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -100,7 +98,7 @@ get_scale(int, LVecBase3f &scale) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_hpr(int, LVecBase3f &hpr) {
-  hpr = _transform->get_hpr();
+  hpr = _hpr;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -112,7 +110,7 @@ get_hpr(int, LVecBase3f &hpr) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_quat(int, LQuaternionf &quat) {
-  quat = _transform->get_quat();
+  quat.set_hpr(_hpr);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,7 +122,7 @@ get_quat(int, LQuaternionf &quat) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_pos(int, LVecBase3f &pos) {
-  pos = _transform->get_pos();
+  pos = _pos;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -136,7 +134,7 @@ get_pos(int, LVecBase3f &pos) {
 ////////////////////////////////////////////////////////////////////
 void AnimChannelMatrixFixed::
 get_shear(int, LVecBase3f &shear) {
-  shear = _transform->get_shear();
+  shear = LVecBase3f::zero();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,5 +145,5 @@ get_shear(int, LVecBase3f &shear) {
 void AnimChannelMatrixFixed::
 output(ostream &out) const {
   AnimChannel<ACMatrixSwitchType>::output(out);
-  out << " = " << *_transform;
+  out << ": pos " << _pos << " hpr " << _hpr << " scale " << _scale;
 }

@@ -422,6 +422,58 @@ freeze_joint(const string &joint_name, const TransformState *transform) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::freeze_joint
+//       Access: Published
+//  Description: Specifies that the joint with the indicated name
+//               should be frozen with the specified transform.  It
+//               will henceforth always hold this fixed transform,
+//               regardless of any animations that may subsequently be
+//               bound to the joint.
+//
+//               Returns true if the joint is successfully frozen, or
+//               false if the named child is not a joint (or slider)
+//               or does not exist.
+////////////////////////////////////////////////////////////////////
+bool PartBundle::
+freeze_joint(const string &joint_name, const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale) {
+  PartGroup *child = find_child(joint_name);
+  if (child == (PartGroup *)NULL) {
+    return false;
+  }
+
+  CDWriter cdata(_cycler, false);
+  cdata->_anim_changed = true;
+
+  return child->apply_freeze_matrix(pos, hpr, scale);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PartBundle::freeze_joint
+//       Access: Published
+//  Description: Specifies that the joint with the indicated name
+//               should be frozen with the specified transform.  It
+//               will henceforth always hold this fixed transform,
+//               regardless of any animations that may subsequently be
+//               bound to the joint.
+//
+//               Returns true if the joint is successfully frozen, or
+//               false if the named child is not a joint (or slider)
+//               or does not exist.
+////////////////////////////////////////////////////////////////////
+bool PartBundle::
+freeze_joint(const string &joint_name, float value) {
+  PartGroup *child = find_child(joint_name);
+  if (child == (PartGroup *)NULL) {
+    return false;
+  }
+
+  CDWriter cdata(_cycler, false);
+  cdata->_anim_changed = true;
+
+  return child->apply_freeze_scalar(value);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PartBundle::control_joint
 //       Access: Published
 //  Description: Specifies that the joint with the indicated name

@@ -136,6 +136,8 @@ PUBLISHED:
   void wait_pending();
 
   bool freeze_joint(const string &joint_name, const TransformState *transform);
+  bool freeze_joint(const string &joint_name, const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale);
+  bool freeze_joint(const string &joint_name, float value);
   bool control_joint(const string &joint_name, PandaNode *node);
   bool release_joint(const string &joint_name);
 

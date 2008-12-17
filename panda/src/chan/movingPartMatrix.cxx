@@ -48,7 +48,9 @@ MovingPartMatrix::
 ////////////////////////////////////////////////////////////////////
 AnimChannelBase *MovingPartMatrix::
 make_initial_channel() const {
-  return new AnimChannelMatrixFixed(get_name(), TransformState::make_mat(_initial_value));
+  LVecBase3f pos, hpr, scale, shear;
+  decompose_matrix(_initial_value, pos, hpr, scale, shear);
+  return new AnimChannelMatrixFixed(get_name(), pos, hpr, scale);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -373,7 +375,7 @@ get_blend_value(const PartBundle *root) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovingPartMatrix::apply_freeze
+//     Function: MovingPartMatrix::apply_freeze_matrix
 //       Access: Public, Virtual
 //  Description: Freezes this particular joint so that it will always
 //               hold the specified transform.  Returns true if this
@@ -382,8 +384,8 @@ get_blend_value(const PartBundle *root) {
 //               PartBundle::freeze_joint().
 ////////////////////////////////////////////////////////////////////
 bool MovingPartMatrix::
-apply_freeze(const TransformState *transform) {
-  _forced_channel = new AnimChannelMatrixFixed(get_name(), transform);
+apply_freeze_matrix(const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale) {
+  _forced_channel = new AnimChannelMatrixFixed(get_name(), pos, hpr, scale);
   return true;
 }
 
