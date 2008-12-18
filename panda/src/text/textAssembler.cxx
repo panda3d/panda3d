@@ -1208,14 +1208,13 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
     _lr[1] = ypos - 0.2f * line_height;
 
     // Apply the requested horizontal alignment to the row.
-    //[fabius] added a different concept of text alignement based upon a boxed region where his width is defined by the wordwrap size with the upper left corner starting from 0,0,0
-    // if the wordwrap size is unspecified the alignement could eventually result wrong.
+    //[fabius] added a different concept of text alignment based upon a boxed region where his width is defined by the wordwrap size with the upper left corner starting from 0,0,0
+    // if the wordwrap size is unspecified the alignment could eventually result wrong.
     float xpos;
     switch (align) {
     case TextProperties::A_left:
-    case TextProperties::A_boxed_left:
       xpos = 0.0f;
-      _lr[0] = max(_lr[0], max(row_width, wordwrap));
+      _lr[0] = max(_lr[0], row_width);
       break;
 
     case TextProperties::A_right:
@@ -1227,6 +1226,11 @@ assemble_paragraph(TextAssembler::PlacedGlyphs &placed_glyphs) {
       xpos = -0.5f * row_width;
       _ul[0] = min(_ul[0], xpos);
       _lr[0] = max(_lr[0], -xpos);
+      break;
+
+    case TextProperties::A_boxed_left:
+      xpos = 0.0f;
+      _lr[0] = max(_lr[0], max(row_width, wordwrap));
       break;
 
     case TextProperties::A_boxed_right:
