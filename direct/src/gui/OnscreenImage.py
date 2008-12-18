@@ -141,7 +141,7 @@ class OnscreenImage(DirectObject, NodePath):
                 else:
                     setter(value)
             except AttributeError:
-                print 'OnscreenText.configure: invalid option:', option
+                print 'OnscreenImage.configure: invalid option:', option
 
     # Allow index style references
     def __setitem__(self, key, value):
