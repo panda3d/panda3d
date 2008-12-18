@@ -29,6 +29,7 @@
     odeContact.I odeContact.h \
     odeAMotorJoint.I odeAMotorJoint.h \
     odeBallJoint.I odeBallJoint.h \
+    odeContactCollection.I odeContactCollection.h \
     odeContactJoint.I odeContactJoint.h \
     odeFixedJoint.I odeFixedJoint.h \
     odeHingeJoint.I odeHingeJoint.h \
@@ -60,6 +61,7 @@
     odeSpace.cxx \
     odeGeom.cxx \
     odeSurfaceParameters.cxx \
+    odeContactCollection.cxx \
     odeContactGeom.cxx odeContact.cxx \
     odeAMotorJoint.cxx odeBallJoint.cxx \
     odeContactJoint.cxx odeFixedJoint.cxx \
@@ -87,6 +89,7 @@
     odeGeom.I odeGeom.h \
     odeSurfaceParameters.I odeSurfaceParameters.h \
     odeContactGeom.I odeContactGeom.h \
+    odeContactCollection.I odeContactCollection.h \
     odeContact.I odeContact.h \
     odeAMotorJoint.I odeAMotorJoint.h \
     odeBallJoint.I odeBallJoint.h \

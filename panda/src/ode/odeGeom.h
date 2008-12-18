@@ -70,6 +70,7 @@ PUBLISHED:
 
   //INLINE void set_data(void* data);
   INLINE void set_body(OdeBody &body);
+  INLINE bool has_body() const;
   INLINE OdeBody get_body() const;
   INLINE void set_position(dReal x, dReal y, dReal z);
   INLINE void set_position(const LVecBase3f &pos);

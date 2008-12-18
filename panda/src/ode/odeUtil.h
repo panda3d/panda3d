@@ -21,6 +21,7 @@
 
 #include "ode_includes.h"
 #include "odeJointCollection.h"
+#include "odeContactCollection.h"
 
 class OdeBody;
 class OdeJoint;
@@ -32,14 +33,16 @@ class OdeJoint;
 class EXPCL_PANDAODE OdeUtil {
 PUBLISHED:
   static OdeJoint get_connecting_joint(const OdeBody &body1,
-				       const OdeBody &body2);
+                                       const OdeBody &body2);
   static OdeJointCollection get_connecting_joint_list(const OdeBody &body1,
-						      const OdeBody &body2);
+                                                      const OdeBody &body2);
   static int are_connected(const OdeBody &body1,
                            const OdeBody &body2);
   static int are_connected_excluding(const OdeBody &body1,
-	                             const OdeBody &body2,
-	                             const int joint_type);
+                                     const OdeBody &body2,
+                                     const int joint_type);
+  static OdeContactCollection collide(const OdeGeom &geom1, const OdeGeom &geom2,
+                                      const short int max_contacts = 150);
 
   static dReal OC_infinity;  
 

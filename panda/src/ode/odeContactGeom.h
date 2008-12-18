@@ -29,9 +29,6 @@
 class EXPCL_PANDAODE OdeContactGeom : public TypedReferenceCount {
   friend class OdeContact;
 
-protected:
-  OdeContactGeom(const dContactGeom &copy);
-
 PUBLISHED:
   OdeContactGeom();
   OdeContactGeom(const OdeContactGeom &copy);
@@ -52,6 +49,7 @@ PUBLISHED:
   INLINE void set_g2(const OdeGeom &geom);
   
 public:
+  OdeContactGeom(const dContactGeom &copy);
   const dContactGeom* get_contact_geom_ptr() const;
 
 private:

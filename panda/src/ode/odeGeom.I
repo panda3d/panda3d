@@ -17,6 +17,11 @@ get_id() const {
   return _id;
 }
 
+INLINE bool OdeGeom::
+has_body() const {
+  return (dGeomGetBody(_id) != NULL);
+}
+
 INLINE OdeBody OdeGeom::
 get_body() const {
   return OdeBody(dGeomGetBody(_id));

@@ -44,10 +44,11 @@ PUBLISHED:
   INLINE void set_fdir1(const LVecBase3f &fdir1);
 
 public:
+  void operator = (const OdeContact &copy);
+  bool operator == (const OdeContact &other);
   const dContact* get_contact_ptr() const;
 
 private:
-  void operator = (const OdeContact &copy);
   dContact _contact;
 
 public:

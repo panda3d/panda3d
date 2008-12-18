@@ -36,8 +36,6 @@ class OdeTriMeshGeom;
 class OdeSimpleSpace;
 class OdeHashSpace;
 class OdeQuadTreeSpace;
-    
-
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeSpace
@@ -46,7 +44,6 @@ class OdeQuadTreeSpace;
 class EXPCL_PANDAODE OdeSpace : public TypedObject {
   friend class OdeGeom;
   static const int MAX_CONTACTS;
-  
 
 protected:
   OdeSpace(dSpaceID id);
@@ -81,7 +78,6 @@ PUBLISHED:
   OdeGeom get_geom(int i); // Not INLINE because of forward declaration
   //static int get_surface_type(OdeSpace * self, dGeomID o1);
   
-
   INLINE OdeSpace get_space() const;
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
@@ -91,10 +87,8 @@ PUBLISHED:
   OdeQuadTreeSpace convert_to_quad_tree_space() const;
   
   int auto_collide();
-  static void auto_callback(void*, dGeomID, dGeomID);
 #ifdef HAVE_PYTHON
   int collide(PyObject* arg, PyObject* near_callback);
-  static void near_callback(void*, dGeomID, dGeomID);
 #endif
   static double get_contact_data(int data_index);
   int get_contact_id(int data_index, int first = 0);
@@ -107,8 +101,12 @@ PUBLISHED:
   int get_collide_id(dGeomID o1);
   int get_collide_id(OdeGeom& geom);
 
-
-public: 
+public:
+  static void auto_callback(void*, dGeomID, dGeomID);
+#ifdef HAVE_PYTHON
+  static void near_callback(void*, dGeomID, dGeomID);
+#endif
+  
   INLINE dSpaceID get_id() const;
   static OdeWorld* _collide_world;
   static OdeSpace* _collide_space;
@@ -120,14 +118,11 @@ public:
 
   static double contact_data[192]; // 64 times three
   static int contact_ids[128]; // 64 times two
-  
 
 protected:
   dSpaceID _id;
   int _g; // REMOVE ME
   OdeWorld* my_world;
-
-
 
 public:
   static TypeHandle get_class_type() {

@@ -29,7 +29,8 @@ get_connecting_joint(const OdeBody &body1, const OdeBody &body2) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OdeUtil::get_connecting_joint_list
 //       Access: Public, Static
-//  Description: Returns a list of joints connecting the bodies.
+//  Description: Returns a collection of joints connecting the
+//               specified bodies.
 ////////////////////////////////////////////////////////////////////
 OdeJointCollection OdeUtil::
 get_connecting_joint_list(const OdeBody &body1, const OdeBody &body2) {
@@ -77,5 +78,27 @@ are_connected_excluding(const OdeBody &body1,
   return dAreConnectedExcluding(body1.get_id(),
         body2.get_id(),
         joint_type);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OdeUtil::collide
+//       Access: Public, Static
+//  Description: Given two geometry objects that potentially touch
+//               (geom1 and geom2), generate contact information
+//               for them. Returns a collection of OdeContacts.
+////////////////////////////////////////////////////////////////////
+OdeContactCollection OdeUtil::
+collide(const OdeGeom &geom1, const OdeGeom &geom2, const short int max_contacts) {
+  dContactGeom *contact_list = (dContactGeom *)PANDA_MALLOC_ARRAY(max_contacts * sizeof(dContactGeom));
+  int num_contacts = dCollide(geom1.get_id(), geom2.get_id(), max_contacts, contact_list, sizeof(contact_list));
+  OdeContactCollection contacts;
+  for (int i = 0; i < num_contacts; i++) {
+    PT(OdeContact) contact = new OdeContact();
+    contact->set_geom(OdeContactGeom(contact_list[i]));
+    contacts.add_contact(contact);
+  }
+  
+  PANDA_FREE_ARRAY(contact_list);
+  return contacts;
 }
 
