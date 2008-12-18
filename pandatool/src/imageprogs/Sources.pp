@@ -21,6 +21,12 @@
 #end bin_target
 
 #begin bin_target
+  #define TARGET image-fix-hidden-color
+  #define SOURCES \
+    imageFixHiddenColor.cxx imageFixHiddenColor.h imageFixHiddenColor.I
+#end bin_target
+
+#begin bin_target
   #define TARGET image-info
   #define SOURCES \
     imageInfo.cxx imageInfo.h
