@@ -1268,7 +1268,7 @@ class Actor(DirectObject, NodePath):
         for bundleDict in self.__partBundleDict.values():     
             bundle = bundleDict[trueName].getBundle()
             if node == None:
-                node = self.attachNewNode(jointName)
+                node = self.attachNewNode(ModelNode(jointName))
                 joint = bundle.findChild(jointName)
                 if joint and isinstance(joint, MovingPartMatrix):
                     node.setMat(joint.getInitialValue())
