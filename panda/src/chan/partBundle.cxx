@@ -325,7 +325,7 @@ load_bind_anim(Loader *loader, const Filename &filename,
     anim_index = anim_preload->find_anim(basename);
   }
 
-  if (anim_index < 0 || !allow_async) {
+  if (anim_index < 0 || !allow_async || !Thread::is_threading_supported()) {
     // The animation is not present in the table, or allow_async is
     // false.  Therefore, perform an ordinary synchronous
     // load-and-bind.
