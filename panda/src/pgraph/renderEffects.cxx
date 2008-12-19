@@ -801,13 +801,21 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = TypedWritable::complete_pointers(p_list, manager);
 
   // Get the effect pointers.
-  Effects::iterator ai;
-  for (ai = _effects.begin(); ai != _effects.end(); ++ai) {
-    Effect &effect = (*ai);
+  size_t i = 0;
+  while (i < _effects.size()) {
+    Effect &effect = _effects[i];
 
     effect._effect = DCAST(RenderEffect, p_list[pi++]);
-    nassertr(effect._effect != (RenderEffect *)NULL, pi);
-    effect._type = effect._effect->get_type();
+    if (effect._effect == (RenderEffect *)NULL) {
+      // Remove this bogus RenderEffect pointer (it must have been
+      // from an unwritable class).
+      _effects.erase(_effects.begin() + i);
+
+    } else {
+      // Keep this good pointer, and increment.
+      effect._type = effect._effect->get_type();
+      ++i;
+    }
   }
 
   // Now make sure the array is properly sorted.  (It won't

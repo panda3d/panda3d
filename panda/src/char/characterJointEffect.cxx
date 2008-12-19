@@ -236,7 +236,11 @@ void CharacterJointEffect::
 write_datagram(BamWriter *manager, Datagram &dg) {
   RenderEffect::write_datagram(manager, dg);
 
-  manager->write_pointer(dg, _character);
+  if (_character.is_valid_pointer()) {
+    manager->write_pointer(dg, _character);
+  } else {
+    manager->write_pointer(dg, NULL);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
