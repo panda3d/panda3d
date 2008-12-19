@@ -3020,6 +3020,8 @@ do_reload_ram_image(bool allow_compression) {
     n = _num_mipmap_levels_read;
   }
 
+  _loaded_from_image = false;
+
   LoaderOptions options;
   options.set_texture_flags(LoaderOptions::TF_preload);
   do_read(_fullpath, _alpha_fullpath,
