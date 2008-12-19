@@ -57,4 +57,17 @@ get_fade_bin_draw_order() const {
   return _fade_bin_draw_order;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: FadeLODNode::get_fade_state_override
+//       Access: Published
+//  Description: Returns the override value that is applied to the
+//               state changes necessary to apply the fade effect.
+//               This should be larger than any attrib overrides on
+//               the fading geometry.
+////////////////////////////////////////////////////////////////////
+INLINE int FadeLODNode::
+get_fade_state_override() const {
+  return _fade_state_override;
+}
+
 

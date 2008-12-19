@@ -20,6 +20,7 @@
 #include "colorScaleAttrib.h"
 #include "depthWriteAttrib.h"
 #include "transparencyAttrib.h"
+#include "cullBinAttrib.h"
 
 TypeHandle FadeLODNode::_type_handle;
 
@@ -37,6 +38,7 @@ FadeLODNode(const string &name) :
   _fade_time = lod_fade_time;
   _fade_bin_name = lod_fade_bin_name;
   _fade_bin_draw_order = lod_fade_bin_draw_order;
+  _fade_state_override = lod_fade_state_override;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -51,6 +53,7 @@ FadeLODNode(const FadeLODNode &copy) :
   _fade_time = copy._fade_time;
   _fade_bin_name = copy._fade_bin_name;
   _fade_bin_draw_order = copy._fade_bin_draw_order;
+  _fade_state_override = copy._fade_state_override;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -279,25 +282,42 @@ set_fade_bin(const string &name, int draw_order) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FadeLODNode::set_fade_state_override
+//       Access: Published
+//  Description: Specifies the override value that is applied to the
+//               state changes necessary to apply the fade effect.
+//               This should be larger than any attrib overrides on
+//               the fading geometry.
+////////////////////////////////////////////////////////////////////
+void FadeLODNode::
+set_fade_state_override(int override) {
+  _fade_state_override = override;
+  _fade_1_old_state.clear();
+  _fade_1_new_state.clear();
+  _fade_2_old_state.clear();
+  _fade_2_new_state.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FadeLODNode::get_fade_1_old_state
-//       Access: Protected, Static
+//       Access: Protected
 //  Description: Returns a RenderState for rendering the old element
 //               during first half of fade.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) FadeLODNode::
 get_fade_1_old_state() {
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
-    state = RenderState::make
-      (DepthOffsetAttrib::make());
+  if (_fade_1_old_state == (const RenderState *)NULL) {
+    _fade_1_old_state = RenderState::make
+      (DepthOffsetAttrib::make(),
+       _fade_state_override);
   }
 
-  return state;
+  return _fade_1_old_state;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FadeLODNode::get_fade_1_new_state
-//       Access: Protected, Static
+//       Access: Protected
 //  Description: Returns a RenderState for rendering the new element
 //               during first half of fade.
 ////////////////////////////////////////////////////////////////////
@@ -307,7 +327,8 @@ get_fade_1_new_state(float in_alpha) {
     _fade_1_new_state = RenderState::make
       (TransparencyAttrib::make(TransparencyAttrib::M_alpha),
        CullBinAttrib::make(_fade_bin_name, _fade_bin_draw_order),
-       DepthOffsetAttrib::make());
+       DepthOffsetAttrib::make(),
+       _fade_state_override);
   }
 
   LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, in_alpha);
@@ -327,7 +348,8 @@ get_fade_2_old_state(float out_alpha) {
     _fade_2_old_state = RenderState::make
       (TransparencyAttrib::make(TransparencyAttrib::M_alpha),
        DepthWriteAttrib::make(DepthWriteAttrib::M_off),
-       CullBinAttrib::make(_fade_bin_name, _fade_bin_draw_order));
+       CullBinAttrib::make(_fade_bin_name, _fade_bin_draw_order),
+       _fade_state_override);
   }
 
   LVecBase4f alpha_scale(1.0f, 1.0f, 1.0f, out_alpha);
@@ -337,19 +359,19 @@ get_fade_2_old_state(float out_alpha) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FadeLODNode::get_fade_2_new_state
-//       Access: Protected, Static
+//       Access: Protected
 //  Description: Returns a RenderState for rendering the new element
 //               during second half of fade.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) FadeLODNode::
 get_fade_2_new_state() {
-  static CPT(RenderState) state = (const RenderState *)NULL;
-  if (state == (const RenderState *)NULL) {
-    state = RenderState::make
-      (DepthOffsetAttrib::make());
+  if (_fade_2_new_state == (const RenderState *)NULL) {
+    _fade_2_new_state = RenderState::make
+      (DepthOffsetAttrib::make(),
+       _fade_state_override);
   }
 
-  return state;
+  return _fade_2_new_state;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -58,6 +58,7 @@ extern ConfigVariableBool polylight_info;
 extern ConfigVariableDouble lod_fade_time;
 extern ConfigVariableString lod_fade_bin_name;
 extern ConfigVariableInt lod_fade_bin_draw_order;
+extern ConfigVariableInt lod_fade_state_override;
 extern ConfigVariableBool verify_lods;
 
 extern ConfigVariableBool show_vertex_animation;
