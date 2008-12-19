@@ -8,6 +8,7 @@ from PyDatagramIterator import PyDatagramIterator
 
 import types
 import imp
+import gc
 
 
 
@@ -97,6 +98,14 @@ class ConnectionRepository(
         self.dcSuffix = ''
 
         self._serverAddress = ''
+
+        if self.config.GetBool('gc-save-all', 1):
+            # set gc to preserve every object involved in a cycle, even ones that
+            # would normally be freed automatically during garbage collect
+            # allows us to find and fix these cycles, reducing or eliminating the
+            # need to run garbage collects
+            # garbage collection CPU usage is O(n), n = number of Python objects
+            gc.set_debug(gc.DEBUG_SAVEALL)
 
     def generateGlobalObject(self, doId, dcname, values=None):
         def applyFieldValues(distObj, dclass, values):
