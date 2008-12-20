@@ -50,7 +50,7 @@ public:
 
 private:
   HRESULT fill_d3d_texture_mipmap_pixels(int mip_level, int depth_index, D3DFORMAT source_format);
-  HRESULT fill_d3d_texture_pixels(DXScreenData &scrn);
+  HRESULT fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture);
   HRESULT fill_d3d_volume_texture_pixels(DXScreenData &scrn);
   static int down_to_power_2(int value);
   unsigned int get_bits_per_pixel(Texture::Format format, int *alphbits);

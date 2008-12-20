@@ -123,6 +123,68 @@ create_texture(DXScreenData &scrn) {
   Texture *tex = get_texture();
   nassertr(IS_VALID_PTR(tex), false);
 
+  // Ensure the ram image is loaded, if available.
+  tex->get_ram_image();
+
+  DWORD orig_width = (DWORD)tex->get_x_size();
+  DWORD orig_height = (DWORD)tex->get_y_size();
+  DWORD orig_depth = (DWORD)tex->get_z_size();
+
+  // check for texture compression
+  bool texture_wants_compressed = false;
+  Texture::CompressionMode compression_mode = tex->get_ram_image_compression();
+  bool texture_stored_compressed = compression_mode != Texture::CM_off;
+  
+  if (texture_stored_compressed) {
+    texture_wants_compressed = true;  
+  } else {
+    if (tex->get_compression() == Texture::CM_off) {
+      // no compression
+    } else {    
+      if (tex->get_compression() == Texture::CM_default) {
+        // default = use "compressed-textures" config setting
+        if (compressed_textures) {
+          texture_wants_compressed = true;
+        }
+      } else {
+        texture_wants_compressed = true;
+      }
+    }  
+  }
+    
+  switch (tex->get_texture_type()) {
+    case Texture::TT_1d_texture:
+    case Texture::TT_2d_texture:
+    case Texture::TT_cube_map:
+      // no compression for render target textures, or very small
+      // textures
+      if (!tex->get_render_to_texture() &&
+          orig_width >= 4 && orig_height >= 4) {
+        if (texture_wants_compressed){
+          compress_texture = true;
+        }
+      }
+      break;
+    case Texture::TT_3d_texture:
+      // compression of 3d textures not supported by all video chips
+      break;
+  }
+
+  if (texture_stored_compressed && !compress_texture) {
+    // If we're going to need to reload the texture to get its
+    // uncompressed image, we'd better do so now, *before* we figure
+    // out the source format.  We have to do this early, even though
+    // we're going to do it again in fill_d3d_texture_pixels(),
+    // because sometimes reloading the original ram image will change
+    // the texture's apparent pixel format (the compressed form may
+    // have a different format than the uncompressed form).
+    tex->get_uncompressed_ram_image();
+
+    orig_width = (DWORD)tex->get_x_size();
+    orig_height = (DWORD)tex->get_y_size();
+    orig_depth = (DWORD)tex->get_z_size();
+  }
+
   // bpp indicates requested fmt, not texture fmt
   DWORD target_bpp = get_bits_per_pixel(tex->get_format(), &num_alpha_bits);
   DWORD num_color_channels = tex->get_num_components();
@@ -131,10 +193,6 @@ create_texture(DXScreenData &scrn) {
 //  printf ("target_bpp %d, num_color_channels %d num_alpha_bits %d \n", target_bpp, num_color_channels, num_alpha_bits);
 
   //PRINT_REFCNT(dxgsg9, scrn._d3d9);
-
-  DWORD orig_width = (DWORD)tex->get_x_size();
-  DWORD orig_height = (DWORD)tex->get_y_size();
-  DWORD orig_depth = (DWORD)tex->get_z_size();
 
   if ((tex->get_format() == Texture::F_luminance_alpha)||
       (tex->get_format() == Texture::F_luminance_alphamask) ||
@@ -172,49 +230,6 @@ create_texture(DXScreenData &scrn) {
   case 4:
     _d3d_format = D3DFMT_A8R8G8B8;
     break;
-  }
-
-  // check for texture compression
-  bool texture_wants_compressed = false;
-  Texture::CompressionMode compression_mode = tex->get_ram_image_compression();
-  bool texture_stored_compressed = compression_mode != Texture::CM_off;
-  
-  if (texture_stored_compressed) {
-    texture_wants_compressed = true;  
-  }
-  else {
-    if (tex->get_compression() == Texture::CM_off) {
-      // no compression
-    }
-    else {    
-      if (tex->get_compression() == Texture::CM_default) {
-        // default = use "compressed-textures" config setting
-        if (compressed_textures) {
-          texture_wants_compressed = true;
-        }
-      }
-      else {
-        texture_wants_compressed = true;
-      }
-    }  
-  }
-    
-  switch (tex->get_texture_type()) {
-    case Texture::TT_1d_texture:
-    case Texture::TT_2d_texture:
-    case Texture::TT_cube_map:
-      // no compression for render target textures, or very small
-      // textures
-      if (!tex->get_render_to_texture() &&
-          orig_width >= 4 && orig_height >= 4) {
-        if (texture_wants_compressed){
-          compress_texture = true;
-        }
-      }
-      break;
-    case Texture::TT_3d_texture:
-      // compression of 3d textures not supported by all video chips
-      break;
   }
   
   // make sure we handled all the possible cases
@@ -813,10 +828,10 @@ create_texture(DXScreenData &scrn) {
   int data_size;
 
   data_size = target_width * target_height * target_depth;
-  data_size = (int) ((float) data_size * bytes_per_texel);
   if (_has_mipmaps) {
-    data_size = (int) ((float) data_size * 1.3f);
+    data_size = (int) ((float) data_size * 1.3333333f);
   }
+  data_size = (int) ((float) data_size * bytes_per_texel);
   if (tex->get_texture_type() == Texture::TT_cube_map) {
     data_size *= 6;
   }
@@ -829,6 +844,21 @@ create_texture(DXScreenData &scrn) {
       << "Creating " << *tex << ", " << data_size << " bytes, "
       << scrn._d3d_device->GetAvailableTextureMem()
       << " reported available.\n";
+    dxgsg9_cat.debug()
+      << " size is " << target_width << " w * " << target_height << " h * "
+      << target_depth << " d";
+    if (_has_mipmaps) {
+      dxgsg9_cat.debug(false)
+        << " * 1.3333333 mipmaps";
+    }
+    dxgsg9_cat.debug(false)
+      << " * " << bytes_per_texel << " bpt";
+    if (tex->get_texture_type() == Texture::TT_cube_map) {
+      dxgsg9_cat.debug(false)
+        << " * 6 faces";
+    }
+    dxgsg9_cat.debug(false)
+      << "\n";
   }
 
   attempts = 0;
@@ -879,7 +909,7 @@ create_texture(DXScreenData &scrn) {
       << " => " << D3DFormatStr(target_pixel_format) << endl;
   }
 
-  hr = fill_d3d_texture_pixels(scrn);
+  hr = fill_d3d_texture_pixels(scrn, compress_texture);
   if (FAILED(hr)) {
 
     dxgsg9_cat.debug ()
@@ -1650,7 +1680,7 @@ exit_FillMipmapSurf:
 //  Description:
 ////////////////////////////////////////////////////////////////////
 HRESULT DXTextureContext9::
-fill_d3d_texture_pixels(DXScreenData &scrn) {
+fill_d3d_texture_pixels(DXScreenData &scrn, bool compress_texture) {
   IDirect3DDevice9 *device = scrn._d3d_device;
   Texture *tex = get_texture();
   nassertr(IS_VALID_PTR(tex), E_FAIL);
@@ -1661,28 +1691,21 @@ fill_d3d_texture_pixels(DXScreenData &scrn) {
   HRESULT hr = E_FAIL;
 
   CPTA_uchar image;
-  if (scrn._dxgsg9->get_supports_compressed_texture()) {
+  Texture::CompressionMode image_compression = Texture::CM_off;
+  if (compress_texture) {
+    // If we are to be compressing this texture, accept a
+    // pre-compressed ram image if it is already so.
     image = tex->get_ram_image();
+    if (!image.is_null()) {
+      image_compression = tex->get_ram_image_compression();
+    }
   } else {
+    // If we are not to be compressing this texture, we can only
+    // accept an uncompressed ram image.  Ask the texture to give us
+    // one, so that there's no danger of accidentally getting a
+    // pre-compressed image.
     image = tex->get_uncompressed_ram_image();
   }
-
-  Texture::CompressionMode image_compression;
-  if (image.is_null()) {
-    image_compression = Texture::CM_off;
-  } else {
-    image_compression = tex->get_ram_image_compression();
-  }
-
-  if (!scrn._dxgsg9->get_supports_compressed_texture_format(image_compression) ||
-      tex->get_x_size() < 4 || tex->get_y_size() < 4) {
-    // If we don't support this particular compression method, or in
-    // any case if the texture is too small (DirectX won't accept a
-    // small compressed texture), then fetch and load the uncompressed
-    // version instead.
-    image = tex->get_uncompressed_ram_image();
-    image_compression = Texture::CM_off;
-  }    
 
   if (image.is_null()) {
     // The texture doesn't have an image to load.  That's ok; it
@@ -1750,7 +1773,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn) {
 
   DWORD orig_depth = (DWORD) tex->get_z_size();
   D3DFORMAT source_format = _d3d_format;
-  
+
   // check for compressed textures and adjust source_format accordingly
   switch (image_compression) {
   case Texture::CM_dxt1:
@@ -1772,7 +1795,7 @@ fill_d3d_texture_pixels(DXScreenData &scrn) {
     // no known compression format.. no adjustment
     break;
   }
-  
+
   for (unsigned int di = 0; di < orig_depth; di++) {
     
     // fill top level mipmap

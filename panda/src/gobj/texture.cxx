@@ -2907,7 +2907,13 @@ do_unlock_and_reload_ram_image(bool allow_compression) {
   }
 
   // Then make sure we still need to reload before continuing.
-  if (_loaded_from_image && !do_has_ram_image() && !_fullpath.empty()) {
+  bool has_ram_image = do_has_ram_image();
+  if (has_ram_image && !allow_compression && get_ram_image_compression() != Texture::CM_off) {
+    // If we don't want compression, but the ram image we have is
+    // pre-compressed, we don't consider it.
+    has_ram_image = false;
+  }
+  if (_loaded_from_image && !has_ram_image && !_fullpath.empty()) {
     nassertv(!_reloading);
     _reloading = true;
 
@@ -2955,7 +2961,7 @@ do_reload_ram_image(bool allow_compression) {
     allow_compression = false;
   }
 
-  if ((cache->get_cache_textures() || (do_has_compression() && cache->get_cache_compressed_textures())) && !textures_header_only) {
+  if ((cache->get_cache_textures() || (allow_compression && cache->get_cache_compressed_textures())) && !textures_header_only) {
     // See if the texture can be found in the on-disk cache, if it is
     // active.
 
