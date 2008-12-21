@@ -96,7 +96,7 @@ const PN_uint32 Patchfile::_HASH_MASK = (PN_uint32(1) << Patchfile::_HASH_BITS) 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::Constructor
 //       Access: Public
-//  Description:
+//  Description: Create a patch file and initializes internal data
 ////////////////////////////////////////////////////////////////////
 Patchfile::
 Patchfile() {
@@ -108,7 +108,7 @@ Patchfile() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::Constructor
 //       Access: Public
-//  Description:
+//  Description: Create patch file with buffer to patch
 ////////////////////////////////////////////////////////////////////
 Patchfile::
 Patchfile(PT(Buffer) buffer) {
@@ -126,7 +126,7 @@ init(PT(Buffer) buffer) {
   _initiated = false;
   nassertv(!buffer.is_null());
   _buffer = buffer;
-  
+
   _version_number = 0;
   _allow_multifile = true;
   reset_footprint_length();
@@ -150,7 +150,7 @@ Patchfile::
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::cleanup
 //       Access: Private
-//  Description:
+//  Description: Closes and clean up internal data structures
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
 cleanup() {
@@ -185,7 +185,7 @@ cleanup() {
 //     Function: Patchfile::initiate
 //       Access: Published
 //  Description: Set up to apply the patch to the file (original
-//     file and patch are destroyed in the process).
+//               file and patch are destroyed in the process).
 ////////////////////////////////////////////////////////////////////
 int Patchfile::
 initiate(const Filename &patch_file, const Filename &file) {
@@ -264,6 +264,13 @@ read_header(const Filename &patch_file) {
 //     Function: Patchfile::run
 //       Access: Published
 //  Description: Perform one buffer's worth of patching
+//               Returns EU_ok while patching
+//				 Returns EU_success when done
+//               If error happens will return one of:
+//               EU_error_abort : Patching has not been initiated
+//               EU_error_file_invalid : file is corrupted
+//               EU_error_invalid_checksum : incompatible patch file
+//               EU_error_write_file_rename : could not rename file
 ////////////////////////////////////////////////////////////////////
 int Patchfile::
 run() {
@@ -308,7 +315,7 @@ run() {
     // if there are bytes to add, read them from patch file and write them to output
     if (express_cat.is_spam() && ADD_length != 0) {
       express_cat.spam()
-        << "ADD: " << ADD_length << " (to " 
+        << "ADD: " << ADD_length << " (to "
         << _write_stream.tellp() << ")" << endl;
     }
 
@@ -370,7 +377,7 @@ run() {
         express_cat.spam()
           << "COPY: " << COPY_length << " bytes from offset "
           << COPY_offset << " (from " << _origfile_stream.tellg()
-          << " to " << _write_stream.tellp() << ")" 
+          << " to " << _write_stream.tellp() << ")"
           << endl;
       }
 
@@ -396,7 +403,7 @@ run() {
 
       if (express_cat.is_debug()) {
         express_cat.debug()
-          //<< "result file = " << _result_file_length 
+          //<< "result file = " << _result_file_length
           << " total bytes = " << _total_bytes_processed << endl;
       }
 
@@ -480,7 +487,8 @@ run() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::apply
 //       Access: Public
-//  Description:
+//  Description: Patches the entire file in one call
+//               returns true on success and false on error
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
 apply(Filename &patch_file, Filename &file) {
@@ -541,7 +549,7 @@ internal_read_header(const Filename &patch_file) {
   if (_version_number >= 1) {
     // Get the length of the source file.
     /*PN_uint32 source_file_length =*/ patch_reader.get_uint32();
-    
+
     // get the MD5 of the source file.
     _MD5_ofSource.read_stream(patch_reader);
   }
@@ -697,7 +705,7 @@ calc_match_length(const char* buf1, const char* buf2, PN_uint32 max_length,
       return 0;
     }
   }
-  
+
   PN_uint32 length = 0;
   while ((length < max_length) && (*buf1 == *buf2)) {
     buf1++, buf2++, length++;
@@ -824,7 +832,7 @@ emit_COPY(ostream &write_stream, PN_uint32 length, PN_uint32 copy_pos) {
 //               limit.
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
-emit_add_and_copy(ostream &write_stream, 
+emit_add_and_copy(ostream &write_stream,
                   PN_uint32 add_length, const char *add_buffer,
                   PN_uint32 copy_length, PN_uint32 copy_pos) {
   if (add_length == 0 && copy_length == 0) {
@@ -863,7 +871,7 @@ emit_add_and_copy(ostream &write_stream,
 //               emits from consecutive adds or copies.
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
-cache_add_and_copy(ostream &write_stream, 
+cache_add_and_copy(ostream &write_stream,
                    PN_uint32 add_length, const char *add_buffer,
                    PN_uint32 copy_length, PN_uint32 copy_pos) {
   if (add_length != 0) {
@@ -902,7 +910,7 @@ cache_add_and_copy(ostream &write_stream,
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
 cache_flush(ostream &write_stream) {
-  emit_add_and_copy(write_stream, 
+  emit_add_and_copy(write_stream,
                     _cache_add_data.size(), _cache_add_data.data(),
                     _cache_copy_length, _cache_copy_start);
   _cache_add_data = string();
@@ -917,7 +925,7 @@ cache_flush(ostream &write_stream) {
 //               Writes the patchfile header.
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
-write_header(ostream &write_stream, 
+write_header(ostream &write_stream,
              istream &stream_orig, istream &stream_new) {
   // prepare to write the patch file header
 
@@ -977,7 +985,7 @@ write_terminator(ostream &write_stream) {
 //               Returns true if successful, false on error.
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
-compute_file_patches(ostream &write_stream, 
+compute_file_patches(ostream &write_stream,
                      PN_uint32 offset_orig, PN_uint32 offset_new,
                      istream &stream_orig, istream &stream_new) {
   // read in original file
@@ -1050,7 +1058,7 @@ compute_file_patches(ostream &write_stream,
         int num_skipped = (int)new_pos - (int)start_pos;
         if (express_cat.is_spam()) {
           express_cat.spam()
-            << "build: num_skipped = " << num_skipped 
+            << "build: num_skipped = " << num_skipped
             << endl;
         }
         cache_add_and_copy(write_stream, num_skipped, &buffer_new[start_pos],
@@ -1073,7 +1081,7 @@ compute_file_patches(ostream &write_stream,
     // emit ADD for all remaining bytes
 
     PN_uint32 remaining_bytes = result_file_length - start_pos;
-    cache_add_and_copy(write_stream, remaining_bytes, &buffer_new[start_pos], 
+    cache_add_and_copy(write_stream, remaining_bytes, &buffer_new[start_pos],
                        0, 0);
     start_pos += remaining_bytes;
   }
@@ -1096,7 +1104,7 @@ compute_file_patches(ostream &write_stream,
 //               small subfiles.
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
-compute_mf_patches(ostream &write_stream, 
+compute_mf_patches(ostream &write_stream,
                    PN_uint32 offset_orig, PN_uint32 offset_new,
                    istream &stream_orig, istream &stream_new) {
   Multifile mf_orig, mf_new;
@@ -1161,7 +1169,7 @@ compute_mf_patches(ostream &write_stream,
       streampos new_start = mf_new.get_subfile_internal_start(ni);
       size_t new_size = mf_new.get_subfile_internal_length(ni);
 
-      if (!patch_subfile(write_stream, offset_orig, offset_new, 
+      if (!patch_subfile(write_stream, offset_orig, offset_new,
                          mf_new.get_subfile_name(ni),
                          stream_origw, orig_start, orig_start + (streampos)orig_size,
                          stream_neww, new_start, new_start + (streampos)new_size)) {
@@ -1248,7 +1256,7 @@ read_tar(TarDef &tar, istream &stream) {
 //               previous call to read_tar().
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
-compute_tar_patches(ostream &write_stream, 
+compute_tar_patches(ostream &write_stream,
                     PN_uint32 offset_orig, PN_uint32 offset_new,
                     istream &stream_orig, istream &stream_new,
                     TarDef &tar_orig, TarDef &tar_new) {
@@ -1299,7 +1307,7 @@ compute_tar_patches(ostream &write_stream,
       // can accurately detect nested multifiles.  The extra data at
       // the end of the file (possibly introduced by a tar file's
       // blocking) is the footer, which is also patched separately.
-      if (!patch_subfile(write_stream, offset_orig, offset_new, "", 
+      if (!patch_subfile(write_stream, offset_orig, offset_new, "",
                          stream_origw, sf_orig._header_start, sf_orig._data_start,
                          stream_neww, sf_new._header_start, sf_new._data_start)) {
         return false;
@@ -1396,6 +1404,7 @@ tar_writefunc(int, const void *, size_t) {
 //               For an original file of size M and a new file of
 //               size N, this algorithm is O(M) in space and
 //               O(M*N) (worst-case) in time.
+//               return false on error
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
 build(Filename file_orig, Filename file_new, Filename patch_name) {
@@ -1435,7 +1444,7 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
 
   write_header(write_stream, stream_orig, stream_new);
 
-  if (!do_compute_patches(file_orig, file_new, 
+  if (!do_compute_patches(file_orig, file_new,
                           write_stream, 0, 0,
                           stream_orig, stream_new)) {
     return false;
@@ -1469,7 +1478,7 @@ build(Filename file_orig, Filename file_new, Filename patch_name) {
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
 do_compute_patches(const Filename &file_orig, const Filename &file_new,
-                   ostream &write_stream, 
+                   ostream &write_stream,
                    PN_uint32 offset_orig, PN_uint32 offset_new,
                    istream &stream_orig, istream &stream_new) {
   nassertr(_add_pos + _cache_add_data.size() + _cache_copy_length == offset_new, false);
@@ -1490,7 +1499,7 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
       char *buffer = (char *)PANDA_MALLOC_ARRAY(magic_number.size());
       stream_orig.seekg(0, ios::beg);
       stream_orig.read(buffer, magic_number.size());
-      
+
       if (stream_orig.gcount() == (int)magic_number.size() &&
           memcmp(buffer, magic_number.data(), magic_number.size()) == 0) {
         stream_new.seekg(0, ios::beg);
@@ -1546,7 +1555,7 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
 
   return true;
 }
-                    
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::patch_subfile
 //       Access: Private
@@ -1554,7 +1563,7 @@ do_compute_patches(const Filename &file_orig, const Filename &file_new,
 //               Multifile or a tar file.
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
-patch_subfile(ostream &write_stream, 
+patch_subfile(ostream &write_stream,
               PN_uint32 offset_orig, PN_uint32 offset_new,
               const Filename &filename,
               IStreamWrapper &stream_orig, streampos orig_start, streampos orig_end,
@@ -1566,34 +1575,34 @@ patch_subfile(ostream &write_stream,
 
   ISubStream subfile_orig(&stream_orig, orig_start, orig_end);
   ISubStream subfile_new(&stream_new, new_start, new_end);
-  
+
   bool is_unchanged = false;
   if (orig_size == new_size) {
     HashVal hash_orig, hash_new;
     hash_orig.hash_stream(subfile_orig);
     hash_new.hash_stream(subfile_new);
-    
+
     if (hash_orig == hash_new) {
       // Actually, the subfile is unchanged; just emit it.
       is_unchanged = true;
     }
   }
-  
+
   if (is_unchanged) {
     if (express_cat.is_debug() && !filename.empty()) {
       express_cat.debug()
         << "Keeping subfile " << filename << "\n";
     }
-    cache_add_and_copy(write_stream, 0, NULL, 
+    cache_add_and_copy(write_stream, 0, NULL,
                        orig_size, offset_orig + orig_start);
-    
+
   } else {
     if (!filename.empty()) {
       express_cat.info()
         << "Patching subfile " << filename << "\n";
     }
-    
-    if (!do_compute_patches(filename, filename, write_stream, 
+
+    if (!do_compute_patches(filename, filename, write_stream,
                             offset_orig + orig_start, offset_new + new_start,
                             subfile_orig, subfile_new)) {
       return false;
