@@ -52,6 +52,14 @@ INLINE MeshDrawer::
 //       Access: Published
 //  Description: Sets the number of images are on one side
 //               of a sqare plate.
+//               Geom drawer expects a plate of square image for
+//               most of its billboard operatoins.  If plate size is
+//               3 the frame numbering would look like this:
+//				   0 1 2
+//                 3 4 5
+//                 6 7 8
+//               you can select any frame you like for many of the
+//               billboards and segments.
 ////////////////////////////////////////////////////////////////////
 INLINE void MeshDrawer::
 set_plate_size(int one_side_size) {
@@ -84,7 +92,7 @@ get_root() {
 ////////////////////////////////////////////////////////////////////
 //     Function: MeshDrawer::set_budget
 //       Access: Published
-//  Description: Sets the total budget of particles.
+//  Description: Sets the total triangle budget of the drawer.
 ////////////////////////////////////////////////////////////////////
 INLINE void MeshDrawer::
 set_budget(int total_budget) {
@@ -95,7 +103,7 @@ set_budget(int total_budget) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MeshDrawer::get_budget()
 //       Access: Published
-//  Description: Gets the total budget of particles.
+//  Description: Gets the total triangle budget of the drawer
 ////////////////////////////////////////////////////////////////////
 INLINE int MeshDrawer::
 get_budget() {

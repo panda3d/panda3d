@@ -41,7 +41,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : MeshDrawer
-// Description : 
+// Description :
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GRUTIL MeshDrawer : public TypedObject {
 PUBLISHED:
@@ -60,15 +60,18 @@ PUBLISHED:
                   LVector3f v2, LVector4f c2, LVector2f uv2,
                   LVector3f v3, LVector4f c3, LVector2f uv3);
   void particle(LVector3f pos, int frame, float size, LVector4f color, float rotation);
+  void blended_particle(LVector3f pos, int frame1, int frame2,
+           float blend, float size, LVector4f color, float rotation);
   void billboard(LVector3f pos, int frame, float size, LVector4f color);
   void segment(LVector3f start, LVector3f stop, int frame, float thickness, LVector4f color);
+  void cross_segment(LVector3f start, LVector3f stop, int frame, float thickness, LVector4f color);
   void uneven_segment(LVector3f start, LVector3f stop,
   		int frame, int multi_frame,
   		float thickness_start, LVector4f color_start,
   		float thickness_stop, LVector4f color_stop);
 
   void link_segment(LVector3f pos, int frame, float thickness, LVector4f color);
-  void link_segment_end(LVector4f color, int frame);
+  void link_segment_end(int frame, LVector4f color);
 
   void explosion(LVector3f pos, int frame, float size, LVector4f color,
            int seed, int number, float distance);
