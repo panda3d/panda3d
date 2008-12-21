@@ -4,3 +4,4 @@
 #include "nodeVertexTransform.cxx"
 #include "pipeOcclusionCullTraverser.cxx"
 #include "rigidBodyCombiner.cxx"
+#include "meshDrawer.cxx"
