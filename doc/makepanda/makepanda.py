@@ -305,9 +305,9 @@ if (COMPILER=="LINUX"):
     LibName("GTK2", "-lgtk-x11-2.0")
 
     if (sys.platform == "darwin"):
-        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FFMPEG", "PNG", "JPEG", "TIFF"]
+        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "FFMPEG", "PNG", "JPEG", "TIFF"]
     else:
-        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "NVIDIACG", "FFMPEG", "OPENAL"]
+        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "NVIDIACG", "FFMPEG", "OPENAL"]
     for pkg in pkgs:
         if (PkgSkip(pkg)==0):
             if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
@@ -334,6 +334,7 @@ if (COMPILER=="LINUX"):
       if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCg")
       if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lpandaopenal")
       if (PkgSkip("TIFF")==0):     LibName("TIFF", "-ltiff")
+    if (PkgSkip("FCOLLADA")==0):   LibName("FCOLLADA", "-lFColladaSD")
     if (PkgSkip("FMOD")==0):       LibName("FMOD", "-lfmod")
     if (PkgSkip("FMODEX")==0):     LibName("FMODEX", "-lfmodex")
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavutil")
