@@ -272,6 +272,10 @@
 #set SOFTIMAGE_LOCATION $[unixfilename $[SOFTIMAGE_LOCATION]]
 #set HAVE_SOFTIMAGE $[HAVE_SOFTIMAGE]
 
+#set FCOLLADA_IPATH $[unixfilename $[FCOLLADA_IPATH]]
+#set FCOLLADA_LPATH $[unixfilename $[FCOLLADA_LPATH]]
+#set FCOLLADA_LIBS $[FCOLLADA_LIBS]
+#set HAVE_FCOLLADA $[HAVE_FCOLLADA]
 
 // Now infer a few more variables based on what was defined.
 #if $[and $[HAVE_GTK],$[PKG_CONFIG]]

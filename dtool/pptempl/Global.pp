@@ -365,6 +365,12 @@
   #define chromium_libs $[CHROMIUM_LIBS]
 #endif
 
+#if $[HAVE_FCOLLADA]
+  #define fcollada_ipath $[wildcard $[FCOLLADA_IPATH]]
+  #define fcollada_lpath $[wildcard $[FCOLLADA_LPATH]]
+  #define fcollada_libs $[FCOLLADA_LIBS]
+#endif
+
 // We define these two variables true here in the global scope; a
 // particular Sources.pp file can redefine these to be false to
 // prevent a particular directory or target from being built in

@@ -146,6 +146,11 @@
 #else
 #print - Did not find OpenMaya
 #endif
+#if $[HAVE_FCOLLADA]
+#print + FCollada
+#else
+#print - Did not find FCollada
+#endif
 
 #print
 #if $[and $[HAVE_INTERROGATE],$[HAVE_PYTHON]]
@@ -203,6 +208,9 @@ $[cdefine MAYA_PRE_5_0]
 
 /* Define if we have SoftImage available. */
 $[cdefine HAVE_SOFTIMAGE]
+
+/* Define if we have FCollada available. */
+$[cdefine HAVE_FCOLLADA]
 
 /* Define if we have OpenSSL installed.  */
 $[cdefine HAVE_OPENSSL]
