@@ -14,6 +14,7 @@
 
 #include "config_grutil.h"
 #include "frameRateMeter.h"
+#include "meshDrawer.h"
 #include "geoMipTerrain.h"
 #include "openCVTexture.h"
 #include "ffmpegTexture.h"
@@ -73,6 +74,7 @@ init_libgrutil() {
   initialized = true;
 
   FrameRateMeter::init_type();
+  MeshDrawer::init_type();
   GeoMipTerrain::init_type();
   NodeVertexTransform::init_type();
   RigidBodyCombiner::init_type();
