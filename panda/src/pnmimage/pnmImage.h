@@ -73,6 +73,7 @@ PUBLISHED:
              xelval maxval = 255, PNMFileType *type = NULL);
 
   void copy_from(const PNMImage &copy);
+  void copy_channel(const PNMImage &copy, int src_channel, int dest_channel);
   void copy_header_from(const PNMImageHeader &header);
   void take_from(PNMImage &orig);
 
@@ -95,7 +96,7 @@ PUBLISHED:
 
   BLOCKING bool read(const Filename &filename, PNMFileType *type = NULL,
                      bool report_unknown_type = true);
-  BLOCKING bool read(istream &data, const string &filename = string(), 
+  BLOCKING bool read(istream &data, const string &filename = string(),
                      PNMFileType *type = NULL,
                      bool report_unknown_type = true);
   BLOCKING bool read(PNMReader *reader);
@@ -231,7 +232,7 @@ private:
                               int &xfrom, int &yfrom, int &x_size, int &y_size,
                               int &xmin, int &ymin, int &xmax, int &ymax);
 
-  INLINE static void compute_spot_pixel(Colord &c, double d2, 
+  INLINE static void compute_spot_pixel(Colord &c, double d2,
                                         double min_radius, double max_radius,
                                         const Colord &fg, const Colord &bg);
 

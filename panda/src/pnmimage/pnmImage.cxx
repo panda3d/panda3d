@@ -33,7 +33,7 @@ PNMImage(const Filename &filename, PNMFileType *type) {
   if (!result) {
     pnmimage_cat.error()
       << "Could not read image " << filename << "\n";
-  }    
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,6 +109,39 @@ copy_from(const PNMImage &copy) {
     memcpy(_array, copy._array, sizeof(xel) * _y_size * _x_size);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PNMImage::copy_channel
+//       Access: Published
+//  Description: Copies a channel from one image into another.
+//               Images must be the same size
+////////////////////////////////////////////////////////////////////
+void PNMImage::
+copy_channel(const PNMImage &copy, int src_channel, int dest_channel) {
+  // Make sure the channels are in range
+  nassertv(src_channel >= 0 && src_channel <= 3);
+  nassertv(dest_channel >= 0 && dest_channel <= 3);
+  // Make sure that images are valid
+  if (!copy.is_valid() || !is_valid()) {
+    pnmimage_cat.error() << "One of the images is invalid!\n";
+    return;
+  }
+  // Make sure the images are the same size
+  if (_x_size != copy.get_x_size() || _y_size != copy.get_y_size()){
+    pnmimage_cat.error() << "Image size doesn't match!\n";
+    return;
+  }
+  // Do the actual copying
+  for (int x = 0; x < _x_size; x++) {
+    for (int y = 0; y < _y_size; y++) {
+      LVecBase4d t = get_xel_a(x, y);
+      LVecBase4d o = copy.get_xel_a(x, y);
+      t.set_cell(dest_channel,o.get_cell(src_channel));
+      set_xel_a(x, y, t);
+    }
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::copy_header_from
@@ -231,7 +264,7 @@ read(const Filename &filename, PNMFileType *type, bool report_unknown_type) {
 ////////////////////////////////////////////////////////////////////
 //     Function: PNMImage::read
 //       Access: Published
-//  Description: Reads the image data from the indicated stream.  
+//  Description: Reads the image data from the indicated stream.
 //
 //               The filename is advisory only, and may be used
 //               to suggest a type if it has a known extension.
@@ -651,7 +684,7 @@ copy_sub_image(const PNMImage &copy, int xto, int yto,
         set_xel_val(x, y, copy.get_xel_val(x - xmin + xfrom, y - ymin + yfrom));
       }
     }
-    
+
     if (has_alpha() && copy.has_alpha()) {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
@@ -668,7 +701,7 @@ copy_sub_image(const PNMImage &copy, int xto, int yto,
         set_xel(x, y, copy.get_xel(x - xmin + xfrom, y - ymin + yfrom));
       }
     }
-    
+
     if (has_alpha() && copy.has_alpha()) {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
@@ -759,7 +792,7 @@ darken_sub_image(const PNMImage &copy, int xto, int yto,
         set_xel_val(x, y, p);
       }
     }
-    
+
     if (has_alpha() && copy.has_alpha()) {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
@@ -778,13 +811,13 @@ darken_sub_image(const PNMImage &copy, int xto, int yto,
         RGBColord c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
         RGBColord o = get_xel(x, y);
         RGBColord p;
-        p.set(min(1.0 - ((1.0 - c[0]) * pixel_scale), o[0]), 
-              min(1.0 - ((1.0 - c[1]) * pixel_scale), o[1]), 
+        p.set(min(1.0 - ((1.0 - c[0]) * pixel_scale), o[0]),
+              min(1.0 - ((1.0 - c[1]) * pixel_scale), o[1]),
               min(1.0 - ((1.0 - c[2]) * pixel_scale), o[2]));
         set_xel(x, y, p);
       }
     }
-    
+
     if (has_alpha() && copy.has_alpha()) {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
@@ -829,7 +862,7 @@ lighten_sub_image(const PNMImage &copy, int xto, int yto,
         set_xel_val(x, y, p);
       }
     }
-    
+
     if (has_alpha() && copy.has_alpha()) {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
@@ -848,13 +881,13 @@ lighten_sub_image(const PNMImage &copy, int xto, int yto,
         RGBColord c = copy.get_xel(x - xmin + xfrom, y - ymin + yfrom);
         RGBColord o = get_xel(x, y);
         RGBColord p;
-        p.set(max(c[0] * pixel_scale, o[0]), 
-              max(c[1] * pixel_scale, o[1]), 
+        p.set(max(c[0] * pixel_scale, o[0]),
+              max(c[1] * pixel_scale, o[1]),
               max(c[2] * pixel_scale, o[2]));
         set_xel(x, y, p);
       }
     }
-    
+
     if (has_alpha() && copy.has_alpha()) {
       for (y = ymin; y < ymax; y++) {
         for (x = xmin; x < xmax; x++) {
