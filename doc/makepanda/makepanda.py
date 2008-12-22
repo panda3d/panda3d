@@ -40,7 +40,7 @@ THREADCOUNT=0
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","FMODEX",
   "OPENAL","NVIDIACG","OPENSSL","FREETYPE","FFTW","ARTOOLKIT",
-  "ODE","DIRECTCAM","OPENCV", "FFMPEG","PANDATOOL"
+  "ODE","DIRECTCAM","OPENCV", "FFMPEG","FCOLLADA","PANDATOOL"
 ])
 
 CheckPandaSourceTree()
@@ -265,6 +265,7 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc8/ffmpeg/lib/avutil-49-panda.lib")
     if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT","thirdparty/win-libs-vc8/artoolkit/lib/libAR.lib")
     if (PkgSkip("ODE")==0):      LibName("ODE",      "thirdparty/win-libs-vc8/ode/lib/ode.lib")
+    if (PkgSkip("FCOLLADA")==0): LibName("FCOLLADA", "thirdparty/win-libs-vc8/fcollada/lib/FCollada.lib")
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, SDK[pkg] + '/lib/Foundation.lib')
@@ -1209,6 +1210,8 @@ CopyAllHeaders('pandatool/src/progbase')
 CopyAllHeaders('pandatool/src/eggbase')
 CopyAllHeaders('pandatool/src/bam')
 CopyAllHeaders('pandatool/src/cvscopy')
+CopyAllHeaders('pandatool/src/daeegg')
+CopyAllHeaders('pandatool/src/daeprogs')
 CopyAllHeaders('pandatool/src/dxf')
 CopyAllHeaders('pandatool/src/dxfegg')
 CopyAllHeaders('pandatool/src/dxfprogs')
@@ -2699,6 +2702,26 @@ if (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/cvscopy']
     TargetAdd('cvscopy_composite1.obj', opts=OPTS, input='cvscopy_composite1.cxx')
     TargetAdd('libcvscopy.lib', input='cvscopy_composite1.obj')
+
+#
+# DIRECTORY: pandatool/src/daeegg/
+#
+if (PkgSkip("PANDATOOL")==0):
+    OPTS=['DIR:pandatool/src/daeegg', 'FCOLLADA']
+    TargetAdd('daeegg_composite1.obj', opts=OPTS, input='daeegg_composite1.cxx')
+    TargetAdd('libdaeegg.lib', input='daeegg_composite1.obj')
+    TargetAdd('libdaeegg.lib', opts=['FCOLLADA'])
+
+#
+# DIRECTORY: pandatool/src/daeprogs/
+#
+if (PkgSkip("PANDATOOL")==0):
+    OPTS=['DIR:pandatool/src/daeprogs', 'FCOLLADA']
+    TargetAdd('dae2egg_daeToEgg.obj', opts=OPTS, input='daeToEgg.cxx')
+    TargetAdd('dae2egg.exe', input='dae2egg_daeToEgg.obj')
+    TargetAdd('dae2egg.exe', input='libdaeegg.lib')
+    TargetAdd('dae2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+    TargetAdd('dae2egg.exe', opts=['WINUSER', 'FCOLLADA'])
 
 #
 # DIRECTORY: pandatool/src/dxf/
