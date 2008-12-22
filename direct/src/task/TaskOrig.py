@@ -21,7 +21,6 @@ from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase.PythonUtil import *
 from direct.showbase.MessengerGlobal import *
 from direct.showbase import ExceptionVarDump
-from direct.showbase.ProfileSession import ProfileSession
 import time
 import fnmatch
 import string
@@ -872,6 +871,10 @@ class TaskManager:
         doProfile = (task.id == profileInfo.taskId)
         # don't profile the same task twice in a row
         doProfile = doProfile and (not profileInfo.profiled)
+
+        # Defer this import until we need it: some Python
+        # distributions don't provide the profile and pstats modules.
+        from direct.showbase.ProfileSession import ProfileSession
         
         if not self.taskTimerVerbose:
             startTime = self.trueClock.getShortTime()
@@ -1034,6 +1037,10 @@ class TaskManager:
         # call to get a profile session that you can modify before passing to profileFrames()
         if name is None:
             name = 'taskMgrFrameProfile'
+
+        # Defer this import until we need it: some Python
+        # distributions don't provide the profile and pstats modules.
+        from direct.showbase.ProfileSession import ProfileSession
         return ProfileSession(name)
 
     def profileFrames(self, num=None, session=None, callback=None):

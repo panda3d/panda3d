@@ -9,7 +9,6 @@ __all__ = ['Task', 'TaskManager',
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import ExceptionVarDump
 from direct.showbase.PythonUtil import *
-from direct.showbase.ProfileSession import ProfileSession
 import signal
 import types
 import time
@@ -550,6 +549,10 @@ class TaskManager:
         # call to get a profile session that you can modify before passing to profileFrames()
         if name is None:
             name = 'taskMgrFrameProfile'
+
+        # Defer this import until we need it: some Python
+        # distributions don't provide the profile and pstats modules.
+        from direct.showbase.ProfileSession import ProfileSession
         return ProfileSession(name)
 
     def profileFrames(self, num=None, session=None, callback=None):
@@ -634,6 +637,9 @@ class TaskManager:
         task.setArgs(taskArgs, appendTask)
         task.setFunction(profileInfo.taskFunc)
 
+        # Defer this import until we need it: some Python
+        # distributions don't provide the profile and pstats modules.
+        from direct.showbase.ProfileSession import ProfileSession
         profileSession = ProfileSession('profiled-task-%s' % task.getName(),
                                         Functor(profileInfo.taskFunc, *profileInfo.taskArgs))
         ret = profileSession.run()
