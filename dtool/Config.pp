@@ -847,6 +847,11 @@
 #defer SOFTIMAGE_LIBS SAA.lib
 #defer HAVE_SOFTIMAGE $[isdir $[SOFTIMAGE_LOCATION]/h]
 
+// Is FCollada installed? This is for the daeegg converter.
+#define FCOLLADA_IPATH /usr/local/include/fcollada
+#define FCOLLADA_LPATH /usr/local/lib
+#define FCOLLADA_LIBS FColladaSD
+#defer HAVE_FCOLLADA $[libtest $[FCOLLADA_LPATH],$[FCOLLADA_LIBS]]
 
 // Define this to generate static libraries and executables, rather than
 // dynamic libraries.
