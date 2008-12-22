@@ -54,8 +54,6 @@ class ShowBase(DirectObject.DirectObject):
 
     notify = directNotify.newCategory("ShowBase")
 
-    GarbageCollectTaskName = "allowGarbageCollect"
-
     def __init__(self):
         __builtin__.__dev__ = config.GetBool('want-dev', 0)
         if config.GetBool('want-variable-dump', not __dev__):
@@ -367,10 +365,6 @@ class ShowBase(DirectObject.DirectObject):
         if self.windowType != 'none':
             self.__doStartDirect()
 
-        if config.GetBool('want-garbage-collect-task', 1):
-            # manual garbage-collect task
-            taskMgr.add(self._garbageCollect, self.GarbageCollectTaskName, 200)
-            
         taskMgr.finalInit()
 
         # Start IGLOOP
@@ -2307,26 +2301,7 @@ class ShowBase(DirectObject.DirectObject):
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)
 
     def run(self):
-        try:
-            self.taskMgr.run()
-        except:
-            # make sure gc is enabled when we break out to the prompt
-            gc.enable()
-        else:
-            gc.enable()
-
-    def _garbageCollect(self, task=None):
-        # enable automatic garbage collection
-        gc.enable()
-        # creating an object with gc enabled causes garbage collection to trigger if appropriate
-        gct = GCTrigger()
-        # disable the automatic garbage collect during the rest of the frame
-        gc.disable()
-        return Task.cont
-
-class GCTrigger:
-    # used to trigger garbage collection
-    pass
+        self.taskMgr.run()
 
 
 # A class to encapsulate information necessary for multiwindow support.

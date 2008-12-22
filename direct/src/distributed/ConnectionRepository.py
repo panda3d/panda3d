@@ -26,6 +26,10 @@ class ConnectionRepository(
     CM_NET=1
     CM_NATIVE=2
 
+    gcNotify = directNotify.newCategory("GarbageCollect")
+
+    GarbageCollectTaskName = "allowGarbageCollect"
+    GarbageThresholdTaskName = "adjustGarbageCollectThreshold"
 
     def __init__(self, connectMethod, config, hasOwnerView=False):
         assert self.notify.debugCall()
@@ -106,6 +110,45 @@ class ConnectionRepository(
             # need to run garbage collects
             # garbage collection CPU usage is O(n), n = number of Python objects
             gc.set_debug(gc.DEBUG_SAVEALL)
+
+        if self.config.GetBool('want-garbage-collect-task', 1):
+            # manual garbage-collect task
+            taskMgr.add(self._garbageCollect, self.GarbageCollectTaskName, 200)
+            # periodically increase gc threshold if there is no garbage
+            taskMgr.doMethodLater(self.config.GetFloat('garbage-threshold-adjust-delay', 15 * 60.),
+                                  self._adjustGcThreshold, self.GarbageThresholdTaskName)
+            
+        self._gcDefaultThreshold = gc.get_threshold()
+
+    def _garbageCollect(self, task=None):
+        # allow a collect
+        # enable automatic garbage collection
+        gc.enable()
+        # creating an object with gc enabled causes garbage collection to trigger if appropriate
+        gct = GCTrigger()
+        # disable the automatic garbage collect during the rest of the frame
+        gc.disable()
+        return Task.cont
+
+    def _adjustGcThreshold(self, task):
+        # do an unconditional collect to make sure gc.garbage has a chance to be
+        # populated before we start increasing the auto-collect threshold
+        gc.collect()
+        if len(gc.garbage) == 0:
+            self.gcNotify.debug('no garbage found, doubling gc threshold')
+            a, b, c = gc.get_threshold()
+            gc.set_threshold(min(a * 2, 1 << 30), b, c)
+
+            task.delayTime = task.delayTime * 2
+            retVal = Task.again
+
+        else:
+            self.gcNotify.warning('garbage found, reverting gc threshold')
+            # the process is producing garbage, stick to the default collection threshold
+            gc.set_threshold(*self._gcDefaultThreshold)
+            retVal = Task.done
+
+        return retVal
 
     def generateGlobalObject(self, doId, dcname, values=None):
         def applyFieldValues(distObj, dclass, values):
@@ -583,3 +626,7 @@ class ConnectionRepository(
         if self.networkPlugPulled():
             self.notify.info('*** RESTORING SIMULATED PULLED-NETWORK-PLUG ***')
             self.setSimulatedDisconnect(0)
+
+class GCTrigger:
+    # used to trigger garbage collection
+    pass
