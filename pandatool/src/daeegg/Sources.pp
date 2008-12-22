@@ -17,11 +17,11 @@
     daeToEggConverter.cxx daeToEggConverter.h \
     daeCharacter.cxx daeCharacter.h \
     daeMaterials.cxx daeMaterials.h \
-    pre_fcollada_include.h
+    pre_fcollada_include.h fcollada_utils.h
 
   #define INSTALL_HEADERS \
     config_daeegg.h daeToEggConverter.h \
     daeCharacter.h daeMaterials.h \
-    pre_fcollada_include.h
+    pre_fcollada_include.h fcollada_utils.h
 
 #end lib_target

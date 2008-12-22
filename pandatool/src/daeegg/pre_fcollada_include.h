@@ -15,6 +15,13 @@
 // This file defines some stuff that need to be defined before
 // one includes FCollada.h
 
+#ifndef PRE_FCOLLADA_INCLUDE_H
+#define PRE_FCOLLADA_INCLUDE_H
+
+#ifdef FCOLLADA_VERSION
+  #error You must include pre_fcollada_include.h before including FCollada.h!
+#endif
+
 // FCollada expects LINUX to be defined on linux
 #ifdef IS_LINUX
   #ifndef LINUX
@@ -24,3 +31,5 @@
 
 #define NO_LIBXML
 #define FCOLLADA_NOMINMAX
+
+#endif

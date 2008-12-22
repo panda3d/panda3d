@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "daeToEggConverter.h"
+#include "fcollada_utils.h"
 #include "config_daeegg.h"
 #include "daeCharacter.h"
 #include "dcast.h"
@@ -35,6 +36,7 @@
 #include "FCDocument/FCDGeometry.h"
 #include "FCDocument/FCDGeometryInstance.h"
 #include "FCDocument/FCDGeometryPolygons.h"
+#include "FCDocument/FCDGeometryPolygonsInput.h"
 #include "FCDocument/FCDGeometrySource.h"
 #include "FCDocument/FCDSkinController.h"
 #include "FCDocument/FCDController.h"
@@ -44,15 +46,6 @@
 #include "FCDocument/FCDExtra.h"
 #include "FCDocument/FCDEffect.h"
 #include "FCDocument/FCDEffectStandard.h"
-
-// Useful conversion stuff
-#define TO_VEC3(v) (LVecBase3d(v[0], v[1], v[2]))
-#define TO_VEC4(v) (LVecBase4d(v[0], v[1], v[2], v[3]))
-#define TO_COLOR(v) (Colorf(v[0], v[1], v[2], v[3]))
-#define FROM_VEC3(v) (FMVector3(v[0], v[1], v[2]))
-#define FROM_VEC4(v) (FMVector4(v[0], v[1], v[2], v[3]))
-#define FROM_MAT4(v) (FMMatrix44(v.getData()))
-#define FROM_FSTRING(fs) (string(fs.c_str()))
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DAEToEggConverter::Constructor
@@ -216,7 +209,12 @@ void DAEToEggConverter::preprocess(const FCDSceneNode* node) {
   for (size_t in = 0; in < node->GetInstanceCount(); ++in) {
     if (node->GetInstance(in)->GetType() == FCDEntityInstance::CONTROLLER) {
       // Loop through the skeleton roots now.
+#if FCOLLADA_VERSION < 0x00030005
       FCDSceneNodeList roots = ((FCDControllerInstance*) node->GetInstance(in))->FindSkeletonNodes();
+#else
+      FCDSceneNodeList roots;
+      ((FCDControllerInstance*) node->GetInstance(in))->FindSkeletonNodes(roots);
+#endif
       for (FCDSceneNodeList::iterator it = roots.begin(); it != roots.end(); ++it) {
         daeegg_cat.spam() << "Found referenced skeleton root " << FROM_FSTRING((*it)->GetDaeId()) << endl;
         _skeletons.push_back(FROM_FSTRING((*it)->GetDaeId()));
@@ -515,7 +513,12 @@ void DAEToEggConverter::process_controller(PT(EggGroup) parent, const FCDControl
     }
   }
   // Add the joint hierarchy
+#if FCOLLADA_VERSION < 0x00030005
   FCDSceneNodeList roots = (const_cast<FCDControllerInstance*> (instance))->FindSkeletonNodes();
+#else
+  FCDSceneNodeList roots;
+  (const_cast<FCDControllerInstance*> (instance))->FindSkeletonNodes(roots);
+#endif
   for (FCDSceneNodeList::iterator it = roots.begin(); it != roots.end(); ++it) {
     process_node(DCAST(EggGroupNode, parent), *it, true);
   }

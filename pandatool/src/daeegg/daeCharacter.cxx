@@ -14,6 +14,7 @@
 
 #include "daeCharacter.h"
 #include "config_daeegg.h"
+#include "fcollada_utils.h"
 #include "pt_EggVertex.h"
 #include "eggXfmSAnim.h"
 
@@ -22,15 +23,6 @@
 #include "FCDocument/FCDSceneNodeTools.h"
 
 TypeHandle DaeCharacter::_type_handle;
-
-// Useful conversion stuff
-#define TO_VEC3(v) (LVecBase3d(v[0], v[1], v[2]))
-#define TO_VEC4(v) (LVecBase4d(v[0], v[1], v[2], v[3]))
-#define TO_COLOR(v) (Colorf(v[0], v[1], v[2], v[3]))
-#define FROM_VEC3(v) (FMVector3(v[0], v[1], v[2]))
-#define FROM_VEC4(v) (FMVector4(v[0], v[1], v[2], v[3]))
-#define FROM_MAT4(v) (FMMatrix44(v.getData()))
-#define FROM_FSTRING(fs) (string(fs.c_str()))
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DaeCharacter::Constructor
@@ -69,7 +61,12 @@ as_egg_bundle() {
   skeleton->set_table_type(EggTable::TT_table);
   bundle->add_child(skeleton);
   // Loop through the joint hierarchy
+#if FCOLLADA_VERSION < 0x00030005
   FCDSceneNodeList roots = _controller_instance->FindSkeletonNodes();
+#else
+  FCDSceneNodeList roots;
+  _controller_instance->FindSkeletonNodes(roots);
+#endif
   for (FCDSceneNodeList::iterator it = roots.begin(); it != roots.end(); ++it) {
     process_joint(skeleton, *it);
   }

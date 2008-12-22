@@ -14,6 +14,7 @@
 
 #include "daeMaterials.h"
 #include "config_daeegg.h"
+#include "fcollada_utils.h"
 
 #include "FCDocument/FCDocument.h"
 #include "FCDocument/FCDMaterial.h"
@@ -26,12 +27,6 @@
 #include "string_utils.h"
 
 TypeHandle DaeMaterials::_type_handle;
-
-// Useful conversion stuff
-#define CONV_VEC3(v) (LVecBase3d(v[0], v[1], v[2]))
-#define CONV_VEC4(v) (LVecBase4d(v[0], v[1], v[2], v[3]))
-#define CONV_COLOR(v) (Colorf(v[0], v[1], v[2], v[3]))
-#define FROM_FSTRING(fs) (string(fs.c_str()))
 
 // luminance function, based on the ISO/CIE color standards
 // see ITU-R Recommendation BT.709-4
@@ -68,7 +63,7 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
   for (size_t vib = 0; vib < instance->GetVertexInputBindingCount(); ++vib) {
     const FCDMaterialInstanceBindVertexInput* mivib = instance->GetVertexInputBinding(vib);
     assert(mivib != NULL);
-    _materials[semantic]->_uvsets[mivib->inputSet] = FROM_FSTRING(mivib->semantic);
+    _materials[semantic]->_uvsets[mivib->inputSet] = *mivib->semantic;
   }
   
   // Handle the material stuff
@@ -87,26 +82,28 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
     } else {
       daeegg_cat.spam() << "Processing effect, material semantic is " << semantic << endl;
       // Set the material parameters
-      egg_material->set_amb(CONV_COLOR(effect_common->GetAmbientColor()));
+      egg_material->set_amb(TO_COLOR(effect_common->GetAmbientColor()));
       ////TODO: find a better way for transparency
-      //LVecBase4f diffuse = CONV_COLOR(effect_common->GetDiffuseColor());
+      //LVecBase4f diffuse = TO_COLOR(effect_common->GetDiffuseColor());
       //diffuse.set_w(diffuse.get_w() * (1.0f - effect_common->GetOpacity()));
       //egg_material->set_diff(diffuse);
-      egg_material->set_diff(CONV_COLOR(effect_common->GetDiffuseColor()));
-      egg_material->set_emit(CONV_COLOR(effect_common->GetEmissionColor()) * effect_common->GetEmissionFactor());
+      egg_material->set_diff(TO_COLOR(effect_common->GetDiffuseColor()));
+      egg_material->set_emit(TO_COLOR(effect_common->GetEmissionColor()) * effect_common->GetEmissionFactor());
       egg_material->set_shininess(effect_common->GetShininess());
-      egg_material->set_spec(CONV_COLOR(effect_common->GetSpecularColor()));
+      egg_material->set_spec(TO_COLOR(effect_common->GetSpecularColor()));
       // Now try to load in the textures
       process_texture_bucket(semantic, effect_common, FUDaeTextureChannel::DIFFUSE, EggTexture::ET_modulate);
       process_texture_bucket(semantic, effect_common, FUDaeTextureChannel::BUMP, EggTexture::ET_normal);
       process_texture_bucket(semantic, effect_common, FUDaeTextureChannel::SPECULAR, EggTexture::ET_modulate_gloss);
       process_texture_bucket(semantic, effect_common, FUDaeTextureChannel::SPECULAR_LEVEL, EggTexture::ET_gloss);
-      process_texture_bucket(semantic, effect_common, FUDaeTextureChannel::OPACITY, EggTexture::ET_unspecified, EggTexture::F_alpha);
       process_texture_bucket(semantic, effect_common, FUDaeTextureChannel::TRANSPARENT, EggTexture::ET_unspecified, EggTexture::F_alpha);
       process_texture_bucket(semantic, effect_common, FUDaeTextureChannel::EMISSION, EggTexture::ET_add);
+#if FCOLLADA_VERSION < 0x00030005
+      process_texture_bucket(semantic, effect_common, FUDaeTextureChannel::OPACITY, EggTexture::ET_unspecified, EggTexture::F_alpha);
+#endif
       // Now, calculate the color blend stuff.
       _materials[semantic]->_blend = convert_blend(effect_common->GetTransparencyMode(),
-                                        CONV_COLOR(effect_common->GetTranslucencyColor()),
+                                          TO_COLOR(effect_common->GetTranslucencyColor()),
                                                    effect_common->GetTranslucencyFactor());
     }
     // Find an <extra> tag to support some extra stuff from extensions
