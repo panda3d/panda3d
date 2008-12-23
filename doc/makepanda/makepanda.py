@@ -3597,7 +3597,8 @@ Section: libdevel
 Priority: optional
 Architecture: ARCH
 Essential: no
-Depends: PYTHONV, python-profiler (>= PV)
+Depends: PYTHONV
+Recommends: python-profiler (>= PV)
 Provides: panda3d
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
 Description: The Panda3D free 3D engine
