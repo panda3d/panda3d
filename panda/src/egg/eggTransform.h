@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 #include "luse.h"
+#include "eggObject.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : EggTransform
@@ -85,7 +86,8 @@ PUBLISHED:
   INLINE const LMatrix3d &get_component_mat3(int n) const;
   INLINE const LMatrix4d &get_component_mat4(int n) const;
 
-  void write(ostream &out, int indent_level) const;
+  void write(ostream &out, int indent_level,
+             const string &label) const;
 
 protected:
   void internal_clear_transform();

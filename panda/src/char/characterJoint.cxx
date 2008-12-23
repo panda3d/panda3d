@@ -57,8 +57,8 @@ CharacterJoint(const CharacterJoint &copy) :
 CharacterJoint::
 CharacterJoint(Character *character,
                PartBundle *root, PartGroup *parent, const string &name,
-               const LMatrix4f &initial_value) :
-  MovingPartMatrix(parent, name, initial_value),
+               const LMatrix4f &default_value) :
+  MovingPartMatrix(parent, name, default_value),
   _character(character)
 {
   Thread *current_thread = Thread::get_current_thread();

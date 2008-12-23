@@ -179,6 +179,27 @@ expose(EggGroup::DCSType dcs_type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggJointNodePointer::apply_default_pose
+//       Access: Public, Virtual
+//  Description: Applies the pose from the indicated frame of the
+//               indicated source joint as the initial pose for
+//               this joint.
+////////////////////////////////////////////////////////////////////
+void EggJointNodePointer::
+apply_default_pose(EggJointPointer *source_joint, int frame) {
+  if (_joint != (EggGroup *)NULL) {
+    LMatrix4d pose;
+    if (frame >= 0 && frame < source_joint->get_num_frames()) {
+      pose = source_joint->get_frame(frame);
+    } else {
+      pose = get_frame(0);
+    }
+    _joint->clear_default_pose();
+    _joint->modify_default_pose().add_matrix4(pose);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggJointNodePointer::has_vertices
 //       Access: Public, Virtual
 //  Description: Returns true if there are any vertices referenced by

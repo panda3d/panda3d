@@ -47,6 +47,7 @@ JointVertexTransform(CharacterJoint *joint) :
 {
   // Tell the joint that we need to be informed when it moves.
   _joint->_vertex_transforms.insert(this);
+  mark_modified(Thread::get_current_thread());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -219,4 +220,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   manager->read_pointer(scan);
   _matrix_stale = true;
+  mark_modified(Thread::get_current_thread());
 }

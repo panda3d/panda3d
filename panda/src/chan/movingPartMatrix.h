@@ -35,11 +35,10 @@ protected:
 
 public:
   INLINE MovingPartMatrix(PartGroup *parent, const string &name,
-                          const LMatrix4f &initial_value =
-                          LMatrix4f::ident_mat());
+                          const LMatrix4f &default_value);
   virtual ~MovingPartMatrix();
 
-  virtual AnimChannelBase *make_initial_channel() const;
+  virtual AnimChannelBase *make_default_channel() const;
   virtual void get_blend_value(const PartBundle *root);
 
   virtual bool apply_freeze_matrix(const LVecBase3f &pos, const LVecBase3f &hpr, const LVecBase3f &scale);

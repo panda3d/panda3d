@@ -262,6 +262,11 @@ PUBLISHED:
   INLINE bool has_tag(const string &key) const;
   INLINE void clear_tag(const string &key);
 
+  INLINE const EggTransform &get_default_pose() const;
+  INLINE EggTransform &modify_default_pose();
+  INLINE void set_default_pose(const EggTransform &transform);
+  INLINE void clear_default_pose();
+
 public:
   INLINE TagData::const_iterator tag_begin() const;
   INLINE TagData::const_iterator tag_end() const;
@@ -360,6 +365,12 @@ private:
   double _fps;
   PT(EggSwitchCondition) _lod;
   TagData _tag_data;
+
+  // This is the <DefaultPose> entry for a <Joint>.  It is not the
+  // <Transform> entry (that is stored via inheritance, in the
+  // EggTransform class we inherit from).
+  EggTransform _default_pose;
+
   VertexRef _vref;
 
   typedef pvector< PT(EggGroup) > GroupRefs;

@@ -39,6 +39,7 @@ public:
 
   virtual bool do_rebuild(EggCharacterDb &db);
   virtual void expose(EggGroup::DCSType dcs_type);
+  virtual void apply_default_pose(EggJointPointer *source_joint, int frame);
 
   virtual bool has_vertices() const;
 

@@ -230,8 +230,8 @@ add_uniform_scale(double scale) {
 //               format.
 ////////////////////////////////////////////////////////////////////
 void EggTransform::
-write(ostream &out, int indent_level) const {
-  indent(out, indent_level) << "<Transform> {\n";
+write(ostream &out, int indent_level, const string &label) const {
+  indent(out, indent_level) << label << " {\n";
 
   int num_components = get_num_components();
   for (int i = 0; i < num_components; i++) {

@@ -282,7 +282,7 @@ bind_hierarchy(AnimGroup *anim, int channel_index, int &joint_index,
       // If we're binding to the NULL anim, it means actually to create
       // a default AnimChannel that just returns the part's initial
       // value.
-      _channels[channel_index] = make_initial_channel();
+      _channels[channel_index] = make_default_channel();
     } else {
       _channels[channel_index] = DCAST(AnimChannelBase, anim);
     }

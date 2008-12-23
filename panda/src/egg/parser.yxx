@@ -33,6 +33,7 @@
 #include "eggExternalReference.h"
 #include "eggData.h"
 #include "eggAnimPreload.h"
+#include "eggTransform.h"
 #include "pt_EggTexture.h"
 #include "pt_EggMaterial.h"
 
@@ -60,6 +61,9 @@
 
 typedef pvector< PT(EggObject) > EggStack;
 static EggStack egg_stack;
+
+// This is used just when parsing a <Transform> or <DefaultPose> entry.
+static EggTransform *egg_top_transform;
 
 // There's one "top-level" egg node, which is where we should parent
 // things (e.g. implicit textures) encountered in the egg file that
@@ -160,7 +164,7 @@ egg_cleanup_parser() {
 %token COORDSYSTEM CV DART
 %token DNORMAL DRGBA DUV DXYZ DCS DISTANCE DTREF
 %token DYNAMICVERTEXPOOL EXTERNAL_FILE
-%token FLIGHT GROUP HIP INTANGENT
+%token GROUP DEFAULTPOSE 
 %token JOINT KNOTS INCLUDE
 %token INSTANCE LINE LOOP MATERIAL MATRIX3 MATRIX4 MODEL MREF NORMAL
 %token NURBSCURVE NURBSSURFACE OBJECTTYPE ORDER
@@ -1432,6 +1436,7 @@ group_body:
   group->set_texlist_flag(value!=0);
 }
         | group_body transform
+        | group_body default_pose
         | group_body group_vertex_ref
         | group_body switchcondition
         | group_body REF '{' group_name '}'
@@ -1512,7 +1517,28 @@ collide_flags:
 transform:
         TRANSFORM
 {
-  egg_stack.back()->as_transform()->clear_transform();
+  egg_top_transform = egg_stack.back()->as_transform();
+  egg_top_transform->clear_transform();
+}
+        '{' transform_body '}'
+        ;
+
+/*
+ * default_pose
+ *
+ * enter: TOS is an EggGroup
+ * exit: default_pose matrix has been set.
+ *
+ */
+default_pose:
+        DEFAULTPOSE
+{
+  EggGroup *group = DCAST(EggGroup, egg_stack.back());
+  if (group->get_group_type() != EggGroup::GT_joint) {
+    eggyywarning("Unexpected <DefaultPose> outside of <Joint>");
+  }
+  egg_top_transform = &group->modify_default_pose();
+  egg_top_transform->clear_transform();
 }
         '{' transform_body '}'
         ;
@@ -1521,7 +1547,7 @@ transform:
 /*
  * transform_body
  *
- * enter: TOS is some kind of EggTransform.
+ * enter: egg_top_transform has been assigned.
  * exit: transform has been filled in.
  *
  */
@@ -1544,70 +1570,70 @@ transform_body:
 translate2d:
         TRANSLATE '{' real real '}'
 {
-  egg_stack.back()->as_transform()->add_translate2d(LVector2d($3, $4));
+  egg_top_transform->add_translate2d(LVector2d($3, $4));
 }
         ;
 
 translate3d:
         TRANSLATE '{' real real real '}'
 {
-  egg_stack.back()->as_transform()->add_translate3d(LVector3d($3, $4, $5));
+  egg_top_transform->add_translate3d(LVector3d($3, $4, $5));
 }
         ;
 
 rotate2d:
         ROTATE '{' real '}'
 {
-  egg_stack.back()->as_transform()->add_rotate2d($3);
+  egg_top_transform->add_rotate2d($3);
 }
         ;
 
 rotx:
         ROTX '{' real '}'
 {
-  egg_stack.back()->as_transform()->add_rotx($3);
+  egg_top_transform->add_rotx($3);
 }
         ;
 
 roty:
         ROTY '{' real '}'
 {
-  egg_stack.back()->as_transform()->add_roty($3);
+  egg_top_transform->add_roty($3);
 }
         ;
 
 rotz:
         ROTZ '{' real '}'
 {
-  egg_stack.back()->as_transform()->add_rotz($3);
+  egg_top_transform->add_rotz($3);
 }
         ;
 
 rotate3d:
         ROTATE '{' real real real real '}'
 {
-  egg_stack.back()->as_transform()->add_rotate3d($3, LVector3d($4, $5, $6));
+  egg_top_transform->add_rotate3d($3, LVector3d($4, $5, $6));
 }
         ;
 
 scale2d:
         SCALE '{' real real '}'
 {
-  egg_stack.back()->as_transform()->add_scale2d(LVecBase2d($3, $4));
+  egg_top_transform->add_scale2d(LVecBase2d($3, $4));
 }
         ;
 
 scale3d:
         SCALE '{' real real real '}'
 {
-  egg_stack.back()->as_transform()->add_scale3d(LVecBase3d($3, $4, $5));
+  egg_top_transform->add_scale3d(LVecBase3d($3, $4, $5));
 }
         ;
 
 uniform_scale:
         SCALE '{' real '}'
 {
-  egg_stack.back()->as_transform()->add_uniform_scale($3);
+  egg_top_transform->add_uniform_scale($3);
 }
         ;
 
@@ -1621,7 +1647,7 @@ matrix3_body:
           real real real
           real real real
 {
-  egg_stack.back()->as_transform()->add_matrix3
+  egg_top_transform->add_matrix3
     (LMatrix3d($1, $2, $3,
                $4, $5, $6,
                $7, $8, $9));
@@ -1639,7 +1665,7 @@ matrix4_body:
           real real real real 
           real real real real 
 {
-  egg_stack.back()->as_transform()->add_matrix4
+  egg_top_transform->add_matrix4
     (LMatrix4d($1, $2, $3, $4,
                $5, $6, $7, $8,
                $9, $10, $11, $12,

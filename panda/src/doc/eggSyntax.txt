@@ -1508,6 +1508,26 @@ GROUPING ENTRIES
     may define either a 2-d or a 3-d transform when it appears within
     the body of a <Texture>.  See <Texture>, above.
 
+  <DefaultPose> { transform-definition }
+
+    This defines an optional default pose transform, which might be a
+    different transform from that defined by the <Transform> entry,
+    above.  This makes sense only for a <Joint>.  See the <Joint>
+    description, below.
+
+    The default pose transform defines the transform the joint will
+    maintain in the absence of any animation being applied.  This is
+    different from the <Transform> entry, which defines the coordinate
+    space the joint must have in order to keep its vertices in their
+    (global space) position as given in the egg file.  If this is
+    different from the <Transform> entry, the joint's vertices will
+    *not* be in their egg file position at initial load.  If there is
+    no <DefaultPose> entry for a particular joint, the implicit
+    default-pose transform is the same as the <Transform> entry.
+
+    Normally, the <DefaultPose> entry, if any, is created by the
+    egg-optchar -defpose option.  Most other software has little
+    reason to specify an explicit <DefaultPose>.
 
   <VertexRef> { indices <Ref> { pool-name } }
 
@@ -1768,8 +1788,9 @@ ANIMATION STRUCTURE
 
   It is not necessary for every joint to have vertices at all.  Every
   joint should include a transform entry, however, which defines the
-  initial, resting transform of the joint.  If a transform is omitted,
-  the identity transform is assumed.
+  initial, resting transform of the joint (but see also <DefaultPose>,
+  above).  If a transform is omitted, the identity transform is
+  assumed.
 
   Some of the vertex definitions may include morph entries, as
   described in MORPH DESCRIPTION ENTRIES, above.  These are meaningful

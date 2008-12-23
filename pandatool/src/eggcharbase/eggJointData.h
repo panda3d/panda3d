@@ -59,6 +59,7 @@ public:
   void expose(EggGroup::DCSType dcs_type = EggGroup::DC_default);
   void zero_channels(const string &components);
   void quantize_channels(const string &components, double quantum);
+  void apply_default_pose(int source_model, int frame);
 
   virtual void add_back_pointer(int model_index, EggObject *egg_object);
   virtual void write(ostream &out, int indent_level = 0) const;

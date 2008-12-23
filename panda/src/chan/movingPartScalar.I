@@ -32,8 +32,8 @@ MovingPartScalar(const MovingPartScalar &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE MovingPartScalar::
 MovingPartScalar(PartGroup *parent, const string &name,
-                 const float &initial_value)
-  : MovingPart<ACScalarSwitchType>(parent, name, initial_value) {
+                 const float &default_value)
+  : MovingPart<ACScalarSwitchType>(parent, name, default_value) {
 }
 
 ////////////////////////////////////////////////////////////////////

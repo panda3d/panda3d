@@ -290,7 +290,7 @@ write(ostream &out, int indent_level) const {
   EggRenderMode::write(out, indent_level + 2);
 
   if (has_transform()) {
-    EggTransform::write(out, indent_level + 2);
+    EggTransform::write(out, indent_level + 2, "<Transform>");
   }
 
   indent(out, indent_level) << "}\n";

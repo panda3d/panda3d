@@ -38,7 +38,7 @@ INLINE MovingPart<SwitchType>::
 MovingPart(const MovingPart<SwitchType> &copy) :
   MovingPartBase(copy),
   _value(copy._value),
-  _initial_value(copy._initial_value)
+  _default_value(copy._default_value)
 {
 }
 
@@ -50,10 +50,10 @@ MovingPart(const MovingPart<SwitchType> &copy) :
 template<class SwitchType>
 INLINE MovingPart<SwitchType>::
 MovingPart(PartGroup *parent, const string &name,
-           const ValueType &initial_value) :
+           const ValueType &default_value) :
   MovingPartBase(parent, name),
-  _value(initial_value),
-  _initial_value(initial_value)
+  _value(default_value),
+  _default_value(default_value)
 {
 }
 
@@ -84,7 +84,7 @@ get_value_type() const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovingPart::make_initial_channel
+//     Function: MovingPart::make_default_channel
 //       Access: Public, Virtual
 //  Description: Creates and returns a new AnimChannel that is not
 //               part of any hierarchy, but that returns the default
@@ -92,8 +92,8 @@ get_value_type() const {
 ////////////////////////////////////////////////////////////////////
 template<class SwitchType>
 AnimChannelBase *MovingPart<SwitchType>::
-make_initial_channel() const {
-  return new AnimChannelFixed<SwitchType>(get_name(), _initial_value);
+make_default_channel() const {
+  return new AnimChannelFixed<SwitchType>(get_name(), _default_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,7 +119,7 @@ void MovingPart<SwitchType>::
 write_datagram(BamWriter *manager, Datagram &me) {
   MovingPartBase::write_datagram(manager, me);
   SwitchType::write_datagram(me, _value);
-  SwitchType::write_datagram(me, _initial_value);
+  SwitchType::write_datagram(me, _default_value);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ void MovingPart<SwitchType>::
 fillin(DatagramIterator &scan, BamReader *manager) {
   MovingPartBase::fillin(scan, manager);
   SwitchType::read_datagram(scan, _value);
-  SwitchType::read_datagram(scan, _initial_value);
+  SwitchType::read_datagram(scan, _default_value);
 }
 
 

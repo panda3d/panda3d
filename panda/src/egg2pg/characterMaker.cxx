@@ -224,17 +224,21 @@ egg_to_slider(const string &name) {
 CharacterJointBundle *CharacterMaker::
 make_bundle() {
   build_joint_hierarchy(_egg_root, _skeleton_root, -1);
-
   make_geometry(_egg_root);
 
   _bundle->sort_descendants();
   parent_joint_nodes(_skeleton_root);
 
+  // Now call update() one more time, to ensure that all of the joints
+  // have their correct transform (since we might have modified the
+  // default transform after construction).
+  _bundle->force_update();
+
   return _bundle;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CharacterMaker::build_hierarchy
+//     Function: CharacterMaker::build_joint_hierarchy
 //       Access: Private
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -271,6 +275,9 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
       // We need to get the transform of the joint, and then convert
       // it to single-precision.
       LMatrix4d matd;
+
+      // First, we get the original, initial transform from the
+      // <Transform> entry.
       if (egg_group->has_transform()) {
         matd = egg_group->get_transform3d();
       } else {
@@ -284,6 +291,16 @@ build_joint_hierarchy(EggNode *egg_node, PartGroup *part, int index) {
                            part, egg_group->get_name(), matf);
       index = _parts.size();
       _parts.push_back(joint);
+
+      // Now that we have computed _net_transform (which we need to
+      // convert the vertices), update the default transform from the
+      // <DefaultPose> entry.
+      if (egg_group->get_default_pose().has_transform()) {
+        matd = egg_group->get_default_pose().get_transform3d();
+        matf = LCAST(float, matd);
+        joint->_default_value = matf;
+        joint->_value = matf;
+      }
 
       if (egg_group->has_dcs_type()) {
         // If the joint requested an explicit DCS, create a node for

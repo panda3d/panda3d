@@ -198,8 +198,8 @@ apply_transform(const TransformState *transform) {
 //  Description: Sets the control effect of all AnimControls to zero
 //               (but does not "stop" the AnimControls).  The
 //               character will no longer be affected by any
-//               animation, and will return to its original Jesus
-//               pose.
+//               animation, and will return to its default
+//               pose (unless restore-initial-pose is false).
 //
 //               The AnimControls which are no longer associated will
 //               not be using any CPU cycles, but they may still be in
@@ -217,6 +217,7 @@ clear_control_effects() {
     cdataw->_blend.clear();
     cdataw->_net_blend = 0.0f;
     cdataw->_anim_changed = true;
+    determine_effective_channels(cdata);
   }
 }
 
@@ -806,6 +807,7 @@ clear_and_stop_intersecting(AnimControl *control, CData *cdata) {
     cdata->_net_blend = new_net_blend;
     cdata->_blend.swap(new_blend);
     cdata->_anim_changed = true;
+    determine_effective_channels(cdata);
   }
 }
 

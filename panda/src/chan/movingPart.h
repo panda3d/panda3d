@@ -37,14 +37,14 @@ protected:
 
 public:
   INLINE MovingPart(PartGroup *parent, const string &name,
-                    const ValueType &_initial_value);
+                    const ValueType &default_value);
 
   virtual TypeHandle get_value_type() const;
-  virtual AnimChannelBase *make_initial_channel() const;
+  virtual AnimChannelBase *make_default_channel() const;
   virtual void output_value(ostream &out) const;
 
   ValueType _value;
-  ValueType _initial_value;
+  ValueType _default_value;
 
 public:
   INLINE virtual void write_datagram(BamWriter* manager, Datagram &me);
@@ -65,8 +65,8 @@ PUBLISHED:
   INLINE ValueType get_value() const {
     return _value;
   }
-  INLINE ValueType get_initial_value() const {
-    return _initial_value;
+  INLINE ValueType get_default_value() const {
+    return _default_value;
   }
 public:
   static void init_type() {

@@ -435,21 +435,13 @@ NUMERIC         ([+-]?(([0-9]+[.]?)|([0-9]*[.][0-9]+))([eE][+-]?[0-9]+)?)
   accept();
   return EXTERNAL_FILE;
 }
-"<FLT_HEADER>" {
-  accept();
-  return FLIGHT;
-}
 "<GROUP>" {
   accept();
   return GROUP;
 }
-"<HIP>" {
+"<DEFAULTPOSE>" {
   accept();
-  return HIP;
-}
-"<IN>" {
-  accept();
-  return INTANGENT;
+  return DEFAULTPOSE;
 }
 "<JOINT>" {
   accept();

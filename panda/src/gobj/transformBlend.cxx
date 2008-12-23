@@ -189,6 +189,7 @@ write(ostream &out, int indent_level) const {
     mat.write(out, indent_level + 4);
   }
   LMatrix4f blend;
+  update_blend(current_thread);
   get_blend(blend, current_thread);
   indent(out, indent_level)
     << "Blended result =\n";

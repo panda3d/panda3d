@@ -90,10 +90,10 @@ PRC_DESC("Set this true to interpolate character animations between frames, "
 
 ConfigVariableBool restore_initial_pose
 ("restore-initial-pose", true,
-PRC_DESC("When this is true, stopping all animations on an Actor causes it "
-         "to return to its initial, unanimated pose.  When false, it retains "
-         "whatever its last-computed pose was (which may or may not be "
-         "the unanimated pose)."));
+PRC_DESC("When this is true, setting all control effects on an Actor to 0 "
+         "causes it to return to its default, unanimated pose.  When "
+         "false, it retains whatever its last-computed pose was "
+         "(which may or may not be the default pose)."));
 
 
 ConfigureFn(config_chan) {

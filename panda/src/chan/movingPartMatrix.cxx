@@ -40,16 +40,16 @@ MovingPartMatrix::
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: MovingPartMatrix::make_initial_channel
+//     Function: MovingPartMatrix::make_default_channel
 //       Access: Public, Virtual
 //  Description: Creates and returns a new AnimChannel that is not
 //               part of any hierarchy, but that returns the default
 //               value associated with this part.
 ////////////////////////////////////////////////////////////////////
 AnimChannelBase *MovingPartMatrix::
-make_initial_channel() const {
+make_default_channel() const {
   LVecBase3f pos, hpr, scale, shear;
-  decompose_matrix(_initial_value, pos, hpr, scale, shear);
+  decompose_matrix(_default_value, pos, hpr, scale, shear);
   return new AnimChannelMatrixFixed(get_name(), pos, hpr, scale);
 }
 
@@ -76,7 +76,7 @@ get_blend_value(const PartBundle *root) {
   if (cdata->_blend.empty()) {
     // No channel is bound; supply the default value.
     if (restore_initial_pose) {
-      _value = _initial_value;
+      _value = _default_value;
     }
 
   } else if (_effective_control != (AnimControl *)NULL && 
@@ -126,7 +126,7 @@ get_blend_value(const PartBundle *root) {
         
         if (net_effect == 0.0f) {
           if (restore_initial_pose) {
-            _value = _initial_value;
+            _value = _default_value;
           }
         } else {
           _value = net_value / net_effect;
@@ -194,7 +194,7 @@ get_blend_value(const PartBundle *root) {
         
         if (net_effect == 0.0f) {
           if (restore_initial_pose) {
-            _value = _initial_value;
+            _value = _default_value;
           }
 
         } else {
@@ -273,7 +273,7 @@ get_blend_value(const PartBundle *root) {
         
         if (net_effect == 0.0f) {
           if (restore_initial_pose) {
-            _value = _initial_value;
+            _value = _default_value;
           }
 
         } else {
@@ -352,7 +352,7 @@ get_blend_value(const PartBundle *root) {
         
         if (net_effect == 0.0f) {
           if (restore_initial_pose) {
-            _value = _initial_value;
+            _value = _default_value;
           }
 
         } else {

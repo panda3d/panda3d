@@ -904,6 +904,61 @@ clear_tag(const string &key) {
   _tag_data.erase(key);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::get_default_pose
+//       Access: Published
+//  Description: Returns a read-only accessor to the initial pose
+//               transform.  This is the <DefaultPose> entry for a
+//               Joint, and defines only the initial transform pose
+//               for the unanimated joint; it has nothing to do with
+//               the group's <Transform> entry, which defines the
+//               (eventual) space of the group's vertices.
+////////////////////////////////////////////////////////////////////
+INLINE const EggTransform &EggGroup::
+get_default_pose() const {
+  return _default_pose;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::modify_default_pose
+//       Access: Published
+//  Description: Returns a writable accessor to the initial pose
+//               transform.  This is the <DefaultPose> entry for a
+//               Joint, and defines only the initial transform pose
+//               for the unanimated joint; it has nothing to do with
+//               the group's <Transform> entry, which defines the
+//               (eventual) space of the group's vertices.
+////////////////////////////////////////////////////////////////////
+INLINE EggTransform &EggGroup::
+modify_default_pose() {
+  return _default_pose;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::set_default_pose
+//       Access: Published
+//  Description: Replaces the initial pose transform.  This is the
+//               <DefaultPose> entry for a Joint, and defines only the
+//               initial transform pose for the unanimated joint; it
+//               has nothing to do with the group's <Transform> entry,
+//               which defines the (eventual) space of the group's
+//               vertices.
+////////////////////////////////////////////////////////////////////
+INLINE void EggGroup::
+set_default_pose(const EggTransform &transform) {
+  _default_pose = transform;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggGroup::clear_default_pose
+//       Access: Published
+//  Description: Removes the initial pose transform.  See
+//               set_default_pose().
+////////////////////////////////////////////////////////////////////
+INLINE void EggGroup::
+clear_default_pose() {
+  _default_pose.clear_transform();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggGroup::tag_begin

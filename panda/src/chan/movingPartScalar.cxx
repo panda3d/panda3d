@@ -59,7 +59,7 @@ get_blend_value(const PartBundle *root) {
   if (cdata->_blend.empty()) {
     // No channel is bound; supply the default value.
     if (restore_initial_pose) {
-      _value = _initial_value;
+      _value = _default_value;
     }
 
   } else if (_effective_control != (AnimControl *)NULL &&
@@ -105,7 +105,7 @@ get_blend_value(const PartBundle *root) {
 
     if (net == 0.0f) {
       if (restore_initial_pose) {
-        _value = _initial_value;
+        _value = _default_value;
       }
 
     } else {

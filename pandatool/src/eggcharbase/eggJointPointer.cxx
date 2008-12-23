@@ -98,3 +98,14 @@ zero_channels(const string &) {
 void EggJointPointer::
 quantize_channels(const string &, double) {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointPointer::apply_default_pose
+//       Access: Public, Virtual
+//  Description: Applies the pose from the indicated frame of the
+//               indicated source joint as the initial pose for
+//               this joint.
+////////////////////////////////////////////////////////////////////
+void EggJointPointer::
+apply_default_pose(EggJointPointer *source_joint, int frame) {
+}

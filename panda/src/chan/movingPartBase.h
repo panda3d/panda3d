@@ -44,7 +44,7 @@ PUBLISHED:
 
 public:
   virtual TypeHandle get_value_type() const=0;
-  virtual AnimChannelBase *make_initial_channel() const=0;
+  virtual AnimChannelBase *make_default_channel() const=0;
 
 PUBLISHED:
   virtual bool clear_forced_channel();

@@ -78,6 +78,7 @@ private:
   void do_flag_groups(EggGroupNode *egg_group);
   void rename_primitives(EggGroupNode *egg_group, const string &name);
   void do_preload();
+  void do_defpose();
 
   bool _list_hierarchy;
   bool _list_hierarchy_v;
@@ -117,6 +118,8 @@ private:
   };
   typedef pvector<FlagGroupsEntry> FlagGroups;
   FlagGroups _flag_groups;
+
+  string _defpose;
 
   bool _optimal_hierarchy;
   double _vref_quantum;

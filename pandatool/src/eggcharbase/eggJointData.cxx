@@ -412,6 +412,37 @@ quantize_channels(const string &components, double quantum) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggJointData::apply_default_pose
+//       Access: Public
+//  Description: Applies the pose from the indicated frame of the
+//               indicated source model_index as the initial pose for
+//               this joint, and does this recursively on all joints
+//               below.
+////////////////////////////////////////////////////////////////////
+void EggJointData::
+apply_default_pose(int source_model, int frame) {
+  if (has_model(source_model)) {
+    EggJointPointer *source_joint;
+    DCAST_INTO_V(source_joint, _back_pointers[source_model]);
+    BackPointers::iterator bpi;
+    for (bpi = _back_pointers.begin(); bpi != _back_pointers.end(); ++bpi) {
+      EggBackPointer *back = (*bpi);
+      if (back != (EggBackPointer *)NULL) {
+        EggJointPointer *joint;
+        DCAST_INTO_V(joint, back);
+        joint->apply_default_pose(source_joint, frame);
+      }
+    }
+  }
+
+  Children::iterator ci;
+  for (ci = _children.begin(); ci != _children.end(); ++ci) {
+    EggJointData *child = (*ci);
+    child->apply_default_pose(source_model, frame);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggJointData::add_back_pointer
 //       Access: Public, Virtual
 //  Description: Adds the indicated model joint or anim table to the

@@ -74,8 +74,8 @@ operator = (const EggGroup &copy) {
   _blend_operand_a = copy._blend_operand_a;
   _blend_operand_b = copy._blend_operand_b;
   _blend_color = copy._blend_color;
-
   _tag_data = copy._tag_data;
+  _default_pose = copy._default_pose;
 
   unref_all_vertices();
   _vref = copy._vref;
@@ -219,7 +219,11 @@ write(ostream &out, int indent_level) const {
   write_switch_flags(out, indent_level + 2);
 
   if (has_transform()) {
-    EggTransform::write(out, indent_level + 2);
+    EggTransform::write(out, indent_level + 2, "<Transform>");
+  }
+
+  if (get_group_type() == GT_joint && _default_pose.has_transform()) {
+    _default_pose.write(out, indent_level + 2, "<DefaultPose>");
   }
 
   write_object_types(out, indent_level + 2);
@@ -1250,6 +1254,12 @@ r_transform(const LMatrix4d &mat, const LMatrix4d &inv,
     inv1.set_row(3, LVector3d(0.0, 0.0, 0.0));
 
     internal_set_transform(inv1 * get_transform3d() * mat);
+
+    if (_default_pose.has_transform()) {
+      LMatrix4d t = _default_pose.get_transform3d();
+      _default_pose.clear_transform();
+      _default_pose.add_matrix4(inv1 * t * mat);
+    }
 
     EggGroupNode::r_transform(mat1, inv1, to_cs);
   } else {

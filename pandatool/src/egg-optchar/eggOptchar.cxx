@@ -113,6 +113,16 @@ EggOptchar() {
      &EggOptchar::dispatch_flag_groups, NULL, &_flag_groups);
 
   add_option
+    ("defpose", "anim.egg,frame", 0,
+     "Specify the model's default pose.  The pose is taken "
+     "from the indicated frame of the named animation file (which must "
+     "also be named separately on the command line).  The "
+     "pose will be held by the model in "
+     "the absence of any animation, and need not be the same "
+     "pose in which the model was originally skinned.",
+     &EggOptchar::dispatch_string, NULL, &_defpose);
+
+  add_option
     ("preload", "", 0,
      "Add an <AnimPreload> entry for each animation to the model file(s).  "
      "This can be used at runtime to support asynchronous "
@@ -271,6 +281,13 @@ run() {
     // Add the AnimPreload entries.
     if (_preload) {
       do_preload();
+    }
+
+    // Finally, set the default poses.  It's important not to do this
+    // until after we have adjusted all of the transforms for the
+    // various joints.
+    if (!_defpose.empty()) {
+      do_defpose();
     }
 
     write_eggs();
@@ -1419,6 +1436,83 @@ do_preload() {
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::do_defpose
+//       Access: Private
+//  Description: Sets the initial pose for the character(s).
+////////////////////////////////////////////////////////////////////
+void EggOptchar::
+do_defpose() {
+  // Split out the defpose parameter.
+  Filename egg_filename;
+  size_t comma = _defpose.find(',');
+  egg_filename = _defpose.substr(0, comma);
+
+  string frame_str;
+  if (comma != string::npos) {
+    frame_str = _defpose.substr(comma + 1);
+  }
+  frame_str = trim(frame_str);
+  int frame = 0;
+  if (!frame_str.empty()) {
+    if (!string_to_int(frame_str, frame)) {
+      nout << "Invalid integer in -defpose: " << frame_str << "\n";
+      return;
+    }
+  }
+
+  // Now find the named animation file in our egg list.
+  int egg_index = -1;
+  int num_eggs = _collection->get_num_eggs();
+  int i;
+
+  // First, look for an exact match.
+  for (i = 0; i < num_eggs && egg_index == -1; ++i) {
+    if (_collection->get_egg(i)->get_egg_filename() == egg_filename) {
+      egg_index = i;
+    }
+  }
+
+  // Then, look for an inexact match.
+  string egg_basename = egg_filename.get_basename_wo_extension();
+  for (i = 0; i < num_eggs && egg_index == -1; ++i) {
+    if (_collection->get_egg(i)->get_egg_filename().get_basename_wo_extension() == egg_basename) {
+      egg_index = i;
+    }
+  }
+
+  if (egg_index == -1) {
+    // No joy.
+    nout << "Egg file " << egg_filename << " named in -defpose, but does not appear on command line.\n";
+    return;
+  }
+
+  EggData *egg_data = _collection->get_egg(egg_index);
+
+  if (_collection->get_num_models(egg_index) == 0) {
+    nout << "Egg file " << egg_filename << " does not include any model or animation.\n";
+    return;
+  }
+
+  // Now get the first model (or animation) named by this egg file.
+  int mi = _collection->get_first_model_index(egg_index);
+  EggCharacterData *ch = _collection->get_character_by_model_index(mi);
+  EggJointData *root_joint = ch->get_root_joint();
+
+  int anim_index = -1;
+  for (i = 0; i < ch->get_num_models() && anim_index == -1; ++i) {
+    if (ch->get_egg_data(i) == egg_data) {
+      anim_index = i;
+    }
+  }
+
+  // This couldn't possibly fail, since we already checked this above.
+  nassertv(anim_index != -1);
+
+  // Now we can recursively apply the default pose to the hierarchy.
+  ch->get_root_joint()->apply_default_pose(anim_index, frame);
 }
 
 int main(int argc, char *argv[]) {
