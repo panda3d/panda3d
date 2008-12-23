@@ -147,8 +147,8 @@ PT(Connection) ConnectionManager::
 open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
   Socket_TCP *socket = new Socket_TCP;
 
-#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
-  // In the simple-threads case, use a non-blocking connect.
+  // We always open the connection with non-blocking mode first, so we
+  // can implement the timeout.
   bool okflag = socket->ActiveOpenNonBlocking(address.get_addr());
   if (okflag && socket->GetLastError() == LOCAL_CONNECT_BLOCKING) {
     // Now wait for the socket to connect.
@@ -171,12 +171,6 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
     }
   }
 
-#else
-  // In the normal case, we can just do a blocking connect.
-  bool okflag = socket->ActiveOpen(address.get_addr(), false);
-
-#endif  // SIMPLE_THREADS
-
   if (!okflag) {
     net_cat.error()
       << "Unable to open TCP connection to server "
@@ -184,6 +178,14 @@ open_TCP_client_connection(const NetAddress &address, int timeout_ms) {
     delete socket;
     return PT(Connection)();
   }
+
+#if !defined(HAVE_THREADS) || !defined(SIMPLE_THREADS)
+  // Now we have opened the socket in nonblocking mode.  Unless we're
+  // using SIMPLE_THREADS, though, we really want the socket in
+  // blocking mode (since that's what we support here).  Change it.
+  socket->SetBlocking();
+
+#endif  // SIMPLE_THREADS
 
   net_cat.info()
     << "Opened TCP connection to server " << address.get_ip_string() << " "
