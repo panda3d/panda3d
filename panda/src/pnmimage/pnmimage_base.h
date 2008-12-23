@@ -19,8 +19,7 @@
 // essential to everything in the PNMImage package.
 
 #include "pandabase.h"
-
-#include <string>
+#include "pnotify.h"
 
 // Since we no longer include pnm.h directly, we have to provide our
 // own definitions for xel and xelval.
@@ -41,6 +40,16 @@ typedef unsigned char gray;
 #define PNM_MAXMAXVAL PGM_MAXMAXVAL
 
 struct pixel {
+PUBLISHED:
+  pixel() { }
+  pixel(gray r, gray g, gray b) : r(r), g(g), b(b) { }
+  static int size() { return 3; }
+  gray operator [](int i) const { nassertr(i >= 0 && i < 3, 0); return *(&r + i); }
+  gray &operator [](int i) { nassertr(i >= 0 && i < 3, r); return *(&r + i); }
+#ifdef HAVE_PYTHON
+  void __setitem__(int i, gray v) { operator[](i) = v; }
+#endif
+
   gray r, g, b;
 };
 
