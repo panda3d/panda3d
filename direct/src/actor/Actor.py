@@ -1244,7 +1244,7 @@ class Actor(DirectObject, NodePath):
         if joint == None:
             Actor.notify.warning("no joint named %s!" % (jointName))
             return None
-        return joint.getInitialValue()
+        return joint.getDefaultValue()
 
 
     def controlJoint(self, node, partName, jointName, lodName="lodRoot"):
@@ -1271,7 +1271,7 @@ class Actor(DirectObject, NodePath):
                 node = self.attachNewNode(ModelNode(jointName))
                 joint = bundle.findChild(jointName)
                 if joint and isinstance(joint, MovingPartMatrix):
-                    node.setMat(joint.getInitialValue())
+                    node.setMat(joint.getDefaultValue())
 
             if bundle.controlJoint(jointName, node.node()):
                 anyGood = True
