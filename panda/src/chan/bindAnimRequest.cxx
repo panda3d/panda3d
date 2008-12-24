@@ -20,6 +20,24 @@
 TypeHandle BindAnimRequest::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BindAnimRequest::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+BindAnimRequest::
+BindAnimRequest(const string &name,
+                const Filename &filename, const LoaderOptions &options,
+                Loader *loader,
+                AnimControl *control, int hierarchy_match_flags,
+                const PartSubset &subset) :
+  ModelLoadRequest(name, filename, options, loader),
+  _control(control),
+  _hierarchy_match_flags(hierarchy_match_flags),
+  _subset(subset)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BindAnimRequest::do_task
 //       Access: Protected, Virtual
 //  Description: Performs the task: that is, loads and binds the

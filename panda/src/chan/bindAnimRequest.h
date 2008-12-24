@@ -33,13 +33,13 @@ public:
   ALLOC_DELETED_CHAIN(BindAnimRequest);
 
 PUBLISHED:
-  INLINE BindAnimRequest(const string &name,
-                         const Filename &filename, 
-                         const LoaderOptions &options,
-                         Loader *loader,
-                         AnimControl *control,
-                         int hierarchy_match_flags,
-                         const PartSubset &subset);
+  BindAnimRequest(const string &name,
+                  const Filename &filename, 
+                  const LoaderOptions &options,
+                  Loader *loader,
+                  AnimControl *control,
+                  int hierarchy_match_flags,
+                  const PartSubset &subset);
   
 protected:
   virtual DoneStatus do_task();

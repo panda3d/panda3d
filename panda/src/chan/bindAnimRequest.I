@@ -12,23 +12,3 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: BindAnimRequest::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE BindAnimRequest::
-BindAnimRequest(const string &name,
-                const Filename &filename, const LoaderOptions &options,
-                Loader *loader,
-                AnimControl *control, int hierarchy_match_flags,
-                const PartSubset &subset) :
-  ModelLoadRequest(name, filename, options, loader),
-  _control(control),
-  _hierarchy_match_flags(hierarchy_match_flags),
-  _subset(subset)
-{
-}
-
-  

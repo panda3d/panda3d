@@ -14,24 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ModelLoadRequest::Constructor
-//       Access: Published
-//  Description: Create a new ModelLoadRequest, and add it to the loader
-//               via load_async(), to begin an asynchronous load.
-////////////////////////////////////////////////////////////////////
-INLINE ModelLoadRequest::
-ModelLoadRequest(const string &name, 
-                 const Filename &filename, const LoaderOptions &options,
-                 Loader *loader) :
-  AsyncTask(name),
-  _filename(filename),
-  _options(options),
-  _loader(loader),
-  _is_ready(false)
-{
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ModelLoadRequest::get_filename
 //       Access: Published
 //  Description: Returns the filename associated with this

@@ -78,14 +78,14 @@ protected:
   virtual void animation_activated();
 
 private:
-  // This is a PT(PartGroup) instead of a PT(PartBundle), just because
-  // we can't include partBundle.h for circular reasons.  But it
-  // actually keeps a pointer to a PartBundle.
   bool _pending;
   string _pending_done_event;
   Mutex _pending_lock;  // protects the above two.
   ConditionVarFull _pending_cvar; // signals when _pending goes true.
 
+  // This is a PT(PartGroup) instead of a PT(PartBundle), just because
+  // we can't include partBundle.h for circular reasons.  But it
+  // actually keeps a pointer to a PartBundle.
   PT(PartGroup) _part;
   PT(AnimBundle) _anim;
   int _channel_index;

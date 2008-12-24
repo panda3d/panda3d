@@ -19,6 +19,24 @@
 TypeHandle ModelLoadRequest::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ModelLoadRequest::Constructor
+//       Access: Published
+//  Description: Create a new ModelLoadRequest, and add it to the loader
+//               via load_async(), to begin an asynchronous load.
+////////////////////////////////////////////////////////////////////
+ModelLoadRequest::
+ModelLoadRequest(const string &name, 
+                 const Filename &filename, const LoaderOptions &options,
+                 Loader *loader) :
+  AsyncTask(name),
+  _filename(filename),
+  _options(options),
+  _loader(loader),
+  _is_ready(false)
+{
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ModelLoadRequest::do_task
 //       Access: Protected, Virtual
 //  Description: Performs the task: that is, loads the one model.

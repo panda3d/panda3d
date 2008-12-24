@@ -2254,5 +2254,8 @@ async_reload_texture(TextureContext *tc) {
     new TextureReloadRequest(string("reload:") + tc->get_texture()->get_name(),
                              _prepared_objects, tc->get_texture(),
                              _supports_compressed_texture);
+  if (_current_display_region != (DisplayRegion *)NULL) {
+    request->set_priority(_current_display_region->get_texture_reload_priority());
+  }
   _loader->load_async(request);
 }

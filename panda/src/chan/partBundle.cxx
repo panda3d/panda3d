@@ -369,6 +369,7 @@ load_bind_anim(Loader *loader, const Filename &filename,
     new BindAnimRequest(string("bind:") + filename.get_basename(),
                         filename, anim_options, loader, control, 
                         hierarchy_match_flags, subset);
+  request->set_priority(async_bind_priority);
   loader->load_async(request);
 
   return control;

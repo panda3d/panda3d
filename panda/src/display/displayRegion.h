@@ -95,6 +95,9 @@ PUBLISHED:
   INLINE void set_clear_depth_between_eyes(bool clear_depth_between_eyes);
   INLINE bool get_clear_depth_between_eyes() const;
 
+  INLINE void set_texture_reload_priority(int texture_reload_priority);
+  INLINE int get_texture_reload_priority() const;
+
   INLINE void set_cull_traverser(CullTraverser *trav);
   CullTraverser *get_cull_traverser();
 
@@ -145,6 +148,8 @@ private:
   // DisplayRegion.  It doesn't need to be cycled.
   GraphicsOutput *_window;
   bool _clear_depth_between_eyes;
+
+  int _texture_reload_priority;
 
   // Ditto for the cull traverser.
   PT(CullTraverser) _trav;

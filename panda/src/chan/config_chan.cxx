@@ -95,6 +95,14 @@ PRC_DESC("When this is true, setting all control effects on an Actor to 0 "
          "false, it retains whatever its last-computed pose was "
          "(which may or may not be the default pose)."));
 
+ConfigVariableInt async_bind_priority
+("async-bind-priority", 100,
+PRC_DESC("This specifies the priority assign to an asynchronous bind "
+         "task when it is requested via PartBundle::load_bind_anim().  "
+         "This controls the relative order in which asynchronous loads "
+         "happen (in particular, relative to asynchronous texture or "
+         "model loads).  A higher number here makes the animations "
+         "load sooner."));
 
 ConfigureFn(config_chan) {
   AnimBundle::init_type();

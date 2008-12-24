@@ -187,6 +187,40 @@ get_clear_depth_between_eyes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_texture_reload_priority
+//       Access: Published
+//  Description: Specifies an integer priority which is assigned to
+//               any asynchronous texture reload requests spawned
+//               while processing this DisplayRegion.  This controls
+//               which textures are loaded first when multiple
+//               textures need to be reloaded at once; it also
+//               controls the relative priority between asynchronous
+//               texture loads and asynchronous model or animation
+//               loads.
+//
+//               Specifying a larger number here makes the textures
+//               rendered by this DisplayRegion load up first.  This
+//               may be particularly useful to do, for instance, for
+//               the DisplayRegion that renders the gui.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_texture_reload_priority(int texture_reload_priority) {
+  _texture_reload_priority = texture_reload_priority;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_texture_reload_priority
+//       Access: Published
+//  Description: Returns the priority which is assigned to
+//               asynchronous texture reload requests.  See
+//               set_texture_reload_priority().
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegion::
+get_texture_reload_priority() const {
+  return _texture_reload_priority;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_cull_traverser
 //       Access: Published
 //  Description: Specifies the CullTraverser that will be used to draw
