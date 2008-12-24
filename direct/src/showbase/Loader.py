@@ -58,7 +58,7 @@ class Loader(DirectObject):
     # model loading funcs
     def loadModel(self, modelPath, loaderOptions = None, noCache = None,
                   allowInstance = False, okMissing = None,
-                  callback = None, extraArgs = []):
+                  callback = None, extraArgs = [], priority = None):
         """
         Attempts to load a model or models from one or more relative
         pathnames.  If the input modelPath is a string (a single model
@@ -101,7 +101,10 @@ class Loader(DirectObject):
         loading, the callback function will be invoked with the n
         loaded models passed as its parameter list.  It is possible
         that the callback will be invoked immediately, even before
-        loadModel() returns.
+        loadModel() returns.  If you use callback, you may also
+        specify a priority, which specifies the relative importance
+        over this model over all of the other asynchronous load
+        requests (higher numbers are loaded first).
 
         True asynchronous model loading requires Panda to have been
         compiled with threading support enabled (you can test
@@ -179,6 +182,8 @@ class Loader(DirectObject):
             i=0
             for modelPath in modelList:
                 request = self.loader.makeAsyncRequest(Filename(modelPath), loaderOptions)
+                if priority is not None:
+                    request.setPriority(priority)
                 request.setDoneEvent(self.hook)
                 request.setPythonObject((cb, i))
                 i+=1
