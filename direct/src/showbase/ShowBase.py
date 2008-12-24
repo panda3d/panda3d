@@ -168,12 +168,7 @@ class ShowBase(DirectObject.DirectObject):
 
         self.hidden = NodePath('hidden')
 
-        # Temporary hasattr for old pandas.
-        if hasattr(GraphicsEngine, 'getGlobalPtr'):
-            self.graphicsEngine = GraphicsEngine.getGlobalPtr()
-        else:
-            self.graphicsEngine = GraphicsEngine()
-
+        self.graphicsEngine = GraphicsEngine.getGlobalPtr()
         self.setupRender()
         self.setupRender2d()
         self.setupDataGraph()

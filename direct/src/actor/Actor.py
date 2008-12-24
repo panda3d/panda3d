@@ -752,10 +752,6 @@ class Actor(DirectObject, NodePath):
         away. """
 
         self.__LODAnimation = (farDistance, nearDistance, delayFactor)
-
-        # Temporary hasattr for old Panda.
-        if not hasattr(Character, 'setLodAnimation'):
-            return
         
         for lodData in self.__partBundleDict.values():
             for partData in lodData.values():
@@ -769,10 +765,6 @@ class Actor(DirectObject, NodePath):
         """
 
         self.__LODAnimation = None
-
-        # Temporary hasattr for old Panda.
-        if not hasattr(Character, 'setLodAnimation'):
-            return
 
         for lodData in self.__partBundleDict.values():
             for partData in lodData.values():
@@ -2300,9 +2292,7 @@ class Actor(DirectObject, NodePath):
         to be loaded immediately. """
 
         for bundle in self.getPartBundles(partName = partName):
-            # Temporary hasattr for old Pandas.
-            if hasattr(bundle, 'waitPending'):
-                bundle.waitPending()
+            bundle.waitPending()
 
     def __bindAnimToPart(self, animName, partName, lodName,
                          allowAsyncBind = True):
