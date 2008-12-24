@@ -1357,18 +1357,20 @@ do_write(ostream &out, int indent_level) const {
     }
   }
 
-  sort(tasks.begin(), tasks.end(), AsyncTaskSortPriority());
-
   double now = _manager->_clock->get_frame_time();
 
-  // Since AsyncTaskSortPriority() sorts backwards (because of STL's
-  // push_heap semantics), we go through the task list in reverse
-  // order to print them forwards.
-  TaskHeap::reverse_iterator ti;
-  int current_sort = tasks.back()->get_sort() - 1;
-  for (ti = tasks.rbegin(); ti != tasks.rend(); ++ti) {
-    AsyncTask *task = (*ti);
-    write_task_line(out, indent_level, task, now);
+  if (!tasks.empty()) {
+    sort(tasks.begin(), tasks.end(), AsyncTaskSortPriority());
+    TaskHeap::reverse_iterator ti;
+    int current_sort = tasks.back()->get_sort() - 1;
+
+    // Since AsyncTaskSortPriority() sorts backwards (because of STL's
+    // push_heap semantics), we go through the task list in reverse
+    // order to print them forwards.
+    for (ti = tasks.rbegin(); ti != tasks.rend(); ++ti) {
+      AsyncTask *task = (*ti);
+      write_task_line(out, indent_level, task, now);
+    }
   }
 
   // Instead of iterating through the _sleeping list in heap order,
