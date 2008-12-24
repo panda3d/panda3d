@@ -4219,7 +4219,7 @@ read_dds_level_generic_uncompressed(Texture *tex, const DDSHeader &header,
       }
     }
     nassertr(p <= image.p() + size, false);
-    for (int b = 0; b < skip_bytes; ++b) {
+    for (int bi = 0; bi < skip_bytes; ++bi) {
       in.get();
     }
   }
