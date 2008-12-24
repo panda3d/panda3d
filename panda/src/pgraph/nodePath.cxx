@@ -364,6 +364,10 @@ find_all_paths_to(PandaNode *node) const {
 //
 //               If the destination NodePath is empty, this is the
 //               same thing as detach_node().
+//
+//               If the referenced node is already a child of the
+//               indicated NodePath (via some other instance), this
+//               operation fails and leaves the NodePath detached.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 reparent_to(const NodePath &other, int sort, Thread *current_thread) {
@@ -455,6 +459,10 @@ wrt_reparent_to(const NodePath &other, int sort, Thread *current_thread) {
 //               differentiated from other similar instances, but it
 //               is nevertheless a different instance and it will
 //               return a different get_id() value.
+//
+//               If the referenced node is already a child of the
+//               indicated NodePath, returns that already-existing
+//               instance, unstashing it first if necessary.
 ////////////////////////////////////////////////////////////////////
 NodePath NodePath::
 instance_to(const NodePath &other, int sort, Thread *current_thread) const {
@@ -475,7 +483,21 @@ instance_to(const NodePath &other, int sort, Thread *current_thread) const {
   bool reparented = PandaNode::reparent(other._head, new_instance._head,
                                         sort, false, pipeline_stage,
                                         current_thread);
-  nassertr(reparented, new_instance);
+  if (!reparented) {
+    // Hmm, couldn't reparent.  Either making this instance would
+    // create a cycle, or it was already a child of that node.  If it
+    // was already a child, return that existing NodePath instead.
+    NodePath orig(other, node(), current_thread);
+    if (!orig.is_empty()) {
+      if (orig.is_stashed()) {
+        orig.unstash();
+      }
+      return orig;
+    }
+    
+    // Nope, it must be a cycle.
+    nassertr(reparented, new_instance);
+  }
 
   // instance_to() doesn't reset the velocity delta, unlike most of
   // the other reparenting operations.  The reasoning is that
