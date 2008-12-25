@@ -2250,12 +2250,34 @@ void GraphicsStateGuardian::
 async_reload_texture(TextureContext *tc) {
   nassertv(_loader != (Loader *)NULL);
 
+  int priority = 0;
+  if (_current_display_region != (DisplayRegion *)NULL) {
+    priority = _current_display_region->get_texture_reload_priority();
+  }
+
+  string task_name = string("reload:") + tc->get_texture()->get_name();
+  PT(AsyncTaskManager) task_mgr = _loader->get_task_manager();
+  
+  // See if we are already loading this task.
+  AsyncTaskCollection orig_tasks = task_mgr->find_tasks(task_name);
+  int num_tasks = orig_tasks.get_num_tasks();
+  for (int ti = 0; ti < num_tasks; ++ti) {
+    AsyncTask *task = orig_tasks.get_task(ti);
+    if (task->is_exact_type(TextureReloadRequest::get_class_type()) &&
+        DCAST(TextureReloadRequest, task)->get_texture() == tc->get_texture()) {
+      // This texture is already queued to be reloaded.  Don't queue
+      // it again, just make sure the priority is updated, and return.
+      task->set_priority(max(task->get_priority(), priority));
+      return;
+    }
+  }
+
+  // This texture has not yet been queued to be reloaded.  Queue it up
+  // now.
   PT(AsyncTask) request = 
-    new TextureReloadRequest(string("reload:") + tc->get_texture()->get_name(),
+    new TextureReloadRequest(task_name,
                              _prepared_objects, tc->get_texture(),
                              _supports_compressed_texture);
-  if (_current_display_region != (DisplayRegion *)NULL) {
-    request->set_priority(_current_display_region->get_texture_reload_priority());
-  }
+  request->set_priority(priority);
   _loader->load_async(request);
 }
