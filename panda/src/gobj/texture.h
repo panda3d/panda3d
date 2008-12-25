@@ -304,6 +304,7 @@ PUBLISHED:
   INLINE CPTA_uchar get_ram_image();
   INLINE CompressionMode get_ram_image_compression() const;
   INLINE CPTA_uchar get_uncompressed_ram_image();
+  CPTA_uchar get_ram_image_as(const string &requested_format);
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
   void set_ram_image(PTA_uchar image, CompressionMode compression = CM_off,

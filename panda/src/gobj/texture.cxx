@@ -3662,6 +3662,81 @@ do_get_uncompressed_ram_image() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_ram_image_as
+//       Access: Published
+//  Description: Returns the uncompressed system-RAM image data
+//               associated with the texture, but rather than
+//               just returning a pointer to the data, like
+//               get_uncompressed_ram_image, this function first
+//               processes the data, reorders the components using
+//               the specified format string, and fills these into
+//               a new area. The 'format' arugment should specify
+//               in which order the components of the texture
+//               must be. For example, valid format strings are
+//               "RGBA", "GA", "ABRG" or "AAA". A component can
+//               also be written as "0" or "1", which means an
+//               empty/black or a full/white channel, respectively.
+//               This function is particularly useful to
+//               copy an image in-memory to a different library
+//               (for example, PIL or wxWidgets) that require
+//               a different component order than Panda's internal
+//               format, BGRA. Note, however, that this conversion
+//               can still be too slow if you want to do it every
+//               frame, and should thus be avoided for that purpose.
+//               The only requirement for the reordering is that
+//               an uncompressed image must be available. If the
+//               RAM image is compressed, it will attempt to re-load
+//               the texture from disk, if it doesn't find an
+//               uncompressed image there, it will return NULL.
+////////////////////////////////////////////////////////////////////
+CPTA_uchar Texture::
+get_ram_image_as(const string &requested_format) {
+  MutexHolder holder(_lock);
+  string format = upcase(requested_format);
+  
+  // Make sure we can grab something that's uncompressed.
+  CPTA_uchar data = do_get_uncompressed_ram_image();
+  if (data == NULL) {
+    gobj_cat.error() << "Couldn't find an uncompressed RAM image!\n";
+    return CPTA_uchar(get_class_type());
+  }
+  nassertr(_num_components > 0 && _num_components <= 4, CPTA_uchar(get_class_type()));
+  nassertr(data.size() == _component_width * _num_components * _x_size * _y_size, CPTA_uchar(get_class_type()));
+  
+  // Create a new array and loop through the pixels to fill it.
+  PTA_uchar newdata = PTA_uchar::empty_array(_x_size * _y_size * format.size() * _component_width);
+  for (int p = 0; p < _x_size * _y_size; ++p) {
+    for (uchar s = 0; s < format.size(); ++s) {
+      char component = -1;
+      if (format.at(s) == 'B' || (_num_components <= 2 && format.at(s) != 'A')) {
+        component = 0;
+      } else if (format.at(s) == 'G') {
+        component = 1;
+      } else if (format.at(s) == 'R') {
+        component = 2;
+      } else if (format.at(s) == 'A') {
+        nassertr(_num_components != 3, CPTA_uchar(get_class_type()));
+        component = _num_components - 1;
+      } else if (format.at(s) == '0') {
+        memset((void*)(newdata + (p * format.size() + s) * _component_width),  0, _component_width);
+      } else if (format.at(s) == '1') {
+        memset((void*)(newdata + (p * format.size() + s) * _component_width), -1, _component_width);
+      } else {
+        gobj_cat.error() << "Unexpected component character '"
+          << format.at(s) << "', expected one of RGBA!\n";
+        return CPTA_uchar(get_class_type());
+      }
+      if (component >= 0) {
+        memcpy((void*)(newdata + (p * format.size() + s) * _component_width),
+               (void*)(data + (p * _num_components + component) * _component_width),
+               _component_width);
+      }
+    }
+  }
+  return newdata;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::do_set_simple_ram_image
 //       Access: Protected
 //  Description: 
