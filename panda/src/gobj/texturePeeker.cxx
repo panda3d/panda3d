@@ -44,7 +44,12 @@ TexturePeeker(Texture *tex) {
     // Regular 1-d, 2-d, or 3-d texture.  The coordinates map
     // directly.  Simple ram images are possible if it is a 2-d
     // texture.
-    if (!(tex->do_has_ram_image() && tex->_ram_image_compression == Texture::CM_off) && !tex->_simple_ram_image._image.empty()) {
+    if (tex->do_has_ram_image() && tex->_ram_image_compression == Texture::CM_off) {
+      // Get the regular RAM image if it is available.
+      _image = tex->do_get_ram_image();
+
+    } else if (!tex->_simple_ram_image._image.empty()) {
+      // Get the simple RAM image if *that* is available.
       _image = tex->_simple_ram_image._image;
       _x_size = tex->_simple_x_size;
       _y_size = tex->_simple_y_size;
@@ -56,6 +61,7 @@ TexturePeeker(Texture *tex) {
       _component_type = Texture::T_unsigned_byte;
 
     } else {
+      // Failing that, reload and get the uncompressed RAM image.
       _image = tex->do_get_uncompressed_ram_image();
     }
   }
