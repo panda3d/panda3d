@@ -257,7 +257,7 @@ public:
  private:
   ShaderArgType cg_parameter_type(CGparameter p);
   ShaderArgDir  cg_parameter_dir(CGparameter p);
-  CGprogram     cg_compile_entry_point(char *entry, const ShaderCaps &caps, bool fshader);
+  CGprogram     cg_compile_entry_point(const char *entry, const ShaderCaps &caps, bool fshader);
   bool          cg_analyze_entry_point(CGprogram prog, bool fshader);
   bool          cg_analyze_shader(const ShaderCaps &caps);
   bool          cg_compile_shader(const ShaderCaps &caps);

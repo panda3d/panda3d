@@ -1033,11 +1033,11 @@ cg_release_resources() {
 //  Description: xyz
 ////////////////////////////////////////////////////////////////////
 CGprogram Shader::
-cg_compile_entry_point(char *entry, const ShaderCaps &caps, bool fshader)
+cg_compile_entry_point(const char *entry, const ShaderCaps &caps, bool fshader)
 {
   CGprogram prog;
   CGerror err;
-  char *compiler_args[100];
+  const char *compiler_args[100];
   int nargs = 0;
   int active = fshader ? caps._active_fprofile : caps._active_vprofile;
   int ultimate = fshader ? caps._ultimate_fprofile : caps._ultimate_vprofile;

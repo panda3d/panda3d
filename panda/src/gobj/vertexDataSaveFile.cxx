@@ -131,7 +131,10 @@ VertexDataSaveFile(const Filename &directory, const string &prefix,
     if (result == 0) {
       // We've got the file.  Truncate it first, for good measure, in
       // case there's an old version of the file we picked up.
-      ftruncate(_fd, 0);
+      if (ftruncate(_fd, 0) < 0) {
+        gobj_cat.warning()
+          << "Couldn't truncate vertex data save file.\n";
+      }
 
       // On Unix, it's safe to unlink (delete) the temporary file
       // after it's been opened.  The file remains open, but

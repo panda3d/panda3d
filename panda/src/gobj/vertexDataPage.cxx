@@ -404,7 +404,7 @@ make_resident() {
 #endif
 
     z_source.opaque = Z_NULL;
-    z_source.msg = "no error message";
+    z_source.msg = (char *) "no error message";
 
     z_source.next_in = (Bytef *)(char *)_page_data;
     z_source.avail_in = _size;
@@ -497,7 +497,7 @@ make_compressed() {
 #endif
 
     z_dest.opaque = Z_NULL;
-    z_dest.msg = "no error message";
+    z_dest.msg = (char *) "no error message";
     
     int result = deflateInit(&z_dest, vertex_data_compression_level);
     if (result < 0) {
