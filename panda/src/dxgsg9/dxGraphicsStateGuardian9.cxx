@@ -2477,6 +2477,13 @@ reset() {
   _screen->_supports_dynamic_textures = ((d3d_caps.Caps2 & D3DCAPS2_DYNAMICTEXTURES) != 0);
   _screen->_supports_automatic_mipmap_generation = ((d3d_caps.Caps2 & D3DCAPS2_CANAUTOGENMIPMAP) != 0);
 
+  if (support_stencil) {
+    int min_stencil = D3DSTENCILCAPS_ZERO | D3DSTENCILCAPS_REPLACE | D3DSTENCILCAPS_INCR | D3DSTENCILCAPS_DECR;
+    if ((d3d_caps.StencilCaps & min_stencil) == min_stencil) {
+      _supports_stencil = true;
+    }
+  }
+
   _supports_stencil_wrap = (d3d_caps.StencilCaps & D3DSTENCILCAPS_INCR) && (d3d_caps.StencilCaps & D3DSTENCILCAPS_DECR);
   _supports_two_sided_stencil = ((d3d_caps.StencilCaps & D3DSTENCILCAPS_TWOSIDED) != 0);
 
@@ -5342,6 +5349,9 @@ void dx_set_stencil_functions (StencilRenderStates *stencil_render_states) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 do_issue_stencil() {
+  if (!_supports_stencil) {
+    return;
+  }
 
   StencilRenderStates *stencil_render_states;
   const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib_def(StencilAttrib::get_class_slot()));

@@ -52,6 +52,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableBool prefer_single_buffer;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt max_texture_stages;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool support_render_texture;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool support_rescale_normal;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool support_stencil;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool copy_texture_inverted;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool window_inverted;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool red_blue_stereo;

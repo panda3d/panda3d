@@ -192,6 +192,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_shadow_filter = false;
   _supports_basic_shaders = false;
 
+  _supports_stencil = false;
   _supports_stencil_wrap = false;
   _supports_two_sided_stencil = false;
 

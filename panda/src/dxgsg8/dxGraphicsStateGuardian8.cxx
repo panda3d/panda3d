@@ -4334,6 +4334,9 @@ void dx_set_stencil_functions (StencilRenderStates *stencil_render_states) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 do_issue_stencil() {
+  if (!_supports_stencil) {
+    return;
+  }
 
   StencilRenderStates *stencil_render_states;
   const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib_def(StencilAttrib::get_class_slot()));

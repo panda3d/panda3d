@@ -152,12 +152,23 @@ ConfigVariableBool support_render_texture
 
 ConfigVariableBool support_rescale_normal
 ("support-rescale-normal", true,
- PRC_DESC("Set this true allow use of the rescale-normal feature, if it "
+ PRC_DESC("Set this true to allow use of the rescale-normal feature, if it "
           "is supported by your graphics card.  This allows lighting normals "
           "to be uniformly counter-scaled, instead of re-normalized, "
           "in the presence of a uniform scale, which should in principle be "
           "a bit faster.  This feature is only supported "
           "by the OpenGL API."));
+
+ConfigVariableBool support_stencil
+("support-stencil", true,
+ PRC_DESC("Set this true to allow use of the stencil buffer, if it "
+          "is supported by your graphics card.  If this is false, stencil "
+          "buffer support will not be enabled, even if it is supported.  "
+          "Generally, only very old cards do not support some kind of "
+          "stencil buffer operations; but it is also not supported by "
+          "our tinydisplay renderer.  "
+          "The main reason to set this false is to test your code in "
+          "the absence of stencil buffer support."));
 
 ConfigVariableBool copy_texture_inverted
 ("copy-texture-inverted", false,

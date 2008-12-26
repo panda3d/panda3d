@@ -603,10 +603,22 @@ get_supports_basic_shaders() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_stencil
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               stencil buffers at all.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_stencil() const {
+  return _supports_stencil;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_two_sided_stencil
 //       Access: Published
 //  Description: Returns true if this particular GSG supports
-//               two sided stencil.
+//               two sided stencil: different stencil settings for the
+//               front and back side of the same polygon.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsStateGuardian::
 get_supports_two_sided_stencil() const {

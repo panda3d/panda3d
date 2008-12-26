@@ -1173,6 +1173,12 @@ reset() {
 
   report_my_gl_errors();
 
+  if (support_stencil) {
+    GLint num_stencil_bits;
+    GLP(GetIntegerv)(GL_STENCIL_BITS, &num_stencil_bits);
+    _supports_stencil = (num_stencil_bits != 0);
+  }
+
   _supports_stencil_wrap = has_extension("GL_EXT_stencil_wrap");
   _supports_two_sided_stencil = has_extension("GL_EXT_stencil_two_side");
   if (_supports_two_sided_stencil) {
@@ -8244,6 +8250,10 @@ void gl_set_stencil_functions (StencilRenderStates *stencil_render_states) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_stencil() {
+  if (!_supports_stencil) {
+    return;
+  }
+
   const StencilAttrib *stencil = DCAST(StencilAttrib, _target_rs->get_attrib_def(StencilAttrib::get_class_slot()));
 
   StencilRenderStates *stencil_render_states;
