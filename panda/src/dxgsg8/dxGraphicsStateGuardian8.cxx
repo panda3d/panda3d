@@ -1827,6 +1827,13 @@ reset() {
       << "\n";
   }
 
+  if (support_stencil) {
+    int min_stencil = D3DSTENCILCAPS_ZERO | D3DSTENCILCAPS_REPLACE | D3DSTENCILCAPS_INCR | D3DSTENCILCAPS_DECR;
+    if ((d3d_caps.StencilCaps & min_stencil) == min_stencil) {
+      _supports_stencil = true;
+    }
+  }
+
   _max_vertices_per_array = d3d_caps.MaxVertexIndex;
   _max_vertices_per_primitive = d3d_caps.MaxPrimitiveCount;
 
