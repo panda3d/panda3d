@@ -105,7 +105,7 @@ typedef struct GLVertex {
   int edge_flag;
   V3 normal;
   V4 coord;
-  V4 tex_coord[MAX_TEXTURE_STAGES];
+  V2 tex_coord[MAX_TEXTURE_STAGES];
   V4 color;
   
   /* computed values */

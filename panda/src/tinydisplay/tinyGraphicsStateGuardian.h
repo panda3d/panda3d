@@ -23,6 +23,7 @@
 #include "zmath.h"
 #include "zbuffer.h"
 #include "zgl.h"
+#include "geomVertexReader.h"
 
 class TinyTextureContext;
 
@@ -127,6 +128,19 @@ private:
 
   INLINE void clear_light_state();
 
+  // Methods used to generate texture coordinates.
+  class TexCoordData {
+  public:
+    GeomVertexReader _r1;
+    GeomVertexReader _r2;
+    LMatrix4f _mat;
+  };
+  typedef void GenTexcoordFunc(V2 &result, TexCoordData &tcdata);
+
+  static void texgen_null(V2 &result, TexCoordData &tcdata);
+  static void texgen_simple(V2 &result, TexCoordData &tcdata);
+  static void texgen_texmat(V2 &result, TexCoordData &tcdata);
+  static void texgen_sphere_map(V2 &result, TexCoordData &tcdata);
 public:
   // Filled in by the Tiny*GraphicsWindow at begin_frame().
   ZBuffer *_current_frame_buffer;

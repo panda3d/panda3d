@@ -16,6 +16,10 @@ typedef struct {
 } M34;
 
 typedef struct {
+	 float v[2];
+} V2;
+
+typedef struct {
 	 float v[3];
 } V3;
 

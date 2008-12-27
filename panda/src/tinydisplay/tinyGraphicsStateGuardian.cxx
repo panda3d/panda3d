@@ -636,27 +636,72 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   GeomVertexReader  rcolor, rnormal;
 
   // We now support up to 2-stage multitexturing.
-  GeomVertexReader rtexcoord[MAX_TEXTURE_STAGES];
-  bool needs_texcoord[MAX_TEXTURE_STAGES] = { false, false };
-  bool needs_texmat[MAX_TEXTURE_STAGES] = { false, false };
-  LMatrix4f texmat[MAX_TEXTURE_STAGES];
-  const InternalName *texcoord_name[MAX_TEXTURE_STAGES] = { 
-    InternalName::get_texcoord(), InternalName::get_texcoord()
-  };
+  GenTexcoordFunc *texgen_func[MAX_TEXTURE_STAGES];
+  TexCoordData tcdata[MAX_TEXTURE_STAGES];
+
+  const TexGenAttrib *target_tex_gen = DCAST(TexGenAttrib, _target_rs->get_attrib_def(TexGenAttrib::get_class_slot()));
+  const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
+
   int max_stage_index = _target_texture->get_num_on_ff_stages();
   for (int si = 0; si < max_stage_index; ++si) {
     TextureStage *stage = _target_texture->get_on_ff_stage(si);
-    rtexcoord[si] = GeomVertexReader(data_reader, stage->get_texcoord_name(),
-                                 force);
-    rtexcoord[si].set_row(_min_vertex);
-    needs_texcoord[si] = rtexcoord[si].has_column();
 
-    if (needs_texcoord[si]) {
-      const TexMatrixAttrib *target_tex_matrix = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
-      if (target_tex_matrix->has_stage(stage)) {
-        needs_texmat[si] = true;
-        texmat[si] = target_tex_matrix->get_mat(stage);
+    switch (target_tex_gen->get_mode(stage)) {
+    case TexGenAttrib::M_eye_sphere_map:
+      tcdata[si]._r1 = GeomVertexReader(data_reader, InternalName::get_normal(),
+                                        force);
+      tcdata[si]._r2 = GeomVertexReader(data_reader, InternalName::get_vertex(),
+                                        force);
+      texgen_func[si] = &texgen_sphere_map;
+      tcdata[si]._mat = _internal_transform->get_mat();
+      break;
+
+    case TexGenAttrib::M_eye_position:
+      tcdata[si]._r1 = GeomVertexReader(data_reader, InternalName::get_vertex(),
+                                       force);
+      texgen_func[si] = &texgen_texmat;
+      {
+        CPT(TransformState) eye_transform =
+          _cs_transform->invert_compose(_internal_transform);
+        tcdata[si]._mat = eye_transform->get_mat();
       }
+      if (target_tex_matrix->has_stage(stage)) {
+        tcdata[si]._mat = tcdata[si]._mat * target_tex_matrix->get_mat(stage);
+      }
+      break;
+
+    case TexGenAttrib::M_world_position:
+      tcdata[si]._r1 = GeomVertexReader(data_reader, InternalName::get_vertex(),
+                                       force);
+      texgen_func[si] = &texgen_texmat;
+      {
+        CPT(TransformState) render_transform =
+          _cs_transform->compose(_scene_setup->get_world_transform());
+        CPT(TransformState) world_transform = 
+          _internal_transform->invert_compose(render_transform);
+        tcdata[si]._mat = world_transform->get_mat();
+      }
+      if (target_tex_matrix->has_stage(stage)) {
+        tcdata[si]._mat = tcdata[si]._mat * target_tex_matrix->get_mat(stage);
+      }
+      break;
+
+    default:
+      // Fall through: use the standard texture coordinates.
+      tcdata[si]._r1 = GeomVertexReader(data_reader, stage->get_texcoord_name(),
+                                       force);
+      texgen_func[si] = &texgen_simple;
+      if (target_tex_matrix->has_stage(stage)) {
+        texgen_func[si] = &texgen_texmat;
+        tcdata[si]._mat = target_tex_matrix->get_mat(stage);
+      }
+
+      break;
+    }
+    tcdata[si]._r1.set_row(_min_vertex);
+    tcdata[si]._r2.set_row(_min_vertex);
+    if (!tcdata[si]._r1.has_column()) {
+      texgen_func[si] = &texgen_null;
     }
   }
 
@@ -722,18 +767,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
     // Texture coordinates.
     for (int si = 0; si < max_stage_index; ++si) {
-      if (needs_texmat[si]) {
-        // Transform texcoords as a four-component vector for most generality.
-        LVecBase4f d = rtexcoord[si].get_data4f() * texmat[si];
-        v->tex_coord[si].v[0] = d[0];
-        v->tex_coord[si].v[1] = d[1];
-        
-      } else if (needs_texcoord[si]) {
-        // No need to transform, so just extract as two-component.
-        const LVecBase2f &d = rtexcoord[si].get_data2f();
-        v->tex_coord[si].v[0] = d[0];
-        v->tex_coord[si].v[1] = d[1];
-      }
+      TexCoordf d;
+      (*texgen_func[si])(v->tex_coord[si], tcdata[si]);
     }
 
     if (needs_color) {
@@ -2974,3 +3009,76 @@ get_tex_filter_func(Texture::FilterType filter) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::texgen_null
+//       Access: Private, Static
+//  Description: Generates invalid texture coordinates.  Used when
+//               texture coordinate params are invalid or unsupported.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+texgen_null(V2 &result, TinyGraphicsStateGuardian::TexCoordData &) {
+  result.v[0] = 0.0;
+  result.v[1] = 0.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::texgen_simple
+//       Access: Private, Static
+//  Description: Extracts a simple 2-d texture coordinate pair from
+//               the vertex data, without applying any texture matrix.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+texgen_simple(V2 &result, TinyGraphicsStateGuardian::TexCoordData &tcdata) {
+  // No need to transform, so just extract as two-component.
+  const LVecBase2f &d = tcdata._r1.get_data2f();
+  result.v[0] = d[0];
+  result.v[1] = d[1];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::texgen_simple
+//       Access: Private, Static
+//  Description: Extracts a simple 2-d texture coordinate pair from
+//               the vertex data, and then applies a texture matrix.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+texgen_texmat(V2 &result, TinyGraphicsStateGuardian::TexCoordData &tcdata) {
+  // Transform texcoords as a four-component vector for most generality.
+  LVecBase4f d = tcdata._r1.get_data4f() * tcdata._mat;
+  result.v[0] = d[0] / d[3];
+  result.v[1] = d[1] / d[3];
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::texgen_sphere_map
+//       Access: Private, Static
+//  Description: Computes appropriate sphere map texture coordinates
+//               based on the eye normal coordinates.
+////////////////////////////////////////////////////////////////////
+void TinyGraphicsStateGuardian::
+texgen_sphere_map(V2 &result, TinyGraphicsStateGuardian::TexCoordData &tcdata) {
+  // Get the normal and point in eye coordinates.
+  LVector3f n = tcdata._mat.xform_vec(tcdata._r1.get_data3f());
+  LVector3f u = tcdata._mat.xform_point(tcdata._r2.get_data3f());
+
+  // Normalize the vectors.
+  n.normalize();
+  u.normalize();
+
+  // Compute the reflection vector.
+  LVector3f r = u - n * dot(n, u) * 2.0f;
+  
+  // compute the denominator, m.
+  float m = 2.0f * csqrt(r[0] * r[0] + r[1] * r[1] + (r[2] + 1.0f) * (r[2] + 1.0f));
+
+  // Now we can compute the s and t coordinates.
+  result.v[0] = r[0] / m + 0.5f;
+  result.v[1] = r[1] / m + 0.5f;
+
+  /*
+  cerr << "n = " << n << " u = " << u << "\n"
+       << "  r = " << r << "\n"
+       << "  m = " << m << ", result = " << result.v[0] << " " << result.v[1]
+       << "\n";
+  */
+}
