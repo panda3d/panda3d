@@ -189,9 +189,8 @@ private:
   static PStatCollector _pixel_count_white_perspective_pcollector;
   static PStatCollector _pixel_count_flat_perspective_pcollector;
   static PStatCollector _pixel_count_smooth_perspective_pcollector;
-  static PStatCollector _pixel_count_white_multitex_pcollector;
-  static PStatCollector _pixel_count_flat_multitex_pcollector;
-  static PStatCollector _pixel_count_smooth_multitex_pcollector;
+  static PStatCollector _pixel_count_smooth_multitex2_pcollector;
+  static PStatCollector _pixel_count_smooth_multitex3_pcollector;
 
 public:
   static TypeHandle get_class_type() {

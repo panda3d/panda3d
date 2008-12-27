@@ -34,7 +34,7 @@ ExtraOptions = [
     [ 'white', 'flat', 'smooth' ],
 
     # texturing
-    [ 'untextured', 'textured', 'perspective', 'multitex' ],
+    [ 'untextured', 'textured', 'perspective', 'multitex2', 'multitex3' ],
     ]
 
 FullOptions = Options + ExtraOptions
@@ -91,7 +91,7 @@ def getFname(ops):
         keyword = FullOptions[i][ops[i]]
         keywordList.append(keyword)
 
-    if keywordList[-1] == 'multitex':
+    if keywordList[-1].startswith('multitex'):
         # We don't bother with white_multitex or flat_multitex.
         keywordList[-2] = 'smooth'
 

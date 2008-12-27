@@ -52,9 +52,8 @@ PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_textured_pcollecto
 PStatCollector TinyGraphicsStateGuardian::_pixel_count_white_perspective_pcollector("Pixels:White perspective");
 PStatCollector TinyGraphicsStateGuardian::_pixel_count_flat_perspective_pcollector("Pixels:Flat perspective");
 PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_perspective_pcollector("Pixels:Smooth perspective");
-PStatCollector TinyGraphicsStateGuardian::_pixel_count_white_multitex_pcollector("Pixels:White multitex");
-PStatCollector TinyGraphicsStateGuardian::_pixel_count_flat_multitex_pcollector("Pixels:Flat multitex");
-PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_multitex_pcollector("Pixels:Smooth multitex");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_multitex2_pcollector("Pixels:Smooth multitex 2");
+PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_multitex3_pcollector("Pixels:Smooth multitex 3");
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::Constructor
@@ -398,9 +397,8 @@ begin_frame(Thread *current_thread) {
   _pixel_count_white_perspective_pcollector.clear_level();
   _pixel_count_flat_perspective_pcollector.clear_level();
   _pixel_count_smooth_perspective_pcollector.clear_level();
-  _pixel_count_white_multitex_pcollector.clear_level();
-  _pixel_count_flat_multitex_pcollector.clear_level();
-  _pixel_count_smooth_multitex_pcollector.clear_level();
+  _pixel_count_smooth_multitex2_pcollector.clear_level();
+  _pixel_count_smooth_multitex3_pcollector.clear_level();
 #endif
 
   return true;
@@ -521,9 +519,8 @@ end_frame(Thread *current_thread) {
   _pixel_count_white_perspective_pcollector.flush_level();
   _pixel_count_flat_perspective_pcollector.flush_level();
   _pixel_count_smooth_perspective_pcollector.flush_level();
-  _pixel_count_white_multitex_pcollector.flush_level();
-  _pixel_count_flat_multitex_pcollector.flush_level();
-  _pixel_count_smooth_multitex_pcollector.flush_level();
+  _pixel_count_smooth_multitex2_pcollector.flush_level();
+  _pixel_count_smooth_multitex3_pcollector.flush_level();
 #endif  // DO_PSTATS
 }
 
@@ -635,7 +632,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   GeomVertexReader  rcolor, rnormal;
 
-  // We now support up to 2-stage multitexturing.
+  // We now support up to 3-stage multitexturing.
   GenTexcoordFunc *texgen_func[MAX_TEXTURE_STAGES];
   TexCoordData tcdata[MAX_TEXTURE_STAGES];
 
@@ -943,9 +940,8 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   pixel_count_white_perspective = 0;
   pixel_count_flat_perspective = 0;
   pixel_count_smooth_perspective = 0;
-  pixel_count_white_multitex = 0;
-  pixel_count_flat_multitex = 0;
-  pixel_count_smooth_multitex = 0;
+  pixel_count_smooth_multitex2 = 0;
+  pixel_count_smooth_multitex3 = 0;
 #endif  // DO_PSTATS
   
   return true;
@@ -1341,9 +1337,8 @@ end_draw_primitives() {
   _pixel_count_white_perspective_pcollector.add_level(pixel_count_white_perspective);
   _pixel_count_flat_perspective_pcollector.add_level(pixel_count_flat_perspective);
   _pixel_count_smooth_perspective_pcollector.add_level(pixel_count_smooth_perspective);
-  _pixel_count_white_multitex_pcollector.add_level(pixel_count_white_multitex);
-  _pixel_count_flat_multitex_pcollector.add_level(pixel_count_flat_multitex);
-  _pixel_count_smooth_multitex_pcollector.add_level(pixel_count_smooth_multitex);
+  _pixel_count_smooth_multitex2_pcollector.add_level(pixel_count_smooth_multitex2);
+  _pixel_count_smooth_multitex3_pcollector.add_level(pixel_count_smooth_multitex3);
 #endif  // DO_PSTATS
 
   GraphicsStateGuardian::end_draw_primitives();
@@ -2206,8 +2201,10 @@ do_issue_texture() {
   _texture_replace = all_replace;
 
   _texturing_state = 2;   // perspective (perspective-correct texturing)
-  if (num_stages >= 2) {
-    _texturing_state = 3;  // multitexture
+  if (num_stages >= 3) {
+    _texturing_state = 4;  // multitex3
+  } else if (num_stages == 2) {
+    _texturing_state = 3;  // multitex2
   } else if (!td_perspective_textures) {
     _texturing_state = 1;    // textured (not perspective correct)
   }

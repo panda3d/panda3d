@@ -55,6 +55,11 @@ void gl_transform_to_viewport(GLContext *c,GLVertex *v)
     v->zp.sa = (int)(v->tex_coord[si].v[0] * c->current_textures[si]->s_max); 
     v->zp.ta = (int)(v->tex_coord[si].v[1] * c->current_textures[si]->t_max);
   }
+  if (c->num_textures_enabled >= 3) {
+    static const int si = 2;
+    v->zp.sb = (int)(v->tex_coord[si].v[0] * c->current_textures[si]->s_max); 
+    v->zp.tb = (int)(v->tex_coord[si].v[1] * c->current_textures[si]->t_max);
+  }
 }
 
 

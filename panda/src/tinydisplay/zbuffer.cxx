@@ -20,9 +20,8 @@ int pixel_count_smooth_textured;
 int pixel_count_white_perspective;
 int pixel_count_flat_perspective;
 int pixel_count_smooth_perspective;
-int pixel_count_white_multitex;
-int pixel_count_flat_multitex;
-int pixel_count_smooth_multitex;
+int pixel_count_smooth_multitex2;
+int pixel_count_smooth_multitex3;
 #endif  // DO_PSTATS
 
 ZBuffer *ZB_open(int xsize, int ysize, int mode,

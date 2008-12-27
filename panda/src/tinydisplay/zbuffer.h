@@ -83,6 +83,8 @@ typedef unsigned int PIXEL;
   ((((unsigned int)(c1) * (unsigned int)(c2))) >> 16)
 #define PCOMPONENT_MULT3(c1, c2, c3) \
   PCOMPONENT_MULT(c1, PCOMPONENT_MULT(c2, c3))
+#define PCOMPONENT_MULT4(c1, c2, c3, c4) \
+  PCOMPONENT_MULT(PCOMPONENT_MULT(c1, c2), PCOMPONENT_MULT(c3, c4))
 
 // Returns a signed product of c1 * c2, where c1 is initially signed.
 // We leave 2 bits on the top to differentiate between c1 < 0 and c1 >
@@ -145,6 +147,9 @@ struct ZBufferPoint {
 
   int sa, ta;   /* mapping coordinates for optional second texture stage */
   float sza,tza; 
+
+  int sb, tb;   /* mapping coordinates for optional third texture stage */
+  float szb,tzb; 
 };
 
 /* zbuffer.c */
@@ -159,9 +164,8 @@ extern int pixel_count_smooth_textured;
 extern int pixel_count_white_perspective;
 extern int pixel_count_flat_perspective;
 extern int pixel_count_smooth_perspective;
-extern int pixel_count_white_multitex;
-extern int pixel_count_flat_multitex;
-extern int pixel_count_smooth_multitex;
+extern int pixel_count_smooth_multitex2;
+extern int pixel_count_smooth_multitex3;
 
 #define COUNT_PIXELS(pixel_count, p0, p1, p2) \
   (pixel_count) += abs((p0)->x * ((p1)->y - (p2)->y) + (p1)->x * ((p2)->y - (p0)->y) + (p2)->x * ((p0)->y - (p1)->y)) / 2
