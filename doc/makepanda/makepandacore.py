@@ -178,6 +178,26 @@ def GetDirectoryContents(dir, filters="*", skip=[]):
 
 ########################################################################
 ##
+## LocateBinary
+##
+## This function searches the system PATH for the binary. Returns its
+## full path when it is found, or None when it was not found.
+##
+########################################################################
+
+def LocateBinary(binary):
+    if not os.environ.has_key("PATH") or os.environ["PATH"] == "":
+        p = os.defpath
+    else:
+        p = os.environ["PATH"]
+    
+    for path in p.split(os.pathsep):
+        if os.access(os.path.join(path, binary), os.X_OK):
+            return os.path.abspath(os.path.realpath(os.path.join(path, binary)))
+    return None
+
+########################################################################
+##
 ## The Timestamp Cache
 ##
 ## The make utility is constantly fetching the timestamps of files.
@@ -622,6 +642,68 @@ def PkgSelected(pkglist, pkg):
     if (pkglist.count(pkg)==0): return 0
     if (PKG_LIST_OMIT[pkg]): return 0
     return 1
+
+########################################################################
+##
+## These functions are for libraries which use pkg-config.
+##
+########################################################################
+
+def PkgConfigHavePkg(pkgname):
+    """Returns a bool whether the pkg-config package is installed."""
+    if (sys.platform == "win32" or not LocateBinary("pkg-config")):
+        return False
+    handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --modversion " + pkgname)
+    result = handle.read().strip()
+    handle.close()
+    return bool(len(result) > 0)
+
+def PkgConfigGetLibs(pkgname):
+    """Returns a list of libs for the package, prefixed by -l."""
+    if (sys.platform == "win32" or not LocateBinary("pkg-config")):
+        return []
+    handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-l " + pkgname)
+    result = handle.read().strip()
+    handle.close()
+    libs = []
+    for l in result.split(" "):
+        libs.append(l)
+    return libs
+
+def PkgConfigGetIncDirs(pkgname):
+    """Returns a list of includes for the package, NOT prefixed by -I."""
+    if (sys.platform == "win32" or not LocateBinary("pkg-config")):
+        return []
+    handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --cflags-only-I " + pkgname)
+    result = handle.read().strip()
+    handle.close()
+    if len(result) == 0: return []
+    libs = []
+    for l in result.split(" "):
+        libs.append(l.replace("-I", "").replace("\"", "").strip())
+    return libs
+
+def PkgConfigGetLibDirs(pkgname):
+    """Returns a list of library paths for the package, NOT prefixed by -L."""
+    if (sys.platform == "win32" or not LocateBinary("pkg-config")):
+        return []
+    handle = os.popen(LocateBinary("pkg-config") + " --silence-errors --libs-only-L " + pkgname)
+    result = handle.read().strip()
+    handle.close()
+    if len(result) == 0: return []
+    libs = []
+    for l in result.split(" "):
+        libs.append(l.replace("-L", "").replace("\"", "").strip())
+    return libs
+
+def PkgConfigEnable(opt, pkgname):
+    """Adds the libraries and includes to IncDirectory, LibName and LibDirectory."""
+    for i in PkgConfigGetIncDirs(pkgname):
+        IncDirectory(opt, i)
+    for i in PkgConfigGetLibDirs(pkgname):
+        LibDirectory(opt, i)
+    for i in PkgConfigGetLibs(pkgname):
+        LibName(opt, i)
 
 ########################################################################
 ##

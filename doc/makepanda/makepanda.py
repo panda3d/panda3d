@@ -292,18 +292,11 @@ if (COMPILER=="LINUX"):
         IncDirectory("GLUT", "/usr/X11R6/include")
     else:
         if (PkgSkip("FREETYPE")==0): IncDirectory("FREETYPE", "/usr/include/freetype2")
-        IncDirectory("GTK2", "/usr/include/gtk-2.0")
-        IncDirectory("GTK2", "/usr/include/cairo")
-        IncDirectory("GTK2", "/usr/include/glib-2.0")
-        IncDirectory("GTK2", "/usr/lib/glib-2.0/include")
-        IncDirectory("GTK2", "/usr/include/pango-1.0")
-        IncDirectory("GTK2", "/usr/lib/gtk-2.0/include")
-        IncDirectory("GTK2", "/usr/include/atk-1.0")
-        if (platform.architecture()[0] == "64bit"):
+        if (os.path.exists("/usr/lib64")):
             IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
             IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
-    LibName("GTK2", "-lgtk-x11-2.0")
-
+    PkgConfigEnable("GTK2", "gtk+-2.0")
+    
     if (sys.platform == "darwin"):
         pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "FFMPEG", "PNG", "JPEG", "TIFF"]
     else:
@@ -3360,7 +3353,7 @@ if (PkgSkip("PANDATOOL")==0):
 # DIRECTORY: pandatool/src/gtk-stats/
 #
 
-if (PkgSkip("PANDATOOL")==0 and sys.platform != "darwin"):
+if (PkgSkip("PANDATOOL")==0 and (sys.platform == "win32" or PkgConfigHavePkg("gtk+-2.0"))):
     if (sys.platform == "win32"):
       OPTS=['DIR:pandatool/src/win-stats']
       TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
