@@ -2700,7 +2700,7 @@ if (PkgSkip("PANDATOOL")==0):
 #
 # DIRECTORY: pandatool/src/daeegg/
 #
-if (PkgSkip("PANDATOOL")==0):
+if (PkgSkip("PANDATOOL")==0 and PkgSkip("FCOLLADA")==0):
     OPTS=['DIR:pandatool/src/daeegg', 'FCOLLADA']
     TargetAdd('daeegg_composite1.obj', opts=OPTS, input='daeegg_composite1.cxx')
     TargetAdd('libdaeegg.lib', input='daeegg_composite1.obj')
@@ -2709,7 +2709,7 @@ if (PkgSkip("PANDATOOL")==0):
 #
 # DIRECTORY: pandatool/src/daeprogs/
 #
-if (PkgSkip("PANDATOOL")==0):
+if (PkgSkip("PANDATOOL")==0 and PkgSkip("FCOLLADA")==0):
     OPTS=['DIR:pandatool/src/daeprogs', 'FCOLLADA']
     TargetAdd('dae2egg_daeToEgg.obj', opts=OPTS, input='daeToEgg.cxx')
     TargetAdd('dae2egg.exe', input='dae2egg_daeToEgg.obj')
