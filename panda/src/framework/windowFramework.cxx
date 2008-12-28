@@ -1302,7 +1302,8 @@ create_anim_controls() {
   setup_shuttle_button("4", 2, st_play_button);
   setup_shuttle_button(":", 3, st_forward_button);
 
-  _panda_framework->get_task_mgr().add(new GenericAsyncTask("controls", st_update_anim_controls, (void *)this));
+  _update_anim_controls_task = new GenericAsyncTask("controls", st_update_anim_controls, (void *)this);
+  _panda_framework->get_task_mgr().add(_update_anim_controls_task);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1316,6 +1317,8 @@ destroy_anim_controls() {
     _anim_controls_group.remove_node();
 
     _panda_framework->get_event_handler().remove_hooks_with((void *)this);
+    _panda_framework->get_task_mgr().remove(_update_anim_controls_task);
+    _update_anim_controls_task.clear();
   }
 }
 

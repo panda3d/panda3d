@@ -175,6 +175,7 @@ private:
   PT(PGSliderBar) _anim_slider;
   PT(PGSliderBar) _play_rate_slider;
   PT(TextNode) _frame_number;
+  PT(GenericAsyncTask) _update_anim_controls_task;
 
   NodePath _mouse;
   PT(Trackball) _trackball;
