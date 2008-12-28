@@ -44,12 +44,12 @@ FfmpegAudioCursor(FfmpegAudio *src) :
     cleanup();
     return;
   }
-  
+
   if (av_find_stream_info(_format_ctx)<0) {
     cleanup();
     return;
   }
-  
+
   // Find the audio stream
   for(int i=0; i<_format_ctx->nb_streams; i++) {
     if(_format_ctx->streams[i]->codec->codec_type==CODEC_TYPE_AUDIO) {
@@ -60,12 +60,12 @@ FfmpegAudioCursor(FfmpegAudio *src) :
       _audio_channels = _audio_ctx->channels;
     }
   }
-  
+
   if (_audio_ctx == 0) {
     cleanup();
     return;
   }
-  
+
   AVCodec *pAudioCodec=avcodec_find_decoder(_audio_ctx->codec_id);
   if(pAudioCodec == 0) {
     cleanup();
@@ -88,14 +88,14 @@ FfmpegAudioCursor(FfmpegAudio *src) :
     return;
   }
   memset(_packet, 0, sizeof(AVPacket));
-  
+
   // Align the buffer to a 16-byte boundary
   // The ffmpeg codec likes this, because it uses SSE/SSE2.
   _buffer = _buffer_alloc;
   while (((size_t)_buffer) & 15) {
     _buffer += 1;
   }
-  
+
   fetch_packet();
   _initial_dts = _packet->dts;
   _last_seek = 0;
@@ -148,7 +148,7 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 //     Function: FfmpegAudioCursor::fetch_packet
 //       Access: Protected
-//  Description: Fetches an audio packet and stores it in the 
+//  Description: Fetches an audio packet and stores it in the
 //               packet buffer.  Also sets packet_size and packet_data.
 ////////////////////////////////////////////////////////////////////
 void FfmpegAudioCursor::
@@ -179,6 +179,8 @@ fetch_packet() {
 ////////////////////////////////////////////////////////////////////
 void FfmpegAudioCursor::
 reload_buffer() {
+
+
   while (_buffer_head == _buffer_tail) {
     // If we're out of packets, generate silence.
     if (_packet->data == 0) {
@@ -188,9 +190,10 @@ reload_buffer() {
       return;
     } else if (_packet_size > 0) {
       int bufsize = _buffer_size * 2;
-      int len = avcodec_decode_audio(_audio_ctx, _buffer, &bufsize, 
+      int len = avcodec_decode_audio(_audio_ctx, _buffer, &bufsize,
                                      _packet_data, _packet_size);
-      if (len < 0) {
+      movies_debug("avcodec_decode_audio returned " << len);
+      if (len <= 0) {
         break;
       }
       _packet_data += len;
@@ -210,7 +213,7 @@ reload_buffer() {
 //     Function: FfmpegAudioCursor::seek
 //       Access: Protected
 //  Description: Seeks to a target location.  Afterward, the
-//               packet_time is guaranteed to be less than or 
+//               packet_time is guaranteed to be less than or
 //               equal to the specified time.
 ////////////////////////////////////////////////////////////////////
 void FfmpegAudioCursor::
@@ -252,15 +255,25 @@ seek(double t) {
 //       Access: Public, Virtual
 //  Description: Read audio samples from the stream.  N is the
 //               number of samples you wish to read.  Your buffer
-//               must be equal in size to N * channels.  
-//               Multiple-channel audio will be interleaved. 
+//               must be equal in size to N * channels.
+//               Multiple-channel audio will be interleaved.
 ////////////////////////////////////////////////////////////////////
 void FfmpegAudioCursor::
 read_samples(int n, PN_int16 *data) {
+
+  //movies_debug("here!!! FfmpegAudioCursor n="<<n);
+
   int desired = n * _audio_channels;
-  while (desired) {
+
+  // give up after 100 tries to fetch data
+  int give_up_after = 100;
+
+  while (desired && give_up_after > 0) {
+
     if (_buffer_head == _buffer_tail) {
       reload_buffer();
+      give_up_after --;
+      movies_debug("reload_buffer will give up in "<<give_up_after);
     }
     int available = _buffer_tail - _buffer_head;
     int ncopy = (desired > available) ? available : desired;
@@ -272,6 +285,7 @@ read_samples(int n, PN_int16 *data) {
       desired -= ncopy;
       _buffer_head += ncopy;
     }
+
   }
   _samples_read += n;
 }

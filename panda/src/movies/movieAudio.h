@@ -21,6 +21,19 @@
 #include "typedWritableReferenceCount.h"
 class MovieAudioCursor;
 
+
+#ifdef NOTIFY_DEBUG //[
+  // Non-release build:
+  #define movies_debug(msg) \
+  if (movies_cat.is_debug()) { \
+	  movies_cat->debug() << msg << endl; \
+  } else {}
+#else //][
+  // Release build:
+  #define movies_debug(msg) ((void)0);
+#endif //]
+
+
 ////////////////////////////////////////////////////////////////////
 //       Class : MovieAudio
 // Description : A MovieAudio is actually any source that provides
