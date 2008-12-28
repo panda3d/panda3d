@@ -3700,12 +3700,80 @@ get_ram_image_as(const string &requested_format) {
     gobj_cat.error() << "Couldn't find an uncompressed RAM image!\n";
     return CPTA_uchar(get_class_type());
   }
+  int imgsize = _x_size * _y_size;
   nassertr(_num_components > 0 && _num_components <= 4, CPTA_uchar(get_class_type()));
-  nassertr(data.size() == _component_width * _num_components * _x_size * _y_size, CPTA_uchar(get_class_type()));
+  nassertr(data.size() == _component_width * _num_components * imgsize, CPTA_uchar(get_class_type()));
   
-  // Create a new array and loop through the pixels to fill it.
-  PTA_uchar newdata = PTA_uchar::empty_array(_x_size * _y_size * format.size() * _component_width);
-  for (int p = 0; p < _x_size * _y_size; ++p) {
+  // Check if the format is already what we have internally.
+  if ((_num_components == 1 && format.size() == 1) || 
+      (_num_components == 2 && format.size() == 2 && format.at(1) == 'A' && format.at(0) != 'A') ||
+      (_num_components == 3 && format == "BGR") ||
+      (_num_components == 4 && format == "BGRA")) {
+    // The format string is already our format, so we just need to copy it.
+    return CPTA_uchar(data);
+  }
+  
+  // Create a new empty array that can hold our image.
+  PTA_uchar newdata = PTA_uchar::empty_array(imgsize * format.size() * _component_width, get_class_type());
+
+  // These ifs are for optimization of commonly used image types.
+  if (format == "RGBA" && _num_components == 4 && _component_width == 1) {
+    imgsize *= 4;
+    for (int p = 0; p < imgsize; p += 4) {
+      newdata[p    ] = data[p + 2];
+      newdata[p + 1] = data[p + 1];
+      newdata[p + 2] = data[p    ];
+      newdata[p + 3] = data[p + 3];
+    }
+    return newdata;
+  }
+  if (format == "RGB" && _num_components == 3 && _component_width == 1) {
+    imgsize *= 3;
+    for (int p = 0; p < imgsize; p += 3) {
+      newdata[p    ] = data[p + 2];
+      newdata[p + 1] = data[p + 1];
+      newdata[p + 2] = data[p    ];
+    }
+    return newdata;
+  }
+  if (format == "A" && _component_width == 1 && _num_components != 3) {
+    // We can generally rely on alpha to be the last component.
+    int component = _num_components - 1;
+    for (int p = 0; p < imgsize; ++p) {
+      newdata[p] = data[component];
+    }
+    return newdata;
+  }
+  if (_component_width == 1) {
+    for (int p = 0; p < imgsize; ++p) {
+      for (uchar s = 0; s < format.size(); ++s) {
+        char component = -1;
+        if (format.at(s) == 'B' || (_num_components <= 2 && format.at(s) != 'A')) {
+          component = 0;
+        } else if (format.at(s) == 'G') {
+          component = 1;
+        } else if (format.at(s) == 'R') {
+          component = 2;
+        } else if (format.at(s) == 'A') {
+          nassertr(_num_components != 3, CPTA_uchar(get_class_type()));
+          component = _num_components - 1;
+        } else if (format.at(s) == '0') {
+          newdata[p * format.size() + s] =  0;
+        } else if (format.at(s) == '1') {
+          newdata[p * format.size() + s] = -1;
+        } else {
+          gobj_cat.error() << "Unexpected component character '"
+            << format.at(s) << "', expected one of RGBA!\n";
+          return CPTA_uchar(get_class_type());
+        }
+        if (component >= 0) {
+          newdata[p * format.size() + s] = data[p * _num_components + component];
+        }
+      }
+    }
+    return newdata;
+  }
+  for (int p = 0; p < imgsize; ++p) {
     for (uchar s = 0; s < format.size(); ++s) {
       char component = -1;
       if (format.at(s) == 'B' || (_num_components <= 2 && format.at(s) != 'A')) {
