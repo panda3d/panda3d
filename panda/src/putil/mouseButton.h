@@ -35,6 +35,8 @@ PUBLISHED:
   static ButtonHandle five();
   static ButtonHandle wheel_up();
   static ButtonHandle wheel_down();
+  static ButtonHandle wheel_left();
+  static ButtonHandle wheel_right();
 
   static bool is_mouse_button(ButtonHandle button);
 
@@ -45,6 +47,8 @@ public:
   static ButtonHandle _buttons[num_mouse_buttons];
   static ButtonHandle _wheel_up;
   static ButtonHandle _wheel_down;
+  static ButtonHandle _wheel_left;
+  static ButtonHandle _wheel_right;
 };
 
 #endif

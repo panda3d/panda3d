@@ -1666,6 +1666,10 @@ get_mouse_button(XButtonEvent &button_event) {
     return MouseButton::wheel_up();
   } else if (index == x_wheel_down_button) {
     return MouseButton::wheel_down();
+  } else if (index == x_wheel_left_button) {
+    return MouseButton::wheel_left();
+  } else if (index == x_wheel_right_button) {
+    return MouseButton::wheel_right();
   } else {
     return MouseButton::button(index - 1);
   }

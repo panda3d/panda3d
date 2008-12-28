@@ -21,6 +21,8 @@
 ButtonHandle MouseButton::_buttons[num_mouse_buttons];
 ButtonHandle MouseButton::_wheel_up;
 ButtonHandle MouseButton::_wheel_down;
+ButtonHandle MouseButton::_wheel_left;
+ButtonHandle MouseButton::_wheel_right;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseButton::button
@@ -116,6 +118,30 @@ wheel_down() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::wheel_left
+//       Access: Public, Static
+//  Description: Returns the ButtonHandle generated when the mouse
+//               is scrolled to the left. Usually, you'll only
+//               find the horizontal scroll on laptops.
+////////////////////////////////////////////////////////////////////
+ButtonHandle MouseButton::
+wheel_left() {
+  return _wheel_left;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseButton::wheel_right
+//       Access: Public, Static
+//  Description: Returns the ButtonHandle generated when the mouse
+//               is scrolled to the right. Usually, you'll only
+//               find the horizontal scroll on laptops.
+////////////////////////////////////////////////////////////////////
+ButtonHandle MouseButton::
+wheel_right() {
+  return _wheel_right;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseButton::is_mouse_button
 //       Access: Public, Static
 //  Description: Returns true if the indicated ButtonHandle is a mouse
@@ -129,7 +155,7 @@ is_mouse_button(ButtonHandle button) {
     }
   }
 
-  return button == _wheel_up || button == _wheel_down;
+  return button == _wheel_up || button == _wheel_down || button == _wheel_left || button == _wheel_right;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,4 +177,6 @@ init_mouse_buttons() {
 
   ButtonRegistry::ptr()->register_button(_wheel_up, "wheel_up");
   ButtonRegistry::ptr()->register_button(_wheel_down, "wheel_down");
+  ButtonRegistry::ptr()->register_button(_wheel_left, "wheel_left");
+  ButtonRegistry::ptr()->register_button(_wheel_right, "wheel_right");
 }

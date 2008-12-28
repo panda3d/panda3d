@@ -32,5 +32,7 @@ extern ConfigVariableBool glx_get_os_address;
 
 extern ConfigVariableInt x_wheel_up_button;
 extern ConfigVariableInt x_wheel_down_button;
+extern ConfigVariableInt x_wheel_left_button;
+extern ConfigVariableInt x_wheel_right_button;
 
 #endif /* __CONFIG_GLXDISPLAY_H__ */

@@ -65,6 +65,18 @@ ConfigVariableInt x_wheel_down_button
           "mouse button number does the system report when the mouse wheel "
           "is rolled one notch down?"));
 
+ConfigVariableInt x_wheel_left_button
+("x-wheel-left-button", 6,
+ PRC_DESC("This is the mouse button index of the wheel_left event: which "
+          "mouse button number does the system report when one scrolls "
+          "to the left?"));
+
+ConfigVariableInt x_wheel_right_button
+("x-wheel-right-button", 7,
+ PRC_DESC("This is the mouse button index of the wheel_right event: which "
+          "mouse button number does the system report when one scrolls "
+          "to the right?"));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libglxdisplay
 //  Description: Initializes the library.  This must be called at
