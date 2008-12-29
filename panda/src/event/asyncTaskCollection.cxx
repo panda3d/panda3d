@@ -56,6 +56,7 @@ add_task(AsyncTask *task) {
   // AsyncTaskCollections, we have to copy the array now so we won't
   // inadvertently modify any of our brethren AsyncTaskCollection
   // objects.
+  nassertv(task != (AsyncTask *)NULL);
 
   if (_tasks.get_ref_count() > 1) {
     AsyncTasks old_tasks = _tasks;
