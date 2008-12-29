@@ -54,7 +54,7 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
   nassertv(instance != NULL);
   const string semantic (FROM_FSTRING(instance->GetSemantic()));
   if (_materials.count(semantic) > 0) {
-    daeegg_cat.warning() << "Ignoring duplicate material with semantic" << semantic << endl;
+    daeegg_cat.warning() << "Ignoring duplicate material with semantic " << semantic << endl;
     return;
   }
   _materials[semantic] = new DaeMaterial();
@@ -63,7 +63,11 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
   for (size_t vib = 0; vib < instance->GetVertexInputBindingCount(); ++vib) {
     const FCDMaterialInstanceBindVertexInput* mivib = instance->GetVertexInputBinding(vib);
     assert(mivib != NULL);
+#if FCOLLADA_VERSION >= 0x00030005
     _materials[semantic]->_uvsets[mivib->inputSet] = *mivib->semantic;
+#else
+    _materials[semantic]->_uvsets[mivib->inputSet] = FROM_FSTRING(mivib->semantic);
+#endif
   }
   
   // Handle the material stuff

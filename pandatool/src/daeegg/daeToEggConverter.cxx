@@ -36,7 +36,6 @@
 #include "FCDocument/FCDGeometry.h"
 #include "FCDocument/FCDGeometryInstance.h"
 #include "FCDocument/FCDGeometryPolygons.h"
-#include "FCDocument/FCDGeometryPolygonsInput.h"
 #include "FCDocument/FCDGeometrySource.h"
 #include "FCDocument/FCDSkinController.h"
 #include "FCDocument/FCDController.h"
@@ -46,6 +45,9 @@
 #include "FCDocument/FCDExtra.h"
 #include "FCDocument/FCDEffect.h"
 #include "FCDocument/FCDEffectStandard.h"
+#if FCOLLADA_VERSION >= 0x00030005
+  #include "FCDocument/FCDGeometryPolygonsInput.h"
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DAEToEggConverter::Constructor
@@ -136,13 +138,15 @@ convert_file(const Filename &filename) {
   // Read the file
   FCollada::Initialize();
   _document = FCollada::LoadDocument(filename.to_os_specific().c_str());
-  if(_document == NULL) {
+  if (_document == NULL) {
     daeegg_cat.error() << "Failed to load document: " << _error_handler.GetErrorString() << endl;
     FCollada::Release();
     return false;
   }
   // Make sure the file uses consistent coordinate system and length
-  FCDocumentTools::StandardizeUpAxisAndLength(_document);
+  if (_document->GetAsset() != NULL) {
+    FCDocumentTools::StandardizeUpAxisAndLength(_document);
+  }
   
   _table = new EggTable();
   _table->set_table_type(EggTable::TT_table);
