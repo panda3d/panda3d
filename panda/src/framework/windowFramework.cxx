@@ -1317,8 +1317,10 @@ destroy_anim_controls() {
     _anim_controls_group.remove_node();
 
     _panda_framework->get_event_handler().remove_hooks_with((void *)this);
-    _panda_framework->get_task_mgr().remove(_update_anim_controls_task);
-    _update_anim_controls_task.clear();
+    if (_update_anim_controls_task != NULL) {
+      _panda_framework->get_task_mgr().remove(_update_anim_controls_task);
+      _update_anim_controls_task.clear();
+    }
   }
 }
 
