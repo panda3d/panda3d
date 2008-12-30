@@ -699,6 +699,7 @@ bool Texture::
 reload() {
   MutexHolder holder(_lock);
   if (_loaded_from_image && !_fullpath.empty()) {
+    do_clear_ram_image();
     do_unlock_and_reload_ram_image(true);
     return do_has_ram_image();
   }
@@ -2999,10 +3000,11 @@ do_reload_ram_image(bool allow_compression) {
           // instance, we don't want to change the filter type or the
           // border color or anything--we just want to get the image and
           // necessary associated parameters.
-          do_reconsider_image_properties(tex->get_x_size(), tex->get_y_size(),
-                                         tex->get_num_components(), 
-                                         tex->get_component_type(), 0,
-                                         LoaderOptions());
+          _x_size = tex->get_x_size();
+          _y_size = tex->get_y_size();
+          _num_components = tex->get_num_components();
+          _format = tex->get_format();
+          _component_type = tex->get_component_type();
           _compression = tex->get_compression();
           _ram_image_compression = tex->_ram_image_compression;
           _ram_images = tex->_ram_images;
