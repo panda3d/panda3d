@@ -22,6 +22,10 @@
 #include "textPropertiesManager.h"
 #include "textEncoder.h"
 #include "config_text.h"
+#include "geomTriangles.h"
+#include "geomLines.h"
+#include "geomPoints.h"
+#include "geomVertexReader.h"
 #include "geomVertexWriter.h"
 #include "geomLines.h"
 #include "geomVertexFormat.h"
@@ -84,7 +88,8 @@ TextAssembler::
 TextAssembler(TextEncoder *encoder) : 
   _encoder(encoder),
   _usage_hint(Geom::UH_static),
-  _max_rows(0)
+  _max_rows(0),
+  _dynamic_merge(text_dynamic_merge)
 {
   _initial_cprops = new ComputedProperties(TextProperties());
   clear();
@@ -105,7 +110,8 @@ TextAssembler(const TextAssembler &copy) :
   _next_row_ypos(copy._next_row_ypos),
   _encoder(copy._encoder),
   _usage_hint(copy._usage_hint),
-  _max_rows(copy._max_rows)
+  _max_rows(copy._max_rows),
+  _dynamic_merge(copy._dynamic_merge)
 {
 }
 
@@ -125,6 +131,7 @@ operator = (const TextAssembler &copy) {
   _encoder = copy._encoder;
   _usage_hint = copy._usage_hint;
   _max_rows = copy._max_rows;
+  _dynamic_merge = copy._dynamic_merge;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -555,7 +562,10 @@ assemble_text() {
   LMatrix4f shadow_xform;
 
   bool any_shadow = false;
-  
+
+  GeomCollectorMap geom_collector_map;
+  GeomCollectorMap geom_shadow_collector_map;
+
   PlacedGlyphs::const_iterator pgi;
   for (pgi = placed_glyphs.begin(); pgi != placed_glyphs.end(); ++pgi) {
     const GlyphPlacement *placement = (*pgi);
@@ -599,16 +609,24 @@ assemble_text() {
     // goes, while the place-text function just stomps on the
     // vertices.
     if (properties->has_shadow()) {
-      placement->assign_copy_to(shadow_geom_node, shadow_state, shadow_xform);
+      if (_dynamic_merge) {
+        placement->assign_append_to(geom_shadow_collector_map, shadow_state, shadow_xform);
+      } else {
+        placement->assign_copy_to(shadow_geom_node, shadow_state, shadow_xform);
+      }
 
       // Don't shadow the graphics.  That can result in duplication of
       // button objects, plus it looks weird.  If you want a shadowed
       // graphic, you can shadow it yourself before you add it.
       //placement->copy_graphic_to(shadow_node, shadow_state, shadow_xform);
-
       any_shadow = true;
     }
-    placement->assign_to(text_geom_node, text_state);
+	
+    if (_dynamic_merge) {
+      placement->assign_append_to(geom_collector_map, text_state, LMatrix4f::ident_mat());
+    } else {
+      placement->assign_to(text_geom_node, text_state);
+    }
     placement->copy_graphic_to(text_node, text_state, LMatrix4f::ident_mat());
     delete placement;
   }  
@@ -619,6 +637,20 @@ assemble_text() {
     // rendering order.
     parent_node->add_child(shadow_node);
   }
+
+  GeomCollectorMap::iterator gc;
+  for (gc = geom_collector_map.begin(); gc != geom_collector_map.end(); ++gc) {
+    (*gc).second.append_geom(text_geom_node, (*gc).first._state);
+  }
+
+  if (any_shadow) {
+    for (gc = geom_shadow_collector_map.begin(); 
+         gc != geom_shadow_collector_map.end();
+         ++gc) {
+      (*gc).second.append_geom(shadow_geom_node, (*gc).first._state);
+    }
+  }
+  
   parent_node->add_child(text_node);
 
   return parent_node;
@@ -1327,7 +1359,7 @@ assemble_row(TextAssembler::TextRow &row,
       line_height = max(line_height, frame[3] - frame[2]);
     } else {
       //[fabius] this is not the right place to calc line height (see below)
-//       line_height = max(line_height, font->get_line_height());
+      //       line_height = max(line_height, font->get_line_height());
     }
 
     if (character == ' ') {
@@ -2165,6 +2197,80 @@ assign_copy_to(GeomNode *geom_node, const RenderState *state,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::GlyphPlacement::assign_append_to
+//       Access: Private
+//  Description: Puts the pieces of the GlyphPlacement in the
+//               indicated GeomNode.  This flavor will append the
+//               Geoms with the additional transform applied to the
+//               vertices.
+////////////////////////////////////////////////////////////////////
+void TextAssembler::GlyphPlacement::
+assign_append_to(GeomCollectorMap &geom_collector_map, 
+                 const RenderState *state,
+                 const LMatrix4f &extra_xform) const {
+  LMatrix4f new_xform = _xform * extra_xform;
+  Pieces::const_iterator pi;
+
+  int p, sp, s, e, i;
+  for (pi = _pieces.begin(); pi != _pieces.end(); ++pi) {
+    const Geom *geom = (*pi)._geom;
+    const GeomVertexData *vdata = geom->get_vertex_data();
+    CPT(RenderState) rs = (*pi)._state->compose(state);
+    GeomCollectorKey key(rs, vdata->get_format());
+
+    GeomCollectorMap::iterator mi = geom_collector_map.find(key);
+    if (mi == geom_collector_map.end()) {
+      mi = geom_collector_map.insert(GeomCollectorMap::value_type(key, GeomCollector(vdata->get_format()))).first;
+    }
+    GeomCollector &geom_collector = (*mi).second;
+
+    // We use this map to keep track of vertex indices we have already
+    // added, so that we don't needlessly duplicate vertices into our
+    // output vertex data.
+    VertexIndexMap vimap;
+
+    for (p = 0; p < geom->get_num_primitives(); p++) {
+      CPT(GeomPrimitive) primitive = geom->get_primitive(p)->decompose();
+
+      // Get a new GeomPrimitive of the corresponding type.
+      GeomPrimitive *new_prim = geom_collector.get_primitive(primitive->get_type());
+
+      // Walk through all of the components (e.g. triangles) of the
+      // primitive.
+      for (sp = 0; sp < primitive->get_num_primitives(); sp++) {
+        s = primitive->get_primitive_start(sp);
+        e = primitive->get_primitive_end(sp);
+
+        // Walk through all of the vertices in the component.
+        for (i = s; i < e; i++) {
+          int vi = primitive->get_vertex(i);
+
+          // Attempt to insert number "vi" into the map.
+          pair<VertexIndexMap::iterator, bool> added = vimap.insert(VertexIndexMap::value_type(vi, 0));
+          int new_vertex;
+          if (added.second) {
+            // The insert succeeded.  That means this is the first
+            // time we have encountered this vertex.
+            new_vertex = geom_collector.append_vertex(vdata, vi, new_xform);
+            // Update the map with the newly-created target vertex index.
+            (*(added.first)).second = new_vertex;
+
+          } else {
+            // The insert failed.  This means we have previously
+            // encountered this vertex, and we have already entered
+            // its target vertex index into the vimap.  Extract that
+            // vertex index, so we can reuse it.
+            new_vertex = (*(added.first)).second;
+          }
+          new_prim->add_vertex(new_vertex);
+        }
+        new_prim->close_primitive();
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::GlyphPlacement::copy_graphic_to
 //       Access: Private
 //  Description: If the GlyphPlacement includes a special graphic,
@@ -2183,6 +2289,100 @@ copy_graphic_to(PandaNode *node, const RenderState *state,
     intermediate_node->set_transform(TransformState::make_mat(new_xform));
     intermediate_node->set_state(state);
     intermediate_node->add_child(_graphic_model);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::GeomCollector Constructor
+//       Access: Public
+//  Description: constructs the GeomCollector class 
+//               (Geom, GeomTriangles, vertexWriter, texcoordWriter..)
+////////////////////////////////////////////////////////////////////
+TextAssembler::GeomCollector::
+GeomCollector(const GeomVertexFormat *format) :
+  _vdata(new GeomVertexData("merged_geom", format, Geom::UH_static)),
+  _geom(new Geom(_vdata))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::GeomCollector Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+TextAssembler::GeomCollector::
+GeomCollector(const TextAssembler::GeomCollector &copy) :
+  _vdata(copy._vdata),
+  _geom(copy._geom)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::GeomCollector::get_primitive
+//       Access: Public
+//  Description: Returns a GeomPrimitive of the appropriate type.  If
+//               one has not yet been created, returns a newly-created
+//               one; if one has previously been created of this type,
+//               returns the previously-created one.
+////////////////////////////////////////////////////////////////////
+GeomPrimitive *TextAssembler::GeomCollector::
+get_primitive(TypeHandle prim_type) {
+  if (prim_type == GeomTriangles::get_class_type()) {
+    if (_triangles == (GeomPrimitive *)NULL) {
+      _triangles = new GeomTriangles(Geom::UH_static);
+      _geom->add_primitive(_triangles);
+    }
+    return _triangles;
+
+  } else if (prim_type == GeomLines::get_class_type()) {
+    if (_lines == (GeomPrimitive *)NULL) {
+      _lines = new GeomLines(Geom::UH_static);
+      _geom->add_primitive(_lines);
+    }
+    return _lines;
+
+  } else if (prim_type == GeomPoints::get_class_type()) {
+    if (_points == (GeomPrimitive *)NULL) {
+      _points = new GeomPoints(Geom::UH_static);
+      _geom->add_primitive(_points);
+    }
+    return _points;
+  }
+
+  nassertr(false, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::GeomCollector::append_vertex
+//       Access: Public
+//  Description: Adds one vertex to the GeomVertexData.
+//               Returns the row number of the added vertex.
+////////////////////////////////////////////////////////////////////
+int TextAssembler::GeomCollector::
+append_vertex(const GeomVertexData *orig_vdata, int orig_row,
+              const LMatrix4f &xform) {
+  int new_row = _vdata->get_num_rows();
+  _vdata->copy_row_from(new_row, orig_vdata, orig_row, Thread::get_current_thread());
+
+  GeomVertexRewriter vertex_rewriter(_vdata, InternalName::get_vertex());
+  vertex_rewriter.set_row(new_row);
+  LPoint3f point = vertex_rewriter.get_data3f();
+  vertex_rewriter.set_data3f(point * xform);
+
+  return new_row;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::GeomCollector::append_geom
+//       Access: Public
+//  Description: closes the geomTriangles and appends the geom to 
+//               the given GeomNode
+////////////////////////////////////////////////////////////////////
+void TextAssembler::GeomCollector::
+append_geom(GeomNode *geom_node, const RenderState *state) {
+  if (_geom->get_num_primitives() > 0) {
+    geom_node->add_geom(_geom, state);
   }
 }
 

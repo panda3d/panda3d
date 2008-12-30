@@ -681,6 +681,65 @@ get_usage_hint() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextNode::set_flatten_flags
+//       Access: Published
+//  Description: Sets the flatten flags.  This should be a union of
+//               the TextNode::FlattenFlags options.  This controls
+//               the degree of flattening performed on the TextNode's
+//               internal geometry (i.e. the scene graph returned by
+//               generate()) each time the text is changed.  In
+//               general, more flattening means a more optimal result,
+//               but it will take more time to generate.
+//
+//               The choice may be any of these three:
+//
+//               FF_none - No flatten operation is called.  The
+//               letters are left as independent Geoms.
+//
+//               FF_light - A flatten_light() operation is called.
+//               The attributes are applied to the vertices, but no
+//               nodes are removed.
+//
+//               FF_medium - A flatten_medium() operation is called.
+//               The attributes are applied to the vertices, and a few
+//               trivial nodes are removed.
+//
+//               FF_strong - A flatten_strong() operation is called.
+//               The attributes are applied to the vertices, and the
+//               resulting nodes are aggressively combined into as few
+//               nodes as possible.
+//
+//               In addition to the above choices, you may optionally
+//               include the following flag:
+//
+//               FF_dynamic_merge - Copy the geoms into a single
+//               GeomVertexData as we go, instead of relying on the
+//               flatten operation at the end.  This pre-flattens the
+//               text considerably, and may obviate the need for
+//               flatten altogether; it also tends to improve
+//               performance considerably even if you do call flatten.
+//               However, it is not as fast as not calling flatten at
+//               all.
+//
+//               The default is taken from the text-flatten and
+//               text-dynamic-merge config variables.
+////////////////////////////////////////////////////////////////////
+INLINE void TextNode::
+set_flatten_flags(int flatten_flags) {
+  _flatten_flags = flatten_flags;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextNode::get_flatten_flags
+//       Access: Published
+//  Description: Returns the flatten flags.  See set_flatten_flags().
+////////////////////////////////////////////////////////////////////
+INLINE int TextNode::
+get_flatten_flags() const {
+  return _flatten_flags;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextNode::set_font
 //       Access: Published
 //  Description: Sets the font that will be used when making text.  If

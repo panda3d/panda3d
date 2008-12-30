@@ -60,6 +60,14 @@ protected:
 PUBLISHED:
   ~TextNode();
 
+  enum FlattenFlags {
+    FF_none          = 0x0000,
+    FF_light         = 0x0001,
+    FF_medium        = 0x0002,
+    FF_strong        = 0x0004,
+    FF_dynamic_merge = 0x0008,
+  };
+
   INLINE float get_line_height() const;
 
   INLINE void set_max_rows(int max_rows);
@@ -123,6 +131,9 @@ PUBLISHED:
 
   INLINE void set_usage_hint(Geom::UsageHint usage_hint);
   INLINE Geom::UsageHint get_usage_hint() const;
+
+  INLINE void set_flatten_flags(int flatten_flags);
+  INLINE int get_flatten_flags() const;
 
   // These methods are inherited from TextProperties, but we override
   // here so we can flag the TextNode as dirty when they have been
@@ -291,6 +302,8 @@ private:
   int _flags;
   int _max_rows;
   GeomEnums::UsageHint _usage_hint;
+  int _flatten_flags;
+  bool _dynamic_merge;
   float _frame_width;
   float _card_border_size;
   float _card_border_uv_portion;

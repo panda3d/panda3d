@@ -68,6 +68,28 @@ get_max_rows() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::set_dynamic_merge
+//       Access: Published
+//  Description: Sets the dynamic_merge flag.  See
+//               TextNode::set_flatten_flags().
+////////////////////////////////////////////////////////////////////
+INLINE void TextAssembler::
+set_dynamic_merge(bool dynamic_merge) {
+  _dynamic_merge = dynamic_merge;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::get_dynamic_merge
+//       Access: Published
+//  Description: Returns the dynamic_merge flag.  See
+//               TextNode::set_flatten_flags().
+////////////////////////////////////////////////////////////////////
+INLINE bool TextAssembler::
+get_dynamic_merge() const {
+  return _dynamic_merge;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextAssembler::set_properties
 //       Access: Published
 //  Description: Specifies the default TextProperties that are applied
@@ -495,4 +517,29 @@ add_piece(Geom *geom, const RenderState *state) {
   piece._geom = geom;
   piece._state = state;
   _pieces.push_back(piece);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::GeomCollectorKey::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE TextAssembler::GeomCollectorKey::
+GeomCollectorKey(const RenderState *state, const GeomVertexFormat *format) :
+  _state(state),
+  _format(format)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::GeomCollectorKey::operator <
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool TextAssembler::GeomCollectorKey::
+operator < (const TextAssembler::GeomCollectorKey &other) const {
+  if (_state != other._state) {
+    return _state < other._state;
+  }
+  return _format < other._format;
 }

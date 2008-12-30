@@ -66,6 +66,13 @@ TextNode(const string &name) : PandaNode(name) {
   _flags = 0;
   _max_rows = 0;
   _usage_hint = GeomEnums::UH_static;
+  _flatten_flags = 0;
+  if (text_flatten) {
+    _flatten_flags |= FF_strong;
+  }
+  if (text_dynamic_merge) {
+    _flatten_flags |= FF_dynamic_merge;
+  }
 
   if (text_small_caps) {
     set_small_caps(true);
@@ -355,7 +362,12 @@ generate() {
   _lr3d.set(0.0f, 0.0f, 0.0f);
 
   // Now build a new sub-tree for all the text components.
-  PT(PandaNode) root = new PandaNode(get_text());
+  string name = get_text();
+  size_t newline = name.find('\n');
+  if (newline != string::npos) {
+    name = name.substr(0, newline);
+  }
+  PT(PandaNode) root = new PandaNode(name);
 
   if (!has_text()) {
     return root;
@@ -383,6 +395,7 @@ generate() {
   assembler.set_properties(*this);
   assembler.set_max_rows(_max_rows);
   assembler.set_usage_hint(_usage_hint);
+  assembler.set_dynamic_merge((_flatten_flags & FF_dynamic_merge) != 0);
   bool all_set = assembler.set_wtext(wtext);
   if (all_set) {
     // No overflow.
@@ -419,12 +432,13 @@ generate() {
   // Now flatten our hierarchy to get rid of the transforms we put in,
   // applying them to the vertices.
 
-  if (text_flatten) {
-    SceneGraphReducer gr;
-    gr.apply_attribs(root);
-    gr.flatten(root, ~SceneGraphReducer::CS_within_radius);
-    gr.collect_vertex_data(root);
-    gr.unify(root, true);
+  NodePath root_np(root);
+  if (_flatten_flags & FF_strong) {
+    root_np.flatten_strong();
+  } else if (_flatten_flags & FF_medium) {
+    root_np.flatten_medium();
+  } else if (_flatten_flags & FF_light) {
+    root_np.flatten_light();
   }
 
   // Now deal with the decorations.

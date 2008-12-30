@@ -37,9 +37,16 @@ ConfigureFn(config_text) {
 ConfigVariableBool text_flatten
 ("text-flatten", true,
  PRC_DESC("Set this true to flatten text when it is generated, or false to "
-          "keep it as a deep hierarchy.  Unless you are debugging the text "
-          "interface, it is almost always a good idea to leave this at "
-          "its default, true."));
+          "keep it as a deep hierarchy.  Usually it's a performance "
+          "advantage to keep this true, but this also depends on the setting "
+          "of text-dynamic-merge.  See TextNode::set_flatten_flags()."));
+
+ConfigVariableBool text_dynamic_merge
+("text-dynamic-merge", true,
+ PRC_DESC("Set this true to merge generated glyphs into the GeomVertexData "
+          "as the text is assembled, or false to wait for the flatten "
+          "operation.  Usually it's a performance "
+          "advantage to keep this true.  See TextNode::set_flatten_flags()."));
 
 ConfigVariableInt text_anisotropic_degree
 ("text-anisotropic-degree", 1,

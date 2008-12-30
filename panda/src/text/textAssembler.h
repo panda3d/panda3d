@@ -25,6 +25,10 @@
 #include "geom.h"
 #include "textPropertiesManager.h"
 #include "textEncoder.h"
+#include "geomVertexRewriter.h"
+
+#include "pmap.h"
+
 
 class TextEncoder;
 class TextGraphic;
@@ -53,6 +57,9 @@ PUBLISHED:
 
   INLINE void set_max_rows(int max_rows);
   INLINE int get_max_rows() const;
+
+  INLINE void set_dynamic_merge(bool dynamic_merge);
+  INLINE bool get_dynamic_merge() const;
 
   INLINE void set_properties(const TextProperties &properties);
   INLINE const TextProperties &get_properties() const;
@@ -177,6 +184,36 @@ private:
   };
   typedef pvector<Piece> Pieces;
 
+  class GeomCollectorKey {
+  public:
+    INLINE GeomCollectorKey(const RenderState *state, const GeomVertexFormat *format);
+    INLINE bool operator < (const GeomCollectorKey &other) const;
+
+    CPT(RenderState) _state;
+    CPT(GeomVertexFormat) _format;
+  };
+
+  typedef pmap<int, int> VertexIndexMap;
+
+  class GeomCollector {
+  public:
+    GeomCollector(const GeomVertexFormat *format);
+    GeomCollector(const GeomCollector &copy);
+
+    GeomPrimitive *get_primitive(TypeHandle prim_type);
+    int append_vertex(const GeomVertexData *orig_vdata, int orig_row,
+                      const LMatrix4f &xform);
+    void append_geom(GeomNode *geom_node, const RenderState *state);
+
+  private:
+    PT(GeomVertexData) _vdata;
+    PT(Geom) _geom;
+    PT(GeomTriangles) _triangles;
+    PT(GeomLines) _lines;
+    PT(GeomPoints) _points;
+  };
+  typedef pmap<GeomCollectorKey, GeomCollector> GeomCollectorMap;
+
   class GlyphPlacement {
   public:
     INLINE void add_piece(Geom *geom, const RenderState *state);
@@ -185,6 +222,9 @@ private:
     void assign_to(GeomNode *geom_node, const RenderState *state) const;
     void assign_copy_to(GeomNode *geom_node, const RenderState *state, 
                         const LMatrix4f &extra_xform) const;
+
+    void assign_append_to(GeomCollectorMap &geom_collector_map, const RenderState *state,
+                          const LMatrix4f &extra_xform) const;
     void copy_graphic_to(PandaNode *node, const RenderState *state,
                          const LMatrix4f &extra_xform) const;
 
@@ -263,6 +303,7 @@ private:
   TextEncoder *_encoder;
   Geom::UsageHint _usage_hint;
   int _max_rows;
+  bool _dynamic_merge;
 };
 
 #include "textAssembler.I"
