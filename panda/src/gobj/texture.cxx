@@ -3027,12 +3027,20 @@ do_reload_ram_image(bool allow_compression) {
   }
 
   _loaded_from_image = false;
+  Format orig_format = _format;
+  int orig_num_components = _num_components;
 
   LoaderOptions options;
   options.set_texture_flags(LoaderOptions::TF_preload);
   do_read(_fullpath, _alpha_fullpath,
           _primary_file_num_channels, _alpha_file_channel,
           z, n, _has_read_pages, _has_read_mipmaps, options, NULL);
+
+  if (orig_num_components == _num_components) {
+    // Restore the original format, in case it was needlessly changed
+    // during the reload operation.
+    _format = orig_format;
+  }
 
   if (do_has_ram_image() && record != (BamCacheRecord *)NULL) {
     if (cache->get_cache_textures() || (_ram_image_compression != CM_off && cache->get_cache_compressed_textures())) {
