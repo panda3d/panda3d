@@ -16,8 +16,8 @@
 #define VERTEXDATABOOK_H
 
 #include "pandabase.h"
-#include "lightMutex.h"
-#include "lightMutexHolder.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 #include "vertexDataPage.h"
 #include "indirectLess.h"
 #include "plist.h"
@@ -58,7 +58,7 @@ private:
   typedef pset<VertexDataPage *, IndirectLess<VertexDataPage> > Pages;
   Pages _pages;
 
-  LightMutex _lock;
+  Mutex _lock;
   friend class VertexDataPage;
 };
 

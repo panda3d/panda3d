@@ -21,12 +21,10 @@
 #include "pStatCollector.h"
 #include "vertexDataSaveFile.h"
 #include "pmutex.h"
-#include "lightMutex.h"
 #include "conditionVar.h"
 #include "conditionVarFull.h"
 #include "thread.h"
 #include "mutexHolder.h"
-#include "lightMutexHolder.h"
 #include "pdeque.h"
 
 class VertexDataBook;
@@ -169,7 +167,7 @@ private:
   size_t _book_size;
   size_t _block_size;
 
-  //LightMutex _lock;  // Inherited from SimpleAllocator.  Protects above members.
+  //Mutex _lock;  // Inherited from SimpleAllocator.  Protects above members.
   RamClass _pending_ram_class;  // Protected by _tlock.
 
   VertexDataBook *_book;  // never changes.
@@ -210,7 +208,7 @@ private:
 
   static VertexDataSaveFile *_save_file;
 
-  static LightMutex _unused_mutex;
+  static Mutex _unused_mutex;
 
   static PStatCollector _vdata_compress_pcollector;
   static PStatCollector _vdata_decompress_pcollector;

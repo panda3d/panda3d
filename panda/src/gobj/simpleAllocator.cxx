@@ -23,7 +23,7 @@ SimpleAllocator::
 ~SimpleAllocator() {
   // We're shutting down.  Force-free everything remaining.
   if (_next != (LinkedListNode *)this) {
-    LightMutexHolder holder(_lock);
+    MutexHolder holder(_lock);
     while (_next != (LinkedListNode *)this) {
       nassertv(_next != (LinkedListNode *)NULL);
       ((SimpleAllocatorBlock *)_next)->do_free();
@@ -38,7 +38,7 @@ SimpleAllocator::
 ////////////////////////////////////////////////////////////////////
 void SimpleAllocator::
 output(ostream &out) const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   out << "SimpleAllocator, " << _total_size << " of " << _max_size 
       << " allocated";
 }
@@ -50,7 +50,7 @@ output(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void SimpleAllocator::
 write(ostream &out) const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   out << "SimpleAllocator, " << _total_size << " of " << _max_size 
       << " allocated";
 
@@ -187,7 +187,7 @@ output(ostream &out) const {
   if (_allocator == (SimpleAllocator *)NULL) {
     out << "free block\n";
   } else {
-    LightMutexHolder holder(_allocator->_lock);
+    MutexHolder holder(_allocator->_lock);
     out << "block of size " << _size << " at " << _start;
   }
 }

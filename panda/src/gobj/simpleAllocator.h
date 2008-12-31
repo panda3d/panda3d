@@ -17,8 +17,8 @@
 
 #include "pandabase.h"
 #include "linkedListNode.h"
-#include "lightMutex.h"
-#include "lightMutexHolder.h"
+#include "pmutex.h"
+#include "mutexHolder.h"
 
 class SimpleAllocatorBlock;
 
@@ -32,7 +32,7 @@ class SimpleAllocatorBlock;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GOBJ SimpleAllocator : public LinkedListNode {
 PUBLISHED:
-  INLINE SimpleAllocator(size_t max_size, LightMutex &lock);
+  INLINE SimpleAllocator(size_t max_size, Mutex &lock);
   virtual ~SimpleAllocator();
 
   INLINE SimpleAllocatorBlock *alloc(size_t size);
@@ -82,7 +82,7 @@ protected:
   // A derived class may also use it to protect itself as well, but
   // take care to call do_alloc() instead of alloc() etc. as
   // necessary.
-  LightMutex &_lock;
+  Mutex &_lock;
 
   friend class SimpleAllocatorBlock;
 };

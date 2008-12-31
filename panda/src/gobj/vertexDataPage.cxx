@@ -17,7 +17,6 @@
 #include "vertexDataSaveFile.h"
 #include "vertexDataBook.h"
 #include "pStatTimer.h"
-#include "lightMutexHolder.h"
 #include "memoryHook.h"
 
 #ifdef HAVE_ZLIB
@@ -72,9 +71,9 @@ SimpleLru *VertexDataPage::_global_lru[RC_end_of_list] = {
 
 VertexDataSaveFile *VertexDataPage::_save_file;
 
-// This mutex is (mostly) unused.  We just need a LightMutex to pass
+// This mutex is (mostly) unused.  We just need a Mutex to pass
 // to the Book Constructor, below.
-LightMutex VertexDataPage::_unused_mutex;
+Mutex VertexDataPage::_unused_mutex;
 
 PStatCollector VertexDataPage::_vdata_compress_pcollector("*:Vertex Data:Compress");
 PStatCollector VertexDataPage::_vdata_decompress_pcollector("*:Vertex Data:Decompress");
@@ -153,7 +152,7 @@ VertexDataPage::
 
   // Since the only way to delete a page is via the
   // changed_contiguous() method, the lock will already be held.
-  // LightMutexHolder holder(_lock);
+  // MutexHolder holder(_lock);
 
   {
     MutexHolder holder2(_tlock);
@@ -291,7 +290,7 @@ changed_contiguous() {
 ////////////////////////////////////////////////////////////////////
 void VertexDataPage::
 evict_lru() {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
 
   switch (_ram_class) {
   case RC_resident:
@@ -1041,7 +1040,7 @@ thread_main() {
     _tlock.release();
 
     {
-      LightMutexHolder holder(_working_page->_lock);
+      MutexHolder holder(_working_page->_lock);
       switch (ram_class) {
       case RC_resident:
         _working_page->make_resident();

@@ -19,7 +19,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE SimpleAllocator::
-SimpleAllocator(size_t max_size, LightMutex &lock) : 
+SimpleAllocator(size_t max_size, Mutex &lock) : 
   LinkedListNode(true),
   _total_size(0),
   _max_size(max_size),
@@ -39,7 +39,7 @@ SimpleAllocator(size_t max_size, LightMutex &lock) :
 ////////////////////////////////////////////////////////////////////
 SimpleAllocatorBlock *SimpleAllocator::
 alloc(size_t size) {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return do_alloc(size);
 }
 
@@ -51,7 +51,7 @@ alloc(size_t size) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool SimpleAllocator::
 is_empty() const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return do_is_empty();
 }
 
@@ -62,7 +62,7 @@ is_empty() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t SimpleAllocator::
 get_total_size() const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return _total_size;
 }
 
@@ -73,7 +73,7 @@ get_total_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t SimpleAllocator::
 get_max_size() const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return _max_size;
 }
 
@@ -86,7 +86,7 @@ get_max_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void SimpleAllocator::
 set_max_size(size_t max_size) {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   _max_size = max_size;
 }
 
@@ -102,7 +102,7 @@ set_max_size(size_t max_size) {
 ////////////////////////////////////////////////////////////////////
 INLINE size_t SimpleAllocator::
 get_contiguous() const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return _contiguous;
 }
 
@@ -114,7 +114,7 @@ get_contiguous() const {
 ////////////////////////////////////////////////////////////////////
 INLINE SimpleAllocatorBlock *SimpleAllocator::
 get_first_block() const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return (_next == this) ? (SimpleAllocatorBlock *)NULL : (SimpleAllocatorBlock *)_next;
 }
 
@@ -194,7 +194,7 @@ INLINE SimpleAllocatorBlock::
 INLINE void SimpleAllocatorBlock::
 free() {
   if (_allocator != (SimpleAllocator *)NULL) {
-    LightMutexHolder holder(_allocator->_lock);
+    MutexHolder holder(_allocator->_lock);
     do_free();
   }
 }
@@ -254,7 +254,7 @@ is_free() const {
 INLINE size_t SimpleAllocatorBlock::
 get_max_size() const {
   nassertr(_allocator != (SimpleAllocator *)NULL, 0);
-  LightMutexHolder holder(_allocator->_lock);
+  MutexHolder holder(_allocator->_lock);
   return do_get_max_size();
 }
 
@@ -268,7 +268,7 @@ get_max_size() const {
 INLINE bool SimpleAllocatorBlock::
 realloc(size_t size) {
   nassertr(_allocator != (SimpleAllocator *)NULL, false);
-  LightMutexHolder holder(_allocator->_lock);
+  MutexHolder holder(_allocator->_lock);
   return do_realloc(size);
 }
 
@@ -281,7 +281,7 @@ realloc(size_t size) {
 INLINE SimpleAllocatorBlock *SimpleAllocatorBlock::
 get_next_block() const {
   nassertr(_allocator != (SimpleAllocator *)NULL, NULL);
-  LightMutexHolder holder(_allocator->_lock);
+  MutexHolder holder(_allocator->_lock);
   return (_next == _allocator) ? (SimpleAllocatorBlock *)NULL : (SimpleAllocatorBlock *)_next;
 }
 

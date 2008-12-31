@@ -22,7 +22,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE VertexDataPage::RamClass VertexDataPage::
 get_ram_class() const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return _ram_class;
 }
 
@@ -36,7 +36,7 @@ get_ram_class() const {
 ////////////////////////////////////////////////////////////////////
 INLINE VertexDataPage::RamClass VertexDataPage::
 get_pending_ram_class() const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return _pending_ram_class;
 }
 
@@ -49,7 +49,7 @@ get_pending_ram_class() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void VertexDataPage::
 request_resident() {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   if (_ram_class != RC_resident) {
     request_ram_class(RC_resident);
   }
@@ -66,7 +66,7 @@ request_resident() {
 ////////////////////////////////////////////////////////////////////
 INLINE VertexDataBlock *VertexDataPage::
 alloc(size_t size) {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return do_alloc(size);
 }
 
@@ -78,7 +78,7 @@ alloc(size_t size) {
 ////////////////////////////////////////////////////////////////////
 INLINE VertexDataBlock *VertexDataPage::
 get_first_block() const {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return (VertexDataBlock *)SimpleAllocator::get_first_block();
 }
 
@@ -142,7 +142,7 @@ get_save_file() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool VertexDataPage::
 save_to_disk() {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   return do_save_to_disk();
 }
 
@@ -208,7 +208,7 @@ get_num_pending_writes() {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned char *VertexDataPage::
 get_page_data(bool force) {
-  LightMutexHolder holder(_lock);
+  MutexHolder holder(_lock);
   if (_ram_class != RC_resident || _pending_ram_class != RC_resident) {
     if (force) {
       make_resident_now();
