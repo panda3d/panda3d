@@ -160,6 +160,7 @@ filter_row(StoreType dest[], int dest_len,
       dest[dest_x] = 0;
     }
   }
+  Thread::consider_yield();
 }
 
 
@@ -602,5 +603,6 @@ quick_filter_from(const PNMImage &from, int xborder, int yborder) {
       from_x0 = from_x1;
     }
     from_y0 = from_y1;
+    Thread::consider_yield();
   }
 }
