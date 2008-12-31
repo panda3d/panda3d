@@ -3626,7 +3626,8 @@ class HierarchyException(Exception):
 # __dev__ is not defined at import time, call this after it's defined
 def recordFunctorCreationStacks():
     global Functor
-    if __dev__:
+    from pandac.PandaModules import ConfigConfigureGetConfigConfigShowbase as config
+    if __dev__ and config.GetBool('record-functor-creation-stacks', 1):
         if not hasattr(Functor, '_functorCreationStacksRecorded'):
             Functor = recordCreationStackStr(Functor)
             Functor._functorCreationStacksRecorded = True
