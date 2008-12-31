@@ -239,7 +239,7 @@ remove_group(MouseWatcherGroup *group) {
 ////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::replace_group
 //       Access: Published
-//  Description: Atomically removes old_group fom the MouseWatcher,
+//  Description: Atomically removes old_group from the MouseWatcher,
 //               and replaces it with new_group.  Presumably old_group
 //               and new_group might have some regions in common;
 //               these are handled properly.
@@ -298,6 +298,10 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
     }
   }
 
+  // Don't add the new regions--we have no reason to believe these
+  // should become current; some of them may not even be under the
+  // mouse.
+  /*
   // And add the new regions
   if (!add.empty()) {
     Regions new_list;
@@ -311,6 +315,7 @@ replace_group(MouseWatcherGroup *old_group, MouseWatcherGroup *new_group) {
     new_current_regions.swap(new_list);
     any_new_current_regions = true;
   }
+  */
 
   if (any_new_current_regions) {
     set_current_regions(new_current_regions);
