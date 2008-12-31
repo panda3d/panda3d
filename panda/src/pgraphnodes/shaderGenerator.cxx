@@ -78,20 +78,20 @@ reset_register_allocator() {
 INLINE char *ShaderGenerator::
 alloc_vreg() {
   switch (_vtregs_used) {
-  case 0: _vtregs_used += 1; return "TEXCOORD0";
-  case 1: _vtregs_used += 1; return "TEXCOORD1";
-  case 2: _vtregs_used += 1; return "TEXCOORD2";
-  case 3: _vtregs_used += 1; return "TEXCOORD3";
-  case 4: _vtregs_used += 1; return "TEXCOORD4";
-  case 5: _vtregs_used += 1; return "TEXCOORD5";
-  case 6: _vtregs_used += 1; return "TEXCOORD6";
-  case 7: _vtregs_used += 1; return "TEXCOORD7";
+  case 0: _vtregs_used += 1; return (char*)"TEXCOORD0";
+  case 1: _vtregs_used += 1; return (char*)"TEXCOORD1";
+  case 2: _vtregs_used += 1; return (char*)"TEXCOORD2";
+  case 3: _vtregs_used += 1; return (char*)"TEXCOORD3";
+  case 4: _vtregs_used += 1; return (char*)"TEXCOORD4";
+  case 5: _vtregs_used += 1; return (char*)"TEXCOORD5";
+  case 6: _vtregs_used += 1; return (char*)"TEXCOORD6";
+  case 7: _vtregs_used += 1; return (char*)"TEXCOORD7";
   }
   switch (_vcregs_used) {
-  case 0: _vcregs_used += 1; return "COLOR0";
-  case 1: _vcregs_used += 1; return "COLOR1";
+  case 0: _vcregs_used += 1; return (char*)"COLOR0";
+  case 1: _vcregs_used += 1; return (char*)"COLOR1";
   }
-  return "UNKNOWN";
+  return (char*)"UNKNOWN";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -102,20 +102,20 @@ alloc_vreg() {
 INLINE char *ShaderGenerator::
 alloc_freg() {
   switch (_ftregs_used) {
-  case 0: _ftregs_used += 1; return "TEXCOORD0";
-  case 1: _ftregs_used += 1; return "TEXCOORD1";
-  case 2: _ftregs_used += 1; return "TEXCOORD2";
-  case 3: _ftregs_used += 1; return "TEXCOORD3";
-  case 4: _ftregs_used += 1; return "TEXCOORD4";
-  case 5: _ftregs_used += 1; return "TEXCOORD5";
-  case 6: _ftregs_used += 1; return "TEXCOORD6";
-  case 7: _ftregs_used += 1; return "TEXCOORD7";
+  case 0: _ftregs_used += 1; return (char*)"TEXCOORD0";
+  case 1: _ftregs_used += 1; return (char*)"TEXCOORD1";
+  case 2: _ftregs_used += 1; return (char*)"TEXCOORD2";
+  case 3: _ftregs_used += 1; return (char*)"TEXCOORD3";
+  case 4: _ftregs_used += 1; return (char*)"TEXCOORD4";
+  case 5: _ftregs_used += 1; return (char*)"TEXCOORD5";
+  case 6: _ftregs_used += 1; return (char*)"TEXCOORD6";
+  case 7: _ftregs_used += 1; return (char*)"TEXCOORD7";
   }
   switch (_fcregs_used) {
-  case 0: _fcregs_used += 1; return "COLOR0";
-  case 1: _fcregs_used += 1; return "COLOR1";
+  case 0: _fcregs_used += 1; return (char*)"COLOR0";
+  case 1: _fcregs_used += 1; return (char*)"COLOR1";
   }
-  return "UNKNOWN";
+  return (char*)"UNKNOWN";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -337,10 +337,6 @@ analyze_renderstate(const RenderState *rs) {
   const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, rs->get_attrib_def(TexGenAttrib::get_class_slot()));
   if (!tex_gen->is_empty()) {
     pgraph_cat.error() << "Shader Generator does not support TexGen yet.\n";
-  }
-  const ColorScaleAttrib *color_scale = DCAST(ColorScaleAttrib, rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
-  if (!color_scale->is_identity()) {
-    pgraph_cat.error() << "Shader Generator does not support ColorScale yet.\n";
   }
   const FogAttrib *fog = DCAST(FogAttrib, rs->get_attrib_def(FogAttrib::get_class_slot()));
   if (!fog->is_off()) {
@@ -824,11 +820,13 @@ synthesize_shader(const RenderState *rs) {
     case TextureStage::M_decal:
       text << "\t result.rgb = lerp(result, tex" << i << ", tex" << i << ".a).rgb;\n";
       break;
-    case TextureStage::M_blend:
-      pgraph_cat.error() << "TextureStage::Mode BLEND not yet supported in per-pixel mode.\n";
-      break;
+    case TextureStage::M_blend: {
+      LVecBase4f c = stage->get_color();
+      text << "\t result.rgb = lerp(result, tex" << i << " * float4("
+           << c[0] << ", " << c[1] << ", " << c[2] << ", " << c[3] << "), tex" << i << ".r).rgb;\n";
+      break; }
     case TextureStage::M_replace:
-      pgraph_cat.error() << "TextureStage::Mode REPLACE not yet supported in per-pixel mode.\n";
+      text << "\t result = tex" << i << ";\n";
       break;
     case TextureStage::M_add:
       text << "\t result.rbg = result.rgb + tex" << i << ".rgb;\n";
@@ -903,6 +901,13 @@ synthesize_shader(const RenderState *rs) {
   default: break;
   }
   
+  // Apply color scale, if any.
+  const ColorScaleAttrib *color_scale = DCAST(ColorScaleAttrib, rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
+  if (!color_scale->is_identity()) {
+    LVecBase4f s = color_scale->get_scale();
+    text << "\t result *= float4(" << s[0] << ", " << s[1] << ", " << s[2] << ", " << s[3] << ");\n";
+  }
+    
   // The multiply is a workaround for a radeon driver bug.
   // It's annoying as heck, since it produces an extra instruction.
   text << "\t o_color = result * 1.000001;\n"; 
