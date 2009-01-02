@@ -23,6 +23,26 @@ $BASH_BLOCK"
 
 # Let's get started!
 clear
+if [ -f $PROFILE ]
+then
+    if [ "$(grep PANDA_VERSION=$PANDA_VERSION $PROFILE)" != "" ]
+    then
+        echo "It looks like your version of Panda3D is already configured!"
+        echo ""
+        echo "Exiting. You can close this window."
+        echo ""
+        exit
+    elif [ "$(grep 'PANDA_VERSION=[0-9].[0-9].[0-9]' $PROFILE)" != "" ]
+    then
+        $(sed s@PANDA_VERSION=[0-9].[0-9].[0-9]@PANDA_VERSION=$PANDA_VERSION@ -i $PROFILE)
+        echo "Success! Your version of Panda3D has been changed to $PANDA_VERSION."
+        echo ""
+        echo "All done! You can close this window."
+        echo ""
+        exit
+    fi
+fi
+
 echo "This script will attempt to look at your BASH profile and add"
 echo "appropriate entries so that Panda3D will work for you. This means"
 echo "adding the following to $PROFILE :"
@@ -51,6 +71,7 @@ fi
 
 if [ "$(grep -i panda3d $PROFILE)" != "" ]
 then
+    echo "Your profile already has some reference to 'panda3d'!"
     echo "It looks like you might already have the paths set up. If you're"
     echo "upgrading, might just need to change PANDA_VERSION to $PANDA_VERSION"
     echo ""
@@ -89,3 +110,4 @@ else
     echo "All done! You can close this window."
     echo ""
 fi
+
