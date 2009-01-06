@@ -23,6 +23,7 @@
 #include "vrmlToEggConverter.h"
 #include "config_xfile.h"
 #include "xFileToEggConverter.h"
+#include "daeToEggConverter.h"
 
 #include "dconfig.h"
 #include "loaderFileTypeRegistry.h"
@@ -78,6 +79,11 @@ init_libptloader() {
   init_libxfile();
   XFileToEggConverter *xfile = new XFileToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(xfile));
+
+#ifdef HAVE_FCOLLADA
+  DAEToEggConverter *dae = new DAEToEggConverter;
+  reg->register_type(new LoaderFileTypePandatool(dae));
+#endif
 
 #ifdef HAVE_MAYA
   // Register the Maya converter as a deferred type.  We don't compile

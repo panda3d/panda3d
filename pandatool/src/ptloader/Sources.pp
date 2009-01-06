@@ -5,7 +5,7 @@
   #define BUILDING_DLL BUILDING_PTLOADER
   #define LOCAL_LIBS \
     fltegg flt lwoegg lwo dxfegg dxf vrmlegg pvrml xfileegg xfile \
-    converter pandatoolbase
+    converter pandatoolbase $[if $[HAVE_FCOLLADA],daeegg]
   #define OTHER_LIBS \
     egg2pg:c egg:c pandaegg:m \
     pstatclient:c mathutil:c linmath:c putil:c \
