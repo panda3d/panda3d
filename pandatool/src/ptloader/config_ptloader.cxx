@@ -23,7 +23,10 @@
 #include "vrmlToEggConverter.h"
 #include "config_xfile.h"
 #include "xFileToEggConverter.h"
+
+#ifdef HAVE_FCOLLADA
 #include "daeToEggConverter.h"
+#endif
 
 #include "dconfig.h"
 #include "loaderFileTypeRegistry.h"
