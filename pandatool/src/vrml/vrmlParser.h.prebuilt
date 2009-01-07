@@ -100,7 +100,7 @@
 
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 120 "vrmlParser.yxx"
+#line 116 "vrmlParser.yxx"
 typedef union YYSTYPE {
   char *string;
   VrmlFieldValue fv;

@@ -132,7 +132,7 @@
 
 
 /* Copy the first part of user declarations.  */
-#line 27 "vrmlParser.yxx"
+#line 23 "vrmlParser.yxx"
 
 
 //
@@ -240,7 +240,7 @@ vrml_cleanup_parser() {
 #endif
 
 #if ! defined (YYSTYPE) && ! defined (YYSTYPE_IS_DECLARED)
-#line 120 "vrmlParser.yxx"
+#line 116 "vrmlParser.yxx"
 typedef union YYSTYPE {
   char *string;
   VrmlFieldValue fv;
@@ -460,14 +460,14 @@ static const yysigned_char yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const unsigned short int yyrline[] =
 {
-       0,   151,   151,   159,   162,   169,   170,   174,   180,   186,
-     195,   196,   200,   200,   206,   208,   206,   211,   213,   217,
-     219,   222,   221,   233,   232,   245,   247,   251,   253,   255,
-     257,   262,   267,   267,   271,   273,   277,   277,   284,   285,
-     288,   289,   290,   290,   294,   296,   301,   302,   303,   304,
-     305,   306,   307,   308,   309,   310,   311,   312,   313,   314,
-     315,   316,   317,   319,   320,   326,   327,   331,   335,   346,
-     349
+       0,   147,   147,   155,   158,   165,   166,   170,   176,   182,
+     191,   192,   196,   196,   202,   204,   202,   207,   209,   213,
+     215,   218,   217,   229,   228,   241,   243,   247,   249,   251,
+     253,   258,   263,   263,   267,   269,   273,   273,   280,   281,
+     284,   285,   286,   286,   290,   292,   297,   298,   299,   300,
+     301,   302,   303,   304,   305,   306,   307,   308,   309,   310,
+     311,   312,   313,   315,   316,   322,   323,   327,   331,   342,
+     345
 };
 #endif
 
@@ -1281,21 +1281,21 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 152 "vrmlParser.yxx"
+#line 148 "vrmlParser.yxx"
     {
   parsed_scene = (yyvsp[0].scene);
 }
     break;
 
   case 3:
-#line 159 "vrmlParser.yxx"
+#line 155 "vrmlParser.yxx"
     {
   (yyval.scene) = new VrmlScene;
 }
     break;
 
   case 4:
-#line 163 "vrmlParser.yxx"
+#line 159 "vrmlParser.yxx"
     {
   Declaration d;
   d._node = (yyvsp[0].nodeRef);
@@ -1305,7 +1305,7 @@ yyreduce:
     break;
 
   case 7:
-#line 175 "vrmlParser.yxx"
+#line 171 "vrmlParser.yxx"
     {
   (yyval.nodeRef)._p = (yyvsp[0].node);
   (yyval.nodeRef)._type = SFNodeRef::T_unnamed;
@@ -1314,7 +1314,7 @@ yyreduce:
     break;
 
   case 8:
-#line 181 "vrmlParser.yxx"
+#line 177 "vrmlParser.yxx"
     {
   (yyval.nodeRef)._p = (yyvsp[0].node);
   (yyval.nodeRef)._type = SFNodeRef::T_def;
@@ -1323,7 +1323,7 @@ yyreduce:
     break;
 
   case 9:
-#line 187 "vrmlParser.yxx"
+#line 183 "vrmlParser.yxx"
     {
   (yyval.nodeRef)._p = NULL;
   (yyval.nodeRef)._type = SFNodeRef::T_use;
@@ -1332,44 +1332,44 @@ yyreduce:
     break;
 
   case 12:
-#line 200 "vrmlParser.yxx"
+#line 196 "vrmlParser.yxx"
     { beginProto((yyvsp[0].string)); }
     break;
 
   case 13:
-#line 202 "vrmlParser.yxx"
+#line 198 "vrmlParser.yxx"
     { endProto();  free((yyvsp[-7].string));}
     break;
 
   case 14:
-#line 206 "vrmlParser.yxx"
+#line 202 "vrmlParser.yxx"
     { beginProto((yyvsp[0].string)); }
     break;
 
   case 15:
-#line 208 "vrmlParser.yxx"
+#line 204 "vrmlParser.yxx"
     { expect(MFSTRING); }
     break;
 
   case 16:
-#line 209 "vrmlParser.yxx"
+#line 205 "vrmlParser.yxx"
     { endProto();  free((yyvsp[-6].string)); }
     break;
 
   case 19:
-#line 217 "vrmlParser.yxx"
+#line 213 "vrmlParser.yxx"
     { addEventIn((yyvsp[-1].string), (yyvsp[0].string));
                                               free((yyvsp[-1].string)); free((yyvsp[0].string)); }
     break;
 
   case 20:
-#line 219 "vrmlParser.yxx"
+#line 215 "vrmlParser.yxx"
     { addEventOut((yyvsp[-1].string), (yyvsp[0].string));
                                               free((yyvsp[-1].string)); free((yyvsp[0].string)); }
     break;
 
   case 21:
-#line 222 "vrmlParser.yxx"
+#line 218 "vrmlParser.yxx"
     {
   int type = fieldType((yyvsp[-1].string));
   expect(type); 
@@ -1377,7 +1377,7 @@ yyreduce:
     break;
 
   case 22:
-#line 227 "vrmlParser.yxx"
+#line 223 "vrmlParser.yxx"
     {
   addField((yyvsp[-3].string), (yyvsp[-2].string), &((yyvsp[0].fv)));
   free((yyvsp[-3].string)); 
@@ -1386,7 +1386,7 @@ yyreduce:
     break;
 
   case 23:
-#line 233 "vrmlParser.yxx"
+#line 229 "vrmlParser.yxx"
     { 
   int type = fieldType((yyvsp[-1].string));
   expect(type); 
@@ -1394,7 +1394,7 @@ yyreduce:
     break;
 
   case 24:
-#line 238 "vrmlParser.yxx"
+#line 234 "vrmlParser.yxx"
     { 
   addExposedField((yyvsp[-3].string), (yyvsp[-2].string), &((yyvsp[0].fv)));
   free((yyvsp[-3].string)); 
@@ -1403,51 +1403,51 @@ yyreduce:
     break;
 
   case 27:
-#line 251 "vrmlParser.yxx"
+#line 247 "vrmlParser.yxx"
     { addEventIn((yyvsp[-1].string), (yyvsp[0].string));
                                               free((yyvsp[-1].string)); free((yyvsp[0].string)); }
     break;
 
   case 28:
-#line 253 "vrmlParser.yxx"
+#line 249 "vrmlParser.yxx"
     { addEventOut((yyvsp[-1].string), (yyvsp[0].string));
                                               free((yyvsp[-1].string)); free((yyvsp[0].string)); }
     break;
 
   case 29:
-#line 255 "vrmlParser.yxx"
+#line 251 "vrmlParser.yxx"
     { addField((yyvsp[-1].string), (yyvsp[0].string));
                                               free((yyvsp[-1].string)); free((yyvsp[0].string)); }
     break;
 
   case 30:
-#line 257 "vrmlParser.yxx"
+#line 253 "vrmlParser.yxx"
     { addExposedField((yyvsp[-1].string), (yyvsp[0].string));
                                               free((yyvsp[-1].string)); free((yyvsp[0].string)); }
     break;
 
   case 31:
-#line 263 "vrmlParser.yxx"
+#line 259 "vrmlParser.yxx"
     { free((yyvsp[-6].string)); free((yyvsp[-4].string)); free((yyvsp[-2].string)); free((yyvsp[0].string)); }
     break;
 
   case 32:
-#line 267 "vrmlParser.yxx"
+#line 263 "vrmlParser.yxx"
     { enterNode((yyvsp[0].string)); }
     break;
 
   case 33:
-#line 268 "vrmlParser.yxx"
+#line 264 "vrmlParser.yxx"
     { (yyval.node) = exitNode(); free((yyvsp[-4].string));}
     break;
 
   case 36:
-#line 277 "vrmlParser.yxx"
+#line 273 "vrmlParser.yxx"
     { enterField((yyvsp[0].string)); }
     break;
 
   case 37:
-#line 279 "vrmlParser.yxx"
+#line 275 "vrmlParser.yxx"
     {
   storeField((yyvsp[0].fv));
   exitField(); 
@@ -1456,44 +1456,44 @@ yyreduce:
     break;
 
   case 40:
-#line 288 "vrmlParser.yxx"
+#line 284 "vrmlParser.yxx"
     { inScript(); free((yyvsp[-1].string)); free((yyvsp[0].string)); }
     break;
 
   case 41:
-#line 289 "vrmlParser.yxx"
+#line 285 "vrmlParser.yxx"
     { inScript(); free((yyvsp[-1].string)); free((yyvsp[0].string)); }
     break;
 
   case 42:
-#line 290 "vrmlParser.yxx"
+#line 286 "vrmlParser.yxx"
     { inScript(); 
                                               int type = fieldType((yyvsp[-1].string));
                                               expect(type); }
     break;
 
   case 43:
-#line 293 "vrmlParser.yxx"
+#line 289 "vrmlParser.yxx"
     { free((yyvsp[-3].string)); free((yyvsp[-2].string)); }
     break;
 
   case 44:
-#line 295 "vrmlParser.yxx"
+#line 291 "vrmlParser.yxx"
     { inScript(); free((yyvsp[-3].string)); free((yyvsp[-2].string)); free((yyvsp[0].string)); }
     break;
 
   case 45:
-#line 297 "vrmlParser.yxx"
+#line 293 "vrmlParser.yxx"
     { inScript(); free((yyvsp[-3].string)); free((yyvsp[-2].string)); free((yyvsp[0].string)); }
     break;
 
   case 63:
-#line 319 "vrmlParser.yxx"
+#line 315 "vrmlParser.yxx"
     { (yyval.fv)._sfnode = (yyvsp[0].nodeRef); }
     break;
 
   case 64:
-#line 321 "vrmlParser.yxx"
+#line 317 "vrmlParser.yxx"
     { 
   (yyval.fv)._sfnode._p = NULL;
   (yyval.fv)._sfnode._type = SFNodeRef::T_null;
@@ -1502,24 +1502,24 @@ yyreduce:
     break;
 
   case 65:
-#line 326 "vrmlParser.yxx"
+#line 322 "vrmlParser.yxx"
     { (yyval.fv)._mf = (yyvsp[0].mfarray); }
     break;
 
   case 66:
-#line 327 "vrmlParser.yxx"
+#line 323 "vrmlParser.yxx"
     { free((yyvsp[0].string)); }
     break;
 
   case 67:
-#line 332 "vrmlParser.yxx"
+#line 328 "vrmlParser.yxx"
     {
   (yyval.mfarray) = (yyvsp[-1].mfarray); 
 }
     break;
 
   case 68:
-#line 336 "vrmlParser.yxx"
+#line 332 "vrmlParser.yxx"
     {
   (yyval.mfarray) = new MFArray;
   VrmlFieldValue v;
@@ -1529,14 +1529,14 @@ yyreduce:
     break;
 
   case 69:
-#line 346 "vrmlParser.yxx"
+#line 342 "vrmlParser.yxx"
     {
   (yyval.mfarray) = new MFArray;
 }
     break;
 
   case 70:
-#line 350 "vrmlParser.yxx"
+#line 346 "vrmlParser.yxx"
     {
   VrmlFieldValue v;
   v._sfnode = (yyvsp[0].nodeRef);
@@ -1777,7 +1777,7 @@ yyreturn:
 }
 
 
-#line 358 "vrmlParser.yxx"
+#line 354 "vrmlParser.yxx"
 
 
 static void

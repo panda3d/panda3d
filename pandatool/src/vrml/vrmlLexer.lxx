@@ -27,7 +27,6 @@
 
 #include "vrmlNode.h"
 #include "vrmlParser.h"
-#include "indent.h"
 #include "pnotify.h"
 
 static int yyinput(void);        // declared by flex.
@@ -37,10 +36,9 @@ extern "C" int vrmlyywrap();
 // Static variables
 ////////////////////////////////////////////////////////////////////
 
-// We'll increment line_number and col_number as we parse the file, so
+// We'll increment line_number as we parse the file, so
 // that we can report the position of an error.
 static int line_number = 0;
-static int col_number = 0;
 
 // current_line holds as much of the current line as will fit.  Its
 // only purpose is for printing it out to report an error to the user.
@@ -81,7 +79,6 @@ vrml_init_lexer(istream &in, const string &filename) {
   inp = &in;
   vrml_filename = filename;
   line_number = 0;
-  col_number = 0;
   error_count = 0;
   warning_count = 0;
 }
@@ -102,10 +99,8 @@ vrmlyyerror(const string &msg) {
     cerr << " in " << vrml_filename;
   }
   cerr 
-    << " at line " << line_number << ", column " << col_number << ":\n"
+    << " at line " << line_number << ":\n"
     << current_line << "\n";
-  indent(cerr, col_number-1) 
-    << "^\n" << msg << "\n\n";
   
   error_count++;
 }
@@ -117,10 +112,8 @@ vrmlyywarning(const string &msg) {
     cerr << " in " << vrml_filename;
   }
   cerr 
-    << " at line " << line_number << ", column " << col_number << ":\n"
+    << " at line " << line_number << ":\n"
     << current_line << "\n";
-  indent(cerr, col_number-1) 
-    << "^\n" << msg << "\n\n";
 
   warning_count++;
 }
@@ -146,7 +139,6 @@ input_chars(char *buffer, int &result, int max_size) {
       strncpy(current_line, vrmlyytext, max_error_width);
       current_line[max_error_width] = '\0';
       line_number++;
-      col_number = 0;
 
       // Truncate it at the newline.
       char *end = strchr(current_line, '\n');
@@ -192,7 +184,7 @@ void extract_vec(double vec[], int num_elements) {
 %x IN_SFS IN_MFS IN_SFIMG
 
     /* Big hairy expression for floating point numbers: */
-float (-?(([0-9]+)|([0-9]*\.[0-9]+)([eE][+\-]?[0-9]+)?))
+float (-?((([0-9]+)|([0-9]*\.[0-9]+))([eE][+\-]?[0-9]+)?))
 
     /* Ints are decimal or hex (0x##): */
 int (-?([0-9]+)|(0[xX][0-9a-fA-F]*))
@@ -204,6 +196,8 @@ int (-?([0-9]+)|(0[xX][0-9a-fA-F]*))
 ws ([ \t\r\n,]|(#.*))+
     /* And the same pattern without the newline */
 wsnnl ([ \t\r,]|(#.*))
+    /* Here's a pattern that matches a single newline character. */
+nl ((\n)|(\n\r)|(\r\n)|(\r))
 
     /* Legal characters to start an identifier */
 idStartChar ([^\x30-\x39\x00-\x20\x22\x23\x27\x2b-\x2e\x5b-\x5d\x7b\x7d])
@@ -259,7 +253,7 @@ idRestChar  ([^\x00-\x20\x22\x23\x27\x2b-\x2c\x2e\x5b-\x5d\x7b\x7d])
 
     /* This is more complicated than they really need to be because */
     /* I was ambitious and made the whitespace-matching rule aggressive */
-<INITIAL>"#VRML V2.0 utf8".*\n{wsnnl}* {
+<INITIAL>"#VRML V2.0 utf8".*{nl}{wsnnl}* {
   BEGIN NODE; 
 }
 
@@ -549,17 +543,30 @@ idRestChar  ([^\x00-\x20\x22\x23\x27\x2b-\x2c\x2e\x5b-\x5d\x7b\x7d])
                         }
 <IN_SFIMG>{int}         { ++sfImageIntsParsed;
                           if (sfImageIntsParsed == sfImageIntsExpected) {
-                              BEGIN NODE; expectToken = 0; return SFIMAGE;
+                            BEGIN NODE; expectToken = 0; return SFIMAGE;
                           }
                         }
 
     /* Whitespace and catch-all rules apply to all start states: */
-<*>{wsnnl}+     ;
-    /* This is also whitespace, but we'll keep track of line number */
+<*>{wsnnl}+ ;
+
+    /* A newline is also whitespace, but we'll keep track of line number */
     /* to report in errors: */
-<*>{wsnnl}*\n{wsnnl}*   ;
+<*>\n.* {
+  // Save a copy of the line so we can print it out for the benefit of
+  // the user in case we get an error.
+  strncpy(current_line, yytext+1, max_error_width);
+  current_line[max_error_width] = '\0';
+  line_number++;
+
+  // Return the whole line to the lexer, except the newline character,
+  // which we eat.
+  yyless(1);
+}
 
     /* This catch-all rule catches anything not covered by any of */
     /* the above: */
-<*>.            { return yytext[0]; }
+<*>. { 
+  return yytext[0]; 
+}
 
