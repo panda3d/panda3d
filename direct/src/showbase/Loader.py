@@ -223,6 +223,7 @@ class Loader(DirectObject):
 
     def loadModelCopy(self, modelPath, loaderOptions = None):
         """loadModelCopy(self, string)
+        NOTE: This method is deprecated and should not be used.
         Attempt to load a model from modelPool, if not present
         then attempt to load it from disk. Return a nodepath to
         a copy of the model if successful or None otherwise
