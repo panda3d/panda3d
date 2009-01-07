@@ -94,8 +94,22 @@ attempt_coercion(PyObject *self, Dtool_PyTypedObject *classdef,
       // temporary object.  Weird.
       Py_DECREF(obj);
     }
+    
+    // Clear the error returned by the coercion constructor.  It's not
+    // the error message we want to report.
+    PyErr_Clear();
   }
   return NULL;
+}
+
+// Temporary function to preserve backward compatibility.
+void *
+DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
+                               int param, const string &function_name, bool const_ok,
+                               PyObject **coerced) {
+  return DTOOL_Call_GetPointerThisClass(self, classdef,
+                                        param, function_name, const_ok,
+                                        coerced, true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +154,10 @@ attempt_coercion(PyObject *self, Dtool_PyTypedObject *classdef,
 void *
 DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
                                int param, const string &function_name, bool const_ok,
-                               PyObject **coerced) {
+                               PyObject **coerced, bool report_errors) {
+  if (PyErr_Occurred()) {
+    return NULL;
+  }
   if (self != NULL) {
     if (DtoolCanThisBeAPandaInstance(self)) {
       Dtool_PyTypedObject *my_type = ((Dtool_PyInstDef *)self)->_My_Type;
@@ -150,34 +167,38 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
           return result;
         }
 
-        ostringstream str;
-        str << function_name << "() argument " << param << " may not be const";
-        string msg = str.str();
-        PyErr_SetString(PyExc_TypeError, msg.c_str());
+        if (report_errors) {
+          ostringstream str;
+          str << function_name << "() argument " << param << " may not be const";
+          string msg = str.str();
+          PyErr_SetString(PyExc_TypeError, msg.c_str());
+        }
 
       } else {
-        ostringstream str;
-        str << function_name << "() argument " << param << " must be ";
-
-
-        PyObject *fname = PyObject_GetAttrString((PyObject *)classdef, "__name__");
-        if (fname != (PyObject *)NULL) {
-          str << PyString_AsString(fname);
-          Py_DECREF(fname);
-        } else {
-          str << classdef->_name;
+        if (report_errors) {
+          ostringstream str;
+          str << function_name << "() argument " << param << " must be ";
+          
+          
+          PyObject *fname = PyObject_GetAttrString((PyObject *)classdef, "__name__");
+          if (fname != (PyObject *)NULL) {
+            str << PyString_AsString(fname);
+            Py_DECREF(fname);
+          } else {
+            str << classdef->_name;
+          }
+          
+          PyObject *tname = PyObject_GetAttrString((PyObject *)self->ob_type, "__name__");
+          if (tname != (PyObject *)NULL) {
+            str << ", not " << PyString_AsString(tname);
+            Py_DECREF(tname);
+          } else {
+            str << ", not " << my_type->_name;
+          }
+          
+          string msg = str.str();
+          PyErr_SetString(PyExc_TypeError, msg.c_str());
         }
-
-        PyObject *tname = PyObject_GetAttrString((PyObject *)self->ob_type, "__name__");
-        if (tname != (PyObject *)NULL) {
-          str << ", not " << PyString_AsString(tname);
-          Py_DECREF(tname);
-        } else {
-          str << ", not " << my_type->_name;
-        }
-
-        string msg = str.str();
-        PyErr_SetString(PyExc_TypeError, msg.c_str());
       }
 
     } else {
@@ -189,28 +210,32 @@ DTOOL_Call_GetPointerThisClass(PyObject *self, Dtool_PyTypedObject *classdef,
       }
 
       // Coercion failed.
-      ostringstream str;
-      str << function_name << "() argument " << param << " must be ";
-
-      PyObject *fname = PyObject_GetAttrString((PyObject *)classdef, "__name__");
-      if (fname != (PyObject *)NULL) {
-        str << PyString_AsString(fname);
-        Py_DECREF(fname);
-      } else {
-        str << classdef->_name;
+      if (report_errors) {
+        ostringstream str;
+        str << function_name << "() argument " << param << " must be ";
+        
+        PyObject *fname = PyObject_GetAttrString((PyObject *)classdef, "__name__");
+        if (fname != (PyObject *)NULL) {
+          str << PyString_AsString(fname);
+          Py_DECREF(fname);
+        } else {
+          str << classdef->_name;
+        }
+        
+        PyObject *tname = PyObject_GetAttrString((PyObject *)self->ob_type, "__name__");
+        if (tname != (PyObject *)NULL) {
+          str << ", not " << PyString_AsString(tname);
+          Py_DECREF(tname);
+        }
+        
+        string msg = str.str();
+        PyErr_SetString(PyExc_TypeError, msg.c_str());
       }
-
-      PyObject *tname = PyObject_GetAttrString((PyObject *)self->ob_type, "__name__");
-      if (tname != (PyObject *)NULL) {
-        str << ", not " << PyString_AsString(tname);
-        Py_DECREF(tname);
-      }
-
-      string msg = str.str();
-      PyErr_SetString(PyExc_TypeError, msg.c_str());
     }
   } else {
-    PyErr_SetString(PyExc_TypeError, "Self Is Null"); 
+    if (report_errors) {
+      PyErr_SetString(PyExc_TypeError, "Self Is Null"); 
+    }
   }
 
   return NULL;

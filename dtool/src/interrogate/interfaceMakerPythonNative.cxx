@@ -2135,6 +2135,8 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
     indent(out,indent_level) 
       << "PyObject **coerced_ptr = NULL;\n";
     indent(out,indent_level) 
+      << "bool report_errors = false;\n";
+    indent(out,indent_level) 
       << "while (true) {\n";
     indent_level += 2;
   }
@@ -2219,16 +2221,28 @@ write_function_forset(ostream &out, InterfaceMaker::Object *obj,
   if (coercion_possible) {
     // Try again, this time with coercion enabled.
     indent(out,indent_level) 
-      << "if (coerced_ptr != NULL) {\n";
+      << "if (coerced_ptr == NULL && !report_errors) {\n";
     indent(out,indent_level + 2) 
-      << "break;\n";
+      << "coerced_ptr = &coerced;\n";
+    indent(out,indent_level + 2) 
+      << "continue;\n";
     indent(out,indent_level) 
       << "}\n";
-    
+
+    // No dice.  Go back one more time, and this time get the error
+    // message.
     indent(out,indent_level) 
-      << "PyErr_Clear();\n";
+      << "if (!report_errors) {\n";
+    indent(out,indent_level + 2) 
+      << "report_errors = true;\n";
+    indent(out,indent_level + 2) 
+      << "continue;\n";
     indent(out,indent_level) 
-      << "coerced_ptr = &coerced;\n";
+      << "}\n";
+
+    // We've been through three times.  We're done.
+    indent(out,indent_level) 
+      << "break;\n";
     
     indent_level -= 2;
     indent(out,indent_level) 
@@ -2453,9 +2467,9 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
         if (coercion_possible && !is_copy_constructor) {
           // We never attempt to coerce a copy constructor parameter.
           // That would lead to infinite recursion.
-          str << ", coerced_ptr";
+          str << ", coerced_ptr, report_errors";
         } else {
-          str << ", NULL";
+          str << ", NULL, true";
         }
         str << ");\n";
 
