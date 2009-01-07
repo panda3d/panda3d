@@ -222,4 +222,6 @@ make_from_bam(const FactoryParams &params) {
 void LensNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
+
+  manager->read_pointer(scan);
 }
