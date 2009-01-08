@@ -1,6 +1,6 @@
 """OnscreenText module: contains the OnscreenText class"""
 
-__all__ = ['OnscreenText']
+__all__ = ['OnscreenText', 'Plain', 'ScreenTitle', 'ScreenPrompt', 'NameConfirm', 'BlackOnWhite']
 
 from pandac.PandaModules import *
 import DirectGuiGlobals as DGG
