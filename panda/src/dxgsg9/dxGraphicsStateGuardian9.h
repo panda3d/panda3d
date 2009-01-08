@@ -362,7 +362,7 @@ protected:
 
   bool _supports_stream_offset;
 
-  list <wdxGraphicsBuffer9 *> _graphics_buffer_list;
+  list <wdxGraphicsBuffer9 **> _graphics_buffer_list;
 
   int _supports_gamma_calibration;  
 

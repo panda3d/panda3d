@@ -52,13 +52,20 @@ wdxGraphicsBuffer9(GraphicsPipe *pipe,
 
   _shared_depth_buffer = 0;
   _debug = 0;
+  _this = 0;
+
+  if (_debug) {
+    cout << "+++++ wdxGraphicsBuffer9 constructor " << this << " " << this -> get_name ( ) << "\n";
+  }
   
   if (_gsg) {
     // save to GSG list to handle device lost issues
     DXGraphicsStateGuardian9 *dxgsg;
 
     dxgsg = DCAST (DXGraphicsStateGuardian9, _gsg);
-    dxgsg -> _graphics_buffer_list.push_back(this);
+    _this = new (wdxGraphicsBuffer9 *);
+    *_this = this;
+    dxgsg -> _graphics_buffer_list.push_back(_this);
   }
 }
 
@@ -70,12 +77,21 @@ wdxGraphicsBuffer9(GraphicsPipe *pipe,
 wdxGraphicsBuffer9::
 ~wdxGraphicsBuffer9() {
 
+  if (_debug) {
+    cout << "----- wdxGraphicsBuffer9 destructor " << this << " " << this -> get_name ( ) << "\n";
+  }
+
   if (_gsg) {
     // remove from GSG list
     DXGraphicsStateGuardian9 *dxgsg;
 
     dxgsg = DCAST (DXGraphicsStateGuardian9, _gsg);
-    dxgsg -> _graphics_buffer_list.remove(this);
+    if (_this) {
+      dxgsg -> _graphics_buffer_list.remove(_this);
+    }
+    _this = 0;
+    _gsg.clear();
+    _gsg = 0;
   }
 
   // unshare shared depth buffer if any
@@ -96,10 +112,6 @@ wdxGraphicsBuffer9::
       graphics_buffer_iterator = _shared_depth_buffer_list.begin( );
     }
   }  
-
-  if (_debug) {
-    printf ("wdxGraphicsBuffer9 destructor \n");
-  }
   
   this -> close_buffer ( );
 }
@@ -480,7 +492,7 @@ rebuild_bitplanes() {
     RenderTexturePlane plane = get_texture_plane(i);
 
     if (_debug) {
-      printf ("i = %d, RenderTexturePlane = %d \n", i, plane);
+//      printf ("i = %d, RenderTexturePlane = %d \n", i, plane);
     }
 
     switch (plane) {
@@ -705,10 +717,6 @@ process_events() {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsBuffer9::
 close_buffer() {
-
-  if (_gsg != (GraphicsStateGuardian *)NULL) {
-    _gsg.clear();
-  }
 
   if (_color_backing_store) {
     _color_backing_store->Release();

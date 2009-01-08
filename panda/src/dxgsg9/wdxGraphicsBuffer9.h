@@ -77,6 +77,8 @@ private:
   wdxGraphicsBuffer9 *_shared_depth_buffer;
   list <wdxGraphicsBuffer9 *> _shared_depth_buffer_list;
 
+  wdxGraphicsBuffer9 **_this;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

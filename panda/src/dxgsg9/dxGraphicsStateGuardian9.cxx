@@ -4699,11 +4699,11 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     // release graphics buffer surfaces
     {
       wdxGraphicsBuffer9 *graphics_buffer;
-      list <wdxGraphicsBuffer9 *>::iterator graphics_buffer_iterator;
+      list <wdxGraphicsBuffer9 **>::iterator graphics_buffer_iterator;
 
       for (graphics_buffer_iterator = _graphics_buffer_list.begin( ); graphics_buffer_iterator != _graphics_buffer_list.end( ); graphics_buffer_iterator++)
       {
-        graphics_buffer = (*graphics_buffer_iterator);
+        graphics_buffer = **graphics_buffer_iterator;
         if (graphics_buffer -> _color_backing_store)
         {
           graphics_buffer -> _color_backing_store -> Release ( );
