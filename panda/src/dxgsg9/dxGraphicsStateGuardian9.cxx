@@ -3468,7 +3468,6 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
     ZeroMemory(&fdata, sizeof(D3DLIGHT9));
     
     fdata.Type =  D3DLIGHT_DIRECTIONAL;
-    fdata.Diffuse  = get_light_color(light_obj);
     fdata.Ambient  =  black ;
     fdata.Specular = *(D3DCOLORVALUE *)(light_obj->get_specular_color().get_data());
     
@@ -3481,6 +3480,11 @@ bind_light(DirectionalLight *light_obj, const NodePath &light, int light_id) {
     fdata.Attenuation1 = 0.0f;       // linear
     fdata.Attenuation2 = 0.0f;       // quadratic
   }
+
+  // We have to reset the Diffuse color at each call, because it might
+  // have changed independently of the light object itself (due to
+  // color_scale_via_lighting being in effect).
+  fdata.Diffuse  = get_light_color(light_obj);
 
   HRESULT hr = _d3d_device->SetLight(light_id, &fdata);
   if (FAILED(hr)) {
