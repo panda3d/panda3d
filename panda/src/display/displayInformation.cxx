@@ -565,7 +565,7 @@ get_cpu_vendor_string() {
   
   string = _cpu_vendor_string;
   if (string == 0) {
-    string = "";
+    string = (char*) string;
   }
   
   return string;
@@ -582,7 +582,7 @@ get_cpu_brand_string() {
   
   string = _cpu_brand_string;
   if (string == 0) {
-    string = "";
+    string = (char*) "";
   }
   
   return string;
