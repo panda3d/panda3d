@@ -203,7 +203,7 @@ class DirectRadioButton(DirectButton):
 
         if self['command']:
             # Pass any extra args to command
-            apply(self['command'], [self['indicatorValue']] + self['extraArgs'])
+            apply(self['command'], self['extraArgs'])
 
     def setOthers(self, others):
         self['others'] = others
