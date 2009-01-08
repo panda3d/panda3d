@@ -21,6 +21,7 @@
 #include "textureAttrib.h"
 #include "renderState.h"
 #include "shadeModelAttrib.h"
+#include "colorAttrib.h"
 #include "geom.h"
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
@@ -221,25 +222,19 @@ generate_flat_geom(const LVecBase4f &frame) {
 
   CPT(GeomVertexFormat) format;
   if (has_texture()) {
-    format = GeomVertexFormat::get_v3cpt2();
+    format = GeomVertexFormat::get_v3t2();
   } else {
-    format = GeomVertexFormat::get_v3cp();
+    format = GeomVertexFormat::get_v3();
   }
   
   PT(GeomVertexData) vdata = new GeomVertexData
     ("PGFrame", format, Geom::UH_static);
   
   GeomVertexWriter vertex(vdata, InternalName::get_vertex());
-  GeomVertexWriter color(vdata, InternalName::get_color());
   vertex.add_data3f(left, 0.0f, top);
   vertex.add_data3f(left, 0.0f, bottom);
   vertex.add_data3f(right, 0.0f, top);
   vertex.add_data3f(right, 0.0f, bottom);
-  
-  color.add_data4f(_color);
-  color.add_data4f(_color);
-  color.add_data4f(_color);
-  color.add_data4f(_color);
 
   if (has_texture()) {
     // Generate UV's.
@@ -259,9 +254,10 @@ generate_flat_geom(const LVecBase4f &frame) {
   strip->add_next_vertices(4);
   strip->close_primitive();
   
+  CPT(RenderState) state = RenderState::make(ColorAttrib::make_flat(_color));
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
-  gnode->add_geom(geom);
+  gnode->add_geom(geom, state);
   
   if (has_texture()) {
     CPT(RenderState) state = 
@@ -432,8 +428,9 @@ generate_bevel_geom(const LVecBase4f &frame, bool in) {
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
-  CPT(RenderState) flat_state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
-  gnode->add_geom(geom, flat_state);
+  CPT(RenderState) state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat),
+                                             ColorAttrib::make_vertex());
+  gnode->add_geom(geom, state);
   
   // For now, beveled and grooved geoms don't support textures.  Easy
   // to add if anyone really wants this.
@@ -673,8 +670,9 @@ generate_groove_geom(const LVecBase4f &frame, bool in) {
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   
-  CPT(RenderState) flat_state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat));
-  gnode->add_geom(geom, flat_state);
+  CPT(RenderState) state = RenderState::make(ShadeModelAttrib::make(ShadeModelAttrib::M_flat),
+                                             ColorAttrib::make_vertex());
+  gnode->add_geom(geom, state);
   
   // For now, beveled and grooved geoms don't support textures.  Easy
   // to add if anyone really wants this.
