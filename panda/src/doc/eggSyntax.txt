@@ -281,12 +281,21 @@ appear before they are referenced.
       REPLACE
       ADD
       BLEND_COLOR_SCALE
+      MODULATE_GLOW
+      MODULATE_GLOSS
+     *NORMAL
+     *NORMAL_HEIGHT
+     *GLOW
+     *GLOSS
+     *HEIGHT
+     *SELECTOR
 
     The default environment type is MODULATE, which means the texture
     color is multiplied with the base polygon (or vertex) color.  This
     is the most common texture environment by far.  Other environment
     types are more esoteric and are especially useful in the presence
-    of multitexture.  See howto.use_multitexture.txt for more on these.
+    of multitexture.  In particular, the types prefixed by an asterisk
+    (*) require enabling Panda's automatic ShaderGenerator.
 
   <Scalar> combine-rgb { combine-mode }
   <Scalar> combine-alpha { combine-mode }
