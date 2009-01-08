@@ -69,6 +69,8 @@ private:
   int _backing_sizex;
   int _backing_sizey;
 
+  wdxGraphicsBuffer8 **_this;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

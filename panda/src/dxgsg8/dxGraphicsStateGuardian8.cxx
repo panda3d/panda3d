@@ -3749,11 +3749,11 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
     // release graphics buffer surfaces
     {
       wdxGraphicsBuffer8 *graphics_buffer;
-      list <wdxGraphicsBuffer8 *>::iterator graphics_buffer_iterator;
+      list <wdxGraphicsBuffer8 **>::iterator graphics_buffer_iterator;
 
       for (graphics_buffer_iterator = _graphics_buffer_list.begin( ); graphics_buffer_iterator != _graphics_buffer_list.end( ); graphics_buffer_iterator++)
       {
-        graphics_buffer = (*graphics_buffer_iterator);
+        graphics_buffer = **graphics_buffer_iterator;
         if (graphics_buffer -> _color_backing_store)
         {
           graphics_buffer -> _color_backing_store -> Release ( );
@@ -4341,6 +4341,7 @@ void dx_set_stencil_functions (StencilRenderStates *stencil_render_states) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 do_issue_stencil() {
+
   if (!_supports_stencil) {
     return;
   }

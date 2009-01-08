@@ -58,12 +58,16 @@ wdxGraphicsBuffer8(GraphicsPipe *pipe,
   // same buffer we draw into.
   _screenshot_buffer_type = _draw_buffer_type;
 
+  _this = 0;
+
   if (_gsg) {
     // save to GSG list to handle device lost issues
     DXGraphicsStateGuardian8 *dxgsg;
 
     dxgsg = DCAST (DXGraphicsStateGuardian8, _gsg);
-    dxgsg -> _graphics_buffer_list.push_back(this);
+    _this = new (wdxGraphicsBuffer8 *);
+    *_this = this;
+    dxgsg -> _graphics_buffer_list.push_back(_this);
   }
 }
 
@@ -81,7 +85,12 @@ wdxGraphicsBuffer8::
     DXGraphicsStateGuardian8 *dxgsg;
 
     dxgsg = DCAST (DXGraphicsStateGuardian8, _gsg);
-    dxgsg -> _graphics_buffer_list.remove(this);
+    if (_this) {
+      dxgsg -> _graphics_buffer_list.remove(_this);
+    }
+    _this = 0;
+    _gsg.clear();
+    _gsg = 0;
   }
 }
 
