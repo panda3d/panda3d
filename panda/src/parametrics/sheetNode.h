@@ -47,6 +47,7 @@ public:
 
   virtual bool safe_to_transform() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
+  virtual bool is_renderable() const;
 
 PUBLISHED:
   INLINE void set_surface(NurbsSurfaceEvaluator *surface);
