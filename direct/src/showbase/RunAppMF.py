@@ -13,12 +13,19 @@ Also see MakeAppMF.py.
 
 import sys
 from direct.showbase import VFSImporter
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, ConfigPageManager, getModelPath
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, getModelPath
 from direct.stdpy import file
 import os
 import __builtin__
 
 MultifileRoot = '/mf'
+
+# This defines the default prc file that is implicitly loaded with an
+# application.
+AppPrcFilename = 'App.prc'
+AppPrc = """
+default-model-extension .bam
+"""
 
 class ArgumentError(AttributeError):
     pass
@@ -67,9 +74,16 @@ def runPackedApp(args):
     # Put our root directory on the model-path and prc-path, too.
     getModelPath().prependDirectory(MultifileRoot)
 
-    cpMgr = ConfigPageManager.getGlobalPtr()
-    cpMgr.getSearchPath().prependDirectory(MultifileRoot)
-    cpMgr.reloadImplicitPages()
+    # Load the implicit App.prc file.
+    loadPrcFileData(AppPrcFilename, AppPrc)
+
+    # Load any prc files in the root.  We have to load them
+    # explicitly, since the ConfigPageManager can't directly look
+    # inside the vfs.
+    for f in vfs.scanDirectory(MultifileRoot):
+        if f.getFilename().getExtension() == 'prc':
+            data = f.readFile(True)
+            loadPrcFileData(f.getFilename().cStr(), data)
 
     # Replace the builtin open and file symbols so user code will get
     # our versions by default, which can open and read files out of
