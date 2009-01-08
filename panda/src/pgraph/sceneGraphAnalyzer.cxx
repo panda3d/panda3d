@@ -30,6 +30,7 @@
 #include "transformState.h"
 #include "textureAttrib.h"
 #include "pta_ushort.h"
+#include "geomVertexReader.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneGraphAnalyzer::Constructor
@@ -390,6 +391,19 @@ collect_statistics(const Geom *geom) {
     }
     if (vdata->has_column(InternalName::get_normal())) {
       _num_normals += num_rows;
+      GeomVertexReader rnormal(vdata, InternalName::get_normal());
+      while (!rnormal.is_at_end()) {
+        LVector3f normal = rnormal.get_data3f();
+        float length = normal.length();
+        if (IS_NEARLY_EQUAL(length, 1.0f)) {
+          // Correct length normal.
+        } else if (length > 1.0f) {
+          ++_num_long_normals;
+        } else {  // length < 1.0f
+          ++_num_short_normals;
+        }
+        _total_normal_length += length;
+      }
     }
     if (vdata->has_column(InternalName::get_color())) {
       _num_colors += num_rows;
