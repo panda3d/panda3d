@@ -14,6 +14,8 @@
 
 #include "directbase.h"
 #include "cMotionTrail.h"
+#include "renderState.h"
+#include "colorAttrib.h"
 
 
 TypeHandle CMotionTrail::_type_handle;
@@ -326,6 +328,10 @@ add_geometry_quad (LVector4f &v0, LVector4f &v1, LVector4f &v2, LVector4f &v3, L
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void CMotionTrail::end_geometry ( ) {    
+  static CPT(RenderState) state;
+  if (state == (RenderState *)NULL) {
+    state = RenderState::make(ColorAttrib::make_vertex());
+  }
 
   PT(Geom) geometry;
   
@@ -334,7 +340,7 @@ void CMotionTrail::end_geometry ( ) {
 
   if (_geom_node) {
     _geom_node -> remove_all_geoms ( );
-    _geom_node -> add_geom (geometry);
+    _geom_node -> add_geom (geometry, state);
   }
 }
 
