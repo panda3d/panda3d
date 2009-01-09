@@ -16,6 +16,7 @@
 
 #include "baseParticleRenderer.h"
 #include "transparencyAttrib.h"
+#include "colorAttrib.h"
 #include "compassEffect.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +141,8 @@ update_alpha_mode(ParticleRendererAlphaMode am) {
 ////////////////////////////////////////////////////////////////////
 void BaseParticleRenderer::
 enable_alpha() {
-  _render_state = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
+  _render_state = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_alpha),
+                                    ColorAttrib::make_vertex());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,5 +152,6 @@ enable_alpha() {
 ////////////////////////////////////////////////////////////////////
 void BaseParticleRenderer::
 disable_alpha() {
-  _render_state = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_none));
+  _render_state = RenderState::make(TransparencyAttrib::make(TransparencyAttrib::M_none),
+                                    ColorAttrib::make_vertex());
 }
