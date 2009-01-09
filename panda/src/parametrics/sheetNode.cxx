@@ -26,6 +26,8 @@
 #include "geomTristrips.h"
 #include "geomVertexWriter.h"
 #include "boundingSphere.h"
+#include "colorAttrib.h"
+#include "renderState.h"
 
 TypeHandle SheetNode::_type_handle;
 
@@ -347,9 +349,14 @@ render_sheet(CullTraverser *trav, CullTraverserData &data,
   
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
+
+  CPT(RenderState) state = data._state;
+  if (use_vertex_color) {
+    state = state->add_attrib(ColorAttrib::make_vertex());
+  }
   
   CullableObject *object = 
-    new CullableObject(geom, data._state,
+    new CullableObject(geom, state,
                        data.get_net_transform(trav),
                        data.get_modelview_transform(trav),
                        trav->get_gsg());

@@ -19,6 +19,7 @@
 #include "cullHandler.h"
 #include "renderState.h"
 #include "renderModeAttrib.h"
+#include "colorAttrib.h"
 #include "bamWriter.h"
 #include "bamReader.h"
 #include "datagram.h"
@@ -375,6 +376,9 @@ render_thread(CullTraverser *trav, CullTraverserData &data,
   
   CPT(RenderAttrib) thick = RenderModeAttrib::make(RenderModeAttrib::M_unchanged, get_thickness());
   CPT(RenderState) state = data._state->add_attrib(thick);
+  if (get_use_vertex_color()) {
+    state = state->add_attrib(ColorAttrib::make_vertex());
+  }
   
   CullableObject *object = 
     new CullableObject(geom, state,
@@ -420,9 +424,14 @@ render_tape(CullTraverser *trav, CullTraverserData &data,
   
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
+
+  CPT(RenderState) state = data._state;
+  if (get_use_vertex_color()) {
+    state = state->add_attrib(ColorAttrib::make_vertex());
+  }
   
   CullableObject *object = 
-    new CullableObject(geom, data._state,
+    new CullableObject(geom, state,
                        data.get_net_transform(trav),
                        data.get_modelview_transform(trav),
                        trav->get_gsg());
@@ -472,9 +481,14 @@ render_billboard(CullTraverser *trav, CullTraverserData &data,
   
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
+
+  CPT(RenderState) state = data._state;
+  if (get_use_vertex_color()) {
+    state = state->add_attrib(ColorAttrib::make_vertex());
+  }
   
   CullableObject *object = 
-    new CullableObject(geom, data._state,
+    new CullableObject(geom, state,
                        data.get_net_transform(trav),
                        data.get_modelview_transform(trav),
                        trav->get_gsg());
@@ -531,9 +545,14 @@ render_tube(CullTraverser *trav, CullTraverserData &data,
   
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
+
+  CPT(RenderState) state = data._state;
+  if (get_use_vertex_color()) {
+    state = state->add_attrib(ColorAttrib::make_vertex());
+  }
   
   CullableObject *object = 
-    new CullableObject(geom, data._state,
+    new CullableObject(geom, state,
                        data.get_net_transform(trav),
                        data.get_modelview_transform(trav),
                        trav->get_gsg());
