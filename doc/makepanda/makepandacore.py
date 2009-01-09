@@ -851,6 +851,8 @@ def SdkLocateMacOSX():
         SDK["MACOSX"] = "/Developer/SDKs/MacOSX10.5.sdk"
     elif (os.path.exists("/Developer/SDKs/MacOSX10.4u.sdk")):
         SDK["MACOSX"] = "/Developer/SDKs/MacOSX10.4u.sdk"
+    elif (os.path.exists("/Developer/SDKs/MacOSX10.4.0.sdk")):
+        SDK["MACOSX"] = "/Developer/SDKs/MacOSX10.4.0.sdk"
     else:
         exit("Could not find any MacOSX SDK")
 
