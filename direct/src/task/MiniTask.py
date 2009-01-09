@@ -26,7 +26,10 @@ class MiniTaskManager:
         self.taskList.append(task)
 
     def remove(self, task):
-        self.taskList.remove(task)
+        try:
+            self.taskList.remove(task)
+        except ValueError:
+            pass
 
     def __executeTask(self, task):
         return task(task)
@@ -44,7 +47,10 @@ class MiniTaskManager:
 
             else:
                 # Remove the task
-                self.taskList.remove(task)
+                try:
+                    self.taskList.remove(task)
+                except ValueError:
+                    pass
                 # Do not increment the iterator
                 continue
 
