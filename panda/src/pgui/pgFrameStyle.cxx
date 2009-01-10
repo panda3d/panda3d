@@ -254,7 +254,7 @@ generate_flat_geom(const LVecBase4f &frame) {
   strip->add_next_vertices(4);
   strip->close_primitive();
   
-  CPT(RenderState) state = RenderState::make(ColorAttrib::make_flat(_color));
+  CPT(RenderState) state = RenderState::make(ColorAttrib::make_flat(_color), -1);
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(strip);
   gnode->add_geom(geom, state);
