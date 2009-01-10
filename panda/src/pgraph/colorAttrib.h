@@ -34,8 +34,7 @@ PUBLISHED:
   };
 
 private:
-  INLINE ColorAttrib(Type type = T_vertex, 
-                     const Colorf &color = Colorf(0.0f, 0.0f, 0.0f, 1.0f));
+  INLINE ColorAttrib(Type type, const Colorf &color);
 
 PUBLISHED:
   static CPT(RenderAttrib) make_vertex();

@@ -819,26 +819,6 @@ remove_column(GeomNode *node, const InternalName *column) {
 //               RenderStates the same.  It does this by
 //               canonicalizing the ColorAttribs, and in the future,
 //               possibly other attribs.
-//
-//               This implementation is not very smart yet.  It 
-//               unnecessarily canonicalizes ColorAttribs even if 
-//               this will not yield compatible RenderStates.  A
-//               better algorithm would:
-//
-//               - each geom already starts with an original
-//                 RenderState.  In addition to this, calculate for
-//                 each geom a canonical RenderState.
-//
-//               - maintain a table mapping canonical RenderState
-//                 to a list of geoms.
-//
-//               - for each group of geoms with the same 
-//                 canonical renderstate, see if they already have
-//                 matching RenderStates.
-//
-//               - If they have differing RenderStates, then
-//                 actually canonicalize the geoms.
-//               
 ////////////////////////////////////////////////////////////////////
 bool GeomTransformer::
 make_compatible_state(GeomNode *node) {
@@ -850,15 +830,16 @@ make_compatible_state(GeomNode *node) {
   GeomNode::GeomList::iterator gi;
   PT(GeomNode::GeomList) geoms = cdata->modify_geoms();
 
-  // For each geom, calculate a canonicalized RenderState, and 
-  // classify all the geoms according to that.
+  // For each geom, calculate a canonicalized RenderState, and
+  // classify all the geoms according to that.  By "canonicalize"
+  // here, we simply mean removing the ColorAttrib.
   
   typedef pmap <CPT(RenderState), pvector<int> > StateTable;
   StateTable state_table;
   
   for (int i = 0; i < (int)geoms->size(); i++) {
     GeomNode::GeomEntry &entry = (*geoms)[i];
-    CPT(RenderState) canon = entry._state->add_attrib(ColorAttrib::make_vertex(), -1);
+    CPT(RenderState) canon = entry._state->remove_attrib(ColorAttrib::get_class_slot());
     state_table[canon].push_back(i);
   }
 
@@ -871,7 +852,7 @@ make_compatible_state(GeomNode *node) {
     // If the geoms in the group already have the same RenderStates,
     // then nothing needs to be done to this group.
     
-    pvector<int> &indices = (*si).second;
+    const pvector<int> &indices = (*si).second;
     bool mismatch = false;
     for (int i = 1; i < (int)indices.size(); i++) {
       if ((*geoms)[indices[i]]._state != (*geoms)[indices[0]]._state) {
@@ -884,15 +865,13 @@ make_compatible_state(GeomNode *node) {
     }
     
     // The geoms do not have the same RenderState, but they could,
-    // since their canonicalized states are the same.  Canonicalize them.
+    // since their canonicalized states are the same.  Canonicalize
+    // them, by applying the colors to the vertices.
     
     const RenderState *canon_state = (*si).first;
     for (int i = 0; i < (int)indices.size(); i++) {
       GeomNode::GeomEntry &entry = (*geoms)[indices[i]];
-      const RenderAttrib *ra = entry._state->get_attrib(ColorAttrib::get_class_slot());
-      if (ra == (RenderAttrib *)NULL) {
-        ra = ColorAttrib::make_off();
-      }
+      const RenderAttrib *ra = entry._state->get_attrib_def(ColorAttrib::get_class_slot());
       const ColorAttrib *ca = DCAST(ColorAttrib, ra);
       if (ca->get_color_type() == ColorAttrib::T_vertex) {
         // All we need to do is ensure that the geom has a color column.
@@ -900,21 +879,19 @@ make_compatible_state(GeomNode *node) {
           PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
           if (set_color(new_geom, Colorf(1,1,1,1))) {
             entry._geom = new_geom;
-            any_changed = true;
           }
         }
       } else {
-        Colorf c(1,1,1,1);
-        if (ca->get_color_type() == ColorAttrib::T_flat) {
-          c = ca->get_color();
-        }
+        // A flat color (or "off", which is white).  Set the vertices
+        // to the indicated flat color.
+        Colorf c = ca->get_color();
         PT(Geom) new_geom = entry._geom.get_read_pointer()->make_copy();
         if (set_color(new_geom, c)) {
           entry._geom = new_geom;
-          any_changed = true;
         }
       }
-      entry._state = canon_state;
+      entry._state = canon_state->add_attrib(ColorAttrib::make_vertex());
+      any_changed = true;
     }
   }
   

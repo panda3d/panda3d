@@ -40,10 +40,7 @@ ColorAttrib(ColorAttrib::Type type, const Colorf &color) :
 //                 ColorAttrib for all geometry.  You can get this
 //                 color via get_color().
 //
-//                 T_off - do not issue any color commands at all.
-//                 This is generally used only in contexts where the
-//                 color is meaningless, e.g. when drawing directly to
-//                 the depth buffer.
+//                 T_off - use the color white.
 ////////////////////////////////////////////////////////////////////
 INLINE ColorAttrib::Type ColorAttrib::
 get_color_type() const {
@@ -53,9 +50,9 @@ get_color_type() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: ColorAttrib::get_color
 //       Access: Published
-//  Description: If the type is T_flat, this returns the color that
-//               will be applied to geometry.  If the type is anything
-//               else, this is meaningless.
+//  Description: If the type is T_flat or T_off, this returns the
+//               color that will be applied to geometry.  If the type
+//               is T_vertex, this is meaningless.
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf &ColorAttrib::
 get_color() const {

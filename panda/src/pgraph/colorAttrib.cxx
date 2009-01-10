@@ -37,7 +37,7 @@ make_vertex() {
   if (_vertex != 0) {
     return _vertex;
   }
-  ColorAttrib *attrib = new ColorAttrib(T_vertex);
+  ColorAttrib *attrib = new ColorAttrib(T_vertex, Colorf::zero());
   _vertex = return_new(attrib);
   return _vertex;
 }
@@ -58,15 +58,14 @@ make_flat(const Colorf &color) {
 //     Function: ColorAttrib::make_off
 //       Access: Published, Static
 //  Description: Constructs a new ColorAttrib object that indicates
-//               geometry should be rendered without any color
-//               commands at all.
+//               geometry should be rendered in white.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorAttrib::
 make_off() {
   if (_off != 0) {
     return _off;
   }
-  ColorAttrib *attrib = new ColorAttrib(T_off);
+  ColorAttrib *attrib = new ColorAttrib(T_off, Colorf(1.0f, 1.0f, 1.0f, 1.0f));
   _off = return_new(attrib);
   return _off;
 }
@@ -80,7 +79,7 @@ make_off() {
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) ColorAttrib::
 make_default() {
-  return make_flat(Colorf(1.0f, 1.0f, 1.0f, 1.0f));
+  return make_off();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -143,10 +142,22 @@ compare_to_impl(const RenderAttrib *other) const {
 ////////////////////////////////////////////////////////////////////
 void ColorAttrib::
 quantize_color() {
-  _color[0] = cfloor(_color[0] * 1000.0f + 0.5f) * 0.001f;
-  _color[1] = cfloor(_color[1] * 1000.0f + 0.5f) * 0.001f;
-  _color[2] = cfloor(_color[2] * 1000.0f + 0.5f) * 0.001f;
-  _color[3] = cfloor(_color[3] * 1000.0f + 0.5f) * 0.001f;
+  switch (_type) {
+  case T_flat:
+    _color[0] = cfloor(_color[0] * 1000.0f + 0.5f) * 0.001f;
+    _color[1] = cfloor(_color[1] * 1000.0f + 0.5f) * 0.001f;
+    _color[2] = cfloor(_color[2] * 1000.0f + 0.5f) * 0.001f;
+    _color[3] = cfloor(_color[3] * 1000.0f + 0.5f) * 0.001f;
+    break;
+
+  case T_off:
+    _color.set(1.0f, 1.0f, 1.0f, 1.0f);
+    break;
+
+  case T_vertex:
+    _color.set(0.0f, 0.0f, 0.0f, 0.0f);
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -184,7 +195,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *ColorAttrib::
 make_from_bam(const FactoryParams &params) {
-  ColorAttrib *attrib = new ColorAttrib;
+  ColorAttrib *attrib = new ColorAttrib(T_off, Colorf::zero());
   DatagramIterator scan;
   BamReader *manager;
 
