@@ -253,7 +253,11 @@ load(const PNMImage &pnmimage, const LoaderOptions &options) {
   do_clear();
   ++_properties_modified;
   ++_image_modified;
-  return do_load_one(pnmimage, get_name(), 0, 0, options);
+  if (do_load_one(pnmimage, get_name(), 0, 0, options)) {
+    consider_auto_compress_ram_image();
+    return true;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -267,7 +271,11 @@ load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options) {
   MutexHolder holder(_lock);
   ++_properties_modified;
   ++_image_modified;
-  return do_load_one(pnmimage, get_name(), z, n, options);
+  if (do_load_one(pnmimage, get_name(), z, n, options)) {
+    consider_auto_compress_ram_image();
+    return true;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1203,6 +1211,56 @@ clear_ram_image() {
 INLINE void Texture::
 set_keep_ram_image(bool keep_ram_image) {
   _keep_ram_image = keep_ram_image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::compress_ram_image
+//       Access: Published
+//  Description: Attempts to compress the texture's RAM image
+//               internally, to a format supported by the indicated
+//               GSG.  In order for this to work, the squish library
+//               must have been compiled into Panda.
+//
+//               If compression is CM_on, then an appropriate
+//               compression method that is supported by the indicated
+//               GSG is automatically chosen.  If the GSG pointer is
+//               NULL, any of the standard DXT1/3/5 compression
+//               methods will be used, regardless of whether it is
+//               supported.
+//
+//               If compression is any specific compression method,
+//               that method is used regardless of whether the GSG
+//               supports it.
+//
+//               quality_level determines the speed/quality tradeoff
+//               of the compression.  If it is QL_default, the
+//               texture's own quality_level parameter is used.
+//
+//               Returns true if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+compress_ram_image(Texture::CompressionMode compression,
+                   Texture::QualityLevel quality_level,
+                   GraphicsStateGuardianBase *gsg) {
+  MutexHolder holder(_lock);
+  return do_compress_ram_image(compression, quality_level, gsg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::uncompress_ram_image
+//       Access: Published
+//  Description: Attempts to uncompress the texture's RAM image
+//               internally.  In order for this to work, the squish
+//               library must have been compiled into Panda, and the
+//               ram image must be compressed in a format supported by
+//               squish.
+//
+//               Returns true if successful, false otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+uncompress_ram_image() {
+  MutexHolder holder(_lock);
+  return do_uncompress_ram_image();
 }
 
 ////////////////////////////////////////////////////////////////////

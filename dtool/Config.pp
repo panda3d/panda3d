@@ -470,6 +470,13 @@
 // drfftw instead of rfftw.
 #defer HAVE_DRFFTW_H $[libtest $[FFTW_LPATH],drfftw]
 
+// Is libsquish installed, and where?
+#define SQUISH_IPATH /usr/local/include
+#define SQUISH_LPATH /usr/local/lib
+#define SQUISH_LIBS squish
+#defer HAVE_SQUISH $[libtest $[SQUISH_LPATH],$[SQUISH_LIBS]]
+
+
 // Is Berkeley DB installed, and where?  Presently, this is only used
 // for some applications (egg-optchar in particular) in Pandatool, and
 // it is completely optional there.  If available, egg-optchar takes

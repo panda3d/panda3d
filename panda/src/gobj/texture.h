@@ -313,6 +313,11 @@ PUBLISHED:
   INLINE void set_keep_ram_image(bool keep_ram_image);
   virtual bool get_keep_ram_image() const;
 
+  INLINE bool compress_ram_image(CompressionMode compression = CM_on,
+                                 QualityLevel quality_level = QL_default,
+                                 GraphicsStateGuardianBase *gsg = NULL);
+  INLINE bool uncompress_ram_image();
+
   INLINE int get_num_ram_mipmap_images() const;
   INLINE bool has_ram_mipmap_image(int n) const;
   int get_num_loadable_ram_mipmap_images() const;
@@ -475,6 +480,12 @@ protected:
   PTA_uchar do_modify_ram_mipmap_image(int n);
   PTA_uchar do_make_ram_mipmap_image(int n);
 
+  bool consider_auto_compress_ram_image();
+  bool do_compress_ram_image(CompressionMode compression,
+                             QualityLevel quality_level,
+                             GraphicsStateGuardianBase *gsg);
+  bool do_uncompress_ram_image();
+
   bool do_reconsider_z_size(int z);
   bool do_reconsider_image_properties(int x_size, int y_size, int num_components,
                                       ComponentType component_type, int z,
@@ -607,6 +618,9 @@ private:
                                        const unsigned char *&q,
                                        size_t pixel_size, size_t row_size,
                                        size_t page_size);
+  
+  bool do_squish(CompressionMode compression, int squish_flags);
+  bool do_unsquish(int squish_flags);
 
 protected:
   // Protects all of the members of this class.

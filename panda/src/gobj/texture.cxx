@@ -39,13 +39,17 @@
 #include "streamReader.h"
 #include "texturePeeker.h"
 
+#ifdef HAVE_SQUISH
+#include <squish.h>
+#endif  // HAVE_SQUISH
+
 #include <stddef.h>
 
 ConfigVariableEnum<Texture::QualityLevel> texture_quality_level
 ("texture-quality-level", Texture::QL_normal,
  PRC_DESC("This specifies a global quality level for all textures.  You "
           "may specify either fastest, normal, or best.  This actually "
-          "affects the meaning of Texture::set_quality_level(TQL_default), "
+          "affects the meaning of Texture::set_quality_level(QL_default), "
           "so it may be overridden on a per-texture basis.  This generally "
           "only has an effect when using the tinydisplay software renderer; "
           "it has little or no effect on normal, hardware-accelerated "
@@ -2082,6 +2086,12 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
     // information, don't let the Texture think that it's got the
     // image now.
     do_clear_ram_image();
+  } else {
+    if ((options.get_texture_flags() & LoaderOptions::TF_preload) != 0) {
+      // If we intend to keep the ram image around, consider
+      // compressing it.
+      consider_auto_compress_ram_image();
+    }
   }
 
   return true;
@@ -2472,6 +2482,7 @@ do_read_txo(istream &in, const string &filename) {
     return false;
   }
 
+  Namable::operator = (*other);
   do_assign(*other);
   _loaded_from_image = true;
   _loaded_from_txo = true;
@@ -2798,7 +2809,7 @@ do_write_one(const Filename &fullpath, int z, int n) const {
 bool Texture::
 do_store_one(PNMImage &pnmimage, int z, int n) const {
   // First, reload the ram image if necessary.
-  ((Texture *)this)->do_get_ram_image();
+  ((Texture *)this)->do_get_uncompressed_ram_image();
 
   nassertr(do_has_ram_mipmap_image(n), false);
   nassertr(z >= 0 && z < do_get_expected_mipmap_z_size(n), false);
@@ -3009,6 +3020,17 @@ do_reload_ram_image(bool allow_compression) {
           _ram_image_compression = tex->_ram_image_compression;
           _ram_images = tex->_ram_images;
           _loaded_from_image = true;
+
+          if (allow_compression && consider_auto_compress_ram_image()) {
+            if (cache->get_cache_compressed_textures()) {
+              // We've re-compressed the image after loading it from the
+              // cache.  To keep the cache current, rewrite it to the
+              // cache now, in its newly compressed form.
+              record->set_data(this, false);
+              cache->store(record);
+            }
+          }
+
           return;
         }
       }
@@ -3120,6 +3142,180 @@ do_make_ram_mipmap_image(int n) {
   _ram_images[n]._image = PTA_uchar::empty_array(do_get_expected_ram_mipmap_image_size(n), get_class_type());
   _ram_images[n]._page_size = do_get_expected_ram_mipmap_page_size(n);
   return _ram_images[n]._image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::consider_auto_compress_ram_image
+//       Access: Protected
+//  Description: Should be called after a texture has been loaded into
+//               RAM, this considers compressing the RAM image, if
+//               cpu-compress-textures has been set and the default
+//               GSG has been set and supports it.
+
+//               Returns true if the image was modified by this
+//               operation, false if it wasn't.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+consider_auto_compress_ram_image() {
+  if (cpu_compress_textures) {
+    CompressionMode compression = _compression;
+    if (compression == CM_default) {
+      if (!compressed_textures) {
+        return false;
+      }
+      compression = CM_on;
+    }
+    if (compression != CM_off && _ram_image_compression == CM_off) {
+      GraphicsStateGuardianBase *gsg = GraphicsStateGuardianBase::get_default_gsg();
+      if (gsg != (GraphicsStateGuardianBase *)NULL) {
+        if (do_compress_ram_image(compression, QL_default, gsg)) {
+          gobj_cat.info()
+            << "Compressed " << get_name() << " with " 
+            << _ram_image_compression << "\n";
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_compress_ram_image
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_compress_ram_image(Texture::CompressionMode compression,
+                      Texture::QualityLevel quality_level,
+                      GraphicsStateGuardianBase *gsg) {
+  nassertr(compression != CM_off, false);
+
+  if (compression == CM_on) {
+    // Select an appropriate compression mode automatically.
+    switch (_format) {
+    case Texture::F_rgbm:
+    case Texture::F_rgb:
+    case Texture::F_rgb5:
+    case Texture::F_rgba5:
+    case Texture::F_rgb8:
+    case Texture::F_rgb12:
+    case Texture::F_rgb332:
+      if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt1)) {
+        compression = CM_dxt1;
+      } else if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt3)) {
+        compression = CM_dxt3;
+      } else if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt5)) {
+        compression = CM_dxt5;
+      }
+      break;
+      
+    case Texture::F_rgba4:
+      if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt3)) {
+        compression = CM_dxt3;
+      } else if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt5)) {
+        compression = CM_dxt5;
+      }
+      break;
+      
+    case Texture::F_rgba:
+    case Texture::F_rgba8:
+    case Texture::F_rgba12:
+      if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt5)) {
+        compression = CM_dxt5;
+      }
+      break;
+    }
+  }
+
+  // Choose an appropriate quality level.
+  if (quality_level == Texture::QL_default) {
+    quality_level = _quality_level;
+  }
+  if (quality_level == Texture::QL_default) {
+    quality_level = texture_quality_level;
+  }
+
+#ifdef HAVE_SQUISH
+  if (_texture_type != TT_3d_texture && _component_type == T_unsigned_byte) {
+    int squish_flags = 0;
+    switch (compression) {
+    case CM_dxt1:
+      squish_flags |= squish::kDxt1;
+      break;
+
+    case CM_dxt3:
+      squish_flags |= squish::kDxt3;
+      break;
+
+    case CM_dxt5:
+      squish_flags |= squish::kDxt5;
+      break;
+    }
+    
+    if (squish_flags != 0) {
+      // This compression mode is supported by squish; use it.
+      switch (quality_level) {
+      case QL_fastest:
+        squish_flags |= squish::kColourRangeFit;
+        break;
+        
+      case QL_normal:
+        // ColourClusterFit is just too slow for everyday use.
+        squish_flags |= squish::kColourRangeFit;
+        // squish_flags |= squish::kColourClusterFit;
+        break;
+        
+      case QL_best:
+        squish_flags |= squish::kColourIterativeClusterFit;
+        break;
+      }
+      
+      if (do_squish(compression, squish_flags)) {
+        return true;
+      }
+    }
+  }
+#endif  // HAVE_SQUISH
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_uncompress_ram_image
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_uncompress_ram_image() {
+
+#ifdef HAVE_SQUISH
+  if (_texture_type != TT_3d_texture && _component_type == T_unsigned_byte) {
+    int squish_flags = 0;
+    switch (_ram_image_compression) {
+    case CM_dxt1:
+      squish_flags |= squish::kDxt1;
+      break;
+
+    case CM_dxt3:
+      squish_flags |= squish::kDxt3;
+      break;
+
+    case CM_dxt5:
+      squish_flags |= squish::kDxt5;
+      break;
+    }
+    
+    if (squish_flags != 0) {
+      // This compression mode is supported by squish; use it.
+      if (do_unsquish(squish_flags)) {
+        return true;
+      }
+    }
+  }
+#endif  // HAVE_SQUISH
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3660,6 +3856,17 @@ do_get_ram_image() {
 ////////////////////////////////////////////////////////////////////
 CPTA_uchar Texture::
 do_get_uncompressed_ram_image() {
+  if (!_ram_images.empty() && _ram_image_compression != CM_off) {
+    // We have an image in-ram, but it's compressed.  Try to
+    // uncompress it first.
+    if (do_uncompress_ram_image()) {
+      gobj_cat.info()
+        << "Uncompressed " << get_name() << "\n";
+      return _ram_images[0]._image;
+    }
+  }
+
+  // Couldn't uncompress the existing image.  Try to reload it.
   if (_loaded_from_image && (!do_has_ram_image() || _ram_image_compression != CM_off) && !_fullpath.empty()) {
     do_unlock_and_reload_ram_image(false);
   }
@@ -5092,6 +5299,183 @@ filter_3d_unsigned_short(unsigned char *&p, const unsigned char *&q,
                          (unsigned int)*(unsigned short *)&q[pixel_size + row_size + page_size]) >> 3;
   store_unscaled_short(p, result);
   q += 2;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_squish
+//       Access: Private
+//  Description: Invokes the squish library to compress the RAM
+//               image(s).
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_squish(Texture::CompressionMode compression, int squish_flags) {
+#ifdef HAVE_SQUISH
+  if (_ram_images.empty()) {
+    return false;
+  }
+  RamImages compressed_ram_images;
+  compressed_ram_images.reserve(_ram_images.size());
+  for (size_t n = 0; n < _ram_images.size(); ++n) {
+    RamImage compressed_image;
+    int x_size = do_get_expected_mipmap_x_size(n);
+    int y_size = do_get_expected_mipmap_y_size(n);
+    int z_size = do_get_expected_mipmap_z_size(n);
+    int page_size = squish::GetStorageRequirements(x_size, y_size, squish_flags);
+    int cell_size = squish::GetStorageRequirements(4, 4, squish_flags);
+
+    compressed_image._page_size = page_size;
+    compressed_image._image = PTA_uchar::empty_array(page_size * z_size);
+    for (int z = 0; z < z_size; ++z) {
+      unsigned char *dest_page = compressed_image._image.p() + z * page_size;
+      unsigned const char *source_page = _ram_images[n]._image.p() + z * _ram_images[n]._page_size;
+      unsigned const char *source_page_end = source_page + _ram_images[n]._page_size;
+      // Convert one 4 x 4 cell at a time.
+      unsigned char *d = dest_page;
+      for (int y = 0; y < y_size; y += 4) {
+        for (int x = 0; x < x_size; x += 4) {
+          unsigned char tb[16 * 4];
+          int mask = 0;
+          unsigned char *t = tb;
+          for (int i = 0; i < 16; ++i) {
+            int xi = x + i % 4;
+            int yi = y + i / 4;
+            unsigned const char *s = source_page + (yi * x_size + xi) * _num_components;
+            if (s < source_page_end) {
+              switch (_num_components) {
+              case 1:
+                t[0] = s[0];   // r
+                t[1] = s[0];   // g
+                t[2] = s[0];   // b
+                t[3] = 255;    // a
+                break;
+
+              case 2:
+                t[0] = s[0];   // r
+                t[1] = s[0];   // g
+                t[2] = s[0];   // b
+                t[3] = s[1];   // a
+                break;
+
+              case 3:
+                t[0] = s[2];   // r
+                t[1] = s[1];   // g
+                t[2] = s[0];   // b
+                t[3] = 255;    // a
+                break;
+
+              case 4:
+                t[0] = s[2];   // r
+                t[1] = s[1];   // g
+                t[2] = s[0];   // b
+                t[3] = s[3];   // a
+                break;
+              }
+              mask |= (1 << i);
+            }
+            t += 4;
+          }
+          squish::CompressMasked(tb, mask, d, squish_flags);
+          d += cell_size;
+          Thread::consider_yield();
+        }
+      }
+    }
+    compressed_ram_images.push_back(compressed_image);
+  }
+  _ram_images.swap(compressed_ram_images);
+  _ram_image_compression = compression;
+  ++_image_modified;
+  return true;
+
+#else  // HAVE_SQUISH
+  return false;
+
+#endif  // HAVE_SQUISH
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_unsquish
+//       Access: Private
+//  Description: Invokes the squish library to uncompress the RAM
+//               image(s).
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_unsquish(int squish_flags) {
+#ifdef HAVE_SQUISH
+  if (_ram_images.empty()) {
+    return false;
+  }
+  RamImages uncompressed_ram_images;
+  uncompressed_ram_images.reserve(_ram_images.size());
+  for (size_t n = 0; n < _ram_images.size(); ++n) {
+    RamImage uncompressed_image;
+    int x_size = do_get_expected_mipmap_x_size(n);
+    int y_size = do_get_expected_mipmap_y_size(n);
+    int z_size = do_get_expected_mipmap_z_size(n);
+    int page_size = squish::GetStorageRequirements(x_size, y_size, squish_flags);
+    int cell_size = squish::GetStorageRequirements(4, 4, squish_flags);
+
+    uncompressed_image._page_size = do_get_expected_ram_mipmap_page_size(n);
+    uncompressed_image._image = PTA_uchar::empty_array(uncompressed_image._page_size * z_size);
+    for (int z = 0; z < z_size; ++z) {
+      unsigned char *dest_page = uncompressed_image._image.p() + z * uncompressed_image._page_size;
+      unsigned char *dest_page_end = dest_page + uncompressed_image._page_size;
+      unsigned const char *source_page = _ram_images[n]._image.p() + z * page_size;
+      // Unconvert one 4 x 4 cell at a time.
+      unsigned const char *s = source_page;
+      for (int y = 0; y < y_size; y += 4) {
+        for (int x = 0; x < x_size; x += 4) {
+          unsigned char tb[16 * 4];
+          squish::Decompress(tb, s, squish_flags);
+          s += cell_size;
+
+          unsigned char *t = tb;
+          for (int i = 0; i < 16; ++i) {
+            int xi = x + i % 4;
+            int yi = y + i / 4;
+            unsigned char *d = dest_page + (yi * x_size + xi) * _num_components;
+            if (d < dest_page_end) {
+              switch (_num_components) {
+              case 1:
+                d[0] = t[1];   // g
+                break;
+
+              case 2:
+                d[0] = t[1];   // g
+                d[1] = t[3];   // a
+                break;
+
+              case 3:
+                d[2] = t[0];   // r
+                d[1] = t[1];   // g
+                d[0] = t[2];   // b
+                break;
+
+              case 4:
+                d[2] = t[0];   // r
+                d[1] = t[1];   // g
+                d[0] = t[2];   // b
+                d[3] = t[3];   // a
+                break;
+              }
+            }
+            t += 4;
+          }
+        }
+        Thread::consider_yield();
+      }
+    }
+    uncompressed_ram_images.push_back(uncompressed_image);
+  }
+  _ram_images.swap(uncompressed_ram_images);
+  _ram_image_compression = CM_off;
+  ++_image_modified;
+  return true;
+
+#else  // HAVE_SQUISH
+  return false;
+
+#endif  // HAVE_SQUISH
 }
 
 ////////////////////////////////////////////////////////////////////

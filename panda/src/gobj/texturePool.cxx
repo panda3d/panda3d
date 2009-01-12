@@ -920,6 +920,16 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
             if (!(options.get_texture_flags() & LoaderOptions::TF_preload)) {
               // But drop the RAM until we need it.
               tex->clear_ram_image();
+
+            } else if (tex->consider_auto_compress_ram_image()) {
+              if (cache->get_cache_compressed_textures()) {
+                // We've re-compressed the image after loading it from the
+                // cache.  To keep the cache current, rewrite it to the
+                // cache now, in its newly compressed form.
+                record->set_data(tex, false);
+                cache->store(record);
+                compressed_cache_record = true;
+              }
             }
             tex->set_keep_ram_image(false);
           }

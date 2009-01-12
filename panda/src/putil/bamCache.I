@@ -101,8 +101,9 @@ get_cache_textures() const {
 //       Access: Published
 //  Description: Indicates whether compressed texture files will be
 //               stored in the cache, as compressed txo files.  The
-//               compression data is extracted from the GSG after the
-//               texture has been loaded.
+//               compressed data may either be generated in-CPU, via
+//               the squish library, or it may be extracted from the
+//               GSG after the texture has been loaded.
 //
 //               This may be set in conjunction with
 //               set_cache_textures(), or independently of it.  If

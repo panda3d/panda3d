@@ -419,13 +419,15 @@ get_supports_compressed_texture() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_compressed_texture_format
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Returns true if this GSG can accept textures
 //               pre-compressed in the indicated format.
+//               compression_mode may be any of the
+//               Texture::CompressionMode enums.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GraphicsStateGuardian::
-get_supports_compressed_texture_format(Texture::CompressionMode compression) const {
-  return _compressed_texture_formats.get_bit(compression);
+get_supports_compressed_texture_format(int compression_mode) const {
+  return _compressed_texture_formats.get_bit(compression_mode);
 }
 
 ////////////////////////////////////////////////////////////////////

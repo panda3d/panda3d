@@ -145,6 +145,11 @@
 #set FFTW_LIBS $[FFTW_LIBS]
 #set HAVE_FFTW $[HAVE_FFTW]
 
+#set SQUISH_IPATH $[unixfilename $[SQUISH_IPATH]]
+#set SQUISH_LPATH $[unixfilename $[SQUISH_LPATH]]
+#set SQUISH_LIBS $[SQUISH_LIBS]
+#set HAVE_SQUISH $[HAVE_SQUISH]
+
 #set BDB_IPATH $[unixfilename $[BDB_IPATH]]
 #set BDB_LPATH $[unixfilename $[BDB_LPATH]]
 #set BDB_LIBS $[BDB_LIBS]

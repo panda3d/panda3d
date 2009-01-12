@@ -41,6 +41,11 @@
 #else
 #print - Did not find fftw
 #endif
+#if $[HAVE_SQUISH]
+#print + squish
+#else
+#print - Did not find squish
+#endif
 #if $[HAVE_CG]
 #print + Nvidia Cg High Level Shading Language
 #else
@@ -231,6 +236,9 @@ $[cdefine HAVE_TAR]
 
 /* Define if we have libfftw installed.  */
 $[cdefine HAVE_FFTW]
+
+/* Define if we have libsquish installed.  */
+$[cdefine HAVE_SQUISH]
 
 /* Define if we have Berkeley DB installed.  */
 $[cdefine HAVE_BDB]

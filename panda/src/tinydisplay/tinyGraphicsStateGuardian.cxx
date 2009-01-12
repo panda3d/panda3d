@@ -1597,17 +1597,22 @@ prepare_texture(Texture *tex) {
   default:
     // Anything else is not supported.
     tinydisplay_cat.info()
-      << "not loading texture " << tex->get_name() << ": "
+      << "Not loading texture " << tex->get_name() << ": "
       << tex->get_texture_type() << "\n";
     return NULL;
   }
 
+  // Even though the texture might be compressed now, it might have an
+  // available uncompressed version that we can load.  So don't reject
+  // it out-of-hand just because it's compressed.
+  /*
   if (tex->get_ram_image_compression() != Texture::CM_off) {
     tinydisplay_cat.info()
-      << "not loading texture " << tex->get_name() << ": "
+      << "Not loading texture " << tex->get_name() << ": "
       << tex->get_ram_image_compression() << "\n";
     return NULL;
   }
+  */
 
   TinyTextureContext *gtc = new TinyTextureContext(_prepared_objects, tex);
 

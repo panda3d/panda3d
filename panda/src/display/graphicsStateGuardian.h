@@ -122,7 +122,7 @@ PUBLISHED:
   INLINE bool get_supports_tex_non_pow2() const;
 
   INLINE bool get_supports_compressed_texture() const;
-  INLINE bool get_supports_compressed_texture_format(Texture::CompressionMode compression) const;
+  virtual INLINE bool get_supports_compressed_texture_format(int compression_mode) const;
 
   INLINE int get_max_lights() const;
   INLINE int get_max_clip_planes() const;

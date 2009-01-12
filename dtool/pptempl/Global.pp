@@ -241,6 +241,13 @@
   #define fftw_libs $[FFTW_LIBS]
 #endif
 
+#if $[HAVE_SQUISH]
+  #define squish_ipath $[wildcard $[SQUISH_IPATH]]
+  #define squish_lpath $[wildcard $[SQUISH_LPATH]]
+  #define squish_cflags $[SQUISH_CFLAGS]
+  #define squish_libs $[SQUISH_LIBS]
+#endif
+
 #if $[HAVE_BDB]
   #define bdb_ipath $[wildcard $[BDB_IPATH]]
   #define bdb_lpath $[wildcard $[BDB_LPATH]]
