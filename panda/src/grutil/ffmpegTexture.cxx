@@ -27,7 +27,7 @@ TypeHandle FFMpegTexture::_type_handle;
 ////////////////////////////////////////////////////////////////////
 //     Function: FFMpegTexture::Constructor
 //       Access: Published
-//  Description: Sets up the texture to read frames from a camera
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 FFMpegTexture::
 FFMpegTexture(const string &name) : 
@@ -205,9 +205,9 @@ make_texture() {
 ////////////////////////////////////////////////////////////////////
 void FFMpegTexture::
 update_frame(int frame) {
-  int max_z = max(_z_size, (int)_pages.size());
+  int max_z = min(_z_size, (int)_pages.size());
   for (int z = 0; z < max_z; ++z) {
-    VideoPage &page = _pages[z];
+    VideoPage &page = _pages.at(z);
     if (page._color.is_valid() || page._alpha.is_valid()) {
       modify_ram_image();
     }
@@ -305,7 +305,6 @@ update_frame(int frame) {
       }
     }
   }
-
 }
 
 

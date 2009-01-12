@@ -1,4 +1,4 @@
-// Filename: openCVTexture.h
+// Filename: ffmpegTexture.h
 // Created by:  zacpavlov (19Aug05)
 //
 ////////////////////////////////////////////////////////////////////
@@ -26,11 +26,8 @@ extern "C" {
 }
 
 ////////////////////////////////////////////////////////////////////
-//       Class : OpenCVTexture
-// Description : A specialization on VideoTexture that takes its input
-//               using the CV library, to produce an animated texture,
-//               with its source taken from an .avi file or from a
-//               camera input.
+//       Class : FFMpegTexture
+// Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_GRUTIL FFMpegTexture : public VideoTexture {
 PUBLISHED:
