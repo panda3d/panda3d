@@ -3666,7 +3666,7 @@ def MakeInstallerLinux():
     DeleteCVS("linuxroot")
     oscmd("chmod -R 555 linuxroot/usr/share/panda3d")
     
-    if (os.path.exists("/usr/bin/rpmbuild")):
+    if (os.path.exists("/usr/bin/rpmbuild") and not os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("rm -rf linuxroot/DEBIAN")
         oscmd("rpm -E '%_target_cpu' > built/tmp/architecture.txt")
         ARCH=ReadFile("built/tmp/architecture.txt").strip()
@@ -3801,3 +3801,4 @@ if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.cxx.moved"):
 WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
 
 printStatus("Makepanda Final Status Report", WARNINGS)
+
