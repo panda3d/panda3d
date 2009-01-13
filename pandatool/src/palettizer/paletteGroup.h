@@ -99,7 +99,6 @@ private:
   typedef pmap<TextureProperties, PalettePage *> Pages;
   Pages _pages;
 
-
   // The TypedWritable interface follows.
 public:
   static void register_with_read_factory();

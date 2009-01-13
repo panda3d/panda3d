@@ -417,7 +417,12 @@ update_egg() {
     return;
   }
 
-  nassertv(_placement != (TexturePlacement *)NULL);
+  if (_placement == (TexturePlacement *)NULL) {
+    // Nor if we don't have an actual placement yet.  This is possible
+    // if the egg was assigned to the "null" group, and the texture
+    // hasn't been re-assigned yet.
+    return;
+  }
 
   TextureImage *texture = get_texture();
   if (texture != (TextureImage *)NULL) {

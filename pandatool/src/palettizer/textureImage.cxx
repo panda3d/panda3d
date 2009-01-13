@@ -46,6 +46,8 @@ TextureImage() {
   _ever_read_image = false;
   _forced_grayscale = false;
   _alpha_bits = 0;
+  _mid_pixel_ratio = 0.0;
+  _is_cutout = false;
   _alpha_mode = EggRenderMode::AM_unspecified;
   _txa_wrap_u = EggTexture::WM_unspecified;
   _txa_wrap_v = EggTexture::WM_unspecified;
@@ -134,12 +136,17 @@ assign_groups() {
       total.make_union(total, (*ei)->get_complete_groups());
     }
 
+    // We don't count the "null" group for texture assignment.
+    total.remove_null();
+    if (total.empty()) {
+      break;
+    }
+
     // Now, find the group that will satisfy the most egg files.  If
     // two groups satisfy the same number of egg files, choose (a) the
     // most specific one, i.e. with the lowest dirname_level, or the
     // lowest dependency_level if the dirname_levels are equal, and
     // (b) the one that has the fewest egg files sharing it.
-    nassertv(!total.empty());
     PaletteGroups::iterator gi = total.begin();
     PaletteGroup *best = (*gi);
     int best_egg_count = compute_egg_count(best, needed_eggs);
@@ -892,7 +899,7 @@ write_source_pathnames(ostream &out, int indent_level) const {
 
   if (_is_cutout) {
     indent(out, indent_level)
-      << "Cutout image (ratio " << _mid_pixel_ratio << ")";
+      << "Cutout image (ratio " << (float)_mid_pixel_ratio << ")\n";
   }
 
   // Now write out the group assignments.
@@ -1196,7 +1203,11 @@ consider_alpha() {
       }
     }
 
-    _mid_pixel_ratio = (double)num_mid_pixels / (double)(source.get_x_size() * source.get_y_size());
+    int num_pixels = source.get_x_size() * source.get_y_size();
+    _mid_pixel_ratio = 0.0;
+    if (num_pixels != 0) {
+      _mid_pixel_ratio = (double)num_mid_pixels / (double)num_pixels;
+    }
   }
 
   _is_cutout = false;

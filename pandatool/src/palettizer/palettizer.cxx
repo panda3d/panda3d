@@ -128,6 +128,8 @@ Palettizer() {
   _round_fuzz = 0.01;
   _remap_uv = RU_poly;
   _remap_char_uv = RU_poly;
+
+  get_palette_group("null");
 }
 
 ////////////////////////////////////////////////////////////////////

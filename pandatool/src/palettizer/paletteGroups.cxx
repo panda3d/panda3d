@@ -35,6 +35,27 @@ PaletteGroups() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroups::Copy Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+PaletteGroups::
+PaletteGroups(const PaletteGroups &copy) :
+  _groups(copy._groups)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroups::operator =
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+void PaletteGroups::
+operator = (const PaletteGroups &copy) {
+  _groups = copy._groups;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteGroups::insert
 //       Access: Public
 //  Description: Inserts a new group to the set, if it is not already
@@ -152,6 +173,25 @@ make_intersection(const PaletteGroups &a, const PaletteGroups &b) {
   }
 
   _groups.swap(i);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroups::remove_null
+//       Access: Public
+//  Description: Removes the special "null" group from the set.  This
+//               is a special group that egg files may be assigned to,
+//               but which textures never are; it indicates that the
+//               egg file should not influence the palette assignment.
+////////////////////////////////////////////////////////////////////
+void PaletteGroups::
+remove_null() {
+  Groups::iterator gi;
+  for (gi = _groups.begin(); gi != _groups.end(); ++gi) {
+    if ((*gi)->get_name() == "null") {
+      _groups.erase(gi);
+      return;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

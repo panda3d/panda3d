@@ -510,6 +510,7 @@ match_texture(TextureImage *texture) const {
 
   texture->_explicitly_assigned_groups.make_union
     (texture->_explicitly_assigned_groups, _palette_groups);
+  texture->_explicitly_assigned_groups.remove_null();
 
   if (got_cont) {
     // If we have the "cont" keyword, we should keep scanning for

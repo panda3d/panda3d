@@ -451,17 +451,17 @@ choose_placements() {
       groups.make_intersection(get_complete_groups(), texture->get_groups());
 
       // Now groups is the set of groups that the egg file requires,
-      // which also happen to include the texture.  It better not be
-      // empty.
-      if (groups.empty()) {
-        nout << "Warning!  Egg file " << get_name() << " and texture "
-             << *reference << " do not have any groups in common.\n"
-             << "Egg groups:\n";
-        get_complete_groups().write(nout, 2);
-        nout << "Texture groups:\n";
-        texture->get_groups().write(nout, 2);
+      // which also happen to include the texture.
 
-      } else {
+      if (groups.empty()) {
+        // It might be empty if the egg file was assigned only to the
+        // "null" group (since this group is not propagated to the
+        // textures).  In this case, choose from the wider set of
+        // groups available to the texture.
+        groups = texture->get_groups();
+      }
+
+      if (!groups.empty()) {
         // It doesn't really matter which group in the set we choose, so
         // we arbitrarily choose the first one.
         PaletteGroup *group = (*groups.begin());

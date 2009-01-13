@@ -47,12 +47,15 @@ public:
   typedef Groups::difference_type difference_type;
 
   PaletteGroups();
+  PaletteGroups(const PaletteGroups &copy);
+  void operator =(const PaletteGroups &copy);
 
   void insert(PaletteGroup *group);
   size_type count(PaletteGroup *group) const;
   void make_complete(const PaletteGroups &a);
   void make_union(const PaletteGroups &a, const PaletteGroups &b);
   void make_intersection(const PaletteGroups &a, const PaletteGroups &b);
+  void remove_null();
   void clear();
 
   bool empty() const;
