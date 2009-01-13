@@ -4425,6 +4425,8 @@ set_scissor(float left, float right, float bottom, float top) {
   vp.X = _current_viewport.X + _current_viewport.Width * left;
   vp.Height = _current_viewport.Height * (top - bottom);
   vp.Y = _current_viewport.Y + _current_viewport.Height * (1.0f - top);
+  vp.MinZ = 0.0f;
+  vp.MaxZ = 1.0f;
 
   HRESULT hr = _d3d_device->SetViewport(&vp);
   if (FAILED(hr)) {
