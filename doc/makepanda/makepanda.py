@@ -38,9 +38,10 @@ COMPRESSOR="zlib"
 THREADCOUNT=0
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
-  "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD","FMODEX",
-  "OPENAL","NVIDIACG","OPENSSL","FREETYPE","FFTW","ARTOOLKIT",
-  "ODE","DIRECTCAM","OPENCV", "FFMPEG","FCOLLADA","PANDATOOL"
+  "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD",
+  "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE",
+  "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM",
+  "OPENCV","FFMPEG","FCOLLADA","PANDATOOL"
 ])
 
 CheckPandaSourceTree()
@@ -298,9 +299,9 @@ if (COMPILER=="LINUX"):
     PkgConfigEnable("GTK2", "gtk+-2.0")
     
     if (sys.platform == "darwin"):
-        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "FFMPEG", "PNG", "JPEG", "TIFF"]
+        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "FFMPEG", "PNG", "JPEG", "TIFF"]
     else:
-        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "NVIDIACG", "FFMPEG", "OPENAL"]
+        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "NVIDIACG", "FFMPEG", "OPENAL"]
     for pkg in pkgs:
         if (PkgSkip(pkg)==0):
             if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
@@ -327,6 +328,7 @@ if (COMPILER=="LINUX"):
       if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCg")
       if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lpandaopenal")
       if (PkgSkip("TIFF")==0):     LibName("TIFF", "-ltiff")
+    if (PkgSkip("SQUISH")==0):     LibName("SQUISH", "-lsquish")
     if (PkgSkip("FCOLLADA")==0):   LibName("FCOLLADA", "-lFColladaSD")
     if (PkgSkip("FMOD")==0):       LibName("FMOD", "-lfmod")
     if (PkgSkip("FMODEX")==0):     LibName("FMODEX", "-lfmodex")
@@ -1605,7 +1607,7 @@ TargetAdd('libpstatclient_igate.obj', input='libpstatclient.in', opts=["DEPENDEN
 # DIRECTORY: panda/src/gobj/
 #
 
-OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB']
+OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH']
 TargetAdd('gobj_composite1.obj', opts=OPTS, input='gobj_composite1.cxx')
 TargetAdd('gobj_composite2.obj', opts=OPTS, input='gobj_composite2.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite.cxx"])
@@ -1848,7 +1850,7 @@ if (PkgSkip("VRPN")==0):
 #
 
 OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA', 'VRPN', 'JPEG', 'PNG',
-      'TIFF', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2',
+      'TIFF', 'ZLIB', 'OPENSSL', 'FREETYPE', 'FFTW', 'ADVAPI', 'WINSOCK2','SQUISH',
       'NVIDIACG', 'WINUSER', 'WINMM', 'FFMPEG', 'DIRECTCAM', 'ARTOOLKIT', 'OPENCV']
 
 TargetAdd('panda_panda.obj', opts=OPTS, input='panda.cxx')
