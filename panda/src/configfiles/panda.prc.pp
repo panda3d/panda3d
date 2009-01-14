@@ -58,6 +58,10 @@ egg-object-type-seq24           <Switch> { 1 } <Scalar> fps { 24 }
 egg-object-type-seq12           <Switch> { 1 } <Scalar> fps { 12 }
 egg-object-type-indexed         <Scalar> indexed { 1 }
 
+egg-object-type-binary          <Scalar> alpha { binary }
+egg-object-type-dual            <Scalar> alpha { dual }
+egg-object-type-glass           <Scalar> alpha { blend_no_occlude }
+
 # These are just shortcuts to define the Model and DCS flags, which
 # indicate nodes that should not be flattened out of the hierarchy
 # during the conversion process.  DCS goes one step further and
