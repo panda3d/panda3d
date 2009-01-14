@@ -260,7 +260,7 @@ global proc pandaExporterUI()
 				-columnWidth 60
 				leftFrameColumn;
 
-				text -label "\n\n\n";
+				text -label " \n \n \n";
 				text -label "Start Frame:";
 				textField
 					-editable 1
