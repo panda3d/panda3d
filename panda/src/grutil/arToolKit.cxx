@@ -257,12 +257,12 @@ detach_patterns() {
 ////////////////////////////////////////////////////////////////////
 void ARToolKit::
 analyze(Texture *tex) {
-  nassertv(tex->has_ram_image());
+  //nassertv(tex->has_ram_image());
   nassertv(tex->get_ram_image_compression() == Texture::CM_off);
   nassertv(tex->get_component_type() == Texture::T_unsigned_byte);
   nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
-
-  if (tex->get_num_components() != 4) {
+  
+  if (tex->get_num_components() != 4 && tex->get_num_components() != 3) {
     grutil_cat.error() << "ARToolKit can only analyze RGBA textures.\n";
     return;
   }
@@ -285,10 +285,22 @@ analyze(Texture *tex) {
   const unsigned char *ram = ri.p();
   unsigned char *data = new unsigned char[xsize * ysize * 4];
   int dstlen = xsize * 4;
-  int srclen = (xsize + padx) * 4;
-  for (int y=0; y<ysize; y++) {
-    int invy = (ysize - y - 1);
-    memcpy(data + invy * dstlen, ram + y * srclen, dstlen);
+  // Until we find a better solution, we'll need to add the Alpha component ourselves.
+  if (tex->get_num_components() == 3) {
+    int srclen = (xsize + padx) * 3;
+    for (int y=0; y<ysize; y++) {
+      int invy = (ysize - y - 1);
+      memcpy(data + invy * dstlen, ram + y * srclen, dstlen - 1);
+      for (int x=0; x<xsize; x++) {
+        data[invy * dstlen + x * 4 + 3] = -1;
+      }
+    }
+  } else {
+    int srclen = (xsize + padx) * 4;
+    for (int y=0; y<ysize; y++) {
+      int invy = (ysize - y - 1);
+      memcpy(data + invy * dstlen, ram + y * srclen, dstlen);
+    }
   }
   
   Controls::const_iterator ctrli;
@@ -301,6 +313,7 @@ analyze(Texture *tex) {
 
   if (arDetectMarker(data, _threshold * 256, &marker_info, &marker_num) < 0) {
     grutil_cat.error() << "ARToolKit detection error.\n";
+    delete data;
     return;
   }
 
@@ -327,10 +340,10 @@ analyze(Texture *tex) {
       arGetTransMat(inf, center, _marker_size, patt_trans);
       LMatrix4f mat;
       for (int i=0; i<4; i++) {
-	mat(i,0) =  patt_trans[0][i];
-	mat(i,1) =  patt_trans[2][i];
-	mat(i,2) = -patt_trans[1][i];
-	mat(i,3) = 0.0;
+        mat(i,0) =  patt_trans[0][i];
+        mat(i,1) =  patt_trans[2][i];
+        mat(i,2) = -patt_trans[1][i];
+        mat(i,3) = 0.0;
       }
       mat(3,3) = 1.0;
       LVecBase3f scale, shear, hpr, pos;
@@ -354,5 +367,5 @@ analyze(Texture *tex) {
   delete data;
 }
 
-
 #endif // HAVE_ARTOOLKIT
+
