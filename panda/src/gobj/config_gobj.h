@@ -49,6 +49,7 @@ EXPCL_PANDA_GOBJ istream &operator >> (istream &in, ShaderUtilization &sut);
 // Configure variables for gobj package.
 extern EXPCL_PANDA_GOBJ ConfigVariableInt max_texture_dimension;
 extern EXPCL_PANDA_GOBJ ConfigVariableDouble texture_scale;
+extern EXPCL_PANDA_GOBJ ConfigVariableInt texture_scale_limit;
 extern EXPCL_PANDA_GOBJ ConfigVariableList exclude_texture_scale;
 
 

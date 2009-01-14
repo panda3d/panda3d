@@ -82,6 +82,12 @@ ConfigVariableDouble texture_scale
           "scale factor is applied before textures-power-2 or "
           "max-texture-dimension."));
 
+ConfigVariableInt texture_scale_limit
+("texture-scale-limit", 4,
+ PRC_DESC("This specifies the limit below which texture-scale will not "
+          "reduce a texture image.  This is a single dimension which applies "
+          "to both X and Y."));
+
 ConfigVariableList exclude_texture_scale
 ("exclude-texture-scale", 
  PRC_DESC("This is a list of glob patterns for texture filenames "

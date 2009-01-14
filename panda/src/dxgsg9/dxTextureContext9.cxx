@@ -405,6 +405,15 @@ create_texture(DXScreenData &scrn) {
     }
   }
 
+  // We can't compress for some reason, so ensure the uncompressed
+  // image is ready to load.
+  if (texture_stored_compressed) {
+    tex->get_uncompressed_ram_image();
+    compression_mode = tex->get_ram_image_compression();
+    texture_stored_compressed = compression_mode != Texture::CM_off;
+    compress_texture = false;
+  }
+
   // handle each target bitdepth separately.  might be less confusing
   // to reorg by num_color_channels (input type, rather than desired
   // 1st target)
@@ -1236,12 +1245,38 @@ extract_texture_data(DXScreenData &screen) {
           << "Texture::LockRect() failed!  level = " << n << " " << D3DERRORSTRING(hr);
         return state;
       }
-
+    
+      int x_size = tex->get_expected_mipmap_x_size(n);
       int y_size = tex->get_expected_mipmap_y_size(n);
-      int size = rect.Pitch * (y_size / div);
-      size = min(size, (int)tex->get_expected_ram_mipmap_image_size(n));
-      PTA_uchar image = PTA_uchar::empty_array(size);
-      memcpy(image.p(), rect.pBits, size);
+      PTA_uchar image;
+      
+      if (compression == Texture::CM_off) {
+        // Uncompressed, but we have to respect the pitch.
+        int pitch = x_size * tex->get_num_components() * tex->get_component_width();
+        pitch = min(pitch, (int)rect.Pitch);
+        int size = pitch * y_size;
+        image = PTA_uchar::empty_array(size);
+        if (pitch == rect.Pitch) {
+          // Easy copy.
+          memcpy(image.p(), rect.pBits, size);
+        } else {
+          // Harder copy: we have to de-interleave DirectX's extra bytes
+          // on the end of each row.
+          unsigned char *dest = image.p();
+          unsigned char *source = (unsigned char *)rect.pBits;
+          for (int yi = 0; yi < y_size; ++yi) {
+            memcpy(dest, source, pitch);
+            dest += pitch;
+            source += rect.Pitch;
+          }
+        }
+        
+      } else {
+        // Compressed; just copy the data verbatim.
+        int size = rect.Pitch * (y_size / div);
+        image = PTA_uchar::empty_array(size);
+        memcpy(image.p(), rect.pBits, size);
+      }
 
       _d3d_2d_texture->UnlockRect(n);
       if (n == 0) {

@@ -1817,6 +1817,11 @@ adjust_size(int &x_size, int &y_size, const string &name) {
   if (!exclude) {
     new_x_size = (int)cfloor(new_x_size * texture_scale + 0.5);
     new_y_size = (int)cfloor(new_y_size * texture_scale + 0.5);
+
+    // Don't auto-scale below 4 in either dimension.  This causes
+    // problems for DirectX and texture compression.
+    new_x_size = min(max(new_x_size, (int)texture_scale_limit), x_size);
+    new_y_size = min(max(new_y_size, (int)texture_scale_limit), y_size);
   }
 
   switch (get_textures_power_2()) {
