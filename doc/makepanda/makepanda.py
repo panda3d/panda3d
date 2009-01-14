@@ -349,10 +349,10 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("ARTOOLKIT")==0):  LibName("ARTOOLKIT", "-lAR")
     if (PkgSkip("ODE")==0):        LibName("ODE", "-lode")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcv")
-    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcvaux")
-    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcxcore")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lhighgui")
+    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcvaux")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lml")
+    if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcxcore")
     if (sys.platform == "darwin"):
         if (PkgSkip("OPENCV")==0):   LibName("OPENCV", "-framework QuickTime")
         LibName("AGL", "-framework AGL")
