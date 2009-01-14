@@ -2349,7 +2349,8 @@ get_primitive(TypeHandle prim_type) {
     return _points;
   }
 
-  nassertr(false, false);
+  nassertr(false, NULL);
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
