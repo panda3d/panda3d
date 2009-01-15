@@ -112,7 +112,8 @@ EggToBam() :
     ("rawtex", "", 0,
      "Record texture data directly in the bam file, instead of storing "
      "a reference to the texture elsewhere on disk.  The textures are "
-     "stored uncompressed.  A particular texture that is encoded into "
+     "stored uncompressed, unless -ctex is also specified.  "
+     "A particular texture that is encoded into "
      "multiple different bam files in this way cannot be unified into "
      "the same part of texture memory if the different bam files are loaded "
      "together.  That being said, this can sometimes be a convenient "
@@ -144,8 +145,13 @@ EggToBam() :
 
   add_option
     ("ctex", "", 0,
+#ifdef HAVE_SQUISH
+     "Pre-compress the texture images using the libsquish library, when "
+     "using -rawtex or -txo.  "
+#else
      "Asks the graphics card to pre-compress the texture images when using "
      "-rawtex or -txo.  "
+#endif  // HAVE_SQUISH
 #ifdef HAVE_ZLIB
      "This is unrelated to the on-disk compression achieved "
      "via -txopz (and it may be used in conjunction with that parameter).  "
@@ -155,25 +161,45 @@ EggToBam() :
      "effect can be achieved at load time by setting compressed-textures in "
      "your Config.prc file; but -ctex pre-compresses the "
      "textures so that they do not need to be compressed at load time.  "
-     "Note that using -ctex makes .txo files that are only guaranteed to load "
-     "on the particular graphics card that was used to generate them.",
+#ifndef HAVE_SQUISH
+     "Note that, since your Panda is not compiled with the libsquish "
+     "library, using -ctex will make .txo files that are only guaranteed "
+     "to load on the particular graphics card that was used to "
+     "generate them."
+#endif  // HAVE_SQUISH
+     ,
      &EggToBam::dispatch_none, &_tex_ctex);
 
   add_option
     ("mipmap", "", 0,
      "Records the pre-generated mipmap levels in the texture object file "
-     "when using -rawtex or -txo, for textures that use mipmapping.  This "
+     "when using -rawtex or -txo, regardless of the texture filter mode.  This "
      "will increase the size of the texture object file by about 33%, but "
      "it prevents the need to compute the mipmaps at runtime.  The default "
-     "is to record mipmap levels only when the texture was specifically "
-     "loaded with them.",
+     "is to record mipmap levels only when the texture uses a mipmap "
+     "filter mode.",
      &EggToBam::dispatch_none, &_tex_mipmap);
+
+  add_option
+    ("ctexq", "quality", 0,
+     "Specifies the compression quality to use when performing the "
+     "texture compression requested by -ctex.  This may be one of "
+     "'default', 'fastest', 'normal', or 'best'.  The default is 'best'.  "
+     "Set it to 'default' to use whatever is specified by the Config.prc "
+     "file.  This is a global setting only; individual texture quality "
+     "settings appearing within the egg file will override this.",
+     &EggToBam::dispatch_string, NULL, &_ctex_quality);
 
   add_option
     ("load-display", "display name", 0,
      "Specifies the particular display module to load to perform the texture "
      "compression requested by -ctex.  If this is omitted, the default is "
-     "taken from the Config.prc file.",
+     "taken from the Config.prc file."
+#ifdef HAVE_SQUISH
+     "  Since your Panda has libsquish compiled in, this is not necessary; "
+     "Panda can compress textures without loading a display module."
+#endif  // HAVE_SQUISH
+     ,
      &EggToBam::dispatch_string, NULL, &_load_display);
 
   redescribe_option
@@ -188,6 +214,7 @@ EggToBam() :
   _egg_combine_geoms = 0;
   _egg_suppress_hidden = 1;
   _tex_txopz = false;
+  _ctex_quality = "best";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -221,6 +248,13 @@ run() {
     compress_chan_quality = _compression_quality;
   }
 
+  if (_ctex_quality != "default") {
+    // Override the user's config file with the command-line parameter
+    // for texture compression.
+    string prc = "texture-quality-level " + _ctex_quality;
+    load_prc_file_data("prc", prc);
+  }
+
   if (!_got_coordinate_system) {
     // If the user didn't specify otherwise, ensure the coordinate
     // system is Z-up.
@@ -234,10 +268,12 @@ run() {
   }
 
   if (_tex_ctex) {
+#ifndef HAVE_SQUISH
     if (!make_buffer()) {
       nout << "Unable to initialize graphics context; cannot compress textures.\n";
       exit(1);
     }
+#endif  // HAVE_SQUISH
   }
 
   if (_tex_txo || _tex_txopz || (_tex_ctex && _tex_rawdata)) {
@@ -245,21 +281,32 @@ run() {
     Textures::iterator ti;
     for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
       Texture *tex = (*ti);
+      tex->get_ram_image();
+      bool want_mipmaps = (_tex_mipmap || tex->uses_mipmaps());
+      if (want_mipmaps) {
+	// Generate mipmap levels.
+	tex->generate_ram_mipmap_images();
+      }
+
       if (_tex_ctex) {
-        tex->set_keep_ram_image(true);
         tex->set_compression(Texture::CM_on);
+#ifdef HAVE_SQUISH
+        if (!tex->compress_ram_image()) {
+          nout << "  couldn't compress " << tex->get_name() << "\n";
+        }
+#else  // HAVE_SQUISH
+        tex->set_keep_ram_image(true);
 	bool has_mipmap_levels = (tex->get_num_ram_mipmap_images() > 1);
         if (!_engine->extract_texture_data(tex, _gsg)) {
           nout << "  couldn't compress " << tex->get_name() << "\n";
         }
-	if (!has_mipmap_levels && !_tex_mipmap) {
+	if (!has_mipmap_levels && !want_mipmaps) {
 	  // Make sure we didn't accidentally introduce mipmap levels
 	  // by rendezvousing through the graphics card.
 	  tex->clear_ram_mipmap_images();
 	}
-      } else if (_tex_mipmap && tex->uses_mipmaps()) {
-	// Generate mipmap levels.
-	tex->generate_ram_mipmap_images();
+        tex->set_keep_ram_image(false);
+#endif  // HAVE_SQUISH
       }
 
       if (_tex_txo || _tex_txopz) {
