@@ -52,11 +52,11 @@ protected:
   virtual void reconsider_dirty();
   virtual void do_reload_ram_image();
 
-  INLINE void consider_update();
+  virtual INLINE void consider_update();
   INLINE void clear_current_frame();
   virtual void update_frame(int frame)=0;
 
-private:
+protected:
   int _video_width;
   int _video_height;
   int _last_frame_update;

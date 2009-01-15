@@ -46,10 +46,12 @@ public:
   static PT(Texture) make_texture();
 
 protected:
+  virtual INLINE void consider_update();
   virtual PT(Texture) do_make_copy();
   void do_assign(const OpenCVTexture &copy);
 
   virtual void update_frame(int frame);
+  virtual void update_frame(int frame, int z);
 
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
