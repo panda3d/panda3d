@@ -389,20 +389,21 @@ DOCSTRING_STMT_PATTERN = (
 
 DERIVATION_PATTERN = (
     symbol.test,
-    (symbol.and_test,
-     (symbol.not_test,
-      (symbol.comparison,
-       (symbol.expr,
-        (symbol.xor_expr,
-         (symbol.and_expr,
-          (symbol.shift_expr,
-           (symbol.arith_expr,
-            (symbol.term,
-             (symbol.factor,
-              (symbol.power,
-               (symbol.atom,
-                (token.NAME, ['classname'])
-   )))))))))))))
+    (symbol.or_test,
+     (symbol.and_test,
+      (symbol.not_test,
+       (symbol.comparison,
+        (symbol.expr,
+         (symbol.xor_expr,
+          (symbol.and_expr,
+           (symbol.shift_expr,
+            (symbol.arith_expr,
+             (symbol.term,
+              (symbol.factor,
+               (symbol.power,
+                (symbol.atom,
+                 (token.NAME, ['classname'])
+   ))))))))))))))
 
 ASSIGNMENT_STMT_PATTERN = (
     symbol.stmt,
