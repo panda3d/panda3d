@@ -112,16 +112,18 @@ ConfigVariableBool compressed_textures
 	  "changes the meaning of set_compression(Texture::CM_default) to "
 	  "Texture::CM_on."));
 
-ConfigVariableBool cpu_compress_textures
-("cpu-compress-textures", false,
- PRC_DESC("Set this true to use the squish library to compress textures on "
-          "the CPU, as they are loaded, rather than to hand them off to "
-          "the graphics driver to compress them.  This will be done "
-          "only if the graphics window is already open and is the default "
-          "graphics context, and it claims to support DXT1/3/5 "
-          "compression.  If any of this is not true, the texture will "
-          "not be automatically compressed via squish, but it may still "
-          "be compressed by the graphics driver."));
+ConfigVariableBool driver_compress_textures
+("driver-compress-textures", false,
+ PRC_DESC("Set this true to ask the graphics driver to compress textures, "
+          "rather than compressing them in-memory first.  Depending on "
+          "your graphics driver, you may or may not get better performance "
+          "or results by setting this true.  Setting it true may also "
+          "allow you to take advantage of some exotic compression algorithm "
+          "other than DXT1/3/5 that your graphics driver supports, but "
+          "which is unknown to Panda.  If the libsquish library is not "
+          "compiled into Panda, textures cannot be compressed in-memory, "
+          "and will always be handed to the graphics driver, regardless "
+          "of this setting."));
 
 ConfigVariableBool vertex_buffers
 ("vertex-buffers", true,

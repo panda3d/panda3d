@@ -3162,7 +3162,7 @@ do_make_ram_mipmap_image(int n) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 consider_auto_compress_ram_image() {
-  if (cpu_compress_textures) {
+  if (!driver_compress_textures) {
     CompressionMode compression = _compression;
     if (compression == CM_default) {
       if (!compressed_textures) {
@@ -3172,13 +3172,11 @@ consider_auto_compress_ram_image() {
     }
     if (compression != CM_off && _ram_image_compression == CM_off) {
       GraphicsStateGuardianBase *gsg = GraphicsStateGuardianBase::get_default_gsg();
-      if (gsg != (GraphicsStateGuardianBase *)NULL) {
-        if (do_compress_ram_image(compression, QL_default, gsg)) {
-          gobj_cat.info()
-            << "Compressed " << get_name() << " with " 
-            << _ram_image_compression << "\n";
-          return true;
-        }
+      if (do_compress_ram_image(compression, QL_default, gsg)) {
+        gobj_cat.info()
+          << "Compressed " << get_name() << " with " 
+          << _ram_image_compression << "\n";
+        return true;
       }
     }
   }
