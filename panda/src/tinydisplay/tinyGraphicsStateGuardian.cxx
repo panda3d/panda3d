@@ -2324,8 +2324,7 @@ upload_texture(TinyTextureContext *gtc, bool force) {
   Texture *tex = gtc->get_texture();
 
   if (_incomplete_render && !force) {
-    bool has_image = _supports_compressed_texture ? tex->has_ram_image() : tex->has_uncompressed_ram_image();
-    if (!has_image && tex->might_have_ram_image() &&
+    if (!tex->has_ram_image() && tex->might_have_ram_image() &&
         tex->has_simple_ram_image() &&
         !_loader.is_null()) {
       // If we don't have the texture data right now, go get it, but in
