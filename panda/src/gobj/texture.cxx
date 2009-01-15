@@ -3874,6 +3874,15 @@ do_get_uncompressed_ram_image() {
     do_unlock_and_reload_ram_image(false);
   }
 
+  if (!_ram_images.empty() && _ram_image_compression != CM_off) {
+    // Great, now we have an image.
+    if (do_uncompress_ram_image()) {
+      gobj_cat.info()
+        << "Uncompressed " << get_name() << "\n";
+      return _ram_images[0]._image;
+    }
+  }
+
   if (_ram_images.empty() || _ram_image_compression != CM_off) {
     return CPTA_uchar(get_class_type());
   }

@@ -1201,12 +1201,12 @@ clear_ram_image() {
 //               memory dumped when the texture is prepared for
 //               rendering.
 //
-//               This will be true for most textures, which can reload
-//               their images if needed by rereading the input file.
-//               However, textures that were generated dynamically and
-//               cannot be easily reloaded will want to set this flag
-//               to true, so that the texture will always keep its
-//               image copy around.
+//               This will be false for most textures, which can
+//               reload their images if needed by rereading the input
+//               file.  However, textures that were generated
+//               dynamically and cannot be easily reloaded will want
+//               to set this flag to true, so that the texture will
+//               always keep its image copy around.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 set_keep_ram_image(bool keep_ram_image) {
