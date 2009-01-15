@@ -49,7 +49,7 @@ PUBLISHED:
   INLINE void set_threshold(double n);
   void attach_pattern(const Filename &pattern, NodePath path);
   void detach_patterns();
-  void analyze(Texture *tex);
+  void analyze(Texture *tex, bool do_flip_texture = true);
   
 private:
   static int get_pattern(const Filename &pattern);

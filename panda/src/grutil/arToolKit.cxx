@@ -119,11 +119,15 @@ static void analyze_fov(double cparam[3][4], int width, int height, double &xfov
 ARToolKit *ARToolKit::
 make(NodePath camera, const Filename &paramfile, double marker_size) {
   
-  if (AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_BGRA) {
+  if (AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_BGRA &&
+      AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_RGBA &&
+      AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_RGB &&
+      AR_DEFAULT_PIXEL_FORMAT != AR_PIXEL_FORMAT_BGR) {
     grutil_cat.error() <<
       "The copy of ARToolKit that you are using is not compiled "
-      "for BGRA input.  Panda3D cannot use this copy of ARToolKit. "
-      "Modify the ARToolKit's config file and compile it again.\n";
+      "for RGB, BGR, RGBA or ARGB input.  Panda3D cannot use "
+      "this copy of ARToolKit. Please modify the ARToolKit's "
+      "config file and compile it again.\n";
     return 0;
   }
   
@@ -254,16 +258,23 @@ detach_patterns() {
 //       Access: Public
 //  Description: Analyzes the non-pad region of the specified texture.
 //               This causes all attached nodepaths to move.
+//               The parameter do_flip_texture is true by default,
+//               because Panda's representation of textures is
+//               upside down from ARToolKit. If you already have
+//               a texture that's upside-down, however, you should
+//               set it to false.
 ////////////////////////////////////////////////////////////////////
 void ARToolKit::
-analyze(Texture *tex) {
+analyze(Texture *tex, bool do_flip_texture) {
+  // We shouldn't assert on has_ram_image since it also returns false
+  // when there is a ram image but its not updated for this frame.
   //nassertv(tex->has_ram_image());
   nassertv(tex->get_ram_image_compression() == Texture::CM_off);
   nassertv(tex->get_component_type() == Texture::T_unsigned_byte);
   nassertv(tex->get_texture_type() == Texture::TT_2d_texture);
   
-  if (tex->get_num_components() != 4 && tex->get_num_components() != 3) {
-    grutil_cat.error() << "ARToolKit can only analyze RGBA textures.\n";
+  if (tex->get_num_components() != 3 && tex->get_num_components() != 4) {
+    grutil_cat.error() << "ARToolKit can only analyze RGB and RGBA textures.\n";
     return;
   }
   
@@ -283,23 +294,80 @@ analyze(Texture *tex) {
 
   CPTA_uchar ri = tex->get_ram_image();
   const unsigned char *ram = ri.p();
-  unsigned char *data = new unsigned char[xsize * ysize * 4];
-  int dstlen = xsize * 4;
-  // Until we find a better solution, we'll need to add the Alpha component ourselves.
-  if (tex->get_num_components() == 3) {
-    int srclen = (xsize + padx) * 3;
-    for (int y=0; y<ysize; y++) {
-      int invy = (ysize - y - 1);
-      memcpy(data + invy * dstlen, ram + y * srclen, dstlen - 1);
-      for (int x=0; x<xsize; x++) {
-        data[invy * dstlen + x * 4 + 3] = -1;
+  
+  unsigned char *data;
+  if (AR_DEFAULT_PIXEL_FORMAT == AR_PIXEL_FORMAT_RGB ||
+      AR_DEFAULT_PIXEL_FORMAT == AR_PIXEL_FORMAT_BGR) {
+    data = new unsigned char[xsize * ysize * 3];
+    int dstlen = xsize * 3;
+    if (tex->get_num_components() == 3) {
+      int srclen = (xsize + padx) * 3;
+      if (do_flip_texture) {
+        for (int y=0; y<ysize; y++) {
+          int invy = (ysize - y - 1);
+          memcpy(data + invy * dstlen, ram + y * srclen, dstlen);
+        }
+      } else if (dstlen == srclen) {
+        memcpy(data, ram, ysize * srclen);
+      } else {
+        for (int y=0; y<ysize; y++) {
+          memcpy(data + y * dstlen, ram + y * srclen, dstlen);
+        }
+      }
+    } else {
+      // Chop off the alpha component.
+      int srclen = (xsize + padx) * 4;
+      if (do_flip_texture) {
+        for (int y=0; y<ysize; y++) {
+          int invy = (ysize - y - 1);
+          for (int x=0; x<xsize; x++) {
+            memcpy(data + invy * dstlen + x * 3, ram + y * srclen + x * 4, 3);
+          }
+        }
+      } else {
+        for (int y=0; y<ysize; y++) {
+          for (int x=0; x<xsize; x++) {
+            memcpy(data + y * dstlen + x * 3, ram + y * srclen + x * 4, 3);
+          }
+        }
       }
     }
-  } else {
-    int srclen = (xsize + padx) * 4;
-    for (int y=0; y<ysize; y++) {
-      int invy = (ysize - y - 1);
-      memcpy(data + invy * dstlen, ram + y * srclen, dstlen);
+  } else { // ARToolKit wants RGBA.
+    data = new unsigned char[xsize * ysize * 4];
+    int dstlen = xsize * 4;
+    if (tex->get_num_components() == 3) {
+      // Until we find a better solution, we'll need to add the Alpha component ourselves.
+      int srclen = (xsize + padx) * 3;
+      if (do_flip_texture) {
+        for (int y=0; y<ysize; y++) {
+          int invy = (ysize - y - 1);
+          memcpy(data + invy * dstlen, ram + y * srclen, dstlen - 1);
+          for (int x=0; x<xsize; x++) {
+            data[invy * dstlen + x * 4 + 3] = -1;
+          }
+        }
+      } else {
+        for (int y=0; y<ysize; y++) {
+          memcpy(data + y * dstlen, ram + y * srclen, dstlen - 1);
+          for (int x=0; x<xsize; x++) {
+            data[y * dstlen + x * 4 + 3] = -1;
+          }
+        }
+      }
+    } else {
+      int srclen = (xsize + padx) * 4;
+      if (do_flip_texture) {
+        for (int y=0; y<ysize; y++) {
+          int invy = (ysize - y - 1);
+          memcpy(data + invy * dstlen, ram + y * srclen, dstlen);
+        }
+      } else if (dstlen == srclen) {
+        memcpy(data, ram, ysize * srclen);
+      } else {
+        for (int y=0; y<ysize; y++) {
+          memcpy(data + y * dstlen, ram + y * srclen, dstlen);
+        }
+      }
     }
   }
   
