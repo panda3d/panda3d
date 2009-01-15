@@ -219,6 +219,17 @@ copy_maya_file(const Filename &source, const Filename &dest,
       lookup.erase(dup);
     }
 
+    // to check out this specific reference is actually loaded or not
+    // somehow this flag order of MEL script must be observed to guarantee proper working
+    string refNode = result.asChar();
+    string refCheckCmd = "file -rfn " + refNode + " -q -dr;";
+    int deferredRef;
+    status = MGlobal::executeCommand(MString(refCheckCmd.c_str()), deferredRef);
+    maya_cat.info() << "deferredRef = " << deferredRef << endl;
+    if (deferredRef == 1) { // means this reference is deferred, unloaded
+      continue;
+    }
+
     Filename filename = 
       _path_replace->convert_path(Filename::from_os_specific(lookup));
 
@@ -241,7 +252,7 @@ copy_maya_file(const Filename &source, const Filename &dest,
     _exec_string.push_back("file -loadReference \"" + string(result.asChar()) + "\" -type \"mayaBinary\" -options \"v=0\" \"" + new_filename.to_os_generic() + "\";");
     //MGlobal::executeCommand("file -loadReference \"mtpRN\" -type \"mayaBinary\" -options \"v=0\" \"m_t_pear_zero.mb\";");
     maya_cat.info() << "executing command: " << _exec_string[_curr_idx] << "\n";
-    status  = MGlobal::executeCommand(MString(_exec_string[ref_index].c_str()));
+    status  = MGlobal::executeCommand(MString(_exec_string[_curr_idx].c_str()));
     if (status != MStatus::kSuccess) {
       status.perror("loadReference failed");
     }
