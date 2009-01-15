@@ -6990,7 +6990,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
   if (!get_supports_compressed_texture_format(image_compression)) {
     image = tex->get_uncompressed_ram_image();
     image_compression = Texture::CM_off;
-  }    
+  } 
 
   /*
   if (image.is_null()) {
@@ -7064,6 +7064,28 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
         << tex->get_expected_mipmap_x_size(mipmap_bias) << " x "
         << tex->get_expected_mipmap_y_size(mipmap_bias) << " x "
         << tex->get_expected_mipmap_z_size(mipmap_bias) << "\n";
+    }
+  }
+
+  if (image_compression != Texture::CM_off) {
+    Texture::QualityLevel quality_level = tex->get_quality_level();
+    if (quality_level == Texture::QL_default) {
+      quality_level = texture_quality_level;
+    }
+
+    switch (quality_level) {
+    case Texture::QL_fastest:
+      GLP(Hint)(GL_TEXTURE_COMPRESSION_HINT, GL_FASTEST);
+      break;
+
+    case Texture::QL_default:
+    case Texture::QL_normal:
+      GLP(Hint)(GL_TEXTURE_COMPRESSION_HINT, GL_DONT_CARE);
+      break;
+
+    case Texture::QL_best:
+      GLP(Hint)(GL_TEXTURE_COMPRESSION_HINT, GL_NICEST);
+      break;
     }
   }
 
