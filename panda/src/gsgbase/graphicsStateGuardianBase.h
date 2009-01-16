@@ -215,6 +215,10 @@ PUBLISHED:
   static GraphicsStateGuardianBase *get_default_gsg();
   static void set_default_gsg(GraphicsStateGuardianBase *default_gsg);
 
+  static int get_num_gsgs();
+  static GraphicsStateGuardianBase *get_gsg(int n);
+  MAKE_SEQ(get_gsgs, get_num_gsgs, get_gsg);
+
 public:
   static void add_gsg(GraphicsStateGuardianBase *gsg);
   static void remove_gsg(GraphicsStateGuardianBase *gsg);

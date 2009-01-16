@@ -964,8 +964,9 @@ clear_ram_mipmap_image(int n) {
 //       Access: Published
 //  Description: Automatically fills in the n mipmap levels of the
 //               Texture, based on the texture's source image.  This
-//               requires the texture's ram image to be available in
-//               system memory.
+//               requires the texture's uncompressed ram image to be
+//               available in system memory.  If it is not already, it
+//               will be fetched if possible.
 //
 //               This call is not normally necessary, since the mipmap
 //               levels will be generated automatically if needed.
@@ -975,6 +976,8 @@ clear_ram_mipmap_image(int n) {
 void Texture::
 generate_ram_mipmap_images() {
   MutexHolder holder(_lock);
+
+  do_get_uncompressed_ram_image();
   nassertv(do_has_ram_image());
   nassertv(_ram_image_compression == CM_off);
   nassertv(_component_type != T_float);

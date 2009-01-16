@@ -660,6 +660,11 @@ reset() {
   _supports_generate_mipmap =
     has_extension("GL_SGIS_generate_mipmap") || is_at_least_version(1, 4);
 
+  // Temporary hack.  There is an issue with auto-generating mipmaps
+  // for pre-compressed images, on certain drivers.  Until I check in
+  // a fix, let's turn off this feature in general.
+  _supports_generate_mipmap = false;
+
   _supports_multitexture = false;
 
   _supports_mesa_6 = false;
@@ -7313,6 +7318,13 @@ upload_texture_image(CLP(TextureContext) *gtc,
       gtc->_depth != depth) {
     // We need to reload a new image.
 
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "loading new texture object, " << width << " x " << height
+        << " x " << depth << ", mipmaps " << mipmap_bias << " - " 
+        << num_ram_mipmap_levels << "\n";
+    }
+
     if (num_ram_mipmap_levels == 0) {
       if (external_format == GL_DEPTH_STENCIL_EXT) {
         GLP(TexImage2D)(page_target, 0, internal_format,
@@ -7404,6 +7416,14 @@ upload_texture_image(CLP(TextureContext) *gtc,
   } else {
     // We can reload the image over the previous image, possibly
     // saving on texture memory fragmentation.
+
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "subloading existing texture object, " << width << " x " << height
+        << " x " << depth << ", mipmaps " << mipmap_bias << " - " 
+        << num_ram_mipmap_levels << "\n";
+    }
+
     for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
       const unsigned char *image_ptr = tex->get_ram_mipmap_image(n);
       if (image_ptr == (const unsigned char *)NULL) {
@@ -7747,13 +7767,17 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
 
   GLint width = 1, height = 1, depth = 1;
   GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_WIDTH, &width);
-  GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_HEIGHT, &height);
-  if (_supports_3d_texture) {
+  if (target != GL_TEXTURE_1D) {
+    GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_HEIGHT, &height);
+  }
+  if (_supports_3d_texture && target == GL_TEXTURE_3D) {
     GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_DEPTH, &depth);
+  } else if (target == GL_TEXTURE_CUBE_MAP) {
+    depth = 6;
   }
   report_my_gl_errors();
 
-  GLint internal_format;
+  GLint internal_format = 0;
   GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
 
   // Make sure we were able to query those parameters properly.
@@ -7875,6 +7899,11 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_rgba;
     compression = Texture::CM_fxt1;
     break;
+
+  default:
+    GLCAT.warning()
+      << "Unhandled internal format for " << tex->get_name()
+      << " : " << hex << "0x" << internal_format << dec << "\n";
   }
 
   // We don't want to call setup_texture() again; that resets too

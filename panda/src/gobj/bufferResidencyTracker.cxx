@@ -36,6 +36,19 @@ BufferResidencyTracker(const string &pgo_name, const string &type_name) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BufferResidencyTracker::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+BufferResidencyTracker::
+~BufferResidencyTracker() {
+  _inactive_nonresident_collector.set_level(0);
+  _active_nonresident_collector.set_level(0);
+  _inactive_resident_collector.set_level(0);
+  _active_resident_collector.set_level(0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BufferResidencyTracker::begin_frame
 //       Access: Public
 //  Description: To be called at the beginning of a frame, this
@@ -66,6 +79,20 @@ begin_frame(Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void BufferResidencyTracker::
 end_frame(Thread *current_thread) {
+  _inactive_nonresident_collector.set_level(_chains[S_inactive_nonresident].get_total_size());
+  _active_nonresident_collector.set_level(_chains[S_active_nonresident].get_total_size());
+  _inactive_resident_collector.set_level(_chains[S_inactive_resident].get_total_size());
+  _active_resident_collector.set_level(_chains[S_active_resident].get_total_size());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BufferResidencyTracker::set_levels
+//       Access: Public
+//  Description: Resets the pstats levels to their appropriate values,
+//               possibly in the middle of a frame.
+////////////////////////////////////////////////////////////////////
+void BufferResidencyTracker::
+set_levels() {
   _inactive_nonresident_collector.set_level(_chains[S_inactive_nonresident].get_total_size());
   _active_nonresident_collector.set_level(_chains[S_active_nonresident].get_total_size());
   _inactive_resident_collector.set_level(_chains[S_inactive_resident].get_total_size());

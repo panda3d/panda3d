@@ -58,6 +58,29 @@ set_default_gsg(GraphicsStateGuardianBase *default_gsg) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardianBase::get_num_gsgs
+//       Access: Published, Static
+//  Description: Returns the total number of GSG's in the universe.
+////////////////////////////////////////////////////////////////////
+int GraphicsStateGuardianBase::
+get_num_gsgs() {
+  return _gsgs.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardianBase::get_gsg
+//       Access: Published, Static
+//  Description: Returns the nth GSG in the universe.  GSG's
+//               automatically add themselves and remove themselves
+//               from this list as they are created and destroyed.
+////////////////////////////////////////////////////////////////////
+GraphicsStateGuardianBase *GraphicsStateGuardianBase::
+get_gsg(int n) {
+  nassertr(n >= 0 && n < (int)_gsgs.size(), NULL);
+  return _gsgs[n];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardianBase::add_gsg
 //       Access: Public, Static
 //  Description: Called by a GSG after it has been initialized, to add

@@ -467,6 +467,36 @@ remove_window(GraphicsOutput *window) {
 
   do_remove_window(window, current_thread);
 
+  GraphicsStateGuardian *gsg = window->get_gsg();
+  if (gsg != (GraphicsStateGuardian *)NULL) {
+    PreparedGraphicsObjects *pgo = gsg->get_prepared_objects();
+    if (pgo != (PreparedGraphicsObjects *)NULL) {
+      // Check to see if any other still-active windows share this
+      // context.
+      bool any_common = false;
+      {
+        LightReMutexHolder holder(_lock, current_thread);
+        Windows::iterator wi;
+        for (wi = _windows.begin(); wi != _windows.end() && !any_common; ++wi) {
+          GraphicsStateGuardian *gsg2 = (*wi)->get_gsg();
+          if (gsg2 != (GraphicsStateGuardian *)NULL &&
+              gsg2->get_prepared_objects() == pgo) {
+            any_common = true;
+          }
+        }
+      }
+      if (!any_common) {
+        // If no windows still use this context, release all textures,
+        // etc.  We do this in case there is a floating pointer
+        // somewhere keeping the GSG from destructing when its window
+        // goes away.  A leaked GSG pointer is bad enough, but there's
+        // no reason we also need to keep around all of the objects
+        // allocated on graphics memory.
+        pgo->release_all();
+      }
+    }
+  }
+
   nassertr(count == 1, true);
   return true;
 }
@@ -486,6 +516,10 @@ remove_all_windows() {
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     GraphicsOutput *win = (*wi);
     do_remove_window(win, current_thread);
+    GraphicsStateGuardian *gsg = win->get_gsg();
+    if (gsg != (GraphicsStateGuardian *)NULL) {
+      gsg->release_all();
+    }
   }
   
   _windows.clear();

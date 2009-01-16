@@ -139,6 +139,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _prepared_objects = new PreparedGraphicsObjects;
   _stereo_buffer_mask = ~0;
   _incomplete_render = allow_incomplete_render;
+  _loader = Loader::get_global_ptr();
 
   _is_hardware = false;
   _prefers_triangle_strips = false;
