@@ -80,6 +80,13 @@ ConfigVariableBool dx_broken_depth_bias
           "to just leave this set, since the workaround seems to be "
           "sufficient for all cases."));
 
+ConfigVariableDouble dx_depth_bias_scale
+("dx-depth-bias-scale", 0.000001,
+ PRC_DESC("If depth bias is not directly supported by the graphics driver "
+          "(or if dx-broken-depth-bias is set true), this configures the "
+          "amount by which we slide the viewport back to achieve the effect "
+          "of a depth bias.  It should generally be a small number."));
+
 #ifndef NDEBUG
 // debugging flag
 // values are same as D3DCULL enumtype, 0 - no force, 1 - force none, 2 - force CW, 3 - force CCW

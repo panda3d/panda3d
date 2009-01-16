@@ -3143,7 +3143,7 @@ do_issue_depth_offset() {
     // DirectX depth bias isn't directly supported by the driver.
     // Cheese a depth bias effect by sliding the viewport backward a
     // bit.
-    static const float bias_scale = 0.0001;
+    static const float bias_scale = dx_depth_bias_scale;
     D3DVIEWPORT9 vp = _current_viewport;
     vp.MinZ -= bias_scale * offset;
     vp.MaxZ -= bias_scale * offset;
