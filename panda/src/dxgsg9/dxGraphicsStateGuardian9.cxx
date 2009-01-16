@@ -2489,7 +2489,7 @@ reset() {
 
   _maximum_simultaneous_render_targets = d3d_caps.NumSimultaneousRTs;
 
-  _supports_depth_bias = ((d3d_caps.RasterCaps & D3DPRASTERCAPS_DEPTHBIAS) != 0);
+  _supports_depth_bias = ((d3d_caps.RasterCaps & (D3DPRASTERCAPS_DEPTHBIAS | D3DPRASTERCAPS_SLOPESCALEDEPTHBIAS)) == (D3DPRASTERCAPS_DEPTHBIAS | D3DPRASTERCAPS_SLOPESCALEDEPTHBIAS));
 
   _supports_gamma_calibration = ((d3d_caps.Caps2 & D3DCAPS2_CANCALIBRATEGAMMA) != 0);
 
@@ -3135,8 +3135,9 @@ do_issue_depth_offset() {
   const DepthOffsetAttrib *target_depth_offset = DCAST(DepthOffsetAttrib, _target_rs->get_attrib_def(DepthOffsetAttrib::get_class_slot()));
   int offset = target_depth_offset->get_offset();
 
-  if (_supports_depth_bias) {
+  if (_supports_depth_bias && !dx_broken_depth_bias) {
     set_render_state(D3DRS_DEPTHBIAS, offset);
+    set_render_state(D3DRS_SLOPESCALEDEPTHBIAS, offset);
 
   } else {
     // DirectX depth bias isn't directly supported by the driver.

@@ -72,6 +72,14 @@ ConfigVariableBool dx_broken_max_index
           "this should work around this bug, at the cost of some additional "
           "rendering overhead on the GPU."));
 
+ConfigVariableBool dx_broken_depth_bias
+("dx-broken-depth-bias", true,
+ PRC_DESC("Configure this true if your graphics driver claims to support "
+          "D3DPRASTERCAPS_DEPTHBIAS, but doesn't appear to do anything "
+          "useful when you set it.  In fact, there's not much reason not "
+          "to just leave this set, since the workaround seems to be "
+          "sufficient for all cases."));
+
 #ifndef NDEBUG
 // debugging flag
 // values are same as D3DCULL enumtype, 0 - no force, 1 - force none, 2 - force CW, 3 - force CCW
