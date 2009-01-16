@@ -307,9 +307,7 @@ set_fade_state_override(int override) {
 CPT(RenderState) FadeLODNode::
 get_fade_1_old_state() {
   if (_fade_1_old_state == (const RenderState *)NULL) {
-    _fade_1_old_state = RenderState::make
-      (DepthOffsetAttrib::make(),
-       _fade_state_override);
+    _fade_1_old_state = RenderState::make_empty();
   }
 
   return _fade_1_old_state;
