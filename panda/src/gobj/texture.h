@@ -307,7 +307,7 @@ PUBLISHED:
   CPTA_uchar get_ram_image_as(const string &requested_format);
   INLINE PTA_uchar modify_ram_image();
   INLINE PTA_uchar make_ram_image();
-  void set_ram_image(PTA_uchar image, CompressionMode compression = CM_off,
+  void set_ram_image(CPTA_uchar image, CompressionMode compression = CM_off,
                      size_t page_size = 0);
   INLINE void clear_ram_image();
   INLINE void set_keep_ram_image(bool keep_ram_image);
@@ -329,7 +329,7 @@ PUBLISHED:
   CPTA_uchar get_ram_mipmap_image(int n);
   INLINE PTA_uchar modify_ram_mipmap_image(int n);
   INLINE PTA_uchar make_ram_mipmap_image(int n);
-  void set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size = 0);
+  void set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size = 0);
   void clear_ram_mipmap_image(int n);
   INLINE void clear_ram_mipmap_images();
   INLINE void generate_ram_mipmap_images();
@@ -339,7 +339,7 @@ PUBLISHED:
   INLINE bool has_simple_ram_image() const;
   INLINE size_t get_simple_ram_image_size() const;
   INLINE CPTA_uchar get_simple_ram_image() const;
-  INLINE void set_simple_ram_image(PTA_uchar image, int x_size, int y_size);
+  INLINE void set_simple_ram_image(CPTA_uchar image, int x_size, int y_size);
   PTA_uchar modify_simple_ram_image();
   PTA_uchar new_simple_ram_image(int x_size, int y_size);
   void generate_simple_ram_image();
@@ -520,7 +520,7 @@ protected:
   virtual bool do_has_uncompressed_ram_image() const;
   CPTA_uchar do_get_ram_image();
   CPTA_uchar do_get_uncompressed_ram_image();
-  void do_set_simple_ram_image(PTA_uchar image, int x_size, int y_size);
+  void do_set_simple_ram_image(CPTA_uchar image, int x_size, int y_size);
   INLINE size_t do_get_ram_image_size() const;
   INLINE bool do_has_ram_mipmap_image(int n) const;
   int do_get_expected_num_mipmap_levels() const;
@@ -734,6 +734,7 @@ public:
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
   void fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata);
+  void fillin_from(Texture *dummy);
 
 public:
   static TypeHandle get_class_type() {

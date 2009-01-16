@@ -189,6 +189,7 @@ public:
   INLINE operator Element *() const;
   INLINE Element *p() const;
   INLINE pvector<Element> &v() const;
+  INLINE ReferenceCountedVector<Element> *v0() const;
 
   // Methods to help out Python and other high-level languages.
   INLINE const Element &get_element(size_type n) const;
@@ -311,6 +312,8 @@ PUBLISHED:
   INLINE operator const Element *() const;
   INLINE const Element *p() const;
   INLINE const pvector<Element> &v() const;
+  INLINE const ReferenceCountedVector<Element> *v0() const;
+  INLINE PointerToArray<Element> cast_non_const() const;
 
   // Methods to help out Python and other high-level languages.
   INLINE const Element &get_element(size_type n) const;

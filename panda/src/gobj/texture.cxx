@@ -775,7 +775,7 @@ load_related(const InternalName *suffix) const {
 //               This does *not* affect keep_ram_image.
 ////////////////////////////////////////////////////////////////////
 void Texture::
-set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
+set_ram_image(CPTA_uchar image, Texture::CompressionMode compression,
               size_t page_size) {
   MutexHolder holder(_lock);
   nassertv(compression != CM_default);
@@ -791,7 +791,7 @@ set_ram_image(PTA_uchar image, Texture::CompressionMode compression,
   if (_ram_images[0]._image != image ||
       _ram_images[0]._page_size != page_size ||
       _ram_image_compression != compression) {
-    _ram_images[0]._image = image;
+    _ram_images[0]._image = image.cast_non_const();
     _ram_images[0]._page_size = page_size;
     _ram_image_compression = compression;
     ++_image_modified;
@@ -887,7 +887,7 @@ get_ram_mipmap_image(int n) {
 //               This does *not* affect keep_ram_image.
 ////////////////////////////////////////////////////////////////////
 void Texture::
-set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size) {
+set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size) {
   MutexHolder holder(_lock);
   nassertv(_ram_image_compression != CM_off || image.size() == do_get_expected_ram_mipmap_image_size(n));
 
@@ -901,7 +901,7 @@ set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size) {
 
   if (_ram_images[n]._image != image ||
       _ram_images[n]._page_size != page_size) {
-    _ram_images[n]._image = image;
+    _ram_images[n]._image = image.cast_non_const();
     _ram_images[n]._page_size = page_size;
     ++_image_modified;
   }
@@ -3990,14 +3990,14 @@ get_ram_image_as(const string &requested_format) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void Texture::
-do_set_simple_ram_image(PTA_uchar image, int x_size, int y_size) {
+do_set_simple_ram_image(CPTA_uchar image, int x_size, int y_size) {
   nassertv(_texture_type == TT_2d_texture);
   size_t expected_page_size = (size_t)(x_size * y_size * 4);
   nassertv(image.size() == expected_page_size);
 
   _simple_x_size = x_size;
   _simple_y_size = y_size;
-  _simple_ram_image._image = image;
+  _simple_ram_image._image = image.cast_non_const();
   _simple_ram_image._page_size = image.size();
   _simple_image_date_generated = (PN_int32)time(NULL);
   ++_simple_image_modified;
@@ -5597,7 +5597,15 @@ make_from_bam(const FactoryParams &params) {
     me->_alpha_file_channel = alpha_file_channel;
     me->_texture_type = texture_type;
 
+    // Read the texture attributes directly from the bam stream.
+    me->fillin(scan, manager, has_rawdata);
+
   } else {
+    // Now create a temporary Texture object to read all the
+    // attributes from the bam stream.
+    PT(Texture) dummy = new Texture("");
+    dummy->fillin(scan, manager, has_rawdata);
+
     if (filename.empty()) {
       // This texture has no filename; since we don't have an image to
       // load, we can't actually create the texture.
@@ -5618,7 +5626,7 @@ make_from_bam(const FactoryParams &params) {
       }
 
       LoaderOptions options = manager->get_loader_options();
-      if (false) {  // temporary hack standin
+      if (dummy->uses_mipmaps()) {
         options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_generate_mipmaps);
       }
 
@@ -5645,19 +5653,12 @@ make_from_bam(const FactoryParams &params) {
         break;
       }
     }
+
+    if (me != (Texture *)NULL) {
+      me->set_name(name);
+    }
   }
 
-  if (me == (Texture *)NULL) {
-    // Oops, we couldn't load the texture; we'll just return NULL.
-    // But we do need a dummy texture to read in and ignore all of the
-    // attributes.
-    PT(Texture) dummy = new Texture("");
-    dummy->fillin(scan, manager, has_rawdata);
-
-  } else {
-    me->set_name(name);
-    me->fillin(scan, manager, has_rawdata);
-  }
   return me;
 }
 
@@ -5673,61 +5674,37 @@ void Texture::
 fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
   // We have already read in the filenames; don't read them again.
 
-  // Use the setters instead of setting these directly, so we can
-  // correctly avoid incrementing _properties_modified if none of
-  // these actually change.  (Otherwise, we'd have to reload the
-  // texture to the GSG every time we loaded a new bam file that
-  // reference the texture, since each bam file reference passes
-  // through this function.)
-
-  do_set_wrap_u((WrapMode)scan.get_uint8());
-  do_set_wrap_v((WrapMode)scan.get_uint8());
-  do_set_wrap_w((WrapMode)scan.get_uint8());
-  do_set_minfilter((FilterType)scan.get_uint8());
-  do_set_magfilter((FilterType)scan.get_uint8());
-  do_set_anisotropic_degree(scan.get_int16());
-  Colorf color;
-  color.read_datagram(scan);
-  do_set_border_color(color);
+  _wrap_u = (WrapMode)scan.get_uint8();
+  _wrap_v = (WrapMode)scan.get_uint8();
+  _wrap_w = (WrapMode)scan.get_uint8();
+  _minfilter = (FilterType)scan.get_uint8();
+  _magfilter = (FilterType)scan.get_uint8();
+  _anisotropic_degree = scan.get_int16();
+  _border_color.read_datagram(scan);
 
   if (manager->get_file_minor_ver() >= 1) {
-    do_set_compression((CompressionMode)scan.get_uint8());
+    _compression = (CompressionMode)scan.get_uint8();
   }
   if (manager->get_file_minor_ver() >= 16) {
-    do_set_quality_level((QualityLevel)scan.get_uint8());
+    _quality_level = (QualityLevel)scan.get_uint8();
   }
 
-  Format format = (Format)scan.get_uint8();
-  int num_components = scan.get_uint8();
-
-  if (num_components == _num_components) {
-    // Only reset the format if the number of components hasn't
-    // changed, since if the number of components has changed our
-    // texture no longer matches what it was when the bam was
-    // written.
-    do_set_format(format);
-  }
+  _format = (Format)scan.get_uint8();
+  _num_components = scan.get_uint8();
+  ++_properties_modified;
 
   bool has_simple_ram_image = false;
   if (manager->get_file_minor_ver() >= 18) {
-    if (has_rawdata || (_orig_file_x_size == 0 && _orig_file_y_size == 0)) {
-      // We only trust the file size if we have the raw data.
-      _orig_file_x_size = scan.get_uint32();
-      _orig_file_y_size = scan.get_uint32();
-    } else {
-      // Discard the file size indicated in the bam file; it might not
-      // be accurate.
-      scan.get_uint32();
-      scan.get_uint32();
-    }
+    _orig_file_x_size = scan.get_uint32();
+    _orig_file_y_size = scan.get_uint32();
 
     has_simple_ram_image = scan.get_bool();
   }
 
   if (has_simple_ram_image) {
-    int x_size = scan.get_uint32();
-    int y_size = scan.get_uint32();
-    PN_int32 date_generated = scan.get_int32();
+    _simple_x_size = scan.get_uint32();
+    _simple_y_size = scan.get_uint32();
+    _simple_image_date_generated = scan.get_int32();
 
     size_t u_size = scan.get_uint32();
     PTA_uchar image = PTA_uchar::empty_array(u_size, get_class_type());
@@ -5735,23 +5712,12 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
       image[(int)u_idx] = scan.get_uint8();
     }
 
-    // Only replace the simple ram image if it was generated more
-    // recently than the one we already have.
-    if (_simple_ram_image._image.empty() ||
-        date_generated > _simple_image_date_generated) {
-      _simple_x_size = x_size;
-      _simple_y_size = y_size;
-      _simple_image_date_generated = date_generated;
-      _simple_ram_image._image = image;
-      _simple_ram_image._page_size = u_size;
-      ++_simple_image_modified;
-    }
+    _simple_ram_image._image = image;
+    _simple_ram_image._page_size = u_size;
+    ++_simple_image_modified;
   }  
 
   if (has_rawdata) {
-    // In the rawdata case, we must always set the format.
-    _format = format;
-    _num_components = num_components;
     _x_size = scan.get_uint32();
     _y_size = scan.get_uint32();
     _z_size = scan.get_uint32();
@@ -5788,8 +5754,58 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
     _loaded_from_image = true;
     do_set_pad_size(0, 0, 0);
     ++_image_modified;
-    ++_properties_modified;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::fillin_from
+//       Access: Protected
+//  Description: Called in make_from_bam(), this method properly
+//               copies the attributes from the bam stream (as stored
+//               in dummy) into this texture, updating the modified
+//               flags appropriately.
+////////////////////////////////////////////////////////////////////
+void Texture::
+fillin_from(Texture *dummy) {
+  // Use the setters instead of setting these directly, so we can
+  // correctly avoid incrementing _properties_modified if none of
+  // these actually change.  (Otherwise, we'd have to reload the
+  // texture to the GSG every time we loaded a new bam file that
+  // reference the texture, since each bam file reference passes
+  // through this function.)
+
+  do_set_wrap_u(dummy->get_wrap_u());
+  do_set_wrap_v(dummy->get_wrap_v());
+  do_set_wrap_w(dummy->get_wrap_w());
+  do_set_minfilter(dummy->get_minfilter());
+  do_set_magfilter(dummy->get_magfilter());
+  do_set_anisotropic_degree(dummy->get_anisotropic_degree());
+  do_set_border_color(dummy->get_border_color());
+  do_set_compression(dummy->get_compression());
+  do_set_quality_level(dummy->get_quality_level());
+
+  Format format = dummy->get_format();
+  int num_components = dummy->get_num_components();
+
+  if (num_components == _num_components) {
+    // Only reset the format if the number of components hasn't
+    // changed, since if the number of components has changed our
+    // texture no longer matches what it was when the bam was
+    // written.
+    do_set_format(format);
+  }
+
+  if (dummy->has_simple_ram_image()) {
+    // Only replace the simple ram image if it was generated more
+    // recently than the one we already have.
+    if (_simple_ram_image._image.empty() ||
+        dummy->_simple_image_date_generated > _simple_image_date_generated) {
+      do_set_simple_ram_image(dummy->get_simple_ram_image(),
+                              dummy->get_simple_x_size(),
+                              dummy->get_simple_y_size());
+      _simple_image_date_generated = dummy->_simple_image_date_generated;
+    }
+  }  
 }
 
 ////////////////////////////////////////////////////////////////////

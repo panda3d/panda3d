@@ -1524,7 +1524,7 @@ get_simple_ram_image() const {
 //               new_simple_ram_image().
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
-set_simple_ram_image(PTA_uchar image, int x_size, int y_size) {
+set_simple_ram_image(CPTA_uchar image, int x_size, int y_size) {
   MutexHolder holder(_lock);
   do_set_simple_ram_image(image, x_size, y_size);
 }

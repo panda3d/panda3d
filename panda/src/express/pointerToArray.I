@@ -428,6 +428,18 @@ v() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PointerToArray::v0
+//       Access: Public
+//  Description: To access the internal ReferenceCountedVector object,
+//               for very low-level fiddling.  Know what you are doing!
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE ReferenceCountedVector<Element> *PointerToArray<Element>::
+v0() const {
+  return (To *)(this->_void_ptr);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PointerToArray::get_element
 //       Access: Published
 //  Description: This method exists mainly to access the elements of
@@ -902,7 +914,7 @@ operator [](int n) const {
 template<class Element>
 INLINE ConstPointerToArray<Element>::
 operator const Element *() const {
-  To *vec = (To *)(this->_void_ptr);
+  const To *vec = (const To *)(this->_void_ptr);
   return ((vec == NULL)||(vec->empty())) ? (const Element *)NULL : &(vec->front());
 }
 
@@ -916,7 +928,7 @@ operator const Element *() const {
 template<class Element>
 INLINE const Element *ConstPointerToArray<Element>::
 p() const {
-  To *vec = (To *)(this->_void_ptr);
+  const To *vec = (const To *)(this->_void_ptr);
   return ((vec == NULL)||(vec->empty())) ? (const Element *)NULL : &(vec->front());
 }
 
@@ -932,7 +944,33 @@ v() const {
   nassertd((this->_void_ptr) != NULL) {
     ((ConstPointerToArray<Element> *)this)->reassign(new ReferenceCountedVector<Element>(_type_handle));
   }
-  return *(To *)(this->_void_ptr);
+  return *(const To *)(this->_void_ptr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::v0
+//       Access: Public
+//  Description: To access the internal ReferenceCountedVector object,
+//               for very low-level fiddling.  Know what you are doing!
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE const ReferenceCountedVector<Element> *ConstPointerToArray<Element>::
+v0() const {
+  return (const To *)(this->_void_ptr);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConstPointerToArray::cast_non_const
+//       Access: Public
+//  Description: Casts away the constness of the CPTA(Element), and
+//               returns an equivalent PTA(Element).
+////////////////////////////////////////////////////////////////////
+template<class Element>
+INLINE PointerToArray<Element> ConstPointerToArray<Element>::
+cast_non_const() const {
+  PointerToArray<Element> non_const;
+  non_const = (To *)(this->_void_ptr);
+  return non_const;
 }
 
 ////////////////////////////////////////////////////////////////////
