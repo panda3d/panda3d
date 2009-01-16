@@ -921,14 +921,20 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
               // But drop the RAM until we need it.
               tex->clear_ram_image();
 
-            } else if (tex->consider_auto_compress_ram_image()) {
-              if (cache->get_cache_compressed_textures()) {
-                // We've re-compressed the image after loading it from the
-                // cache.  To keep the cache current, rewrite it to the
-                // cache now, in its newly compressed form.
-                record->set_data(tex, false);
-                cache->store(record);
-                compressed_cache_record = true;
+            } else {
+              bool was_compressed = (tex->get_ram_image_compression() != Texture::CM_off);
+              if (tex->consider_auto_process_ram_image(tex->uses_mipmaps(), true)) {
+                bool is_compressed = (tex->get_ram_image_compression() != Texture::CM_off);
+                if (!was_compressed && is_compressed &&
+                    cache->get_cache_compressed_textures()) {
+                  // We've re-compressed the image after loading it
+                  // from the cache.  To keep the cache current,
+                  // rewrite it to the cache now, in its newly
+                  // compressed form.
+                  record->set_data(tex, false);
+                  cache->store(record);
+                  compressed_cache_record = true;
+                }
               }
             }
             tex->set_keep_ram_image(false);

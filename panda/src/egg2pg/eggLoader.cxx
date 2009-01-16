@@ -934,6 +934,21 @@ load_texture(TextureDef &def, EggTexture *egg_tex) {
     options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_preload_simple);
   }
 
+  if (!egg_ignore_filters && !egg_ignore_mipmaps) {
+    switch (egg_tex->get_minfilter()) {
+    case EggTexture::FT_nearest:
+    case EggTexture::FT_linear:
+    case EggTexture::FT_unspecified:
+      break;
+      
+    case EggTexture::FT_nearest_mipmap_nearest:
+    case EggTexture::FT_linear_mipmap_nearest:
+    case EggTexture::FT_nearest_mipmap_linear:
+    case EggTexture::FT_linear_mipmap_linear:
+      options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_generate_mipmaps);
+    }
+  }
+
   PT(Texture) tex;
   switch (egg_tex->get_texture_type()) {
   case EggTexture::TT_unspecified:

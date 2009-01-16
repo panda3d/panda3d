@@ -254,7 +254,8 @@ load(const PNMImage &pnmimage, const LoaderOptions &options) {
   ++_properties_modified;
   ++_image_modified;
   if (do_load_one(pnmimage, get_name(), 0, 0, options)) {
-    consider_auto_compress_ram_image();
+    bool generate_mipmaps = ((options.get_texture_flags() & LoaderOptions::TF_generate_mipmaps) != 0);
+    consider_auto_process_ram_image(generate_mipmaps || uses_mipmaps(), true);
     return true;
   }
   return false;
@@ -272,7 +273,6 @@ load(const PNMImage &pnmimage, int z, int n, const LoaderOptions &options) {
   ++_properties_modified;
   ++_image_modified;
   if (do_load_one(pnmimage, get_name(), z, n, options)) {
-    consider_auto_compress_ram_image();
     return true;
   }
   return false;
@@ -1297,6 +1297,19 @@ has_ram_mipmap_image(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::has_all_ram_mipmap_images
+//       Access: Published
+//  Description: Returns true if all expected mipmap levels have been
+//               defined and exist in the system RAM, or false if even
+//               one mipmap level is missing.
+////////////////////////////////////////////////////////////////////
+INLINE bool Texture::
+has_all_ram_mipmap_images() const {
+  MutexHolder holder(_lock);
+  return do_has_all_ram_mipmap_images();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_ram_mipmap_image_size
 //       Access: Published
 //  Description: Returns the number of bytes used by the in-memory
@@ -1401,6 +1414,26 @@ INLINE void Texture::
 clear_ram_mipmap_images() {
   MutexHolder holder(_lock);
   do_clear_ram_mipmap_images();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::generate_ram_mipmap_images
+//       Access: Published
+//  Description: Automatically fills in the n mipmap levels of the
+//               Texture, based on the texture's source image.  This
+//               requires the texture's uncompressed ram image to be
+//               available in system memory.  If it is not already, it
+//               will be fetched if possible.
+//
+//               This call is not normally necessary, since the mipmap
+//               levels will be generated automatically if needed.
+//               But there may be certain cases in which you would
+//               like to call this explicitly.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+generate_ram_mipmap_images() {
+  MutexHolder holder(_lock);
+  do_generate_ram_mipmap_images();
 }
 
 ////////////////////////////////////////////////////////////////////

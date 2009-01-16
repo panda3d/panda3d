@@ -43,6 +43,7 @@ PUBLISHED:
     TF_preload           = 0x0004,  // Texture will have RAM image
     TF_preload_simple    = 0x0008,  // Texture will have simple RAM image
     TF_allow_1d          = 0x0010,  // If texture is Nx1, make a 1-d texture
+    TF_generate_mipmaps  = 0x0020,  // Consider generating mipmaps
   };
 
   LoaderOptions(int flags = LF_search | LF_report_errors);

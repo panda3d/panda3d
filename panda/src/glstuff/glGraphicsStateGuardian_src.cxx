@@ -660,11 +660,6 @@ reset() {
   _supports_generate_mipmap =
     has_extension("GL_SGIS_generate_mipmap") || is_at_least_version(1, 4);
 
-  // Temporary hack.  There is an issue with auto-generating mipmaps
-  // for pre-compressed images, on certain drivers.  Until I check in
-  // a fix, let's turn off this feature in general.
-  _supports_generate_mipmap = false;
-
   _supports_multitexture = false;
 
   _supports_mesa_6 = false;
@@ -7278,9 +7273,12 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
       if (num_ram_mipmap_levels == 1) {
         // No RAM mipmap levels available.  Should we generate some?
-        if (!_supports_generate_mipmap ||
-            (!auto_generate_mipmaps && image_compression == Texture::CM_off)) {
-          // Yes, the GL won't generate them, so we need to.
+        if (!_supports_generate_mipmap || !driver_generate_mipmaps || 
+            image_compression != Texture::CM_off) {
+          // Yes, the GL can't or won't generate them, so we need to.
+          // Note that some drivers (nVidia) will *corrupt memory* if
+          // you ask them to generate mipmaps for a pre-compressed
+          // texture.
           tex->generate_ram_mipmap_images();
           num_ram_mipmap_levels = tex->get_num_ram_mipmap_images();
         }

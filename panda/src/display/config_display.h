@@ -57,7 +57,6 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableBool copy_texture_inverted;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool window_inverted;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool red_blue_stereo;
 extern EXPCL_PANDA_DISPLAY ConfigVariableString red_blue_stereo_colors;
-extern EXPCL_PANDA_DISPLAY ConfigVariableBool auto_generate_mipmaps;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool color_scale_via_lighting;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool alpha_scale_via_texture;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool allow_incomplete_render;

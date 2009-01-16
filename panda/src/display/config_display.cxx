@@ -196,14 +196,6 @@ ConfigVariableString red_blue_stereo_colors
           "be a two-word string, where each word is one of 'red', 'blue', "
           "'green', or 'alpha'."));
 
-ConfigVariableBool auto_generate_mipmaps
-("auto-generate-mipmaps", false,
- PRC_DESC("Set this true to use the hardware to generate mipmaps "
-          "automatically in all cases, if supported.  Set it false "
-          "to generate mipmaps in software when possible.  This is "
-          "false by default because some drivers (Intel) seem to do a "
-          "poor job of generating mipmaps when needed."));
-
 ConfigVariableBool color_scale_via_lighting
 ("color-scale-via-lighting", true,
  PRC_DESC("When this is true, Panda will try to implement ColorAttribs and "

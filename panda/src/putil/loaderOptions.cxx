@@ -57,6 +57,7 @@ output(ostream &out) const {
     write_flag(out, sep, "LF_no_disk_cache", LF_no_disk_cache);
     write_flag(out, sep, "LF_no_ram_cache", LF_no_ram_cache);
   }
+  write_flag(out, sep, "LF_allow_instance", LF_allow_instance);
   if (sep.empty()) {
     out << "0";
   }
@@ -66,6 +67,8 @@ output(ostream &out) const {
   sep = "";
   write_texture_flag(out, sep, "TF_preload", TF_preload);
   write_texture_flag(out, sep, "TF_preload_simple", TF_preload_simple);
+  write_texture_flag(out, sep, "TF_allow_1d", TF_allow_1d);
+  write_texture_flag(out, sep, "TF_generate_mipmaps", TF_generate_mipmaps);
   if (sep.empty()) {
     out << "0";
   }

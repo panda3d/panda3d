@@ -321,7 +321,7 @@ PUBLISHED:
   INLINE int get_num_ram_mipmap_images() const;
   INLINE bool has_ram_mipmap_image(int n) const;
   int get_num_loadable_ram_mipmap_images() const;
-  bool has_all_ram_mipmap_images() const;
+  INLINE bool has_all_ram_mipmap_images() const;
   INLINE size_t get_ram_mipmap_image_size(int n) const;
   INLINE size_t get_ram_mipmap_page_size(int n) const;
   INLINE size_t get_expected_ram_mipmap_image_size(int n) const;
@@ -332,7 +332,7 @@ PUBLISHED:
   void set_ram_mipmap_image(int n, PTA_uchar image, size_t page_size = 0);
   void clear_ram_mipmap_image(int n);
   INLINE void clear_ram_mipmap_images();
-  void generate_ram_mipmap_images();
+  INLINE void generate_ram_mipmap_images();
 
   INLINE int get_simple_x_size() const;
   INLINE int get_simple_y_size() const;
@@ -480,11 +480,13 @@ protected:
   PTA_uchar do_modify_ram_mipmap_image(int n);
   PTA_uchar do_make_ram_mipmap_image(int n);
 
-  bool consider_auto_compress_ram_image();
+  bool consider_auto_process_ram_image(bool generate_mipmaps, 
+                                       bool allow_compression);
   bool do_compress_ram_image(CompressionMode compression,
                              QualityLevel quality_level,
                              GraphicsStateGuardianBase *gsg);
   bool do_uncompress_ram_image();
+  bool do_has_all_ram_mipmap_images() const;
 
   bool do_reconsider_z_size(int z);
   bool do_reconsider_image_properties(int x_size, int y_size, int num_components,
@@ -533,6 +535,7 @@ protected:
   INLINE void do_clear_ram_image();
   void do_clear_simple_ram_image();
   void do_clear_ram_mipmap_images();
+  void do_generate_ram_mipmap_images();
   void do_set_pad_size(int x, int y, int z);
 
   // This nested class declaration is used below.

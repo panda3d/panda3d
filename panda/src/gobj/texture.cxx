@@ -860,42 +860,6 @@ get_num_loadable_ram_mipmap_images() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::has_all_ram_mipmap_images
-//       Access: Published
-//  Description: Returns true if all expected mipmap levels have been
-//               defined and exist in the system RAM, or false if even
-//               one mipmap level is missing.
-////////////////////////////////////////////////////////////////////
-bool Texture::
-has_all_ram_mipmap_images() const {
-  MutexHolder holder(_lock);
-  if (_ram_images.empty() || _ram_images[0]._image.empty()) {
-    // If we don't even have a base image, the answer is no.
-    return false;
-  }
-  if (!is_mipmap(_minfilter)) {
-    // If we have a base image and don't require mipmapping, the
-    // answer is yes.
-    return true;
-  }
-
-  // Check that we have enough mipmap levels to meet the size
-  // requirements.
-  int size = max(_x_size, max(_y_size, _z_size));
-  int n = 0;
-  int x = 1;
-  while (x < size) {
-    x = (x << 1);
-    ++n;
-    if (n >= (int)_ram_images.size() || _ram_images[n]._image.empty()) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Texture::get_ram_mipmap_image
 //       Access: Published
 //  Description: Returns the system-RAM image data associated with the
@@ -957,67 +921,6 @@ clear_ram_mipmap_image(int n) {
   }
   _ram_images[n]._image.clear();
   _ram_images[n]._page_size = 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::generate_ram_mipmap_images
-//       Access: Published
-//  Description: Automatically fills in the n mipmap levels of the
-//               Texture, based on the texture's source image.  This
-//               requires the texture's uncompressed ram image to be
-//               available in system memory.  If it is not already, it
-//               will be fetched if possible.
-//
-//               This call is not normally necessary, since the mipmap
-//               levels will be generated automatically if needed.
-//               But there may be certain cases in which you would
-//               like to call this explicitly.
-////////////////////////////////////////////////////////////////////
-void Texture::
-generate_ram_mipmap_images() {
-  MutexHolder holder(_lock);
-
-  do_get_uncompressed_ram_image();
-  nassertv(do_has_ram_image());
-  nassertv(_ram_image_compression == CM_off);
-  nassertv(_component_type != T_float);
-  do_clear_ram_mipmap_images();
-
-  if (gobj_cat.is_debug()) {
-    gobj_cat.debug()
-      << "Generating mipmap levels for " << *this << "\n";
-  }
-
-  if (_texture_type == Texture::TT_3d_texture && _z_size != 1) {
-    // Eek, a 3-D texture.
-    int x_size = _x_size;
-    int y_size = _y_size;
-    int z_size = _z_size;
-    int n = 0;
-    while (x_size > 1 || y_size > 1 || z_size > 1) {
-      _ram_images.push_back(RamImage());
-      filter_3d_mipmap_level(_ram_images[n + 1], _ram_images[n],
-                             x_size, y_size, z_size);
-      x_size = max(x_size >> 1, 1);
-      y_size = max(y_size >> 1, 1);
-      z_size = max(z_size >> 1, 1);
-      ++n;
-    }
-
-  } else {
-    // A 1-D, 2-D, or cube map texture.
-    int x_size = _x_size;
-    int y_size = _y_size;
-    int n = 0;
-    while (x_size > 1 || y_size > 1) {
-      _ram_images.push_back(RamImage());
-      filter_2d_mipmap_pages(_ram_images[n + 1], _ram_images[n],
-                             x_size, y_size);
-      x_size = max(x_size >> 1, 1);
-      y_size = max(y_size >> 1, 1);
-      ++n;
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2097,8 +2000,9 @@ do_read(const Filename &fullpath, const Filename &alpha_fullpath,
   } else {
     if ((options.get_texture_flags() & LoaderOptions::TF_preload) != 0) {
       // If we intend to keep the ram image around, consider
-      // compressing it.
-      consider_auto_compress_ram_image();
+      // compressing it etc.
+      bool generate_mipmaps = ((options.get_texture_flags() & LoaderOptions::TF_generate_mipmaps) != 0);
+      consider_auto_process_ram_image(generate_mipmaps || uses_mipmaps(), true);
     }
   }
 
@@ -3029,8 +2933,11 @@ do_reload_ram_image(bool allow_compression) {
           _ram_images = tex->_ram_images;
           _loaded_from_image = true;
 
-          if (allow_compression && consider_auto_compress_ram_image()) {
-            if (cache->get_cache_compressed_textures()) {
+          bool was_compressed = (_ram_image_compression != CM_off);
+          if (consider_auto_process_ram_image(uses_mipmaps(), allow_compression)) {
+            bool is_compressed = (_ram_image_compression != CM_off);
+            if (!was_compressed && is_compressed &&
+                cache->get_cache_compressed_textures()) {
               // We've re-compressed the image after loading it from the
               // cache.  To keep the cache current, rewrite it to the
               // cache now, in its newly compressed form.
@@ -3153,38 +3060,44 @@ do_make_ram_mipmap_image(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::consider_auto_compress_ram_image
+//     Function: Texture::consider_auto_process_ram_image
 //       Access: Protected
 //  Description: Should be called after a texture has been loaded into
-//               RAM, this considers compressing the RAM image, if
-//               cpu-compress-textures has been set and the default
-//               GSG has been set and supports it.
-
+//               RAM, this considers generating mipmaps and/or
+//               compressing the RAM image.
+//
 //               Returns true if the image was modified by this
 //               operation, false if it wasn't.
 ////////////////////////////////////////////////////////////////////
 bool Texture::
-consider_auto_compress_ram_image() {
-  if (!driver_compress_textures) {
+consider_auto_process_ram_image(bool generate_mipmaps, bool allow_compression) {
+  bool modified = false;
+
+  if (generate_mipmaps && !driver_generate_mipmaps && 
+      _ram_images.size() == 1) {
+    do_generate_ram_mipmap_images();
+    modified = true;
+  }
+
+  if (allow_compression && !driver_compress_textures) {
     CompressionMode compression = _compression;
-    if (compression == CM_default) {
-      if (!compressed_textures) {
-        return false;
-      }
+    if (compression == CM_default && compressed_textures) {
       compression = CM_on;
     }
     if (compression != CM_off && _ram_image_compression == CM_off) {
       GraphicsStateGuardianBase *gsg = GraphicsStateGuardianBase::get_default_gsg();
       if (do_compress_ram_image(compression, QL_default, gsg)) {
-        gobj_cat.info()
-          << "Compressed " << get_name() << " with " 
-          << _ram_image_compression << "\n";
-        return true;
+        if (gobj_cat.is_debug()) {
+          gobj_cat.debug()
+            << "Compressed " << get_name() << " with " 
+            << _ram_image_compression << "\n";
+        }
+        modified = true;
       }
     }
   }
 
-  return false;
+  return modified;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3322,6 +3235,39 @@ do_uncompress_ram_image() {
   }
 #endif  // HAVE_SQUISH
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_has_all_ram_mipmap_images
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_has_all_ram_mipmap_images() const {
+  if (_ram_images.empty() || _ram_images[0]._image.empty()) {
+    // If we don't even have a base image, the answer is no.
+    return false;
+  }
+  if (!is_mipmap(_minfilter)) {
+    // If we have a base image and don't require mipmapping, the
+    // answer is yes.
+    return true;
+  }
+
+  // Check that we have enough mipmap levels to meet the size
+  // requirements.
+  int size = max(_x_size, max(_y_size, _z_size));
+  int n = 0;
+  int x = 1;
+  while (x < size) {
+    x = (x << 1);
+    ++n;
+    if (n >= (int)_ram_images.size() || _ram_images[n]._image.empty()) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3866,8 +3812,10 @@ do_get_uncompressed_ram_image() {
     // We have an image in-ram, but it's compressed.  Try to
     // uncompress it first.
     if (do_uncompress_ram_image()) {
-      gobj_cat.info()
-        << "Uncompressed " << get_name() << "\n";
+      if (gobj_cat.is_debug()) {
+        gobj_cat.debug()
+          << "Uncompressed " << get_name() << "\n";
+      }
       return _ram_images[0]._image;
     }
   }
@@ -4169,6 +4117,103 @@ void Texture::
 do_clear_ram_mipmap_images() {
   if (!_ram_images.empty()) {
     _ram_images.erase(_ram_images.begin() + 1, _ram_images.end());
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_generate_ram_mipmap_images
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_generate_ram_mipmap_images() {
+  nassertv(do_has_ram_image());
+  nassertv(_component_type != T_float);
+  if (do_get_expected_num_mipmap_levels() == 1) {
+    // Don't bother.
+    return;
+  }
+
+  RamImage orig_compressed_image;
+  CompressionMode orig_compression_mode = CM_off;
+
+  if (_ram_image_compression != CM_off) {
+    // The RAM image is compressed.  This means we need to uncompress
+    // it in order to generate mipmap images.  Save the original
+    // first, to avoid lossy recompression.
+    orig_compressed_image = _ram_images[0];
+    orig_compression_mode = _ram_image_compression;
+
+    // Now try to get the uncompressed source image.
+    do_get_uncompressed_ram_image();
+
+    nassertv(_ram_image_compression == CM_off);
+  }
+
+  do_clear_ram_mipmap_images();
+
+  if (gobj_cat.is_debug()) {
+    gobj_cat.debug()
+      << "Generating mipmap levels for " << *this << "\n";
+  }
+
+  if (_texture_type == Texture::TT_3d_texture && _z_size != 1) {
+    // Eek, a 3-D texture.
+    int x_size = _x_size;
+    int y_size = _y_size;
+    int z_size = _z_size;
+    int n = 0;
+    while (x_size > 1 || y_size > 1 || z_size > 1) {
+      _ram_images.push_back(RamImage());
+      filter_3d_mipmap_level(_ram_images[n + 1], _ram_images[n],
+                             x_size, y_size, z_size);
+      x_size = max(x_size >> 1, 1);
+      y_size = max(y_size >> 1, 1);
+      z_size = max(z_size >> 1, 1);
+      ++n;
+    }
+
+  } else {
+    // A 1-D, 2-D, or cube map texture.
+    int x_size = _x_size;
+    int y_size = _y_size;
+    int n = 0;
+    while (x_size > 1 || y_size > 1) {
+      _ram_images.push_back(RamImage());
+      filter_2d_mipmap_pages(_ram_images[n + 1], _ram_images[n],
+                             x_size, y_size);
+      x_size = max(x_size >> 1, 1);
+      y_size = max(y_size >> 1, 1);
+      ++n;
+    }
+  }
+
+  if (orig_compression_mode != CM_off) {
+    // Now attempt to recompress the mipmap images according to the
+    // original compression mode.  We don't need to bother compressing
+    // the first image (it was already compressed, after all), so
+    // temporarily remove it from the top of the mipmap stack, and
+    // compress all of the rest of them instead.
+    nassertv(_ram_images.size() > 1);
+    int l0_x_size = _x_size;
+    int l0_y_size = _y_size;
+    int l0_z_size = _z_size;
+    _x_size = do_get_expected_mipmap_x_size(1);
+    _y_size = do_get_expected_mipmap_y_size(1);
+    _z_size = do_get_expected_mipmap_z_size(1);
+    RamImage uncompressed_image = _ram_images[0];
+    _ram_images.erase(_ram_images.begin());
+
+    bool success = do_compress_ram_image(orig_compression_mode, QL_default, NULL);
+    // Now restore the toplevel image.
+    if (success) {
+      _ram_images.insert(_ram_images.begin(), orig_compressed_image);
+    } else {
+      _ram_images.insert(_ram_images.begin(), uncompressed_image);
+    }
+    _x_size = l0_x_size;
+    _y_size = l0_y_size;
+    _z_size = l0_z_size;
   }
 }
 
@@ -5328,6 +5373,13 @@ do_squish(Texture::CompressionMode compression, int squish_flags) {
   if (_ram_images.empty()) {
     return false;
   }
+
+  if (!do_has_all_ram_mipmap_images()) {
+    // If we're about to compress the RAM image, we should ensure that
+    // we have all of the mipmap levels first.
+    do_generate_ram_mipmap_images();
+  }
+
   RamImages compressed_ram_images;
   compressed_ram_images.reserve(_ram_images.size());
   for (size_t n = 0; n < _ram_images.size(); ++n) {
@@ -5562,28 +5614,31 @@ make_from_bam(const FactoryParams &params) {
         }
       }
 
+      LoaderOptions options = manager->get_loader_options();
+      if (false) {  // temporary hack standin
+        options.set_texture_flags(options.get_texture_flags() | LoaderOptions::TF_generate_mipmaps);
+      }
+
       switch (texture_type) {
       case TT_1d_texture:
       case TT_2d_texture:
         if (alpha_filename.empty()) {
           me = TexturePool::load_texture(filename, primary_file_num_channels,
-                                         false, manager->get_loader_options());
+                                         false, options);
         } else {
           me = TexturePool::load_texture(filename, alpha_filename,
                                          primary_file_num_channels, 
                                          alpha_file_channel,
-                                         false, manager->get_loader_options());
+                                         false, options);
         }
         break;
 
       case TT_3d_texture:
-        me = TexturePool::load_3d_texture(filename, false, 
-                                          manager->get_loader_options());
+        me = TexturePool::load_3d_texture(filename, false, options);
         break;
 
       case TT_cube_map:
-        me = TexturePool::load_cube_map(filename, false, 
-                                        manager->get_loader_options());
+        me = TexturePool::load_cube_map(filename, false, options);
         break;
       }
     }
@@ -5822,7 +5877,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
   me.add_string(alpha_filename);
   me.add_uint8(_primary_file_num_channels);
   me.add_uint8(_alpha_file_channel);
-  me.add_uint8(has_rawdata);
+  me.add_bool(has_rawdata);
   me.add_uint8(_texture_type);
 
   // The data beginning at this point is handled by fillin().
