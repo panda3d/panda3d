@@ -5076,6 +5076,7 @@ filter_2d_mipmap_pages(Texture::RamImage &to, const Texture::RamImage &from,
           }
         }
         q += row_size;
+        Thread::consider_yield();
       }
       if (y < y_size) {
         // Skip the last odd row.
@@ -5178,6 +5179,7 @@ filter_3d_mipmap_level(Texture::RamImage &to, const Texture::RamImage &from,
             }
           }
           q += row_size;
+          Thread::consider_yield();
         }
         if (y < y_size) {
           // Skip the last odd row.
@@ -5243,6 +5245,7 @@ filter_3d_mipmap_level(Texture::RamImage &to, const Texture::RamImage &from,
           }
         }
         q += row_size;
+        Thread::consider_yield();
       }
       if (y < y_size) {
         // Skip the last odd row.
