@@ -337,6 +337,9 @@ main(int argc, char *argv[]) {
       }
     }
     window->loop_animations(hierarchy_match_flags);
+
+    // Make sure the textures are preloaded.
+    framework.get_models().prepare_scene(window->get_graphics_window()->get_gsg());
     
     loading_np.remove_node();
 
