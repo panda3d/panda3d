@@ -66,6 +66,8 @@ private:
   void *_camera_param;
   double _threshold;
   double _marker_size;
+  double _prev_conv[3][4];
+  bool _have_prev_conv;
 };
 
 #include "arToolKit.I"

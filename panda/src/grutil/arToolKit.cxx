@@ -165,6 +165,7 @@ make(NodePath camera, const Filename &paramfile, double marker_size) {
   result->_camera_param = new ARParam;
   result->_threshold = 0.5;
   result->_marker_size = marker_size;
+  result->_have_prev_conv = false;
   memcpy(result->_camera_param, &wparam, sizeof(wparam));
   return result;
 }
@@ -404,26 +405,26 @@ analyze(Texture *tex, bool do_flip_texture) {
       double center[2];
       center[0] = 0.0;
       center[1] = 0.0;
-      double patt_trans[3][4];
-      arGetTransMat(inf, center, _marker_size, patt_trans);
+      if (_have_prev_conv) {
+        arGetTransMatCont(inf, _prev_conv, center, _marker_size, _prev_conv);
+      } else {
+        arGetTransMat(inf, center, _marker_size, _prev_conv);
+      }
       LMatrix4f mat;
       for (int i=0; i<4; i++) {
-        mat(i,0) =  patt_trans[0][i];
-        mat(i,1) =  patt_trans[2][i];
-        mat(i,2) = -patt_trans[1][i];
+        mat(i,0) =  _prev_conv[0][i];
+        mat(i,1) =  _prev_conv[2][i];
+        mat(i,2) = -_prev_conv[1][i];
         mat(i,3) = 0.0;
       }
       mat(3,3) = 1.0;
       LVecBase3f scale, shear, hpr, pos;
       decompose_matrix(mat, scale, shear, hpr, pos);
       
-      NodePath parent = np.get_parent();
-      if (parent.is_empty()) {
+      if (np.get_parent().is_empty()) {
         grutil_cat.error() << "NodePath must have a parent.\n";
       } else {
-        np.reparent_to(_camera);
-        np.set_pos_hpr(pos,hpr);
-        np.wrt_reparent_to(parent);
+        np.set_pos_hpr(_camera, pos, hpr);
       }
       
       np.show();
