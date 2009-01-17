@@ -295,7 +295,9 @@ class Loader(DirectObject):
                  textureMargin = None, polyMargin = None,
                  minFilter = None, magFilter = None,
                  anisotropicDegree = None,
-                 outline = None,
+                 outlineWidth = None,
+                 outlineFeather = 0.1,
+                 outlineColor = VBase4(0, 0, 0, 1),
                  lineHeight = None, okMissing = False):
         """
         modelPath is a string.
@@ -310,12 +312,10 @@ class Loader(DirectObject):
         (except lineHeight and spaceAdvance) may only be specified for
         font files like TTF files, not for static egg files.
 
-        If outline is not None, it may be either a single number,
-        representing the desired outline width (in font pixels), or it
-        may be a 2-tuple of (width, feather), where feather is a
-        number in the range 0.0 to 1.0 and indicates the softness of
-        the outline.
-        
+        If outlineWidth is nonzero, an outline will be created at
+        runtime for the letters, and outlineWidth will be the desired
+        width of the outline, in points (most fonts are 10 points
+        high).
         """
         assert Loader.notify.debug("Loading font: %s" % (modelPath))
         if phaseChecker:
@@ -348,18 +348,12 @@ class Loader(DirectObject):
                 font.setMagfilter(magFilter)
             if anisotropicDegree != None:
                 font.setAnisotropicDegree(anisotropicDegree)
-            if outline != None:
-                # Outline should be a float: width
-                # or a 2-tuple: (width, feather)
-                try:
-                    outline = tuple(outline)
-                except TypeError:
-                    outline = (outline,)
-                if len(outline) < 2:
-                    outline = (outline[0], 0.1)
-                font.setOutline(VBase4(0, 0, 0, 1), *outline)
-                # This means we also want the bg to be black.
-                font.setBg(VBase4(0, 0, 0, 0))
+            if outlineWidth:
+                font.setOutline(outlineColor, outlineWidth, outlineFeather)
+
+                # This means we also want the background to match the
+                # outline color, but transparent.
+                font.setBg(VBase4(outlineColor[0], outlineColor[1], outlineColor[2], 0.0))
 
         if lineHeight is not None:
             # If the line height is specified, it overrides whatever
