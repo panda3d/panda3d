@@ -90,7 +90,7 @@ class Loader(DirectObject):
         Otherwise, an IOError is raised if the model is not found or
         cannot be read (similar to attempting to open a nonexistent
         file).  (If modelPath is a list of filenames, then IOError is
-        raised if *any* of the models could be loaded.)
+        raised if *any* of the models could not be loaded.)
 
         If callback is not None, then the model load will be performed
         asynchronously.  In this case, loadModel() will initiate a
@@ -290,7 +290,8 @@ class Loader(DirectObject):
 
     # font loading funcs
     def loadFont(self, modelPath,
-                 spaceAdvance = None, pointSize = None,
+                 spaceAdvance = None, lineHeight = None,
+                 pointSize = None,
                  pixelsPerUnit = None, scaleFactor = None,
                  textureMargin = None, polyMargin = None,
                  minFilter = None, magFilter = None,
@@ -299,22 +300,76 @@ class Loader(DirectObject):
                  outlineWidth = None,
                  outlineFeather = 0.1,
                  outlineColor = VBase4(0, 0, 0, 1),
-                 lineHeight = None, okMissing = False):
+                 renderMode = None,
+                 okMissing = False):
         """
         modelPath is a string.
 
         This loads a special model as a TextFont object, for rendering
         text with a TextNode.  A font file must be either a special
-        egg file (or bam file) generated with egg-mkfont, or a
-        standard font file (like a TTF file) that is supported by
-        FreeType.
+        egg file (or bam file) generated with egg-mkfont, which is
+        considered a static font, or a standard font file (like a TTF
+        file) that is supported by FreeType, which is considered a
+        dynamic font.
+
+        okMissing should be True to indicate the method should return
+        None if the font file is not found.  If it is False, the
+        method will raise an exception if the font file is not found
+        or cannot be loaded.
 
         Most font-customization parameters accepted by this method
         (except lineHeight and spaceAdvance) may only be specified for
-        font files like TTF files, not for static egg files.
+        dynamic font files like TTF files, not for static egg files.
 
-        If color is not None, it is a VBase4 specifying the foreground
-        color of the font.  Specifying this option breaks
+        lineHeight specifies the vertical distance between consecutive
+        lines, in Panda units.  If unspecified, it is taken from the
+        font information.  This parameter may be specified for static
+        as well as dynamic fonts.
+
+        spaceAdvance specifies the width of a space character (ascii
+        32), in Panda units.  If unspecified, it is taken from the
+        font information.  This may be specified for static as well as
+        dynamic fonts.
+
+        The remaining parameters may only be specified for dynamic
+        fonts.
+
+        pixelsPerUnit controls the visual quality of the rendered text
+        characters.  It specifies the number of texture pixels per
+        each Panda unit of character height.  Increasing this number
+        increases the amount of detail that can be represented in the
+        characters, at the expense of texture memory.
+
+        scaleFactor also controls the visual quality of the rendered
+        text characters.  It is the amount by which the characters are
+        rendered bigger out of Freetype, and then downscaled to fit
+        within the texture.  Increasing this number may reduce some
+        artifacts of very small font characters, at a small cost of
+        processing time to generate the characters initially.
+
+        textureMargin specifies the number of pixels of the texture to
+        leave between adjacent characters.  It may be a floating-point
+        number.  This helps reduce bleed-through from nearby
+        characters within the texture space.  Increasing this number
+        reduces artifacts at the edges of the character cells
+        (especially for very small text scales), at the expense of
+        texture memory.
+
+        polyMargin specifies the amount of additional buffer to create
+        in the polygon that represents each character, in Panda units.
+        It is similar to textureMargin, but it controls the polygon
+        buffer, not the texture buffer.  Increasing this number
+        reduces artifacts from letters getting chopped off at the
+        edges (especially for very small text scales), with some
+        increasing risk of adjacent letters overlapping and obscuring
+        each other.
+
+        minFilter, magFilter, and anisotropicDegree specify the
+        texture filter modes that should be applied to the textures
+        that are created to hold the font characters.
+
+        If color is not None, it should be a VBase4 specifying the
+        foreground color of the font.  Specifying this option breaks
         TextNode.setColor(), so you almost never want to use this
         option; the default (white) is the most appropriate for a
         font, as it allows text to have any arbitrary color assigned
@@ -331,6 +386,39 @@ class Loader(DirectObject):
         outlineWidth, you can also specify outlineFeather (0.0 .. 1.0)
         and outlineColor.  You may need to increase pixelsPerUnit to
         get the best results.
+
+        if renderMode is not None, it may be one of the following
+        symbols to specify a geometry-based font:
+
+            TextFont.RMTexture - this is the default.  Font characters
+              are rendered into a texture and applied to a polygon.
+              This gives the best general-purpose results.
+
+            TextFont.RMWireframe - Font characters are rendered as a
+              sequence of one-pixel lines.  Consider enabling line or
+              multisample antialiasing for best results.
+
+            TextFont.RMPolygon - Font characters are rendered as a
+              flat polygon.  This works best for very large
+              characters, and generally requires polygon or
+              multisample antialiasing to be enabled for best results.
+
+            TextFont.RMExtruded - Font characters are rendered with a
+              3-D outline made of polygons, like a cookie cutter.
+              This is appropriate for a 3-D scene, but may be
+              completely invisible when assigned to a 2-D scene and
+              viewed normally from the front, since polygons are
+              infinitely thin.
+
+            TextFont.RMSolid - A combination of RMPolygon and
+              RMExtruded: a flat polygon in front with a solid
+              three-dimensional edge.  This is best for letters that
+              will be tumbling in 3-D space.
+
+        If the texture mode is other than RMTexture, most of the above
+        parameters do not apply, though pixelsPerUnit still does apply
+        and roughly controls the tightness of the curve approximation
+        (and the number of vertices generated).
         
         """
         assert Loader.notify.debug("Loading font: %s" % (modelPath))
@@ -375,6 +463,8 @@ class Loader(DirectObject):
                 # This means we want the background to match the
                 # outline color, but transparent.
                 font.setBg(VBase4(outlineColor[0], outlineColor[1], outlineColor[2], 0.0))
+            if renderMode:
+                font.setRenderMode(renderMode)
 
         if lineHeight is not None:
             # If the line height is specified, it overrides whatever
@@ -396,7 +486,23 @@ class Loader(DirectObject):
         texturePath is a string.
 
         Attempt to load a texture from the given file path using
-        TexturePool class. Returns None if not found
+        TexturePool class.
+
+        okMissing should be True to indicate the method should return
+        None if the texture file is not found.  If it is False, the
+        method will raise an exception if the texture file is not
+        found or cannot be loaded.
+
+        If alphaPath is not None, it is the name of a grayscale image
+        that is applied as the texture's alpha channel.
+
+        If readMipmaps is True, then the filename string must contain
+        a sequence of hash characters ('#') that are filled in with
+        the mipmap index number, and n images will be loaded
+        individually which define the n mipmap levels of the texture.
+        The base level is mipmap level 0, and this defines the size of
+        the texture and the number of expected mipmap images.
+        
         """
         if alphaPath is None:
             assert Loader.notify.debug("Loading texture: %s" % (texturePath))
@@ -416,11 +522,19 @@ class Loader(DirectObject):
     def load3DTexture(self, texturePattern, readMipmaps = False, okMissing = False):
         """
         texturePattern is a string that contains a sequence of one or
-        more '#' characters, which will be filled in with the sequence
-        number.
+        more hash characters ('#'), which will be filled in with the
+        z-height number.  Returns a 3-D Texture object, suitable for
+        rendering volumetric textures.
 
-        Returns a 3-D Texture object, suitable for rendering
-        volumetric textures, if successful, or None if not.
+        okMissing should be True to indicate the method should return
+        None if the texture file is not found.  If it is False, the
+        method will raise an exception if the texture file is not
+        found or cannot be loaded.
+
+        If readMipmaps is True, then the filename string must contain
+        two sequences of hash characters; the first group is filled in
+        with the z-height number, and the second group with the mipmap
+        index number.
         """
         assert Loader.notify.debug("Loading 3-D texture: %s" % (texturePattern))
         if phaseChecker:
@@ -434,12 +548,19 @@ class Loader(DirectObject):
     def loadCubeMap(self, texturePattern, readMipmaps = False, okMissing = False):
         """
         texturePattern is a string that contains a sequence of one or
-        more '#' characters, which will be filled in with the sequence
-        number.
+        more hash characters ('#'), which will be filled in with the
+        face index number (0 through 6).  Returns a six-face cube map
+        Texture object.
 
-        Returns a six-face cube map Texture object if successful, or
-        None if not.
+        okMissing should be True to indicate the method should return
+        None if the texture file is not found.  If it is False, the
+        method will raise an exception if the texture file is not
+        found or cannot be loaded.
 
+        If readMipmaps is True, then the filename string must contain
+        two sequences of hash characters; the first group is filled in
+        with the face index number, and the second group with the
+        mipmap index number.
         """
         assert Loader.notify.debug("Loading cube map: %s" % (texturePattern))
         if phaseChecker:
