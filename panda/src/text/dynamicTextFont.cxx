@@ -63,6 +63,15 @@ DynamicTextFont(const Filename &font_filename, int face_index) {
   TextFont::set_name(FreetypeFont::get_name());
   TextFont::_line_height = FreetypeFont::get_line_height();
   TextFont::_space_advance = FreetypeFont::get_space_advance();
+
+  _fg.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _bg.set(1.0f, 1.0f, 1.0f, 0.0f);
+  _outline_color.set(1.0f, 1.0f, 1.0f, 0.0f);
+  _outline_width = 0.0f;
+  _outline_feather = 0.0f;
+  _has_outline = false;
+  _tex_format = Texture::F_alpha;
+  _needs_image_processing = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,6 +88,15 @@ DynamicTextFont(const char *font_data, int data_length, int face_index) {
   TextFont::set_name(FreetypeFont::get_name());
   TextFont::_line_height = FreetypeFont::_line_height;
   TextFont::_space_advance = FreetypeFont::_space_advance;
+
+  _fg.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _bg.set(1.0f, 1.0f, 1.0f, 0.0f);
+  _outline_color.set(1.0f, 1.0f, 1.0f, 0.0f);
+  _outline_width = 0.0f;
+  _outline_feather = 0.0f;
+  _has_outline = false;
+  _tex_format = Texture::F_alpha;
+  _needs_image_processing = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,7 +169,7 @@ garbage_collect() {
   Pages::iterator pi;
   for (pi = _pages.begin(); pi != _pages.end(); ++pi) {
     DynamicTextPage *page = (*pi);
-    page->garbage_collect();
+    page->garbage_collect(this);
   }
 
   return removed_count;
@@ -304,6 +322,75 @@ update_filters() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::determine_tex_format
+//       Access: Private
+//  Description: Examines the _fg, _bg, and _outline colors to
+//               determine the appropriate format for the font pages,
+//               including the outline properties.
+////////////////////////////////////////////////////////////////////
+void DynamicTextFont::
+determine_tex_format() {
+  nassertv(get_num_pages() == 0);
+
+  _has_outline = (_outline_color != _bg && _outline_width > 0.0f);
+  _needs_image_processing = true;
+
+  bool needs_color = false;
+  bool needs_grayscale = false;
+  bool needs_alpha = false;
+
+  if (_fg[1] != _fg[0] || _fg[2] != _fg[0] ||
+      _bg[1] != _bg[0] || _bg[2] != _bg[0] ||
+      (_has_outline && (_outline_color[1] != _outline_color[0] || _outline_color[2] != _outline_color[0]))) {
+    // At least one of fg, bg, or outline contains a color, not just a
+    // grayscale value.
+    needs_color = true;
+
+  } else if (_fg[0] != 1.0f || _fg[1] != 1.0f || _fg[2] != 1.0f ||
+             _bg[0] != 1.0f || _bg[1] != 1.0f || _bg[2] != 1.0f ||
+             (_has_outline && (_outline_color[0] != 1.0f || _outline_color[1] != 1.0f || _outline_color[2] != 1.0f))) {
+    // fg, bg, and outline contain non-white grayscale values.
+    needs_grayscale = true;
+  }
+
+  if (_fg[3] != 1.0f || _bg[3] != 1.0f || 
+      (_has_outline && (_outline_color[3] != 1.0f))) {
+    // fg, bg, and outline contain non-opaque alpha values.
+    needs_alpha = true;
+  }
+
+  if (needs_color) {
+    if (needs_alpha) {
+      _tex_format = Texture::F_rgba;
+    } else {
+      _tex_format = Texture::F_rgb;
+    }
+  } else if (needs_grayscale) {
+    if (needs_alpha) {
+      _tex_format = Texture::F_luminance_alpha;
+    } else {
+      _tex_format = Texture::F_luminance;
+    }
+  } else {
+    if (needs_alpha) {
+      _tex_format = Texture::F_alpha;
+
+      if (!_has_outline && 
+          _fg == Colorf(1.0f, 1.0f, 1.0f, 1.0f) &&
+          _bg == Colorf(1.0f, 1.0f, 1.0f, 0.0f)) {
+        // This is the standard font color.  It can be copied directly
+        // without any need for special processing.
+        _needs_image_processing = false;
+      }
+
+    } else {
+      // This won't be a very interesting font.
+      _tex_format = Texture::F_luminance;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::make_glyph
 //       Access: Private
 //  Description: Slots a space in the texture map for the new
@@ -432,33 +519,53 @@ make_glyph(int character, int glyph_index) {
     float tex_x_size = bitmap.width;
     float tex_y_size = bitmap.rows;
 
-    if (_tex_pixels_per_unit == _font_pixels_per_unit) {
+    int outline = 0;
+
+    if (_tex_pixels_per_unit == _font_pixels_per_unit &&
+        !_needs_image_processing) {
       // If the bitmap produced from the font doesn't require scaling
-      // before it goes to the texture, we can just copy it directly
-      // into the texture.
+      // or any other processing before it goes to the texture, we can
+      // just copy it directly into the texture.
       glyph = slot_glyph(character, bitmap.width, bitmap.rows);
       copy_bitmap_to_texture(bitmap, glyph);
 
     } else {
       // Otherwise, we need to copy to a PNMImage first, so we can
-      // scale it; and then copy it to the texture from there.
+      // scale it and/or process it; and then copy it to the texture
+      // from there.
       tex_x_size /= _scale_factor;
       tex_y_size /= _scale_factor;
       int int_x_size = (int)ceil(tex_x_size);
       int int_y_size = (int)ceil(tex_y_size);
       int bmp_x_size = (int)(int_x_size * _scale_factor + 0.5f);
       int bmp_y_size = (int)(int_y_size * _scale_factor + 0.5f);
-      glyph = slot_glyph(character, int_x_size, int_y_size);
-      
+
       PNMImage image(bmp_x_size, bmp_y_size, PNMImage::CT_grayscale);
       copy_bitmap_to_pnmimage(bitmap, image);
 
       PNMImage reduced(int_x_size, int_y_size, PNMImage::CT_grayscale);
       reduced.quick_filter_from(image);
-      copy_pnmimage_to_texture(reduced, glyph);
+
+      outline = (int)ceil(_outline_width);
+      int_x_size += outline * 2;
+      int_y_size += outline * 2;
+      tex_x_size += outline * 2;
+      tex_y_size += outline * 2;
+      glyph = slot_glyph(character, int_x_size, int_y_size);
+
+      if (outline != 0) {
+        // Pad the glyph image to make room for the outline.
+        PNMImage padded(int_x_size, int_y_size, PNMImage::CT_grayscale);
+        padded.copy_sub_image(reduced, outline, outline);
+        copy_pnmimage_to_texture(padded, glyph);
+
+      } else {
+        copy_pnmimage_to_texture(reduced, glyph);
+      }
     }
       
-    glyph->make_geom(slot->bitmap_top, slot->bitmap_left,
+    glyph->make_geom(slot->bitmap_top + outline * _scale_factor,
+                     slot->bitmap_left - outline * _scale_factor,
                      advance, _poly_margin,
                      tex_x_size, tex_y_size,
                      _font_pixels_per_unit, _tex_pixels_per_unit);
@@ -541,11 +648,125 @@ copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph) {
 ////////////////////////////////////////////////////////////////////
 void DynamicTextFont::
 copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph) {
-  for (int yi = 0; yi < image.get_y_size(); yi++) {
-    unsigned char *texture_row = glyph->get_row(yi);
-    nassertv(texture_row != (unsigned char *)NULL);
-    for (int xi = 0; xi < image.get_x_size(); xi++) {
-      texture_row[xi] = image.get_gray_val(xi, yi);
+  if (!_needs_image_processing) {
+    // Copy the image directly into the alpha component of the
+    // texture.
+    nassertv(glyph->_page->get_num_components() == 1);
+    for (int yi = 0; yi < image.get_y_size(); yi++) {
+      unsigned char *texture_row = glyph->get_row(yi);
+      nassertv(texture_row != (unsigned char *)NULL);
+      for (int xi = 0; xi < image.get_x_size(); xi++) {
+        texture_row[xi] = image.get_gray_val(xi, yi);
+      }
+    }
+
+  } else {
+    if (_has_outline) {
+      // Gaussian blur the glyph to generate an outline.
+      PNMImage outline(image.get_x_size(), image.get_y_size(), PNMImage::CT_grayscale);
+      outline.gaussian_filter_from(_outline_width, image);
+
+      // Filter the resulting outline to make a harder edge.
+      for (int yi = 0; yi < outline.get_y_size(); yi++) {
+        for (int xi = 0; xi < outline.get_x_size(); xi++) {
+          float v = outline.get_gray(xi, yi);
+          if (v == 0.0f) {
+            // Do nothing.
+          } else if (v >= _outline_feather) {
+            // Clamp to 1.
+            outline.set_gray(xi, yi, 1.0);
+          } else {
+            // Linearly scale the range 0 .. _outline_feather onto 0 .. 1.
+            outline.set_gray(xi, yi, v / _outline_feather);
+          }
+        }
+      }
+
+      // Now blend that into the texture.
+      blend_pnmimage_to_texture(outline, glyph, _outline_color);
+    }
+
+    // Colorize the image as we copy it in.  This assumes the previous
+    // color at this part of the texture was already initialized to
+    // the background color.
+    blend_pnmimage_to_texture(image, glyph, _fg);
+  }    
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::blend_pnmimage_to_texture
+//       Access: Private
+//  Description: Blends the PNMImage into the appropriate part of the
+//               texture, where 0.0 in the image indicates the color
+//               remains the same, and 1.0 indicates the color is
+//               assigned the indicated foreground color.
+////////////////////////////////////////////////////////////////////
+void DynamicTextFont::
+blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
+                          const Colorf &fg) {
+  Colorf fgv = fg * 255.0f;
+
+  int num_components = glyph->_page->get_num_components();
+  if (num_components == 1) {
+    // Luminance or alpha.
+    int ci = 3;
+    if (glyph->_page->get_format() != Texture::F_alpha) {
+      ci = 0;
+    }
+
+    for (int yi = 0; yi < image.get_y_size(); yi++) {
+      unsigned char *texture_row = glyph->get_row(yi);
+      nassertv(texture_row != (unsigned char *)NULL);
+      for (int xi = 0; xi < image.get_x_size(); xi++) {
+        unsigned char *tr = texture_row + xi;
+        float t = (float)image.get_gray(xi, yi);
+        tr[0] = (unsigned char)(tr[0] + t * (fgv[ci] - tr[0]));
+      }
+    }
+
+  } else if (num_components == 2) {
+    // Luminance + alpha.
+
+    for (int yi = 0; yi < image.get_y_size(); yi++) {
+      unsigned char *texture_row = glyph->get_row(yi);
+      nassertv(texture_row != (unsigned char *)NULL);
+      for (int xi = 0; xi < image.get_x_size(); xi++) {
+        unsigned char *tr = texture_row + xi * 2;
+        float t = (float)image.get_gray(xi, yi);
+        tr[0] = (unsigned char)(tr[0] + t * (fgv[0] - tr[0]));
+        tr[1] = (unsigned char)(tr[1] + t * (fgv[3] - tr[1]));
+      }
+    }
+
+  } else if (num_components == 3) {
+    // RGB.
+
+    for (int yi = 0; yi < image.get_y_size(); yi++) {
+      unsigned char *texture_row = glyph->get_row(yi);
+      nassertv(texture_row != (unsigned char *)NULL);
+      for (int xi = 0; xi < image.get_x_size(); xi++) {
+        unsigned char *tr = texture_row + xi * 3;
+        float t = (float)image.get_gray(xi, yi);
+        tr[0] = (unsigned char)(tr[0] + t * (fgv[2] - tr[0]));
+        tr[1] = (unsigned char)(tr[1] + t * (fgv[1] - tr[1]));
+        tr[2] = (unsigned char)(tr[2] + t * (fgv[0] - tr[2]));
+      }
+    }
+
+  } else { // (num_components == 4)
+    // RGBA.
+
+    for (int yi = 0; yi < image.get_y_size(); yi++) {
+      unsigned char *texture_row = glyph->get_row(yi);
+      nassertv(texture_row != (unsigned char *)NULL);
+      for (int xi = 0; xi < image.get_x_size(); xi++) {
+        unsigned char *tr = texture_row + xi * 4;
+        float t = (float)image.get_gray(xi, yi);
+        tr[0] = (unsigned char)(tr[0] + t * (fgv[2] - tr[0]));
+        tr[1] = (unsigned char)(tr[1] + t * (fgv[1] - tr[1]));
+        tr[2] = (unsigned char)(tr[2] + t * (fgv[0] - tr[2]));
+        tr[3] = (unsigned char)(tr[3] + t * (fgv[3] - tr[3]));
+      }
     }
   }
 }

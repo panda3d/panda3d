@@ -59,7 +59,9 @@ get_row(int y) {
   y = _page->get_y_size() - 1 - y;
 
   int offset = (y * _page->get_x_size()) + x;
-  return _page->modify_ram_image() + offset; 
+  int pixel_width = _page->get_num_components() * _page->get_component_width();
+
+  return _page->modify_ram_image() + offset * pixel_width; 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,18 +70,14 @@ get_row(int y) {
 //  Description: Erases the glyph from the texture map.
 ////////////////////////////////////////////////////////////////////
 void DynamicTextGlyph::
-erase() {
+erase(DynamicTextFont *font) {
   nassertv(_page != (DynamicTextPage *)NULL);
   nassertv(_page->has_ram_image());
 
   int ysizetop = _page->get_y_size() - 1;
   int width = _page->get_x_size();
-  unsigned char *buffer = _page->modify_ram_image();
 
-  for (int y = _y; y < _y + _y_size; y++) {
-    int offset = (ysizetop - y) * width + _x;
-    memset(buffer + offset, 0, _x_size);
-  }
+  _page->fill_region(_x, _y, _x_size, _y_size, font->get_bg());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -121,7 +119,7 @@ make_geom(int bitmap_top, int bitmap_left, float advance, float poly_margin,
   float uv_bottom = 1.0f - ((float)(_y + poly_margin + tex_y_size) + 0.5f) / _page->get_y_size();
   float uv_right = ((float)(_x + poly_margin + tex_x_size) + 0.5f) / _page->get_x_size();
   // Create a corresponding triangle pair.  We use a pair of indexed
-  // triangles rther than a single triangle strip, to avoid the bad
+  // triangles rather than a single triangle strip, to avoid the bad
   // vertex duplication behavior with lots of two-triangle strips.
   PT(GeomVertexData) vdata = new GeomVertexData
     (string(), GeomVertexFormat::get_v3t2(),

@@ -40,7 +40,7 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
   _x_size = _font->get_page_x_size();
   _y_size = _font->get_page_y_size();
 
-  setup_2d_texture(_x_size, _y_size, T_unsigned_byte, F_alpha);
+  setup_2d_texture(_x_size, _y_size, T_unsigned_byte, font->get_tex_format());
 
   // Assign a name to the Texture.
   ostringstream strm;
@@ -59,12 +59,15 @@ DynamicTextPage(DynamicTextFont *font, int page_number) :
   // at the edges at all.
   set_wrap_u(text_wrap_mode);
   set_wrap_v(text_wrap_mode);
-  set_border_color(Colorf(0.0f, 0.0f, 0.0f, 0.0f));
+  set_border_color(font->get_bg());
+
+  // Fill the page with the font's background color.
+  fill_region(0, 0, _x_size, _y_size, font->get_bg());
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextPage::slot_glyph
-//       Access: Publiic
+//       Access: Public
 //  Description: Finds space within the page for a glyph of the
 //               indicated size.  If space is found, creates a new
 //               glyph object and returns it; otherwise, returns NULL.
@@ -86,6 +89,89 @@ slot_glyph(int character, int x_size, int y_size, int margin) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextPage::fill_region
+//       Access: Private
+//  Description: Fills a rectangular region of the texture with the
+//               indicated color.
+////////////////////////////////////////////////////////////////////
+void DynamicTextPage::
+fill_region(int x, int y, int x_size, int y_size, const Colorf &color) {
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
+  int num_components = get_num_components();
+  if (num_components == 1) {
+    // Luminance or alpha.
+    int ci = 3;
+    if (get_format() != Texture::F_alpha) {
+      ci = 0;
+    }
+    
+    unsigned char v = (unsigned char)(color[ci] * 255.0f);
+
+    unsigned char *image = modify_ram_image();
+    for (int yi = y; yi < y + y_size; yi++) {
+      unsigned char *row = image + yi * _x_size;
+      memset(row + x, v, x_size);
+    }
+
+  } else if (num_components == 2) {
+    // Luminance + alpha.
+
+    union {
+      unsigned char p[2];
+      PN_uint16 v;
+    } v;
+
+    v.p[0] = (unsigned char)(color[0] * 255.0f);
+    v.p[1] = (unsigned char)(color[3] * 255.0f);
+
+    PN_uint16 *image = (PN_uint16 *)modify_ram_image().p();
+    for (int yi = y; yi < y + y_size; yi++) {
+      PN_uint16 *row = image + yi * _x_size ;
+      for (int xi = x; xi < x + x_size; xi++) {
+        row[xi] = v.v;
+      }
+    }
+
+  } else if (num_components == 3) {
+    // RGB.
+
+    unsigned char p0 = (unsigned char)(color[2] * 255.0f);
+    unsigned char p1 = (unsigned char)(color[1] * 255.0f);
+    unsigned char p2 = (unsigned char)(color[0] * 255.0f);
+
+    unsigned char *image = modify_ram_image();
+    for (int yi = y; yi < y + y_size; yi++) {
+      unsigned char *row = image + yi * _x_size * 3;
+      for (int xi = x; xi < x + x_size; xi++) {
+        row[xi * 3] = p0;
+        row[xi * 3 + 1] = p1;
+        row[xi * 3 + 2] = p2;
+      }
+    }
+    
+  } else { // (num_components == 4)
+    // RGBA.
+    union {
+      unsigned char p[4];
+      PN_uint32 v;
+    } v;
+
+    v.p[0] = (unsigned char)(color[2] * 255.0f);
+    v.p[1] = (unsigned char)(color[1] * 255.0f);
+    v.p[2] = (unsigned char)(color[0] * 255.0f);
+    v.p[3] = (unsigned char)(color[3] * 255.0f);
+
+    PN_uint32 *image = (PN_uint32 *)modify_ram_image().p();
+    for (int yi = y; yi < y + y_size; yi++) {
+      PN_uint32 *row = image + yi * _x_size;
+      for (int xi = x; xi < x + x_size; xi++) {
+        row[xi] = v.v;
+      }
+    }
+  }    
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextPage::garbage_collect
 //       Access: Private
 //  Description: Removes all of the glyphs from the page that are no
@@ -95,7 +181,7 @@ slot_glyph(int character, int x_size, int y_size, int margin) {
 //               font's index first.
 ////////////////////////////////////////////////////////////////////
 int DynamicTextPage::
-garbage_collect() {
+garbage_collect(DynamicTextFont *font) {
   int removed_count = 0;
 
   Glyphs new_glyphs;
@@ -108,7 +194,7 @@ garbage_collect() {
     } else {
       // Drop this one.
       removed_count++;
-      glyph->erase();
+      glyph->erase(font);
     }
   }
 

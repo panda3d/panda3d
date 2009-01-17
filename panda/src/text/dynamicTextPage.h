@@ -43,13 +43,14 @@ public:
   INLINE int get_x_size() const;
   INLINE int get_y_size() const;
 
+  void fill_region(int x, int y, int x_size, int y_size, const Colorf &color);
+
 PUBLISHED:
   INLINE bool is_empty() const;
 
 private:
-  int garbage_collect();
+  int garbage_collect(DynamicTextFont *font);
 
-private:
   bool find_hole(int &x, int &y, int x_size, int y_size) const;
   DynamicTextGlyph *find_overlap(int x, int y, int x_size, int y_size) const;
 

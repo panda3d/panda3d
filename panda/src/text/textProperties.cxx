@@ -44,7 +44,7 @@ TextProperties() {
   _wordwrap_width = 0.0f;
   _preserve_trailing_whitespace = false;
   _text_color.set(1.0f, 1.0f, 1.0f, 1.0f);
-  _shadow_color.set(1.0f, 1.0f, 1.0f, 1.0f);
+  _shadow_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _shadow_offset.set(0.0f, 0.0f);
   _draw_order = 1;
   _tab_width = text_tab_width;

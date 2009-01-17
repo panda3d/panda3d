@@ -406,6 +406,164 @@ get_winding_order() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_fg
+//       Access: Published
+//  Description: Changes the color of the foreground pixels of the
+//               font as they are rendered into the font texture.  The
+//               default is (1, 1, 1, 1), or opaque white, which
+//               allows text created with the font to be colored
+//               individually.  Normally, you would not change this
+//               unless you really need a particular color effect to
+//               appear in the font itself.
+//
+//               This should only be called before any characters have
+//               been requested out of the font, or immediately after
+//               calling clear().
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_fg(const Colorf &fg) {
+  // If this assertion fails, you didn't call clear() first.  RTFM.
+  nassertv(get_num_pages() == 0);
+
+  _fg = fg;
+  determine_tex_format();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_fg
+//       Access: Published
+//  Description: Returns the color of the foreground pixels of the
+//               font as they are rendered into the font texture.
+//               See set_fg().
+////////////////////////////////////////////////////////////////////
+INLINE const Colorf &DynamicTextFont::
+get_fg() const {
+  return _fg;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_bg
+//       Access: Published
+//  Description: Changes the color of the background pixels of the
+//               font as they are rendered into the font texture.  The
+//               default is (1, 1, 1, 0), or transparent white, which
+//               allows text created with the font to be colored
+//               individually.  (Note that it should not generally be
+//               (0, 0, 0, 0), which would tend to bleed into the
+//               foreground color, unless you have also specified a
+//               outline color of (0, 0, 0, 1)) .
+//
+//               Normally, you would not change this unless you really
+//               need a particular color effect to appear in the font
+//               itself.
+//
+//               This should only be called before any characters have
+//               been requested out of the font, or immediately after
+//               calling clear().
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_bg(const Colorf &bg) {
+  // If this assertion fails, you didn't call clear() first.  RTFM.
+  nassertv(get_num_pages() == 0);
+
+  _bg = bg;
+  determine_tex_format();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_bg
+//       Access: Published
+//  Description: Returns the color of the background pixels of the
+//               font as they are rendered into the font texture.
+//               See set_bg().
+////////////////////////////////////////////////////////////////////
+INLINE const Colorf &DynamicTextFont::
+get_bg() const {
+  return _bg;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::set_outline
+//       Access: Published
+//  Description: Sets up the font to have an outline around each font
+//               letter.  This is achieved via a Gaussian post-process
+//               as each letter is generated; there is some runtime
+//               cost for this effect, but it is minimal as each
+//               letter is normally generated only once and then
+//               cached.
+//
+//               The color is the desired color of the outline, width
+//               is the number of pixels beyond the letter that the
+//               outline extends, and feather is a number in the range
+//               0.0 .. 1.0 that controls the softness of the outline.
+//               Set the width to 0.0 to disable the outline.
+//
+//               This should only be called before any characters have
+//               been requested out of the font, or immediately after
+//               calling clear().
+////////////////////////////////////////////////////////////////////
+INLINE void DynamicTextFont::
+set_outline(const Colorf &outline_color, float outline_width,
+            float outline_feather) {
+  // If this assertion fails, you didn't call clear() first.  RTFM.
+  nassertv(get_num_pages() == 0);
+
+  _outline_color = outline_color;
+  _outline_width = outline_width;
+  _outline_feather = outline_feather;
+  determine_tex_format();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_outline_color
+//       Access: Published
+//  Description: Returns the color of the outline pixels of the
+//               font as they are rendered into the font texture.
+//               See set_outline().
+////////////////////////////////////////////////////////////////////
+INLINE const Colorf &DynamicTextFont::
+get_outline_color() const {
+  return _outline_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_outline_width
+//       Access: Published
+//  Description: Returns the width of the outline pixels of the
+//               font, as the number of pixels beyond each letter.
+//               See set_outline().
+////////////////////////////////////////////////////////////////////
+INLINE float DynamicTextFont::
+get_outline_width() const {
+  return _outline_width;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_outline_feather
+//       Access: Published
+//  Description: Returns the softness of the outline pixels of the
+//               font, as a value in the range 0.0 to 1.0.
+//               See set_outline().
+////////////////////////////////////////////////////////////////////
+INLINE float DynamicTextFont::
+get_outline_feather() const {
+  return _outline_feather;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DynamicTextFont::get_tex_format
+//       Access: Published
+//  Description: Returns the texture format used to render the
+//               individual pages.  This is set automatically
+//               according to the colors selected.
+////////////////////////////////////////////////////////////////////
+INLINE Texture::Format DynamicTextFont::
+get_tex_format() const {
+  return _tex_format;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DynamicTextFont::ContourPoint::Constructor
 //       Access: Public
 //  Description: 

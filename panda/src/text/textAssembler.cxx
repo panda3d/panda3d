@@ -589,11 +589,9 @@ assemble_text() {
       }
 
       if (properties->has_shadow()) {
-        if (properties->has_shadow_color()) {
-          shadow_state = shadow_state->add_attrib(ColorAttrib::make_flat(properties->get_shadow_color()));
-          if (properties->get_shadow_color()[3] != 1.0) {
-            shadow_state = shadow_state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
-          }
+        shadow_state = shadow_state->add_attrib(ColorAttrib::make_flat(properties->get_shadow_color()));
+        if (properties->get_shadow_color()[3] != 1.0) {
+          shadow_state = shadow_state->add_attrib(TransparencyAttrib::make(TransparencyAttrib::M_alpha));
         }
 
         if (properties->has_bin()) {

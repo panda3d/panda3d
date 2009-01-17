@@ -22,6 +22,7 @@
 #include "textGlyph.h"
 
 class DynamicTextPage;
+class DynamicTextFont;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DynamicTextGlyph
@@ -45,7 +46,7 @@ public:
 
   INLINE bool intersects(int x, int y, int x_size, int y_size) const;
   unsigned char *get_row(int y);
-  void erase();
+  void erase(DynamicTextFont *font);
   void make_geom(int top, int left, float advance, float poly_margin,
                  float tex_x_size, float tex_y_size,
                  float font_pixels_per_unit, float tex_pixels_per_unit);

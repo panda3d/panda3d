@@ -86,6 +86,17 @@ PUBLISHED:
   INLINE void set_winding_order(WindingOrder winding_order);
   INLINE WindingOrder get_winding_order() const;
 
+  INLINE void set_fg(const Colorf &fg);
+  INLINE const Colorf &get_fg() const;
+  INLINE void set_bg(const Colorf &bg);
+  INLINE const Colorf &get_bg() const;
+  INLINE void set_outline(const Colorf &outline_color, float outline_width,
+                          float outline_feather);
+  INLINE const Colorf &get_outline_color() const;
+  INLINE float get_outline_width() const;
+  INLINE float get_outline_feather() const;
+  INLINE Texture::Format get_tex_format() const;
+
   int get_num_pages() const;
   DynamicTextPage *get_page(int n) const;
   MAKE_SEQ(get_pages, get_num_pages, get_page);
@@ -101,9 +112,12 @@ public:
 private:
   void initialize();
   void update_filters();
+  void determine_tex_format();
   DynamicTextGlyph *make_glyph(int character, int glyph_index);
   void copy_bitmap_to_texture(const FT_Bitmap &bitmap, DynamicTextGlyph *glyph);
   void copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph);
+  void blend_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph,
+                                 const Colorf &fg);
   DynamicTextGlyph *slot_glyph(int character, int x_size, int y_size);
 
   void render_wireframe_contours(DynamicTextGlyph *glyph);
@@ -128,6 +142,13 @@ private:
 
   RenderMode _render_mode;
   WindingOrder _winding_order;
+
+  Colorf _fg, _bg, _outline_color;
+  float _outline_width;
+  float _outline_feather;
+  bool _has_outline;
+  Texture::Format _tex_format;
+  bool _needs_image_processing;
 
   typedef pvector< PT(DynamicTextPage) > Pages;
   Pages _pages;
