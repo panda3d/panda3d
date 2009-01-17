@@ -295,6 +295,7 @@ class Loader(DirectObject):
                  textureMargin = None, polyMargin = None,
                  minFilter = None, magFilter = None,
                  anisotropicDegree = None,
+                 color = None,
                  outlineWidth = None,
                  outlineFeather = 0.1,
                  outlineColor = VBase4(0, 0, 0, 1),
@@ -312,10 +313,25 @@ class Loader(DirectObject):
         (except lineHeight and spaceAdvance) may only be specified for
         font files like TTF files, not for static egg files.
 
+        If color is not None, it is a VBase4 specifying the foreground
+        color of the font.  Specifying this option breaks
+        TextNode.setColor(), so you almost never want to use this
+        option; the default (white) is the most appropriate for a
+        font, as it allows text to have any arbitrary color assigned
+        at generation time.  However, if you want to use a colored
+        outline (below) with a different color for the interior, for
+        instance a yellow letter with a blue outline, then you need
+        this option, and then *all* text generated with this font will
+        have to be yellow and blue.
+
         If outlineWidth is nonzero, an outline will be created at
         runtime for the letters, and outlineWidth will be the desired
         width of the outline, in points (most fonts are 10 points
-        high).
+        high, so 0.5 is often a good choice).  If you specify
+        outlineWidth, you can also specify outlineFeather (0.0 .. 1.0)
+        and outlineColor.  You may need to increase pixelsPerUnit to
+        get the best results.
+        
         """
         assert Loader.notify.debug("Loading font: %s" % (modelPath))
         if phaseChecker:
@@ -348,10 +364,15 @@ class Loader(DirectObject):
                 font.setMagfilter(magFilter)
             if anisotropicDegree != None:
                 font.setAnisotropicDegree(anisotropicDegree)
+            if color:
+                font.setFg(color)
+                # This means we want the background to match the
+                # foreground color, but transparent.
+                font.setBg(VBase4(color[0], color[1], color[2], 0.0))
             if outlineWidth:
                 font.setOutline(outlineColor, outlineWidth, outlineFeather)
 
-                # This means we also want the background to match the
+                # This means we want the background to match the
                 # outline color, but transparent.
                 font.setBg(VBase4(outlineColor[0], outlineColor[1], outlineColor[2], 0.0))
 
