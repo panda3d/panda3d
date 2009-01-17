@@ -543,3 +543,20 @@ operator < (const TextAssembler::GeomCollectorKey &other) const {
   }
   return _format < other._format;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextAssembler::GeomCollector::count_geom
+//       Access: Public
+//  Description: If the indicated Geom is a GeomTextGlyph, increments
+//               its reference count and adds it into this geom.  This
+//               is necessary to keep references to outstanding
+//               glyphs, so we know when it's safe to recycle
+//               no-longer-used glyphs.
+//
+//               If the indicated Geom is an ordinary Geom, does
+//               nothing.
+////////////////////////////////////////////////////////////////////
+INLINE void TextAssembler::GeomCollector::
+count_geom(const Geom *geom) {
+  _geom->count_geom(geom);
+}

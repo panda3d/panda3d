@@ -74,10 +74,9 @@ erase(DynamicTextFont *font) {
   nassertv(_page != (DynamicTextPage *)NULL);
   nassertv(_page->has_ram_image());
 
-  int ysizetop = _page->get_y_size() - 1;
-  int width = _page->get_x_size();
-
-  _page->fill_region(_x, _y, _x_size, _y_size, font->get_bg());
+  _page->fill_region(_x + _margin, 
+                     _page->get_y_size() - (_y + _y_size + _margin),
+                     _x_size, _y_size, font->get_bg());
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -494,10 +494,11 @@ get_bg() const {
 //               cached.
 //
 //               The color is the desired color of the outline, width
-//               is the number of pixels beyond the letter that the
-//               outline extends, and feather is a number in the range
-//               0.0 .. 1.0 that controls the softness of the outline.
-//               Set the width to 0.0 to disable the outline.
+//               is the number of points beyond the letter that the
+//               outline extends (a typical font is 10 points high),
+//               and feather is a number in the range 0.0 .. 1.0 that
+//               controls the softness of the outline.  Set the width
+//               to 0.0 to disable the outline.
 //
 //               This should only be called before any characters have
 //               been requested out of the font, or immediately after
@@ -531,7 +532,7 @@ get_outline_color() const {
 //     Function: DynamicTextFont::get_outline_width
 //       Access: Published
 //  Description: Returns the width of the outline pixels of the
-//               font, as the number of pixels beyond each letter.
+//               font, as the number of points beyond each letter.
 //               See set_outline().
 ////////////////////////////////////////////////////////////////////
 INLINE float DynamicTextFont::

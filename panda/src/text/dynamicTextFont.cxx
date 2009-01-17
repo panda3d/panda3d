@@ -546,7 +546,10 @@ make_glyph(int character, int glyph_index) {
       PNMImage reduced(int_x_size, int_y_size, PNMImage::CT_grayscale);
       reduced.quick_filter_from(image);
 
-      outline = (int)ceil(_outline_width);
+      // convert the outline width from points to tex_pixels.
+      float outline_pixels = _outline_width / _points_per_unit * _tex_pixels_per_unit;
+      outline = (int)ceil(outline_pixels);
+
       int_x_size += outline * 2;
       int_y_size += outline * 2;
       tex_x_size += outline * 2;
@@ -564,8 +567,8 @@ make_glyph(int character, int glyph_index) {
       }
     }
       
-    glyph->make_geom(slot->bitmap_top + outline * _scale_factor,
-                     slot->bitmap_left - outline * _scale_factor,
+    glyph->make_geom((int)floor(slot->bitmap_top + outline * _scale_factor + 0.5f),
+                     (int)floor(slot->bitmap_left - outline * _scale_factor + 0.5f),
                      advance, _poly_margin,
                      tex_x_size, tex_y_size,
                      _font_pixels_per_unit, _tex_pixels_per_unit);
@@ -664,20 +667,26 @@ copy_pnmimage_to_texture(const PNMImage &image, DynamicTextGlyph *glyph) {
     if (_has_outline) {
       // Gaussian blur the glyph to generate an outline.
       PNMImage outline(image.get_x_size(), image.get_y_size(), PNMImage::CT_grayscale);
-      outline.gaussian_filter_from(_outline_width, image);
+      float outline_pixels = _outline_width / _points_per_unit * _tex_pixels_per_unit;
+      outline.gaussian_filter_from(outline_pixels * 0.707, image);
 
-      // Filter the resulting outline to make a harder edge.
+      // Filter the resulting outline to make a harder edge.  Square
+      // _outline_feather first to make the range more visually linear
+      // (this approximately compensates for the Gaussian falloff of
+      // the feathered edge).
+      float f = _outline_feather * _outline_feather;
+
       for (int yi = 0; yi < outline.get_y_size(); yi++) {
         for (int xi = 0; xi < outline.get_x_size(); xi++) {
           float v = outline.get_gray(xi, yi);
           if (v == 0.0f) {
             // Do nothing.
-          } else if (v >= _outline_feather) {
+          } else if (v >= f) {
             // Clamp to 1.
             outline.set_gray(xi, yi, 1.0);
           } else {
-            // Linearly scale the range 0 .. _outline_feather onto 0 .. 1.
-            outline.set_gray(xi, yi, v / _outline_feather);
+            // Linearly scale the range 0 .. f onto 0 .. 1.
+            outline.set_gray(xi, yi, v / f);
           }
         }
       }

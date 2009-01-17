@@ -25,16 +25,17 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : GeomTextGlyph
 // Description : This is a specialization on Geom for containing a
-//               triangle strip intended to represent a
-//               DynamicTextGlyph.  Its sole purpose is to maintain
-//               the geom count on the glyph, so we can determine the
-//               actual usage count on a dynamic glyph (and thus know
-//               when it is safe to recycle the glyph).
+//               primitive intended to represent a DynamicTextGlyph.
+//               Its sole purpose is to maintain the geom count on the
+//               glyph, so we can determine the actual usage count on
+//               a dynamic glyph (and thus know when it is safe to
+//               recycle the glyph).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_TEXT GeomTextGlyph : public Geom {
 public:
   GeomTextGlyph(DynamicTextGlyph *glyph,
                 const GeomVertexData *data);
+  GeomTextGlyph(const GeomVertexData *data);
   GeomTextGlyph(const GeomTextGlyph &copy);
   void operator = (const GeomTextGlyph &copy);
   virtual ~GeomTextGlyph();
@@ -42,6 +43,7 @@ public:
 
   virtual Geom *make_copy() const;
   virtual bool copy_primitives_from(const Geom *other);
+  void count_geom(const Geom *other);
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level = 0) const;

@@ -43,6 +43,18 @@ GeomTextGlyph(DynamicTextGlyph *glyph, const GeomVertexData *data) :
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomTextGlyph::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+GeomTextGlyph::
+GeomTextGlyph(const GeomVertexData *data) :
+  Geom(data)
+{
+  // With this constructor, there are no glyphs initially.
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomTextGlyph::Copy Constructor
 //       Access: Public
 //  Description: 
@@ -144,6 +156,32 @@ copy_primitives_from(const Geom *other) {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomTextGlyph::count_geom
+//       Access: Public
+//  Description: Records the reference count of the other Geom within
+//               this Geom, as if the primitives were copied in via
+//               copy_primitives_from() (but does not actually copy
+//               any primitives).  This is particularly necessary for
+//               GeomTextGlyph's reference counting mechanism.
+//
+//               Does nothing if the other Geom is not a
+//               GeomTextGlyph.
+////////////////////////////////////////////////////////////////////
+void GeomTextGlyph::
+count_geom(const Geom *other) {
+  if (other->is_of_type(GeomTextGlyph::get_class_type())) {
+    const GeomTextGlyph *tother;
+    DCAST_INTO_V(tother, other);
+    
+    Glyphs::const_iterator gi;
+    for (gi = tother->_glyphs.begin(); gi != tother->_glyphs.end(); ++gi) {
+      _glyphs.push_back(*gi);
+      (*gi)->_geom_count++;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

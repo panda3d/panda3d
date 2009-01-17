@@ -2221,6 +2221,7 @@ assign_append_to(GeomCollectorMap &geom_collector_map,
       mi = geom_collector_map.insert(GeomCollectorMap::value_type(key, GeomCollector(vdata->get_format()))).first;
     }
     GeomCollector &geom_collector = (*mi).second;
+    geom_collector.count_geom(geom);
 
     // We use this map to keep track of vertex indices we have already
     // added, so that we don't needlessly duplicate vertices into our
@@ -2299,7 +2300,7 @@ copy_graphic_to(PandaNode *node, const RenderState *state,
 TextAssembler::GeomCollector::
 GeomCollector(const GeomVertexFormat *format) :
   _vdata(new GeomVertexData("merged_geom", format, Geom::UH_static)),
-  _geom(new Geom(_vdata))
+  _geom(new GeomTextGlyph(_vdata))
 {
 }
 

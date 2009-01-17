@@ -22,7 +22,7 @@
 #include "unicodeLatinMap.h"
 #include "geomNode.h"
 #include "pointerTo.h"
-#include "geom.h"
+#include "geomTextGlyph.h"
 #include "textPropertiesManager.h"
 #include "textEncoder.h"
 #include "geomVertexRewriter.h"
@@ -200,6 +200,7 @@ private:
     GeomCollector(const GeomVertexFormat *format);
     GeomCollector(const GeomCollector &copy);
 
+    INLINE void count_geom(const Geom *geom);
     GeomPrimitive *get_primitive(TypeHandle prim_type);
     int append_vertex(const GeomVertexData *orig_vdata, int orig_row,
                       const LMatrix4f &xform);
@@ -207,7 +208,7 @@ private:
 
   private:
     PT(GeomVertexData) _vdata;
-    PT(Geom) _geom;
+    PT(GeomTextGlyph) _geom;
     PT(GeomTriangles) _triangles;
     PT(GeomLines) _lines;
     PT(GeomPoints) _points;
