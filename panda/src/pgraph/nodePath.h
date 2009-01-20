@@ -177,6 +177,8 @@ PUBLISHED:
 
   // Methods to query a NodePath's contents.
   INLINE bool is_empty() const;
+  INLINE operator bool () const;
+
   INLINE bool is_singleton(Thread *current_thread = Thread::get_current_thread()) const;
   int get_num_nodes(Thread *current_thread = Thread::get_current_thread()) const;
   PandaNode *get_node(int index, Thread *current_thread = Thread::get_current_thread()) const;
