@@ -98,6 +98,7 @@ RenameSet methodRenameDictionary[] = {
     { "operator ->"  , "dereference",          0 },
     { "operator <<=" , "__ilshift__",          1 },
     { "operator >>=" , "__irshift__",          1 },
+    { "operator typecast bool" , "__nonzero__", 0 },
     { "print"       , "Cprint",               0 },
     { "CInterval.set_t" , "_priv__cSetT",      0 },
     { NULL, NULL, -1 }
@@ -206,7 +207,7 @@ std::string  classNameFromCppName(const std::string &cppName)
     //# initialize to empty string
     std::string className = "";
     //# These are the characters we want to strip out of the name
-    const std::string  badChars("!@#$%^&*()<>,.-=+~{}? ");
+    const std::string  badChars("!@#$%^&*()<>,.-=+~{}?");
     int nextCap = 0;
     int firstChar = 1;
     for(std::string::const_iterator  chr = cppName.begin(); chr != cppName.end(); chr++)
@@ -214,7 +215,7 @@ std::string  classNameFromCppName(const std::string &cppName)
         if (badChars.find(*chr) != std::string::npos)
         {
         }
-        else if (*chr == '_')
+        else if (*chr == '_' || *chr == ' ')
         {
             nextCap = 1;
         }
@@ -271,14 +272,14 @@ std::string nonClassNameFromCppName(const std::string &cppName_in)
 ///////////////////////////////////////////////////////////////////////////////////////
 std::string  methodNameFromCppName(const std::string &cppName, const std::string &className) {
     std::string methodName;
-    std::string badChars(" ");
+    const std::string  badChars("!@#$%^&*()<>,.-=+~{}?");
     int nextCap = 0;
     for(std::string::const_iterator  chr = cppName.begin(); chr != cppName.end(); chr++)
     {
         if (badChars.find(*chr) != std::string::npos)
         {
         }
-        else if (*chr == '_')
+        else if (*chr == '_' || *chr == ' ')
         {
             nextCap = 1;
         }
@@ -557,6 +558,16 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
     def._answer_location = "tp_setattro";
     def._wrapper_type = WT_setattr;
     return true;
+  }
+
+  if (func->_ifunc.is_operator_typecast()) {
+    // A typecast operator.  If it's a bool type, then we wrap it with
+    // the __nonzero__ slot method.
+    if (!func->_remaps.empty() && TypeManager::is_bool(func->_remaps[0]->_return_type->get_orig_type())) {
+      def._answer_location = "tp_as_number->nb_nonzero";
+      def._wrapper_type = WT_inquiry;
+      return true;
+    }
   }
 
   return false;
@@ -1439,6 +1450,29 @@ write_module_class(ostream &out,  Object *obj) {
           out << "    }\n";
           out << "    Py_DECREF(result);\n";
           out << "    return 0;\n";
+          out << "}\n\n";
+        }
+        break;
+        
+      case WT_inquiry:
+        // int func(PyObject *self)
+        {
+          Function *func = rfi->first;
+          out << "//////////////////\n";
+          out << "//  A wrapper function to satisfy Python's internal calling conventions. \n";
+          out << "//     " <<ClassName<< " ..." << rfi->second._answer_location <<" = "<< methodNameFromCppName(func,export_calss_name) <<"\n";
+          out << "//////////////////\n";
+          out << "static int " << func->_name << methodNameFromCppName(func,export_calss_name) << "(PyObject *self)\n";
+          out << "{\n";
+          out << "    PyObject *args = Py_BuildValue(\"()\");\n";
+          out << "    PyObject *result = " << func->_name <<"(self, args, NULL);\n";
+          out << "    Py_DECREF(args);\n";
+          out << "    if (result == NULL) {\n";
+          out << "      return -1;\n";
+          out << "    }\n";
+          out << "    int iresult = PyInt_AsLong(result);\n";
+          out << "    Py_DECREF(result);\n";
+          out << "    return iresult;\n";
           out << "}\n\n";
         }
         break;

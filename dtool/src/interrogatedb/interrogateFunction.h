@@ -39,6 +39,7 @@ public:
   INLINE bool is_virtual() const;
   INLINE bool is_method() const;
   INLINE bool is_unary_op() const;
+  INLINE bool is_operator_typecast() const;
   INLINE TypeIndex get_class() const;
 
   INLINE bool has_scoped_name() const;
@@ -70,6 +71,7 @@ private:
     F_getter          = 0x0010,
     F_setter          = 0x0020,
     F_unary_op        = 0x0040,
+    F_operator_typecast = 0x0080,
   };
 
   int _flags;

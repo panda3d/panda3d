@@ -857,15 +857,15 @@ function_prototype:
   // As an added bonus, the type of the formal_parameter will be the
   // typecast type, i.e. the return type of the typecast function.
 
-  // We give all typecast operators the name "operator typecast".
-  // Only their return type will differentiate them.  (Naturally, this
-  // violates actual C++ rules, but we're not an actual C++ compiler
-  // so we don't care.  And this is the easiest way to do it.)
+  // We give typecast operators the name "operator typecast <name>",
+  // where <name> is a simple name of the type to be typecast.  Use
+  // the method's return type to determine the full type description.
+  string name = "operator typecast " + $2->get_simple_name();
   CPPIdentifier *ident = $1;
   if (ident == NULL) {
-    ident = new CPPIdentifier("operator typecast", @1.file);
+    ident = new CPPIdentifier(name, @1.file);
   } else {
-    ident->add_name("operator typecast");
+    ident->add_name(name);
   }
   $$ = CPPInstance::make_typecast_function
     (new CPPInstance($2, $3, 0, @3.file), ident, $6, $8);

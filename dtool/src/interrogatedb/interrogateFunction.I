@@ -58,6 +58,17 @@ is_unary_op() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterrogateFunction::is_operator_typecast
+//       Access: Public
+//  Description: Returns true if the function is a special typecast
+//               operator, like operator bool().
+////////////////////////////////////////////////////////////////////
+INLINE bool InterrogateFunction::
+is_operator_typecast() const {
+  return (_flags & F_operator_typecast) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterrogateFunction::get_class
 //       Access: Public
 //  Description: Return the class that owns the method, if is_method()

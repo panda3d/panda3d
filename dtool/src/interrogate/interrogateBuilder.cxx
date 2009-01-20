@@ -1685,6 +1685,11 @@ get_function(CPPInstance *function, string description,
     ifunction->_flags |= InterrogateFunction::F_unary_op;
   }
 
+  if (ftype->_flags & CPPFunctionType::F_operator_typecast) {
+    // This is a special typecast operator.
+    ifunction->_flags |= InterrogateFunction::F_operator_typecast;
+  }
+
   ifunction->_flags |= flags;
   ifunction->_instances->insert(InterrogateFunction::Instances::value_type(function_signature, function));
   ifunction->_expression = expression;

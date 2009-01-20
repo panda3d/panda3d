@@ -73,6 +73,7 @@ private:
     WT_sequence_setitem,
     WT_sequence_size,
     WT_mapping_setitem,
+    WT_inquiry,
   };
 
   class SlottedFunctionDef {
