@@ -561,12 +561,27 @@ get_slotted_function_def(Object *obj, Function *func, SlottedFunctionDef &def) {
   }
 
   if (func->_ifunc.is_operator_typecast()) {
-    // A typecast operator.  If it's a bool type, then we wrap it with
-    // the __nonzero__ slot method.
-    if (!func->_remaps.empty() && TypeManager::is_bool(func->_remaps[0]->_return_type->get_orig_type())) {
-      def._answer_location = "tp_as_number->nb_nonzero";
-      def._wrapper_type = WT_inquiry;
-      return true;
+    // A typecast operator.  Check for a supported low-level typecast type.
+    if (!func->_remaps.empty()) {
+      if (TypeManager::is_bool(func->_remaps[0]->_return_type->get_orig_type())) {
+        // If it's a bool type, then we wrap it with the __nonzero__
+        // slot method.
+        def._answer_location = "tp_as_number->nb_nonzero";
+        def._wrapper_type = WT_inquiry;
+        return true;
+
+      } else if (TypeManager::is_integer(func->_remaps[0]->_return_type->get_orig_type())) {
+        // An integer type.
+        def._answer_location = "tp_as_number->nb_int";
+        def._wrapper_type = WT_no_params;
+        return true;
+
+      } else if (TypeManager::is_float(func->_remaps[0]->_return_type->get_orig_type())) {
+        // A floating-point (or double) type.
+        def._answer_location = "tp_as_number->nb_float";
+        def._wrapper_type = WT_no_params;
+        return true;
+      }
     }
   }
 
