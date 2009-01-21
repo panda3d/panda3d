@@ -2246,6 +2246,14 @@ do_issue_texture() {
         minfilter = Texture::FT_nearest;
       }
       magfilter = Texture::FT_nearest;
+
+    } else if (quality_level == Texture::QL_best) {
+      if (minfilter == Texture::FT_default) {
+        minfilter = Texture::FT_linear;
+      }
+      if (magfilter == Texture::FT_default) {
+        magfilter = Texture::FT_linear;
+      }
     }
 
     texture_def->tex_minfilter_func = get_tex_filter_func(minfilter);
