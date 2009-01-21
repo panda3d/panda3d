@@ -2070,8 +2070,8 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
       _orig_file_y_size = image.get_y_size();
       consider_rescale(image, fullpath.get_basename());
     } else {
-      image.set_read_size(get_expected_mipmap_x_size(n),
-                          get_expected_mipmap_y_size(n));
+      image.set_read_size(do_get_expected_mipmap_x_size(n),
+                          do_get_expected_mipmap_y_size(n));
     }
 
     if (image.get_x_size() != image.get_read_x_size() ||
