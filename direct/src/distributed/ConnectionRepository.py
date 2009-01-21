@@ -3,6 +3,7 @@ from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.DoInterestManager import DoInterestManager
 from direct.distributed.DoCollectionManager import DoCollectionManager
+from direct.showbase import GarbageReport
 from PyDatagram import PyDatagram
 from PyDatagramIterator import PyDatagramIterator
 
@@ -49,6 +50,9 @@ class ConnectionRepository(
 
         if self.config.GetBool('verbose-repository'):
             self.setVerbose(1)
+
+        self._allowGarbageCycles = self.config.GetBool(
+            'allow-garbage-cycles', 1)
 
         # Set this to 'http' to establish a connection to the server
         # using the HTTPClient interface, which ultimately uses the
@@ -133,8 +137,8 @@ class ConnectionRepository(
     def _adjustGcThreshold(self, task):
         # do an unconditional collect to make sure gc.garbage has a chance to be
         # populated before we start increasing the auto-collect threshold
-        gc.collect()
-        if len(gc.garbage) == 0:
+        leakExists = self._checkForGarbageLeak()
+        if not leakExists:
             self.gcNotify.debug('no garbage found, doubling gc threshold')
             a, b, c = gc.get_threshold()
             gc.set_threshold(min(a * 2, 1 << 30), b, c)
@@ -149,6 +153,19 @@ class ConnectionRepository(
             retVal = Task.done
 
         return retVal
+
+    def _checkForGarbageLeak(self):
+        # does a garbage collect
+        # returns True if there is a garbage leak, False otherwise
+        # logs leak info and terminates (if configured to do so)
+        gc.collect()
+        leakExists = (len(gc.garbage) > 0)
+        if leakExists and (not self._allowGarbageCycles):
+            print
+            gr = GarbageReport.GarbageLogger('found garbage', threaded=False)
+            print
+            self.notify.error('%s garbage cycles found, see info above' % gr.getNumCycles())
+        return leakExists
 
     def generateGlobalObject(self, doId, dcname, values=None):
         def applyFieldValues(distObj, dclass, values):
