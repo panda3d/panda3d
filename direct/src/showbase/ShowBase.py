@@ -29,6 +29,7 @@ from InputStateGlobal import inputState
 from direct.showbase.BufferViewer import BufferViewer
 from direct.task import Task
 from direct.directutil import Verify
+from direct.showbase import GarbageReport
 import EventManager
 import math,sys,os
 import Loader
@@ -137,6 +138,7 @@ class ShowBase(DirectObject.DirectObject):
         self.winList = []
         self.winControls = []
         self.mainWinMinimized = 0
+        self.mainWinForeground = 0
         self.pipe = None
         self.pipeList = []
         self.mouse2cam = None
@@ -2181,7 +2183,16 @@ class ShowBase(DirectObject.DirectObject):
             if not properties.getOpen():
                 # If the user closes the main window, we should exit.
                 self.notify.info("User closed main window.")
+                if __dev__:
+                    GarbageReport.b_checkForGarbageLeaks()
                 self.userExit()
+
+            if properties.getForeground() and not self.mainWinForeground:
+                self.mainWinForeground = 1
+            elif not properties.getForeground() and self.mainWinForeground:
+                self.mainWinForeground = 0
+                if __dev__:
+                    GarbageReport.b_checkForGarbageLeaks()
 
             if properties.getMinimized() and not self.mainWinMinimized:
                 # If the main window is minimized, throw an event to

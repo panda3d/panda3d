@@ -51,9 +51,6 @@ class ConnectionRepository(
         if self.config.GetBool('verbose-repository'):
             self.setVerbose(1)
 
-        self._allowGarbageCycles = self.config.GetBool(
-            'allow-garbage-cycles', 1)
-
         # Set this to 'http' to establish a connection to the server
         # using the HTTPClient interface, which ultimately uses the
         # OpenSSL socket library (even though SSL is not involved).
@@ -137,7 +134,9 @@ class ConnectionRepository(
     def _adjustGcThreshold(self, task):
         # do an unconditional collect to make sure gc.garbage has a chance to be
         # populated before we start increasing the auto-collect threshold
-        leakExists = self._checkForGarbageLeak()
+        # don't distribute the leak check from the client to the AI, they both
+        # do these garbage checks independently over time
+        leakExists = GarbageReport.checkForGarbageLeaks()
         if not leakExists:
             self.gcNotify.debug('no garbage found, doubling gc threshold')
             a, b, c = gc.get_threshold()
@@ -153,19 +152,6 @@ class ConnectionRepository(
             retVal = Task.done
 
         return retVal
-
-    def _checkForGarbageLeak(self):
-        # does a garbage collect
-        # returns True if there is a garbage leak, False otherwise
-        # logs leak info and terminates (if configured to do so)
-        gc.collect()
-        leakExists = (len(gc.garbage) > 0)
-        if leakExists and (not self._allowGarbageCycles):
-            print
-            gr = GarbageReport.GarbageLogger('found garbage', threaded=False)
-            print
-            self.notify.error('%s garbage cycles found, see info above' % gr.getNumCycles())
-        return leakExists
 
     def generateGlobalObject(self, doId, dcname, values=None):
         def applyFieldValues(distObj, dclass, values):

@@ -513,3 +513,29 @@ class GarbageLogger(GarbageReport):
         kArgs['log'] = True
         kArgs['autoDestroy'] = True
         GarbageReport.__init__(self, name, *args, **kArgs)
+
+def checkForGarbageLeaks():
+    gc.collect()
+    leakExists = (len(gc.garbage) > 0)
+    if leakExists and (not config.GetBool('allow-garbage-cycles', 1)):
+        print
+        gr = GarbageLogger('found garbage', threaded=False)
+        print
+        notify = directNotify.newCategory("GarbageDetect")
+        notify.error('%s garbage cycles found, see info above' % gr.getNumCycles())
+    return leakExists
+
+def b_checkForGarbageLeaks():
+    # does a garbage collect
+    # returns True if there is a garbage leak, False otherwise
+    # logs leak info and terminates (if configured to do so)
+    try:
+        # if this is the client, tell the AI to check for leaks too
+        base.cr.timeManager
+    except:
+        pass
+    else:
+        if base.cr.timeManager:
+            base.cr.timeManager.d_checkForGarbageLeaks()
+    checkForGarbageLeaks()
+    
