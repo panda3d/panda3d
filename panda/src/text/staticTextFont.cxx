@@ -41,17 +41,23 @@ StaticTextFont(PandaNode *font_def) {
   _font = font_def;
   _glyphs.clear();
 
-  // This bit is a temporary hack.  We find all of the textures
-  // referenced by the font, and hard-set them to the specified
-  // quality level for text.  This should not remain more than a
-  // couple of weeks; after that time, we'll remove this and require
-  // users to set their desired quality level in static fonts
-  // explicitly.
+  // If there is no explicit quality level or filter settings on the
+  // textures in the static font, set the appropriate defaults for
+  // text.
   NodePath np(font_def);
   TextureCollection tc = np.find_all_textures();
   int num_textures = tc.get_num_textures();
   for (int i = 0; i < num_textures; ++i) {
-    tc.get_texture(i)->set_quality_level(text_quality_level);
+    Texture *tex = tc.get_texture(i);
+    if (tex->get_quality_level() == Texture::QL_default) {
+      tex->set_quality_level(text_quality_level);
+    }
+    if (tex->get_minfilter() == Texture::FT_default) {
+      tex->set_minfilter(text_minfilter);
+    }
+    if (tex->get_magfilter() == Texture::FT_default) {
+      tex->set_magfilter(text_magfilter);
+    }
   }
 
   find_characters(font_def, RenderState::make_empty());
