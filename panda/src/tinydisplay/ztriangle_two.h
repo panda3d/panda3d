@@ -117,7 +117,7 @@ static void FNAME(smooth_untextured) (ZBuffer *zb,
 static void FNAME(white_textured) (ZBuffer *zb,
                                    ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTextureLevel *texture_levels;
+  ZTextureDef *texture_def;
 
 #define INTERP_Z
 #define INTERP_ST
@@ -128,14 +128,14 @@ static void FNAME(white_textured) (ZBuffer *zb,
 
 #define DRAW_INIT()				\
   {						\
-    texture_levels = zb->current_textures[0];       \
+    texture_def = &zb->current_textures[0];       \
   }
 
 #define PUT_PIXEL(_a)                                                   \
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx);      \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -154,7 +154,7 @@ static void FNAME(white_textured) (ZBuffer *zb,
 static void FNAME(flat_textured) (ZBuffer *zb,
                                   ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTextureLevel *texture_levels;
+  ZTextureDef *texture_def;
   int or0, og0, ob0, oa0;
 
 #define INTERP_Z
@@ -170,7 +170,7 @@ static void FNAME(flat_textured) (ZBuffer *zb,
       /* This alpha is zero, and we'll never get other than 0. */       \
       return;                                   \
     }                                           \
-    texture_levels = zb->current_textures[0];       \
+    texture_def = &zb->current_textures[0];       \
     or0 = p2->r;                                \
     og0 = p2->g;                                \
     ob0 = p2->b;                                \
@@ -181,7 +181,7 @@ static void FNAME(flat_textured) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx);      \
       int a = PALPHA_MULT(oa0, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -209,7 +209,7 @@ static void FNAME(flat_textured) (ZBuffer *zb,
 static void FNAME(smooth_textured) (ZBuffer *zb,
                                     ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTextureLevel *texture_levels;
+  ZTextureDef *texture_def;
 
 #define INTERP_Z
 #define INTERP_ST
@@ -235,14 +235,14 @@ static void FNAME(smooth_textured) (ZBuffer *zb,
 
 #define DRAW_INIT()                             \
   {                                             \
-    texture_levels = zb->current_textures[0];       \
+    texture_def = &zb->current_textures[0];       \
   }
 
 #define PUT_PIXEL(_a)                                                   \
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx);      \
       int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -279,7 +279,7 @@ static void FNAME(smooth_textured) (ZBuffer *zb,
 static void FNAME(white_perspective) (ZBuffer *zb,
                                       ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTextureLevel *texture_levels;
+  ZTextureDef *texture_def;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
 
 #define INTERP_Z
@@ -293,7 +293,7 @@ static void FNAME(white_perspective) (ZBuffer *zb,
 
 #define DRAW_INIT()				\
   {						\
-    texture_levels = zb->current_textures[0];       \
+    texture_def = &zb->current_textures[0];       \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -305,7 +305,7 @@ static void FNAME(white_perspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx);      \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -388,7 +388,7 @@ static void FNAME(white_perspective) (ZBuffer *zb,
 static void FNAME(flat_perspective) (ZBuffer *zb,
                                      ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTextureLevel *texture_levels;
+  ZTextureDef *texture_def;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
   int or0, og0, ob0, oa0;
 
@@ -406,7 +406,7 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
       /* This alpha is zero, and we'll never get other than 0. */       \
       return;                                   \
     }                                           \
-    texture_levels = zb->current_textures[0];       \
+    texture_def = &zb->current_textures[0];       \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -421,7 +421,7 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx);      \
       int a = PALPHA_MULT(oa0, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -518,7 +518,7 @@ static void FNAME(flat_perspective) (ZBuffer *zb,
 static void FNAME(smooth_perspective) (ZBuffer *zb,
                                        ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
-  ZTextureLevel *texture_levels;
+  ZTextureDef *texture_def;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
 
 #define INTERP_Z
@@ -545,7 +545,7 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
 
 #define DRAW_INIT() 				\
   {						\
-    texture_levels = zb->current_textures[0];       \
+    texture_def = &zb->current_textures[0];       \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -556,7 +556,7 @@ static void FNAME(smooth_perspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_levels, s, t, mipmap_level, mipmap_dx); \
+      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx); \
       int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -683,10 +683,10 @@ static void FNAME(smooth_multitex2) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(zb->current_textures[0], s, t, mipmap_level, mipmap_dx); \
+      tmp = ZB_LOOKUP_TEXTURE(&zb->current_textures[0], s, t, mipmap_level, mipmap_dx); \
       int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
-        int tmpa = ZB_LOOKUP_TEXTURE(zb->current_textures[1], sa, ta, mipmap_levela, mipmap_dxa); \
+        int tmpa = ZB_LOOKUP_TEXTURE(&zb->current_textures[1], sa, ta, mipmap_levela, mipmap_dxa); \
         STORE_PIX(pp[_a],                                               \
                   RGBA_TO_PIXEL(PCOMPONENT_MULT3(or1, PIXEL_R(tmp), PIXEL_R(tmpa)),     \
                                 PCOMPONENT_MULT3(og1, PIXEL_G(tmp), PIXEL_G(tmpa)),     \
@@ -840,11 +840,11 @@ static void FNAME(smooth_multitex3) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(zb->current_textures[0], s, t, mipmap_level, mipmap_dx); \
+      tmp = ZB_LOOKUP_TEXTURE(&zb->current_textures[0], s, t, mipmap_level, mipmap_dx); \
       int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
-        int tmpa = ZB_LOOKUP_TEXTURE(zb->current_textures[1], sa, ta, mipmap_levela, mipmap_dxa); \
-        int tmpb = ZB_LOOKUP_TEXTURE(zb->current_textures[2], sb, tb, mipmap_levelb, mipmap_dxb); \
+        int tmpa = ZB_LOOKUP_TEXTURE(&zb->current_textures[1], sa, ta, mipmap_levela, mipmap_dxa); \
+        int tmpb = ZB_LOOKUP_TEXTURE(&zb->current_textures[2], sb, tb, mipmap_levelb, mipmap_dxb); \
         STORE_PIX(pp[_a],                                               \
                   RGBA_TO_PIXEL(PCOMPONENT_MULT4(or1, PIXEL_R(tmp), PIXEL_R(tmpa), PIXEL_R(tmpb)),     \
                                 PCOMPONENT_MULT4(og1, PIXEL_G(tmp), PIXEL_G(tmpa), PIXEL_G(tmpb)),     \

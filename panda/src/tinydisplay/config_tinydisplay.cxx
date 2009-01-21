@@ -84,6 +84,12 @@ ConfigVariableBool td_ignore_mipmaps
    PRC_DESC("Configure this true to disable use of mipmaps on the "
             "tinydisplay software renderer."));
 
+ConfigVariableBool td_ignore_clamp
+  ("td-ignore-clamp", false,
+   PRC_DESC("Configure this true to disable texture clamp mode and other "
+            "wrap modes other than repeat (all textures will repeat, which "
+            "is a little cheaper)."));
+
 ConfigVariableBool td_perspective_textures
   ("td-perspective-textures", true,
    PRC_DESC("Configure this false to disable use of perspective-correct "

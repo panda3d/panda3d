@@ -1371,6 +1371,10 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), 1)) {
     return false;
   }
+  gltex->border_color.v[0] = 0.0f;
+  gltex->border_color.v[1] = 0.0f;
+  gltex->border_color.v[2] = 0.0f;
+  gltex->border_color.v[3] = 0.0f;
 
   PIXEL *ip = gltex->levels[0].pixmap + gltex->xsize * gltex->ysize;
   PIXEL *fo = _c->zb->pbuf + xo + yo * _c->zb->linesize / PSZB;
@@ -1683,7 +1687,22 @@ update_texture(TextureContext *tc, bool force, int stage_index) {
   GLTexture *gltex = &gtc->_gltex;
 
   _c->current_textures[stage_index] = gltex;
-  _c->zb->current_textures[stage_index] = gltex->levels;
+
+  ZTextureDef *texture_def = &_c->zb->current_textures[stage_index];
+  texture_def->levels = gltex->levels;
+  texture_def->s_max = gltex->s_max;
+  texture_def->t_max = gltex->t_max;
+
+  const V4 &bc = gltex->border_color;
+  int r = (int)(bc.v[0] * (ZB_POINT_RED_MAX - ZB_POINT_RED_MIN) 
+                + ZB_POINT_RED_MIN);
+  int g = (int)(bc.v[1] * (ZB_POINT_GREEN_MAX - ZB_POINT_GREEN_MIN) 
+                + ZB_POINT_GREEN_MIN);
+  int b = (int)(bc.v[2] * (ZB_POINT_BLUE_MAX - ZB_POINT_BLUE_MIN) 
+                + ZB_POINT_BLUE_MIN);
+  int a = (int)(bc.v[3] * (ZB_POINT_ALPHA_MAX - ZB_POINT_ALPHA_MIN) 
+                + ZB_POINT_ALPHA_MIN);
+  texture_def->border_color = RGBA_TO_PIXEL(r, g, b, a);
 
   return true;
 }
@@ -2159,11 +2178,12 @@ do_issue_texture() {
   }
   nassertv(num_stages <= MAX_TEXTURE_STAGES);
 
-  Texture::QualityLevel quality_level = _texture_quality_override;
-  Texture::FilterType minfilter = Texture::FT_nearest;
-  Texture::FilterType magfilter = Texture::FT_nearest;
-  bool all_use_mipmaps = true;
   bool all_replace = true;
+  bool all_nearest = true;
+  bool all_mipmap_nearest = true;
+  bool any_mipmap = false;
+  bool needs_general = false;
+  Texture::QualityLevel best_quality_level = Texture::QL_default;
 
   for (int si = 0; si < num_stages; ++si) {
     TextureStage *stage = _target_texture->get_on_ff_stage(si);
@@ -2187,17 +2207,100 @@ do_issue_texture() {
       all_replace = false;
     }
 
-    if (quality_level < texture->get_quality_level()) {
+    Texture::QualityLevel quality_level = _texture_quality_override;
+    if (quality_level == Texture::QL_default) {
       quality_level = texture->get_quality_level();
     }
-    if (minfilter < texture->get_minfilter()) {
-      minfilter = texture->get_minfilter();
+    if (quality_level == Texture::QL_default) {
+      quality_level = texture_quality_level;
     }
-    if (magfilter < texture->get_magfilter()) {
-      magfilter = texture->get_magfilter();
+
+    best_quality_level = max(best_quality_level, quality_level);
+
+    ZTextureDef *texture_def = &_c->zb->current_textures[si];
+    
+    // Fill in the filter func pointers.  These may not actually get
+    // called, if we decide below we can inline the filters.
+    Texture::FilterType minfilter = texture->get_minfilter();
+    Texture::FilterType magfilter = texture->get_magfilter();
+
+    if (td_ignore_mipmaps && Texture::is_mipmap(minfilter)) {
+      // Downgrade mipmaps.
+      if (minfilter == Texture::FT_nearest_mipmap_nearest) {
+        minfilter = Texture::FT_nearest;
+      } else {
+        minfilter = Texture::FT_linear;
+      }
     }
-    if (!texture->uses_mipmaps()) {
-      all_use_mipmaps = false;
+
+    // Depending on this particular texture's quality level, we may
+    // downgrade the requested filters.
+    if (quality_level == Texture::QL_fastest) {
+      minfilter = Texture::FT_nearest;
+      magfilter = Texture::FT_nearest;
+
+    } else if (quality_level == Texture::QL_normal) {
+      if (Texture::is_mipmap(minfilter)) {
+        minfilter = Texture::FT_nearest_mipmap_nearest;
+      } else {
+        minfilter = Texture::FT_nearest;
+      }
+      magfilter = Texture::FT_nearest;
+    }
+
+    texture_def->tex_minfilter_func = get_tex_filter_func(minfilter);
+    texture_def->tex_magfilter_func = get_tex_filter_func(magfilter);
+    
+    Texture::WrapMode wrap_u = texture->get_wrap_u();
+    Texture::WrapMode wrap_v = texture->get_wrap_v();
+    if (td_ignore_clamp) {
+      wrap_u = Texture::WM_repeat;
+      wrap_v = Texture::WM_repeat;
+    }
+
+    if (wrap_u != Texture::WM_repeat || wrap_v != Texture::WM_repeat) {
+      // We have some nonstandard wrap mode.  This will force the use
+      // of the general texfilter mode.
+      needs_general = true;
+
+      // We need another level of indirection to implement the
+      // different texcoord wrap modes.  This means we will be using
+      // the _impl function pointers, which are called by the toplevel
+      // function.
+
+      texture_def->tex_minfilter_func_impl = texture_def->tex_minfilter_func;
+      texture_def->tex_magfilter_func_impl = texture_def->tex_magfilter_func;
+
+      // Now assign the toplevel function pointer to do the
+      // appropriate texture coordinate wrapping/clamping.
+      texture_def->tex_minfilter_func = apply_wrap_general_minfilter;
+      texture_def->tex_magfilter_func = apply_wrap_general_magfilter;
+
+      texture_def->tex_wrap_u_func = get_tex_wrap_func(wrap_u);
+      texture_def->tex_wrap_v_func = get_tex_wrap_func(wrap_v);
+
+      // The following special cases are handled inline, rather than
+      // relying on the above wrap function pointers.
+      if (wrap_u && Texture::WM_border_color && wrap_v == Texture::WM_border_color) {
+        texture_def->tex_minfilter_func = apply_wrap_border_color_minfilter;
+        texture_def->tex_magfilter_func = apply_wrap_border_color_magfilter;
+      } else if (wrap_u && Texture::WM_clamp && wrap_v == Texture::WM_clamp) {
+        texture_def->tex_minfilter_func = apply_wrap_clamp_minfilter;
+        texture_def->tex_magfilter_func = apply_wrap_clamp_magfilter;
+      }
+    }
+
+    if (minfilter != Texture::FT_nearest || magfilter != Texture::FT_nearest) {
+      all_nearest = false;
+    }
+
+    if (minfilter != Texture::FT_nearest_mipmap_nearest ||
+        magfilter != Texture::FT_nearest) {
+      all_mipmap_nearest = false;
+    }
+
+    if (Texture::is_mipmap(minfilter)) {
+      any_mipmap = true;
     }
   }
 
@@ -2214,33 +2317,21 @@ do_issue_texture() {
     _texturing_state = 1;    // textured (not perspective correct)
   }
 
-  if (quality_level == Texture::QL_default) {
-    quality_level = texture_quality_level;
-  }
-
-  if (quality_level == Texture::QL_best) {
+  if (best_quality_level == Texture::QL_best) {
     // This is the most generic texture filter.  Slow, but pretty.
     _texfilter_state = 2;  // tgeneral
 
-    if (!all_use_mipmaps && Texture::is_mipmap(minfilter)) {
-      // We can't enable mipmaps unless all the textures in the stack
-      // enable mipmaps.
-      minfilter = Texture::FT_linear;
+    if (!needs_general) {
+      if (all_nearest) {
+        // This case is inlined.
+        _texfilter_state = 0;    // tnearest
+      } else if (all_mipmap_nearest) {
+        // So is this case.
+        _texfilter_state = 1;  // tmipmap
+      }
     }
 
-    _c->zb->tex_minfilter_func = get_tex_filter_func(minfilter);
-    _c->zb->tex_magfilter_func = get_tex_filter_func(magfilter);
-
-    if (minfilter == Texture::FT_nearest && magfilter == Texture::FT_nearest) {
-      // This case is inlined.
-      _texfilter_state = 0;    // tnearest
-    } else if (minfilter == Texture::FT_nearest_mipmap_nearest &&
-               magfilter == Texture::FT_nearest) {
-      // So is this case.
-      _texfilter_state = 1;  // tmipmap
-    }
-
-  } else if (quality_level == Texture::QL_fastest) {
+  } else if (best_quality_level == Texture::QL_fastest) {
     // This is the cheapest texture filter.  We disallow mipmaps and
     // perspective correctness.
     _texfilter_state = 0;    // tnearest
@@ -2251,8 +2342,14 @@ do_issue_texture() {
     // there are no mipmaps, and mipmap_nearest if there are any
     // mipmaps--these are the two inlined filters.
     _texfilter_state = 0;    // tnearest
-    if (all_use_mipmaps && !td_ignore_mipmaps) {
+    if (any_mipmap) {
       _texfilter_state = 1;  // tmipmap
+    }
+
+    if (needs_general) {
+      // To support nonstandard texcoord wrapping etc, we need to
+      // force the general texfilter mode.
+      _texfilter_state = 2;  // tgeneral
     }
   }
 }
@@ -2365,6 +2462,11 @@ upload_texture(TinyTextureContext *gtc, bool force) {
   if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), num_levels)) {
     return false;
   }
+  Colorf border_color = tex->get_border_color();
+  gltex->border_color.v[0] = border_color[0];
+  gltex->border_color.v[1] = border_color[1];
+  gltex->border_color.v[2] = border_color[2];
+  gltex->border_color.v[3] = border_color[3];
 
   int bytecount = 0;
   int xsize = gltex->xsize;
@@ -2470,6 +2572,11 @@ upload_simple_texture(TinyTextureContext *gtc) {
   if (!setup_gltex(gltex, width, height, 1)) {
     return false;
   }
+  Colorf border_color = tex->get_border_color();
+  gltex->border_color.v[0] = border_color[0];
+  gltex->border_color.v[1] = border_color[1];
+  gltex->border_color.v[2] = border_color[2];
+  gltex->border_color.v[3] = border_color[3];
 
   ZTextureLevel *dest = &gltex->levels[0];
   memcpy(dest->pixmap, image_ptr, image_size);
@@ -2546,9 +2653,10 @@ setup_gltex(GLTexture *gltex, int x_size, int y_size, int num_levels) {
     next_buffer += bytecount;
     nassertr(next_buffer <= end_of_buffer, false);
 
-    dest->s_mask = (1 << (s_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
-    dest->t_mask = (1 << (t_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS);
-    dest->t_shift = (ZB_POINT_ST_FRAC_BITS - s_bits);
+    dest->s_mask = ((1 << (s_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS)) << level;
+    dest->t_mask = ((1 << (t_bits + ZB_POINT_ST_FRAC_BITS)) - (1 << ZB_POINT_ST_FRAC_BITS)) << level;
+    dest->s_shift = (ZB_POINT_ST_FRAC_BITS + level);
+    dest->t_shift = (ZB_POINT_ST_FRAC_BITS - s_bits + level);
     
     x_size = max((x_size >> 1), 1);
     y_size = max((y_size >> 1), 1);
@@ -2982,32 +3090,47 @@ get_tex_filter_func(Texture::FilterType filter) {
     return &lookup_texture_bilinear;
 
   case Texture::FT_nearest_mipmap_nearest:
-    if (td_ignore_mipmaps) {
-      return &lookup_texture_nearest;
-    }
     return &lookup_texture_mipmap_nearest;
 
   case Texture::FT_nearest_mipmap_linear:
-    if (td_ignore_mipmaps) {
-      return &lookup_texture_nearest;
-    }
     return &lookup_texture_mipmap_linear;
       
   case Texture::FT_linear_mipmap_nearest:
-    if (td_ignore_mipmaps) {
-      return &lookup_texture_bilinear;
-    }
     return &lookup_texture_mipmap_bilinear;
 
   case Texture::FT_linear_mipmap_linear:
-    if (td_ignore_mipmaps) {
-      return &lookup_texture_bilinear;
-    }
     return &lookup_texture_mipmap_trilinear;
 
   default:
     return &lookup_texture_nearest;
   }
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: TinyGraphicsStateGuardian::get_tex_wrap_func
+//       Access: Private, Static
+//  Description: Returns the pointer to the appropriate wrap
+//               function according to the texture's wrap mode.
+////////////////////////////////////////////////////////////////////
+ZB_texWrapFunc TinyGraphicsStateGuardian::
+get_tex_wrap_func(Texture::WrapMode wrap_mode) {
+  switch (wrap_mode) {
+  case Texture::WM_clamp:
+  case Texture::WM_border_color:  // border_color is handled later.
+    return &texcoord_clamp;
+
+  case Texture::WM_repeat:
+  case Texture::WM_invalid:
+    return &texcoord_repeat;
+
+  case Texture::WM_mirror:
+    return &texcoord_mirror;
+
+  case Texture::WM_mirror_once:
+    return &texcoord_mirror_once;
+  }
+
+  return &texcoord_repeat;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -123,6 +123,7 @@ typedef struct GLTexture {
   int num_levels;
   int xsize, ysize;
   int s_max, t_max;
+  V4 border_color;
 
   void *allocated_buffer;
   int total_bytecount;

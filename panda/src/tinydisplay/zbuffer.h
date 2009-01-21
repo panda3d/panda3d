@@ -26,15 +26,15 @@ typedef unsigned int ZPOINT;
 #define MAX_MIPMAP_LEVELS (32 - ZB_POINT_ST_FRAC_BITS + 1)
 
 /* Returns the index within a texture level for the given (s, t) texel. */
-#define ZB_TEXEL(level, s, t)                                         \
-  ((((t) & (level)->t_mask) >> (level)->t_shift) |                  \
-   (((s) & (level)->s_mask) >> ZB_POINT_ST_FRAC_BITS))
+#define ZB_TEXEL(texture_level, s, t)                                   \
+  ((((t) & (texture_level).t_mask) >> (texture_level).t_shift) |      \
+   (((s) & (texture_level).s_mask) >> (texture_level).s_shift))
 
-#define ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t) \
-  (texture_levels)->pixmap[ZB_TEXEL(texture_levels, s, t)]
+#define ZB_LOOKUP_TEXTURE_NEAREST(texture_def, s, t) \
+  (texture_def)->levels[0].pixmap[ZB_TEXEL((texture_def)->levels[0], s, t)]
 
-#define ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_levels, s, t, level) \
-  ZB_LOOKUP_TEXTURE_NEAREST((texture_levels) + (level), (s) >> (level), (t) >> (level))
+#define ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level) \
+  (texture_def)->levels[(level)].pixmap[ZB_TEXEL((texture_def)->levels[(level)], s, t)]
 
 /* A special abs() function which doesn't require any branching
    instructions.  Might not work on some exotic hardware. */
@@ -105,18 +105,33 @@ typedef unsigned int PIXEL;
 
 typedef struct {
   PIXEL *pixmap;
-  unsigned int s_mask, t_mask, t_shift;
+  unsigned int s_mask, s_shift, t_mask, t_shift;
 } ZTextureLevel;
 
 typedef struct ZBuffer ZBuffer;
 typedef struct ZBufferPoint ZBufferPoint;
+typedef struct ZTextureDef ZTextureDef;
 
 typedef void (*ZB_fillTriangleFunc)(ZBuffer  *,
                                     ZBufferPoint *,ZBufferPoint *,ZBufferPoint *);
 
 typedef void (*ZB_storePixelFunc)(ZBuffer *zb, PIXEL &result, int r, int g, int b, int a);
 
-typedef PIXEL (*ZB_lookupTextureFunc)(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
+typedef PIXEL (*ZB_lookupTextureFunc)(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+
+typedef int (*ZB_texWrapFunc)(int coord, int max_coord); 
+
+struct ZTextureDef {
+  ZTextureLevel *levels;
+  ZB_lookupTextureFunc tex_minfilter_func;
+  ZB_lookupTextureFunc tex_magfilter_func;
+  ZB_lookupTextureFunc tex_minfilter_func_impl;
+  ZB_lookupTextureFunc tex_magfilter_func_impl;
+  ZB_texWrapFunc tex_wrap_u_func;
+  ZB_texWrapFunc tex_wrap_v_func;
+  int s_max, t_max;
+  PIXEL border_color;
+};
 
 struct ZBuffer {
   int xsize,ysize;
@@ -130,12 +145,10 @@ struct ZBuffer {
   int nb_colors;
   unsigned char *dctable;
   int *ctable;
-  ZTextureLevel *current_textures[MAX_TEXTURE_STAGES];  // This is actually an array of texture levels for each stage.
+  ZTextureDef current_textures[MAX_TEXTURE_STAGES];
   int reference_alpha;
   int blend_r, blend_g, blend_b, blend_a;
   ZB_storePixelFunc store_pix_func;
-  ZB_lookupTextureFunc tex_minfilter_func;
-  ZB_lookupTextureFunc tex_magfilter_func;
 };
 
 struct ZBufferPoint {
@@ -192,12 +205,26 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
                        int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a,
                        int xmin, int ymin, int xsize, int ysize);
 
-PIXEL lookup_texture_nearest(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
-PIXEL lookup_texture_bilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
-PIXEL lookup_texture_mipmap_nearest(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
-PIXEL lookup_texture_mipmap_linear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
-PIXEL lookup_texture_mipmap_bilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
-PIXEL lookup_texture_mipmap_trilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL lookup_texture_nearest(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL lookup_texture_bilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL lookup_texture_mipmap_nearest(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL lookup_texture_mipmap_linear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL lookup_texture_mipmap_bilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL lookup_texture_mipmap_trilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+
+PIXEL apply_wrap_general_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL apply_wrap_general_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+
+PIXEL apply_wrap_border_color_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL apply_wrap_border_color_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+
+PIXEL apply_wrap_clamp_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+PIXEL apply_wrap_clamp_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx);
+
+int texcoord_clamp(int coord, int max_coord);
+int texcoord_repeat(int coord, int max_coord);
+int texcoord_mirror(int coord, int max_coord);
+int texcoord_mirror_once(int coord, int max_coord);
 
 /* linesize is in BYTES */
 void ZB_copyFrameBuffer(ZBuffer *zb,void *buf,int linesize);

@@ -36,6 +36,7 @@ ZBuffer *ZB_open(int xsize, int ysize, int mode,
     zb = (ZBuffer *)gl_malloc(sizeof(ZBuffer));
     if (zb == NULL)
 	return NULL;
+    memset(zb, 0, sizeof(ZBuffer));
 
     /* xsize must be a multiple of 4 */
     xsize = (xsize + 3) & ~3;
@@ -81,9 +82,6 @@ ZBuffer *ZB_open(int xsize, int ysize, int mode,
 	zb->frame_buffer_allocated = 0;
 	zb->pbuf = (PIXEL *)frame_buffer;
     }
-
-    zb->current_textures[0] = NULL;
-    zb->current_textures[1] = NULL;
 
     return zb;
   error:
@@ -375,25 +373,24 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
 
 // Grab the nearest texel from the base level.  This is also
 // implemented inline as ZB_LOOKUP_TEXTURE_NEAREST.
-PIXEL lookup_texture_nearest(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
+PIXEL lookup_texture_nearest(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
 {
-  return ZB_LOOKUP_TEXTURE_NEAREST(texture_levels, s, t);
+  return ZB_LOOKUP_TEXTURE_NEAREST(texture_def, s, t);
 }
 
 // Bilinear filter four texels in the base level.
-PIXEL lookup_texture_bilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
+PIXEL lookup_texture_bilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
 {
-  ZTextureLevel *base_level = texture_levels;
   PIXEL p1, p2, p3, p4;
   int sf, tf;
   int r, g, b, a;
 
-  p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s - ZB_ST_FRAC_HIGH, t - ZB_ST_FRAC_HIGH);
-  p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t - ZB_ST_FRAC_HIGH);
+  p1 = ZB_LOOKUP_TEXTURE_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t - ZB_ST_FRAC_HIGH);
+  p2 = ZB_LOOKUP_TEXTURE_NEAREST(texture_def, s, t - ZB_ST_FRAC_HIGH);
   sf = s & ZB_ST_FRAC_MASK;
 
-  p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s - ZB_ST_FRAC_HIGH, t);
-  p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t);
+  p3 = ZB_LOOKUP_TEXTURE_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t);
+  p4 = ZB_LOOKUP_TEXTURE_NEAREST(texture_def, s, t);
   tf = t & ZB_ST_FRAC_MASK;
 
   r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
@@ -406,19 +403,19 @@ PIXEL lookup_texture_bilinear(ZTextureLevel *texture_levels, int s, int t, unsig
 
 // Grab the nearest texel from the nearest mipmap level.  This is also
 // implemented inline as ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST.
-PIXEL lookup_texture_mipmap_nearest(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
+PIXEL lookup_texture_mipmap_nearest(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
 {
-  return ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_levels, s, t, level);
+  return ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level);
 }
 
 // Linear filter the two texels from the two nearest mipmap levels.
-PIXEL lookup_texture_mipmap_linear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
+PIXEL lookup_texture_mipmap_linear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
 {
   PIXEL p1, p2;
   int r, g, b, a;
 
-  p1 = ZB_LOOKUP_TEXTURE_NEAREST(texture_levels + level - 1, s >> (level - 1), t >> (level - 1));
-  p2 = ZB_LOOKUP_TEXTURE_NEAREST(texture_levels + level, s >> level, t >> level);
+  p1 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level - 1);
+  p2 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level);
 
   unsigned int bitsize = (level - 1) + ZB_POINT_ST_FRAC_BITS;
   r = LINEAR_FILTER_BITSIZE(PIXEL_R(p1), PIXEL_R(p2), level_dx, bitsize);
@@ -430,23 +427,19 @@ PIXEL lookup_texture_mipmap_linear(ZTextureLevel *texture_levels, int s, int t, 
 }
 
 // Bilinear filter four texels in the nearest mipmap level.
-PIXEL lookup_texture_mipmap_bilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
+PIXEL lookup_texture_mipmap_bilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
 {
-  ZTextureLevel *base_level = texture_levels + level;
-  s >>= level;
-  t >>= level;
-
   PIXEL p1, p2, p3, p4;
   int sf, tf;
   int r, g, b, a;
 
-  p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s - ZB_ST_FRAC_HIGH, t - ZB_ST_FRAC_HIGH);
-  p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t - ZB_ST_FRAC_HIGH);
-  sf = s & ZB_ST_FRAC_MASK;
+  p1 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t - ZB_ST_FRAC_HIGH, level);
+  p2 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t - ZB_ST_FRAC_HIGH, level);
+  sf = (s >> level) & ZB_ST_FRAC_MASK;
 
-  p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s - ZB_ST_FRAC_HIGH, t);
-  p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, s, t);
-  tf = t & ZB_ST_FRAC_MASK;
+  p3 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t, level);
+  p4 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level);
+  tf = (t >> level) & ZB_ST_FRAC_MASK;
 
   r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
   g = BILINEAR_FILTER(PIXEL_G(p1), PIXEL_G(p2), PIXEL_G(p3), PIXEL_G(p4), sf, tf);
@@ -458,26 +451,22 @@ PIXEL lookup_texture_mipmap_bilinear(ZTextureLevel *texture_levels, int s, int t
 
 // Bilinear filter four texels in each of the nearest two mipmap
 // levels, then linear filter them together.
-PIXEL lookup_texture_mipmap_trilinear(ZTextureLevel *texture_levels, int s, int t, unsigned int level, unsigned int level_dx)
+PIXEL lookup_texture_mipmap_trilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
 {
   PIXEL p1a, p2a;
 
   {
-    ZTextureLevel *base_level = texture_levels + level - 1;
-    int sl = s >> (level - 1);
-    int tl = t >> (level - 1);
-    
     PIXEL p1, p2, p3, p4;
     int sf, tf;
     int r, g, b, a;
 
-    p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl - ZB_ST_FRAC_HIGH, tl - ZB_ST_FRAC_HIGH);
-    p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl - ZB_ST_FRAC_HIGH);
-    sf = sl & ZB_ST_FRAC_MASK;
+    p1 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t - ZB_ST_FRAC_HIGH, level - 1);
+    p2 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t - ZB_ST_FRAC_HIGH, level - 1);
+    sf = (s >> (level - 1)) & ZB_ST_FRAC_MASK;
     
-    p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl - ZB_ST_FRAC_HIGH, tl);
-    p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl);
-    tf = tl & ZB_ST_FRAC_MASK;
+    p3 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t, level - 1);
+    p4 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level - 1);
+    tf = (t >> (level - 1)) & ZB_ST_FRAC_MASK;
     
     r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
     g = BILINEAR_FILTER(PIXEL_G(p1), PIXEL_G(p2), PIXEL_G(p3), PIXEL_G(p4), sf, tf);
@@ -487,21 +476,17 @@ PIXEL lookup_texture_mipmap_trilinear(ZTextureLevel *texture_levels, int s, int 
   }
 
   {
-    ZTextureLevel *base_level = texture_levels + level;
-    int sl = s >> level;
-    int tl = t >> level;
-    
     PIXEL p1, p2, p3, p4;
     int sf, tf;
     int r, g, b, a;
 
-    p1 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl - ZB_ST_FRAC_HIGH, tl - ZB_ST_FRAC_HIGH);
-    p2 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl - ZB_ST_FRAC_HIGH);
-    sf = sl & ZB_ST_FRAC_MASK;
+    p1 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t - ZB_ST_FRAC_HIGH, level);
+    p2 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t - ZB_ST_FRAC_HIGH, level);
+    sf = (s >> level) & ZB_ST_FRAC_MASK;
     
-    p3 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl - ZB_ST_FRAC_HIGH, tl);
-    p4 = ZB_LOOKUP_TEXTURE_NEAREST(base_level, sl, tl);
-    tf = tl & ZB_ST_FRAC_MASK;
+    p3 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s - ZB_ST_FRAC_HIGH, t, level);
+    p4 = ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level);
+    tf = (t >> level) & ZB_ST_FRAC_MASK;
     
     r = BILINEAR_FILTER(PIXEL_R(p1), PIXEL_R(p2), PIXEL_R(p3), PIXEL_R(p4), sf, tf);
     g = BILINEAR_FILTER(PIXEL_G(p1), PIXEL_G(p2), PIXEL_G(p3), PIXEL_G(p4), sf, tf);
@@ -518,4 +503,69 @@ PIXEL lookup_texture_mipmap_trilinear(ZTextureLevel *texture_levels, int s, int 
   a = LINEAR_FILTER_BITSIZE(PIXEL_A(p1a), PIXEL_A(p2a), level_dx, bitsize); 
 
   return RGBA_TO_PIXEL(r, g, b, a);
+}
+
+
+// Apply the wrap mode to s and t coordinates by calling the generic
+// wrap mode function.
+PIXEL apply_wrap_general_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+  s = (*texture_def->tex_wrap_u_func)(s, texture_def->s_max);
+  t = (*texture_def->tex_wrap_v_func)(t, texture_def->t_max);
+  return (*texture_def->tex_minfilter_func_impl)(texture_def, s, t, level, level_dx);
+}
+PIXEL apply_wrap_general_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+  s = (*texture_def->tex_wrap_u_func)(s, texture_def->s_max);
+  t = (*texture_def->tex_wrap_v_func)(t, texture_def->t_max);
+  return (*texture_def->tex_magfilter_func_impl)(texture_def, s, t, level, level_dx);
+}
+
+// Outside the legal range of s and t, return just the texture's
+// border color.
+PIXEL apply_wrap_border_color_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+  if (s < 0 || t < 0 || s > texture_def->s_max || t > texture_def->t_max) {
+    return texture_def->border_color;
+  }
+  return (*texture_def->tex_minfilter_func_impl)(texture_def, s, t, level, level_dx);
+}
+PIXEL apply_wrap_border_color_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+  if (s < 0 || t < 0 || s > texture_def->s_max || t > texture_def->t_max) {
+    return texture_def->border_color;
+  }
+  return (*texture_def->tex_magfilter_func_impl)(texture_def, s, t, level, level_dx);
+}
+
+// Outside the legal range of s and t, clamp s and t to the edge.
+// This is also duplicated by texcoord_clamp(), but using these
+// functions instead saves two additional function calls per pixel.
+PIXEL apply_wrap_clamp_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+  s = min(max(s, 0), texture_def->s_max);
+  t = min(max(t, 0), texture_def->t_max);
+  return (*texture_def->tex_minfilter_func_impl)(texture_def, s, t, level, level_dx);
+}
+PIXEL apply_wrap_clamp_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+  s = min(max(s, 0), texture_def->s_max);
+  t = min(max(t, 0), texture_def->t_max);
+  return (*texture_def->tex_magfilter_func_impl)(texture_def, s, t, level, level_dx);
+}
+
+int texcoord_clamp(int coord, int max_coord) {
+  return min(max(coord, 0), max_coord);
+}
+
+int texcoord_repeat(int coord, int max_coord) {
+  return coord;
+}
+
+int texcoord_mirror(int coord, int max_coord) {
+  if ((coord & ((max_coord << 1) - 1)) > max_coord) {
+    coord = (max_coord << 1) - coord;
+  }
+  return coord;
+}
+
+int texcoord_mirror_once(int coord, int max_coord) {
+  if (coord > max_coord) {
+    coord = (max_coord << 1) - coord;
+  }
+  return max(coord, 0);
 }

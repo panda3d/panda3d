@@ -36,6 +36,7 @@ extern ConfigVariableInt osx_mouse_wheel_scale;
 
 extern ConfigVariableInt td_texture_ram;
 extern ConfigVariableBool td_ignore_mipmaps;
+extern ConfigVariableBool td_ignore_clamp;
 extern ConfigVariableBool td_perspective_textures;
 
 #endif
