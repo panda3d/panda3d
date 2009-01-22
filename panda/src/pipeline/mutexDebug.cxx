@@ -148,9 +148,10 @@ do_acquire(Thread *current_thread) {
       // In this case, it's not a real mutex.  Just watch it go by.
       MissedThreads::iterator mi = _missed_threads.insert(MissedThreads::value_type(current_thread, 0)).first;
       if ((*mi).second == 0) {
-        thread_cat.info()
-          << *current_thread << " not stopped by " << *this << " (held by "
-          << *_locking_thread << ")\n";
+        ostringstream ostr;
+        ostr << *current_thread << " not stopped by " << *this << " (held by "
+             << *_locking_thread << ")\n";
+        nassert_raise(ostr.str());
       } else {
         if (!_allow_recursion) {
           ostringstream ostr;

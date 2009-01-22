@@ -164,7 +164,7 @@ get_collector_fullname(int index) const {
 ////////////////////////////////////////////////////////////////////
 PStatThread PStatClient::
 get_thread(int index) const {
-  LightReMutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   nassertr(index >= 0 && index < _num_threads, PStatThread());
   return PStatThread((PStatClient *)this, index);
 }
@@ -370,7 +370,7 @@ thread_tick(const string &sync_name) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 client_main_tick() {
-  LightReMutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   if (has_impl()) {
     if (!_impl->client_is_connected()) {
       client_disconnect();
@@ -400,7 +400,7 @@ client_main_tick() {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 client_thread_tick(const string &sync_name) {
-  LightReMutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   if (has_impl()) {
     MultiThingsByName::const_iterator ni =
@@ -423,7 +423,7 @@ client_thread_tick(const string &sync_name) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::
 client_disconnect() {
-  LightReMutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   if (has_impl()) {
     _impl->client_disconnect();
     delete _impl;
@@ -484,7 +484,7 @@ get_global_pstats() {
 ////////////////////////////////////////////////////////////////////
 PStatCollector PStatClient::
 make_collector_with_relname(int parent_index, string relname) {
-  LightReMutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   if (relname.empty()) {
     relname = "Unnamed";
@@ -524,7 +524,7 @@ make_collector_with_relname(int parent_index, string relname) {
 ////////////////////////////////////////////////////////////////////
 PStatCollector PStatClient::
 make_collector_with_name(int parent_index, const string &name) {
-  LightReMutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
 
   nassertr(parent_index >= 0 && parent_index < _num_collectors,
            PStatCollector());
@@ -593,7 +593,7 @@ do_get_current_thread() const {
 ////////////////////////////////////////////////////////////////////
 PStatThread PStatClient::
 make_thread(Thread *thread) {
-  LightReMutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   return do_make_thread(thread);
 }
 
@@ -1144,7 +1144,7 @@ activate_hook(Thread *thread) {
 ////////////////////////////////////////////////////////////////////
 void PStatClient::Collector::
 make_def(const PStatClient *client, int this_index) {
-  LightReMutexHolder holder(client->_lock);
+  ReMutexHolder holder(client->_lock);
   if (_def == (PStatCollectorDef *)NULL) {
     _def = new PStatCollectorDef(this_index, _name);
     if (_parent_index != this_index) {

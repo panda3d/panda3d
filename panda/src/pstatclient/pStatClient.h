@@ -20,9 +20,9 @@
 #include "pStatFrameData.h"
 #include "pStatClientImpl.h"
 #include "pStatCollectorDef.h"
-#include "lightReMutex.h"
+#include "reMutex.h"
 #include "lightMutex.h"
-#include "lightReMutexHolder.h"
+#include "reMutexHolder.h"
 #include "lightMutexHolder.h"
 #include "pmap.h"
 #include "thread.h"
@@ -144,7 +144,7 @@ private:
 
 private:
   // This mutex protects everything in this class.
-  LightReMutex _lock;
+  ReMutex _lock;
 
   typedef pmap<string, int> ThingsByName;
   typedef pmap<string, vector_int> MultiThingsByName;

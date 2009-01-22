@@ -75,7 +75,7 @@ get_max_rate() const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatClient::
 get_num_collectors() const {
-  LightReMutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   return _num_collectors;
 }
 
@@ -99,7 +99,7 @@ get_collector_def(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE int PStatClient::
 get_num_threads() const {
-  LightReMutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   return _num_threads;
 }
 
@@ -211,7 +211,7 @@ resume_after_pause() {
 ////////////////////////////////////////////////////////////////////
 INLINE bool PStatClient::
 client_connect(string hostname, int port) {
-  LightReMutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   client_disconnect();
   return get_impl()->client_connect(hostname, port);
 }
@@ -261,7 +261,7 @@ has_impl() const {
 ////////////////////////////////////////////////////////////////////
 INLINE PStatClientImpl *PStatClient::
 get_impl() {
-  LightReMutexHolder holder(_lock);
+  ReMutexHolder holder(_lock);
   if (_impl == (PStatClientImpl *)NULL) {
     _impl = new PStatClientImpl(this);
   }
