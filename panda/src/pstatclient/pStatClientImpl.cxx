@@ -127,6 +127,10 @@ client_connect(string hostname, int port) {
 
   send_hello();
 
+#ifdef DEBUG_THREADS
+  MutexDebug::increment_pstats();
+#endif // DEBUG_THREADS
+
   return _is_connected;
 }
 
@@ -138,6 +142,9 @@ client_connect(string hostname, int port) {
 void PStatClientImpl::
 client_disconnect() {
   if (_is_connected) {
+#ifdef DEBUG_THREADS
+    MutexDebug::decrement_pstats();
+#endif // DEBUG_THREADS
     _reader.remove_connection(_tcp_connection);
     close_connection(_tcp_connection);
     close_connection(_udp_connection);

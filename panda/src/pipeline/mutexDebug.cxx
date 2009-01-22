@@ -18,6 +18,7 @@
 
 #ifdef DEBUG_THREADS
 
+int MutexDebug::_pstats_count = 0;
 MutexTrueImpl *MutexDebug::_global_lock;
 
 ////////////////////////////////////////////////////////////////////
@@ -101,6 +102,36 @@ output_with_holder(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MutexDebug::increment_pstats
+//       Access: Public, Static
+//  Description: Intended to be called only by
+//               PStatClientImpl::client_connect(), this tells the
+//               global mutex system that PStats is active.  Once
+//               PStats is active, all "light" mutexes are treated the
+//               same as full mutexes.
+////////////////////////////////////////////////////////////////////
+void MutexDebug::
+increment_pstats() {
+  _global_lock->acquire();
+  ++_pstats_count;
+  _global_lock->release();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MutexDebug::decrement_pstats
+//       Access: Public, Static
+//  Description: Intended to be called only by
+//               PStatClientImpl::client_disconnect(), this tells the
+//               global mutex system that PStats is no longer active.
+////////////////////////////////////////////////////////////////////
+void MutexDebug::
+decrement_pstats() {
+  _global_lock->acquire();
+  --_pstats_count;
+  _global_lock->release();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MutexDebug::do_acquire
 //       Access: Private
 //  Description: The private implementation of acquire() assumes that
@@ -144,7 +175,7 @@ do_acquire(Thread *current_thread) {
   } else {
     // The mutex is locked by some other thread.
 
-    if (_lightweight) {
+    if (_lightweight && _pstats_count == 0) {
       // In this case, it's not a real mutex.  Just watch it go by.
       MissedThreads::iterator mi = _missed_threads.insert(MissedThreads::value_type(current_thread, 0)).first;
       if ((*mi).second == 0) {
@@ -263,7 +294,7 @@ do_try_acquire(Thread *current_thread) {
   } else {
     // The mutex is locked by some other thread.  Return false.
 
-    if (_lightweight) {
+    if (_lightweight && _pstats_count == 0) {
       // In this case, it's not a real mutex.  Just watch it go by.
       MissedThreads::iterator mi = _missed_threads.insert(MissedThreads::value_type(current_thread, 0)).first;
       if ((*mi).second == 0) {

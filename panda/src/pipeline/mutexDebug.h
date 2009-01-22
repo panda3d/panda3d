@@ -49,6 +49,10 @@ PUBLISHED:
 
   typedef void VoidFunc();
 
+public:
+  static void increment_pstats();
+  static void decrement_pstats();
+
 private:
   void do_acquire(Thread *current_thread);
   bool do_try_acquire(Thread *current_thread);
@@ -72,6 +76,7 @@ private:
 
   ConditionVarImpl _cvar_impl;
 
+  static int _pstats_count;
   static MutexTrueImpl *_global_lock;
 
   friend class ConditionVarDebug;

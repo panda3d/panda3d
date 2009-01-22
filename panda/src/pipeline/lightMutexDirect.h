@@ -49,7 +49,16 @@ PUBLISHED:
   void output(ostream &out) const;
 
 private:
+#ifdef DO_PSTATS
+  // When PStats is compiled in, we use the full implementation of
+  // LightMutex, even in the SIMPLE_THREADS case.  We have to do this
+  // since any PStatTimer call may trigger a context switch, and any
+  // low-level context switch requires all containing mutexes to be
+  // true mutexes.
+  MutexTrueImpl _impl;
+#else
   MutexImpl _impl;
+#endif  // DO_PSTATS
 };
 
 INLINE ostream &

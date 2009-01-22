@@ -15,6 +15,8 @@
 #include "lightReMutexDirect.h"
 #include "thread.h"
 
+#ifndef DEBUG_THREADS
+
 ////////////////////////////////////////////////////////////////////
 //     Function: LightReMutexDirect::output
 //       Access: Published
@@ -25,3 +27,5 @@ void LightReMutexDirect::
 output(ostream &out) const {
   out << "LightReMutex " << (void *)this;
 }
+
+#endif  // !DEBUG_THREADS

@@ -21,6 +21,8 @@
 
 class Thread;
 
+#ifndef DEBUG_THREADS
+
 ////////////////////////////////////////////////////////////////////
 //       Class : LightReMutexDirect
 // Description : This class implements a standard lightReMutex by making
@@ -51,7 +53,7 @@ PUBLISHED:
   void output(ostream &out) const;
 
 private:
-#ifdef HAVE_REMUTEXIMPL
+#if defined(HAVE_REMUTEXIMPL) && !defined(DO_PSTATS)
   ReMutexImpl _impl;
 
 #else
@@ -68,5 +70,7 @@ operator << (ostream &out, const LightReMutexDirect &m) {
 }
 
 #include "lightReMutexDirect.I"
+
+#endif  // !DEBUG_THREADS
 
 #endif
