@@ -2810,8 +2810,16 @@ r_prepare_scene(const RenderState *state,
   Children children = get_children(current_thread);
   // We must call get_num_children() each time through the loop, in
   // case we're running SIMPLE_THREADS and we get interrupted.
-  for (int i = 0; i < children.get_num_children(); i++) {
+  int i;
+  for (i = 0; i < children.get_num_children(); i++) {
     PandaNode *child = children.get_child(i);
+    CPT(RenderState) child_state = state->compose(child->get_state());
+    child->r_prepare_scene(child_state, prepared_objects, current_thread);
+  }
+
+  Stashed stashed = get_stashed(current_thread);
+  for (i = 0; i < stashed.get_num_stashed(); i++) {
+    PandaNode *child = stashed.get_stashed(i);
     CPT(RenderState) child_state = state->compose(child->get_state());
     child->r_prepare_scene(child_state, prepared_objects, current_thread);
   }
