@@ -136,8 +136,8 @@ class ConnectionRepository(
         # populated before we start increasing the auto-collect threshold
         # don't distribute the leak check from the client to the AI, they both
         # do these garbage checks independently over time
-        leakExists = GarbageReport.checkForGarbageLeaks()
-        if not leakExists:
+        numGarbage = GarbageReport.checkForGarbageLeaks()
+        if numGarbage == 0:
             self.gcNotify.debug('no garbage found, doubling gc threshold')
             a, b, c = gc.get_threshold()
             gc.set_threshold(min(a * 2, 1 << 30), b, c)

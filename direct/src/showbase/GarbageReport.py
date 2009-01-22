@@ -516,18 +516,22 @@ class GarbageLogger(GarbageReport):
 
 def checkForGarbageLeaks():
     gc.collect()
-    leakExists = (len(gc.garbage) > 0)
-    if leakExists and (not config.GetBool('allow-garbage-cycles', 1)):
+    numGarbage = len(gc.garbage)
+    if numGarbage:
         print
         gr = GarbageLogger('found garbage', threaded=False)
         print
         notify = directNotify.newCategory("GarbageDetect")
-        notify.error('%s garbage cycles found, see info above' % gr.getNumCycles())
-    return leakExists
+        if config.GetBool('allow-garbage-cycles', 1):
+            func = notify.warning
+        else:
+            func = notify.error
+        func('%s garbage cycles found, see info above' % gr.getNumCycles())
+    return numGarbage
 
 def b_checkForGarbageLeaks():
-    # does a garbage collect
-    # returns True if there is a garbage leak, False otherwise
+    # does a garbage collect on the client and the AI
+    # returns number of client garbage leaks
     # logs leak info and terminates (if configured to do so)
     try:
         # if this is the client, tell the AI to check for leaks too
@@ -537,5 +541,4 @@ def b_checkForGarbageLeaks():
     else:
         if base.cr.timeManager:
             base.cr.timeManager.d_checkForGarbageLeaks()
-    checkForGarbageLeaks()
-    
+    return checkForGarbageLeaks()
