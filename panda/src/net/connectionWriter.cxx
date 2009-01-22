@@ -159,7 +159,7 @@ get_current_queue_size() const {
 //
 //               If block is true, this will not return false if the
 //               send queue is filled; instead, it will wait until
-//               this is space available.
+//               there is space available.
 ////////////////////////////////////////////////////////////////////
 bool ConnectionWriter::
 send(const Datagram &datagram, const PT(Connection) &connection, bool block) {
@@ -198,7 +198,7 @@ send(const Datagram &datagram, const PT(Connection) &connection, bool block) {
 //
 //               If block is true, this will not return false if the
 //               send queue is filled; instead, it will wait until
-//               this is space available.
+//               there is space available.
 ////////////////////////////////////////////////////////////////////
 bool ConnectionWriter::
 send(const Datagram &datagram, const PT(Connection) &connection,

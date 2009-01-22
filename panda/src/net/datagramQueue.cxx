@@ -22,7 +22,10 @@
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DatagramQueue::
-DatagramQueue() : _cv(_cvlock) {
+DatagramQueue() : 
+  _cvlock("DatagramQueue::_cvlock"),
+  _cv(_cvlock) 
+{
   _shutdown = false;
   _max_queue_size = get_net_max_write_queue();
 }
