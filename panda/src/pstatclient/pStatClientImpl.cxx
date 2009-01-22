@@ -184,6 +184,8 @@ new_frame(int thread_index) {
   }
 
   float frame_start = get_real_time();
+  int frame_number = -1;
+  PStatFrameData frame_data;
 
   if (!pthread->_frame_data.is_empty()) {
     // Collector 0 is the whole frame.
@@ -201,7 +203,8 @@ new_frame(int thread_index) {
         pthread->_frame_data.add_level(i, ptd._level);
       }
     }
-    transmit_frame_data(thread_index);
+    pthread->_frame_data.swap(frame_data);
+    frame_number = pthread->_frame_number;
   }
 
   pthread->_frame_data.clear();
@@ -211,6 +214,10 @@ new_frame(int thread_index) {
   // Also record the time for the PStats operation itself.
   int pstats_index = PStatClient::_pstats_pcollector.get_index();
   _client->start(pstats_index, thread_index, frame_start);
+
+  if (frame_number != -1) {
+    transmit_frame_data(thread_index, frame_number, frame_data);
+  }
   _client->stop(pstats_index, thread_index, get_real_time());
 }
 
@@ -221,7 +228,8 @@ new_frame(int thread_index) {
 //               transmit the latest data to the PStatServer.
 ////////////////////////////////////////////////////////////////////
 void PStatClientImpl::
-transmit_frame_data(int thread_index) {
+transmit_frame_data(int thread_index, int frame_number, 
+                    const PStatFrameData &frame_data) {
   nassertv(thread_index >= 0 && thread_index < _client->_num_threads);
   PStatClient::InternalThread *thread = _client->get_thread_ptr(thread_index);
   if (_is_connected && thread->_is_active) {
@@ -243,11 +251,11 @@ transmit_frame_data(int thread_index) {
       datagram.add_uint8(0);
 
       datagram.add_uint16(thread_index);
-      datagram.add_uint32(thread->_frame_number);
+      datagram.add_uint32(frame_number);
 
       bool sent;
 
-      if (!thread->_frame_data.write_datagram(datagram, _client)) {
+      if (!frame_data.write_datagram(datagram, _client)) {
         // Too many events to fit in a single datagram.  Maybe it was
         // a long frame load or something.  Just drop the datagram.
         sent = false;

@@ -59,6 +59,18 @@ clear() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PStatFrameData::swap
+//       Access: Public
+//  Description: Exchanges the data in this object with the data in
+//               the other.
+////////////////////////////////////////////////////////////////////
+INLINE void PStatFrameData::
+swap(PStatFrameData &other) {
+  _time_data.swap(other._time_data);
+  _level_data.swap(other._level_data);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PStatFrameData::add_start
 //       Access: Public
 //  Description: Adds a 'start collector' data point to the frame

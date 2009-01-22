@@ -39,6 +39,7 @@ public:
   INLINE bool is_level_empty() const;
   INLINE bool is_empty() const;
   INLINE void clear();
+  INLINE void swap(PStatFrameData &other);
 
   INLINE void add_start(int index, float time);
   INLINE void add_stop(int index, float time);

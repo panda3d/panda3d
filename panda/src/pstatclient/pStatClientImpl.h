@@ -74,7 +74,8 @@ public:
   void new_frame(int thread_index);
 
 private:
-  void transmit_frame_data(int thread_index);
+  void transmit_frame_data(int thread_index, int frame_number,
+                           const PStatFrameData &frame_data);
 
   void transmit_control_data();
 
