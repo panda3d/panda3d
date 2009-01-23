@@ -514,14 +514,12 @@ choose_next_context() {
     if (_ready.empty() && _next_ready.empty()) {
       // All of our threads are currently sleeping.  Therefore, wake
       // the volunteer(s) immediately.
-      if (!_volunteers.empty()) {
-        wake_all_sleepers(_volunteers);
+      wake_all_sleepers(_volunteers);
 
-      } else {
-        // No volunteers.  Sleep the whole process.
-        system_yield();
-        now = get_current_time();
-      }
+      // We should also yield the whole process now, to be polite to
+      // the rest of the system.
+      system_yield();
+      now = get_current_time();
     }
     wake_sleepers(_sleeping, now);
     wake_sleepers(_volunteers, now);
@@ -560,6 +558,10 @@ choose_next_context() {
           thread_cat.debug()
             << "Waking volunteers.\n";
         }
+        // We should yield the whole process now, to be polite to the
+        // rest of the system.
+        system_yield();
+        now = get_current_time();
         wake_all_sleepers(_volunteers);
         wake_sleepers(_sleeping, now);
 
