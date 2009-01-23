@@ -32,7 +32,7 @@
 // Description : GeoMipTerrain, meaning Panda3D GeoMipMapping, can convert
 //               a heightfield image into a 3D terrain, consisting
 //               of several GeomNodes. It uses the GeoMipMapping
-//                algorithm, or Geometrical MipMapping, based on
+//               algorithm, or Geometrical MipMapping, based on
 //               the LOD (Level of Detail) algorithm. For more
 //               information about the GeoMipMapping algoritm, see
 //               this paper, written by Willem H. de Boer:
@@ -79,9 +79,9 @@ PUBLISHED:
   INLINE void set_auto_flatten(int mode);
   
   // The focal point is the point at which the terrain will have the
-  // lowest level of detail (highest quality). Parts farther away
-  // from the focal point will hae a higher level of detail. The
-  // focal point is not taken in respect if bruteforce is set true.
+  // highest quality (lowest level of detail). Parts farther away from
+  // the focal point will have a lower quality (higher level of detail).
+  // The focal point is not taken in respect if bruteforce is set true.
   INLINE void set_focal_point(LPoint2d fp);
   INLINE void set_focal_point(LPoint2f fp);
   INLINE void set_focal_point(LPoint3d fp);
