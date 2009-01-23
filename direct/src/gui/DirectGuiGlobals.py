@@ -74,6 +74,7 @@ ACCEPT = PGEntry.getAcceptPrefix() + KeyboardButton.enter().getName() + '-'
 ACCEPTFAILED = PGEntry.getAcceptFailedPrefix() + KeyboardButton.enter().getName() + '-'
 TYPE = PGEntry.getTypePrefix()
 ERASE = PGEntry.getErasePrefix()
+CURSORMOVE = PGEntry.getCursormovePrefix()
 # For DirectSlider and DirectScrollBar widgets
 ADJUST = PGSliderBar.getAdjustPrefix()
 

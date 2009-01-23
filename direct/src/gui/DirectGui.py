@@ -15,6 +15,7 @@ from OnscreenImage import *
 from DirectFrame import *
 from DirectButton import *
 from DirectEntry import *
+from DirectEntryScroll import *
 from DirectLabel import *
 from DirectScrolledList import *
 from DirectDialog import *
