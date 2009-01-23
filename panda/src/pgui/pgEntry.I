@@ -156,6 +156,31 @@ get_cursor_position() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_cursor_X
+//       Access: Published
+//  Description: Returns the node position x of the cursor
+////////////////////////////////////////////////////////////////////
+
+INLINE float PGEntry:: 
+get_cursor_X() const {
+  LightReMutexHolder holder(_lock);
+  return _cursor_def.get_x();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_cursor_y
+//       Access: Published
+//  Description: Returns the node position y of the cursor
+////////////////////////////////////////////////////////////////////
+
+INLINE float PGEntry:: 
+get_cursor_Y() const {
+  LightReMutexHolder holder(_lock);
+  return _cursor_def.get_y();
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::set_max_chars
 //       Access: Published
 //  Description: Sets the maximum number of characters that may be
@@ -489,6 +514,18 @@ get_erase_prefix() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_cursormove_prefix
+//       Access: Published, Static
+//  Description: Returns the prefix that is used to define the cursor
+//               event for all PGEntries.  The cursor event is the
+//               concatenation of this string followed by get_id().
+////////////////////////////////////////////////////////////////////
+INLINE string PGEntry::
+get_cursormove_prefix() {
+  return "cursormove-";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::get_accept_event
 //       Access: Published
 //  Description: Returns the event name that will be thrown when the
@@ -543,6 +580,17 @@ get_type_event() const {
 INLINE string PGEntry::
 get_erase_event() const {
   return get_erase_prefix() + get_id();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::get_cursormove_event
+//       Access: Published
+//  Description: Returns the event name that will be thrown whenever
+//               the cursor moves
+////////////////////////////////////////////////////////////////////
+INLINE string PGEntry::
+get_cursormove_event() const {
+  return get_cursormove_prefix() + get_id();
 }
 
 ////////////////////////////////////////////////////////////////////

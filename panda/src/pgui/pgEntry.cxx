@@ -517,6 +517,19 @@ erase(const MouseWatcherParameter &param) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PGEntry::cursormove
+//       Access: Public, Virtual
+//  Description: This is a callback hook function, called whenever the
+//               cursor moves.
+////////////////////////////////////////////////////////////////////
+void PGEntry::
+cursormove() {
+  LightReMutexHolder holder(_lock);
+  string event = get_cursormove_event();
+  throw_event(event, EventParameter(_cursor_def.get_x()), EventParameter(_cursor_def.get_y()));
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PGEntry::setup
 //       Access: Published
 //  Description: Sets up the entry for normal use.  The width is the
@@ -844,6 +857,8 @@ update_cursor() {
 
     _cursor_def.set_pos(xpos, 0.0f, ypos);
     _cursor_stale = false;
+    cursormove();
+    
   }
 
   // Should the cursor be visible?

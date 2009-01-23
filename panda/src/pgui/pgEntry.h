@@ -61,6 +61,7 @@ public:
   virtual void overflow(const MouseWatcherParameter &param);
   virtual void type(const MouseWatcherParameter &param);
   virtual void erase(const MouseWatcherParameter &param);
+  virtual void cursormove();
 
 PUBLISHED:
   enum State {
@@ -83,6 +84,9 @@ PUBLISHED:
 
   INLINE void set_cursor_position(int position);
   INLINE int get_cursor_position() const;
+  
+  INLINE float get_cursor_X() const;
+  INLINE float get_cursor_Y() const;
 
   INLINE void set_max_chars(int max_chars);
   INLINE int get_max_chars() const;
@@ -120,12 +124,15 @@ PUBLISHED:
   INLINE static string get_overflow_prefix();
   INLINE static string get_type_prefix();
   INLINE static string get_erase_prefix();
+  INLINE static string get_cursormove_prefix();
 
   INLINE string get_accept_event(const ButtonHandle &button) const;
   INLINE string get_accept_failed_event(const ButtonHandle &button) const;
   INLINE string get_overflow_event() const;
   INLINE string get_type_event() const;
   INLINE string get_erase_event() const;
+  INLINE string get_cursormove_event() const;
+  
 
   INLINE bool set_wtext(const wstring &wtext);
   INLINE wstring get_plain_wtext() const;
