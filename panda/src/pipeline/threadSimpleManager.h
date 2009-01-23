@@ -84,24 +84,24 @@ public:
 private:
   static void init_pointers();
 
+  typedef pdeque<ThreadSimpleImpl *> FifoThreads;
+  typedef pvector<ThreadSimpleImpl *> Sleeping;
+
   static void st_choose_next_context(void *data);
   void choose_next_context();
   void do_timeslice_accounting(ThreadSimpleImpl *thread, double now);
-  void wake_sleepers(double now);
+  void wake_sleepers(Sleeping &sleepers, double now);
+  void wake_all_sleepers(Sleeping &sleepers);
   void report_deadlock();
   double determine_timeslice(ThreadSimpleImpl *chosen_thread);
+  void kill_non_joinable(FifoThreads &threads);
+  void kill_non_joinable(Sleeping &threads);
 
   // STL function object to sort the priority queue of sleeping threads.
   class CompareStartTime {
   public:
     INLINE bool operator ()(ThreadSimpleImpl *a, ThreadSimpleImpl *b) const;
   };
-
-  typedef pdeque<ThreadSimpleImpl *> FifoThreads;
-  typedef pvector<ThreadSimpleImpl *> Sleeping;
-
-  void kill_non_joinable(FifoThreads &threads);
-  void kill_non_joinable(Sleeping &threads);
 
 public:
   // Defined within the class to avoid static-init ordering problems.
@@ -115,17 +115,31 @@ public:
 private:
   ThreadSimpleImpl *volatile _current_thread;
 
-  // FIFO list of ready threads.
+  // The list of ready threads: threads that are ready to execute
+  // right now.
   FifoThreads _ready;
-  FifoThreads _next_ready;
-  int _num_next_ready_volunteers;
 
+  // The list of threads that are ready, but will not be executed
+  // until next epoch (for instance, because they exceeded their
+  // timeslice budget this epoch).
+  FifoThreads _next_ready;
+
+  // The list of threads that are blocked on some ConditionVar or
+  // Mutex.
   typedef pmap<BlockerSimple *, FifoThreads> Blocked;
   Blocked _blocked;
 
-  // Priority queue (partially-ordered heap) based on wakeup time.
+  // Priority queue (partially-ordered heap) of sleeping threads,
+  // based on wakeup time.
   Sleeping _sleeping;
 
+  // Priority queue (partially-ordered heap) of volunteer threads,
+  // based on wakeup time.  This are threads that have voluntarily
+  // yielded a timeslice.  They are treated the same as sleeping
+  // threads, unless all threads are sleeping.
+  Sleeping _volunteers;
+
+  // Threads which have finished execution and are awaiting cleanup.
   FifoThreads _finished;
 
   ThreadSimpleImpl *_waiting_for_exit;
