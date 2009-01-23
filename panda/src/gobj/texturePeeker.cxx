@@ -25,14 +25,6 @@
 ////////////////////////////////////////////////////////////////////
 TexturePeeker::
 TexturePeeker(Texture *tex) {
-  _x_size = tex->_x_size;
-  _y_size = tex->_y_size;
-  _z_size = tex->_z_size;
-  _component_width = tex->_component_width;
-  _num_components = tex->_num_components;
-  _format = tex->_format;
-  _component_type = tex->_component_type;
-
   if (tex->_texture_type == Texture::TT_cube_map) {
     // Cube map texture.  We'll need to map from (u, v, w) to (u, v)
     // within the appropriate page, where w indicates the page.
@@ -47,6 +39,13 @@ TexturePeeker(Texture *tex) {
     if (tex->do_has_ram_image() && tex->_ram_image_compression == Texture::CM_off) {
       // Get the regular RAM image if it is available.
       _image = tex->do_get_ram_image();
+      _x_size = tex->_x_size;
+      _y_size = tex->_y_size;
+      _z_size = tex->_z_size;
+      _component_width = tex->_component_width;
+      _num_components = tex->_num_components;
+      _format = tex->_format;
+      _component_type = tex->_component_type;
 
     } else if (!tex->_simple_ram_image._image.empty()) {
       // Get the simple RAM image if *that* is available.
@@ -63,6 +62,13 @@ TexturePeeker(Texture *tex) {
     } else {
       // Failing that, reload and get the uncompressed RAM image.
       _image = tex->do_get_uncompressed_ram_image();
+      _x_size = tex->_x_size;
+      _y_size = tex->_y_size;
+      _z_size = tex->_z_size;
+      _component_width = tex->_component_width;
+      _num_components = tex->_num_components;
+      _format = tex->_format;
+      _component_type = tex->_component_type;
     }
   }
 
@@ -157,6 +163,7 @@ lookup(Colorf &color, float u, float v) const {
   int x = int((u - cfloor(u)) * (float)_x_size + 0.5f) % _x_size;
   int y = int((v - cfloor(v)) * (float)_y_size + 0.5f) % _y_size;
 
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   const unsigned char *p = _image.p() + (y * _x_size + x) * _pixel_width;
 
   (*_get_texel)(color, p, _get_component);
@@ -180,6 +187,8 @@ lookup(Colorf &color, float u, float v, float w) const {
   int y = int((v - cfloor(v)) * (float)_y_size + 0.5f) % _y_size;
   int z = int((w - cfloor(w)) * (float)_z_size + 0.5f) % _z_size;
 
+  nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size && 
+           z >= 0 && z < _z_size);
   const unsigned char *p = _image.p() + (z * _x_size * _y_size + y * _x_size + x) * _pixel_width;
 
   (*_get_texel)(color, p, _get_component);
@@ -286,6 +295,8 @@ accum_filter_z(Colorf &color, float &net,
                int min_x, int max_x, float min_u, float max_u,
                int min_y, int max_y, float min_v, float max_v,
                int min_z, int max_z, float min_w, float max_w) const {
+  nassertv(min_z >= 0 && min_z <= _z_size && 
+           max_z >= 0 && max_z <= _z_size);
   int zi = min_z;
 
   if (min_z >= max_z - 1) {
@@ -333,6 +344,9 @@ accum_filter_y(Colorf &color, float &net, int zi,
                int min_x, int max_x, float min_u, float max_u,
                int min_y, int max_y, float min_v, float max_v,
                float weight) const {
+  nassertv(zi >= 0 && zi < _z_size);
+  nassertv(min_y >= 0 && min_y <= _y_size && 
+           max_y >= 0 && max_y <= _y_size);
   int yi = min_y;
 
   if (min_y >= max_y - 1) {
@@ -367,6 +381,10 @@ void TexturePeeker::
 accum_filter_x(Colorf &color, float &net, int yi, int zi,
                int min_x, int max_x, float min_u, float max_u,
                float weight) const {
+  nassertv(yi >= 0 && yi < _y_size && zi >= 0 && zi < _z_size);
+  nassertv(min_x >= 0 && min_x <= _x_size && 
+           max_x >= 0 && max_x <= _x_size);
+
   // Compute the p corresponding to min_x.
   int xi = min_x % _x_size;
   const unsigned char *p = _image.p() + (zi * _x_size * _y_size + yi * _x_size + xi) * _pixel_width;
