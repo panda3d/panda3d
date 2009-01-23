@@ -57,7 +57,7 @@ class ShowBase(DirectObject.DirectObject):
 
     def __init__(self):
         __builtin__.__dev__ = config.GetBool('want-dev', 0)
-        if config.GetBool('want-variable-dump', not __dev__):
+        if config.GetBool('want-variable-dump', 0):
             ExceptionVarDump.install()
 
         # Locate the directory containing the main program
