@@ -5652,6 +5652,8 @@ make_from_bam(const FactoryParams &params) {
         me = TexturePool::load_cube_map(filename, false, options);
         break;
       }
+
+      me->fillin_from(dummy);
     }
 
     if (me != (Texture *)NULL) {
