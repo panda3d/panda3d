@@ -49,7 +49,10 @@ Connection(ConnectionManager *manager, Socket_IP *socket) :
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
   // In the presence of SIMPLE_THREADS, we use non-blocking I/O.  We
   // simulate blocking by yielding the thread.
-  _socket->SetNonBlocking();
+  if (_socket->SetNonBlocking() != ALL_OK) {
+    net_cat.warning()
+      << "Unable to set non-blocking status on socket\n";
+  }
 #endif
 }
 
