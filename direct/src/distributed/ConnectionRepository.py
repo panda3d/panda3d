@@ -116,7 +116,7 @@ class ConnectionRepository(
             # manual garbage-collect task
             taskMgr.add(self._garbageCollect, self.GarbageCollectTaskName, 200)
             # periodically increase gc threshold if there is no garbage
-            taskMgr.doMethodLater(self.config.GetFloat('garbage-threshold-adjust-delay', 15 * 60.),
+            taskMgr.doMethodLater(self.config.GetFloat('garbage-threshold-adjust-delay', 5 * 60.),
                                   self._adjustGcThreshold, self.GarbageThresholdTaskName)
             
         self._gcDefaultThreshold = gc.get_threshold()

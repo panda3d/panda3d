@@ -529,7 +529,7 @@ def checkForGarbageLeaks():
         func('%s garbage cycles found, see info above' % gr.getNumCycles())
     return numGarbage
 
-def b_checkForGarbageLeaks():
+def b_checkForGarbageLeaks(wantReply=False):
     # does a garbage collect on the client and the AI
     # returns number of client garbage leaks
     # logs leak info and terminates (if configured to do so)
@@ -540,5 +540,5 @@ def b_checkForGarbageLeaks():
         pass
     else:
         if base.cr.timeManager:
-            base.cr.timeManager.d_checkForGarbageLeaks()
+            base.cr.timeManager.d_checkForGarbageLeaks(wantReply=wantReply)
     return checkForGarbageLeaks()
