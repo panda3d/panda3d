@@ -279,12 +279,14 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
   }
 
   if (cache->get_cache_compressed_textures() && tex->has_compression()) {
+#ifndef HAVE_SQUISH
     // We don't want to save the uncompressed version; we'll save the
     // compressed version when it becomes available.
     store_record = false;
     if (!compressed_cache_record) {
       tex->set_post_load_store_cache(true);
     }
+#endif // HAVE_SQUISH
 
   } else if (!cache->get_cache_textures()) {
     // We don't want to save this texture.
@@ -403,12 +405,14 @@ ns_load_texture(const Filename &orig_filename,
   }
 
   if (cache->get_cache_compressed_textures() && tex->has_compression()) {
+#ifndef HAVE_SQUISH
     // We don't want to save the uncompressed version; we'll save the
     // compressed version when it becomes available.
     store_record = false;
     if (!compressed_cache_record) {
       tex->set_post_load_store_cache(true);
     }
+#endif  // HAVE_SQUISH
 
   } else if (!cache->get_cache_textures()) {
     // We don't want to save this texture.
@@ -508,12 +512,14 @@ ns_load_3d_texture(const Filename &filename_pattern,
   }
 
   if (cache->get_cache_compressed_textures() && tex->has_compression()) {
+#ifndef HAVE_SQUISH
     // We don't want to save the uncompressed version; we'll save the
     // compressed version when it becomes available.
     store_record = false;
     if (!compressed_cache_record) {
       tex->set_post_load_store_cache(true);
     }
+#endif  // HAVE_SQUISH
 
   } else if (!cache->get_cache_textures()) {
     // We don't want to save this texture.
@@ -600,12 +606,14 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
   }
 
   if (cache->get_cache_compressed_textures() && tex->has_compression()) {
+#ifndef HAVE_SQUISH
     // We don't want to save the uncompressed version; we'll save the
     // compressed version when it becomes available.
     store_record = false;
     if (!compressed_cache_record) {
       tex->set_post_load_store_cache(true);
     }
+#endif  // HAVE_SQUISH
 
   } else if (!cache->get_cache_textures()) {
     // We don't want to save this texture.

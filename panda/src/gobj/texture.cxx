@@ -2849,7 +2849,26 @@ do_unlock_and_reload_ram_image(bool allow_compression) {
     tex->do_reload_ram_image(allow_compression);
 
     _lock.acquire();
-    do_assign(*tex);
+    
+    // Rather than calling do_assign(), which would copy *all* of the
+    // reloaded texture's properties over, we only copy in the ones
+    // which are relevant to the ram image.  This way, if the
+    // properties have changed during the reload (for instance,
+    // because we reloaded a txo), it won't contaminate the original
+    // texture.
+    _x_size = tex->_x_size;
+    _y_size = tex->_y_size;
+    _z_size = tex->_z_size;
+    _orig_file_x_size = tex->_orig_file_x_size;
+    _orig_file_y_size = tex->_orig_file_y_size;
+    _num_components = tex->_num_components;
+    _component_width = tex->_component_width;
+    _texture_type = tex->_texture_type;
+    _format = tex->_format;
+    _component_type = tex->_component_type;
+    _keep_ram_image = tex->_keep_ram_image;
+    _ram_image_compression = tex->_ram_image_compression;
+    _ram_images = tex->_ram_images;
 
     nassertv(_reloading);
     _reloading = false;

@@ -324,7 +324,7 @@ protected:
   void update_standard_texture_bindings();
 
   void do_auto_rescale_normal();
-  void specify_texture(Texture *tex);
+  bool specify_texture(CLP(TextureContext) *gtc);
   bool apply_texture(TextureContext *tc);
   bool upload_texture(CLP(TextureContext) *gtc, bool force);
   bool upload_texture_image(CLP(TextureContext) *gtc,
