@@ -14,6 +14,7 @@
 
 #include "adaptiveLru.h"
 #include "config_gobj.h"
+#include "clockObject.h"
 #include "indent.h"
 
 static const int HIGH_PRIORITY_SCALE = 4;
@@ -240,7 +241,7 @@ begin_epoch() {
     do_evict_to(_max_size, false);
   }
 
-  ++_current_frame_identifier;
+  _current_frame_identifier = ClockObject::get_global_clock()->get_frame_count();
 }
 
 ////////////////////////////////////////////////////////////////////
