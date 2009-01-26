@@ -86,6 +86,7 @@ destroy() {
   if (get_class() == OdeTriMeshGeom::get_geom_class()) {
     OdeTriMeshData::unlink_data(_id);
   }
+  dGeomDestroy(_id);
 }
 
 OdeSpace OdeGeom::
