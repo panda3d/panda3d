@@ -17,6 +17,7 @@
 #include "dcField.h"
 #include "dcClass.h"
 #include "dcmsgtypes.h"
+#include "config_distributed.h"
 
 static const float smooth_node_epsilon = 0.01;
 static const double network_time_precision = 100.0;  // Matches ClockDelta.py
@@ -349,10 +350,25 @@ finish_send_update(DCPacker &packer) {
             << _node_path << " pos = " << _store_xyz
             << " hpr = " << _store_hpr
             << " zoneId = " << _currL[0];
+
+#ifdef HAVE_PYTHON
+      string message = error.str();
+      distributed_cat.warning()
+        << message << "\n";
+      PyErr_SetString(PyExc_ValueError, message.c_str());
+#else
       nassert_raise(error.str());
+#endif
 
     } else {
-      nassert_raise("Unexpected pack error in DC file.");
+      const char *message = "Unexpected pack error in DC file.";
+#ifdef HAVE_PYTHON
+      distributed_cat.warning()
+        << message << "\n";
+      PyErr_SetString(PyExc_TypeError, message);
+#else
+      nassert_raise(message);
+#endif
     }
 #endif
   }
