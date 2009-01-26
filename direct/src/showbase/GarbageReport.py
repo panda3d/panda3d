@@ -517,7 +517,7 @@ class GarbageLogger(GarbageReport):
 def checkForGarbageLeaks():
     gc.collect()
     numGarbage = len(gc.garbage)
-    if numGarbage:
+    if numGarbage and not configIsToday('disable-garbage-logging'):
         print
         gr = GarbageLogger('found garbage', threaded=False)
         print
