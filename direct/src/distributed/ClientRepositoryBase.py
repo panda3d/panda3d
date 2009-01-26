@@ -180,12 +180,11 @@ class ClientRepositoryBase(ConnectionRepository):
     def handleGenerateWithRequiredOther(self, di):
         parentId = di.getUint32()
         zoneId = di.getUint32()
-        assert parentId == self.GameGlobalsId or parentId in self.doId2do
         # Get the class Id
         classId = di.getUint16()
         # Get the DO Id
         doId = di.getUint32()
-
+        
         dclass = self.dclassesByNumber[classId]
 
         deferrable = getattr(dclass.getClassDef(), 'deferrable', False)
@@ -225,6 +224,7 @@ class ClientRepositoryBase(ConnectionRepository):
 
     def __doGenerate(self, parentId, zoneId, classId, doId, di):
         # Look up the dclass
+        assert parentId == self.GameGlobalsId or parentId in self.doId2do
         dclass = self.dclassesByNumber[classId]
         assert(self.notify.debug("performing generate for %s %s" % (dclass.getName(), doId)))
         dclass.startGenerate()
