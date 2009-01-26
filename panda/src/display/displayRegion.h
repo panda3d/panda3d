@@ -95,6 +95,9 @@ PUBLISHED:
   INLINE void set_clear_depth_between_eyes(bool clear_depth_between_eyes);
   INLINE bool get_clear_depth_between_eyes() const;
 
+  INLINE void set_incomplete_render(bool incomplete_render);
+  INLINE bool get_incomplete_render() const;
+
   INLINE void set_texture_reload_priority(int texture_reload_priority);
   INLINE int get_texture_reload_priority() const;
 
@@ -149,6 +152,7 @@ private:
   GraphicsOutput *_window;
   bool _clear_depth_between_eyes;
 
+  bool _incomplete_render;
   int _texture_reload_priority;
 
   // Ditto for the cull traverser.

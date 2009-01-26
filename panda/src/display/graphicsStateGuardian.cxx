@@ -1075,6 +1075,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
                        Lens::StereoChannel stereo_channel) {
   _current_display_region = dr->get_object();
   _current_stereo_channel = stereo_channel;
+  _effective_incomplete_render = _incomplete_render && _current_display_region->get_incomplete_render();
 
   _stereo_buffer_mask = ~0;
 

@@ -137,6 +137,11 @@ needs_reset() const {
 //               screens, to guarantee that all of your assets are
 //               available by the time you take the loading screen
 //               down.
+//
+//               This flag may also be set individually on each
+//               DisplayRegion.  It will be considered true for a
+//               given DisplayRegion only if it is true on both the
+//               GSG and on the DisplayRegion.
 ////////////////////////////////////////////////////////////////////
 INLINE void GraphicsStateGuardian::
 set_incomplete_render(bool incomplete_render) {

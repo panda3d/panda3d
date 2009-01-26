@@ -2428,7 +2428,7 @@ bool TinyGraphicsStateGuardian::
 upload_texture(TinyTextureContext *gtc, bool force) {
   Texture *tex = gtc->get_texture();
 
-  if (_incomplete_render && !force) {
+  if (_effective_incomplete_render && !force) {
     if (!tex->has_ram_image() && tex->might_have_ram_image() &&
         tex->has_simple_ram_image() &&
         !_loader.is_null()) {

@@ -187,6 +187,40 @@ get_clear_depth_between_eyes() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_incomplete_render
+//       Access: Public
+//  Description: Sets the incomplete_render flag.  When this is
+//               true, the frame will be rendered even if some of the
+//               geometry or textures in the scene are not available
+//               (e.g. they have been temporarily paged out).  When
+//               this is false, the frame will be held up while this
+//               data is reloaded.
+//
+//               This flag may also be set on the
+//               GraphicsStateGuardian.  It will be considered true
+//               for a given DisplayRegion only if it is true on both
+//               the GSG and on the DisplayRegion.
+//
+//               See GraphicsStateGuardian::set_incomplete_render()
+//               for more detail.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_incomplete_render(bool incomplete_render) {
+  _incomplete_render = incomplete_render;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_incomplete_render
+//       Access: Public, Virtual
+//  Description: Returns the incomplete_render flag.  See
+//               set_incomplete_render().
+////////////////////////////////////////////////////////////////////
+INLINE bool DisplayRegion::
+get_incomplete_render() const {
+  return _incomplete_render;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_texture_reload_priority
 //       Access: Published
 //  Description: Specifies an integer priority which is assigned to

@@ -387,6 +387,7 @@ protected:
   bool _closing_gsg;
   bool _active;
   bool _incomplete_render;
+  bool _effective_incomplete_render;
   PT(Loader) _loader;
 
   PT(PreparedGraphicsObjects) _prepared_objects;

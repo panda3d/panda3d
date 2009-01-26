@@ -32,6 +32,7 @@ DisplayRegion::
 DisplayRegion(GraphicsOutput *window) :
   _window(window),
   _clear_depth_between_eyes(true),
+  _incomplete_render(true),
   _texture_reload_priority(0),
   _cull_region_pcollector("Cull:Invalid"),
   _draw_region_pcollector("Draw:Invalid")
@@ -50,6 +51,7 @@ DisplayRegion::
 DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
   _window(window),
   _clear_depth_between_eyes(true),
+  _incomplete_render(true),
   _texture_reload_priority(0),
   _cull_region_pcollector("Cull:Invalid"),
   _draw_region_pcollector("Draw:Invalid")
