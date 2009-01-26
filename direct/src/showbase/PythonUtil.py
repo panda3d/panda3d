@@ -3836,6 +3836,22 @@ def endSuperLog():
 def isInteger(n):
     return type(n) in (types.IntType, types.LongType)
 
+def configIsToday(configName):
+    # returns true if config string is a valid representation of today's date
+    today = time.localtime()
+    confStr = config.GetString(configName, '')
+    for format in ('%m/%d/%Y', '%m-%d-%Y', '%m.%d.%Y'):
+        try:
+            confDate = time.strptime(confStr, format)
+        except ValueError:
+            pass
+        else:
+            if (confDate.tm_year == today.tm_year and
+                confDate.tm_mon == today.tm_mon and
+                confDate.tm_mday == today.tm_mday):
+                return True
+    return False
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
@@ -3888,3 +3904,4 @@ __builtin__.pdir = pdir
 __builtin__.deeptype = deeptype
 __builtin__.Default = Default
 __builtin__.isInteger = isInteger
+__builtin__.configIsToday = configIsToday
