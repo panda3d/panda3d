@@ -509,6 +509,8 @@ class GarbageReport(Job):
 class GarbageLogger(GarbageReport):
     """If you just want to log the current garbage to the log file, make
     one of these. It automatically destroys itself after logging"""
+    # variable for checkForGarbageLeaks
+    LastNumGarbage = 0
     def __init__(self, name, *args, **kArgs):
         kArgs['log'] = True
         kArgs['autoDestroy'] = True
@@ -517,7 +519,9 @@ class GarbageLogger(GarbageReport):
 def checkForGarbageLeaks():
     gc.collect()
     numGarbage = len(gc.garbage)
-    if numGarbage and not configIsToday('disable-garbage-logging'):
+    if ((numGarbage != GarbageLogger.LastNumGarbage) and
+        (not configIsToday('disable-garbage-logging'))):
+        GarbageLogger.LastNumGarbage = numGarbage
         print
         gr = GarbageLogger('found garbage', threaded=False)
         print
