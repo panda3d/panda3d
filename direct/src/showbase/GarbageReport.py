@@ -37,15 +37,18 @@ class GarbageReport(Job):
 
     def __init__(self, name, log=True, verbose=False, fullReport=False, findCycles=True,
                  threaded=False, doneCallback=None, autoDestroy=False, priority=None,
-                 safeMode=False, delOnly=False):
+                 safeMode=False, delOnly=False, collect=True):
         # if autoDestroy is True, GarbageReport will self-destroy after logging
         # if false, caller is responsible for calling destroy()
         # if threaded is True, processing will be performed over multiple frames
+        # if collect is False, we assume that the caller just did a collect and the results
+        # are still in gc.garbage
         Job.__init__(self, name)
         # stick the arguments onto a ScratchPad so we can delete them all at once
         self._args = ScratchPad(name=name, log=log, verbose=verbose, fullReport=fullReport,
                                 findCycles=findCycles, doneCallback=doneCallback,
-                                autoDestroy=autoDestroy, safeMode=safeMode, delOnly=delOnly)
+                                autoDestroy=autoDestroy, safeMode=safeMode, delOnly=delOnly,
+                                collect=collect)
         if priority is not None:
             self.setPriority(priority)
         jobMgr.add(self)
@@ -62,7 +65,8 @@ class GarbageReport(Job):
             # cycles that do not involve any instances that define __del__ are cleaned up
             # automatically by Python, but they also appear in gc.garbage when SAVEALL is set
             gc.set_debug(0)
-            gc.collect()
+            if self._args.collect:
+                gc.collect()
             garbageInstances = gc.garbage[:]
             del gc.garbage[:]
             # only yield if there's more time-consuming work to do,
@@ -88,7 +92,8 @@ class GarbageReport(Job):
         # do a SAVEALL pass so that we have all of the objects involved in legitimate garbage cycles
         # without SAVEALL, gc.garbage only contains objects with __del__ methods
         gc.set_debug(gc.DEBUG_SAVEALL)
-        gc.collect()
+        if self._args.collect:
+            gc.collect()
         self.garbage = gc.garbage[:]
         del gc.garbage[:]
         # only yield if there's more time-consuming work to do,
@@ -523,7 +528,7 @@ def checkForGarbageLeaks():
         (not configIsToday('disable-garbage-logging'))):
         GarbageLogger.LastNumGarbage = numGarbage
         print
-        gr = GarbageLogger('found garbage', threaded=False)
+        gr = GarbageLogger('found garbage', threaded=False, collect=False)
         print
         notify = directNotify.newCategory("GarbageDetect")
         if config.GetBool('allow-garbage-cycles', 1):
