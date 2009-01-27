@@ -49,6 +49,14 @@ StaticTextFont(PandaNode *font_def) {
   int num_textures = tc.get_num_textures();
   for (int i = 0; i < num_textures; ++i) {
     Texture *tex = tc.get_texture(i);
+    
+    // Don't compress font textures.  Though there's a relatively high
+    // bang-for-the-buck in compressing them, there's an increased
+    // risk that broken graphics drivers will fail to render the text
+    // properly, causing troubles for a user who then won't be able to
+    // navigate the options menus to disable texture compression.
+    tex->set_compression(Texture::CM_off);
+
     if (tex->get_quality_level() == Texture::QL_default) {
       tex->set_quality_level(text_quality_level);
     }
