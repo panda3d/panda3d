@@ -106,6 +106,7 @@ private:
 public:
   // Defined within the class to avoid static-init ordering problems.
   ConfigVariableDouble _simple_thread_epoch_timeslice;
+  ConfigVariableDouble _simple_thread_volunteer_delay;
   ConfigVariableDouble _simple_thread_window;
   ConfigVariableDouble _simple_thread_low_weight;
   ConfigVariableDouble _simple_thread_normal_weight;

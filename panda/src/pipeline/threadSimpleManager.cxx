@@ -36,17 +36,22 @@ ThreadSimpleManager *ThreadSimpleManager::_global_ptr;
 ThreadSimpleManager::
 ThreadSimpleManager() :
   _simple_thread_epoch_timeslice
-  ("simple-thread-epoch-timeslice", 0.01,
+  ("simple-thread-epoch-timeslice", 0.05,
    PRC_DESC("When SIMPLE_THREADS is defined, this defines the amount of time, "
             "in seconds, that should be considered the "
             "typical timeslice for one epoch (to run all threads once).")),
+  _simple_thread_volunteer_delay
+  ("simple-thread-volunteer-delay", 0.0001,
+   PRC_DESC("When SIMPLE_THREADS is defined, this defines the amount of time, "
+            "in seconds, for which a task that voluntarily yields should "
+            "be delayed.")),
   _simple_thread_window
   ("simple-thread-window", 1.0,
    PRC_DESC("When SIMPLE_THREADS is defined, this defines the amount of time, "
             "in seconds, over which to average all the threads' runtimes, "
             "for the purpose of scheduling threads.")),
   _simple_thread_low_weight
-  ("simple-thread-low-weight", 0.1,
+  ("simple-thread-low-weight", 0.2,
    PRC_DESC("When SIMPLE_THREADS is defined, this determines the relative "
             "amount of time that is given to threads with priority TP_low.")),
   _simple_thread_normal_weight
@@ -106,7 +111,7 @@ enqueue_ready(ThreadSimpleImpl *thread, bool volunteer) {
     // sleep for the duration of the timeslice, so it won't interfere
     // with timeslice accounting for the remaining ready threads.
     double now = get_current_time();
-    thread->_wake_time = now + _simple_thread_epoch_timeslice;
+    thread->_wake_time = now + _simple_thread_volunteer_delay;
     _volunteers.push_back(thread);
     push_heap(_volunteers.begin(), _volunteers.end(), CompareStartTime());
   }
