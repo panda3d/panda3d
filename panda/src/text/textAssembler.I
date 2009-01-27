@@ -558,5 +558,7 @@ operator < (const TextAssembler::GeomCollectorKey &other) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void TextAssembler::GeomCollector::
 count_geom(const Geom *geom) {
+#ifdef HAVE_FREETYPE
   _geom->count_geom(geom);
+#endif
 }

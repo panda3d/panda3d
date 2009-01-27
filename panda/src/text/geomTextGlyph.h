@@ -16,10 +16,10 @@
 #define GEOMTEXTGLYPH_H
 
 #include "pandabase.h"
+#include "geom.h"
 
 #ifdef HAVE_FREETYPE
 
-#include "geom.h"
 #include "dynamicTextGlyph.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -76,6 +76,11 @@ private:
 };
 
 #include "geomTextGlyph.I"
+
+#else  // HAVE_FREETYPE
+
+// Without Freetype, a GeomTextGlyph is really just an ordinary Geom.
+typedef Geom GeomTextGlyph;
 
 #endif  // HAVE_FREETYPE
 
