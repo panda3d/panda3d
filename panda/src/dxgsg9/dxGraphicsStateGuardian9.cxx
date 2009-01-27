@@ -173,6 +173,10 @@ DXGraphicsStateGuardian9::
   if (IS_VALID_PTR(_d3d_device)) {
     _d3d_device->SetTexture(0, NULL);  // this frees reference to the old texture
   }
+#ifdef HAVE_CG
+  cgD3D9SetDevice(NULL);
+#endif // HAVE_CG
+
   free_nondx_resources();
 }
 
