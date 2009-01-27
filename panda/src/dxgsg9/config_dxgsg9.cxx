@@ -120,6 +120,15 @@ ConfigVariableBool dx_preserve_fpu_state
 ConfigVariableInt dx_preferred_device_id
 ("dx-preferred-device-id", -1);
 
+ConfigVariableBool dx_intel_compressed_texture_bug
+("dx-intel-compressed-texture-bug", true,
+ PRC_DESC("Set this true to work around a bug in the Intel driver "
+          "igdumd32.dll, for at least the 965 Express chipset family, "
+          "which breaks compressed texture images smaller "
+          "than about 256x256 (even mipmap levels).  The workaround is "
+          "simply to disable compressed texture support when this "
+          "driver is detected."));
+
 #ifdef _DEBUG
 ConfigVariableDouble dx_global_miplevel_bias
 ("dx-global-miplevel-bias", 0.0);

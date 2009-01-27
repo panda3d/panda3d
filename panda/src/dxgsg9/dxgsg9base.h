@@ -210,6 +210,7 @@ struct DXScreenData {
 
   bool _supports_dynamic_textures;
   bool _supports_automatic_mipmap_generation;
+  bool _intel_compressed_texture_bug;
 };
 
 

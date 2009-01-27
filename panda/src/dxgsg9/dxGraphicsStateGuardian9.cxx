@@ -2678,12 +2678,21 @@ reset() {
     _compressed_texture_formats.set_bit(Texture::CM_dxt##num);\
   }
 
-  CHECK_FOR_DXTVERSION(1)
-  CHECK_FOR_DXTVERSION(2)
-  CHECK_FOR_DXTVERSION(3)
-  CHECK_FOR_DXTVERSION(4)
-  CHECK_FOR_DXTVERSION(5)
-
+  if (_screen->_intel_compressed_texture_bug) {
+    dxgsg9_cat.info()
+      << "Buggy Intel driver detected; disabling compressed textures.\n";
+    _screen->_supported_tex_formats_mask &= 
+      ~(DXT1_FLAG | DXT2_FLAG | DXT3_FLAG | DXT4_FLAG | DXT5_FLAG);
+                                              
+  } else {
+    // Check for available compressed formats normally.
+    CHECK_FOR_DXTVERSION(1);
+    CHECK_FOR_DXTVERSION(2);
+    CHECK_FOR_DXTVERSION(3);
+    CHECK_FOR_DXTVERSION(4);
+    CHECK_FOR_DXTVERSION(5);
+  }
+      
   #undef CHECK_FOR_DXTVERSION
 
   _screen->_supports_rgba16f_texture_format = false;

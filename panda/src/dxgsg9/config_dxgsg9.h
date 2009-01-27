@@ -47,6 +47,8 @@ extern ConfigVariableBool dx_do_vidmemsize_check;
 extern ConfigVariableBool dx_preserve_fpu_state;
 extern ConfigVariableInt dx_preferred_device_id;
 
+extern ConfigVariableBool dx_intel_compressed_texture_bug;
+
 #ifndef NDEBUG
 extern ConfigVariableInt dx_force_backface_culling;
 #endif

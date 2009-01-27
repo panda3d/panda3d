@@ -61,6 +61,7 @@ private:
     char szDescription[MAX_DEVICE_IDENTIFIER_STRING];
     GUID guidDeviceIdentifier;
     DWORD VendorID, DeviceID;
+    LARGE_INTEGER _driver_version;
     HMONITOR _monitor;
   };
   typedef pvector<DXDeviceInfo> DXDeviceInfoVec;

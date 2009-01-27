@@ -930,6 +930,7 @@ choose_device() {
             MAX_DEVICE_IDENTIFIER_STRING);
     devinfo.VendorID = adapter_info.VendorId;
     devinfo.DeviceID = adapter_info.DeviceId;
+    devinfo._driver_version = adapter_info.DriverVersion;
     devinfo._monitor = _monitor;
     devinfo.cardID = i;
 
@@ -1135,6 +1136,15 @@ consider_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
   _wcontext._display_mode.Format = pixFmt;
   _wcontext._display_mode.RefreshRate = D3DPRESENT_RATE_DEFAULT;
   _wcontext._monitor = device_info->_monitor;
+
+  if (strcmp(device_info->szDriver, "igdumd32.dll") == 0 &&
+      device_info->_driver_version.QuadPart <= 0x0007000e000a0531LL &&
+      dx_intel_compressed_texture_bug) {
+    // Disable compressed textures for this buggy driver (7.14.10.1329
+    // and earlier--I don't know whether any other drivers also
+    // exhibit the bug).
+    _wcontext._intel_compressed_texture_bug = true;
+  }
 
   return true;
 }
