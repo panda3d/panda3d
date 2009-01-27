@@ -41,6 +41,8 @@ class DistributedObjectAI(DistributedObjectBase):
             self.__barriers = {}
 
             self.__generated = False
+            # reference count for multiple inheritance
+            self.__generates = 0
 
             self._zoneData = None
 
@@ -93,60 +95,62 @@ class DistributedObjectAI(DistributedObjectBase):
         Note that this may be called multiple times if a class inherits
         from DistributedObjectAI more than once.
         """
-        # prevent this code from executing multiple times
-        if self.air is not None:
-            # self.doId may not exist.  The __dict__ syntax works around that.
-            assert self.notify.debug('delete(): %s' % (self.__dict__.get("doId")))
+        self.__generates -= 1
+        if self.__generates < 0:
+            self.notify.error('DistributedObjectAI: delete() called more times than generate()')
+        if self.__generates == 0:
+            # prevent this code from executing multiple times
+            if self.air is not None:
+                # self.doId may not exist.  The __dict__ syntax works around that.
+                assert self.notify.debug('delete(): %s' % (self.__dict__.get("doId")))
 
-            if not self._DOAI_requestedDelete:
-                # this logs every delete that was not requested by us.
-                # TODO: this currently prints warnings for deletes of objects
-                # that we did not create. We need to add a 'locally created'
-                # flag to every object to filter these out.
-                """
-                DistributedObjectAI.notify.warning(
-                    'delete() called but requestDelete never called for %s: %s'
-                    % (self.__dict__.get('doId'), self.__class__.__name__))
+                if not self._DOAI_requestedDelete:
+                    # this logs every delete that was not requested by us.
+                    # TODO: this currently prints warnings for deletes of objects
+                    # that we did not create. We need to add a 'locally created'
+                    # flag to every object to filter these out.
                     """
-                """
-                # print a stack trace so we can detect whether this is the
-                # result of a network msg.
-                # this is slow.
-                from direct.showbase.PythonUtil import StackTrace
-                DistributedObjectAI.notify.warning(
-                    'stack trace: %s' % StackTrace())
+                    DistributedObjectAI.notify.warning(
+                        'delete() called but requestDelete never called for %s: %s'
+                        % (self.__dict__.get('doId'), self.__class__.__name__))
+                        """
                     """
-            self._DOAI_requestedDelete = False
+                    # print a stack trace so we can detect whether this is the
+                    # result of a network msg.
+                    # this is slow.
+                    from direct.showbase.PythonUtil import StackTrace
+                    DistributedObjectAI.notify.warning(
+                        'stack trace: %s' % StackTrace())
+                        """
+                self._DOAI_requestedDelete = False
 
-            if self._zoneData is not None:
-                self._zoneData.destroy()
-            self._zoneData = None
+                if self._zoneData is not None:
+                    self._zoneData.destroy()
+                self._zoneData = None
 
-            # Clean up all the pending barriers.
-            for barrier in self.__barriers.values():
-                barrier.cleanup()
-            self.__barriers = {}
+                # Clean up all the pending barriers.
+                for barrier in self.__barriers.values():
+                    barrier.cleanup()
+                self.__barriers = {}
 
-            self.air.stopTrackRequestDeletedDO(self)
+                self.air.stopTrackRequestDeletedDO(self)
 
-            # DCR: I've re-enabled this block of code so that Toontown's
-            # AI won't leak channels.
-            # Let me know if it causes trouble.
-            ### Asad: As per Roger's suggestion, turn off the following
-            ### block until a solution is thought out of how to prevent
-            ### this delete message or to handle this message better
-            # TODO: do we still need this check?
-            if not hasattr(self, "doNotDeallocateChannel"):
-                if self.air:
-                    if self.air.minChannel <= self.doId <= self.air.maxChannel:
-                        self.air.deallocateChannel(self.doId)
-            self.air = None
+                # DCR: I've re-enabled this block of code so that Toontown's
+                # AI won't leak channels.
+                # Let me know if it causes trouble.
+                ### Asad: As per Roger's suggestion, turn off the following
+                ### block until a solution is thought out of how to prevent
+                ### this delete message or to handle this message better
+                # TODO: do we still need this check?
+                if not hasattr(self, "doNotDeallocateChannel"):
+                    if self.air:
+                        if self.air.minChannel <= self.doId <= self.air.maxChannel:
+                            self.air.deallocateChannel(self.doId)
+                self.air = None
 
-            if hasattr(self, 'parentId'):
-                del self.parentId
-            if hasattr(self, 'zoneId'):
-                del self.zoneId
-            self.__generated = False
+                self.parentId = None
+                self.zoneId = None
+                self.__generated = False
 
     def isDeleted(self):
         """
@@ -418,7 +422,7 @@ class DistributedObjectAI(DistributedObjectBase):
         other networked info in this function.
         """
         assert self.notify.debugStateCall(self)
-
+        self.__generates += 1
 
     def generateInit(self, repository=None):
         """

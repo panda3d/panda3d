@@ -40,6 +40,8 @@ class DistributedObjectUD(DistributedObjectBase):
             self.__barriers = {}
 
             self.__generated = False
+            # reference count for multiple inheritance
+            self.__generates = 0
 
     # Uncomment if you want to debug DO leaks
     #def __del__(self):
@@ -89,47 +91,49 @@ class DistributedObjectUD(DistributedObjectBase):
         Note that this may be called multiple times if a class inherits
         from DistributedObjectUD more than once.
         """
-        # prevent this code from executing multiple times
-        if self.air is not None:
-            # self.doId may not exist.  The __dict__ syntax works around that.
-            assert self.notify.debug('delete(): %s' % (self.__dict__.get("doId")))
+        self.__generates -= 1
+        if self.__generates < 0:
+            self.notify.error('DistributedObjectUD: delete() called more times than generate()')
+        if self.__generates == 0:
+            # prevent this code from executing multiple times
+            if self.air is not None:
+                # self.doId may not exist.  The __dict__ syntax works around that.
+                assert self.notify.debug('delete(): %s' % (self.__dict__.get("doId")))
 
-            if not self._DOUD_requestedDelete:
-                # this logs every delete that was not requested by us.
-                # TODO: this currently prints warnings for deletes of objects
-                # that we did not create. We need to add a 'locally created'
-                # flag to every object to filter these out.
-                """
-                DistributedObjectUD.notify.warning(
-                    'delete() called but requestDelete never called for %s: %s'
-                    % (self.__dict__.get('doId'), self.__class__.__name__))
+                if not self._DOUD_requestedDelete:
+                    # this logs every delete that was not requested by us.
+                    # TODO: this currently prints warnings for deletes of objects
+                    # that we did not create. We need to add a 'locally created'
+                    # flag to every object to filter these out.
                     """
-                """
-                # print a stack trace so we can detect whether this is the
-                # result of a network msg.
-                # this is slow.
-                from direct.showbase.PythonUtil import StackTrace
-                DistributedObjectUD.notify.warning(
-                    'stack trace: %s' % StackTrace())
+                    DistributedObjectUD.notify.warning(
+                        'delete() called but requestDelete never called for %s: %s'
+                        % (self.__dict__.get('doId'), self.__class__.__name__))
+                        """
                     """
-            self._DOUD_requestedDelete = False
+                    # print a stack trace so we can detect whether this is the
+                    # result of a network msg.
+                    # this is slow.
+                    from direct.showbase.PythonUtil import StackTrace
+                    DistributedObjectUD.notify.warning(
+                        'stack trace: %s' % StackTrace())
+                        """
+                self._DOUD_requestedDelete = False
 
-            # Clean up all the pending barriers.
-            for barrier in self.__barriers.values():
-                barrier.cleanup()
-            self.__barriers = {}
+                # Clean up all the pending barriers.
+                for barrier in self.__barriers.values():
+                    barrier.cleanup()
+                self.__barriers = {}
 
-            # Asad: As per Roger's suggestion, turn off the following block until a solution is
-            # Thought out of how to prevent this delete message or to handle this message better
-##             if not hasattr(self, "doNotDeallocateChannel"):
-##                 if self.air:
-##                     self.air.deallocateChannel(self.doId)
-##             self.air = None
-            if hasattr(self, 'parentId'):
-                del self.parentId
-            if hasattr(self, 'zoneId'):
-                del self.zoneId
-            self.__generated = False
+                # Asad: As per Roger's suggestion, turn off the following block until a solution is
+                # Thought out of how to prevent this delete message or to handle this message better
+##              if not hasattr(self, "doNotDeallocateChannel"):
+##                  if self.air:
+##                      self.air.deallocateChannel(self.doId)
+##              self.air = None
+                self.parentId = None
+                self.zoneId = None
+                self.__generated = False
 
     def isDeleted(self):
         """
@@ -350,6 +354,7 @@ class DistributedObjectUD(DistributedObjectBase):
         other networked info in this function.
         """
         assert self.notify.debugStateCall(self)
+        self.__generates += 1
         self.air.storeObjectLocation(self, self.parentId, self.zoneId)
 
     def generateInit(self, repository=None):
