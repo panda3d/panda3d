@@ -244,30 +244,36 @@ store(BamCacheRecord *record) {
     return false;
   }
 
-  BamWriter writer(&dout, temp_pathname);
-  if (!writer.init()) {
-    temp_pathname.unlink();
-    return false;
-  }
+  {
+    BamWriter writer(&dout, temp_pathname);
+    if (!writer.init()) {
+      temp_pathname.unlink();
+      return false;
+    }
+    
+    TypeRegistry *type_registry = TypeRegistry::ptr();
+    TypeHandle texture_type = type_registry->find_type("Texture");
+    if (record->get_data()->is_of_type(texture_type)) {
+      // Texture objects write the actual texture image.
+      writer.set_file_texture_mode(BTM_rawdata);
+    } else {
+      // Any other kinds of objects write texture references.
+      writer.set_file_texture_mode(BTM_fullpath);
+    }
+    
+    if (!writer.write_object(record)) {
+      temp_pathname.unlink();
+      return false;
+    }
+    
+    if (!writer.write_object(record->get_data())) {
+      temp_pathname.unlink();
+      return false;
+    }
 
-  TypeRegistry *type_registry = TypeRegistry::ptr();
-  TypeHandle texture_type = type_registry->find_type("Texture");
-  if (record->get_data()->is_of_type(texture_type)) {
-    // Texture objects write the actual texture image.
-    writer.set_file_texture_mode(BTM_rawdata);
-  } else {
-    // Any other kinds of objects write texture references.
-    writer.set_file_texture_mode(BTM_fullpath);
-  }
-
-  if (!writer.write_object(record)) {
-    temp_pathname.unlink();
-    return false;
-  }
-
-  if (!writer.write_object(record->get_data())) {
-    temp_pathname.unlink();
-    return false;
+    // Now that we are done with the BamWriter, it's important to let
+    // it destruct now and clean itself up, or it might get mad if we
+    // delete any TypedWritables below that haven't been written yet.
   }
 
   record->_record_size = temp_file.tellp();
@@ -752,15 +758,17 @@ do_write_index(Filename &index_pathname, const BamCacheIndex *index) {
     return false;
   }
 
-  BamWriter writer(&dout, index_pathname);
-  if (!writer.init()) {
-    index_pathname.unlink();
-    return false;
-  }
-
-  if (!writer.write_object(index)) {
-    index_pathname.unlink();
-    return false;
+  {
+    BamWriter writer(&dout, index_pathname);
+    if (!writer.init()) {
+      index_pathname.unlink();
+      return false;
+    }
+    
+    if (!writer.write_object(index)) {
+      index_pathname.unlink();
+      return false;
+    }
   }
 
   index_file.close();
