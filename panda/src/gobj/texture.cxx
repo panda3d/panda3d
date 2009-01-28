@@ -4636,7 +4636,7 @@ read_dds_level_generic_uncompressed(Texture *tex, const DDSHeader &header,
       // Read a little-endian numeric value of bpp bytes.
       unsigned int pixel = 0;
       int shift = 0;
-      for (int b = 0; b < bpp; ++b) {
+      for (int bi = 0; bi < bpp; ++bi) {
         unsigned int ch = (unsigned char)in.get();
         pixel |= (ch << shift);
         shift += 8;
