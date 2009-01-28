@@ -256,6 +256,9 @@ close_window() {
     _gsg.clear();
     _active = false;
   }
+
+  DXGraphicsStateGuardian9::set_cg_device(NULL);
+
   _dxgsg->release_swap_chain(&_wcontext);
   WinGraphicsWindow::close_window();
 }

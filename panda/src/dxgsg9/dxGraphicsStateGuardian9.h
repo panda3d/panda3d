@@ -164,6 +164,8 @@ public:
   void restore_gamma();
   static void atexit_function(void);
 
+  static void set_cg_device(LPDIRECT3DDEVICE9 cg_device);
+
 protected:
   void do_issue_transform();
   void do_issue_alpha_test();
@@ -365,6 +367,8 @@ protected:
   list <wdxGraphicsBuffer9 **> _graphics_buffer_list;
 
   int _supports_gamma_calibration;  
+
+  static LPDIRECT3DDEVICE9 _cg_device;
 
 public:
   virtual TypeHandle get_type() const {

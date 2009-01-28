@@ -81,6 +81,8 @@ D3DMATRIX DXGraphicsStateGuardian9::_d3d_ident_mat;
 unsigned char *DXGraphicsStateGuardian9::_temp_buffer = NULL;
 unsigned char *DXGraphicsStateGuardian9::_safe_buffer_start = NULL;
 
+LPDIRECT3DDEVICE9 DXGraphicsStateGuardian9::_cg_device = NULL;
+
 #define __D3DLIGHT_RANGE_MAX ((float)sqrt(FLT_MAX))  //for some reason this is missing in dx9 hdrs
 
 #define MY_D3DRGBA(r, g, b, a) ((D3DCOLOR) D3DCOLOR_COLORVALUE(r, g, b, a))
@@ -173,9 +175,6 @@ DXGraphicsStateGuardian9::
   if (IS_VALID_PTR(_d3d_device)) {
     _d3d_device->SetTexture(0, NULL);  // this frees reference to the old texture
   }
-#ifdef HAVE_CG
-  cgD3D9SetDevice(NULL);
-#endif // HAVE_CG
 
   free_nondx_resources();
 }
@@ -2432,7 +2431,7 @@ reset() {
   _auto_detect_shader_model = _shader_model;
 
 #ifdef HAVE_CG
-  cgD3D9SetDevice (_d3d_device);
+  set_cg_device(_d3d_device);
 
   if (cgD3D9IsProfileSupported(CG_PROFILE_PS_2_0) &&
       cgD3D9IsProfileSupported(CG_PROFILE_VS_2_0)) {
@@ -4416,6 +4415,7 @@ set_context(DXScreenData *new_context) {
   _swap_chain = _screen->_swap_chain;   //copy this one field for speed of deref
 
   _screen->_dxgsg9 = this;
+  set_cg_device(_d3d_device);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -5663,9 +5663,26 @@ restore_gamma() {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian9::
 atexit_function(void) {
+  set_cg_device(NULL);
   static_set_gamma(true, 1.0f);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::set_cg_device
+//       Access: Protected, Static
+//  Description: Sets the global Cg device pointer.  TODO: make this
+//               thread-safe somehow.  Maybe Cg is inherently not
+//               thread-safe.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian9::
+set_cg_device(LPDIRECT3DDEVICE9 cg_device) {
+#ifdef HAVE_CG
+  if (_cg_device != cg_device) {
+    cgD3D9SetDevice(cg_device);
+    _cg_device = cg_device;
+  }
+#endif // HAVE_CG
+}
 
 
 

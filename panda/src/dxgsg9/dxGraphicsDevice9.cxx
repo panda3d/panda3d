@@ -37,5 +37,4 @@ DXGraphicsDevice9(wdxGraphicsPipe9 *pipe) :
 ////////////////////////////////////////////////////////////////////
 DXGraphicsDevice9::
 ~DXGraphicsDevice9() {
-
 }
