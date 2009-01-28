@@ -21,6 +21,8 @@
 #include "filename.h"
 #include "pmap.h"
 #include "pvector.h"
+#include "reMutex.h"
+#include "reMutexHolder.h"
 
 class BamCacheIndex;
 
@@ -58,7 +60,7 @@ PUBLISHED:
   INLINE bool get_cache_compressed_textures() const;
 
   void set_root(const Filename &root);
-  INLINE const Filename &get_root() const;
+  INLINE Filename get_root() const;
 
   INLINE void set_flush_time(int flush_time);
   INLINE int get_flush_time() const;
@@ -122,6 +124,8 @@ private:
 
   Filename _index_pathname;
   string _index_ref_contents;
+
+  ReMutex _lock;
 };
 
 #include "bamCache.I"

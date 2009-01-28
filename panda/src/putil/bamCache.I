@@ -27,6 +27,7 @@
 ////////////////////////////////////////////////////////////////////
 INLINE void BamCache::
 set_active(bool active) {
+  ReMutexHolder holder(_lock);
   _active = active;
 }
 
@@ -45,6 +46,7 @@ set_active(bool active) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool BamCache::
 get_active() const {
+  ReMutexHolder holder(_lock);
   return _active;
 }
 
@@ -56,6 +58,7 @@ get_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void BamCache::
 set_cache_models(bool flag) {
+  ReMutexHolder holder(_lock);
   _cache_models = flag;
 }
 
@@ -69,6 +72,7 @@ set_cache_models(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool BamCache::
 get_cache_models() const {
+  ReMutexHolder holder(_lock);
   return _cache_models && _active;
 }
 
@@ -80,6 +84,7 @@ get_cache_models() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void BamCache::
 set_cache_textures(bool flag) {
+  ReMutexHolder holder(_lock);
   _cache_textures = flag;
 }
 
@@ -93,6 +98,7 @@ set_cache_textures(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool BamCache::
 get_cache_textures() const {
+  ReMutexHolder holder(_lock);
   return _cache_textures && _active;
 }
 
@@ -117,6 +123,7 @@ get_cache_textures() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void BamCache::
 set_cache_compressed_textures(bool flag) {
+  ReMutexHolder holder(_lock);
   _cache_compressed_textures = flag;
 }
 
@@ -131,6 +138,7 @@ set_cache_compressed_textures(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool BamCache::
 get_cache_compressed_textures() const {
+  ReMutexHolder holder(_lock);
   return _cache_compressed_textures && _active;
 }
 
@@ -140,8 +148,9 @@ get_cache_compressed_textures() const {
 //  Description: Returns the current root pathname of the cache.  See
 //               set_root().
 ////////////////////////////////////////////////////////////////////
-INLINE const Filename &BamCache::
+INLINE Filename BamCache::
 get_root() const {
+  ReMutexHolder holder(_lock);
   return _root;
 }
 
@@ -153,6 +162,7 @@ get_root() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void BamCache::
 set_flush_time(int flush_time) {
+  ReMutexHolder holder(_lock);
   _flush_time = flush_time;
 }
 
@@ -164,6 +174,7 @@ set_flush_time(int flush_time) {
 ////////////////////////////////////////////////////////////////////
 INLINE int BamCache::
 get_flush_time() const {
+  ReMutexHolder holder(_lock);
   return _flush_time;
 }
 
@@ -183,6 +194,7 @@ get_flush_time() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void BamCache::
 set_cache_max_kbytes(int max_kbytes) {
+  ReMutexHolder holder(_lock);
   _max_kbytes = max_kbytes;
   check_cache_size();
 }
@@ -196,6 +208,7 @@ set_cache_max_kbytes(int max_kbytes) {
 ////////////////////////////////////////////////////////////////////
 INLINE int BamCache::
 get_cache_max_kbytes() const {
+  ReMutexHolder holder(_lock);
   return _max_kbytes;
 }
 
@@ -210,6 +223,7 @@ get_cache_max_kbytes() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void BamCache::
 set_read_only(bool ro) {
+  ReMutexHolder holder(_lock);
   _read_only = ro;
 }
 
@@ -224,6 +238,7 @@ set_read_only(bool ro) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool BamCache::
 get_read_only() const {
+  ReMutexHolder holder(_lock);
   return _read_only;
 }
 
