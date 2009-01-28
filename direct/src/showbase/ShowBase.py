@@ -272,15 +272,21 @@ class ShowBase(DirectObject.DirectObject):
         # - client-cpu-affinity-mask config
         # - pcalt-# (# is CPU number, 0-based)
         # - client-cpu-affinity config
+        # - auto-single-cpu-affinity config
         affinityMask = self.config.GetInt('client-cpu-affinity-mask', -1)
         if affinityMask != -1:
             TrueClock.getGlobalPtr().setCpuAffinity(affinityMask)
         else:
+            # this is useful on machines that perform better with each process
+            # assigned to a single CPU
+            autoAffinity = self.config.GetBool('auto-single-cpu-affinity', 0)
             affinity = None
-            if 'clientIndex' in __builtin__.__dict__:
+            if autoAffinity and ('clientIndex' in __builtin__.__dict__):
                 affinity = abs(int(__builtin__.clientIndex))
             else:
                 affinity = self.config.GetInt('client-cpu-affinity', -1)
+            if (affinity in (None, -1)) and autoAffinity:
+                affinity = 0
             if affinity not in (None, -1):
                 # Windows XP supports a 32-bit affinity mask
                 TrueClock.getGlobalPtr().setCpuAffinity(1 << (affinity % 32))
