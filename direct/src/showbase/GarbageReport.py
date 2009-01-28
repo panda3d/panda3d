@@ -514,8 +514,9 @@ class GarbageReport(Job):
 class GarbageLogger(GarbageReport):
     """If you just want to log the current garbage to the log file, make
     one of these. It automatically destroys itself after logging"""
-    # variable for checkForGarbageLeaks
+    # for checkForGarbageLeaks
     LastNumGarbage = 0
+    LastNumCycles = 0
     def __init__(self, name, *args, **kArgs):
         kArgs['log'] = True
         kArgs['autoDestroy'] = True
@@ -524,18 +525,20 @@ class GarbageLogger(GarbageReport):
 def checkForGarbageLeaks():
     gc.collect()
     numGarbage = len(gc.garbage)
-    if ((numGarbage != GarbageLogger.LastNumGarbage) and
-        (not configIsToday('disable-garbage-logging'))):
-        GarbageLogger.LastNumGarbage = numGarbage
-        print
-        gr = GarbageLogger('found garbage', threaded=False, collect=False)
-        print
+    if (numGarbage > 0 and (not configIsToday('disable-garbage-logging'))):
+        if (numGarbage != GarbageLogger.LastNumGarbage):
+            print
+            gr = GarbageLogger('found garbage', threaded=False, collect=False)
+            print
+            GarbageLogger.LastNumGarbage = numGarbage
+            GarbageLogger.LastNumCycles = gr.getNumCycles()
         notify = directNotify.newCategory("GarbageDetect")
         if config.GetBool('allow-garbage-cycles', 1):
             func = notify.warning
         else:
             func = notify.error
-        func('%s garbage cycles found, see info above' % gr.getNumCycles())
+        func('%s garbage cycles found, see info above' %
+             GarbageLogger.LastNumCycles)
     return numGarbage
 
 def b_checkForGarbageLeaks(wantReply=False):
