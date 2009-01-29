@@ -1141,9 +1141,9 @@ consider_device(wdxGraphicsPipe9 *dxpipe, DXDeviceInfo *device_info) {
   _wcontext._monitor = device_info->_monitor;
 
   if (strcmp(device_info->szDriver, "igdumd32.dll") == 0 &&
-      device_info->_driver_version.QuadPart <= 0x0007000e000a0531LL &&
+      device_info->_driver_version.QuadPart <= 0x0007000e000affffLL &&
       dx_intel_compressed_texture_bug) {
-    // Disable compressed textures for this buggy driver (7.14.10.1329
+    // Disable compressed textures for this buggy driver (7.14.10.65535
     // and earlier--I don't know whether any other drivers also
     // exhibit the bug).
     _wcontext._intel_compressed_texture_bug = true;
