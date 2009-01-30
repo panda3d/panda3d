@@ -281,6 +281,12 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
     tex->clear_ram_image();
   }
 
+  // Set it to have no compression by default.  You can restore
+  // compression later if you really, really want it; but this freaks
+  // out some drivers, and presumably it's a mistake if you have
+  // compression enabled for a rendered texture.
+  tex->set_compression(Texture::CM_off);
+
   // Choose a default bitplane.
   if (plane == RTP_COUNT) {
     if (tex->get_format()==Texture::F_depth_stencil) {
