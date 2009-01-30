@@ -3003,6 +3003,9 @@ do_reload_ram_image(bool allow_compression) {
   if (do_has_ram_image() && record != (BamCacheRecord *)NULL) {
     if (cache->get_cache_textures() || (_ram_image_compression != CM_off && cache->get_cache_compressed_textures())) {
       // Update the cache.
+      if (record != (BamCacheRecord *)NULL) {
+        record->add_dependent_file(_fullpath);
+      }
       record->set_data(this, false);
       cache->store(record);
     }
