@@ -68,6 +68,7 @@ class FilterManager(DirectObject):
         self.rclears = self.getClears(self.region)
         self.camera = cam
         self.caminit = cam.node().getInitialState()
+        self.camstate = self.caminit
         self.buffers = []
         self.sizes = []
         self.nextsort = self.win.getSort() - 1000
@@ -173,6 +174,8 @@ class FilterManager(DirectObject):
 
         if (colortex == None):
             colortex = Texture("filter-base-color")
+            colortex.setWrapU(Texture.WMClamp)
+            colortex.setWrapV(Texture.WMClamp)
 
         texgroup = (depthtex, colortex, auxtex, None)
 
@@ -193,7 +196,7 @@ class FilterManager(DirectObject):
         quad.setColor(Vec4(1,0.5,0.5,1))
 
         cs = NodePath("dummy")
-        cs.setState(self.caminit)
+        cs.setState(self.camstate)
         # Do we really need to turn on the Shader Generator?
         #cs.setShaderAuto()
         if (auxbits):
@@ -238,7 +241,9 @@ class FilterManager(DirectObject):
 
         winx, winy = self.getScaledSize(mul, div, align)
         
-        buffer = self.createBuffer("filter-stage", winx, winy, texgroup, depthbits=0)
+        depthbits = bool(depthtex != None)
+        
+        buffer = self.createBuffer("filter-stage", winx, winy, texgroup, depthbits)
 
         if (buffer == None):
             return None
@@ -273,7 +278,7 @@ class FilterManager(DirectObject):
         winprops.setSize(xsize, ysize)
         props = FrameBufferProperties()
         props.setRgbColor(1)
-        props.setDepthBits(1)
+        props.setDepthBits(depthbits)
         depthtex, colortex, auxtex0, auxtex1 = texgroup
         if (auxtex0 != None):
             props.setAuxRgba(1)
@@ -321,6 +326,7 @@ class FilterManager(DirectObject):
         self.sizes = []
         self.setClears(self.win, self.wclears)
         self.setClears(self.region, self.rclears)
+        self.camstate = self.caminit
         self.camera.node().setInitialState(self.caminit)
         self.region.setCamera(self.camera)
         self.nextsort = self.win.getSort() - 1000
