@@ -95,6 +95,7 @@ PUBLISHED:
 
   INLINE void set_incomplete_render(bool incomplete_render);
   virtual INLINE bool get_incomplete_render() const;
+  virtual INLINE bool get_effective_incomplete_render() const;
 
   INLINE void set_loader(Loader *loader);
   INLINE Loader *get_loader() const;

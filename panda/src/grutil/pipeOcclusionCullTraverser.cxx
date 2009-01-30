@@ -140,8 +140,9 @@ PipeOcclusionCullTraverser(const PipeOcclusionCullTraverser &copy) :
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void PipeOcclusionCullTraverser::
-set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase) {
-  CullTraverser::set_scene(scene_setup, gsgbase);
+set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase,
+          bool dr_incomplete_render) {
+  CullTraverser::set_scene(scene_setup, gsgbase, dr_incomplete_render);
   if (!_live) {
     return;
   }
@@ -195,7 +196,7 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsgbase) {
   _internal_cull_handler = new DrawCullHandler(gsg);
   _internal_trav = new CullTraverser;
   _internal_trav->set_cull_handler(_internal_cull_handler);
-  _internal_trav->set_scene(_scene, gsg);
+  _internal_trav->set_scene(_scene, gsg, dr_incomplete_render);
   _internal_trav->set_view_frustum(get_view_frustum());
   _internal_trav->set_camera_mask(_occlusion_mask);
 

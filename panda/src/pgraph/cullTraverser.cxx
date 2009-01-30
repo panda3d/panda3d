@@ -57,6 +57,7 @@ CullTraverser() :
   _initial_state = RenderState::make_empty();
   _cull_handler = (CullHandler *)NULL;
   _portal_clipper = (PortalClipper *)NULL;
+  _effective_incomplete_render = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,7 +77,8 @@ CullTraverser(const CullTraverser &copy) :
   _depth_offset_decals(copy._depth_offset_decals),
   _view_frustum(copy._view_frustum),
   _cull_handler(copy._cull_handler),
-  _portal_clipper(copy._portal_clipper)
+  _portal_clipper(copy._portal_clipper),
+  _effective_incomplete_render(copy._effective_incomplete_render)
 {
 }
 
@@ -88,7 +90,8 @@ CullTraverser(const CullTraverser &copy) :
 //               traversal begins.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
-set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg) {
+set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg,
+          bool dr_incomplete_render) {
   _scene_setup = scene_setup;
   _gsg = gsg;
 
@@ -101,6 +104,8 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg) {
   _tag_state_key = camera->get_tag_state_key();
   _has_tag_state_key = !_tag_state_key.empty();
   _camera_mask = camera->get_camera_mask();
+
+  _effective_incomplete_render = _gsg->get_incomplete_render() && dr_incomplete_render;
 }
 
 ////////////////////////////////////////////////////////////////////

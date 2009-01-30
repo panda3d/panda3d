@@ -1687,7 +1687,7 @@ do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
 
   CullTraverser *trav = dr->get_cull_traverser();
   trav->set_cull_handler(cull_handler);
-  trav->set_scene(scene_setup, gsg);
+  trav->set_scene(scene_setup, gsg, dr->get_incomplete_render());
 
   trav->set_view_frustum(NULL);
   if (view_frustum_cull) {

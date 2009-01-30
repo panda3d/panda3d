@@ -160,6 +160,24 @@ get_incomplete_render() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_effective_incomplete_render
+//       Access: Public, Virtual
+//  Description: Returns true if the GSG is effectively in
+//               incomplete_render state, considering both the GSG's
+//               incomplete_render and its current DisplayRegion's
+//               incomplete_render flags.  It only makes sense to call
+//               this during the draw traversal; at other times this
+//               return value will be meaningless.
+//
+//               See CullTraverser::get_effective_incomplete_render()
+//               for this same information during the cull traversal.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_effective_incomplete_render() const {
+  return _effective_incomplete_render;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_loader
 //       Access: Public
 //  Description: Sets the Loader object that will be used by this GSG

@@ -218,6 +218,22 @@ get_portal_clipper() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullTraverser::get_effective_incomplete_render
+//       Access: Public
+//  Description: Returns true if the cull traversal is effectively in
+//               incomplete_render state, considering both the GSG's
+//               incomplete_render and the current DisplayRegion's
+//               incomplete_render flags.  This returns the flag
+//               during the cull traversal; see
+//               GSG::get_effective_incomplete_render() for this same
+//               flag during the draw traversal.
+////////////////////////////////////////////////////////////////////
+INLINE bool CullTraverser::
+get_effective_incomplete_render() const {
+  return _effective_incomplete_render;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::flush_level
 //       Access: Public, Static
 //  Description: Flushes the PStatCollectors used during traversal.

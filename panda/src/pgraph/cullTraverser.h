@@ -54,7 +54,8 @@ public:
   INLINE Thread *get_current_thread() const;
 
   virtual void set_scene(SceneSetup *scene_setup,
-                         GraphicsStateGuardianBase *gsg);
+                         GraphicsStateGuardianBase *gsg,
+                         bool dr_incomplete_render);
   INLINE SceneSetup *get_scene() const;
   INLINE bool has_tag_state_key() const;
   INLINE const string &get_tag_state_key() const;
@@ -76,6 +77,8 @@ public:
 
   INLINE void set_portal_clipper(PortalClipper *portal_clipper);
   INLINE PortalClipper *get_portal_clipper() const;
+
+  INLINE bool get_effective_incomplete_render() const;
 
   void traverse(const NodePath &root);
   void traverse(CullTraverserData &data);
@@ -123,6 +126,7 @@ private:
   PT(GeometricBoundingVolume) _view_frustum;
   CullHandler *_cull_handler;
   PortalClipper *_portal_clipper;
+  bool _effective_incomplete_render;
   
 public:
   static TypeHandle get_class_type() {

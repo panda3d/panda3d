@@ -51,7 +51,8 @@ PUBLISHED:
   PipeOcclusionCullTraverser(const PipeOcclusionCullTraverser &copy);
 
   virtual void set_scene(SceneSetup *scene_setup,
-                         GraphicsStateGuardianBase *gsg);
+                         GraphicsStateGuardianBase *gsg,
+                         bool dr_incomplete_render);
   virtual void end_traverse();
 
   INLINE GraphicsOutput *get_buffer() const;
