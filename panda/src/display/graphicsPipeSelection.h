@@ -62,7 +62,17 @@ public:
 private:
   INLINE void load_default_module() const;
   void do_load_default_module();
-  void *load_named_module(const string &name);
+  TypeHandle load_named_module(const string &name);
+
+  class LoadedModule {
+  public:
+    string _module_name;
+    void *_module_handle;
+    TypeHandle _default_pipe_type;
+  };
+  typedef pmap<string, LoadedModule> LoadedModules;
+  LoadedModules _loaded_modules;
+  LightMutex _loaded_modules_lock;
 
   class PipeType {
   public:

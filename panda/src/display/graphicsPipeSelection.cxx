@@ -260,56 +260,8 @@ make_module_pipe(const string &module_name) {
       << "make_module_pipe(" << module_name << ")\n";
   }
 
-  void *handle = load_named_module(module_name);
-  if (display_cat.is_debug()) {
-    display_cat.debug()
-      << "module handle = " << handle << "\n";
-  }
-
-  if (handle == (void *)NULL) {
-    // Couldn't load the module.
-    return NULL;
-  }
-
-  string symbol_name = "get_pipe_type_" + module_name;
-  void *dso_symbol = get_dso_symbol(handle, symbol_name);
-  if (display_cat.is_debug()) {
-    display_cat.debug()
-      << "symbol of " << symbol_name << " = " << dso_symbol << "\n";
-  }
-
-  if (dso_symbol == (void *)NULL) {
-    // Couldn't find the module function.
-    unload_dso(handle);
-    return NULL;
-  }
-  
-  // We successfully loaded the module, and we found the
-  // get_pipe_type_* recommendation function.  Call it to figure
-  // out what pipe type we should expect.
-  typedef int FuncType();
-  int pipe_type_index = (*(FuncType *)dso_symbol)();
-  if (display_cat.is_debug()) {
-    display_cat.debug()
-      << "pipe_type_index = " << pipe_type_index << "\n";
-  }
-
-  if (pipe_type_index == 0) {
-    // The recommendation function had no advice, weird.
-    unload_dso(handle);
-    return NULL;
-  }
-
-  TypeRegistry *type_reg = TypeRegistry::ptr();
-  TypeHandle pipe_type = type_reg->find_type_by_id(pipe_type_index);
-  if (display_cat.is_debug()) {
-    display_cat.debug()
-      << "pipe_type = " << pipe_type << "\n";
-  }
-
+  TypeHandle pipe_type = load_named_module(module_name);
   if (pipe_type == TypeHandle::none()) {
-    // The recommendation function returned a bogus type index, weird.
-    unload_dso(handle);
     return NULL;
   }
    
@@ -466,18 +418,81 @@ do_load_default_module() {
 //     Function: GraphicsPipeSelection::load_named_module
 //       Access: Private
 //  Description: Loads the indicated display module by looking for a
-//               matching .dll or .so file.  Returns the return value
-//               from load_dso(), or NULL.
+//               matching .dll or .so file.  Returns the TypeHandle
+//               recommended by the module, or TypeHandle::none() on
+//               failure.
 ////////////////////////////////////////////////////////////////////
-void *GraphicsPipeSelection::
+TypeHandle GraphicsPipeSelection::
 load_named_module(const string &name) {
+  LightMutexHolder holder(_loaded_modules_lock);
+
+  LoadedModules::iterator mi = _loaded_modules.find(name);
+  if (mi != _loaded_modules.end()) {
+    // We have previously loaded this module.  Don't attempt to
+    // re-load it.
+    return (*mi).second._default_pipe_type;
+  }
+
+  // We have not yet loaded this module.  Load it now.
   Filename dlname = Filename::dso_filename("lib" + name + ".so");
   display_cat.info()
     << "loading display module: " << dlname.to_os_specific() << endl;
-  void *tmp = load_dso(get_plugin_path().get_value(), dlname);
-  if (tmp == (void *)NULL) {
+  void *handle = load_dso(get_plugin_path().get_value(), dlname);
+  if (handle == (void *)NULL) {
     display_cat.info()
       << "Unable to load: " << load_dso_error() << endl;
+    return TypeHandle::none();
   }
-  return tmp;
+
+  // Now get the module's recommended pipe type.  This requires
+  // calling a specially-named function that should have been exported
+  // from the module.
+  string symbol_name = "get_pipe_type_" + name;
+  void *dso_symbol = get_dso_symbol(handle, symbol_name);
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "symbol of " << symbol_name << " = " << dso_symbol << "\n";
+  }
+
+  if (dso_symbol == (void *)NULL) {
+    // Couldn't find the module function.
+    unload_dso(handle);
+    return TypeHandle::none();
+  }
+  
+  // We successfully loaded the module, and we found the
+  // get_pipe_type_* recommendation function.  Call it to figure
+  // out what pipe type we should expect.
+  typedef int FuncType();
+  int pipe_type_index = (*(FuncType *)dso_symbol)();
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "pipe_type_index = " << pipe_type_index << "\n";
+  }
+
+  if (pipe_type_index == 0) {
+    // The recommendation function had no advice, weird.
+    unload_dso(handle);
+    return TypeHandle::none();
+  }
+
+  TypeRegistry *type_reg = TypeRegistry::ptr();
+  TypeHandle pipe_type = type_reg->find_type_by_id(pipe_type_index);
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "pipe_type = " << pipe_type << "\n";
+  }
+
+  if (pipe_type == TypeHandle::none()) {
+    // The recommendation function returned a bogus type index, weird.
+    unload_dso(handle);
+    return TypeHandle::none();
+  }
+
+  LoadedModule &module = _loaded_modules[name];
+  module._module_name = name;
+  module._module_handle = handle;
+  module._default_pipe_type = pipe_type;
+
+  return pipe_type;
 }
