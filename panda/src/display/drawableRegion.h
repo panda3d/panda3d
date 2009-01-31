@@ -46,7 +46,6 @@ PUBLISHED:
   enum RenderTexturePlane {
     RTP_stencil=0,
     RTP_depth_stencil=1,
-    RTP_depth=1,
     RTP_color,
     RTP_aux_rgba_0,
     RTP_aux_rgba_1,
@@ -60,6 +59,7 @@ PUBLISHED:
     RTP_aux_float_1,
     RTP_aux_float_2,
     RTP_aux_float_3,
+    RTP_depth,
     RTP_COUNT
   };
 

@@ -237,6 +237,7 @@ clear_render_textures() {
 //               You can specify a bitplane to attach the texture to.
 //               the legal choices are:
 //
+//               * RTP_depth
 //               * RTP_depth_stencil
 //               * RTP_color
 //               * RTP_aux_rgba_0
@@ -248,6 +249,7 @@ clear_render_textures() {
 //               texture to, this routine will use a default based
 //               on the texture's format:
 //
+//               * F_depth_component attaches to RTP_depth
 //               * F_depth_stencil attaches to RTP_depth_stencil
 //               * all other formats attach to RTP_color.
 //
@@ -291,6 +293,8 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   if (plane == RTP_COUNT) {
     if (tex->get_format()==Texture::F_depth_stencil) {
       plane = RTP_depth_stencil;
+    } else if (tex->get_format()==Texture::F_depth_component) {
+      plane = RTP_depth;
     } else {
       plane = RTP_color;
     }
@@ -299,8 +303,11 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   // Set the texture's format to match the bitplane.
   // (And validate the bitplane, while we're at it).
 
-  if (plane == RTP_depth_stencil) {
-    tex->set_format(Texture::F_depth_stencil);
+  if (plane == RTP_depth) {
+    tex->set_format(Texture::F_depth_component);
+    tex->set_match_framebuffer_format(true);
+  } else if (plane == RTP_depth_stencil) {
+    tex->set_format(Texture::F_depth_component);
     tex->set_match_framebuffer_format(true);
   } else if ((plane == RTP_color)||
              (plane == RTP_aux_rgba_0)||

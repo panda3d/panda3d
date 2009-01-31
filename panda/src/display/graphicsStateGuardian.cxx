@@ -1027,6 +1027,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
   case Shader::SMO_clip_x_to_view: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
+    nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4f::ident_mat());
     Lens *lens = DCAST(LensNode, np.node())->get_lens();
     t = lens->get_projection_mat_inv(_current_stereo_channel) *
       LMatrix4f::convert_mat(lens->get_coordinate_system(), _coordinate_system) *
@@ -1037,6 +1038,7 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
   case Shader::SMO_view_to_clip_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
+    nassertr(np.node()->is_of_type(LensNode::get_class_type()), &LMatrix4f::ident_mat());
     Lens *lens = DCAST(LensNode, np.node())->get_lens();
     t = get_scene()->get_camera_transform()->get_mat() *
       invert(np.get_net_transform()->get_mat()) *
