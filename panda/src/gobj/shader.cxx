@@ -830,10 +830,11 @@ compile_parameter(const ShaderArgId  &arg_id,
   // Keywords to access constants.
 
   if (pieces[0] == "k") {
-    if ((!cp_errchk_parameter_words(p,2)) ||
-        (!cp_errchk_parameter_in(p)) ||
+    if ((!cp_errchk_parameter_in(p)) ||
         (!cp_errchk_parameter_uniform(p)))
       return false;
+    // In the case of k-parameters, we allow underscores in the name.
+    PT(InternalName) kinputname = InternalName::make(p._id._name.substr(2));
     switch (p._type) {
     case SAT_float4: {
       ShaderMatSpec bind;
@@ -841,7 +842,7 @@ compile_parameter(const ShaderArgId  &arg_id,
       bind._piece = SMP_row3;
       bind._func = SMF_first;
       bind._part[0] = SMO_vec_constant_x;
-      bind._arg[0] = InternalName::make(pieces[1]);
+      bind._arg[0] = kinputname;
       bind._part[1] = SMO_identity;
       bind._arg[1] = NULL;
       cp_optimize_mat_spec(bind);
@@ -854,7 +855,7 @@ compile_parameter(const ShaderArgId  &arg_id,
       bind._piece = SMP_whole;
       bind._func = SMF_first;
       bind._part[0] = SMO_vec_constant_x;
-      bind._arg[0] = InternalName::make(pieces[1]);
+      bind._arg[0] = kinputname;
       bind._part[1] = SMO_identity;
       bind._arg[1] = NULL;
       cp_optimize_mat_spec(bind);
@@ -864,7 +865,7 @@ compile_parameter(const ShaderArgId  &arg_id,
     case SAT_sampler1d: {
       ShaderTexSpec bind;
       bind._id = arg_id;
-      bind._name = InternalName::make(pieces[1]);
+      bind._name = kinputname;
       bind._desired_type=Texture::TT_1d_texture;
       _tex_spec.push_back(bind);
       break;
@@ -872,7 +873,7 @@ compile_parameter(const ShaderArgId  &arg_id,
     case SAT_sampler2d: {
       ShaderTexSpec bind;
       bind._id = arg_id;
-      bind._name = InternalName::make(pieces[1]);
+      bind._name = kinputname;
       bind._desired_type=Texture::TT_2d_texture;
       _tex_spec.push_back(bind);
       break;
@@ -880,7 +881,7 @@ compile_parameter(const ShaderArgId  &arg_id,
     case SAT_sampler3d: {
       ShaderTexSpec bind;
       bind._id = arg_id;
-      bind._name = InternalName::make(pieces[1]);
+      bind._name = kinputname;
       bind._desired_type=Texture::TT_3d_texture;
       _tex_spec.push_back(bind);
       break;
@@ -888,7 +889,7 @@ compile_parameter(const ShaderArgId  &arg_id,
     case SAT_samplercube: {
       ShaderTexSpec bind;
       bind._id = arg_id;
-      bind._name = InternalName::make(pieces[1]);
+      bind._name = kinputname;
       bind._desired_type = Texture::TT_cube_map;
       _tex_spec.push_back(bind);
       break;
