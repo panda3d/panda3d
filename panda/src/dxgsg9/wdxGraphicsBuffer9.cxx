@@ -594,6 +594,7 @@ select_cube_map(int cube_map_index) {
   for (int i=0; i<count_textures(); i++) {
     if (get_rtm_mode(i) == RTM_bind_or_copy) {
       if ((get_texture(i)->get_format() != Texture::F_depth_stencil)&&
+          (get_texture(i)->get_format() != Texture::F_depth_component)&&
           (color_tex_index < 0)) {
         color_tex_index = i;
       } else {
