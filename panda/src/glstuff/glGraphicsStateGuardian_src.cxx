@@ -3373,6 +3373,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   if (tex->get_match_framebuffer_format()) {
 
     switch (tex->get_format()) {
+    case Texture::F_depth_component:
     case Texture::F_depth_stencil:
       // If the texture is one of these special formats, we don't want
       // to adapt it to the framebuffer's color format.
@@ -3396,6 +3397,7 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   GLenum target = get_texture_target(tex->get_texture_type());
   GLint internal_format = get_internal_image_format(tex);
+
   bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
   if (uses_mipmaps) {
     if (_supports_generate_mipmap) {
@@ -3473,6 +3475,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 
   Texture::Format format = tex->get_format();
   switch (format) {
+  case Texture::F_depth_component:
   case Texture::F_depth_stencil:
     if (_current_properties->get_depth_bits() <= 8) {
       component_type = Texture::T_unsigned_byte;
@@ -4995,7 +4998,7 @@ get_texture_filter_type(Texture::FilterType ft, Texture::Format fmt,
     case Texture::FT_shadow:
       return GL_LINEAR;
     case Texture::FT_default:
-      if ((fmt == Texture::F_depth_stencil)) {
+      if (fmt == Texture::F_depth_stencil || fmt == Texture::F_depth_component) {
         return GL_NEAREST;
       } else {
         return GL_LINEAR;
@@ -5021,7 +5024,7 @@ get_texture_filter_type(Texture::FilterType ft, Texture::Format fmt,
     case Texture::FT_shadow:
       return GL_LINEAR;
     case Texture::FT_default:
-      if ((fmt == Texture::F_depth_stencil)) {
+      if (fmt == Texture::F_depth_stencil || fmt == Texture::F_depth_component) {
         return GL_NEAREST;
       } else {
         return GL_LINEAR;
@@ -5097,6 +5100,7 @@ get_external_image_format(Texture *tex) const {
     case Texture::CM_on:
       switch (tex->get_format()) {
       case Texture::F_color_index:
+      case Texture::F_depth_component:
       case Texture::F_depth_stencil:
         // This shouldn't be possible.
         nassertr(false, GL_RGB);
@@ -5165,6 +5169,8 @@ get_external_image_format(Texture *tex) const {
   switch (tex->get_format()) {
   case Texture::F_color_index:
     return GL_COLOR_INDEX;
+  case Texture::F_depth_component:
+    return GL_DEPTH_COMPONENT;
   case Texture::F_depth_stencil:
     if (_supports_depth_stencil) {
       return GL_DEPTH_STENCIL_EXT;
@@ -5235,6 +5241,7 @@ get_internal_image_format(Texture *tex) const {
       // which compression algorithm was applied.
       switch (tex->get_format()) {
       case Texture::F_color_index:
+      case Texture::F_depth_component:
       case Texture::F_depth_stencil:
         // Unsupported; fall through to below.
         break;
@@ -5347,6 +5354,8 @@ get_internal_image_format(Texture *tex) const {
   switch (tex->get_format()) {
   case Texture::F_color_index:
     return GL_COLOR_INDEX;
+  case Texture::F_depth_component:
+    return GL_DEPTH_COMPONENT;
   case Texture::F_depth_stencil:
     if (_supports_depth_stencil) {
       return GL_DEPTH_STENCIL_EXT;
@@ -6923,7 +6932,8 @@ specify_texture(CLP(TextureContext) *gtc) {
     GLP(TexParameterf)(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
   } 
 
-  if (tex->get_format() == Texture::F_depth_stencil) {
+  if (tex->get_format() == Texture::F_depth_stencil ||
+      tex->get_format() == Texture::F_depth_component) {
     GLP(TexParameteri)(target, GL_DEPTH_TEXTURE_MODE_ARB, GL_INTENSITY);
     if (_supports_shadow_filter) {
       if ((tex->get_magfilter() == Texture::FT_shadow) ||
@@ -7352,7 +7362,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
 
     if (num_ram_mipmap_levels == 0) {
-      if (external_format == GL_DEPTH_STENCIL_EXT) {
+      if (external_format == GL_DEPTH_STENCIL_EXT || external_format == GL_DEPTH_COMPONENT) {
         GLP(TexImage2D)(page_target, 0, internal_format,
                         width, height, 0,
                         external_format, GL_UNSIGNED_INT_24_8_EXT, NULL);
@@ -7831,6 +7841,9 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_color_index;
     break;
   case GL_DEPTH_COMPONENT:
+    type = Texture::T_float;
+    format = Texture::F_depth_component;
+    break;
   case GL_DEPTH_STENCIL_EXT:
     type = Texture::T_float;
     format = Texture::F_depth_stencil;
