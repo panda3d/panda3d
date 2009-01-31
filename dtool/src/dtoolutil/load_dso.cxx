@@ -137,6 +137,11 @@ void * load_dso(const DSearchPath &path, const Filename &filename)
   return answer;
 }
 
+bool
+unload_dso(void *dso_handle) {
+  return dlclose(dso_handle)==0;
+}
+
 string
 load_dso_error() {
   char *message = dlerror();
