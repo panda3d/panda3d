@@ -855,7 +855,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   XClassHint *class_hints_p = NULL;
   if (properties.get_undecorated()) {
     class_hints_p = XAllocClassHint();
-    class_hints_p->res_class = "Undecorated";
+    class_hints_p->res_class = (char*) "Undecorated";
 
     if (!properties.get_fullscreen()) {
       type_data[next_type_data++] = _net_wm_window_type_splash;
@@ -1249,6 +1249,15 @@ handle_keypress(XKeyEvent &event) {
 
   // Now get the raw unshifted button.
   ButtonHandle button = get_button(event);
+  if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
+    _input_devices[0].button_down(KeyboardButton::control());
+  }
+  if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
+    _input_devices[0].button_down(KeyboardButton::shift());
+  }
+  if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
+    _input_devices[0].button_down(KeyboardButton::alt());
+  }
   if (button != ButtonHandle::none()) {
     _input_devices[0].button_down(button);
   }
@@ -1266,6 +1275,15 @@ handle_keyrelease(XKeyEvent &event) {
 
   // Now get the raw unshifted button.
   ButtonHandle button = get_button(event);
+  if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
+    _input_devices[0].button_up(KeyboardButton::control());
+  }
+  if (button == KeyboardButton::lshift() || button == KeyboardButton::rshift()) {
+    _input_devices[0].button_up(KeyboardButton::shift());
+  }
+  if (button == KeyboardButton::lalt() || button == KeyboardButton::ralt()) {
+    _input_devices[0].button_up(KeyboardButton::alt());
+  }
   if (button != ButtonHandle::none()) {
     _input_devices[0].button_up(button);
   }
@@ -1633,14 +1651,17 @@ map_button(KeySym key) {
   case XK_Pause:
     return KeyboardButton::pause();
   case XK_Shift_L:
+    return KeyboardButton::lshift();
   case XK_Shift_R:
-    return KeyboardButton::shift();
+    return KeyboardButton::rshift();
   case XK_Control_L:
+    return KeyboardButton::lcontrol();
   case XK_Control_R:
-    return KeyboardButton::control();
+    return KeyboardButton::rcontrol();
   case XK_Alt_L:
+    return KeyboardButton::lalt();
   case XK_Alt_R:
-    return KeyboardButton::alt();
+    return KeyboardButton::ralt();
   case XK_Meta_L:
   case XK_Meta_R:
     return KeyboardButton::meta();
