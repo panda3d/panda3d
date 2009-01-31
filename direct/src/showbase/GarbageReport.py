@@ -9,6 +9,8 @@ from direct.showbase.Job import Job
 import gc
 import types
 
+GarbageCycleCountAnnounceEvent = 'announceGarbageCycleDesc2num'
+
 class FakeObject:
     pass
 
@@ -170,7 +172,7 @@ class GarbageReport(Job):
         # find the cycles
         if self._args.findCycles and self.numGarbage > 0:
             if self._args.verbose:
-                self.notify.info('detecting cycles...')
+                self.notify.info('calculating cycles...')
             for i in xrange(self.numGarbage):
                 yield None
                 for newCycles in self._getCycles(i, self.uniqueCycleSets):
@@ -394,6 +396,14 @@ class GarbageReport(Job):
         # if the job hasn't run yet, we don't have a numCycles yet
         return self.numCycles
 
+    def getDesc2numDict(self):
+        # dict of python-syntax leak -> number of that type of leak
+        desc2num = {}
+        for cycleBySyntax in self.cyclesBySyntax:
+            desc2num.setdefault(cycleBySyntax, 0)
+            desc2num[cycleBySyntax] += 1
+        return desc2num
+        
     def getGarbage(self):
         return self.garbage
 
@@ -514,31 +524,34 @@ class GarbageReport(Job):
 class GarbageLogger(GarbageReport):
     """If you just want to log the current garbage to the log file, make
     one of these. It automatically destroys itself after logging"""
-    # for checkForGarbageLeaks
-    LastNumGarbage = 0
-    LastNumCycles = 0
     def __init__(self, name, *args, **kArgs):
         kArgs['log'] = True
         kArgs['autoDestroy'] = True
         GarbageReport.__init__(self, name, *args, **kArgs)
 
+class _CFGLGlobals:
+    # for checkForGarbageLeaks
+    LastNumGarbage = 0
+    LastNumCycles = 0
+
 def checkForGarbageLeaks():
     gc.collect()
     numGarbage = len(gc.garbage)
     if (numGarbage > 0 and (not configIsToday('disable-garbage-logging'))):
-        if (numGarbage != GarbageLogger.LastNumGarbage):
+        if (numGarbage != _CFGLGlobals.LastNumGarbage):
             print
-            gr = GarbageLogger('found garbage', threaded=False, collect=False)
+            gr = GarbageReport('found garbage', threaded=False, collect=False)
             print
-            GarbageLogger.LastNumGarbage = numGarbage
-            GarbageLogger.LastNumCycles = gr.getNumCycles()
+            _CFGLGlobals.LastNumGarbage = numGarbage
+            _CFGLGlobals.LastNumCycles = gr.getNumCycles()
+            messenger.send(GarbageCycleCountAnnounceEvent, [gr.getDesc2numDict()])
+            gr.destroy()
         notify = directNotify.newCategory("GarbageDetect")
         if config.GetBool('allow-garbage-cycles', 1):
             func = notify.warning
         else:
             func = notify.error
-        func('%s garbage cycles found, see info above' %
-             GarbageLogger.LastNumCycles)
+        func('%s garbage cycles found, see info above' % _CFGLGlobals.LastNumCycles)
     return numGarbage
 
 def b_checkForGarbageLeaks(wantReply=False):
