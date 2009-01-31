@@ -111,7 +111,7 @@ PUBLISHED:
   
 private:
   
-  NodePath generate_block(unsigned short mx, unsigned short my, unsigned short level);
+  PT(GeomNode) generate_block(unsigned short mx, unsigned short my, unsigned short level);
   bool update_block(unsigned short mx, unsigned short my,
                     signed short level = -1, bool forced = false);
   void calc_levels();

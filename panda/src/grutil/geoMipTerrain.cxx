@@ -24,6 +24,7 @@
 #include "geomTriangles.h"
 #include "geom.h"
 #include "geomNode.h"
+#include "boundingBox.h"
 #include "config_grutil.h"
 
 #include "sceneGraphReducer.h"
@@ -41,13 +42,13 @@ TypeHandle GeoMipTerrain::_type_handle;
 //               detail. T-Junctions for neighbor-mipmaps with
 //               different levels are also taken into account.
 ////////////////////////////////////////////////////////////////////
-NodePath GeoMipTerrain::
+PT(GeomNode) GeoMipTerrain::
 generate_block(unsigned short mx,
                unsigned short my,
                unsigned short level) {
   
-  nassertr(mx < (_xsize - 1) / _block_size, NodePath::fail());
-  nassertr(my < (_ysize - 1) / _block_size, NodePath::fail());
+  nassertr(mx < (_xsize - 1) / _block_size, NULL);
+  nassertr(my < (_ysize - 1) / _block_size, NULL);
 
   unsigned short center = _block_size / 2;
   unsigned int vcounter = 0;
@@ -89,6 +90,10 @@ generate_block(unsigned short mx,
   unsigned short reallevel = level;
   level = int(pow(2.0, int(level)));
   
+  // Stores the max and min heights.
+  float minh = 1.0f;
+  float maxh = 0.0f;
+  
   // Confusing note:
   // the variable level contains not the actual level as described
   // in the GeoMipMapping paper. That is stored in reallevel,
@@ -108,8 +113,10 @@ generate_block(unsigned short mx,
           cwriter.add_data4f(color.get_x(), color.get_y(),
                              color.get_z(), color.get_w());
         }
-        vwriter.add_data3f(x - 0.5 * _block_size, y - 0.5 * _block_size,
-                                                get_pixel_value(mx, my, x, y));
+        float pval = get_pixel_value(mx, my, x, y);
+        if (pval < minh) minh = pval;
+        if (pval > maxh) maxh = pval;
+        vwriter.add_data3f(x - 0.5 * _block_size, y - 0.5 * _block_size, pval);
         twriter.add_data2f((mx * _block_size + x) / double(_xsize - 1),
                            (my * _block_size + y) / double(_ysize - 1));
         nwriter.add_data3f(get_normal(mx, my, x, y));
@@ -236,11 +243,15 @@ generate_block(unsigned short mx,
 
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(prim);
+  PT(BoundingBox) box = new BoundingBox(LPoint3f(mx * _block_size, my * _block_size, minh),
+                                        LPoint3f((mx + 1) * _block_size + _block_size, (my + 1) * _block_size, maxh));
+  geom->set_bounds(box);
 
   PT(GeomNode) node = new GeomNode("gmm" + int_to_str(mx) + "x" + int_to_str(my));
   node->add_geom(geom);
   _old_levels.at(mx).at(my) = reallevel;
-  return NodePath(node);
+  
+  return node;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -374,11 +385,10 @@ generate() {
     pvector<NodePath> tvector; //create temporary row
     for (unsigned int my = 0; my < (_ysize - 1) / _block_size; my++) {
       if (_bruteforce) {
-        tvector.push_back(generate_block(mx, my, 0));
+        tvector.push_back(_root.attach_new_node(generate_block(mx, my, 0)));
       } else {
-        tvector.push_back(generate_block(mx, my, _levels[mx][my]));
+        tvector.push_back(_root.attach_new_node(generate_block(mx, my, _levels[mx][my])));
       }
-      tvector[my].reparent_to(_root);
       tvector[my].set_pos((mx + 0.5) * _block_size, (my + 0.5) * _block_size, 0);
     }
     _blocks.push_back(tvector); //push the new row of NodePaths into the 2d vect
@@ -460,6 +470,7 @@ update() {
   }
   return false;
 }
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::root_flattened
 //       Access: Private
@@ -581,16 +592,9 @@ update_block(unsigned short mx, unsigned short my,
   if (level == -1) {
     level = _levels[mx][my];
   }
-  if (forced || _old_levels[mx][my] != level) { // if the level has changed...
-    // this code copies the collision mask, removes the chunk and
-    // replaces it with a regenerated one.
-    CollideMask mask = _blocks[mx][my].get_collide_mask();
-    _blocks[mx][my].remove_node();
-    _blocks[mx][my] = generate_block(mx, my, level);
-    _blocks[mx][my].set_collide_mask(mask);
-    _blocks[mx][my].reparent_to(_root);
-    _blocks[mx][my].set_pos((mx + 0.5) * _block_size,
-                            (my + 0.5) * _block_size, 0);
+  if (forced || _old_levels[mx][my] != level) { // If the level has changed...
+    // Replaces the chunk with a regenerated one.
+    generate_block(mx, my, level)->replace_node(_blocks[mx][my].node());
     return true;
   }
   return false;
