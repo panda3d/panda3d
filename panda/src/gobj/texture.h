@@ -77,7 +77,6 @@ PUBLISHED:
 
   enum Format {
     F_depth_stencil = 1,
-    F_depth_component = 1,
     F_color_index,
     F_red,
     F_green,
@@ -111,6 +110,8 @@ PUBLISHED:
 
     F_rgba16,  // 16 bits per R,G,B,A channel
     F_rgba32,  // 32 bits per R,G,B,A channel
+
+    F_depth_component,
   };
 
   enum FilterType {
