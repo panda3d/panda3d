@@ -6,6 +6,7 @@
 #include "pandadx9.h"
 
 #include "config_dxgsg9.h"
+#include "wdxGraphicsPipe9.h"
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to load libpandadx9.dll will fail if they
@@ -24,4 +25,14 @@
 void
 init_libpandadx9() {
   init_libdxgsg9();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_pipe_type_pandadx9
+//  Description: Returns the TypeHandle index of the recommended
+//               graphics pipe type defined by this module.
+////////////////////////////////////////////////////////////////////
+int
+get_pipe_type_pandadx9() {
+  return wdxGraphicsPipe9::get_class_type().get_index();
 }

@@ -24,6 +24,7 @@
 NotifyCategoryDecl(tinydisplay, EXPCL_TINYDISPLAY, EXPTP_TINYDISPLAY);
 
 extern EXPCL_TINYDISPLAY void init_libtinydisplay();
+extern "C" EXPCL_TINYDISPLAY int get_pipe_type_tinydisplay();
 
 extern ConfigVariableString display_cfg;
 extern ConfigVariableBool x_error_abort;

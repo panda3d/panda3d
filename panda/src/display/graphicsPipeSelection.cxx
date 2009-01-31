@@ -247,6 +247,76 @@ make_pipe(TypeHandle type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsPipeSelection::make_module_pipe
+//       Access: Published
+//  Description: Returns a new GraphicsPipe of a type defined by the
+//               indicated module.  Returns NULL if the module is not
+//               found or does not properly recommend a GraphicsPipe.
+////////////////////////////////////////////////////////////////////
+PT(GraphicsPipe) GraphicsPipeSelection::
+make_module_pipe(const string &module_name) {
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "make_module_pipe(" << module_name << ")\n";
+  }
+
+  void *handle = load_named_module(module_name);
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "module handle = " << handle << "\n";
+  }
+
+  if (handle == (void *)NULL) {
+    // Couldn't load the module.
+    return NULL;
+  }
+
+  string symbol_name = "get_pipe_type_" + module_name;
+  void *dso_symbol = get_dso_symbol(handle, symbol_name);
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "symbol of " << symbol_name << " = " << dso_symbol << "\n";
+  }
+
+  if (dso_symbol == (void *)NULL) {
+    // Couldn't find the module function.
+    unload_dso(handle);
+    return NULL;
+  }
+  
+  // We successfully loaded the module, and we found the
+  // get_pipe_type_* recommendation function.  Call it to figure
+  // out what pipe type we should expect.
+  typedef int FuncType();
+  int pipe_type_index = (*(FuncType *)dso_symbol)();
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "pipe_type_index = " << pipe_type_index << "\n";
+  }
+
+  if (pipe_type_index == 0) {
+    // The recommendation function had no advice, weird.
+    unload_dso(handle);
+    return NULL;
+  }
+
+  TypeRegistry *type_reg = TypeRegistry::ptr();
+  TypeHandle pipe_type = type_reg->find_type_by_id(pipe_type_index);
+  if (display_cat.is_debug()) {
+    display_cat.debug()
+      << "pipe_type = " << pipe_type << "\n";
+  }
+
+  if (pipe_type == TypeHandle::none()) {
+    // The recommendation function returned a bogus type index, weird.
+    unload_dso(handle);
+    return NULL;
+  }
+   
+  return make_pipe(pipe_type);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsPipeSelection::make_default_pipe
 //       Access: Published
 //  Description: Creates a new GraphicsPipe of some arbitrary type.
@@ -396,9 +466,10 @@ do_load_default_module() {
 //     Function: GraphicsPipeSelection::load_named_module
 //       Access: Private
 //  Description: Loads the indicated display module by looking for a
-//               matching .dll or .so file.
+//               matching .dll or .so file.  Returns the return value
+//               from load_dso(), or NULL.
 ////////////////////////////////////////////////////////////////////
-void GraphicsPipeSelection::
+void *GraphicsPipeSelection::
 load_named_module(const string &name) {
   Filename dlname = Filename::dso_filename("lib" + name + ".so");
   display_cat.info()
@@ -408,4 +479,5 @@ load_named_module(const string &name) {
     display_cat.info()
       << "Unable to load: " << load_dso_error() << endl;
   }
+  return tmp;
 }

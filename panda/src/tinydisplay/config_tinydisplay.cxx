@@ -154,3 +154,30 @@ init_libtinydisplay() {
   ps->set_system_tag("TinyGL", "SDL", "SDL");
 #endif
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_pipe_type_tinydisplay
+//  Description: Returns the TypeHandle index of the recommended
+//               graphics pipe type defined by this module.
+////////////////////////////////////////////////////////////////////
+int
+get_pipe_type_tinydisplay() {
+
+#ifdef IS_LINUX
+  return TinyXGraphicsPipe::get_class_type().get_index();
+#endif
+
+#ifdef WIN32
+  return TinyWinGraphicsPipe::get_class_type().get_index();
+#endif
+
+#ifdef IS_OSX
+  return TinyOsxGraphicsPipe::get_class_type().get_index();
+#endif
+
+#ifdef HAVE_SDL
+  return TinySDLGraphicsPipe::get_class_type().get_index();
+#endif
+
+  return 0;
+}

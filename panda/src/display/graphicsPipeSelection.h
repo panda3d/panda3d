@@ -47,6 +47,7 @@ PUBLISHED:
   PT(GraphicsPipe) make_pipe(const string &type_name,
                              const string &module_name = string());
   PT(GraphicsPipe) make_pipe(TypeHandle type);
+  PT(GraphicsPipe) make_module_pipe(const string &module_name);
   PT(GraphicsPipe) make_default_pipe();
 
   INLINE int get_num_aux_modules() const;
@@ -61,7 +62,7 @@ public:
 private:
   INLINE void load_default_module() const;
   void do_load_default_module();
-  void load_named_module(const string &name);
+  void *load_named_module(const string &name);
 
   class PipeType {
   public:
