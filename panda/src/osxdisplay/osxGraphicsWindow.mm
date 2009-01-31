@@ -627,7 +627,8 @@ osxGraphicsWindow::osxGraphicsWindow(GraphicsPipe *pipe,
 
   _cursor_hidden = false;
   _display_hide_cursor = false;
-  _wheel_delta = 0;
+  _wheel_hdelta = 0;
+  _wheel_vdelta = 0;
   
   if (osxdisplay_cat.is_debug())	
     osxdisplay_cat.debug() << "osxGraphicsWindow::osxGraphicsWindow() -" <<_ID << "\n";
@@ -1510,20 +1511,36 @@ void osxGraphicsWindow::SystemPointToLocalPoint(Point &qdGlobalPoint)
                 GetEventParameter(event, kEventParamMouseLocation,typeQDPoint, NULL, sizeof(Point),NULL	, (void*) &qdGlobalPoint);
                 SystemPointToLocalPoint(qdGlobalPoint);
                 
+                if (wheelAxis == kEventMouseWheelAxisX)
+                {
+                    set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
+                    _wheel_hdelta += this_wheel_delta;
+                    SInt32 wheel_scale = osx_mouse_wheel_scale;
+                    while (_wheel_hdelta > wheel_scale) {
+                      _input_devices[0].button_down(MouseButton::wheel_left());
+                      _input_devices[0].button_up(MouseButton::wheel_left());
+                      _wheel_hdelta -= wheel_scale;
+                    }
+                    while (_wheel_hdelta < -wheel_scale) {
+                      _input_devices[0].button_down(MouseButton::wheel_right());
+                      _input_devices[0].button_up(MouseButton::wheel_right());
+                      _wheel_hdelta += wheel_scale;
+                    }
+                }
                 if (wheelAxis == kEventMouseWheelAxisY)
                 {
                     set_pointer_in_window((int)qdGlobalPoint.h, (int)qdGlobalPoint.v);
-                    _wheel_delta += this_wheel_delta;
+                    _wheel_vdelta += this_wheel_delta;
                     SInt32 wheel_scale = osx_mouse_wheel_scale;
-                    while (_wheel_delta > wheel_scale) {
+                    while (_wheel_vdelta > wheel_scale) {
                       _input_devices[0].button_down(MouseButton::wheel_up());
                       _input_devices[0].button_up(MouseButton::wheel_up());
-                      _wheel_delta -= wheel_scale;
+                      _wheel_vdelta -= wheel_scale;
                     }
-                    while (_wheel_delta < -wheel_scale) {
+                    while (_wheel_vdelta < -wheel_scale) {
                       _input_devices[0].button_down(MouseButton::wheel_down());
                       _input_devices[0].button_up(MouseButton::wheel_down());
-                      _wheel_delta += wheel_scale;
+                      _wheel_vdelta += wheel_scale;
                     }
                 }
                 result = noErr;
