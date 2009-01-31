@@ -112,6 +112,12 @@ load_dso_error() {
   return errmsg.str();
 }
 
+void *
+get_dso_symbol(void *handle, const string &name) {
+  // Windows puts a leading underscore in front of the symbol name.
+  return (void *)GetProcAddress((HMODULE)handle, name.c_str());
+}
+
 /* end Win32-specific code */
 
 #elif defined(IS_OSX)
@@ -138,6 +144,11 @@ load_dso_error() {
     return std::string(message);
   }
   return "No error.";
+}
+
+void *
+get_dso_symbol(void *handle, const string &name) {
+  return dlsym(handle, name.c_str());
 }
 
 #else
@@ -167,6 +178,11 @@ load_dso_error() {
     return std::string(message);
   }
   return "No error.";
+}
+
+void *
+get_dso_symbol(void *handle, const string &name) {
+  return dlsym(handle, name.c_str());
 }
 
 #endif

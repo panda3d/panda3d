@@ -36,5 +36,9 @@ unload_dso(void *dso_handle);
 EXPCL_DTOOL string
 load_dso_error();
 
+// Returns a function pointer or other symbol from a loaded library.
+EXPCL_DTOOL void *
+get_dso_symbol(void *handle, const string &name);
+
 #endif
 
