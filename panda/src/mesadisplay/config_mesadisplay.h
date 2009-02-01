@@ -23,5 +23,6 @@ ConfigureDecl(config_mesadisplay, EXPCL_PANDAMESA, EXPTP_PANDAMESA);
 NotifyCategoryDecl(mesadisplay, EXPCL_PANDAMESA, EXPTP_PANDAMESA);
 
 extern EXPCL_PANDAMESA void init_libmesadisplay();
+extern "C" EXPCL_PANDAMESA int get_pipe_type_mesadisplay();
 
 #endif
