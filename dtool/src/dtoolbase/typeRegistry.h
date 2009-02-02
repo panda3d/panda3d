@@ -47,11 +47,10 @@ public:
 
   void record_derivation(TypeHandle child, TypeHandle parent);
   void record_alternate_name(TypeHandle type, const string &name);
-  TypeHandle find_type_by_id(int id) const;
 
 PUBLISHED:
   TypeHandle find_type(const string &name) const;
-
+  TypeHandle find_type_by_id(int id) const;
 
   string get_name(TypeHandle type, TypedObject *object) const;
   bool is_derived_from(TypeHandle child, TypeHandle base,

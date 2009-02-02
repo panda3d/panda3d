@@ -216,7 +216,7 @@ record_alternate_name(TypeHandle type, const string &name) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::find_type
-//       Access: Public
+//       Access: Published
 //  Description: Looks for a previously-registered type of the given
 //               name.  Returns its TypeHandle if it exists, or
 //               TypeHandle::none() if there is no such type.
@@ -236,10 +236,30 @@ find_type(const string &name) const {
   return handle;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: TypeRegistry::find_type_by_id
+//       Access: Published
+//  Description: Looks for a previously-registered type with the given
+//               id number (as returned by TypeHandle::get_index()).
+//               Returns its TypeHandle if it exists, or
+//               TypeHandle::none() if there is no such type.
+///////////////////////////////////////////////////////////////////
+TypeHandle TypeRegistry::
+find_type_by_id(int id) const {
+  if (id < 0 ||id >= (int)_handle_registry.size()) {
+    cerr
+      << "Invalid TypeHandle index " << id
+      << "!  Is memory corrupt?\n";
+    return TypeHandle::none();
+  }
+
+  return _handle_registry[id]->_handle;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::get_name
-//       Access: Public
+//       Access: Published
 //  Description: Returns the name of the indicated type.
 //
 //               The "object" pointer is an optional pointer to the
@@ -260,7 +280,7 @@ get_name(TypeHandle type, TypedObject *object) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::is_derived_from
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the first type is derived from the
 //               second type, false otherwise.
 //
@@ -294,7 +314,7 @@ is_derived_from(TypeHandle child, TypeHandle base,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::get_num_type_handles
-//       Access: Public
+//       Access: Published
 //  Description: Returns the total number of unique TypeHandles in the
 //               system.
 ////////////////////////////////////////////////////////////////////
@@ -308,7 +328,7 @@ get_num_typehandles() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::get_typehandle
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth TypeHandle in the system.  See
 //               get_num_typehandles().
 ////////////////////////////////////////////////////////////////////
@@ -330,7 +350,7 @@ get_typehandle(int n) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::get_num_root_classes
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of root classes--that is, classes
 //               that do not inherit from any other classes--known in
 //               the system.
@@ -346,7 +366,7 @@ get_num_root_classes() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::get_root_class
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth root class in the system.  See
 //               get_num_root_classes().
 ////////////////////////////////////////////////////////////////////
@@ -365,7 +385,7 @@ get_root_class(int n) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::get_num_parent_classes
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of parent classes that the
 //               indicated type is known to have.  This may then be
 //               used to index into get_parent_class().  The result
@@ -391,7 +411,7 @@ get_num_parent_classes(TypeHandle child, TypedObject *child_object) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::get_parent_class
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth parent class of this type.  The index
 //               should be in the range 0 <= index <
 //               get_num_parent_classes().
@@ -411,7 +431,7 @@ get_parent_class(TypeHandle child, int index) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::get_num_child_classes
-//       Access: Public
+//       Access: Published
 //  Description: Returns the number of child classes that the
 //               indicated type is known to have.  This may then be
 //               used to index into get_child_class().
@@ -433,7 +453,7 @@ get_num_child_classes(TypeHandle child, TypedObject *child_object) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::get_child_class
-//       Access: Public
+//       Access: Published
 //  Description: Returns the nth child class of this type.  The index
 //               should be in the range 0 <= index <
 //               get_num_child_classes().
@@ -453,7 +473,7 @@ get_child_class(TypeHandle child, int index) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::get_parent_towards
-//       Access: Public
+//       Access: Published
 //  Description: Returns the parent of the indicated child class that
 //               is in a direct line of inheritance to the indicated
 //               ancestor class.  This is useful in the presence of
@@ -483,7 +503,7 @@ get_parent_towards(TypeHandle child, TypeHandle base,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::reregister_types
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Walks through the TypeRegistry tree and makes sure
 //               that each type that was previously registered is
 //               *still* registered.  This seems to get broken in
@@ -512,7 +532,7 @@ reregister_types() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::write
-//       Access: Public
+//       Access: Published
 //  Description: Makes an attempt to format the entire TypeRegistry in
 //               a nice way that shows the derivation tree as
 //               intelligently as possible.
@@ -526,7 +546,7 @@ write(ostream &out) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeRegistry::ptr
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Returns the pointer to the global TypeRegistry
 //               object.
 ////////////////////////////////////////////////////////////////////
@@ -731,22 +751,6 @@ look_up(TypeHandle handle, TypedObject *object) const {
 #endif  // NDEBUG
 
   return _handle_registry[handle._index];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: find_type_by_id
-//       Access: Private
-///////////////////////////////////////////////////////////////////
-TypeHandle TypeRegistry::
-find_type_by_id(int id) const {
-  if (id < 0 ||id >= (int)_handle_registry.size()) {
-    cerr
-      << "Invalid TypeHandle index " << id
-      << "!  Is memory corrupt?\n";
-    return TypeHandle::none();
-  }
-
-  return _handle_registry[id]->_handle;
 }
 
 ////////////////////////////////////////////////////////////////////
