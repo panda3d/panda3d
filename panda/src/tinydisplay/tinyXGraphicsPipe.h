@@ -46,7 +46,7 @@ typedef int XIC;
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyXGraphicsPipe
 // Description : This graphics pipe represents the interface for
-//               creating TinyGL graphics windows on an X11-based
+//               creating TinyPanda graphics windows on an X11-based
 //               (e.g. Unix) client.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_TINYDISPLAY TinyXGraphicsPipe : public GraphicsPipe {

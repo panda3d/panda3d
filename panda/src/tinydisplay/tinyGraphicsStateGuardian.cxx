@@ -2404,9 +2404,9 @@ set_scissor(float left, float right, float bottom, float top) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::apply_texture
 //       Access: Protected
-//  Description: Updates TinyGL with the current information for this
-//               texture, and makes it the current texture available
-//               for rendering.
+//  Description: Updates the graphics state with the current
+//               information for this texture, and makes it the
+//               current texture available for rendering.
 ////////////////////////////////////////////////////////////////////
 bool TinyGraphicsStateGuardian::
 apply_texture(TextureContext *tc) {
@@ -2419,7 +2419,7 @@ apply_texture(TextureContext *tc) {
 ////////////////////////////////////////////////////////////////////
 //     Function: TinyGraphicsStateGuardian::upload_texture
 //       Access: Protected
-//  Description: Uploads the texture image to TinyGL.
+//  Description: Uploads the texture image to the graphics state.
 //
 //               The return value is true if successful, or false if
 //               the texture has no image.

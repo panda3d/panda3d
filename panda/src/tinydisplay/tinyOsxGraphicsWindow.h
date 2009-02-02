@@ -27,8 +27,8 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyOsxGraphicsWindow
-// Description : Opens a window on OS X to display the TinyGL software
-//               rendering.
+// Description : Opens a window on OS X to display the TinyPanda
+//               software rendering.
 ////////////////////////////////////////////////////////////////////
 class TinyOsxGraphicsWindow : public GraphicsWindow {
 public:

@@ -54,23 +54,6 @@ munge_format_impl(const GeomVertexFormat *orig,
   PT(GeomVertexFormat) new_format = new GeomVertexFormat(*orig);
   new_format->set_animation(animation);
 
-  /*
-  const GeomVertexColumn *color_type = orig->get_color_column();
-  if (color_type != (GeomVertexColumn *)NULL &&
-      color_type->get_numeric_type() == NT_packed_dabc) {
-    // We need to convert the color format; OpenGL doesn't support the
-    // byte order of DirectX's packed ARGB format.
-    int color_array = orig->get_array_with(InternalName::get_color());
-
-    PT(GeomVertexArrayFormat) new_array_format = new_format->modify_array(color_array);
-
-    // Replace the existing color format with the new format.
-    new_array_format->add_column
-      (InternalName::get_color(), 4, NT_uint8,
-       C_color, color_type->get_start());
-  }
-  */
-
   CPT(GeomVertexFormat) format = GeomVertexFormat::register_format(new_format);
 
   return format;

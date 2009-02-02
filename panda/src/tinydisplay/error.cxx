@@ -7,7 +7,7 @@ void gl_fatal_error(char *format, ...)
 
   va_start(ap,format);
 
-  fprintf(stderr,"TinyGL: fatal error: ");
+  fprintf(stderr,"TinyPanda: fatal error: ");
   vfprintf(stderr,format,ap);
   fprintf(stderr,"\n");
   exit(1);

@@ -118,7 +118,7 @@ init_libtinydisplay() {
   TinyTextureContext::init_type();
 
   PandaSystem *ps = PandaSystem::get_global_ptr();
-  ps->add_system("TinyGL");
+  ps->add_system("TinyPanda");
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
 
@@ -127,7 +127,7 @@ init_libtinydisplay() {
   TinyXGraphicsWindow::init_type();
   selection->add_pipe_type(TinyXGraphicsPipe::get_class_type(),
                            TinyXGraphicsPipe::pipe_constructor);
-  ps->set_system_tag("TinyGL", "native_window_system", "X");
+  ps->set_system_tag("TinyPanda", "native_window_system", "X");
 #endif
 
 #ifdef WIN32
@@ -135,7 +135,7 @@ init_libtinydisplay() {
   TinyWinGraphicsWindow::init_type();
   selection->add_pipe_type(TinyWinGraphicsPipe::get_class_type(),
                            TinyWinGraphicsPipe::pipe_constructor);
-  ps->set_system_tag("TinyGL", "native_window_system", "Win");
+  ps->set_system_tag("TinyPanda", "native_window_system", "Win");
 #endif
 
 #ifdef IS_OSX
@@ -143,7 +143,7 @@ init_libtinydisplay() {
   TinyOsxGraphicsWindow::init_type();
   selection->add_pipe_type(TinyOsxGraphicsPipe::get_class_type(),
                            TinyOsxGraphicsPipe::pipe_constructor);
-  ps->set_system_tag("TinyGL", "OSX", "OSX");
+  ps->set_system_tag("TinyPanda", "native_window_system", "OSX");
 #endif
 
 #ifdef HAVE_SDL
@@ -151,7 +151,7 @@ init_libtinydisplay() {
   TinySDLGraphicsWindow::init_type();
   selection->add_pipe_type(TinySDLGraphicsPipe::get_class_type(),
                            TinySDLGraphicsPipe::pipe_constructor);
-  ps->set_system_tag("TinyGL", "SDL", "SDL");
+  ps->set_system_tag("TinyPanda", "SDL", "SDL");
 #endif
 }
 

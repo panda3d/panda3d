@@ -29,8 +29,16 @@ class TinyTextureContext;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyGraphicsStateGuardian
-// Description : An interface to the TinyGL software rendering code
+// Description : An interface to the TinyPanda software rendering code
 //               within this module.
+//
+//               TinyPanda takes its name from TinyGL, the
+//               public-domain software renderer (see
+//               http://fabrice.bellard.free.fr/TinyGL/ ) from which
+//               this code originated.  It has since been heavily
+//               modified, to integrate it closely with Panda, and to
+//               add additional features such as blending, filtering,
+//               and multitexturing.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_TINYDISPLAY TinyGraphicsStateGuardian : public GraphicsStateGuardian {
 public:

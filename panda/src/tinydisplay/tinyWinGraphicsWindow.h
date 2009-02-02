@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyWinGraphicsWindow
 // Description : Opens a window on Microsoft Windows to display the
-//               TinyGL software rendering.
+//               TinyPanda software rendering.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_TINYDISPLAY TinyWinGraphicsWindow : public WinGraphicsWindow {
 public:

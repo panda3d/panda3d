@@ -23,8 +23,9 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyGeomMunger
 // Description : This specialization on GeomMunger finesses vertices
-//               for TinyGL rendering.  In particular, it makes sure
-//               colors aren't stored in DirectX's packed_argb format.
+//               for TinyPanda rendering.  This actually doesn't have
+//               to do very much, since TinyPanda is not that
+//               particular.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_TINYDISPLAY TinyGeomMunger : public StandardMunger {
 public:

@@ -30,8 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyOsxGraphicsPipe
 // Description : This graphics pipe represents the interface for
-//               creating TinyGL graphics windows on a Windows-based
-//               client.
+//               creating TinyPanda graphics windows on a Mac client.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_TINYDISPLAY TinyOsxGraphicsPipe : public GraphicsPipe {
 public:

@@ -25,8 +25,8 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : TinyWinGraphicsPipe
 // Description : This graphics pipe represents the interface for
-//               creating TinyGL graphics windows on a Windows-based
-//               client.
+//               creating TinyPanda graphics windows on a
+//               Windows-based client.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_TINYDISPLAY TinyWinGraphicsPipe : public WinGraphicsPipe {
 public:
