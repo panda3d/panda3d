@@ -1129,6 +1129,66 @@ was_image_modified(PreparedGraphicsObjects *prepared_objects) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_data_size_bytes
+//       Access: Public
+//  Description: Returns the number of bytes which the texture is
+//               reported to consume within graphics memory, for the
+//               indicated GSG.  This may return a nonzero value even
+//               if the texture is not currently resident; you should
+//               also check get_resident() if you want to know how
+//               much space the texture is actually consuming right
+//               now.
+////////////////////////////////////////////////////////////////////
+size_t Texture::
+get_data_size_bytes(PreparedGraphicsObjects *prepared_objects) const {
+  MutexHolder holder(_lock);
+  Contexts::const_iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    TextureContext *tc = (*ci).second;
+    return tc->get_data_size_bytes();
+  }
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_active
+//       Access: Public
+//  Description: Returns true if this Texture was rendered in the most
+//               recent frame within the indicated GSG.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+get_active(PreparedGraphicsObjects *prepared_objects) const {
+  MutexHolder holder(_lock);
+  Contexts::const_iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    TextureContext *tc = (*ci).second;
+    return tc->get_active();
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_resident
+//       Access: Public
+//  Description: Returns true if this Texture is reported to be
+//               resident within graphics memory for the indicated
+//               GSG.
+////////////////////////////////////////////////////////////////////
+bool Texture::
+get_resident(PreparedGraphicsObjects *prepared_objects) const {
+  MutexHolder holder(_lock);
+  Contexts::const_iterator ci;
+  ci = _contexts.find(prepared_objects);
+  if (ci != _contexts.end()) {
+    TextureContext *tc = (*ci).second;
+    return tc->get_resident();
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::release
 //       Access: Published
 //  Description: Frees the texture context only on the indicated object,
