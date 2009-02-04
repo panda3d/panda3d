@@ -323,6 +323,11 @@ protected:
   void disable_standard_texture_bindings();
   void update_standard_texture_bindings();
 
+#ifndef NDEBUG
+  void update_show_usage_texture_bindings();
+  void upload_usage_texture(int width, int height);
+#endif  // NDEBUG
+
   void do_auto_rescale_normal();
   bool specify_texture(CLP(TextureContext) *gtc);
   bool apply_texture(TextureContext *tc);
@@ -520,6 +525,23 @@ public:
   DeletedDisplayLists _deleted_queries;
 
   RenderState::SlotMask _inv_state_mask;
+
+#ifndef NDEBUG
+  bool _show_texture_usage;
+  int _show_texture_usage_max_size;
+  int _show_texture_usage_index;
+
+  class UsageTextureKey {
+  public:
+    INLINE UsageTextureKey(int x_size, int y_size);
+    INLINE bool operator < (const UsageTextureKey &other) const;
+
+    int _x_size;
+    int _y_size;
+  };
+  typedef pmap<UsageTextureKey, GLuint> UsageTextures;
+  UsageTextures _usage_textures;
+#endif  // NDEBUG
 
   static PStatCollector _load_display_list_pcollector;
   static PStatCollector _primitive_batches_display_list_pcollector;

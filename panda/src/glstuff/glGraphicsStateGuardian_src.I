@@ -14,7 +14,7 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::draw_display_list
+//     Function: GLGraphicsStateGuardian::draw_display_list
 //       Access: Public
 //  Description: If the GeomContext is non-NULL and contains a valid
 //               display list, uses it to draw the geometry if
@@ -38,7 +38,7 @@ draw_display_list(GeomContext *gc) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::report_errors
+//     Function: GLGraphicsStateGuardian::report_errors
 //       Access: Public, Static
 //  Description: Checks for any outstanding error codes and outputs
 //               them, if found.  If NDEBUG is defined, this function
@@ -61,7 +61,7 @@ report_errors(int line, const char *source_file) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::report_my_errors
+//     Function: GLGraphicsStateGuardian::report_my_errors
 //       Access: Public
 //  Description: Like report_errors(), above, but non-static so we can
 //               throw an event on failure.
@@ -79,7 +79,7 @@ report_my_errors(int line, const char *source_file) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_gl_vendor
+//     Function: GLGraphicsStateGuardian::get_gl_vendor
 //       Access: Public
 //  Description: Returns the GL vendor string reported by the driver.
 ////////////////////////////////////////////////////////////////////
@@ -89,7 +89,7 @@ get_gl_vendor() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_gl_renderer
+//     Function: GLGraphicsStateGuardian::get_gl_renderer
 //       Access: Public
 //  Description: Returns the GL renderer string reported by the driver.
 ////////////////////////////////////////////////////////////////////
@@ -99,7 +99,7 @@ get_gl_renderer() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_gl_version
+//     Function: GLGraphicsStateGuardian::get_gl_version
 //       Access: Public
 //  Description: Returns the GL version string reported by the driver.
 ////////////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@ get_gl_version() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_gl_version_major
+//     Function: GLGraphicsStateGuardian::get_gl_version_major
 //       Access: Public
 //  Description: Returns the major part of the reported GL version
 //               number.
@@ -120,7 +120,7 @@ get_gl_version_major() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_gl_version_minor
+//     Function: GLGraphicsStateGuardian::get_gl_version_minor
 //       Access: Public
 //  Description: Returns the minor part of the reported GL version
 //               number.
@@ -131,7 +131,7 @@ get_gl_version_minor() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_gl_version_release
+//     Function: GLGraphicsStateGuardian::get_gl_version_release
 //       Access: Public
 //  Description: Returns the release part of the reported GL version
 //               number.
@@ -157,7 +157,7 @@ maybe_gl_finish() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_multisample_antialias
+//     Function: GLGraphicsStateGuardian::enable_multisample_antialias
 //       Access: Protected
 //  Description: Specifies whether multisample should be enabled for
 //               antialiasing purposes.
@@ -182,7 +182,7 @@ enable_multisample_antialias(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_multisample_alpha_one
+//     Function: GLGraphicsStateGuardian::enable_multisample_alpha_one
 //       Access: Protected
 //  Description: Specifies whether multisample should be enabled for
 //               transparency purposes, using the sample_alpha_to_one
@@ -210,7 +210,7 @@ enable_multisample_alpha_one(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_multisample_alpha_mask
+//     Function: GLGraphicsStateGuardian::enable_multisample_alpha_mask
 //       Access: Protected
 //  Description: Specifies whether multisample should be enabled for
 //               transparency purposes, using the sample_alpha_to_mask
@@ -238,7 +238,7 @@ enable_multisample_alpha_mask(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_line_smooth
+//     Function: GLGraphicsStateGuardian::enable_line_smooth
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -256,7 +256,7 @@ enable_line_smooth(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_point_smooth
+//     Function: GLGraphicsStateGuardian::enable_point_smooth
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -274,7 +274,7 @@ enable_point_smooth(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_polygon_smooth
+//     Function: GLGraphicsStateGuardian::enable_polygon_smooth
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -291,7 +291,7 @@ enable_polygon_smooth(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::setup_antialias_line
+//     Function: GLGraphicsStateGuardian::setup_antialias_line
 //       Access: Protected
 //  Description: Sets the appropriate antialiasing modes to render a
 //               series of line primitives, according to
@@ -308,7 +308,7 @@ setup_antialias_line() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::setup_antialias_point
+//     Function: GLGraphicsStateGuardian::setup_antialias_point
 //       Access: Protected
 //  Description: Sets the appropriate antialiasing modes to render a
 //               series of point primitives, according to
@@ -325,7 +325,7 @@ setup_antialias_point() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::setup_antialias_polygon
+//     Function: GLGraphicsStateGuardian::setup_antialias_polygon
 //       Access: Protected
 //  Description: Sets the appropriate antialiasing modes to render a
 //               series of point primitives, according to
@@ -362,7 +362,7 @@ setup_antialias_polygon() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_stencil_test
+//     Function: GLGraphicsStateGuardian::enable_stencil_test
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -387,7 +387,7 @@ enable_stencil_test(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_blend
+//     Function: GLGraphicsStateGuardian::enable_blend
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -412,7 +412,7 @@ enable_blend(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_depth_test
+//     Function: GLGraphicsStateGuardian::enable_depth_test
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -437,7 +437,7 @@ enable_depth_test(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_fog
+//     Function: GLGraphicsStateGuardian::enable_fog
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -462,7 +462,7 @@ enable_fog(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_alpha_test
+//     Function: GLGraphicsStateGuardian::enable_alpha_test
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -488,7 +488,7 @@ enable_alpha_test(bool val) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::enable_polygon_offset
+//     Function: GLGraphicsStateGuardian::enable_polygon_offset
 //       Access:
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -517,7 +517,7 @@ enable_polygon_offset(bool val) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_light_id
+//     Function: GLGraphicsStateGuardian::get_light_id
 //       Access: Public
 //  Description: Convert index to gl light id
 ////////////////////////////////////////////////////////////////////
@@ -526,7 +526,7 @@ INLINE GLenum CLP(GraphicsStateGuardian)::get_light_id(int index) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CLP(GraphicsStateGuardian)::get_clip_plane_id
+//     Function: GLGraphicsStateGuardian::get_clip_plane_id
 //       Access: Public
 //  Description: Convert index to gl clip plane id
 ////////////////////////////////////////////////////////////////////
@@ -534,3 +534,32 @@ INLINE GLenum CLP(GraphicsStateGuardian)::
 get_clip_plane_id(int index) const {
   return GL_CLIP_PLANE0 + index;
 }
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::UsageTextureKey::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE CLP(GraphicsStateGuardian)::UsageTextureKey::
+UsageTextureKey(int x_size, int y_size) :
+  _x_size(x_size),
+  _y_size(y_size)
+{
+}
+#endif  // NDEBUG
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::UsageTextureKey::operator <
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(GraphicsStateGuardian)::UsageTextureKey::
+operator < (const CLP(GraphicsStateGuardian)::UsageTextureKey &other) const {
+  if (_x_size != other._x_size) {
+    return _x_size < other._x_size;
+  }
+  return _y_size < other._y_size;
+}
+#endif  // NDEBUG

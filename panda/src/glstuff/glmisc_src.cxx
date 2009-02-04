@@ -52,6 +52,21 @@ ConfigVariableBool CLP(force_mipmaps)
    PRC_DESC("Configure this true to enable full trilinear mipmapping on every "
             "texture, whether it asks for it or not."));
 
+ConfigVariableBool CLP(show_texture_usage)
+  ("gl-show-texture-usage", false,
+   PRC_DESC("If you set this true, the screen will flash with textures drawn "
+            "in a special mode that shows the mipmap detail level and texture "
+            "size for each texture.  Textures will be drawn in blue for "
+            "mipmap level 0, gray for mipmap level 1, and red for all higher "
+            "mipmap levels.  Brighter colors represent larger textures."));
+
+ConfigVariableInt CLP(show_texture_usage_max_size)
+  ("gl-show-texture-usage-max-size", 1024,
+   PRC_DESC("Specifies the texture size (along one side) of the largest "
+            "texture expected to be loaded.  This controls the assignment "
+            "of the texture color in gl-show-texture-usage mode; colors "
+            "will be fully bright for textures of this size or larger."));
+
 ConfigVariableBool CLP(color_mask)
   ("gl-color-mask", true,
    PRC_DESC("Configure this false if your GL's implementation of glColorMask() "

@@ -1628,6 +1628,35 @@ begin_frame(Thread *current_thread) {
   _primitive_batches_display_list_pcollector.clear_level();
 #endif
 
+#ifndef NDEBUG
+  _show_texture_usage = false;
+  if (CLP(show_texture_usage)) {
+    // When this is true, then every other second, we show the usage
+    // textures instead of the real textures.
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    int this_second = (int)floor(now);
+    if (this_second & 1) {
+      _show_texture_usage = true;
+      _show_texture_usage_index = this_second >> 1;
+
+      int max_size = CLP(show_texture_usage_max_size);
+      if (max_size != _show_texture_usage_max_size) {
+        // Remove the cache of usage textures; we've changed the max
+        // size.
+        UsageTextures::iterator ui;
+        for (ui = _usage_textures.begin();
+             ui != _usage_textures.end();
+             ++ui) {
+          GLuint index = (*ui).second;
+          GLP(DeleteLists)(index, 1);
+        }
+        _usage_textures.clear();
+        _show_texture_usage_max_size = max_size;
+      }
+    }
+  }
+#endif  // NDEBUG
+
   report_my_gl_errors();
   return true;
 }
@@ -2055,11 +2084,18 @@ update_standard_vertex_arrays(bool force) {
 
     _sender.add_column(_data_reader, InternalName::get_normal(),
                        NULL, NULL, GLP(Normal3f), NULL);
-    if (!_sender.add_column(_data_reader, InternalName::get_color(),
-                            NULL, NULL, GLP(Color3f), GLP(Color4f))) {
-      // If we didn't have a color column, the item color is white.
+#ifndef NDEBUG
+    if (_show_texture_usage) {
+      // In show_texture_usage mode, all colors are white, so as not
+      // to contaminate the texture color.
       GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
-    }
+    } else
+#endif // NDEBUG
+      if (!_sender.add_column(_data_reader, InternalName::get_color(),
+                              NULL, NULL, GLP(Color3f), GLP(Color4f))) {
+        // If we didn't have a color column, the item color is white.
+        GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
+      }
 
     // Now set up each of the active texture coordinate stages--or at
     // least those for which we're not generating texture coordinates
@@ -2140,22 +2176,30 @@ update_standard_vertex_arrays(bool force) {
       GLP(DisableClientState)(GL_NORMAL_ARRAY);
     }
     
-    if (_data_reader->get_color_info(array_reader, num_values, numeric_type,
-                                     start, stride) &&
-        numeric_type != Geom::NT_packed_dabc) {
-      if (!setup_array_data(client_pointer, array_reader, force)) {
-        return false;
-      }
-      GLP(ColorPointer)(num_values, get_numeric_type(numeric_type),
-                        stride, client_pointer + start);
-      GLP(EnableClientState)(GL_COLOR_ARRAY);
-    } else {
+#ifndef NDEBUG
+    if (_show_texture_usage) {
+      // In show_texture_usage mode, all colors are white, so as not
+      // to contaminate the texture color.
       GLP(DisableClientState)(GL_COLOR_ARRAY);
-      
-      // Since we don't have per-vertex color, the implicit color is
-      // white.
       GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
-    }
+    } else
+#endif // NDEBUG
+      if (_data_reader->get_color_info(array_reader, num_values, numeric_type,
+                                       start, stride) &&
+          numeric_type != Geom::NT_packed_dabc) {
+        if (!setup_array_data(client_pointer, array_reader, force)) {
+          return false;
+        }
+        GLP(ColorPointer)(num_values, get_numeric_type(numeric_type),
+                          stride, client_pointer + start);
+        GLP(EnableClientState)(GL_COLOR_ARRAY);
+      } else {
+        GLP(DisableClientState)(GL_COLOR_ARRAY);
+        
+        // Since we don't have per-vertex color, the implicit color is
+        // white.
+        GLP(Color4f)(1.0f, 1.0f, 1.0f, 1.0f);
+      }
     
     // Now set up each of the active texture coordinate stages--or at
     // least those for which we're not generating texture coordinates
@@ -4005,6 +4049,18 @@ do_issue_material() {
     material = target_material->get_material();
   }
 
+  bool has_material_force_color = _has_material_force_color;
+
+#ifndef NDEBUG
+  if (_show_texture_usage) {
+    // In show_texture_usage mode, all colors are white, so as not
+    // to contaminate the texture color.  This means we disable
+    // lighting materials too.
+    material = &empty;
+    has_material_force_color = false;
+  }
+#endif  // NDEBUG
+
   GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
 
   GLP(Materialfv)(face, GL_SPECULAR, material->get_specular().get_data());
@@ -4022,7 +4078,7 @@ do_issue_material() {
     // The material specifies an ambient, but not a diffuse component.
     // The diffuse component comes from the object's color.
     GLP(Materialfv)(face, GL_AMBIENT, material->get_ambient().get_data());
-    if (_has_material_force_color) {
+    if (has_material_force_color) {
       GLP(Disable)(GL_COLOR_MATERIAL);
       GLP(Materialfv)(face, GL_DIFFUSE, _material_force_color.get_data());
     } else {
@@ -4034,7 +4090,7 @@ do_issue_material() {
     // The material specifies a diffuse, but not an ambient component.
     // The ambient component comes from the object's color.
     GLP(Materialfv)(face, GL_DIFFUSE, material->get_diffuse().get_data());
-    if (_has_material_force_color) {
+    if (has_material_force_color) {
       GLP(Disable)(GL_COLOR_MATERIAL);
       GLP(Materialfv)(face, GL_AMBIENT, _material_force_color.get_data());
     } else {
@@ -4045,7 +4101,7 @@ do_issue_material() {
   } else {
     // The material specifies neither a diffuse nor an ambient
     // component.  Both components come from the object's color.
-    if (_has_material_force_color) {
+    if (has_material_force_color) {
       GLP(Disable)(GL_COLOR_MATERIAL);
       GLP(Materialfv)(face, GL_AMBIENT, _material_force_color.get_data());
       GLP(Materialfv)(face, GL_DIFFUSE, _material_force_color.get_data());
@@ -5780,6 +5836,18 @@ print_gfx_visual() {
 ////////////////////////////////////////////////////////////////////
 float *CLP(GraphicsStateGuardian)::
 get_light_color(float light_color[4], Light *light) const {
+#ifndef NDEBUG
+  if (_show_texture_usage) {
+    // In show_texture_usage mode, all lights are white, so as not to
+    // contaminate the texture color.
+    light_color[0] = 1.0f;
+    light_color[1] = 1.0f;
+    light_color[2] = 1.0f;
+    light_color[3] = 1.0f;
+    return light_color;
+  }
+#endif  // NDEBUG
+
   const Colorf &c = light->get_color();
 
   light_color[0] = c[0] * _light_color_scale[0];
@@ -6347,10 +6415,19 @@ do_issue_texture() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::update_standard_texture_bindings
 //       Access: Private
-//  Description:
+//  Description: Applies the appropriate set of textures for the
+//               current state, using the standard fixed-function
+//               pipeline.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 update_standard_texture_bindings() {
+#ifndef NDEBUG
+  if (_show_texture_usage) {
+    update_show_usage_texture_bindings();
+    return;
+  }
+#endif // NDEBUG
+
   int num_stages = _target_texture->get_num_on_ff_stages();
 
   nassertv(num_stages <= _max_texture_stages &&
@@ -6539,6 +6616,168 @@ update_standard_texture_bindings() {
   report_my_gl_errors();
 }
 
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::update_show_usage_texture_bindings
+//       Access: Private
+//  Description: This is a special function that loads the usage
+//               textures in gl-show-texture-usage mode, instead of
+//               loading the actual used textures.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+update_show_usage_texture_bindings() {
+  int num_stages = _target_texture->get_num_on_ff_stages();
+
+  nassertv(num_stages <= _max_texture_stages &&
+           _num_active_texture_stages <= _max_texture_stages);
+
+  _texture_involves_color_scale = false;
+
+  // First, we walk through the list of textures and pretend to render
+  // them all, even though we don't actually render them, just so
+  // Panda will keep track of the list of "active" textures correctly
+  // during the flash.
+  int i;
+  for (i = 0; i < num_stages; i++) {
+    TextureStage *stage = _target_texture->get_on_ff_stage(i);
+    Texture *texture = _target_texture->get_on_texture(stage);
+    nassertv(texture != (Texture *)NULL);
+
+    TextureContext *tc = texture->prepare_now(_prepared_objects, this);
+    if (tc == (TextureContext *)NULL) {
+      // Something wrong with this texture; skip it.
+      break;
+    }
+    tc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
+  }
+
+  // Disable all texture stages.
+  for (i = 0; i < _num_active_texture_stages; i++) {
+    _glActiveTexture(GL_TEXTURE0 + i);
+    GLP(Disable)(GL_TEXTURE_1D);
+    GLP(Disable)(GL_TEXTURE_2D);
+    if (_supports_3d_texture) {
+      GLP(Disable)(GL_TEXTURE_3D);
+    }
+    if (_supports_cube_map) {
+      GLP(Disable)(GL_TEXTURE_CUBE_MAP);
+    }
+  }
+  
+  // Save the count of texture stages for next time.
+  _num_active_texture_stages = num_stages;
+
+  if (num_stages > 0) {
+    // Now, pick just one texture stage to apply.
+    i = _show_texture_usage_index % num_stages;
+
+    TextureStage *stage = _target_texture->get_on_ff_stage(i);
+    Texture *texture = _target_texture->get_on_texture(stage);
+    nassertv(texture != (Texture *)NULL);
+
+    // Choose the corresponding usage texture and apply it.
+    _glActiveTexture(GL_TEXTURE0 + i);
+    GLP(Enable)(GL_TEXTURE_2D);
+
+    UsageTextureKey key(texture->get_x_size(), texture->get_y_size());
+    UsageTextures::iterator ui = _usage_textures.find(key);
+    if (ui == _usage_textures.end()) {
+      // Need to create a new texture for this size.
+      GLuint index;
+      GLP(GenTextures)(1, &index);
+      GLP(BindTexture)(GL_TEXTURE_2D, index);
+      upload_usage_texture(texture->get_x_size(), texture->get_y_size());
+      _usage_textures[key] = index;
+
+    } else {
+      // Just bind the previously-created texture.
+      GLuint index = (*ui).second;
+      GLP(BindTexture)(GL_TEXTURE_2D, index);
+    }
+  }
+
+  report_my_gl_errors();
+}
+#endif  // NDEBUG
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::upload_usage_texture
+//       Access: Protected
+//  Description: Uploads a special "usage" texture intended to be
+//               applied only in gl-show-texture-usage mode, to reveal
+//               where texure memory is being spent.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+upload_usage_texture(int width, int height) {
+  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+  // Get the color and scale appropriate to this level.
+  int max_size = _show_texture_usage_max_size;
+  float scale = (double)(width * height) / (max_size * max_size);
+  scale = csqrt(min(scale, 1.0f)) * 0.8f + 0.2f;
+
+  if (GLCAT.is_debug()) {
+    GLCAT.debug()
+      << "upload_usage_texture(" << width << ", " << height
+      << "), scale = " << scale << "\n";
+  }
+
+  static Colorf colors[3] = {
+    Colorf(0.0f, 0.0f, 1.0f, 1.0f),   // mipmap 0: blue
+    Colorf(1.0f, 1.0f, 1.0f, 1.0f),   // mipmap 1: white
+    Colorf(1.0f, 0.0f, 0.0f, 1.0f),   // mipmap 2 and higher: red
+  };
+
+
+  // Allocate a temporary array large enough to contain the toplevel
+  // mipmap.
+  PN_uint32 *buffer = (PN_uint32 *)PANDA_MALLOC_ARRAY(width * height * 4);
+
+  int n = 0;
+  while (true) {
+    // Choose the color for the nth mipmap.
+    Colorf c = colors[min(n, 2)] * scale;
+
+    // A simple union to store the colors values bytewise, and get the
+    // answer wordwise, independently of machine byte-ordernig.
+    union {
+      struct { 
+        char r, g, b, a;
+      } b;
+      PN_uint32 w;
+    } store;
+
+    store.b.r = (int)(c[0] * 255.0f);
+    store.b.g = (int)(c[1] * 255.0f);
+    store.b.b = (int)(c[2] * 255.0f);
+    store.b.a = 0xff;
+
+    // Fill in the array.
+    int num_pixels = width * height;
+    for (int p = 0; p < num_pixels; ++p) {
+      buffer[p] = store.w;
+    }
+    
+    GLP(TexImage2D)(GL_TEXTURE_2D, n, GL_RGBA, width, height, 0,
+                    GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+    if (width == 1 && height == 1) {
+      // That was the last mipmap level.
+      break;
+    }
+
+    width = max(width >> 1, 1);
+    height = max(height >> 1, 1);
+    ++n;
+  }
+
+  PANDA_FREE_ARRAY(buffer);
+}
+#endif  // NDEBUG
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::disable_standard_texture_bindings
