@@ -347,6 +347,13 @@ get_wtext() const {
 //               characters, which may not exactly match the embedded
 //               properties characters of the original string, but it
 //               will encode the same way.
+//
+//               Embedded properties characters will be closed before
+//               every newline, then reopened (if necessary) on the
+//               subsequent character following the newline.  This
+//               means it will be safe to divide the text up at the
+//               newline characters and treat each line as an
+//               independent piece.
 ////////////////////////////////////////////////////////////////////
 wstring TextAssembler::
 get_wordwrapped_wtext() const {
@@ -358,6 +365,8 @@ get_wordwrapped_wtext() const {
   for (bi = _text_block.begin(); bi != _text_block.end(); ++bi) {
     const TextRow &row = (*bi);
     if (bi != _text_block.begin()) {
+      current_cprops->append_delta(wtext, _initial_cprops);
+      current_cprops = _initial_cprops;
       wtext += '\n';
     }
     
