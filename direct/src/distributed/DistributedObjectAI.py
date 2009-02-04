@@ -97,7 +97,7 @@ class DistributedObjectAI(DistributedObjectBase):
         """
         self.__generates -= 1
         if self.__generates < 0:
-            self.notify.error('DistributedObjectAI: delete() called more times than generate()')
+            self.notify.warning('DistributedObjectAI: delete() called more times than generate()')
         if self.__generates == 0:
             # prevent this code from executing multiple times
             if self.air is not None:
