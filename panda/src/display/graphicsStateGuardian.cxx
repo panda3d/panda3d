@@ -49,6 +49,13 @@
 #include <algorithm>
 #include <limits.h>
 
+#ifdef HAVE_PYTHON
+#include "py_panda.h"  
+#ifndef CPPPARSER
+IMPORT_THIS struct Dtool_PyTypedObject Dtool_Texture;
+#endif
+#endif  // HAVE_PYTHON
+
 PStatCollector GraphicsStateGuardian::_vertex_buffer_switch_pcollector("Vertex buffer switch:Vertex");
 PStatCollector GraphicsStateGuardian::_index_buffer_switch_pcollector("Vertex buffer switch:Index");
 PStatCollector GraphicsStateGuardian::_load_vertex_buffer_pcollector("Draw:Transfer data:Vertex buffer");
@@ -368,6 +375,58 @@ get_gamma(float gamma) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsStateGuardian::
 restore_gamma() {
+}
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_prepared_textures
+//       Access: Published
+//  Description: Returns a Python list of all of the
+//               currently-prepared textures within the GSG.
+////////////////////////////////////////////////////////////////////
+PyObject *GraphicsStateGuardian::
+get_prepared_textures() const {
+  size_t num_textures = _prepared_objects->_prepared_textures.size();
+  PyObject *list = PyList_New(num_textures);
+
+  size_t i = 0;
+  PreparedGraphicsObjects::Textures::const_iterator ti;
+  for (ti = _prepared_objects->_prepared_textures.begin();
+       ti != _prepared_objects->_prepared_textures.end();
+       ++ti) {
+    Texture *tex = (*ti)->get_texture();
+
+    PyObject *element = 
+      DTool_CreatePyInstanceTyped(tex, Dtool_Texture,
+                                  true, false, tex->get_type_index());
+
+    PyList_SetItem(list, i, element);
+    ++i;
+  }
+
+  return list;
+}
+#endif  // HAVE_PYTHON
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::traverse_prepared_textures
+//       Access: Public
+//  Description: Calls the indicated function on all
+//               currently-prepared textures, or until the callback
+//               function returns false.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func, 
+                           void *callback_arg) {
+  PreparedGraphicsObjects::Textures::const_iterator ti;
+  for (ti = _prepared_objects->_prepared_textures.begin();
+       ti != _prepared_objects->_prepared_textures.end();
+       ++ti) {
+    bool result = (*func)(*ti,callback_arg);
+    if (!result) {
+      return;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1920,25 +1979,6 @@ create_gamma_table (float gamma, unsigned short *red_table, unsigned short *gree
     green_table [i] = (int)g;
     blue_table [i] = (int)g;
   }    
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::traverse_prepared_textures
-//       Access: Public
-//  Description: Calls the indicated function on all
-//               currently-prepared textures, or until the callback
-//               function returns false.
-////////////////////////////////////////////////////////////////////
-void GraphicsStateGuardian::
-traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg) {
-  PreparedGraphicsObjects::Textures::const_iterator ti;
-  for (ti = _prepared_objects->_prepared_textures.begin();
-       ti != _prepared_objects->_prepared_textures.end();
-       ++ti) {
-    bool bResult=(*pertex_callbackfn)(*ti,callback_arg);
-    if(!bResult)
-      return;
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

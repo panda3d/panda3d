@@ -168,7 +168,13 @@ PUBLISHED:
 
   INLINE void set_texture_quality_override(Texture::QualityLevel quality_level);
   INLINE Texture::QualityLevel get_texture_quality_override() const;
-  
+
+#ifdef HAVE_PYTHON
+  PyObject *get_prepared_textures() const;
+#endif
+  typedef bool TextureCallback(TextureContext *tc, void *callback_arg);
+  void traverse_prepared_textures(TextureCallback *func, void *callback_arg);
+
 public:
   bool set_scene(SceneSetup *scene_setup);
   virtual SceneSetup *get_scene() const;
@@ -279,8 +285,6 @@ public:
 #ifdef DO_PSTATS
   static void init_frame_pstats();
 #endif
-
-  void traverse_prepared_textures(bool (*pertex_callbackfn)(TextureContext *,void *),void *callback_arg);
 
 protected:
   virtual void enable_lighting(bool enable);
