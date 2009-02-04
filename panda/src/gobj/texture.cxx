@@ -1530,6 +1530,36 @@ prepare_now(PreparedGraphicsObjects *prepared_objects,
   return tc;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::up_to_power_2
+//       Access: Published, Static
+//  Description: Returns the smallest power of 2 greater than or equal
+//               to value.
+////////////////////////////////////////////////////////////////////
+int Texture::
+up_to_power_2(int value) {
+  if (value <= 1) {
+    return 1;
+  }
+  int bit = get_next_higher_bit(((unsigned int)value) - 1);
+  return (1 << bit);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::down_to_power_2
+//       Access: Published, Static
+//  Description: Returns the largest power of 2 less than or equal
+//               to value.
+////////////////////////////////////////////////////////////////////
+int Texture::
+down_to_power_2(int value) {
+  if (value <= 1) {
+    return 1;
+  }
+  int bit = get_next_higher_bit(((unsigned int)value) >> 1);
+  return (1 << bit);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::texture_uploaded
@@ -1658,36 +1688,6 @@ string_filter_type(const string &string) {
 PT(Texture) Texture::
 make_texture() {
   return new Texture;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::up_to_power_2
-//       Access: Public, Static
-//  Description: Returns the smallest power of 2 greater than or equal
-//               to value.
-////////////////////////////////////////////////////////////////////
-int Texture::
-up_to_power_2(int value) {
-  int x = 1;
-  while (x < value) {
-    x = (x << 1);
-  }
-  return x;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Texture::down_to_power_2
-//       Access: Public, Static
-//  Description: Returns the largest power of 2 less than or equal
-//               to value.
-////////////////////////////////////////////////////////////////////
-int Texture::
-down_to_power_2(int value) {
-  int x = 1;
-  while ((x << 1) <= value) {
-    x = (x << 1);
-  }
-  return x;
 }
 
 ////////////////////////////////////////////////////////////////////
