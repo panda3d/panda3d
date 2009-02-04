@@ -1199,3 +1199,34 @@ class TaskManager:
             del l
             tm.destroy()
             del tm
+
+if __debug__:
+    def checkLeak():
+        import sys
+        import gc
+        gc.enable()
+        from direct.showbase.DirectObject import DirectObject
+        class TestClass(DirectObject):
+            def doTask(self, task):
+                return task.done
+        obj = TestClass()
+        startRefCount = sys.getrefcount(obj)
+        print 'sys.getrefcount(obj): %s' % sys.getrefcount(obj)
+        print '** addTask'
+        t = obj.addTask(obj.doTask, 'test')
+        print 'sys.getrefcount(obj): %s' % sys.getrefcount(obj)
+        print 'task.getRefCount(): %s' % t.getRefCount()
+        print '** removeTask'
+        obj.removeTask('test')
+        print 'sys.getrefcount(obj): %s' % sys.getrefcount(obj)
+        print 'task.getRefCount(): %s' % t.getRefCount()
+        print '** step'
+        taskMgr.step()
+        taskMgr.step()
+        taskMgr.step()
+        print 'sys.getrefcount(obj): %s' % sys.getrefcount(obj)
+        print 'task.getRefCount(): %s' % t.getRefCount()
+        print '** task release'
+        t = None
+        print 'sys.getrefcount(obj): %s' % sys.getrefcount(obj)
+        assert sys.getrefcount(obj) == startRefCount

@@ -64,6 +64,8 @@ PythonTask::
   Py_DECREF(_args);
   Py_DECREF(_dict);
   Py_XDECREF(_generator);
+  Py_XDECREF(_owner);
+  Py_XDECREF(_upon_death);
 }
 
 ////////////////////////////////////////////////////////////////////
