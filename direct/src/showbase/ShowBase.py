@@ -2190,7 +2190,7 @@ class ShowBase(DirectObject.DirectObject):
             if not properties.getOpen():
                 # If the user closes the main window, we should exit.
                 self.notify.info("User closed main window.")
-                if __dev__:
+                if __dev__ and (not config.GetBool('disable-garbage-logging', 1)):
                     GarbageReport.b_checkForGarbageLeaks()
                 self.userExit()
 
@@ -2198,7 +2198,7 @@ class ShowBase(DirectObject.DirectObject):
                 self.mainWinForeground = 1
             elif not properties.getForeground() and self.mainWinForeground:
                 self.mainWinForeground = 0
-                if __dev__:
+                if __dev__ and (not config.GetBool('disable-garbage-logging', 1)):
                     GarbageReport.b_checkForGarbageLeaks()
 
             if properties.getMinimized() and not self.mainWinMinimized:
