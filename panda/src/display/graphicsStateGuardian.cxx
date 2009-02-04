@@ -386,6 +386,7 @@ restore_gamma() {
 ////////////////////////////////////////////////////////////////////
 PyObject *GraphicsStateGuardian::
 get_prepared_textures() const {
+  ReMutexHolder holder(_prepared_objects->_lock);
   size_t num_textures = _prepared_objects->_prepared_textures.size();
   PyObject *list = PyList_New(num_textures);
 
@@ -394,15 +395,18 @@ get_prepared_textures() const {
   for (ti = _prepared_objects->_prepared_textures.begin();
        ti != _prepared_objects->_prepared_textures.end();
        ++ti) {
-    Texture *tex = (*ti)->get_texture();
+    PT(Texture) tex = (*ti)->get_texture();
 
     PyObject *element = 
       DTool_CreatePyInstanceTyped(tex, Dtool_Texture,
                                   true, false, tex->get_type_index());
+    tex->ref();
 
+    nassertr(i < num_textures, NULL);
     PyList_SetItem(list, i, element);
     ++i;
   }
+  nassertr(i == num_textures, NULL);
 
   return list;
 }
@@ -418,6 +422,7 @@ get_prepared_textures() const {
 void GraphicsStateGuardian::
 traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func, 
                            void *callback_arg) {
+  ReMutexHolder holder(_prepared_objects->_lock);
   PreparedGraphicsObjects::Textures::const_iterator ti;
   for (ti = _prepared_objects->_prepared_textures.begin();
        ti != _prepared_objects->_prepared_textures.end();

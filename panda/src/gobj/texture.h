@@ -428,7 +428,7 @@ PUBLISHED:
   static int down_to_power_2(int value);
 
 public:
-  void texture_uploaded(GraphicsStateGuardianBase *gsg);
+  void texture_uploaded();
   
   virtual bool has_cull_callback() const;
   virtual bool cull_callback(CullTraverser *trav, const CullTraverserData &data) const;

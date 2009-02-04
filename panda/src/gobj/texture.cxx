@@ -1564,18 +1564,17 @@ down_to_power_2(int value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Texture::texture_uploaded
 //       Access: Public
-//  Description: This method is called by the GraphicsStateGuardian
-//               after a texture has been successfully uploaded to
-//               graphics memory.  It is intended as a callback so the
-//               texture can release its RAM image, if _keep_ram_image
-//               is false.
+//  Description: This method is called by the GraphicsEngine at the
+//               beginning of the frame *after* a texture has been
+//               successfully uploaded to graphics memory.  It is
+//               intended as a callback so the texture can release its
+//               RAM image, if _keep_ram_image is false.
 //
-//               Normally, this is not called directly except by the
-//               GraphicsStateGuardian.  It will be called in the draw
-//               thread.
+//               This is called indirectly when the GSG calls
+//               GraphicsEngine::texture_uploaded().
 ////////////////////////////////////////////////////////////////////
 void Texture::
-texture_uploaded(GraphicsStateGuardianBase *gsg) {
+texture_uploaded() {
   MutexHolder holder(_lock);
 
   if (!keep_texture_ram && !_keep_ram_image) {

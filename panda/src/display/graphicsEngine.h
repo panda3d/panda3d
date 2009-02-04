@@ -127,6 +127,8 @@ public:
                     CallbackFunction *func, void *data);
   bool remove_callback(const string &thread_name, CallbackTime callback_time,
                        CallbackFunction *func, void *data);
+
+  void texture_uploaded(Texture *tex);
   
 private:
   class Callback {
@@ -343,6 +345,9 @@ private:
 
   bool _singular_warning_last_frame;
   bool _singular_warning_this_frame;
+
+  typedef pvector< PT(Texture) > LoadedTextures;
+  LoadedTextures _loaded_textures;
 
   LightReMutex _lock;
 

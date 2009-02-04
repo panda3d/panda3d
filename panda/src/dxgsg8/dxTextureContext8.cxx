@@ -18,6 +18,7 @@
 #include "pStatTimer.h"
 #include "dxgsg8base.h"
 #include "bamCache.h"
+#include "graphicsEngine.h"
 
 #include <assert.h>
 #include <time.h>
@@ -794,7 +795,7 @@ create_texture(DXScreenData &scrn) {
     }
   }
 
-  tex->texture_uploaded(scrn._dxgsg8);
+  scrn._dxgsg8->get_engine()->texture_uploaded(tex);
   mark_loaded();
   return true;
 

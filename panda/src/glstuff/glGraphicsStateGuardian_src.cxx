@@ -59,6 +59,7 @@
 #include "stencilAttrib.h"
 #include "lightAttrib.h"
 #include "scissorAttrib.h"
+#include "graphicsEngine.h"
 
 #ifdef HAVE_CG
 #include "Cg/cgGL.h"
@@ -7462,7 +7463,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
       }
     }
 
-    tex->texture_uploaded(this);
+    get_engine()->texture_uploaded(tex);
     gtc->mark_loaded();
 
     report_my_gl_errors();

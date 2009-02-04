@@ -17,6 +17,7 @@
 #include "pStatTimer.h"
 #include "dxTextureContext9.h"
 #include "bamCache.h"
+#include "graphicsEngine.h"
 #include <d3dx9tex.h>
 #include <assert.h>
 #include <time.h>
@@ -946,7 +947,7 @@ create_texture(DXScreenData &scrn) {
 
   // must not put render to texture into LRU
   if (!_managed && !tex->get_render_to_texture()) {
-    tex->texture_uploaded(scrn._dxgsg9);
+    scrn._dxgsg9->get_engine()->texture_uploaded(tex);
   }
   mark_loaded();
   

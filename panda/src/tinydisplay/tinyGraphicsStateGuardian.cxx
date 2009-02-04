@@ -38,6 +38,7 @@
 #include "zmath.h"
 #include "ztriangle_table.h"
 #include "store_pixel_table.h"
+#include "graphicsEngine.h"
 
 TypeHandle TinyGraphicsStateGuardian::_type_handle;
 
@@ -2536,7 +2537,7 @@ upload_texture(TinyTextureContext *gtc, bool force) {
 
   gtc->update_data_size_bytes(bytecount);
   
-  tex->texture_uploaded(this);
+  get_engine()->texture_uploaded(tex);
   gtc->mark_loaded();
 
   return true;

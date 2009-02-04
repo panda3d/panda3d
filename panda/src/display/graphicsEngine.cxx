@@ -695,6 +695,14 @@ render_frame() {
       }
     }
     _windows.swap(new_windows);
+
+    // Go ahead and release any textures' ram images for textures that
+    // were drawn in the previous frame.
+    LoadedTextures::iterator lti;
+    for (lti = _loaded_textures.begin(); lti != _loaded_textures.end(); ++lti) {
+      (*lti)->texture_uploaded();
+    }
+    _loaded_textures.clear();
     
     // Now it's time to do any drawing from the main frame--after all of
     // the App code has executed, but before we begin the next frame.
@@ -1053,6 +1061,29 @@ remove_callback(const string &thread_name,
   WindowRenderer *wr = get_window_renderer(thread_name, 0);
   return wr->remove_callback(callback_time, Callback(func, data));
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::texture_uploaded
+//       Access: Public
+//  Description: This method is called by the GraphicsStateGuardian
+//               after a texture has been successfully uploaded to
+//               graphics memory.  It is intended as a callback so the
+//               texture can release its RAM image, if _keep_ram_image
+//               is false.
+//
+//               Normally, this is not called directly except by the
+//               GraphicsStateGuardian.  It will be called in the draw
+//               thread.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+texture_uploaded(Texture *tex) {
+  LightReMutexHolder holder(_lock);
+  // We defer this until the end of the frame; multiple GSG's might be
+  // rendering the texture within the same frame, and we don't want to
+  // dump the texture image until they've all had a chance at it.
+  _loaded_textures.push_back(tex);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::scene_root_func
