@@ -467,6 +467,16 @@ class ShowBase(DirectObject.DirectObject):
             self.pipe.getInterfaceName(), self.pipe.getType().getName()))
         self.pipeList.append(self.pipe)
 
+    def makeModulePipe(self, moduleName):
+        """
+        Returns a GraphicsPipe from the indicated module,
+        e.g. 'pandagl' or 'pandadx9'.  Does not affect base.pipe or
+        base.pipeList.
+        """
+
+        selection = GraphicsPipeSelection.getGlobalPtr()
+        return selection.makeModulePipe(moduleName)
+
     def makeAllPipes(self):
         """
         Creates all GraphicsPipes that the system knows about and fill up
