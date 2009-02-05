@@ -49,11 +49,17 @@ class TexMemWatcher(DirectObject):
                                                   props, flags)
         assert self.win
 
+        # Set our GSG to a texture memory limit of 0.  This will force
+        # it to unload any textures as soon as they are offscreen, so
+        # that our GSG's texture memory utilization will match that of
+        # the real GSG.
+        self.win.getGsg().getPreparedObjects().setGraphicsMemoryLimit(0)
+
         # We don't need to clear the color buffer, since we'll be
-        # filling it with a texture.  But we can clear the depth
-        # buffer; we use the depth buffer to cut a hole in the matte.
+        # filling it with a texture.  We also don't need to clear the
+        # depth buffer, since we won't be using it.
         self.win.setClearColor(False)
-        self.win.setClearDepth(True)
+        self.win.setClearDepth(False)
 
         self.win.setWindowEvent('tex-mem-window')
         self.accept('tex-mem-window', self.windowEvent)
