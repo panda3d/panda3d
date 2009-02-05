@@ -2665,13 +2665,16 @@ do_read_dds(istream &in, const string &filename, bool header_only) {
 ////////////////////////////////////////////////////////////////////
 bool Texture::
 do_write(const Filename &fullpath, int z, int n, bool write_pages, bool write_mipmaps) const {
-  if (!do_has_ram_image()) {
-    ((Texture *)this)->do_get_ram_image();
-  }
-  nassertr(do_has_ram_image(), false);
-
   if (is_txo_filename(fullpath)) {
+    if (!do_has_ram_image()) {
+      ((Texture *)this)->do_get_ram_image();
+    }
+    nassertr(do_has_ram_image(), false);
     return do_write_txo_file(fullpath);
+  }
+
+  if (!do_has_uncompressed_ram_image()) {
+    ((Texture *)this)->do_get_uncompressed_ram_image();
   }
 
   nassertr(do_has_ram_mipmap_image(n), false);
