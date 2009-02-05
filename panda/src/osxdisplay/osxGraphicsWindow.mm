@@ -736,10 +736,15 @@ bool osxGraphicsWindow::set_icon_filename(const Filename &icon_filename)
 
   Filename icon_pathname = icon_filename;
   if (!vfs->resolve_filename(icon_pathname, get_model_path())) {
-    // The filename doesn't exist.
-    osxdisplay_cat.warning()
-      << "Could not find icon filename " << icon_filename << "\n";
-    return false;
+    // The filename doesn't exist along the search path.
+    if (icon_pathname.is_fully_qualified() && vfs->exists(icon_pathname)) {
+      // But it does exist locally, so accept it.
+
+    } else {
+      osxdisplay_cat.warning()
+        << "Could not find icon filename " << icon_filename << "\n";
+      return false;
+    }
   }
 
 

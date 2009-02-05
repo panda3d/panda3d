@@ -2280,10 +2280,15 @@ get_icon(const Filename &filename) {
   // virtual file system.
   Filename resolved = filename;
   if (!resolved.resolve_filename(get_model_path())) {
-    // The filename doesn't exist.
-    windisplay_cat.warning()
-      << "Could not find icon filename " << filename << "\n";
-    return 0;
+    // The filename doesn't exist along the search path.
+    if (resolved.is_fully_qualified() && resolved.exists()) {
+      // But it does exist locally, so accept it.
+
+    } else {
+      windisplay_cat.warning()
+        << "Could not find icon filename " << filename << "\n";
+      return 0;
+    }
   }
   fi = _icon_filenames.find(resolved);
   if (fi != _icon_filenames.end()) {
