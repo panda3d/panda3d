@@ -705,7 +705,12 @@ reload() {
   if (_loaded_from_image && !_fullpath.empty()) {
     do_clear_ram_image();
     do_unlock_and_reload_ram_image(true);
-    return do_has_ram_image();
+    if (do_has_ram_image()) {
+      // An explicit call to reload() should increment image_modified.
+      ++_image_modified;
+      return true;
+    }
+    return false;
   }
 
   // We don't have a filename to load from.
@@ -2918,16 +2923,38 @@ do_unlock_and_reload_ram_image(bool allow_compression) {
     // properties have changed during the reload (for instance,
     // because we reloaded a txo), it won't contaminate the original
     // texture.
-    _x_size = tex->_x_size;
-    _y_size = tex->_y_size;
-    _z_size = tex->_z_size;
     _orig_file_x_size = tex->_orig_file_x_size;
     _orig_file_y_size = tex->_orig_file_y_size;
-    _num_components = tex->_num_components;
-    _component_width = tex->_component_width;
-    _texture_type = tex->_texture_type;
-    _format = tex->_format;
-    _component_type = tex->_component_type;
+ 
+    // If any of *these* properties have changed, the texture has
+    // changed in some fundamental way.  Update it appropriately.
+    if (tex->_x_size != _x_size ||
+        tex->_y_size != _y_size ||
+        tex->_z_size != _z_size ||
+        tex->_num_components != _num_components ||
+        tex->_component_width != _component_width ||
+        tex->_texture_type != _texture_type ||
+        tex->_format != _format ||
+        tex->_component_type != _component_type) {
+
+      _x_size = tex->_x_size;
+      _y_size = tex->_y_size;
+      _z_size = tex->_z_size;
+
+      _num_components = tex->_num_components;
+      _component_width = tex->_component_width;
+      _texture_type = tex->_texture_type;
+      _format = tex->_format;
+      _component_type = tex->_component_type;
+
+      // Normally, we don't update the _modified semaphores in a
+      // do_blah method, but we'll make an exception in this case,
+      // because it's easiest to modify this here, and only when we
+      // know it's needed.
+      ++_properties_modified;
+      ++_image_modified;
+    }
+
     _keep_ram_image = tex->_keep_ram_image;
     _ram_image_compression = tex->_ram_image_compression;
     _ram_images = tex->_ram_images;
@@ -2935,13 +2962,10 @@ do_unlock_and_reload_ram_image(bool allow_compression) {
     nassertv(_reloading);
     _reloading = false;
 
-    // Normally, we don't update the _modified semaphores in a do_blah
-    // method, but we'll make an exception in this case, because it's
-    // easiest to modify these here, and only when we know it's
-    // needed.
-    ++_image_modified;
-    ++_properties_modified;
-
+    // We don't generally increment the _image_modified semaphore,
+    // because this is just a reload, and presumably the image hasn't
+    // changed (unless we hit the if condition above).
+    
     _cvar.notify_all();
   }
 }
@@ -4022,9 +4046,9 @@ get_ram_image_as(const string &requested_format) {
           nassertr(_num_components != 3, CPTA_uchar(get_class_type()));
           component = _num_components - 1;
         } else if (format.at(s) == '0') {
-          newdata[p * format.size() + s] =  0;
+          newdata[p * format.size() + s] = 0x00;
         } else if (format.at(s) == '1') {
-          newdata[p * format.size() + s] = -1;
+          newdata[p * format.size() + s] = 0xff;
         } else {
           gobj_cat.error() << "Unexpected component character '"
             << format.at(s) << "', expected one of RGBA!\n";

@@ -7586,14 +7586,120 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
   int highest_level = 0;
 
+  bool needs_reload = false;
   if (!gtc->_already_applied ||
       gtc->_uses_mipmaps != uses_mipmaps ||
       gtc->_internal_format != internal_format ||
       gtc->_width != width ||
       gtc->_height != height ||
       gtc->_depth != depth) {
-    // We need to reload a new image.
+    // We need to reload a new GL Texture object.
+    needs_reload = true;
+  }
 
+  if (!needs_reload) {
+    // Try to subload the image over the existing GL Texture object,
+    // possibly saving on texture memory fragmentation.
+
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "subloading existing texture object, " << width << " x " << height
+        << " x " << depth << ", mipmaps " << num_ram_mipmap_levels
+        << ", uses_mipmaps = " << uses_mipmaps << "\n";
+    }
+
+    for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
+      const unsigned char *image_ptr = tex->get_ram_mipmap_image(n);
+      if (image_ptr == (const unsigned char *)NULL) {
+        GLCAT.warning()
+          << "No mipmap level " << n << " defined for " << tex->get_name()
+          << "\n";
+        // No mipmap level n; stop here.
+        break;
+      }
+
+      size_t image_size = tex->get_ram_mipmap_image_size(n);
+      if (one_page_only) {
+        image_size = tex->get_ram_mipmap_page_size(n);
+        image_ptr += image_size * z;
+      }
+
+      PTA_uchar bgr_image;
+      if (!_supports_bgr && image_compression == Texture::CM_off) {
+        // If the GL doesn't claim to support BGR, we may have to reverse
+        // the component ordering of the image.
+        image_ptr = fix_component_ordering(bgr_image, image_ptr, image_size,
+                                           external_format, tex);
+      }
+
+      int width = tex->get_expected_mipmap_x_size(n);
+      int height = tex->get_expected_mipmap_y_size(n);
+      int depth = tex->get_expected_mipmap_z_size(n);
+
+#ifdef DO_PSTATS
+      _data_transferred_pcollector.add_level(image_size);
+#endif
+      switch (texture_target) {
+      case GL_TEXTURE_1D:
+        if (image_compression == Texture::CM_off) {
+          GLP(TexSubImage1D)(page_target, n - mipmap_bias, 0, width,
+                             external_format, component_type, image_ptr);
+        } else {
+          _glCompressedTexSubImage1D(page_target, n - mipmap_bias, 0, width,
+                                     external_format, image_size, image_ptr);
+        }
+        break;
+
+      case GL_TEXTURE_3D:
+        if (_supports_3d_texture) {
+          if (image_compression == Texture::CM_off) {
+            _glTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
+                             external_format, component_type, image_ptr);
+          } else {
+            _glCompressedTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
+                                       external_format, image_size, image_ptr);
+          }
+        } else {
+          report_my_gl_errors();
+          return false;
+        }
+        break;
+
+      default:
+        if (image_compression == Texture::CM_off) {
+          if (n==0) {
+            // It's unfortunate that we can't adjust the width, too,
+            // but TexSubImage2D doesn't accept a row-stride parameter.
+            height = tex->get_y_size() - tex->get_pad_y_size();
+          }
+          GLP(TexSubImage2D)(page_target, n - mipmap_bias, 0, 0, width, height,
+                             external_format, component_type, image_ptr);
+        } else {
+          _glCompressedTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
+                                     external_format, image_size, image_ptr);
+        }
+        break;
+      }
+
+      highest_level = n;
+    }
+
+    // Did that fail?  If it did, we'll immediately try again, this
+    // time loading the texture from scratch.
+    GLenum error_code = GLP(GetError)();
+    if (error_code != GL_NO_ERROR) {
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "GL texture subload failed for " << tex->get_name()
+          << " : " << get_error_string(error_code) << "\n";
+      }
+      needs_reload = true;
+    }
+  }
+
+  if (needs_reload) {
+    // Load the image up from scratch, creating a new GL Texture
+    // object.
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "loading new texture object, " << width << " x " << height
@@ -7689,91 +7795,17 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
       highest_level = n;
     }
-  } else {
-    // We can reload the image over the previous image, possibly
-    // saving on texture memory fragmentation.
 
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "subloading existing texture object, " << width << " x " << height
-        << " x " << depth << ", mipmaps " << num_ram_mipmap_levels
-        << ", uses_mipmaps = " << uses_mipmaps << "\n";
-    }
-
-    for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
-      const unsigned char *image_ptr = tex->get_ram_mipmap_image(n);
-      if (image_ptr == (const unsigned char *)NULL) {
-        GLCAT.warning()
-          << "No mipmap level " << n << " defined for " << tex->get_name()
-          << "\n";
-        // No mipmap level n; stop here.
-        break;
-      }
-
-      size_t image_size = tex->get_ram_mipmap_image_size(n);
-      if (one_page_only) {
-        image_size = tex->get_ram_mipmap_page_size(n);
-        image_ptr += image_size * z;
-      }
-
-      PTA_uchar bgr_image;
-      if (!_supports_bgr && image_compression == Texture::CM_off) {
-        // If the GL doesn't claim to support BGR, we may have to reverse
-        // the component ordering of the image.
-        image_ptr = fix_component_ordering(bgr_image, image_ptr, image_size,
-                                           external_format, tex);
-      }
-
-      int width = tex->get_expected_mipmap_x_size(n);
-      int height = tex->get_expected_mipmap_y_size(n);
-      int depth = tex->get_expected_mipmap_z_size(n);
-
-#ifdef DO_PSTATS
-      _data_transferred_pcollector.add_level(image_size);
-#endif
-      switch (texture_target) {
-      case GL_TEXTURE_1D:
-        if (image_compression == Texture::CM_off) {
-          GLP(TexSubImage1D)(page_target, n - mipmap_bias, 0, width,
-                             external_format, component_type, image_ptr);
-        } else {
-          _glCompressedTexSubImage1D(page_target, n - mipmap_bias, 0, width,
-                                     external_format, image_size, image_ptr);
-        }
-        break;
-
-      case GL_TEXTURE_3D:
-        if (_supports_3d_texture) {
-          if (image_compression == Texture::CM_off) {
-            _glTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                             external_format, component_type, image_ptr);
-          } else {
-            _glCompressedTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
-                                       external_format, image_size, image_ptr);
-          }
-        } else {
-          report_my_gl_errors();
-          return false;
-        }
-        break;
-
-      default:
-        if (image_compression == Texture::CM_off) {
-          if (n==0) {
-            // It's unfortunate that we can't adjust the width, too,
-            // but TexSubImage2D doesn't accept a row-stride parameter.
-            height = tex->get_y_size() - tex->get_pad_y_size();
-          }
-          GLP(TexSubImage2D)(page_target, n - mipmap_bias, 0, 0, width, height,
-                             external_format, component_type, image_ptr);
-        } else {
-          _glCompressedTexSubImage2D(page_target, n - mipmap_bias, 0, 0, width, height,
-                                     external_format, image_size, image_ptr);
-        }
-        break;
-      }
-
-      highest_level = n;
+    // Report the error message explicitly if the GL texture creation
+    // failed.
+    GLenum error_code = GLP(GetError)();
+    if (error_code != GL_NO_ERROR) {
+      GLCAT.error()
+        << "GL texture creation failed for " << tex->get_name()
+        << " : " << get_error_string(error_code) << "\n";
+      
+      gtc->_already_applied = false;
+      return false;
     }
   }
 
@@ -7793,16 +7825,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
   }
 
-  // Report the error message explicitly if the GL texture creation
-  // failed.
-  GLenum error_code = GLP(GetError)();
-  if (error_code != GL_NO_ERROR) {
-    GLCAT.error()
-      << "GL texture creation failed for " << tex->get_name()
-      << " : " << get_error_string(error_code) << "\n";
-
-    return false;
-  }
+  report_my_gl_errors();
 
   return true;
 }
