@@ -45,9 +45,25 @@ class TexMemWatcher(DirectObject):
         fbprops = FrameBufferProperties.getDefault()
         flags = GraphicsPipe.BFFbPropsOptional | GraphicsPipe.BFRequireWindow
 
-        self.win = base.graphicsEngine.makeOutput(base.pipe, name, 0, fbprops,
+        self.pipe = None
+
+        # We should use a tinydisplay pipe, so we don't compete for the
+        # graphics memory.
+        moduleName = base.config.GetString('tex-mem-pipe', 'tinydisplay')
+        if moduleName:
+            self.pipe = base.makeModulePipe(moduleName)
+
+        # If the requested pipe fails for some reason, I guess we'll
+        # use the regular pipe.
+        if not self.pipe:
+            self.pipe = base.pipe
+        
+        self.win = base.graphicsEngine.makeOutput(self.pipe, name, 0, fbprops,
                                                   props, flags)
         assert self.win
+
+        # We should render at the end of the frame.
+        self.win.setSort(10000)
 
         # Set our GSG to a texture memory limit of 0.  This will force
         # it to unload any textures as soon as they are offscreen, so
@@ -224,7 +240,7 @@ class TexMemWatcher(DirectObject):
                     texRecords.append(tr)
                 else:
                     tr.setActive(active)
-                    if tr.size != size:
+                    if tr.size != size or not tr.placements:
                         # The size has changed; reapply it.
                         tr.setSize(size)
                         self.unplaceTexture(tr)
@@ -234,10 +250,11 @@ class TexMemWatcher(DirectObject):
                     # This texture is no longer resident; need to remove it.
                     self.unplaceTexture(tr)
 
-        # Now go through and make sure we unplace any textures that we
-        # didn't visit at all this pass.
-        for tr in neverVisited.values():
+        # Now go through and make sure we unplace (and remove!) any
+        # textures that we didn't visit at all this pass.
+        for tex, tr in neverVisited.items():
             self.unplaceTexture(tr)
+            del self.texRecords[tex]
 
         self.totalSize = totalSize
         if totalSize > self.limit and self.dynamicLimit:
@@ -479,7 +496,7 @@ class TexMemWatcher(DirectObject):
                     tpw0 = overlap.p[0] - x
                     if tpw0 <= 0.0:
                         break
-                    if tpw0 == tpw:
+                    if x + tpw0 == x + tpw:
                         tpw0 *= 0.999  # imprecision hack
                     tpw = tpw0
                     tph = area / tpw
@@ -572,14 +589,16 @@ class TexMemWatcher(DirectObject):
 
                     if tpw0 * tph > tpw * tph0:
                         # Shortening width results in larger.
-                        if tpw == tpw0:
+                        if x + tpw == x + tpw0:
                             tpw0 *= 0.999  # imprecision hack
                         tpw = tpw0
                     else:
                         # Shortening height results in larger.
-                        if tph == tph0:
+                        if y + tph == y + tph0:
                             tph0 *= 0.999  # imprecision hack
                         tph = tph0
+                    print "x = %s, y = %s, tpw = %s, tph = %s" % (
+                        x, y, tpw, tph)
                 
                 assert nextX > x
                 x = nextX
