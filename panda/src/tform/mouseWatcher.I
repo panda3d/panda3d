@@ -80,6 +80,49 @@ get_mouse_y() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_frame
+//       Access: Published
+//  Description: Sets the frame of the MouseWatcher.  See the next
+//               flavor of this method for a more verbose explanation.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+set_frame(float left, float right, float bottom, float top) {
+  set_frame(LVecBase4f(left, right, bottom, top));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::set_frame
+//       Access: Published
+//  Description: Sets the frame of the MouseWatcher.  This determines
+//               the coordinate space in which the MouseWatcherRegions
+//               should be expected to live.  Normally, this is left
+//               at -1, 1, -1, 1, which is the default setting, and
+//               matches the mouse coordinate range.
+//
+//               Whatever values you specify here indicate the shape
+//               of the full screen, and the MouseWatcherRegions will
+//               be given in coordinate space matching it.  For
+//               instance, if you specify (0, 1, 0, 1), then a
+//               MouseWatcherRegion with the frame (0, 1, 0, .5) will
+//               cover the lower half of the screen.
+////////////////////////////////////////////////////////////////////
+INLINE void MouseWatcher::
+set_frame(const LVecBase4f &frame) {
+  _frame = frame;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MouseWatcher::get_frame
+//       Access: Published
+//  Description: Returns the frame of the MouseWatcher.  See
+//               set_frame().
+////////////////////////////////////////////////////////////////////
+INLINE const LVecBase4f &MouseWatcher::
+get_frame() const {
+  return _frame;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MouseWatcher::is_over_region
 //       Access: Published
 //  Description: Returns true if the mouse is over any rectangular

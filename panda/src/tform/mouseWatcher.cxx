@@ -69,6 +69,8 @@ MouseWatcher(const string &name) :
   _button_down = false;
   _eh = (EventHandler *)NULL;
   _display_region = (DisplayRegion *)NULL;
+
+  _frame.set(-1.0f, 1.0f, -1.0f, 1.0f);
   
   _inactivity_timeout = inactivity_timeout;
   _has_inactivity_timeout = !IS_NEARLY_ZERO(_inactivity_timeout);
@@ -586,6 +588,13 @@ void MouseWatcher::
 get_over_regions(MouseWatcher::Regions &regions, const LPoint2f &pos) const {
   nassertv(_lock.debug_is_locked());
 
+  // Scale the mouse coordinates into the frame.
+  float mx = (pos[0] + 1.0f) * 0.5f * (_frame[1] - _frame[0]) + _frame[0];
+  float my = (pos[1] + 1.0f) * 0.5f * (_frame[3] - _frame[2]) + _frame[2];
+
+  //  pos[0] = 2.0f * (mx - _frame[0]) / (_frame[1] - _frame[0]) - 1.0f;
+  //  pos[1] = 2.0f * (my - _frame[2]) / (_frame[3] - _frame[2]) - 1.0f;
+
   // Ensure the vector is empty before we begin.
   regions.clear();
 
@@ -595,8 +604,8 @@ get_over_regions(MouseWatcher::Regions &regions, const LPoint2f &pos) const {
     const LVecBase4f &frame = region->get_frame();
 
     if (region->get_active() &&
-        pos[0] >= frame[0] && pos[0] <= frame[1] &&
-        pos[1] >= frame[2] && pos[1] <= frame[3]) {
+        mx >= frame[0] && mx <= frame[1] &&
+        my >= frame[2] && my <= frame[3]) {
 
       regions.push_back(region);
     }
@@ -611,8 +620,8 @@ get_over_regions(MouseWatcher::Regions &regions, const LPoint2f &pos) const {
       const LVecBase4f &frame = region->get_frame();
       
       if (region->get_active() &&
-          pos[0] >= frame[0] && pos[0] <= frame[1] &&
-          pos[1] >= frame[2] && pos[1] <= frame[3]) {
+          mx >= frame[0] && mx <= frame[1] &&
+          my >= frame[2] && my <= frame[3]) {
         
         regions.push_back(region);
       }

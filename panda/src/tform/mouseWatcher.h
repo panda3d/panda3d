@@ -78,6 +78,10 @@ PUBLISHED:
   INLINE float get_mouse_x() const;
   INLINE float get_mouse_y() const;
 
+  INLINE void set_frame(float left, float right, float bottom, float top);
+  INLINE void set_frame(const LVecBase4f &frame);
+  INLINE const LVecBase4f &get_frame() const;
+
   INLINE bool is_over_region() const;
   INLINE bool is_over_region(float x, float y) const;
   INLINE bool is_over_region(const LPoint2f &pos) const;
@@ -215,6 +219,8 @@ private:
   LPoint2f _mouse;
   LPoint2f _mouse_pixel;
   BitArray _current_buttons_down;
+
+  LVecBase4f _frame;
 
   PT(PointerEventList) _trail_log;
   int _num_trail_recent;
