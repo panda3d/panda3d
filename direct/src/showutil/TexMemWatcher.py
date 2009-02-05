@@ -36,9 +36,11 @@ class TexMemWatcher(DirectObject):
         self.winSize = (300, 300)
         name = 'Texture Memory'
         props = WindowProperties()
+        props.setOrigin(100, 100)
         props.setSize(*self.winSize)
         props.setTitle(name)
         props.setFullscreen(False)
+        props.setUndecorated(False)
 
         fbprops = FrameBufferProperties.getDefault()
         flags = GraphicsPipe.BFFbPropsOptional | GraphicsPipe.BFRequireWindow
@@ -239,16 +241,22 @@ class TexMemWatcher(DirectObject):
             self.repack()
 
         else:
-            # Pack in just the newly-loaded textures.
+            overflowCount = sum(map(lambda tp: tp.overflowed, self.texPlacements.keys()))
+            if overflowCount:
+                # Shouldn't be overflowing any more.  Better repack.
+                self.repack()
 
-            # Sort the regions from largest to smallest to maximize
-            # packing effectiveness.
-            texRecords.sort(key = lambda tr: (-tr.w, -tr.h))
+            else:
+                # Pack in just the newly-loaded textures.
 
-            self.overflowing = False
-            for tr in texRecords:
-                self.placeTexture(tr)
-                self.texRecords[tr.tex] = tr
+                # Sort the regions from largest to smallest to maximize
+                # packing effectiveness.
+                texRecords.sort(key = lambda tr: (-tr.w, -tr.h))
+
+                self.overflowing = False
+                for tr in texRecords:
+                    self.placeTexture(tr)
+                    self.texRecords[tr.tex] = tr
 
         return task.again
                 
@@ -370,6 +378,8 @@ class TexMemWatcher(DirectObject):
         self.overflowing = True
         tp = self.findHole(tr.w, tr.h, allowOverflow = True)
         if tp:
+            if tp.p[1] > self.w or tp.p[3] > self.h:
+                tp.overflowed = 1
             tr.placements = [tp]
             tr.makeCard(self)
             self.texPlacements[tp] = tr
@@ -429,7 +439,7 @@ class TexMemWatcher(DirectObject):
         square units big, regardless of its shape.  If one is found,
         returns an appropriate TexPlacement; otherwise, returns
         None. """
-            
+
         y = 0
         while y < self.h:
             nextY = self.h
@@ -460,9 +470,12 @@ class TexMemWatcher(DirectObject):
                     nextY = min(nextY, overlap.p[3])
 
                     # Shorten the available region.
-                    tpw = overlap.p[0] - x
-                    if tpw <= 0.0:
+                    tpw0 = overlap.p[0] - x
+                    if tpw0 <= 0.0:
                         break
+                    if tpw0 == tpw:
+                        tpw0 *= 0.999  # imprecision hack
+                    tpw = tpw0
                     tph = area / tpw
                 
                 assert nextX > x
@@ -477,7 +490,7 @@ class TexMemWatcher(DirectObject):
     def findHolePieces(self, area):
         """ Returns a list of holes whose net area sums to the given
         area, or None if there are not enough holes. """
-        
+
         # First, save the original value of self.texPlacements, since
         # we will be modifying that during this search.
         savedTexPlacements = copy.copy(self.texPlacements)
@@ -553,9 +566,13 @@ class TexMemWatcher(DirectObject):
 
                     if tpw0 * tph > tpw * tph0:
                         # Shortening width results in larger.
+                        if tpw == tpw0:
+                            tpw0 *= 0.999  # imprecision hack
                         tpw = tpw0
                     else:
                         # Shortening height results in larger.
+                        if tph == tph0:
+                            tph0 *= 0.999  # imprecision hack
                         tph = tph0
                 
                 assert nextX > x
@@ -609,15 +626,22 @@ class TexRecord:
     def setActive(self, flag):
         self.active = flag
         if self.active:
+            self.backing.clearColor()
             self.matte.clearColor()
+            self.card.clearColor()
         else:
-            self.matte.setColor((0.4, 0.4, 0.4, 1))
+            self.backing.setColor((0.2, 0.2, 0.2, 1), 2)
+            self.matte.setColor((0.2, 0.2, 0.2, 1), 2)
+            self.card.setColor((0.4, 0.4, 0.4, 1), 2)
 
     def makeCard(self, tmw):
         if self.root:
             self.root.detachNode()
 
         root = NodePath('root')
+
+        # A backing to put behind the card.
+        backing = root.attachNewNode('backing')
 
         # A card to display the texture.
         card = root.attachNewNode('card')
@@ -635,6 +659,12 @@ class TexRecord:
             cx = (l + r) * 0.5
             cy = (b + t) * 0.5
             shrinkMat = Mat4.translateMat(-cx, 0, -cy) * Mat4.scaleMat(0.9) * Mat4.translateMat(cx, 0, cy)
+            
+            cm = CardMaker('backing')
+            cm.setFrame(l, r, b, t)
+            cm.setColor(0.1, 0.3, 0.5, 1)
+            c = backing.attachNewNode(cm.generate())
+            c.setMat(shrinkMat)
             
             cm = CardMaker('card')
             cm.setFrame(l, r, b, t)
@@ -658,28 +688,21 @@ class TexRecord:
             f2 = f1.copyTo(frame)
             f2.setMat(shrinkMat)
 
-        # Instead of enabling transparency, we set a color blend
-        # attrib.  We do this because plain transparency would also
-        # enable an alpha test, which we don't want; we want to draw
-        # every pixel.
-        card.setAttrib(ColorBlendAttrib.make(
-            ColorBlendAttrib.MAdd,
-            ColorBlendAttrib.OIncomingAlpha,
-            ColorBlendAttrib.OOneMinusIncomingAlpha))
-        card.setBin('fixed', 0)
-        card.setTexture(self.tex)
-        card.setY(-1)  # the card gets pulled back, so the matte will z-test it out.
-        card.setDepthWrite(True)
-        card.setDepthTest(True)
-        #card.flattenStrong()
-        self.card = card
-
-        matte.setBin('fixed', 10)
-        matte.setDepthTest(True)
+        matte.setBin('fixed', 0)
         #matte.flattenStrong()
         self.matte = matte
 
-        frame.setBin('fixed', 20)
+        backing.setBin('fixed', 10)
+        #backing.flattenStrong()
+        self.backing = backing
+
+        card.setTransparency(TransparencyAttrib.MAlpha)
+        card.setBin('fixed', 20)
+        card.setTexture(self.tex)
+        #card.flattenStrong()
+        self.card = card
+
+        frame.setBin('fixed', 30)
         #frame.flattenStrong()
         self.frame = frame
 
@@ -691,6 +714,7 @@ class TexPlacement:
     def __init__(self, l, r, b, t):
         self.p = (l, r, b, t)
         self.rotated = False
+        self.overflowed = 0
 
     def intersects(self, other):
         """ Returns True if the placements intersect, False
