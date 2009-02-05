@@ -597,8 +597,7 @@ class TexMemWatcher(DirectObject):
                         if y + tph == y + tph0:
                             tph0 *= 0.999  # imprecision hack
                         tph = tph0
-                    print "x = %s, y = %s, tpw = %s, tph = %s" % (
-                        x, y, tpw, tph)
+                    #print "x = %s, y = %s, tpw = %s, tph = %s" % (x, y, tpw, tph)
                 
                 assert nextX > x
                 x = nextX
