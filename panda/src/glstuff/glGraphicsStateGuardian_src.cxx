@@ -6748,14 +6748,14 @@ upload_usage_texture(int width, int height) {
     // answer wordwise, independently of machine byte-ordernig.
     union {
       struct { 
-        char r, g, b, a;
+        unsigned char r, g, b, a;
       } b;
       PN_uint32 w;
     } store;
 
-    store.b.r = (int)(c[0] * 255.0f);
-    store.b.g = (int)(c[1] * 255.0f);
-    store.b.b = (int)(c[2] * 255.0f);
+    store.b.r = (unsigned char)(c[0] * 255.0f);
+    store.b.g = (unsigned char)(c[1] * 255.0f);
+    store.b.b = (unsigned char)(c[2] * 255.0f);
     store.b.a = 0xff;
 
     // Fill in the array.
