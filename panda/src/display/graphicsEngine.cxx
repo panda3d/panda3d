@@ -700,7 +700,10 @@ render_frame() {
     // were drawn in the previous frame.
     LoadedTextures::iterator lti;
     for (lti = _loaded_textures.begin(); lti != _loaded_textures.end(); ++lti) {
-      (*lti)->texture_uploaded();
+      LoadedTexture &lt = (*lti);
+      if (lt._tex->get_image_modified() == lt._image_modified) {
+        lt._tex->texture_uploaded();
+      }
     }
     _loaded_textures.clear();
     
@@ -1081,7 +1084,10 @@ texture_uploaded(Texture *tex) {
   // We defer this until the end of the frame; multiple GSG's might be
   // rendering the texture within the same frame, and we don't want to
   // dump the texture image until they've all had a chance at it.
-  _loaded_textures.push_back(tex);
+  _loaded_textures.push_back(LoadedTexture());
+  LoadedTexture &lt = _loaded_textures.back();
+  lt._tex = tex;
+  lt._image_modified = tex->get_image_modified();
 }
 
 
