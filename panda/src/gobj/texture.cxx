@@ -5562,7 +5562,6 @@ do_squish(Texture::CompressionMode compression, int squish_flags) {
   }
   _ram_images.swap(compressed_ram_images);
   _ram_image_compression = compression;
-  ++_image_modified;
   return true;
 
 #else  // HAVE_SQUISH
@@ -5647,7 +5646,6 @@ do_unsquish(int squish_flags) {
   }
   _ram_images.swap(uncompressed_ram_images);
   _ram_image_compression = CM_off;
-  ++_image_modified;
   return true;
 
 #else  // HAVE_SQUISH

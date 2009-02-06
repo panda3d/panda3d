@@ -1243,7 +1243,11 @@ compress_ram_image(Texture::CompressionMode compression,
                    Texture::QualityLevel quality_level,
                    GraphicsStateGuardianBase *gsg) {
   MutexHolder holder(_lock);
-  return do_compress_ram_image(compression, quality_level, gsg);
+  if (do_compress_ram_image(compression, quality_level, gsg)) {
+    ++_image_modified;
+    return true;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1260,7 +1264,11 @@ compress_ram_image(Texture::CompressionMode compression,
 INLINE bool Texture::
 uncompress_ram_image() {
   MutexHolder holder(_lock);
-  return do_uncompress_ram_image();
+  if (do_uncompress_ram_image()) {
+    ++_image_modified;
+    return true;
+  }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1413,6 +1421,7 @@ make_ram_mipmap_image(int n) {
 INLINE void Texture::
 clear_ram_mipmap_images() {
   MutexHolder holder(_lock);
+  ++_image_modified;
   do_clear_ram_mipmap_images();
 }
 
@@ -1433,6 +1442,7 @@ clear_ram_mipmap_images() {
 INLINE void Texture::
 generate_ram_mipmap_images() {
   MutexHolder holder(_lock);
+  ++_image_modified;
   do_generate_ram_mipmap_images();
 }
 
