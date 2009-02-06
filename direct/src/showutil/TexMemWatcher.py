@@ -125,6 +125,8 @@ class TexMemWatcher(DirectObject):
         self.nextTexRecordKey = 0
         self.rollover = None
         self.isolate = None
+        self.isolated = None
+        self.needsRepack = False
         
         self.task = taskMgr.doMethodLater(0.5, self.updateTextures, 'TexMemWatcher')
 
@@ -206,6 +208,9 @@ class TexMemWatcher(DirectObject):
 
     def enterRegion(self, region, buttonName):
         """ the mouse has rolled over a texture. """
+        if self.isolate:
+            return
+        
         key, pi = map(int, region.getName().split(':'))
         tr = self.texRecordsByKey.get(key)
         if not tr:
@@ -255,9 +260,12 @@ class TexMemWatcher(DirectObject):
             self.isolate.removeNode()
             self.isolate = None
 
+        self.isolated = tr
+
         self.canvas.show()
         self.background.clearColor()
         self.win.getGsg().setTextureQualityOverride(Texture.QLDefault)
+        self.gsg.clearFlashTexture()
 
         if not tr:
             return
@@ -268,6 +276,9 @@ class TexMemWatcher(DirectObject):
 
         # Show the texture in all its filtered glory.
         self.win.getGsg().setTextureQualityOverride(Texture.QLBest)
+
+        # Start the texture flashing in the main window.
+        self.gsg.setFlashTexture(tr.tex)
 
         self.isolate = self.render2d.attachNewNode('isolate')
         self.isolate.setBin('fixed', 0)
@@ -334,7 +345,18 @@ class TexMemWatcher(DirectObject):
 
         self.background.setTexScale(TextureStage.getDefault(),
                                     self.winSize[0] / 20.0, self.winSize[1] / (20.0 * self.top))
-        self.repack()
+
+        if self.isolate:
+            # If we're currently showing an isolated texture, refresh
+            # that display so we get its size right.  And when we come
+            # back to the main window (but not now), repack it.
+            self.needsRepack = True
+            self.isolateTexture(self.isolated)
+
+        else:
+            # If we're showing the main window, just repack it
+            # immediately.
+            self.repack()
 
     def makeWindowBackground(self):
         """ Creates a tile to use for coloring the background of the
@@ -375,6 +397,15 @@ class TexMemWatcher(DirectObject):
         """ Gets the current list of resident textures and adds new
         textures or removes old ones from the onscreen display, as
         necessary. """
+
+        if self.isolate:
+            # never mind for now.
+            return task.again
+
+        if self.needsRepack:
+            self.needsRepack = False
+            self.repack()
+            return task.again
 
         pgo = self.gsg.getPreparedObjects()
         totalSize = 0
