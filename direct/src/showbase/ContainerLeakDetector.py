@@ -486,7 +486,7 @@ class FindContainers(Job):
                 # if we hit a dead end, start over from another container
                 curObjRef = None
 
-                if type(curObj) in (types.ModuleType, types.InstanceType):
+                if hasattr(curObj, '__dict__'):
                     child = curObj.__dict__
                     hasLength = self._hasLength(child)
                     notDeadEnd = not self._isDeadEnd(child)
