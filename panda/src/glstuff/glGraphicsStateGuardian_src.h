@@ -324,7 +324,7 @@ protected:
   void update_standard_texture_bindings();
 
 #ifndef NDEBUG
-  void update_show_usage_texture_bindings();
+  void update_show_usage_texture_bindings(int show_stage_index);
   void upload_usage_texture(int width, int height);
 #endif  // NDEBUG
 

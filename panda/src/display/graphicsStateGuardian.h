@@ -175,6 +175,12 @@ PUBLISHED:
   typedef bool TextureCallback(TextureContext *tc, void *callback_arg);
   void traverse_prepared_textures(TextureCallback *func, void *callback_arg);
 
+#ifndef NDEBUG
+  void set_flash_texture(Texture *tex);
+  void clear_flash_texture();
+  Texture *get_flash_texture() const;
+#endif
+
 public:
   bool set_scene(SceneSetup *scene_setup);
   virtual SceneSetup *get_scene() const;
@@ -460,6 +466,10 @@ protected:
 
   float _gamma;
   Texture::QualityLevel _texture_quality_override;
+
+#ifndef NDEBUG
+  PT(Texture) _flash_texture;
+#endif
   
 public:
   // Statistics

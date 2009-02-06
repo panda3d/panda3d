@@ -6424,12 +6424,38 @@ void CLP(GraphicsStateGuardian)::
 update_standard_texture_bindings() {
 #ifndef NDEBUG
   if (_show_texture_usage) {
-    update_show_usage_texture_bindings();
+    update_show_usage_texture_bindings(-1);
     return;
   }
 #endif // NDEBUG
 
   int num_stages = _target_texture->get_num_on_ff_stages();
+
+#ifndef NDEBUG
+  // Also check the _flash_texture.  If it is non-NULL, we need to
+  // check to see if our flash_texture is in the texture stack here.
+  // If so, then we need to call the special show_texture method
+  // instead of the normal texture stack.
+  if (_flash_texture != (Texture *)NULL) {
+    double now = ClockObject::get_global_clock()->get_frame_time();
+    int this_second = (int)floor(now);
+    if (this_second & 1) {
+      int show_stage_index = -1;
+      for (int i = 0; i < num_stages && show_stage_index < 0; ++i) {
+        TextureStage *stage = _target_texture->get_on_ff_stage(i);
+        Texture *texture = _target_texture->get_on_texture(stage);
+        if (texture == _flash_texture) {
+          show_stage_index = i;
+        }
+      }
+      
+      if (show_stage_index >= 0) {
+        update_show_usage_texture_bindings(show_stage_index);
+        return;
+      }
+    }
+  }
+#endif  // NDEBUG
 
   nassertv(num_stages <= _max_texture_stages &&
            _num_active_texture_stages <= _max_texture_stages);
@@ -6625,9 +6651,14 @@ update_standard_texture_bindings() {
 //  Description: This is a special function that loads the usage
 //               textures in gl-show-texture-usage mode, instead of
 //               loading the actual used textures.
+//
+//               If the indicated stage_index is >= 0, then it is the
+//               particular texture that is shown.  Otherwise, the
+//               textures are rotated through based on
+//               show_texture_usage_index.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-update_show_usage_texture_bindings() {
+update_show_usage_texture_bindings(int show_stage_index) {
   int num_stages = _target_texture->get_num_on_ff_stages();
 
   nassertv(num_stages <= _max_texture_stages &&
@@ -6671,7 +6702,11 @@ update_show_usage_texture_bindings() {
 
   if (num_stages > 0) {
     // Now, pick just one texture stage to apply.
-    i = _show_texture_usage_index % num_stages;
+    if (show_stage_index >= 0 && show_stage_index < num_stages) {
+      i = show_stage_index;
+    } else {
+      i = _show_texture_usage_index % num_stages;
+    }
 
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
     Texture *texture = _target_texture->get_on_texture(stage);
@@ -6708,30 +6743,24 @@ update_show_usage_texture_bindings() {
 //       Access: Protected
 //  Description: Uploads a special "usage" texture intended to be
 //               applied only in gl-show-texture-usage mode, to reveal
-//               where texure memory is being spent.
+//               where texture memory is being spent.
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 upload_usage_texture(int width, int height) {
   GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-  // Get the color and scale appropriate to this level.
-  int max_size = _show_texture_usage_max_size;
-  float scale = (double)(width * height) / (max_size * max_size);
-  scale = csqrt(min(scale, 1.0f)) * 0.8f + 0.2f;
+  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+  GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
-      << "upload_usage_texture(" << width << ", " << height
-      << "), scale = " << scale << "\n";
+      << "upload_usage_texture(" << width << ", " << height << ")\n";
   }
 
   static Colorf colors[3] = {
-    Colorf(0.0f, 0.0f, 1.0f, 1.0f),   // mipmap 0: blue
-    Colorf(1.0f, 1.0f, 1.0f, 1.0f),   // mipmap 1: white
-    Colorf(1.0f, 0.0f, 0.0f, 1.0f),   // mipmap 2 and higher: red
+    Colorf(0.4f, 0.5f, 0.8f, 1.0f),   // mipmap 0: blue
+    Colorf(1.0f, 1.0f, 0.0f, 1.0f),   // mipmap 1: yellow
+    Colorf(0.8f, 0.3f, 0.3f, 1.0f),   // mipmap 2 and higher: red
   };
 
 
@@ -6742,7 +6771,7 @@ upload_usage_texture(int width, int height) {
   int n = 0;
   while (true) {
     // Choose the color for the nth mipmap.
-    Colorf c = colors[min(n, 2)] * scale;
+    Colorf c = colors[min(n, 2)];
 
     // A simple union to store the colors values bytewise, and get the
     // answer wordwise, independently of machine byte-ordernig.

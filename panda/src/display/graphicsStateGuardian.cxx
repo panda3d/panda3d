@@ -434,6 +434,62 @@ traverse_prepared_textures(GraphicsStateGuardian::TextureCallback *func,
   }
 }
 
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::set_flash_texture
+//       Access: Published
+//  Description: Sets the "flash texture".  This is a debug feature;
+//               when enabled, the specified texture will begin
+//               flashing in the scene, helping you to find it
+//               visually.
+//
+//               The texture also flashes with a color code: blue for
+//               mipmap level 0, yellow for mipmap level 1, and red
+//               for mipmap level 2 or higher (even for textures that
+//               don't have mipmaps).  This gives you an idea of the
+//               choice of the texture size.  If it is blue, the
+//               texture is being drawn the proper size or magnified;
+//               if it is yellow, it is being minified a little bit;
+//               and if it red, it is being minified considerably.  If
+//               you see a red texture when you are right in front of
+//               it, you should consider reducing the size of the
+//               texture to avoid wasting texture memory.
+//
+//               Not all rendering backends support the flash_texture
+//               feature.  Presently, it is only supported by OpenGL.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+set_flash_texture(Texture *tex) {
+  _flash_texture = tex;
+}
+#endif  // NDEBUG
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::clear_flash_texture
+//       Access: Published
+//  Description: Resets the "flash texture", so that no textures will
+//               flash.  See set_flash_texture().
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+clear_flash_texture() {
+  _flash_texture = NULL;
+}
+#endif  // NDEBUG
+
+#ifndef NDEBUG
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_flash_texture
+//       Access: Published
+//  Description: Returns the current "flash texture", if any, or NULL
+//               if none.  See set_flash_texture().
+////////////////////////////////////////////////////////////////////
+Texture *GraphicsStateGuardian::
+get_flash_texture() const {
+  return _flash_texture;
+}
+#endif  // NDEBUG
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_scene
 //       Access: Public
@@ -1925,7 +1981,7 @@ bind_light(Spotlight *light_obj, const NodePath &light, int light_id) {
 #ifdef DO_PSTATS
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::init_frame_pstats
-//       Access: Pubilc, Static
+//       Access: Public, Static
 //  Description: Initializes the relevant PStats data at the beginning
 //               of the frame.
 ////////////////////////////////////////////////////////////////////
@@ -1952,6 +2008,7 @@ init_frame_pstats() {
   }
 }
 #endif  // DO_PSTATS
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::create_gamma_table
