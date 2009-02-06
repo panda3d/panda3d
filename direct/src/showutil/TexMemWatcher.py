@@ -622,7 +622,7 @@ class TexMemWatcher(DirectObject):
         # Sort the regions from largest to smallest to maximize
         # packing effectiveness.
         texRecords = self.texRecordsByTex.values()
-        texRecords.sort(key = lambda tr: (-tr.w, -tr.h))
+        texRecords.sort(key = lambda tr: (tr.w, tr.h), reverse = True)
         
         self.overflowing = False
         for tr in texRecords:
@@ -671,7 +671,7 @@ class TexMemWatcher(DirectObject):
 
             # Couldn't find a hole of the right shape; can we find a
             # single rectangular hole of the right area, but of any shape?
-            tp = self.findArea(tr.h * tr.w)
+            tp = self.findArea(tr.w, tr.h)
             if tp:
                 texCmp = cmp(tr.w, tr.h)
                 holeCmp = cmp(tp.p[1] - tp.p[0], tp.p[3] - tp.p[2])
@@ -687,10 +687,14 @@ class TexMemWatcher(DirectObject):
             # in.
             tpList = self.findHolePieces(tr.h * tr.w)
             if tpList:
+                texCmp = cmp(tr.w, tr.h)
                 tr.placements = tpList
-                tr.makeCard(self)
                 for tp in tpList:
+                    holeCmp = cmp(tp.p[1] - tp.p[0], tp.p[3] - tp.p[2])
+                    if texCmp != 0 and holeCmp != 0 and texCmp != holeCmp:
+                        tp.rotated = True
                     self.texPlacements[tp] = tr
+                tr.makeCard(self)
                 return
 
         # Just let it overflow.
@@ -751,13 +755,60 @@ class TexMemWatcher(DirectObject):
 
         # Nope, wouldn't fit anywhere.
         return None
-        
 
-    def findArea(self, area):
+    def findArea(self, w, h):
         """ Searches for a rectangular hole that is at least area
-        square units big, regardless of its shape.  If one is found,
-        returns an appropriate TexPlacement; otherwise, returns
+        square units big, regardless of its shape, but attempt to find
+        one that comes close to the right shape, at least.  If one is
+        found, returns an appropriate TexPlacement; otherwise, returns
         None. """
+
+        aspect = float(min(w, h)) / float(max(w, h))
+        area = w * h
+        holes = self.findAvailableHoles(area)
+
+        # Walk through the list and find the one with the best aspect
+        # match.
+        matches = []
+        for tarea, tp in holes:
+            l, r, b, t = tp.p
+            tw = r - l
+            th = t - b
+
+            # To constrain our area within this rectangle, how would
+            # we have to squish it?
+            if tw < w:
+                # We'd have to make it taller.
+                nh = area / tw
+                assert nh <= th
+                th = nh
+            elif th < h:
+                # We'd have to make it narrower.
+                nw = area / th
+                assert nw <= tw
+                tw = nw
+            else:
+                # We don't have to squish it?  Shouldn't have gotten
+                # here.
+                assert False
+
+            # Make a new tp that has the right area.
+            tp = TexPlacement(l, l + tw, b, b + th)
+            ta = float(min(tw, th)) / float(max(tw, th))
+
+            match = min(ta, aspect) / max(ta, aspect)
+            matches.append((match, tp))
+
+        if matches:
+            return max(matches)[1]
+        return None
+
+    def findAllArea(self, area):
+        """ Searches for a rectangular hole that is at least area
+        square units big, regardless of its shape.  Returns a list of
+        all such holes found. """
+
+        result = []
 
         y = 0
         while y < self.h:
@@ -782,8 +833,7 @@ class TexMemWatcher(DirectObject):
                     tp = TexPlacement(x, x + tpw, y, y + tph)
                     overlap = self.findOverlap(tp)
                     if not overlap:
-                        # Hooray!
-                        return tp
+                        result.append(tp)
 
                     nextX = min(nextX, overlap.p[1])
                     nextY = min(nextY, overlap.p[3])
@@ -803,8 +853,7 @@ class TexMemWatcher(DirectObject):
             assert nextY > y
             y = nextY
 
-        # Nope, wouldn't fit anywhere.
-        return None
+        return result
 
     def findHolePieces(self, area):
         """ Returns a list of holes whose net area sums to the given
@@ -841,7 +890,13 @@ class TexMemWatcher(DirectObject):
         return None
 
     def findLargestHole(self):
-        """ Searches for the largest available hole. """
+        holes = self.findAvailableHoles(0)
+        return max(holes)[1]
+
+    def findAvailableHoles(self, area):
+        """ Finds a list of available holes, of at least the indicated
+        area.  Returns a list of tuples, where each tuple is of the
+        form (area, tp)."""
 
         holes = []
             
@@ -869,7 +924,9 @@ class TexMemWatcher(DirectObject):
                     overlap = self.findOverlap(tp)
                     if not overlap:
                         # Here's a hole.
-                        holes.append((tpw * tph, tp))
+                        tarea = tpw * tph
+                        if tarea >= area:
+                            holes.append((tarea, tp))
                         break
 
                     nextX = min(nextX, overlap.p[1])
@@ -901,12 +958,7 @@ class TexMemWatcher(DirectObject):
             assert nextY > y
             y = nextY
 
-        if not holes:
-            # No holes to be found.
-            return None
-
-        # Return the biggest hole
-        return max(holes)[1]
+        return holes
 
     def findOverlap(self, tp):
         """ If there is another placement that overlaps the indicated
