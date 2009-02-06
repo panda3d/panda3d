@@ -80,8 +80,8 @@ class TexMemWatcher(DirectObject):
         # We don't need to clear the color buffer, since we'll be
         # filling it with a texture.  We also don't need to clear the
         # depth buffer, since we won't be using it.
-        self.win.setClearColor(False)
-        self.win.setClearDepth(False)
+        self.win.setClearColorActive(False)
+        self.win.setClearDepthActive(False)
 
         eventName = '%s-window' % (self.name)
         self.win.setWindowEvent(eventName)
@@ -1041,7 +1041,7 @@ class TexRecord:
             p = self.placements[pi]
             r = MouseWatcherRegion('%s:%s' % (self.key, pi), *p.p)
             tmw.mw.addRegion(r)
-            self.regions.append(p)
+            self.regions.append(r)
 
 class TexPlacement:
     def __init__(self, l, r, b, t):
