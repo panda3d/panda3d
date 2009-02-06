@@ -22,6 +22,8 @@ class TexMemWatcher(DirectObject):
 
     NextIndex = 1
 
+    StatusHeight = 20  # in pixels
+
     def __init__(self, gsg = None, limit = None):
         DirectObject.__init__(self)
 
@@ -30,6 +32,7 @@ class TexMemWatcher(DirectObject):
         TexMemWatcher.NextIndex += 1
 
         self.cleanedUp = False
+        self.top = 1.0
         
         # If no GSG is specified, use the main GSG.
         if gsg is None:
@@ -55,14 +58,15 @@ class TexMemWatcher(DirectObject):
 
         self.pipe = None
 
-        # We should use a tinydisplay pipe, so we don't compete for the
-        # graphics memory.
-        moduleName = base.config.GetString('tex-mem-pipe', 'tinydisplay')
+        # Set this to tinydisplay if you're running on a machine with
+        # limited texture memory.  That way you won't compete for
+        # texture memory with the main scene.
+        moduleName = base.config.GetString('tex-mem-pipe', '')
         if moduleName:
             self.pipe = base.makeModulePipe(moduleName)
 
-        # If the requested pipe fails for some reason, I guess we'll
-        # use the regular pipe.
+        # If the requested pipe fails for some reason, we'll use the
+        # regular pipe.
         if not self.pipe:
             self.pipe = base.pipe
         
@@ -83,43 +87,18 @@ class TexMemWatcher(DirectObject):
         self.win.setWindowEvent(eventName)
         self.accept(eventName, self.windowEvent)
 
-        # Make a render2d in this new window.
-        self.render2d = NodePath('render2d')
-        self.render2d.setDepthTest(False)
-        self.render2d.setDepthWrite(False)
-        self.render2d.setTwoSided(True)
-        
-        # And a camera to view it.
-        self.dr = self.win.makeDisplayRegion()
-        cam = Camera('cam2d')
-        self.lens = OrthographicLens()
-        self.lens.setNearFar(-1000, 1000)
-        cam.setLens(self.lens)
-
-        self.cam = self.render2d.attachNewNode(cam)
-        self.dr.setCamera(self.cam)
-
-        # We'll need a Mouse and a MouseWatcher in the data graph, so
-        # we can interact with the various textures.
+        # We'll need a mouse object to get mouse events.
         self.mouse = base.dataRoot.attachNewNode(MouseAndKeyboard(self.win, 0, '%s-mouse' % (self.name)))
-        self.mw = MouseWatcher('%s-watcher' % (self.name))
-        mwnp = self.mouse.attachNewNode(self.mw)
         bt = ButtonThrower('%s-thrower' % (self.name))
-        mwnp.attachNewNode(bt)
+        self.mouse.attachNewNode(bt)
         bt.setPrefix('button-%s-' % (self.name))
         self.accept('button-%s-mouse1' % (self.name), self.mouseClick)
 
-        eventName = '%s-enter' % (self.name)
-        self.mw.setEnterPattern(eventName)
-        self.accept(eventName, self.enterRegion)
-
-        eventName = '%s-leave' % (self.name)
-        self.mw.setLeavePattern(eventName)
-        self.accept(eventName, self.leaveRegion)
+        self.setupGui()
+        self.setupCanvas()
 
         # Now start handling up the actual stuff in the scene.
-
-        self.canvas = self.render2d.attachNewNode('canvas')
+        
         self.background = None
         self.overflowing = False
         self.nextTexRecordKey = 0
@@ -131,6 +110,119 @@ class TexMemWatcher(DirectObject):
         self.task = taskMgr.doMethodLater(0.5, self.updateTextures, 'TexMemWatcher')
 
         self.setLimit(limit)
+
+    def setupGui(self):
+        """ Creates the gui elements and supporting structures. """
+
+        self.render2d = NodePath('render2d')
+        self.render2d.setDepthTest(False)
+        self.render2d.setDepthWrite(False)
+        self.render2d.setTwoSided(True)
+        self.render2d.setBin('unsorted', 0)
+        
+        # Create a DisplayRegion and an associated camera.
+        dr = self.win.makeDisplayRegion()
+        cam = Camera('cam2d')
+        self.lens = OrthographicLens()
+        self.lens.setNearFar(-1000, 1000)
+        self.lens.setFilmSize(2, 2)
+        cam.setLens(self.lens)
+
+        np = self.render2d.attachNewNode(cam)
+        dr.setCamera(np)
+
+        self.aspect2d = self.render2d.attachNewNode('aspect2d')
+
+        cm = CardMaker('statusBackground')
+        cm.setColor(0.85, 0.85, 0.85, 1)
+        cm.setFrame(0, 2, 0, 2)
+        self.statusBackground = self.render2d.attachNewNode(cm.generate(), -1)
+        self.statusBackground.setPos(-1, 0, -1)
+
+        self.status = self.aspect2d.attachNewNode('status')
+        self.statusText = TextNode('statusText')
+        self.statusText.setTextColor(0, 0, 0, 1)
+        self.statusTextNP = self.status.attachNewNode(self.statusText)
+        self.statusTextNP.setScale(1.5)
+
+        self.sizeText = TextNode('sizeText')
+        self.sizeText.setTextColor(0, 0, 0, 1)
+        self.sizeText.setAlign(TextNode.ARight)
+        self.sizeText.setCardAsMargin(0.25, 0, 0, -0.25)
+        self.sizeText.setCardColor(0.85, 0.85, 0.85, 1)
+        self.sizeTextNP = self.status.attachNewNode(self.sizeText)
+        self.sizeTextNP.setScale(1.5)
+
+    def setupCanvas(self):
+        """ Creates the "canvas", which is the checkerboard area where
+        texture memory is laid out.  The canvas has its own
+        DisplayRegion. """
+        
+        self.canvasRoot = NodePath('canvasRoot')
+        self.canvasRoot.setDepthTest(False)
+        self.canvasRoot.setDepthWrite(False)
+        self.canvasRoot.setTwoSided(True)
+        self.canvasRoot.setBin('unsorted', 0)
+
+        self.canvas = self.canvasRoot.attachNewNode('canvas')
+        
+        # Create a DisplayRegion and an associated camera.
+        self.canvasDR = self.win.makeDisplayRegion()
+        self.canvasDR.setSort(-10)
+        cam = Camera('cam2d')
+        self.canvasLens = OrthographicLens()
+        self.canvasLens.setNearFar(-1000, 1000)
+        cam.setLens(self.canvasLens)
+
+        np = self.canvasRoot.attachNewNode(cam)
+        self.canvasDR.setCamera(np)
+
+        # Create a MouseWatcher so we can interact with the various
+        # textures.
+        self.mw = MouseWatcher('%s-watcher' % (self.name))
+        self.mw.setDisplayRegion(self.canvasDR)
+        mwnp = self.mouse.attachNewNode(self.mw)
+
+        eventName = '%s-enter' % (self.name)
+        self.mw.setEnterPattern(eventName)
+        self.accept(eventName, self.enterRegion)
+
+        eventName = '%s-leave' % (self.name)
+        self.mw.setLeavePattern(eventName)
+        self.accept(eventName, self.leaveRegion)
+
+        # Create a checkerboard background card for the canvas.
+        p = PNMImage(2, 2, 1)
+        p.setGray(0, 0, 0.40)
+        p.setGray(1, 1, 0.40)
+        p.setGray(0, 1, 0.75)
+        p.setGray(1, 0, 0.75)
+
+        self.checkTex = Texture('checkTex')
+        self.checkTex.load(p)
+        self.checkTex.setMagfilter(Texture.FTNearest)
+
+        self.canvasBackground = None
+
+        self.makeCanvasBackground()
+
+    def makeCanvasBackground(self):
+        if self.canvasBackground:
+            self.canvasBackground.removeNode()
+            
+        self.canvasBackground = self.canvasRoot.attachNewNode('canvasBackground', -100)
+
+        cm = CardMaker('background')
+        cm.setFrame(0, 1, 0, 1)
+        cm.setUvRange((0, 0), (1, 1))
+        self.canvasBackground.attachNewNode(cm.generate())
+
+        cm.setFrame(0, 1, 1, self.top)
+        cm.setUvRange((0, 1), (1, self.top))
+        bad = self.canvasBackground.attachNewNode(cm.generate())
+        bad.setColor((0.8, 0.2, 0.2, 1))
+
+        self.canvasBackground.setTexture(self.checkTex)
 
     def setLimit(self, limit):
         self.limit = limit
@@ -164,11 +256,11 @@ class TexMemWatcher(DirectObject):
         if self.dynamicLimit:
             # Actually, we'll never exceed texture memory, so never mind.
             self.top = 1
+        self.makeCanvasBackground()
+        
+        self.canvasLens.setFilmSize(1, self.top)
+        self.canvasLens.setFilmOffset(0.5, self.top / 2.0)  # lens covers 0..1 in x and y
 
-        self.lens.setFilmSize(1, self.top)
-        self.lens.setFilmOffset(0.5, self.top / 2.0)  # lens covers 0..1 in x and y
-
-        self.makeWindowBackground()
         self.reconfigureWindow()
 
     def cleanup(self):
@@ -208,9 +300,6 @@ class TexMemWatcher(DirectObject):
 
     def enterRegion(self, region, buttonName):
         """ the mouse has rolled over a texture. """
-        if self.isolate:
-            return
-        
         key, pi = map(int, region.getName().split(':'))
         tr = self.texRecordsByKey.get(key)
         if not tr:
@@ -243,14 +332,12 @@ class TexMemWatcher(DirectObject):
     def setRollover(self, tr, pi):
         """ Sets the highlighted texture (due to mouse rollover) to
         the indicated texture, or None to clear it. """
-
-        if self.rollover:
-            self.rollover.clearRollover()
         
         self.rollover = tr
-
         if self.rollover:
-            self.rollover.showRollover(pi, self)
+            self.statusText.setText(tr.tex.getName())
+        else:
+            self.statusText.setText('')
 
     def isolateTexture(self, tr):
         """ Isolates the indicated texture onscreen, or None to
@@ -262,17 +349,20 @@ class TexMemWatcher(DirectObject):
 
         self.isolated = tr
 
+        # Undo the previous call to isolate.
         self.canvas.show()
-        self.background.clearColor()
+        self.canvasBackground.clearColor()
         self.win.getGsg().setTextureQualityOverride(Texture.QLDefault)
         self.gsg.clearFlashTexture()
 
         if not tr:
             return
 
+        # Now isolate.
+        
         self.canvas.hide()
         # Disable the red bar at the top.
-        self.background.setColor(1, 1, 1, 1, 1)
+        self.canvasBackground.setColor(1, 1, 1, 1, 1)
 
         # Show the texture in all its filtered glory.
         self.win.getGsg().setTextureQualityOverride(Texture.QLBest)
@@ -281,20 +371,21 @@ class TexMemWatcher(DirectObject):
         self.gsg.setFlashTexture(tr.tex)
 
         self.isolate = self.render2d.attachNewNode('isolate')
-        self.isolate.setBin('fixed', 0)
+
+        wx, wy = self.winSize
 
         # Put a label on the bottom of the screen.
         tn = TextNode('tn')
-        tn.setText('%s\n%s x %s\n%s bytes' % (
+        tn.setText('%s\n%s x %s\n%s' % (
             tr.tex.getName(), tr.tex.getXSize(), tr.tex.getYSize(),
-            tr.size))
+            self.formatSize(tr.size)))
         tn.setAlign(tn.ACenter)
         tn.setCardAsMargin(100.0, 100.0, 0.1, 0.1)
         tn.setCardColor(0.1, 0.2, 0.4, 1)
         tnp = self.isolate.attachNewNode(tn)
-        scale = 15.0 / self.winSize[1]
-        tnp.setScale(scale * self.winSize[1] / self.winSize[0], scale, scale)
-        tnp.setPos(0.5, 0, -tn.getBottom() * scale)
+        scale = 30.0 / wy
+        tnp.setScale(scale * wy / wx, scale, scale)
+        tnp.setPos(render2d, 0, 0, -1 - tn.getBottom() * scale)
 
         labelTop = tn.getHeight() * scale
 
@@ -303,8 +394,8 @@ class TexMemWatcher(DirectObject):
         tw = tr.tex.getXSize()
         th = tr.tex.getYSize()
 
-        wx = self.winSize[0] * 0.9
-        wy = self.winSize[1] * (1.0 - labelTop) * 0.9
+        wx = float(wx)
+        wy = float(wy) * (2.0 - labelTop) * 0.5
 
         w = min(tw, wx)
         h = min(th, wy)
@@ -316,13 +407,13 @@ class TexMemWatcher(DirectObject):
         w = tw * s / float(self.winSize[0])
         h = th * s / float(self.winSize[1])
 
-        cx = 0.5
-        cy = 1.0 - (1.0 - labelTop) * 0.5
+        cx = 0.0
+        cy = 1.0 - (2.0 - labelTop) * 0.5
 
-        l = cx - w * 0.5
-        r = cx + w * 0.5
-        b = cy - h * 0.5
-        t = cy + h * 0.5
+        l = cx - w
+        r = cx + w
+        b = cy - h
+        t = cy + h
 
         cm = CardMaker('card')
         cm.setFrame(l, r, b, t)
@@ -343,8 +434,27 @@ class TexMemWatcher(DirectObject):
     def reconfigureWindow(self):
         """ Resets everything for a new window size. """
 
-        self.background.setTexScale(TextureStage.getDefault(),
-                                    self.winSize[0] / 20.0, self.winSize[1] / (20.0 * self.top))
+        wx, wy = self.winSize
+        if wx <= 0 or wy <= 0:
+            return
+
+        self.aspect2d.setScale(float(wy) / float(wx), 1, 1)
+
+        # Reserve self.StatusHeight pixels for the status bar;
+        # everything else is for the canvas.
+
+        statusScale = float(self.StatusHeight) / float(wy)
+        self.statusBackground.setScale(1, 1, statusScale)
+        self.status.setScale(statusScale)
+        self.statusTextNP.setPos(self.statusBackground, 0, 0, 0.5)
+        self.sizeTextNP.setPos(self.statusBackground, 2, 0, 0.5)
+
+        self.canvasDR.setDimensions(0, 1, statusScale, 1)
+
+        w = self.canvasDR.getPixelWidth()
+        h = self.canvasDR.getPixelHeight()
+        self.canvasBackground.setTexScale(TextureStage.getDefault(),
+                                          w / 20.0, h / (20.0 * self.top))
 
         if self.isolate:
             # If we're currently showing an isolated texture, refresh
@@ -357,41 +467,6 @@ class TexMemWatcher(DirectObject):
             # If we're showing the main window, just repack it
             # immediately.
             self.repack()
-
-    def makeWindowBackground(self):
-        """ Creates a tile to use for coloring the background of the
-        window, so we can tell what empty space looks like. """
-
-        if self.background:
-            self.background.detachNode()
-            self.background = None
-
-        # We start with a simple checkerboard texture image.
-        p = PNMImage(2, 2, 1)
-        p.setGray(0, 0, 0.40)
-        p.setGray(1, 1, 0.40)
-        p.setGray(0, 1, 0.80)
-        p.setGray(1, 0, 0.80)
-
-        tex = Texture('check')
-        tex.load(p)
-        tex.setMagfilter(tex.FTNearest)
-
-        self.background = self.render2d.attachNewNode('background')
-
-        cm = CardMaker('background')
-        cm.setFrame(0, 1, 0, 1)
-        cm.setUvRange((0, 0), (1, 1))
-        self.background.attachNewNode(cm.generate())
-
-        cm.setFrame(0, 1, 1, self.top)
-        cm.setUvRange((0, 1), (1, self.top))
-        bad = self.background.attachNewNode(cm.generate())
-        bad.setColor((0.8, 0.2, 0.2, 1))
-
-        self.background.setBin('fixed', -100)
-        self.background.setTexture(tex)
-
 
     def updateTextures(self, task):
         """ Gets the current list of resident textures and adds new
@@ -453,6 +528,7 @@ class TexMemWatcher(DirectObject):
             del self.texRecordsByKey[tr.key]
 
         self.totalSize = totalSize
+        self.sizeText.setText(self.formatSize(self.totalSize))
         if totalSize > self.limit and self.dynamicLimit:
             # Actually, never mind on the update: we have exceeded the
             # dynamic limit computed before, and therefore we need to
@@ -509,6 +585,7 @@ class TexMemWatcher(DirectObject):
                     totalSize += size
 
         self.totalSize = totalSize
+        self.sizeText.setText(self.formatSize(self.totalSize))
         if not self.totalSize:
             return
 
@@ -540,7 +617,7 @@ class TexMemWatcher(DirectObject):
         self.h = h
 
         self.canvas.setScale(1.0 / w, 1.0, 1.0 / h)
-        self.mw.setFrame(0, w, 0, h)
+        self.mw.setFrame(0, w, 0, h * self.top)
 
         # Sort the regions from largest to smallest to maximize
         # packing effectiveness.
@@ -550,6 +627,19 @@ class TexMemWatcher(DirectObject):
         self.overflowing = False
         for tr in texRecords:
             self.placeTexture(tr)
+
+    def formatSize(self, size):
+        """ Returns a size in MB, KB, GB, whatever. """
+        if size < 1000:
+            return '%s bytes' % (size)
+        size /= 1024.0
+        if size < 1000:
+            return '%0.1f kb' % (size)
+        size /= 1024.0
+        if size < 1000:
+            return '%0.1f MB' % (size)
+        size /= 1024.0
+        return '%0.1f GB' % (size)
 
     def unplaceTexture(self, tr):
         """ Removes the texture from its place on the canvas. """
@@ -838,7 +928,6 @@ class TexRecord:
         self.root = None
         self.regions = []
         self.placements = []
-        self.rollover = None
 
         self.setSize(size)
 
@@ -880,18 +969,18 @@ class TexRecord:
         self.clearCard(tmw)
         root = NodePath('root')
 
+        # A matte to frame the texture and indicate its status.
+        matte = root.attachNewNode('matte', 0)
+
         # A backing to put behind the card.
-        backing = root.attachNewNode('backing')
+        backing = root.attachNewNode('backing', 10)
 
         # A card to display the texture.
-        card = root.attachNewNode('card')
-
-        # A matte to frame the texture and indicate its status.
-        matte = root.attachNewNode('matte')
+        card = root.attachNewNode('card', 20)
 
         # A wire frame to ring the matte and separate the card from
         # its neighbors.
-        frame = root.attachNewNode('frame')
+        frame = root.attachNewNode('frame', 30)
 
 
         for p in self.placements:
@@ -928,21 +1017,17 @@ class TexRecord:
             f2 = f1.copyTo(frame)
             f2.setMat(shrinkMat)
 
-        matte.setBin('fixed', 0)
         #matte.flattenStrong()
         self.matte = matte
 
-        backing.setBin('fixed', 10)
         #backing.flattenStrong()
         self.backing = backing
 
         card.setTransparency(TransparencyAttrib.MAlpha)
-        card.setBin('fixed', 20)
         card.setTexture(self.tex)
         #card.flattenStrong()
         self.card = card
 
-        frame.setBin('fixed', 30)
         #frame.flattenStrong()
         self.frame = frame
 
@@ -957,105 +1042,6 @@ class TexRecord:
             r = MouseWatcherRegion('%s:%s' % (self.key, pi), *p.p)
             tmw.mw.addRegion(r)
             self.regions.append(p)
-
-    def showRollover(self, pi, tmw):
-        self.clearRollover()
-        try:
-            p = self.placements[pi]
-        except IndexError:
-            return
-
-        # Center the rollover rectangle over the placement
-        l, r, b, t = p.p
-        cx0 = (l + r) * 0.5
-        cy0 = (b + t) * 0.5
-
-        # Exaggerate its size a bit
-        w = self.w
-        h = self.h
-
-        cx = cx0
-        if cx + w > tmw.w:
-            cx = tmw.w - w
-        if cx - w < 0:
-            cx = w
-
-        cy = cy0
-        if cy + h > tmw.h:
-            cy = tmw.h - h
-        if cy - h < 0:
-            cy = h
-
-        # But keep it within the window
-        l = max(cx - w, 0)
-        r = min(cx + w, tmw.w)
-        b = max(cy - h, 0)
-        t = min(cy + h, tmw.h)
-
-        # If it needs to be shrunk to fit within the window, keep it
-        # the same aspect ratio.
-        sx = float(r - l) / float(w)
-        sy = float(t - b) / float(h)
-        if sx != sy:
-            s = min(sx, sy)
-            w *= s / sx
-            h *= s / sy
-
-            cx = cx0
-            if cx + w > tmw.w:
-                cx = tmw.w - w
-            if cx - w < 0:
-                cx = w
-
-            cy = cy0
-            if cy + h > tmw.h:
-                cy = tmw.h - h
-            if cy - h < 0:
-                cy = h
-
-            l = max(cx - w, 0)
-            r = min(cx + w, tmw.w)
-            b = max(cy - h, 0)
-            t = min(cy + h, tmw.h)
-
-        self.rollover = tmw.canvas.attachNewNode('rollover')
-
-        cm = CardMaker('backing')
-        cm.setFrame(l, r, b, t)
-        cm.setColor(0.1, 0.3, 0.5, 1)
-        c = self.rollover.attachNewNode(cm.generate())
-        c.setBin('fixed', 100)
-            
-        cm = CardMaker('card')
-        cm.setFrame(l, r, b, t)
-        c = self.rollover.attachNewNode(cm.generate())
-        c.setTexture(self.tex)
-        c.setBin('fixed', 110)
-        c.setTransparency(TransparencyAttrib.MAlpha)
-
-        # Label the font too.
-        tn = TextNode('tn')
-        tn.setText('%s\n%s x %s' % (self.tex.getName(), self.tex.getXSize(), self.tex.getYSize()))
-        tn.setAlign(tn.ACenter)
-        tn.setShadow(0.05, 0.05)
-        tnp = self.rollover.attachNewNode(tn)
-        scale = 20.0 / tmw.winSize[1] * tmw.h
-        tnp.setScale(scale)
-        tx = (l + r) * 0.5
-        ty = b + scale * 2
-        tnp.setPos(tx, 0, ty)
-        if tx + tn.getWidth() * scale * 0.5 > tmw.w:
-            tn.setAlign(tn.ARight)
-            tnp.setX(r)
-        elif tx - tn.getWidth() * scale * 0.5 < 0:
-            tn.setAlign(tn.ALeft)
-            tnp.setX(l)
-        tnp.setBin('fixed', 120)
-
-    def clearRollover(self):
-        if self.rollover:
-            self.rollover.removeNode()
-            self.rollover = None
 
 class TexPlacement:
     def __init__(self, l, r, b, t):
