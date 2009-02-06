@@ -891,7 +891,9 @@ class TexMemWatcher(DirectObject):
 
     def findLargestHole(self):
         holes = self.findAvailableHoles(0)
-        return max(holes)[1]
+        if holes:
+            return max(holes)[1]
+        return None
 
     def findAvailableHoles(self, area):
         """ Finds a list of available holes, of at least the indicated
