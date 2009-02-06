@@ -149,6 +149,7 @@ class ShowBase(DirectObject.DirectObject):
         self.mouseInterface = None
         self.drive = None
         self.trackball = None
+        self.texmem = None
         self.cam = None
         self.cam2d = None
         self.cam2dp = None
@@ -1781,6 +1782,18 @@ class ShowBase(DirectObject.DirectObject):
         """
         if self.trackball:
             self.changeMouseInterface(self.trackball)
+
+    def toggleTexMem(self):
+        """ Toggles a handy texture memory watcher.  See TexMemWatcher
+        for more information. """
+
+        if self.texmem and not self.texmem.cleanedUp:
+            self.texmem.cleanup()
+            self.texmem = None
+            return
+
+        from direct.showutil.TexMemWatcher import TexMemWatcher
+        self.texmem = TexMemWatcher()
 
     def oobe(self):
         """
