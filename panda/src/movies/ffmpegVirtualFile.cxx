@@ -96,11 +96,26 @@ static PN_int64
 pandavfs_seek(URLContext *h, PN_int64 pos, int whence) {
   istream *s = (istream*)(h->priv_data);
   switch(whence) {
-  case 0: s->seekg(pos, ios::beg); break;
-  case 1: s->seekg(pos, ios::cur); break;
-  case 2: s->seekg(pos, ios::end); break;
+  case SEEK_SET: s->seekg(pos, ios::beg); break;
+  case SEEK_CUR: s->seekg(pos, ios::cur); break;
+  case SEEK_END: s->seekg(pos, ios::end); break;
+  case AVSEEK_SIZE: {
+    s->seekg(0, ios::cur);
+    offset_t p = s->tellg();
+    s->seekg(-1, ios::end);
+    offset_t size = s->tellg();
+    if (size < 0) {
+      movies_cat.error() << "Failed to determine filesize in ffmpegVirtualFile\n";
+      s->clear();
+      return -1;
+    }
+    size++;
+    s->seekg(p, ios::beg);
+    s->clear();
+    return size; }
   default:
     movies_cat.error() << "Illegal parameter to seek in ffmpegVirtualFile\n";
+    s->clear();
     return -1;
   }
   s->clear();
