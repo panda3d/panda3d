@@ -25,7 +25,7 @@
 // Description : A single glyph in a PNMTextMaker.
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PNMTEXT PNMTextGlyph {
-public:
+PUBLISHED:
   PNMTextGlyph(double advance);
   ~PNMTextGlyph();
 
