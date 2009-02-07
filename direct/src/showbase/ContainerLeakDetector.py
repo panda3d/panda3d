@@ -279,6 +279,12 @@ class ObjectRef:
             indirection.release()
         yield str
 
+    def getFinalIndirectionStr(self):
+        prevIndirection = None
+        if len(self._indirections) > 1:
+            prevIndirection = self._indirections[-2]
+        return self._indirections[-1].getString(prevIndirection=prevIndirection)
+
     def __repr__(self):
         for result in self.getEvalStrGen():
             pass
@@ -816,6 +822,60 @@ class FPTObjsOfType(Job):
         if self._doneCallback:
             self._doneCallback(self)
 
+class FPTObjsNamed(Job):
+    def __init__(self, name, leakDetector, on, doneCallback=None):
+        Job.__init__(self, name)
+        self._leakDetector = leakDetector
+        self.notify = self._leakDetector.notify
+        self._on = on
+        self._doneCallback = doneCallback
+        self._ldde = self._leakDetector._getDestroyEvent()
+        self.accept(self._ldde, self._handleLDDestroy)
+        ContainerLeakDetector.addPrivateObj(self.__dict__)
+
+    def destroy(self):
+        self.ignore(self._ldde)
+        self._leakDetector = None
+        self._doneCallback = None
+        ContainerLeakDetector.removePrivateObj(self.__dict__)
+        Job.destroy(self)
+
+    def _handleLDDestroy(self):
+        self.destroy()
+        
+    def getPriority(self):
+        return Job.Priorities.High
+    
+    def run(self):
+        ids = self._leakDetector.getContainerIds()
+        try:
+            for id in ids:
+                yield None
+                try:
+                    for container in self._leakDetector.getContainerByIdGen(id):
+                        yield None
+                except:
+                    pass
+                else:
+                    name = self._leakDetector._id2ref[id].getFinalIndirectionStr()
+                    if self._on.lower() in name.lower():
+                        try:
+                            for ptc in self._leakDetector.getContainerNameByIdGen(id):
+                                yield None
+                        except:
+                            pass
+                        else:
+                            print 'GPTCN(' + self._on + '):' + self.getJobName() + ': ' + ptc
+        except Exception, e:
+            print 'FPTObjsNamed job caught exception: %s' % e
+            if __dev__:
+                raise
+        yield Job.Done
+
+    def finished(self):
+        if self._doneCallback:
+            self._doneCallback(self)
+
 class PruneObjectRefs(Job):
     """
     Job to destroy any container refs that are no longer valid.
@@ -988,6 +1048,11 @@ class ContainerLeakDetector(Job):
 
     def getPathsToContainers(self, name, ot, doneCallback=None):
         j =  FPTObjsOfType(name, self, ot, doneCallback)
+        jobMgr.add(j)
+        return j
+        
+    def getPathsToContainersNamed(self, name, on, doneCallback=None):
+        j =  FPTObjsNamed(name, self, on, doneCallback)
         jobMgr.add(j)
         return j
         
