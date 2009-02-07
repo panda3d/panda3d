@@ -211,9 +211,10 @@ class ObjectRef:
             return None
         return container
 
-    def getContainerGen(self):
+    def getContainerGen(self, getInstance=False):
         # try to get a handle on the container by eval'ing and looking things
         # up in dictionaries, depending on the type of each indirection
+        # if getInstance is True, will return instance instead of instance dict
         #import pdb;pdb.set_trace()
         evalStr = ''
         curObj = None
@@ -237,10 +238,15 @@ class ObjectRef:
             yield None
             indirection.release()
 
+        if getInstance:
+            lenDict = len('.__dict__')
+            if evalStr[-lenDict:] == '.__dict__':
+                evalStr = evalStr[:-lenDict]
+
         # TODO: check that this is still the object we originally pointed to
         yield self._getContainerByEval(evalStr, curObj=curObj)
         
-    def getEvalStrGen(self):
+    def getEvalStrGen(self, getInstance=False):
         str = ''
         prevIndirection = None
         curIndirection = None
@@ -262,6 +268,12 @@ class ObjectRef:
                 nextIndirection = None
             str += curIndirection.getString(prevIndirection=prevIndirection,
                                             nextIndirection=nextIndirection)
+
+        if getInstance:
+            lenDict = len('.__dict__')
+            if str[-lenDict:] == '.__dict__':
+                str = str[:-lenDict]
+
         for indirection in indirections:
             yield None
             indirection.release()
@@ -744,6 +756,66 @@ class CheckContainers(Job):
                 raise
         yield Job.Done
 
+class FPTObjsOfType(Job):
+    def __init__(self, name, leakDetector, otn, doneCallback=None):
+        Job.__init__(self, name)
+        self._leakDetector = leakDetector
+        self.notify = self._leakDetector.notify
+        self._otn = otn
+        self._doneCallback = doneCallback
+        self._ldde = self._leakDetector._getDestroyEvent()
+        self.accept(self._ldde, self._handleLDDestroy)
+        ContainerLeakDetector.addPrivateObj(self.__dict__)
+
+    def destroy(self):
+        self.ignore(self._ldde)
+        self._leakDetector = None
+        self._doneCallback = None
+        ContainerLeakDetector.removePrivateObj(self.__dict__)
+        Job.destroy(self)
+
+    def _handleLDDestroy(self):
+        self.destroy()
+        
+    def getPriority(self):
+        return Job.Priorities.High
+    
+    def run(self):
+        ids = self._leakDetector.getContainerIds()
+        try:
+            for id in ids:
+                getInstance = (self._otn.lower() not in 'dict')
+                yield None
+                try:
+                    for container in self._leakDetector.getContainerByIdGen(
+                        id, getInstance=getInstance):
+                        yield None
+                except:
+                    pass
+                else:
+                    if hasattr(container, '__class__'):
+                        cName = container.__class__.__name__
+                    else:
+                        cName = container.__name__
+                    if (self._otn.lower() in cName.lower()):
+                        try:
+                            for ptc in self._leakDetector.getContainerNameByIdGen(
+                                id, getInstance=getInstance):
+                                yield None
+                        except:
+                            pass
+                        else:
+                            print 'GPTC(' + self._otn + '):' + self.getJobName() + ': ' + ptc
+        except Exception, e:
+            print 'FPTObjsOfType job caught exception: %s' % e
+            if __dev__:
+                raise
+        yield Job.Done
+
+    def finished(self):
+        if self._doneCallback:
+            self._doneCallback(self)
+
 class PruneObjectRefs(Job):
     """
     Job to destroy any container refs that are no longer valid.
@@ -846,6 +918,7 @@ class ContainerLeakDetector(Job):
         jobMgr.add(self)
 
     def destroy(self):
+        messenger.send(self._getDestroyEvent())
         self.ignoreAll()
         if self._pruneContainersJob is not None:
             jobMgr.remove(self._pruneContainersJob)
@@ -859,6 +932,10 @@ class ContainerLeakDetector(Job):
         del self._index2containerId2len
         del self._index2delay
 
+    def _getDestroyEvent(self):
+        # sent when leak detector is about to be destroyed
+        return 'cldDestroy-%s' % self._serialNum
+        
     def getLeakEvent(self):
         # sent when a leak is detected
         # passes description string as argument
@@ -879,15 +956,15 @@ class ContainerLeakDetector(Job):
     def getContainerIds(self):
         return self._id2ref.keys()
 
-    def getContainerByIdGen(self, id):
+    def getContainerByIdGen(self, id, **kwArgs):
         # return a generator to look up a container
-        return self._id2ref[id].getContainerGen()
+        return self._id2ref[id].getContainerGen(**kwArgs)
     def getContainerById(self, id):
         for result in self._id2ref[id].getContainerGen():
             pass
         return result
-    def getContainerNameByIdGen(self, id):
-        return self._id2ref[id].getEvalStrGen()
+    def getContainerNameByIdGen(self, id, **kwArgs):
+        return self._id2ref[id].getEvalStrGen(**kwArgs)
     def getContainerNameById(self, id):
         if id in self._id2ref:
             return repr(self._id2ref[id])
@@ -908,6 +985,11 @@ class ContainerLeakDetector(Job):
 
         while True:
             yield Job.Sleep
+
+    def getPathsToContainers(self, name, ot, doneCallback=None):
+        j =  FPTObjsOfType(name, self, ot, doneCallback)
+        jobMgr.add(j)
+        return j
         
     def _scheduleNextLeakCheck(self):
         taskMgr.doMethodLater(self._nextCheckDelay, self._checkForLeaks,
