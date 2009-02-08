@@ -512,8 +512,14 @@ class ParseTreeInfo:
                 cstmt = vars['compound']
                 if cstmt[0] == symbol.funcdef:
                     name = cstmt[2][1]
-                    self.function_info[name] = ParseTreeInfo(cstmt and cstmt[-1] or None, name, self.file)
-                    self.function_info[name].prototype = self.extract_tokens("", cstmt[3])
+                    # Workaround for a weird issue with static and classmethods
+                    if name == "def":
+                        name = cstmt[3][1]
+                        self.function_info[name] = ParseTreeInfo(cstmt and cstmt[-1] or None, name, self.file)
+                        self.function_info[name].prototype = self.extract_tokens("", cstmt[4])
+                    else:
+                        self.function_info[name] = ParseTreeInfo(cstmt and cstmt[-1] or None, name, self.file)
+                        self.function_info[name].prototype = self.extract_tokens("", cstmt[3])
                 elif cstmt[0] == symbol.classdef:
                     name = cstmt[2][1]
                     self.class_info[name] = ParseTreeInfo(cstmt and cstmt[-1] or None, name, self.file)
@@ -557,6 +563,7 @@ class CodeDatabase:
         self.typeExports = {}
         self.varExports = {}
         self.globalfn = []
+        self.formattedprotos = {}
         print "Reading C++ source files"
         for cxx in cxxlist:
             tokzr = InterrogateTokenizer(cxx)
@@ -696,14 +703,23 @@ class CodeDatabase:
         else:
             return pathToModule(func.file)
 
-    def getFunctionPrototype(self, fn):
+    def getFunctionPrototype(self, fn, urlprefix, urlsuffix):
         func = self.funcs.get(fn)
         if (isinstance(func, InterrogateFunction)):
-            proto = func.prototype
-            proto = proto.replace(" inline "," ")
-            if (proto.startswith("inline ")): proto = proto[7:]
-            proto = proto.replace("basic_string< char >", "string")
-            return textToHTML(proto,"")
+            if self.formattedprotos.has_key(fn):
+                proto = self.formattedprotos[fn]
+            else:
+                proto = func.prototype
+                proto = proto.replace(" inline "," ")
+                if (proto.startswith("inline ")): proto = proto[7:]
+                proto = proto.replace("basic_string< char >", "string")
+                proto = textToHTML(proto,"")
+                if "." in fn:
+                    for c in self.goodtypes.keys():
+                        if c != fn.split(".")[0] and (c in proto):
+                            proto = re.sub("\\b%s\\b" % c, linkTo(urlprefix+c+urlsuffix, c), proto)
+                self.formattedprotos[fn] = proto
+            return proto
         elif (isinstance(func, ParseTreeInfo)):
             return textToHTML("def "+func.name+func.prototype,"")
         return fn
@@ -715,6 +731,14 @@ class CodeDatabase:
         elif (isinstance(func, ParseTreeInfo)):
             return textToHTML(func.docstring, "#")
         return fn
+
+    def isFunctionPython(self, fn):
+        func = self.funcs.get(fn)
+        if (isinstance(func, InterrogateFunction)):
+            return False
+        elif (isinstance(func, ParseTreeInfo)):
+            return True
+        return False
 
     def getFuncExports(self, mod):
         return self.funcExports.get(mod, [])
@@ -790,9 +814,9 @@ def makeCodeDatabase(indirlist, directdirlist):
     findFiles(directdirlist, ".py", ignore, pyfiles)
     return CodeDatabase(cxxfiles, pyfiles)
 
-def generateFunctionDocs(code, method):
+def generateFunctionDocs(code, method, urlprefix, urlsuffix):
     name = code.getFunctionName(method)
-    proto = code.getFunctionPrototype(method)
+    proto = code.getFunctionPrototype(method, urlprefix, urlsuffix)
     comment = code.getFunctionComment(method)
     if (comment == ""): comment = "Undocumented function.<br>\n"
     chunk = '<table bgcolor="e8e8e8" border=0 cellspacing=0 cellpadding=5 width="100%"><tr><td>' + "\n"
@@ -864,11 +888,11 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
         for sclass in inheritance:
             constructors = code.getClassConstructors(sclass)
             for constructor in constructors:
-                body = body + generateFunctionDocs(code, constructor)
+                body = body + generateFunctionDocs(code, constructor, urlprefix, urlsuffix)
             methods = code.getClassMethods(sclass)[:]
             methods.sort(None, str.lower)
             for method in methods:
-                body = body + generateFunctionDocs(code, method)
+                body = body + generateFunctionDocs(code, method, urlprefix, urlsuffix)
         body = header + body + footer
         writeFile(docdir + "/" + type + ".html", body)
         if (CLASS_RENAME_DICT.has_key(type)):
@@ -890,7 +914,7 @@ def generate(pversion, indirlist, directdirlist, docdir, header, footer, urlpref
     index = "<h1>List of Global Functions - Panda " + pversion + "</h1>\n"
     index = index + generateLinkTable(fnnames, fnnames, 3,"#","")
     for func in fnlist:
-        index = index + generateFunctionDocs(code, func)
+        index = index + generateFunctionDocs(code, func, urlprefix, urlsuffix)
     index = header + index + footer
     writeFile(docdir + "/functions.html", index)
 
