@@ -22,6 +22,7 @@
 #include "loaderOptions.h"
 #include "pmutex.h"
 #include "pmap.h"
+#include "textureCollection.h"
 
 class TexturePoolFilter;
 class BamCache;
@@ -69,6 +70,9 @@ PUBLISHED:
   INLINE static void list_contents(ostream &out);
   INLINE static void list_contents();
 
+  INLINE static Texture *find_texture(const string &name);
+  INLINE static TextureCollection find_all_textures(const string &name = "*");
+
   INLINE static void set_fake_texture_image(const Filename &filename);
   INLINE static void clear_fake_texture_image();
   INLINE static bool has_fake_texture_image();
@@ -115,6 +119,8 @@ private:
   void ns_release_all_textures();
   int ns_garbage_collect();
   void ns_list_contents(ostream &out) const;
+  Texture *ns_find_texture(const string &name) const;
+  TextureCollection ns_find_all_textures(const string &name) const;
 
   void resolve_filename(Filename &new_filename, const Filename &orig_filename);
 

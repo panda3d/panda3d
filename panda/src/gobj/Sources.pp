@@ -55,6 +55,7 @@
     simpleLru.h simpleLru.I \
     sliderTable.I sliderTable.h \
     texture.I texture.h \
+    textureCollection.I textureCollection.h \
     textureContext.I textureContext.h \
     texturePeeker.I texturePeeker.h \
     texturePool.I texturePool.h \
@@ -120,7 +121,9 @@
     simpleAllocator.cxx \
     simpleLru.cxx \
     sliderTable.cxx \
-    texture.cxx textureContext.cxx \
+    texture.cxx \
+    textureCollection.cxx \
+    textureContext.cxx \
     texturePeeker.cxx \
     texturePool.cxx \
     texturePoolFilter.cxx \
@@ -188,6 +191,7 @@
     simpleLru.h simpleLru.I \
     sliderTable.I sliderTable.h \
     texture.I texture.h \
+    textureCollection.I textureCollection.h \
     textureContext.I textureContext.h \
     texturePeeker.I texturePeeker.h \
     texturePool.I texturePool.h \

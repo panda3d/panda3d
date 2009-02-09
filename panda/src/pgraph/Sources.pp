@@ -108,7 +108,6 @@
     texProjectorEffect.I texProjectorEffect.h \
     textureAttrib.I textureAttrib.h \
     texGenAttrib.I texGenAttrib.h \
-    textureCollection.I textureCollection.h \
     textureStageCollection.I textureStageCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \
@@ -211,7 +210,6 @@
     texProjectorEffect.cxx \
     textureAttrib.cxx \
     texGenAttrib.cxx \
-    textureCollection.cxx \
     textureStageCollection.cxx \
     transformState.cxx \
     transparencyAttrib.cxx \
@@ -312,7 +310,6 @@
     texProjectorEffect.I texProjectorEffect.h \
     textureAttrib.I textureAttrib.h \
     texGenAttrib.I texGenAttrib.h \
-    textureCollection.I textureCollection.h \
     textureStageCollection.I textureStageCollection.h \
     transformState.I transformState.h \
     transparencyAttrib.I transparencyAttrib.h \

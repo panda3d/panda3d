@@ -21,9 +21,10 @@
 
 ////////////////////////////////////////////////////////////////////
 //       Class : TextureCollection
-// Description : 
+// Description : Manages a list of Texture objects, as returned by
+//               TexturePool::find_all_textures().
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH TextureCollection {
+class EXPCL_PANDA_GOBJ TextureCollection {
 PUBLISHED:
   TextureCollection();
   TextureCollection(const TextureCollection &copy);

@@ -249,6 +249,31 @@ list_contents() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::find_texture
+//       Access: Published, Static
+//  Description: Returns the first texture found in the pool that
+//               matches the indicated name (which may contain
+//               wildcards).  Returns the texture if it is found, or
+//               NULL if it is not.
+////////////////////////////////////////////////////////////////////
+INLINE Texture *TexturePool::
+find_texture(const string &name) {
+  return get_global_ptr()->ns_find_texture(name);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::find_all_textures
+//       Access: Published, Static
+//  Description: Returns the set of all textures found in the pool
+//               that match the indicated name (which may contain
+//               wildcards).
+////////////////////////////////////////////////////////////////////
+INLINE TextureCollection TexturePool::
+find_all_textures(const string &name) {
+  return get_global_ptr()->ns_find_all_textures(name);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::set_fake_texture_image
 //       Access: Published, Static
 //  Description: Sets a bogus filename that will be loaded in lieu of

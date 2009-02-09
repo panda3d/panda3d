@@ -13,6 +13,7 @@
 #include "simpleLru.cxx"
 #include "sliderTable.cxx"
 #include "texture.cxx"
+#include "textureCollection.cxx"
 #include "textureContext.cxx"
 #include "texturePeeker.cxx"
 #include "texturePool.cxx"

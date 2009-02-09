@@ -855,6 +855,49 @@ ns_list_contents(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::ns_find_texture
+//       Access: Private
+//  Description: The nonstatic implementation of find_texture().
+////////////////////////////////////////////////////////////////////
+Texture *TexturePool::
+ns_find_texture(const string &name) const {
+  MutexHolder holder(_lock);
+  GlobPattern glob(name);
+
+  Textures::const_iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    Texture *tex = (*ti).second;
+    if (glob.matches(tex->get_name())) {
+      return tex;
+    }
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePool::ns_find_all_textures
+//       Access: Private
+//  Description: The nonstatic implementation of find_all_textures().
+////////////////////////////////////////////////////////////////////
+TextureCollection TexturePool::
+ns_find_all_textures(const string &name) const {
+  MutexHolder holder(_lock);
+  TextureCollection result;
+  GlobPattern glob(name);
+
+  Textures::const_iterator ti;
+  for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
+    Texture *tex = (*ti).second;
+    if (glob.matches(tex->get_name())) {
+      result.add_texture(tex);
+    }
+  }
+
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TexturePool::resolve_filename
 //       Access: Private
 //  Description: Searches for the indicated filename along the
