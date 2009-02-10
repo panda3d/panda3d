@@ -368,8 +368,6 @@ class ShowBase(DirectObject.DirectObject):
 
         if self.windowType != 'none':
             self.__doStartDirect()
-            if self.config.GetBool('show-tex-mem', False):
-                self.toggleTexMem()
 
         taskMgr.finalInit()
 
@@ -790,6 +788,10 @@ class ShowBase(DirectObject.DirectObject):
 
             self.setFrameRateMeter(self.config.GetBool(
                 'show-frame-rate-meter', 0))
+
+            if self.config.GetBool('show-tex-mem', False):
+                if not self.texmem or self.texmem.cleanedUp:
+                    self.toggleTexMem()
 
         return success
 
