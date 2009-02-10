@@ -33,6 +33,65 @@ class TexMemWatcher(DirectObject):
 
         self.cleanedUp = False
         self.top = 1.0
+
+        # The textures managed by the TexMemWatcher are packed
+        # arbitrarily into the canvas, which is the viewable region
+        # that represents texture memory allocation.  The packing
+        # arrangement has no relation to actual layout within texture
+        # memory (which we have no way to determine).
+
+        # The visual size of each texture is chosen in proportion to
+        # the total number of bytes of texture memory the texture
+        # consumes.  This includes mipmaps, and accounts for texture
+        # compression.  Visually, a texture with mipmaps will be
+        # represented by a rectangle 33% larger than an
+        # equivalent-sized texture without mipmaps.  Of course, this
+        # once again has little bearing to the way the textures are
+        # actually arranged in memory; but it serves to give a visual
+        # indication of how much texture memory each texture consumes.
+
+        # There is an arbitrary limit, self.limit, which may have been
+        # passed to the constructor, or which may be arbitrarily
+        # determined.  This represents the intended limit to texture
+        # memory utilization.  We (generously) assume that the
+        # graphics card will implement a perfect texture packing
+        # algorithm, so that as long as our total utilization <=
+        # self.limit, it must fit within texture memory.  We represent
+        # this visually by aggressively packing textures within the
+        # self.limit block so that they are guaranteed to fit, as long
+        # as we do not exceed the total utilization.  This may
+        # sometimes mean distorting a texture block or even breaking
+        # it into multiple pieces to get it to fit, clearly
+        # fictionalizing whatever the graphics driver is actually
+        # doing.
+
+        # Internally, textures are packed into an integer grid of
+        # Q-units.  Q-units are in proportion to texture bytes.
+        # Specifically, each Q-unit corresponds to a block of
+        # self.quantize * self.quantize texture bytes in the Texture
+        # Memory window.  The Q-units are the smallest packable unit;
+        # increasing self.quantize therefore reduces the visual
+        # packing resolution correspondingly.
+
+
+        # This number defines the size of a Q-unit square, in texture
+        # bytes.  It is automatically adjusted in repack().
+        self.quantize = 1
+
+        # This is the maximum number of bitmask rows (within
+        # self.limit) to allocate for packing.  This controls the
+        # value assigned to self.quantize in repack().
+        self.maxHeight = base.config.GetInt('tex-mem-max-height', 300)
+        
+        # The total number of texture bytes tracked, including overflow.
+        self.totalSize = 0
+
+        # The total number of texture bytes placed, not including
+        # overflow (that is, within self.limit).
+        self.placedSize = 0
+
+        # The total number of Q-units placed, not including overflow.
+        self.placedQSize = 0
         
         # If no GSG is specified, use the main GSG.
         if gsg is None:
@@ -87,6 +146,11 @@ class TexMemWatcher(DirectObject):
         self.win.setWindowEvent(eventName)
         self.accept(eventName, self.windowEvent)
 
+        # Listen for this event so we can update appropriately, if
+        # anyone changes the window's graphics memory limit,
+        self.accept('graphics_memory_limit_changed',
+                    self.graphicsMemoryLimitChanged)
+
         # We'll need a mouse object to get mouse events.
         self.mouse = base.dataRoot.attachNewNode(MouseAndKeyboard(self.win, 0, '%s-mouse' % (self.name)))
         bt = ButtonThrower('%s-thrower' % (self.name))
@@ -106,8 +170,11 @@ class TexMemWatcher(DirectObject):
         self.isolate = None
         self.isolated = None
         self.needsRepack = False
-        
-        self.task = taskMgr.doMethodLater(0.5, self.updateTextures, 'TexMemWatcher')
+
+        # How frequently should the texture memory window check for
+        # state changes?
+        updateInterval = base.config.GetDouble("tex-mem-update-interval", 0.5)
+        self.task = taskMgr.doMethodLater(updateInterval, self.updateTextures, 'TexMemWatcher')
 
         self.setLimit(limit)
 
@@ -224,44 +291,57 @@ class TexMemWatcher(DirectObject):
 
         self.canvasBackground.setTexture(self.checkTex)
 
-    def setLimit(self, limit):
+    def setLimit(self, limit = None):
+        """ Indicates the texture memory limit.  If limit is None or
+        unspecified, the limit is taken from the GSG, if any; or there
+        is no limit. """
+        
+        self.__doSetLimit(limit)
+        self.reconfigureWindow()
+        
+    def __doSetLimit(self, limit):
+        """ Internal implementation of setLimit(). """
         self.limit = limit
+        self.lruLimit = False
         self.dynamicLimit = False
         
-        if limit is None:
+        if not limit:
             # If no limit was specified, use the specified graphics
             # memory limit, if any.
-            lruLimit = self.gsg.getPreparedObjects().getGraphicsMemoryLimit()
-            if lruLimit < 2**32 - 1:
-                # Got a real lruLimit.  Use it.
-                self.limit = lruLimit
+            lruSize = self.gsg.getPreparedObjects().getGraphicsMemoryLimit()
+            if lruSize and lruSize < 2**32 - 1:
+                # Got a real lruSize.  Use it.
+                self.limit = lruSize
+                self.lruLimit = True
 
             else:
                 # No LRU limit either, so there won't be a practical
                 # limit to the TexMemWatcher.  We'll determine our
                 # limit on-the-fly instead.
-                
                 self.dynamicLimit = True
 
-        if not self.dynamicLimit:
-            # Set our GSG to limit itself to no more textures than we
-            # expect to display onscreen, so we don't go crazy with
-            # texture memory.
-            self.win.getGsg().getPreparedObjects().setGraphicsMemoryLimit(self.limit)
+        if self.dynamicLimit:
+            # Choose a suitable limit by rounding to the next power of two.
+            self.limit = Texture.upToPower2(self.totalSize)
+
+        # Set our GSG to limit itself to no more textures than we
+        # expect to display onscreen, so we don't go crazy with
+        # texture memory.
+        self.win.getGsg().getPreparedObjects().setGraphicsMemoryLimit(self.limit)
 
         # The actual height of the canvas, including the overflow
         # area.  The texture memory itself is restricted to (0..1)
         # vertically; anything higher than 1 is overflow.
-        self.top = 1.25
+        top = 1.25
         if self.dynamicLimit:
             # Actually, we'll never exceed texture memory, so never mind.
-            self.top = 1
-        self.makeCanvasBackground()
+            top = 1
+        if top != self.top:
+            self.top = top
+            self.makeCanvasBackground()
         
         self.canvasLens.setFilmSize(1, self.top)
         self.canvasLens.setFilmOffset(0.5, self.top / 2.0)  # lens covers 0..1 in x and y
-
-        self.reconfigureWindow()
 
     def cleanup(self):
         if not self.cleanedUp:
@@ -284,6 +364,10 @@ class TexMemWatcher(DirectObject):
             self.texRecordsByKey = {}
             self.texPlacements = {}
 
+    def graphicsMemoryLimitChanged(self):
+        if self.dynamicLimit or self.lruLimit:
+            self.__doSetLimit(None)
+            self.reconfigureWindow()
 
     def windowEvent(self, win):
         if win == self.win:
@@ -537,7 +621,7 @@ class TexMemWatcher(DirectObject):
 
         else:
             overflowCount = sum(map(lambda tp: tp.overflowed, self.texPlacements.keys()))
-            if overflowCount:
+            if totalSize <= self.limit and overflowCount:
                 # Shouldn't be overflowing any more.  Better repack.
                 self.repack()
 
@@ -546,7 +630,7 @@ class TexMemWatcher(DirectObject):
 
                 # Sort the regions from largest to smallest to maximize
                 # packing effectiveness.
-                texRecords.sort(key = lambda tr: (-tr.w, -tr.h))
+                texRecords.sort(key = lambda tr: (tr.tw, tr.th), reverse = True)
 
                 self.overflowing = False
                 for tr in texRecords:
@@ -564,10 +648,13 @@ class TexMemWatcher(DirectObject):
         self.texRecordsByTex = {}
         self.texRecordsByKey = {}
         self.texPlacements = {}
+        self.bitmasks = []
         self.mw.clearRegions()
         self.setRollover(None, None)
         self.w = 1
         self.h = 1
+        self.placedSize = 0
+        self.placedQSize = 0
 
         pgo = self.gsg.getPreparedObjects()
         totalSize = 0
@@ -589,14 +676,9 @@ class TexMemWatcher(DirectObject):
         if not self.totalSize:
             return
 
-        if self.dynamicLimit:
-            # Choose a suitable limit by rounding to the next power of two.
-            self.limit = Texture.upToPower2(self.totalSize)
-
-            # Set our GSG to limit itself to no more textures than we
-            # expect to display onscreen, so we don't go crazy with
-            # texture memory.
-            self.win.getGsg().getPreparedObjects().setGraphicsMemoryLimit(self.limit)
+        if self.dynamicLimit or self.lruLimit:
+            # Adjust the limit to ensure we keep tracking the lru size.
+            self.__doSetLimit(None)
 
         # Now make that into a 2-D rectangle of the appropriate shape,
         # such that w * h == limit.
@@ -613,8 +695,28 @@ class TexMemWatcher(DirectObject):
         # Region size
         w = math.sqrt(self.limit) / math.sqrt(r)
         h = w * r
+
+        # Now choose self.quantize so that we don't exceed
+        # self.maxHeight.
+        if h > self.maxHeight:
+            self.quantize = int(math.ceil(h / self.maxHeight))
+        else:
+            self.quantize = 1
+        
+        w = max(int(w / self.quantize + 0.5), 1)
+        h = max(int(h / self.quantize + 0.5), 1)
         self.w = w
         self.h = h
+        self.area = self.w * self.h
+
+        # We store a bitarray for each row, for fast lookup for
+        # unallocated space on the canvas.  Each pixel on the row
+        # corresponds to a bit in the bitarray, where bit 0 is pixel
+        # 0, bit 1 is pixel 1, and so on.  If the bit is set, the
+        # space is occupied.
+        self.bitmasks = []
+        for i in range(self.h):
+            self.bitmasks.append(BitArray())
 
         self.canvas.setScale(1.0 / w, 1.0, 1.0 / h)
         self.mw.setFrame(0, w, 0, h * self.top)
@@ -622,7 +724,7 @@ class TexMemWatcher(DirectObject):
         # Sort the regions from largest to smallest to maximize
         # packing effectiveness.
         texRecords = self.texRecordsByTex.values()
-        texRecords.sort(key = lambda tr: (tr.w, tr.h), reverse = True)
+        texRecords.sort(key = lambda tr: (tr.tw, tr.th), reverse = True)
         
         self.overflowing = False
         for tr in texRecords:
@@ -644,34 +746,35 @@ class TexMemWatcher(DirectObject):
     def unplaceTexture(self, tr):
         """ Removes the texture from its place on the canvas. """
         for tp in tr.placements:
+            tp.clearBitmasks(self.bitmasks)
+            if not tp.overflowed:
+                self.placedQSize -= tp.area
             del self.texPlacements[tp]
         tr.placements = []
         tr.clearCard(self)
+        if not tp.overflowed:
+            self.placedSize -= tr.size
 
     def placeTexture(self, tr):
         """ Places the texture somewhere on the canvas where it will
         fit. """
 
-        if not self.overflowing:
-            tp = self.findHole(tr.w, tr.h)
-            if tp:
-                tr.placements = [tp]
-                tr.makeCard(self)
-                self.texPlacements[tp] = tr
-                return
+        tr.computePlacementSize(self)
 
-            # Couldn't find a hole; can we fit it if we rotate?
-            tp = self.findHole(tr.h, tr.w)
-            if tp:
-                tp.rotated = True
-                tr.placements = [tp]
-                tr.makeCard(self)
-                self.texPlacements[tp] = tr
-                return
-
-            # Couldn't find a hole of the right shape; can we find a
-            # single rectangular hole of the right area, but of any shape?
-            tp = self.findArea(tr.w, tr.h)
+        shouldFit = False
+        availableSize = self.limit - self.placedSize
+        if availableSize >= tr.size:
+            shouldFit = True
+            availableQSize = self.area - self.placedQSize
+            if availableQSize < tr.area:
+                # The texture should fit, but won't, due to roundoff
+                # error.  Make it correspondingly smaller, so we can
+                # place it anyway.
+                tr.area = availableQSize
+            
+        if shouldFit:
+            # Look for a single rectangular hole to hold this piece.
+            tp = self.findHole(tr.area, tr.w, tr.h)
             if tp:
                 texCmp = cmp(tr.w, tr.h)
                 holeCmp = cmp(tp.p[1] - tp.p[0], tp.p[3] - tp.p[2])
@@ -679,13 +782,16 @@ class TexMemWatcher(DirectObject):
                     tp.rotated = True
                 tr.placements = [tp]
                 tr.makeCard(self)
+                tp.setBitmasks(self.bitmasks)
+                self.placedQSize += tp.area
                 self.texPlacements[tp] = tr
+                self.placedSize += tr.size
                 return
 
             # Couldn't find a single rectangular hole.  We'll have to
             # divide the texture up into several smaller pieces to cram it
             # in.
-            tpList = self.findHolePieces(tr.h * tr.w)
+            tpList = self.findHolePieces(tr.area)
             if tpList:
                 texCmp = cmp(tr.w, tr.h)
                 tr.placements = tpList
@@ -693,79 +799,50 @@ class TexMemWatcher(DirectObject):
                     holeCmp = cmp(tp.p[1] - tp.p[0], tp.p[3] - tp.p[2])
                     if texCmp != 0 and holeCmp != 0 and texCmp != holeCmp:
                         tp.rotated = True
+                    tp.setBitmasks(self.bitmasks)
+                    self.placedQSize += tp.area
                     self.texPlacements[tp] = tr
+                self.placedSize += tr.size
                 tr.makeCard(self)
                 return
 
         # Just let it overflow.
         self.overflowing = True
-        tp = self.findHole(tr.w, tr.h, allowOverflow = True)
+        tp = self.findOverflowHole(tr.area, tr.w, tr.h)
         if tp:
             if tp.p[1] > self.w or tp.p[3] > self.h:
                 tp.overflowed = 1
+                while len(self.bitmasks) <= tp.p[3]:
+                    self.bitmasks.append(BitArray())
+                    
             tr.placements = [tp]
             tr.makeCard(self)
+            tp.setBitmasks(self.bitmasks)
+            if not tp.overflowed:
+                self.placedQSize += tp.area
+                self.placedSize += tr.size
             self.texPlacements[tp] = tr
             return
 
         # Something went wrong.
         assert False
 
-    def findHole(self, w, h, allowOverflow = False):
-        """ Searches for a hole large enough for (w, h).  If one is
-        found, returns an appropriate TexPlacement; otherwise, returns
-        None. """
-
-        if w > self.w:
-            # It won't fit within the row at all.
-            if not allowOverflow:
-                return None
-            # Just stack it on the top.
-            y = 0
-            if self.texPlacements:
-                y = max(map(lambda tp: tp.p[3], self.texPlacements.keys()))
-            tp = TexPlacement(0, w, y, y + h)
-            return tp
-            
-        y = 0
-        while y + h <= self.h or allowOverflow:
-            nextY = None
-
-            # Scan along the row at 'y'.
-            x = 0
-            while x + w <= self.w:
-                # Consider the spot at x, y.
-                tp = TexPlacement(x, x + w, y, y + h)
-                overlap = self.findOverlap(tp)
-                if not overlap:
-                    # Hooray!
-                    return tp
-
-                nextX = overlap.p[1]
-                if nextY is None:
-                    nextY = overlap.p[3]
-                else:
-                    nextY = min(nextY, overlap.p[3])
-
-                assert nextX > x
-                x = nextX
-
-            assert nextY > y
-            y = nextY
-
-        # Nope, wouldn't fit anywhere.
-        return None
-
-    def findArea(self, w, h):
+    def findHole(self, area, w, h):
         """ Searches for a rectangular hole that is at least area
         square units big, regardless of its shape, but attempt to find
         one that comes close to the right shape, at least.  If one is
         found, returns an appropriate TexPlacement; otherwise, returns
         None. """
 
-        aspect = float(min(w, h)) / float(max(w, h))
-        area = w * h
-        holes = self.findAvailableHoles(area)
+        if area == 0:
+            tp = TexPlacement(0, 0, 0, 0)
+            return tp
+
+        # Rotate the hole to horizontal first.
+        w, h = max(w, h), min(w, h)
+
+        aspect = float(w) / float(h)
+        holes = self.findAvailableHoles(area, w, h)
 
         # Walk through the list and find the one with the best aspect
         # match.
@@ -779,22 +856,24 @@ class TexMemWatcher(DirectObject):
             # we have to squish it?
             if tw < w:
                 # We'd have to make it taller.
-                nh = area / tw
-                assert nh <= th
+                nh = min(area / tw, th)
                 th = nh
             elif th < h:
                 # We'd have to make it narrower.
-                nw = area / th
-                assert nw <= tw
+                nw = min(area / th, tw)
                 tw = nw
             else:
-                # We don't have to squish it?  Shouldn't have gotten
-                # here.
-                assert False
+                # Hey, we don't have to squish it after all!  Just
+                # return this hole.
+                tw = w
+                th = h
 
             # Make a new tp that has the right area.
             tp = TexPlacement(l, l + tw, b, b + th)
-            ta = float(min(tw, th)) / float(max(tw, th))
+            
+            ta = float(max(tw, th)) / float(min(tw, th))
+            if ta == aspect:
+                return tp
 
             match = min(ta, aspect) / max(ta, aspect)
             matches.append((match, tp))
@@ -803,58 +882,6 @@ class TexMemWatcher(DirectObject):
             return max(matches)[1]
         return None
 
-    def findAllArea(self, area):
-        """ Searches for a rectangular hole that is at least area
-        square units big, regardless of its shape.  Returns a list of
-        all such holes found. """
-
-        result = []
-
-        y = 0
-        while y < self.h:
-            nextY = self.h
-
-            # Scan along the row at 'y'.
-            x = 0
-            while x < self.w:
-                nextX = self.w
-
-                # Consider the spot at x, y.
-
-                # How wide can we go?  Start by trying to go all the
-                # way to the edge of the region.
-                tpw = self.w - x
-
-                # Now, given this particular width, how tall do we
-                # need to go?
-                tph = area / tpw
-
-                while y + tph < self.h:
-                    tp = TexPlacement(x, x + tpw, y, y + tph)
-                    overlap = self.findOverlap(tp)
-                    if not overlap:
-                        result.append(tp)
-
-                    nextX = min(nextX, overlap.p[1])
-                    nextY = min(nextY, overlap.p[3])
-
-                    # Shorten the available region.
-                    tpw0 = overlap.p[0] - x
-                    if tpw0 <= 0.0:
-                        break
-                    if x + tpw0 == x + tpw:
-                        tpw0 *= 0.999  # imprecision hack
-                    tpw = tpw0
-                    tph = area / tpw
-                
-                assert nextX > x
-                x = nextX
-
-            assert nextY > y
-            y = nextY
-
-        return result
-
     def findHolePieces(self, area):
         """ Returns a list of holes whose net area sums to the given
         area, or None if there are not enough holes. """
@@ -862,10 +889,19 @@ class TexMemWatcher(DirectObject):
         # First, save the original value of self.texPlacements, since
         # we will be modifying that during this search.
         savedTexPlacements = copy.copy(self.texPlacements)
+        savedBitmasks = []
+        for ba in self.bitmasks:
+            savedBitmasks.append(BitArray(ba))
 
         result = []
 
         while area > 0:
+
+            # We have to call findLargestHole() each time through this
+            # loop, instead of just walking through
+            # findAvailableHoles() in order, because
+            # findAvailableHoles() might return a list of overlapping
+            # holes.
             tp = self.findLargestHole()
             if not tp:
                 break
@@ -875,18 +911,23 @@ class TexMemWatcher(DirectObject):
             if tpArea >= area:
                 # we're done.
                 shorten = (tpArea - area) / (r - l)
-                tp.p = (l, r, b, t - shorten)
+                t -= shorten
+                tp.p = (l, r, b, t)
+                tp.area = (r - l) * (t - b)
                 result.append(tp)
                 self.texPlacements = savedTexPlacements
+                self.bitmasks = savedBitmasks
                 return result
 
             # Keep going.
             area -= tpArea
             result.append(tp)
+            tp.setBitmasks(self.bitmasks)
             self.texPlacements[tp] = None
 
         # Huh, not enough room, or no more holes.
         self.texPlacements = savedTexPlacements
+        self.bitmasks = savedBitmasks
         return None
 
     def findLargestHole(self):
@@ -895,83 +936,149 @@ class TexMemWatcher(DirectObject):
             return max(holes)[1]
         return None
 
-    def findAvailableHoles(self, area):
+    def findAvailableHoles(self, area, w = None, h = None):
         """ Finds a list of available holes, of at least the indicated
         area.  Returns a list of tuples, where each tuple is of the
-        form (area, tp)."""
+        form (area, tp).
+
+        If w and h are non-None, this will short-circuit on the first
+        hole it finds that fits w x h, and return just that hole in a
+        singleton list.
+        """
 
         holes = []
-            
-        y = 0
-        while y < self.h:
-            nextY = self.h
+        lastTuples = set()
+        lastBitmask = None
+        b = 0
+        while b < self.h:
+            # Separate this row into (l, r) tuples.
+            bm = self.bitmasks[b]
+            if bm == lastBitmask:
+                # This row is exactly the same as the row below; no
+                # need to reexamine.
+                b += 1
+                continue
 
-            # Scan along the row at 'y'.
-            x = 0
-            while x < self.w:
-                nextX = self.w
-
-                # Consider the spot at x, y.
-
-                # How wide can we go?  Start by trying to go all the
-                # way to the edge of the region.
-                tpw = self.w - x
-
-                # And how tall can we go?  Start by trying to go to
-                # the top of the region.
-                tph = self.h - y
-
-                while tpw > 0.0 and tph > 0.0:
-                    tp = TexPlacement(x, x + tpw, y, y + tph)
-                    overlap = self.findOverlap(tp)
-                    if not overlap:
-                        # Here's a hole.
-                        tarea = tpw * tph
-                        if tarea >= area:
-                            holes.append((tarea, tp))
-                        break
-
-                    nextX = min(nextX, overlap.p[1])
-                    nextY = min(nextY, overlap.p[3])
-
-                    # We've been intersected either on the top or the
-                    # right.  We need to shorten either width or
-                    # height.  Which way results in the largest
-                    # remaining area?
-
-                    tpw0 = overlap.p[0] - x
-                    tph0 = overlap.p[2] - y
-
-                    if tpw0 * tph > tpw * tph0:
-                        # Shortening width results in larger.
-                        if x + tpw == x + tpw0:
-                            tpw0 *= 0.999  # imprecision hack
-                        tpw = tpw0
-                    else:
-                        # Shortening height results in larger.
-                        if y + tph == y + tph0:
-                            tph0 *= 0.999  # imprecision hack
-                        tph = tph0
-                    #print "x = %s, y = %s, tpw = %s, tph = %s" % (x, y, tpw, tph)
+            lastBitmask = bm
                 
-                assert nextX > x
-                x = nextX
+            tuples = self.findEmptyRuns(bm)
+            newTuples = tuples.difference(lastTuples)
 
-            assert nextY > y
-            y = nextY
+            for l, r in newTuples:
+                # Find out how high we can go with this bitmask. 
+                mask = BitArray.range(l, r - l)
+                t = b + 1
+                while t < self.h and (self.bitmasks[t] & mask).isZero():
+                    t += 1
+
+                tpw = (r - l)
+                tph = (t - b)
+                tarea = tpw * tph
+                assert tarea > 0
+                if tarea >= area:
+                    tp = TexPlacement(l, r, b, t)
+                    if w and h and \
+                       ((tpw >= w and tph >= h) or \
+                        (tph >= w and tpw >= h)):
+                        # This hole is big enough; short circuit.
+                        return [(tarea, tp)]
+
+                    holes.append((tarea, tp))
+
+            lastTuples = tuples
+            b += 1
 
         return holes
 
-    def findOverlap(self, tp):
-        """ If there is another placement that overlaps the indicated
-        TexPlacement, returns it.  Otherwise, returns None. """
+    def findOverflowHole(self, area, w, h):
+        """ Searches for a hole large enough for (w, h), in the
+        overflow space.  Since the overflow space is infinite, this
+        will always succeed. """
 
-        for other in self.texPlacements.keys():
-            if other.intersects(tp):
-                return other
+        if w > self.w:
+            # It won't fit within the margins at all; just stack it on
+            # the top.
 
-        return None
-            
+            # Scan down past all of the empty bitmasks that may be
+            # stacked on top.
+            b = len(self.bitmasks)
+            while b > self.h and self.bitmasks[b - 1].isZero():
+                b -= 1
+                
+            tp = TexPlacement(0, w, b, b + h)
+            return tp
+
+        # It fits within the margins; find the first row with enough
+        # space for it.
+
+        lastTuples = set()
+        lastBitmask = None
+        b = self.h
+        while True:
+            if b >= len(self.bitmasks):
+                # Off the top.  Just leave it here.
+                tp = TexPlacement(0, w, b, b + h)
+                return tp
+                
+            # Separate this row into (l, r) tuples.
+            bm = self.bitmasks[b]
+            if bm == lastBitmask:
+                # This row is exactly the same as the row below; no
+                # need to reexamine.
+                b += 1
+                continue
+
+            lastBitmask = bm
+
+            tuples = self.findEmptyRuns(bm)
+            newTuples = tuples.difference(lastTuples)
+
+            for l, r in newTuples:
+                # Is this region wide enough?
+                if r - l < w:
+                    continue
+                
+                # Is it tall enough?
+                r = l + w
+                mask = BitArray.range(l, r - l)
+
+                t = b + 1
+                while t < b + h and \
+                      (t > len(self.bitmasks) or (self.bitmasks[t] & mask).isZero()):
+                    t += 1
+
+                if t < b + h:
+                    # Not tall enough.
+                    continue
+
+                tp = TexPlacement(l, r, b, t)
+                return tp
+
+            lastTuples = tuples
+            b += 1
+
+    def findEmptyRuns(self, bm):
+        """ Separates a bitmask into a list of (l, r) tuples,
+        corresponding to the empty regions in the row between 0 and
+        self.w. """
+
+        tuples = set()
+        l = bm.getLowestOffBit()
+        assert l != -1
+        if l < self.w:
+            r = bm.getNextHigherDifferentBit(l)
+            if r == l or r >= self.w:
+                r = self.w
+            tuples.add((l, r))
+            l = bm.getNextHigherDifferentBit(r)
+            while l != r and l < self.w:
+                r = bm.getNextHigherDifferentBit(l)
+                if r == l or r >= self.w:
+                    r = self.w
+                tuples.add((l, r))
+                l = bm.getNextHigherDifferentBit(r)
+
+        return tuples
 
 
 class TexRecord:
@@ -991,12 +1098,14 @@ class TexRecord:
         y = self.tex.getYSize()
         r = float(y) / float(x)
 
-        # Card size
-        w = math.sqrt(self.size) / math.sqrt(r)
-        h = w * r
+        # Card size, in unscaled texel units.
+        self.tw = math.sqrt(self.size) / math.sqrt(r)
+        self.th = self.tw * r
 
-        self.w = w
-        self.h = h
+    def computePlacementSize(self, tmw):
+        self.w = max(int(self.tw / tmw.quantize + 0.5), 1)
+        self.h = max(int(self.th / tmw.quantize + 0.5), 1)
+        self.area = self.w * self.h
 
 
     def setActive(self, flag):
@@ -1100,6 +1209,7 @@ class TexRecord:
 class TexPlacement:
     def __init__(self, l, r, b, t):
         self.p = (l, r, b, t)
+        self.area = (r - l) * (t - b)
         self.rotated = False
         self.overflowed = 0
 
@@ -1113,3 +1223,36 @@ class TexPlacement:
         return (tl < mr and tr > ml and
                 tb < mt and tt > mb)
 
+    def setBitmasks(self, bitmasks):
+        """ Sets all of the appropriate bits to indicate this region
+        is taken. """
+
+        l, r, b, t = self.p
+        mask = BitArray.range(l, r - l)
+        
+        for yi in range(b, t):
+            assert (bitmasks[yi] & mask).isZero()
+            bitmasks[yi] |= mask
+
+    def clearBitmasks(self, bitmasks):
+        """ Clears all of the appropriate bits to indicate this region
+        is available. """
+
+        l, r, b, t = self.p
+        mask = ~BitArray.range(l, r - l)
+        
+        for yi in range(b, t):
+            assert (bitmasks[yi] | mask).isAllOn()
+            bitmasks[yi] &= mask
+
+    def hasOverlap(self, bitmasks):
+        """ Returns true if there is an overlap with this region and
+        any other region, false otherwise. """
+
+        l, r, b, t = self.p
+        mask = BitArray.range(l, r - l)
+        
+        for yi in range(b, t):
+            if not (bitmasks[yi] & mask).isZero():
+                return True
+        return False
