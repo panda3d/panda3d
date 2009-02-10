@@ -637,7 +637,7 @@
 #define X11_IPATH
 #define X11_LPATH /usr/X11R6/lib
 #define X11_LIBS X11
-#defer HAVE_X11 $[libtest $[X11_LPATH],$[X11_LIBS]]
+#defer HAVE_X11 $[and $[IS_LINUX],$[libtest $[X11_LPATH],$[X11_LIBS]]]
 
 // How about GLX?
 #define GLX_IPATH

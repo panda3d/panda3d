@@ -21,6 +21,7 @@
 #include "tinyOsxGraphicsWindow.h"
 #include "tinySDLGraphicsPipe.h"
 #include "tinySDLGraphicsWindow.h"
+#include "tinyOffscreenGraphicsPipe.h"
 #include "tinyGraphicsBuffer.h"
 #include "tinyGraphicsStateGuardian.h"
 #include "tinyGeomMunger.h"
@@ -122,12 +123,12 @@ init_libtinydisplay() {
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
 
-#ifdef IS_LINUX
+#ifdef HAVE_X11
   TinyXGraphicsPipe::init_type();
   TinyXGraphicsWindow::init_type();
   selection->add_pipe_type(TinyXGraphicsPipe::get_class_type(),
                            TinyXGraphicsPipe::pipe_constructor);
-  ps->set_system_tag("TinyPanda", "native_window_system", "X");
+  ps->set_system_tag("TinyPanda", "native_window_system", "X11");
 #endif
 
 #ifdef WIN32
@@ -153,6 +154,11 @@ init_libtinydisplay() {
                            TinySDLGraphicsPipe::pipe_constructor);
   ps->set_system_tag("TinyPanda", "SDL", "SDL");
 #endif
+
+  TinyOffscreenGraphicsPipe::init_type();
+  selection->add_pipe_type(TinyOffscreenGraphicsPipe::get_class_type(),
+                           TinyOffscreenGraphicsPipe::pipe_constructor);
+  ps->set_system_tag("TinyPanda", "", "");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,10 +169,6 @@ init_libtinydisplay() {
 int
 get_pipe_type_tinydisplay() {
 
-#ifdef IS_LINUX
-  return TinyXGraphicsPipe::get_class_type().get_index();
-#endif
-
 #ifdef WIN32
   return TinyWinGraphicsPipe::get_class_type().get_index();
 #endif
@@ -175,9 +177,13 @@ get_pipe_type_tinydisplay() {
   return TinyOsxGraphicsPipe::get_class_type().get_index();
 #endif
 
+#ifdef HAVE_X11
+  return TinyXGraphicsPipe::get_class_type().get_index();
+#endif
+
 #ifdef HAVE_SDL
   return TinySDLGraphicsPipe::get_class_type().get_index();
 #endif
 
-  return 0;
+  return TinyOffscreenGraphicsPipe::get_class_type().get_index();
 }

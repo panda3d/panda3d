@@ -30,6 +30,7 @@
     tinyWinGraphicsWindow.h tinyWinGraphicsWindow.I \
     tinyXGraphicsPipe.I tinyXGraphicsPipe.h \
     tinyXGraphicsWindow.h tinyXGraphicsWindow.I \
+    tinyOffscreenGraphicsPipe.I tinyOffscreenGraphicsPipe.h \
     tinyOsxGraphicsPipe.I tinyOsxGraphicsPipe.h \
     tinyOsxGraphicsWindow.h tinyOsxGraphicsWindow.I \
     $[if $[IS_OSX],tinyOsxGraphicsWindow.mm,] \
@@ -55,6 +56,7 @@
     tinyGeomMunger.cxx \
     tinyGraphicsBuffer.cxx \
     tinyGraphicsStateGuardian.cxx \
+    tinyOffscreenGraphicsPipe.cxx \
     tinyOsxGraphicsPipe.cxx \
     tinySDLGraphicsPipe.cxx \
     tinySDLGraphicsWindow.cxx \

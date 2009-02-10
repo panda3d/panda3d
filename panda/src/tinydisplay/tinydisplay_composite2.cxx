@@ -4,6 +4,7 @@
 #include "tinyOsxGraphicsPipe.h"
 
 #include "tinyGraphicsStateGuardian.cxx"
+#include "tinyOffscreenGraphicsPipe.cxx"
 #include "tinyOsxGraphicsPipe.cxx"
 #include "tinySDLGraphicsPipe.cxx"
 #include "tinySDLGraphicsWindow.cxx"

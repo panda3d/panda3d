@@ -126,6 +126,11 @@
 //#else
 //#print - Did not find SDL
 //#endif
+#if $[HAVE_X11]
+#print + X11
+#else
+#print - Did not find X11
+#endif
 #if $[HAVE_MESA]
 #print + Mesa
 #else
@@ -309,6 +314,9 @@ $[cdefine HAVE_TINYDISPLAY]
 
 /* Define if we have the SDL library. */
 $[cdefine HAVE_SDL]
+
+/* Define if we have X11. */
+$[cdefine HAVE_X11]
 
 /* Define if we want to compile the threading code.  */
 $[cdefine HAVE_THREADS]

@@ -14,7 +14,7 @@
 
 #include "pandabase.h"
 
-#ifdef IS_LINUX
+#ifdef HAVE_X11
 
 #include "tinyXGraphicsWindow.h"
 #include "tinyGraphicsStateGuardian.h"
@@ -1643,5 +1643,5 @@ create_ximage() {
                          32, 0);
 }
 
-#endif  // IS_LINUX
+#endif  // HAVE_X11
 

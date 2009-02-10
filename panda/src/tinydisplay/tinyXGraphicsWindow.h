@@ -17,7 +17,7 @@
 
 #include "pandabase.h"
 
-#ifdef IS_LINUX
+#ifdef HAVE_X11
 
 #include "tinyXGraphicsPipe.h"
 #include "graphicsWindow.h"
@@ -127,7 +127,7 @@ private:
 
 #include "tinyXGraphicsWindow.I"
 
-#endif  // IS_LINUX
+#endif  // HAVE_X11
 
 #endif
 
