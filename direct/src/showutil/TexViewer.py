@@ -41,6 +41,7 @@ class TexViewer(DirectObject):
                                    Texture.TUnsignedByte,
                                    Texture.FRgba8)
             self.t2.setRamImage(self.tex.getSimpleRamImage())
+            self.t2.setMagfilter(Texture.FTNearest)
 
             cm = CardMaker('right')
             l, r, b, t = (0.1, 1, 0, 0.9)
