@@ -547,7 +547,7 @@ class FindContainers(Job):
                     if hasLength or notDeadEnd:
                         # prevent cycles in the references (i.e. base.loader.base)
                         for goesThrough in parentObjRef.goesThroughGen(child):
-                            pass
+                            yield None
                         if not goesThrough:
                             objRef = ObjectRef(Indirection(evalStr='.__dict__'),
                                                id(child), parentObjRef)
@@ -585,7 +585,7 @@ class FindContainers(Job):
                         if hasLength or notDeadEnd:
                             # prevent cycles in the references (i.e. base.loader.base)
                             for goesThrough in parentObjRef.goesThroughGen(curObj[key]):
-                                pass
+                                yield None
                             if not goesThrough:
                                 if curObj is __builtin__.__dict__:
                                     objRef = ObjectRef(Indirection(evalStr='%s' % key),
@@ -636,7 +636,7 @@ class FindContainers(Job):
                                 if hasLength or notDeadEnd:
                                     # prevent cycles in the references (i.e. base.loader.base)
                                     for goesThrough in parentObjRef.goesThrough(curObj[index]):
-                                        pass
+                                        yield None
                                     if not goesThrough:
                                         objRef = ObjectRef(Indirection(evalStr='[%s]' % index),
                                                            id(curObj[index]), parentObjRef)
