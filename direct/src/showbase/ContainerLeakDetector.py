@@ -157,21 +157,18 @@ class ObjectRef:
 
     def __init__(self, indirection, objId, other=None):
         self._indirections = []
-        # this is a cache of the ids of our component objects
-        self._objIds = set()
         # are we building off of an existing ref?
         if other is not None:
-            self._objIds = set(other._objIds)
             for ind in other._indirections:
                 self._indirections.append(ind)
-        self._indirections.append(indirection)
 
         # make sure we're not storing a reference to the actual object,
         # that could cause a memory leak
         assert type(objId) in (types.IntType, types.LongType)
         # prevent cycles (i.e. base.loader.base.loader)
-        assert objId not in self._objIds
-        self._objIds.add(objId)
+        assert not self.goesThrough(objId=objId)
+
+        self._indirections.append(indirection)
 
         # make sure our indirections don't get destroyed while we're using them
         for ind in self._indirections:
@@ -186,12 +183,49 @@ class ObjectRef:
     def getNumIndirections(self):
         return len(self._indirections)
 
-    def goesThrough(self, obj):
+    def goesThroughGen(self, obj=None, objId=None):
+        if obj is None:
+            assert type(objId) in (types.IntType, types.LongType)
+        else:
+            objId = id(obj)
+        o = None
+        evalStr = ''
+        curObj = None
+        # make sure the indirections don't go away on us
+        indirections = self._indirections
+        for indirection in indirections:
+            yield None
+            indirection.acquire()
+        for indirection in indirections:
+            yield None
+            if not indirection.isDictKey():
+                # build up a string to be eval'd
+                evalStr += indirection.getString()
+            else:
+                curObj = self._getContainerByEval(evalStr, curObj=curObj)
+                if curObj is None:
+                    raise FailedEval(evalStr)
+                # try to look up this key in the curObj dictionary
+                curObj = indirection.dereferenceDictKey(curObj)
+                evalStr = ''
+            yield None
+            o = self._getContainerByEval(evalStr, curObj=curObj)
+            if id(o) == objId:
+                break
+        for indirection in indirections:
+            yield None
+            indirection.release()
+
+        yield id(o) == objId
+
+    def goesThrough(self, obj=None, objId=None):
         # since we cache the ids involved in this reference,
         # this isn't perfect, for example if base.myObject is reassigned
         # to a different object after this Ref was created this would return
         # false, allowing a ref to base.myObject.otherObject.myObject
-        return id(obj) in self._objIds
+        for goesThrough in self.goesThroughGen(obj=obj, objId=objId):
+            pass
+        return goesThrough
 
     def _getContainerByEval(self, evalStr, curObj=None):
         if curObj is not None:
@@ -207,7 +241,9 @@ class ObjectRef:
             container = eval(evalStr)
         except NameError, ne:
             return None
-        except AttributeError, ne:
+        except AttributeError, ae:
+            return None
+        except KeyError, ke:
             return None
         return container
 
@@ -510,7 +546,9 @@ class FindContainers(Job):
                     notDeadEnd = not self._isDeadEnd(child)
                     if hasLength or notDeadEnd:
                         # prevent cycles in the references (i.e. base.loader.base)
-                        if not parentObjRef.goesThrough(child):
+                        for goesThrough in parentObjRef.goesThroughGen(child):
+                            pass
+                        if not goesThrough:
                             objRef = ObjectRef(Indirection(evalStr='.__dict__'),
                                                id(child), parentObjRef)
                             yield None
@@ -546,7 +584,9 @@ class FindContainers(Job):
                             notDeadEnd = not self._isDeadEnd(attr, key)
                         if hasLength or notDeadEnd:
                             # prevent cycles in the references (i.e. base.loader.base)
-                            if not parentObjRef.goesThrough(curObj[key]):
+                            for goesThrough in parentObjRef.goesThroughGen(curObj[key]):
+                                pass
+                            if not goesThrough:
                                 if curObj is __builtin__.__dict__:
                                     objRef = ObjectRef(Indirection(evalStr='%s' % key),
                                                        id(curObj[key]))
@@ -595,7 +635,9 @@ class FindContainers(Job):
                                     notDeadEnd = not self._isDeadEnd(attr)
                                 if hasLength or notDeadEnd:
                                     # prevent cycles in the references (i.e. base.loader.base)
-                                    if not parentObjRef.goesThrough(curObj[index]):
+                                    for goesThrough in parentObjRef.goesThrough(curObj[index]):
+                                        pass
+                                    if not goesThrough:
                                         objRef = ObjectRef(Indirection(evalStr='[%s]' % index),
                                                            id(curObj[index]), parentObjRef)
                                         yield None
