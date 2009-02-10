@@ -25,6 +25,7 @@
 #include "geomContext.h"
 #include "shaderContext.h"
 #include "config_gobj.h"
+#include "throw_event.h"
 
 int PreparedGraphicsObjects::_name_index = 0;
 
@@ -99,6 +100,32 @@ PreparedGraphicsObjects::
     ibc->set_owning_chain(NULL);
   }
   _released_index_buffers.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PreparedGraphicsObjects::set_graphics_memory_limit
+//       Access: Public
+//  Description: Sets an artificial cap on graphics memory that
+//               will be imposed on this GSG.
+//
+//               This limits the total amount of graphics memory,
+//               including texture memory and vertex buffer memory,
+//               that will be consumed by the GSG, regardless of
+//               whether the hardware claims to provide more graphics
+//               memory than this. It is useful to put a ceiling on
+//               graphics memory consumed, since some drivers seem to
+//               allow the application to consume more memory than the
+//               hardware can realistically support.
+////////////////////////////////////////////////////////////////////
+void PreparedGraphicsObjects::
+set_graphics_memory_limit(size_t limit) {
+  if (limit != _graphics_memory_lru.get_max_size()) {
+    _graphics_memory_lru.set_max_size(limit);
+  
+    // We throw an event here so global objects (particularly the
+    // TexMemWatcher) can automatically respond to this change.
+    throw_event("graphics_memory_limit_changed");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

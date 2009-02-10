@@ -63,7 +63,7 @@ public:
 PUBLISHED:
   INLINE const string &get_name() const;
 
-  INLINE void set_graphics_memory_limit(size_t limit);
+  void set_graphics_memory_limit(size_t limit);
   INLINE size_t get_graphics_memory_limit() const;
   void show_graphics_memory_lru(ostream &out) const;
   void show_residency_trackers(ostream &out) const;
