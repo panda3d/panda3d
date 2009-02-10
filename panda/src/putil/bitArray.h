@@ -102,6 +102,7 @@ PUBLISHED:
   void output_hex(ostream &out, int spaces_every = 4) const;
   void write(ostream &out, int indent_level = 0) const;
 
+  INLINE operator bool () const;
   INLINE bool operator == (const BitArray &other) const;
   INLINE bool operator != (const BitArray &other) const;
   INLINE bool operator < (const BitArray &other) const;
