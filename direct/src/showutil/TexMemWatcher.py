@@ -164,7 +164,6 @@ class TexMemWatcher(DirectObject):
         # Now start handling up the actual stuff in the scene.
         
         self.background = None
-        self.overflowing = False
         self.nextTexRecordKey = 0
         self.rollover = None
         self.isolate = None
@@ -632,7 +631,6 @@ class TexMemWatcher(DirectObject):
                 # packing effectiveness.
                 texRecords.sort(key = lambda tr: (tr.tw, tr.th), reverse = True)
 
-                self.overflowing = False
                 for tr in texRecords:
                     self.placeTexture(tr)
                     self.texRecordsByTex[tr.tex] = tr
@@ -726,7 +724,6 @@ class TexMemWatcher(DirectObject):
         texRecords = self.texRecordsByTex.values()
         texRecords.sort(key = lambda tr: (tr.tw, tr.th), reverse = True)
         
-        self.overflowing = False
         for tr in texRecords:
             self.placeTexture(tr)
 
@@ -745,21 +742,26 @@ class TexMemWatcher(DirectObject):
 
     def unplaceTexture(self, tr):
         """ Removes the texture from its place on the canvas. """
-        for tp in tr.placements:
-            tp.clearBitmasks(self.bitmasks)
-            if not tp.overflowed:
-                self.placedQSize -= tp.area
-            del self.texPlacements[tp]
-        tr.placements = []
-        tr.clearCard(self)
-        if not tp.overflowed:
-            self.placedSize -= tr.size
+        if tr.placements:
+            for tp in tr.placements:
+                tp.clearBitmasks(self.bitmasks)
+                if not tp.overflowed:
+                    self.placedQSize -= tp.area
+                    assert self.placedQSize >= 0
+                del self.texPlacements[tp]
+            tr.placements = []
+            tr.clearCard(self)
+            if not tr.overflowed:
+                self.placedSize -= tr.size
+                assert self.placedSize >= 0
+        tr.overflowed = 0
 
     def placeTexture(self, tr):
         """ Places the texture somewhere on the canvas where it will
         fit. """
 
         tr.computePlacementSize(self)
+        tr.overflowed = 0
 
         shouldFit = False
         availableSize = self.limit - self.placedSize
@@ -807,25 +809,17 @@ class TexMemWatcher(DirectObject):
                 return
 
         # Just let it overflow.
-        self.overflowing = True
+        tr.overflowed = 1
         tp = self.findOverflowHole(tr.area, tr.w, tr.h)
-        if tp:
-            if tp.p[1] > self.w or tp.p[3] > self.h:
-                tp.overflowed = 1
-                while len(self.bitmasks) <= tp.p[3]:
-                    self.bitmasks.append(BitArray())
-                    
-            tr.placements = [tp]
-            tr.makeCard(self)
-            tp.setBitmasks(self.bitmasks)
-            if not tp.overflowed:
-                self.placedQSize += tp.area
-                self.placedSize += tr.size
-            self.texPlacements[tp] = tr
-            return
+        tp.overflowed = 1
+        while len(self.bitmasks) <= tp.p[3]:
+            self.bitmasks.append(BitArray())
 
-        # Something went wrong.
-        assert False
+        tr.placements = [tp]
+        tr.makeCard(self)
+        tp.setBitmasks(self.bitmasks)
+        self.texPlacements[tp] = tr
+
 
     def findHole(self, area, w, h):
         """ Searches for a rectangular hole that is at least area
@@ -1044,7 +1038,7 @@ class TexMemWatcher(DirectObject):
 
                 t = b + 1
                 while t < b + h and \
-                      (t > len(self.bitmasks) or (self.bitmasks[t] & mask).isZero()):
+                      (t >= len(self.bitmasks) or (self.bitmasks[t] & mask).isZero()):
                     t += 1
 
                 if t < b + h:
@@ -1089,6 +1083,7 @@ class TexRecord:
         self.root = None
         self.regions = []
         self.placements = []
+        self.overflowed = 0
 
         self.setSize(size)
 
