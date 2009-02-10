@@ -368,6 +368,8 @@ class ShowBase(DirectObject.DirectObject):
 
         if self.windowType != 'none':
             self.__doStartDirect()
+            if self.config.GetBool('show-tex-mem', False):
+                self.toggleTexMem()
 
         taskMgr.finalInit()
 
