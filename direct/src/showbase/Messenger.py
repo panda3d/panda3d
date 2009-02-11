@@ -60,6 +60,7 @@ class Messenger:
         # classes to call down (speed optimization, assuming objects
         # accept/ignore more than once over their lifetime)
         # get unique messenger id for this object
+        # assumes lock is held.
         if not hasattr(object, '_messengerId'):
             object._messengerId = (object.__class__.__name__, self._messengerIdGen)
             self._messengerIdGen += 1
@@ -78,10 +79,14 @@ class Messenger:
         return self._id2object[id][1]
 
     def _getObjects(self):
-        objs = []
-        for refCount, obj in self._id2object.itervalues():
-            objs.append(obj)
-        return objs
+        self.lock.acquire()
+        try:
+            objs = []
+            for refCount, obj in self._id2object.itervalues():
+                objs.append(obj)
+            return objs
+        finally:
+            self.lock.release()
 
     def _getNumListeners(self, event):
         return len(self.__callbacks.get(event, {}))
