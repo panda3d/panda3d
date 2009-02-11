@@ -246,11 +246,16 @@ verify_window_sizes(int numsizes, int *dimen) {
 ////////////////////////////////////////////////////////////////////
 void wdxGraphicsWindow8::
 close_window() {
-  wdxdisplay8_cat.debug() << "wdx closed window\n";
+  if (wdxdisplay8_cat.is_debug()) {
+    wdxdisplay8_cat.debug()
+      << "wdxGraphicsWindow8::close_window() " << this << "\n";
+  }
+
   if (_gsg != (GraphicsStateGuardian*)NULL) {
     _gsg.clear();
     _active = false;
   }
+
   _dxgsg->release_swap_chain(&_wcontext);
   WinGraphicsWindow::close_window();
 }
@@ -286,6 +291,15 @@ open_window() {
     return false;
   }
 
+  // Ensure the window properties get set to the actual size of the
+  // window.
+  {
+    WindowProperties resized_props;
+    resized_props.set_size(_wcontext._display_mode.Width, 
+                           _wcontext._display_mode.Height);
+    _properties.add_properties(resized_props);
+  }
+
   wdxdisplay8_cat.debug() << "_wcontext._window is " << _wcontext._window << "\n";
   if (!WinGraphicsWindow::open_window()) {
     return false;
@@ -309,8 +323,8 @@ open_window() {
 
       wdxdisplay8_cat.debug() << "device width " << _wcontext._display_mode.Width << "\n";
       if (!create_screen_buffers_and_device(_wcontext, dx_force_16bpp_zbuffer)) {
-        // just crash here
-        wdxdisplay8_cat.error() << "fatal: must be trying to create two fullscreen windows: not supported\n";
+        wdxdisplay8_cat.error() << "Unable to create window with specified parameters.\n";
+        close_window();
         return false;
       }
       _dxgsg->get_pipe()->make_device((void*)(&_wcontext));
@@ -536,10 +550,11 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
 
   PRINT_REFCNT(wdxdisplay8, _d3d8);
 
-  assert(_d3d8 != NULL);
-  assert(pD3DCaps->DevCaps & D3DDEVCAPS_HWRASTERIZATION);
+  nassertr(_d3d8 != NULL, false);
+  nassertr(pD3DCaps->DevCaps & D3DDEVCAPS_HWRASTERIZATION, false);
 
   presentation_params->BackBufferFormat = display._display_mode.Format;  // dont need dest alpha, so just use adapter format
+  cerr << "attempting " << D3DFormatStr(presentation_params->BackBufferFormat) << "\n";
 
   bool do_sync = sync_video;
 
@@ -691,7 +706,7 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
       presentation_params->SwapEffect = D3DSWAPEFFECT_DISCARD;
     }
 
-    //assert((dwRenderWidth == presentation_params->BackBufferWidth)&&(dwRenderHeight == presentation_params->BackBufferHeight));
+    //nassertv((dwRenderWidth == presentation_params->BackBufferWidth)&&(dwRenderHeight == presentation_params->BackBufferHeight));
 
     hr = _d3d8->CreateDevice(display._card_id, D3DDEVTYPE_HAL, _hWnd,
                              dwBehaviorFlags, presentation_params, &display._d3d_device);
@@ -759,7 +774,6 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   return true;
 
  Fallback_to_16bpp_buffers:
-
   if ((!IS_16BPP_DISPLAY_FORMAT(presentation_params->BackBufferFormat)) &&
       (display._supported_screen_depths_mask & (R5G6B5_FLAG|X1R5G5B5_FLAG))) {
     // fallback strategy, if we trying >16bpp, fallback to 16bpp buffers
@@ -903,14 +917,14 @@ choose_device() {
 bool wdxGraphicsWindow8::
 search_for_device(wdxGraphicsPipe8 *dxpipe, DXDeviceInfo *device_info) {
 
-  assert(dxpipe != NULL);
+  nassertr(dxpipe != NULL, false);
   WindowProperties properties = get_properties();
   DWORD dwRenderWidth = properties.get_x_size();
   DWORD dwRenderHeight = properties.get_y_size();
   HRESULT hr;
   LPDIRECT3D8 _d3d8 = dxpipe->__d3d8;
 
-  assert(_dxgsg != NULL);
+  nassertr(_dxgsg != NULL, false);
   _wcontext._d3d8 = _d3d8;
   _wcontext._is_dx8_1 = dxpipe->__is_dx8_1;
   _wcontext._card_id = device_info->cardID;  // could this change by end?
@@ -1145,8 +1159,8 @@ init_resized_window() {
   DWORD newWidth = _wcontext._presentation_params.BackBufferWidth;
   DWORD newHeight = _wcontext._presentation_params.BackBufferHeight;
 
-  assert((newWidth != 0) && (newHeight != 0));
-  assert(_wcontext._window != NULL);
+  nassertv((newWidth != 0) && (newHeight != 0));
+  nassertv(_wcontext._window != NULL);
 
   if (_wcontext._presentation_params.Windowed) {
     POINT ul, lr;
@@ -1169,7 +1183,7 @@ init_resized_window() {
   }
 
   // clear window to black ASAP
-  assert(_wcontext._window != NULL);
+  nassertv(_wcontext._window != NULL);
   ClearToBlack(_wcontext._window, get_properties());
 
   // clear textures and VB's out of video&AGP mem, so cache is reset

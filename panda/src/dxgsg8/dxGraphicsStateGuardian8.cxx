@@ -625,6 +625,7 @@ clear(DrawableRegion *clearable) {
               << "Unable to clear stencil buffer; removing.\n";
             // This is really hacky code.
             ((FrameBufferProperties *)_current_properties)->set_stencil_bits(0);
+            _supports_stencil = false;
           }
         }
       }
@@ -742,7 +743,17 @@ prepare_lens() {
 ////////////////////////////////////////////////////////////////////
 bool DXGraphicsStateGuardian8::
 begin_frame(Thread *current_thread) {
-  return GraphicsStateGuardian::begin_frame(current_thread);
+  if (!GraphicsStateGuardian::begin_frame(current_thread)) {
+    return false;
+  }
+
+  if (_d3d_device == NULL) {
+    dxgsg8_cat.debug()
+      << this << "::begin_frame(): no device.\n";
+    return false;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1793,8 +1804,11 @@ reset() {
   // TransformState::make_identity());
   // want gsg to pass all state settings down so any non-matching defaults we set here get overwritten
 
-  assert(_screen->_d3d8 != NULL);
-  assert(_d3d_device != NULL);
+  if (_d3d_device == NULL) {
+    return;
+  }
+
+  nassertv(_screen->_d3d8 != NULL);
 
   D3DCAPS8 d3d_caps;
   _d3d_device->GetDeviceCaps(&d3d_caps);
@@ -1830,7 +1844,30 @@ reset() {
   if (support_stencil) {
     int min_stencil = D3DSTENCILCAPS_ZERO | D3DSTENCILCAPS_REPLACE | D3DSTENCILCAPS_INCR | D3DSTENCILCAPS_DECR;
     if ((d3d_caps.StencilCaps & min_stencil) == min_stencil) {
-      _supports_stencil = true;
+      if (dxgsg8_cat.is_debug()) {
+        dxgsg8_cat.debug()
+          << "Checking for stencil; mode = "
+          << D3DFormatStr(_screen->_presentation_params.AutoDepthStencilFormat)
+          << "\n";
+      }
+      switch (_screen->_presentation_params.AutoDepthStencilFormat) {
+        // These are the only formats that support stencil.
+      case D3DFMT_D15S1:
+      case D3DFMT_D24S8:
+      case D3DFMT_D24X4S4:
+        _supports_stencil = true;
+        if (dxgsg8_cat.is_debug()) {
+          dxgsg8_cat.debug()
+            << "Stencils supported.\n";
+        }
+        break;
+
+      default:
+        if (dxgsg8_cat.is_debug()) {
+          dxgsg8_cat.debug()
+            << "Stencils NOT supported.\n";
+        }
+      }
     }
   }
 
@@ -1972,7 +2009,7 @@ reset() {
   } else {
     // every card is going to have vertex fog, since it's implemented
     // in d3d runtime.
-    assert((_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGVERTEX) != 0);
+    nassertv((_screen->_d3dcaps.RasterCaps & D3DPRASTERCAPS_FOGVERTEX) != 0);
 
     // vertex fog may look crappy if you have large polygons in the
     // foreground and they get clipped, so you may want to disable it
@@ -3474,6 +3511,10 @@ set_context(DXScreenData *new_context) {
 ////////////////////////////////////////////////////////////////////
 void DXGraphicsStateGuardian8::
 set_render_target() {
+  if (_d3d_device == NULL) {
+    return;
+  }
+
   LPDIRECT3DSURFACE8 back = NULL, stencil = NULL;
 
   if (!_swap_chain)  //maybe fullscreen mode or main/single window
@@ -3699,9 +3740,9 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
                  DXScreenData **screen) {
   HRESULT hr;
 
-  assert(IS_VALID_PTR(presentation_params));
-  assert(IS_VALID_PTR(_screen->_d3d8));
-  assert(IS_VALID_PTR(_d3d_device));
+  nassertr(IS_VALID_PTR(presentation_params), E_FAIL);
+  nassertr(IS_VALID_PTR(_screen->_d3d8), E_FAIL);
+  nassertr(IS_VALID_PTR(_d3d_device), E_FAIL);
 
   // for windowed mode make sure our format matches the desktop fmt,
   // in case the desktop mode has been changed
@@ -3816,10 +3857,13 @@ reset_d3d_device(D3DPRESENT_PARAMETERS *presentation_params,
 bool DXGraphicsStateGuardian8::
 check_cooperative_level() {
   bool bDoReactivateWindow = false;
+  if (_d3d_device == NULL) {
+    return false;
+  }
   HRESULT hr = _d3d_device->TestCooperativeLevel();
 
   if (SUCCEEDED(hr)) {
-    assert(SUCCEEDED(_last_testcooplevel_result));
+    nassertr(SUCCEEDED(_last_testcooplevel_result), false);
     return true;
   }
 

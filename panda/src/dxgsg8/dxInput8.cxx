@@ -126,7 +126,7 @@ bool DInput8Info::CreateJoystickOrPad(HWND _window) {
         goto handle_error;
     }
 
-    assert(pJoyDevice!=NULL);
+    nassertr(pJoyDevice!=NULL, false);
     _DeviceList.push_back(pJoyDevice);
 
     // Set the data format to "simple joystick" - a predefined data format
@@ -143,7 +143,7 @@ bool DInput8Info::CreateJoystickOrPad(HWND _window) {
     // must be called AFTER SetDataFormat to get all the proper flags
     DX_DECLARE_CLEAN(DIDEVCAPS, DIDevCaps);
     hr = pJoyDevice->GetCapabilities(&DIDevCaps);
-    assert(SUCCEEDED(hr));
+    nassertr(SUCCEEDED(hr), false);
 
     _DevCaps.push_back(DIDevCaps);
 
@@ -214,7 +214,7 @@ BOOL CALLBACK EnumObjectsCallbackJoystick( const DIDEVICEOBJECTINSTANCE* pdidoi,
 
 bool DInput8Info::ReadJoystick(int devnum, DIJOYSTATE2 &js) {
     LPDIRECTINPUTDEVICE8 pJoystick = _DeviceList[devnum];
-    assert(pJoystick!=NULL);
+    nassertr(pJoystick!=NULL, false);
     HRESULT hr;
     char *errstr;
 

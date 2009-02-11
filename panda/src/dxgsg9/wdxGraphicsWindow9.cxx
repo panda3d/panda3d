@@ -285,6 +285,8 @@ open_window() {
   if (_gsg == 0) {
     _dxgsg = new DXGraphicsStateGuardian9(_pipe);
     _gsg = _dxgsg;
+  } else {
+    DCAST_INTO_R(_dxgsg, _gsg, false);
   }
 
   if (!choose_device()) {
@@ -585,33 +587,26 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
     do_sync = false;
   }
 
-  bool check_device_format;
+  presentation_params->BackBufferFormat = display._display_mode.Format;
 
   // check for D3DFMT_A8R8G8B8 first
-  check_device_format = false;
   if (bWantAlpha) {
-    presentation_params->BackBufferFormat = D3DFMT_A8R8G8B8;
-    // verify the rendertarget fmt
-    if (FAILED(_d3d9->CheckDeviceFormat(adapter, device_type, display._display_mode.Format, D3DUSAGE_RENDERTARGET,
-                                        D3DRTYPE_SURFACE, presentation_params->BackBufferFormat))) {
-      wdxdisplay9_cat.error() << "adpater #" << adapter << " CheckDeviceFmt failed for surface fmt " << D3DFormatStr(presentation_params->BackBufferFormat) << endl;
-    }
-    else {
-      check_device_format = true;
+    if (!FAILED(_d3d9->CheckDeviceFormat(adapter, device_type, display._display_mode.Format, D3DUSAGE_RENDERTARGET,
+                                        D3DRTYPE_SURFACE, D3DFMT_A8R8G8B8))) {
+      if (!FAILED(_d3d9->CheckDeviceType(adapter, device_type, display._display_mode.Format, D3DFMT_A8R8G8B8,
+                                         is_fullscreen()))) {
+        // We can accept D3DFMT_A8R8G8B8, so use it.
+        presentation_params->BackBufferFormat = D3DFMT_A8R8G8B8;
+      }
     }
   }
 
   // check for same format as display_mode
-  if (check_device_format == false) {
-    presentation_params->BackBufferFormat = display._display_mode.Format;
-    // verify the rendertarget fmt
-    if (FAILED(_d3d9->CheckDeviceFormat(adapter, device_type, display._display_mode.Format, D3DUSAGE_RENDERTARGET,
-                                        D3DRTYPE_SURFACE, presentation_params->BackBufferFormat))) {
-      wdxdisplay9_cat.error() << "adapter #" << adapter << " CheckDeviceFmt failed for surface fmt " << D3DFormatStr(presentation_params->BackBufferFormat) << endl;
-    }
-    else {
-      check_device_format = true;
-    }
+  // verify the rendertarget fmt
+  if (FAILED(_d3d9->CheckDeviceFormat(adapter, device_type, display._display_mode.Format, D3DUSAGE_RENDERTARGET,
+                                      D3DRTYPE_SURFACE, presentation_params->BackBufferFormat))) {
+    wdxdisplay9_cat.error() << "adapter #" << adapter << " CheckDeviceFmt failed for surface fmt " << D3DFormatStr(presentation_params->BackBufferFormat) << endl;
+    goto Fallback_to_16bpp_buffers;
   }
 
   if (FAILED(_d3d9->CheckDeviceType(adapter, device_type, display._display_mode.Format, presentation_params->BackBufferFormat,
@@ -844,7 +839,6 @@ create_screen_buffers_and_device(DXScreenData &display, bool force_16bpp_zbuffer
   return true;
 
  Fallback_to_16bpp_buffers:
-
   if ((!IS_16BPP_DISPLAY_FORMAT(presentation_params->BackBufferFormat)) &&
       (display._supported_screen_depths_mask & (R5G6B5_FLAG|X1R5G5B5_FLAG))) {
     // fallback strategy, if we trying >16bpp, fallback to 16bpp buffers

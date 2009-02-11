@@ -441,10 +441,14 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
     bVerboseMode = true;
   }
 
-  // list fmts in order of preference
-#define NUM_TEST_ZFMTS 3
-  static D3DFORMAT NoStencilPrefList[NUM_TEST_ZFMTS] = {D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D16};
-  static D3DFORMAT StencilPrefList[NUM_TEST_ZFMTS] = {D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D15S1};
+  // list formats to try in order of preference.
+
+#define NUM_TEST_ZFMTS 6
+#define FIRST_NON_STENCIL_ZFMT 3
+  static D3DFORMAT FormatPrefList[NUM_TEST_ZFMTS] = {
+    D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D15S1,  // with stencil
+    D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D16         // without stencil
+  };
 
   // do not use Display._display_mode since that is probably not set yet, use Test_display_mode instead
 
@@ -460,9 +464,9 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
       << "FindBestDepthFmt: bSelectOnly16bpp: " << bOnlySelect16bpp << endl;
   }
 
-  for (int i = 0; i < NUM_TEST_ZFMTS; i++) {
-    D3DFORMAT TestDepthFmt =
-      (bWantStencil ? StencilPrefList[i] : NoStencilPrefList[i]);
+  int first_format = (bWantStencil ? 0 : FIRST_NON_STENCIL_ZFMT);
+  for (int i = first_format; i < NUM_TEST_ZFMTS; i++) {
+    D3DFORMAT TestDepthFmt = FormatPrefList[i];
 
     if (bOnlySelect16bpp && !IS_16BPP_ZBUFFER(TestDepthFmt)) {
       continue;

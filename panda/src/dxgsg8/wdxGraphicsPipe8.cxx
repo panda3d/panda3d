@@ -263,7 +263,7 @@ find_all_card_memavails() {
   ZeroMemory(&ZeroGUID, sizeof(GUID));
 
   if (_card_ids.size() > 1) {
-    assert(IsEqualGUID(ZeroGUID, _card_ids[0].DX7_DeviceGUID));
+    nassertr(IsEqualGUID(ZeroGUID, _card_ids[0].DX7_DeviceGUID), false);
     // delete enum of primary display (always the first), since it is
     // duplicated by explicit entry
     _card_ids.erase(_card_ids.begin());
@@ -439,10 +439,18 @@ bool wdxGraphicsPipe8::
 find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
                        D3DFORMAT *pBestFmt, bool bWantStencil,
                        bool bForce16bpp, bool bVerboseMode) const {
-  // list fmts in order of preference
-#define NUM_TEST_ZFMTS 3
-  static D3DFORMAT NoStencilPrefList[NUM_TEST_ZFMTS] = {D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D16};
-  static D3DFORMAT StencilPrefList[NUM_TEST_ZFMTS] = {D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D15S1};
+  if (dxgsg8_cat.is_debug()) {
+    bVerboseMode = true;
+  }
+
+  // list formats to try in order of preference.
+
+#define NUM_TEST_ZFMTS 6
+#define FIRST_NON_STENCIL_ZFMT 3
+  static D3DFORMAT FormatPrefList[NUM_TEST_ZFMTS] = {
+    D3DFMT_D24S8, D3DFMT_D24X4S4, D3DFMT_D15S1,  // with stencil
+    D3DFMT_D32, D3DFMT_D24X8, D3DFMT_D16         // without stencil
+  };
 
   // do not use Display._display_mode since that is probably not set yet, use Test_display_mode instead
 
@@ -458,9 +466,9 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
       << "FindBestDepthFmt: bSelectOnly16bpp: " << bOnlySelect16bpp << endl;
   }
 
-  for (int i = 0; i < NUM_TEST_ZFMTS; i++) {
-    D3DFORMAT TestDepthFmt =
-      (bWantStencil ? StencilPrefList[i] : NoStencilPrefList[i]);
+  int first_format = (bWantStencil ? 0 : FIRST_NON_STENCIL_ZFMT);
+  for (int i = first_format; i < NUM_TEST_ZFMTS; i++) {
+    D3DFORMAT TestDepthFmt = FormatPrefList[i];
 
     if (bOnlySelect16bpp && !IS_16BPP_ZBUFFER(TestDepthFmt)) {
       continue;
@@ -508,7 +516,6 @@ find_best_depth_format(DXScreenData &Display, D3DDISPLAYMODE &Test_display_mode,
           << "unexpected CheckDepthStencilMatch failure for "
           << D3DFormatStr(Test_display_mode.Format) << ", "
           << D3DFormatStr(TestDepthFmt) << endl;
-        exit(1);
       }
     }
   }
@@ -566,7 +573,7 @@ search_for_valid_displaymode(DXScreenData &scrn,
                              bool bForce16bppZBuffer,
                              bool bVerboseMode) {
 
-  assert(IS_VALID_PTR(scrn._d3d8));
+  nassertv(IS_VALID_PTR(scrn._d3d8));
   HRESULT hr;
 
   *pSuggestedPixFmt = D3DFMT_UNKNOWN;

@@ -908,6 +908,7 @@ clear(DrawableRegion *clearable) {
               << "Unable to clear stencil buffer; removing.\n";
             // This is really hacky code.
             ((FrameBufferProperties *)_current_properties)->set_stencil_bits(0);
+            _supports_stencil = false;
           }
         }
       }
@@ -2483,7 +2484,30 @@ reset() {
   if (support_stencil) {
     int min_stencil = D3DSTENCILCAPS_ZERO | D3DSTENCILCAPS_REPLACE | D3DSTENCILCAPS_INCR | D3DSTENCILCAPS_DECR;
     if ((d3d_caps.StencilCaps & min_stencil) == min_stencil) {
-      _supports_stencil = true;
+      if (dxgsg9_cat.is_debug()) {
+        dxgsg9_cat.debug()
+          << "Checking for stencil; mode = "
+          << D3DFormatStr(_screen->_presentation_params.AutoDepthStencilFormat)
+          << "\n";
+      }
+      switch (_screen->_presentation_params.AutoDepthStencilFormat) {
+        // These are the only formats that support stencil.
+      case D3DFMT_D15S1:
+      case D3DFMT_D24S8:
+      case D3DFMT_D24X4S4:
+        _supports_stencil = true;
+        if (dxgsg9_cat.is_debug()) {
+          dxgsg9_cat.debug()
+            << "Stencils supported.\n";
+        }
+        break;
+
+      default:
+        if (dxgsg9_cat.is_debug()) {
+          dxgsg9_cat.debug()
+            << "Stencils NOT supported.\n";
+        }
+      }
     }
   }
 
