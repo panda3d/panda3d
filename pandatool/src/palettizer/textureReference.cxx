@@ -484,8 +484,11 @@ update_egg() {
   nassertv(image != (PaletteImage *)NULL);
 
   image->update_egg_tex(_egg_tex);
-  // Palette images never wrap.
-  _egg_tex->set_wrap_mode(EggTexture::WM_clamp);
+
+  // Palette images never wrap, so the wrap mode doesn't matter.  We
+  // let this default to unspecified, which means the images will
+  // wrap by default, which is the fastest mode for tinydisplay anyway.
+  _egg_tex->set_wrap_mode(EggTexture::WM_unspecified);
   _egg_tex->set_wrap_u(EggTexture::WM_unspecified);
   _egg_tex->set_wrap_v(EggTexture::WM_unspecified);
 

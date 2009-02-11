@@ -119,7 +119,7 @@ Palettizer() {
   _shadow_color_type = (PNMFileType *)NULL;
   _shadow_alpha_type = (PNMFileType *)NULL;
   _pal_x_size = _pal_y_size = 512;
-  _background.set(0.0, 0.0, 0.0, 1.0);
+  _background.set(0.0, 0.0, 0.0, 0.0);
   _cutout_mode = EggRenderMode::AM_dual;
   _cutout_ratio = 0.3;
 
