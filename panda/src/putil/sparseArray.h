@@ -93,7 +93,6 @@ PUBLISHED:
 
   void output(ostream &out) const;
 
-  INLINE operator bool () const;
   INLINE bool operator == (const SparseArray &other) const;
   INLINE bool operator != (const SparseArray &other) const;
   INLINE bool operator < (const SparseArray &other) const;

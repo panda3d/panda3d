@@ -632,19 +632,6 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: BitMask::operator bool
-//       Access: Published
-//  Description: The bool typecast operator returns true if any bits
-//               are set, false if none of them is set.  That is, true
-//               if nonzero, false if zero.
-////////////////////////////////////////////////////////////////////
-template<class WType, int nbits>
-INLINE BitMask<WType, nbits>::
-operator bool () const {
-  return !is_zero();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: BitMask::operator ==
 //       Access: Published
 //  Description:

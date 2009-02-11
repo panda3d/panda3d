@@ -647,19 +647,6 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DoubleBitMask::operator bool
-//       Access: Published
-//  Description: The bool typecast operator returns true if any bits
-//               are set, false if none of them is set.  That is, true
-//               if nonzero, false if zero.
-////////////////////////////////////////////////////////////////////
-template<class BMType>
-INLINE DoubleBitMask<BMType>::
-operator bool () const {
-  return !is_zero();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DoubleBitMask::operator ==
 //       Access: Published
 //  Description:
