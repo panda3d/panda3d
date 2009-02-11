@@ -71,11 +71,15 @@ class TexMemWatcher(DirectObject):
         # self.quantize * self.quantize texture bytes in the Texture
         # Memory window.  The Q-units are the smallest packable unit;
         # increasing self.quantize therefore reduces the visual
-        # packing resolution correspondingly.
+        # packing resolution correspondingly.  Q-units very roughly
+        # correspond to pixels onscreen (they may be larger, sometimes
+        # considerably larger, than 1 pixel, depending on the window
+        # size).
 
 
         # This number defines the size of a Q-unit square, in texture
-        # bytes.  It is automatically adjusted in repack().
+        # bytes.  It is automatically adjusted in repack() based on
+        # the window size and the texture memory size.
         self.quantize = 1
 
         # This is the maximum number of bitmask rows (within
@@ -103,10 +107,12 @@ class TexMemWatcher(DirectObject):
         self.gsg = gsg
 
         # Now open a new window just to render the output.
-        self.winSize = (300, 300)
+        size = ConfigVariableInt('tex-mem-win-size', '300 300')
+        origin = ConfigVariableInt('tex-mem-win-origin', '100 100')
+        self.winSize = (size[0], size[1])
         name = 'Texture Memory'
         props = WindowProperties()
-        props.setOrigin(100, 100)
+        props.setOrigin(origin[0], origin[1])
         props.setSize(*self.winSize)
         props.setTitle(name)
         props.setFullscreen(False)
@@ -708,9 +714,9 @@ class TexMemWatcher(DirectObject):
         self.area = self.w * self.h
 
         # We store a bitarray for each row, for fast lookup for
-        # unallocated space on the canvas.  Each pixel on the row
-        # corresponds to a bit in the bitarray, where bit 0 is pixel
-        # 0, bit 1 is pixel 1, and so on.  If the bit is set, the
+        # unallocated space on the canvas.  Each Q-unit on the row
+        # corresponds to a bit in the bitarray, where bit 0 is Q-unit
+        # 0, bit 1 is Q-unit 1, and so on.  If the bit is set, the
         # space is occupied.
         self.bitmasks = []
         for i in range(self.h):
