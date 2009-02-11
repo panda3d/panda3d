@@ -624,8 +624,8 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
       if (level_state.has_collider(c)) {
         entry._from_node = level_state.get_collider_node(c);
 
-        if ((entry._from_node->get_from_collide_mask() &
-             cnode->get_into_collide_mask()) != 0) {
+        if (entry._from_node->get_from_collide_mask() &
+            cnode->get_into_collide_mask()) {
           #ifdef DO_PSTATS
           //PStatTimer collide_timer(_solid_collide_collectors[pass]);
           #endif
@@ -669,8 +669,8 @@ r_traverse_single(CollisionLevelStateSingle &level_state, size_t pass) {
       if (level_state.has_collider(c)) {
         entry._from_node = level_state.get_collider_node(c);
 
-        if ((entry._from_node->get_from_collide_mask() &
-             gnode->get_into_collide_mask()) != 0) {
+        if (entry._from_node->get_from_collide_mask() &
+            gnode->get_into_collide_mask()) {
           #ifdef DO_PSTATS
           //PStatTimer collide_timer(_solid_collide_collectors[pass]);
           #endif
@@ -841,8 +841,8 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
       if (level_state.has_collider(c)) {
         entry._from_node = level_state.get_collider_node(c);
 
-        if ((entry._from_node->get_from_collide_mask() &
-             cnode->get_into_collide_mask()) != 0) {
+        if (entry._from_node->get_from_collide_mask() &
+            cnode->get_into_collide_mask()) {
           #ifdef DO_PSTATS
           //PStatTimer collide_timer(_solid_collide_collectors[pass]);
           #endif
@@ -886,8 +886,8 @@ r_traverse_double(CollisionLevelStateDouble &level_state, size_t pass) {
       if (level_state.has_collider(c)) {
         entry._from_node = level_state.get_collider_node(c);
 
-        if ((entry._from_node->get_from_collide_mask() &
-             gnode->get_into_collide_mask()) != 0) {
+        if (entry._from_node->get_from_collide_mask() &
+            gnode->get_into_collide_mask()) {
           #ifdef DO_PSTATS
           //PStatTimer collide_timer(_solid_collide_collectors[pass]);
           #endif
@@ -1058,8 +1058,8 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
       if (level_state.has_collider(c)) {
         entry._from_node = level_state.get_collider_node(c);
 
-        if ((entry._from_node->get_from_collide_mask() &
-             cnode->get_into_collide_mask()) != 0) {
+        if (entry._from_node->get_from_collide_mask() &
+            cnode->get_into_collide_mask()) {
           #ifdef DO_PSTATS
           //PStatTimer collide_timer(_solid_collide_collectors[pass]);
           #endif
@@ -1103,8 +1103,8 @@ r_traverse_quad(CollisionLevelStateQuad &level_state, size_t pass) {
       if (level_state.has_collider(c)) {
         entry._from_node = level_state.get_collider_node(c);
 
-        if ((entry._from_node->get_from_collide_mask() &
-             gnode->get_into_collide_mask()) != 0) {
+        if (entry._from_node->get_from_collide_mask() &
+            gnode->get_into_collide_mask()) {
           #ifdef DO_PSTATS
           //PStatTimer collide_timer(_solid_collide_collectors[pass]);
           #endif
