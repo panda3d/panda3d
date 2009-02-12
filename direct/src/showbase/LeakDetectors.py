@@ -62,8 +62,13 @@ class SceneGraphLeakDetector(LeakDetector):
 
 class CppMemoryUsage(LeakDetector):
     def __len__(self):
-        if config.GetBool('track-memory-usage', 0):
-            return int(MemoryUsage.getCppSize())
+        haveMemoryUsage = True
+        try:
+            MemoryUsage
+        except:
+            haveMemoryUsage = False
+        if haveMemoryUsage:
+            return int(MemoryUsage.getCurrentCppSize())
         else:
             return 0
 
