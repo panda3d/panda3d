@@ -32,7 +32,7 @@ __all__ = ['enumerate', 'unique', 'indent', 'nonRepeatingRandomList',
 'pandaBreak','pandaTrace','formatTimeCompact','DestructiveScratchPad',
 'deeptype','getProfileResultString','StdoutCapture','StdoutPassthrough',
 'Averager', 'getRepository', 'formatTimeExact', 'startSuperLog', 'endSuperLog',
-'typeName', ]
+'typeName', 'safeTypeName', 'histogramDict', ]
 
 import types
 import string
@@ -3859,6 +3859,24 @@ def typeName(o):
     else:
         return o.__name__
 
+def safeTypeName(o):
+    try:
+        return typeName(o)
+    except:
+        pass
+    try:
+        return type(o)
+    except:
+        pass
+    return '<failed safeTypeName()>'
+
+def histogramDict(l):
+    d = {}
+    for e in l:
+        d.setdefault(e, 0)
+        d[e] += 1
+    return d
+
 import __builtin__
 __builtin__.Functor = Functor
 __builtin__.Stack = Stack
@@ -3913,3 +3931,5 @@ __builtin__.Default = Default
 __builtin__.isInteger = isInteger
 __builtin__.configIsToday = configIsToday
 __builtin__.typeName = typeName
+__builtin__.safeTypeName = safeTypeName
+__builtin__.histogramDict = histogramDict
