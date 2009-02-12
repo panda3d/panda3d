@@ -589,9 +589,10 @@ update_block(unsigned short mx, unsigned short my,
   nassertr_always(!_is_dirty, false);
   nassertr_always(mx < (_xsize - 1) / _block_size, false);
   nassertr_always(my < (_ysize - 1) / _block_size, false);
-  if (level == -1) {
+  if (level < -1) {
     level = _levels[mx][my];
   }
+  level = min(max(_min_level, (unsigned short) level), _max_level);
   if (forced || _old_levels[mx][my] != level) { // If the level has changed...
     // Replaces the chunk with a regenerated one.
     generate_block(mx, my, level)->replace_node(_blocks[mx][my].node());
