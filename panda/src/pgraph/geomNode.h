@@ -100,6 +100,7 @@ public:
                    GeomTransformer &transformer);
 
 protected:
+  virtual void r_mark_geom_bounds_stale(Thread *current_thread);
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                                        int &internal_vertices,
                                        int pipeline_stage,

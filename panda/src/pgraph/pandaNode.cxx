@@ -2642,6 +2642,29 @@ force_bounds_stale(int pipeline_stage, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::r_mark_geom_bounds_stale
+//       Access: Protected, Virtual
+//  Description: Recursively calls Geom::mark_bounds_stale() on every
+//               Geom at this node and below.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+r_mark_geom_bounds_stale(Thread *current_thread) {
+  Children children = get_children(current_thread);
+
+  int i;
+  for (i = 0; i < children.get_num_children(); i++) {
+    PandaNode *child = children.get_child(i);
+    child->r_mark_geom_bounds_stale(current_thread);
+  }
+
+  Stashed stashed = get_stashed(current_thread);
+  for (i = 0; i < stashed.get_num_stashed(); i++) {
+    PandaNode *child = stashed.get_stashed(i);
+    child->r_mark_geom_bounds_stale(current_thread);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description: Returns a newly-allocated BoundingVolume that

@@ -150,6 +150,7 @@ PUBLISHED:
   CPT(GeomVertexData) reverse_normals() const;
 
   CPT(GeomVertexData) animate_vertices(bool force, Thread *current_thread) const;
+  void clear_animated_vertices();
 
   PT(GeomVertexData) 
     replace_column(InternalName *name, int num_components,

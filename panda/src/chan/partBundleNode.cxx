@@ -57,6 +57,10 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
       PT(PartBundle) new_bundle = bundle->apply_transform(attribs._transform);
       update_bundle(handle, new_bundle);
     }
+
+    // Make sure the Geom bounding volumes get recomputed due to this
+    // update.
+    r_mark_geom_bounds_stale(Thread::get_current_thread());
   }
 }
 

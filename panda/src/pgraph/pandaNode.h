@@ -308,6 +308,8 @@ protected:
   void force_bounds_stale(int pipeline_stage, Thread *current_thread);
   INLINE void mark_internal_bounds_stale(int pipeline_stage, Thread *current_thread);
 
+  virtual void r_mark_geom_bounds_stale(Thread *current_thread);
+
   virtual void compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
                                        int &internal_vertices,
                                        int pipeline_stage,

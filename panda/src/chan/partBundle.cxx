@@ -188,6 +188,10 @@ apply_transform(const TransformState *transform) {
     bool inserted = _applied_transforms.insert(AppliedTransforms::value_type(transform, new_bundle)).second;
     nassertr(inserted, new_bundle);
   }
+  
+  // Make sure the new transform gets immediately applied to all of
+  // the joints.
+  new_bundle->force_update();
 
   return new_bundle;
 }

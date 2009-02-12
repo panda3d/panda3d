@@ -833,6 +833,30 @@ do_premunge(GraphicsStateGuardianBase *gsg,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomNode::r_mark_geom_bounds_stale
+//       Access: Protected, Virtual
+//  Description: Recursively calls Geom::mark_bounds_stale() on every
+//               Geom at this node and below.
+////////////////////////////////////////////////////////////////////
+void GeomNode::
+r_mark_geom_bounds_stale(Thread *current_thread) {
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+
+    GeomList::iterator gi;
+    PT(GeomList) geoms = cdata->modify_geoms();
+    for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
+      GeomEntry &entry = (*gi);
+      entry._geom.get_read_pointer()->mark_bounds_stale();
+    }
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+  mark_internal_bounds_stale();
+
+  PandaNode::r_mark_geom_bounds_stale(current_thread);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomNode::compute_internal_bounds
 //       Access: Protected, Virtual
 //  Description: Returns a newly-allocated BoundingVolume that

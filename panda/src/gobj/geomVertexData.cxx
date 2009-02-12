@@ -1061,6 +1061,22 @@ animate_vertices(bool force, Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeomVertexData::clear_animated_vertices
+//       Access: Published
+//  Description: Removes the cache of animated vertices computed by a
+//               previous call to animate_vertices() within the same
+//               frame.  This will force the next call to
+//               animate_vertices() to recompute these values from
+//               scratch.  Normally it is not necessary to call this.
+////////////////////////////////////////////////////////////////////
+void GeomVertexData::
+clear_animated_vertices() {
+  CDWriter cdata(_cycler, true);
+  cdata->_animated_vertices_modified.clear();
+  cdata->_animated_vertices.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexData::bytewise_copy
 //       Access: Private, Static
 //  Description: Quickly copies data without the need to convert it.
