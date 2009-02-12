@@ -376,6 +376,9 @@ MemoryUsage(const MemoryHook &copy) : MemoryHook(copy) {
   // messages.
   _startup_track_memory_usage = _track_memory_usage;
 
+  // Make sure the express category has been instantiated.
+  express_cat->is_info();
+
   _report_memory_usage = ConfigVariableBool
     ("report-memory-usage", false,
      PRC_DESC("Set this true to enable automatic reporting of allocated objects "
