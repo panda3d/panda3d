@@ -345,6 +345,10 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
     return;
   }
 
+  // We get the TextureAttrib directly from the _target_rs, not the
+  // filtered TextureAttrib in _target_texture.
+  const TextureAttrib *texattrib = DCAST(TextureAttrib, gsg->_target_rs->get_attrib(TextureAttrib::get_class_slot()));
+
   for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
     CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
     if (p == 0) continue;
@@ -354,11 +358,11 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
       const ShaderInput *input = gsg->_target_shader->get_shader_input(id);
       tex = input->get_texture();
     } else {
-      if (_shader->_tex_spec[i]._stage >= gsg->_target_texture->get_num_on_stages()) {
+      if (_shader->_tex_spec[i]._stage >= texattrib->get_num_on_stages()) {
         continue;
       }
-      TextureStage *stage = gsg->_target_texture->get_on_stage(_shader->_tex_spec[i]._stage);
-      tex = gsg->_target_texture->get_on_texture(stage);
+      TextureStage *stage = texattrib->get_on_stage(_shader->_tex_spec[i]._stage);
+      tex = texattrib->get_on_texture(stage);
     }
     if (_shader->_tex_spec[i]._suffix != 0) {
       // The suffix feature is inefficient. It is a temporary hack.
