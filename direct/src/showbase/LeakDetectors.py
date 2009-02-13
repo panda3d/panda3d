@@ -23,6 +23,64 @@ class LeakDetector:
         # point to what is leaking
         return '%s-%s' % (self.__class__.__name__, id(self))
 
+class ObjectTypeLeakDetector(LeakDetector):
+    def __init__(self, otld, objType, generation):
+        self._otld = otld
+        self._objType = objType
+        self._generation = generation
+        LeakDetector.__init__(self)
+
+    def destroy(self):
+        self._otld = None
+        LeakDetector.destroy(self)
+
+    def getLeakDetectorKey(self):
+        return '%s-%s' % (self._objType, self.__class__.__name__)
+
+    def __len__(self):
+        num = self._otld._getNumObjsOfType(self._objType, self._generation)
+        self._generation = self._otld._getGeneration()
+        return num
+
+class ObjectTypesLeakDetector(LeakDetector):
+    # are we accumulating any particular Python object type?
+    def __init__(self):
+        LeakDetector.__init__(self)
+        self._type2ld = {}
+        self._type2count = {}
+        self._generation = 0
+        self._thisLdGen = 0
+
+    def destroy(self):
+        for ld in self._type2ld.itervalues():
+            ld.destroy()
+        LeakDetector.destroy(self)
+
+    def _recalc(self):
+        objs = gc.get_objects()
+        self._type2count = {}
+        for obj in objs:
+            objType = safeTypeName(obj)
+            if objType not in self._type2ld:
+                self._type2ld[objType] = ObjectTypeLeakDetector(self, objType, self._generation)
+            self._type2count.setdefault(objType, 0)
+            self._type2count[objType] += 1
+        self._generation += 1
+
+    def _getGeneration(self):
+        return self._generation
+
+    def _getNumObjsOfType(self, objType, otherGen):
+        if self._generation == otherGen:
+            self._recalc()
+        return self._type2count.get(objType, 0)
+
+    def __len__(self):
+        if self._generation == self._thisLdGen:
+            self._recalc()
+        self._thisLdGen = self._generation
+        return len(self._type2count)
+
 class GarbageLeakDetector(LeakDetector):
     # are we accumulating Python garbage?
     def __len__(self):
