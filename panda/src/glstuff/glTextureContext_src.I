@@ -24,4 +24,9 @@ CLP(TextureContext)(PreparedGraphicsObjects *pgo, Texture *tex) :
 {
   _index = 0;
   _already_applied = false;
+  _uses_mipmaps = false;
+  _internal_format = 0;
+  _width = 0;
+  _height = 0;
+  _depth = 0;
 }

@@ -591,8 +591,7 @@ get_active_display_region(int n) const {
 //  Description: Generates a GeomVertexData for a texture card.
 ////////////////////////////////////////////////////////////////////
 PT(GeomVertexData) GraphicsOutput::
-create_texture_card_vdata(int x, int y)
-{
+create_texture_card_vdata(int x, int y) {
   float xhi = 1.0;
   float yhi = 1.0;
 

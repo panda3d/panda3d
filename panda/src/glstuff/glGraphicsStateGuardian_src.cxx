@@ -3442,6 +3442,8 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   GLenum target = get_texture_target(tex->get_texture_type());
   GLint internal_format = get_internal_image_format(tex);
+  int width = tex->get_x_size();
+  int height = tex->get_y_size();
 
   bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
   if (uses_mipmaps) {
@@ -3455,8 +3457,13 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   }
 
   bool new_image = needs_reload || gtc->was_image_modified();
-  if (internal_format != gtc->_internal_format) {
-    // If the internal format has changed, we need to reload the
+  if (!gtc->_already_applied ||
+      internal_format != gtc->_internal_format ||
+      uses_mipmaps != gtc->_uses_mipmaps ||
+      width != gtc->_width ||
+      height != gtc->_height ||
+      1 != gtc->_depth) {
+    // If the texture properties have changed, we need to reload the
     // image.
     new_image = true;
   }
@@ -3471,11 +3478,28 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   if (new_image) {
     // We have to create a new image.
-    GLP(CopyTexImage2D)(target, 0, internal_format, xo, yo, w, h, 0);
+    if (w != width || h != height) {
+      // This means a two-step process, to create a texture of the
+      // appropriate size.
+      GLP(TexImage2D)(target, 0, internal_format, width, height, 0,
+                      GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+      GLP(CopyTexSubImage2D)(target, 0, 0, 0, xo, yo, w, h);
+
+    } else {
+      // One-step process.
+      GLP(CopyTexImage2D)(target, 0, internal_format, xo, yo, w, h, 0);
+    }
   } else {
     // We can overlay the existing image.
     GLP(CopyTexSubImage2D)(target, 0, 0, 0, xo, yo, w, h);
   }
+
+  gtc->_already_applied = true;
+  gtc->_uses_mipmaps = uses_mipmaps;
+  gtc->_internal_format = internal_format;
+  gtc->_width = width;
+  gtc->_height = height;
+  gtc->_depth = 1;
 
   gtc->mark_loaded();
   gtc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
