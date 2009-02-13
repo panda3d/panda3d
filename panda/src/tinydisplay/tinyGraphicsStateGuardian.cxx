@@ -2732,17 +2732,13 @@ copy_lum_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int leve
   int co = cw - 1;
 #endif
 
-  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  unsigned int *dpix = (unsigned int *)dest->pixmap;
   nassertv(dpix != NULL);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
   while (pixel_count-- > 0) {
-    dpix[0] = spix[co];
-    dpix[1] = spix[co];
-    dpix[2] = spix[co];
-    dpix[3] = 0xff;
-      
-    dpix += 4;
+    *dpix = RGBA8_TO_PIXEL(spix[co], spix[co], spix[co], 0xff);
+    ++dpix;
     spix += cw;
   }
 }
@@ -2771,17 +2767,13 @@ copy_alpha_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int le
   int co = cw - 1;
 #endif
 
-  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  unsigned int *dpix = (unsigned int *)dest->pixmap;
   nassertv(dpix != NULL);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
   while (pixel_count-- > 0) {
-    dpix[0] = 0xff;
-    dpix[1] = 0xff;
-    dpix[2] = 0xff;
-    dpix[3] = spix[co];
-      
-    dpix += 4;
+    *dpix = RGBA8_TO_PIXEL(0xff, 0xff, 0xff, spix[co]);
+    ++dpix;
     spix += cw;
   }
 }
@@ -2811,19 +2803,43 @@ copy_one_channel_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, 
   int co = cw - 1;
 #endif
 
-  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  unsigned int *dpix = (unsigned int *)dest->pixmap;
   nassertv(dpix != NULL);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
-  while (pixel_count-- > 0) {
-    dpix[0] = 0;
-    dpix[1] = 0;
-    dpix[2] = 0;
-    dpix[3] = 0xff;
-    dpix[channel] = spix[co];
-      
-    dpix += 4;
-    spix += cw;
+
+  switch (channel) {
+  case 0:
+    while (pixel_count-- > 0) {
+      *dpix = RGBA8_TO_PIXEL(spix[co], 0, 0, 0xff);
+      ++dpix;
+      spix += cw;
+    }
+    break;
+
+  case 1:
+    while (pixel_count-- > 0) {
+      *dpix = RGBA8_TO_PIXEL(0, spix[co], 0, 0xff);
+      ++dpix;
+      spix += cw;
+    }
+    break;
+
+  case 2:
+    while (pixel_count-- > 0) {
+      *dpix = RGBA8_TO_PIXEL(0, 0, spix[co], 0xff);
+      ++dpix;
+      spix += cw;
+    }
+    break;
+
+  case 3:
+    while (pixel_count-- > 0) {
+      *dpix = RGBA8_TO_PIXEL(0, 0, 0, spix[co]);
+      ++dpix;
+      spix += cw;
+    }
+    break;
   }
 }
 
@@ -2852,18 +2868,15 @@ copy_la_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int level
   int co = cw - 1;
 #endif
 
-  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  unsigned int *dpix = (unsigned int *)dest->pixmap;
   nassertv(dpix != NULL);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
+  int inc = 2 * cw;
   while (pixel_count-- > 0) {
-    dpix[0] = spix[co];
-    dpix[1] = spix[co];
-    dpix[2] = spix[co];
-    dpix[3] = spix[cw + co];
-      
-    dpix += 4;
-    spix += 2 * cw;
+    *dpix = RGBA8_TO_PIXEL(spix[co], spix[co], spix[co], spix[cw + co]);
+    ++dpix;
+    spix += inc;
   }
 }
 
@@ -2891,18 +2904,15 @@ copy_rgb_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int leve
   int co = cw - 1;
 #endif
 
-  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  unsigned int *dpix = (unsigned int *)dest->pixmap;
   nassertv(dpix != NULL);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
+  int inc = 3 * cw;
   while (pixel_count-- > 0) {
-    dpix[0] = spix[co];
-    dpix[1] = spix[cw + co];
-    dpix[2] = spix[cw + cw + co];
-    dpix[3] = 0xff;
-      
-    dpix += 4;
-    spix += 3 * cw;
+    *dpix = RGBA8_TO_PIXEL(spix[cw + cw + co], spix[cw + co], spix[co], 0xff);
+    ++dpix;
+    spix += inc;
   }
 }
 
@@ -2930,18 +2940,15 @@ copy_rgba_image(ZTextureLevel *dest, int xsize, int ysize, Texture *tex, int lev
   int co = cw - 1;
 #endif
 
-  unsigned char *dpix = (unsigned char *)dest->pixmap;
+  unsigned int *dpix = (unsigned int *)dest->pixmap;
   nassertv(dpix != NULL);
   const unsigned char *spix = src;
   int pixel_count = xsize * ysize;
+  int inc = 4 * cw;
   while (pixel_count-- > 0) {
-    dpix[0] = spix[co];
-    dpix[1] = spix[cw + co];
-    dpix[2] = spix[cw + cw + co];
-    dpix[3] = spix[cw + cw + cw + co];
-      
-    dpix += 4;
-    spix += 4 * cw;
+    *dpix = RGBA8_TO_PIXEL(spix[cw + cw + co], spix[cw + co], spix[co], spix[cw + cw + cw + co]);
+    ++dpix;
+    spix += inc;
   }
 }
 

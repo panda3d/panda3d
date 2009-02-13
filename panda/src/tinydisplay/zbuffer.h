@@ -70,6 +70,8 @@ typedef unsigned int ZPOINT;
   ((((unsigned int)(r) << 8) & 0xff0000) | ((unsigned int)(g) & 0xff00) | ((unsigned int)(b) >> 8))
 #define RGBA_TO_PIXEL(r,g,b,a)                                   \
   ((((unsigned int)(a) << 16) & 0xff000000) | (((unsigned int)(r) << 8) & 0xff0000) | ((unsigned int)(g) & 0xff00) | ((unsigned int)(b) >> 8))
+#define RGBA8_TO_PIXEL(r,g,b,a)                                   \
+  ((((unsigned int)(a) << 24) & 0xff000000) | (((unsigned int)(r) << 16) & 0xff0000) | (((unsigned int)(g) << 8) & 0xff00) | (unsigned int)(b))
 #define PIXEL_R(p) (((unsigned int)(p) & 0xff0000) >> 8)
 #define PIXEL_G(p) ((unsigned int)(p) & 0xff00)
 #define PIXEL_B(p) (((unsigned int)(p) & 0x00ff) << 8)
