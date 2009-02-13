@@ -15,7 +15,7 @@
   #define INSTALL_HEADERS \
      config_osxdisplay.h \
      osxGraphicsPipe.h \
-     osxGraphicsWindow.h \
+     osxGraphicsWindow.h osxGraphicsWindow.I \
      osxGraphicsStateGuardian.h
     
   #define INCLUDED_SOURCES \

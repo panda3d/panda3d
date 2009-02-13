@@ -145,16 +145,7 @@ private:
   static TypeHandle _type_handle;
 };
 
-
-
-
-inline void osxGraphicsWindow::SendKeyEvent( ButtonHandle  key, bool down)
-{
-    if(down)
-		_input_devices[0].button_down(key);
-	else
-		_input_devices[0].button_up(key);
-}
+#include "osxGraphicsWindow.I"
 
 #endif
 
