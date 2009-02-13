@@ -22,6 +22,7 @@
 #include "factoryParams.h"
 
 #include "pvector.h"
+#include "pmap.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : FactoryBase
