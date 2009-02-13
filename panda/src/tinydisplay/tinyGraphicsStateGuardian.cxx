@@ -675,9 +675,9 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       {
         CPT(TransformState) render_transform =
           _cs_transform->compose(_scene_setup->get_world_transform());
-        CPT(TransformState) world_transform = 
-          _internal_transform->invert_compose(render_transform);
-        tcdata[si]._mat = world_transform->get_mat();
+        CPT(TransformState) world_inv_transform = 
+          render_transform->invert_compose(_internal_transform);
+        tcdata[si]._mat = world_inv_transform->get_mat();
       }
       if (target_tex_matrix->has_stage(stage)) {
         tcdata[si]._mat = tcdata[si]._mat * target_tex_matrix->get_mat(stage);
@@ -1372,10 +1372,11 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   if (!setup_gltex(gltex, tex->get_x_size(), tex->get_y_size(), 1)) {
     return false;
   }
-  gltex->border_color.v[0] = 0.0f;
-  gltex->border_color.v[1] = 0.0f;
-  gltex->border_color.v[2] = 0.0f;
-  gltex->border_color.v[3] = 0.0f;
+  Colorf border_color = tex->get_border_color();
+  gltex->border_color.v[0] = border_color[0];
+  gltex->border_color.v[1] = border_color[1];
+  gltex->border_color.v[2] = border_color[2];
+  gltex->border_color.v[3] = border_color[3];
 
   PIXEL *ip = gltex->levels[0].pixmap + gltex->xsize * gltex->ysize;
   PIXEL *fo = _c->zb->pbuf + xo + yo * _c->zb->linesize / PSZB;
