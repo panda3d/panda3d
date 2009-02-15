@@ -72,6 +72,91 @@
 int NodePath::_max_search_depth = 7000; 
 TypeHandle NodePath::_type_handle;
 
+
+// ***Begin temporary transition code for operator bool
+enum EmptyNodePathType {
+  ENP_future,
+  ENP_transition,
+  ENP_deprecated,
+};
+
+ostream &operator << (ostream &out, EmptyNodePathType enp) {
+  switch (enp) {
+  case ENP_future:
+    return out << "future";
+  case ENP_transition:
+    return out << "transition";
+  case ENP_deprecated:
+    return out << "deprecated";
+  }
+  return out << "**invalid EmptyNodePathType value (" << (int)enp << ")**";
+}
+
+istream &operator >> (istream &in, EmptyNodePathType &enp) {
+  string word;
+  in >> word;
+  if (word == "future") {
+    enp = ENP_future;
+  } else if (word == "transition") {
+    enp = ENP_transition;
+  } else if (word == "deprecated") {
+    enp = ENP_deprecated;
+  } else {
+    pgraph_cat.warning()
+      << "Invalid EmptyNodePathType value (\"" << word << "\")\n";
+    enp = ENP_transition;
+  }
+  return in;
+}
+
+static ConfigVariableEnum<EmptyNodePathType> empty_node_path
+("empty-node-path", ENP_transition,
+ PRC_DESC("This is a temporary transition variable to control the behavior "
+          "of a NodePath when it is used as a boolean false.  Set this to "
+          "'deprecated' to preserve the original behavior: every NodePath "
+          "evaluates true, even an empty NodePath.  Set it to 'future' to "
+          "support the new behavior: non-empty NodePaths evaluate true, "
+          "and empty NodePaths evaluate false.  Set it to 'transition' to "
+          "raise an exception if an empty NodePath is used as a boolean."));
+
+// ***End temporary transition code for operator bool
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::operator bool
+//       Access: Published
+//  Description: Returns true if the NodePath is valid (not empty),
+//               or false if it contains no nodes.
+////////////////////////////////////////////////////////////////////
+NodePath::
+operator bool () const {
+  switch (empty_node_path) {
+  case ENP_future:
+    return !is_empty();
+
+  case ENP_deprecated:
+    return true;
+
+  case ENP_transition:
+    if (!is_empty()) {
+      return true;
+    }
+
+    {
+      const char *message = "Using an empty NodePath as a boolean value.  Because the meaning of this operation is changing, you should avoid doing this to avoid ambiguity, or set the config variable empty-node-path to 'future' or 'deprecated' to specify the desired behavior.";
+      pgraph_cat.warning()
+        << message << "\n";
+#ifdef HAVE_PYTHON
+      PyErr_Warn(PyExc_FutureWarning, (char *)message);
+#endif
+    }
+    return true;
+  }
+
+  nassertr(false, true);
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::get_num_nodes
 //       Access: Published

@@ -223,17 +223,6 @@ is_empty() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NodePath::operator bool
-//       Access: Published
-//  Description: Returns true if the NodePath is valid (not empty),
-//               or false if it contains no nodes.
-////////////////////////////////////////////////////////////////////
-INLINE NodePath::
-operator bool () const {
-  return !is_empty();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NodePath::is_singleton
 //       Access: Published
 //  Description: Returns true if the NodePath contains exactly one
