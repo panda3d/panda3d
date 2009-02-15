@@ -37,6 +37,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyErr_Print(...);
   EXPCL_DTOOLCONFIG int PyErr_Restore(...);
   EXPCL_DTOOLCONFIG int PyErr_SetString(...);
+  EXPCL_DTOOLCONFIG int PyErr_Warn(...);
   EXPCL_DTOOLCONFIG int PyEval_CallFunction(...);
   EXPCL_DTOOLCONFIG int PyEval_InitThreads(...);
   EXPCL_DTOOLCONFIG int PyEval_RestoreThread(...);
@@ -127,6 +128,7 @@ extern "C" {
 
   EXPCL_DTOOLCONFIG extern void *PyExc_AssertionError;
   EXPCL_DTOOLCONFIG extern void *PyExc_AttributeError;
+  EXPCL_DTOOLCONFIG extern void *PyExc_FutureWarning;
   EXPCL_DTOOLCONFIG extern void *PyExc_IndexError;
   EXPCL_DTOOLCONFIG extern void *PyExc_RuntimeError;
   EXPCL_DTOOLCONFIG extern void *PyExc_StopIteration;
@@ -159,6 +161,7 @@ int PyErr_Occurred(...) { return 0; }
 int PyErr_Print(...) { return 0; }
 int PyErr_Restore(...) { return 0; }
 int PyErr_SetString(...) { return 0; }
+int PyErr_Warn(...) { return 0; }
 int PyEval_CallFunction(...) { return 0; }
 int PyEval_InitThreads(...) { return 0; }
 int PyEval_RestoreThread(...) { return 0; }
@@ -253,6 +256,7 @@ int Py_IsInitialized() {
 
 void *PyExc_AssertionError = (void *)NULL;
 void *PyExc_AttributeError = (void *)NULL;
+void *PyExc_FutureWarning = (void *)NULL;
 void *PyExc_IndexError = (void *)NULL;
 void *PyExc_RuntimeError = (void *)NULL;
 void *PyExc_StopIteration = (void *)NULL;
