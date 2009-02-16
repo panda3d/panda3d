@@ -14,7 +14,7 @@
 
 
 
-inline void OsxGraphicsWindow::SendKeyEvent( ButtonHandle  key, bool down)
+inline void osxGraphicsWindow::SendKeyEvent( ButtonHandle  key, bool down)
 {
     if(down)
 		_input_devices[0].button_down(key);
