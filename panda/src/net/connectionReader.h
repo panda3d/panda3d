@@ -20,6 +20,7 @@
 #include "connection.h"
 
 #include "pointerTo.h"
+#include "pmutex.h"
 #include "lightMutex.h"
 #include "pvector.h"
 #include "pset.h"
@@ -76,7 +77,7 @@ PUBLISHED:
   void poll();
 
   ConnectionManager *get_manager() const;
-  bool is_polling() const;
+  INLINE bool is_polling() const;
   int get_num_threads() const;
 
   void set_raw_mode(bool mode);
@@ -98,6 +99,7 @@ protected:
     bool _busy;
     bool _error;
   };
+  typedef pvector<SocketInfo *> Sockets;
 
   void shutdown();
   void clear_manager();
@@ -109,6 +111,18 @@ protected:
   virtual void process_raw_incoming_udp_data(SocketInfo *sinfo);
   virtual void process_raw_incoming_tcp_data(SocketInfo *sinfo);
 
+protected:
+  ConnectionManager *_manager;
+
+  // These structures track the total set of sockets (connections) we
+  // know about.
+  Sockets _sockets;
+  // This is the list of recently-removed sockets.  We can't actually
+  // delete them until they're no longer _busy.
+  Sockets _removed_sockets;
+  // Any operations on _sockets are protected by this mutex.
+  LightMutex _sockets_mutex;
+
 private:
   void thread_run(int thread_index);
 
@@ -116,9 +130,6 @@ private:
                                         int current_thread_index);
 
   void rebuild_select_list();
-
-protected:
-  ConnectionManager *_manager;
 
 private:
   bool _raw_mode;
@@ -141,31 +152,22 @@ private:
   // These structures are used to manage selecting for noise on
   // available sockets.
   Socket_fdset _fdset;
-  typedef pvector<SocketInfo *> Sockets;
   Sockets _selecting_sockets;
   int _next_index;
   int _num_results;
   // Threads go to sleep on this mutex waiting for their chance to
   // read a socket.
-  LightMutex _select_mutex;
+  Mutex _select_mutex;
 
   // This is atomically updated with the index (in _threads) of the
   // thread that is currently waiting on the PR_Poll() call.  It
   // contains -1 if no thread is so waiting.
   AtomicAdjust::Integer _currently_polling_thread;
 
-  // These structures track the total set of sockets (connections) we
-  // know about.
-  Sockets _sockets;
-  // This is the list of recently-removed sockets.  We can't actually
-  // delete them until they're no longer _busy.
-  Sockets _removed_sockets;
-  // Any operations on _sockets are protected by this mutex.
-  LightMutex _sockets_mutex;
-
-
   friend class ConnectionManager;
   friend class ReaderThread;
 };
+
+#include "connectionReader.I"
 
 #endif

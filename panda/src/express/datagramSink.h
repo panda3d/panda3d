@@ -26,7 +26,7 @@
 //               or across the net
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS DatagramSink {
-public:
+PUBLISHED:
   INLINE DatagramSink();
   virtual ~DatagramSink();
 

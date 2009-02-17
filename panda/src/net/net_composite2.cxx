@@ -1,4 +1,6 @@
 
+#include "datagramTCPHeader.cxx"
+#include "datagramUDPHeader.cxx"
 #include "netAddress.cxx"
 #include "netDatagram.cxx"
 #include "queuedConnectionListener.cxx"

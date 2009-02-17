@@ -28,7 +28,7 @@ class VirtualFile;
 //               from the net
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEXPRESS DatagramGenerator {
-public:
+PUBLISHED:
   INLINE DatagramGenerator();
   virtual ~DatagramGenerator();
 

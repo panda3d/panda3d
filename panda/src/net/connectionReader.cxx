@@ -21,6 +21,7 @@
 #include "trueClock.h"
 #include "socket_udp.h"
 #include "socket_tcp.h"
+#include "mutexHolder.h"
 #include "lightMutexHolder.h"
 #include "pnotify.h"
 #include "atomicAdjust.h"
@@ -323,17 +324,6 @@ get_manager() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConnectionReader::is_polling
-//       Access: Public
-//  Description: Returns true if the reader is a polling reader,
-//               i.e. it has no threads.
-////////////////////////////////////////////////////////////////////
-bool ConnectionReader::
-is_polling() const {
-  return _polling;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::get_num_threads
 //       Access: Public
 //  Description: Returns the number of threads the ConnectionReader
@@ -560,7 +550,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
       socket->RecvData(buffer + header_bytes_read,
                        _tcp_header_size - header_bytes_read);
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
-    while (bytes_read <= 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
+    while (bytes_read < 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
       Thread::force_yield();
       bytes_read = socket->RecvData(buffer + header_bytes_read,
                                     _tcp_header_size - header_bytes_read);
@@ -603,7 +593,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
       socket->RecvData(buffer, min(read_buffer_size,
                                    (int)(size - datagram.get_length())));
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
-    while (bytes_read <= 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
+    while (bytes_read < 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
       Thread::force_yield();
       bytes_read =
         socket->RecvData(buffer, min(read_buffer_size,
@@ -716,7 +706,7 @@ process_raw_incoming_tcp_data(SocketInfo *sinfo) {
   char buffer[read_buffer_size];
   int bytes_read = socket->RecvData(buffer, read_buffer_size);
 #if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
-  while (bytes_read <= 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
+  while (bytes_read < 0 && socket->GetLastError() == LOCAL_BLOCKING_ERROR) {
     Thread::force_yield();
     bytes_read = socket->RecvData(buffer, read_buffer_size);
   }
@@ -784,7 +774,7 @@ ConnectionReader::SocketInfo *ConnectionReader::
 get_next_available_socket(bool allow_block, int current_thread_index) {
   // Go to sleep on the select() mutex.  This guarantees that only one
   // thread is in this function at a time.
-  LightMutexHolder holder(_select_mutex);
+  MutexHolder holder(_select_mutex);
 
   do {
     // First, check the result from the previous select call.  If
@@ -827,6 +817,12 @@ get_next_available_socket(bool allow_block, int current_thread_index) {
         if (!allow_block) {
           timeout = 0;
         }
+#if defined(HAVE_THREADS) && defined(SIMPLE_THREADS)
+        // In the presence of SIMPLE_THREADS, we never wait at all,
+        // but rather we yield the thread if we come up empty (so that
+        // we won't block the entire process).
+        timeout = 0;
+#endif
 
         _num_results = _fdset.WaitForRead(false, timeout);
       }
@@ -836,6 +832,7 @@ get_next_available_socket(bool allow_block, int current_thread_index) {
         // never timeout indefinitely, so we can check the shutdown
         // flag every once in a while.)
         interrupted = true;
+        Thread::force_yield();
 
       } else if (_num_results < 0) {
         // If we had an error, just return.

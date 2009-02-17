@@ -5,6 +5,6 @@
 #include "connectionManager.cxx"
 #include "connectionReader.cxx"
 #include "connectionWriter.cxx"
+#include "datagramGeneratorNet.cxx"
+#include "datagramSinkNet.cxx"
 #include "datagramQueue.cxx"
-#include "datagramTCPHeader.cxx"
-#include "datagramUDPHeader.cxx"
