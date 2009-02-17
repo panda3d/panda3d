@@ -32,7 +32,7 @@ EXPORT_TEMPLATE_CLASS(EXPCL_PANDA_NET, EXPTP_PANDA_NET, QueuedReturn<Datagram>);
 //               datagram is not available, get_datagram() will block
 //               until one is.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAEXPRESS DatagramGeneratorNet : public DatagramGenerator, public ConnectionReader, public QueuedReturn<Datagram> {
+class EXPCL_PANDA_NET DatagramGeneratorNet : public DatagramGenerator, public ConnectionReader, public QueuedReturn<Datagram> {
 PUBLISHED:
   DatagramGeneratorNet(ConnectionManager *manager, int num_threads);
   virtual ~DatagramGeneratorNet();
