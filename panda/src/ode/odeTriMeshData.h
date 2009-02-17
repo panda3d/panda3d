@@ -73,11 +73,20 @@ public:
   INLINE void build_double1(const void* vertices, int vertex_stride, int vertex_count, \
 			    const void* indices, int index_count, int tri_stride, \
 			    const void* normals);
+
+  // Temporarily commenting these two out--ODE had an API change from
+  // (int *indices) to (dTriIndex *indices).  But since there's no
+  // #define that indicates the ODE version, we don't have any way to
+  // automatically put the right symbol in here.  However, we're not
+  // using these methods right now anyway.
+
+  /*
   INLINE void build_simple(const dReal* vertices, int vertex_count, \
 			   const int* indices, int index_count);
   INLINE void build_simple1(const dReal* vertices, int vertex_count, \
 			    const int* indices, int index_count, \
 			    const int* normals);
+  */
   INLINE void preprocess();
 
   INLINE dTriMeshDataID get_id() const;

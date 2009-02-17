@@ -50,15 +50,19 @@ build_double1(const void* vertices, int vertex_stride, int vertex_count, const v
   dGeomTriMeshDataBuildDouble1(_id, vertices, vertex_stride, vertex_count, indices, index_count, tri_stride, normals);
 }
 
+/*
 INLINE void OdeTriMeshData::
 build_simple(const dReal* vertices, int vertex_count, const int* indices, int index_count) {
   dGeomTriMeshDataBuildSimple(_id, vertices, vertex_count, indices, index_count);
 }
+*/
 
+/*
 INLINE void OdeTriMeshData::
 build_simple1(const dReal* vertices, int vertex_count, const int* indices, int index_count, const int* normals) {
   dGeomTriMeshDataBuildSimple1(_id, vertices, vertex_count, indices, index_count, normals);
 }
+*/
 
 INLINE void OdeTriMeshData::
 preprocess() {
