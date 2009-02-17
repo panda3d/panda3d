@@ -229,7 +229,9 @@ set_name(const string &name) {
     }
   }
   PStatCollector parent(_show_code_pcollector, name.substr(0, trimmed));
-  _task_pcollector = PStatCollector(parent, name.substr(0, end));
+  // prevent memory leak
+  //_task_pcollector = PStatCollector(parent, name.substr(0, end));
+  _task_pcollector = parent;
 #endif  // DO_PSTATS
 }
 
