@@ -364,6 +364,33 @@ output(ostream &out) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConfigPage::output_brief_signature
+//       Access: Published
+//  Description: Outputs the first few hex digits of the signature.
+////////////////////////////////////////////////////////////////////
+void ConfigPage::
+output_brief_signature(ostream &out) const {
+  size_t num_bytes = min(_signature.size(), (size_t)8);
+  for (size_t p = 0; p < num_bytes; ++p) {
+    unsigned int byte = _signature[p];
+
+    unsigned int hi = (byte >> 4) & 0xf;
+    if (hi >= 10) {
+      out << (char)((hi - 10) + 'a');
+    } else {
+      out << (char)(hi + '0');
+    }
+
+    unsigned int lo = byte & 0xf;
+    if (lo >= 10) {
+      out << (char)((lo - 10) + 'a');
+    } else {
+      out << (char)(lo + '0');
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConfigPage::write
 //       Access: Published
 //  Description: 

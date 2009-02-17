@@ -432,9 +432,13 @@ write(ostream &out) const {
     const ConfigPage *page = (*pi);
     out << "  " << page->get_name();
     if (page->get_trust_level() > 0) {
-      out << "  (signed " << page->get_trust_level() << ")\n";
+      out << "  (signed " << page->get_trust_level() << ": ";
+      page->output_brief_signature(out);
+      out << ")\n";
     } else if (!page->get_signature().empty()) {
-      out << "  (invalid signature)\n";
+      out << "  (invalid signature: ";
+      page->output_brief_signature(out);
+      out << ")\n";
     } else {
       out << "\n";
     }
@@ -445,9 +449,13 @@ write(ostream &out) const {
     const ConfigPage *page = (*pi);
     out << "  " << page->get_name();
     if (page->get_trust_level() > 0) {
-      out << "  (signed " << page->get_trust_level() << ")\n";
+      out << "  (signed " << page->get_trust_level() << ": ";
+      page->output_brief_signature(out);
+      out << ")\n";
     } else if (!page->get_signature().empty()) {
-      out << "  (invalid signature)\n";
+      out << "  (invalid signature: ";
+      page->output_brief_signature(out);
+      out << ")\n";
     } else {
       out << "\n";
     }

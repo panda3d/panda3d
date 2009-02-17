@@ -67,6 +67,7 @@ PUBLISHED:
   bool is_variable_used(int n) const;
 
   void output(ostream &out) const;
+  void output_brief_signature(ostream &out) const;
   void write(ostream &out) const;
 
 private:
