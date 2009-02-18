@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "graphicsStateGuardian.h"
+#include "graphicsEngine.h"
 #include "config_display.h"
 #include "textureContext.h"
 #include "vertexBufferContext.h"
@@ -246,6 +247,17 @@ GraphicsStateGuardian::
   }
 
   GeomMunger::unregister_mungers_for_gsg(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_engine
+//       Access: Published
+//  Description: Returns the graphics engine that created this GSG.
+////////////////////////////////////////////////////////////////////
+GraphicsEngine *GraphicsStateGuardian::
+get_engine() const {
+  nassertr(_engine != (GraphicsEngine *)NULL, GraphicsEngine::get_global_ptr());
+  return _engine;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -101,7 +101,7 @@ PUBLISHED:
   INLINE Loader *get_loader() const;
 
   INLINE GraphicsPipe *get_pipe() const;
-  INLINE GraphicsEngine *get_engine() const;
+  GraphicsEngine *get_engine() const;
   INLINE const GraphicsThreadingModel &get_threading_model() const;
 
   INLINE bool is_hardware() const;

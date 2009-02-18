@@ -213,16 +213,6 @@ get_pipe() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsStateGuardian::get_engine
-//       Access: Published
-//  Description: Returns the graphics engine that created this GSG.
-////////////////////////////////////////////////////////////////////
-INLINE GraphicsEngine *GraphicsStateGuardian::
-get_engine() const {
-  return _engine;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_threading_model
 //       Access: Published
 //  Description: Returns the threading model that was used to create
