@@ -44,16 +44,14 @@ extern std::string EXPORT_IMPORT_PREFEX;
 // Name Remaper...
 //      Snagged from ffi py code....
 /////////////////////////////////////////////////////////
-struct RenameSet
-{
-    char     * _from;
-    char    * _to;
-    int      function_type;
+struct RenameSet {
+  const char *_from;
+  const char *_to;
+  int function_type;
 };
-struct FlagSet
-{
-    char    * _to;
-    int      function_type;
+struct FlagSet {
+  const char *_to;
+  int function_type;
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -104,7 +102,7 @@ RenameSet methodRenameDictionary[] = {
     { NULL, NULL, -1 }
     };
 
-char *  InPlaceSet[] = {
+const char *  InPlaceSet[] = {
      "__iadd__",            
      "__isub__",            
      "__imul__",            
@@ -2032,11 +2030,11 @@ write_function_for_name(ostream &out1, InterfaceMaker::Object *obj, InterfaceMak
     // not a constructor, since we don't have a place to put the
     // constructor doc string.
     out << "#ifndef NDEBUG\n";
-    out << "static char * " << func->_name << "_comment =\n";
+    out << "static const char * " << func->_name << "_comment =\n";
     output_quoted(out, 4, FunctionComment);
     out << ";\n";
     out << "#else\n";
-    out << "static char * " << func->_name << "_comment = NULL;\n";
+    out << "static const char * " << func->_name << "_comment = NULL;\n";
     out << "#endif\n";
   }
 
@@ -2360,7 +2358,7 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       "(" + type->get_local_name(&parser) + ")" + param_name;
 
     if (!remap->_has_this || pn != 0) {
-      keyword_list += "\""+remap->_parameters[pn]._name + "\", ";
+      keyword_list += "(char *)\""+remap->_parameters[pn]._name + "\", ";
     }
 
     if (remap->_parameters[pn]._remap->new_type_is_atomic_string()) {
