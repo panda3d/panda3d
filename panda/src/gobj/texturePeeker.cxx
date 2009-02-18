@@ -160,8 +160,8 @@ TexturePeeker(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
 lookup(Colorf &color, float u, float v) const {
-  int x = int((u - cfloor(u)) * (float)_x_size + 0.5f) % _x_size;
-  int y = int((v - cfloor(v)) * (float)_y_size + 0.5f) % _y_size;
+  int x = int((u - cfloor(u)) * (float)_x_size) % _x_size;
+  int y = int((v - cfloor(v)) * (float)_y_size) % _y_size;
 
   nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size);
   const unsigned char *p = _image.p() + (y * _x_size + x) * _pixel_width;
@@ -183,9 +183,9 @@ lookup(Colorf &color, float u, float v) const {
 ////////////////////////////////////////////////////////////////////
 void TexturePeeker::
 lookup(Colorf &color, float u, float v, float w) const {
-  int x = int((u - cfloor(u)) * (float)_x_size + 0.5f) % _x_size;
-  int y = int((v - cfloor(v)) * (float)_y_size + 0.5f) % _y_size;
-  int z = int((w - cfloor(w)) * (float)_z_size + 0.5f) % _z_size;
+  int x = int((u - cfloor(u)) * (float)_x_size) % _x_size;
+  int y = int((v - cfloor(v)) * (float)_y_size) % _y_size;
+  int z = int((w - cfloor(w)) * (float)_z_size) % _z_size;
 
   nassertv(x >= 0 && x < _x_size && y >= 0 && y < _y_size && 
            z >= 0 && z < _z_size);
