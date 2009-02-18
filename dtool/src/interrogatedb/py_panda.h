@@ -470,7 +470,7 @@ struct LibrayDef
 };
 ///////////////////////////////////////////////////////////////////////////////
 
-EXPCL_DTOOLCONFIG void Dtool_PyModuleInitHelper( LibrayDef   *defs[], char *  modulename);
+EXPCL_DTOOLCONFIG void Dtool_PyModuleInitHelper( LibrayDef   *defs[], const char *  modulename);
 
 ///////////////////////////////////////////////////////////////////////////////
 ///  HACK.... Be carefull 

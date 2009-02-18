@@ -18,11 +18,11 @@
 #ifdef HAVE_PYTHON
 
 PyMemberDef standard_type_members[] = {
-  {"this", T_INT, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY,"C++ This if any"},
-//  {"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY,"C++ 'this' ownership rules"},
-//  {"this_const", T_INT, offsetof(Dtool_PyInstDef, _is_const), READONLY,"C++ 'this' const flag"},
-//  {"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature), READONLY,"A type check signature"},
-  {"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY,"The dtool meta object"},
+  {(char *)"this", T_INT, offsetof(Dtool_PyInstDef,_ptr_to_object),READONLY, (char *)"C++ This if any"},
+//  {(char *)"this_ownership", T_INT, offsetof(Dtool_PyInstDef, _memory_rules), READONLY, (char *)"C++ 'this' ownership rules"},
+//  {(char *)"this_const", T_INT, offsetof(Dtool_PyInstDef, _is_const), READONLY, (char *)"C++ 'this' const flag"},
+//  {(char *)"this_signature", T_INT, offsetof(Dtool_PyInstDef, _signature), READONLY, (char *)"A type check signature"},
+  {(char *)"this_metatype", T_OBJECT, offsetof(Dtool_PyInstDef, _My_Type), READONLY, (char *)"The dtool meta object"},
   {NULL}  /* Sentinel */
 };
 
@@ -427,7 +427,7 @@ Dtool_PyTypedObject *  Dtool_RuntimeTypeDtoolType(int type)
 };
 
 ///////////////////////////////////////////////////////////////////////////////
-void Dtool_PyModuleInitHelper( LibrayDef   *defs[], char *  modulename)
+void Dtool_PyModuleInitHelper( LibrayDef   *defs[], const char *  modulename)
 {
     // the module level function inits....
     MethodDefmap  functions;
@@ -679,7 +679,7 @@ int DTOOL_PyObject_Compare(PyObject *v1, PyObject *v2)
 
 PyObject *make_list_for_item(PyObject *self, const char *num_name,
                              const char *element_name) {
-  PyObject *num_result = PyObject_CallMethod(self, (char *)num_name, "()");
+  PyObject *num_result = PyObject_CallMethod(self, (char *)num_name, (char *)"()");
   if (num_result == NULL) {
     return NULL;
   }
@@ -688,7 +688,7 @@ PyObject *make_list_for_item(PyObject *self, const char *num_name,
   
   PyObject *list = PyList_New(num_elements);
   for (int i = 0; i < num_elements; ++i) {
-    PyObject *element = PyObject_CallMethod(self, (char *)element_name, "(i)", i);
+    PyObject *element = PyObject_CallMethod(self, (char *)element_name, (char *)"(i)", i);
     if (element == NULL) {
       Py_DECREF(list);
       return NULL;
