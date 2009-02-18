@@ -42,10 +42,10 @@ BoundingSphere(const LPoint3f &center, float radius) :
 //       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE_MATHUTIL const LPoint3f &BoundingSphere::
+INLINE_MATHUTIL LPoint3f BoundingSphere::
 get_center() const {
-  nassertr(!is_empty(), _center);
-  nassertr(!is_infinite(), _center);
+  nassertr(!is_empty(), LPoint3f::zero());
+  nassertr(!is_infinite(), LPoint3f::zero());
   return _center;
 }
 

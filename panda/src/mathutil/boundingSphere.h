@@ -44,7 +44,7 @@ public:
   virtual void output(ostream &out) const;
 
 PUBLISHED:
-  INLINE_MATHUTIL const LPoint3f &get_center() const;
+  INLINE_MATHUTIL LPoint3f get_center() const;
   INLINE_MATHUTIL float get_radius() const;
 
 public:
