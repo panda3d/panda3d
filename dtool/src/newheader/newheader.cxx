@@ -18,34 +18,34 @@
 #include <time.h>
 #include <stdlib.h>
 
-char *cxx_style = 
+const char *cxx_style = 
 "// Filename: %s\n"
 "// Created by:  %s (%s)\n"
 "//\n"
 "////////////////////////////////////////////////////////////////////\n"
 "//\n"
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
+"// PANDA 3D SOFTWARE\n"
+"// Copyright (c) Carnegie Mellon University.  All rights reserved.\n"
+"//\n"
+"// All use of this software is subject to the terms of the revised BSD\n"
+"// license.  You should have received a copy of this license along\n"
+"// with this source code in a file named \"LICENSE.\"\n"
 "//\n"
 "////////////////////////////////////////////////////////////////////\n"
 "\n";
 
-char *c_style = 
+const char *c_style = 
 "/* Filename: %s\n"
 " * Created by:  %s (%s)\n"
 " *\n"
 " * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n"
 " *\n"
-// PANDA 3D SOFTWARE
-// Copyright (c) Carnegie Mellon University.  All rights reserved.
-//
-// All use of this software is subject to the terms of the revised BSD
-// license.  You should have received a copy of this license along
-// with this source code in a file named "LICENSE."
+" * PANDA 3D SOFTWARE\n"
+" * Copyright (c) Carnegie Mellon University.  All rights reserved.\n"
+" *\n"
+" * All use of this software is subject to the terms of the revised BSD\n"
+" * license.  You should have received a copy of this license along\n"
+" * with this source code in a file named \"LICENSE.\"\n"
 " *\n"
 " * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */\n"
 "\n";
@@ -66,7 +66,7 @@ FileDef file_def[] = {
 
 void
 generate_header(const char *header, const string &filename) {
-  char *username = getenv("USER");
+  const char *username = getenv("USER");
   if (username == NULL) {
     username = "";
   }
