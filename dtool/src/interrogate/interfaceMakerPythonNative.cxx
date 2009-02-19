@@ -1127,7 +1127,7 @@ void InterfaceMakerPythonNative::write_module_support(ostream &out,ostream *out_
         {
             {
                 out << "  { \"" << methodNameFromCppName(func,"") << "\", (PyCFunction) &" 
-                    << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
+                    << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
             }
         }
     }  
@@ -1214,7 +1214,7 @@ write_module_class(ostream &out,  Object *obj) {
     SlottedFunctionDef slotted_def;
     if (!get_slotted_function_def(obj, func, slotted_def)) {
       out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
-          << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
+          << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
       if(!isFunctionWithThis(func)) {
         static_functions[x] = func;
       }
@@ -1224,7 +1224,7 @@ write_module_class(ostream &out,  Object *obj) {
         wraped_Operator_functions[func] = slotted_def;
         
         out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
-            << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
+            << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
         if (!isFunctionWithThis(func)) {
           static_functions[x] = func;
         }
@@ -1233,7 +1233,7 @@ write_module_class(ostream &out,  Object *obj) {
         normal_Operator_functions[func] = slotted_def._answer_location;
         
         out << "  { \"" << methodNameFromCppName(func,export_calss_name) << "\",(PyCFunction ) &" 
-            << func->_name << ", METH_VARARGS| METH_KEYWORDS ," << func->_name << "_comment},\n";
+            << func->_name << ", METH_VARARGS| METH_KEYWORDS, (char *)" << func->_name << "_comment},\n";
         if (!isFunctionWithThis(func)) {
           static_functions[x] = func;
         }
