@@ -444,7 +444,7 @@ void Dtool_PyModuleInitHelper( LibrayDef   *defs[], const char *  modulename)
     newdef[offset].ml_meth = NULL;
     newdef[offset].ml_flags = 0;
 
-    PyObject * module = Py_InitModule(modulename,newdef);   
+    PyObject * module = Py_InitModule((char *)modulename,newdef);   
 
     if(module == NULL)
     {
