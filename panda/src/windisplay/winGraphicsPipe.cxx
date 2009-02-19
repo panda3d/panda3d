@@ -804,11 +804,8 @@ WinGraphicsPipe() {
   windisplay_cat.info() << string;
 
   // CPUID
-  int debug;
   CPU_ID cpu_id;
 
-  debug = false;
-  
   windisplay_cat.info() << "start CPU ID\n";
   
   if (initialize_cpu_id (&cpu_id)) {  
@@ -825,8 +822,9 @@ WinGraphicsPipe() {
       _display_information -> _cpu_version_information = cpu_id.version_information;
       _display_information -> _cpu_brand_index = cpu_id.brand_index;
 
-      if (debug) {
-        printf ("%X|", _display_information -> _cpu_id_version);
+      if (windisplay_cat.is_debug()) {
+        windisplay_cat.debug()
+          << hex << _display_information -> _cpu_id_version << dec << "|";
 
         int index;
         for (index = 0; index < _display_information -> _cpu_id_size; index++) {
@@ -834,17 +832,19 @@ WinGraphicsPipe() {
 
           data = _display_information -> _cpu_id_data [index];
 
-          printf ("%X", data);
-          if (index < (_display_information -> _cpu_id_size - 1))
-          {
-            printf ("|");        
+          windisplay_cat.debug(false)
+            << hex << data << dec;
+          if (index < (_display_information -> _cpu_id_size - 1)) {
+            windisplay_cat.debug(false)
+              << "|";
           }
         }
-        printf ("\n");
+        windisplay_cat.debug(false)
+          << "\n";
       }
     }
 
-    if (debug) {
+    if (windisplay_cat.is_debug()) {
       parse_cpu_id (&cpu_id);
     }
   }
