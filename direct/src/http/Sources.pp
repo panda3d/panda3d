@@ -1,4 +1,5 @@
 #define BUILD_DIRECTORY $[WANT_NATIVE_NET]
+#define USE_PACKAGES native_net
 
 #define OTHER_LIBS \
     express:c pandaexpress:m \

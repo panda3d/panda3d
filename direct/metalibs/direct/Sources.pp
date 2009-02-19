@@ -6,6 +6,7 @@
 
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_DIRECT
+#define USE_PACKAGES native_net
 
 #define COMPONENT_LIBS \
   directbase dcparser showbase deadrec directd interval distributed motiontrail http
