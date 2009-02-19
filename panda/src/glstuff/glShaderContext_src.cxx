@@ -339,7 +339,10 @@ disable_shader_texture_bindings(GSG *gsg) {
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
-  if (prev) prev->disable_shader_texture_bindings(gsg);
+  if (prev) {
+    prev->disable_shader_texture_bindings(gsg);
+  }
+
 #ifdef HAVE_CG
   if (_cg_context == 0) {
     return;
@@ -347,11 +350,15 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
 
   // We get the TextureAttrib directly from the _target_rs, not the
   // filtered TextureAttrib in _target_texture.
-  const TextureAttrib *texattrib = DCAST(TextureAttrib, gsg->_target_rs->get_attrib(TextureAttrib::get_class_slot()));
+  const TextureAttrib *texattrib = DCAST(TextureAttrib, gsg->_target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
+  nassertv(texattrib != (TextureAttrib *)NULL);
 
-  for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
+  for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
     CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
-    if (p == 0) continue;
+    if (p == 0) {
+      continue;
+    }
+
     Texture *tex = 0;
     InternalName *id = _shader->_tex_spec[i]._name;
     if (id != 0) {
