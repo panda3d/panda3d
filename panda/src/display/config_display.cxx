@@ -190,11 +190,12 @@ ConfigVariableBool red_blue_stereo
 	  "rendering."));
 
 ConfigVariableString red_blue_stereo_colors
-("red-blue-stereo-colors", "red blue",
+("red-blue-stereo-colors", "red cyan",
  PRC_DESC("This defines the color channels that are used for the left and "
           "right eye, respectively, for red-blue-stereo mode.  This should "
           "be a two-word string, where each word is one of 'red', 'blue', "
-          "'green', or 'alpha'."));
+          "'green', 'cyan', 'magenta', 'yellow', or 'alpha', or a union "
+          "of two or more words separated by a vertical pipe (|)."));
 
 ConfigVariableBool color_scale_via_lighting
 ("color-scale-via-lighting", true,

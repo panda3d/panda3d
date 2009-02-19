@@ -867,6 +867,15 @@ parse_color_mask(const string &word) {
     } else if (w == "blue" || w == "b") {
       result |= 0x004;
 
+    } else if (w == "yellow" || w == "y") {
+      result |= 0x003;
+
+    } else if (w == "magenta" || w == "m") {
+      result |= 0x005;
+
+    } else if (w == "cyan" || w == "c") {
+      result |= 0x006;
+
     } else if (w == "alpha" || w == "a") {
       result |= 0x008;
 
