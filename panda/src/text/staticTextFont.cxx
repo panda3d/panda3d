@@ -294,11 +294,10 @@ find_characters(PandaNode *root, const RenderState *net_state) {
     CPT(Geom) dot;
     const RenderState *state = NULL;
     find_character_gsets(root, ch, dot, state, next_net_state);
-    if (ch != (Geom *)NULL && dot != (Geom *)NULL) {
+    if (dot != (Geom *)NULL) {
       // Get the first vertex from the "dot" geoset.  This will be the
       // design size indicator.
-      const Geom *geom = DCAST(Geom, ch);
-      GeomVertexReader reader(geom->get_vertex_data(), InternalName::get_vertex());
+      GeomVertexReader reader(dot->get_vertex_data(), InternalName::get_vertex());
       _line_height = reader.get_data3f()[2];
       _space_advance = 0.25f * _line_height;
     }
