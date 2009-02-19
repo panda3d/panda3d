@@ -227,7 +227,7 @@ rebuild_bitplanes() {
 
     Texture *attach[RTP_COUNT];
     attach[RTP_color] = 0;
-    //attach[RTP_depth] = 0;
+    attach[RTP_depth] = 0;
     attach[RTP_depth_stencil] = 0;
     for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
       attach[RTP_aux_rgba_0+i] = 0;
@@ -270,7 +270,7 @@ rebuild_bitplanes() {
 
     // For all slots, update the slot.
 
-    //bind_slot(rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
+    bind_slot(rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
     bind_slot(rb_resize, attach, RTP_depth_stencil, GL_DEPTH_ATTACHMENT_EXT);
     bind_slot(rb_resize, attach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
     int next = GL_COLOR_ATTACHMENT1_EXT;
