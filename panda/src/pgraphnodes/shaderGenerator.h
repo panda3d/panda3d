@@ -67,6 +67,10 @@ PUBLISHED:
   
 protected:
   CPT(RenderAttrib) create_shader_attrib(const string &txt);
+  static const string combine_mode_as_string(CPT(TextureStage) stage,
+                TextureStage::CombineMode c_mode, bool single_value, short texindex, const RenderState *rs);
+  static const string combine_source_as_string(CPT(TextureStage) stage,
+                short num, bool single_value, short texindex, const RenderState *rs);
 
   // Shader register allocation:
 
