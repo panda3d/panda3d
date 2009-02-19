@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include "zgl.h"
 
-void gl_fatal_error(char *format, ...)
+void gl_fatal_error(const char *format, ...)
 {
   va_list ap;
 

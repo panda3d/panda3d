@@ -1202,7 +1202,7 @@ read_tar(TarDef &tar, istream &stream) {
   stream.seekg(0, ios::beg);
   nassertr(_tar_istream == NULL, false);
   _tar_istream = &stream;
-  if (tar_open(&tfile, "dummy", &tt, O_RDONLY, 0, 0) != 0) {
+  if (tar_open(&tfile, (char *)"dummy", &tt, O_RDONLY, 0, 0) != 0) {
     _tar_istream = NULL;
     return false;
   }

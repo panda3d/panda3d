@@ -230,7 +230,7 @@ void gl_resizeImageNoInterpolate(unsigned char *dest,int xsize_dest,int ysize_de
 
 GLContext *gl_get_context(void);
 
-void gl_fatal_error(char *format, ...);
+void gl_fatal_error(const char *format, ...);
 
 
 /* specular buffer "api" */

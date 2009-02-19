@@ -153,7 +153,7 @@ PUBLISHED:
   INLINE unsigned int get_render_state (unsigned int render_state_identifier) const;
 
 public:
-  static char *stencil_render_state_name_array [SRS_total];
+  static const char *stencil_render_state_name_array [SRS_total];
   
   virtual void output(ostream &out) const;
 

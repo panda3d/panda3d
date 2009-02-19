@@ -916,7 +916,7 @@ set_wm_properties(const WindowProperties &properties, bool already_mapped) {
   XClassHint *class_hints_p = NULL;
   if (properties.get_undecorated()) {
     class_hints_p = XAllocClassHint();
-    class_hints_p->res_class = "Undecorated";
+    class_hints_p->res_class = (char *)"Undecorated";
 
     if (!properties.get_fullscreen()) {
       type_data[next_type_data++] = _net_wm_window_type_splash;

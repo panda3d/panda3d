@@ -55,7 +55,7 @@ static short get_byte_as_short (istream *f);
 static int readerr (istream *f);
 static void * xmalloc (int bytes);
 #define MALLOC(n, type)     (type *)xmalloc((n) * sizeof(type))
-static char * compression_name (char compr);
+static const char * compression_name (char compr);
 static void       read_bytes (istream *ifp, int n, char *buf);
 static bool read_header(istream *ifp, Header *head, const string &magic_number);
 static TabEntry * read_table (istream *ifp, int tablen);
@@ -503,7 +503,7 @@ xmalloc(int bytes) {
     return mem;
 }
 
-static char *
+static const char *
 compression_name(char compr) {
     switch( compr ) {
         case STORAGE_VERBATIM:

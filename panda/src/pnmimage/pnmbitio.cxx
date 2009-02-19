@@ -46,7 +46,7 @@ struct bitstream
  */
 
 EXPCL_PANDA_PNMIMAGE struct bitstream *
-pm_bitinit(istream *f, char *mode)
+pm_bitinit(istream *f, const char *mode)
 {
         struct bitstream *ans = (struct bitstream *)0;
 
@@ -66,7 +66,7 @@ pm_bitinit(istream *f, char *mode)
 }
 
 EXPCL_PANDA_PNMIMAGE struct bitstream *
-pm_bitinit(ostream *f, char *mode)
+pm_bitinit(ostream *f, const char *mode)
 {
         struct bitstream *ans = (struct bitstream *)0;
 

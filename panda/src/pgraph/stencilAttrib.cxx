@@ -23,7 +23,7 @@
 TypeHandle StencilAttrib::_type_handle;
 int StencilAttrib::_attrib_slot;
 
-char *StencilAttrib::
+const char *StencilAttrib::
 stencil_render_state_name_array [StencilAttrib::SRS_total] =
 {
   "SRS_front_enable",

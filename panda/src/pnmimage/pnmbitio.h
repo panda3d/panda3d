@@ -30,8 +30,8 @@ typedef struct bitstream *BITSTREAM;
  * Returns 0 on error.
  */
 
-extern EXPCL_PANDA_PNMIMAGE BITSTREAM pm_bitinit(istream *f, char *mode);
-extern EXPCL_PANDA_PNMIMAGE BITSTREAM pm_bitinit(ostream *f, char *mode);
+extern EXPCL_PANDA_PNMIMAGE BITSTREAM pm_bitinit(istream *f, const char *mode);
+extern EXPCL_PANDA_PNMIMAGE BITSTREAM pm_bitinit(ostream *f, const char *mode);
 
 /*
  * pm_bitfini() - deallocate the given BITSTREAM.

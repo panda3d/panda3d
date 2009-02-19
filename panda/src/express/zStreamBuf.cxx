@@ -90,7 +90,7 @@ open_read(istream *source, bool owns_source) {
   _z_source.zfree = (free_func)&do_zlib_free;
 #endif
   _z_source.opaque = Z_NULL;
-  _z_source.msg = "no error message";
+  _z_source.msg = (char *)"no error message";
 
   int result = inflateInit(&_z_source);
   if (result < 0) {
@@ -141,7 +141,7 @@ open_write(ostream *dest, bool owns_dest, int compression_level) {
   _z_dest.zfree = (free_func)&do_zlib_free;
 #endif
   _z_dest.opaque = Z_NULL;
-  _z_dest.msg = "no error message";
+  _z_dest.msg = (char *)"no error message";
 
   int result = deflateInit(&_z_dest, compression_level);
   if (result < 0) {
