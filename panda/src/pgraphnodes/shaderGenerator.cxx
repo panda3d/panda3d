@@ -427,22 +427,21 @@ create_shader_attrib(const string &txt) {
 //               - flat colors
 //               - vertex colors
 //               - lighting
-//               - normal maps
-//               - gloss maps
-//               - glow maps
+//               - normal maps, but not multiple
+//               - gloss maps, but not multiple
+//               - glow maps, but not multiple
 //               - materials, but not updates to materials
 //               - 2D textures
-//               - texture stage modes: modulate, decal, add
+//               - all texture stage modes, including combine modes
+//               - color scale attrib
 //               - light ramps (for cartoon shading)
 //
 //               Not yet supported:
 //               - 3D textures, cube textures
-//               - texture stage modes: replace, blend
-//               - color scale attrib
+//               - dot3_rgb and dot3_rgba combine modes
 //               - texgen
 //               - texmatrix
 //               - fog
-//               - other TextureStage::Modes
 //
 //               Potential optimizations
 //               - omit attenuation calculations if attenuation off
@@ -807,8 +806,11 @@ synthesize_shader(const RenderState *rs) {
       text << "\t result = float4(1,1,1,1);\n";
     }
   }
-
+  
+  text << "\t float4 primary_color = result;\n";
+  text << "\t float4 last_saved_result = result;\n";
   const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
+  bool have_saved_result = false;
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = texture->get_on_stage(i);
     switch (stage->get_mode()) {
@@ -829,19 +831,34 @@ synthesize_shader(const RenderState *rs) {
       text << "\t result = tex" << i << ";\n";
       break;
     case TextureStage::M_add:
-      text << "\t result.rbg = result.rgb + tex" << i << ".rgb;\n";
+      text << "\t result.rgb += tex" << i << ".rgb;\n";
       if (_calc_primary_alpha) {
-        text << "\t result.a   = result.a * tex" << i << ".a;\n";
+        text << "\t result.a   *= tex" << i << ".a;\n";
       }
       break;
     case TextureStage::M_combine:
-      pgraph_cat.error() << "TextureStage::Mode COMBINE not yet supported in per-pixel mode.\n";
+      text << "\t result.rgb = ";
+      text << combine_mode_as_string(stage, stage->get_combine_rgb_mode(), false, i, rs);
+      text << "\n\t result.a = ";
+      text << combine_mode_as_string(stage, stage->get_combine_alpha_mode(), true, i, rs);
+      text << "\n";
       break;
-    case TextureStage::M_blend_color_scale:
-      pgraph_cat.error() << "TextureStage::Mode BLEND_COLOR_SCALE not yet supported in per-pixel mode.\n";
-      break;
+    case TextureStage::M_blend_color_scale: {
+      const ColorScaleAttrib *color_scale = DCAST(ColorScaleAttrib, rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
+      LVecBase4f c = color_scale->get_scale();
+      text << "\t result.rgb = lerp(result, tex" << i << " * float4("
+           << c[0] << ", " << c[1] << ", " << c[2] << ", " << c[3] << "), tex" << i << ".r).rgb;\n";
+      break; }
     default:
       break;
+    }
+    if (stage->get_saved_result()) {
+      if (have_saved_result) {
+        text << "\t last_saved_result = result;\n";
+      } else {
+        text << "\t float4 last_saved_result = result;\n";
+        have_saved_result = true;
+      }
     }
   }
 
@@ -932,3 +949,119 @@ synthesize_shader(const RenderState *rs) {
   return shattr;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::combine_mode_as_string
+//       Access: Protected, Static
+//  Description: This 'synthesizes' a combine mode into a string.
+////////////////////////////////////////////////////////////////////
+const string ShaderGenerator::
+combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode, bool single_value, short texindex, const RenderState *rs) {
+  ostringstream text;
+  switch (c_mode) {
+    case TextureStage::CM_replace:
+      text << combine_source_as_string(stage, 0, single_value, texindex, rs);
+      break;
+    case TextureStage::CM_modulate:
+      text << combine_source_as_string(stage, 0, single_value, texindex, rs);
+      text << " * ";
+      text << combine_source_as_string(stage, 1, single_value, texindex, rs);
+      break;
+    case TextureStage::CM_add:
+      text << combine_source_as_string(stage, 0, single_value, texindex, rs);
+      text << " + ";
+      text << combine_source_as_string(stage, 1, single_value, texindex, rs);
+      break;
+    case TextureStage::CM_add_signed:
+      pgraph_cat.error() << "TextureStage::CombineMode ADD_SIGNED not yet supported in per-pixel mode.\n";
+      break;
+    case TextureStage::CM_interpolate:
+      text << "lerp(";
+      text << combine_source_as_string(stage, 0, single_value, texindex, rs);
+      text << ", ";
+      text << combine_source_as_string(stage, 1, single_value, texindex, rs);
+      text << ", ";
+      text << combine_source_as_string(stage, 2, true, texindex, rs);
+      text << ")";
+      break;
+    case TextureStage::CM_subtract:
+      text << combine_source_as_string(stage, 0, single_value, texindex, rs);
+      text << " + ";
+      text << combine_source_as_string(stage, 1, single_value, texindex, rs);
+      break;
+    case TextureStage::CM_dot3_rgb:
+      pgraph_cat.error() << "TextureStage::CombineMode DOT3_RGB not yet supported in per-pixel mode.\n";
+      break;
+    case TextureStage::CM_dot3_rgba:
+      pgraph_cat.error() << "TextureStage::CombineMode DOT3_RGBA not yet supported in per-pixel mode.\n";
+      break;
+  }
+  return text.str();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::combine_source_as_string
+//       Access: Protected, Static
+//  Description: This 'synthesizes' a combine source into a string.
+////////////////////////////////////////////////////////////////////
+const string ShaderGenerator::
+combine_source_as_string(CPT(TextureStage) stage, short num, bool single_value, short texindex, const RenderState *rs) {
+  TextureStage::CombineSource c_src = TextureStage::CS_undefined;
+  TextureStage::CombineOperand c_op = TextureStage::CO_undefined;
+  switch (num) {
+    case 0:
+      c_src = stage->get_combine_rgb_source0();
+      c_op = stage->get_combine_rgb_operand0();
+      break;
+    case 1:
+      c_src = stage->get_combine_rgb_source1();
+      c_op = stage->get_combine_rgb_operand1();
+      break;
+    case 2:
+      c_src = stage->get_combine_rgb_source2();
+      c_op = stage->get_combine_rgb_operand2();
+      break;
+  }
+  ostringstream csource;
+  if (c_op == TextureStage::CO_one_minus_src_color ||
+      c_op == TextureStage::CO_one_minus_src_alpha) {
+    csource << "1.0f - ";
+  }
+  switch (c_src) {
+    case TextureStage::CS_texture:
+      csource << "tex" << texindex;
+      break;
+    case TextureStage::CS_constant: {
+      LVecBase4f c = stage->get_color();
+      csource << "float4(" << c[0] << ", " << c[1] << ", " << c[2] << ", " << c[3] << ")";
+      break; }
+    case TextureStage::CS_primary_color:
+      csource << "primary_color";
+      break;
+    case TextureStage::CS_previous:
+      csource << "result";
+      break;
+    case TextureStage::CS_constant_color_scale: {
+      const ColorScaleAttrib *color_scale = DCAST(ColorScaleAttrib, rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
+      LVecBase4f s = color_scale->get_scale();
+      csource << "float4(" << s[0] << ", " << s[1] << ", " << s[2] << ", " << s[3] << ")";
+      break; }
+    case TextureStage::CS_last_saved_result:
+      csource << "last_saved_result";
+      break;
+  }
+  if (c_op == TextureStage::CO_src_color || c_op == TextureStage::CO_one_minus_src_color) {
+    if (single_value) {
+      // Let's take the red channel.
+      csource << ".r";
+    } else {
+      csource << ".rgb";
+    }
+  } else {
+    csource << ".a";
+    if (!single_value) {
+      // Dunno if it's legal at all, but let's just allow it.
+      return "float3(" + csource.str() + ")";
+    }
+  }
+  return csource.str();
+}
