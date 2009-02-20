@@ -1118,9 +1118,7 @@ class ShowBase(DirectObject.DirectObject):
         dr.setClearDepthActive(1)
 
         # Make any texture reloads on the gui come up immediately.
-        # Temporary hasattr for old Pandas.
-        if hasattr(dr, 'setIncompleteRender'):
-            dr.setIncompleteRender(False)
+        dr.setIncompleteRender(False)
 
         left, right, bottom, top = coords
 
