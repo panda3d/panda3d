@@ -433,15 +433,15 @@ class AttrSetter(StateChangeNode):
 
 if __debug__:
     o = ScratchPad()
-    sv = StateVar(0)
-    as = AttrSetter(sv, o, 'testAttr')
+    svar = StateVar(0)
+    aset = AttrSetter(svar, o, 'testAttr')
     assert hasattr(o, 'testAttr')
     assert o.testAttr == 0
-    sv.set('red')
+    svar.set('red')
     assert o.testAttr == 'red'
-    as.destroy()
-    sv.destroy()
+    aset.destroy()
+    svar.destroy()
     o.destroy()
-    del as
-    del sv
+    del aset
+    del svar
     del o
