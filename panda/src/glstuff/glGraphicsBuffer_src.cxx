@@ -189,7 +189,10 @@ rebuild_bitplanes() {
   // Bind the FBO
 
   Texture *tex = get_texture(0);
-
+  if (tex == 0) {
+    return;
+  }
+  
   if (tex->get_texture_type() != Texture::TT_cube_map) {
     if (_fbo == 0) {
       glgsg->_glGenFramebuffers(1, &_fbo);
