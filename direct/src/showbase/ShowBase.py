@@ -1075,7 +1075,14 @@ class ShowBase(DirectObject.DirectObject):
         self.camList.append(cam)
 
         # Now, make a DisplayRegion for the camera.
-        dr = win.makeDisplayRegion(*displayRegion)
+        if stereo is not None:
+            if stereo:
+                dr = win.makeStereoDisplayRegion(*displayRegion)
+            else:
+                dr = win.makeMonoDisplayRegion(*displayRegion)
+        else:
+            dr = win.makeDisplayRegion(*displayRegion)
+
         dr.setSort(sort)
 
         # By default, we do not clear 3-d display regions (the entire
@@ -1083,17 +1090,16 @@ class ShowBase(DirectObject.DirectObject):
         # we will if clearDepth is specified.
         if clearDepth:
             dr.setClearDepthActive(1)
+        elif dr.isStereo():
+            # If it's a stereo DisplayRegion, we clear the right
+            # channel by default.
+            dr.getRightEye().setClearDepthActive(1)
+            
         if clearColor:
             dr.setClearColorActive(1)
             dr.setClearColor(clearColor)
 
         dr.setCamera(cam)
-
-        if stereo == None:
-            stereo = (win.isStereo() and self.config.GetBool('default-stereo-camera', 1))
-        if stereo:
-            # A stereo camera!
-            dr.setStereoChannel(Lens.SCStereo)
 
         return cam
 
@@ -1104,7 +1110,7 @@ class ShowBase(DirectObject.DirectObject):
         Makes a new camera2d associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2d.
         """
-        dr = win.makeDisplayRegion(*displayRegion)
+        dr = win.makeMonoDisplayRegion(*displayRegion)
         dr.setSort(sort)
 
         # Enable clearing of the depth buffer on this new display
@@ -1151,7 +1157,7 @@ class ShowBase(DirectObject.DirectObject):
         Makes a new camera2dp associated with the indicated window, and
         assigns it to render the indicated subrectangle of render2dp.
         """
-        dr = win.makeDisplayRegion(*displayRegion)
+        dr = win.makeMonoDisplayRegion(*displayRegion)
         dr.setSort(sort)
 
         # Unlike render2d, we don't clear the depth buffer for
@@ -2138,7 +2144,7 @@ class ShowBase(DirectObject.DirectObject):
 
         # Set up the scene to convert the cube map.  It's just a
         # simple scene, with only the FisheyeMaker object in it.
-        dr = toSphere.makeDisplayRegion()
+        dr = toSphere.makeMonoDisplayRegion()
         camNode = Camera('camNode')
         lens = OrthographicLens()
         lens.setFilmSize(2, 2)
