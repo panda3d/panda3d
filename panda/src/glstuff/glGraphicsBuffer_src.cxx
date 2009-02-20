@@ -307,9 +307,11 @@ rebuild_bitplanes() {
       int color_attachment = GL_COLOR_ATTACHMENT0_EXT;
 
       for (int i=0; i<count_textures(); i++) {
-        if (get_rtm_mode(i) != RTM_bind_or_copy) {
-          continue;
-        }
+        // Do we really need the following lines?
+        // Uncommenting them seems to break stuff.
+        //if (get_rtm_mode(i) != RTM_bind_or_copy) {
+        //  continue;
+        //}
 
         Texture *tex = get_texture(i);
         TextureContext *tc = tex->prepare_now(glgsg->get_prepared_objects(), glgsg);
