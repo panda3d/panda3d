@@ -1230,7 +1230,7 @@ handle_keystroke(XKeyEvent &event) {
 
   } else {
     // Without an input context, just get the ascii keypress.
-    ButtonHandle button = get_button(event);
+    ButtonHandle button = get_button(event, true);
     if (button.has_ascii_equivalent()) {
       _input_devices[0].keystroke(button.get_ascii_equivalent());
     }
@@ -1248,7 +1248,7 @@ handle_keypress(XKeyEvent &event) {
   _input_devices[0].set_pointer_in_window(event.x, event.y);
 
   // Now get the raw unshifted button.
-  ButtonHandle button = get_button(event);
+  ButtonHandle button = get_button(event, false);
   if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
     _input_devices[0].button_down(KeyboardButton::control());
   }
@@ -1274,7 +1274,7 @@ handle_keyrelease(XKeyEvent &event) {
   _input_devices[0].set_pointer_in_window(event.x, event.y);
 
   // Now get the raw unshifted button.
-  ButtonHandle button = get_button(event);
+  ButtonHandle button = get_button(event, false);
   if (button == KeyboardButton::lcontrol() || button == KeyboardButton::rcontrol()) {
     _input_devices[0].button_up(KeyboardButton::control());
   }
@@ -1296,7 +1296,7 @@ handle_keyrelease(XKeyEvent &event) {
 //               keyboard button indicated by the given key event.
 ////////////////////////////////////////////////////////////////////
 ButtonHandle glxGraphicsWindow::
-get_button(XKeyEvent &key_event) {
+get_button(XKeyEvent &key_event, bool allow_shift) {
   KeySym key = XLookupKeysym(&key_event, 0);
 
   if ((key_event.state & Mod2Mask) != 0) {
@@ -1346,12 +1346,32 @@ get_button(XKeyEvent &key_event) {
         return button;
       }
       // If that didn't produce a button we know, just fall through
-      // and handle the unshifted key.
+      // and handle the normal, un-numlocked key.
       break;
 
     default:
       break;
     } 
+  }
+
+  if (allow_shift) {
+    // If shift is held down, get the shifted keysym.
+    if ((key_event.state & ShiftMask) != 0) {
+      KeySym k2 = XLookupKeysym(&key_event, 1);
+      ButtonHandle button = map_button(k2);
+      if (button != ButtonHandle::none()) {
+        return button;
+      }
+    }
+
+    // If caps lock is down, shift lowercase letters to uppercase.  We
+    // can do this in just the ASCII set, because we handle
+    // international keyboards elsewhere (via an input context).
+    if ((key_event.state & (ShiftMask | LockMask)) != 0) {
+      if (key >= XK_a and key <= XK_z) {
+        key += (XK_A - XK_a);
+      }
+    }
   }
 
   return map_button(key);

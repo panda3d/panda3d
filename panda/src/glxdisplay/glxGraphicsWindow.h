@@ -61,7 +61,7 @@ private:
   void handle_keypress(XKeyEvent &event);
   void handle_keyrelease(XKeyEvent &event);
 
-  ButtonHandle get_button(XKeyEvent &key_event);
+  ButtonHandle get_button(XKeyEvent &key_event, bool allow_shift);
   ButtonHandle map_button(KeySym key);
   ButtonHandle get_mouse_button(XButtonEvent &button_event);
 
