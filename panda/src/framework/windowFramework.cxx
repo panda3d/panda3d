@@ -180,11 +180,6 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
     NodePath camera_np = make_camera();
     _display_region_3d->set_camera(camera_np);
 
-    if (_window->is_stereo() && default_stereo_camera) {
-      // Actually, let's make a stereo DisplayRegion.
-      _display_region_3d->set_stereo_channel(Lens::SC_stereo);
-    }
-
     set_background_type(_background_type);
 
     if (show_frame_rate_meter) {
@@ -286,7 +281,7 @@ get_render_2d() {
     // display region.
     float l, r, b, t;
     _display_region_3d->get_dimensions(l, r, b, t);
-    _display_region_2d = _window->make_display_region(l, r, b, t);
+    _display_region_2d = _window->make_mono_display_region(l, r, b, t);
     _display_region_2d->set_sort(10);
 
     // Finally, we need a camera to associate with the display region.

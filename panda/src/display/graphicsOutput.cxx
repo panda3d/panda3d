@@ -121,7 +121,7 @@ GraphicsOutput(GraphicsPipe *pipe,
   // We start out with one DisplayRegion that covers the whole window,
   // which we may use internally for full-window operations like
   // clear() and get_screenshot().
-  _default_display_region = make_display_region(0.0f, 1.0f, 0.0f, 1.0f);
+  _default_display_region = make_mono_display_region(0.0f, 1.0f, 0.0f, 1.0f);
   _default_display_region->set_active(false);
 
   _display_regions_stale = false;
@@ -445,6 +445,68 @@ set_sort(int sort) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::make_display_region
+//       Access: Published
+//  Description: Creates a new DisplayRegion that covers the indicated
+//               sub-rectangle within the window.  The range on all
+//               parameters is 0..1.
+//
+//               If is_stereo() is true for this window, and
+//               default-stereo-camera is configured true, this
+//               actually makes a StereoDisplayRegion.  Call
+//               make_mono_display_region() or
+//               make_stereo_display_region() if you want to insist on
+//               one or the other.
+////////////////////////////////////////////////////////////////////
+DisplayRegion *GraphicsOutput::
+make_display_region(float l, float r, float b, float t) {
+  if (is_stereo() && default_stereo_camera) {
+    return make_stereo_display_region(l, r, b, t);
+  } else {
+    return make_mono_display_region(l, r, b, t);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::make_mono_display_region
+//       Access: Published
+//  Description: Creates a new DisplayRegion that covers the indicated
+//               sub-rectangle within the window.  The range on all
+//               parameters is 0..1.
+//
+//               This always returns a mono DisplayRegion, even if
+//               is_stereo() is true.
+////////////////////////////////////////////////////////////////////
+DisplayRegion *GraphicsOutput::
+make_mono_display_region(float l, float r, float b, float t) {
+  return add_display_region(new DisplayRegion(this, l, r, b, t));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::make_stereo_display_region
+//       Access: Published
+//  Description: Creates a new DisplayRegion that covers the indicated
+//               sub-rectangle within the window.  The range on all
+//               parameters is 0..1.
+//
+//               This always returns a stereo DisplayRegion, even if
+//               is_stereo() is false.
+////////////////////////////////////////////////////////////////////
+StereoDisplayRegion *GraphicsOutput::
+make_stereo_display_region(float l, float r, float b, float t) {
+  PT(DisplayRegion) left = new DisplayRegion(this, l, r, b, t);
+  PT(DisplayRegion) right = new DisplayRegion(this, l, r, b, t);
+
+  PT(StereoDisplayRegion) stereo = new StereoDisplayRegion(this, l, r, b, t,
+                                                           left, right);
+  add_display_region(stereo);
+  add_display_region(left);
+  add_display_region(right);
+
+  return stereo;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::remove_display_region
 //       Access: Published
 //  Description: Removes the indicated DisplayRegion from the window,
@@ -459,22 +521,14 @@ remove_display_region(DisplayRegion *display_region) {
 
   nassertr(display_region != _default_display_region, false);
 
-  PT(DisplayRegion) drp = display_region;
-  TotalDisplayRegions::iterator dri =
-    find(_total_display_regions.begin(), _total_display_regions.end(), drp);
-  if (dri != _total_display_regions.end()) {
-    // Let's aggressively clean up the display region too.
-    display_region->cleanup();
-    display_region->_window = NULL;
-    _total_display_regions.erase(dri);
-    if (display_region->is_active()) {
-      _display_regions_stale = true;
-    }
-
-    return true;
+  if (display_region->is_stereo()) {
+    StereoDisplayRegion *sdr;
+    DCAST_INTO_R(sdr, display_region, false);
+    do_remove_display_region(sdr->get_left_eye());
+    do_remove_display_region(sdr->get_right_eye());
   }
 
-  return false;
+  return do_remove_display_region(display_region);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1031,9 +1085,9 @@ clear(Thread *current_thread) {
 bool GraphicsOutput::
 copy_to_textures() {
   bool okflag = true;
-  for (int i=0; i<count_textures(); i++) {
+  for (int i = 0; i < count_textures(); ++i) {
     RenderTextureMode rtm_mode = get_rtm_mode(i);
-    if ((rtm_mode == RTM_none)||(rtm_mode == RTM_bind_or_copy)) {
+    if ((rtm_mode == RTM_none) || (rtm_mode == RTM_bind_or_copy)) {
       continue;
     }
 
@@ -1217,6 +1271,34 @@ add_display_region(DisplayRegion *display_region) {
   _display_regions_stale = true;
 
   return display_region;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::do_remove_display_region
+//       Access: Private
+//  Description: Internal implementation of remove_display_region.
+//               Assumes the lock is already held.
+////////////////////////////////////////////////////////////////////
+bool GraphicsOutput::
+do_remove_display_region(DisplayRegion *display_region) {
+  nassertr(display_region != _default_display_region, false);
+
+  PT(DisplayRegion) drp = display_region;
+  TotalDisplayRegions::iterator dri =
+    find(_total_display_regions.begin(), _total_display_regions.end(), drp);
+  if (dri != _total_display_regions.end()) {
+    // Let's aggressively clean up the display region too.
+    display_region->cleanup();
+    display_region->_window = NULL;
+    _total_display_regions.erase(dri);
+    if (display_region->is_active()) {
+      _display_regions_stale = true;
+    }
+
+    return true;
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

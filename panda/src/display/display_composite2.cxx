@@ -12,3 +12,4 @@
 #include "stencilRenderStates.cxx"
 #include "displaySearchParameters.cxx"
 #include "displayInformation.cxx"
+#include "stereoDisplayRegion.cxx"

@@ -467,22 +467,45 @@ trigger_copy()  {
 //       Access: Published
 //  Description: Creates a new DisplayRegion that covers the entire
 //               window.
+//
+//               If is_stereo() is true for this window, and
+//               default-stereo-camera is configured true, this
+//               actually makes a StereoDisplayRegion.  Call
+//               make_mono_display_region() or
+//               make_stereo_display_region() if you want to insist on
+//               one or the other.
 ////////////////////////////////////////////////////////////////////
 INLINE DisplayRegion *GraphicsOutput::
 make_display_region() {
-  return add_display_region(new DisplayRegion(this));
+  return make_display_region(0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsOutput::make_display_region
+//     Function: GraphicsOutput::make_mono_display_region
 //       Access: Published
-//  Description: Creates a new DisplayRegion that covers the indicated
-//               sub-rectangle within the window.  The range on all
-//               parameters is 0..1.
+//  Description: Creates a new DisplayRegion that covers the entire
+//               window.
+//
+//               This always returns a mono DisplayRegion, even if
+//               is_stereo() is true.
 ////////////////////////////////////////////////////////////////////
 INLINE DisplayRegion *GraphicsOutput::
-make_display_region(float l, float r, float b, float t) {
-  return add_display_region(new DisplayRegion(this, l, r, b, t));
+make_mono_display_region() {
+  return make_mono_display_region(0.0f, 1.0f, 0.0f, 1.0f);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::make_stereo_display_region
+//       Access: Published
+//  Description: Creates a new DisplayRegion that covers the entire
+//               window.
+//
+//               This always returns a stereo DisplayRegion, even if
+//               is_stereo() is false.
+////////////////////////////////////////////////////////////////////
+INLINE StereoDisplayRegion *GraphicsOutput::
+make_stereo_display_region() {
+  return make_stereo_display_region(0.0f, 1.0f, 0.0f, 1.0f);
 }
 
 ////////////////////////////////////////////////////////////////////

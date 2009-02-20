@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 
+#include "displayRegionBase.h"
 #include "drawableRegion.h"
 #include "referenceCount.h"
 #include "nodePath.h"
@@ -54,11 +55,11 @@ class CullTraverser;
 //               glass, usually for layering 2-d interfaces on top of
 //               a 3-d scene.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_DISPLAY DisplayRegion : public ReferenceCount, public DrawableRegion {
+class EXPCL_PANDA_DISPLAY DisplayRegion : public DisplayRegionBase, public DrawableRegion {
 protected:
-  DisplayRegion(GraphicsOutput *window);
   DisplayRegion(GraphicsOutput *window,
                 float l, float r, float b, float t);
+
 private:
   DisplayRegion(const DisplayRegion &copy);
   void operator = (const DisplayRegion &copy);
@@ -75,50 +76,40 @@ PUBLISHED:
   INLINE float get_right() const;
   INLINE float get_bottom() const;
   INLINE float get_top() const;
-  void set_dimensions(float l, float r, float b, float t);
+  virtual void set_dimensions(float l, float r, float b, float t);
 
   INLINE GraphicsOutput *get_window() const;
   GraphicsPipe *get_pipe() const;
+  virtual bool is_stereo() const;
 
-  void set_camera(const NodePath &camera);
+  virtual void set_camera(const NodePath &camera);
   INLINE NodePath get_camera(Thread *current_thread = Thread::get_current_thread()) const;
 
-  void set_active(bool active);
+  virtual void set_active(bool active);
   INLINE bool is_active() const;
 
-  void set_sort(int sort);
+  virtual void set_sort(int sort);
   INLINE int get_sort() const;
 
-  void set_stereo_channel(Lens::StereoChannel stereo_channel);
+  virtual void set_stereo_channel(Lens::StereoChannel stereo_channel);
   INLINE Lens::StereoChannel get_stereo_channel();
 
-  INLINE void set_clear_depth_between_eyes(bool clear_depth_between_eyes);
-  INLINE bool get_clear_depth_between_eyes() const;
-
-  INLINE void set_incomplete_render(bool incomplete_render);
+  virtual void set_incomplete_render(bool incomplete_render);
   INLINE bool get_incomplete_render() const;
 
-  INLINE void set_texture_reload_priority(int texture_reload_priority);
+  virtual void set_texture_reload_priority(int texture_reload_priority);
   INLINE int get_texture_reload_priority() const;
 
-  INLINE void set_cull_traverser(CullTraverser *trav);
+  virtual void set_cull_traverser(CullTraverser *trav);
   CullTraverser *get_cull_traverser();
 
-  INLINE void set_cube_map_index(int cube_map_index);
+  virtual void set_cube_map_index(int cube_map_index);
   INLINE int get_cube_map_index() const;
-
-  void compute_pixels();
-  void compute_pixels_all_stages();
-  void compute_pixels(int x_size, int y_size);
-  void compute_pixels_all_stages(int x_size, int y_size);
-  INLINE void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
-  INLINE void get_region_pixels(int &xo, int &yo, int &w, int &h) const;
-  INLINE void get_region_pixels_i(int &xo, int &yo, int &w, int &h) const;
 
   INLINE int get_pixel_width() const;
   INLINE int get_pixel_height() const;
 
-  void output(ostream &out) const;
+  virtual void output(ostream &out) const;
 
   static Filename make_screenshot_filename(
     const string &prefix = "screenshot");
@@ -127,9 +118,17 @@ PUBLISHED:
     const Filename &filename, const string &image_comment = "");
   bool get_screenshot(PNMImage &image);
 
-  PT(PandaNode) make_cull_result_graph();
+  virtual PT(PandaNode) make_cull_result_graph();
 
 public:
+  void compute_pixels();
+  void compute_pixels_all_stages();
+  void compute_pixels(int x_size, int y_size);
+  void compute_pixels_all_stages(int x_size, int y_size);
+  INLINE void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
+  INLINE void get_region_pixels(int &xo, int &yo, int &w, int &h) const;
+  INLINE void get_region_pixels_i(int &xo, int &yo, int &w, int &h) const;
+
   virtual bool supports_pixel_zoom() const;
 
   INLINE void set_cull_result(CullResult *cull_result, SceneSetup *scene_setup,
@@ -147,10 +146,10 @@ private:
   void do_compute_pixels(int x_size, int y_size, CData *cdata);
   void set_active_index(int index);
 
+protected:
   // The associated window is a permanent property of the
   // DisplayRegion.  It doesn't need to be cycled.
   GraphicsOutput *_window;
-  bool _clear_depth_between_eyes;
 
   bool _incomplete_render;
   int _texture_reload_priority;
@@ -158,6 +157,7 @@ private:
   // Ditto for the cull traverser.
   PT(CullTraverser) _trav;
 
+private:
   // This is the data that is associated with the DisplayRegion that
   // needs to be cycled every frame, but represents the parameters as
   // specified by the user, and which probably will not change that
@@ -230,10 +230,14 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    ReferenceCount::init_type();
+    DisplayRegionBase::init_type();
     register_type(_type_handle, "DisplayRegion",
-                  ReferenceCount::get_class_type());
+                  DisplayRegionBase::get_class_type());
   }
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
 
 private:
   static TypeHandle _type_handle;
@@ -302,8 +306,6 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-INLINE ostream &operator << (ostream &out, const DisplayRegion &dr);
 
 #include "displayRegion.I"
 

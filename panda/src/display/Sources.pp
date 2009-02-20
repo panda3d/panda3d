@@ -33,6 +33,7 @@
     windowProperties.I windowProperties.h \
     renderBuffer.h \
     stencilRenderStates.h \
+    stereoDisplayRegion.I stereoDisplayRegion.h \
     displaySearchParameters.h \
     displayInformation.h    
     
@@ -55,6 +56,7 @@
     windowProperties.cxx \
     lru.cxx \
     stencilRenderStates.cxx \
+    stereoDisplayRegion.cxx \
     displaySearchParameters.cxx \
     displayInformation.cxx    
 
@@ -80,6 +82,7 @@
     windowProperties.I windowProperties.h \
     renderBuffer.h \
     stencilRenderStates.h \
+    stereoDisplayRegion.I stereoDisplayRegion.h \
     displaySearchParameters.h \
     displayInformation.h    
 

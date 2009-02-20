@@ -156,90 +156,14 @@ get_stereo_channel() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_clear_depth_between_eyes
-//       Access: Published
-//  Description: Specifies whether the depth buffer is cleared again
-//               between the left and right eyes of a stereo
-//               DisplayRegion.  This has an effect only when
-//               get_stereo_channel() returns Lens::SC_stereo; other
-//               kinds of DisplayRegions are monocular and do not
-//               render two different eyes.
-//
-//               Normally, you want this to be true, since if you're
-//               using a depth buffer you normally need to clear it
-//               between the left and right eyes.
-////////////////////////////////////////////////////////////////////
-INLINE void DisplayRegion::
-set_clear_depth_between_eyes(bool clear_depth_between_eyes) {
-  _clear_depth_between_eyes = clear_depth_between_eyes;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_clear_depth_between_eyes
-//       Access: Published
-//  Description: Returns whether the depth buffer is cleared again
-//               between the left and right eyes of a stereo
-//               DisplayRegion.  See set_clear_depth_between_eyes().
-////////////////////////////////////////////////////////////////////
-INLINE bool DisplayRegion::
-get_clear_depth_between_eyes() const {
-  return _clear_depth_between_eyes;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_incomplete_render
-//       Access: Public
-//  Description: Sets the incomplete_render flag.  When this is
-//               true, the frame will be rendered even if some of the
-//               geometry or textures in the scene are not available
-//               (e.g. they have been temporarily paged out).  When
-//               this is false, the frame will be held up while this
-//               data is reloaded.
-//
-//               This flag may also be set on the
-//               GraphicsStateGuardian.  It will be considered true
-//               for a given DisplayRegion only if it is true on both
-//               the GSG and on the DisplayRegion.
-//
-//               See GraphicsStateGuardian::set_incomplete_render()
-//               for more detail.
-////////////////////////////////////////////////////////////////////
-INLINE void DisplayRegion::
-set_incomplete_render(bool incomplete_render) {
-  _incomplete_render = incomplete_render;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_incomplete_render
-//       Access: Public, Virtual
+//       Access: Published
 //  Description: Returns the incomplete_render flag.  See
 //               set_incomplete_render().
 ////////////////////////////////////////////////////////////////////
 INLINE bool DisplayRegion::
 get_incomplete_render() const {
   return _incomplete_render;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_texture_reload_priority
-//       Access: Published
-//  Description: Specifies an integer priority which is assigned to
-//               any asynchronous texture reload requests spawned
-//               while processing this DisplayRegion.  This controls
-//               which textures are loaded first when multiple
-//               textures need to be reloaded at once; it also
-//               controls the relative priority between asynchronous
-//               texture loads and asynchronous model or animation
-//               loads.
-//
-//               Specifying a larger number here makes the textures
-//               rendered by this DisplayRegion load up first.  This
-//               may be particularly useful to do, for instance, for
-//               the DisplayRegion that renders the gui.
-////////////////////////////////////////////////////////////////////
-INLINE void DisplayRegion::
-set_texture_reload_priority(int texture_reload_priority) {
-  _texture_reload_priority = texture_reload_priority;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -255,38 +179,6 @@ get_texture_reload_priority() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_cull_traverser
-//       Access: Published
-//  Description: Specifies the CullTraverser that will be used to draw
-//               the contents of this DisplayRegion.  Normally the
-//               default CullTraverser is sufficient, but this may be
-//               changed to change the default cull behavior.
-////////////////////////////////////////////////////////////////////
-INLINE void DisplayRegion::
-set_cull_traverser(CullTraverser *trav) {
-  _trav = trav;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::set_cube_map_index
-//       Access: Published
-//  Description: This is a special parameter that is only used when
-//               rendering the faces of a cube map.  Normally you
-//               should not need to set it directly.  This sets up the
-//               DisplayRegion to render to the nth cube map face; the
-//               value must be between 0 and 5, inclusive.  A normal
-//               DisplayRegion that is not associated with any
-//               particular cube map should be set to -1.
-////////////////////////////////////////////////////////////////////
-INLINE void DisplayRegion::
-set_cube_map_index(int cube_map_index) {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
-  CDWriter cdata(_cycler);
-  cdata->_cube_map_index = cube_map_index;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_cube_map_index
 //       Access: Published
 //  Description: Returns the cube map face index associated with this
@@ -298,54 +190,6 @@ INLINE int DisplayRegion::
 get_cube_map_index() const {
   CDReader cdata(_cycler);
   return cdata->_cube_map_index;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_pixels
-//       Access: Published
-//  Description: Retrieves the coordinates of the DisplayRegion within
-//               its window, in pixels.
-////////////////////////////////////////////////////////////////////
-INLINE void DisplayRegion::
-get_pixels(int &pl, int &pr, int &pb, int &pt) const {
-  CDReader cdata(_cycler);
-  pl = cdata->_pl;
-  pr = cdata->_pr;
-  pb = cdata->_pb;
-  pt = cdata->_pt;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_region_pixels
-//       Access: Published
-//  Description: Retrieves the coordinates of the DisplayRegion within
-//               its window, as the pixel location of its bottom-left
-//               corner, along with a pixel width and height.
-////////////////////////////////////////////////////////////////////
-INLINE void DisplayRegion::
-get_region_pixels(int &xo, int &yo, int &w, int &h) const {
-  CDReader cdata(_cycler);
-  xo = cdata->_pl;
-  yo = cdata->_pb;
-  w = cdata->_pr - cdata->_pl;
-  h = cdata->_pt - cdata->_pb;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::get_region_pixels_i
-//       Access: Published
-//  Description: Similar to get_region_pixels(), but returns the upper
-//               left corner, and the pixel numbers are numbered from
-//               the top-left corner down, in the DirectX way of
-//               things.
-////////////////////////////////////////////////////////////////////
-INLINE void DisplayRegion::
-get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
-  CDReader cdata(_cycler);
-  xo = cdata->_pl;
-  yo = cdata->_pti;
-  w = cdata->_pr - cdata->_pl;
-  h = cdata->_pbi - cdata->_pti;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -368,6 +212,54 @@ INLINE int DisplayRegion::
 get_pixel_height() const {
   CDReader cdata(_cycler);
   return cdata->_pt - cdata->_pb;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_pixels
+//       Access: Public
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its window, in pixels.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+get_pixels(int &pl, int &pr, int &pb, int &pt) const {
+  CDReader cdata(_cycler);
+  pl = cdata->_pl;
+  pr = cdata->_pr;
+  pb = cdata->_pb;
+  pt = cdata->_pt;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_region_pixels
+//       Access: Public
+//  Description: Retrieves the coordinates of the DisplayRegion within
+//               its window, as the pixel location of its bottom-left
+//               corner, along with a pixel width and height.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+get_region_pixels(int &xo, int &yo, int &w, int &h) const {
+  CDReader cdata(_cycler);
+  xo = cdata->_pl;
+  yo = cdata->_pb;
+  w = cdata->_pr - cdata->_pl;
+  h = cdata->_pt - cdata->_pb;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_region_pixels_i
+//       Access: Public
+//  Description: Similar to get_region_pixels(), but returns the upper
+//               left corner, and the pixel numbers are numbered from
+//               the top-left corner down, in the DirectX way of
+//               things.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
+  CDReader cdata(_cycler);
+  xo = cdata->_pl;
+  yo = cdata->_pti;
+  w = cdata->_pr - cdata->_pl;
+  h = cdata->_pbi - cdata->_pti;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -675,18 +567,6 @@ get_stereo_channel() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegionPipelineReader::get_clear_depth_between_eyes
-//       Access: Public
-//  Description: Returns whether the depth buffer is cleared again
-//               between the left and right eyes of a stereo
-//               DisplayRegion.  See set_clear_depth_between_eyes().
-////////////////////////////////////////////////////////////////////
-INLINE bool DisplayRegionPipelineReader::
-get_clear_depth_between_eyes() const {
-  return _object->_clear_depth_between_eyes;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegionPipelineReader::get_cube_map_index
 //       Access: Public
 //  Description: Returns the cube map face index associated with this
@@ -762,9 +642,4 @@ get_pixel_width() const {
 INLINE int DisplayRegionPipelineReader::
 get_pixel_height() const {
   return _cdata->_pt - _cdata->_pb;
-}
-
-INLINE ostream &operator << (ostream &out, const DisplayRegion &dr) {
-  dr.output(out);
-  return out;
 }

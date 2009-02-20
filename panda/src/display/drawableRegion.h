@@ -65,10 +65,10 @@ PUBLISHED:
 
   INLINE void set_clear_color_active(bool clear_color_active);
   INLINE bool get_clear_color_active() const;
-
+  
   INLINE void set_clear_depth_active(bool clear_depth_active);
   INLINE bool get_clear_depth_active() const;
-
+ 
   INLINE void set_clear_stencil_active(bool clear_stencil_active);
   INLINE bool get_clear_stencil_active() const;
 
@@ -81,17 +81,16 @@ PUBLISHED:
   INLINE void set_clear_stencil(unsigned int stencil);
   INLINE unsigned int get_clear_stencil() const;
 
-  INLINE void set_clear_active(int n, bool clear_aux_active);
-  INLINE bool get_clear_active(int n) const;
+  virtual void set_clear_active(int n, bool clear_aux_active);
+  virtual bool get_clear_active(int n) const;
 
-  INLINE void set_clear_value(int n, const Colorf &color);
-  INLINE const Colorf &get_clear_value(int n) const;
+  virtual void set_clear_value(int n, const Colorf &clear_value);
+  virtual const Colorf &get_clear_value(int n) const;
   
-  INLINE void disable_clears();
+  virtual void disable_clears();
+  virtual bool is_any_clear_active() const;
 
-  INLINE bool is_any_clear_active() const;
-
-  INLINE void set_pixel_zoom(float pixel_zoom);
+  virtual void set_pixel_zoom(float pixel_zoom);
   INLINE float get_pixel_zoom() const;
   INLINE float get_pixel_factor() const;
   virtual bool supports_pixel_zoom() const;

@@ -9,12 +9,17 @@
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx     
 
   #define SOURCES \
-    config_gsgbase.h graphicsStateGuardianBase.h
+    config_gsgbase.h \
+    displayRegionBase.I displayRegionBase.h \
+    graphicsStateGuardianBase.h    
 
   #define INCLUDED_SOURCES \
-    config_gsgbase.cxx graphicsStateGuardianBase.cxx
+    config_gsgbase.cxx \
+    displayRegionBase.cxx \
+    graphicsStateGuardianBase.cxx
 
   #define INSTALL_HEADERS \
+    displayRegionBase.I displayRegionBase.h \
     graphicsStateGuardianBase.h
 
   #define IGATESCAN all

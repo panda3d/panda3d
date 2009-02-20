@@ -82,9 +82,9 @@ get_num_display_regions() const {
 //  Description: Returns the nth display region associated with the
 //               camera.
 ////////////////////////////////////////////////////////////////////
-INLINE DisplayRegion *Camera::
+INLINE DisplayRegionBase *Camera::
 get_display_region(int n) const {
-  nassertr(n >= 0 && n < (int)_display_regions.size(), (DisplayRegion *)NULL);
+  nassertr(n >= 0 && n < (int)_display_regions.size(), (DisplayRegionBase *)NULL);
   return _display_regions[n];
 }
 

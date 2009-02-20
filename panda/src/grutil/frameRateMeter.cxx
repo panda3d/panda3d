@@ -88,7 +88,7 @@ setup_window(GraphicsOutput *window) {
   _root.set_two_sided(1, 1);
     
   // Create a display region that covers the entire window.
-  _display_region = _window->make_display_region();
+  _display_region = _window->make_mono_display_region();
   _display_region->set_sort(frame_rate_meter_layer_sort);
     
   // Finally, we need a camera to associate with the display region.

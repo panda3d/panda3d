@@ -24,6 +24,7 @@
 #include "graphicsDevice.h"
 #include "parasiteBuffer.h"
 #include "pandaSystem.h"
+#include "stereoDisplayRegion.h"
 
 ConfigureDef(config_display);
 NotifyCategoryDef(display, "");
@@ -197,6 +198,14 @@ ConfigVariableString red_blue_stereo_colors
           "'green', 'cyan', 'magenta', 'yellow', or 'alpha', or a union "
           "of two or more words separated by a vertical pipe (|)."));
 
+ConfigVariableBool default_stereo_camera
+("default-stereo-camera", true,
+ PRC_DESC("When this is true, the default DisplayRegion created for "
+          "a window or buffer with the stereo property will be a "
+          "StereoDisplayRegion, which activates the stereo properties of "
+          "the camera lens, and enables stereo.  Set this false to "
+          "require StereoDisplayRegions to be created explicitly."));
+
 ConfigVariableBool color_scale_via_lighting
 ("color-scale-via-lighting", true,
  PRC_DESC("When this is true, Panda will try to implement ColorAttribs and "
@@ -369,6 +378,7 @@ init_libdisplay() {
   GraphicsWindow::init_type();
   ParasiteBuffer::init_type();
   StandardMunger::init_type();
+  StereoDisplayRegion::init_type();
 
 #if defined(HAVE_THREADS) && defined(DO_PIPELINING)
   PandaSystem *ps = PandaSystem::get_global_ptr();

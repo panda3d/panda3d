@@ -1244,9 +1244,16 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
   win->change_scenes(dr_reader);
   gsg->prepare_display_region(dr_reader, dr_reader->get_stereo_channel());
 
+  if (dr_reader->is_any_clear_active()) {
+    gsg->clear(dr);
+  }
+
   PT(SceneSetup) scene_setup = setup_scene(gsg, dr_reader);
   if (scene_setup == (SceneSetup *)NULL) {
     // Never mind.
+
+  } else if (dr_reader->get_object()->is_stereo()) {
+    // Don't draw stereo DisplayRegions directly.
 
   } else if (!gsg->set_scene(scene_setup)) {
     // The scene or lens is inappropriate somehow.
@@ -1254,10 +1261,6 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
       << gsg->get_type() << " cannot render scene with specified lens.\n";
 
   } else {
-    if (dr_reader->is_any_clear_active()) {
-      gsg->clear(dr);
-    }
-
     DrawCullHandler cull_handler(gsg);
     if (gsg->begin_scene()) {
       delete dr_reader;
@@ -1312,7 +1315,7 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
             dr_reader = NULL;
             (*aci).second = dr;
             cull_to_bins(win, dr, current_thread);
-
+            
           } else {
             // We have already culled a scene using this camera in
             // this thread, and now we're being asked to cull another
@@ -1326,7 +1329,7 @@ cull_to_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
                                 setup_scene(win->get_gsg(), dr_reader),
                                 current_thread);
           }
-
+        
           if (dr_reader != (DisplayRegionPipelineReader *)NULL) {
             delete dr_reader;
           }
@@ -1462,9 +1465,7 @@ draw_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
 
   PT(CullResult) cull_result = dr->get_cull_result(current_thread);
   PT(SceneSetup) scene_setup = dr->get_scene_setup(current_thread);
-  if (cull_result != (CullResult *)NULL && scene_setup != (SceneSetup *)NULL) {
-    do_draw(cull_result, scene_setup, win, dr, current_thread);
-  }
+  do_draw(cull_result, scene_setup, win, dr, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1771,62 +1772,33 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
   GraphicsStateGuardian *gsg = win->get_gsg();
   win->change_scenes(dr_reader);
 
-  if (dr_reader->get_stereo_channel() == Lens::SC_stereo) {
-    // A special case.  For a stereo DisplayRegion, we render the left
-    // eye, followed by the right eye.
-    if (dr_reader->is_any_clear_active()) {
-      gsg->prepare_display_region(dr_reader, Lens::SC_stereo);
-      gsg->clear(dr_reader->get_object());
-    }
-    gsg->prepare_display_region(dr_reader, Lens::SC_left);
+  gsg->prepare_display_region(dr_reader, dr_reader->get_stereo_channel());
+  if (dr_reader->is_any_clear_active()) {
+    gsg->clear(dr_reader->get_object());
+  }
 
-    if (!gsg->set_scene(scene_setup)) {
-      // The scene or lens is inappropriate somehow.
-      display_cat.error()
-        << gsg->get_type() << " cannot render scene with specified lens.\n";
-    } else {
-      if (gsg->begin_scene()) {
-        delete dr_reader;
-        dr_reader = NULL;
-        cull_result->draw(current_thread);
-        gsg->end_scene();
-        dr_reader = new DisplayRegionPipelineReader(dr, current_thread);
-      }
-      if (dr_reader->get_clear_depth_between_eyes()) {
-        DrawableRegion clear_region;
-        clear_region.set_clear_depth_active(true);
-        clear_region.set_clear_depth(dr->get_clear_depth());
-        gsg->clear(&clear_region);
-      }
-      gsg->prepare_display_region(dr_reader, Lens::SC_right);
-      gsg->set_scene(scene_setup);
-      if (gsg->begin_scene()) {
-        delete dr_reader;
-        dr_reader = NULL;
-        cull_result->draw(current_thread);
-        gsg->end_scene();
-      }
-    }
+  if (cull_result == NULL || scene_setup == NULL) {
+    // Nothing to see here.
+
+  } else if (dr_reader->get_object()->is_stereo()) {
+    // We don't actually draw the stereo DisplayRegions.  These are
+    // just placeholders; we draw the individual left and right eyes
+    // instead.  (We might still clear the stereo DisplayRegions,
+    // though, since it's probably faster to clear right and left
+    // channels in one pass, than to clear them in two separate
+    // passes.)
+
+  } else if (!gsg->set_scene(scene_setup)) {
+    // The scene or lens is inappropriate somehow.
+    display_cat.error()
+      << gsg->get_type() << " cannot render scene with specified lens.\n";
 
   } else {
-    // For a mono DisplayRegion, or a left/right eye only
-    // DisplayRegion, we just render that.
-    gsg->prepare_display_region(dr_reader, dr_reader->get_stereo_channel());
-
-    if (!gsg->set_scene(scene_setup)) {
-      // The scene or lens is inappropriate somehow.
-      display_cat.error()
-        << gsg->get_type() << " cannot render scene with specified lens.\n";
-    } else {
-      if (dr_reader->is_any_clear_active()) {
-        gsg->clear(dr_reader->get_object());
-      }
-      if (gsg->begin_scene()) {
-        delete dr_reader;
-        dr_reader = NULL;
-        cull_result->draw(current_thread);
-        gsg->end_scene();
-      }
+    if (gsg->begin_scene()) {
+      delete dr_reader;
+      dr_reader = NULL;
+      cull_result->draw(current_thread);
+      gsg->end_scene();
     }
   }
 

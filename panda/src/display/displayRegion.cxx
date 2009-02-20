@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "displayRegion.h"
+#include "stereoDisplayRegion.h"
 #include "graphicsOutput.h"
 #include "config_display.h"
 #include "texture.h"
@@ -25,32 +26,12 @@ TypeHandle DisplayRegionPipelineReader::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::Constructor
-//       Access: Public
-//  Description:
-////////////////////////////////////////////////////////////////////
-DisplayRegion::
-DisplayRegion(GraphicsOutput *window) :
-  _window(window),
-  _clear_depth_between_eyes(true),
-  _incomplete_render(true),
-  _texture_reload_priority(0),
-  _cull_region_pcollector("Cull:Invalid"),
-  _draw_region_pcollector("Draw:Invalid")
-{
-  _screenshot_buffer_type = window->get_draw_buffer_type();
-  _draw_buffer_type = window->get_draw_buffer_type();
-  compute_pixels_all_stages();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::Constructor
-//       Access: Public
+//       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
 DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
   _window(window),
-  _clear_depth_between_eyes(true),
   _incomplete_render(true),
   _texture_reload_priority(0),
   _cull_region_pcollector("Cull:Invalid"),
@@ -68,11 +49,11 @@ DisplayRegion(GraphicsOutput *window, float l, float r, float b, float t) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DisplayRegion::
-DisplayRegion(const DisplayRegion &) : 
+DisplayRegion(const DisplayRegion &copy) : 
+  _window(NULL),
   _cull_region_pcollector("Cull:Invalid"),
   _draw_region_pcollector("Draw:Invalid")
 {
-  nassertv(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -117,7 +98,7 @@ cleanup() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_dimensions
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Changes the portion of the framebuffer this
 //               DisplayRegion corresponds to.  The parameters range
 //               from 0 to 1, where 0,0 is the lower left corner and
@@ -153,8 +134,19 @@ get_pipe() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::is_stereo
+//       Access: Published, Virtual
+//  Description: Returns true if this is a StereoDisplayRegion, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+bool DisplayRegion::
+is_stereo() const {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_camera
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Sets the camera that is associated with this
 //               DisplayRegion.  There is a one-to-many association
 //               between cameras and DisplayRegions; one camera may be
@@ -196,7 +188,7 @@ set_camera(const NodePath &camera) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_active
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Sets the active flag associated with the
 //               DisplayRegion.  If the DisplayRegion is marked
 //               inactive, nothing is rendered.
@@ -216,7 +208,7 @@ set_active(bool active) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_sort
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Sets the sort value associated with the
 //               DisplayRegion.  Within a window, DisplayRegions will
 //               be rendered in order from the lowest sort value to
@@ -236,17 +228,18 @@ set_sort(int sort) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_stereo_channel
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Specifies whether the DisplayRegion represents the
 //               left or right channel of a stereo pair, or whether it
-//               is a normal, monocular image.  See
-//               set_stereo_channel().
+//               is a normal, monocular image.  This automatically
+//               adjusts the lens that is used to render to this
+//               DisplayRegion to its left or right eye, according to
+//               the lens's stereo properties.
 //
-//               This controls which direction--to the left or the
-//               right--the view from a PerspectiveLens is shifted
-//               when it is used to render into this DisplayRegion.
-//               Also see Lens::set_interocular_distance() and
-//               Lens::set_convergence_distance().
+//               When the DisplayRegion is attached to a stereo window
+//               (one for which is_stereo() returns true), this also
+//               specifies which physical channel the DisplayRegion
+//               renders to.
 //
 //               Normally you would create at least two DisplayRegions
 //               for a stereo window, one for each of the left and
@@ -255,17 +248,79 @@ set_sort(int sort) {
 //               is used to control the exact properties of the lens
 //               when it is used to render into this DisplayRegion.
 //
-//               When the DisplayRegion is attached to a stereo window
-//               (one in which FrameBufferProperties::FM_stereo is
-//               set), this also specifies which physical channel the
-//               DisplayRegion renders to.
+//               Also see the StereoDisplayRegion, which automates
+//               managing a pair of left/right DisplayRegions.
+//
+//               An ordinary DisplayRegion may be set to SC_mono,
+//               SC_left, or SC_right.  You may set SC_stereo only on
+//               a StereoDisplayRegion.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
 set_stereo_channel(Lens::StereoChannel stereo_channel) {
+  nassertv(is_stereo() || stereo_channel != Lens::SC_stereo);
+
   nassertv(Thread::get_current_pipeline_stage() == 0);
 
   CDWriter cdata(_cycler);
   cdata->_stereo_channel = stereo_channel;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_incomplete_render
+//       Access: Published, Virtual
+//  Description: Sets the incomplete_render flag.  When this is
+//               true, the frame will be rendered even if some of the
+//               geometry or textures in the scene are not available
+//               (e.g. they have been temporarily paged out).  When
+//               this is false, the frame will be held up while this
+//               data is reloaded.
+//
+//               This flag may also be set on the
+//               GraphicsStateGuardian.  It will be considered true
+//               for a given DisplayRegion only if it is true on both
+//               the GSG and on the DisplayRegion.
+//
+//               See GraphicsStateGuardian::set_incomplete_render()
+//               for more detail.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+set_incomplete_render(bool incomplete_render) {
+  _incomplete_render = incomplete_render;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_texture_reload_priority
+//       Access: Published, Virtual
+//  Description: Specifies an integer priority which is assigned to
+//               any asynchronous texture reload requests spawned
+//               while processing this DisplayRegion.  This controls
+//               which textures are loaded first when multiple
+//               textures need to be reloaded at once; it also
+//               controls the relative priority between asynchronous
+//               texture loads and asynchronous model or animation
+//               loads.
+//
+//               Specifying a larger number here makes the textures
+//               rendered by this DisplayRegion load up first.  This
+//               may be particularly useful to do, for instance, for
+//               the DisplayRegion that renders the gui.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+set_texture_reload_priority(int texture_reload_priority) {
+  _texture_reload_priority = texture_reload_priority;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_cull_traverser
+//       Access: Published, Virtual
+//  Description: Specifies the CullTraverser that will be used to draw
+//               the contents of this DisplayRegion.  Normally the
+//               default CullTraverser is sufficient, but this may be
+//               changed to change the default cull behavior.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+set_cull_traverser(CullTraverser *trav) {
+  _trav = trav;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,82 +338,27 @@ get_cull_traverser() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::compute_pixels
-//       Access: Published
-//  Description: Computes the pixel locations of the DisplayRegion
-//               within its window.  The DisplayRegion will request
-//               the size from the window.
+//     Function: DisplayRegion::set_cube_map_index
+//       Access: Published, Virtual
+//  Description: This is a special parameter that is only used when
+//               rendering the faces of a cube map.  Normally you
+//               should not need to set it directly.  This sets up the
+//               DisplayRegion to render to the nth cube map face; the
+//               value must be between 0 and 5, inclusive.  A normal
+//               DisplayRegion that is not associated with any
+//               particular cube map should be set to -1.
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
-compute_pixels() {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
-
-  if (_window != (GraphicsOutput *)NULL) {
-    CDWriter cdata(_cycler);
-    do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), 
-                      cdata);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::compute_pixels_all_stages
-//       Access: Published
-//  Description: Computes the pixel locations of the DisplayRegion
-//               within its window.  The DisplayRegion will request
-//               the size from the window.
-////////////////////////////////////////////////////////////////////
-void DisplayRegion::
-compute_pixels_all_stages() {
-  int pipeline_stage = Thread::get_current_pipeline_stage();
-  nassertv(pipeline_stage == 0);
-
-  if (_window != (GraphicsOutput *)NULL) {
-    OPEN_ITERATE_ALL_STAGES(_cycler) {
-      CDStageWriter cdata(_cycler, pipeline_stage);
-      do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), 
-                        cdata);
-    }
-    CLOSE_ITERATE_ALL_STAGES(_cycler);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::compute_pixels
-//       Access: Published
-//  Description: Computes the pixel locations of the DisplayRegion
-//               within its window, given the size of the window in
-//               pixels.
-////////////////////////////////////////////////////////////////////
-void DisplayRegion::
-compute_pixels(int x_size, int y_size) {
+set_cube_map_index(int cube_map_index) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage == 0);
   CDWriter cdata(_cycler);
-  do_compute_pixels(x_size, y_size, cdata);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DisplayRegion::compute_pixels_all_stages
-//       Access: Published
-//  Description: Performs a compute_pixels() operation for all stages
-//               of the pipeline.  This is appropriate, for instance,
-//               when a window changes sizes, since this is a global
-//               operation; and you want the new window size to be
-//               immediately available even to the downstream stages.
-////////////////////////////////////////////////////////////////////
-void DisplayRegion::
-compute_pixels_all_stages(int x_size, int y_size) {
-  OPEN_ITERATE_ALL_STAGES(_cycler) {
-    CDStageWriter cdata(_cycler, pipeline_stage);
-    do_compute_pixels(x_size, y_size, cdata);
-  } 
-  CLOSE_ITERATE_ALL_STAGES(_cycler);
+  cdata->_cube_map_index = cube_map_index;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::output
-//       Access: Published
+//       Access: Published, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void DisplayRegion::
@@ -526,7 +526,7 @@ get_screenshot(PNMImage &image) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::make_cull_result_graph
-//       Access: Public
+//       Access: Published
 //  Description: Returns a special scene graph constructed to
 //               represent the results of the last frame's cull
 //               operation.
@@ -555,8 +555,82 @@ make_cull_result_graph() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::compute_pixels
+//       Access: Public
+//  Description: Computes the pixel locations of the DisplayRegion
+//               within its window.  The DisplayRegion will request
+//               the size from the window.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+compute_pixels() {
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+
+  if (_window != (GraphicsOutput *)NULL) {
+    CDWriter cdata(_cycler);
+    do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), 
+                      cdata);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::compute_pixels_all_stages
+//       Access: Public
+//  Description: Computes the pixel locations of the DisplayRegion
+//               within its window.  The DisplayRegion will request
+//               the size from the window.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+compute_pixels_all_stages() {
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+
+  if (_window != (GraphicsOutput *)NULL) {
+    OPEN_ITERATE_ALL_STAGES(_cycler) {
+      CDStageWriter cdata(_cycler, pipeline_stage);
+      do_compute_pixels(_window->get_fb_x_size(), _window->get_fb_y_size(), 
+                        cdata);
+    }
+    CLOSE_ITERATE_ALL_STAGES(_cycler);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::compute_pixels
+//       Access: Public
+//  Description: Computes the pixel locations of the DisplayRegion
+//               within its window, given the size of the window in
+//               pixels.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+compute_pixels(int x_size, int y_size) {
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+  CDWriter cdata(_cycler);
+  do_compute_pixels(x_size, y_size, cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::compute_pixels_all_stages
+//       Access: Public
+//  Description: Performs a compute_pixels() operation for all stages
+//               of the pipeline.  This is appropriate, for instance,
+//               when a window changes sizes, since this is a global
+//               operation; and you want the new window size to be
+//               immediately available even to the downstream stages.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::
+compute_pixels_all_stages(int x_size, int y_size) {
+  OPEN_ITERATE_ALL_STAGES(_cycler) {
+    CDStageWriter cdata(_cycler, pipeline_stage);
+    do_compute_pixels(x_size, y_size, cdata);
+  } 
+  CLOSE_ITERATE_ALL_STAGES(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::supports_pixel_zoom
-//       Access: Published, Virtual
+//       Access: Public, Virtual
 //  Description: Returns true if a call to set_pixel_zoom() will be
 //               respected, false if it will be ignored.  If this
 //               returns false, then get_pixel_factor() will always

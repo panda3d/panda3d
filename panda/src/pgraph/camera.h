@@ -25,8 +25,7 @@
 #include "pointerTo.h"
 #include "pmap.h"
 #include "auxSceneData.h"
-
-class DisplayRegion;
+#include "displayRegionBase.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Camera
@@ -54,7 +53,7 @@ PUBLISHED:
   INLINE const NodePath &get_scene() const;
 
   INLINE int get_num_display_regions() const;
-  INLINE DisplayRegion *get_display_region(int n) const;
+  INLINE DisplayRegionBase *get_display_region(int n) const;
   MAKE_SEQ(get_display_regions, get_num_display_regions, get_display_region);
 
   INLINE void set_camera_mask(DrawMask mask);
@@ -84,8 +83,8 @@ PUBLISHED:
   int cleanup_aux_scene_data(Thread *current_thread = Thread::get_current_thread());
 
 private:
-  void add_display_region(DisplayRegion *display_region);
-  void remove_display_region(DisplayRegion *display_region);
+  void add_display_region(DisplayRegionBase *display_region);
+  void remove_display_region(DisplayRegionBase *display_region);
 
   bool _active;
   NodePath _scene;
@@ -94,7 +93,7 @@ private:
 
   DrawMask _camera_mask;
 
-  typedef pvector<DisplayRegion *> DisplayRegions;
+  typedef pvector<DisplayRegionBase *> DisplayRegions;
   DisplayRegions _display_regions;
 
   CPT(RenderState) _initial_state;

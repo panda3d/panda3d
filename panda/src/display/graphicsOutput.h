@@ -19,6 +19,7 @@
 
 #include "graphicsPipe.h"
 #include "displayRegion.h"
+#include "stereoDisplayRegion.h"
 #include "graphicsStateGuardian.h"
 #include "drawableRegion.h"
 #include "renderBuffer.h"
@@ -141,8 +142,11 @@ PUBLISHED:
   INLINE void trigger_copy();
   
   INLINE DisplayRegion *make_display_region();
-  INLINE DisplayRegion *make_display_region(float l, float r,
-                                            float b, float t);
+  DisplayRegion *make_display_region(float l, float r, float b, float t);
+  INLINE DisplayRegion *make_mono_display_region();
+  DisplayRegion *make_mono_display_region(float l, float r, float b, float t);
+  INLINE StereoDisplayRegion *make_stereo_display_region();
+  StereoDisplayRegion *make_stereo_display_region(float l, float r, float b, float t);
   bool remove_display_region(DisplayRegion *display_region);
   void remove_all_display_regions();
 
@@ -248,6 +252,7 @@ private:
   PT(GeomVertexData) create_texture_card_vdata(int x, int y);
   
   DisplayRegion *add_display_region(DisplayRegion *display_region);
+  bool do_remove_display_region(DisplayRegion *display_region);
 
   INLINE void win_display_regions_changed();
 

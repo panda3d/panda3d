@@ -93,8 +93,7 @@ copy_clear_settings(const DrawableRegion &copy) {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_color_active(bool clear_color_active) {
-  _clear_active[RTP_color] = clear_color_active;
-  update_pixel_factor();
+  set_clear_active(RTP_color, clear_color_active);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,7 +105,7 @@ set_clear_color_active(bool clear_color_active) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DrawableRegion::
 get_clear_color_active() const {
-  return _clear_active[RTP_color];
+  return get_clear_active(RTP_color);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -120,8 +119,7 @@ get_clear_color_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_depth_active(bool clear_depth_active) {
-  _clear_active[RTP_depth] = clear_depth_active;
-  update_pixel_factor();
+  set_clear_active(RTP_depth, clear_depth_active);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,7 +131,7 @@ set_clear_depth_active(bool clear_depth_active) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DrawableRegion::
 get_clear_depth_active() const {
-  return _clear_active[RTP_depth];
+  return get_clear_active(RTP_depth);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,7 +145,7 @@ get_clear_depth_active() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_stencil_active(bool clear_stencil_active) {
-  _clear_active[RTP_stencil] = clear_stencil_active;
+  set_clear_active(RTP_stencil, clear_stencil_active);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -159,30 +157,7 @@ set_clear_stencil_active(bool clear_stencil_active) {
 ////////////////////////////////////////////////////////////////////
 INLINE bool DrawableRegion::
 get_clear_stencil_active() const {
-  return _clear_active[RTP_stencil];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DrawableRegion::set_clear_active
-//       Access: Published
-//  Description: Sets the clear-active flag for any bitplane.
-////////////////////////////////////////////////////////////////////
-INLINE void DrawableRegion::
-set_clear_active(int n, bool clear_active) {
-  nassertv((n >= 0)&&(n < RTP_COUNT));
-  _clear_active[n] = clear_active;
-  update_pixel_factor();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DrawableRegion::get_clear_active
-//       Access: Published
-//  Description: Gets the clear-active flag for any bitplane.
-////////////////////////////////////////////////////////////////////
-INLINE bool DrawableRegion::
-get_clear_active(int n) const {
-  nassertr((n >= 0)&&(n < RTP_COUNT), false);
-  return _clear_active[n];
+  return get_clear_active(RTP_stencil);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,7 +171,7 @@ get_clear_active(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_color(const Colorf &color) {
-  _clear_value[RTP_color] = color;
+  set_clear_value(RTP_color, color);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -210,7 +185,7 @@ set_clear_color(const Colorf &color) {
 ////////////////////////////////////////////////////////////////////
 INLINE const Colorf &DrawableRegion::
 get_clear_color() const {
-  return _clear_value[RTP_color];
+  return get_clear_value(RTP_color);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,7 +199,7 @@ get_clear_color() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_depth(float depth) {
-  _clear_value[RTP_depth] = Colorf(depth,depth,depth,depth);
+  set_clear_value(RTP_depth, Colorf(depth,depth,depth,depth));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -238,7 +213,7 @@ set_clear_depth(float depth) {
 ////////////////////////////////////////////////////////////////////
 INLINE float DrawableRegion::
 get_clear_depth() const {
-  return _clear_value[RTP_depth][0];
+  return get_clear_value(RTP_depth)[0];
 }
 ////////////////////////////////////////////////////////////////////
 //     Function: DrawableRegion::set_clear_stencil
@@ -251,7 +226,7 @@ get_clear_depth() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void DrawableRegion::
 set_clear_stencil(const unsigned int stencil) {
-  _clear_value[RTP_stencil] = Colorf(stencil,stencil,stencil,stencil);
+  set_clear_value(RTP_stencil, Colorf(stencil,stencil,stencil,stencil));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -265,92 +240,7 @@ set_clear_stencil(const unsigned int stencil) {
 ////////////////////////////////////////////////////////////////////
 INLINE unsigned int DrawableRegion::
 get_clear_stencil() const {
-  return (int)(_clear_value[RTP_stencil][0]);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DrawableRegion::set_clear_value
-//       Access: Published
-//  Description: Sets the clear value for any bitplane.
-////////////////////////////////////////////////////////////////////
-INLINE void DrawableRegion::
-set_clear_value(int n, const Colorf &color) {
-  nassertv((n >= 0) && (n < RTP_COUNT));
-  _clear_value[n] = color;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DrawableRegion::get_clear_value
-//       Access: Published
-//  Description: Returns the clear value for any bitplane.
-////////////////////////////////////////////////////////////////////
-INLINE const Colorf &DrawableRegion::
-get_clear_value(int n) const {
-  static Colorf blank(0.5,0.5,0.5,0.0);
-  nassertr((n >= 0) && (n < RTP_COUNT), blank);
-  return _clear_value[n];
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DrawableRegion::disable_clears
-//       Access: Published
-//  Description: Disables both the color and depth clear.  See
-//               set_clear_color_active and set_clear_depth_active.
-////////////////////////////////////////////////////////////////////
-INLINE void DrawableRegion::
-disable_clears() {
-  for (int i=0; i<RTP_COUNT; i++) {
-    _clear_active[i] = false;
-  }
-  update_pixel_factor();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DrawableRegion::is_any_clear_active
-//       Access: Published
-//  Description: Returns true if any of the clear types (so far there
-//               are just color or depth) have been set active, or
-//               false if none of them are active and there is no need
-//               to clear.
-////////////////////////////////////////////////////////////////////
-INLINE bool DrawableRegion::
-is_any_clear_active() const {
-  for (int i=0; i<RTP_COUNT; i++) {
-    if (_clear_active[i]) return true;
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: DrawableRegion::set_pixel_zoom
-//       Access: Published
-//  Description: Sets the amount by which the pixels of the region are
-//               scaled internally when filling the image interally.
-//               Setting this number larger makes the pixels blockier,
-//               but may make the rendering faster, particularly for
-//               software renderers.  Setting this number to 2.0
-//               reduces the number of pixels that have to be filled
-//               by the renderer by a factor of 2.0.  It doesn't make
-//               sense to set this lower than 1.0.
-//
-//               It is possible to set this on either individual
-//               DisplayRegions or on overall GraphicsWindows, but you
-//               will get better performance for setting it on the
-//               window rather than its individual DisplayRegions.
-//               Also, you may not set it on a DisplayRegion that
-//               doesn't have both clear_color() and clear_depth()
-//               enabled.
-//
-//               This property is only supported on renderers for
-//               which it is particularly useful--currently, this is
-//               the tinydisplay software renderer.  Other kinds of
-//               renderers allow you to set this property, but ignore
-//               it.
-////////////////////////////////////////////////////////////////////
-INLINE void DrawableRegion::
-set_pixel_zoom(float pixel_zoom) {
-  _pixel_zoom = pixel_zoom;
-  update_pixel_factor();
+  return (int)(get_clear_value(RTP_stencil)[0]);
 }
 
 ////////////////////////////////////////////////////////////////////

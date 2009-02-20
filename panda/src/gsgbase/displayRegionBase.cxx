@@ -1,5 +1,5 @@
-// Filename: config_gsgbase.cxx
-// Created by:  drose (06Oct99)
+// Filename: displayRegionBase.cxx
+// Created by:  drose (20Feb09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,15 +12,16 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_gsgbase.h"
 #include "displayRegionBase.h"
-#include "graphicsStateGuardianBase.h"
 
-#include "dconfig.h"
+TypeHandle DisplayRegionBase::_type_handle;
 
-Configure(config_gsgbase);
 
-ConfigureFn(config_gsgbase) {
-  DisplayRegionBase::init_type();
-  GraphicsStateGuardianBase::init_type();
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionBase::Destructor
+//       Access: Public, Virtual
+//  Description:
+////////////////////////////////////////////////////////////////////
+DisplayRegionBase::
+~DisplayRegionBase() {
 }
