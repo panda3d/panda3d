@@ -822,11 +822,30 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 
   int color_write_state = 0;  // cstore
+
+  const ColorWriteAttrib *target_color_write = DCAST(ColorWriteAttrib, _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot()));
+  unsigned int color_channels =
+    target_color_write->get_channels() & _color_write_mask;
+  if (color_channels != ColorWriteAttrib::C_all) {
+    // Implement a color mask.
+    int op_a = get_color_blend_op(ColorBlendAttrib::O_one);
+    int op_b = get_color_blend_op(ColorBlendAttrib::O_zero);
+    _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b][color_channels];
+    color_write_state = 2;   // cgeneral
+  }
+
   const TransparencyAttrib *target_transparency = DCAST(TransparencyAttrib, _target_rs->get_attrib_def(TransparencyAttrib::get_class_slot()));
   switch (target_transparency->get_mode()) {
   case TransparencyAttrib::M_alpha:
   case TransparencyAttrib::M_dual:
     color_write_state = 1;    // cblend
+    if (color_channels != ColorWriteAttrib::C_all) {
+      // Implement a color mask, with alpha blending.
+      int op_a = get_color_blend_op(ColorBlendAttrib::O_incoming_alpha);
+      int op_b = get_color_blend_op(ColorBlendAttrib::O_one_minus_incoming_alpha);
+      _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b][color_channels];
+      color_write_state = 2;   // cgeneral
+    }
     break;
 
   default:
@@ -839,7 +858,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     // the transparency set.
     int op_a = get_color_blend_op(target_color_blend->get_operand_a());
     int op_b = get_color_blend_op(target_color_blend->get_operand_b());
-    _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b];
+    _c->zb->store_pix_func = store_pixel_funcs[op_a][op_b][color_channels];
     Colorf c = target_color_blend->get_color();
     _c->zb->blend_r = (int)(c[0] * ZB_POINT_RED_MAX);
     _c->zb->blend_g = (int)(c[1] * ZB_POINT_GREEN_MAX);
@@ -849,9 +868,6 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     color_write_state = 2;     // cgeneral
   }
 
-  const ColorWriteAttrib *target_color_write = DCAST(ColorWriteAttrib, _target_rs->get_attrib_def(ColorWriteAttrib::get_class_slot()));
-  unsigned int color_channels =
-    target_color_write->get_channels() & _color_write_mask;
   if (color_channels == ColorWriteAttrib::C_off) {
     color_write_state = 3;    // coff
   }

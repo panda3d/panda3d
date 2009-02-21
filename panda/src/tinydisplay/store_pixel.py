@@ -34,8 +34,17 @@ CodeTable = {
     'mcalpha' : '0xffff - zb->blend_a',
 }    
 
-def getFname(op_a, op_b):
-    return 'store_pixel_%s_%s' % (op_a, op_b)
+
+bitnames = 'rgba'
+
+def getFname(op_a, op_b, mask):
+    maskname = ''
+    for b in range(4):
+        if (mask & (1 << b)):
+            maskname += bitnames[b]
+        else:
+            maskname += '0'
+    return 'store_pixel_%s_%s_%s' % (op_a, op_b, maskname)
 
 # We write the code that actually instantiates the various
 # pixel-storing functions to store_pixel_code.h.
@@ -51,16 +60,22 @@ print >> table, ''
 
 for op_a in Operands:
     for op_b in Operands:
-        fname = getFname(op_a, op_b)
-        print >> code, '#define FNAME(name) %s' % (fname)
-        print >> code, '#define OP_A(f, i) ((unsigned int)(%s))' % (CodeTable[op_a])
-        print >> code, '#define OP_B(f, i) ((unsigned int)(%s))' % (CodeTable[op_eb])
-        print >> code, '#include "store_pixel.h"'
-        print >> code, ''
-        
+        for mask in range(0, 16):
+            fname = getFname(op_a, op_b, mask)
+            print >> code, '#define FNAME(name) %s' % (fname)
+            print >> code, '#define OP_A(f, i) ((unsigned int)(%s))' % (CodeTable[op_a])
+            print >> code, '#define OP_B(f, i) ((unsigned int)(%s))' % (CodeTable[op_b])
+            for b in range(0, 4):
+                if (mask & (1 << b)):
+                    print >> code, "#define STORE_PIXEL_%s(fr, r) STORE_PIX_CLAMP(r)" % (b)
+                else:
+                    print >> code, "#define STORE_PIXEL_%s(fr, r) (fr)" % (b)
+            print >> code, '#include "store_pixel.h"'
+            print >> code, ''
+            
 
 # Now, generate the table of function pointers.
-arraySize = '[%s][%s]' % (len(Operands), len(Operands))
+arraySize = '[%s][%s][16]' % (len(Operands), len(Operands))
 
 print >> table, 'extern const ZB_storePixelFunc store_pixel_funcs%s;' % (arraySize)
 print >> code, 'const ZB_storePixelFunc store_pixel_funcs%s = {' % (arraySize)
@@ -68,8 +83,11 @@ print >> code, 'const ZB_storePixelFunc store_pixel_funcs%s = {' % (arraySize)
 for op_a in Operands:
     print >> code, '  {'
     for op_b in Operands:
-        fname = getFname(op_a, op_b)
-        print >> code, '    %s,' % (fname)
+        print >> code, '    {'
+        for mask in range(0, 16):
+            fname = getFname(op_a, op_b, mask)
+            print >> code, '      %s,' % (fname)
+        print >> code, '    },'
     print >> code, '  },'
 print >> code, '};'
 

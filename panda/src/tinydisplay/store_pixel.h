@@ -25,10 +25,10 @@ FNAME(store_pixel) (ZBuffer *zb, PIXEL &result, int r, int g, int b, int a) {
   unsigned int fb = PIXEL_B(result);
   unsigned int fa = PIXEL_A(result);
 
-  r = STORE_PIX_CLAMP(((unsigned int)r * OP_A(fr, r) >> 16) + ((unsigned int)fr * OP_B(fr, r) >> 16));
-  g = STORE_PIX_CLAMP(((unsigned int)g * OP_A(fg, g) >> 16) + ((unsigned int)fg * OP_B(fg, g) >> 16));
-  b = STORE_PIX_CLAMP(((unsigned int)b * OP_A(fb, b) >> 16) + ((unsigned int)fb * OP_B(fb, b) >> 16));
-  a = STORE_PIX_CLAMP(((unsigned int)a * OP_A(fa, a) >> 16) + ((unsigned int)fa * OP_B(fa, a) >> 16));
+  r = STORE_PIXEL_0(fr, ((unsigned int)r * OP_A(fr, r) >> 16) + ((unsigned int)fr * OP_B(fr, r) >> 16));
+  g = STORE_PIXEL_1(fg, ((unsigned int)g * OP_A(fg, g) >> 16) + ((unsigned int)fg * OP_B(fg, g) >> 16));
+  b = STORE_PIXEL_2(fg, ((unsigned int)b * OP_A(fb, b) >> 16) + ((unsigned int)fb * OP_B(fb, b) >> 16));
+  a = STORE_PIXEL_3(fg, ((unsigned int)a * OP_A(fa, a) >> 16) + ((unsigned int)fa * OP_B(fa, a) >> 16));
   result = RGBA_TO_PIXEL(r, g, b, a);
 }
 
@@ -36,3 +36,7 @@ FNAME(store_pixel) (ZBuffer *zb, PIXEL &result, int r, int g, int b, int a) {
 #undef FNAME  
 #undef OP_A
 #undef OP_B
+#undef STORE_PIXEL_0
+#undef STORE_PIXEL_1
+#undef STORE_PIXEL_2
+#undef STORE_PIXEL_3
