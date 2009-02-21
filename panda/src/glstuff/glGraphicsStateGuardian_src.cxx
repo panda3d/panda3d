@@ -1450,7 +1450,9 @@ clear(DrawableRegion *clearable) {
   if (clearable->get_clear_color_active()) {
     Colorf v = clearable->get_clear_color();
     GLP(ClearColor)(v[0],v[1],v[2],v[3]);
-    GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    if (CLP(color_mask)) {
+      GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    }
     _state_mask.clear_bit(ColorWriteAttrib::get_class_slot());
     mask |= GL_COLOR_BUFFER_BIT;
     set_draw_buffer(clearable->get_draw_buffer_type());
@@ -3387,6 +3389,9 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
                             const RenderBuffer &rb) {
   nassertr(tex != NULL && dr != NULL, false);
   set_read_buffer(rb._buffer_type);
+  if (CLP(color_mask)) {
+    GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  }
   
   int xo, yo, w, h;
   dr->get_region_pixels(xo, yo, w, h);
@@ -3529,6 +3534,9 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
   nassertr(tex != NULL && dr != NULL, false);
   set_read_buffer(rb._buffer_type);
   GLP(PixelStorei)(GL_PACK_ALIGNMENT, 1);
+  if (CLP(color_mask)) {
+    GLP(ColorMask)(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+  }
 
   // Bug fix for RE, RE2, and VTX - need to disable texturing in order
   // for GLP(ReadPixels)() to work
