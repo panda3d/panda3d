@@ -345,7 +345,7 @@ update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
       break;
     }
     FMOD::DSP *prev;
-    res2 = head->getInput(0, &prev);
+    res2 = head->getInput(0, &prev, NULL);
     void *userdata;
     res3 = prev->getUserData(&userdata);
     if (userdata != USER_DSP_MAGIC) {
@@ -363,10 +363,10 @@ update_dsp_chain(FMOD::DSP *head, FilterProperties *config) {
     FMOD::DSP *dsp = make_dsp(conf[i]);
     if (dsp == 0) break;
     FMOD::DSP *prev;
-    res1 = head->getInput(0, &prev);
+    res1 = head->getInput(0, &prev, NULL);
     res2 = head->disconnectFrom(prev);
-    res3 = head->addInput(dsp);
-    res4 = dsp->addInput(prev);
+    res3 = head->addInput(dsp, NULL);
+    res4 = dsp->addInput(prev, NULL);
     res5 = dsp->setActive(true);
     if ((res1!=FMOD_OK)||(res2!=FMOD_OK)||(res3!=FMOD_OK)||(res4!=FMOD_OK)||(res5!=FMOD_OK)) {
       audio_error("Could not update DSP chain.");

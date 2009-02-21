@@ -163,11 +163,16 @@ play() {
 ////////////////////////////////////////////////////////////////////
 FMOD_RESULT F_CALLBACK sound_end_callback(FMOD_CHANNEL *  channel, 
 					  FMOD_CHANNEL_CALLBACKTYPE  type, 
-					  int  command, 
-					  unsigned int  commanddata1, 
-					  unsigned int  commanddata2) {
-  FmodAudioSound *fsound = (FmodAudioSound*)command;
-  fsound->_self_ref = fsound;
+					  void *commanddata1, 
+					  void *commanddata2) {
+  if (type == FMOD_CHANNEL_CALLBACKTYPE_END) {
+    FMOD::Channel *fc = (FMOD::Channel *)channel;
+    void *userdata = NULL;
+    FMOD_RESULT result = fc->getUserData(&userdata);
+    fmod_audio_errcheck("channel->getUserData()", result);
+    FmodAudioSound *fsound = (FmodAudioSound*)userdata;
+    fsound->_self_ref = fsound;
+  }
   return FMOD_OK;
 }
 
@@ -311,13 +316,11 @@ set_time(float start_time) {
   }
   
   if (_channel == 0) {
-    // This is because setCallback expects an integer
-    // but 64-bits pointers wont fit in a 32-bits int.
-    nassertv_always((intptr_t)this < UINT_MAX);
-    
     result = _manager->_system->playSound(FMOD_CHANNEL_FREE, _sound, true, &_channel);
     fmod_audio_errcheck("_system->playSound()", result);
-    result = _channel->setCallback(FMOD_CHANNEL_CALLBACKTYPE_END, sound_end_callback, (intptr_t)this);
+    result = _channel->setUserData(this);
+    fmod_audio_errcheck("_channel->setUserData()", result);
+    result = _channel->setCallback(sound_end_callback);
     fmod_audio_errcheck("_channel->setCallback()", result);
     result = _channel->setPosition( startTime , FMOD_TIMEUNIT_MS );
     fmod_audio_errcheck("_channel->setPosition()", result);

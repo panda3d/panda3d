@@ -204,9 +204,8 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 
   friend FMOD_RESULT F_CALLBACK sound_end_callback(FMOD_CHANNEL *  channel, 
                                                    FMOD_CHANNEL_CALLBACKTYPE  type, 
-                                                   int  command, 
-                                                   unsigned int  commanddata1, 
-                                                   unsigned int  commanddata2);
+                                                   void *commanddata1, 
+                                                   void *commanddata2);
 
   ////////////////////////////////////////////////////////////
   //These are needed for Panda's Pointer System. DO NOT ERASE!
