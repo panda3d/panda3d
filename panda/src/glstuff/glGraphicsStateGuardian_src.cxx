@@ -7524,7 +7524,10 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
       }
     }
 
-    get_engine()->texture_uploaded(tex);
+    GraphicsEngine *engine = get_engine();
+    nassertr(engine != (GraphicsEngine *)NULL, false);
+    engine = GraphicsEngine::get_global_ptr();  // temp hack
+    engine->texture_uploaded(tex);
     gtc->mark_loaded();
 
     report_my_gl_errors();
