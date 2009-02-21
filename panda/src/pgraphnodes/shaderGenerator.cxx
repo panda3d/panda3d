@@ -645,7 +645,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lcolor = alight_alight" << i << ";\n";
       if (_separate_ambient_diffuse && _have_ambient) {
         text << "\t tot_ambient += lcolor;\n";
-      } else {
+      } else if(_have_diffuse) {
         text << "\t tot_diffuse += lcolor;\n";
       }
     }
@@ -655,7 +655,9 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lspec  = dlight_dlight" << i << "_rel_view[1];\n";
       text << "\t lvec   = dlight_dlight" << i << "_rel_view[2];\n";
       text << "\t lcolor *= saturate(dot(l_normal, lvec.xyz));\n";
-      text << "\t tot_diffuse += lcolor;\n";
+      if (_have_diffuse) {
+        text << "\t tot_diffuse += lcolor;\n";
+      }
       if (_have_specular) {
         if (_material->get_local()) {
           text << "\t lhalf  = normalize(lvec - normalize(l_pos));\n";
@@ -677,7 +679,9 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lvec /= ldist;\n";
       text << "\t lattenv = 1/(latten.x + latten.y*ldist + latten.z*ldist*ldist);\n";
       text << "\t lcolor *= lattenv * saturate(dot(l_normal, lvec.xyz));\n";
-      text << "\t tot_diffuse += lcolor;\n";
+      if (_have_diffuse) {
+        text << "\t tot_diffuse += lcolor;\n";
+      }
       if (_have_specular) {
         if (_material->get_local()) {
           text << "\t lhalf  = normalize(lvec - normalize(l_pos));\n";
@@ -704,7 +708,9 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lattenv *= pow(langle, latten.w);\n";
       text << "\t if (langle < ldir.w) lattenv = 0;\n";
       text << "\t lcolor *= lattenv * saturate(dot(l_normal, lvec.xyz));\n";
-      text << "\t tot_diffuse += lcolor;\n";
+      if (_have_diffuse) {
+        text << "\t tot_diffuse += lcolor;\n";
+      }
       if (_have_specular) {
         if (_material->get_local()) {
           text << "\t lhalf  = normalize(lvec - normalize(l_pos));\n";
