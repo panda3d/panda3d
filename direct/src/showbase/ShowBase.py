@@ -469,7 +469,7 @@ class ShowBase(DirectObject.DirectObject):
                 "library via load-display or aux-display.")
 
         self.notify.info("Default graphics pipe is %s (%s)." % (
-            self.pipe.getInterfaceName(), self.pipe.getType().getName()))
+            self.pipe.getType().getName(), self.pipe.getInterfaceName()))
         self.pipeList.append(self.pipe)
 
     def makeModulePipe(self, moduleName):
@@ -513,7 +513,7 @@ class ShowBase(DirectObject.DirectObject):
                 pipe = selection.makePipe(pipeType)
                 if pipe:
                     self.notify.info("Got aux graphics pipe %s (%s)." % (
-                        pipe.getInterfaceName(), pipe.getType().getName()))
+                        pipe.getType().getName(), pipe.getInterfaceName()))
                     self.pipeList.append(pipe)
                 else:
                     self.notify.info("Could not make graphics pipe %s." % (
@@ -700,15 +700,22 @@ class ShowBase(DirectObject.DirectObject):
         if self.win == None:
             # Try a little harder if the window wouldn't open.
             self.makeAllPipes()
-            while self.win == None and len(self.pipeList) > 1:
+            try:
                 self.pipeList.remove(self.pipe)
+            except ValueError:
+                pass
+            while self.win == None and self.pipeList:
                 self.pipe = self.pipeList[0]
+                self.notify.info("Trying pipe type %s (%s)" % (
+                    self.pipe.getType(), self.pipe.getInterfaceName()))
                 self.openMainWindow(*args, **kw)
 
                 self.graphicsEngine.openWindows()
                 if self.win != None and not self.isMainWindowOpen():
                     self.notify.info("Window did not open, removing.")
                     self.closeWindow(self.win)
+                if self.win == None:
+                    self.pipeList.remove(self.pipe)
 
         if self.win == None:
             self.notify.warning("Unable to open '%s' window." % (
@@ -717,6 +724,9 @@ class ShowBase(DirectObject.DirectObject):
                 # Unless require-window is set to false, it is an
                 # error not to open a window.
                 raise StandardError, 'Could not open window.'
+        else:
+            self.notify.info("Successfully opened window of type %s (%s)" % (
+                self.win.getType(), self.win.getPipe().getInterfaceName()))
 
         # The default is trackball mode, which is more convenient for
         # ad-hoc development in Python using ShowBase.  Applications
