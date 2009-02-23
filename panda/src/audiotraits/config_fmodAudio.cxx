@@ -15,8 +15,8 @@
 #include "pandabase.h"
 #ifdef HAVE_FMODEX //[
 
-
 #include "config_fmodAudio.h"
+#include "audioManager.h"
 #include "fmodAudioManager.h"
 #include "fmodAudioSound.h"
 #include "pandaSystem.h"
@@ -39,15 +39,13 @@ ConfigureFn(config_fmodAudio) {
 ////////////////////////////////////////////////////////////////////
 void
 init_libFmodAudio() {
+  cerr << "init_libFmodAudio\n";
   static bool initialized = false;
   if (initialized) {
     return;
   }
   
   initialized = true;
-
-  AudioManager::register_AudioManager_creator(Create_AudioManager);
-
   FmodAudioManager::init_type();
   FmodAudioSound::init_type();
 
@@ -55,6 +53,18 @@ init_libFmodAudio() {
   ps->add_system("FMOD");
   ps->add_system("audio");
   ps->set_system_tag("audio", "implementation", "FMOD");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_audio_manager_func_fmod_audio
+//  Description: This function is called when the dynamic library is
+//               loaded; it should return the Create_AudioManager
+//               function appropriate to create a FmodAudioManager.
+///////////////////////////////////////////////////////////////////
+Create_AudioManager_proc *
+get_audio_manager_func_fmod_audio() {
+  init_libFmodAudio();
+  return &Create_FmodAudioManager;
 }
 
 #endif //]

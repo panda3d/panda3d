@@ -238,7 +238,7 @@ private:
 
 };
 
-EXPCL_FMOD_AUDIO PT(AudioManager) Create_AudioManager();
+EXPCL_FMOD_AUDIO AudioManager *Create_FmodAudioManager();
 
 
 #endif //]

@@ -176,7 +176,7 @@ private:
   friend class MilesAudioStream;
 };
 
-EXPCL_MILES_AUDIO PT(AudioManager) Create_AudioManager();
+EXPCL_MILES_AUDIO AudioManager *Create_MilesAudioManager();
 
 
 #endif //]

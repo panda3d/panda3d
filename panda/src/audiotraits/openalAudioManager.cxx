@@ -61,11 +61,12 @@ void alc_audio_errcheck(const char *context,ALCdevice* device) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Create_AudioManager
+//     Function: Create_OpenALAudioManager
 //       Access: Private
 //  Description: Factory Function
 ////////////////////////////////////////////////////////////////////
-PT(AudioManager) Create_AudioManager() {
+AudioManager *Create_OpenALAudioManager() {
+  audio_debug("Create_OpenALAudioManager()");
   return new OpenALAudioManager;
 }
 

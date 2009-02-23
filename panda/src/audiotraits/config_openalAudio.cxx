@@ -45,9 +45,6 @@ init_libOpenALAudio() {
   }
   
   initialized = true;
-
-  AudioManager::register_AudioManager_creator(Create_AudioManager);
-
   OpenALAudioManager::init_type();
   OpenALAudioSound::init_type();
 
@@ -55,6 +52,18 @@ init_libOpenALAudio() {
   ps->add_system("OpenAL");
   ps->add_system("audio");
   ps->set_system_tag("audio", "implementation", "OpenAL");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_audio_manager_func_openal_audio
+//  Description: This function is called when the dynamic library is
+//               loaded; it should return the Create_AudioManager
+//               function appropriate to create an OpenALAudioManager.
+///////////////////////////////////////////////////////////////////
+Create_AudioManager_proc *
+get_audio_manager_func_openal_audio() {
+  init_libOpenALAudio();
+  return &Create_OpenALAudioManager;
 }
 
 #endif //]

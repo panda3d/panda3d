@@ -31,17 +31,17 @@ TypeHandle AudioManager::_type_handle;
 
 
 namespace {
-  PT(AudioManager) create_NullAudioManger() {
-    audio_debug("create_NullAudioManger()");
+  AudioManager *create_NullAudioManager() {
+    audio_debug("create_NullAudioManager()");
     return new NullAudioManager();
   }
 }
 
 Create_AudioManager_proc* AudioManager::_create_AudioManager
-    =create_NullAudioManger;
+    =create_NullAudioManager;
 
 void AudioManager::register_AudioManager_creator(Create_AudioManager_proc* proc) {
-  nassertv(_create_AudioManager==create_NullAudioManger);
+  nassertv(_create_AudioManager==create_NullAudioManager);
   _create_AudioManager=proc;
 }
 
@@ -50,37 +50,46 @@ void AudioManager::register_AudioManager_creator(Create_AudioManager_proc* proc)
 // Factory method for getting a platform specific AudioManager:
 PT(AudioManager) AudioManager::create_AudioManager() {
   audio_debug("create_AudioManager()\n  audio_library_name=\""<<audio_library_name<<"\"");
-  static int lib_load;
+  static bool lib_load = false;
   if (!lib_load) {
-    lib_load=1;
+    lib_load = true;
     if (!audio_library_name.empty() && !(audio_library_name == "null")) {
       Filename dl_name = Filename::dso_filename(
           "lib"+string(audio_library_name)+".so");
       dl_name.to_os_specific();
       audio_debug("  dl_name=\""<<dl_name<<"\"");
-      void* lib = load_dso(get_plugin_path().get_value(), dl_name);
-      if (!lib) {
+      void *handle = load_dso(get_plugin_path().get_value(), dl_name);
+      if (handle == (void *)NULL) {
         audio_error("  LoadLibrary() failed, will use NullAudioManager");
         audio_error("    "<<load_dso_error());
-        nassertr(_create_AudioManager==create_NullAudioManger, 0);
+        nassertr(_create_AudioManager == create_NullAudioManager, NULL);
       } else {
-        // ...the library will register itself with the AudioManager.
-        #if defined(DWORD) && defined(WIN32) && !defined(NDEBUG) //[
-          const int bufLen=256;
-          char path[bufLen];
-          DWORD count = GetModuleFileName((HMODULE)lib, path, bufLen);
-          if (count) {
-            audio_debug("  GetModuleFileName() \""<<path<<"\"");
-          } else {
-            audio_debug("  GetModuleFileName() failed.");
-          }
-        #endif //]
+        // Get the special function from the dso, which should return
+        // the AudioManager factory function.
+        string symbol_name = "get_audio_manager_func_" + audio_library_name.get_value();
+        void *dso_symbol = get_dso_symbol(handle, symbol_name);
+        if (audio_cat.is_debug()) {
+          audio_cat.debug()
+            << "symbol of " << symbol_name << " = " << dso_symbol << "\n";
+        }
+        
+        if (dso_symbol == (void *)NULL) {
+          // Couldn't find the module function.
+          unload_dso(handle);
+          handle = NULL;
+          audio_error("  Audio library did not provide get_audio_manager_func, will use NullAudioManager");
+        } else {
+          typedef Create_AudioManager_proc *FuncType();
+          Create_AudioManager_proc *factory_func = (*(FuncType *)dso_symbol)();
+          AudioManager::register_AudioManager_creator(factory_func);          
+        }
       }
     }
   }
   PT(AudioManager) am = (*_create_AudioManager)();
-  if (!am->is_valid()) {
-    am = create_NullAudioManger();
+  if (!am->is_exact_type(NullAudioManager::get_class_type()) && !am->is_valid()) {
+    audio_error("  " << am->get_type() << " is not valid, will use NullAudioManager");
+    am = create_NullAudioManager();
   }
   return am;
 }

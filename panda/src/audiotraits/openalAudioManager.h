@@ -242,7 +242,7 @@ private:
 
 };
 
-EXPCL_OPENAL_AUDIO PT(AudioManager) Create_AudioManager();
+EXPCL_OPENAL_AUDIO AudioManager *Create_AudioManager();
 
 
 #endif //]

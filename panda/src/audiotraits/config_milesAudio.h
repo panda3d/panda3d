@@ -22,6 +22,7 @@
 #include "configVariableBool.h"
 #include "configVariableInt.h"
 #include "dconfig.h"
+#include "audioManager.h"
 
 ConfigureDecl(config_milesAudio, EXPCL_MILES_AUDIO, EXPTP_MILES_AUDIO);
 NotifyCategoryDecl(milesAudio, EXPCL_MILES_AUDIO, EXPTP_MILES_AUDIO);
@@ -32,7 +33,7 @@ extern ConfigVariableInt miles_audio_preload_threshold;
 extern ConfigVariableBool miles_audio_panda_threads;
 
 extern EXPCL_MILES_AUDIO void init_libMilesAudio();
-
+extern "C" EXPCL_MILES_AUDIO Create_AudioManager_proc *get_audio_manager_func_miles_audio();
 #endif //]
 
 #endif // CONFIG_MILESAUDIO_H

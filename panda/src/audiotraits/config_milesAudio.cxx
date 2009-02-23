@@ -77,9 +77,6 @@ init_libMilesAudio() {
     return;
   }
   initialized = true;
-
-  AudioManager::register_AudioManager_creator(Create_AudioManager);
-
   MilesAudioManager::init_type();
   MilesAudioSound::init_type();
   MilesAudioSample::init_type();
@@ -90,6 +87,18 @@ init_libMilesAudio() {
   ps->add_system("Miles");
   ps->add_system("audio");
   ps->set_system_tag("audio", "implementation", "Miles");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: get_audio_manager_func_miles_audio
+//  Description: This function is called when the dynamic library is
+//               loaded; it should return the Create_AudioManager
+//               function appropriate to create a MilesAudioManager.
+///////////////////////////////////////////////////////////////////
+Create_AudioManager_proc *
+get_audio_manager_func_miles_audio() {
+  init_libMilesAudio();
+  return &Create_MilesAudioManager;
 }
 
 #endif //]

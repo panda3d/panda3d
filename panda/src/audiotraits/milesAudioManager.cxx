@@ -35,8 +35,8 @@
 
 TypeHandle MilesAudioManager::_type_handle;
 
-PT(AudioManager) Create_AudioManager() {
-  audio_debug("Create_AudioManager() Miles.");
+AudioManager *Create_MilesAudioManager() {
+  audio_debug("Create_MilesAudioManager()");
   return new MilesAudioManager();
 }
 

@@ -21,7 +21,7 @@
 #include "filterProperties.h"
 #include "movieAudio.h"
 
-typedef PT(AudioManager) Create_AudioManager_proc();
+typedef AudioManager *Create_AudioManager_proc();
 
 
 class EXPCL_PANDA_AUDIO AudioManager : public TypedReferenceCount {

@@ -67,11 +67,12 @@ void fmod_audio_errcheck(const char *context, FMOD_RESULT result) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Create_AudioManager
+//     Function: Create_FmodAudioManager
 //       Access: Private
 //  Description: Factory Function
 ////////////////////////////////////////////////////////////////////
-PT(AudioManager) Create_AudioManager() {
+AudioManager *Create_FmodAudioManager() {
+  audio_debug("Create_FmodAudioManager()");
   return new FmodAudioManager;
 }
 
