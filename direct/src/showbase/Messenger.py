@@ -119,10 +119,14 @@ class Messenger:
                 "object: %s\n accepting: %s\n method: %s\n extraArgs: %s\n persistent: %s" %
                 (object, event, method, extraArgs, persistent))
 
-        # Make the the method is callable
+        # Make sure that the method is callable
         assert callable(method), (
             "method not callable in accept (ignoring): %s %s"%
             (method, extraArgs))
+
+        # Make sure extraArgs is a list or tuple
+        if not (isinstance(extraArgs, list) or isinstance(extraArgs, tuple) or isinstance(extraArgs, set)):
+            raise TypeError, "A list is required as extraArgs argument"
 
         self.lock.acquire()
         try:
