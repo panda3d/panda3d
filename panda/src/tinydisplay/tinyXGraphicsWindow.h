@@ -31,12 +31,12 @@
 class EXPCL_TINYDISPLAY TinyXGraphicsWindow : public GraphicsWindow {
 public:
   TinyXGraphicsWindow(GraphicsPipe *pipe, 
-                    const string &name,
-                    const FrameBufferProperties &fb_prop,
-                    const WindowProperties &win_prop,
-                    int flags,
-                    GraphicsStateGuardian *gsg,
-                    GraphicsOutput *host);
+                      const string &name,
+                      const FrameBufferProperties &fb_prop,
+                      const WindowProperties &win_prop,
+                      int flags,
+                      GraphicsStateGuardian *gsg,
+                      GraphicsOutput *host);
   virtual ~TinyXGraphicsWindow();
 
   virtual bool move_pointer(int device, int x, int y);
@@ -51,6 +51,7 @@ public:
 protected:
   virtual void close_window();
   virtual bool open_window();
+  virtual void pixel_factor_changed();
 
 private:
   void set_wm_properties(const WindowProperties &properties,
@@ -69,11 +70,13 @@ private:
   void open_raw_mice();
   void poll_raw_mice();
 
-  void create_frame_buffer();
+  void create_full_frame_buffer();
+  void create_reduced_frame_buffer();
   void create_ximage();
   
 private:
-  ZBuffer *_frame_buffer;
+  ZBuffer *_reduced_frame_buffer;
+  ZBuffer *_full_frame_buffer;
   int _pitch;
   XImage *_ximage;
 

@@ -78,7 +78,8 @@ TinyXGraphicsWindow(GraphicsPipe *pipe,
   _net_wm_state_add = tinyx_pipe->_net_wm_state_add;
   _net_wm_state_remove = tinyx_pipe->_net_wm_state_remove;
 
-  _frame_buffer = NULL;
+  _reduced_frame_buffer = NULL;
+  _full_frame_buffer = NULL;
   _ximage = NULL;
   update_pixel_factor();
 
@@ -159,7 +160,11 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   TinyGraphicsStateGuardian *tinygsg;
   DCAST_INTO_R(tinygsg, _gsg, false);
 
-  tinygsg->_current_frame_buffer = _frame_buffer;
+  if (_reduced_frame_buffer != (ZBuffer *)NULL) {
+    tinygsg->_current_frame_buffer = _reduced_frame_buffer;
+  } else {
+    tinygsg->_current_frame_buffer = _full_frame_buffer;
+  }
   tinygsg->reset_if_new();
   
   _gsg->set_current_properties(&get_fb_properties());
@@ -210,17 +215,25 @@ end_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void TinyXGraphicsWindow::
 begin_flip() {
-  if (_bytes_per_pixel == 4 && _pitch == _frame_buffer->linesize) {
+  if (_reduced_frame_buffer != (ZBuffer *)NULL) {
+    // Zoom the reduced buffer onto the full buffer.
+    ZB_zoomFrameBuffer(_full_frame_buffer, 0, 0, 
+                       _full_frame_buffer->xsize, _full_frame_buffer->ysize,
+                       _reduced_frame_buffer, 0, 0,
+                       _reduced_frame_buffer->xsize, _reduced_frame_buffer->ysize);
+  }
+
+  if (_bytes_per_pixel == 4 && _pitch == _full_frame_buffer->linesize) {
     // If we match the expected bpp, we don't need an intervening copy
     // operation.  Just point the XImage directly at the framebuffer
     // data.
-    _ximage->data = (char *)_frame_buffer->pbuf;
+    _ximage->data = (char *)_full_frame_buffer->pbuf;
   } else {
-    ZB_copyFrameBuffer(_frame_buffer, _ximage->data, _pitch);
+    ZB_copyFrameBuffer(_full_frame_buffer, _ximage->data, _pitch);
   }
 
   XPutImage(_display, _xwindow, _gc, _ximage, 0, 0, 0, 0,
-            _frame_buffer->xsize, _frame_buffer->ysize);
+            _full_frame_buffer->xsize, _full_frame_buffer->ysize);
   XFlush(_display);
 }
 
@@ -331,8 +344,9 @@ process_events() {
         // A normal window may be resized by the user at will.
         properties.set_size(event.xconfigure.width, event.xconfigure.height);
         system_changed_properties(properties);
-        ZB_resize(_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
-        _pitch = (_frame_buffer->xsize * _bytes_per_pixel + 3) & ~3;
+        ZB_resize(_full_frame_buffer, NULL, _properties.get_x_size(), _properties.get_y_size());
+        _pitch = (_full_frame_buffer->xsize * _bytes_per_pixel + 3) & ~3;
+        create_reduced_frame_buffer();
         create_ximage();
       }
       break;
@@ -774,16 +788,17 @@ open_window() {
 
   _gc = XCreateGC(_display, _xwindow, 0, NULL);
 
-  create_frame_buffer();
-  if (_frame_buffer == NULL) {
+  create_full_frame_buffer();
+  if (_full_frame_buffer == NULL) {
     tinydisplay_cat.error()
       << "Could not create frame buffer.\n";
     return false;
   }
+  create_reduced_frame_buffer();
   create_ximage();
   nassertr(_ximage != NULL, false);
 
-  tinygsg->_current_frame_buffer = _frame_buffer;
+  tinygsg->_current_frame_buffer = _full_frame_buffer;
   
   tinygsg->reset_if_new();
   if (!tinygsg->is_valid()) {
@@ -803,6 +818,17 @@ open_window() {
   }
   
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyXGraphicsWindow::pixel_factor_changed
+//       Access: Protected, Virtual
+//  Description: Called internally when the pixel factor changes.
+////////////////////////////////////////////////////////////////////
+void TinyXGraphicsWindow::
+pixel_factor_changed() {
+  GraphicsWindow::pixel_factor_changed();
+  create_reduced_frame_buffer();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1580,16 +1606,16 @@ check_event(Display *display, XEvent *event, char *arg) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TinyXGraphicsWindow::create_frame_buffer
+//     Function: TinyXGraphicsWindow::create_full_frame_buffer
 //       Access: Private
 //  Description: Creates a suitable frame buffer for the current
 //               window size.
 ////////////////////////////////////////////////////////////////////
 void TinyXGraphicsWindow::
-create_frame_buffer() {
-  if (_frame_buffer != NULL) {
-    ZB_close(_frame_buffer);
-    _frame_buffer = NULL;
+create_full_frame_buffer() {
+  if (_full_frame_buffer != NULL) {
+    ZB_close(_full_frame_buffer);
+    _full_frame_buffer = NULL;
   }
 
   int mode;
@@ -1610,8 +1636,34 @@ create_frame_buffer() {
     return;
   }
 
-  _frame_buffer = ZB_open(_properties.get_x_size(), _properties.get_y_size(), mode, 0, 0, 0, 0);
-  _pitch = (_frame_buffer->xsize * _bytes_per_pixel + 3) & ~3;
+  _full_frame_buffer = ZB_open(_properties.get_x_size(), _properties.get_y_size(), mode, 0, 0, 0, 0);
+  _pitch = (_full_frame_buffer->xsize * _bytes_per_pixel + 3) & ~3;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TinyXGraphicsWindow::create_reduced_frame_buffer
+//       Access: Private
+//  Description: Creates a suitable frame buffer for the current
+//               window size and pixel zoom.
+////////////////////////////////////////////////////////////////////
+void TinyXGraphicsWindow::
+create_reduced_frame_buffer() {
+  if (_reduced_frame_buffer != NULL) {
+    ZB_close(_reduced_frame_buffer);
+    _reduced_frame_buffer = NULL;
+  }
+
+  int x_size = get_fb_x_size();
+  int y_size = get_fb_y_size();
+
+  if (x_size == _full_frame_buffer->xsize) {
+    // No zooming is necessary.
+
+  } else {
+    // The reduced size is different, so we need a separate buffer to
+    // render into.
+    _reduced_frame_buffer = ZB_open(x_size, y_size, _full_frame_buffer->mode, 0, 0, 0, 0);
+  }
 }
 
 
@@ -1632,14 +1684,14 @@ create_ximage() {
     _ximage = NULL;
   }
 
-  int image_size = _frame_buffer->ysize * _pitch;
+  int image_size = _full_frame_buffer->ysize * _pitch;
   char *data = NULL;
   if (_bytes_per_pixel != 4) {
     data = (char *)PANDA_MALLOC_ARRAY(image_size);
   }
 
   _ximage = XCreateImage(_display, _visual, _depth, ZPixmap, 0, data,
-                         _frame_buffer->xsize, _frame_buffer->ysize,
+                         _full_frame_buffer->xsize, _full_frame_buffer->ysize,
                          32, 0);
 }
 

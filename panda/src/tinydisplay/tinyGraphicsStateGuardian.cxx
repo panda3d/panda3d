@@ -446,27 +446,8 @@ end_scene() {
     int fb_xsize = int(xsize * pixel_factor);
     int fb_ysize = int(ysize * pixel_factor);
 
-    int tyinc = _current_frame_buffer->linesize / PSZB;
-    int fyinc = _aux_frame_buffer->linesize / PSZB;
-
-    int fyt = 0;
-    for (int ty = 0; ty < ysize; ++ty) {
-      int fy = fyt / ysize;
-      fyt += fb_ysize;
-
-      PIXEL *tp = _current_frame_buffer->pbuf + xmin + (ymin + ty) * tyinc;
-      PIXEL *fp = _aux_frame_buffer->pbuf + fy * fyinc;
-      ZPOINT *tz = _current_frame_buffer->zbuf + xmin + (ymin + ty) * _current_frame_buffer->xsize;
-      ZPOINT *fz = _aux_frame_buffer->zbuf + fy * _aux_frame_buffer->xsize;
-      int fxt = 0;
-      for (int tx = 0; tx < xsize; ++tx) {
-        int fx = fxt / xsize;
-        fxt += fb_xsize;
-
-        tp[tx] = fp[fx];
-        tz[tx] = fz[fx];
-      }
-    }
+    ZB_zoomFrameBuffer(_current_frame_buffer, xmin, ymin, xsize, ysize,
+                       _aux_frame_buffer, 0, 0, fb_xsize, fb_ysize);
     _c->zb = _current_frame_buffer;
   }
 

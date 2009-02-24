@@ -130,7 +130,7 @@ void ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize)
     }
 }
 
-static void ZB_copyBuffer(ZBuffer * zb,
+static void ZB_copyBuffer(const ZBuffer * zb,
                           void *buf,
                           int linesize)
 {
@@ -152,7 +152,7 @@ static void ZB_copyBuffer(ZBuffer * zb,
   (((v >> 8) & 0xf800) | (((v) >> 5) & 0x07e0) | (((v) & 0xff) >> 3))
 
 /* XXX: not optimized */
-static void ZB_copyFrameBuffer5R6G5B(ZBuffer * zb, 
+static void ZB_copyFrameBuffer5R6G5B(const ZBuffer * zb, 
                                      void *buf, int linesize) 
 {
     PIXEL *q;
@@ -178,7 +178,7 @@ static void ZB_copyFrameBuffer5R6G5B(ZBuffer * zb,
 }
 
 /* XXX: not optimized */
-static void ZB_copyFrameBufferRGB24(ZBuffer * zb, 
+static void ZB_copyFrameBufferRGB24(const ZBuffer * zb, 
                                     void *buf, int linesize) 
 {
     PIXEL *q;
@@ -204,7 +204,7 @@ static void ZB_copyFrameBufferRGB24(ZBuffer * zb,
     }
 }
 
-void ZB_copyFrameBuffer(ZBuffer * zb, void *buf,
+void ZB_copyFrameBuffer(const ZBuffer * zb, void *buf,
 			int linesize)
 {
     switch (zb->mode) {
@@ -226,6 +226,33 @@ void ZB_copyFrameBuffer(ZBuffer * zb, void *buf,
     default:
 	assert(0);
     }
+}
+
+// Copy from (source_xmin,source_ymin)+(source_xsize,source_ysize) to 
+//  (dest_xmin,dest_ymin)+(dest_xsize,dest_ysize).
+void ZB_zoomFrameBuffer(ZBuffer *dest, int dest_xmin, int dest_ymin, int dest_xsize, int dest_ysize,
+                        const ZBuffer *source, int source_xmin, int source_ymin, int source_xsize, int source_ysize) {
+  int tyinc = dest->linesize / PSZB;
+  int fyinc = source->linesize / PSZB;
+  
+  int fyt = 0;
+  for (int ty = 0; ty < dest_ysize; ++ty) {
+    int fy = fyt / dest_ysize;
+    fyt += source_ysize;
+    
+    PIXEL *tp = dest->pbuf + dest_xmin + (dest_ymin + ty) * tyinc;
+    PIXEL *fp = source->pbuf + source_xmin + (source_ymin + fy) * fyinc;
+    ZPOINT *tz = dest->zbuf + dest_xmin + (dest_ymin + ty) * dest->xsize;
+    ZPOINT *fz = source->zbuf + source_xmin + (source_ymin + fy) * source->xsize;
+    int fxt = 0;
+    for (int tx = 0; tx < dest_xsize; ++tx) {
+      int fx = fxt / dest_xsize;
+      fxt += source_xsize;
+      
+      tp[tx] = fp[fx];
+      tz[tx] = fz[fx];
+    }
+  }
 }
 
 
