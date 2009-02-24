@@ -39,7 +39,6 @@ ConfigureFn(config_fmodAudio) {
 ////////////////////////////////////////////////////////////////////
 void
 init_libFmodAudio() {
-  cerr << "init_libFmodAudio\n";
   static bool initialized = false;
   if (initialized) {
     return;
