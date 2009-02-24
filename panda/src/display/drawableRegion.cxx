@@ -186,7 +186,7 @@ get_renderbuffer_type(int rtp) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: DrawableRegion::pixel_factor_changed
-//       Access: Published, Virtual
+//       Access: Protected, Virtual
 //  Description: Called internally when the pixel factor changes.
 ////////////////////////////////////////////////////////////////////
 void DrawableRegion::
