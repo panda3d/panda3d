@@ -66,7 +66,11 @@ PT(AudioManager) AudioManager::create_AudioManager() {
       } else {
         // Get the special function from the dso, which should return
         // the AudioManager factory function.
-        string symbol_name = "get_audio_manager_func_" + audio_library_name.get_value();
+        string lib_name = audio_library_name;
+        if (lib_name.substr(0, 2) == "p3") {
+          lib_name = lib_name.substr(3);
+        }
+        string symbol_name = "get_audio_manager_func_" + lib_name;
         void *dso_symbol = get_dso_symbol(handle, symbol_name);
         if (audio_cat.is_debug()) {
           audio_cat.debug()
