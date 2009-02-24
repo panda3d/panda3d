@@ -267,6 +267,12 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT","thirdparty/win-libs-vc8/artoolkit/lib/libAR.lib")
     if (PkgSkip("ODE")==0):      LibName("ODE",      "thirdparty/win-libs-vc8/ode/lib/ode.lib")
     if (PkgSkip("FCOLLADA")==0): LibName("FCOLLADA", "thirdparty/win-libs-vc8/fcollada/lib/FCollada.lib")
+    if (PkgSkip("SQUISH")==0):   LibName("SQUISH",   "thirdparty/win-libs-vc8/squish/lib/squish.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc8/opencv/lib/cv.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc8/opencv/lib/highgui.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc8/opencv/lib/cvaux.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc8/opencv/lib/ml.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc8/opencv/lib/cxcore.lib")
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, SDK[pkg] + '/lib/Foundation.lib')
@@ -840,6 +846,7 @@ DTOOL_CONFIG=[
     ("HAVE_ODE",                       'UNDEF',                  'UNDEF'),
     ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
+    ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 ]
@@ -2479,6 +2486,9 @@ TargetAdd('libtinydisplay.dll', input='tinydisplay_composite1.obj')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_composite2.obj')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle.obj')
 TargetAdd('libtinydisplay.dll', input=COMMON_PANDA_LIBS)
+if (sys.platform == "win32"):
+    TargetAdd('libtinydisplay.dll', input='libp3windisplay.dll')
+    TargetAdd('libtinydisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
 
 #
 # DIRECTORY: direct/src/directbase/
