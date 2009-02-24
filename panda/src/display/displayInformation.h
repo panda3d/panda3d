@@ -106,6 +106,9 @@ PUBLISHED:
   PN_uint64 get_current_cpu_frequency();
   void update_cpu_frequency(int processor_number);
 
+  int get_num_cpu_cores();
+  int get_num_logical_cpus();
+
   int get_os_version_major();
   int get_os_version_minor();
   int get_os_version_build();
@@ -164,6 +167,9 @@ public:
   
   PN_uint64 _maximum_cpu_frequency;
   PN_uint64 _current_cpu_frequency;
+
+  int _num_cpu_cores;
+  int _num_logical_cpus;
   
   void (*_get_memory_information_function) (DisplayInformation *display_information);
   PN_uint64 (*_cpu_time_function) (void);

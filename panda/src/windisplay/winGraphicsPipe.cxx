@@ -16,6 +16,7 @@
 #include "config_windisplay.h"
 #include "displaySearchParameters.h"
 #include "dtool_config.h"
+#include "pbitops.h"
 
 #include "psapi.h"
 #include "powrprof.h"
@@ -710,6 +711,70 @@ int update_cpu_frequency_function (int processor_number, DisplayInformation *dis
   return update;
 }
 
+void
+count_number_of_cpus(DisplayInformation *display_information) {
+  int num_cpu_cores = 0;
+  int num_logical_cpus = 0;
+
+  // Get a pointer to the GetLogicalProcessorInformation function.
+  typedef BOOL (WINAPI *LPFN_GLPI)(PSYSTEM_LOGICAL_PROCESSOR_INFORMATION, 
+                                   PDWORD);
+  LPFN_GLPI glpi;
+  glpi = (LPFN_GLPI)GetProcAddress(GetModuleHandle(TEXT("kernel32")),
+                                    "GetLogicalProcessorInformation");
+  if (glpi == NULL) {
+    windisplay_cat.info()
+      << "GetLogicalProcessorInformation is not supported.\n";
+    return;
+  }
+
+  // Allocate a buffer to hold the result of the
+  // GetLogicalProcessorInformation call.
+  PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buffer = NULL;
+  DWORD buffer_length = 0;
+  DWORD rc = glpi(buffer, &buffer_length);
+  while (!rc) {
+    if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
+      if (buffer != NULL) {
+        PANDA_FREE_ARRAY(buffer);
+      }
+      
+      buffer = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)PANDA_MALLOC_ARRAY(buffer_length);
+      nassertv(buffer != NULL);
+    } else {
+      windisplay_cat.info()
+        << "GetLogicalProcessorInformation failed: " << GetLastError()
+        << "\n";
+      return;
+    }
+    rc = glpi(buffer, &buffer_length);
+  }
+
+  // Now get the results.
+  PSYSTEM_LOGICAL_PROCESSOR_INFORMATION ptr = buffer;
+  PSYSTEM_LOGICAL_PROCESSOR_INFORMATION end = (PSYSTEM_LOGICAL_PROCESSOR_INFORMATION)((char *)buffer + buffer_length);
+
+  while (ptr < end) {
+    if (ptr->Relationship == RelationProcessorCore) {
+      num_cpu_cores++;
+      
+      // A hyperthreaded core supplies more than one logical processor.
+      num_logical_cpus += count_bits_in_word((PN_uint64)(ptr->ProcessorMask));
+    }
+    ++ptr;
+  }
+
+  PANDA_FREE_ARRAY(buffer);
+
+  windisplay_cat.info()
+    << num_cpu_cores << " CPU cores, with "
+    << num_logical_cpus << " logical processors.\n";
+
+  display_information->_num_cpu_cores = num_cpu_cores;
+  display_information->_num_logical_cpus = num_logical_cpus;
+}
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: WinGraphicsPipe::Constructor
 //       Access: Public
@@ -850,6 +915,9 @@ WinGraphicsPipe() {
   }
 
   windisplay_cat.info() << "end CPU ID\n";
+
+  // Number of CPU's
+  count_number_of_cpus(_display_information);
 
   OSVERSIONINFO version_info;
 

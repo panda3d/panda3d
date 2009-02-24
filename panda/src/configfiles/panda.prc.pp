@@ -28,6 +28,9 @@ aux-display pandagl
 #if $[HAVE_DX8]
 aux-display pandadx8
 #endif
+#if $[HAVE_TINYDISPLAY]
+aux-display tinydisplay
+#endif
 
 # The egg loader is handy to have available by default.  This allows
 # clients to load egg files.  (The bam loader is built-in so bam files

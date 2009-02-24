@@ -119,6 +119,9 @@ DisplayInformation() {
   _maximum_cpu_frequency = 0;
   _current_cpu_frequency = 0;
 
+  _num_cpu_cores = 0;
+  _num_logical_cpus = 0;
+
   _get_memory_information_function = 0;
   _cpu_time_function = 0;
   _update_cpu_frequency_function = 0;
@@ -665,6 +668,30 @@ update_cpu_frequency(int processor_number) {
   if (_update_cpu_frequency_function) {
     _update_cpu_frequency_function (processor_number, this);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_num_cpu_cores
+//       Access: Published
+//  Description: Returns the number of individual CPU cores in the
+//               system, or 0 if this number is not available.  A
+//               hyperthreaded CPU counts once here.
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_num_cpu_cores() {
+  return _num_cpu_cores;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayInformation::get_num_logical_cpus
+//       Access: Published
+//  Description: Returns the number of logical CPU's in the
+//               system, or 0 if this number is not available.  A
+//               hyperthreaded CPU counts as two or more here.
+////////////////////////////////////////////////////////////////////
+int DisplayInformation::
+get_num_logical_cpus() {
+  return _num_logical_cpus;
 }
 
 ////////////////////////////////////////////////////////////////////
