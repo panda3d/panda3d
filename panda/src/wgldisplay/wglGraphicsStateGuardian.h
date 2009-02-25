@@ -30,7 +30,7 @@
 ////////////////////////////////////////////////////////////////////
 class wglGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
-  wglGraphicsStateGuardian(GraphicsPipe *pipe,
+  wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                            wglGraphicsStateGuardian *share_with);
   virtual ~wglGraphicsStateGuardian();
 

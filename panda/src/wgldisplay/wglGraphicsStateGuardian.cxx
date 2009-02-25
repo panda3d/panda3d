@@ -27,9 +27,9 @@ bool wglGraphicsStateGuardian::_twindow_class_registered = false;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wglGraphicsStateGuardian::
-wglGraphicsStateGuardian(GraphicsPipe *pipe,
+wglGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                          wglGraphicsStateGuardian *share_with) : 
-  GLGraphicsStateGuardian(pipe),
+  GLGraphicsStateGuardian(engine, pipe),
   _share_with(share_with)
 {
   _made_context = false;

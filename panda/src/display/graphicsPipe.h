@@ -23,6 +23,7 @@
 #include "lightMutex.h"
 #include "displayInformation.h"
 
+class GraphicsEngine;
 class GraphicsOutput;
 class GraphicsWindow;
 class GraphicsBuffer;
@@ -116,6 +117,7 @@ protected:
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,
+                                         GraphicsEngine *engine,
                                          GraphicsStateGuardian *gsg,
                                          GraphicsOutput *host,
                                          int retry,

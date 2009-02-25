@@ -36,6 +36,7 @@
 #include "nodePath.h"
 
 class PNMImage;
+class GraphicsEngine;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsOutput
@@ -59,7 +60,8 @@ class PNMImage;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_DISPLAY GraphicsOutput : public TypedWritableReferenceCount, public DrawableRegion {
 protected:
-  GraphicsOutput(GraphicsPipe *pipe, 
+  GraphicsOutput(GraphicsEngine *engine,
+                 GraphicsPipe *pipe, 
                  const string &name,
                  const FrameBufferProperties &fb_prop,
                  const WindowProperties &win_prop, int flags,
@@ -91,6 +93,7 @@ PUBLISHED:
 
   INLINE GraphicsStateGuardian *get_gsg() const;
   INLINE GraphicsPipe *get_pipe() const;
+  INLINE GraphicsEngine *get_engine() const;
   INLINE const string &get_name() const;
 
   INLINE int count_textures() const;
@@ -236,6 +239,7 @@ protected:
     RenderTextureMode _rtm_mode;
   };
   PT(GraphicsStateGuardian) _gsg;
+  GraphicsEngine *_engine;
   PT(GraphicsPipe) _pipe;
   PT(GraphicsOutput) _host;
   FrameBufferProperties _fb_properties;

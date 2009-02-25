@@ -29,14 +29,14 @@ TypeHandle wglGraphicsBuffer::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wglGraphicsBuffer::
-wglGraphicsBuffer(GraphicsPipe *pipe,
+wglGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsBuffer(pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   _pbuffer = (HPBUFFERARB)0;
   _pbuffer_dc = (HDC)0;
@@ -288,7 +288,7 @@ open_buffer() {
   wglGraphicsStateGuardian *wglgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    wglgsg = new wglGraphicsStateGuardian(_pipe, NULL);
+    wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, NULL);
     wglgsg->choose_pixel_format(_fb_properties, true);
     _gsg = wglgsg;
   } else {
@@ -298,7 +298,7 @@ open_buffer() {
     if ((!wglgsg->get_fb_properties().subsumes(_fb_properties))||
         (!wglgsg->get_fb_properties().is_single_buffered())||
         (!wglgsg->pfnum_supports_pbuffer())) {
-      wglgsg = new wglGraphicsStateGuardian(_pipe, wglgsg);
+      wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, wglgsg);
       wglgsg->choose_pixel_format(_fb_properties, true);
       _gsg = wglgsg;
     }

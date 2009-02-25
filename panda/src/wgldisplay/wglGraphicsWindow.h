@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAGL wglGraphicsWindow : public WinGraphicsWindow {
 public:
-  wglGraphicsWindow(GraphicsPipe *pipe, 
+  wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,

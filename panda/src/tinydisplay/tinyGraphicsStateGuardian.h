@@ -42,7 +42,7 @@ class TinyTextureContext;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_TINYDISPLAY TinyGraphicsStateGuardian : public GraphicsStateGuardian {
 public:
-  TinyGraphicsStateGuardian(GraphicsPipe *pipe,
+  TinyGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                             TinyGraphicsStateGuardian *share_with);
 
   virtual ~TinyGraphicsStateGuardian();

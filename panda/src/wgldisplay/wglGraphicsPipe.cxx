@@ -107,6 +107,7 @@ make_output(const string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
+            GraphicsEngine *engine,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
@@ -148,7 +149,7 @@ make_output(const string &name,
         return NULL;
       }
     }
-    return new wglGraphicsWindow(this, name, fb_prop, win_prop,
+    return new wglGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
   
@@ -182,7 +183,7 @@ make_output(const string &name,
         (fb_prop.is_basic())) {
       precertify = true;
     }
-    return new GLGraphicsBuffer(this, name, fb_prop, win_prop,
+    return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                 flags, gsg, host);
   }
   
@@ -215,7 +216,7 @@ make_output(const string &name,
         (wglgsg->get_fb_properties().is_single_buffered())) {
       precertify = true;
     }
-    return new wglGraphicsBuffer(this, name, fb_prop, win_prop,
+    return new wglGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
   

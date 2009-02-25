@@ -93,8 +93,8 @@ LPDIRECT3DDEVICE9 DXGraphicsStateGuardian9::_cg_device = NULL;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXGraphicsStateGuardian9::
-DXGraphicsStateGuardian9(GraphicsPipe *pipe) :
-  GraphicsStateGuardian(CS_yup_left, pipe)
+DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe) :
+  GraphicsStateGuardian(CS_yup_left, engine, pipe)
 {
   if (dxgsg9_cat.is_debug()) {
     dxgsg9_cat.debug()

@@ -27,14 +27,14 @@ TypeHandle TinyGraphicsBuffer::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 TinyGraphicsBuffer::
-TinyGraphicsBuffer(GraphicsPipe *pipe, 
+TinyGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
                    const string &name,
                    const FrameBufferProperties &fb_prop,
                    const WindowProperties &win_prop,
                    int flags,
                    GraphicsStateGuardian *gsg,
                    GraphicsOutput *host) :
-  GraphicsBuffer(pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   _frame_buffer = NULL;
 }
@@ -134,7 +134,7 @@ open_buffer() {
   TinyGraphicsStateGuardian *tinygsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    tinygsg = new TinyGraphicsStateGuardian(_pipe, NULL);
+    tinygsg = new TinyGraphicsStateGuardian(_engine, _pipe, NULL);
     _gsg = tinygsg;
   } else {
     DCAST_INTO_R(tinygsg, _gsg, false);

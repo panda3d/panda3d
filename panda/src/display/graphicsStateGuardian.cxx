@@ -123,9 +123,10 @@ TypeHandle GraphicsStateGuardian::_type_handle;
 ////////////////////////////////////////////////////////////////////
 GraphicsStateGuardian::
 GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
-                      GraphicsPipe *pipe) :
+                      GraphicsEngine *engine, GraphicsPipe *pipe) :
   _internal_coordinate_system(internal_coordinate_system),
-  _pipe(pipe)
+  _pipe(pipe),
+  _engine(engine)
 {
   _coordinate_system = CS_invalid;
   _internal_transform = TransformState::make_identity();
@@ -230,8 +231,6 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   
   _gamma = 1.0f;
   _texture_quality_override = Texture::QL_default;
-
-  _engine = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -255,6 +254,9 @@ GraphicsStateGuardian::
 //     Function: GraphicsStateGuardian::get_engine
 //       Access: Published
 //  Description: Returns the graphics engine that created this GSG.
+//               Since there is normally only one GraphicsEngine
+//               object in an application, this is usually the same as
+//               the global GraphicsEngine.
 ////////////////////////////////////////////////////////////////////
 GraphicsEngine *GraphicsStateGuardian::
 get_engine() const {

@@ -64,7 +64,7 @@ class DXIndexBufferContext9;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXGraphicsStateGuardian9 : public GraphicsStateGuardian {
 public:
-  DXGraphicsStateGuardian9(GraphicsPipe *pipe);
+  DXGraphicsStateGuardian9(GraphicsEngine *engine, GraphicsPipe *pipe);
   ~DXGraphicsStateGuardian9();
 
   FrameBufferProperties

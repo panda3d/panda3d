@@ -31,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsBuffer : public GraphicsBuffer {
 public:
-  glxGraphicsBuffer(GraphicsPipe *pipe, 
+  glxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,

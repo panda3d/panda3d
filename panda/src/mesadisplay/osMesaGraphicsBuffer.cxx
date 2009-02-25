@@ -25,14 +25,14 @@ TypeHandle OsMesaGraphicsBuffer::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 OsMesaGraphicsBuffer::
-OsMesaGraphicsBuffer(GraphicsPipe *pipe,
+OsMesaGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                      const string &name,
                      const FrameBufferProperties &fb_prop,
                      const WindowProperties &win_prop,
                      int flags,
                      GraphicsStateGuardian *gsg,
                      GraphicsOutput *host) :
-  GraphicsBuffer(pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   _type = GL_UNSIGNED_BYTE;
   _screenshot_buffer_type = _draw_buffer_type;
@@ -131,7 +131,7 @@ close_buffer() {
 bool OsMesaGraphicsBuffer::
 open_buffer() {
   if (_gsg == 0) {
-    _gsg = new OSMesaGraphicsStateGuardian(_pipe, NULL);
+    _gsg = new OSMesaGraphicsStateGuardian(_engine, _pipe, NULL);
   }
   
   _image = PTA_uchar::empty_array(_x_size * _y_size * 4);

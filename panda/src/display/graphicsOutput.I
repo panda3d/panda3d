@@ -46,6 +46,19 @@ get_pipe() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::get_engine
+//       Access: Published
+//  Description: Returns the graphics engine that created this output.
+//               Since there is normally only one GraphicsEngine
+//               object in an application, this is usually the same as
+//               the global GraphicsEngine.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsEngine *GraphicsOutput::
+get_engine() const {
+  return _engine;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::get_name
 //       Access: Published
 //  Description: Returns the name that was passed to the

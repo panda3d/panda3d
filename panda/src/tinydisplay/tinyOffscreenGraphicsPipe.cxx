@@ -79,6 +79,7 @@ make_output(const string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
+            GraphicsEngine *engine,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
@@ -90,7 +91,7 @@ make_output(const string &name,
         ((flags&BF_require_window)!=0)) {
       return NULL;
     }
-    return new TinyGraphicsBuffer(this, name, fb_prop, win_prop, flags, gsg, host);
+    return new TinyGraphicsBuffer(engine, this, name, fb_prop, win_prop, flags, gsg, host);
   }
   
   // Nothing else left to try.

@@ -81,8 +81,8 @@ unsigned char *DXGraphicsStateGuardian8::_safe_buffer_start = NULL;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 DXGraphicsStateGuardian8::
-DXGraphicsStateGuardian8(GraphicsPipe *pipe) :
-  GraphicsStateGuardian(CS_yup_left, pipe)
+DXGraphicsStateGuardian8(GraphicsEngine *engine, GraphicsPipe *pipe) :
+  GraphicsStateGuardian(CS_yup_left, engine, pipe)
 {
   // Assume that we will get a hardware-accelerated context, unless
   // the window tells us otherwise.

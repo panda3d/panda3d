@@ -368,7 +368,7 @@ make_output(GraphicsPipe *pipe,
   for (int retry=0; retry<10; retry++) {
     bool precertify = false;
     PT(GraphicsOutput) window = 
-      pipe->make_output(name, fb_prop, win_prop, flags, gsg, host, retry, precertify);
+      pipe->make_output(name, fb_prop, win_prop, flags, this, gsg, host, retry, precertify);
     if (window != (GraphicsOutput *)NULL) {
       window->_sort = sort;
       if ((precertify) && (gsg != 0) && (window->get_gsg()==gsg)) {
@@ -1820,6 +1820,7 @@ void GraphicsEngine::
 do_add_window(GraphicsOutput *window,
               const GraphicsThreadingModel &threading_model) {
   LightReMutexHolder holder(_lock);
+  nassertv(window->get_engine() == this);
 
   // We have a special counter that is unique per window that allows
   // us to assure that recently-added windows end up on the end of the
@@ -1886,9 +1887,8 @@ do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
            const GraphicsThreadingModel &threading_model) {
   LightReMutexHolder holder(_lock);
 
+  nassertv(gsg->get_pipe() == pipe && gsg->get_engine() == this);
   gsg->_threading_model = threading_model;
-  gsg->_pipe = pipe;
-  gsg->_engine = this;
   if (!_default_loader.is_null()) {
     gsg->set_loader(_default_loader);
   }

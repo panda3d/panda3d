@@ -41,7 +41,7 @@ class WinGraphicsPipe;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAWIN WinGraphicsWindow : public GraphicsWindow {
 public:
-  WinGraphicsWindow(GraphicsPipe *pipe,
+  WinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,

@@ -20,14 +20,14 @@ TypeHandle CLP(GraphicsBuffer)::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CLP(GraphicsBuffer)::
-CLP(GraphicsBuffer)(GraphicsPipe *pipe,
+CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
                     int flags,
                     GraphicsStateGuardian *gsg,
                     GraphicsOutput *host) :
-  GraphicsBuffer(pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   // An FBO doesn't have a back buffer.
   _draw_buffer_type       = RenderBuffer::T_front;

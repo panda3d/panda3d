@@ -67,7 +67,7 @@ class EXPCL_PANDA_DISPLAY GraphicsStateGuardian : public GraphicsStateGuardianBa
   //
 public:
   GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
-                        GraphicsPipe *pipe);
+                        GraphicsEngine *engine, GraphicsPipe *pipe);
   virtual ~GraphicsStateGuardian();
 
 PUBLISHED:

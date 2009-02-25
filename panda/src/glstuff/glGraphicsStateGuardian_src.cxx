@@ -254,8 +254,8 @@ fix_component_ordering(PTA_uchar &new_image,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CLP(GraphicsStateGuardian)::
-CLP(GraphicsStateGuardian)(GraphicsPipe *pipe) :
-  GraphicsStateGuardian(CS_yup_right, pipe)
+CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
+  GraphicsStateGuardian(CS_yup_right, engine, pipe)
 {
   _error_count = 0;
 

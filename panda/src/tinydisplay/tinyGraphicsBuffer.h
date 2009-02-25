@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_TINYDISPLAY TinyGraphicsBuffer : public GraphicsBuffer {
 public:
-  TinyGraphicsBuffer(GraphicsPipe *pipe, 
+  TinyGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
                      const string &name,
                      const FrameBufferProperties &fb_prop,
                      const WindowProperties &win_prop,

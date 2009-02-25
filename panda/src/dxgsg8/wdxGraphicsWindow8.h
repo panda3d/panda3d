@@ -30,7 +30,7 @@ class wdxGraphicsPipe8;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX wdxGraphicsWindow8 : public WinGraphicsWindow {
 public:
-  wdxGraphicsWindow8(GraphicsPipe *pipe,
+  wdxGraphicsWindow8(GraphicsEngine *engine, GraphicsPipe *pipe,
                      const string &name,
                      const FrameBufferProperties &fb_prop,
                      const WindowProperties &win_prop,

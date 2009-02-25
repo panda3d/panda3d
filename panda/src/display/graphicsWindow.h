@@ -36,7 +36,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_DISPLAY GraphicsWindow : public GraphicsOutput {
 protected:
-  GraphicsWindow(GraphicsPipe *pipe, 
+  GraphicsWindow(GraphicsEngine *engine,
+                 GraphicsPipe *pipe, 
                  const string &name,
                  const FrameBufferProperties &fb_prop,
                  const WindowProperties &win_prop,

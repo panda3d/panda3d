@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_TINYDISPLAY TinyWinGraphicsWindow : public WinGraphicsWindow {
 public:
-  TinyWinGraphicsWindow(GraphicsPipe *pipe, 
+  TinyWinGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
                         const string &name,
                         const FrameBufferProperties &fb_prop,
                         const WindowProperties &win_prop,

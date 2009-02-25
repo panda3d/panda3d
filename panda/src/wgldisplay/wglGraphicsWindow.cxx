@@ -29,14 +29,14 @@ TypeHandle wglGraphicsWindow::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wglGraphicsWindow::
-wglGraphicsWindow(GraphicsPipe *pipe, 
+wglGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  WinGraphicsWindow(pipe, name, fb_prop, win_prop, flags, gsg, host)
+  WinGraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   _hdc = (HDC)0;
 }
@@ -180,7 +180,7 @@ open_window() {
   wglGraphicsStateGuardian *wglgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    wglgsg = new wglGraphicsStateGuardian(_pipe, NULL);
+    wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, NULL);
     wglgsg->choose_pixel_format(_fb_properties, false);
     _gsg = wglgsg;
   } else {
@@ -188,7 +188,7 @@ open_window() {
     // new one that shares with the old gsg.
     DCAST_INTO_R(wglgsg, _gsg, false);
     if (!wglgsg->get_fb_properties().subsumes(_fb_properties)) {
-      wglgsg = new wglGraphicsStateGuardian(_pipe, wglgsg);
+      wglgsg = new wglGraphicsStateGuardian(_engine, _pipe, wglgsg);
       wglgsg->choose_pixel_format(_fb_properties, false);
       _gsg = wglgsg;
     }

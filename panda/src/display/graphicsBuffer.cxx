@@ -24,13 +24,13 @@ TypeHandle GraphicsBuffer::_type_handle;
 //               GraphicsEngine::make_buffer() function.
 ////////////////////////////////////////////////////////////////////
 GraphicsBuffer::
-GraphicsBuffer(GraphicsPipe *pipe,
+GraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                const string &name,
                const FrameBufferProperties &fb_prop,
                const WindowProperties &win_prop, int flags,
                GraphicsStateGuardian *gsg,
                GraphicsOutput *host) :
-  GraphicsOutput(pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsOutput(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);

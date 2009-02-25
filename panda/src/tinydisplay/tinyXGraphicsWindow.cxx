@@ -50,14 +50,14 @@ TypeHandle TinyXGraphicsWindow::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 TinyXGraphicsWindow::
-TinyXGraphicsWindow(GraphicsPipe *pipe, 
-                  const string &name,
-                  const FrameBufferProperties &fb_prop,
-                  const WindowProperties &win_prop,
-                  int flags,
-                  GraphicsStateGuardian *gsg,
-                  GraphicsOutput *host) :
-  GraphicsWindow(pipe, name, fb_prop, win_prop, flags, gsg, host)
+TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+                    const string &name,
+                    const FrameBufferProperties &fb_prop,
+                    const WindowProperties &win_prop,
+                    int flags,
+                    GraphicsStateGuardian *gsg,
+                    GraphicsOutput *host) :
+  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   TinyXGraphicsPipe *tinyx_pipe;
   DCAST_INTO_V(tinyx_pipe, _pipe);
@@ -647,7 +647,7 @@ open_window() {
   TinyGraphicsStateGuardian *tinygsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    tinygsg = new TinyGraphicsStateGuardian(_pipe, NULL);
+    tinygsg = new TinyGraphicsStateGuardian(_engine, _pipe, NULL);
     _gsg = tinygsg;
   } else {
     DCAST_INTO_R(tinygsg, _gsg, false);

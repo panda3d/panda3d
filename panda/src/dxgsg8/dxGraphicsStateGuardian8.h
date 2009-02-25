@@ -43,7 +43,7 @@ class DXIndexBufferContext8;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX DXGraphicsStateGuardian8 : public GraphicsStateGuardian {
 public:
-  DXGraphicsStateGuardian8(GraphicsPipe *pipe);
+  DXGraphicsStateGuardian8(GraphicsEngine *engine, GraphicsPipe *pipe);
   ~DXGraphicsStateGuardian8();
 
   FrameBufferProperties

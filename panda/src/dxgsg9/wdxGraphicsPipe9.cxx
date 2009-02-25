@@ -86,6 +86,7 @@ make_output(const string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
+            GraphicsEngine *engine,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
@@ -121,7 +122,7 @@ make_output(const string &name,
         return NULL;
       }
     }
-    return new wdxGraphicsWindow9(this, name, fb_prop, win_prop,
+    return new wdxGraphicsWindow9(engine, this, name, fb_prop, win_prop,
                                   flags, gsg, host);
   }
 
@@ -155,7 +156,7 @@ make_output(const string &name,
         (gsg->get_supports_render_texture())) {
       precertify = true;
     }
-    return new wdxGraphicsBuffer9(this, name, fb_prop, win_prop,
+    return new wdxGraphicsBuffer9(engine, this, name, fb_prop, win_prop,
                                   flags, gsg, host);
   }
 

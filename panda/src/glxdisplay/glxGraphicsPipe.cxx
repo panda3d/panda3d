@@ -202,6 +202,7 @@ make_output(const string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
+            GraphicsEngine *engine,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
@@ -235,7 +236,7 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new glxGraphicsWindow(this, name, fb_prop, win_prop,
+    return new glxGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
   
@@ -268,7 +269,7 @@ make_output(const string &name,
         (fb_prop.is_basic())) {
       precertify = true;
     }
-    return new GLGraphicsBuffer(this, name, fb_prop, win_prop,
+    return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                 flags, gsg, host);
   }
   
@@ -285,7 +286,7 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new glxGraphicsBuffer(this, name, fb_prop, win_prop,
+    return new glxGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
 #endif  // HAVE_GLXFBCONFIG

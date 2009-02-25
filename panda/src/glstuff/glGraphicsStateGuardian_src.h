@@ -108,7 +108,7 @@ typedef void (APIENTRYP PFNGLGENERATEMIPMAPEXTPROC) (GLenum target);
 ////////////////////////////////////////////////////////////////////
 class EXPCL_GL CLP(GraphicsStateGuardian) : public GraphicsStateGuardian {
 public:
-  CLP(GraphicsStateGuardian)(GraphicsPipe *pipe);
+  CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe);
   virtual ~CLP(GraphicsStateGuardian)();
 
   virtual void reset();

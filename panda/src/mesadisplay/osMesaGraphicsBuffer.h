@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAMESA OsMesaGraphicsBuffer : public GraphicsBuffer {
 public:
-  OsMesaGraphicsBuffer(GraphicsPipe *pipe, 
+  OsMesaGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
                        const string &name,
                        const FrameBufferProperties &fb_prop,
                        const WindowProperties &win_prop,

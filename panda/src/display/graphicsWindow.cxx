@@ -32,14 +32,14 @@ TypeHandle GraphicsWindow::_type_handle;
 //               GraphicsEngine::make_window() function.
 ////////////////////////////////////////////////////////////////////
 GraphicsWindow::
-GraphicsWindow(GraphicsPipe *pipe,
+GraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                const string &name,
                const FrameBufferProperties &fb_prop,
                const WindowProperties &win_prop,
                int flags,
                GraphicsStateGuardian *gsg,
                GraphicsOutput *host) :
-  GraphicsOutput(pipe, name, fb_prop, win_prop, flags, gsg, host),
+  GraphicsOutput(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
   _input_lock("GraphicsWindow::_input_lock"),
   _properties_lock("GraphicsWindow::_properties_lock")
 {

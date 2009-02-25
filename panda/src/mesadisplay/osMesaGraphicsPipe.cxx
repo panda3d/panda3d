@@ -78,6 +78,7 @@ make_output(const string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
+            GraphicsEngine *engine,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
@@ -103,7 +104,7 @@ make_output(const string &name,
     FrameBufferProperties fb_prop2 = fb_prop;
     fb_prop2.set_back_buffers(0);
 
-    return new OsMesaGraphicsBuffer(this, name, fb_prop2, win_prop,
+    return new OsMesaGraphicsBuffer(engine, this, name, fb_prop2, win_prop,
                                     flags, gsg, host);
   }
   

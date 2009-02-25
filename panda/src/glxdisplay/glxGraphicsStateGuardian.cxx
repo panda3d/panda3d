@@ -28,9 +28,9 @@ TypeHandle glxGraphicsStateGuardian::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 glxGraphicsStateGuardian::
-glxGraphicsStateGuardian(GraphicsPipe *pipe,
+glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 			 glxGraphicsStateGuardian *share_with) :
-  GLGraphicsStateGuardian(pipe)
+  GLGraphicsStateGuardian(engine, pipe)
 {
   _share_context=0;
   _context=0;

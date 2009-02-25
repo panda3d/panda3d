@@ -32,7 +32,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDADX wdxGraphicsBuffer8 : public GraphicsBuffer {
 public:
-  wdxGraphicsBuffer8(GraphicsPipe *pipe,
+  wdxGraphicsBuffer8(GraphicsEngine *engine, GraphicsPipe *pipe,
                      const string &name,
                      const FrameBufferProperties &fb_prop,
                      const WindowProperties &win_prop,

@@ -68,7 +68,7 @@ static CubeFaceDef cube_faces[6] = {
 //               GraphicsEngine::make_window() function.
 ////////////////////////////////////////////////////////////////////
 GraphicsOutput::
-GraphicsOutput(GraphicsPipe *pipe,
+GraphicsOutput(GraphicsEngine *engine, GraphicsPipe *pipe,
                const string &name,
                const FrameBufferProperties &fb_prop,
                const WindowProperties &win_prop,
@@ -82,6 +82,7 @@ GraphicsOutput(GraphicsPipe *pipe,
 #ifdef DO_MEMORY_USAGE
   MemoryUsage::update_type(this, this);
 #endif
+  _engine = engine;
   _pipe = pipe;
   _gsg = gsg;
   _host = host;

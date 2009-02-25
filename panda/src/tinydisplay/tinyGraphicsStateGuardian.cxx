@@ -62,9 +62,9 @@ PStatCollector TinyGraphicsStateGuardian::_pixel_count_smooth_multitex3_pcollect
 //  Description:
 ////////////////////////////////////////////////////////////////////
 TinyGraphicsStateGuardian::
-TinyGraphicsStateGuardian(GraphicsPipe *pipe,
-			 TinyGraphicsStateGuardian *share_with) :
-  GraphicsStateGuardian(CS_yup_right, pipe)
+TinyGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
+                          TinyGraphicsStateGuardian *share_with) :
+  GraphicsStateGuardian(CS_yup_right, engine, pipe)
 {
   _current_frame_buffer = NULL;
   _aux_frame_buffer = NULL;

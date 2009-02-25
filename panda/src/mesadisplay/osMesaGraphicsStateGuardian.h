@@ -25,7 +25,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAMESA OSMesaGraphicsStateGuardian : public MesaGraphicsStateGuardian {
 public:
-  OSMesaGraphicsStateGuardian(GraphicsPipe *pipe,
+  OSMesaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 			      OSMesaGraphicsStateGuardian *share_with);
   virtual ~OSMesaGraphicsStateGuardian();
 

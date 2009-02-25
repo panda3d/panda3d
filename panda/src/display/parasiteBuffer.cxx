@@ -27,7 +27,8 @@ TypeHandle ParasiteBuffer::_type_handle;
 ParasiteBuffer::
 ParasiteBuffer(GraphicsOutput *host, const string &name,
                int x_size, int y_size, int flags) :
-  GraphicsOutput(host->get_pipe(), name, host->get_fb_properties(),
+  GraphicsOutput(host->get_engine(), host->get_pipe(), 
+                 name, host->get_fb_properties(),
                  WindowProperties::size(x_size, y_size), flags, 
                  host->get_gsg(), host)
 {

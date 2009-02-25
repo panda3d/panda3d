@@ -85,7 +85,7 @@ public:
 			   int _screen,
 			   bool need_pbuffer);
   
-  glxGraphicsStateGuardian(GraphicsPipe *pipe,
+  glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 			   glxGraphicsStateGuardian *share_with);
 
   virtual ~glxGraphicsStateGuardian();

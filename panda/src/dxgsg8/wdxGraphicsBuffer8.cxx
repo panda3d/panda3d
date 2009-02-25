@@ -37,14 +37,14 @@ TypeHandle wdxGraphicsBuffer8::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 wdxGraphicsBuffer8::
-wdxGraphicsBuffer8(GraphicsPipe *pipe,
+wdxGraphicsBuffer8(GraphicsEngine *engine, GraphicsPipe *pipe,
                    const string &name,
                    const FrameBufferProperties &fb_prop,
                    const WindowProperties &win_prop,
                    int flags,
                    GraphicsStateGuardian *gsg,
                    GraphicsOutput *host):
-  GraphicsBuffer(pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   // initialize all class members
   _cube_map_index = -1;
@@ -523,7 +523,7 @@ open_buffer() {
 
   // GSG creation/initialization.
   if (_gsg == 0) {
-    _dxgsg = new DXGraphicsStateGuardian8(_pipe);
+    _dxgsg = new DXGraphicsStateGuardian8(_engine, _pipe);
     _gsg = _dxgsg;
   } else {
     DCAST_INTO_R(_dxgsg, _gsg, false);

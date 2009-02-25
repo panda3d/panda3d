@@ -41,6 +41,7 @@ protected:
                                          const FrameBufferProperties &fb_prop,
                                          const WindowProperties &win_prop,
                                          int flags,
+                                         GraphicsEngine *engine,
                                          GraphicsStateGuardian *gsg,
                                          GraphicsOutput *host,
                                          int retry,

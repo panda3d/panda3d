@@ -33,14 +33,14 @@ TypeHandle glxGraphicsBuffer::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 glxGraphicsBuffer::
-glxGraphicsBuffer(GraphicsPipe *pipe, 
+glxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsBuffer(pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);
@@ -169,7 +169,7 @@ open_buffer() {
   glxGraphicsStateGuardian *glxgsg;
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
-    glxgsg = new glxGraphicsStateGuardian(_pipe, NULL);
+    glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, NULL);
     glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), true);
     _gsg = glxgsg;
   } else {
@@ -177,7 +177,7 @@ open_buffer() {
     // new one that shares with the old gsg.
     DCAST_INTO_R(glxgsg, _gsg, false);
     if (!glxgsg->get_fb_properties().subsumes(_fb_properties)) {
-      glxgsg = new glxGraphicsStateGuardian(_pipe, glxgsg);
+      glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, glxgsg);
       glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), true);
       _gsg = glxgsg;
     }

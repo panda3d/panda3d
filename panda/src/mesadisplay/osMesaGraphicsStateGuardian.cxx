@@ -22,9 +22,9 @@ TypeHandle OSMesaGraphicsStateGuardian::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 OSMesaGraphicsStateGuardian::
-OSMesaGraphicsStateGuardian(GraphicsPipe *pipe,
+OSMesaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
 			    OSMesaGraphicsStateGuardian *share_with) : 
-  MesaGraphicsStateGuardian(pipe)
+  MesaGraphicsStateGuardian(engine, pipe)
 {
   OSMesaContext share_context = NULL;
   if (share_with != (OSMesaGraphicsStateGuardian *)NULL) {
@@ -36,7 +36,6 @@ OSMesaGraphicsStateGuardian(GraphicsPipe *pipe,
 
   // OSMesa is never hardware-accelerated.
   _is_hardware = false;
-  cerr << "constructed " << this << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

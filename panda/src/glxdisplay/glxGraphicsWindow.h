@@ -28,7 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 class glxGraphicsWindow : public GraphicsWindow {
 public:
-  glxGraphicsWindow(GraphicsPipe *pipe, 
+  glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,
