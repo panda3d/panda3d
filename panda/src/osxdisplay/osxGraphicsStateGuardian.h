@@ -33,7 +33,7 @@ class osxGraphicsWindow;
 ////////////////////////////////////////////////////////////////////
 class osxGraphicsStateGuardian : public GLGraphicsStateGuardian {
 public:
-  osxGraphicsStateGuardian(GraphicsPipe *pipe,
+  osxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
                            osxGraphicsStateGuardian *share_with);
   virtual ~osxGraphicsStateGuardian();
   virtual void reset();

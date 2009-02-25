@@ -600,14 +600,14 @@ static int id_seed = 100;
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-osxGraphicsWindow::osxGraphicsWindow(GraphicsPipe *pipe, 
-                  						const string &name,
-                  						const FrameBufferProperties &fb_prop,
-                  						const WindowProperties &win_prop,
-                  						int flags,
-                  						GraphicsStateGuardian *gsg,
-                  						GraphicsOutput *host) :
-  GraphicsWindow(pipe, name, fb_prop, win_prop, flags, gsg, host),
+osxGraphicsWindow::osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
+                                     const string &name,
+                                     const FrameBufferProperties &fb_prop,
+                                     const WindowProperties &win_prop,
+                                     int flags,
+                                     GraphicsStateGuardian *gsg,
+                                     GraphicsOutput *host) :
+  GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host),
   _osx_window(NULL),
   _is_fullscreen(false),
   _pending_icon(NULL),
@@ -1020,7 +1020,7 @@ bool osxGraphicsWindow::open_window()
   
   if (_gsg == 0)
   {
-    _gsg = new osxGraphicsStateGuardian(_pipe, NULL);
+    _gsg = new osxGraphicsStateGuardian(_engine, _pipe, NULL);
   }
   
   //OSXGloablMutex().lock();

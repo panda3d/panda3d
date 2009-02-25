@@ -33,7 +33,7 @@ OSStatus aglReportError (const std::string &);
 ////////////////////////////////////////////////////////////////////
 class osxGraphicsWindow : public GraphicsWindow {
 public:
-  osxGraphicsWindow(GraphicsPipe *pipe, 
+  osxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
                     const string &name,
                     const FrameBufferProperties &fb_prop,
                     const WindowProperties &win_prop,

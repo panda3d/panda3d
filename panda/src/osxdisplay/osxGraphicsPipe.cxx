@@ -207,6 +207,7 @@ make_output(const string &name,
             const FrameBufferProperties &fb_prop,
             const WindowProperties &win_prop,
             int flags,
+            GraphicsEngine *engine,
             GraphicsStateGuardian *gsg,
             GraphicsOutput *host,
             int retry,
@@ -232,7 +233,7 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new osxGraphicsWindow(this, name, fb_prop, win_prop,
+    return new osxGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
   

@@ -26,14 +26,14 @@ TypeHandle osxGraphicsBuffer::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 osxGraphicsBuffer::
-osxGraphicsBuffer(GraphicsPipe *pipe,
+osxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
                   int flags,
                   GraphicsStateGuardian *gsg,
                   GraphicsOutput *host) :
-  GraphicsBuffer(pipe, name, fb_prop, win_prop, flags, gsg, host)
+  GraphicsBuffer(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   osxGraphicsPipe *osx_pipe;
   DCAST_INTO_V(osx_pipe, _pipe);
@@ -142,7 +142,7 @@ bool osxGraphicsBuffer::
 open_buffer() {
 
   if (_gsg == 0) {
-    _gsg = new osxGraphicsStateGuardian(_pipe, NULL);
+    _gsg = new osxGraphicsStateGuardian(_engine, _pipe, NULL);
   }
   
   return false;
