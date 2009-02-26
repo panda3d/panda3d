@@ -8,6 +8,9 @@ x.x.0 releases.
 * Makepanda now fully supports OSX
 * DDS textures are now supported
 * COLLADA->egg converter added
+* New C++-based Task system, which includes async threading support
+* Support for asynchronous on-demand loading of textures and/or animations
+* New software-based renderer "tinydisplay"
 * Packpanda now also supports Linux
 * Added libsquish support for DXT compression
 * New MeshDrawer class for realtime mesh manipulation
@@ -23,6 +26,8 @@ x.x.0 releases.
 * Left and right scrolling events now available
 * Several improvements to API reference
 * ShaderGenerator now supports several more blend modes and color scale
+* .x converter now supports AnimTicksPerSecond
+* Smoother transitions in FadeLodNode
 * Various performance optimizations
 * Several more minor bugs fixed
 
