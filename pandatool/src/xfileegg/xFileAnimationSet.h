@@ -71,6 +71,9 @@ public:
   
   FrameData &create_frame_data(const string &joint_name);
 
+public:
+  double _frame_rate;
+
 private:
   void mirror_table(XFileToEggConverter *converter,
                     EggGroup *model_node, EggTable *anim_node);

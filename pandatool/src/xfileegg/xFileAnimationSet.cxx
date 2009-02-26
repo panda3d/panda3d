@@ -28,6 +28,7 @@
 ////////////////////////////////////////////////////////////////////
 XFileAnimationSet::
 XFileAnimationSet() {
+  _frame_rate = 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,6 +94,9 @@ create_hierarchy(XFileToEggConverter *converter) {
       anim_table->add_data(joint->get_transform3d());
     }
     anim_table->optimize();
+    if (_frame_rate != 0.0) {
+      anim_table->set_fps(_frame_rate);
+    }
   }
 
   return true;

@@ -51,10 +51,9 @@ XFileToEgg() :
 
   add_option
     ("fr", "fps", 0,
-     "Specify the frame rate of the resulting animation.  The animation "
-     "tables should have one entry per frame, rather than one per "
-     "keyframe; the time component of the animation tables is ignored "
-     "and the frames are played sequentially at the specified frame rate.",
+     "Specify the frame rate of the resulting animation.  If this is "
+     "omitted or 0, the frame rate is inferred from the file itself; but "
+     "note that the file must contain evenly-spaced keyframes.",
      &XFileToEgg::dispatch_double, NULL, &_frame_rate);
 
   add_option
@@ -83,7 +82,7 @@ XFileToEgg() :
      "Specify the coordinate system of the input " + _format_name +
      " file.  Normally, this is y-up-left.");
 
-  _frame_rate = 30.0;
+  _frame_rate = 0.0;
   _coordinate_system = CS_yup_left;
 }
 

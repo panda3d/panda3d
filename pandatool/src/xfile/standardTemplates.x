@@ -267,3 +267,8 @@ template SkinWeights {
  array FLOAT weights[nWeights];
  Matrix4x4 matrixOffset;
 }
+
+template AnimTicksPerSecond {
+ <9E415A43-7BA6-4a73-8743-B73D47E88476>
+ DWORD AnimTicksPerSecond;
+} 

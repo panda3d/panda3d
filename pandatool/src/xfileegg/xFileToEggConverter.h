@@ -87,7 +87,7 @@ private:
                              FrameData &table);
   bool set_animation_frame(const string &joint_name, FrameData &table, 
                            int frame, int key_type,
-                           const XFileDataObject &values);
+                           const XFileDataObject &values); 
   bool convert_mesh(XFileDataNode *obj, EggGroupNode *egg_parent);
 
   bool create_polygons();
@@ -97,6 +97,9 @@ private:
 
   bool _any_frames;
   bool _any_animation;
+  int _ticks_per_second;
+  int _total_tick_deltas;
+  int _num_ticks;
 
   typedef pvector<XFileMesh *> Meshes;
   Meshes _meshes;

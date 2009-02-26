@@ -361,9 +361,11 @@ object:
 }
         optional_class_id data_parts_list TOKEN_CBRACE
 {
-  XFileDataNodeTemplate *current_template = 
-    DCAST(XFileDataNodeTemplate, current_node);
-  current_template->finalize_parse_data();
+  if (current_node->is_exact_type(XFileDataNodeTemplate::get_class_type())) {
+    XFileDataNodeTemplate *current_template = 
+      DCAST(XFileDataNodeTemplate, current_node);
+    current_template->finalize_parse_data();
+  }
 
   $$ = current_node;
   current_node = $<u.node>4;
@@ -387,21 +389,27 @@ data_part:
 }
         | integer_list
 {
-  XFileDataNodeTemplate *current_template = 
-    DCAST(XFileDataNodeTemplate, current_node);
-  current_template->add_parse_int($1);
+  if (current_node->is_exact_type(XFileDataNodeTemplate::get_class_type())) {
+    XFileDataNodeTemplate *current_template = 
+      DCAST(XFileDataNodeTemplate, current_node);
+    current_template->add_parse_int($1);
+  }
 }
         | realnum_list
 {
-  XFileDataNodeTemplate *current_template = 
-    DCAST(XFileDataNodeTemplate, current_node);
-  current_template->add_parse_double($1);
+  if (current_node->is_exact_type(XFileDataNodeTemplate::get_class_type())) {
+    XFileDataNodeTemplate *current_template = 
+      DCAST(XFileDataNodeTemplate, current_node);
+    current_template->add_parse_double($1);
+  }
 }
         | string list_separator
 {
-  XFileDataNodeTemplate *current_template = 
-    DCAST(XFileDataNodeTemplate, current_node);
-  current_template->add_parse_string($1);
+  if (current_node->is_exact_type(XFileDataNodeTemplate::get_class_type())) {
+    XFileDataNodeTemplate *current_template = 
+      DCAST(XFileDataNodeTemplate, current_node);
+    current_template->add_parse_string($1);
+  }
 }
         | list_separator
 {

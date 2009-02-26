@@ -35,7 +35,7 @@
 XFileToEggConverter::
 XFileToEggConverter() {
   _make_char = false;
-  _frame_rate = 30.0;
+  _frame_rate = 0.0;
   _x_file = new XFile(true);
   _dart_node = NULL;
 }
@@ -296,6 +296,8 @@ get_toplevel() {
   int num_objects = _x_file->get_num_objects();
   int i;
 
+  _ticks_per_second = 4800;  // X File default.
+
   // First, make a pass through the toplevel objects and see if we
   // have frames and/or animation.
   _any_frames = false;
@@ -359,6 +361,9 @@ convert_toplevel_object(XFileDataNode *obj, EggGroupNode *egg_parent) {
     if (!convert_animation_set(obj)) {
       return false;
     }
+
+  } else if (obj->is_standard_object("AnimTicksPerSecond")) {
+    _ticks_per_second = (*obj)[0].i();
 
   } else if (obj->is_standard_object("Mesh")) {
     // If there are any Frames at all in the file, then assume a Mesh
@@ -498,12 +503,24 @@ convert_animation_set(XFileDataNode *obj) {
   XFileAnimationSet *animation_set = new XFileAnimationSet();
   animation_set->set_name(obj->get_name());
 
+  _total_tick_deltas = 0;
+  _num_ticks = 0;
+
   // Now walk through the children of the set; each one animates a
   // different joint.
   int num_objects = obj->get_num_objects();
   for (int i = 0; i < num_objects; i++) {
     if (!convert_animation_set_object(obj->get_object(i), *animation_set)) {
       return false;
+    }
+  }
+
+  animation_set->_frame_rate = _frame_rate;
+  if (_num_ticks != 0 && _frame_rate == 0.0) {
+    // Compute the frame rate from the timing information.
+    double delta = (double)_total_tick_deltas / (double)_num_ticks;
+    if (delta != 0.0) {
+      animation_set->_frame_rate = (double)_ticks_per_second / delta;
     }
   }
 
@@ -626,12 +643,22 @@ convert_animation_key(XFileDataNode *obj, const string &joint_name,
   
   const XFileDataObject &keys = (*obj)["keys"];
 
+  int last_time = 0;
   for (int i = 0; i < keys.size(); i++) {
-    // We ignore the time value.  It seems to be of questionable value
-    // anyway, being of all sorts of crazy scales; and Panda doesn't
-    // support timestamped keyframes anyway.  Assume the x file was
-    // generated with one frame per frame of animation, and translate
-    // accordingly.
+    // The time value is problematic, since it allows x files to
+    // specify keyframes of arbitrary duration.  Panda doesn't support
+    // this; all frames in Panda must be of a constant duration.
+    // Thus, we largely ignore the time value, but we take the average
+    // of all deltas as the duration.  This will correctly handle .x
+    // files with uniform keyframes, at least.
+
+    int this_time = keys[i]["time"].i();
+    if (i != 0) {
+      int delta = this_time - last_time;
+      _total_tick_deltas += delta;
+      ++_num_ticks;
+    }
+    last_time = this_time;
 
     const XFileDataObject &values = keys[i]["tfkeys"]["values"];
     if (!set_animation_frame(joint_name, table, i, key_type, values)) {
