@@ -311,7 +311,7 @@
 #define PYTHON_COMMAND python
 #defer PYTHON_DEBUG_COMMAND $[PYTHON_COMMAND]$[if $[WINDOWS_PLATFORM],_d]
 #define PYTHON_FRAMEWORK
-#defer HAVE_PYTHON $[isdir $[PYTHON_IPATH]]
+#defer HAVE_PYTHON $[or $[PYTHON_FRAMEWORK],$[isdir $[PYTHON_IPATH]]]
 
 // By default, we'll assume the user only wants to run with Debug
 // python if he has to--that is, on Windows when building a debug build.
@@ -462,8 +462,8 @@
 
 
 // Is libfftw installed, and where?
-#define FFTW_IPATH /usr/local/include
-#define FFTW_LPATH /usr/local/lib
+#define FFTW_IPATH /opt/local/include
+#define FFTW_LPATH /opt/local/lib
 #define FFTW_LIBS rfftw fftw
 #defer HAVE_FFTW $[libtest $[FFTW_LPATH],$[FFTW_LIBS]]
 // This is because darwinport's version of the fftw lib is called
@@ -501,13 +501,14 @@
   #define CG_LPATH
   #define CG_LIBS Cg
 #endif
-#defer HAVE_CG $[libtest $[CG_LPATH],$[CG_LIBS]]
+#define CG_FRAMEWORK
+#defer HAVE_CG $[or $[CG_FRAMEWORK],$[libtest $[CG_LPATH],$[CG_LIBS]]]
 
 // Is CgGL installed, and where?
 #defer CGGL_IPATH $[CG_IPATH]
 #defer CGGL_LPATH $[CG_LPATH]
 #define CGGL_LIBS $[if $[WINDOWS_PLATFORM],cgGL.lib,CgGL]
-#defer HAVE_CGGL $[and $[HAVE_CG],$[libtest $[CGGL_LPATH],$[CGGL_LIBS]]]
+#defer HAVE_CGGL $[or $[CGGL_FRAMEWORK],$[and $[HAVE_CG],$[libtest $[CGGL_LPATH],$[CGGL_LIBS]]]]
 
 // Is CgDX8 installed, and where?
 #defer CGDX8_IPATH $[CG_IPATH]
