@@ -10,7 +10,7 @@ x.x.0 releases.
 * COLLADA->egg converter added
 * Packpanda now also supports Linux
 * Added libsquish support for DXT compression
-* Part of Pyro system integrated
+* New MeshDrawer class for realtime mesh manipulation
 * Infamous FBO bug fixed
 * Shader k-parameters can now contain underscores
 * Fixed OpenCVTexture and ARToolKit on Linux
