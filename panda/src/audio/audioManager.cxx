@@ -68,7 +68,7 @@ PT(AudioManager) AudioManager::create_AudioManager() {
         // the AudioManager factory function.
         string lib_name = audio_library_name;
         if (lib_name.substr(0, 2) == "p3") {
-          lib_name = lib_name.substr(3);
+          lib_name = lib_name.substr(2);
         }
         string symbol_name = "get_audio_manager_func_" + lib_name;
         void *dso_symbol = get_dso_symbol(handle, symbol_name);
