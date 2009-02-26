@@ -1,3 +1,31 @@
+------------------------  RELEASE 1.6.0  ------------------------
+
+This release introduces several major new features and
+significant bugfixes. It is likely to be buggy, like most
+x.x.0 releases.
+
+* Lightweight threading framework without runtime overhead
+* Makepanda now fully supports OSX
+* DDS textures are now supported
+* COLLADA->egg converter added
+* Packpanda now also supports Linux
+* Added libsquish support for DXT compression
+* Part of Pyro system integrated
+* Infamous FBO bug fixed
+* Shader k-parameters can now contain underscores
+* Fixed OpenCVTexture and ARToolKit on Linux
+* GeoMipTerrain now supports multi-channel heightmaps
+* GeoMipTerrain features new near/far LOD system
+* GeoMipTerrain performance improved
+* Fixed some minor but annoying OpenAL/FFMpeg issues
+* Fixed bug with lcontrol and rcontrol on Linux
+* Fixed bug regarding icon filenames
+* Left and right scrolling events now available
+* Several improvements to API reference
+* ShaderGenerator now supports several more blend modes and color scale
+* Various performance optimizations
+* Several more minor bugs fixed
+
 ------------------------  RELEASE 1.5.4  ------------------------
 
 This is a bugfix release, fixing the problems found in 1.5.3.
