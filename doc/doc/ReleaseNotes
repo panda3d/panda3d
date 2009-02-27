@@ -11,6 +11,7 @@ x.x.0 releases.
 * New C++-based Task system, which includes async threading support
 * Support for asynchronous on-demand loading of textures and/or animations
 * New software-based renderer "tinydisplay"
+* More pythonic features: iterable methods, implicit parameter casting
 * Packpanda now also supports Linux
 * Added libsquish support for DXT compression
 * New MeshDrawer class for realtime mesh manipulation
@@ -27,7 +28,12 @@ x.x.0 releases.
 * Several improvements to API reference
 * ShaderGenerator now supports several more blend modes and color scale
 * .x converter now supports AnimTicksPerSecond
+* vfs-mount-url can load models directly off the web
 * Smoother transitions in FadeLodNode
+* Dynamically-generated outline on fonts: loader.loadFont(outlineWidth = xxx)
+* Texture.getRamImageAs()
+* base.toggleTexMem()
+* Text generation performance optimization
 * Various performance optimizations
 * Several more minor bugs fixed
 
