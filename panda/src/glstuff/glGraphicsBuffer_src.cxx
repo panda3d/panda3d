@@ -266,7 +266,6 @@ rebuild_bitplanes() {
         _textures[i]._rtm_mode = RTM_copy_texture;
         continue;
       }
-
       // Assign the texture to this slot.
       attach[plane] = tex;
     }
@@ -465,7 +464,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
     // Allocate and bind the renderbuffer.
     glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rb[slot]);
     if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
-      if (_gsg->get_supports_depth_stencil()) {
+      if (_gsg->get_supports_depth_stencil() && slot == RTP_depth_stencil) {
         glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_STENCIL_EXT,
                                       _rb_size_x, _rb_size_y);
         glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
