@@ -39,6 +39,7 @@ protected:
   virtual bool handle_args(Args &args);
 
   static bool dispatch_wrap_mode(const string &opt, const string &arg, void *var);
+  static bool dispatch_quality_level(const string &opt, const string &arg, void *var);
   static bool dispatch_format(const string &opt, const string &arg, void *var);
 
 private:
@@ -57,6 +58,7 @@ public:
   Colorf _polygon_color;
   vector_string _texture_names;
   EggTexture::WrapMode _wrap_mode;
+  EggTexture::QualityLevel _quality_level;
   EggTexture::Format _format;
   EggTexture::Format _format_1, _format_2, _format_3, _format_4;
   bool _apply_bface;

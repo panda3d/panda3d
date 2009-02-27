@@ -223,6 +223,7 @@ get_string() const {
   result += get_filter_string(_magfilter);
   result += get_anisotropic_degree_string(_anisotropic_degree);
   result += get_type_string(_color_type, _alpha_type);
+  result += get_quality_level_string(_quality_level);
   return result;
 }
 
@@ -655,26 +656,26 @@ get_format_string(EggTexture::Format format) {
 string TextureProperties::
 get_filter_string(EggTexture::FilterType filter_type) {
   switch (filter_type) {
-      case EggTexture::FT_unspecified:
-        return "u";
-
-      case EggTexture::FT_nearest:
-        return "n";
-
-      case EggTexture::FT_linear:
-        return "l";
-
-      case EggTexture::FT_nearest_mipmap_nearest:
-        return "m1";
-
-      case EggTexture::FT_linear_mipmap_nearest:
-        return "m2";
-
-      case EggTexture::FT_nearest_mipmap_linear:
-        return "m3";
-
-      case EggTexture::FT_linear_mipmap_linear:
-        return "m";
+  case EggTexture::FT_unspecified:
+    return "u";
+    
+  case EggTexture::FT_nearest:
+    return "n";
+    
+  case EggTexture::FT_linear:
+    return "l";
+    
+  case EggTexture::FT_nearest_mipmap_nearest:
+    return "m1";
+    
+  case EggTexture::FT_linear_mipmap_nearest:
+    return "m2";
+    
+  case EggTexture::FT_nearest_mipmap_linear:
+    return "m3";
+    
+  case EggTexture::FT_linear_mipmap_linear:
+    return "m";
   }
 
   return "x";
@@ -691,6 +692,29 @@ get_anisotropic_degree_string(int aniso_degree) {
     return "";
   } else {
     return string("an") + format_string(aniso_degree);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureProperties::get_quality_level_string
+//       Access: Private, Static
+//  Description: Returns a short string describing the quality level.
+////////////////////////////////////////////////////////////////////
+string TextureProperties::
+get_quality_level_string(EggTexture::QualityLevel quality_level) {
+  switch (quality_level) {
+  case EggTexture::QL_unspecified:
+  case EggTexture::QL_default:
+    return "";
+
+  case EggTexture::QL_fastest:
+    return "f";
+
+  case EggTexture::QL_normal:
+    return "n";
+
+  case EggTexture::QL_best:
+    return "b";
   }
 }
 

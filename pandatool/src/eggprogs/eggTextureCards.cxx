@@ -87,6 +87,12 @@ EggTextureCards() : EggWriter(true, true) {
      &EggTextureCards::dispatch_wrap_mode, NULL, &_wrap_mode);
 
   add_option
+    ("ql", "[default | fastest | normal | best]", 0,
+     "Specifies the quality level of the texture.  This mainly affects "
+     "the tinydisplay software renderer.",
+     &EggTextureCards::dispatch_quality_level, NULL, &_quality_level);
+
+  add_option
     ("f", "format", 0,
      "Indicates the format for all textures: typical choices are \"rgba12\" "
      "or \"rgb5\" or \"alpha\".  The default is to leave this unspecified.",
@@ -142,6 +148,7 @@ EggTextureCards() : EggWriter(true, true) {
   _polygon_geometry.set(-0.5, 0.5, -0.5, 0.5);
   _polygon_color.set(1.0, 1.0, 1.0, 1.0);
   _wrap_mode = EggTexture::WM_unspecified;
+  _quality_level = EggTexture::QL_unspecified;
   _format = EggTexture::F_unspecified;
   _format_1 = EggTexture::F_unspecified;
   _format_2 = EggTexture::F_unspecified;
@@ -199,6 +206,28 @@ dispatch_wrap_mode(const string &opt, const string &arg, void *var) {
            << arg << "\n";
       return false;
     }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTextureCards::dispatch_quality_level
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               one parameter, which is to be interpreted as a
+//               QualityLevel string.  The data pointer is to a
+//               QualityLevel enum variable.
+////////////////////////////////////////////////////////////////////
+bool EggTextureCards::
+dispatch_quality_level(const string &opt, const string &arg, void *var) {
+  EggTexture::QualityLevel *qlp = (EggTexture::QualityLevel *)var;
+
+  *qlp = EggTexture::string_quality_level(arg);
+  if (*qlp == EggTexture::QL_unspecified) {
+    nout << "Invalid quality level parameter for -" << opt << ": "
+         << arg << "\n";
+    return false;
   }
 
   return true;
@@ -359,6 +388,7 @@ run() {
 
     EggTexture *tref = new EggTexture(name, filename);
     tref->set_wrap_mode(_wrap_mode);
+    tref->set_quality_level(_quality_level);
 
     if (texture_ok) {
       switch (num_channels) {

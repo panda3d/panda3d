@@ -43,6 +43,7 @@ TxaLine() {
   _alpha_mode = EggRenderMode::AM_unspecified;
   _wrap_u = EggTexture::WM_unspecified;
   _wrap_v = EggTexture::WM_unspecified;
+  _quality_level = EggTexture::QL_unspecified;
   _got_margin = false;
   _margin = 0;
   _got_coverage_threshold = false;
@@ -283,28 +284,35 @@ parse(const string &line) {
             if (am != EggRenderMode::AM_unspecified) {
               _alpha_mode = am;
 
-            } else if (word.length() > 2 && word[word.length() - 2] == '_' &&
-                       strchr("uv", word[word.length() - 1]) != NULL) {
-              // It must be a wrap mode for u or v.
-              string prefix = word.substr(0, word.length() - 2);
-              EggTexture::WrapMode wm = EggTexture::string_wrap_mode(prefix);
-              if (wm == EggTexture::WM_unspecified) {
-                return false;
-              }
-              switch (word[word.length() - 1]) {
-              case 'u':
-                _wrap_u = wm;
-                break;
-
-              case 'v':
-                _wrap_v = wm;
-                break;
-              }
-
             } else {
-              // Maybe it's an image file request.
-              if (!parse_image_type_request(word, _color_type, _alpha_type)) {
-                return false;
+              // Maybe it's a quality level.
+              EggTexture::QualityLevel ql = EggTexture::string_quality_level(word);
+              if (ql != EggTexture::QL_unspecified) {
+                _quality_level = ql;
+
+              } else if (word.length() > 2 && word[word.length() - 2] == '_' &&
+                         strchr("uv", word[word.length() - 1]) != NULL) {
+                // It must be a wrap mode for u or v.
+                string prefix = word.substr(0, word.length() - 2);
+                EggTexture::WrapMode wm = EggTexture::string_wrap_mode(prefix);
+                if (wm == EggTexture::WM_unspecified) {
+                  return false;
+                }
+                switch (word[word.length() - 1]) {
+                case 'u':
+                  _wrap_u = wm;
+                  break;
+                  
+                case 'v':
+                  _wrap_v = wm;
+                  break;
+                }
+                
+              } else {
+                // Maybe it's an image file request.
+                if (!parse_image_type_request(word, _color_type, _alpha_type)) {
+                  return false;
+                }
               }
             }
           }
@@ -448,6 +456,10 @@ match_texture(TextureImage *texture) const {
   if (_color_type != (PNMFileType *)NULL) {
     request._properties._color_type = _color_type;
     request._properties._alpha_type = _alpha_type;
+  }
+
+  if (_quality_level != EggTexture::QL_unspecified) {
+    request._properties._quality_level = _quality_level;
   }
 
   if (_format != EggTexture::F_unspecified) {

@@ -71,6 +71,7 @@ private:
   static string get_format_string(EggTexture::Format format);
   static string get_filter_string(EggTexture::FilterType filter_type);
   static string get_anisotropic_degree_string(int aniso_degree);
+  static string get_quality_level_string(EggTexture::QualityLevel quality_level);
   static string get_type_string(PNMFileType *color_type,
                                 PNMFileType *alpha_type);
 
