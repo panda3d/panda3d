@@ -150,6 +150,7 @@ class ShowBase(DirectObject.DirectObject):
         self.drive = None
         self.trackball = None
         self.texmem = None
+        self.showVertices = None
         self.cam = None
         self.cam2d = None
         self.cam2dp = None
@@ -1812,6 +1813,58 @@ class ShowBase(DirectObject.DirectObject):
 
         from direct.showutil.TexMemWatcher import TexMemWatcher
         self.texmem = TexMemWatcher()
+
+    def toggleShowVertices(self):
+        """ Toggles a mode that visualizes vertex density per screen
+        area. """
+
+        if self.showVertices:
+            # Clean up the old mode.
+            self.showVertices.node().setActive(0)
+            dr = self.showVertices.node().getDisplayRegion(0)
+            base.win.removeDisplayRegion(dr)
+            self.showVertices.removeNode()
+            self.showVertices = None
+            return
+
+        dr = base.win.makeDisplayRegion()
+        dr.setSort(1000)
+        cam = Camera('showVertices')
+        cam.setLens(base.camLens)
+
+        # Set up a funny state to render only vertices.
+        override = 100000
+        t = NodePath('t')
+        t.setColor(1, 0, 0, 0.01, override)
+        t.setColorScale(1, 1, 1, 1, override)
+        t.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd, ColorBlendAttrib.OIncomingAlpha, ColorBlendAttrib.OOne), override)
+        t.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MPoint, 6), override)
+        t.setTwoSided(True, override)
+        t.setBin('fixed', 0, override)
+        t.setDepthTest(False, override)
+        t.setDepthWrite(False, override)
+        t.setLightOff(override)
+        t.setShaderOff(override)
+        t.setFogOff(override)
+        t.setAttrib(AntialiasAttrib.make(AntialiasAttrib.MNone), override)
+        t.setAttrib(RescaleNormalAttrib.make(RescaleNormalAttrib.MNone), override)
+        t.setTextureOff(override)
+
+        # Make the spots round.  Not sure why this doesn't work right
+        # now.
+##         spot = PNMImage(256, 256)
+##         spot.renderSpot((1, 1, 1, 1), (0, 0, 0, 0), 0, 1)
+##         tex = Texture('spot')
+##         tex.load(spot)
+##         t.setTexture(tex, override)
+##         t.setAttrib(TexGenAttrib.make(TextureStage.getDefault(), TexGenAttrib.MPointSprite), override)
+
+        cam.setInitialState(t.getState())
+        cam.setCameraMask(~PandaNode.getOverallBit())
+
+        self.showVertices = self.camera.attachNewNode(cam)
+        dr.setCamera(self.showVertices)
+        
 
     def oobe(self):
         """
