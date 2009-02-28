@@ -83,6 +83,7 @@ RenderState() :
   _last_mi = _mungers.end();
   _cache_stats.add_num_states(1);
   _read_overrides = NULL;
+  _generated_shader = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -109,6 +110,7 @@ RenderState(const RenderState &copy) :
   _last_mi = _mungers.end();
   _cache_stats.add_num_states(1);
   _read_overrides = NULL;
+  _generated_shader = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
