@@ -177,3 +177,22 @@ INLINE bool CullableObject::SortPoints::
 operator () (unsigned short a, unsigned short b) const {
   return _array[a]._dist > _array[b]._dist;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::SourceFormat::operator <
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE bool CullableObject::SourceFormat::
+operator < (const CullableObject::SourceFormat &other) const {
+  if (_format != other._format) {
+    return _format < other._format;
+  }
+  if (_sprite_texcoord != other._sprite_texcoord) {
+    return (int)_sprite_texcoord < (int)other._sprite_texcoord;
+  }
+  if (_retransform_sprites != other._retransform_sprites) {
+    return (int)_retransform_sprites < (int)other._retransform_sprites;
+  }
+  return false;
+}

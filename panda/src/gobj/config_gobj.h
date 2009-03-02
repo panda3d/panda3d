@@ -62,6 +62,7 @@ extern EXPCL_PANDA_GOBJ ConfigVariableBool vertex_arrays;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool display_lists;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool hardware_animated_vertices;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool hardware_point_sprites;
+extern EXPCL_PANDA_GOBJ ConfigVariableBool hardware_points;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool matrix_palette;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool display_list_animation;
 extern EXPCL_PANDA_GOBJ ConfigVariableBool connect_triangle_strips;

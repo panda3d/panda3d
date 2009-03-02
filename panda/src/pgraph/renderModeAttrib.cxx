@@ -93,6 +93,10 @@ output(ostream &out) const {
     break;
   }
 
+  if (get_thickness() != 1.0f) {
+    out << ", thick " << get_thickness();
+  }
+
   if (get_perspective()) {
     out << ", perspective";
   }

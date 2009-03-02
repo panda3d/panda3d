@@ -29,6 +29,7 @@
 #include "pStatCollector.h"
 #include "deletedChain.h"
 #include "graphicsStateGuardianBase.h"
+#include "lightMutex.h"
 
 class CullTraverser;
 
@@ -106,8 +107,18 @@ private:
   };
 
   // This is a cache of converted vertex formats.
-  typedef pmap<CPT(GeomVertexFormat), CPT(GeomVertexFormat) > FormatMap;
+  class SourceFormat {
+  public:
+    SourceFormat(const GeomVertexFormat *format, bool sprite_texcoord);
+    INLINE bool operator < (const SourceFormat &other) const;
+
+    CPT(GeomVertexFormat) _format;
+    bool _sprite_texcoord;
+    bool _retransform_sprites;
+  };
+  typedef pmap<SourceFormat, CPT(GeomVertexFormat) > FormatMap;
   static FormatMap _format_map;
+  static LightMutex _format_lock;
 
   static PStatCollector _munge_geom_pcollector;
   static PStatCollector _munge_sprites_pcollector;
