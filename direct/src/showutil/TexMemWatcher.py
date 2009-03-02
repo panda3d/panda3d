@@ -442,7 +442,8 @@ class TexMemWatcher(DirectObject):
         self.canvas.show()
         self.canvasBackground.clearColor()
         self.win.getGsg().setTextureQualityOverride(Texture.QLDefault)
-        self.gsg.clearFlashTexture()
+        if hasattr(self.gsg, 'clearFlashTexture'):
+            self.gsg.clearFlashTexture()
 
         if not tr:
             return
@@ -456,8 +457,9 @@ class TexMemWatcher(DirectObject):
         # Show the texture in all its filtered glory.
         self.win.getGsg().setTextureQualityOverride(Texture.QLBest)
 
-        # Start the texture flashing in the main window.
-        self.gsg.setFlashTexture(tr.tex)
+        if hasattr(self.gsg, 'setFlashTexture'):
+            # Start the texture flashing in the main window.
+            self.gsg.setFlashTexture(tr.tex)
 
         self.isolate = self.render2d.attachNewNode('isolate')
 
