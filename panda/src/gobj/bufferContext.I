@@ -71,7 +71,6 @@ get_resident() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void BufferContext::
 set_active(bool flag) {
-#ifdef DO_PSTATS
   if (flag) {
     _residency_state |= BufferResidencyTracker::S_active;
     // Assume that rendering the object automatically makes it
@@ -81,7 +80,6 @@ set_active(bool flag) {
     _residency_state &= ~BufferResidencyTracker::S_active;
   }
   set_owning_chain(&_residency->_chains[_residency_state]);
-#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,14 +91,12 @@ set_active(bool flag) {
 ////////////////////////////////////////////////////////////////////
 INLINE void BufferContext::
 set_resident(bool flag) {
-#ifdef DO_PSTATS
   if (flag) {
     _residency_state |= BufferResidencyTracker::S_resident;
   } else {
     _residency_state &= ~BufferResidencyTracker::S_resident;
   }
   set_owning_chain(&_residency->_chains[_residency_state]);
-#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////

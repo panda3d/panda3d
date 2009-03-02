@@ -7503,11 +7503,9 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
     gtc->_height = height;
     gtc->_depth = depth;
 
-#ifdef DO_PSTATS
     if (!image.is_null()) {
       gtc->update_data_size_bytes(get_texture_memory_size(tex));
     }
-#endif
 
     if (tex->get_post_load_store_cache()) {
       tex->set_post_load_store_cache(false);

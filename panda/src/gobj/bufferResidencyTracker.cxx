@@ -56,7 +56,6 @@ BufferResidencyTracker::
 ////////////////////////////////////////////////////////////////////
 void BufferResidencyTracker::
 begin_frame(Thread *current_thread) {
-#ifdef DO_PSTATS
   int this_frame = ClockObject::get_global_clock()->get_frame_count(current_thread);
   if (_active_frame != this_frame) {
     _active_frame = this_frame;
@@ -68,7 +67,6 @@ begin_frame(Thread *current_thread) {
     move_inactive(_chains[S_inactive_resident],
                   _chains[S_active_resident]);
   }
-#endif  // DO_PSTATS
 }
 
 ////////////////////////////////////////////////////////////////////
