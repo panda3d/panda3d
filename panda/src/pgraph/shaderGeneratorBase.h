@@ -24,7 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH ShaderGeneratorBase : public TypedWritableReferenceCount {
 private:
-  static PT(ShaderGeneratorBase) _default_generator;
+  static ShaderGeneratorBase *_default_generator;
 
 protected:
   ShaderGeneratorBase();

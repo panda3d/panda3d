@@ -15,7 +15,7 @@
 #include "shaderGeneratorBase.h"
 
 TypeHandle ShaderGeneratorBase::_type_handle;
-PT(ShaderGeneratorBase) ShaderGeneratorBase::_default_generator;
+ShaderGeneratorBase *ShaderGeneratorBase::_default_generator = NULL;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderGeneratorBase::Constructor
@@ -52,5 +52,13 @@ get_default() {
 ////////////////////////////////////////////////////////////////////
 void ShaderGeneratorBase::
 set_default(ShaderGeneratorBase *generator) {
-  _default_generator = generator;
+  if (generator != _default_generator) {
+    if (_default_generator != (ShaderGeneratorBase *)NULL) {
+      unref_delete(_default_generator);
+    }
+    _default_generator = generator;
+    if (_default_generator != (ShaderGeneratorBase *)NULL) {
+      _default_generator->ref();
+    }
+  }
 }
