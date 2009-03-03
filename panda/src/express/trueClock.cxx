@@ -272,8 +272,8 @@ correct_time(double time) {
     ++_error_count;
     
     // If both are negative, we call it 0.  If one is negative, we
-    // trust the other one.  If both are nonnegative, we trust the
-    // smaller of the two.
+    // trust the other one (up to paranoid_clock_jump_error).  If both
+    // are nonnegative, we trust the smaller of the two.
     double time_adjust = 0.0;
     double tod_adjust = 0.0;
 
@@ -283,12 +283,16 @@ correct_time(double time) {
       tod_adjust = -tod_delta;
       
     } else if (time_delta < 0.0 || (tod_delta >= 0.0 && tod_delta < time_delta)) {
-      // Trust tod.
-      time_adjust = (tod_delta - time_delta);
+      // Trust tod, up to a point.
+      double new_tod_delta = min(tod_delta, paranoid_clock_jump_error);
+      time_adjust = new_tod_delta - time_delta;
+      tod_adjust = new_tod_delta - tod_delta;
       
     } else {
-      // Trust time.
-      tod_adjust = (time_delta - tod_delta);
+      // Trust time, up to a point.
+      double new_time_delta = min(time_delta, paranoid_clock_jump_error);
+      time_adjust = new_time_delta - time_delta;
+      tod_adjust = new_time_delta - tod_delta;
     }
 
     _time_offset += time_adjust;
