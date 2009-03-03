@@ -129,7 +129,7 @@ get_first_vertex() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomPrimitive::get_num_vertices
 //       Access: Published
-//  Description: Returns the number of vertex vertices used by all the
+//  Description: Returns the number of vertices used by all the
 //               primitives in this object.
 ////////////////////////////////////////////////////////////////////
 INLINE int GeomPrimitive::

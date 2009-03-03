@@ -130,6 +130,7 @@ PUBLISHED:
   CPT(GeomPrimitive) doubleside() const;
   CPT(GeomPrimitive) reverse() const;
   CPT(GeomPrimitive) match_shade_model(ShadeModel shade_model) const;
+  CPT(GeomPrimitive) make_points() const;
 
   int get_num_bytes() const;
   INLINE int get_data_size_bytes() const;

@@ -231,6 +231,19 @@ unify(int max_indices, bool preserve_order) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Geom::make_points
+//       Access: Published
+//  Description: Returns a new Geom with points at all the vertices.
+//               See GeomPrimitive::make_points().
+////////////////////////////////////////////////////////////////////
+INLINE PT(Geom) Geom::
+make_points() const {
+  PT(Geom) new_geom = make_copy();
+  new_geom->make_points_in_place();
+  return new_geom;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Geom::get_modified
 //       Access: Published
 //  Description: Returns a sequence number which is guaranteed to

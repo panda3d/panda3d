@@ -62,20 +62,33 @@ munge_geom(GraphicsStateGuardianBase *gsg,
   if (_geom != (Geom *)NULL) {
     _munger = munger;
 
-    GeomPipelineReader geom_reader(_geom, current_thread);
-    _munged_data = geom_reader.get_vertex_data();
+    int geom_rendering;
 
-#ifdef _DEBUG
     {
-      GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
-      data_reader.check_array_readers();
-      nassertr(geom_reader.check_valid(&data_reader), false);
-    }
+      GeomPipelineReader geom_reader(_geom, current_thread);
+      _munged_data = geom_reader.get_vertex_data();
+      
+#ifdef _DEBUG
+      {
+        GeomVertexDataPipelineReader data_reader(_munged_data, current_thread);
+        data_reader.check_array_readers();
+        nassertr(geom_reader.check_valid(&data_reader), false);
+      }
 #endif  // _DEBUG
-
-    int geom_rendering = geom_reader.get_geom_rendering();
-    geom_rendering = _state->get_geom_rendering(geom_rendering);
-    geom_rendering = _modelview_transform->get_geom_rendering(geom_rendering);
+      
+      geom_rendering = geom_reader.get_geom_rendering();
+      geom_rendering = _state->get_geom_rendering(geom_rendering);
+      geom_rendering = _modelview_transform->get_geom_rendering(geom_rendering);
+      
+      if (geom_rendering & Geom::GR_point_bits) {
+        if (geom_reader.get_primitive_type() != Geom::PT_points) {
+          if (singular_points) {
+            // Isolate the points so there's no unneeded overlap.
+            _geom = _geom->make_points();
+          }
+        }
+      }
+    }
     
     GraphicsStateGuardianBase *gsg = traverser->get_gsg();
     int gsg_bits = gsg->get_supported_geom_rendering();
@@ -356,9 +369,9 @@ munge_points_to_quads(const CullTraverser *traverser, bool force) {
   inv_render_transform.invert_from(render_transform);
 
   // Now convert all of the vertices in the GeomVertexData to quads.
-  // We always convert all the vertices, assuming all the vertices
-  // will referenced by GeomPrimitives, because we want to optimize
-  // for the most common case.
+  // We always convert all the vertices, assuming all the vertices are
+  // referenced by GeomPrimitives, because we want to optimize for the
+  // most common case.
   int orig_verts = source_data->get_num_rows();
   int new_verts = 4 * orig_verts;        // each vertex becomes four.
 

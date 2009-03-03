@@ -20,6 +20,7 @@
 #include "geomVertexReader.h"
 #include "geomVertexWriter.h"
 #include "geomVertexRewriter.h"
+#include "geomPoints.h"
 #include "preparedGraphicsObjects.h"
 #include "internalName.h"
 #include "bamReader.h"
@@ -829,6 +830,59 @@ match_shade_model(GeomPrimitive::ShadeModel shade_model) const {
 
   // Not compatible, sorry.
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeomPrimitive::make_points
+//       Access: Published
+//  Description: Returns a new GeomPoints primitive that represents
+//               each of the vertices in the original primitive,
+//               rendered exactly once.  If the original primitive is
+//               already a GeomPoints primitive, returns the original
+//               primitive unchanged.
+////////////////////////////////////////////////////////////////////
+CPT(GeomPrimitive) GeomPrimitive::
+make_points() const {
+  if (is_exact_type(GeomPoints::get_class_type())) {
+    return this;
+  }
+
+  // First, get a list of all of the vertices referenced by the
+  // original primitive.
+  BitArray bits;
+  int num_vertices = get_num_vertices();
+  if (is_indexed()) {
+    CPT(GeomVertexArrayData) vertices = get_vertices();
+    GeomVertexReader index(vertices, 0);
+    for (int vi = 0; vi < num_vertices; ++vi) {
+      nassertr(!index.is_at_end(), NULL);
+      bits.set_bit(index.get_data1i());
+    }
+  } else {
+    int first_vertex = get_first_vertex();
+    bits.set_range(first_vertex, num_vertices);
+  }
+
+  // Now construct a new index array with just those bits.
+  PT(GeomVertexArrayData) new_vertices = make_index_data();
+  GeomVertexWriter new_index(new_vertices, 0);
+  int p = bits.get_lowest_on_bit();
+  while (p != -1) {
+    while (bits.get_bit(p)) {
+      new_index.add_data1i(p);
+      ++p;
+    }
+    int q = bits.get_next_higher_different_bit(p);
+    if (q == p) {
+      break;
+    }
+    p = q;
+  }
+
+  PT(GeomPrimitive) points = new GeomPoints(UH_dynamic);
+  points->set_vertices(new_vertices);
+
+  return points;
 }
 
 ////////////////////////////////////////////////////////////////////
