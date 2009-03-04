@@ -614,7 +614,7 @@ synthesize_shader(const RenderState *rs) {
   }
   if (_out_aux_normal) {
     text << "\t // Output the camera-space surface normal\n";
-    text << "\t o_aux.rgb = (l_normal*0.5) + float4(0.5,0.5,0.5,0)).rgb;\n";
+    text << "\t o_aux.rgb = (l_normal.rgb*0.5) + float3(0.5,0.5,0.5);\n";
   }
   if (_lighting) {
     text << "\t // Begin view-space light calculations\n";
