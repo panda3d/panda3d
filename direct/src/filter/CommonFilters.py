@@ -54,7 +54,9 @@ class CommonFilters:
 
     def loadShader(self, name):
         fn = os.path.join(os.path.abspath(os.path.dirname(__file__)), name)
-        return Shader.load(Filename.fromOsSpecific(fn))
+        fn = Filename.fromOsSpecific(fn)
+        fn.makeTrueCase()
+        return Shader.load(fn)
 
     def cleanup(self):
         self.manager.cleanup()
@@ -176,6 +178,8 @@ class CommonFilters:
                 text += "o_color = 1-((1-bloom)*(1-o_color));\n"
             if (configuration.has_key("ViewGlow")):
                 text += "o_color.r = o_color.a;\n"
+            if (configuration.has_key("Inverted")):
+                text += "o_color = float4(1, 1, 1, 1) - o_color;\n"
             text += "}\n"
     
             self.finalQuad.setShader(Shader.make(text))
@@ -260,5 +264,14 @@ class CommonFilters:
             return self.reconfigure(True, "ViewGlow")
         return True
 
-        
+    def setInverted(self):
+        fullrebuild = (self.configuration.has_key("Inverted") == False)
+        self.configuration["Inverted"] = 1
+        return self.reconfigure(fullrebuild, "Inverted")
+
+    def delInverted(self):
+        if (self.configuration.has_key("Inverted")):
+            del self.configuration["Inverted"]
+            return self.reconfigure(True, "Inverted")
+        return True        
 
