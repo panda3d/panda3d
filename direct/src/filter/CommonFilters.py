@@ -93,6 +93,8 @@ class CommonFilters:
                 auxbits |= AuxBitplaneAttrib.ABOGlow
             for tex in needtex:
                 self.textures[tex] = Texture("scene-"+tex)
+                self.textures[tex].setWrapU(Texture.WMClamp)
+                self.textures[tex].setWrapV(Texture.WMClamp)
                 needtexpix = True
 
             self.finalQuad = self.manager.renderSceneInto(textures = self.textures, auxbits=auxbits)
@@ -141,6 +143,10 @@ class CommonFilters:
             if (configuration.has_key("Bloom")):
                 text += " uniform float4 texpad_txbloom3,\n"
                 text += " out float4 l_texcoordB : TEXCOORD2,\n"
+            if (configuration.has_key("VolumetricLighting")):
+                text += "uniform float4x4 trans_model_to_clip_of_camera,\n"
+                text += "uniform float4 mspos_caster,\n"
+                text += "out float2 l_casterpos,\n"
             text += " uniform float4x4 mat_modelproj)\n"
             text += "{\n"
             text += " l_position=mul(mat_modelproj, vtx_position);\n"
@@ -153,6 +159,8 @@ class CommonFilters:
                 text += " l_texcoordC+=texpix_txcolor*0.5;\n"
                 if (configuration.has_key("CartoonInk")):
                     text += " l_texcoordN+=texpix_txaux*0.5;\n"
+            if (configuration.has_key("VolumetricLighting")):
+                text += " l_casterpos=(mul(trans_model_to_clip_of_camera, mspos_caster).xy);\n"
             text += "}\n"
 
             text += "void fshader(\n"
@@ -167,6 +175,9 @@ class CommonFilters:
                 text += "uniform sampler2D k_tx" + key + ",\n"
             if (configuration.has_key("CartoonInk")):
                 text += "uniform float4 k_cartoonseparation,\n"
+            if (configuration.has_key("VolumetricLighting")):
+                text += "uniform float4 k_vlparams,\n"
+                text += "float2 l_casterpos,\n"
             text += "out float4 o_color : COLOR)\n"
             text += "{\n"
             text += " o_color = tex2D(k_txcolor, l_texcoordC.xy);\n"
@@ -178,19 +189,33 @@ class CommonFilters:
                 text += "o_color = 1-((1-bloom)*(1-o_color));\n"
             if (configuration.has_key("ViewGlow")):
                 text += "o_color.r = o_color.a;\n"
+            if (configuration.has_key("VolumetricLighting")):
+                text += "float decay = 1.0f;\n"
+                text += "float2 curcoord = l_texcoordC.xy;\n"
+                text += "float2 lightdir = normalize(curcoord - l_casterpos);\n"                text += "lightdir *= k_vlparams.y;\n"
+                text += "half4 sample = tex2D(k_txcolor, curcoord);\n"
+                text += "float3 vlcolor = sample.rgb * sample.a;\n"
+                text += "for (int i = 0; i < k_vlparams.x; i++) {\n"
+                text += "  curcoord -= lightdir;\n"
+                text += "  sample = tex2D(k_txcolor, curcoord);\n"
+                text += "  sample *= sample.a * decay;//*weight\n"
+                text += "  vlcolor += sample.rgb;\n"
+                text += "  decay *= k_vlparams.z;\n"
+                text += "}\n"
+                text += "o_color += float4(vlcolor * k_vlparams.w, 1);\n"
             if (configuration.has_key("Inverted")):
                 text += "o_color = float4(1, 1, 1, 1) - o_color;\n"
             text += "}\n"
-    
+            
             self.finalQuad.setShader(Shader.make(text))
             for tex in self.textures:
                 self.finalQuad.setShaderInput("tx"+tex, self.textures[tex])
-
+        
         if (changed == "CartoonInk") or fullrebuild:
             if (configuration.has_key("CartoonInk")):
                 separation = configuration["CartoonInk"]
                 self.finalQuad.setShaderInput("cartoonseparation", Vec4(separation,0,separation,0))
-
+        
         if (changed == "Bloom") or fullrebuild:
             if (configuration.has_key("Bloom")):
                 bloomconf = configuration["Bloom"]
@@ -199,6 +224,14 @@ class CommonFilters:
                 self.bloom[0].setShaderInput("trigger", bloomconf.mintrigger, 1.0/(bloomconf.maxtrigger-bloomconf.mintrigger), 0.0, 0.0)
                 self.bloom[0].setShaderInput("desat", bloomconf.desat)
                 self.bloom[3].setShaderInput("intensity", intensity, intensity, intensity, intensity)
+        
+        if (changed == "VolumetricLighting") or fullrebuild:
+            if (configuration.has_key("VolumetricLighting")):
+                config = configuration["VolumetricLighting"]
+                tcparam = (1.0 / config.density) / float(config.numsamples)
+                self.finalQuad.setShaderInput("camera", self.manager.camera)
+                self.finalQuad.setShaderInput("caster", config.caster)
+                self.finalQuad.setShaderInput("vlparams", config.numsamples, tcparam, 1.0 - config.decay, config.exposure)
         
         return True
 
@@ -273,5 +306,22 @@ class CommonFilters:
         if (self.configuration.has_key("Inverted")):
             del self.configuration["Inverted"]
             return self.reconfigure(True, "Inverted")
-        return True        
+        return True
+
+    def setVolumetricLighting(self, caster, numsamples = 32, density = 5.0, decay = 0.1, exposure = 0.1):
+        fullrebuild = (self.configuration.has_key("VolumetricLighting") == False)
+        newconfig = FilterConfig()
+        newconfig.caster = caster
+        newconfig.numsamples = numsamples
+        newconfig.density = density
+        newconfig.decay = decay
+        newconfig.exposure = exposure
+        self.configuration["VolumetricLighting"] = newconfig
+        return self.reconfigure(fullrebuild, "VolumetricLighting")
+
+    def delVolumetricLighting(self):
+        if (self.configuration.has_key("VolumetricLighting")):
+            del self.configuration["VolumetricLighting"]
+            return self.reconfigure(True, "VolumetricLighting")
+        return True
 
