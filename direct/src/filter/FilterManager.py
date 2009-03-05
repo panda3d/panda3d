@@ -291,7 +291,7 @@ class FilterManager(DirectObject):
         if (buffer == None):
             return buffer
         if (depthtex):
-            buffer.addRenderTexture(depthtex, GraphicsOutput.RTMBindOrCopy, GraphicsOutput.RTPDepth)
+            buffer.addRenderTexture(depthtex, GraphicsOutput.RTMBindOrCopy, GraphicsOutput.RTPDepthStencil)
         if (colortex):
             buffer.addRenderTexture(colortex, GraphicsOutput.RTMBindOrCopy, GraphicsOutput.RTPColor)
         if (auxtex0):
