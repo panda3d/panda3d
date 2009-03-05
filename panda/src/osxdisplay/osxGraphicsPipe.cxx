@@ -237,21 +237,36 @@ make_output(const string &name,
                                  flags, gsg, host);
   }
   
-  //  // Second thing to try: a glGraphicsBuffer
-  //  
-  //  if (retry == 1) {
-  //    if ((!support_render_texture)||
-  //        ((flags&BF_require_parasite)!=0)||
-  //        ((flags&BF_require_window)!=0)) {
-  //      return NULL;
-  //    }
-  //    if (precertify) {
-  //      if (!osxgsg->_supports_framebuffer_object) {
-  //        return NULL;
-  //      }
-  //    }
-  //    return new glGraphicsBuffer(this, name, fb_prop, win_prop, flags, gsg, host);
-  //  }
+  // Second thing to try: a glGraphicsBuffer
+  
+  if (retry == 1) {
+    if ((host==0)||
+        ((flags&BF_require_parasite)!=0)||
+        ((flags&BF_require_window)!=0)) {
+      return NULL;
+    }
+    // Early failure - if we are sure that this buffer WONT
+    // meet specs, we can bail out early.
+    if ((flags & BF_fb_props_optional)==0) {
+      if ((fb_prop.get_indexed_color() > 0)||
+          (fb_prop.get_back_buffers() > 0)||
+          (fb_prop.get_accum_bits() > 0)||
+          (fb_prop.get_multisamples() > 0)) {
+        return NULL;
+      }
+    }
+    // Early success - if we are sure that this buffer WILL
+    // meet specs, we can precertify it.
+    if ((osxgsg != 0) &&
+        (osxgsg->is_valid()) &&
+        (!osxgsg->needs_reset()) &&
+        (osxgsg->_supports_framebuffer_object) &&
+        (osxgsg->_glDrawBuffers != 0)&&
+        (fb_prop.is_basic())) {
+      precertify = true;
+    }
+    return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop, flags, gsg, host);
+  }
   
   // Third thing to try: an osxGraphicsBuffer
  /* 
@@ -264,7 +279,7 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
-    return new osxGraphicsBuffer(this, name, fb_prop, win_prop,
+    return new osxGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
   */

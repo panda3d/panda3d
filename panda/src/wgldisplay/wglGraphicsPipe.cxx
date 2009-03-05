@@ -156,8 +156,7 @@ make_output(const string &name,
   // Second thing to try: a GLGraphicsBuffer
   
   if (retry == 1) {
-    if ((!support_rtt)||
-        (!gl_support_fbo)||
+    if ((!gl_support_fbo)||
         (host==0)||
         ((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)) {
