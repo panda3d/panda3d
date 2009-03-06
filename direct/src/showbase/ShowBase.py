@@ -1835,10 +1835,10 @@ class ShowBase(DirectObject.DirectObject):
         # Set up a funny state to render only vertices.
         override = 100000
         t = NodePath('t')
-        t.setColor(1, 0, 0, 0.01, override)
+        t.setColor(1, 0, 1, 0.02, override)
         t.setColorScale(1, 1, 1, 1, override)
-        t.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd, ColorBlendAttrib.OIncomingAlpha, ColorBlendAttrib.OOne), override)
-        t.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MPoint, 6), override)
+        t.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd, ColorBlendAttrib.OIncomingAlpha, ColorBlendAttrib.OOneMinusIncomingAlpha), override)
+        t.setAttrib(RenderModeAttrib.make(RenderModeAttrib.MPoint, 10), override)
         t.setTwoSided(True, override)
         t.setBin('fixed', 0, override)
         t.setDepthTest(False, override)
@@ -1850,19 +1850,22 @@ class ShowBase(DirectObject.DirectObject):
         t.setAttrib(RescaleNormalAttrib.make(RescaleNormalAttrib.MNone), override)
         t.setTextureOff(override)
 
-        # Make the spots round.  Not sure why this doesn't work right
-        # now.
-##         spot = PNMImage(256, 256)
-##         spot.renderSpot((1, 1, 1, 1), (0, 0, 0, 0), 0, 1)
-##         tex = Texture('spot')
-##         tex.load(spot)
-##         t.setTexture(tex, override)
-##         t.setAttrib(TexGenAttrib.make(TextureStage.getDefault(), TexGenAttrib.MPointSprite), override)
+        # Make the spots round, so there's less static in the display.
+        # This forces software point generation on many drivers, so
+        # it's not on by default.
+        if self.config.GetBool('round-show-vertices', False):
+            spot = PNMImage(256, 256, 1)
+            spot.renderSpot((1, 1, 1, 1), (0, 0, 0, 0), 0.8, 1)
+            tex = Texture('spot')
+            tex.load(spot)
+            tex.setFormat(tex.FAlpha)
+            t.setTexture(tex, override)
+            t.setAttrib(TexGenAttrib.make(TextureStage.getDefault(), TexGenAttrib.MPointSprite), override)
 
         cam.setInitialState(t.getState())
         cam.setCameraMask(~PandaNode.getOverallBit())
 
-        self.showVertices = self.camera.attachNewNode(cam)
+        self.showVertices = self.cam.attachNewNode(cam)
         dr.setCamera(self.showVertices)
         
 
