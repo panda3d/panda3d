@@ -120,8 +120,11 @@ move_pointer(int device, int x, int y) {
       return false;
     }
 
-    XWarpPointer(_display, None, _xwindow, 0, 0, 0, 0, x, y);
-    _input_devices[0].set_pointer_in_window(x, y);
+    const MouseData &md = _input_devices[0].get_pointer();
+    if (!md.get_in_window() || md.get_x() != x || md.get_y() != y) {
+      XWarpPointer(_display, None, _xwindow, 0, 0, 0, 0, x, y);
+      _input_devices[0].set_pointer_in_window(x, y);
+    }
     return true;
   } else {
     // Move a raw mouse.
