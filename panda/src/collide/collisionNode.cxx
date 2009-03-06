@@ -396,7 +396,12 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   PandaNode::write_datagram(manager, dg);
 
   int num_solids = _solids.size();
-  dg.add_uint16(num_solids);
+  if (num_solids >= 0xffff) {
+    dg.add_uint16(0xffff);
+    dg.add_uint32(num_solids);
+  } else {
+    dg.add_uint16(num_solids);
+  }
   for(int i = 0; i < num_solids; i++) {
     manager->write_pointer(dg, _solids[i].get_read_pointer());
   }
@@ -455,6 +460,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
 
   int num_solids = scan.get_uint16();
+  if (num_solids == 0xffff) {
+    num_solids = scan.get_uint32();
+  }
   _solids.clear();
   _solids.reserve(num_solids);
   for(int i = 0; i < num_solids; i++) {
