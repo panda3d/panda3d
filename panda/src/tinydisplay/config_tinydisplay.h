@@ -30,6 +30,8 @@ extern ConfigVariableString display_cfg;
 extern ConfigVariableBool x_error_abort;
 extern ConfigVariableInt x_wheel_up_button;
 extern ConfigVariableInt x_wheel_down_button;
+extern ConfigVariableInt x_wheel_left_button;
+extern ConfigVariableInt x_wheel_right_button;
 
 extern ConfigVariableBool show_resize_box;
 extern ConfigVariableBool osx_disable_event_loop;

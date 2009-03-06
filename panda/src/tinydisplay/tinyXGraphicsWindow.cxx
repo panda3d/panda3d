@@ -1398,12 +1398,12 @@ get_button(XKeyEvent &key_event, bool allow_shift) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsWindow::map_button
+//     Function: TinyXGraphicsWindow::map_button
 //       Access: Private
 //  Description: Maps from a single X keysym to Panda's ButtonHandle.
 //               Called by get_button(), above.
 ////////////////////////////////////////////////////////////////////
-ButtonHandle glxGraphicsWindow::
+ButtonHandle TinyXGraphicsWindow::
 map_button(KeySym key) {
   switch (key) {
   case XK_BackSpace:

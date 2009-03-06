@@ -60,6 +60,18 @@ ConfigVariableInt x_wheel_down_button
           "mouse button number does the system report when the mouse wheel "
           "is rolled one notch down?"));
 
+ConfigVariableInt x_wheel_left_button
+("x-wheel-left-button", 6,
+ PRC_DESC("This is the mouse button index of the wheel_left event: which "
+          "mouse button number does the system report when one scrolls "
+          "to the left?"));
+
+ConfigVariableInt x_wheel_right_button
+("x-wheel-right-button", 7,
+ PRC_DESC("This is the mouse button index of the wheel_right event: which "
+          "mouse button number does the system report when one scrolls "
+          "to the right?"));
+
 ConfigVariableBool show_resize_box
 ("show-resize-box", true,
  PRC_DESC("When this variable is true, then resizable OSX Panda windows will "
