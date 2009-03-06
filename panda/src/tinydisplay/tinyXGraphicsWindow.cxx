@@ -150,6 +150,10 @@ bool TinyXGraphicsWindow::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
+  if (_xwindow == (Window)NULL) {
+    return false;
+  }
+
   begin_frame_spam(mode);
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     return false;
@@ -218,6 +222,10 @@ end_frame(FrameMode mode, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void TinyXGraphicsWindow::
 begin_flip() {
+  if (_xwindow == (Window)NULL) {
+    return;
+  }
+
   if (_reduced_frame_buffer != (ZBuffer *)NULL) {
     // Zoom the reduced buffer onto the full buffer.
     ZB_zoomFrameBuffer(_full_frame_buffer, 0, 0, 
