@@ -230,6 +230,7 @@ int texcoord_mirror_once(int coord, int max_coord);
 
 /* linesize is in BYTES */
 void ZB_copyFrameBuffer(const ZBuffer *zb,void *buf,int linesize);
+void ZB_copyFrameBufferNoAlpha(const ZBuffer *zb,void *buf,int linesize);
 void ZB_zoomFrameBuffer(ZBuffer *dest, int dest_xmin, int dest_ymin, 
                         int dest_xsize, int dest_ysize,
                         const ZBuffer *source, int source_xmin, int source_ymin,

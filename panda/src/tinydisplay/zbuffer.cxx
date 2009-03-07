@@ -148,6 +148,30 @@ static void ZB_copyBuffer(const ZBuffer * zb,
     }
 }
 
+static void
+ZB_copyBufferNoAlpha(const ZBuffer * zb, void *buf, int linesize) {
+  const PIXEL *q = zb->pbuf;
+  PIXEL *p = (PIXEL *)buf;
+  int xsize = zb->xsize;
+  for (int y = 0; y < zb->ysize; ++y) {
+    const PIXEL *q1 = q;
+    PIXEL *p1 = p;
+    PIXEL *p2 = p1 + xsize;
+    while (p1 < p2) {
+      // Make sure the alpha bits are set to 0xff.
+#ifdef WORDS_BIGENDIAN        
+      *p1 = *q1 | 0x000000ff;
+#else
+      *p1 = *q1 | 0xff000000;
+#endif
+      ++p1;
+      ++q1;
+    }
+    p = (PIXEL *) ((char *) p + linesize);
+    q = (const PIXEL *) ((const char *) q + zb->linesize);
+  }
+}
+
 #define RGB32_TO_RGB16(v) \
   (((v >> 8) & 0xf800) | (((v) >> 5) & 0x07e0) | (((v) & 0xff) >> 3))
 
@@ -221,6 +245,30 @@ void ZB_copyFrameBuffer(const ZBuffer * zb, void *buf,
 #ifdef TGL_FEATURE_32_BITS
     case ZB_MODE_RGBA:
 	ZB_copyBuffer(zb, buf, linesize);
+	break;
+#endif
+    default:
+	assert(0);
+    }
+}
+
+void ZB_copyFrameBufferNoAlpha(const ZBuffer * zb, void *buf,
+                               int linesize)
+{
+    switch (zb->mode) {
+#ifdef TGL_FEATURE_16_BITS
+    case ZB_MODE_5R6G5B:
+	ZB_copyFrameBuffer5R6G5B(zb, buf, linesize);
+	break;
+#endif
+#ifdef TGL_FEATURE_24_BITS
+    case ZB_MODE_RGB24:
+	ZB_copyFrameBufferRGB24(zb, buf, linesize);
+	break;
+#endif
+#ifdef TGL_FEATURE_32_BITS
+    case ZB_MODE_RGBA:
+	ZB_copyBufferNoAlpha(zb, buf, linesize);
 	break;
 #endif
     default:

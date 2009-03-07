@@ -234,14 +234,12 @@ begin_flip() {
                        _reduced_frame_buffer->xsize, _reduced_frame_buffer->ysize);
   }
 
-  if (_bytes_per_pixel == 4 && _pitch == _full_frame_buffer->linesize) {
-    // If we match the expected bpp, we don't need an intervening copy
-    // operation.  Just point the XImage directly at the framebuffer
-    // data.
-    _ximage->data = (char *)_full_frame_buffer->pbuf;
-  } else {
-    ZB_copyFrameBuffer(_full_frame_buffer, _ximage->data, _pitch);
-  }
+  // We can't just point the XPutImage directly at our own framebuffer
+  // data, even if the bytes_per_pixel matches, because some X
+  // displays will respect the alpha channel and make the window
+  // transparent there.  We don't want transparent windows where the
+  // alpha data happens to less than 1.0.
+  ZB_copyFrameBufferNoAlpha(_full_frame_buffer, _ximage->data, _pitch);
 
   XPutImage(_display, _xwindow, _gc, _ximage, 0, 0, 0, 0,
             _full_frame_buffer->xsize, _full_frame_buffer->ysize);
@@ -1830,19 +1828,14 @@ create_reduced_frame_buffer() {
 void TinyXGraphicsWindow::
 create_ximage() {
   if (_ximage != NULL) {
-    if (_bytes_per_pixel != 4) {
-      PANDA_FREE_ARRAY(_ximage->data);
-    }
+    PANDA_FREE_ARRAY(_ximage->data);
     _ximage->data = NULL;
     XDestroyImage(_ximage);
     _ximage = NULL;
   }
 
   int image_size = _full_frame_buffer->ysize * _pitch;
-  char *data = NULL;
-  if (_bytes_per_pixel != 4) {
-    data = (char *)PANDA_MALLOC_ARRAY(image_size);
-  }
+  char *data = (char *)PANDA_MALLOC_ARRAY(image_size);
 
   _ximage = XCreateImage(_display, _visual, _depth, ZPixmap, 0, data,
                          _full_frame_buffer->xsize, _full_frame_buffer->ysize,
