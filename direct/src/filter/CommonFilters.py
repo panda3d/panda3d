@@ -16,7 +16,7 @@ clunky approach.  - Josh
 """
 
 from FilterManager import FilterManager
-from pandac.PandaModules import Point3, Vec3, Vec4
+from pandac.PandaModules import Point3, Vec3, Vec4, Point2
 from pandac.PandaModules import NodePath, PandaNode
 from pandac.PandaModules import Filename
 from pandac.PandaModules import AuxBitplaneAttrib
@@ -51,6 +51,7 @@ class CommonFilters:
         self.manager = FilterManager(win, cam)
         self.configuration = {}
         self.cleanup()
+        self.task = taskMgr.add(self.update, "common-filters-update")
 
     def loadShader(self, name):
         fn = os.path.join(os.path.abspath(os.path.dirname(__file__)), name)
@@ -143,10 +144,6 @@ class CommonFilters:
             if (configuration.has_key("Bloom")):
                 text += " uniform float4 texpad_txbloom3,\n"
                 text += " out float4 l_texcoordB : TEXCOORD2,\n"
-            if (configuration.has_key("VolumetricLighting")):
-                text += "uniform float4x4 trans_model_to_clip_of_camera,\n"
-                text += "uniform float4 mspos_caster,\n"
-                text += "out float2 l_casterpos,\n"
             text += " uniform float4x4 mat_modelproj)\n"
             text += "{\n"
             text += " l_position=mul(mat_modelproj, vtx_position);\n"
@@ -159,8 +156,6 @@ class CommonFilters:
                 text += " l_texcoordC+=texpix_txcolor*0.5;\n"
                 if (configuration.has_key("CartoonInk")):
                     text += " l_texcoordN+=texpix_txaux*0.5;\n"
-            if (configuration.has_key("VolumetricLighting")):
-                text += " l_casterpos=(mul(trans_model_to_clip_of_camera, mspos_caster).xy);\n"
             text += "}\n"
 
             text += "void fshader(\n"
@@ -176,8 +171,8 @@ class CommonFilters:
             if (configuration.has_key("CartoonInk")):
                 text += "uniform float4 k_cartoonseparation,\n"
             if (configuration.has_key("VolumetricLighting")):
+                text += "uniform float4 k_casterpos,\n"
                 text += "uniform float4 k_vlparams,\n"
-                text += "float2 l_casterpos,\n"
             text += "out float4 o_color : COLOR)\n"
             text += "{\n"
             text += " o_color = tex2D(k_txcolor, l_texcoordC.xy);\n"
@@ -192,7 +187,7 @@ class CommonFilters:
             if (configuration.has_key("VolumetricLighting")):
                 text += "float decay = 1.0f;\n"
                 text += "float2 curcoord = l_texcoordC.xy;\n"
-                text += "float2 lightdir = normalize(curcoord - l_casterpos);\n"                text += "lightdir *= k_vlparams.y;\n"
+                text += "float2 lightdir = curcoord - k_casterpos.xy;\n"                text += "lightdir *= k_vlparams.y;\n"
                 text += "half4 sample = tex2D(k_txcolor, curcoord);\n"
                 text += "float3 vlcolor = sample.rgb * sample.a;\n"
                 text += "for (int i = 0; i < k_vlparams.x; i++) {\n"
@@ -228,12 +223,22 @@ class CommonFilters:
         if (changed == "VolumetricLighting") or fullrebuild:
             if (configuration.has_key("VolumetricLighting")):
                 config = configuration["VolumetricLighting"]
-                tcparam = (1.0 / config.density) / float(config.numsamples)
-                self.finalQuad.setShaderInput("camera", self.manager.camera)
-                self.finalQuad.setShaderInput("caster", config.caster)
-                self.finalQuad.setShaderInput("vlparams", config.numsamples, tcparam, 1.0 - config.decay, config.exposure)
+                tcparam = config.density / float(config.numsamples)
+                self.finalQuad.setShaderInput("vlparams", config.numsamples, tcparam, config.decay, config.exposure)
         
+        self.update()
         return True
+
+    def update(self, task = None):
+        """Updates the shader inputs that need to be updated every frame.
+        Normally, you shouldn't call this, it's being called in a task."""
+        if self.configuration.has_key("VolumetricLighting"):
+            caster = self.configuration["VolumetricLighting"].caster
+            casterpos = Point2()
+            self.manager.camera.node().getLens().project(caster.getPos(self.manager.camera), casterpos)
+            self.finalQuad.setShaderInput("casterpos", Vec4(casterpos.getX() * 0.5 + 0.5, (casterpos.getY() * 0.5 + 0.5), 0, 0))
+        if task != None:
+            return task.cont
 
     def setCartoonInk(self, separation=1):
         fullrebuild = (self.configuration.has_key("CartoonInk") == False)
