@@ -83,6 +83,9 @@ class DirectObject:
         del self._taskList[task.id]        
         
     def detectLeaks(self):
+        if not __dev__:
+            return
+        
         # call this after the DirectObject instance has been destroyed
         # if it's leaking, will notify user
         
