@@ -24,6 +24,7 @@
 #include "lightReMutexHolder.h"
 #include "lightMutexHolder.h"
 #include "thread.h"
+#include "py_panda.h"
 
 LightReMutex *TransformState::_states_lock = NULL;
 TransformState::States *TransformState::_states = NULL;
@@ -824,9 +825,129 @@ unref() const {
   return false;
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_composition_cache
+//       Access: Published
+//  Description: Returns a list of 2-tuples that represents the
+//               composition cache.  For each tuple in the list, the
+//               first element is the source transform, and the second
+//               is the result transform.  If both are None, there is
+//               no entry in the cache at that slot.
+//
+//               In general, a->compose(source) == result.
+//
+//               This has no practical value other than for examining
+//               the cache for performance analysis.
+////////////////////////////////////////////////////////////////////
+PyObject *TransformState::
+get_composition_cache() const {
+  IMPORT_THIS struct Dtool_PyTypedObject Dtool_TransformState;
+  LightReMutexHolder holder(*_states_lock);
+  size_t cache_size = _composition_cache.get_size();
+  PyObject *list = PyList_New(cache_size);
+
+  for (size_t i = 0; i < cache_size; ++i) {
+    PyObject *tuple = PyTuple_New(2);
+    PyObject *a, *b;
+    if (!_composition_cache.has_element(i)) {
+      a = Py_None;
+      Py_INCREF(a);
+      b = Py_None;
+      Py_INCREF(b);
+    } else {
+      const TransformState *source = _composition_cache.get_key(i);
+      if (source == (TransformState *)NULL) {
+        a = Py_None;
+        Py_INCREF(a);
+      } else {
+        source->ref();
+        a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState, 
+                                        true, true, source->get_type_index());
+      }
+      const TransformState *result = _composition_cache.get_data(i)._result;
+      if (result == (TransformState *)NULL) {
+        b = Py_None;
+        Py_INCREF(b);
+      } else {
+        result->ref();
+        b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState, 
+                                        true, true, result->get_type_index());
+      }
+    }
+    PyTuple_SET_ITEM(tuple, 0, a);
+    PyTuple_SET_ITEM(tuple, 1, b);
+
+    PyList_SET_ITEM(list, i, tuple);
+  }
+
+  return list;
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_invert_composition_cache
+//       Access: Published
+//  Description: Returns a list of 2-tuples that represents the
+//               invert_composition cache.  For each tuple in the list, the
+//               first element is the source transform, and the second
+//               is the result transform.  If both are None, there is
+//               no entry in the cache at that slot.
+//
+//               In general, a->invert_compose(source) == result.
+//
+//               This has no practical value other than for examining
+//               the cache for performance analysis.
+////////////////////////////////////////////////////////////////////
+PyObject *TransformState::
+get_invert_composition_cache() const {
+  IMPORT_THIS struct Dtool_PyTypedObject Dtool_TransformState;
+  LightReMutexHolder holder(*_states_lock);
+  size_t cache_size = _invert_composition_cache.get_size();
+  PyObject *list = PyList_New(cache_size);
+
+  for (size_t i = 0; i < cache_size; ++i) {
+    PyObject *tuple = PyTuple_New(2);
+    PyObject *a, *b;
+    if (!_invert_composition_cache.has_element(i)) {
+      a = Py_None;
+      Py_INCREF(a);
+      b = Py_None;
+      Py_INCREF(b);
+    } else {
+      const TransformState *source = _invert_composition_cache.get_key(i);
+      if (source == (TransformState *)NULL) {
+        a = Py_None;
+        Py_INCREF(a);
+      } else {
+        source->ref();
+        a = DTool_CreatePyInstanceTyped((void *)source, Dtool_TransformState, 
+                                        true, true, source->get_type_index());
+      }
+      const TransformState *result = _invert_composition_cache.get_data(i)._result;
+      if (result == (TransformState *)NULL) {
+        b = Py_None;
+        Py_INCREF(b);
+      } else {
+        result->ref();
+        b = DTool_CreatePyInstanceTyped((void *)result, Dtool_TransformState, 
+                                        true, true, result->get_type_index());
+      }
+    }
+    PyTuple_SET_ITEM(tuple, 0, a);
+    PyTuple_SET_ITEM(tuple, 1, b);
+
+    PyList_SET_ITEM(list, i, tuple);
+  }
+
+  return list;
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::output
-//       Access: Published, Virtual
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void TransformState::
@@ -916,17 +1037,28 @@ output(ostream &out) const {
   }
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::write
-//       Access: Published, Virtual
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void TransformState::
 write(ostream &out, int indent_level) const {
   indent(out, indent_level) << *this << "\n";
-  //  indent(out, indent_level + 2) << _composition_cache << "\n";
-  //  indent(out, indent_level + 2) << _invert_composition_cache << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::write_composition_cache
+//       Access: Published
+//  Description: Writes a brief description of the composition cache
+//               and invert composition cache to the indicated
+//               ostream.  This is not useful except for performance
+//               analysis, to examine the cache structure.
+////////////////////////////////////////////////////////////////////
+void TransformState::
+write_composition_cache(ostream &out, int indent_level) const {
+  indent(out, indent_level + 2) << _composition_cache << "\n";
+  indent(out, indent_level + 2) << _invert_composition_cache << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1267,6 +1399,40 @@ validate_states() {
 
   return true;
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_states
+//       Access: Published, Static
+//  Description: Returns a list of all of the TransformState objects
+//               in the state cache.  The order of elements in this
+//               cache is arbitrary.
+////////////////////////////////////////////////////////////////////
+PyObject *TransformState::
+get_states() {
+  IMPORT_THIS struct Dtool_PyTypedObject Dtool_TransformState;
+  if (_states == (States *)NULL) {
+    return PyList_New(0);
+  }
+  LightReMutexHolder holder(*_states_lock);
+
+  size_t num_states = _states->size();
+  PyObject *list = PyList_New(num_states);
+  States::const_iterator si;
+  size_t i;
+  for (si = _states->begin(), i = 0; si != _states->end(); ++si, ++i) {
+    nassertr(i < num_states, list);
+    const TransformState *state = (*si);
+    state->ref();
+    PyObject *a = 
+      DTool_CreatePyInstanceTyped((void *)state, Dtool_TransformState, 
+                                  true, true, state->get_type_index());
+    PyList_SET_ITEM(list, i, a);
+  }
+  nassertr(i == num_states, list);
+  return list;
+}
+#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: TransformState::init_states

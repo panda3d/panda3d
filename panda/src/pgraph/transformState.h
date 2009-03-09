@@ -188,9 +188,14 @@ PUBLISHED:
   INLINE int get_invert_composition_cache_size() const;
   INLINE const TransformState *get_invert_composition_cache_source(int n) const;
   INLINE const TransformState *get_invert_composition_cache_result(int n) const;
+#ifdef HAVE_PYTHON
+  PyObject *get_composition_cache() const;
+  PyObject *get_invert_composition_cache() const;
+#endif  // HAVE_PYTHON
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
+  void write_composition_cache(ostream &out, int indent_level) const;
 
   static int get_num_states();
   static int get_num_unused_states();
@@ -198,6 +203,10 @@ PUBLISHED:
   static void list_cycles(ostream &out);
   static void list_states(ostream &out);
   static bool validate_states();
+#ifdef HAVE_PYTHON
+  static PyObject *get_states();
+#endif  // HAVE_PYTHON
+
 
 public:
   static void init_states();

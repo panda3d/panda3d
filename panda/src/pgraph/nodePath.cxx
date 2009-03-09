@@ -3174,11 +3174,10 @@ get_bin_draw_order() const {
 //  Description: Adds the indicated texture to the list of textures
 //               that will be rendered on the default texture stage.
 //
-//               This is the deprecated single-texture variant of this
-//               method; it is now superceded by set_texture() that
-//               accepts a stage and texture.  However, this method
-//               may be used in the presence of multitexture if you
-//               just want to adjust the default stage.
+//               This is the convenience single-texture variant of
+//               this method; it is now superceded by set_texture()
+//               that accepts a stage and texture.  You may use this
+//               method if you just want to adjust the default stage.
 ////////////////////////////////////////////////////////////////////
 void NodePath::
 set_texture(Texture *tex, int priority) {
