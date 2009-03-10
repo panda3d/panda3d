@@ -50,8 +50,7 @@ protected:
   virtual void *get_extension_func(const char *prefix, const char *name);
   
 public:
-  OSStatus buildGL(osxGraphicsWindow &window, bool full_screen,
-                   FrameBufferProperties &fb_props);
+  OSStatus buildGL(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props);
   AGLContext  get_context(void) { return _aglcontext; };
   
   const AGLPixelFormat  getAGlPixelFormat() const { return _aglPixFmt; };

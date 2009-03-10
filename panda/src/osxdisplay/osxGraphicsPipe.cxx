@@ -212,7 +212,6 @@ make_output(const string &name,
             GraphicsOutput *host,
             int retry,
             bool &precertify) {
-  
   if (!_is_valid) {
     return NULL;
   }
@@ -269,7 +268,6 @@ make_output(const string &name,
   }
   
   // Third thing to try: an osxGraphicsBuffer
- /* 
   if (retry == 2) {
     if ((!support_render_texture)||
         ((flags&BF_require_parasite)!=0)||
@@ -282,7 +280,7 @@ make_output(const string &name,
     return new osxGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
-  */
+
   // Nothing else left to try.
   return NULL;
 }

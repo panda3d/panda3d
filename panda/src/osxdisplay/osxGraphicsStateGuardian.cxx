@@ -184,8 +184,7 @@ draw_resize_box() {
 //  Description: This function will build up a context for a gsg..  
 ////////////////////////////////////////////////////////////////////
 OSStatus osxGraphicsStateGuardian::
-buildGL(osxGraphicsWindow &window, bool full_screen,
-        FrameBufferProperties &fb_props) {
+buildGL(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
   if (_aglcontext) {
     describe_pixel_format(fb_props);
     return noErr; // already built
@@ -230,15 +229,13 @@ buildGL(osxGraphicsWindow &window, bool full_screen,
   if (full_screen) {
     attrib.push_back(AGL_FULLSCREEN);
   }
+  if (pbuffer) {
+    attrib.push_back(AGL_PBUFFER);
+  }
 
-  // These are renderer modes, not pixel modes.  Not sure if they have
-  // any meaning here; maybe we should handle these flags differently.
   if (fb_props.get_force_hardware()) {
     attrib.push_back(AGL_ACCELERATED);
     attrib.push_back(AGL_NO_RECOVERY);
-  }
-  if (fb_props.get_force_software()) {
-    attrib.push_back(AGL_PBUFFER);
   }
 
   // Allow the system to choose the largest buffers requested that

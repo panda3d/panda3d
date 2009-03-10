@@ -65,7 +65,7 @@ init_libosxdisplay() {
   }
   initialized = true;
 
-  osxGraphicsStateGuardian::init_type();
+  osxGraphicsBuffer::init_type();
   osxGraphicsPipe::init_type();
   osxGraphicsWindow::init_type();
   osxGraphicsStateGuardian::init_type();

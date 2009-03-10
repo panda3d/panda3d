@@ -23,12 +23,11 @@
 #include "glgsg.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : OSXGraphicsBuffer
-//  rhh mar-2006
-//  Sorry ... this is not functional at all... I have no need for it yet ?
-// 
+//       Class : osxGraphicsBuffer
+// Description : An offscreen buffer in the OSX environment.  This
+//               creates an AGLPbuffer.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAGL osxGraphicsBuffer : public GraphicsBuffer {
+class osxGraphicsBuffer : public GraphicsBuffer {
 public:
   osxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
                     const string &name,
@@ -39,7 +38,6 @@ public:
                     GraphicsOutput *host);
   virtual ~osxGraphicsBuffer();
 
-
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
 
@@ -47,6 +45,8 @@ protected:
   virtual void close_buffer();
   virtual bool open_buffer();
 
+private:
+  AGLPbuffer _pbuffer;
    
 public:
   static TypeHandle get_class_type() {
@@ -54,7 +54,7 @@ public:
   }
   static void init_type() {
     GraphicsBuffer::init_type();
-    register_type(_type_handle, "owsGraphicsBuffer",
+    register_type(_type_handle, "osxGraphicsBuffer",
                   GraphicsBuffer::get_class_type());
   }
   virtual TypeHandle get_type() const {

@@ -692,7 +692,7 @@ buildGL(bool full_screen) {
   // make sure the ggs is up and runnig..
   osxGraphicsStateGuardian *osxgsg = NULL;
   osxgsg = DCAST(osxGraphicsStateGuardian, _gsg);
-  OSStatus stat = osxgsg->buildGL(*this, full_screen, _fb_properties);
+  OSStatus stat = osxgsg->buildGL(full_screen, false, _fb_properties);
 
   if(stat != noErr) {
     return stat;
