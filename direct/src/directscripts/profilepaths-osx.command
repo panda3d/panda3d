@@ -2,8 +2,9 @@
 
 # We should only need to adjust the version in the future, hopefully.
 PANDA_VERSION=$1
-PANDA_PATH=/Applications/Panda3D/$PANDA_VERSION
+PANDA_PATH=/Applications/Panda3D/\$PANDA_VERSION
 PROFILE=$HOME/.bash_profile
+PROFILE_BACKUP=$HOME/.bash_profile_backup
 
 # Build the block of stuff to put in the user's BASH profile
 BASH_BLOCK='if [ -d $PANDA_PATH ]
@@ -25,6 +26,10 @@ $BASH_BLOCK"
 clear
 if [ -f $PROFILE ]
 then
+    # Back it up first
+    cp $PROFILE $PROFILE_BACKUP
+    
+    # Check if it isn't already configured
     if [ "$(grep PANDA_VERSION=$PANDA_VERSION $PROFILE)" != "" ]
     then
         echo "It looks like your version of Panda3D is already configured!"
@@ -34,7 +39,7 @@ then
         exit
     elif [ "$(grep 'PANDA_VERSION=[0-9].[0-9].[0-9]' $PROFILE)" != "" ]
     then
-        $(sed s@PANDA_VERSION=[0-9].[0-9].[0-9]@PANDA_VERSION=$PANDA_VERSION@ -i $PROFILE)
+        $(sed -e s@PANDA_VERSION=[0-9].[0-9].[0-9]@PANDA_VERSION=$PANDA_VERSION@ -e s@PANDA_PATH=/Applications/Panda3D/[0-9].[0-9].[0-9]@PANDA_PATH=$PANDA_PATH@ < $PROFILE_BACKUP > $PROFILE)
         echo "Success! Your version of Panda3D has been changed to $PANDA_VERSION."
         echo ""
         echo "All done! You can close this window."
