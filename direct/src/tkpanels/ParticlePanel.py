@@ -2772,9 +2772,15 @@ class ParticlePanel(AppShell):
 
 # Create demo in root window for testing.
 if __name__ == '__main__':
-    
+
+    try:
+        base
+    except:
+        from direct.directbase import DirectStart
+
     root = Pmw.initialise()
     pp = ParticlePanel()
     base.pp=pp
     #ve = VectorEntry(Toplevel(), relief = GROOVE)
     #ve.pack()
+    run()
