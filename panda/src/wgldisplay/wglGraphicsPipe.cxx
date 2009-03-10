@@ -189,19 +189,27 @@ make_output(const string &name,
   // Third thing to try: a wglGraphicsBuffer
   
   if (retry == 2) {
-    if ((!support_rtt)||
-        ((flags&BF_require_parasite)!=0)||
-        ((flags&BF_require_window)!=0)||
-        ((flags&BF_rtt_cumulative)!=0)||
-        ((flags&BF_can_bind_every)!=0)) {
+    if (((flags&BF_require_parasite)!=0)||
+        ((flags&BF_require_window)!=0)) {
       return NULL;
     }
+
+    if (!support_rtt) {
+      if (((flags&BF_rtt_cumulative)!=0)||
+          ((flags&BF_can_bind_every)!=0)) {
+        // If we require Render-to-Texture, but can't be sure we
+        // support it, bail.
+        return NULL;
+      }
+    }
+
     // Early failure - if we are sure that this buffer WONT
     // meet specs, we can bail out early.
     if ((flags & BF_fb_props_optional) == 0) {
       if ((fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_rgba() > 0)||
           (fb_prop.get_aux_float() > 0)) {
+        cerr << "b\n";
         return NULL;
       }
     }
@@ -213,8 +221,10 @@ make_output(const string &name,
         (wglgsg->pfnum_supports_pbuffer()) &&
         (wglgsg->get_fb_properties().subsumes(fb_prop))&&
         (wglgsg->get_fb_properties().is_single_buffered())) {
+      cerr << "c\n";
       precertify = true;
     }
+    cerr << "d\n";
     return new wglGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }

@@ -4926,7 +4926,7 @@ set_read_buffer(int rbtype) {
       break;
 
     default:
-      GLP(ReadBuffer)(GL_FRONT_AND_BACK);
+      break;
     }
   }
 

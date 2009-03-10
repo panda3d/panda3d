@@ -282,6 +282,8 @@ open_buffer() {
   // So always use a single-buffered gsg.
   
   _fb_properties.set_back_buffers(0);
+  _draw_buffer_type = RenderBuffer::T_front;
+  _screenshot_buffer_type = RenderBuffer::T_front;
   
   // GSG creation/initialization.
 
