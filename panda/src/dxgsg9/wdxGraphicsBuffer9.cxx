@@ -745,11 +745,14 @@ open_buffer() {
 
   // GSG creation/initialization.
   if (_gsg == 0) {
-    _dxgsg = new DXGraphicsStateGuardian9(_engine, _pipe);
-    _gsg = _dxgsg;
-  } else {
-    DCAST_INTO_R(_dxgsg, _gsg, false);
+    // The code below doesn't support creating a GSG on the fly.
+    // Just error out for now.
+    //_dxgsg = new DXGraphicsStateGuardian9(_engine, _pipe);
+    //_gsg = _dxgsg;
+    return false;
   }
+   
+  DCAST_INTO_R(_dxgsg, _gsg, false);
 
   if (!save_bitplanes()) {
     return false;
