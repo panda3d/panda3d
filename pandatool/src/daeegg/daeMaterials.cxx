@@ -367,11 +367,11 @@ convert_blend(FCDEffectStandard::TransparencyMode mode, Colorf transparent, doub
   
   // Now figure out the operands.
   if (mode == FCDEffectStandard::RGB_ZERO) {// || mode == FCDEffectStandard::A_ZERO) {
-    blend->_operand_a = EggGroup::BO_constant_color;
-    blend->_operand_b = EggGroup::BO_one_minus_constant_color;
-  } else if (mode == FCDEffectStandard::A_ONE) {// || mode == FCDEffectStandard::RGB_ONE) {
     blend->_operand_a = EggGroup::BO_one_minus_constant_color;
     blend->_operand_b = EggGroup::BO_constant_color;
+  } else if (mode == FCDEffectStandard::A_ONE) {// || mode == FCDEffectStandard::RGB_ONE) {
+    blend->_operand_a = EggGroup::BO_constant_color;
+    blend->_operand_b = EggGroup::BO_one_minus_constant_color;
   } else {
     daeegg_cat.error() << "Unknown opaque type found!" << endl;
     blend->_enabled = false;
@@ -380,18 +380,18 @@ convert_blend(FCDEffectStandard::TransparencyMode mode, Colorf transparent, doub
   
   // See if we can optimize out the color.
   if (blend->_operand_a == EggGroup::BO_constant_color) {
-    if (blend->_color[0] == blend->_color[1] == blend->_color[2] == blend->_color[3] == 0) {
+    if ((blend->_color[0] == 0) && (blend->_color[1] == 0) && (blend->_color[2] == 0) && (blend->_color[3] == 0)) {
       blend->_operand_a = EggGroup::BO_zero;
     }
-    if (blend->_color[0] == blend->_color[1] == blend->_color[2] == blend->_color[3] == 1) {
+    if ((blend->_color[0] == 1) && (blend->_color[1] == 1) && (blend->_color[2] == 1) && (blend->_color[3] == 1)) {
       blend->_operand_a = EggGroup::BO_one;
     }
   }
   if (blend->_operand_b == EggGroup::BO_one_minus_constant_color) {
-    if (blend->_color[0] == blend->_color[1] == blend->_color[2] == blend->_color[3] == 0) {
+    if ((blend->_color[0] == 0) && (blend->_color[1] == 0) && (blend->_color[2] == 0) && (blend->_color[3] == 0)) {
       blend->_operand_b = EggGroup::BO_one;
     }
-    if (blend->_color[0] == blend->_color[1] == blend->_color[2] == blend->_color[3] == 1) {
+    if ((blend->_color[0] == 1) && (blend->_color[1] == 1) && (blend->_color[2] == 1) && (blend->_color[3] == 1)) {
       blend->_operand_b = EggGroup::BO_zero;
     }
   }
