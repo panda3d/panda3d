@@ -258,6 +258,27 @@ validate_attribs() {
 //               to share a common RenderAttrib pointer for all
 //               equivalent RenderAttrib objects.
 //
+//               This is different from return_unique() in that it
+//               does not actually guarantee a unique pointer, unless
+//               uniquify-attribs is set.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) RenderAttrib::
+return_new(RenderAttrib *attrib) {
+  nassertr(attrib != (RenderAttrib *)NULL, attrib);
+  if (!uniquify_attribs) {
+    return attrib;
+  }
+
+  return return_unique(attrib);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::return_unique
+//       Access: Protected, Static
+//  Description: This function is used by derived RenderAttrib types
+//               to share a common RenderAttrib pointer for all
+//               equivalent RenderAttrib objects.
+//
 //               The make() function of the derived type should create
 //               a new RenderAttrib and pass it through return_new(),
 //               which will either save the pointer and return it
@@ -266,18 +287,8 @@ validate_attribs() {
 //               there was already a similar object saved).
 ////////////////////////////////////////////////////////////////////
 CPT(RenderAttrib) RenderAttrib::
-return_new(RenderAttrib *attrib) {
+return_unique(RenderAttrib *attrib) {
   nassertr(attrib != (RenderAttrib *)NULL, attrib);
-  static ConfigVariableBool uniquify_attribs("uniquify-attribs", true);
-  if (!uniquify_attribs) {
-    return attrib;
-  }
-
-  LightReMutexHolder holder(*_attribs_lock);
-
-  // This should be a newly allocated pointer, not one that was used
-  // for anything else.
-  nassertr(attrib->_saved_entry == _attribs->end(), attrib);
 
 #ifndef NDEBUG
   if (!state_cache) {
@@ -290,6 +301,14 @@ return_new(RenderAttrib *attrib) {
     nassertr(validate_attribs(), attrib);
   }
 #endif
+
+  LightReMutexHolder holder(*_attribs_lock);
+
+  if (attrib->_saved_entry != _attribs->end()) {
+    // This attrib is already in the cache.
+    nassertr(_attribs->find(attrib) == attrib->_saved_entry, attrib);
+    return attrib;
+  }
 
   // Save the attrib in a local PointerTo so that it will be freed at
   // the end of this function if no one else uses it.
@@ -509,7 +528,7 @@ TypedWritable *RenderAttrib::
 change_this(TypedWritable *old_ptr, BamReader *manager) {
   // First, uniquify the pointer.
   RenderAttrib *attrib = DCAST(RenderAttrib, old_ptr);
-  CPT(RenderAttrib) pointer = return_new(attrib);
+  CPT(RenderAttrib) pointer = return_unique(attrib);
 
   // But now we have a problem, since we have to hold the reference
   // count and there's no way to return a TypedWritable while still

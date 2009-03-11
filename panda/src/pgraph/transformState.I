@@ -684,6 +684,21 @@ get_inverse() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TransformState::get_unique
+//       Access: Published
+//  Description: Returns the pointer to the unique TransformState in
+//               the cache that is equivalent to this one.  This may
+//               be the same pointer as this object, or it may be a
+//               different pointer; but it will be an equivalent
+//               object, and it will be a shared pointer.  This may be
+//               called from time to time to improve cache benefits.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(TransformState) TransformState::
+get_unique() const {
+  return return_unique((TransformState *)this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TransformState::get_geom_rendering
 //       Access: Published
 //  Description: Returns the union of the Geom::GeomRendering bits

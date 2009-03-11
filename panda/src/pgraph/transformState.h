@@ -169,6 +169,7 @@ PUBLISHED:
   CPT(TransformState) invert_compose(const TransformState *other) const;
 
   INLINE CPT(TransformState) get_inverse() const;
+  INLINE CPT(TransformState) get_unique() const;
 
   INLINE int get_geom_rendering(int geom_rendering) const;
 
@@ -230,12 +231,18 @@ private:
   typedef pvector<CompositionCycleDescEntry> CompositionCycleDesc;
 
   static CPT(TransformState) return_new(TransformState *state);
+  static CPT(TransformState) return_unique(TransformState *state);
+
   CPT(TransformState) do_compose(const TransformState *other) const;
   CPT(TransformState) do_invert_compose(const TransformState *other) const;
   static bool r_detect_cycles(const TransformState *start_state,
                               const TransformState *current_state,
                               int length, UpdateSeq this_seq,
                               CompositionCycleDesc *cycle_desc);
+  static bool r_detect_reverse_cycles(const TransformState *start_state,
+                                      const TransformState *current_state,
+                                      int length, UpdateSeq this_seq,
+                                      CompositionCycleDesc *cycle_desc);
 
   void release_new();
   void remove_cache_pointers();
@@ -248,6 +255,7 @@ private:
   typedef phash_set<const TransformState *, indirect_less_hash<const TransformState *> > States;
   static States *_states;
   static CPT(TransformState) _identity_state;
+  static CPT(TransformState) _invalid_state;
 
   // This iterator records the entry corresponding to this TransformState
   // object in the above global set.  We keep the iterator around so

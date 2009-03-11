@@ -194,6 +194,30 @@ ConfigVariableBool state_cache
           "similar to the TransformState cache controlled via "
           "transform-cache."));
 
+ConfigVariableBool uniquify_transforms
+("uniquify-transforms", false,
+ PRC_DESC("Set this true to ensure that equivalent TransformStates "
+          "are pointerwise equal.  This may improve caching performance, "
+          "but also adds additional overhead to maintain the cache, "
+          "including the need to check for a composition cycle in "
+          "the cache."));
+
+ConfigVariableBool uniquify_states
+("uniquify-states", true,
+ PRC_DESC("Set this true to ensure that equivalent RenderStates "
+          "are pointerwise equal.  This may improve caching performance, "
+          "but also adds additional overhead to maintain the cache, "
+          "including the need to check for a composition cycle in "
+          "the cache."));
+
+ConfigVariableBool uniquify_attribs
+("uniquify-attribs", true,
+ PRC_DESC("Set this true to ensure that equivalent RenderAttribs "
+          "are pointerwise equal.  This may improve caching performance, "
+          "but also adds additional overhead to maintain the cache, "
+          "including the need to check for a composition cycle in "
+          "the cache."));
+
 ConfigVariableBool retransform_sprites
 ("retransform-sprites", true,
  PRC_DESC("To render sprite-based particle effects, Panda must convert "

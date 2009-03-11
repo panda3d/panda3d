@@ -144,6 +144,21 @@ get_override(int slot) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_unique
+//       Access: Published
+//  Description: Returns the pointer to the unique RenderState in
+//               the cache that is equivalent to this one.  This may
+//               be the same pointer as this object, or it may be a
+//               different pointer; but it will be an equivalent
+//               object, and it will be a shared pointer.  This may be
+//               called from time to time to improve cache benefits.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(RenderState) RenderState::
+get_unique() const {
+  return return_unique((RenderState *)this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderState::cache_ref
 //       Access: Published
 //  Description: Overrides this method to update PStats appropriately.
@@ -207,6 +222,159 @@ node_unref() const {
 #else  // DO_PSTATS
   return do_node_unref();
 #endif  // DO_PSTATS
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_composition_cache_num_entries
+//       Access: Published
+//  Description: Returns the number of entries in the composition
+//               cache for this RenderState.  This is the number of
+//               other RenderStates whose composition with this one
+//               has been cached.  This number is not useful for any
+//               practical reason other than performance analysis.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+get_composition_cache_num_entries() const {
+  LightReMutexHolder holder(*_states_lock);
+  return _composition_cache.get_num_entries();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_invert_composition_cache_num_entries
+//       Access: Published
+//  Description: Returns the number of entries in the
+//               invert_composition cache for this RenderState.
+//               This is similar to the composition cache, but it
+//               records cache entries for the invert_compose()
+//               operation.  See get_composition_cache_num_entries().
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+get_invert_composition_cache_num_entries() const {
+  LightReMutexHolder holder(*_states_lock);
+  return _invert_composition_cache.get_num_entries();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_composition_cache_size
+//       Access: Published
+//  Description: Returns the number of slots in the composition
+//               cache for this RenderState.  You may use this as
+//               an upper bound when walking through all of the
+//               composition cache results via
+//               get_composition_cache_source() or result().
+//
+//               This has no practical value other than for examining
+//               the cache for performance analysis.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+get_composition_cache_size() const {
+  LightReMutexHolder holder(*_states_lock);
+  return _composition_cache.get_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_composition_cache_source
+//       Access: Published
+//  Description: Returns the source RenderState of the nth element
+//               in the composition cache.  Returns NULL if there
+//               doesn't happen to be an entry in the nth element.
+//               See get_composition_cache_result().
+//
+//               This has no practical value other than for examining
+//               the cache for performance analysis.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderState *RenderState::
+get_composition_cache_source(int n) const {
+  LightReMutexHolder holder(*_states_lock);
+  if (!_composition_cache.has_element(n)) {
+    return NULL;
+  }
+  return _composition_cache.get_key(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_composition_cache_result
+//       Access: Published
+//  Description: Returns the result RenderState of the nth element
+//               in the composition cache.  Returns NULL if there
+//               doesn't happen to be an entry in the nth element.
+//
+//               In general,
+//               a->compose(a->get_composition_cache_source(n)) ==
+//               a->get_composition_cache_result(n).
+//
+//               This has no practical value other than for examining
+//               the cache for performance analysis.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderState *RenderState::
+get_composition_cache_result(int n) const {
+  LightReMutexHolder holder(*_states_lock);
+  if (!_composition_cache.has_element(n)) {
+    return NULL;
+  }
+  return _composition_cache.get_data(n)._result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_invert_composition_cache_size
+//       Access: Published
+//  Description: Returns the number of slots in the composition
+//               cache for this RenderState.  You may use this as
+//               an upper bound when walking through all of the
+//               composition cache results via
+//               get_invert_composition_cache_source() or result().
+//
+//               This has no practical value other than for examining
+//               the cache for performance analysis.
+////////////////////////////////////////////////////////////////////
+INLINE int RenderState::
+get_invert_composition_cache_size() const {
+  LightReMutexHolder holder(*_states_lock);
+  return _invert_composition_cache.get_size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_invert_composition_cache_source
+//       Access: Published
+//  Description: Returns the source RenderState of the nth element
+//               in the invert composition cache.  Returns NULL if
+//               there doesn't happen to be an entry in the nth
+//               element.  See get_invert_composition_cache_result().
+//
+//               This has no practical value other than for examining
+//               the cache for performance analysis.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderState *RenderState::
+get_invert_composition_cache_source(int n) const {
+  LightReMutexHolder holder(*_states_lock);
+  if (!_invert_composition_cache.has_element(n)) {
+    return NULL;
+  }
+  return _invert_composition_cache.get_key(n);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_invert_composition_cache_result
+//       Access: Published
+//  Description: Returns the result RenderState of the nth element
+//               in the invert composition cache.  Returns NULL if
+//               there doesn't happen to be an entry in the nth
+//               element.
+//
+//               In general,
+//               a->invert_compose(a->get_invert_composition_cache_source(n))
+//               == a->get_invert_composition_cache_result(n).
+//
+//               This has no practical value other than for examining
+//               the cache for performance analysis.
+////////////////////////////////////////////////////////////////////
+INLINE const RenderState *RenderState::
+get_invert_composition_cache_result(int n) const {
+  LightReMutexHolder holder(*_states_lock);
+  if (!_invert_composition_cache.has_element(n)) {
+    return NULL;
+  }
+  return _invert_composition_cache.get_data(n)._result;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -108,12 +108,28 @@ PUBLISHED:
   INLINE int get_override(TypeHandle type) const;
   INLINE int get_override(int slot) const;
 
+  INLINE CPT(RenderState) get_unique() const;
+
   bool unref() const;
 
   INLINE void cache_ref() const;
   INLINE bool cache_unref() const;
   INLINE void node_ref() const;
   INLINE bool node_unref() const;
+
+  INLINE int get_composition_cache_num_entries() const;
+  INLINE int get_invert_composition_cache_num_entries() const;
+
+  INLINE int get_composition_cache_size() const;
+  INLINE const RenderState *get_composition_cache_source(int n) const;
+  INLINE const RenderState *get_composition_cache_result(int n) const;
+  INLINE int get_invert_composition_cache_size() const;
+  INLINE const RenderState *get_invert_composition_cache_source(int n) const;
+  INLINE const RenderState *get_invert_composition_cache_result(int n) const;
+#ifdef HAVE_PYTHON
+  PyObject *get_composition_cache() const;
+  PyObject *get_invert_composition_cache() const;
+#endif  // HAVE_PYTHON
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;
@@ -127,6 +143,9 @@ PUBLISHED:
   static void list_cycles(ostream &out);
   static void list_states(ostream &out);
   static bool validate_states();
+#ifdef HAVE_PYTHON
+  static PyObject *get_states();
+#endif  // HAVE_PYTHON
 
 PUBLISHED:
   // These methods are intended for use by low-level code, but they're
@@ -159,12 +178,17 @@ private:
   typedef pvector<CompositionCycleDescEntry> CompositionCycleDesc;
 
   static CPT(RenderState) return_new(RenderState *state);
+  static CPT(RenderState) return_unique(RenderState *state);
   CPT(RenderState) do_compose(const RenderState *other) const;
   CPT(RenderState) do_invert_compose(const RenderState *other) const;
   static bool r_detect_cycles(const RenderState *start_state,
                               const RenderState *current_state,
                               int length, UpdateSeq this_seq,
                               CompositionCycleDesc *cycle_desc);
+  static bool r_detect_reverse_cycles(const RenderState *start_state,
+                                      const RenderState *current_state,
+                                      int length, UpdateSeq this_seq,
+                                      CompositionCycleDesc *cycle_desc);
 
   void release_new();
   void remove_cache_pointers();

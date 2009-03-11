@@ -29,6 +29,7 @@
 LightReMutex *TransformState::_states_lock = NULL;
 TransformState::States *TransformState::_states = NULL;
 CPT(TransformState) TransformState::_identity_state;
+CPT(TransformState) TransformState::_invalid_state;
 UpdateSeq TransformState::_last_cycle_detect;
 PStatCollector TransformState::_cache_update_pcollector("*:State Cache:Update");
 PStatCollector TransformState::_transform_compose_pcollector("*:State Cache:Compose Transform");
@@ -195,7 +196,7 @@ make_identity() {
   // and store a pointer forever once we find it the first time.
   if (_identity_state == (TransformState *)NULL) {
     TransformState *state = new TransformState;
-    _identity_state = return_new(state);
+    _identity_state = return_unique(state);
   }
 
   return _identity_state;
@@ -209,9 +210,13 @@ make_identity() {
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
 make_invalid() {
-  TransformState *state = new TransformState;
-  state->_flags = F_is_invalid | F_singular_known | F_is_singular | F_components_known | F_mat_known;
-  return return_new(state);
+  if (_invalid_state == (TransformState *)NULL) {
+    TransformState *state = new TransformState;
+    state->_flags = F_is_invalid | F_singular_known | F_is_singular | F_components_known | F_mat_known;
+    _invalid_state = return_unique(state);
+  }
+
+  return _invalid_state;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -787,7 +792,7 @@ unref() const {
   // be holding it if we happen to drop the reference count to 0.
   LightReMutexHolder holder(*_states_lock);
 
-  if (auto_break_cycles) {
+  if (auto_break_cycles && uniquify_transforms) {
     if (get_cache_ref_count() > 0 &&
         get_ref_count() == get_cache_ref_count() + 1) {
       // If we are about to remove the one reference that is not in the
@@ -807,6 +812,16 @@ unref() const {
         }
         
         ((TransformState *)this)->remove_cache_pointers();
+      } else {
+        ++_last_cycle_detect;
+        if (r_detect_reverse_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+          if (pgraph_cat.is_debug()) {
+            pgraph_cat.debug()
+              << "Breaking cycle involving " << (*this) << "\n";
+          }
+          
+          ((TransformState *)this)->remove_cache_pointers();
+        }
       }
     }
   }
@@ -1317,6 +1332,30 @@ list_cycles(ostream &out) {
         }
 
         cycle_desc.clear();
+      } else {
+        ++_last_cycle_detect;
+        if (r_detect_reverse_cycles(state, state, 1, _last_cycle_detect, &cycle_desc)) {
+          // This state begins a cycle.
+          CompositionCycleDesc::iterator csi;
+          
+          out << "\nReverse cycle detected of length " << cycle_desc.size() + 1 << ":\n"
+              << "state ";
+          for (csi = cycle_desc.begin(); csi != cycle_desc.end(); ++csi) {
+            const CompositionCycleDescEntry &entry = (*csi);
+            out << (const void *)entry._result << ":"
+                << entry._result->get_ref_count() << " =\n";
+            entry._result->write(out, 2);
+            out << (const void *)entry._obj << ":"
+                << entry._obj->get_ref_count() << " =\n";
+            entry._obj->write(out, 2);
+            visited.insert(entry._result);
+          }
+          out << (void *)state << ":"
+              << state->get_ref_count() << " =\n";
+          state->write(out, 2);
+          
+          cycle_desc.clear();
+        }
       }
     }
   }
@@ -1464,6 +1503,26 @@ init_states() {
 //  Description: This function is used to share a common TransformState
 //               pointer for all equivalent TransformState objects.
 //
+//               This is different from return_unique() in that it
+//               does not actually guarantee a unique pointer, unless
+//               uniquify-transforms is set.
+////////////////////////////////////////////////////////////////////
+CPT(TransformState) TransformState::
+return_new(TransformState *state) {
+  nassertr(state != (TransformState *)NULL, state);
+  if (!uniquify_transforms && !state->is_identity()) {
+    return state;
+  }
+
+  return return_unique(state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::return_unique
+//       Access: Private, Static
+//  Description: This function is used to share a common TransformState
+//               pointer for all equivalent TransformState objects.
+//
 //               See the similar logic in RenderState.  The idea is to
 //               create a new TransformState object and pass it
 //               through this function, which will share the pointer
@@ -1471,12 +1530,8 @@ init_states() {
 //               is equivalent.
 ////////////////////////////////////////////////////////////////////
 CPT(TransformState) TransformState::
-return_new(TransformState *state) {
+return_unique(TransformState *state) {
   nassertr(state != (TransformState *)NULL, state);
-  static ConfigVariableBool uniquify_transforms("uniquify-transforms", true);
-  if (!uniquify_transforms && !state->is_identity()) {
-    return state;
-  }
 
 #ifndef NDEBUG
   if (!transform_cache) {
@@ -1494,9 +1549,11 @@ return_new(TransformState *state) {
 
   LightReMutexHolder holder(*_states_lock);
 
-  // This should be a newly allocated pointer, not one that was used
-  // for anything else.
-  nassertr(state->_saved_entry == _states->end(), state);
+  if (state->_saved_entry != _states->end()) {
+    // This state is already in the cache.
+    nassertr(_states->find(state) == state->_saved_entry, state);
+    return state;
+  }
 
   // Save the state in a local PointerTo so that it will be freed at
   // the end of this function if no one else uses it.
@@ -1788,6 +1845,85 @@ r_detect_cycles(const TransformState *start_state,
             cycle_desc->push_back(entry);
           }
           return true;
+        }
+      }
+    }
+  }
+
+  // No cycle detected.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TransformState::r_detect_reverse_cycles
+//       Access: Private, Static
+//  Description: Works the same as r_detect_cycles, but checks for
+//               cycles in the reverse direction along the cache
+//               chain.  (A cycle may appear in either direction, and
+//               we must check both.)
+////////////////////////////////////////////////////////////////////
+bool TransformState::
+r_detect_reverse_cycles(const TransformState *start_state,
+                        const TransformState *current_state,
+                        int length, UpdateSeq this_seq,
+                        TransformState::CompositionCycleDesc *cycle_desc) {
+  if (current_state->_cycle_detect == this_seq) {
+    // We've already seen this state; therefore, we've found a cycle.
+
+    // However, we only care about cycles that return to the starting
+    // state and involve more than two steps.  If only one or two
+    // nodes are involved, it doesn't represent a memory leak, so no
+    // problem there.
+    return (current_state == start_state && length > 2);
+  }
+  ((TransformState *)current_state)->_cycle_detect = this_seq;
+
+  int i;
+  int cache_size = current_state->_composition_cache.get_size();
+  for (i = 0; i < cache_size; ++i) {
+    if (current_state->_composition_cache.has_element(i)) {
+      const TransformState *other = current_state->_composition_cache.get_key(i);
+      if (other != current_state) {
+        int oi = other->_composition_cache.find(current_state);
+        nassertr(oi != -1, false);
+
+        const TransformState *result = other->_composition_cache.get_data(oi)._result;
+        if (result != (const TransformState *)NULL) {
+          if (r_detect_reverse_cycles(start_state, result, length + 1, 
+                                      this_seq, cycle_desc)) {
+            // Cycle detected.
+            if (cycle_desc != (CompositionCycleDesc *)NULL) {
+              const TransformState *other = current_state->_composition_cache.get_key(i);
+              CompositionCycleDescEntry entry(other, result, false);
+              cycle_desc->push_back(entry);
+            }
+            return true;
+          }
+        }
+      }
+    }
+  }
+
+  cache_size = current_state->_invert_composition_cache.get_size();
+  for (i = 0; i < cache_size; ++i) {
+    if (current_state->_invert_composition_cache.has_element(i)) {
+      const TransformState *other = current_state->_invert_composition_cache.get_key(i);
+      if (other != current_state) {
+        int oi = other->_invert_composition_cache.find(current_state);
+        nassertr(oi != -1, false);
+
+        const TransformState *result = other->_invert_composition_cache.get_data(oi)._result;
+        if (result != (const TransformState *)NULL) {
+          if (r_detect_reverse_cycles(start_state, result, length + 1, 
+                                      this_seq, cycle_desc)) {
+            // Cycle detected.
+            if (cycle_desc != (CompositionCycleDesc *)NULL) {
+              const TransformState *other = current_state->_invert_composition_cache.get_key(i);
+              CompositionCycleDescEntry entry(other, result, false);
+              cycle_desc->push_back(entry);
+            }
+            return true;
+          }
         }
       }
     }
@@ -2289,7 +2425,7 @@ TypedWritable *TransformState::
 change_this(TypedWritable *old_ptr, BamReader *manager) {
   // First, uniquify the pointer.
   TransformState *state = DCAST(TransformState, old_ptr);
-  CPT(TransformState) pointer = return_new(state);
+  CPT(TransformState) pointer = return_unique(state);
 
   // But now we have a problem, since we have to hold the reference
   // count and there's no way to return a TypedWritable while still

@@ -37,6 +37,7 @@
 #include "thread.h"
 #include "shaderGeneratorBase.h"
 #include "renderAttribRegistry.h"
+#include "py_panda.h"
   
 LightReMutex *RenderState::_states_lock = NULL;
 RenderState::States *RenderState::_states = NULL;
@@ -278,7 +279,7 @@ make_empty() {
   // and store a pointer forever once we find it the first time.
   if (_empty_state == (RenderState *)NULL) {
     RenderState *state = new RenderState;
-    _empty_state = return_new(state);
+    _empty_state = return_unique(state);
   }
 
   return _empty_state;
@@ -297,7 +298,7 @@ make_full_default() {
   if (_full_default_state == (RenderState *)NULL) {
     RenderState *state = new RenderState;
     state->fill_default();
-    _full_default_state = return_new(state);
+    _full_default_state = return_unique(state);
   }
 
   return _full_default_state;
@@ -718,7 +719,7 @@ unref() const {
   // be holding it if we happen to drop the reference count to 0.
   LightReMutexHolder holder(*_states_lock);
 
-  if (auto_break_cycles) {
+  if (auto_break_cycles && uniquify_states) {
     if (get_cache_ref_count() > 0 &&
         get_ref_count() == get_cache_ref_count() + 1) {
       // If we are about to remove the one reference that is not in the
@@ -736,6 +737,16 @@ unref() const {
         }
         
         ((RenderState *)this)->remove_cache_pointers();
+      } else {
+        ++_last_cycle_detect;
+        if (r_detect_reverse_cycles(this, this, 1, _last_cycle_detect, NULL)) {
+          if (pgraph_cat.is_debug()) {
+            pgraph_cat.debug()
+              << "Breaking cycle involving " << (*this) << "\n";
+          }
+          
+          ((RenderState *)this)->remove_cache_pointers();
+        }
       }
     }
   }
@@ -753,6 +764,126 @@ unref() const {
 
   return false;
 }
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_composition_cache
+//       Access: Published
+//  Description: Returns a list of 2-tuples that represents the
+//               composition cache.  For each tuple in the list, the
+//               first element is the source render, and the second
+//               is the result render.  If both are None, there is
+//               no entry in the cache at that slot.
+//
+//               In general, a->compose(source) == result.
+//
+//               This has no practical value other than for examining
+//               the cache for performance analysis.
+////////////////////////////////////////////////////////////////////
+PyObject *RenderState::
+get_composition_cache() const {
+  IMPORT_THIS struct Dtool_PyTypedObject Dtool_RenderState;
+  LightReMutexHolder holder(*_states_lock);
+  size_t cache_size = _composition_cache.get_size();
+  PyObject *list = PyList_New(cache_size);
+
+  for (size_t i = 0; i < cache_size; ++i) {
+    PyObject *tuple = PyTuple_New(2);
+    PyObject *a, *b;
+    if (!_composition_cache.has_element(i)) {
+      a = Py_None;
+      Py_INCREF(a);
+      b = Py_None;
+      Py_INCREF(b);
+    } else {
+      const RenderState *source = _composition_cache.get_key(i);
+      if (source == (RenderState *)NULL) {
+        a = Py_None;
+        Py_INCREF(a);
+      } else {
+        source->ref();
+        a = DTool_CreatePyInstanceTyped((void *)source, Dtool_RenderState, 
+                                        true, true, source->get_type_index());
+      }
+      const RenderState *result = _composition_cache.get_data(i)._result;
+      if (result == (RenderState *)NULL) {
+        b = Py_None;
+        Py_INCREF(b);
+      } else {
+        result->ref();
+        b = DTool_CreatePyInstanceTyped((void *)result, Dtool_RenderState, 
+                                        true, true, result->get_type_index());
+      }
+    }
+    PyTuple_SET_ITEM(tuple, 0, a);
+    PyTuple_SET_ITEM(tuple, 1, b);
+
+    PyList_SET_ITEM(list, i, tuple);
+  }
+
+  return list;
+}
+#endif  // HAVE_PYTHON
+
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_invert_composition_cache
+//       Access: Published
+//  Description: Returns a list of 2-tuples that represents the
+//               invert_composition cache.  For each tuple in the list, the
+//               first element is the source render, and the second
+//               is the result render.  If both are None, there is
+//               no entry in the cache at that slot.
+//
+//               In general, a->invert_compose(source) == result.
+//
+//               This has no practical value other than for examining
+//               the cache for performance analysis.
+////////////////////////////////////////////////////////////////////
+PyObject *RenderState::
+get_invert_composition_cache() const {
+  IMPORT_THIS struct Dtool_PyTypedObject Dtool_RenderState;
+  LightReMutexHolder holder(*_states_lock);
+  size_t cache_size = _invert_composition_cache.get_size();
+  PyObject *list = PyList_New(cache_size);
+
+  for (size_t i = 0; i < cache_size; ++i) {
+    PyObject *tuple = PyTuple_New(2);
+    PyObject *a, *b;
+    if (!_invert_composition_cache.has_element(i)) {
+      a = Py_None;
+      Py_INCREF(a);
+      b = Py_None;
+      Py_INCREF(b);
+    } else {
+      const RenderState *source = _invert_composition_cache.get_key(i);
+      if (source == (RenderState *)NULL) {
+        a = Py_None;
+        Py_INCREF(a);
+      } else {
+        source->ref();
+        a = DTool_CreatePyInstanceTyped((void *)source, Dtool_RenderState, 
+                                        true, true, source->get_type_index());
+      }
+      const RenderState *result = _invert_composition_cache.get_data(i)._result;
+      if (result == (RenderState *)NULL) {
+        b = Py_None;
+        Py_INCREF(b);
+      } else {
+        result->ref();
+        b = DTool_CreatePyInstanceTyped((void *)result, Dtool_RenderState, 
+                                        true, true, result->get_type_index());
+      }
+    }
+    PyTuple_SET_ITEM(tuple, 0, a);
+    PyTuple_SET_ITEM(tuple, 1, b);
+
+    PyList_SET_ITEM(list, i, tuple);
+  }
+
+  return list;
+}
+#endif  // HAVE_PYTHON
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::output
@@ -1102,6 +1233,30 @@ list_cycles(ostream &out) {
         }
 
         cycle_desc.clear();
+      } else {
+        ++_last_cycle_detect;
+        if (r_detect_reverse_cycles(state, state, 1, _last_cycle_detect, &cycle_desc)) {
+          // This state begins a cycle.
+          CompositionCycleDesc::iterator csi;
+          
+          out << "\nReverse cycle detected of length " << cycle_desc.size() + 1 << ":\n"
+              << "state ";
+          for (csi = cycle_desc.begin(); csi != cycle_desc.end(); ++csi) {
+            const CompositionCycleDescEntry &entry = (*csi);
+            out << (const void *)entry._result << ":"
+                << entry._result->get_ref_count() << " =\n";
+            entry._result->write(out, 2);
+            out << (const void *)entry._obj << ":"
+                << entry._obj->get_ref_count() << " =\n";
+            entry._obj->write(out, 2);
+            visited.insert(entry._result);
+          }
+          out << (void *)state << ":"
+              << state->get_ref_count() << " =\n";
+          state->write(out, 2);
+          
+          cycle_desc.clear();
+        }
       }
     }
   }
@@ -1279,11 +1434,9 @@ validate_filled_slots() const {
 //  Description: This function is used to share a common RenderState
 //               pointer for all equivalent RenderState objects.
 //
-//               See the similar logic in RenderAttrib.  The idea is
-//               to create a new RenderState object and pass it
-//               through this function, which will share the pointer
-//               with a previously-created RenderState object if it is
-//               equivalent.
+//               This is different from return_unique() in that it
+//               does not actually guarantee a unique pointer, unless
+//               uniquify-states is set.
 ////////////////////////////////////////////////////////////////////
 CPT(RenderState) RenderState::
 return_new(RenderState *state) {
@@ -1316,10 +1469,28 @@ return_new(RenderState *state) {
   nassertr(state->validate_filled_slots(), state);
 #endif
 
-  static ConfigVariableBool uniquify_states("uniquify-states", true);
   if (!uniquify_states && !state->is_empty()) {
     return state;
   }
+
+  return return_unique(state);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::return_unique
+//       Access: Private, Static
+//  Description: This function is used to share a common RenderState
+//               pointer for all equivalent RenderState objects.
+//
+//               See the similar logic in RenderAttrib.  The idea is
+//               to create a new RenderState object and pass it
+//               through this function, which will share the pointer
+//               with a previously-created RenderState object if it is
+//               equivalent.
+////////////////////////////////////////////////////////////////////
+CPT(RenderState) RenderState::
+return_unique(RenderState *state) {
+  nassertr(state != (RenderState *)NULL, state);
 
 #ifndef NDEBUG
   if (!state_cache) {
@@ -1335,13 +1506,29 @@ return_new(RenderState *state) {
 
   LightReMutexHolder holder(*_states_lock);
 
-  // This should be a newly allocated pointer, not one that was used
-  // for anything else.
-  nassertr(state->_saved_entry == _states->end(), state);
+  if (state->_saved_entry != _states->end()) {
+    // This state is already in the cache.
+    nassertr(_states->find(state) == state->_saved_entry, state);
+    return state;
+  }
 
   // Save the state in a local PointerTo so that it will be freed at
   // the end of this function if no one else uses it.
   CPT(RenderState) pt_state = state;
+
+  // Ensure each of the individual attrib pointers has been uniquified
+  // before we add the state to the cache.
+  if (!uniquify_attribs && !state->is_empty()) {
+    SlotMask mask = state->_filled_slots;
+    int slot = mask.get_lowest_on_bit();
+    while (slot >= 0) {
+      Attribute &attrib = state->_attributes[slot];
+      nassertr(attrib._attrib != (RenderAttrib *)NULL, state);
+      attrib._attrib = attrib._attrib->get_unique();
+      mask.clear_bit(slot);
+      slot = mask.get_lowest_on_bit();
+    }    
+  }
 
   pair<States::iterator, bool> result = _states->insert(state);
 
@@ -1520,6 +1707,85 @@ r_detect_cycles(const RenderState *start_state,
             cycle_desc->push_back(entry);
           }
           return true;
+        }
+      }
+    }
+  }
+
+  // No cycle detected.
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::r_detect_reverse_cycles
+//       Access: Private, Static
+//  Description: Works the same as r_detect_cycles, but checks for
+//               cycles in the reverse direction along the cache
+//               chain.  (A cycle may appear in either direction, and
+//               we must check both.)
+////////////////////////////////////////////////////////////////////
+bool RenderState::
+r_detect_reverse_cycles(const RenderState *start_state,
+                        const RenderState *current_state,
+                        int length, UpdateSeq this_seq,
+                        RenderState::CompositionCycleDesc *cycle_desc) {
+  if (current_state->_cycle_detect == this_seq) {
+    // We've already seen this state; therefore, we've found a cycle.
+
+    // However, we only care about cycles that return to the starting
+    // state and involve more than two steps.  If only one or two
+    // nodes are involved, it doesn't represent a memory leak, so no
+    // problem there.
+    return (current_state == start_state && length > 2);
+  }
+  ((RenderState *)current_state)->_cycle_detect = this_seq;
+
+  int i;
+  int cache_size = current_state->_composition_cache.get_size();
+  for (i = 0; i < cache_size; ++i) {
+    if (current_state->_composition_cache.has_element(i)) {
+      const RenderState *other = current_state->_composition_cache.get_key(i);
+      if (other != current_state) {
+        int oi = other->_composition_cache.find(current_state);
+        nassertr(oi != -1, false);
+
+        const RenderState *result = other->_composition_cache.get_data(oi)._result;
+        if (result != (const RenderState *)NULL) {
+          if (r_detect_reverse_cycles(start_state, result, length + 1, 
+                                      this_seq, cycle_desc)) {
+            // Cycle detected.
+            if (cycle_desc != (CompositionCycleDesc *)NULL) {
+              const RenderState *other = current_state->_composition_cache.get_key(i);
+              CompositionCycleDescEntry entry(other, result, false);
+              cycle_desc->push_back(entry);
+            }
+            return true;
+          }
+        }
+      }
+    }
+  }
+
+  cache_size = current_state->_invert_composition_cache.get_size();
+  for (i = 0; i < cache_size; ++i) {
+    if (current_state->_invert_composition_cache.has_element(i)) {
+      const RenderState *other = current_state->_invert_composition_cache.get_key(i);
+      if (other != current_state) {
+        int oi = other->_invert_composition_cache.find(current_state);
+        nassertr(oi != -1, false);
+
+        const RenderState *result = other->_invert_composition_cache.get_data(oi)._result;
+        if (result != (const RenderState *)NULL) {
+          if (r_detect_reverse_cycles(start_state, result, length + 1, 
+                                      this_seq, cycle_desc)) {
+            // Cycle detected.
+            if (cycle_desc != (CompositionCycleDesc *)NULL) {
+              const RenderState *other = current_state->_invert_composition_cache.get_key(i);
+              CompositionCycleDescEntry entry(other, result, false);
+              cycle_desc->push_back(entry);
+            }
+            return true;
+          }
         }
       }
     }
@@ -1801,6 +2067,40 @@ update_pstats(int old_referenced_bits, int new_referenced_bits) {
 #endif  // DO_PSTATS
 }
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: RenderState::get_states
+//       Access: Published, Static
+//  Description: Returns a list of all of the RenderState objects
+//               in the state cache.  The order of elements in this
+//               cache is arbitrary.
+////////////////////////////////////////////////////////////////////
+PyObject *RenderState::
+get_states() {
+  IMPORT_THIS struct Dtool_PyTypedObject Dtool_RenderState;
+  if (_states == (States *)NULL) {
+    return PyList_New(0);
+  }
+  LightReMutexHolder holder(*_states_lock);
+
+  size_t num_states = _states->size();
+  PyObject *list = PyList_New(num_states);
+  States::const_iterator si;
+  size_t i;
+  for (si = _states->begin(), i = 0; si != _states->end(); ++si, ++i) {
+    nassertr(i < num_states, list);
+    const RenderState *state = (*si);
+    state->ref();
+    PyObject *a = 
+      DTool_CreatePyInstanceTyped((void *)state, Dtool_RenderState, 
+                                  true, true, state->get_type_index());
+    PyList_SET_ITEM(list, i, a);
+  }
+  nassertr(i == num_states, list);
+  return list;
+}
+#endif  // HAVE_PYTHON
+
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::init_states
 //       Access: Public, Static
@@ -1915,7 +2215,7 @@ TypedWritable *RenderState::
 change_this(TypedWritable *old_ptr, BamReader *manager) {
   // First, uniquify the pointer.
   RenderState *state = DCAST(RenderState, old_ptr);
-  CPT(RenderState) pointer = return_new(state);
+  CPT(RenderState) pointer = return_unique(state);
 
   // But now we have a problem, since we have to hold the reference
   // count and there's no way to return a TypedWritable while still

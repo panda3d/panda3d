@@ -90,6 +90,21 @@ compare_to(const RenderAttrib &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: RenderAttrib::get_unique
+//       Access: Published
+//  Description: Returns the pointer to the unique RenderAttrib in
+//               the cache that is equivalent to this one.  This may
+//               be the same pointer as this object, or it may be a
+//               different pointer; but it will be an equivalent
+//               object, and it will be a shared pointer.  This may be
+//               called from time to time to improve cache benefits.
+////////////////////////////////////////////////////////////////////
+INLINE CPT(RenderAttrib) RenderAttrib::
+get_unique() const {
+  return return_unique((RenderAttrib *)this);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::register_slot
 //       Access: Public, Static
 //  Description: Adds the indicated TypeHandle to the registry, if it

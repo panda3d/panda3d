@@ -304,7 +304,7 @@ collect(const RenderState *state, int attrib_types) {
 void AccumulatedAttribs::
 apply_to_node(PandaNode *node, int attrib_types) {
   if ((attrib_types & SceneGraphReducer::TT_transform) != 0) {
-    node->set_transform(_transform->compose(node->get_transform()));
+    node->set_transform(_transform->compose(node->get_transform())->get_unique());
     node->reset_prev_transform();
     _transform = TransformState::make_identity();
   }
@@ -314,9 +314,9 @@ apply_to_node(PandaNode *node, int attrib_types) {
       const RenderAttrib *node_attrib =
         node->get_attrib(ColorAttrib::get_class_slot());
       if (node_attrib != (RenderAttrib *)NULL) {
-        node->set_attrib(_color->compose(node_attrib));
+        node->set_attrib(_color->compose(node_attrib)->get_unique());
       } else {
-        node->set_attrib(_color);
+        node->set_attrib(_color->get_unique());
       }
       _color = (RenderAttrib *)NULL;
     }
@@ -327,9 +327,9 @@ apply_to_node(PandaNode *node, int attrib_types) {
       const RenderAttrib *node_attrib =
         node->get_attrib(ColorScaleAttrib::get_class_slot());
       if (node_attrib != (RenderAttrib *)NULL) {
-        node->set_attrib(_color_scale->compose(node_attrib));
+        node->set_attrib(_color_scale->compose(node_attrib)->get_unique());
       } else {
-        node->set_attrib(_color_scale);
+        node->set_attrib(_color_scale->get_unique());
       }
       _color_scale = (RenderAttrib *)NULL;
     }
@@ -340,9 +340,9 @@ apply_to_node(PandaNode *node, int attrib_types) {
       const RenderAttrib *node_attrib =
         node->get_attrib(TexMatrixAttrib::get_class_slot());
       if (node_attrib != (RenderAttrib *)NULL) {
-        node->set_attrib(_tex_matrix->compose(node_attrib));
+        node->set_attrib(_tex_matrix->compose(node_attrib)->get_unique());
       } else {
-        node->set_attrib(_tex_matrix);
+        node->set_attrib(_tex_matrix->get_unique());
       }
       _tex_matrix = (RenderAttrib *)NULL;
     }
@@ -353,9 +353,9 @@ apply_to_node(PandaNode *node, int attrib_types) {
       const RenderAttrib *node_attrib =
         node->get_attrib(ClipPlaneAttrib::get_class_slot());
       if (node_attrib != (RenderAttrib *)NULL) {
-        node->set_attrib(_clip_plane->compose(node_attrib));
+        node->set_attrib(_clip_plane->compose(node_attrib)->get_unique());
       } else {
-        node->set_attrib(_clip_plane);
+        node->set_attrib(_clip_plane->get_unique());
       }
       _clip_plane = (RenderAttrib *)NULL;
     }
@@ -366,16 +366,16 @@ apply_to_node(PandaNode *node, int attrib_types) {
       const RenderAttrib *node_attrib =
         node->get_attrib(CullFaceAttrib::get_class_slot());
       if (node_attrib != (RenderAttrib *)NULL) {
-        node->set_attrib(_cull_face->compose(node_attrib));
+        node->set_attrib(_cull_face->compose(node_attrib)->get_unique());
       } else {
-        node->set_attrib(_cull_face);
+        node->set_attrib(_cull_face->get_unique());
       }
       _cull_face = (RenderAttrib *)NULL;
     }
   }
 
   if ((attrib_types & SceneGraphReducer::TT_other) != 0) {
-    node->set_state(_other->compose(node->get_state()));
+    node->set_state(_other->compose(node->get_state())->get_unique());
     _other = RenderState::make_empty();
   }
 }

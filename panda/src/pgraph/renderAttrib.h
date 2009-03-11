@@ -76,6 +76,7 @@ public:
 
 PUBLISHED:
   INLINE int compare_to(const RenderAttrib &other) const;
+  INLINE CPT(RenderAttrib) get_unique() const;
 
   bool unref() const;
 
@@ -174,6 +175,7 @@ PUBLISHED:
 
 protected:
   static CPT(RenderAttrib) return_new(RenderAttrib *attrib);
+  static CPT(RenderAttrib) return_unique(RenderAttrib *attrib);
   virtual int compare_to_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) compose_impl(const RenderAttrib *other) const;
   virtual CPT(RenderAttrib) invert_compose_impl(const RenderAttrib *other) const;
