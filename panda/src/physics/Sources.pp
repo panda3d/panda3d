@@ -63,7 +63,7 @@
     physicsCollisionHandler.I physicsCollisionHandler.h \
     physicsManager.I physicsManager.h \
     physicsObject.I physicsObject.h \
-    physicsObjectCollection.h
+    physicsObjectCollection.h physicsObjectCollection.I
 
   #define IGATESCAN all
 
