@@ -77,12 +77,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   osxGraphicsStateGuardian *osxgsg;
   DCAST_INTO_R(osxgsg, _gsg, false);
   if (!aglSetPBuffer(osxgsg->get_context(), _pbuffer, 0, 0, 0)) {
-    aglReportError("aglSetPBuffer");
+    report_agl_error("aglSetPBuffer");
     return false;
   }	
 
   if (!aglSetCurrentContext(osxgsg->get_context())) {
-    aglReportError("aglSetCurrentContext");
+    report_agl_error("aglSetCurrentContext");
     return false;
   }	
 
@@ -170,7 +170,7 @@ open_buffer() {
       target = GL_TEXTURE_2D;
     }
     if (!aglCreatePBuffer(_x_size, _y_size, target, GL_RGBA, 0, &_pbuffer)) {
-      aglReportError("aglCreatePBuffer");
+      report_agl_error("aglCreatePBuffer");
       close_buffer();
       return false;
     }
@@ -178,19 +178,20 @@ open_buffer() {
 
   osxGraphicsStateGuardian *osxgsg;
   DCAST_INTO_R(osxgsg, _gsg, false);
-  OSStatus stat = osxgsg->buildGL(false, true, _fb_properties);
+
+  OSStatus stat = osxgsg->build_gl(false, true, _fb_properties);
   if (stat != noErr) {
     return false;
   }
 
   if (!aglSetPBuffer(osxgsg->get_context(), _pbuffer, 0, 0, 0)) {
-    aglReportError("aglSetPBuffer");
+    report_agl_error("aglSetPBuffer");
     close_buffer();
     return false;
   }
 
   if (!aglSetCurrentContext(osxgsg->get_context())) {
-    aglReportError("aglSetCurrentContext");
+    report_agl_error("aglSetCurrentContext");
     return false;
   }	
 

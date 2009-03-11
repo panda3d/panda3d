@@ -51,8 +51,7 @@ protected:
                                          int retry,
                                          bool &precertify);
 
-private:
- public:
+public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }

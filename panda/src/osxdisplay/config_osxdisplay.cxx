@@ -23,7 +23,7 @@
 
 Configure(config_osxdisplay);
 
-NotifyCategoryDef( osxdisplay , "display");
+NotifyCategoryDef(osxdisplay, "display");
 
 ConfigureFn(config_osxdisplay) {
   init_libosxdisplay();
@@ -69,8 +69,6 @@ init_libosxdisplay() {
   osxGraphicsPipe::init_type();
   osxGraphicsWindow::init_type();
   osxGraphicsStateGuardian::init_type();
-
-
 
   GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
   selection->add_pipe_type(osxGraphicsPipe::get_class_type(), osxGraphicsPipe::pipe_constructor);

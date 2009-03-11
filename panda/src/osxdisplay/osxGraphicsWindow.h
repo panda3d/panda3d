@@ -24,7 +24,7 @@
 #include <AGL/agl.h>
 
 #define HACK_SCREEN_HASH_CONTEXT true
-OSStatus aglReportError (const std::string &);
+OSStatus report_agl_error(const string &comment);
 
 ////////////////////////////////////////////////////////////////////
 //       Class : osxGraphicsWindow
@@ -59,43 +59,42 @@ public:
   virtual void set_properties_now(WindowProperties &properties);
 
 private:
-  void   ReleaseSystemResources();
-  inline void SendKeyEvent( ButtonHandle  key, bool down);
+  void release_system_resources();
+  inline void send_key_event(ButtonHandle key, bool down);
 
 protected:
   virtual void close_window();
   virtual bool open_window();
 
 private:
-	
-  bool OSOpenWindow(WindowProperties &properties);
+  bool os_open_window(WindowProperties &properties);
 
-    //
-    // a singleton .. for the events to find the right pipe to push the event into
-    //
-
+  //
+  // a singleton .. for the events to find the right pipe to push the event into
+  //
 
 public: // do not call direct ..
-  OSStatus handleKeyInput (EventHandlerCallRef myHandler, EventRef event, Boolean keyDown);
-  OSStatus handleTextInput (EventHandlerCallRef myHandler, EventRef event);
-  OSStatus handleWindowMouseEvents (EventHandlerCallRef myHandler, EventRef event);
-  ButtonHandle OSX_TranslateKey( UInt32 key,  EventRef event );
-  static osxGraphicsWindow * GetCurrentOSxWindow (WindowRef hint);
+  OSStatus handle_key_input(EventHandlerCallRef myHandler, EventRef event, 
+                            Boolean keyDown);
+  OSStatus handle_text_input(EventHandlerCallRef myHandler, EventRef event);
+  OSStatus handle_window_mouse_events(EventHandlerCallRef myHandler, EventRef event);
+  ButtonHandle osx_translate_key(UInt32 key,  EventRef event);
+  static osxGraphicsWindow *get_current_osx_window(WindowRef hint);
 
-  void     HandleModifireDeleta(UInt32 modifiers);
-  void HandleButtonDelta(UInt32 new_buttons);
-  void     DoResize(void);
+  void handle_modifier_delta(UInt32 new_modifiers);
+  void handle_button_delta(UInt32 new_buttons);
+  void do_resize();
 
   OSStatus event_handler(EventHandlerCallRef myHandler, EventRef event);
 
   virtual void user_close_request();
-  void SystemCloseWindow();
-  void SystemSetWindowForground(bool forground);	
-  void SystemPointToLocalPoint(Point &qdGlobalPoint);
-  void LocalPointToSystemPoint(Point &qdLocalPoint);
-  AGLContext get_ggs_context(void);
-  AGLContext get_context(void);
-  OSStatus buildGL(bool full_screen);
+  void system_close_window();
+  void system_set_window_foreground(bool foreground);	
+  void system_point_to_local_point(Point &global_point);
+  void local_point_to_system_point(Point &local_point);
+  AGLContext get_gsg_context();
+  AGLContext get_context();
+  OSStatus build_gl(bool full_screen);
   bool set_icon_filename(const Filename &icon_filename);
 
   void set_pointer_in_window(int x, int y);
@@ -111,7 +110,7 @@ private:
   CGImageRef _current_icon;
   
   int _ID;
-  static osxGraphicsWindow  *FullScreenWindow; 
+  static osxGraphicsWindow *full_screen_window; 
   
 #ifdef HACK_SCREEN_HASH_CONTEXT
   AGLContext _holder_aglcontext;
