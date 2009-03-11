@@ -195,7 +195,7 @@ ConfigVariableBool state_cache
           "transform-cache."));
 
 ConfigVariableBool uniquify_transforms
-("uniquify-transforms", false,
+("uniquify-transforms", true,
  PRC_DESC("Set this true to ensure that equivalent TransformStates "
           "are pointerwise equal.  This may improve caching performance, "
           "but also adds additional overhead to maintain the cache, "
