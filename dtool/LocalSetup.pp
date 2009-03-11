@@ -600,6 +600,7 @@ $[cdefine USE_STL_ALLOCATOR]
 /* Platform-identifying defines. */
 $[cdefine IS_OSX]
 $[cdefine IS_LINUX]
+$[cdefine IS_FREEBSD]
 
 
 #end dtool_config.h
