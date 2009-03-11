@@ -47,11 +47,6 @@ get_extension_func(const char *prefix, const char *name) {
     symbol = NSLookupAndBindSymbol (fullname.c_str());
   }
   
-  if (osxdisplay_cat.is_debug()) {              
-    osxdisplay_cat.debug()
-      << "Looking up symbol " << fullname << "\n" ;
-  }
-  
   return symbol ? NSAddressOfSymbol(symbol) : NULL;
 }
 
@@ -68,7 +63,7 @@ osxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
   _aglPixFmt(NULL),
   _aglcontext(NULL)
 {
-  SharedBuffer = 1011;
+  _shared_buffer = 1011;
   get_gamma_table();
 }
 
@@ -215,8 +210,13 @@ build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
   attrib.push_back(fb_props.get_depth_bits());
   attrib.push_back(AGL_STENCIL_SIZE);
   attrib.push_back(fb_props.get_stencil_bits());
-  attrib.push_back(AGL_SAMPLES_ARB);
-  attrib.push_back(fb_props.get_multisamples());
+  if (fb_props.get_multisamples() != 0) {
+    attrib.push_back(AGL_MULTISAMPLE);
+    attrib.push_back(AGL_SAMPLE_BUFFERS_ARB);
+    attrib.push_back(1);
+    attrib.push_back(AGL_SAMPLES_ARB);
+    attrib.push_back(fb_props.get_multisamples());
+  }
 
   if (fb_props.is_stereo()) {
     attrib.push_back(AGL_STEREO);
@@ -247,29 +247,29 @@ build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props) {
   // build context
   _aglcontext = NULL;
   _aglPixFmt = aglChoosePixelFormat(&display, 1, &attrib[0]);
-  err = report_agl_error ("aglChoosePixelFormat");
+  err = report_agl_error("aglChoosePixelFormat");
   if (_aglPixFmt) {
     if(_share_with == NULL) {
       _aglcontext = aglCreateContext(_aglPixFmt, NULL);
     } else {
       _aglcontext = aglCreateContext(_aglPixFmt, ((osxGraphicsStateGuardian *)_share_with)->_aglcontext);
     }
-    err = report_agl_error ("aglCreateContext");
+    err = report_agl_error("aglCreateContext");
 
     if (_aglcontext == NULL) {
       osxdisplay_cat.error()
-        << "osxGraphicsStateGuardian::buildG Error Getting Gl Context \n" ;
+        << "osxGraphicsStateGuardian::build_gl Error Getting GL Context \n" ;
       if(err == noErr) {
         err = -1;
       }
     } else {
-      aglSetInteger (_aglcontext, AGL_BUFFER_NAME, &SharedBuffer);      
+      aglSetInteger(_aglcontext, AGL_BUFFER_NAME, &_shared_buffer);      
       err = report_agl_error("aglSetInteger AGL_BUFFER_NAME");          
     }
         
   } else {
     osxdisplay_cat.error()
-      << "osxGraphicsStateGuardian::buildG Error Getting Pixel Format\n" ;
+      << "osxGraphicsStateGuardian::build_gl Error Getting Pixel Format\n" ;
     osxdisplay_cat.error()
       << fb_props << "\n";
     if(err == noErr) {

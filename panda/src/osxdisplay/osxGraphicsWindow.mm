@@ -568,14 +568,14 @@ release_system_resources() {
   }
 
   if (_osx_window != NULL) {
-    SetWRefCon (_osx_window, (long int) NULL);
-    HideWindow (_osx_window);
+    SetWRefCon(_osx_window, (long int) NULL);
+    HideWindow(_osx_window);
     DisposeWindow(_osx_window);
     _osx_window = NULL;
   }
  
   if (_holder_aglcontext) {
-    aglDestroyContext (_holder_aglcontext); 
+    aglDestroyContext(_holder_aglcontext); 
     _holder_aglcontext = NULL;
   }
   
@@ -714,7 +714,7 @@ build_gl(bool full_screen) {
   OSStatus err = noErr;
  
   if (osxgsg->get_agl_pixel_format()) {
-    _holder_aglcontext = aglCreateContext(osxgsg->get_agl_pixel_format(),NULL);
+    _holder_aglcontext = aglCreateContext(osxgsg->get_agl_pixel_format(), NULL);
  
     err = report_agl_error("aglCreateContext");
     if (_holder_aglcontext == NULL) {
@@ -724,7 +724,7 @@ build_gl(bool full_screen) {
         err = -1; 
       }
     } else { 
-      aglSetInteger(_holder_aglcontext, AGL_BUFFER_NAME, &osxgsg->SharedBuffer); 
+      aglSetInteger(_holder_aglcontext, AGL_BUFFER_NAME, &osxgsg->_shared_buffer); 
       err = report_agl_error ("aglSetInteger AGL_BUFFER_NAME");
     }
   } else {
@@ -1216,8 +1216,8 @@ os_open_window(WindowProperties &req_properties) {
         osxdisplay_cat.error()
           << "Error in build_gl\n";
  
-        HideWindow (_osx_window);
-        SetWRefCon (_osx_window, (long int) NULL);
+        HideWindow(_osx_window);
+        SetWRefCon(_osx_window, (long int) NULL);
         DisposeWindow(_osx_window);
         _osx_window = NULL;
         return false;
@@ -1227,10 +1227,10 @@ os_open_window(WindowProperties &req_properties) {
         << "build_gl complete, set properties\n";
 
       //
-      // atach the holder context to the window..
+      // attach the holder context to the window..
       //
       
-      if (!aglSetDrawable(_holder_aglcontext, GetWindowPort (_osx_window))) {
+      if (!aglSetDrawable(_holder_aglcontext, GetWindowPort(_osx_window))) {
         err = report_agl_error("aglSetDrawable");
       }
       
