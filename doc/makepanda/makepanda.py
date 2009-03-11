@@ -335,7 +335,7 @@ if (COMPILER=="LINUX"):
       if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lpandaopenal")
       if (PkgSkip("TIFF")==0):     LibName("TIFF", "-ltiff")
     if (PkgSkip("SQUISH")==0):     LibName("SQUISH", "-lsquish")
-    if (PkgSkip("FCOLLADA")==0):   LibName("FCOLLADA", "-lFColladaSD")
+    if (PkgSkip("FCOLLADA")==0):   LibName("FCOLLADA", "-lFCollada")
     if (PkgSkip("FMOD")==0):       LibName("FMOD", "-lfmod")
     if (PkgSkip("FMODEX")==0):     LibName("FMODEX", "-lfmodex")
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavutil")
@@ -375,7 +375,8 @@ if (COMPILER=="LINUX"):
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, "-Wl,-rpath," + SDK[pkg] + "/lib")
-            LibName(pkg, "-lOpenMayalib")
+            if (sys.platform != "darwin"):
+                LibName(pkg, "-lOpenMayalib")
             LibName(pkg, "-lOpenMaya")
             LibName(pkg, "-lOpenMayaAnim")
             LibName(pkg, "-lAnimSlice")
@@ -847,6 +848,7 @@ DTOOL_CONFIG=[
     ("HAVE_OPENCV",                    'UNDEF',                  'UNDEF'),
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
+    ("HAVE_FCOLLADA",                  'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 ]
@@ -2716,7 +2718,7 @@ if (PkgSkip("PANDATOOL")==0 and PkgSkip("FCOLLADA")==0):
     OPTS=['DIR:pandatool/src/daeegg', 'FCOLLADA']
     TargetAdd('daeegg_composite1.obj', opts=OPTS, input='daeegg_composite1.cxx')
     TargetAdd('libdaeegg.lib', input='daeegg_composite1.obj')
-    TargetAdd('libdaeegg.lib', opts=['FCOLLADA'])
+    TargetAdd('libdaeegg.lib', opts=['FCOLLADA', 'CARBON'])
 
 #
 # DIRECTORY: pandatool/src/daeprogs/
@@ -2727,7 +2729,7 @@ if (PkgSkip("PANDATOOL")==0 and PkgSkip("FCOLLADA")==0):
     TargetAdd('dae2egg.exe', input='dae2egg_daeToEgg.obj')
     TargetAdd('dae2egg.exe', input='libdaeegg.lib')
     TargetAdd('dae2egg.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
-    TargetAdd('dae2egg.exe', opts=['WINUSER', 'FCOLLADA'])
+    TargetAdd('dae2egg.exe', opts=['WINUSER', 'FCOLLADA', 'CARBON'])
 
 #
 # DIRECTORY: pandatool/src/dxf/
@@ -3173,7 +3175,7 @@ if (PkgSkip("PANDATOOL")==0):
 #
 
 if (PkgSkip("PANDATOOL")==0):
-    OPTS=['DIR:pandatool/src/ptloader', 'DIR:pandatool/src/flt', 'DIR:pandatool/src/lwo', 'DIR:pandatool/src/xfile', 'DIR:pandatool/src/xfileegg', 'BUILDING:PTLOADER']
+    OPTS=['DIR:pandatool/src/ptloader', 'DIR:pandatool/src/flt', 'DIR:pandatool/src/lwo', 'DIR:pandatool/src/xfile', 'DIR:pandatool/src/xfileegg', 'DIR:pandatool/src/daeegg', 'BUILDING:PTLOADER', 'FCOLLADA']
     TargetAdd('ptloader_config_ptloader.obj', opts=OPTS, input='config_ptloader.cxx')
     TargetAdd('ptloader_loaderFileTypePandatool.obj', opts=OPTS, input='loaderFileTypePandatool.cxx')
     TargetAdd('libp3ptloader.dll', input='ptloader_config_ptloader.obj')
@@ -3188,13 +3190,14 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('libp3ptloader.dll', input='libpvrml.lib')
     TargetAdd('libp3ptloader.dll', input='libxfileegg.lib')
     TargetAdd('libp3ptloader.dll', input='libxfile.lib')
+    TargetAdd('libp3ptloader.dll', input='libdaeegg.lib')
     TargetAdd('libp3ptloader.dll', input='libeggbase.lib')
     TargetAdd('libp3ptloader.dll', input='libprogbase.lib')
     TargetAdd('libp3ptloader.dll', input='libconverter.lib')
     TargetAdd('libp3ptloader.dll', input='libpandatoolbase.lib')
     TargetAdd('libp3ptloader.dll', input='libpandaegg.dll')
     TargetAdd('libp3ptloader.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3ptloader.dll', opts=['ADVAPI'])
+    TargetAdd('libp3ptloader.dll', opts=['ADVAPI', 'FCOLLADA'])
 
 #
 # DIRECTORY: pandatool/src/mayaprogs/

@@ -763,28 +763,22 @@ def SdkLocateMaya():
                             SDK[ver] = res
             elif (sys.platform == "darwin"):
                 ddir1 = "sdks/"+ver.lower().replace("x","")+"-osx"
-                if os.environ.has_key("MAYA_LOCATION"): ddir2 = os.environ["MAYA_LOCATION"].rstrip("/")
-                ddir3 = "/Applications/Autodesk/maya"+key+"/Maya.app/Contents"
-                if (os.path.isdir(ddir1)):
-                    SDK[ver] = ddir1
-                elif (os.environ.has_key("MAYA_LOCATION") and os.path.isdir(ddir2)):
-                    SDK[ver] = ddir2
-                elif (os.path.isdir(ddir3)):
-                    SDK[ver] = ddir3
+                ddir2 = "/Applications/Autodesk/maya"+key+"/Maya.app/Contents"
+                
+                if (os.path.isdir(ddir1)):   SDK[ver] = ddir1
+                elif (os.path.isdir(ddir2)): SDK[ver] = ddir2
             else:
                 ddir1 = "sdks/"+ver.lower().replace("x","")+"-linux"+platform.architecture()[0].replace("bit","")
-                if os.environ.has_key("MAYA_LOCATION"): ddir2 = os.environ["MAYA_LOCATION"].rstrip("/")
                 if (platform.architecture()[0] == "64bit"):
-                    ddir3 = "/usr/autodesk/maya"+key+"-x64"
+                    ddir2 = "/usr/autodesk/maya"+key+"-x64"
+                    ddir3 = "/usr/aw/maya"+key+"-x64"
                 else:
-                    ddir3 = "/usr/autodesk/maya"+key
-                if (os.path.isdir(ddir1)):
-                    SDK[ver] = ddir1
-                elif (os.environ.has_key("MAYA_LOCATION") and os.path.isdir(ddir2) and
-                     ((ver.lower() in ddir2.lower()) or ("maya"+key in ddir2.lower()))):
-                    SDK[ver] = ddir2
-                elif (os.path.isdir(ddir3)):
-                    SDK[ver] = ddir3
+                    ddir2 = "/usr/autodesk/maya"+key
+                    ddir3 = "/usr/aw/maya"+key
+                
+                if (os.path.isdir(ddir1)):   SDK[ver] = ddir1
+                elif (os.path.isdir(ddir2)): SDK[ver] = ddir2
+                elif (os.path.isdir(ddir3)): SDK[ver] = ddir3
 
 def SdkLocateMax():
     if (sys.platform != "win32"): return
