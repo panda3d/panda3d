@@ -684,6 +684,9 @@ void TinyOsxGraphicsWindow::end_frame(FrameMode mode, Thread *current_thread)
   _gsg->end_frame(current_thread);
 
   if (mode == FM_render) {
+
+    copy_to_textures();
+
     trigger_flip();
     if (_one_shot) {
       prepare_for_deletion();

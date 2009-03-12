@@ -900,6 +900,8 @@ end_frame(FrameMode mode, Thread *current_thread) {
   if (mode == FM_render) {
     nassertv(_gsg != (GraphicsStateGuardian *)NULL);
 
+    copy_to_textures();
+
     if (!_properties.get_fixed_size() && 
         !_properties.get_undecorated() && 
         !_properties.get_fullscreen() &&
