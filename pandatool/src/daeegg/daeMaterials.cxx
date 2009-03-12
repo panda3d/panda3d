@@ -64,11 +64,12 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
     const FCDMaterialInstanceBindVertexInput* mivib = instance->GetVertexInputBinding(vib);
     assert(mivib != NULL);
     PT(DaeVertexInputBinding) bvi = new DaeVertexInputBinding();
-    bvi->_input_semantic = mivib->inputSemantic;
     bvi->_input_set = mivib->inputSet;
 #if FCOLLADA_VERSION >= 0x00030005
+    bvi->_input_semantic = mivib->GetInputSemantic();
     bvi->_semantic = *mivib->semantic;
 #else
+    bvi->_input_semantic = mivib->inputSemantic;
     bvi->_semantic = FROM_FSTRING(mivib->semantic);
 #endif
     _materials[semantic]->_uvsets.push_back(bvi);
