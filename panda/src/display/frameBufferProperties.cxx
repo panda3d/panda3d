@@ -466,11 +466,17 @@ get_quality(const FrameBufferProperties &reqs) const {
     quality -= 100000;
   }
 
+  // Deduct for lacking multisamples altogether.
+  // Cost: 100,000
+  if (reqs._property[FBP_multisamples] != 0 && _property[FBP_multisamples] == 0) {
+    quality -= 100000;
+  }
+
   // Deduct for not enough bits in depth, color, alpha, stencil, or accum.
   // Cost: 10,000
 
   for (int prop=FBP_depth_bits; prop<=FBP_accum_bits; prop++) {
-    if (reqs._property[prop] > _property[prop]) {
+    if (_property[prop] != 0 && reqs._property[prop] > _property[prop]) {
       quality -= 10000;
     }
   }
@@ -478,43 +484,51 @@ get_quality(const FrameBufferProperties &reqs) const {
   // deduct for insufficient multisamples.
   // Cost: 1,000
 
-  if (reqs._property[FBP_multisamples] > _property[FBP_multisamples]) {
+  if (_property[FBP_multisamples] != 0 && 
+      reqs._property[FBP_multisamples] > _property[FBP_multisamples]) {
     quality -= 1000;
   }
 
   // Deduct for unrequested bitplanes.
-  // Cost: 10
+  // Cost: 50
   
   for (int prop=FBP_depth_bits; prop<=FBP_accum_bits; prop++) {
     if ((_property[prop]) && (reqs._property[prop] == 0)) {
-      quality -= 10;
+      quality -= 50;
     }
   }
   for (int prop=FBP_aux_rgba; prop<=FBP_aux_float; prop++) {
     int extra = _property[prop] > reqs._property[prop];
     if (extra > 0) {
-      if (extra > 3) {
-        quality -= 30;
-      } else {
-        quality -= extra*10;
-      }
+      extra = min(extra, 3);
+      quality -= extra*50;
     }
   }
   
-  // Deduct for excessive resolution in any bitplane.
-  // Cost: 10
+  // Deduct for excessive resolution in any bitplane (unless we asked
+  // for only 1 bit, which is the convention for any amount).
+
+  // Cost: 50
   
   for (int prop=FBP_depth_bits; prop<=FBP_accum_bits; prop++) {
-    if (reqs._property[prop] <= 8) {
-      if (_property[prop] > 8) {
-        quality -= 10;
-      }
+    if (reqs._property[prop] > 1 &&
+        _property[prop] > reqs._property[prop]) {
+      quality -= 50;
     }
-    if (reqs._property[prop] <= 32) {
-      if (_property[prop] > 32) {
-        quality -= 10;
-      }
-    }
+  }
+
+  // Bonus for each depth bit.
+  // Extra: 3 per bit.
+  quality += 3 * _property[FBP_depth_bits];
+
+  // Bonus for each multisamples.
+  // Extra: 2 per sample.
+  quality += 2 * _property[FBP_multisamples];
+
+  // Bonus for each color, alpha, stencil, and accum.
+  // Extra: 1 per bit.
+  for (int prop=FBP_color_bits; prop<=FBP_accum_bits; prop++) {
+    quality += _property[prop];
   }
   
   return quality;
