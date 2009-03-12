@@ -100,11 +100,10 @@ PUBLISHED:
   // This enum is used to control the automatic generation of bounding
   // volumes.
   enum BoundsType {
+    BT_default,
     BT_best,
     BT_sphere,
     BT_box,
-
-    BT_invalid,    // Do not use this one
   };
 
 public:

@@ -312,7 +312,12 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
   // First, get ourselves a fresh, empty bounding volume.
   PT(BoundingVolume) bound;
 
-  if (bounds_type == BoundingVolume::BT_sphere) {
+  BoundingVolume::BoundsType btype = get_bounds_type();
+  if (btype == BoundingVolume::BT_default) {
+    btype = bounds_type;
+  }
+
+  if (btype == BoundingVolume::BT_sphere) {
     bound = new BoundingSphere;
   } else {
     bound = new BoundingBox;

@@ -899,8 +899,13 @@ compute_internal_bounds(CPT(BoundingVolume) &internal_bounds,
 
   PT(GeometricBoundingVolume) gbv;
 
-  if (bounds_type == BoundingVolume::BT_box ||
-      (bounds_type != BoundingVolume::BT_sphere && all_box)) {
+  BoundingVolume::BoundsType btype = get_bounds_type();
+  if (btype == BoundingVolume::BT_default) {
+    btype = bounds_type;
+  }
+
+  if (btype == BoundingVolume::BT_box ||
+      (btype != BoundingVolume::BT_sphere && all_box)) {
     // If all of the child volumes are a BoundingBox, then our volume
     // is also a BoundingBox.
     gbv = new BoundingBox;

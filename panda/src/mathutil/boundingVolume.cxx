@@ -168,7 +168,10 @@ as_bounding_plane() const {
 ////////////////////////////////////////////////////////////////////
 BoundingVolume::BoundsType BoundingVolume::
 string_bounds_type(const string &str) {
-  if (strcmp(str.c_str(), "best") == 0) {
+  if (strcmp(str.c_str(), "default") == 0) {
+    return BT_default;
+
+  } else if (strcmp(str.c_str(), "best") == 0) {
     return BT_best;
 
   } else if (strcmp(str.c_str(), "sphere") == 0) {
@@ -178,7 +181,7 @@ string_bounds_type(const string &str) {
     return BT_box;
   }
 
-  return BT_invalid;
+  return BT_default;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -412,6 +415,9 @@ contains_plane(const BoundingPlane *) const {
 ostream &
 operator << (ostream &out, BoundingVolume::BoundsType type) {
   switch (type) {
+  case BoundingVolume::BT_default:
+    return out << "default";
+
   case BoundingVolume::BT_best:
     return out << "best";
 
@@ -420,9 +426,6 @@ operator << (ostream &out, BoundingVolume::BoundsType type) {
 
   case BoundingVolume::BT_box:
     return out << "box";
-
-  case BoundingVolume::BT_invalid:
-    return out << "invalid";
   }
 
   mathutil_cat.error()
@@ -436,7 +439,7 @@ operator >> (istream &in, BoundingVolume::BoundsType &type) {
   string word;
   in >> word;
   type = BoundingVolume::string_bounds_type(word);
-  if (type == BoundingVolume::BT_invalid) {
+  if (type == BoundingVolume::BT_default) {
     mathutil_cat->error()
       << "Invalid BoundingVolume::BoundsType string: " << word << "\n";
   }

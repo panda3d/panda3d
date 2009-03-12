@@ -1261,9 +1261,14 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
                        InternalName::get_vertex(),
                        cdata, current_thread);
 
+  BoundingVolume::BoundsType btype = cdata->_bounds_type;
+  if (btype == BoundingVolume::BT_default) {
+    btype = bounds_type;
+  }
+
   if (found_any) {
     // Then we put the bounding volume around both of those points.
-    if (bounds_type == BoundingVolume::BT_sphere) {
+    if (btype == BoundingVolume::BT_sphere) {
       // The user specifically requested a BoundingSphere, so oblige.
       BoundingBox box(min, max);
       box.local_object();
@@ -1287,7 +1292,7 @@ compute_internal_bounds(Geom::CData *cdata, Thread *current_thread) const {
 
   } else {
     // No points; empty bounding volume.
-    if (bounds_type == BoundingVolume::BT_sphere) {
+    if (btype == BoundingVolume::BT_sphere) {
       cdata->_internal_bounds = new BoundingSphere;
     } else {
       cdata->_internal_bounds = new BoundingBox;
@@ -1647,6 +1652,8 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   // Actually, we shouldn't bother writing out _geom_rendering; we'll
   // just throw it away anyway.
   dg.add_uint16(_geom_rendering);
+
+  dg.add_uint8(_bounds_type);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1697,6 +1704,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _got_usage_hint = false;
   _modified = Geom::get_next_modified();
+
+  _bounds_type = BoundingVolume::BT_default;
+  if (manager->get_file_minor_ver() >= 19) {
+    _bounds_type = (BoundingVolume::BoundsType)scan.get_uint8();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

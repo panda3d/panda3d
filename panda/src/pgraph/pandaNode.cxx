@@ -162,6 +162,7 @@ PandaNode(const PandaNode &copy) :
     cdata->_draw_control_mask = copy_cdata->_draw_control_mask;
     cdata->_draw_show_mask = copy_cdata->_draw_show_mask;
     cdata->_into_collide_mask = copy_cdata->_into_collide_mask;
+    cdata->_bounds_type = copy_cdata->_bounds_type;
     cdata->_user_bounds = copy_cdata->_user_bounds;
     cdata->_internal_bounds = NULL;
     cdata->_internal_bounds_computed = UpdateSeq::initial();
@@ -2238,6 +2239,53 @@ write(ostream &out, int indent_level) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::set_bounds_type
+//       Access: Published
+//  Description: Specifies the desired type of bounding volume that
+//               will be created for this node.  This is normally
+//               BoundingVolume::BT_default, which means to set the
+//               type according to the config variable "bounds-type".
+//
+//               If this is BT_sphere or BT_box, a BoundingSphere or
+//               BoundingBox is explicitly created.  If it is BT_best,
+//               the appropriate type to best enclose the node's
+//               children is created.
+//
+//               This affects the bounding volume returned by
+//               get_bounds(), which is not exactly the same bounding
+//               volume modified by set_bounds(), because a new
+//               bounding volume has to be created that includes this
+//               node and all of its children.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+set_bounds_type(BoundingVolume::BoundsType bounds_type) {
+  Thread *current_thread = Thread::get_current_thread();
+  OPEN_ITERATE_CURRENT_AND_UPSTREAM(_cycler, current_thread) {
+    CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
+    cdata->_bounds_type = bounds_type;
+    mark_bounds_stale(pipeline_stage, current_thread);
+
+    // GeomNodes, CollisionNodes, and PGItems all have an internal
+    // bounds that may need to be updated when the bounds_type
+    // changes.
+    mark_internal_bounds_stale(pipeline_stage, current_thread);
+  }
+  CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::get_bounds_type
+//       Access: Published
+//  Description: Returns the bounding volume type set with
+//               set_bounds_type().
+////////////////////////////////////////////////////////////////////
+BoundingVolume::BoundsType PandaNode::
+get_bounds_type() const {
+  CDReader cdata(_cycler);
+  return cdata->_bounds_type;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::set_bounds
 //       Access: Published
 //  Description: Resets the bounding volume so that it is the
@@ -3932,8 +3980,13 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
         CPT(TransformState) transform = get_transform(current_thread);
         PT(GeometricBoundingVolume) gbv;
 
-        if (bounds_type == BoundingVolume::BT_box ||
-            (bounds_type != BoundingVolume::BT_sphere && all_box && transform->is_identity())) {
+        BoundingVolume::BoundsType btype = cdataw->_bounds_type;
+        if (btype == BoundingVolume::BT_default) {
+          btype = bounds_type;
+        }
+
+        if (btype == BoundingVolume::BT_box ||
+            (btype != BoundingVolume::BT_sphere && all_box && transform->is_identity())) {
           // If all of the child volumes are a BoundingBox, and we
           // have no transform, then our volume is also a
           // BoundingBox.
@@ -4115,6 +4168,7 @@ CData() :
   _draw_control_mask(DrawMask::all_off()),
   _draw_show_mask(DrawMask::all_on()),
   _into_collide_mask(CollideMask::all_off()),
+  _bounds_type(BoundingVolume::BT_default),
   _user_bounds(NULL),
   _final_bounds(false),
   _fancy_bits(0),
@@ -4147,6 +4201,7 @@ CData(const PandaNode::CData &copy) :
   _draw_control_mask(copy._draw_control_mask),
   _draw_show_mask(copy._draw_show_mask),
   _into_collide_mask(copy._into_collide_mask),
+  _bounds_type(copy._bounds_type),
   _user_bounds(copy._user_bounds),
   _final_bounds(copy._final_bounds),
   _fancy_bits(copy._fancy_bits),
@@ -4216,6 +4271,7 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   dg.add_uint32(_draw_control_mask.get_word());
   dg.add_uint32(_draw_show_mask.get_word());
   dg.add_uint32(_into_collide_mask.get_word());
+  dg.add_uint8(_bounds_type);
 
   dg.add_uint32(_tag_data.size());
   TagData::const_iterator ti;
@@ -4334,6 +4390,11 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 
   _into_collide_mask.set_word(scan.get_uint32());
+
+  _bounds_type = BoundingVolume::BT_default;
+  if (manager->get_file_minor_ver() >= 19) {
+    _bounds_type = (BoundingVolume::BoundsType)scan.get_uint8();
+  }
 
   // Read in the tag list.
   int num_tags = scan.get_uint32();
