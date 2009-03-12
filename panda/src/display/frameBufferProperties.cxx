@@ -518,17 +518,23 @@ get_quality(const FrameBufferProperties &reqs) const {
   }
 
   // Bonus for each depth bit.
-  // Extra: 3 per bit.
-  quality += 3 * _property[FBP_depth_bits];
+  // Extra: 2 per bit.
+  if (reqs._property[FBP_depth_bits] != 0) {
+    quality += 2 * _property[FBP_depth_bits];
+  }
 
-  // Bonus for each multisamples.
+  // Bonus for each multisample.
   // Extra: 2 per sample.
-  quality += 2 * _property[FBP_multisamples];
+  if (reqs._property[FBP_multisamples] != 0) {
+    quality += 2 * _property[FBP_multisamples];
+  }
 
   // Bonus for each color, alpha, stencil, and accum.
   // Extra: 1 per bit.
   for (int prop=FBP_color_bits; prop<=FBP_accum_bits; prop++) {
-    quality += _property[prop];
+    if (reqs._property[prop] != 0) {
+      quality += _property[prop];
+    }
   }
   
   return quality;
