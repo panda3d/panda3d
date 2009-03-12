@@ -16,6 +16,7 @@ x.x.0 releases.
 * Added libsquish support for DXT compression
 * New MeshDrawer class for realtime mesh manipulation
 * Infamous FBO bug fixed
+* Preliminary support for Volumetric Lighting
 * Shader k-parameters can now contain underscores
 * Fixed OpenCVTexture and ARToolKit on Linux
 * GeoMipTerrain now supports multi-channel heightmaps
@@ -24,6 +25,7 @@ x.x.0 releases.
 * Fixed some minor but annoying OpenAL/FFMpeg issues
 * Fixed bug with lcontrol and rcontrol on Linux
 * Fixed bug regarding icon filenames
+* Multisampling antialiasing doesn't crash on OSX anymore
 * Left and right scrolling events now available
 * Several improvements to API reference
 * ShaderGenerator now supports several more blend modes and color scale
