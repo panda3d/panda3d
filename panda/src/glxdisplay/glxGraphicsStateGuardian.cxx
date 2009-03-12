@@ -175,10 +175,9 @@ get_properties_advanced(FrameBufferProperties &properties,
     pixmap_supported = true;
   }
   
-  if (caveat & GLX_SLOW_CONFIG) {
+  slow = false;
+  if (caveat == GLX_SLOW_CONFIG) {
     slow = true;
-  } else {
-    slow = false;
   }
 
   if ((drawable_type & GLX_WINDOW_BIT)==0) {
