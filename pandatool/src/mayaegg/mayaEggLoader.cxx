@@ -105,12 +105,12 @@ public:
 
   MayaEggNurbsSurface  *GetSurface(EggVertexPool *pool, EggGroup *parent);
 
-  typedef phash_map<EggVertexPool *, MayaEggMesh *, pointer_hash> MeshTable;
+  typedef phash_map<EggGroup *, MayaEggMesh *, pointer_hash> MeshTable;
   typedef phash_map<EggXfmSAnim *, MayaAnim *, pointer_hash> AnimTable;
   typedef phash_map<EggGroup *, MayaEggJoint *, pointer_hash> JointTable;
   typedef phash_map<EggGroup *, MayaEggGroup *, pointer_hash> GroupTable;
   typedef phash_map<string, MayaEggTex *, string_hash> TexTable;
-  typedef phash_map<EggVertexPool *, MayaEggNurbsSurface *, pointer_hash> SurfaceTable;
+  typedef phash_map<EggGroup *, MayaEggNurbsSurface *, pointer_hash> SurfaceTable;
 
   MeshTable        _mesh_tab;
   AnimTable        _anim_tab;
@@ -330,6 +330,23 @@ MayaEggGroup *MayaEggLoader::MakeGroup(EggGroup *group, EggGroup *context)
 
   result->_name = group->get_name();
   result->_group = dgn.create("transform", MString(result->_name.c_str()), parent, &status);
+
+  if (group->has_transform3d()) {
+    LMatrix4d tMat = group->get_transform3d();
+    double matData[4][4] = {{tMat.get_cell(0,0), tMat.get_cell(0,1), tMat.get_cell(0,2), tMat.get_cell(0,3)},
+                  {tMat.get_cell(1,0), tMat.get_cell(1,1), tMat.get_cell(1,2), tMat.get_cell(1,3)},
+                  {tMat.get_cell(2,0), tMat.get_cell(2,1), tMat.get_cell(2,2), tMat.get_cell(2,3)},
+                  {tMat.get_cell(3,0), tMat.get_cell(3,1), tMat.get_cell(3,2), tMat.get_cell(3,3)}};
+    MMatrix mat(matData);
+
+    MTransformationMatrix matrix = MTransformationMatrix(mat);
+    MFnTransform tFn = MFnTransform(result->_group, &status);
+    if (status != MStatus::kSuccess) {
+      status.perror("MFnTransformNode:create failed!");
+    } else {
+      tFn.set(matrix);
+    }
+  }
 
   if (status != MStatus::kSuccess) {
     status.perror("MFnDagNode:create failed!");
@@ -906,7 +923,7 @@ int MayaEggMesh::GetCVert(Colorf col)
 
 MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool, EggGroup *parent)
 {
-  MayaEggMesh *result = _mesh_tab[pool];
+  MayaEggMesh *result = _mesh_tab[parent];
   if (result == 0) {
     result = new MayaEggMesh;
     result->_pool = pool;
@@ -922,7 +939,7 @@ MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool, EggGroup *parent)
     result->_faceIndices.clear();
     result->_eggObjectTypes.clear();
     result->_renameTrans = false;
-    _mesh_tab[pool] = result;
+    _mesh_tab[parent] = result;
   }
   return result;
 }
@@ -1001,7 +1018,7 @@ public:
 
 MayaEggNurbsSurface *MayaEggLoader::GetSurface(EggVertexPool *pool, EggGroup *parent)
 {
-  MayaEggNurbsSurface *result = _surface_tab[pool];
+  MayaEggNurbsSurface *result = _surface_tab[parent];
   if (result == 0) {
     result = new MayaEggNurbsSurface;
     result->_pool = pool;
@@ -1026,7 +1043,7 @@ MayaEggNurbsSurface *MayaEggLoader::GetSurface(EggVertexPool *pool, EggGroup *pa
 
     result->_eggObjectTypes.clear();
     result->_renameTrans = false;
-    _surface_tab[pool] = result;
+    _surface_tab[parent] = result;
   }
   return result;
 }
