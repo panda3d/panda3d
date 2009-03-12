@@ -252,8 +252,15 @@ choose_pixel_format(const FrameBufferProperties &properties,
   if (configs != 0) {
     for (int i=0; i<num_configs; i++) {
       FrameBufferProperties fbprops;
-      bool pbuffer_supported, slow;
+      bool pbuffer_supported = false, slow = false;
       get_properties_advanced(fbprops, pbuffer_supported, slow, configs[i]);
+      if (glxdisplay_cat.is_debug()) {
+        const char *pbuffertext = pbuffer_supported ? " (pbuffer)" : "";
+        const char *slowtext = slow ? " (slow)" : "";
+        glxdisplay_cat.debug()
+          << i << ": " << fbprops << pbuffertext << slowtext << "\n";
+      }
+
       int quality = fbprops.get_quality(properties);
       if ((quality > 0)&&(slow)) quality -= 10000000;
       if ((need_pbuffer==0)||(pbuffer_supported)) {
