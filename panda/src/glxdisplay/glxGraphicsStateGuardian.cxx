@@ -293,7 +293,6 @@ choose_pixel_format(const FrameBufferProperties &properties,
       _visual = _visuals;
       if (_visual) {
 	_fbprops = best_props;
-        cerr << "selected " << _fbconfig << "\n";
 	return;
       }
     }

@@ -165,7 +165,6 @@ close_buffer() {
 ////////////////////////////////////////////////////////////////////
 bool glxGraphicsPixmap::
 open_buffer() {
-  cerr << "open_buffer\n";
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_R(glx_pipe, _pipe, false);
 
@@ -197,7 +196,6 @@ open_buffer() {
 
   _drawable = glx_pipe->get_root();
   if (_host != NULL) {
-    cerr << "got host: " << _host->get_type() << "\n";
     if (_host->is_of_type(glxGraphicsWindow::get_class_type())) {
       glxGraphicsWindow *win = DCAST(glxGraphicsWindow, _host);
       _drawable = win->get_xwindow();
@@ -207,24 +205,18 @@ open_buffer() {
     }
   }
 
-  cerr << "creating pixmap, root = " << _drawable
-       << ", size = " << _x_size << " " << _y_size << ", depth = "
-       << visual_info->depth << "\n";
   _x_pixmap = XCreatePixmap(_display, _drawable, 
                             _x_size, _y_size, visual_info->depth);
-  cerr << "got " << _x_pixmap << "\n";
   if (_x_pixmap == None) {
     glxdisplay_cat.error()
       << "Failed to create X pixmap.\n";
     close_buffer();
     return false;
   }
-  cerr << "creating glx pixmap\n";
 
 #ifdef HAVE_GLXFBCONFIG
   if (glxgsg->_fbconfig) {
     // Use the FBConfig to create the pixmap.
-    cerr << "fbconfig\n";
     _glx_pixmap = glXCreatePixmap(_display, glxgsg->_fbconfig, _x_pixmap, NULL);
   } else
 #endif  // HAVE_GLXFBCONFIG
@@ -233,8 +225,6 @@ open_buffer() {
       _glx_pixmap = glXCreateGLXPixmap(_display, visual_info, _x_pixmap);
     }
 
-  cerr << "got " << _glx_pixmap << "\n";
-
   if (_glx_pixmap == None) {
     glxdisplay_cat.error()
       << "Failed to create GLX pixmap.\n";
@@ -242,9 +232,7 @@ open_buffer() {
     return false;
   }
 
-  cerr << "making current, context = " << glxgsg->_context << "\n";
   glXMakeCurrent(_display, _glx_pixmap, glxgsg->_context);
-  cerr << "context = " << glxgsg->_context << "\n";
   glxgsg->reset_if_new();
   if (!glxgsg->is_valid()) {
     close_buffer();
