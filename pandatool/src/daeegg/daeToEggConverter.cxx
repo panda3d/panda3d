@@ -362,10 +362,21 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
     const FCDGeometryPolygonsInput* tinput = polygons->FindInput(FUDaeGeometryInput::TEXTANGENT);
     const uint32* tindices;
     if (tinput != NULL) tindices = tinput->GetIndices();
-    // Get a name for potential texture coordinate sets
-    string uvsetname ("");
+    // Get a name for potential coordinate sets
+    string tcsetname ("");
     if (materials != NULL && tcinput != NULL) {
-      uvsetname = materials->get_uvset_name(FROM_FSTRING(polygons->GetMaterialSemantic()), tcinput->GetSet());
+      daeegg_cat.debug() << "Assigning texcoord set " << tcinput->GetSet() << " to semantic " << FROM_FSTRING(polygons->GetMaterialSemantic()) << "\n";
+      tcsetname = materials->get_uvset_name(FROM_FSTRING(polygons->GetMaterialSemantic()), FUDaeGeometryInput::TEXCOORD, tcinput->GetSet());
+    }
+    string tbsetname ("");
+    if (materials != NULL && binput != NULL) {
+      daeegg_cat.debug() << "Assigning texbinormal set " << binput->GetSet() << " to semantic " << FROM_FSTRING(polygons->GetMaterialSemantic()) << "\n";
+      tbsetname = materials->get_uvset_name(FROM_FSTRING(polygons->GetMaterialSemantic()), FUDaeGeometryInput::TEXBINORMAL, binput->GetSet());
+    }
+    string ttsetname ("");
+    if (materials != NULL && tinput != NULL) {
+      daeegg_cat.debug() << "Assigning textangent set " << tinput->GetSet() << " to semantic " << FROM_FSTRING(polygons->GetMaterialSemantic()) << "\n";
+      ttsetname = materials->get_uvset_name(FROM_FSTRING(polygons->GetMaterialSemantic()), FUDaeGeometryInput::TEXTANGENT, tinput->GetSet());
     }
     // Loop through the indices and add the vertices.
     for (size_t ix = 0; ix < pinput->GetIndexCount(); ++ix) {
@@ -383,9 +394,9 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
         assert(tcsource->GetStride() == 2 || tcsource->GetStride() == 3);
         data = &tcsource->GetData()[tcindices[ix]*tcsource->GetStride()];
         if (tcsource->GetStride() == 2) {
-          vertex->set_uv(uvsetname, LPoint2d(data[0], data[1]));
+          vertex->set_uv(tcsetname, LPoint2d(data[0], data[1]));
         } else {
-          vertex->set_uvw(uvsetname, LPoint3d(data[0], data[1], data[2]));
+          vertex->set_uvw(tcsetname, LPoint3d(data[0], data[1], data[2]));
         }
       }
       // Process the color
@@ -396,28 +407,23 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
       }
       // Possibly add a UV object
       if ((bsource != NULL && binput != NULL) || (tsource != NULL && tinput != NULL)) {
-        PT(EggVertexUV) vertex_uv;
-        if (tcsource != NULL && tcinput != NULL) {
-          assert(tcsource->GetStride() == 2 || tcsource->GetStride() == 3);
-          data = &tcsource->GetData()[tcindices[ix]*tcsource->GetStride()];
-          if (tcsource->GetStride() == 2) {
-            vertex_uv = new EggVertexUV(uvsetname, TexCoordd(data[0], data[1]));
-          } else {
-            vertex_uv = new EggVertexUV(uvsetname, TexCoord3d(data[0], data[1], data[2]));
-          }
-        } else {
-          vertex_uv = new EggVertexUV(uvsetname, TexCoordd());
-        }
-        vertex->set_uv_obj(vertex_uv);
         if (bsource != NULL && binput != NULL) {
           assert(bsource->GetStride() == 3);
           data = &bsource->GetData()[bindices[ix]*3];
-          vertex_uv->set_binormal(LVecBase3d(data[0], data[1], data[2]));
+          PT(EggVertexUV) uv_obj = vertex->modify_uv_obj(tbsetname);
+          if (uv_obj == NULL) {
+            uv_obj = new EggVertexUV(tbsetname, TexCoordd());
+          }
+          uv_obj->set_binormal(LVecBase3d(data[0], data[1], data[2]));
         }
         if (tsource != NULL && tinput != NULL) {
           assert(tsource->GetStride() == 3);
           data = &tsource->GetData()[tindices[ix]*3];
-          vertex_uv->set_tangent(LVecBase3d(data[0], data[1], data[2]));
+          PT(EggVertexUV) uv_obj = vertex->modify_uv_obj(ttsetname);
+          if (uv_obj == NULL) {
+            uv_obj = new EggVertexUV(ttsetname, TexCoordd());
+          }
+          uv_obj->set_tangent(LVecBase3d(data[0], data[1], data[2]));
         }
       }
       vertex->transform(parent->get_node_to_vertex());

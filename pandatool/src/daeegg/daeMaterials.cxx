@@ -63,11 +63,15 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
   for (size_t vib = 0; vib < instance->GetVertexInputBindingCount(); ++vib) {
     const FCDMaterialInstanceBindVertexInput* mivib = instance->GetVertexInputBinding(vib);
     assert(mivib != NULL);
+    PT(DaeVertexInputBinding) bvi = new DaeVertexInputBinding();
+    bvi->_input_semantic = mivib->inputSemantic;
+    bvi->_input_set = mivib->inputSet;
 #if FCOLLADA_VERSION >= 0x00030005
-    _materials[semantic]->_uvsets[mivib->inputSet] = *mivib->semantic;
+    bvi->_semantic = *mivib->semantic;
 #else
-    _materials[semantic]->_uvsets[mivib->inputSet] = FROM_FSTRING(mivib->semantic);
+    bvi->_semantic = FROM_FSTRING(mivib->semantic);
 #endif
+    _materials[semantic]->_uvsets.push_back(bvi);
   }
   
   // Handle the material stuff
@@ -81,13 +85,13 @@ void DaeMaterials::add_material_instance(const FCDMaterialInstance* instance) {
     // Grab the common profile effect
     const FCDEffectStandard* effect_common = (FCDEffectStandard *)effect->FindProfile(FUDaeProfileType::COMMON);
     if (effect_common == NULL) {
-      daeegg_cat.debug() << "Ignoring effect referenced by material with semantic " << semantic
+      daeegg_cat.info() << "Ignoring effect referenced by material with semantic " << semantic
                          << " because it has no common profile" << endl;
     } else {
       daeegg_cat.spam() << "Processing effect, material semantic is " << semantic << endl;
       // Set the material parameters
       egg_material->set_amb(TO_COLOR(effect_common->GetAmbientColor()));
-      ////TODO: find a better way for transparency
+      ////We already process transparency using blend modes
       //LVecBase4f diffuse = TO_COLOR(effect_common->GetDiffuseColor());
       //diffuse.set_w(diffuse.get_w() * (1.0f - effect_common->GetOpacity()));
       //egg_material->set_diff(diffuse);
@@ -149,11 +153,8 @@ process_texture_bucket(const string semantic, const FCDEffectStandard* effect_co
       // Find a set of UV coordinates
       const FCDEffectParameterInt* uvset = effect_common->GetTexture(bucket, tx)->GetSet();
       if (uvset != NULL) {
-        if (_materials[semantic]->_uvsets.count(uvset->GetValue()) == 0) {
-          daeegg_cat.warning() << "Texture references a nonexisting UV coordinate set!" << endl;
-        } else {
-          egg_texture->set_uv_name(_materials[semantic]->_uvsets[uvset->GetValue()]);
-        }
+        daeegg_cat.debug() << "Texture has uv name '" << FROM_FSTRING(uvset->GetSemantic()) << "'\n";
+        egg_texture->set_uv_name(FROM_FSTRING(uvset->GetSemantic()));
       }
       // Apply sampler stuff
       if (sampler != NULL) {
@@ -243,14 +244,34 @@ apply_to(const string semantic, const PT(EggGroup) to) {
 ////////////////////////////////////////////////////////////////////
 //     Function: DaeMaterials::get_uvset_name
 //       Access: Public
-//  Description: Returns the name of the uvset with the specified
-//               FCollada input set, or an empty string if the given
-//               material has no input set.
+//  Description: Returns the semantic of the uvset with the
+//               specified input set, or an empty string if the
+//               given material has no input set.
 ////////////////////////////////////////////////////////////////////
 const string DaeMaterials::
-get_uvset_name(const string semantic, int32 input_set) {
-  if (_materials.count(semantic) > 0 && _materials[semantic]->_uvsets.count(input_set)) {
-    return _materials[semantic]->_uvsets[input_set];
+get_uvset_name(const string semantic, FUDaeGeometryInput::Semantic input_semantic, int32 input_set) {
+  if (_materials.count(semantic) > 0) {
+    if (input_set == -1 && _materials[semantic]->_uvsets.size() == 1) {
+      return _materials[semantic]->_uvsets[0]->_semantic;
+    } else {
+      for (int i = 0; i < _materials[semantic]->_uvsets.size(); ++i) {
+        if (_materials[semantic]->_uvsets[i]->_input_set == input_set &&
+            _materials[semantic]->_uvsets[i]->_input_semantic == input_semantic) {
+          return _materials[semantic]->_uvsets[i]->_semantic;
+        }
+      }
+      // If we can't find it, let's look again, but don't care for the
+      // input_semantic this time. The reason for this is that some tools
+      // export textangents and texbinormals bound to a uvset with input
+      // semantic TEXCOORD.
+      for (int i = 0; i < _materials[semantic]->_uvsets.size(); ++i) {
+        if (_materials[semantic]->_uvsets[i]->_input_set == input_set) {
+          daeegg_cat.info() << "Using uv set with non-matching input semantic\n";
+          return _materials[semantic]->_uvsets[i]->_semantic;
+        }
+      }
+      daeegg_cat.warning() << "No uv set binding found for input set " << input_set << "\n";
+    }
   }
   return "";
 }
@@ -385,6 +406,22 @@ convert_blend(FCDEffectStandard::TransparencyMode mode, Colorf transparent, doub
     }
     if ((blend->_color[0] == 1) && (blend->_color[1] == 1) && (blend->_color[2] == 1) && (blend->_color[3] == 1)) {
       blend->_operand_a = EggGroup::BO_one;
+    }
+  }
+  if (blend->_operand_b == EggGroup::BO_constant_color) {
+    if ((blend->_color[0] == 0) && (blend->_color[1] == 0) && (blend->_color[2] == 0) && (blend->_color[3] == 0)) {
+      blend->_operand_b = EggGroup::BO_zero;
+    }
+    if ((blend->_color[0] == 1) && (blend->_color[1] == 1) && (blend->_color[2] == 1) && (blend->_color[3] == 1)) {
+      blend->_operand_b = EggGroup::BO_one;
+    }
+  }
+  if (blend->_operand_a == EggGroup::BO_one_minus_constant_color) {
+    if ((blend->_color[0] == 0) && (blend->_color[1] == 0) && (blend->_color[2] == 0) && (blend->_color[3] == 0)) {
+      blend->_operand_a = EggGroup::BO_one;
+    }
+    if ((blend->_color[0] == 1) && (blend->_color[1] == 1) && (blend->_color[2] == 1) && (blend->_color[3] == 1)) {
+      blend->_operand_a = EggGroup::BO_zero;
     }
   }
   if (blend->_operand_b == EggGroup::BO_one_minus_constant_color) {

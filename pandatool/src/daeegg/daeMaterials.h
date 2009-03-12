@@ -46,7 +46,7 @@ public:
   void add_material_instance(const FCDMaterialInstance* instance);
   void apply_to(const string semantic, const PT(EggPrimitive) to);
   void apply_to(const string semantic, const PT(EggGroup) to);
-  const string get_uvset_name(const string semantic, int32 input_set);
+  const string get_uvset_name(const string semantic, FUDaeGeometryInput::Semantic input_semantic, int32 input_set);
   
   static EggTexture::TextureType convert_texture_type(const FCDEffectParameterSampler::SamplerType orig_type);
   static EggTexture::WrapMode convert_wrap_mode(const FUDaeTextureWrapMode::WrapMode orig_mode);
@@ -61,12 +61,19 @@ private:
     EggGroup::BlendOperand _operand_b;
   };
   
+  // Holds information to bind texcoord inputs to textures.
+  struct DaeVertexInputBinding : public ReferenceCount {
+    int32 _input_set;
+    FUDaeGeometryInput::Semantic _input_semantic;
+    string _semantic;
+  };
+  
   // Holds stuff for an individual material.
   struct DaeMaterial : public ReferenceCount {
     pvector<PT_EggTexture> _egg_textures;
     PT_EggMaterial _egg_material;
     bool _double_sided;
-    pmap<int32, string> _uvsets;
+    pvector<PT(DaeVertexInputBinding)> _uvsets;
     PT(DaeBlendSettings) _blend;
   };
   
