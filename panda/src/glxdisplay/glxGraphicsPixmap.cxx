@@ -1,5 +1,5 @@
-// Filename: glxGraphicsBuffer.cxx
-// Created by:  drose (09Feb04)
+// Filename: glxGraphicsPixmap.cxx
+// Created by:  drose (10Mar09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,7 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "glxGraphicsBuffer.h"
+#include "glxGraphicsPixmap.h"
+#include "glxGraphicsWindow.h"
 #include "glxGraphicsStateGuardian.h"
 #include "config_glxdisplay.h"
 #include "glxGraphicsPipe.h"
@@ -21,19 +22,15 @@
 #include "glgsg.h"
 #include "pStatTimer.h"
 
-#ifdef HAVE_GLXFBCONFIG
-// This whole class doesn't make sense unless we have the GLXFBConfig
-// and associated GLXPbuffer interfaces available.
-
-TypeHandle glxGraphicsBuffer::_type_handle;
+TypeHandle glxGraphicsPixmap::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::Constructor
+//     Function: glxGraphicsPixmap::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
-glxGraphicsBuffer::
-glxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe, 
+glxGraphicsPixmap::
+glxGraphicsPixmap(GraphicsEngine *engine, GraphicsPipe *pipe, 
                   const string &name,
                   const FrameBufferProperties &fb_prop,
                   const WindowProperties &win_prop,
@@ -45,25 +42,27 @@ glxGraphicsBuffer(GraphicsEngine *engine, GraphicsPipe *pipe,
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_V(glx_pipe, _pipe);
   _display = glx_pipe->get_display();
-  _pbuffer = None;
+  _drawable = None;
+  _x_pixmap = None;
+  _glx_pixmap = None;
 
-  // Since the pbuffer never gets flipped, we get screenshots from the
-  // same buffer we draw into.
+  // Since the pixmap never gets flipped, we get screenshots from the
+  // same pixmap we draw into.
   _screenshot_buffer_type = _draw_buffer_type;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::Destructor
+//     Function: glxGraphicsPixmap::Destructor
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
-glxGraphicsBuffer::
-~glxGraphicsBuffer() {
-  nassertv(_pbuffer == None);
+glxGraphicsPixmap::
+~glxGraphicsPixmap() {
+  nassertv(_x_pixmap == None && _glx_pixmap == None);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::begin_frame
+//     Function: glxGraphicsPixmap::begin_frame
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
 //               before beginning rendering for a given frame.  It
@@ -71,7 +70,7 @@ glxGraphicsBuffer::
 //               if the frame should be rendered, or false if it
 //               should be skipped.
 ////////////////////////////////////////////////////////////////////
-bool glxGraphicsBuffer::
+bool glxGraphicsPixmap::
 begin_frame(FrameMode mode, Thread *current_thread) {
   PStatTimer timer(_make_current_pcollector, current_thread);
 
@@ -82,7 +81,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 
   glxGraphicsStateGuardian *glxgsg;
   DCAST_INTO_R(glxgsg, _gsg, false);
-  glXMakeCurrent(_display, _pbuffer, glxgsg->_context);
+  glXMakeCurrent(_display, _glx_pixmap, glxgsg->_context);
 
   // Now that we have made the context current to a window, we can
   // reset the GSG state if this is the first time it has been used.
@@ -104,13 +103,13 @@ begin_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::end_frame
+//     Function: glxGraphicsPixmap::end_frame
 //       Access: Public, Virtual
 //  Description: This function will be called within the draw thread
 //               after rendering is completed for a given frame.  It
 //               should do whatever finalization is required.
 ////////////////////////////////////////////////////////////////////
-void glxGraphicsBuffer::
+void glxGraphicsPixmap::
 end_frame(FrameMode mode, Thread *current_thread) {
   end_frame_spam(mode);
   nassertv(_gsg != (GraphicsStateGuardian *)NULL);
@@ -131,12 +130,12 @@ end_frame(FrameMode mode, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::close_buffer
+//     Function: glxGraphicsPixmap::close_buffer
 //       Access: Protected, Virtual
-//  Description: Closes the buffer right now.  Called from the window
+//  Description: Closes the pixmap right now.  Called from the window
 //               thread.
 ////////////////////////////////////////////////////////////////////
-void glxGraphicsBuffer::
+void glxGraphicsPixmap::
 close_buffer() {
   if (_gsg != (GraphicsStateGuardian *)NULL) {
     glXMakeCurrent(_display, None, NULL);
@@ -144,23 +143,29 @@ close_buffer() {
     _active = false;
   }
 
-  if (_pbuffer != None) {
-    glXDestroyPbuffer(_display, _pbuffer);
-    _pbuffer = None;
+  if (_glx_pixmap != None) {
+    glXDestroyGLXPixmap(_display, _glx_pixmap);
+    _glx_pixmap = None;
+  }
+
+  if (_x_pixmap != None) {
+    XFreePixmap(_display, _x_pixmap);
+    _x_pixmap = None;
   }
 
   _is_valid = false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsBuffer::open_buffer
+//     Function: glxGraphicsPixmap::open_buffer
 //       Access: Protected, Virtual
-//  Description: Opens the buffer right now.  Called from the window
-//               thread.  Returns true if the buffer is successfully
+//  Description: Opens the pixmap right now.  Called from the window
+//               thread.  Returns true if the pixmap is successfully
 //               opened, or false if there was a problem.
 ////////////////////////////////////////////////////////////////////
-bool glxGraphicsBuffer::
+bool glxGraphicsPixmap::
 open_buffer() {
+  cerr << "open_buffer\n";
   glxGraphicsPipe *glx_pipe;
   DCAST_INTO_R(glx_pipe, _pipe, false);
 
@@ -169,7 +174,7 @@ open_buffer() {
   if (_gsg == 0) {
     // There is no old gsg.  Create a new one.
     glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, NULL);
-    glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), true, false);
+    glxgsg->choose_pixel_format(_fb_properties, _display, glx_pipe->get_screen(), false, true);
     _gsg = glxgsg;
   } else {
     // If the old gsg has the wrong pixel format, create a
@@ -177,49 +182,69 @@ open_buffer() {
     DCAST_INTO_R(glxgsg, _gsg, false);
     if (!glxgsg->get_fb_properties().subsumes(_fb_properties)) {
       glxgsg = new glxGraphicsStateGuardian(_engine, _pipe, glxgsg);
-      glxgsg->choose_pixel_format(_fb_properties, glx_pipe->get_display(), glx_pipe->get_screen(), true, false);
+      glxgsg->choose_pixel_format(_fb_properties, _display, glx_pipe->get_screen(), false, true);
       _gsg = glxgsg;
     }
   }
-  
-  if (glxgsg->_fbconfig == None) {
-    // If we didn't use an fbconfig to create the GSG, we can't create
-    // a PBuffer.
-    return false;
-  }
 
-  static const int max_attrib_list = 32;
-  int attrib_list[max_attrib_list];
-  int n=0;
-
-#ifdef HAVE_OFFICIAL_GLXFBCONFIG
-  // The official GLX 1.3 version passes in the size in the attrib
-  // list.
-  attrib_list[n++] = GLX_PBUFFER_WIDTH;
-  attrib_list[n++] = _x_size;
-  attrib_list[n++] = GLX_PBUFFER_HEIGHT;
-  attrib_list[n++] = _y_size;
-
-  nassertr(n < max_attrib_list, false);
-  attrib_list[n] = (int)None;
-  _pbuffer = glXCreatePbuffer(glxgsg->_display, glxgsg->_fbconfig,
-                              attrib_list);
-
-#else
-  // The SGI version passed in the size in the parameter list.
-  nassertr(n < max_attrib_list, false);
-  attrib_list[n] = (int)None;
-  _pbuffer = glXCreateGLXPbufferSGIX(glxgsg->_display, glxgsg->_fbconfig,
-                                     _x_size, _y_size, attrib_list);
-#endif
-
-  if (_pbuffer == None) {
+  XVisualInfo *visual_info = glxgsg->_visual;
+  if (visual_info == NULL) {
+    // No X visual for this fbconfig; how can we create the pixmap?
     glxdisplay_cat.error()
-      << "failed to create GLX pbuffer.\n";
+      << "No X visual: cannot create pixmap.\n";
     return false;
   }
 
-  glXMakeCurrent(_display, _pbuffer, glxgsg->_context);
+  _drawable = glx_pipe->get_root();
+  if (_host != NULL) {
+    cerr << "got host: " << _host->get_type() << "\n";
+    if (_host->is_of_type(glxGraphicsWindow::get_class_type())) {
+      glxGraphicsWindow *win = DCAST(glxGraphicsWindow, _host);
+      _drawable = win->get_xwindow();
+    } else if (_host->is_of_type(glxGraphicsPixmap::get_class_type())) {
+      glxGraphicsPixmap *pix = DCAST(glxGraphicsPixmap, _host);
+      _drawable = pix->_drawable;
+    }
+  }
+
+  cerr << "creating pixmap, root = " << _drawable
+       << ", size = " << _x_size << " " << _y_size << ", depth = "
+       << visual_info->depth << "\n";
+  _x_pixmap = XCreatePixmap(_display, _drawable, 
+                            _x_size, _y_size, visual_info->depth);
+  cerr << "got " << _x_pixmap << "\n";
+  if (_x_pixmap == None) {
+    glxdisplay_cat.error()
+      << "Failed to create X pixmap.\n";
+    close_buffer();
+    return false;
+  }
+  cerr << "creating glx pixmap\n";
+
+#ifdef HAVE_GLXFBCONFIG
+  if (glxgsg->_fbconfig) {
+    // Use the FBConfig to create the pixmap.
+    cerr << "fbconfig\n";
+    _glx_pixmap = glXCreatePixmap(_display, glxgsg->_fbconfig, _x_pixmap, NULL);
+  } else
+#endif  // HAVE_GLXFBCONFIG
+    {
+      // Use the XVisual to create the pixmap.
+      _glx_pixmap = glXCreateGLXPixmap(_display, visual_info, _x_pixmap);
+    }
+
+  cerr << "got " << _glx_pixmap << "\n";
+
+  if (_glx_pixmap == None) {
+    glxdisplay_cat.error()
+      << "Failed to create GLX pixmap.\n";
+    close_buffer();
+    return false;
+  }
+
+  cerr << "making current, context = " << glxgsg->_context << "\n";
+  glXMakeCurrent(_display, _glx_pixmap, glxgsg->_context);
+  cerr << "context = " << glxgsg->_context << "\n";
   glxgsg->reset_if_new();
   if (!glxgsg->is_valid()) {
     close_buffer();
@@ -235,6 +260,3 @@ open_buffer() {
   _is_valid = true;
   return true;
 }
-
-
-#endif  // HAVE_GLXFBCONFIG

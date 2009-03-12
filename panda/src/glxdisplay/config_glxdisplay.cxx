@@ -15,6 +15,7 @@
 #include "config_glxdisplay.h"
 #include "glxGraphicsBuffer.h"
 #include "glxGraphicsPipe.h"
+#include "glxGraphicsPixmap.h"
 #include "glxGraphicsWindow.h"
 #include "glxGraphicsStateGuardian.h"
 #include "graphicsPipeSelection.h"
@@ -97,6 +98,7 @@ init_libglxdisplay() {
   glxGraphicsBuffer::init_type();
 #endif  // HAVE_GLXFBCONFIG
   glxGraphicsPipe::init_type();
+  glxGraphicsPixmap::init_type();
   glxGraphicsWindow::init_type();
   glxGraphicsStateGuardian::init_type();
 

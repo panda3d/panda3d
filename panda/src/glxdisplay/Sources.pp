@@ -16,6 +16,7 @@
     config_glxdisplay.cxx config_glxdisplay.h \
     glxGraphicsBuffer.h glxGraphicsBuffer.I glxGraphicsBuffer.cxx \
     glxGraphicsPipe.I glxGraphicsPipe.cxx glxGraphicsPipe.h \
+    glxGraphicsPixmap.h glxGraphicsPixmap.I glxGraphicsPixmap.cxx \
     glxGraphicsWindow.h glxGraphicsWindow.I glxGraphicsWindow.cxx \
     glxGraphicsStateGuardian.h glxGraphicsStateGuardian.I \
     glxGraphicsStateGuardian.cxx \

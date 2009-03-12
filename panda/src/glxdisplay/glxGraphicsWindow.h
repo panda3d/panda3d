@@ -45,6 +45,8 @@ public:
   virtual void process_events();
   virtual void set_properties_now(WindowProperties &properties);
 
+  INLINE Window get_xwindow() const;
+
 protected:
   virtual void close_window();
   virtual bool open_window();

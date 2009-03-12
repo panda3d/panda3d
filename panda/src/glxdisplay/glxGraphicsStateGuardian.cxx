@@ -137,8 +137,8 @@ get_properties(FrameBufferProperties &properties, XVisualInfo *visual) {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
 get_properties_advanced(FrameBufferProperties &properties, 
-			bool &pbuffer_supported, bool &slow,
-                        fbconfig config) {
+			bool &pbuffer_supported, bool &pixmap_supported,
+                        bool &slow, fbconfig config) {
 
   properties.clear();
 
@@ -165,21 +165,25 @@ get_properties_advanced(FrameBufferProperties &properties,
   glXGetFBConfigAttrib(_display, config, GLX_DRAWABLE_TYPE, &drawable_type);
   glXGetFBConfigAttrib(_display, config, GLX_CONFIG_CAVEAT, &caveat);
 
-  if ((drawable_type & GLX_WINDOW_BIT)==0) {
-    // If we return a set of properties without setting either
-    // rgb_color or indexed_color, then this indicates a visual
-    // that's no good for any kind of rendering.
-    return;
-  }
   pbuffer_supported = false;
   if ((drawable_type & GLX_PBUFFER_BIT)!=0) {
     pbuffer_supported = true;
+  }
+
+  pixmap_supported = false;
+  if ((drawable_type & GLX_PIXMAP_BIT)!=0) {
+    pixmap_supported = true;
   }
   
   if (caveat & GLX_SLOW_CONFIG) {
     slow = true;
   } else {
     slow = false;
+  }
+
+  if ((drawable_type & GLX_WINDOW_BIT)==0) {
+    // We insist on having a context that will support an onscreen window.
+    return;
   }
   
   if (double_buffer) {
@@ -216,8 +220,7 @@ get_properties_advanced(FrameBufferProperties &properties,
 void glxGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
 		    Display *display,
-		    int screen,
-                    bool need_pbuffer) {
+		    int screen, bool need_pbuffer, bool need_pixmap) {
 
   _display = display;
   _screen = screen;
@@ -248,27 +251,34 @@ choose_pixel_format(const FrameBufferProperties &properties,
   int best_quality = 0;
   int best_result = 0;
   FrameBufferProperties best_props;
-
+  
   if (configs != 0) {
-    for (int i=0; i<num_configs; i++) {
+    for (int i = 0; i < num_configs; ++i) {
       FrameBufferProperties fbprops;
-      bool pbuffer_supported = false, slow = false;
-      get_properties_advanced(fbprops, pbuffer_supported, slow, configs[i]);
+      bool pbuffer_supported, pixmap_supported, slow;
+      get_properties_advanced(fbprops, pbuffer_supported, pixmap_supported,
+                              slow, configs[i]);
       if (glxdisplay_cat.is_debug()) {
         const char *pbuffertext = pbuffer_supported ? " (pbuffer)" : "";
+        const char *pixmaptext = pixmap_supported ? " (pixmap)" : "";
         const char *slowtext = slow ? " (slow)" : "";
         glxdisplay_cat.debug()
-          << i << ": " << fbprops << pbuffertext << slowtext << "\n";
+          << i << ": " << fbprops << pbuffertext << pixmaptext << slowtext << "\n";
       }
-
       int quality = fbprops.get_quality(properties);
       if ((quality > 0)&&(slow)) quality -= 10000000;
-      if ((need_pbuffer==0)||(pbuffer_supported)) {
-	if (quality > best_quality) {
-	  best_quality = quality;
-	  best_result = i;
-	  best_props = fbprops;
-	}
+
+      if (need_pbuffer && !pbuffer_supported) {
+        continue;
+      }
+      if (need_pixmap && !pixmap_supported) {
+        continue;
+      }
+      
+      if (quality > best_quality) {
+        best_quality = quality;
+        best_result = i;
+        best_props = fbprops;
       }
     }
   }
@@ -283,10 +293,13 @@ choose_pixel_format(const FrameBufferProperties &properties,
       _visual = _visuals;
       if (_visual) {
 	_fbprops = best_props;
+        cerr << "selected " << _fbconfig << "\n";
 	return;
       }
     }
     // This really shouldn't happen, so I'm not too careful about cleanup.
+    glxdisplay_cat.error()
+      << "Could not create FBConfig context!\n";
     _fbconfig = 0;
     _context = 0;
     _visual = 0;

@@ -15,6 +15,7 @@
 #include "glxGraphicsPipe.h"
 #include "glxGraphicsWindow.h"
 #include "glxGraphicsBuffer.h"
+#include "glxGraphicsPixmap.h"
 #include "glxGraphicsStateGuardian.h"
 #include "config_glxdisplay.h"
 #include "frameBufferProperties.h"
@@ -272,24 +273,49 @@ make_output(const string &name,
     return new GLGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                 flags, gsg, host);
   }
-  
+
 #ifdef HAVE_GLXFBCONFIG
   // Third thing to try: a glxGraphicsBuffer
   
   if (retry == 2) {
-    if ((!support_rtt)||
-        ((flags&BF_require_parasite)!=0)||
+    if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
         ((flags&BF_resizeable)!=0)||
-        ((flags&BF_size_track_host)!=0)||
-        ((flags&BF_rtt_cumulative)!=0)||
-        ((flags&BF_can_bind_every)!=0)) {
+        ((flags&BF_size_track_host)!=0)) {
       return NULL;
     }
+
+    if (!support_rtt) {
+      if (((flags&BF_rtt_cumulative)!=0)||
+          ((flags&BF_can_bind_every)!=0)) {
+        // If we require Render-to-Texture, but can't be sure we
+        // support it, bail.
+        return NULL;
+      }
+    }
+
     return new glxGraphicsBuffer(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }
 #endif  // HAVE_GLXFBCONFIG
+
+  // Third thing to try: a glxGraphicsPixmap.
+  if (retry == 3) {
+    if (((flags&BF_require_parasite)!=0)||
+        ((flags&BF_require_window)!=0)||
+        ((flags&BF_resizeable)!=0)||
+        ((flags&BF_size_track_host)!=0)) {
+      return NULL;
+    }
+
+    if (((flags&BF_rtt_cumulative)!=0)||
+        ((flags&BF_can_bind_every)!=0)) {
+      return NULL;
+    }
+
+    return new glxGraphicsPixmap(engine, this, name, fb_prop, win_prop,
+                                 flags, gsg, host);
+  }
   
   // Nothing else left to try.
   return NULL;
