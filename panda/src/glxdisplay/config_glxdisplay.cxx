@@ -78,6 +78,21 @@ ConfigVariableInt x_wheel_right_button
           "mouse button number does the system report when one scrolls "
           "to the right?"));
 
+ConfigVariableBool glx_support_pbuffer
+("glx-support-pbuffer", false,
+ PRC_DESC("Set this true to enable the use of X pbuffer-based offscreen "
+          "buffers, if available.  This is usually preferred over "
+          "pixmap-based buffers, but not all drivers support them."));
+
+ConfigVariableBool glx_support_pixmap
+("glx-support-pixmap", false,
+ PRC_DESC("Set this true to enable the use of X pixmap-based offscreen "
+          "buffers.  This is false by default because pixmap-based buffers "
+          "are usually slower than pbuffer-based buffers, and because at "
+          "least one driver is known to crash (crash!) when it attempts "
+          "to create a pixmap-based buffer."));
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libglxdisplay
 //  Description: Initializes the library.  This must be called at

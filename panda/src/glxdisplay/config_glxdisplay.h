@@ -35,4 +35,7 @@ extern ConfigVariableInt x_wheel_down_button;
 extern ConfigVariableInt x_wheel_left_button;
 extern ConfigVariableInt x_wheel_right_button;
 
+extern ConfigVariableBool glx_support_pbuffer;
+extern ConfigVariableBool glx_support_pixmap;
+
 #endif /* __CONFIG_GLXDISPLAY_H__ */

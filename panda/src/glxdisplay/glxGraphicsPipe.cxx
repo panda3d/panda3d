@@ -278,6 +278,10 @@ make_output(const string &name,
   // Third thing to try: a glxGraphicsBuffer
   
   if (retry == 2) {
+    if (!glx_support_pbuffer) {
+      return NULL;
+    }
+
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
         ((flags&BF_resizeable)!=0)||
@@ -301,6 +305,10 @@ make_output(const string &name,
 
   // Third thing to try: a glxGraphicsPixmap.
   if (retry == 3) {
+    if (!glx_support_pixmap) {
+      return NULL;
+    }
+
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
         ((flags&BF_resizeable)!=0)||
