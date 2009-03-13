@@ -432,6 +432,8 @@ show_bounds(CullTraverserData &data, bool tight) {
 
     if (node->is_geom_node()) {
       // Also show the bounding volumes of included Geoms.
+      net_transform = net_transform->compose(node->get_transform());
+      modelview_transform = modelview_transform->compose(node->get_transform());
       GeomNode *gnode = DCAST(GeomNode, node);
       int num_geoms = gnode->get_num_geoms();
       for (int i = 0; i < num_geoms; ++i) {
