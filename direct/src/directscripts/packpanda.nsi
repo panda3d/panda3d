@@ -90,7 +90,7 @@ Section "${SMDIRECTORY}" SecCore
         File "${PANDA}\LICENSE"
         SetOutPath $INSTDIR\bin
         File /r "${PANDA}\bin\*.dll"
-        File /r "${PANDA}\bin\Microsoft.VC80.CRT.manifest"
+        File /r "${PANDA}\bin\Microsoft.VC90.CRT.manifest"
         SetOutPath $INSTDIR\etc
         File /r "${PANDACONF}\*"
         SetOutPath $INSTDIR\direct\src\directscripts
