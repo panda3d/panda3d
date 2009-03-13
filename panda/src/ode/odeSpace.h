@@ -101,6 +101,9 @@ PUBLISHED:
   int get_collide_id(dGeomID o1);
   int get_collide_id(OdeGeom& geom);
 
+  INLINE void set_collision_event(const string &event_name);
+  INLINE string get_collision_event();
+
 public:
   static void auto_callback(void*, dGeomID, dGeomID);
 #ifdef HAVE_PYTHON
@@ -115,6 +118,7 @@ public:
   static PyObject* _python_callback;
 #endif
   static int contactCount;
+  string _collision_event;
 
   static double contact_data[192]; // 64 times three
   static int contact_ids[128]; // 64 times two

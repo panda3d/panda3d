@@ -37,6 +37,8 @@ class OdeSimpleSpace;
 class OdeHashSpace;
 class OdeQuadTreeSpace;
 
+class OdeCollisionEntry;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeGeom
 // Description : 
@@ -44,6 +46,7 @@ class OdeQuadTreeSpace;
 class EXPCL_PANDAODE OdeGeom : public TypedObject {
   friend class OdeContactGeom;
   friend class OdeSpace;
+  friend class OdeCollisionEntry;
 
 protected:
   OdeGeom(dGeomID id);

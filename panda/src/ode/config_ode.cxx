@@ -45,6 +45,7 @@
 #include "odeRayGeom.h"
 #include "odeTriMeshData.h"
 #include "odeTriMeshGeom.h"
+#include "odeCollisionEntry.h"
 #include "dconfig.h"
 
 Configure(config_ode);
@@ -108,4 +109,5 @@ init_libode() {
   OdeRayGeom::init_type();
   OdeTriMeshData::init_type();
   OdeTriMeshGeom::init_type();
+  OdeCollisionEntry::init_type();
 }

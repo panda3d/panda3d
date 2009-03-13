@@ -51,6 +51,7 @@
     odeRayGeom.I odeRayGeom.h \
     odeTriMeshData.I odeTriMeshData.h \
     odeTriMeshGeom.I odeTriMeshGeom.h \
+    odeCollisionEntry.h \
     odeHelperStructs.h
 
   #define INCLUDED_SOURCES \
@@ -74,7 +75,8 @@
     odeSphereGeom.cxx odeBoxGeom.cxx \
     odePlaneGeom.cxx odeCappedCylinderGeom.cxx \
     odeCylinderGeom.cxx odeRayGeom.cxx \
-    odeTriMeshData.cxx  odeTriMeshGeom.cxx
+    odeTriMeshData.cxx  odeTriMeshGeom.cxx \
+    odeCollisionEntry.cxx
 
 
   #define INSTALL_HEADERS \
@@ -113,7 +115,8 @@
     odeCylinderGeom.I odeCylinderGeom.h \
     odeRayGeom.I odeRayGeom.h \
     odeTriMeshData.I odeTriMeshData.h \
-    odeTriMeshGeom.I odeTriMeshGeom.h 
+    odeTriMeshGeom.I odeTriMeshGeom.h  \
+    odeCollisionEntry.h
 
   #define IGATESCAN all
 

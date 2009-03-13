@@ -25,6 +25,8 @@
 
 class OdeJoint;
 class OdeGeom;
+class OdeCollisionEntry;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeBody
 // Description : 
@@ -32,6 +34,7 @@ class OdeGeom;
 class EXPCL_PANDAODE OdeBody : public TypedObject {
   friend class OdeJoint;
   friend class OdeGeom;
+  friend class OdeCollisionEntry;
 
 protected:
   OdeBody(dBodyID id);

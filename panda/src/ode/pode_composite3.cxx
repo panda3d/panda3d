@@ -10,3 +10,4 @@
 #include "odeSimpleSpace.cxx"
 #include "odeHashSpace.cxx"
 #include "odeQuadTreeSpace.cxx"
+#include "odeCollisionEntry.cxx"

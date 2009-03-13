@@ -15,6 +15,8 @@
 #include "config_ode.h"
 #include "odeSpace.h"
 
+#include "throw_event.h"
+
 #ifdef HAVE_PYTHON
   #include "py_panda.h"
   #include "typedReferenceCount.h"
@@ -194,12 +196,27 @@ auto_callback(void *data, dGeomID o1, dGeomID o2)
         }
         autoCallbackCounter += 1;
 
+        PT(OdeCollisionEntry) entry;
+        if (!_collide_space->_collision_event.empty()) {
+          entry = new OdeCollisionEntry;
+          entry->_geom1 = o1;
+          entry->_geom2 = o2;
+          entry->_body1 = b1;
+          entry->_body2 = b2;
+          entry->_points = new LPoint3f[numc];
+        }
+        
         for(i=0; i < numc; i++)
         {
             dJointID c = dJointCreateContact(_collide_world->get_id(), _collide_joint_group, contact + i);
             if ((_collide_space->get_collide_id(o1) >= 0) && (_collide_space->get_collide_id(o2) >= 0))
             {
                 dJointAttach(c, b1, b2);
+            }
+            if (!_collide_space->_collision_event.empty()) {
+              entry->_points[i][0] = contact[i].geom.pos[0];
+              entry->_points[i][1] = contact[i].geom.pos[1];
+              entry->_points[i][2] = contact[i].geom.pos[2];
             }
             // this creates contact position data for python. It is useful for debugging only 64 points are stored
             if(contactCount < 64)
@@ -213,6 +230,10 @@ auto_callback(void *data, dGeomID o1, dGeomID o2)
             }
         }
         _collide_world->set_dampen_on_bodies(b1, b2, collide_params.dampen);
+        
+        if (!_collide_space->_collision_event.empty()) {
+          throw_event(_collide_space->_collision_event, EventParameter(entry));
+        }
     }
 
 }

@@ -91,3 +91,13 @@ is_enabled() {
   return dGeomIsEnabled((dGeomID)_id);
 }
 
+INLINE void OdeSpace::
+set_collision_event(const string &event_name) {
+  _collision_event = event_name;
+}
+
+INLINE string OdeSpace::
+get_collision_event() {
+  return _collision_event;
+}
+
