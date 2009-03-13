@@ -439,7 +439,7 @@ load_named_module(const string &name) {
     << "loading display module: " << dlname.to_os_specific() << endl;
   void *handle = load_dso(get_plugin_path().get_value(), dlname);
   if (handle == (void *)NULL) {
-    display_cat.info()
+    display_cat.warning()
       << "Unable to load: " << load_dso_error() << endl;
     return TypeHandle::none();
   }
