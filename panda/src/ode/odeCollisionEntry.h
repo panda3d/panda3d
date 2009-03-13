@@ -25,7 +25,7 @@ class OdeGeom;
 // Description : A class used to hold information about a collision
 //               that has occurred.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDASKEL OdeCollisionEntry : public TypedReferenceCount {
+class EXPCL_PANDAODE OdeCollisionEntry : public TypedReferenceCount {
 PUBLISHED:
   virtual ~OdeCollisionEntry() {};
   
