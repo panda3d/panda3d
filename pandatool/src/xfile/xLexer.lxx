@@ -597,14 +597,14 @@ WHITESPACE           [ ]+
   return TOKEN_GUID;
 }
 
-[A-Za-z_-][A-Za-z0-9_.-]* { 
+[A-Za-z_()-][A-Za-z0-9_.()-]* { 
   // Identifier.
   accept();
   xyylval.str = xyytext;
   return TOKEN_NAME;
 }
 
-[0-9-]+[A-Za-z_-][A-Za-z0-9_.-]* { 
+[0-9-]+[A-Za-z_()-][A-Za-z0-9_.()-]* { 
   // Identifier with leading digit.
   accept();
   xyylval.str = xyytext;
