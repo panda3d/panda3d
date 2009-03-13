@@ -93,12 +93,20 @@ Section "${SMDIRECTORY}" SecCore
         File /r "${PANDA}\bin\Microsoft.VC90.CRT.manifest"
         SetOutPath $INSTDIR\etc
         File /r "${PANDACONF}\*"
-        SetOutPath $INSTDIR\direct\src\directscripts
-        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\directscripts\*"
-        SetOutPath $INSTDIR\direct\src\filter
-        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\filter\*.sha"
+        SetOutPath $INSTDIR\direct\directscripts
+        !ifdef PPGAME
+        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\directscripts\*"
+        SetOutPath $INSTDIR\direct\filter
+        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\filter\*.sha"
         SetOutPath $INSTDIR\direct
         File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\*.py"
+        !else
+        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\directscripts\*"
+        SetOutPath $INSTDIR\direct\filter
+        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\filter\*.sha"
+        SetOutPath $INSTDIR\direct
+        File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\*.py"
+        !endif
         File "${PANDA}\direct\__init__.py"
         SetOutPath $INSTDIR\pandac
         File /r "${PANDA}\pandac\*.py"

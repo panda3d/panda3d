@@ -369,7 +369,7 @@ if (sys.platform == "win32"):
     CMD=CMD+'/DPPGAME="'+TMPGAME+'" '
     CMD=CMD+'/DPPMAIN="'+MAIN+'" '
     CMD=CMD+'/DPPICON="'+PPICON+'" '
-    CMD=CMD+'"'+PSOURCE+'\\direct\\src\\directscripts\\packpanda.nsi"' 
+    CMD=CMD+'"'+PSOURCE+'\\direct\\directscripts\\packpanda.nsi"' 
     
     print ""
     print CMD
