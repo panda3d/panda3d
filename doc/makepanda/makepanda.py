@@ -29,7 +29,7 @@ from makepandacore import *
 
 COMPILER=0
 THIRDPARTYLIBS=0
-VC80CRTVERSION=""
+VC90CRTVERSION=""
 OPTIMIZE="3"
 INSTALLER=0
 GENMAN=0
@@ -167,8 +167,8 @@ SdkAutoDisableMax()
 if (sys.platform == "win32"):
     SetupVisualStudioEnviron()
     COMPILER="MSVC"
-    THIRDPARTYLIBS="thirdparty/win-libs-vc8/"
-    VC80CRTVERSION = GetVC80CRTVersion(THIRDPARTYLIBS+"extras/bin/Microsoft.VC80.CRT.manifest")
+    THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
+    VC90CRTVERSION = GetVC90CRTVersion(THIRDPARTYLIBS+"extras/bin/Microsoft.VC90.CRT.manifest")
 else:
     CheckLinkerLibraryPath()
     COMPILER="LINUX"
@@ -178,7 +178,7 @@ else:
         THIRDPARTYLIBS="thirdparty/linux-libs-x64/"
     else:
         THIRDPARTYLIBS="thirdparty/linux-libs-a/"
-    VC80CRTVERSION = 0
+    VC90CRTVERSION = 0
 
 ##########################################################################################
 #
@@ -214,7 +214,7 @@ if (COMPILER=="MSVC"):
             elif (pkg[:2]=="DX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
             else:
-                IncDirectory(pkg, "thirdparty/win-libs-vc8/" + pkg.lower() + "/include")
+                IncDirectory(pkg, "thirdparty/win-libs-vc9/" + pkg.lower() + "/include")
     for pkg in DXVERSIONS:
         if (PkgSkip(pkg)==0):
             vnum=pkg[2:]
@@ -244,35 +244,35 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
-    if (PkgSkip("PNG")==0):      LibName("PNG",      "thirdparty/win-libs-vc8/png/lib/libpandapng.lib")
-    if (PkgSkip("JPEG")==0):     LibName("JPEG",     "thirdparty/win-libs-vc8/jpeg/lib/libpandajpeg.lib")
-    if (PkgSkip("TIFF")==0):     LibName("TIFF",     "thirdparty/win-libs-vc8/tiff/lib/libpandatiff.lib")
-    if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     "thirdparty/win-libs-vc8/zlib/lib/libpandazlib1.lib")
-    if (PkgSkip("VRPN")==0):     LibName("VRPN",     "thirdparty/win-libs-vc8/vrpn/lib/vrpn.lib")
-    if (PkgSkip("VRPN")==0):     LibName("VRPN",     "thirdparty/win-libs-vc8/vrpn/lib/quat.lib")
-    if (PkgSkip("FMOD")==0):     LibName("FMOD",     "thirdparty/win-libs-vc8/fmod/lib/fmod.lib")
-    if (PkgSkip("FMODEX")==0):   LibName("FMODEX",   "thirdparty/win-libs-vc8/fmodex/lib/fmodex_vc.lib")
-    if (PkgSkip("OPENAL")==0):   LibName("OPENAL",   "thirdparty/win-libs-vc8/openal/lib/pandaopenal32.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     "thirdparty/win-libs-vc8/nvidiacg/lib/cgGL.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    "thirdparty/win-libs-vc8/nvidiacg/lib/cgD3D9.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "thirdparty/win-libs-vc8/nvidiacg/lib/cg.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "thirdparty/win-libs-vc8/openssl/lib/libpandassl.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "thirdparty/win-libs-vc8/openssl/lib/libpandaeay.lib")
-    if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", "thirdparty/win-libs-vc8/freetype/lib/freetype.lib")
-    if (PkgSkip("FFTW")==0):     LibName("FFTW",     "thirdparty/win-libs-vc8/fftw/lib/rfftw.lib")        
-    if (PkgSkip("FFTW")==0):     LibName("FFTW",     "thirdparty/win-libs-vc8/fftw/lib/fftw.lib")        
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc8/ffmpeg/lib/avcodec-51-panda.lib")
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc8/ffmpeg/lib/avformat-50-panda.lib")
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc8/ffmpeg/lib/avutil-49-panda.lib")
-    if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT","thirdparty/win-libs-vc8/artoolkit/lib/libAR.lib")
-    if (PkgSkip("ODE")==0):      LibName("ODE",      "thirdparty/win-libs-vc8/ode/lib/ode.lib")
-    if (PkgSkip("FCOLLADA")==0): LibName("FCOLLADA", "thirdparty/win-libs-vc8/fcollada/lib/FCollada.lib")
-    if (PkgSkip("SQUISH")==0):   LibName("SQUISH",   "thirdparty/win-libs-vc8/squish/lib/squish.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc8/opencv/lib/cv.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc8/opencv/lib/highgui.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc8/opencv/lib/cvaux.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc8/opencv/lib/ml.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc8/opencv/lib/cxcore.lib")
+    if (PkgSkip("PNG")==0):      LibName("PNG",      "thirdparty/win-libs-vc9/png/lib/libpandapng.lib")
+    if (PkgSkip("JPEG")==0):     LibName("JPEG",     "thirdparty/win-libs-vc9/jpeg/lib/libpandajpeg.lib")
+    if (PkgSkip("TIFF")==0):     LibName("TIFF",     "thirdparty/win-libs-vc9/tiff/lib/libpandatiff.lib")
+    if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     "thirdparty/win-libs-vc9/zlib/lib/libpandazlib1.lib")
+    if (PkgSkip("VRPN")==0):     LibName("VRPN",     "thirdparty/win-libs-vc9/vrpn/lib/vrpn.lib")
+    if (PkgSkip("VRPN")==0):     LibName("VRPN",     "thirdparty/win-libs-vc9/vrpn/lib/quat.lib")
+    if (PkgSkip("FMOD")==0):     LibName("FMOD",     "thirdparty/win-libs-vc9/fmod/lib/fmod.lib")
+    if (PkgSkip("FMODEX")==0):   LibName("FMODEX",   "thirdparty/win-libs-vc9/fmodex/lib/fmodex_vc.lib")
+    if (PkgSkip("OPENAL")==0):   LibName("OPENAL",   "thirdparty/win-libs-vc9/openal/lib/pandaopenal32.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     "thirdparty/win-libs-vc9/nvidiacg/lib/cgGL.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    "thirdparty/win-libs-vc9/nvidiacg/lib/cgD3D9.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "thirdparty/win-libs-vc9/nvidiacg/lib/cg.lib")
+    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "thirdparty/win-libs-vc9/openssl/lib/libpandassl.lib")
+    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "thirdparty/win-libs-vc9/openssl/lib/libpandaeay.lib")
+    if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", "thirdparty/win-libs-vc9/freetype/lib/freetype.lib")
+    if (PkgSkip("FFTW")==0):     LibName("FFTW",     "thirdparty/win-libs-vc9/fftw/lib/rfftw.lib")        
+    if (PkgSkip("FFTW")==0):     LibName("FFTW",     "thirdparty/win-libs-vc9/fftw/lib/fftw.lib")        
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc9/ffmpeg/lib/avcodec-51-panda.lib")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc9/ffmpeg/lib/avformat-50-panda.lib")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc9/ffmpeg/lib/avutil-49-panda.lib")
+    if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT","thirdparty/win-libs-vc9/artoolkit/lib/libAR.lib")
+    if (PkgSkip("ODE")==0):      LibName("ODE",      "thirdparty/win-libs-vc9/ode/lib/ode.lib")
+    if (PkgSkip("FCOLLADA")==0): LibName("FCOLLADA", "thirdparty/win-libs-vc9/fcollada/lib/FCollada.lib")
+    if (PkgSkip("SQUISH")==0):   LibName("SQUISH",   "thirdparty/win-libs-vc9/squish/lib/squish.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc9/opencv/lib/cv.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc9/opencv/lib/highgui.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc9/opencv/lib/cvaux.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc9/opencv/lib/ml.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc9/opencv/lib/cxcore.lib")
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, SDK[pkg] + '/lib/Foundation.lib')
@@ -548,8 +548,8 @@ def CompileIgate(woutd,wsrc,opts):
     cmd = "built/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
     if (COMPILER=="MSVC"):
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
-        #NOTE: this 1400 value is the version number for VC2005.
-        cmd = cmd + ' -D_MSC_VER=1400 -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
+        #NOTE: this 1500 value is the version number for VC2008.
+        cmd = cmd + ' -D_MSC_VER=1500 -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="LINUX") and (platform.architecture()[0]=="64bit"):
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D_LP64'
     if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit"):
@@ -626,8 +626,8 @@ def CompileLib(lib, obj, opts):
 
 def CompileLink(dll, obj, opts):
     if (COMPILER=="MSVC"):
-        cmd = 'link /nologo /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
-        cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk"
+        cmd = 'link /nologo /NOD:MFC80.LIB /NOD:MFC90.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
+        cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk /FORCE:MULTIPLE"
         if (GetOrigExt(dll) != ".exe"): cmd = cmd + " /DLL"
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:EXPORTS"
@@ -658,7 +658,7 @@ def CompileLink(dll, obj, opts):
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
         oscmd(cmd)
-        SetVC80CRTVersion(dll+".manifest", VC80CRTVERSION)
+        SetVC90CRTVersion(dll+".manifest", VC90CRTVERSION)
         mtcmd = 'mt -manifest ' + dll + '.manifest -outputresource:' + dll
         if (dll.endswith(".exe")==0): mtcmd = mtcmd + ';2'
         else:                          mtcmd = mtcmd + ';1'
@@ -3197,7 +3197,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('libp3ptloader.dll', input='libpandatoolbase.lib')
     TargetAdd('libp3ptloader.dll', input='libpandaegg.dll')
     TargetAdd('libp3ptloader.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3ptloader.dll', opts=['ADVAPI', 'FCOLLADA'])
+    TargetAdd('libp3ptloader.dll', opts=['ADVAPI', 'FCOLLADA', 'WINUSER'])
 
 #
 # DIRECTORY: pandatool/src/mayaprogs/

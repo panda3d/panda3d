@@ -584,19 +584,19 @@ def CheckPandaSourceTree():
 ##
 ########################################################################
 
-VC80CRTVERSIONRE=re.compile(" name=['\"]Microsoft.VC80.CRT['\"] version=['\"]([0-9.]+)['\"] ")
+VC90CRTVERSIONRE=re.compile("name=['\"]Microsoft.VC90.CRT['\"]\\s+version=['\"]([0-9.]+)['\"]")
 
-def GetVC80CRTVersion(fn):
+def GetVC90CRTVersion(fn):
     manifest = ReadFile(fn)
-    version = VC80CRTVERSIONRE.search(manifest)
+    version = VC90CRTVERSIONRE.search(manifest)
     if (version == None):
-        exit("Cannot locate version number in "+manifn)
+        exit("Cannot locate version number in "+fn)
     return version.group(1)
 
-def SetVC80CRTVersion(fn, ver):
+def SetVC90CRTVersion(fn, ver):
     manifest = ReadFile(fn)
-    subst = " name='Microsoft.VC80.CRT' version='"+ver+"' "
-    manifest = VC80CRTVERSIONRE.sub(subst, manifest)
+    subst = " name='Microsoft.VC90.CRT' version='"+ver+"' "
+    manifest = VC90CRTVERSIONRE.sub(subst, manifest)
     WriteFile(fn, manifest)
 
 ########################################################################
@@ -823,7 +823,7 @@ def SdkLocatePython():
 
 def SdkLocateVisualStudio():
     if (sys.platform != "win32"): return
-    vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", "8.0")
+    vcdir = GetRegistryKey("SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VC7", "9.0")
     if (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
         vcdir = vcdir[:-3]
         SDK["VISUALSTUDIO"] = vcdir
@@ -833,8 +833,8 @@ def SdkLocateMSPlatform():
     if (platsdk == 0):
         platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.1","InstallationFolder")
     
-    if (platsdk == 0 and os.path.isdir("C:\\Program Files\\Microsoft Visual Studio 8\\VC\\PlatformSDK")):
-      platsdk = "C:\\Program Files\\Microsoft Visual Studio 8\\VC\\PlatformSDK\\"
+    if (platsdk == 0 and os.path.isdir("C:\\Program Files\\Microsoft Visual Studio 9\\VC\\PlatformSDK")):
+      platsdk = "C:\\Program Files\\Microsoft Visual Studio 9\\VC\\PlatformSDK\\"
     
     if (platsdk != 0):
         SDK["MSPLATFORM"] = platsdk
