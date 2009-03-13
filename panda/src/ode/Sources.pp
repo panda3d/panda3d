@@ -51,7 +51,7 @@
     odeRayGeom.I odeRayGeom.h \
     odeTriMeshData.I odeTriMeshData.h \
     odeTriMeshGeom.I odeTriMeshGeom.h \
-    odeCollisionEntry.h \
+    odeCollisionEntry.I odeCollisionEntry.h \
     odeHelperStructs.h
 
   #define INCLUDED_SOURCES \
@@ -116,7 +116,7 @@
     odeRayGeom.I odeRayGeom.h \
     odeTriMeshData.I odeTriMeshData.h \
     odeTriMeshGeom.I odeTriMeshGeom.h  \
-    odeCollisionEntry.h
+    odeCollisionEntry.I odeCollisionEntry.h
 
   #define IGATESCAN all
 

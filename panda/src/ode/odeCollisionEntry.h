@@ -29,15 +29,20 @@ class EXPCL_PANDASKEL OdeCollisionEntry : public TypedReferenceCount {
 PUBLISHED:
   virtual ~OdeCollisionEntry() {};
   
-  const OdeGeom get_geom1();
-  const OdeGeom get_geom2();
-  const OdeBody get_body1();
-  const OdeBody get_body2();
+  INLINE const OdeGeom get_geom1();
+  INLINE const OdeGeom get_geom2();
+  INLINE const OdeBody get_body1();
+  INLINE const OdeBody get_body2();
+  
+  INLINE const LPoint3f get_contact_point(size_t n);
+  INLINE const size_t get_num_contact_points();
+  MAKE_SEQ(get_contact_points, get_num_contact_points, get_contact_point);
 
 private:
-  OdeCollisionEntry();
+  INLINE OdeCollisionEntry();
   dGeomID _geom1, _geom2;
   dBodyID _body1, _body2;
+  size_t _num_points;
   LPoint3f *_points;
 
 public:
@@ -61,6 +66,7 @@ private:
   friend class OdeSpace;
 };
 
+#include "odeCollisionEntry.I"
 
 #endif
 

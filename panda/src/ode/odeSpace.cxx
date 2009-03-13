@@ -203,6 +203,7 @@ auto_callback(void *data, dGeomID o1, dGeomID o2)
           entry->_geom2 = o2;
           entry->_body1 = b1;
           entry->_body2 = b2;
+          entry->_num_points = numc;
           entry->_points = new LPoint3f[numc];
         }
         
