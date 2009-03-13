@@ -63,7 +63,7 @@ int main(int argc, char **argv)
   
   // See if we can find the panda root.  If not, abort.
   
-  sprintf(ppbuf,"%s/direct/__init__.py",fnbuf);
+  sprintf(ppbuf,"%s/include/dtool_config.h",fnbuf);
   FILE *f = fopen(ppbuf,"r");
   if (f==0) pathfail();
   fclose(f);
@@ -150,9 +150,9 @@ int main(int argc, char **argv)
   #include <malloc.h>
 #endif
 
-void errorexit(char *s)
+void errorexit(const char *s)
 {
-  fprintf(stderr,"%s\n");
+  fprintf(stderr,"%s\n", s);
   exit(1);
 }
 
@@ -187,7 +187,7 @@ int main(int argc, char **argv)
   // See if we can find the 'direct' tree locally.
   // If not, continue anyway.  It may be possible to succeed.
   
-  sprintf(ppbuf,"%s/direct/__init__.py",fnbuf);
+  sprintf(ppbuf,"%s/include/dtool_config.h",fnbuf);
   FILE *f = fopen(ppbuf,"r");
   if (f) {
     char *pp = getenv("PYTHONPATH");
