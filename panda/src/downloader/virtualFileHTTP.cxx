@@ -17,6 +17,8 @@
 #include "stringStream.h"
 #include "zStream.h"
 
+#ifdef HAVE_OPENSSL
+
 TypeHandle VirtualFileHTTP::_type_handle;
 
 
@@ -276,3 +278,6 @@ get_timestamp() const {
   }
   return 0;
 }
+
+#endif // HAVE_OPENSSL
+

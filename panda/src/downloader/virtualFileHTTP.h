@@ -21,6 +21,8 @@
 #include "httpChannel.h"
 #include "urlSpec.h"
 
+#ifdef HAVE_OPENSSL
+
 class VirtualFileMountHTTP;
 
 ////////////////////////////////////////////////////////////////////
@@ -86,4 +88,7 @@ private:
 
 #include "virtualFileHTTP.I"
 
+#endif // HAVE_OPENSSL
+
 #endif
+
