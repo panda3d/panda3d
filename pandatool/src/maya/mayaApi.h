@@ -47,6 +47,7 @@ public:
   bool clear();
 
   DistanceUnit get_units();
+  void set_units(DistanceUnit unit);
   CoordinateSystem get_coordinate_system();
 
 private:

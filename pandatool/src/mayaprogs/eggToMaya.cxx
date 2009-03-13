@@ -95,6 +95,18 @@ run() {
     exit(1);
   }
 
+  // [gjeon] since maya's internal unit is fixed to cm
+  // and when we can't change UI unit without affecting data
+  // all distance data is converted to cm
+  // we need to convert them back to proper output unit user provided here
+  // along with UI unit
+  maya->set_units(_output_units);
+
+  if (_output_units != DU_centimeters && _output_units != DU_invalid) {
+    nout << "Converting from centimeters"
+         << " to " << format_long_unit(_output_units) << "\n";
+  }
+
   // Now convert the data.
   if (!MayaLoadEggData(_data, true, _convert_model, _convert_anim, _respect_normals)) {
     nout << "Unable to convert egg file.\n";

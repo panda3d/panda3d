@@ -380,6 +380,44 @@ get_units() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MayaApi::set_units
+//       Access: Public
+//  Description: Set Maya's UI units.
+////////////////////////////////////////////////////////////////////
+void MayaApi::
+set_units(DistanceUnit unit) {
+  switch (unit) {
+  case DU_inches:
+    MDistance::setUIUnit(MDistance::kInches);
+    break;
+  case DU_feet:
+    MDistance::setUIUnit(MDistance::kFeet);
+    break;
+  case DU_yards:
+    MDistance::setUIUnit(MDistance::kYards);
+    break;
+  case DU_statute_miles:
+    MDistance::setUIUnit(MDistance::kMiles);
+    break;
+  case DU_millimeters:
+    MDistance::setUIUnit(MDistance::kMillimeters);
+    break;
+  case DU_centimeters:
+    MDistance::setUIUnit(MDistance::kCentimeters);
+    break;
+  case DU_kilometers:
+    MDistance::setUIUnit(MDistance::kKilometers);
+    break;
+  case DU_meters:
+    MDistance::setUIUnit(MDistance::kMeters);
+    break;
+
+  default:
+    ;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MayaApi::get_coordinate_system
 //       Access: Public
 //  Description: Returns Maya's internal coordinate system in effect.

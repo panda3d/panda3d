@@ -118,6 +118,16 @@ add_units_options() {
 ////////////////////////////////////////////////////////////////////
 void EggToSomething::
 apply_units_scale(EggData *data) {
+
+  // [gjeon] since maya's internal unit is fixed to cm
+  // and when we can't change UI unit without affecting data
+  // we need to convert data to cm for now
+  // this will be set later to proper output unit user provided
+  // by using MayaApi::set_units() in eggToMaya.cxx
+  DistanceUnit output_units = _output_units;
+  if (_format_name == "Maya")
+    _output_units = DU_centimeters;
+
   if (_output_units != DU_invalid && _input_units != DU_invalid &&
       _input_units != _output_units) {
     nout << "Converting from " << format_long_unit(_input_units)
@@ -125,6 +135,7 @@ apply_units_scale(EggData *data) {
     double scale = convert_units(_input_units, _output_units);
     data->transform(LMatrix4d::scale_mat(scale));
   }
+  _output_units = output_units;
 }
 
 ////////////////////////////////////////////////////////////////////
