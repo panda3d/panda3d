@@ -16,6 +16,7 @@ SUFFIX_DLL=[".dll",".dlo",".dle",".dli",".dlm",".mll",".exe"]
 SUFFIX_LIB=[".lib",".ilb"]
 STARTTIME=time.time()
 MAINTHREAD=threading.currentThread()
+OUTPUTDIR="built"
 
 ########################################################################
 ##
@@ -314,7 +315,7 @@ def CxxGetIncludes(path):
 ########################################################################
 
 def SaveDependencyCache():
-    try: icache = open("built/tmp/makepanda-dcache",'wb')
+    try: icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'wb')
     except: icache = 0
     if (icache!=0):
         print "Storing dependency cache."
@@ -325,7 +326,7 @@ def SaveDependencyCache():
 def LoadDependencyCache():
     global CXXINCLUDECACHE
     global BUILTFROMCACHE
-    try: icache = open("built/tmp/makepanda-dcache",'rb')
+    try: icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'rb')
     except: icache = 0
     if (icache!=0):
         CXXINCLUDECACHE = cPickle.load(icache)
@@ -541,29 +542,28 @@ def CreateFile(file):
 ########################################################################
 
 def MakeBuildTree():
-    MakeDirectory("built")
-    MakeDirectory("built/bin")
-    MakeDirectory("built/lib")
-    MakeDirectory("built/tmp")
-    MakeDirectory("built/etc")
-    MakeDirectory("built/plugins")
-    MakeDirectory("built/modelcache")
-    MakeDirectory("built/include")
-    MakeDirectory("built/include/parser-inc")
-    MakeDirectory("built/include/parser-inc/openssl")
-    MakeDirectory("built/include/parser-inc/netinet")
-    MakeDirectory("built/include/parser-inc/Cg")
-    MakeDirectory("built/include/openssl")
-    MakeDirectory("built/models")
-    MakeDirectory("built/models/audio")
-    MakeDirectory("built/models/audio/sfx")
-    MakeDirectory("built/models/icons")
-    MakeDirectory("built/models/maps")
-    MakeDirectory("built/models/misc")
-    MakeDirectory("built/models/gui")
-    MakeDirectory("built/direct")
-    MakeDirectory("built/pandac")
-    MakeDirectory("built/pandac/input")
+    MakeDirectory(OUTPUTDIR)
+    MakeDirectory(OUTPUTDIR+"/bin")
+    MakeDirectory(OUTPUTDIR+"/lib")
+    MakeDirectory(OUTPUTDIR+"/tmp")
+    MakeDirectory(OUTPUTDIR+"/etc")
+    MakeDirectory(OUTPUTDIR+"/plugins")
+    MakeDirectory(OUTPUTDIR+"/modelcache")
+    MakeDirectory(OUTPUTDIR+"/include")
+    MakeDirectory(OUTPUTDIR+"/include/parser-inc")
+    MakeDirectory(OUTPUTDIR+"/include/parser-inc/openssl")
+    MakeDirectory(OUTPUTDIR+"/include/parser-inc/netinet")
+    MakeDirectory(OUTPUTDIR+"/include/parser-inc/Cg")
+    MakeDirectory(OUTPUTDIR+"/include/openssl")
+    MakeDirectory(OUTPUTDIR+"/models")
+    MakeDirectory(OUTPUTDIR+"/models/audio")
+    MakeDirectory(OUTPUTDIR+"/models/audio/sfx")
+    MakeDirectory(OUTPUTDIR+"/models/icons")
+    MakeDirectory(OUTPUTDIR+"/models/maps")
+    MakeDirectory(OUTPUTDIR+"/models/misc")
+    MakeDirectory(OUTPUTDIR+"/models/gui")
+    MakeDirectory(OUTPUTDIR+"/pandac")
+    MakeDirectory(OUTPUTDIR+"/pandac/input")
 
 ########################################################################
 #
@@ -598,6 +598,19 @@ def SetVC90CRTVersion(fn, ver):
     subst = " name='Microsoft.VC90.CRT' version='"+ver+"' "
     manifest = VC90CRTVERSIONRE.sub(subst, manifest)
     WriteFile(fn, manifest)
+
+########################################################################
+##
+## Gets or sets the output directory, by default "built".
+##
+########################################################################
+
+def GetOutputDir():
+  return OUTPUTDIR
+
+def SetOutputDir(outputdir):
+  global OUTPUTDIR
+  OUTPUTDIR=outputdir
 
 ########################################################################
 ##
@@ -804,15 +817,15 @@ def SdkLocatePython():
         elif (sys.platform == "darwin"):
             if not SDK.has_key("MACOSX"): SdkLocateMacOSX()
             if (os.path.isdir("%s/System/Library/Frameworks/Python.framework" % SDK["MACOSX"])):
-                os.system("readlink %s/System/Library/Frameworks/Python.framework/Versions/Current > built/tmp/pythonversion 2>&1" % SDK["MACOSX"])
-                pv = ReadFile("built/tmp/pythonversion")
+                os.system("readlink %s/System/Library/Frameworks/Python.framework/Versions/Current > %s/tmp/pythonversion 2>&1" % (SDK["MACOSX"], OUTPUTDIR))
+                pv = ReadFile(OUTPUTDIR+"/tmp/pythonversion")
                 SDK["PYTHON"] = SDK["MACOSX"]+"/System/Library/Frameworks/Python.framework/Headers"
                 SDK["PYTHONVERSION"] = "python"+pv
             else:
                 exit("Could not find the python framework!")
         else:
-            os.system("python -V > built/tmp/pythonversion 2>&1")
-            pv=ReadFile("built/tmp/pythonversion")
+            os.system("python -V > "+OUTPUTDIR+"/tmp/pythonversion 2>&1")
+            pv=ReadFile(OUTPUTDIR+"/tmp/pythonversion")
             if (pv.startswith("Python ")==0):
                 exit("python -V did not produce the expected output")
             pv = pv[7:10]
@@ -962,7 +975,7 @@ def DefSymbol(opt, sym, val):
 
 def CheckLinkerLibraryPath():
     if (sys.platform == "win32"): return
-    builtlib = os.path.abspath("built/lib")
+    builtlib = os.path.abspath(os.path.join(OUTPUTDIR,"lib"))
     try:
         ldpath = []
         f = file("/etc/ld.so.conf","r")
@@ -972,7 +985,7 @@ def CheckLinkerLibraryPath():
     if (os.environ.has_key("LD_LIBRARY_PATH")):
         ldpath = ldpath + os.environ["LD_LIBRARY_PATH"].split(":")
     if (ldpath.count(builtlib)==0):
-        WARNINGS.append("Caution: the built/lib directory is not in LD_LIBRARY_PATH")
+        WARNINGS.append("Caution: the "+os.path.join(OUTPUTDIR,"lib")+" directory is not in LD_LIBRARY_PATH")
         WARNINGS.append("or /etc/ld.so.conf.  You must add it before using panda.")
         if (os.environ.has_key("LD_LIBRARY_PATH")):
             os.environ["LD_LIBRARY_PATH"] = builtlib + ":" + os.environ["LD_LIBRARY_PATH"]
@@ -1003,7 +1016,7 @@ def CopyAllFiles(dstdir, srcdir, suffix=""):
 def CopyAllHeaders(dir, skip=[]):
     for filename in GetDirectoryContents(dir, ["*.h", "*.I", "*.T"], skip):
         srcfile = dir + "/" + filename
-        dstfile = "built/include/" + filename
+        dstfile = OUTPUTDIR+"/include/" + filename
         if (NeedsBuild([dstfile],[srcfile])):
             WriteFile(dstfile,ReadFile(srcfile))
             JustBuilt([dstfile],[srcfile])
@@ -1055,36 +1068,36 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
-    if (fn.endswith(".mll")): return "built/plugins/"+fn
+    if (fn.endswith(".mll")): return OUTPUTDIR+"/plugins/"+fn
     if (sys.platform == "win32"):
         if (fn.endswith(".def")): return CxxFindSource(fn, ipath)
-        if (fn.endswith(".obj")): return "built/tmp/"+fn
-        if (fn.endswith(".dll")): return "built/bin/"+fn
-        if (fn.endswith(".dlo")): return "built/plugins/"+fn
-        if (fn.endswith(".dli")): return "built/plugins/"+fn
-        if (fn.endswith(".dle")): return "built/plugins/"+fn
-        if (fn.endswith(".exe")): return "built/bin/"+fn
-        if (fn.endswith(".lib")): return "built/lib/"+fn
-        if (fn.endswith(".ilb")): return "built/tmp/"+fn[:-4]+".lib"
-        if (fn.endswith(".dat")): return "built/tmp/"+fn
-        if (fn.endswith(".in")):  return "built/pandac/input/"+fn
+        if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".dll")): return OUTPUTDIR+"/bin/"+fn
+        if (fn.endswith(".dlo")): return OUTPUTDIR+"/plugins/"+fn
+        if (fn.endswith(".dli")): return OUTPUTDIR+"/plugins/"+fn
+        if (fn.endswith(".dle")): return OUTPUTDIR+"/plugins/"+fn
+        if (fn.endswith(".exe")): return OUTPUTDIR+"/bin/"+fn
+        if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn
+        if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".lib"
+        if (fn.endswith(".dat")): return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".in")):  return OUTPUTDIR+"/pandac/input/"+fn
     elif (sys.platform == "darwin"):
         if (fn.endswith(".mm")):  return CxxFindSource(fn, ipath)
-        if (fn.endswith(".obj")): return "built/tmp/"+fn[:-4]+".o"
-        if (fn.endswith(".dll")): return "built/lib/"+fn[:-4]+".dylib"
-        if (fn.endswith(".exe")): return "built/bin/"+fn[:-4]
-        if (fn.endswith(".lib")): return "built/lib/"+fn[:-4]+".a"
-        if (fn.endswith(".ilb")): return "built/tmp/"+fn[:-4]+".a"
-        if (fn.endswith(".dat")): return "built/tmp/"+fn
-        if (fn.endswith(".in")):  return "built/pandac/input/"+fn
+        if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
+        if (fn.endswith(".dll")): return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
+        if (fn.endswith(".exe")): return OUTPUTDIR+"/bin/"+fn[:-4]
+        if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
+        if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
+        if (fn.endswith(".dat")): return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".in")):  return OUTPUTDIR+"/pandac/input/"+fn
     else:
-        if (fn.endswith(".obj")): return "built/tmp/"+fn[:-4]+".o"
-        if (fn.endswith(".dll")): return "built/lib/"+fn[:-4]+".so"
-        if (fn.endswith(".exe")): return "built/bin/"+fn[:-4]
-        if (fn.endswith(".lib")): return "built/lib/"+fn[:-4]+".a"
-        if (fn.endswith(".ilb")): return "built/tmp/"+fn[:-4]+".a"
-        if (fn.endswith(".dat")): return "built/tmp/"+fn
-        if (fn.endswith(".in")):  return "built/pandac/input/"+fn
+        if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
+        if (fn.endswith(".dll")): return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
+        if (fn.endswith(".exe")): return OUTPUTDIR+"/bin/"+fn[:-4]
+        if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
+        if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
+        if (fn.endswith(".dat")): return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".in")):  return OUTPUTDIR+"/pandac/input/"+fn
     return fn
 
 
@@ -1151,7 +1164,7 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0):
     if (ipath == 0): ipath = []
     if (type(input) == str): input = [input]
     if (type(dep) == str): dep = [dep]
-    full = FindLocation(target,["built/include"])
+    full = FindLocation(target,[OUTPUTDIR+"/include"])
     if (TARGET_TABLE.has_key(full) == 0):
         t = Target()
         t.name = full
@@ -1162,7 +1175,7 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0):
         TARGET_LIST.append(t)
     else:
         t = TARGET_TABLE[full]
-    ipath = ["built/tmp"] + GetListOption(ipath, "DIR:") + ["built/include"]
+    ipath = [OUTPUTDIR+"/tmp"] + GetListOption(ipath, "DIR:") + [OUTPUTDIR+"/include"]
     if (opts != 0):
         for x in opts:
             if (t.opts.count(x)==0):

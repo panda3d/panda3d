@@ -97,7 +97,7 @@ def parseopts(args):
     longopts = [
         "help",
         "optimize=","everything","nothing","installer",
-        "version=","lzma","no-python","threads="]
+        "version=","lzma","no-python","threads=","outputdir="]
     anything = 0
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
     for pkg in PkgListGet(): longopts.append("use-"+pkg.lower())
@@ -111,6 +111,7 @@ def parseopts(args):
             elif (option=="--everything"): PkgEnableAll()
             elif (option=="--nothing"): PkgDisableAll()
             elif (option=="--threads"): THREADCOUNT=int(value)
+            elif (option=="--outputdir"): SetOutputDir(value.strip())
             elif (option=="--version"):
                 VERSION=value
                 if (len(VERSION.split(".")) != 3): raise "usage"
@@ -400,8 +401,8 @@ if (COMPILER=="LINUX"):
             LibName(pkg, "-lIMFbase")
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
-IncDirectory("ALWAYS", "built/tmp")
-IncDirectory("ALWAYS", "built/include")
+IncDirectory("ALWAYS", GetOutputDir()+"/tmp")
+IncDirectory("ALWAYS", GetOutputDir()+"/include")
 
 ########################################################################
 ##
@@ -493,17 +494,17 @@ def CompileCxx(obj,src,opts):
 
 def CompileBison(wobj, wsrc, opts):
     ifile = os.path.basename(wsrc)
-    wdsth = "built/include/" + ifile[:-4] + ".h"
-    wdstc = "built/tmp/" + ifile + ".cxx"
+    wdsth = GetOutputDir()+"/include/" + ifile[:-4] + ".h"
+    wdstc = GetOutputDir()+"/tmp/" + ifile + ".cxx"
     pre = GetValueOption(opts, "BISONPREFIX_")
     if (COMPILER == "MSVC"):
-        oscmd('thirdparty/win-util/bison -y -d -obuilt/tmp/'+ifile+'.c -p '+pre+' '+wsrc)
-        CopyFile(wdstc, "built/tmp/"+ifile+".c")
-        CopyFile(wdsth, "built/tmp/"+ifile+".h")
+        oscmd('thirdparty/win-util/bison -y -d -o'+GetOutputDir()+'/tmp/'+ifile+'.c -p '+pre+' '+wsrc)
+        CopyFile(wdstc, GetOutputDir()+"/tmp/"+ifile+".c")
+        CopyFile(wdsth, GetOutputDir()+"/tmp/"+ifile+".h")
     if (COMPILER == "LINUX"):
-        oscmd("bison -y -d -obuilt/tmp/"+ifile+".c -p "+pre+" "+wsrc)
-        CopyFile(wdstc, "built/tmp/"+ifile+".c")
-        CopyFile(wdsth, "built/tmp/"+ifile+".h")
+        oscmd("bison -y -d -o"+GetOutputDir()+"/tmp/"+ifile+".c -p "+pre+" "+wsrc)
+        CopyFile(wdstc, GetOutputDir()+"/tmp/"+ifile+".c")
+        CopyFile(wdsth, GetOutputDir()+"/tmp/"+ifile+".h")
     CompileCxx(wobj,wdstc,opts)
 
 ########################################################################
@@ -514,7 +515,7 @@ def CompileBison(wobj, wsrc, opts):
 
 def CompileFlex(wobj,wsrc,opts):
     ifile = os.path.basename(wsrc)
-    wdst = "built/tmp/"+ifile+".cxx"
+    wdst = GetOutputDir()+"/tmp/"+ifile+".cxx"
     pre = GetValueOption(opts, "BISONPREFIX_")
     dashi = opts.count("FLEXDASHI")
     if (COMPILER == "MSVC"):
@@ -533,7 +534,7 @@ def CompileFlex(wobj,wsrc,opts):
 
 def CompileIgate(woutd,wsrc,opts):
     outbase = os.path.basename(woutd)[:-3]
-    woutc = "built/tmp/"+outbase+"_igate.cxx"
+    woutc = GetOutputDir()+"/tmp/"+outbase+"_igate.cxx"
     wobj = FindLocation(outbase + "_igate.obj", [])
     srcdir = GetValueOption(opts, "SRCDIR:")
     module = GetValueOption(opts, "IMOD:")
@@ -545,7 +546,7 @@ def CompileIgate(woutd,wsrc,opts):
         CompileCxx(wobj,woutc,opts)
         ConditionalWriteFile(woutd,"")
         return
-    cmd = "built/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
+    cmd = GetOutputDir()+"/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
     if (COMPILER=="MSVC"):
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
         #NOTE: this 1500 value is the version number for VC2008.
@@ -561,7 +562,7 @@ def CompileIgate(woutd,wsrc,opts):
     if (optlevel==4): cmd = cmd + ' -DNDEBUG -DFORCE_INLINING'
     cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
     cmd = cmd + ' -fnames -string -refcount -assert -python-native'
-    cmd = cmd + ' -Sbuilt/include/parser-inc'
+    cmd = cmd + ' -S' + GetOutputDir() + '/include/parser-inc'
     for x in ipath: cmd = cmd + ' -I' + x
     for (opt,dir) in INCDIRECTORIES:
         if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -S"' + dir + '"'
@@ -584,15 +585,15 @@ def CompileIgate(woutd,wsrc,opts):
 def CompileImod(wobj, wsrc, opts):
     module = GetValueOption(opts, "IMOD:")
     library = GetValueOption(opts, "ILIB:")
-    if (PkgSkip("PYTHON")):
-        WriteFile(woutc,"")
-        CompileCxx(wobj,woutc,opts)
-        return
     if (COMPILER=="MSVC"):
         woutc = wobj[:-4]+".cxx"
     if (COMPILER=="LINUX"):
         woutc = wobj[:-2]+".cxx"
-    cmd = 'built/bin/interrogate_module '
+    if (PkgSkip("PYTHON")):
+        WriteFile(woutc,"")
+        CompileCxx(wobj,woutc,opts)
+        return
+    cmd = GetOutputDir() + '/bin/interrogate_module '
     cmd = cmd + ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
     for x in wsrc: cmd = cmd + ' ' + x
     oscmd(cmd)
@@ -637,15 +638,15 @@ def CompileLink(dll, obj, opts):
         cmd = cmd + " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
         cmd = cmd + ' /OUT:' + dll
         if (dll.endswith(".dll")):
-            cmd = cmd + ' /IMPLIB:built/lib/'+dll[10:-4]+".lib"
+            cmd = cmd + ' /IMPLIB:' + GetOutputDir() + '/lib/'+dll[10:-4]+".lib"
         for (opt, dir) in LIBDIRECTORIES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /LIBPATH:"' + dir + '"'
         for x in obj:
             if (x.endswith(".dll")):
-                cmd = cmd + ' built/lib/' + x[10:-4] + ".lib"
+                cmd = cmd + ' ' + GetOutputDir() + '/lib/' + x[10:-4] + ".lib"
             elif (x.endswith(".lib")):
                 dname = x[:-4]+".dll"
-                if (os.path.exists("built/bin/" + x[10:-4] + ".dll")):
+                if (os.path.exists(GetOutputDir()+"/bin/" + x[10:-4] + ".dll")):
                     exit("Error: in makepanda, specify "+dname+", not "+x)
                 cmd = cmd + ' ' + x
             elif (x.endswith(".def")):
@@ -664,12 +665,12 @@ def CompileLink(dll, obj, opts):
         else:                          mtcmd = mtcmd + ';1'
         oscmd(mtcmd)
     if (COMPILER=="LINUX"):
-        if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -Lbuilt/lib -L/usr/X11R6/lib'
+        if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
         else:
             if (sys.platform == "darwin"):
-                cmd = 'g++ -undefined dynamic_lookup -dynamic -dynamiclib -o ' + dll + ' -install_name built/lib/' + os.path.basename(dll) + ' -Lbuilt/lib -L/usr/X11R6/lib'
+                cmd = 'g++ -undefined dynamic_lookup -dynamic -dynamiclib -o ' + dll + ' -install_name ' + GetOutputDir() + '/lib/' + os.path.basename(dll) + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
             else:
-                cmd = 'g++ -shared -o ' + dll + ' -Lbuilt/lib -L/usr/X11R6/lib'
+                cmd = 'g++ -shared -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
         for x in obj:
             if (GetOrigExt(x) != ".dat"):
                 base = os.path.basename(x)
@@ -697,8 +698,8 @@ def CompileEggPZ(eggpz, src, opts):
     if (src.endswith(".egg")):
         CopyFile(eggpz[:-3], src)
     elif (src.endswith(".flt")):
-        oscmd("built/bin/flt2egg -ps keep -o " + eggpz[:-3] + " " + src)
-    oscmd("built/bin/pzip " + eggpz[:-3])
+        oscmd(GetOutputDir()+"/bin/flt2egg -ps keep -o " + eggpz[:-3] + " " + src)
+    oscmd(GetOutputDir()+"/bin/pzip " + eggpz[:-3])
 
 ##########################################################################################
 #
@@ -884,9 +885,11 @@ def WriteConfigSettings():
             prc_parameters[key] = unix
 
     for x in PkgListGet():
-        if (PkgSkip(x)==0):
-            if (dtool_config.has_key("HAVE_"+x)):
+        if (dtool_config.has_key("HAVE_"+x)):
+            if (PkgSkip(x)==0):
                 dtool_config["HAVE_"+x] = '1'
+            else:
+                dtool_config["HAVE_"+x] = 'UNDEF'
     
     dtool_config["HAVE_NET"] = '1'
     
@@ -935,7 +938,7 @@ def WriteConfigSettings():
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " " + val + "\n"
             del prc_parameters[key]
-    ConditionalWriteFile('built/include/prc_parameters.h', conf)
+    ConditionalWriteFile(GetOutputDir() + '/include/prc_parameters.h', conf)
 
     conf = "/* dtool_config.h.  Generated automatically by makepanda.py */\n"
     for key in dtool_config.keys():
@@ -943,11 +946,11 @@ def WriteConfigSettings():
         if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
         else:                conf = conf + "#define " + key + " " + val + "\n"
         del dtool_config[key]
-    ConditionalWriteFile('built/include/dtool_config.h', conf)
+    ConditionalWriteFile(GetOutputDir() + '/include/dtool_config.h', conf)
 
     for x in PkgListGet():
-        if (PkgSkip(x)): ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
-        else:            ConditionalWriteFile('built/tmp/dtool_have_'+x.lower()+'.dat',"1\n")
+        if (PkgSkip(x)): ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
+        else:            ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat',"1\n")
 
 WriteConfigSettings()
 
@@ -1013,31 +1016,13 @@ def CreatePandaVersionFiles():
     checkpandaversion_h = checkpandaversion_h.replace("VERSION3",str(version3))
     checkpandaversion_h = checkpandaversion_h.replace("NVERSION",str(nversion))
 
-    ConditionalWriteFile('built/include/pandaVersion.h',        pandaversion_h)
-    ConditionalWriteFile('built/include/checkPandaVersion.cxx', checkpandaversion_cxx)
-    ConditionalWriteFile('built/include/checkPandaVersion.h',   checkpandaversion_h)
-    ConditionalWriteFile("built/tmp/null.cxx","")
+    ConditionalWriteFile(GetOutputDir()+'/include/pandaVersion.h',        pandaversion_h)
+    ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.cxx', checkpandaversion_cxx)
+    ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.h',   checkpandaversion_h)
+    ConditionalWriteFile(GetOutputDir()+"/tmp/null.cxx","")
 
 
 CreatePandaVersionFiles()
-
-##########################################################################################
-#
-# Generate direct/__init__.py
-#
-##########################################################################################
-
-DIRECTINIT="""
-import os,sys
-srcdir1 = os.path.join(__path__[0], 'src')
-srcdir2 = os.path.join(__path__[0], '..', '..', 'direct', 'src')
-if    (os.path.isdir(srcdir1)): __path__[0] = srcdir1
-elif  (os.path.isdir(srcdir2)): __path__[0] = srcdir2
-else: sys.exit("Cannot find the 'direct' tree")
-"""
-
-if (PkgSkip("PYTHON")==0):
-    ConditionalWriteFile('built/direct/__init__.py', DIRECTINIT)
 
 ##########################################################################################
 #
@@ -1056,8 +1041,8 @@ if (sys.platform != "win32"):
     confautoprc = confautoprc.replace("aux-display pandadx8","")
     confautoprc = confautoprc.replace("aux-display pandadx7","")
 
-ConditionalWriteFile("built/etc/Config.prc", configprc)
-ConditionalWriteFile("built/etc/Confauto.prc", confautoprc)
+ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
+ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
 
 ##########################################################################################
 #
@@ -1069,17 +1054,17 @@ for pkg in PkgListGet():
     if (PkgSkip(pkg)==0):
         if (COMPILER == "MSVC"):
             if (os.path.exists(THIRDPARTYLIBS+pkg.lower()+"/bin")):
-                CopyAllFiles("built/bin/",THIRDPARTYLIBS+pkg.lower()+"/bin/")
+                CopyAllFiles(GetOutputDir()+"/bin/",THIRDPARTYLIBS+pkg.lower()+"/bin/")
         if (COMPILER == "LINUX"):
             if (os.path.exists(THIRDPARTYLIBS+pkg.lower()+"/lib")):
-                CopyAllFiles("built/lib/",THIRDPARTYLIBS+pkg.lower()+"/lib/")
+                CopyAllFiles(GetOutputDir()+"/lib/",THIRDPARTYLIBS+pkg.lower()+"/lib/")
 if (COMPILER=="MSVC"):
-    CopyAllFiles("built/bin/", THIRDPARTYLIBS+"extras"+"/bin/")
+    CopyAllFiles(GetOutputDir()+"/bin/", THIRDPARTYLIBS+"extras"+"/bin/")
 if (sys.platform == "win32"):
     if (PkgSkip("PYTHON")==0):
-        CopyFile('built/bin/python25.dll', 'thirdparty/win-python/python25.dll')
-        CopyTree('built/python', 'thirdparty/win-python')
-        ConditionalWriteFile('built/python/panda.pth',"..\n../bin\n")
+        CopyFile(GetOutputDir()+'/bin/python25.dll', 'thirdparty/win-python/python25.dll')
+        CopyTree(GetOutputDir()+'/python', 'thirdparty/win-python')
+        ConditionalWriteFile(GetOutputDir()+'/python/panda.pth',"..\n../bin\n")
 
 ########################################################################
 ##
@@ -1087,13 +1072,13 @@ if (sys.platform == "win32"):
 ##
 ########################################################################
 
-CopyFile("built/", "doc/LICENSE")
-CopyFile("built/", "doc/ReleaseNotes")
-CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".mel")
-CopyAllFiles("built/plugins/",  "pandatool/src/scripts/", ".ms")
+CopyFile(GetOutputDir()+"/", "doc/LICENSE")
+CopyFile(GetOutputDir()+"/", "doc/ReleaseNotes")
+CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".mel")
+CopyAllFiles(GetOutputDir()+"/plugins/",  "pandatool/src/scripts/", ".ms")
 if (PkgSkip("PYTHON")==0 and os.path.isdir("thirdparty/Pmw")):
-    CopyTree('built/Pmw',         'thirdparty/Pmw')
-ConditionalWriteFile('built/include/ctl3d.h', '/* dummy file to make MAX happy */')
+    CopyTree(GetOutputDir()+'/Pmw',         'thirdparty/Pmw')
+ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make MAX happy */')
 
 ########################################################################
 #
@@ -1101,11 +1086,11 @@ ConditionalWriteFile('built/include/ctl3d.h', '/* dummy file to make MAX happy *
 #
 ########################################################################
 
-CopyAllFiles('built/include/parser-inc/','dtool/src/parser-inc/')
-CopyAllFiles('built/include/parser-inc/openssl/','dtool/src/parser-inc/')
-CopyAllFiles('built/include/parser-inc/netinet/','dtool/src/parser-inc/')
-CopyFile('built/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
-CopyFile('built/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
+CopyAllFiles(GetOutputDir()+'/include/parser-inc/','dtool/src/parser-inc/')
+CopyAllFiles(GetOutputDir()+'/include/parser-inc/openssl/','dtool/src/parser-inc/')
+CopyAllFiles(GetOutputDir()+'/include/parser-inc/netinet/','dtool/src/parser-inc/')
+CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
+CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
 
 ########################################################################
 #
@@ -1251,7 +1236,7 @@ CopyAllHeaders('pandatool/src/text-stats')
 CopyAllHeaders('pandatool/src/vrmlprogs')
 CopyAllHeaders('pandatool/src/win-stats')
 CopyAllHeaders('pandatool/src/xfileprogs')
-CopyFile('built/include/','dtool/src/dtoolutil/vector_src.cxx')
+CopyFile(GetOutputDir()+'/include/','dtool/src/dtoolutil/vector_src.cxx')
 
 ########################################################################
 # 
@@ -1331,7 +1316,7 @@ TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL'])
 #
 
 OPTS=['DIR:dtool/src/cppparser', 'BISONPREFIX_cppyy']
-CreateFile("built/include/cppBison.h")
+CreateFile(GetOutputDir()+"/include/cppBison.h")
 TargetAdd('cppParser_cppBison.obj',  opts=OPTS, input='cppBison.yxx')
 TargetAdd('cppBison.h', input='cppParser_cppBison.obj', opts=['DEPENDENCYONLY'])
 TargetAdd('cppParser_composite.obj', opts=OPTS, input='cppParser_composite.cxx')
@@ -2195,7 +2180,7 @@ if PkgSkip("DX9")==0:
 #
 
 OPTS=['DIR:panda/src/egg', 'BUILDING:PANDAEGG',  'ZLIB', 'BISONPREFIX_eggyy', 'FLEXDASHI']
-CreateFile("built/include/parser.h")
+CreateFile(GetOutputDir()+"/include/parser.h")
 TargetAdd('egg_parser.obj', opts=OPTS, input='parser.yxx')
 TargetAdd('parser.h', input='egg_parser.obj', opts=['DEPENDENCYONLY'])
 TargetAdd('egg_lexer.obj', opts=OPTS, input='lexer.lxx')
@@ -2521,7 +2506,7 @@ if (PkgSkip("PYTHON")==0):
 
 if (PkgSkip("PYTHON")==0):
     OPTS=['DIR:direct/src/dcparser', 'WITHINPANDA', 'BUILDING:DIRECT', 'BISONPREFIX_dcyy']
-    CreateFile("built/include/dcParser.h")
+    CreateFile(GetOutputDir()+"/include/dcParser.h")
     TargetAdd('dcparser_dcParser.obj', opts=OPTS, input='dcParser.yxx')
     TargetAdd('dcParser.h', input='egg_parser.obj', opts=['DEPENDENCYONLY'])
     TargetAdd('dcparser_dcLexer.obj', opts=OPTS, input='dcLexer.lxx')
@@ -3083,7 +3068,7 @@ for VER in MAXVERSIONS:
   VNUM=VER[3:]
   if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/maxegg', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
-    CopyFile("built/tmp/maxEgg.obj", "pandatool/src/maxegg/maxEgg.obj")
+    CopyFile(GetOutputDir()+"/tmp/maxEgg.obj", "pandatool/src/maxegg/maxEgg.obj")
     TargetAdd('maxegg'+VNUM+'_loader.obj', opts=OPTS, input='maxEggLoader.cxx')
     TargetAdd('maxegg'+VNUM+'_composite1.obj', opts=OPTS, input='maxegg_composite1.cxx')
     TargetAdd('maxegg'+VNUM+'.dlo', input='maxegg'+VNUM+'_composite1.obj')
@@ -3100,7 +3085,7 @@ for VER in MAXVERSIONS:
   VNUM=VER[3:]
   if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/maxprogs', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
-    CopyFile("built/tmp/maxImportRes.obj", "pandatool/src/maxprogs/maxImportRes.obj")
+    CopyFile(GetOutputDir()+"/tmp/maxImportRes.obj", "pandatool/src/maxprogs/maxImportRes.obj")
     TargetAdd('maxprogs'+VNUM+'_maxeggimport.obj', opts=OPTS, input='maxEggImport.cxx')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='maxegg'+VNUM+'_loader.obj')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='maxprogs'+VNUM+'_maxeggimport.obj')
@@ -3118,7 +3103,7 @@ for VER in MAXVERSIONS:
 
 if (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/vrml', 'ZLIB', 'BISONPREFIX_vrmlyy']
-    CreateFile("built/include/vrmlParser.h")
+    CreateFile(GetOutputDir()+"/include/vrmlParser.h")
     TargetAdd('pvrml_vrmlParser.obj', opts=OPTS, input='vrmlParser.yxx')
     TargetAdd('vrmlParser.h', input='pvrml_vrmlParser.obj', opts=['DEPENDENCYONLY'])
     TargetAdd('pvrml_vrmlLexer.obj', opts=OPTS, input='vrmlLexer.lxx')
@@ -3152,7 +3137,7 @@ if (PkgSkip("PANDATOOL")==0):
 
 if (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/xfile', 'ZLIB', 'BISONPREFIX_xyy', 'FLEXDASHI']
-    CreateFile("built/include/xParser.h")
+    CreateFile(GetOutputDir()+"/include/xParser.h")
     TargetAdd('xfile_xParser.obj', opts=OPTS, input='xParser.yxx')
     TargetAdd('xParser.h', input='xfile_xParser.obj', opts=['DEPENDENCYONLY'])
     TargetAdd('xfile_xLexer.obj', opts=OPTS, input='xLexer.lxx')
@@ -3420,28 +3405,28 @@ if (PkgSkip("PANDATOOL")==0):
 
     for model in GetDirectoryContents("dmodels/src/misc", ["*.egg", "*.flt"]):
         eggpz = model[:-4] + ".egg.pz"
-        TargetAdd("built/models/misc/"+eggpz, input="dmodels/src/misc/"+model)
+        TargetAdd(GetOutputDir()+"/models/misc/"+eggpz, input="dmodels/src/misc/"+model)
 
     for model in GetDirectoryContents("dmodels/src/gui", ["*.egg", "*.flt"]):
         eggpz = model[:-4] + ".egg.pz"
-        TargetAdd("built/models/gui/"+eggpz, input="dmodels/src/gui/"+model)
+        TargetAdd(GetOutputDir()+"/models/gui/"+eggpz, input="dmodels/src/gui/"+model)
 
     for model in GetDirectoryContents("models", ["*.egg", "*.flt"]):
         eggpz = model[:-4] + ".egg.pz"
-        TargetAdd("built/models/"+eggpz, input="models/"+model)
+        TargetAdd(GetOutputDir()+"/models/"+eggpz, input="models/"+model)
 
-    CopyAllFiles("built/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
-    CopyAllFiles("built/models/icons/",      "dmodels/src/icons/",     ".gif")
+    CopyAllFiles(GetOutputDir()+"/models/audio/sfx/",  "dmodels/src/audio/sfx/", ".wav")
+    CopyAllFiles(GetOutputDir()+"/models/icons/",      "dmodels/src/icons/",     ".gif")
     
-    CopyAllFiles("built/models/maps/",       "models/maps/",           ".jpg")
-    CopyAllFiles("built/models/maps/",       "models/maps/",           ".png")
-    CopyAllFiles("built/models/maps/",       "models/maps/",           ".rgb")
-    CopyAllFiles("built/models/maps/",       "models/maps/",           ".rgba")
+    CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".jpg")
+    CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".png")
+    CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".rgb")
+    CopyAllFiles(GetOutputDir()+"/models/maps/",       "models/maps/",           ".rgba")
     
-    CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".jpg")
-    CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".png")
-    CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".rgb")
-    CopyAllFiles("built/models/maps/",       "dmodels/src/maps/",      ".rgba")
+    CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".jpg")
+    CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".png")
+    CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgb")
+    CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgba")
 
 
 ##########################################################################################
@@ -3551,12 +3536,12 @@ RunDependencyQueue(DEPENDENCYQUEUE)
 
 if (PkgSkip("PYTHON")==0):
     inputs = []
-    for x in GetDirectoryContents("built/pandac/input", ["*.in"]):
-        inputs.append("built/pandac/input/" + x)
-    if (NeedsBuild(['built/pandac/PandaModules.py'],inputs)):
-        if (GENMAN): oscmd("built/bin/genpycode -d")
-        else       : oscmd("built/bin/genpycode")
-        JustBuilt(['built/pandac/PandaModules.py'],inputs)
+    for x in GetDirectoryContents(GetOutputDir()+"/pandac/input", ["*.in"]):
+        inputs.append(GetOutputDir()+"/pandac/input/" + x)
+    if (NeedsBuild([GetOutputDir()+'/pandac/PandaModules.py'],inputs)):
+        if (GENMAN): oscmd(GetOutputDir()+"/bin/genpycode -d")
+        else       : oscmd(GetOutputDir()+"/bin/genpycode")
+        JustBuilt([GetOutputDir()+'/pandac/PandaModules.py'],inputs)
 
 ##########################################################################################
 #
@@ -3577,7 +3562,7 @@ def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
     if (os.path.exists("nsis-output.exe")):
         os.remove("nsis-output.exe")
     psource=os.path.abspath(".")
-    panda=os.path.abspath("built")
+    panda=os.path.abspath(GetOutputDir())
     cmd="thirdparty/win-nsis/makensis /V2 "
     cmd=cmd+'/DCOMPRESSOR="'+COMPRESSOR+'" '
     cmd=cmd+'/DNAME="'+fullname+'" '
@@ -3651,40 +3636,41 @@ def MakeInstallerLinux():
     oscmd("mkdir -p linuxroot/usr/bin")
     oscmd("mkdir -p linuxroot/usr/include")
     oscmd("mkdir -p linuxroot/usr/share/panda3d")
+    oscmd("mkdir -p linuxroot/usr/share/panda3d/direct")
     oscmd("mkdir -p linuxroot/usr/lib/panda3d")
     oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/lib-dynload")
     oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/site-packages")
     oscmd("mkdir -p linuxroot/etc/ld.so.conf.d")
-    oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < built/etc/Config.prc > linuxroot/etc/Config.prc")
-    oscmd("cp built/etc/Confauto.prc  linuxroot/etc/Confauto.prc")
-    oscmd("cp --recursive built/include linuxroot/usr/include/panda3d")
-    oscmd("cp --recursive direct        linuxroot/usr/share/panda3d/direct")
-    oscmd("cp --recursive built/pandac  linuxroot/usr/share/panda3d/pandac")
-    oscmd("cp built/direct/__init__.py  linuxroot/usr/share/panda3d/direct/__init__.py")
-    oscmd("cp --recursive built/models  linuxroot/usr/share/panda3d/models")
-    if os.path.isdir("samples"):        oscmd("cp --recursive samples       linuxroot/usr/share/panda3d/samples")
-    if os.path.isdir("built/Pmw"):      oscmd("cp --recursive built/Pmw     linuxroot/usr/share/panda3d/Pmw")
-    if os.path.isdir("built/plugins"):  oscmd("cp --recursive built/plugins linuxroot/usr/share/panda3d/plugins")
+    WriteFile("linuxroot/usr/share/panda3d/direct/__init__.py", "")
+    oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < "+GetOutputDir()+"/etc/Config.prc > linuxroot/etc/Config.prc")
+    oscmd("cp "+GetOutputDir()+"/etc/Confauto.prc  linuxroot/etc/Confauto.prc")
+    oscmd("cp --recursive "+GetOutputDir()+"/include linuxroot/usr/include/panda3d")
+    oscmd("cp --recursive direct/src/*               linuxroot/usr/share/panda3d/direct")
+    oscmd("cp --recursive "+GetOutputDir()+"/pandac  linuxroot/usr/share/panda3d/pandac")
+    oscmd("cp --recursive "+GetOutputDir()+"/models  linuxroot/usr/share/panda3d/models")
+    if os.path.isdir("samples"):                  oscmd("cp --recursive samples                    linuxroot/usr/share/panda3d/samples")
+    if os.path.isdir(GetOutputDir()+"/Pmw"):      oscmd("cp --recursive "+GetOutputDir()+"/Pmw     linuxroot/usr/share/panda3d/Pmw")
+    if os.path.isdir(GetOutputDir()+"/plugins"):  oscmd("cp --recursive "+GetOutputDir()+"/plugins linuxroot/usr/share/panda3d/plugins")
     oscmd("cp doc/LICENSE               linuxroot/usr/share/panda3d/LICENSE")
     oscmd("cp doc/LICENSE               linuxroot/usr/include/panda3d/LICENSE")
     oscmd("cp doc/ReleaseNotes          linuxroot/usr/share/panda3d/ReleaseNotes")
     oscmd("echo '/usr/lib/panda3d'   >  linuxroot/etc/ld.so.conf.d/panda3d.conf")
     oscmd("echo '/usr/share/panda3d' >  linuxroot/usr/lib/"+PYTHONV+"/site-packages/panda3d.pth")
     oscmd("echo '/usr/lib/panda3d'   >> linuxroot/usr/lib/"+PYTHONV+"/site-packages/panda3d.pth")
-    oscmd("cp built/bin/*               linuxroot/usr/bin/")
-    for base in os.listdir("built/lib"):
-        oscmd("cp built/lib/"+base+" linuxroot/usr/lib/panda3d/"+base)
-    for base in os.listdir("linuxroot/usr/share/panda3d/direct/src"):
+    oscmd("cp "+GetOutputDir()+"/bin/*               linuxroot/usr/bin/")
+    for base in os.listdir(GetOutputDir()+"/lib"):
+        oscmd("cp "+GetOutputDir()+"/lib/"+base+" linuxroot/usr/lib/panda3d/"+base)
+    for base in os.listdir("linuxroot/usr/share/panda3d/direct"):
         if ((base != "extensions") and (base != "extensions_native")):
-            compileall.compile_dir("linuxroot/usr/share/panda3d/direct/src/"+base)
+            compileall.compile_dir("linuxroot/usr/share/panda3d/direct/"+base)
     compileall.compile_dir("linuxroot/usr/share/panda3d/Pmw")
     DeleteCVS("linuxroot")
     oscmd("chmod -R 555 linuxroot/usr/share/panda3d")
     
     if (os.path.exists("/usr/bin/rpmbuild") and not os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("rm -rf linuxroot/DEBIAN")
-        oscmd("rpm -E '%_target_cpu' > built/tmp/architecture.txt")
-        ARCH=ReadFile("built/tmp/architecture.txt").strip()
+        oscmd("rpm -E '%_target_cpu' > "+GetOutputDir()+"/tmp/architecture.txt")
+        ARCH=ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
         pandasource = os.path.abspath(os.getcwd())
         txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",pandasource).replace("PYTHONV",PYTHONV)
         WriteFile("panda3d.spec", txt)
@@ -3692,8 +3678,8 @@ def MakeInstallerLinux():
         oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
     
     if (os.path.exists("/usr/bin/dpkg-deb")):
-        oscmd("dpkg --print-architecture > built/tmp/architecture.txt")
-        ARCH=ReadFile("built/tmp/architecture.txt").strip()
+        oscmd("dpkg --print-architecture > "+GetOutputDir()+"/tmp/architecture.txt")
+        ARCH=ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
         txt = INSTALLER_DEB_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV).replace("ARCH",ARCH).replace("PV",PYTHONV.replace("python", ""))
         oscmd("mkdir -p linuxroot/DEBIAN")
         oscmd("cd linuxroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
@@ -3727,56 +3713,57 @@ def MakeInstallerOSX():
     if (not os.path.exists("Panda3D-tpl-rw")): exit()
     try:
       oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/etc" % VERSION)
-      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib" % VERSION)
       oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/bin" % VERSION)
+      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib" % VERSION)
+      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
       oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
-      oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/Applications/Panda3D/%s@' < built/etc/Config.prc > Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % (VERSION, VERSION))
+      oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/Applications/Panda3D/%s@' < %s/etc/Config.prc > Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % (VERSION, GetOutputDir(), VERSION))
       # Append the plugin-path to the Config.prc.
       f = open("Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % VERSION, "a")
       f.write("\nplugin-path /Applications/Panda3D/%s/lib\n" % VERSION)
       f.close()
-      oscmd("cp built/etc/Confauto.prc   Panda3D-tpl-rw/Panda3D/%s/etc/Confauto.prc" % VERSION)
-      oscmd("cp -R built/include         Panda3D-tpl-rw/Panda3D/%s/include" % VERSION)
-      oscmd("cp -R direct                Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
-      oscmd("cp -R built/pandac          Panda3D-tpl-rw/Panda3D/%s/lib/pandac" % VERSION)
-      oscmd("cp built/direct/__init__.py Panda3D-tpl-rw/Panda3D/%s/lib/direct/__init__.py" % VERSION)
-      oscmd("cp -R built/models          Panda3D-tpl-rw/Panda3D/%s/models" % VERSION)
-      oscmd("cp -R doc/LICENSE           Panda3D-tpl-rw/Panda3D/%s/LICENSE" % VERSION)
-      oscmd("cp -R doc/ReleaseNotes      Panda3D-tpl-rw/Panda3D/%s/ReleaseNotes" % VERSION)
-      oscmd("cp -R built/bin/*           Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION)
+      WriteFile("Panda3D-tpl-rw/Panda3D/%s/lib/direct/__init__.py" % VERSION, "")
+      oscmd("cp %s/etc/Confauto.prc   Panda3D-tpl-rw/Panda3D/%s/etc/Confauto.prc" % (GetOutputDir(), VERSION))
+      oscmd("cp -R %s/include         Panda3D-tpl-rw/Panda3D/%s/include" % (GetOutputDir(), VERSION))
+      oscmd("cp -R direct/src/*       Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
+      oscmd("cp -R %s/pandac          Panda3D-tpl-rw/Panda3D/%s/lib/pandac" % (GetOutputDir(), VERSION))
+      oscmd("cp -R %s/models          Panda3D-tpl-rw/Panda3D/%s/models" % (GetOutputDir(), VERSION))
+      oscmd("cp -R doc/LICENSE        Panda3D-tpl-rw/Panda3D/%s/LICENSE" % VERSION)
+      oscmd("cp -R doc/ReleaseNotes   Panda3D-tpl-rw/Panda3D/%s/ReleaseNotes" % VERSION)
+      oscmd("cp -R %s/bin/*           Panda3D-tpl-rw/Panda3D/%s/bin/" % (GetOutputDir(), VERSION))
       if os.path.isdir("samples"):       oscmd("cp -R samples   Panda3D-tpl-rw/Panda3D/%s/samples" % VERSION)
-      if os.path.isdir("built/Pmw"):     oscmd("cp -R built/Pmw Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % VERSION)
-      if os.path.isdir("built/plugins"): oscmd("cp -R built/plugins Panda3D-tpl-rw/Panda3D/%s/plugins" % VERSION)
-      for base in os.listdir("built/lib"):
-          oscmd("cp built/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
+      if os.path.isdir(GetOutputDir()+"/Pmw"):     oscmd("cp -R %s/Pmw Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % (GetOutputDir(), VERSION))
+      if os.path.isdir(GetOutputDir()+"/plugins"): oscmd("cp -R %s/plugins Panda3D-tpl-rw/Panda3D/%s/plugins" % (GetOutputDir(), VERSION))
+      for base in os.listdir(GetOutputDir()+"/lib"):
+          oscmd("cp "+GetOutputDir()+"/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
       # Loop through the binaries and libraries and execute install_name_tool on them
       bindir = "Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION
       libdir = "Panda3D-tpl-rw/Panda3D/%s/lib/" % VERSION
       for fn in os.listdir(bindir):
           if os.path.isfile(bindir + fn):
-              oscmd("otool -L %s%s | grep built/lib/ > built/tmp/otool-libs.txt" % (bindir, fn), True)
-              for line in open("built/tmp/otool-libs.txt", "r"):
+              oscmd("otool -L %s%s | grep %s/lib/ > %s/tmp/otool-libs.txt" % (bindir, fn, GetOutputDir(), GetOutputDir()), True)
+              for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                   if len(line.strip()) > 0:
-                      libname = line.strip().split("built/lib/")[1].split(" ")[0]
-                      oscmd("install_name_tool -change built/lib/%s %s %s%s" % (libname, libname, bindir, fn), True)
+                      libname = line.strip().split(GetOutputDir()+"/lib/")[1].split(" ")[0]
+                      oscmd("install_name_tool -change %s/lib/%s %s %s%s" % (GetOutputDir(), libname, libname, bindir, fn), True)
       for fn in os.listdir(libdir):
           if os.path.isfile(libdir + fn):
               oscmd("install_name_tool -id %s %s%s" % (fn, libdir, fn), True)
-              oscmd("otool -L %s%s | grep built/lib/ > built/tmp/otool-libs.txt" % (libdir, fn), True)
-              for line in open("built/tmp/otool-libs.txt", "r"):
+              oscmd("otool -L %s%s | grep %s/lib/ > %s/tmp/otool-libs.txt" % (libdir, fn, GetOutputDir(), GetOutputDir()), True)
+              for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                   if len(line.strip()) > 0:
-                      libname = line.strip().split("built/lib/")[1].split(" ")[0]
-                      oscmd("install_name_tool -change built/lib/%s %s %s%s" % (libname, libname, libdir, fn), True)
+                      libname = line.strip().split(GetOutputDir()+"/lib/")[1].split(" ")[0]
+                      oscmd("install_name_tool -change %s/lib/%s %s %s%s" % (GetOutputDir(), libname, libname, libdir, fn), True)
       # Compile the python files
-      for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src"):
+      for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct"):
           if ((base != "extensions") and (base != "extensions_native")):
-              compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/src/"+base)
+              compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct/"+base)
       compileall.compile_dir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
       oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct")
       oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/pandac")
       oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/models")
       if os.path.isdir("samples"):   oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/samples")
-      if os.path.isdir("built/Pmw"): oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
+      if os.path.isdir(GetOutputDir()+"/Pmw"): oscmd("chmod -R 555 Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/Pmw")
     except: # Make sure the dmg gets unmounted even when error occurs
       oscmd("hdiutil detach Panda3D-tpl-rw -quiet -force", True)
       oscmd("rm -f Panda3D-tpl-rw.dmg")
