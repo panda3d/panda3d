@@ -11,6 +11,7 @@
 # (If we do change original directools, it will force user has to install the latest version of OUR Panda)
 #
 #################################################################
+from pandac.PandaModules import GeomNode
 from direct.directtools.DirectGlobals import *
 from direct.directtools.DirectUtil import *
 from seGeometry import *
@@ -431,8 +432,6 @@ class SelectionQueue(CollisionHandlerQueue):
         # Turn this mask all off since we're not testing for collisions against
         # collision solids
         self.collisionNode.setFromCollideMask(bitMask)
-        # Don't test against actual geometry
-        self.collisionNode.setCollideGeom(0)
 
     def collideWithGeom(self):
         # The into collide mask is the bit pattern colliders look at
@@ -443,10 +442,8 @@ class SelectionQueue(CollisionHandlerQueue):
         # The from collide mask is the bit pattern *this* collision solid
         # compares against the into collide mask of candidate collision solids
         # Turn this mask all off since we're not testing for collisions against
-        # collision solids
-        self.collisionNode.setFromCollideMask(BitMask32().allOff())
-        # What we want to test against is actual geometry
-        self.collisionNode.setCollideGeom(1)
+        # collision solids, but we do want to test against geometry
+        self.collisionNode.setFromCollideMask(GeomNode.getDefaultCollideMask())
 
     def collideWithWidget(self):
         # This collision node should not be tested against by any other
@@ -457,8 +454,6 @@ class SelectionQueue(CollisionHandlerQueue):
         mask = BitMask32()
         mask.setBit(31)
         self.collisionNode.setFromCollideMask(mask)
-        # But in this case, don't test against actual geometry
-        self.collisionNode.setCollideGeom(0)
 
     def addUnpickable(self, item):
         if item not in self.unpickable:
