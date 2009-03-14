@@ -30,6 +30,7 @@
 #include "deletedChain.h"
 #include "graphicsStateGuardianBase.h"
 #include "lightMutex.h"
+#include "callbackObject.h"
 
 class CullTraverser;
 
@@ -42,21 +43,20 @@ class CullTraverser;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH CullableObject {
 public:
-  INLINE CullableObject(CullableObject *next = NULL);
+  INLINE CullableObject();
   INLINE CullableObject(const Geom *geom, const RenderState *state,
                         const TransformState *net_transform,
                         const TransformState *modelview_transform,
-                        const GraphicsStateGuardianBase *gsg,
-                        CullableObject *next = NULL);
+                        const GraphicsStateGuardianBase *gsg);
   INLINE CullableObject(const Geom *geom, const RenderState *state,
                         const TransformState *net_transform,
                         const TransformState *modelview_transform,
-                        const TransformState *internal_transform,
-                        CullableObject *next = NULL);
+                        const TransformState *internal_transform);
     
   INLINE CullableObject(const CullableObject &copy);
   INLINE void operator = (const CullableObject &copy);
 
+  INLINE bool is_fancy() const;
   INLINE bool has_decals() const;
 
   bool munge_geom(GraphicsStateGuardianBase *gsg,
@@ -67,6 +67,10 @@ public:
 
   INLINE bool request_resident() const;
   INLINE static void flush_level();
+
+  INLINE void set_draw_callback(CallbackObject *draw_callback);
+  INLINE void set_next(CullableObject *next);
+  INLINE CullableObject *get_next() const;
 
 public:
   ~CullableObject();
@@ -82,14 +86,29 @@ public:
   CPT(TransformState) _net_transform;
   CPT(TransformState) _modelview_transform;
   CPT(TransformState) _internal_transform;
-  CullableObject *_next;
 
 private:
+  bool _fancy;
+
+  // Fancy things below.  These pointers are only meaningful if
+  // _fancy, above, is true.
+  CallbackObject *_draw_callback;
+  CullableObject *_next;  // for decals
+
+private:
+  INLINE void make_fancy();
   bool munge_points_to_quads(const CullTraverser *traverser, bool force);
   bool munge_texcoord_light_vector(const CullTraverser *traverser, bool force);
 
   static CPT(RenderState) get_flash_cpu_state();
   static CPT(RenderState) get_flash_hardware_state();
+
+  INLINE void draw_inline(GraphicsStateGuardianBase *gsg,
+                          bool force, Thread *current_thread);
+  void draw_fancy(GraphicsStateGuardianBase *gsg, bool force, 
+                  Thread *current_thread);
+  void draw_with_decals(GraphicsStateGuardianBase *gsg, bool force, 
+                        Thread *current_thread);
 
 private:
   // This class is used internally by munge_points_to_quads().

@@ -4044,6 +4044,20 @@ do_issue_blending() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DXGraphicsStateGuardian9::reissue_transforms
+//       Access: Protected, Virtual
+//  Description: Called by clear_state_and_transform() to ensure that
+//               the current modelview and projection matrices are
+//               properly loaded in the graphics state, after a
+//               callback might have mucked them up.
+////////////////////////////////////////////////////////////////////
+void DXGraphicsStateGuardian9::
+reissue_transforms() {
+  prepare_lens();
+  do_issue_transform();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DXGraphicsStateGuardian9::enable_lighting
 //       Access: Protected, Virtual
 //  Description: Intended to be overridden by a derived class to

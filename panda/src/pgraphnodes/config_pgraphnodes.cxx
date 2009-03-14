@@ -15,9 +15,13 @@
 #include "config_pgraphnodes.h"
 
 #include "ambientLight.h"
+#include "callbackData.h"
+#include "callbackNode.h"
+#include "callbackObject.h"
 #include "directionalLight.h"
 #include "lightLensNode.h"
 #include "lightNode.h"
+#include "nodeCullCallbackData.h"
 #include "pointLight.h"
 #include "selectiveChildNode.h"
 #include "sequenceNode.h"
@@ -51,9 +55,13 @@ init_libpgraphnodes() {
   initialized = true;
 
   AmbientLight::init_type();
+  CallbackData::init_type();
+  CallbackNode::init_type();
+  CallbackObject::init_type();
   DirectionalLight::init_type();
   LightLensNode::init_type();
   LightNode::init_type();
+  NodeCullCallbackData::init_type();
   PointLight::init_type();
   SelectiveChildNode::init_type();
   SequenceNode::init_type();
@@ -62,6 +70,7 @@ init_libpgraphnodes() {
   SwitchNode::init_type();
 
   AmbientLight::register_with_read_factory();
+  CallbackNode::register_with_read_factory();
   DirectionalLight::register_with_read_factory();
   LightLensNode::register_with_read_factory();
   LightNode::register_with_read_factory();

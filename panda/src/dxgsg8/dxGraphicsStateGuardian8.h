@@ -151,6 +151,8 @@ protected:
 
   void set_scissor(float left, float right, float bottom, float top);
 
+  virtual void reissue_transforms();
+
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);

@@ -193,6 +193,103 @@ get_cube_map_index() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_cull_callback
+//       Access: Published
+//  Description: Sets the CallbackObject that will be notified when
+//               the DisplayRegion is visited during the cull
+//               traversal.  This callback will be made during the
+//               cull thread.
+//
+//               The cull traversal is responsible for determining
+//               which nodes are visible and within the view frustum,
+//               and for accumulating state and transform, and
+//               generally building up the list of CullableObjects
+//               that are to be eventually passed to the draw
+//               traversal for rendering.
+//
+//               At the time the cull traversal callback is made, the
+//               traversal for this DisplayRegion has not yet started.
+//
+//               The callback is passed an instance of a
+//               DisplayRegionCullCallbackData, which contains
+//               pointers to the current scene information, as well as
+//               the current DisplayRegion and GSG.  The callback
+//               *replaces* the normal cull behavior, so if your
+//               callback does nothing, the scene graph will not be
+//               traversed and therefore nothing will be drawn.  If
+//               you wish the normal cull traversal to be performed
+//               for this DisplayRegion, you must call
+//               cbdata->upcall() from your callback.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_cull_callback(CallbackObject *object) {
+  CDWriter cdata(_cycler);
+  cdata->_cull_callback = object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_cull_callback
+//       Access: Published
+//  Description: Returns the CallbackObject set by set_cull_callback().
+////////////////////////////////////////////////////////////////////
+INLINE CallbackObject *DisplayRegion::
+get_cull_callback() const {
+  CDReader cdata(_cycler);
+  return cdata->_cull_callback;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_draw_callback
+//       Access: Published
+//  Description: Sets the CallbackObject that will be notified when
+//               the contents of DisplayRegion is drawn during the
+//               draw traversal.  This callback will be made during
+//               the draw thread.
+//
+//               The draw traversal is responsible for actually
+//               issuing the commands to the graphics engine to draw
+//               primitives.  Its job is to walk through the list of
+//               CullableObjects build up by the cull traversal, as
+//               quickly as possible, issuing the appropriate commands
+//               to draw each one.
+//
+//               At the time the draw traversal callback is made, the
+//               graphics state is in the initial state, and no
+//               projection matrix or modelview matrix is in effect.
+//               begin_scene() has not yet been called, and no objects
+//               have yet been drawn.  However, the viewport has
+//               already been set to the appropriate part of the
+//               window, and the clear commands for this DisplayRegion
+//               (if any) have been issued.
+//
+//               The callback is passed an instance of a
+//               DisplayRegionDrawCallbackData, which contains
+//               pointers to the current scene information, as well as
+//               the current DisplayRegion and GSG.  The callback
+//               *replaces* the normal draw behavior, so if your
+//               callback does nothing, nothing in the DisplayRegion
+//               will be drawn.  If you wish the draw traversal to
+//               continue to draw the contents of this DisplayRegion,
+//               you must call cbdata->upcall() from your callback.
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+set_draw_callback(CallbackObject *object) {
+  CDWriter cdata(_cycler);
+  cdata->_draw_callback = object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_draw_callback
+//       Access: Published
+//  Description: Returns the CallbackObject set by set_draw_callback().
+////////////////////////////////////////////////////////////////////
+INLINE CallbackObject *DisplayRegion::
+get_draw_callback() const {
+  CDReader cdata(_cycler);
+  return cdata->_draw_callback;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_pixel_width
 //       Access: Published
 //  Description: Returns the width of the DisplayRegion in pixels.
@@ -577,6 +674,16 @@ get_stereo_channel() {
 INLINE int DisplayRegionPipelineReader::
 get_cube_map_index() const {
   return _cdata->_cube_map_index;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_draw_callback
+//       Access: Published
+//  Description: Returns the CallbackObject set by set_draw_callback().
+////////////////////////////////////////////////////////////////////
+INLINE CallbackObject *DisplayRegionPipelineReader::
+get_draw_callback() const {
+  return _cdata->_draw_callback;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -43,6 +43,8 @@
 #include "vertexDataBook.h"
 #include "vertexDataPage.h"
 #include "config_pgraph.h"
+#include "displayRegionCullCallbackData.h"
+#include "displayRegionDrawCallbackData.h"
 
 #if defined(WIN32)
   #define WINDOWS_LEAN_AND_MEAN
@@ -1017,53 +1019,6 @@ get_global_ptr() {
   }
   return _global_ptr;
 }
- 
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::add_callback
-//       Access: Public
-//  Description: Adds the indicated C/C++ function and an arbitrary
-//               associated data pointer to the list of functions that
-//               will be called in the indicated thread at the
-//               indicated point of the frame.
-//
-//               The thread name may be one of the cull or draw names
-//               specified in set_threading_model(), or it may be the
-//               empty string to indicated the app or main thread.
-//
-//               The return value is true if the function and data
-//               pointer are successfully added to the appropriate
-//               callback list, or false if the same function and data
-//               pointer were already there.
-////////////////////////////////////////////////////////////////////
-bool GraphicsEngine::
-add_callback(const string &thread_name, 
-             GraphicsEngine::CallbackTime callback_time,
-             GraphicsEngine::CallbackFunction *func, void *data) {
-  LightReMutexHolder holder(_lock);
-  WindowRenderer *wr = get_window_renderer(thread_name, 0);
-  return wr->add_callback(callback_time, Callback(func, data));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::remove_callback
-//       Access: Public
-//  Description: Removes a callback added by a previous call to
-//               add_callback().  All parameters must match the same
-//               parameters passed to add_callback().  The return
-//               value is true if the callback is successfully
-//               removed, or false if it was not on the list (either
-//               one or more of the parameters did not match the call
-//               to add_callback(), or the callback has already been
-//               removed).
-////////////////////////////////////////////////////////////////////
-bool GraphicsEngine::
-remove_callback(const string &thread_name,
-                GraphicsEngine::CallbackTime callback_time,
-                GraphicsEngine::CallbackFunction *func, void *data) {
-  LightReMutexHolder holder(_lock);
-  WindowRenderer *wr = get_window_renderer(thread_name, 0);
-  return wr->remove_callback(callback_time, Callback(func, data));
-}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::texture_uploaded
@@ -1088,6 +1043,49 @@ texture_uploaded(Texture *tex) {
   LoadedTexture &lt = _loaded_textures.back();
   lt._tex = tex;
   lt._image_modified = tex->get_image_modified();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::do_cull
+//       Access: Public, Static
+//  Description: Fires off a cull traversal using the indicated camera.
+////////////////////////////////////////////////////////////////////
+void GraphicsEngine::
+do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
+        GraphicsStateGuardian *gsg, Thread *current_thread) {
+  DisplayRegion *dr = scene_setup->get_display_region();
+  PStatTimer timer(dr->get_cull_region_pcollector(), current_thread);
+
+  CullTraverser *trav = dr->get_cull_traverser();
+  trav->set_cull_handler(cull_handler);
+  trav->set_scene(scene_setup, gsg, dr->get_incomplete_render());
+
+  trav->set_view_frustum(NULL);
+  if (view_frustum_cull) {
+    // If we're to be performing view-frustum culling, determine the
+    // bounding volume associated with the current viewing frustum.
+
+    // First, we have to get the current viewing frustum, which comes
+    // from the lens.
+    PT(BoundingVolume) bv = scene_setup->get_lens()->make_bounds();
+
+    if (bv != (BoundingVolume *)NULL &&
+        bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
+      // Transform it into the appropriate coordinate space.
+      PT(GeometricBoundingVolume) local_frustum;
+      local_frustum = DCAST(GeometricBoundingVolume, bv->make_copy());
+
+      NodePath scene_parent = scene_setup->get_scene_root().get_parent(current_thread);
+      CPT(TransformState) cull_center_transform = 
+        scene_setup->get_cull_center().get_transform(scene_parent, current_thread);
+      local_frustum->xform(cull_center_transform->get_mat());
+
+      trav->set_view_frustum(local_frustum);
+    }
+  }
+
+  trav->traverse(scene_setup->get_scene_root());
+  trav->end_traverse();
 }
 
 
@@ -1265,7 +1263,20 @@ cull_and_draw_together(GraphicsOutput *win, DisplayRegion *dr,
     if (gsg->begin_scene()) {
       delete dr_reader;
       dr_reader = NULL;
-      do_cull(&cull_handler, scene_setup, gsg, current_thread);
+
+      CallbackObject *cbobj = dr->get_cull_callback();
+      if (cbobj != (CallbackObject *)NULL) {
+        // Issue the cull callback on this DisplayRegion.
+        DisplayRegionCullCallbackData cbdata(&cull_handler, scene_setup);
+        cbobj->do_callback(&cbdata);
+        
+        // The callback has taken care of the culling.
+        
+      } else {
+        // Perform the cull normally.
+        do_cull(&cull_handler, scene_setup, gsg, current_thread);
+      }
+
       gsg->end_scene();
     }
   }
@@ -1369,7 +1380,18 @@ cull_to_bins(GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread) {
 
   if (scene_setup != (SceneSetup *)NULL) {
     BinCullHandler cull_handler(cull_result);
-    do_cull(&cull_handler, scene_setup, gsg, current_thread);
+    CallbackObject *cbobj = dr->get_cull_callback();
+    if (cbobj != (CallbackObject *)NULL) {
+      // Issue the cull callback on this DisplayRegion.
+      DisplayRegionCullCallbackData cbdata(&cull_handler, scene_setup);
+      cbobj->do_callback(&cbdata);
+
+      // The callback has taken care of the culling.
+
+    } else {
+      // Perform the cull normally.
+      do_cull(&cull_handler, scene_setup, gsg, current_thread);
+    }
 
     PStatTimer timer(_cull_sort_pcollector, current_thread);
     cull_result->finish_cull(scene_setup, current_thread);
@@ -1713,49 +1735,6 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::do_cull
-//       Access: Private
-//  Description: Fires off a cull traversal using the indicated camera.
-////////////////////////////////////////////////////////////////////
-void GraphicsEngine::
-do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
-        GraphicsStateGuardian *gsg, Thread *current_thread) {
-  DisplayRegion *dr = scene_setup->get_display_region();
-  PStatTimer timer(dr->get_cull_region_pcollector(), current_thread);
-
-  CullTraverser *trav = dr->get_cull_traverser();
-  trav->set_cull_handler(cull_handler);
-  trav->set_scene(scene_setup, gsg, dr->get_incomplete_render());
-
-  trav->set_view_frustum(NULL);
-  if (view_frustum_cull) {
-    // If we're to be performing view-frustum culling, determine the
-    // bounding volume associated with the current viewing frustum.
-
-    // First, we have to get the current viewing frustum, which comes
-    // from the lens.
-    PT(BoundingVolume) bv = scene_setup->get_lens()->make_bounds();
-
-    if (bv != (BoundingVolume *)NULL &&
-        bv->is_of_type(GeometricBoundingVolume::get_class_type())) {
-      // Transform it into the appropriate coordinate space.
-      PT(GeometricBoundingVolume) local_frustum;
-      local_frustum = DCAST(GeometricBoundingVolume, bv->make_copy());
-
-      NodePath scene_parent = scene_setup->get_scene_root().get_parent(current_thread);
-      CPT(TransformState) cull_center_transform = 
-        scene_setup->get_cull_center().get_transform(scene_parent, current_thread);
-      local_frustum->xform(cull_center_transform->get_mat());
-
-      trav->set_view_frustum(local_frustum);
-    }
-  }
-
-  trav->traverse(scene_setup->get_scene_root());
-  trav->end_traverse();
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::do_draw
 //       Access: Private
 //  Description: Draws the previously-culled scene.
@@ -1766,21 +1745,40 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
   // Statistics
   PStatTimer timer(dr->get_draw_region_pcollector(), current_thread);
 
-  DisplayRegionPipelineReader *dr_reader = 
-    new DisplayRegionPipelineReader(dr, current_thread);
-
   GraphicsStateGuardian *gsg = win->get_gsg();
-  win->change_scenes(dr_reader);
+  CallbackObject *cbobj;
 
-  gsg->prepare_display_region(dr_reader, dr_reader->get_stereo_channel());
-  if (dr_reader->is_any_clear_active()) {
-    gsg->clear(dr_reader->get_object());
+  {
+    DisplayRegionPipelineReader dr_reader(dr, current_thread);
+    win->change_scenes(&dr_reader);
+    gsg->prepare_display_region(&dr_reader, dr_reader.get_stereo_channel());
+    if (dr_reader.is_any_clear_active()) {
+      gsg->clear(dr_reader.get_object());
+    }
+
+    cbobj = dr_reader.get_draw_callback();
+  }
+
+  if (cbobj != (CallbackObject *)NULL) {
+    // Issue the draw callback on this DisplayRegion.
+
+    // Set the GSG to the initial state.
+    gsg->set_state_and_transform(RenderState::make_empty(), TransformState::make_identity());
+
+    DisplayRegionDrawCallbackData cbdata(cull_result, scene_setup);
+    cbobj->do_callback(&cbdata);
+
+    // We don't trust the state the callback may have left us in.
+    gsg->clear_state_and_transform();
+
+    // The callback has taken care of the drawing.
+    return;
   }
 
   if (cull_result == NULL || scene_setup == NULL) {
     // Nothing to see here.
 
-  } else if (dr_reader->get_object()->is_stereo()) {
+  } else if (dr->is_stereo()) {
     // We don't actually draw the stereo DisplayRegions.  These are
     // just placeholders; we draw the individual left and right eyes
     // instead.  (We might still clear the stereo DisplayRegions,
@@ -1795,15 +1793,9 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
 
   } else {
     if (gsg->begin_scene()) {
-      delete dr_reader;
-      dr_reader = NULL;
       cull_result->draw(current_thread);
       gsg->end_scene();
     }
-  }
-
-  if (dr_reader != (DisplayRegionPipelineReader *)NULL) {
-    delete dr_reader;
   }
 }
 
@@ -2369,8 +2361,6 @@ do_frame(GraphicsEngine *engine, Thread *current_thread) {
   PStatTimer timer(engine->_do_frame_pcollector, current_thread);
   LightReMutexHolder holder(_wl_lock);
 
-  do_callbacks(CB_pre_frame);
-
   engine->cull_to_bins(_cull, current_thread);
   engine->cull_and_draw_together(_cdraw, current_thread);
   engine->draw_bins(_draw, current_thread);
@@ -2395,8 +2385,6 @@ do_frame(GraphicsEngine *engine, Thread *current_thread) {
 
     _gsgs.swap(new_gsgs);
   }
-
-  do_callbacks(CB_post_frame);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2507,60 +2495,6 @@ any_done_gsgs() const {
   }
 
   return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::add_callback
-//       Access: Public
-//  Description: Adds the indicated callback to this renderer's list
-//               for the indicated callback time.  Returns true if it
-//               is successfully added, false if it was already there.
-////////////////////////////////////////////////////////////////////
-bool GraphicsEngine::WindowRenderer::
-add_callback(GraphicsEngine::CallbackTime callback_time, 
-             const GraphicsEngine::Callback &callback) {
-  nassertr(callback_time >= 0 && callback_time < CB_len, false);
-  LightReMutexHolder holder(_wl_lock);
-  return _callbacks[callback_time].insert(callback).second;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::remove_callback
-//       Access: Public
-//  Description: Removes the indicated callback from this renderer's
-//               list for the indicated callback time.  Returns true
-//               if it is successfully removed, or false if it was not
-//               on the list.
-////////////////////////////////////////////////////////////////////
-bool GraphicsEngine::WindowRenderer::
-remove_callback(GraphicsEngine::CallbackTime callback_time, 
-                const GraphicsEngine::Callback &callback) {
-  nassertr(callback_time >= 0 && callback_time < CB_len, false);
-  LightReMutexHolder holder(_wl_lock);
-  Callbacks::iterator cbi = _callbacks[callback_time].find(callback);
-  if (cbi != _callbacks[callback_time].end()) {
-    _callbacks[callback_time].erase(cbi);
-    return true;
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::WindowRenderer::do_callbacks
-//       Access: Private
-//  Description: Calls all of the callback functions on the indicated
-//               list.  Intended to be called internally when we have
-//               reached the indicated point on the frame.
-////////////////////////////////////////////////////////////////////
-void GraphicsEngine::WindowRenderer::
-do_callbacks(GraphicsEngine::CallbackTime callback_time) {
-  nassertv(callback_time >= 0 && callback_time < CB_len);
-  Callbacks::const_iterator cbi;
-  for (cbi = _callbacks[callback_time].begin();
-       cbi != _callbacks[callback_time].end();
-       ++cbi) {
-    (*cbi).do_callback();
-  }
 }
 
 ////////////////////////////////////////////////////////////////////

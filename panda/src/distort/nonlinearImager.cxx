@@ -20,6 +20,9 @@
 #include "graphicsOutput.h"
 #include "graphicsEngine.h"
 #include "dcast.h"
+#include "cPointerCallbackObject.h"
+#include "asyncTaskManager.h"
+#include "genericAsyncTask.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NonlinearImager::Constructor
@@ -42,9 +45,9 @@ NonlinearImager::
   remove_all_screens();
   remove_all_viewers();
 
-  if (_engine != (GraphicsEngine *)NULL) {
-    _engine->remove_callback("", GraphicsEngine::CB_pre_frame, 
-                             recompute_callback, (void *)this);
+  if (_recompute_task != (AsyncTask *)NULL) {
+    AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
+    task_mgr->remove(_recompute_task);
   }
 }
 
@@ -330,8 +333,13 @@ add_viewer(DisplayRegion *dr) {
   nassertr(_viewers.empty() || (engine == _engine), -1);
   if (_engine == (GraphicsEngine *)NULL) {
     _engine = engine;
-    _engine->add_callback("", GraphicsEngine::CB_pre_frame, 
-                          recompute_callback, (void *)this);
+  }
+
+  if (_recompute_task == (AsyncTask *)NULL) {
+    _recompute_task = 
+      new GenericAsyncTask("nli_recompute", recompute_callback, (void *)this);
+    AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
+    task_mgr->add(_recompute_task);
   }
 
   int previous_vi = find_viewer(dr);
@@ -595,14 +603,14 @@ recompute() {
 ////////////////////////////////////////////////////////////////////
 //     Function: NonlinearImager::recompute_callback
 //       Access: Private, Static
-//  Description: This function is added as a callback to the beginning
-//               of the graphics engine's frame, to ensure that all
+//  Description: This function is added as a task, to ensure that all
 //               frames are up-to-date.
 ////////////////////////////////////////////////////////////////////
-void NonlinearImager::
-recompute_callback(void *data) {
+AsyncTask::DoneStatus NonlinearImager::
+recompute_callback(GenericAsyncTask *, void *data) {
   NonlinearImager *self = (NonlinearImager *)data;
   self->recompute_if_stale();
+  return AsyncTask::DS_cont;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -259,6 +259,7 @@ protected:
   bool is_at_least_version(int major_version, int minor_version, int release_version = 0) const;
   virtual void *get_extension_func(const char *prefix, const char *name);
 
+  virtual void reissue_transforms();
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);

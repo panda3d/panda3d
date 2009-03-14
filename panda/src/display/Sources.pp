@@ -15,6 +15,8 @@
     config_display.h \
     drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h  \
+    displayRegionCullCallbackData.I displayRegionCullCallbackData.h \
+    displayRegionDrawCallbackData.I displayRegionDrawCallbackData.h \
     frameBufferProperties.I frameBufferProperties.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsOutput.I graphicsOutput.h \
@@ -42,6 +44,8 @@
     config_display.cxx \
     drawableRegion.cxx \
     displayRegion.cxx \
+    displayRegionCullCallbackData.cxx \
+    displayRegionDrawCallbackData.cxx \
     frameBufferProperties.cxx \
     graphicsEngine.cxx \
     graphicsOutput.cxx \
@@ -65,6 +69,8 @@
     config_display.h \
     drawableRegion.I drawableRegion.h \
     displayRegion.I displayRegion.h \
+    displayRegionCullCallbackData.I displayRegionCullCallbackData.h \
+    displayRegionDrawCallbackData.I displayRegionDrawCallbackData.h \
     frameBufferProperties.I frameBufferProperties.h \
     graphicsEngine.I graphicsEngine.h \
     graphicsOutput.I graphicsOutput.h \

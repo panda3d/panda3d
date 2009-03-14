@@ -22,14 +22,18 @@
 #include "bitMask.h"
 #include "buttonHandle.h"
 #include "cachedTypedWritableReferenceCount.h"
+#include "callbackData.h"
+#include "callbackObject.h"
 #include "clockObject.h"
 #include "configurable.h"
 #include "copyOnWriteObject.h"
+#include "cPointerCallbackObject.h"
 #include "datagram.h"
 #include "doubleBitMask.h"
 #include "factoryParam.h"
 #include "namable.h"
 #include "nodeCachedReferenceCount.h"
+#include "pythonCallbackObject.h"
 #include "referenceCount.h"
 #include "sparseArray.h"
 #include "typedObject.h"
@@ -153,16 +157,20 @@ init_libputil() {
   BitMask32::init_type();
   BitMask64::init_type();
   ButtonHandle::init_type();
+  CPointerCallbackObject::init_type();
   CachedTypedWritableReferenceCount::init_type();
+  CallbackData::init_type();
+  CallbackObject::init_type();
   ClockObject::init_type();
   Configurable::init_type();
   CopyOnWriteObject::init_type();
   Datagram::init_type();
   DoubleBitMaskNative::init_type();
-  QuadBitMaskNative::init_type();
   FactoryParam::init_type();
   Namable::init_type();
   NodeCachedReferenceCount::init_type();
+  PythonCallbackObject::init_type();
+  QuadBitMaskNative::init_type();
   ReferenceCount::init_type();
   SparseArray::init_type();
   TypedObject::init_type();

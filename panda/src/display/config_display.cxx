@@ -15,6 +15,8 @@
 
 #include "config_display.h"
 #include "displayRegion.h"
+#include "displayRegionCullCallbackData.h"
+#include "displayRegionDrawCallbackData.h"
 #include "standardMunger.h"
 #include "graphicsStateGuardian.h"
 #include "graphicsPipe.h"
@@ -369,6 +371,8 @@ init_libdisplay() {
   initialized = true;
 
   DisplayRegion::init_type();
+  DisplayRegionCullCallbackData::init_type();
+  DisplayRegionDrawCallbackData::init_type();
   DisplayRegionPipelineReader::init_type();
   GraphicsBuffer::init_type();
   GraphicsDevice::init_type();

@@ -36,6 +36,7 @@ class EXPCL_PANDA_PGRAPH SceneSetup : public ReferenceCount {
 public:
   INLINE SceneSetup();
 
+PUBLISHED:
   INLINE void set_display_region(DisplayRegion *display_region);
   INLINE DisplayRegion *get_display_region() const;
 

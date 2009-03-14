@@ -97,7 +97,7 @@ INLINE CullTraverserData::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::node
-//       Access: Public
+//       Access: Published
 //  Description: Returns the node traversed to so far.
 ////////////////////////////////////////////////////////////////////
 INLINE PandaNode *CullTraverserData::
@@ -129,7 +129,7 @@ node_reader() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::get_net_transform
-//       Access: Public
+//       Access: Published
 //  Description: Returns the net transform: the relative transform
 //               from root of the scene graph to the current node.
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ get_net_transform(const CullTraverser *) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::is_in_view
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the current node is within the view
 //               frustum, false otherwise.  If the node's bounding
 //               volume falls completely within the view frustum, this
@@ -173,7 +173,7 @@ is_in_view(const DrawMask &camera_mask) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::is_this_node_hidden
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if this particular node is hidden, even
 //               though we might be traversing past this node to find
 //               a child node that has had show_through() called for

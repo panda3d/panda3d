@@ -115,36 +115,15 @@ public:
     TS_done
   };
 
-  enum CallbackTime {
-    CB_pre_frame,
-    CB_post_frame,
-    CB_len  // Not an option; just indicates the size of the list.
-  };
-
-  typedef void CallbackFunction(void *data);
-
-  bool add_callback(const string &thread_name, CallbackTime callback_time,
-                    CallbackFunction *func, void *data);
-  bool remove_callback(const string &thread_name, CallbackTime callback_time,
-                       CallbackFunction *func, void *data);
-
   void texture_uploaded(Texture *tex);
+
+public:
+  static void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
+                      GraphicsStateGuardian *gsg, Thread *current_thread);
   
 private:
-  class Callback {
-  public:
-    INLINE Callback(CallbackFunction *func, void *data);
-    INLINE bool operator < (const Callback &other) const;
-    INLINE void do_callback() const;
-
-  private:
-    CallbackFunction *_func;
-    void *_data;
-  };
-
   typedef ov_set< PT(GraphicsOutput), IndirectLess<GraphicsOutput> > Windows;
   typedef pset< PT(GraphicsStateGuardian) > GSGs;
-  typedef pset< Callback > Callbacks;
 
   static bool scene_root_func(const PandaNode *node);
   bool is_scene_root(const PandaNode *node);
@@ -169,8 +148,6 @@ private:
 
   PT(SceneSetup) setup_scene(GraphicsStateGuardian *gsg, 
                              DisplayRegionPipelineReader *dr);
-  void do_cull(CullHandler *cull_handler, SceneSetup *scene_setup,
-               GraphicsStateGuardian *gsg, Thread *current_thread);
   void do_draw(CullResult *cull_result, SceneSetup *scene_setup,
                GraphicsOutput *win, DisplayRegion *dr, Thread *current_thread);
 
@@ -287,12 +264,6 @@ private:
     void do_pending(GraphicsEngine *engine, Thread *current_thread);
     bool any_done_gsgs() const;
 
-    bool add_callback(CallbackTime callback_time, const Callback &callback);
-    bool remove_callback(CallbackTime callback_time, const Callback &callback);
-
-  private:
-    void do_callbacks(CallbackTime callback_time);
-
   public:
     Windows _cull;    // cull stage
     Windows _cdraw;   // cull-and-draw-together stage
@@ -304,7 +275,6 @@ private:
 
     GSGs _gsgs;       // draw stage
 
-    Callbacks _callbacks[CB_len];
     LightReMutex _wl_lock;
   };
 

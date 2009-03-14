@@ -49,7 +49,6 @@ PUBLISHED:
   CullTraverser();
   CullTraverser(const CullTraverser &copy);
 
-public:
   INLINE GraphicsStateGuardianBase *get_gsg() const;
   INLINE Thread *get_current_thread() const;
 

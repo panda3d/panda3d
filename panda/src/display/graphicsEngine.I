@@ -151,39 +151,3 @@ make_parasite(GraphicsOutput *host, const string &name,
                                        host->get_gsg(), host);
   return result;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::Callback::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE GraphicsEngine::Callback::
-Callback(CallbackFunction *func, void *data) :
-  _func(func),
-  _data(data)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::Callback::operator <
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE bool GraphicsEngine::Callback::
-operator < (const GraphicsEngine::Callback &other) const {
-  if (_func != other._func) {
-    return _func < other._func;
-  }
-  return _data < other._data;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GraphicsEngine::Callback::do_callback
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-INLINE void GraphicsEngine::Callback::
-do_callback() const {
-  (*_func)(_data);
-}
-

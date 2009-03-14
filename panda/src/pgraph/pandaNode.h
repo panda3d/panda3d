@@ -112,6 +112,7 @@ public:
   virtual bool has_single_child_visibility() const;
   virtual int get_visible_child() const;
   virtual bool is_renderable() const;
+  virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
   PT(PandaNode) copy_subgraph(Thread *current_thread = Thread::get_current_thread()) const;

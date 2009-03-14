@@ -50,6 +50,7 @@ public:
              const PStatCollector &draw_region_pcollector);
   INLINE ~CullResult();
 
+PUBLISHED:
   PT(CullResult) make_next() const;
 
   INLINE CullBin *get_bin(int bin_index);

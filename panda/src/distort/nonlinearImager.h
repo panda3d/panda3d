@@ -27,10 +27,13 @@
 #include "pointerTo.h"
 #include "pvector.h"
 #include "graphicsEngine.h"
+#include "callbackObject.h"
+#include "asyncTask.h"
 
 class GraphicsEngine;
 class GraphicsStateGuardian;
 class GraphicsOutput;
+class GenericAsyncTask;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : NonlinearImager
@@ -130,7 +133,7 @@ PUBLISHED:
   void recompute();
 
 public:
-  static void recompute_callback(void *data);
+  static AsyncTask::DoneStatus recompute_callback(GenericAsyncTask *task, void *data);
   void recompute_if_stale();
 
 private:
@@ -174,6 +177,7 @@ private:
   Screens _screens;
 
   PT(GraphicsEngine) _engine;
+  PT(AsyncTask) _recompute_task;
   NodePath _dark_room;
 
   bool _stale;

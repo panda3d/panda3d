@@ -1,6 +1,8 @@
 #include "standardMunger.cxx"
 #include "drawableRegion.cxx"
 #include "displayRegion.cxx"
+#include "displayRegionCullCallbackData.cxx"
+#include "displayRegionDrawCallbackData.cxx"
 #include "graphicsEngine.cxx"
 #include "graphicsPipe.cxx"
 #include "graphicsStateGuardian.cxx"

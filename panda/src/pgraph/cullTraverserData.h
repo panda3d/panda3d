@@ -54,10 +54,14 @@ public:
                            PandaNode *child);
   INLINE ~CullTraverserData();
 
+PUBLISHED:
   INLINE PandaNode *node() const;
+
+public:
   INLINE PandaNodePipelineReader *node_reader();
   INLINE const PandaNodePipelineReader *node_reader() const;
 
+PUBLISHED:
   CPT(TransformState) get_modelview_transform(const CullTraverser *trav) const;
   INLINE const TransformState *get_net_transform(const CullTraverser *trav) const;
 
@@ -71,6 +75,7 @@ public:
                                  CPT(RenderEffects) node_effects,
                                  const RenderAttrib *off_clip_planes);
 
+public:
   WorkingNodePath _node_path;
   PandaNodePipelineReader _node_reader;
   CPT(TransformState) _net_transform;

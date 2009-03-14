@@ -20,5 +20,6 @@
 #include "findApproxLevelEntry.cxx"
 #include "fog.cxx"
 #include "fogAttrib.cxx"
+#include "geomDrawCallbackData.cxx"
 #include "geomNode.cxx"
 #include "geomTransformer.cxx"

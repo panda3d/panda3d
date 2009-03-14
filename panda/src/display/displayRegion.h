@@ -36,6 +36,7 @@
 #include "plist.h"
 #include "pStatCollector.h"
 #include "cullTraverser.h"
+#include "callbackObject.h"
 
 class GraphicsOutput;
 class GraphicsPipe;
@@ -105,6 +106,12 @@ PUBLISHED:
 
   virtual void set_cube_map_index(int cube_map_index);
   INLINE int get_cube_map_index() const;
+
+  INLINE void set_cull_callback(CallbackObject *object);
+  INLINE CallbackObject *get_cull_callback() const;
+
+  INLINE void set_draw_callback(CallbackObject *object);
+  INLINE CallbackObject *get_draw_callback() const;
 
   INLINE int get_pixel_width() const;
   INLINE int get_pixel_height() const;
@@ -191,6 +198,9 @@ private:
     int _sort;
     Lens::StereoChannel _stereo_channel;
     int _cube_map_index;
+
+    PT(CallbackObject) _cull_callback;
+    PT(CallbackObject) _draw_callback;
   };
 
   PipelineCycler<CData> _cycler;
@@ -282,6 +292,7 @@ public:
   INLINE Lens::StereoChannel get_stereo_channel();
   INLINE bool get_clear_depth_between_eyes() const;
   INLINE int get_cube_map_index() const;
+  INLINE CallbackObject *get_draw_callback() const;
 
   INLINE void get_pixels(int &pl, int &pr, int &pb, int &pt) const;
   INLINE void get_region_pixels(int &xo, int &yo, int &w, int &h) const;

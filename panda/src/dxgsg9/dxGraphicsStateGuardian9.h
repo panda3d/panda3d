@@ -186,6 +186,8 @@ protected:
   void do_issue_stencil();
   void do_issue_scissor();
 
+  virtual void reissue_transforms();
+
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);

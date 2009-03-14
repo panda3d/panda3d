@@ -53,6 +53,7 @@
     findApproxPath.I findApproxPath.h \
     fog.I fog.h \
     fogAttrib.I fogAttrib.h \
+    geomDrawCallbackData.I geomDrawCallbackData.h \
     geomNode.I geomNode.h \
     geomTransformer.I geomTransformer.h \
     internalNameCollection.I internalNameCollection.h \
@@ -156,6 +157,7 @@
     findApproxPath.cxx \
     fog.cxx \
     fogAttrib.cxx \
+    geomDrawCallbackData.cxx \
     geomNode.cxx \
     geomTransformer.cxx \
     internalNameCollection.cxx \
@@ -255,6 +257,7 @@
     fadeLodNodeData.h \
     fog.I fog.h \
     fogAttrib.I fogAttrib.h \
+    geomDrawCallbackData.I geomDrawCallbackData.h \
     geomNode.I geomNode.h \
     geomTransformer.I geomTransformer.h \
     internalNameCollection.I internalNameCollection.h \

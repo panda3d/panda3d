@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_gsg
-//       Access: Public
+//       Access: Published
 //  Description: Returns the GraphicsStateGuardian in effect.
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsStateGuardianBase *CullTraverser::
@@ -25,7 +25,7 @@ get_gsg() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_current_thread
-//       Access: Public
+//       Access: Published
 //  Description: Returns the currently-executing thread object, as
 //               passed to the CullTraverser constructor.
 ////////////////////////////////////////////////////////////////////
@@ -36,7 +36,7 @@ get_current_thread() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_scene
-//       Access: Public
+//       Access: Published
 //  Description: Returns the SceneSetup object.
 ////////////////////////////////////////////////////////////////////
 INLINE SceneSetup *CullTraverser::
@@ -46,7 +46,7 @@ get_scene() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::has_tag_state_key
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if a nonempty tag state key has been
 //               specified for the scene's camera, false otherwise.
 ////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ has_tag_state_key() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_tag_state_key
-//       Access: Public
+//       Access: Published
 //  Description: Returns the tag state key that has been specified for
 //               the scene's camera, if any.
 ////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ get_tag_state_key() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_camera_transform
-//       Access: Public
+//       Access: Published
 //  Description: Returns the position of the camera relative to the
 //               starting node.
 ////////////////////////////////////////////////////////////////////
@@ -79,7 +79,7 @@ get_camera_transform() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_world_transform
-//       Access: Public
+//       Access: Published
 //  Description: Returns the position of the starting node relative
 //               to the camera.  This is the inverse of the camera
 //               transform.
@@ -97,7 +97,7 @@ get_world_transform() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_initial_state
-//       Access: Public
+//       Access: Published
 //  Description: Returns the initial RenderState at the top of the
 //               scene graph we are traversing, or the empty state if
 //               the initial state was never set.
@@ -109,7 +109,7 @@ get_initial_state() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_depth_offset_decals
-//       Access: Public
+//       Access: Published
 //  Description: Returns the depth_offset_decals flag.  See
 //               set_depth_offset_decals().
 ////////////////////////////////////////////////////////////////////
@@ -120,7 +120,7 @@ get_depth_offset_decals() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::set_camera_mask
-//       Access: Public
+//       Access: Published
 //  Description: Changes the visibility mask for the camera viewing
 //               the scene.  This is normally set automatically
 //               at the time setup_scene() is called; you should
@@ -135,7 +135,7 @@ set_camera_mask(const DrawMask &camera_mask) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_camera_mask
-//       Access: Public
+//       Access: Published
 //  Description: Returns the visibility mask from the camera viewing
 //               the scene.
 ////////////////////////////////////////////////////////////////////
@@ -146,7 +146,7 @@ get_camera_mask() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::set_view_frustum
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the bounding volume that corresponds to the
 //               view frustum.  Any primitives that fall entirely
 //               outside of this volume are not drawn.
@@ -158,7 +158,7 @@ set_view_frustum(GeometricBoundingVolume *view_frustum) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_view_frustum
-//       Access: Public
+//       Access: Published
 //  Description: Returns the bounding volume that corresponds to the
 //               view frustum, or NULL if the view frustum is not in
 //               use or has not been set.
@@ -177,7 +177,7 @@ get_view_frustum() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::set_cull_handler
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the object that will receive the culled
 //               Geoms.  This must be set before calling traverse().
 ////////////////////////////////////////////////////////////////////
@@ -188,7 +188,7 @@ set_cull_handler(CullHandler *cull_handler) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_cull_handler
-//       Access: Public
+//       Access: Published
 //  Description: Returns the object that will receive the culled
 //               Geoms.
 ////////////////////////////////////////////////////////////////////
@@ -198,7 +198,7 @@ get_cull_handler() const {
 }
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::set_portal_clipper
-//       Access: Public
+//       Access: Published
 //  Description: Specifies _portal_clipper object pointer that 
 //               subsequent traverse() or traverse_below may use.
 ////////////////////////////////////////////////////////////////////
@@ -209,7 +209,7 @@ set_portal_clipper(PortalClipper *portal_clipper) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_portal_clipper
-//       Access: Public
+//       Access: Published
 //  Description: Returns the _portal_clipper pointer
 ////////////////////////////////////////////////////////////////////
 INLINE PortalClipper *CullTraverser::
@@ -219,7 +219,7 @@ get_portal_clipper() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::get_effective_incomplete_render
-//       Access: Public
+//       Access: Published
 //  Description: Returns true if the cull traversal is effectively in
 //               incomplete_render state, considering both the GSG's
 //               incomplete_render and the current DisplayRegion's
@@ -235,7 +235,7 @@ get_effective_incomplete_render() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::flush_level
-//       Access: Public, Static
+//       Access: Published, Static
 //  Description: Flushes the PStatCollectors used during traversal.
 ////////////////////////////////////////////////////////////////////
 INLINE void CullTraverser::

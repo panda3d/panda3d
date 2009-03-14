@@ -54,6 +54,7 @@ public:
                       const TransformState *transform,
                       Thread *current_thread) const;
   virtual bool is_renderable() const;
+  virtual void add_for_draw(CullTraverser *trav, CullTraverserData &data);
   virtual CollideMask get_legal_collide_mask() const;
 
   virtual bool safe_to_flatten() const;

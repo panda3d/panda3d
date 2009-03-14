@@ -44,7 +44,7 @@ TypeHandle CullTraverser::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
@@ -62,7 +62,7 @@ CullTraverser() :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::Copy Constructor
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 CullTraverser::
@@ -84,7 +84,7 @@ CullTraverser(const CullTraverser &copy) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::set_scene
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Sets the SceneSetup object that indicates the initial
 //               camera position, etc.  This must be called before
 //               traversal begins.
@@ -110,7 +110,7 @@ set_scene(SceneSetup *scene_setup, GraphicsStateGuardianBase *gsg,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::traverse
-//       Access: Public
+//       Access: Published
 //  Description: Begins the traversal from the indicated node.
 ////////////////////////////////////////////////////////////////////
 void CullTraverser::
@@ -165,7 +165,7 @@ traverse(const NodePath &root) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::traverse
-//       Access: Public
+//       Access: Published
 //  Description: Traverses from the next node with the given
 //               data, which has been constructed with the node but
 //               has not yet been converted into the node's space.
@@ -226,7 +226,7 @@ traverse(CullTraverserData &data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::traverse_below
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Traverses all the children of the indicated node,
 //               with the given data, which has been converted into
 //               the node's space.
@@ -247,73 +247,8 @@ traverse_below(CullTraverserData &data) {
     start_decal(data);
     
   } else {
-    if (!this_node_hidden && node->is_geom_node()) {
-      _geom_nodes_pcollector.add_level(1);
-      GeomNode *geom_node = DCAST(GeomNode, node);
-
-      if (pgraph_cat.is_spam()) {
-        pgraph_cat.spam()
-          << "Found " << *geom_node << " in state " << *data._state 
-          << " draw_mask = " << data._draw_mask << "\n";
-      }
-      
-      // Get all the Geoms, with no decalling.
-      GeomNode::Geoms geoms = geom_node->get_geoms(_current_thread);
-      int num_geoms = geoms.get_num_geoms();
-      _geoms_pcollector.add_level(num_geoms);
-      CPT(TransformState) net_transform = data.get_net_transform(this);
-      CPT(TransformState) modelview_transform = data.get_modelview_transform(this);
-      CPT(TransformState) internal_transform = get_gsg()->get_cs_transform()->compose(modelview_transform);
-
-      for (int i = 0; i < num_geoms; i++) {
-        const Geom *geom = geoms.get_geom(i);
-        if (geom->is_empty()) {
-          continue;
-        }
-
-        CPT(RenderState) state = data._state->compose(geoms.get_geom_state(i));
-        if (state->has_cull_callback() && !state->cull_callback(this, data)) {
-          // Cull.
-          continue;
-        }
-
-        // Cull the Geom bounding volume against the view frustum
-        // and/or the cull planes.  Don't bother unless we've got more
-        // than one Geom, since otherwise the bounding volume of the
-        // GeomNode is (probably) the same as that of the one Geom,
-        // and we've already culled against that.
-        if (num_geoms > 1) {
-          if (data._view_frustum != (GeometricBoundingVolume *)NULL) {
-            // Cull the individual Geom against the view frustum.
-            CPT(BoundingVolume) geom_volume = geom->get_bounds();
-            const GeometricBoundingVolume *geom_gbv =
-              DCAST(GeometricBoundingVolume, geom_volume);
-
-            int result = data._view_frustum->contains(geom_gbv);
-            if (result == BoundingVolume::IF_no_intersection) {
-              // Cull this Geom.
-              continue;
-            }
-          }
-          if (!data._cull_planes->is_empty()) {
-            // Also cull the Geom against the cull planes.
-            CPT(BoundingVolume) geom_volume = geom->get_bounds();
-            const GeometricBoundingVolume *geom_gbv =
-              DCAST(GeometricBoundingVolume, geom_volume);
-            int result;
-            data._cull_planes->do_cull(result, state, geom_gbv);
-            if (result == BoundingVolume::IF_no_intersection) {
-              // Cull.
-              continue;
-            }
-          }
-        }
-
-        CullableObject *object = 
-          new CullableObject(geom, state, net_transform, 
-                             modelview_transform, internal_transform);
-        _cull_handler->record_object(object, this);
-      }
+    if (!this_node_hidden) {
+      node->add_for_draw(this, data);
     }
 
     if (has_decal) {
@@ -353,7 +288,7 @@ traverse_below(CullTraverserData &data) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::end_traverse
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Should be called when the traverser has finished
 //               traversing its scene, this gives it a chance to do
 //               any necessary finalization.
@@ -365,7 +300,7 @@ end_traverse() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverser::draw_bounding_volume
-//       Access: Public
+//       Access: Published
 //  Description: Draws an appropriate visualization of the indicated
 //               bounding volume.
 ////////////////////////////////////////////////////////////////////
@@ -723,7 +658,8 @@ start_decal(const CullTraverserData &data) {
 
   // Now create a new, empty CullableObject to separate the decals
   // from the non-decals.
-  CullableObject *separator = new CullableObject(decals);
+  CullableObject *separator = new CullableObject;
+  separator->set_next(decals);
 
   // And now get the base Geoms, again in reverse order.
   CullableObject *object = separator;
@@ -778,11 +714,12 @@ start_decal(const CullTraverserData &data) {
         }
       }
     }
-    
+
+    CullableObject *next = object;
     object =
       new CullableObject(geom, state, net_transform, 
-                         modelview_transform, internal_transform,
-                         object);
+                         modelview_transform, internal_transform);
+    object->set_next(next);
   }
 
   if (object != separator) {
@@ -891,10 +828,11 @@ r_get_decals(CullTraverserData &data, CullableObject *decals) {
           }
         }
 
+        CullableObject *next = decals;
         decals =
           new CullableObject(geom, state, net_transform, 
-                             modelview_transform, internal_transform,
-                             decals);
+                             modelview_transform, internal_transform);
+        decals->set_next(next);
       }
     }
   }

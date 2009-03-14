@@ -144,7 +144,7 @@ void CullBin::ResultGraphBuilder::
 add_object(CullableObject *object) {
   if (_current_transform != object->_modelview_transform || 
       _current_state != object->_state || 
-      object->_next != (CullableObject *)NULL) {
+      object->is_fancy()) {
     // Create a new GeomNode to hold the net transform and state.  We
     // choose to create a new GeomNode for each new state, to make it
     // clearer to the observer when the state changes.
@@ -158,12 +158,12 @@ add_object(CullableObject *object) {
 
   record_one_object(_current_node, object);
 
-  if (object->_next != (CullableObject *)NULL) {
+  if (object->get_next() != (CullableObject *)NULL) {
     // Collect the decal base pieces.
-    CullableObject *base = object->_next;
+    CullableObject *base = object->get_next();
     while (base != (CullableObject *)NULL && base->_geom != (Geom *)NULL) {
       record_one_object(_current_node, base);
-      base = base->_next;
+      base = base->get_next();
     }
 
     if (base != (CullableObject *)NULL) {
@@ -174,11 +174,11 @@ add_object(CullableObject *object) {
       CPT(TransformState) transform;
       CPT(RenderState) state;
       PT(GeomNode) decal_node;
-      CullableObject *decal = base->_next;
+      CullableObject *decal = base->get_next();
       while (decal != (CullableObject *)NULL) {
         if (transform != decal->_modelview_transform || 
             state != decal->_state || 
-            decal->_next != (CullableObject *)NULL) {
+            decal->get_next() != (CullableObject *)NULL) {
           // Create a new GeomNode to hold the net transform.
           transform = decal->_modelview_transform;
           state = decal->_state;
@@ -189,7 +189,7 @@ add_object(CullableObject *object) {
         }
         
         record_one_object(decal_node, decal);
-        decal = decal->_next;
+        decal = decal->get_next();
         ++decal_index;
       }
     }

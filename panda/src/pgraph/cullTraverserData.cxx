@@ -29,7 +29,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::get_modelview_transform
-//       Access: Public
+//       Access: Published
 //  Description: Returns the modelview transform: the relative
 //               transform from the camera to the model.
 ////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ get_modelview_transform(const CullTraverser *trav) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullTraverserData::apply_transform_and_state
-//       Access: Public
+//       Access: Published
 //  Description: Applies the transform and state from the current
 //               node onto the current data.  This also evaluates
 //               billboards, etc.
@@ -66,8 +66,8 @@ apply_transform_and_state(CullTraverser *trav) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: CullTraverserData::apply_specific_transform
-//       Access: Public
+//     Function: CullTraverserData::apply_transform_and_state
+//       Access: Published
 //  Description: Applies the indicated transform and state changes
 //               (e.g. as extracted from a node) onto the current
 //               data.  This also evaluates billboards, etc.

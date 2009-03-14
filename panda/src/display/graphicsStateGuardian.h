@@ -181,10 +181,11 @@ PUBLISHED:
   Texture *get_flash_texture() const;
 #endif
 
-public:
+PUBLISHED:
   bool set_scene(SceneSetup *scene_setup);
   virtual SceneSetup *get_scene() const;
 
+public:
   virtual TextureContext *prepare_texture(Texture *tex);
   virtual bool update_texture(TextureContext *tc, bool force);
   virtual void release_texture(TextureContext *tc);
@@ -224,12 +225,16 @@ public:
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
 
+  virtual void clear_state_and_transform();
+
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
 
   virtual bool begin_frame(Thread *current_thread);
+PUBLISHED:
   virtual bool begin_scene();
   virtual void end_scene();
+public:
   virtual void end_frame(Thread *current_thread);
 
   void set_current_properties(const FrameBufferProperties *properties);
@@ -293,6 +298,8 @@ public:
 #endif
 
 protected:
+  virtual void reissue_transforms();
+
   virtual void enable_lighting(bool enable);
   virtual void set_ambient_light(const Colorf &color);
   virtual void enable_light(int light_id, bool enable);

@@ -5891,6 +5891,21 @@ get_light_color(float light_color[4], Light *light) const {
   return light_color;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::reissue_transforms
+//       Access: Protected, Virtual
+//  Description: Called by clear_state_and_transform() to ensure that
+//               the current modelview and projection matrices are
+//               properly loaded in the graphics state, after a
+//               callback might have mucked them up.
+////////////////////////////////////////////////////////////////////
+void CLP(GraphicsStateGuardian)::
+reissue_transforms() {
+  prepare_lens();
+  do_issue_transform();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::enable_lighting
 //       Access: Protected, Virtual

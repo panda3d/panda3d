@@ -19,8 +19,8 @@
 //               filled in later.
 ////////////////////////////////////////////////////////////////////
 INLINE CullableObject::
-CullableObject(CullableObject *next) :
-  _next(next)
+CullableObject() :
+  _fancy(false)
 {
 }
 
@@ -34,14 +34,13 @@ INLINE CullableObject::
 CullableObject(const Geom *geom, const RenderState *state,
                const TransformState *net_transform,
                const TransformState *modelview_transform,
-               const GraphicsStateGuardianBase *gsg,
-               CullableObject *next) :
+               const GraphicsStateGuardianBase *gsg) :
   _geom(geom),
   _state(state),
   _net_transform(net_transform),
   _modelview_transform(modelview_transform),
   _internal_transform(gsg->get_cs_transform()->compose(modelview_transform)),
-  _next(next)
+  _fancy(false)
 {
 }
 
@@ -55,14 +54,13 @@ INLINE CullableObject::
 CullableObject(const Geom *geom, const RenderState *state,
                const TransformState *net_transform,
                const TransformState *modelview_transform,
-               const TransformState *internal_transform,
-               CullableObject *next) :
+               const TransformState *internal_transform) :
   _geom(geom),
   _state(state),
   _net_transform(net_transform),
   _modelview_transform(modelview_transform),
   _internal_transform(internal_transform),
-  _next(next)
+  _fancy(false)
 {
 }
   
@@ -82,7 +80,7 @@ CullableObject(const CullableObject &copy) :
   _net_transform(copy._net_transform),
   _modelview_transform(copy._modelview_transform),
   _internal_transform(copy._internal_transform),
-  _next((CullableObject *)NULL)
+  _fancy(false)
 {
 }
 
@@ -94,6 +92,7 @@ CullableObject(const CullableObject &copy) :
 ////////////////////////////////////////////////////////////////////
 INLINE void CullableObject::
 operator = (const CullableObject &copy) {
+  nassertv(!_fancy);
   _geom = copy._geom;
   _munger = copy._munger;
   _munged_data = copy._munged_data;
@@ -104,14 +103,26 @@ operator = (const CullableObject &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::is_fancy
+//       Access: Public
+//  Description: Returns true if the object has something fancy to it:
+//               decals, maybe, or a draw_callback, that prevents it
+//               from being rendered inline.
+////////////////////////////////////////////////////////////////////
+INLINE bool CullableObject::
+is_fancy() const {
+  return _fancy;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::has_decals
 //       Access: Public
-//  Description: Returns true if the object has one or more decals
-//               placed on it, false otherwise.
+//  Description: Returns true if the object has decals associated with
+//               it.
 ////////////////////////////////////////////////////////////////////
 INLINE bool CullableObject::
 has_decals() const {
-  return (_next != (CullableObject *)NULL);
+  return _fancy && (_next != (CullableObject *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,12 +134,18 @@ has_decals() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CullableObject::
 draw(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
-  _geom->draw(gsg, _munger, _munged_data, force, current_thread);
+  if (_fancy) {
+    draw_fancy(gsg, force, current_thread);
+  } else {
+    nassertv(_geom != (Geom *)NULL);
+    gsg->set_state_and_transform(_state, _internal_transform);
+    draw_inline(gsg, force, current_thread);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::request_resident
-//       Access: Published
+//       Access: Public
 //  Description: Returns true if all the data necessary to render this
 //               object is currently resident in memory.  If this
 //               returns false, the data will be brought back into
@@ -146,6 +163,54 @@ request_resident() const {
   return resident;
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::set_draw_callback
+//       Access: Public
+//  Description: Specifies a CallbackObject that will be responsible
+//               for drawing this object.
+////////////////////////////////////////////////////////////////////
+INLINE void CullableObject::
+set_draw_callback(CallbackObject *draw_callback) {
+  make_fancy();
+  if (draw_callback != _draw_callback) {
+    if (_draw_callback != (CallbackObject *)NULL) {
+      unref_delete(_draw_callback);
+    }
+    _draw_callback = draw_callback;
+    if (_draw_callback != (CallbackObject *)NULL) {
+      _draw_callback->ref();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::set_next
+//       Access: Public
+//  Description: Sets the next object in the decal chain.  This next
+//               object will be destructed when this object destructs.
+////////////////////////////////////////////////////////////////////
+INLINE void CullableObject::
+set_next(CullableObject *next) {
+  make_fancy();
+  nassertv(_next == (CullableObject *)NULL);
+  _next = next;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::get_next
+//       Access: Public
+//  Description: Returns the next object in the decal chain, or NULL
+//               for the end of the chain.
+////////////////////////////////////////////////////////////////////
+INLINE CullableObject *CullableObject::
+get_next() const {
+  if (_fancy) {
+    return _next;
+  }
+  return NULL;
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CullableObject::flush_level
 //       Access: Public, Static
@@ -154,6 +219,36 @@ request_resident() const {
 INLINE void CullableObject::
 flush_level() {
   _sw_sprites_pcollector.flush_level();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::make_fancy
+//       Access: Private
+//  Description: Elevates this object to "fancy" status.  This means
+//               that the additional pointers, like _next and
+//               _draw_callback, have meaningful values and should be
+//               examined.
+////////////////////////////////////////////////////////////////////
+INLINE void CullableObject::
+make_fancy() {
+  if (!_fancy) {
+    _fancy = true;
+    _draw_callback = NULL;
+    _next = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CullableObject::draw_inline
+//       Access: Private
+//  Description: Draws the cullable object on the GSG immediately, in
+//               the GSG's current state.  This should only be called
+//               from the draw thread.  Assumes the GSG has already
+//               been set to the appropriate state.
+////////////////////////////////////////////////////////////////////
+INLINE void CullableObject::
+draw_inline(GraphicsStateGuardianBase *gsg, bool force, Thread *current_thread) {
+  _geom->draw(gsg, _munger, _munged_data, force, current_thread);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -577,6 +577,18 @@ is_renderable() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::add_for_draw
+//       Access: Public, Virtual
+//  Description: Adds the node's contents to the CullResult we are
+//               building up during the cull traversal, so that it
+//               will be drawn at render time.  For most nodes other
+//               than GeomNodes, this is a do-nothing operation.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+add_for_draw(CullTraverser *, CullTraverserData &) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::copy_subgraph
 //       Access: Published
 //  Description: Allocates and returns a complete copy of this

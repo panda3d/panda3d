@@ -67,7 +67,7 @@ CullResult(GraphicsStateGuardianBase *gsg,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::make_next
-//       Access: Public
+//       Access: Published
 //  Description: Returns a newly-allocated CullResult object that
 //               contains a copy of just the subset of the data from
 //               this CullResult object that is worth keeping around
@@ -95,7 +95,7 @@ make_next() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::add_object
-//       Access: Public
+//       Access: Published
 //  Description: Adds the indicated CullableObject to the appropriate
 //               bin.  The bin becomes the owner of the object
 //               pointer, and will eventually delete it.
@@ -230,7 +230,7 @@ add_object(CullableObject *object, const CullTraverser *traverser) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::finish_cull
-//       Access: Public
+//       Access: Published
 //  Description: Called after all the geoms have been added, this
 //               indicates that the cull process is finished for this
 //               frame and gives the bins a chance to do any
@@ -258,7 +258,7 @@ finish_cull(SceneSetup *scene_setup, Thread *current_thread) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::draw
-//       Access: Public
+//       Access: Published
 //  Description: Asks all the bins to draw themselves in the correct
 //               order.
 ////////////////////////////////////////////////////////////////////
@@ -281,7 +281,7 @@ draw(Thread *current_thread) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: CullResult::make_result_graph
-//       Access: Public
+//       Access: Published
 //  Description: Returns a special scene graph constructed to
 //               represent the results of the cull.  This will be a
 //               hierarchy of nodes, one node for each bin, each of

@@ -13,10 +13,12 @@
 
   #define SOURCES \
     ambientLight.h ambientLight.I \
+    callbackNode.h callbackNode.I \
     config_pgraphnodes.h \
     directionalLight.h directionalLight.I \
     lightLensNode.h lightLensNode.I \
     lightNode.h lightNode.I \
+    nodeCullCallbackData.h nodeCullCallbackData.I \
     pointLight.h pointLight.I \
     selectiveChildNode.h selectiveChildNode.I \
     sequenceNode.h sequenceNode.I \
@@ -26,10 +28,12 @@
 
   #define INCLUDED_SOURCES \
     ambientLight.cxx \
+    callbackNode.cxx \
     config_pgraphnodes.cxx \
     directionalLight.cxx \
     lightLensNode.cxx \
     lightNode.cxx \
+    nodeCullCallbackData.cxx \
     pointLight.cxx \
     selectiveChildNode.cxx \
     sequenceNode.cxx \
@@ -39,10 +43,12 @@
 
   #define INSTALL_HEADERS \
     ambientLight.h ambientLight.I \
+    callbackNode.h callbackNode.I \
     config_pgraphnodes.h \
     directionalLight.h directionalLight.I \
     lightLensNode.h lightLensNode.I \
     lightNode.h lightNode.I \
+    nodeCullCallbackData.h nodeCullCallbackData.I \
     pointLight.h pointLight.I \
     selectiveChildNode.h selectiveChildNode.I \
     sequenceNode.h sequenceNode.I \

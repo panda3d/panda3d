@@ -1,3 +1,5 @@
+#include "nodeCullCallbackData.cxx"
+#include "pointLight.cxx"
 #include "selectiveChildNode.cxx"
 #include "sequenceNode.cxx"
 #include "shaderGenerator.cxx"

@@ -42,6 +42,7 @@
 #include "fadeLodNodeData.h"
 #include "fog.h"
 #include "fogAttrib.h"
+#include "geomDrawCallbackData.h"
 #include "geomNode.h"
 #include "geomTransformer.h"
 #include "lensNode.h"
@@ -425,6 +426,7 @@ init_libpgraph() {
   FindApproxLevelEntry::init_type();
   Fog::init_type();
   FogAttrib::init_type();
+  GeomDrawCallbackData::init_type();
   GeomNode::init_type();
   GeomTransformer::init_type();
   LensNode::init_type();

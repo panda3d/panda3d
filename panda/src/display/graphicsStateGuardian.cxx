@@ -508,11 +508,12 @@ get_flash_texture() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::set_scene
-//       Access: Public
+//       Access: Published
 //  Description: Sets the SceneSetup object that indicates the initial
 //               camera position, etc.  This must be called before
 //               traversal begins.  Returns true if the scene is
-//               acceptable, false if something's wrong.
+//               acceptable, false if something's wrong.  This should
+//               be called in the draw thread only.
 ////////////////////////////////////////////////////////////////////
 bool GraphicsStateGuardian::
 set_scene(SceneSetup *scene_setup) {
@@ -532,7 +533,7 @@ set_scene(SceneSetup *scene_setup) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_scene
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Returns the current SceneSetup object.
 ////////////////////////////////////////////////////////////////////
 SceneSetup *GraphicsStateGuardian::
@@ -1239,6 +1240,26 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::clear_state_and_transform
+//       Access: Public, Virtual
+//  Description: Forgets the current graphics state and current
+//               transform, so that the next call to
+//               set_state_and_transform() will have to reload
+//               everything.  This is a good thing to call when you
+//               are no longer sure what the graphics state is.  This
+//               should only be called from the draw thread.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+clear_state_and_transform() {
+  // Re-issue the modelview and projection transforms.
+  reissue_transforms();
+
+  // Now clear the state flags to unknown.
+  _state_rs = RenderState::make_empty();
+  _state_mask.clear();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::prepare_lens
 //       Access: Public, Virtual
 //  Description: Makes the current lens (whichever lens was most
@@ -1306,12 +1327,13 @@ begin_frame(Thread *current_thread) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::begin_scene
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Called between begin_frame() and end_frame() to mark
 //               the beginning of drawing commands for a "scene"
 //               (usually a particular DisplayRegion) within a frame.
 //               All 3-D drawing commands, except the clear operation,
 //               must be enclosed within begin_scene() .. end_scene().
+//               This must be called in the draw thread.
 //
 //               The return value is true if successful (in which case
 //               the scene will be drawn and end_scene() will be
@@ -1326,7 +1348,7 @@ begin_scene() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::end_scene
-//       Access: Public, Virtual
+//       Access: Published, Virtual
 //  Description: Called between begin_frame() and end_frame() to mark
 //               the end of drawing commands for a "scene" (usually a
 //               particular DisplayRegion) within a frame.  All 3-D
@@ -2057,6 +2079,18 @@ create_gamma_table (float gamma, unsigned short *red_table, unsigned short *gree
     green_table [i] = (int)g;
     blue_table [i] = (int)g;
   }    
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::reissue_transforms
+//       Access: Protected, Virtual
+//  Description: Called by clear_state_and_transform() to ensure that
+//               the current modelview and projection matrices are
+//               properly loaded in the graphics state, after a
+//               callback might have mucked them up.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+reissue_transforms() {
 }
 
 ////////////////////////////////////////////////////////////////////

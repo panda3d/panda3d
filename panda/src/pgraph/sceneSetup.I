@@ -31,7 +31,7 @@ SceneSetup() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::set_display_region
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the display region for the scene.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
@@ -41,7 +41,7 @@ set_display_region(DisplayRegion *display_region) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::get_display_region
-//       Access: Public
+//       Access: Published
 //  Description: Returns the display region for the scene.
 ////////////////////////////////////////////////////////////////////
 INLINE DisplayRegion *SceneSetup::
@@ -51,7 +51,7 @@ get_display_region() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::set_viewport_size
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the size of the viewport (display region),
 //               in pixels.
 ////////////////////////////////////////////////////////////////////
@@ -63,7 +63,7 @@ set_viewport_size(int width, int height) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::get_viewport_width
-//       Access: Public
+//       Access: Published
 //  Description: Returns the width of the viewport (display region) in
 //               pixels.
 ////////////////////////////////////////////////////////////////////
@@ -74,7 +74,7 @@ get_viewport_width() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::get_viewport_height
-//       Access: Public
+//       Access: Published
 //  Description: Returns the height of the viewport (display region) in
 //               pixels.
 ////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ get_viewport_height() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::set_scene_root
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the root node of the scene.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
@@ -95,7 +95,7 @@ set_scene_root(const NodePath &scene_root) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::get_scene_root
-//       Access: Public
+//       Access: Published
 //  Description: Returns the root node of the scene.
 ////////////////////////////////////////////////////////////////////
 INLINE const NodePath &SceneSetup::
@@ -105,7 +105,7 @@ get_scene_root() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::set_camera_path
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the NodePath to the camera.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
@@ -115,7 +115,7 @@ set_camera_path(const NodePath &camera_path) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::get_camera_path
-//       Access: Public
+//       Access: Published
 //  Description: Returns the NodePath to the camera.
 ////////////////////////////////////////////////////////////////////
 INLINE const NodePath &SceneSetup::
@@ -125,7 +125,7 @@ get_camera_path() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::set_camera_node
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the camera used to render the scene.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
@@ -135,7 +135,7 @@ set_camera_node(Camera *camera_node) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::get_camera_node
-//       Access: Public
+//       Access: Published
 //  Description: Returns the camera used to render the scene.
 ////////////////////////////////////////////////////////////////////
 INLINE Camera *SceneSetup::
@@ -145,7 +145,7 @@ get_camera_node() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::set_lens
-//       Access: Public
+//       Access: Published
 //  Description: Indicates the particular Lens used for rendering.
 ////////////////////////////////////////////////////////////////////
 INLINE void SceneSetup::
@@ -155,7 +155,7 @@ set_lens(const Lens *lens) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::get_lens
-//       Access: Public
+//       Access: Published
 //  Description: Returns the particular Lens used for rendering.
 ////////////////////////////////////////////////////////////////////
 INLINE const Lens *SceneSetup::
@@ -191,7 +191,7 @@ get_inverted() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::get_cull_center
-//       Access: Public
+//       Access: Published
 //  Description: Returns the point from which the culling operations
 //               will be performed.  This is normally the camera, but
 //               if camera->set_cull_center() has been specified, it
@@ -231,7 +231,7 @@ get_initial_state() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::set_camera_transform
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the position of the camera relative to the
 //               starting node.
 ////////////////////////////////////////////////////////////////////
@@ -242,7 +242,7 @@ set_camera_transform(const TransformState *camera_transform) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::get_camera_transform
-//       Access: Public
+//       Access: Published
 //  Description: Returns the position of the camera relative to the
 //               starting node.
 ////////////////////////////////////////////////////////////////////
@@ -253,7 +253,7 @@ get_camera_transform() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::set_world_transform
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the position of the starting node relative
 //               to the camera.  This is the inverse of the camera
 //               transform.
@@ -265,7 +265,7 @@ set_world_transform(const TransformState *world_transform) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: SceneSetup::get_world_transform
-//       Access: Public
+//       Access: Published
 //  Description: Returns the position of the starting node relative
 //               to the camera.  This is the inverse of the camera
 //               transform.

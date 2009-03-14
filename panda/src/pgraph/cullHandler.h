@@ -40,9 +40,6 @@ public:
   INLINE static void draw(CullableObject *object,
                           GraphicsStateGuardianBase *gsg,
                           bool force, Thread *current_thread);
-  static void draw_with_decals(CullableObject *object,
-                               GraphicsStateGuardianBase *gsg,
-                               bool force, Thread *current_thread);
 };
 
 #include "cullHandler.I"
