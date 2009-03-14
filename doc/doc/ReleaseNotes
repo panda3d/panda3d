@@ -22,6 +22,7 @@ x.x.0 releases.
 * GeoMipTerrain now supports multi-channel heightmaps
 * GeoMipTerrain features new near/far LOD system
 * GeoMipTerrain performance improved
+* CallbackNode added to support low-level drawing callbacks from Python
 * Fixed some minor but annoying OpenAL/FFMpeg issues
 * Fixed bug with lcontrol and rcontrol on Linux
 * Fixed bug regarding icon filenames
