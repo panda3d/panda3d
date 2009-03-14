@@ -20,6 +20,7 @@
 #include "coordinateSystem.h"
 #include "lvecBase3.h"
 #include "lvector3.h"
+#include "lpoint2.h"
 
 #include "fltnames.h"
 #include "lpoint3_src.h"

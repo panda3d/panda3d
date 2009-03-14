@@ -23,6 +23,7 @@
 #include "checksumHashGenerator.h"
 #include "mathNumbers.h"
 #include "deg_2_rad.h"
+#include "lvecBase2.h"
 
 #include "cmath.h"
 #include "nearly_zero.h"

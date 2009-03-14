@@ -21,6 +21,7 @@
 #include "cmath.h"
 #include "config_linmath.h"
 #include "lvecBase3.h"
+#include "lvector2.h"
 
 #include "fltnames.h"
 #include "lvector3_src.h"

@@ -116,6 +116,39 @@ unit_z() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVector3::get_xy
+//       Access: Public
+//  Description: Returns a 2-component vector that shares just the
+//               first two components of this vector.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LVector3)::
+get_xy() const {
+  return FLOATNAME(LVector2)(_v.v._0, _v.v._1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector3::get_xz
+//       Access: Public
+//  Description: Returns a 2-component vector that shares just the
+//               first and last components of this vector.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LVector3)::
+get_xz() const {
+  return FLOATNAME(LVector2)(_v.v._0, _v.v._2);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector3::get_yz
+//       Access: Public
+//  Description: Returns a 2-component vector that shares just the
+//               last two components of this vector.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector2) FLOATNAME(LVector3)::
+get_yz() const {
+  return FLOATNAME(LVector2)(_v.v._1, _v.v._2);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVector3::unary -
 //       Access: Published
 //  Description:
@@ -178,9 +211,9 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector::angle_rad
 //       Access: Published
-//  Description: Returns the angle between this vector and the other
-//               one, expressed in radians.  Both vectors should be
-//               initially normalized.
+//  Description: Returns the unsigned angle between this vector and
+//               the other one, expressed in radians.  Both vectors
+//               should be initially normalized.
 ////////////////////////////////////////////////////////////////////
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 angle_rad(const FLOATNAME(LVector3) &other) const {
@@ -196,29 +229,6 @@ angle_rad(const FLOATNAME(LVector3) &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVector::relative_angle_rad
-//       Access: Published
-//  Description: returns the signed angled between two vectors. 
-//               normalization is NOT necessary
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
-relative_angle_rad(const FLOATNAME(LVector3) &other) const {
-  return atan2((_v.v._0*other._v.v._1)-(_v.v._1*other._v.v._0), dot(other));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVector::relative_angle_deg
-//       Access: Published
-//  Description: returns the signed angled between two vectors. 
-//               normalization is NOT necessary
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
-relative_angle_deg(const FLOATNAME(LVector3) &other) const {
-  return relative_angle_rad(other)*180/3.1415926535;
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVector::angle_deg
 //       Access: Published
 //  Description: Returns the angle between this vector and the other
@@ -228,6 +238,64 @@ relative_angle_deg(const FLOATNAME(LVector3) &other) const {
 INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
 angle_deg(const FLOATNAME(LVector3) &other) const {
   return rad_2_deg(angle_rad(other));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector::signed_angle_rad
+//       Access: Published
+//  Description: returns the signed angle between two vectors.
+//               The angle is positive if the rotation from this
+//               vector to other is clockwise when looking in the
+//               direction of the ref vector.
+//
+//               Vectors (except the ref vector) should be initially
+//               normalized.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
+signed_angle_rad(const FLOATNAME(LVector3) &other, 
+                 const FLOATNAME(LVector3) &ref) const {
+  FLOATTYPE angle = angle_rad(other);
+  if (cross(other).dot(ref) < 0.0f) {
+    angle = -angle;
+  }
+  return angle;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector::signed_angle_deg
+//       Access: Published
+//  Description: Returns the signed angle between two vectors. 
+//               The angle is positive if the rotation from this
+//               vector to other is clockwise when looking in the
+//               direction of the ref vector.
+//
+//               Vectors (except the ref vector) should be initially
+//               normalized.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
+signed_angle_deg(const FLOATNAME(LVector3) &other,
+                 const FLOATNAME(LVector3) &ref) const {
+  return rad_2_deg(signed_angle_rad(other, ref));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector::relative_angle_rad
+//       Access: Published
+//  Description: This method is deprecated.  Do not use.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
+relative_angle_rad(const FLOATNAME(LVector3) &other) const {
+  return atan2((_v.v._0*other._v.v._1)-(_v.v._1*other._v.v._0), dot(other));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector::relative_angle_deg
+//       Access: Published
+//  Description: This method is deprecated.  Do not use.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector3)::
+relative_angle_deg(const FLOATNAME(LVector3) &other) const {
+  return relative_angle_rad(other)*180/3.1415926535;
 }
 
 ////////////////////////////////////////////////////////////////////

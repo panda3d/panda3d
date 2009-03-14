@@ -116,6 +116,39 @@ unit_z() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LPoint3::get_xy
+//       Access: Public
+//  Description: Returns a 2-component vector that shares just the
+//               first two components of this vector.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint3)::
+get_xy() const {
+  return FLOATNAME(LPoint2)(_v.v._0, _v.v._1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LPoint3::get_xz
+//       Access: Public
+//  Description: Returns a 2-component vector that shares just the
+//               first and last components of this vector.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint3)::
+get_xz() const {
+  return FLOATNAME(LPoint2)(_v.v._0, _v.v._2);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LPoint3::get_yz
+//       Access: Public
+//  Description: Returns a 2-component vector that shares just the
+//               last two components of this vector.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint3)::
+get_yz() const {
+  return FLOATNAME(LPoint2)(_v.v._1, _v.v._2);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LPoint3::unary -
 //       Access: Public
 //  Description:

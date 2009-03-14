@@ -36,6 +36,10 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LPoint3) &unit_y();
   INLINE_LINMATH static const FLOATNAME(LPoint3) &unit_z();
 
+  INLINE_LINMATH FLOATNAME(LPoint2) get_xy() const;
+  INLINE_LINMATH FLOATNAME(LPoint2) get_xz() const;
+  INLINE_LINMATH FLOATNAME(LPoint2) get_yz() const;
+
   INLINE_LINMATH FLOATNAME(LPoint3) operator - () const;
 
   INLINE_LINMATH FLOATNAME(LVecBase3)

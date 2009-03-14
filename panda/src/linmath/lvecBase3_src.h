@@ -56,6 +56,10 @@ PUBLISHED:
   INLINE_LINMATH void set_y(FLOATTYPE value);
   INLINE_LINMATH void set_z(FLOATTYPE value);
 
+  INLINE_LINMATH FLOATNAME(LVecBase2) get_xy() const;
+  INLINE_LINMATH FLOATNAME(LVecBase2) get_xz() const;
+  INLINE_LINMATH FLOATNAME(LVecBase2) get_yz() const;
+
   // These next functions add to an existing value.
   // i.e. foo.set_x(foo.get_x() + value)
   // These are useful to reduce overhead in scripting

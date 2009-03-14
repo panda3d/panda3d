@@ -218,6 +218,29 @@ operator / (FLOATTYPE scalar) const {
   return FLOATNAME(LVector2)(FLOATNAME(LVecBase2)::operator * (recip_scalar));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LVector2::signed_angle_rad
+//       Access: Published
+//  Description: returns the signed angled between two vectors. 
+//               normalization is NOT necessary
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector2)::
+signed_angle_rad(const FLOATNAME(LVector2) &other) const {
+  return catan2((_v.v._0*other._v.v._1)-(_v.v._1*other._v.v._0), dot(other));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector2::signed_angle_deg
+//       Access: Published
+//  Description: returns the signed angled between two vectors. 
+//               normalization is NOT necessary
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATTYPE FLOATNAME(LVector2)::
+signed_angle_deg(const FLOATNAME(LVector2) &other) const {
+  return rad_2_deg(signed_angle_rad(other));
+}
+
+
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: LVector2::python_repr

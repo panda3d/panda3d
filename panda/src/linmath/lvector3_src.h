@@ -36,6 +36,10 @@ PUBLISHED:
   INLINE_LINMATH static const FLOATNAME(LVector3) &unit_y();
   INLINE_LINMATH static const FLOATNAME(LVector3) &unit_z();
 
+  INLINE_LINMATH FLOATNAME(LVector2) get_xy() const;
+  INLINE_LINMATH FLOATNAME(LVector2) get_xz() const;
+  INLINE_LINMATH FLOATNAME(LVector2) get_yz() const;
+
   INLINE_LINMATH FLOATNAME(LVector3) operator - () const;
 
   INLINE_LINMATH FLOATNAME(LVecBase3) operator + (const FLOATNAME(LVecBase3) &other) const;
@@ -47,6 +51,11 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVector3) cross(const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH FLOATTYPE angle_rad(const FLOATNAME(LVector3) &other) const;
   INLINE_LINMATH FLOATTYPE angle_deg(const FLOATNAME(LVector3) &other) const;
+
+  INLINE_LINMATH FLOATTYPE signed_angle_rad(const FLOATNAME(LVector3) &other,
+                                            const FLOATNAME(LVector3) &ref) const;
+  INLINE_LINMATH FLOATTYPE signed_angle_deg(const FLOATNAME(LVector3) &other,
+                                            const FLOATNAME(LVector3) &ref) const;
 
   INLINE_LINMATH FLOATTYPE relative_angle_rad(const FLOATNAME(LVector3) &other) const;
   INLINE_LINMATH FLOATTYPE relative_angle_deg(const FLOATNAME(LVector3) &other) const;
