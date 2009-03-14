@@ -350,7 +350,7 @@ class DirectBoundingBox:
         # Get a node path's bounds
         nodeBounds = BoundingSphere()
         nodeBounds.extendBy(self.nodePath.node().getInternalBound())
-        for child in self.nodePath.getChildrenAsList():
+        for child in self.nodePath.getChildren():
             nodeBounds.extendBy(child.getBounds())
         return nodeBounds.makeCopy()
 
@@ -514,7 +514,7 @@ class SelectionQueue(CollisionHandlerQueue):
                 # Skip, if backfacing poly
                 pass
             elif ((skipFlags & SKIP_CAMERA) and
-                  (camera in nodePath.getAncestry())):
+                  (camera in nodePath.getAncestors())):
                 # Skip if parented to a camera.
                 pass
             # Can pick unpickable, use the first visible node

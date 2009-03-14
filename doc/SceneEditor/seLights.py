@@ -81,13 +81,13 @@ class seLight(NodePath):
         
         self.assign(self.LightNode)
         if(self.type=='spot'):
-            self.helpModel = loader.loadModelCopy( "models/misc/Spotlight" )
+            self.helpModel = loader.loadModel( "models/misc/Spotlight" )
         elif(self.type=='point'):
-            self.helpModel = loader.loadModelCopy( "models/misc/Pointlight" )
+            self.helpModel = loader.loadModel( "models/misc/Pointlight" )
         elif(self.type=='directional'):
-            self.helpModel = loader.loadModelCopy( "models/misc/Dirlight" )
+            self.helpModel = loader.loadModel( "models/misc/Dirlight" )
         else:
-            self.helpModel = loader.loadModelCopy( "models/misc/sphere" )
+            self.helpModel = loader.loadModel( "models/misc/sphere" )
         self.helpModel.setColor(self.lightcolor)
         self.helpModel.reparentTo(self)
         DirectUtil.useDirectRenderStyle(self.helpModel)
@@ -304,7 +304,7 @@ class seLightManager(NodePath):
         # Originally, we don't do this load model thing.
         # But the problem is, if we don't, then it will cause some
         # Bounding calculation error...
-        self.helpModel = loader.loadModelCopy( "models/misc/sphere" )
+        self.helpModel = loader.loadModel( "models/misc/sphere" )
         self.helpModel.reparentTo(self)
         self.helpModel.hide()
    

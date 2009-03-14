@@ -310,7 +310,7 @@ class DirectCameraControl(DirectObject):
             self.cqEntries = self.cqEntries[1:] + self.cqEntries[:1]
             # Filter out object's under camera
             nodePath = entry.getIntoNodePath()
-            if SEditor.camera not in nodePath.getAncestry():
+            if SEditor.camera not in nodePath.getAncestors():
                 # Compute new hit point
                 hitPt = entry.getSurfacePoint(entry.getFromNodePath())
                 # Move coa marker to new point

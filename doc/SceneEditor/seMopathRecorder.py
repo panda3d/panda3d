@@ -700,7 +700,7 @@ class MopathRecorder(AppShell, DirectObject):
 
     def getChildIds(self, nodePath):
         ids = [nodePath.id()]
-        kids = nodePath.getChildrenAsList()
+        kids = nodePath.getChildren()
         for kid in kids:
             ids += self.getChildIds(kid)
         return ids

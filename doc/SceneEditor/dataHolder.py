@@ -166,7 +166,7 @@ class dataHolder:
         name = nodePath.getName()
 
         ## Check if there is any child node, if so, remove it.
-        childrenList = nodePath.getChildrenAsList()
+        childrenList = nodePath.getChildren()
         
                 
         if self.ModelDic.has_key(name):
@@ -258,7 +258,7 @@ class dataHolder:
                 newName = name+'_copy_%d'%i
                 while self.isInScene(newName):
                     newName = newName + '_1'
-                holder[newName] = loader.loadModelCopy(FilePath.getFullpath())
+                holder[newName] = loader.loadModel(FilePath.getFullpath())
                 holderRef[newName] = FilePath
                 self.ModelNum += 1
                 holder[newName].reparentTo(parent)
@@ -713,7 +713,7 @@ class dataHolder:
         number = len(self.dummyDict)
         number += 1
         name = 'Dummy%d'%number
-        self.dummyModel = loader.loadModelCopy( "models/misc/sphere" )
+        self.dummyModel = loader.loadModel( "models/misc/sphere" )
         self.dummyModel.reparentTo(nodePath)
         while self.isInScene(name):
             name = name + '_1'

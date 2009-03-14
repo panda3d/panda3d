@@ -88,7 +88,7 @@ class DirectGrid(NodePath,DirectObject):
         self.centerLines.reset()
 
         # Now redraw lines
-        numLines = math.ceil(self.gridSize/self.gridSpacing)
+        numLines = int(math.ceil(self.gridSize/self.gridSpacing))
         scaledSize = numLines * self.gridSpacing
  
         center = self.centerLines

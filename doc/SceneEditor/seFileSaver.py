@@ -250,7 +250,7 @@ class FileSaver:
             dummyS=str(dummy)
             
             if(1): # This is kept for now... perhaps later some sort of check might have to be enforced based on loadMode
-                out_file.write(i2+ "self."+ dummyS + "=loader.loadModelCopy(\"models/misc/sphere\")\n")
+                out_file.write(i2+ "self."+ dummyS + "=loader.loadModel(\"models/misc/sphere\")\n")
                 #Transformation Code
                 out_file.write(i2+"# Transforming the Dummy\n")
                 out_file.write(i2+ "self."+ dummyS + ".setPosHprScale(%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f)\n"% (AllScene.dummyDict[dummy].getX(),AllScene.dummyDict[dummy].getY(),AllScene.dummyDict[dummy].getZ(),AllScene.dummyDict[dummy].getH(),AllScene.dummyDict[dummy].getP(),AllScene.dummyDict[dummy].getR(),AllScene.dummyDict[dummy].getSx(),AllScene.dummyDict[dummy].getSy(),AllScene.dummyDict[dummy].getSz()))
