@@ -225,6 +225,7 @@ public:
   virtual void prepare_display_region(DisplayRegionPipelineReader *dr,
                                       Lens::StereoChannel stereo_channel);
 
+  virtual void clear_before_callback();
   virtual void clear_state_and_transform();
 
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);

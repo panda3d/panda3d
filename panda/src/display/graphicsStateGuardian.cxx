@@ -1240,6 +1240,19 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::clear_before_callback
+//       Access: Public, Virtual
+//  Description: Resets any non-standard graphics state that might
+//               give a callback apoplexy.  Some drivers require that
+//               the graphics state be restored to neutral before
+//               performing certain operations.  In OpenGL, for
+//               instance, this closes any open vertex buffers.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+clear_before_callback() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::clear_state_and_transform
 //       Access: Public, Virtual
 //  Description: Forgets the current graphics state and current

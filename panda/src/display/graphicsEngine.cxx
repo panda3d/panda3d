@@ -1763,6 +1763,7 @@ do_draw(CullResult *cull_result, SceneSetup *scene_setup,
     // Issue the draw callback on this DisplayRegion.
 
     // Set the GSG to the initial state.
+    gsg->clear_before_callback();
     gsg->set_state_and_transform(RenderState::make_empty(), TransformState::make_identity());
 
     DisplayRegionDrawCallbackData cbdata(cull_result, scene_setup);

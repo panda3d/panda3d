@@ -782,6 +782,7 @@ draw_fancy(GraphicsStateGuardianBase *gsg, bool force,
   nassertv(_fancy);
   if (_draw_callback != (CallbackObject *)NULL) {
     // It has a callback associated.
+    gsg->clear_before_callback();
     gsg->set_state_and_transform(_state, _internal_transform);
     GeomDrawCallbackData cbdata(this, gsg, force);
     _draw_callback->do_callback(&cbdata);

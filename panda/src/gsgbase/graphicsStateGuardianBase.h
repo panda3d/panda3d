@@ -128,6 +128,7 @@ public:
   // that display depends on.
   virtual SceneSetup *get_scene() const=0;
 
+  virtual void clear_before_callback()=0;
   virtual void clear_state_and_transform()=0;
 
 #ifndef CPPPARSER
