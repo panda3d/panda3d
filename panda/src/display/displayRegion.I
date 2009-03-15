@@ -228,6 +228,17 @@ set_cull_callback(CallbackObject *object) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::clear_cull_callback
+//       Access: Published
+//  Description: Removes the callback set by an earlier call to
+//               set_cull_callback().
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+clear_cull_callback() {
+  set_cull_callback(NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_cull_callback
 //       Access: Published
 //  Description: Returns the CallbackObject set by set_cull_callback().
@@ -276,6 +287,17 @@ INLINE void DisplayRegion::
 set_draw_callback(CallbackObject *object) {
   CDWriter cdata(_cycler);
   cdata->_draw_callback = object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::clear_draw_callback
+//       Access: Published
+//  Description: Removes the callback set by an earlier call to
+//               set_draw_callback().
+////////////////////////////////////////////////////////////////////
+INLINE void DisplayRegion::
+clear_draw_callback() {
+  set_draw_callback(NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

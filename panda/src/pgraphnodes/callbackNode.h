@@ -30,9 +30,11 @@ PUBLISHED:
   CallbackNode(const string &name);
 
   INLINE void set_cull_callback(CallbackObject *object);
+  INLINE void clear_cull_callback();
   INLINE CallbackObject *get_cull_callback() const;
 
   INLINE void set_draw_callback(CallbackObject *object);
+  INLINE void clear_draw_callback();
   INLINE CallbackObject *get_draw_callback() const;
 
 public:
