@@ -399,7 +399,8 @@ if (COMPILER=="LINUX"):
             LibName(pkg, "-lCommandEngine")
             LibName(pkg, "-lFoundation")
             LibName(pkg, "-lIMFbase")
-            LibName(pkg, "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
+            if (sys.platform == "darwin"):
+                LibName(pkg, "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
 
 DefSymbol("WITHINPANDA", "WITHIN_PANDA", "1")
 IncDirectory("ALWAYS", GetOutputDir()+"/tmp")
