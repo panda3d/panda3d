@@ -22,11 +22,13 @@
 
 
   #define SOURCES \
+     config_http.h \
      http_connection.h  \
      http_request.h
 
 
   #define INCLUDED_SOURCES \
+     config_http.cxx \
      http_connection.cxx	\
      parsedhttprequest.cxx  \
      http_request.cxx

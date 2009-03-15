@@ -1,5 +1,7 @@
 #include "http_connection.h"
 
+TypeHandle HttpConnection::_type_handle;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 HttpConnection::HttpConnection(SOCKET sck,Socket_Address &inaddr) :
     _Timer(Time_Span(10,0)) ,
