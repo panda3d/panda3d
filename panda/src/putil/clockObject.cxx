@@ -159,8 +159,11 @@ set_mode(ClockObject::Mode mode) {
 void ClockObject::
 set_real_time(double time) {
 #ifdef NOTIFY_DEBUG
-  if (this == _global_clock) {
-    util_cat.warning()
+  // This is only a debug message, since it happens during normal
+  // development, particularly at startup, or whenever you break into
+  // the task loop.
+  if (util_cat.is_debug() && this == _global_clock) {
+    util_cat.debug()
       << "Adjusting global clock's real time by " << time - get_real_time()
       << " seconds.\n";
   }
