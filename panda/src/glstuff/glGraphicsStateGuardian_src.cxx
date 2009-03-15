@@ -1548,6 +1548,7 @@ prepare_display_region(DisplayRegionPipelineReader *dr,
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 clear_before_callback() {
+  disable_standard_vertex_arrays();
   unbind_buffers();
 }
 
