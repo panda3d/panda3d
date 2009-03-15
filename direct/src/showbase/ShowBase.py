@@ -256,13 +256,12 @@ class ShowBase(DirectObject.DirectObject):
 
         # Get a pointer to Panda's global ClockObject, used for
         # synchronizing events between Python and C.
-        # object is exactly in sync with the TrueClock.
         globalClock = ClockObject.getGlobalClock()
 
         # Since we have already started up a TaskManager, and probably
         # a number of tasks; and since the TaskManager had to use the
         # TrueClock to tell time until this moment, make sure the
-        # globalClock
+        # globalClock object is exactly in sync with the TrueClock.
         trueClock = TrueClock.getGlobalPtr()
         globalClock.setRealTime(trueClock.getShortTime())
         globalClock.tick()
