@@ -38,7 +38,7 @@ COMPRESSOR="zlib"
 THREADCOUNT=0
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
-  "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","FMOD",
+  "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN",
   "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE",
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM",
   "OPENCV","FFMPEG","FCOLLADA","PANDATOOL"
@@ -251,7 +251,6 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     "thirdparty/win-libs-vc9/zlib/lib/libpandazlib1.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     "thirdparty/win-libs-vc9/vrpn/lib/vrpn.lib")
     if (PkgSkip("VRPN")==0):     LibName("VRPN",     "thirdparty/win-libs-vc9/vrpn/lib/quat.lib")
-    if (PkgSkip("FMOD")==0):     LibName("FMOD",     "thirdparty/win-libs-vc9/fmod/lib/fmod.lib")
     if (PkgSkip("FMODEX")==0):   LibName("FMODEX",   "thirdparty/win-libs-vc9/fmodex/lib/fmodex_vc.lib")
     if (PkgSkip("OPENAL")==0):   LibName("OPENAL",   "thirdparty/win-libs-vc9/openal/lib/pandaopenal32.lib")
     if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     "thirdparty/win-libs-vc9/nvidiacg/lib/cgGL.lib")
@@ -306,9 +305,9 @@ if (COMPILER=="LINUX"):
     PkgConfigEnable("GTK2", "gtk+-2.0")
     
     if (sys.platform == "darwin"):
-        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "FFMPEG", "PNG", "JPEG", "TIFF"]
+        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "FFMPEG", "PNG", "JPEG", "TIFF"]
     else:
-        pkgs = ["VRPN", "FFTW", "FMOD", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "NVIDIACG", "FFMPEG", "OPENAL"]
+        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "NVIDIACG", "FFMPEG", "OPENAL"]
     for pkg in pkgs:
         if (PkgSkip(pkg)==0):
             if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
@@ -337,7 +336,6 @@ if (COMPILER=="LINUX"):
       if (PkgSkip("TIFF")==0):     LibName("TIFF", "-ltiff")
     if (PkgSkip("SQUISH")==0):     LibName("SQUISH", "-lsquish")
     if (PkgSkip("FCOLLADA")==0):   LibName("FCOLLADA", "-lFCollada")
-    if (PkgSkip("FMOD")==0):       LibName("FMOD", "-lfmod")
     if (PkgSkip("FMODEX")==0):     LibName("FMODEX", "-lfmodex")
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavutil")
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavformat")
@@ -834,7 +832,6 @@ DTOOL_CONFIG=[
     ("HAVE_JPEG",                      'UNDEF',                  'UNDEF'),
     ("HAVE_TIFF",                      'UNDEF',                  'UNDEF'),
     ("HAVE_VRPN",                      'UNDEF',                  'UNDEF'),
-    ("HAVE_FMOD",                      'UNDEF',                  'UNDEF'),
     ("HAVE_FMODEX",                    'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL",                    'UNDEF',                  'UNDEF'),
     ("HAVE_NVIDIACG",                  'UNDEF',                  'UNDEF'),
