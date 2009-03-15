@@ -562,6 +562,7 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR+"/models/maps")
     MakeDirectory(OUTPUTDIR+"/models/misc")
     MakeDirectory(OUTPUTDIR+"/models/gui")
+    MakeDirectory(OUTPUTDIR+"/direct")
     MakeDirectory(OUTPUTDIR+"/pandac")
     MakeDirectory(OUTPUTDIR+"/pandac/input")
 
