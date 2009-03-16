@@ -9,6 +9,17 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+// We include these system header files first, because there is a
+// namescope conflict between them and some other header file that
+// gets included later (in particular, TCP_NODELAY must not be a
+// #define symbol for these headers to be included properly).
+
+#include <Carbon/Carbon.h>
+#include <Cocoa/Cocoa.h>
+#include <OpenGL/gl.h>
+#include <AGL/agl.h>
+#include <ApplicationServices/ApplicationServices.h>
+
 #include "osxGraphicsWindow.h"
 #include "config_osxdisplay.h"
 #include "osxGraphicsPipe.h"
@@ -23,13 +34,6 @@
 #include "virtualFileSystem.h"
 #include "config_util.h"
 #include "pset.h"
-
-#include <Carbon/Carbon.h>
-#include <Cocoa/Cocoa.h>
-#include <OpenGL/gl.h>
-#include <AGL/agl.h>
-#include <ApplicationServices/ApplicationServices.h>
-
 #include "pmutex.h"
 
 ////////////////////////////////////
