@@ -2,7 +2,7 @@
 
 #define OTHER_LIBS \
   egg:c pandaegg:m \
-  pgraph:c gobj:c lerp:c linmath:c putil:c \
+  pgraph:c pgraphnodes:c gobj:c lerp:c linmath:c putil:c \
   pnmimage:c pnmimagetypes:c display:c pipeline:c \
   event:c mathutil:c cull:c gsgbase:c pstatclient:c \
   $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
