@@ -59,7 +59,7 @@ public:
   virtual void set_properties_now(WindowProperties &properties);
 
 private:
-  void release_system_resources();
+  void release_system_resources(bool destructing);
   inline void send_key_event(ButtonHandle key, bool down);
 
 protected:

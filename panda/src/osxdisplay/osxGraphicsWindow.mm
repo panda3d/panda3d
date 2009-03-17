@@ -358,7 +358,7 @@ system_close_window() {
     osxdisplay_cat.debug()
       << "System Closing Window \n";
   }
-  release_system_resources(); 
+  release_system_resources(false); 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -549,7 +549,7 @@ handle_text_input(EventHandlerCallRef my_handler, EventRef text_event) {
 //  Description: Clean up the OS level messes.
 ////////////////////////////////////////////////////////////////////
 void osxGraphicsWindow::
-release_system_resources() {
+release_system_resources(bool destructing) {
   if (_is_fullscreen) {
     _is_fullscreen = false;
     full_screen_window = NULL;
@@ -597,12 +597,14 @@ release_system_resources() {
     _current_icon = NULL;
   }
 
-  WindowProperties properties;
-  properties.set_foreground(false);
-  properties.set_open(false);
-  properties.set_cursor_filename(Filename());
-  system_changed_properties(properties);
- 
+  if (!destructing) {
+    WindowProperties properties;
+    properties.set_foreground(false);
+    properties.set_open(false);
+    properties.set_cursor_filename(Filename());
+    system_changed_properties(properties);
+  }
+    
   _is_fullscreen = false; 
   _osx_window = NULL;
 }
@@ -670,7 +672,7 @@ osxGraphicsWindow::
     SetWRefCon(_osx_window, (long) NULL);
   }
 
-  release_system_resources(); 
+  release_system_resources(true); 
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -989,7 +991,7 @@ close_window() {
   properties.set_open(false);
   system_changed_properties(properties);
 
-  release_system_resources();
+  release_system_resources(false);
   _gsg.clear();
   _active = false;
   GraphicsWindow::close_window();
@@ -1885,7 +1887,7 @@ set_properties_now(WindowProperties &properties) {
  
     // get a copy of my properties..
     WindowProperties req_properties(_properties); 
-    release_system_resources();
+    release_system_resources(false);
     req_properties.add_properties(properties); 
  
     os_open_window(req_properties); 
