@@ -144,4 +144,13 @@ clear_receiver() {
 void Event::
 output(ostream &out) const {
   out << get_name();
+
+  out << "(";
+  for (ParameterList::const_iterator pi = _parameters.begin(); pi != _parameters.end(); ++pi) {
+    if (pi != _parameters.begin()) {
+      out << ", ";
+    }
+    out << (*pi);
+  }
+  out << ")";
 }
