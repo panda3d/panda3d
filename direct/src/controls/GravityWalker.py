@@ -285,6 +285,7 @@ class GravityWalker(DirectObject.DirectObject):
 
     def setGravity(self, gravity):
         self.__gravity = gravity
+        self.lifter.setGravity(self.__gravity)
 
     def getGravity(self, gravity):
         return self.__gravity
