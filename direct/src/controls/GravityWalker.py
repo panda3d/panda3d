@@ -31,7 +31,7 @@ class GravityWalker(DirectObject.DirectObject):
     DiagonalFactor = math.sqrt(2.) / 2.
 
     # special methods
-    def __init__(self, gravity = -32.1740, standableGround=0.707,
+    def __init__(self, gravity = 64.348, standableGround=0.707,
             hardLandingForce=16.0):
         assert self.notify.debugStateCall(self)
         DirectObject.DirectObject.__init__(self)
@@ -165,7 +165,7 @@ class GravityWalker(DirectObject.DirectObject):
 
     def getIsAirborne(self):
         return self.isAirborne
-    
+
     def setAvatar(self, avatar):
         self.avatar = avatar
         if avatar is not None:
@@ -187,7 +187,7 @@ class GravityWalker(DirectObject.DirectObject):
 
         # set up floor collision mechanism
         self.lifter = CollisionHandlerGravity()
-        self.lifter.setGravity(32.174 * 2.0)
+        self.lifter.setGravity(self.__gravity)
         self.lifter.addInPattern("enter%in")
         self.lifter.addOutPattern("exit%in")
         self.lifter.setOffset(floorOffset)
@@ -282,6 +282,12 @@ class GravityWalker(DirectObject.DirectObject):
 
         if self.cRayNodePath and not self.cRayNodePath.isEmpty():
             self.cRayNodePath.node().setFromCollideMask(self.floorBitmask)
+
+    def setGravity(self, gravity):
+        self.__gravity = gravity
+
+    def getGravity(self, gravity):
+        return self.__gravity
 
     def initializeCollisions(self, collisionTraverser, avatarNodePath,
             avatarRadius = 1.4, floorOffset = 1.0, reach = 1.0):
@@ -384,7 +390,7 @@ class GravityWalker(DirectObject.DirectObject):
                     # position, so we never trigger things that are
                     # behind other polygons.
                     base.shadowTrav.addCollider(self.cEventSphereNodePath, self.event)
-                
+
             else:
                 if hasattr(self, 'cTrav'):
                     self.cTrav.removeCollider(self.cWallSphereNodePath)
@@ -513,7 +519,7 @@ class GravityWalker(DirectObject.DirectObject):
             self.speed*=base.debugRunningMultiplier
             self.slideSpeed*=base.debugRunningMultiplier
             self.rotationSpeed*=1.25
-            
+
         if self.needToDeltaPos:
             self.setPriorParentVector()
             self.needToDeltaPos = 0
@@ -676,7 +682,7 @@ class GravityWalker(DirectObject.DirectObject):
                 self.floorPusher.flush()
             self.event.flush()
         self.lifter.flush() # not currently defined or needed
-        
+
     if __debug__:
         def debugPrint(self, message):
             """for debugging"""
