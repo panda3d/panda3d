@@ -257,13 +257,13 @@ choose_pixel_format(const FrameBufferProperties &properties,
       bool pbuffer_supported, pixmap_supported, slow;
       get_properties_advanced(fbprops, pbuffer_supported, pixmap_supported,
                               slow, configs[i]);
-      if (glxdisplay_cat.is_debug()) {
-        const char *pbuffertext = pbuffer_supported ? " (pbuffer)" : "";
-        const char *pixmaptext = pixmap_supported ? " (pixmap)" : "";
-        const char *slowtext = slow ? " (slow)" : "";
-        glxdisplay_cat.debug()
-          << i << ": " << fbprops << pbuffertext << pixmaptext << slowtext << "\n";
-      }
+      // We're not protecting this code by an is_debug() check, because if we do,
+      // some weird compiler bug appears and somehow makes the quality always 0.
+      const char *pbuffertext = pbuffer_supported ? " (pbuffer)" : "";
+      const char *pixmaptext = pixmap_supported ? " (pixmap)" : "";
+      const char *slowtext = slow ? " (slow)" : "";
+      glxdisplay_cat.debug()
+        << i << ": " << fbprops << pbuffertext << pixmaptext << slowtext << "\n";
       int quality = fbprops.get_quality(properties);
       if ((quality > 0)&&(slow)) quality -= 10000000;
 
