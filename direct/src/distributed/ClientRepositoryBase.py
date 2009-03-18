@@ -558,7 +558,7 @@ class ClientRepositoryBase(ConnectionRepository):
             # This object has been fully generated.  It's OK to update.
             self.__doUpdate(doId, di, ovUpdated)
             
-
+            
     def __doUpdate(self, doId, di, ovUpdated):
         # Find the DO
         do = self.doId2do.get(doId)
@@ -586,7 +586,7 @@ class ClientRepositoryBase(ConnectionRepository):
             except:
                 self.notify.warning(
                         "Asked to update non-existent DistObj " + str(doId) + "and failed to find it")
-            
+ 
     def __doUpdateOwner(self, doId, di):
         ovObj = self.doId2ownerView.get(doId)
         if ovObj:
@@ -624,6 +624,13 @@ class ClientRepositoryBase(ConnectionRepository):
         # Got a system message from the server.
         message = di.getString()
         self.notify.info('Message from server: %s' % (message))
+        return message
+        
+    def handleSystemMessageAknowledge(self, di):
+        # Got a system message from the server.
+        message = di.getString()
+        self.notify.info('Message with aknowledge from server: %s' % (message))
+        messenger.send("system message aknowledge", [message])
         return message
 
     def getObjectsOfClass(self, objClass):

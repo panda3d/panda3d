@@ -85,6 +85,8 @@ MsgName2Id = {
     'CLIENT_GET_FRIEND_LIST_EXTENDED_RESP':          116,
 
     'CLIENT_SET_FIELD_SENDABLE':                     120,
+    
+    'CLIENT_SYSTEMMESSAGE_AKNOWLEDGE':               123,
     }
 
 # create id->name table for debugging
