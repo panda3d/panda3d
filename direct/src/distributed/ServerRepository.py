@@ -225,7 +225,10 @@ class ServerRepository:
         elif type == CLIENT_OBJECT_DISABLE:
             self.handleClientDisable(datagram, dgi.getUint32())
         else:
-            self.notify.error("unrecognized message")
+            self.handleMessageType(type, dgi)
+
+    def handleMessageType(self, msgType, di):
+        self.notify.error("unrecognized message")
 
 # client wants to create an object, so we store appropriate data,
 # and then pass message along to corresponding zones

@@ -155,6 +155,9 @@ class ClientRepository(ClientRepositoryBase):
         # may forget to send heartbeats.  Keep them coming!
         self.considerHeartbeat()
 
+    def handleMessageType(self, msgType, di):
+        self.notify.error("unrecognized message")
+
     def handleGenerateWithRequired(self, di):
         # Get the class Id
         classId = di.getUint16()
