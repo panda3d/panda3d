@@ -1372,6 +1372,11 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     if (context->get_model_flag()) {
       mesh->AddEggFlag("model");
     }
+    
+    // [gjeon] to handle other flags
+    for (int i = 0; i < context->get_num_object_types(); i++) {
+      mesh->AddEggFlag(MString(context->get_object_type(i).c_str()));
+    }
 
   } else if (node->is_of_type(EggNurbsSurface::get_class_type())) {
     // [gjeon] to convert nurbsSurface
@@ -1447,6 +1452,11 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     // [gjeon] to handle model flag
     if (context->get_model_flag()) {
       surface->AddEggFlag("model");
+    }
+
+    // [gjeon] to handle other flags
+    for (int i = 0; i < context->get_num_object_types(); i++) {
+     surface->AddEggFlag(MString(context->get_object_type(i).c_str()));
     }
 
   } else if (node->is_of_type(EggComment::get_class_type())) {
