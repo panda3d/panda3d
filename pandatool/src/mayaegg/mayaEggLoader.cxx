@@ -281,6 +281,12 @@ MayaEggTex *MayaEggLoader::GetTex(const string &name, const string &fn)
       MString fn_str(fn.c_str());
       filetex.findPlug("fileTextureName").setValue(fn_str);
       dgmod.connect(filetex.findPlug("outColor"),shader.findPlug("color"));
+
+      // [gjeon] to create alpha channel connection
+      unsigned len_fn = fn_str.length(); 
+      if ((len_fn > 5) && (fn_str.toLowerCase().substring(len_fn - 5, len_fn-1) == ".rgba")) {
+        dgmod.connect(filetex.findPlug("outTransparency"),shader.findPlug("transparency"));
+      }
     }
     status = dgmod.doIt();
     if (status != MStatus::kSuccess) {
