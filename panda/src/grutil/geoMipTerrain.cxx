@@ -1,6 +1,6 @@
 // Filename: geoMipTerrain.cxx
 // Created by:  pro-rsoft (29jun07)
-// Last updated by: pro-rsoft (25sep08)
+// Last updated by: pro-rsoft (17jan09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -243,12 +243,11 @@ generate_block(unsigned short mx,
 
   PT(Geom) geom = new Geom(vdata);
   geom->add_primitive(prim);
-  PT(BoundingBox) box = new BoundingBox(LPoint3f(mx * _block_size, my * _block_size, minh),
-                                        LPoint3f((mx + 1) * _block_size + _block_size, (my + 1) * _block_size, maxh));
-  geom->set_bounds(box);
+  geom->set_bounds_type(BoundingVolume::BT_box);
 
   PT(GeomNode) node = new GeomNode("gmm" + int_to_str(mx) + "x" + int_to_str(my));
   node->add_geom(geom);
+  node->set_bounds_type(BoundingVolume::BT_box);
   _old_levels.at(mx).at(my) = reallevel;
   
   return node;
@@ -589,7 +588,7 @@ update_block(unsigned short mx, unsigned short my,
   nassertr_always(!_is_dirty, false);
   nassertr_always(mx < (_xsize - 1) / _block_size, false);
   nassertr_always(my < (_ysize - 1) / _block_size, false);
-  if (level < -1) {
+  if (level < 0) {
     level = _levels[mx][my];
   }
   level = min(max(_min_level, (unsigned short) level), _max_level);
