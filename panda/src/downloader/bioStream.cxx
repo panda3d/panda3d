@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////
 bool IBioStream::
 is_closed() {
-  if (_buf._is_closed) {
+  if (!_buf._read_open) {
     return true;
   }
   clear();
@@ -54,7 +54,7 @@ close() {
 ////////////////////////////////////////////////////////////////////
 bool OBioStream::
 is_closed() {
-  if (_buf._is_closed) {
+  if (!_buf._write_open) {
     return true;
   }
   clear();
@@ -82,7 +82,7 @@ close() {
 ////////////////////////////////////////////////////////////////////
 bool BioStream::
 is_closed() {
-  if (_buf._is_closed) {
+  if (!_buf._read_open) {
     return true;
   }
   clear();

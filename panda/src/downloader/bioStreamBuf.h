@@ -47,7 +47,8 @@ private:
   size_t write_chars(const char *start, size_t length);
 
   PT(BioPtr) _source;
-  bool _is_closed;
+  bool _read_open;
+  bool _write_open;
   char *_buffer;
 
   friend class IBioStream;

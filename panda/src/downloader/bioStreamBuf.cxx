@@ -37,7 +37,8 @@ typedef int streamsize;
 ////////////////////////////////////////////////////////////////////
 BioStreamBuf::
 BioStreamBuf() {
-  _is_closed = false;
+  _read_open = false;
+  _write_open = false;
 
 #ifdef HAVE_IOSTREAM
   _buffer = (char *)PANDA_MALLOC_ARRAY(8192);
@@ -79,6 +80,8 @@ BioStreamBuf::
 void BioStreamBuf::
 open(BioPtr *source) {
   _source = source;
+  _read_open = true;
+  _write_open = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -90,6 +93,8 @@ void BioStreamBuf::
 close() {
   sync();
   _source.clear();
+  _read_open = false;
+  _write_open = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -188,8 +193,8 @@ underflow() {
         // which that never returns true, if the socket is closed by
         // the server.  But BIO_should_retry() *appears* to be
         // reliable.
-        _is_closed = !BIO_should_retry(*_source);
-        if (_is_closed) {
+        _read_open = BIO_should_retry(*_source);
+        if (!_read_open) {
           downloader_cat.info()
             << "Lost connection to "
             << _source->get_server_name() << ":" 
@@ -255,10 +260,10 @@ write_chars(const char *start, size_t length) {
         // when the server is terminated, this seems to be the best
         // way of detecting that case on the client: a BIO write error
         // without a retry request
-        //_is_closed = !BIO_should_retry(*_source);
-        //_is_closed = BIO_eof(*_source);
-        _is_closed = !BIO_should_write(*_source);
-        if (_is_closed) {
+        //_write_open = BIO_should_retry(*_source);
+        //_write_open = !BIO_eof(*_source);
+        _write_open = BIO_should_write(*_source);
+        if (!_write_open) {
           return wrote_so_far;
         }
         
