@@ -1,5 +1,6 @@
 #include "config_glxdisplay.cxx"
 #include "glxGraphicsBuffer.cxx"
 #include "glxGraphicsPipe.cxx"
+#include "glxGraphicsPixmap.cxx"
 #include "glxGraphicsStateGuardian.cxx"
 #include "glxGraphicsWindow.cxx"
