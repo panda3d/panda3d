@@ -61,6 +61,9 @@ PUBLISHED:
   INLINE void set_start_tex_scale(const LVecBase2f &tex_scale);
   INLINE void set_end_tex_scale(const LVecBase2f &tex_scale);
 
+  INLINE void set_override(int override);
+  INLINE int get_override() const;
+
   virtual void priv_initialize(double t);
   virtual void priv_instant();
   virtual void priv_step(double t);
@@ -117,6 +120,7 @@ private:
   float _start_tex_rotate, _end_tex_rotate;
   LVecBase2f _start_tex_scale, _end_tex_scale;
 
+  int _override;
   double _prev_d;
   float _slerp_angle;
   float _slerp_denom;

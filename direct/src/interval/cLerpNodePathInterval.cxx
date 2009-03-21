@@ -65,6 +65,7 @@ CLerpNodePathInterval(const string &name, double duration,
   _other(other),
   _flags(0),
   _texture_stage(TextureStage::get_default()),
+  _override(0),
   _slerp(NULL)
 {
   if (bake_in_start) {
@@ -431,7 +432,7 @@ priv_step(double t) {
         lerp_value_from_prev(color, d, _prev_d, color, _end_color);
       }
 
-      state = state->add_attrib(ColorAttrib::make_flat(color));
+      state = state->add_attrib(ColorAttrib::make_flat(color), _override);
     }
 
     if ((_flags & F_end_color_scale) != 0) {
@@ -453,7 +454,7 @@ priv_step(double t) {
         lerp_value_from_prev(color_scale, d, _prev_d, color_scale, _end_color_scale);
       }
 
-      state = state->add_attrib(ColorScaleAttrib::make(color_scale));
+      state = state->add_attrib(ColorScaleAttrib::make(color_scale), _override);
     }    
 
     if ((_flags & (F_end_tex_offset | F_end_tex_rotate | F_end_tex_scale)) != 0) {
@@ -512,9 +513,9 @@ priv_step(double t) {
 
       // Apply the modified transform back to the state.
       if (tma != (TexMatrixAttrib *)NULL) {
-        state = state->add_attrib(tma->add_stage(_texture_stage, transform));
+        state = state->add_attrib(tma->add_stage(_texture_stage, transform), _override);
       } else {
-        state = state->add_attrib(TexMatrixAttrib::make(_texture_stage, transform));
+        state = state->add_attrib(TexMatrixAttrib::make(_texture_stage, transform), _override);
       }
     }    
 

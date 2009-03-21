@@ -637,28 +637,32 @@ class LerpPosQuatScaleShearInterval(LerpNodePathInterval):
 class LerpColorInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, color, startColor = None,
                  other = None, blendType = 'noBlend',
-                 bakeInStart = 1, name = None):
+                 bakeInStart = 1, name = None, override = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, 0, nodePath, other)
         self.setEndColor(color)
         if startColor != None:
             self.setStartColor(startColor)
+        if override != None:
+            self.setOverride(override)
 
 class LerpColorScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, colorScale, startColorScale = None,
                  other = None, blendType = 'noBlend',
-                 bakeInStart = 1, name = None):
+                 bakeInStart = 1, name = None, override = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, 0, nodePath, other)
         self.setEndColorScale(colorScale)
         if startColorScale != None:
             self.setStartColorScale(startColorScale)
+        if override != None:
+            self.setOverride(override)
 
 class LerpTexOffsetInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, texOffset, startTexOffset = None,
                  other = None, blendType = 'noBlend',
                  textureStage = None,
-                 bakeInStart = 1, name = None):
+                 bakeInStart = 1, name = None, override = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, 0, nodePath, other)
         self.setEndTexOffset(texOffset)
@@ -666,12 +670,14 @@ class LerpTexOffsetInterval(LerpNodePathInterval):
             self.setStartTexOffset(startTexOffset)
         if textureStage != None:
             self.setTextureStage(textureStage)
+        if override != None:
+            self.setOverride(override)
 
 class LerpTexRotateInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, texRotate, startTexRotate = None,
                  other = None, blendType = 'noBlend',
                  textureStage = None,
-                 bakeInStart = 1, name = None):
+                 bakeInStart = 1, name = None, override = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, 0, nodePath, other)
         self.setEndTexRotate(texRotate)
@@ -679,12 +685,14 @@ class LerpTexRotateInterval(LerpNodePathInterval):
             self.setStartTexRotate(startTexRotate)
         if textureStage != None:
             self.setTextureStage(textureStage)
+        if override != None:
+            self.setOverride(override)
 
 class LerpTexScaleInterval(LerpNodePathInterval):
     def __init__(self, nodePath, duration, texScale, startTexScale = None,
                  other = None, blendType = 'noBlend',
                  textureStage = None,
-                 bakeInStart = 1, name = None):
+                 bakeInStart = 1, name = None, override = None):
         LerpNodePathInterval.__init__(self, name, duration, blendType,
                                       bakeInStart, 0, nodePath, other)
         self.setEndTexScale(texScale)
@@ -692,8 +700,16 @@ class LerpTexScaleInterval(LerpNodePathInterval):
             self.setStartTexScale(startTexScale)
         if textureStage != None:
             self.setTextureStage(textureStage)
+        if override != None:
+            self.setOverride(override)
 
 
+
+
+#
+# The remaining intervals defined in this module are the old-school
+# Python-based intervals.
+#
 
 
 class LerpFunctionNoStateInterval(Interval.Interval):
@@ -701,6 +717,14 @@ class LerpFunctionNoStateInterval(Interval.Interval):
     Class used to execute a function over time.  Function can access fromData
     and toData to perform blend.  If fromData and toData not specified, will
     execute the given function passing in values ranging from 0 to 1
+
+    This is different from a standard LerpFunction, in that it assumes
+    the function is not modifying any state that needs to be kept; so
+    that it will only call the function while the lerp is actually
+    running, and will not be guaranteed to call the function with its
+    final value of the lerp.  In particular, if the lerp interval
+    happens to get skipped over completely, it will not bother to call
+    the function at all.
     """
     
     # Interval counter
@@ -772,11 +796,6 @@ class LerpFuncNS(LerpFunctionNoStateInterval):
     def __init__(self, *args, **kw):
         LerpFunctionNoStateInterval.__init__(self, *args, **kw)
 
-
-#
-# The remaining intervals defined in this module are the old-school
-# Python-based intervals.
-#
 
 class LerpFunctionInterval(Interval.Interval):
     """

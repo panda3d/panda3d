@@ -447,3 +447,30 @@ set_end_tex_scale(const LVecBase2f &tex_scale) {
   _end_tex_scale = tex_scale;
   _flags |= F_end_tex_scale;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::set_override
+//       Access: Published
+//  Description: Changes the override value that will be associated
+//               with any state changes applied by the lerp.  If this
+//               lerp is changing state (for instance, a color lerp or
+//               a tex matrix lerp), then the new attributes created
+//               by this lerp will be assigned the indicated override
+//               value when they are applied to the node.
+////////////////////////////////////////////////////////////////////
+INLINE void CLerpNodePathInterval::
+set_override(int override) {
+  _override = override;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLerpNodePathInterval::get_override
+//       Access: Published
+//  Description: Returns the override value that will be associated
+//               with any state changes applied by the lerp.  See
+//               set_override().
+////////////////////////////////////////////////////////////////////
+INLINE int CLerpNodePathInterval::
+get_override() const {
+  return _override;
+}
