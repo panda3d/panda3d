@@ -460,6 +460,17 @@ def GetRegistryKey(path, subkey):
         _winreg.CloseKey(key)
     return k1
 
+def GetProgramFiles():
+    if (os.environ.has_key("PROGRAMFILES")):
+        return os.environ["PROGRAMFILES"]
+    elif (os.path.isdir("C:\\Program Files")):
+        return "C:\\Program Files"
+    elif (os.path.isdir("D:\\Program Files")):
+        return "D:\\Program Files"
+    elif (os.path.isdir("E:\\Program Files")):
+        return "E:\\Program Files"
+    return 0
+
 ########################################################################
 ##
 ## Parsing Compiler Option Lists
@@ -847,10 +858,16 @@ def SdkLocateMSPlatform():
     if (platsdk == 0):
         platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.1","InstallationFolder")
     
-    if (platsdk == 0 and os.path.isdir("C:\\Program Files\\Microsoft Visual Studio 9\\VC\\PlatformSDK")):
-      platsdk = "C:\\Program Files\\Microsoft Visual Studio 9\\VC\\PlatformSDK\\"
+    if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2"))):
+        platsdk = os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2")
+    
+    # Doesn't work with the Express versions, so we're checking for the "atlmfc" dir, which is not in the Express 
+    if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\atlmfc"))):
+        platsdk = os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\PlatformSDK")
     
     if (platsdk != 0):
+        if (not platsdk.endswith("//")):
+            platsdk += "//"
         SDK["MSPLATFORM"] = platsdk
 
 def SdkLocateMacOSX():
@@ -930,7 +947,9 @@ def SetupVisualStudioEnviron():
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "VC\\bin")
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\include")
+    AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\atlmfc\\include")
     AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib")
+    AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\atl")
     AddToPathEnv("LIB",     SDK["MSPLATFORM"] + "lib")

@@ -261,17 +261,18 @@ if __name__ == "__main__":
     else:
         print "Making CHM file for manual..."
         if VERSION == None:
-            makeManualCHM("panda3d-manual.chm", "manual", "Panda3D Manual")
+            makeManualCHM("manual.chm", "manual", "Panda3D Manual")
         else:
-            makeManualCHM("panda3d-%s-manual.chm" % VERSION, "manual", "Panda3D %s Manual" % VERSION)
+            makeManualCHM("manual-%s.chm" % VERSION, "manual", "Panda3D %s Manual" % VERSION)
     
     if not os.path.isdir("reference"):
         print "No directory named 'reference' found"
     else:
         print "Making CHM file for API reference..."
         if VERSION == None:
-            makeReferenceCHM("panda3d-reference.chm", "reference", "Panda3D Reference")
+            makeReferenceCHM("reference.chm", "reference", "Panda3D Reference")
         else:
-            makeReferenceCHM("panda3d-%s-reference.chm" % VERSION, "reference", "Panda3D %s Reference" % VERSION)
+            makeReferenceCHM("reference-%s.chm" % VERSION, "reference", "Panda3D %s Reference" % VERSION)
     
     print "Done!"
+

@@ -22,6 +22,18 @@
 
 #include "dtool_config.h"
 
+/* Make sure WIN32 and WIN32_VC are defined when using MSVC */
+#ifdef _WIN32
+#ifndef WIN32
+#define WIN32
+#endif
+#ifdef _MSC_VER
+#ifndef WIN32_VC
+#define WIN32_VC
+#endif
+#endif
+#endif
+
 #ifdef WIN32_VC
 /* These warning pragmas must appear before anything else for VC++ to
    respect them.  Sheesh. */

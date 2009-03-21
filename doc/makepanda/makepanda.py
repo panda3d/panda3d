@@ -1039,7 +1039,7 @@ else: sys.exit("Cannot find the 'direct' tree")
 """
 
 if (PkgSkip("PYTHON")==0):
-    ConditionalWriteFile('built/direct/__init__.py', DIRECTINIT)
+    ConditionalWriteFile(GetOutputDir()+'/direct/__init__.py', DIRECTINIT)
 
 ##########################################################################################
 #
