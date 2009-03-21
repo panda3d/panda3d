@@ -187,7 +187,8 @@ class CommonFilters:
             if (configuration.has_key("VolumetricLighting")):
                 text += "float decay = 1.0f;\n"
                 text += "float2 curcoord = l_texcoordC.xy;\n"
-                text += "float2 lightdir = curcoord - k_casterpos.xy;\n"                text += "lightdir *= k_vlparams.y;\n"
+                text += "float2 lightdir = curcoord - k_casterpos.xy;\n"
+                text += "lightdir *= k_vlparams.y;\n"
                 text += "half4 sample = tex2D(k_txcolor, curcoord);\n"
                 text += "float3 vlcolor = sample.rgb * sample.a;\n"
                 text += "for (int i = 0; i < k_vlparams.x; i++) {\n"
