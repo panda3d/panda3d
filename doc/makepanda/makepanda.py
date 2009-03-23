@@ -3622,7 +3622,7 @@ Release: 1
 License: BSD License
 Group: Development/Libraries
 BuildRoot: PANDASOURCE/linuxroot
-BuildRequires: PYTHONV
+Requires: python (>= PV)
 %description
 The Panda3D engine.
 %post
@@ -3644,6 +3644,7 @@ The Panda3D engine.
 def MakeInstallerLinux():
     import compileall
     PYTHONV=SDK["PYTHONVERSION"]
+    PV=PYTHONV.replace("python", "")
     if (os.path.isdir("linuxroot")): oscmd("chmod -R 755 linuxroot")
     oscmd("rm -rf linuxroot data.tar.gz control.tar.gz panda3d.spec")
     if (os.path.exists("/usr/bin/rpmbuild")):
@@ -3689,7 +3690,7 @@ def MakeInstallerLinux():
         oscmd("rpm -E '%_target_cpu' > "+GetOutputDir()+"/tmp/architecture.txt")
         ARCH=ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
         pandasource = os.path.abspath(os.getcwd())
-        txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",pandasource).replace("PYTHONV",PYTHONV)
+        txt = INSTALLER_SPEC_FILE[1:].replace("VERSION",VERSION).replace("PANDASOURCE",pandasource).replace("PYTHONV",PYTHONV).replace("PV",PV)
         WriteFile("panda3d.spec", txt)
         oscmd("rpmbuild --define '_rpmdir "+pandasource+"' -bb panda3d.spec")
         oscmd("mv "+ARCH+"/panda3d-"+VERSION+"-1."+ARCH+".rpm .")
@@ -3697,7 +3698,7 @@ def MakeInstallerLinux():
     if (os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("dpkg --print-architecture > "+GetOutputDir()+"/tmp/architecture.txt")
         ARCH=ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
-        txt = INSTALLER_DEB_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV).replace("ARCH",ARCH).replace("PV",PYTHONV.replace("python", ""))
+        txt = INSTALLER_DEB_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV).replace("ARCH",ARCH).replace("PV",PV)
         oscmd("mkdir -p linuxroot/DEBIAN")
         oscmd("cd linuxroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
         oscmd("cd linuxroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
