@@ -2698,8 +2698,6 @@ do_read_dds(istream &in, const string &filename, bool header_only) {
         // image.  Because this is a Microsoft format, the levels are
         // arranged in a rotated order.
         static const int level_remap[6] = {
-          //          0, 1, 2, 3, 4, 5
-          //          0, 1, 4, 5, 3, 2
           0, 1, 5, 4, 2, 3
         };
         for (n = 0; n < (int)header.num_levels; ++n) {
