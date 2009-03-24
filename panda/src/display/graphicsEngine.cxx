@@ -1414,9 +1414,9 @@ void GraphicsEngine::
 draw_bins(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
   nassertv(wlist.verify_list());
 
-  Windows::const_iterator wi;
-  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
+  size_t wlist_size = wlist.size();
+  for (size_t wi = 0; wi < wlist_size; ++wi) {
+    GraphicsOutput *win = wlist[wi];
     if (win->is_active() && win->get_gsg()->is_active()) {
       if (win->flip_ready()) {
         {
