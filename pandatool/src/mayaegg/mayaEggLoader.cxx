@@ -704,6 +704,8 @@ public:
   EggGroup            *_parent;
   MDagPath            _shape_dag_path;
   int                 _vert_count;  
+
+  string _name;
   
   MFloatPointArray    _vertexArray;
   MVectorArray        _normalArray;
@@ -914,7 +916,7 @@ public:
   
   int GetTVert(TexCoordd uv);
   int GetCVert(Colorf col);
-  int AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, MayaEggTex *tex);
+  int AddFace(unsigned numVertices, MIntArray mvertIndices, MIntArray mtvertIndices, MayaEggTex *tex);
 
   void ConnectTextures(void);
 };
@@ -922,15 +924,18 @@ public:
 int MayaEggMesh::GetTVert(TexCoordd uv)
 {
   if (_tvert_tab.count(uv)) {
+    if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "found uv coords idx: " << _tvert_tab[uv] << endl;
+    }
     return _tvert_tab[uv];
-  }
-  if (mayaloader_cat.is_spam()) {
-    mayaloader_cat.spam() << "found uv coords\n";
   }
   int idx = _tvert_count++;
   _uarray.append(uv.get_x());
   _varray.append(uv.get_y());
   _tvert_tab[uv] = idx;
+  if (mayaloader_cat.is_spam()) {
+    mayaloader_cat.spam() << "adding uv coords idx:" << idx << endl;
+  }
   return idx;
 }
 
@@ -954,6 +959,7 @@ MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool, EggGroup *parent)
   MayaEggMesh *result = _mesh_tab[parent];
   if (result == 0) {
     result = new MayaEggMesh;
+    result->_name = parent->get_name();
     result->_pool = pool;
     result->_parent = parent;
     result->_vert_count = 0;
@@ -972,16 +978,15 @@ MayaEggMesh *MayaEggLoader::GetMesh(EggVertexPool *pool, EggGroup *parent)
   return result;
 }
 
-int MayaEggMesh::AddFace(int v0, int v1, int v2, int tv0, int tv1, int tv2, int cv0, int cv1, int cv2, MayaEggTex *tex)
+int MayaEggMesh::AddFace(unsigned numVertices, MIntArray mvertIndices, MIntArray mtvertIndices, MayaEggTex *tex)
 {
   int idx = _face_count++;
-  _polygonCounts.append(3);
-  _polygonConnects.append(v0);
-  _polygonConnects.append(v1);
-  _polygonConnects.append(v2);
-  _uvIds.append(tv0);
-  _uvIds.append(tv1);
-  _uvIds.append(tv2);
+  _polygonCounts.append(numVertices);
+  for (unsigned i = 0; i < mvertIndices.length(); i++)
+  {
+    _polygonConnects.append(mvertIndices[i]);
+    _uvIds.append(mtvertIndices[i]);
+  }
   _face_tex.push_back(tex);
   return idx;
 }
@@ -1025,7 +1030,7 @@ void MayaEggMesh::ConnectTextures(void)
 class MayaEggNurbsSurface : public MayaEggGeom
 {
 public:
-  string _name;
+
 
   MPointArray         _cvArray;
   MDoubleArray        _uKnotArray;
@@ -1051,7 +1056,7 @@ MayaEggNurbsSurface *MayaEggLoader::GetSurface(EggVertexPool *pool, EggGroup *pa
     result = new MayaEggNurbsSurface;
     result->_pool = pool;
     result->_parent = parent;
-    result->_name = pool->get_name();
+    result->_name = parent->get_name();
 
     result->_vert_count = 0;
     result->_vertColorArray.clear();
@@ -1378,19 +1383,24 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     if (mayaloader_cat.is_spam()) {
       mayaloader_cat.spam() << "num vertices: " << vertIndices.size() << "\n";
     }
-    for (int i = 1; i < numVertices - 1; i++) {
-      if (poly->has_color()) {
-        if (mayaloader_cat.is_spam()) {
-          mayaloader_cat.spam() << "found a face color of " << poly->get_color() << endl;
-        }
-        mesh->_faceIndices.append(mesh->_face_count);
-        mesh->_faceColorArray.append(MakeMayaColor(poly->get_color()));
-      }
-      mesh->AddFace(vertIndices[0], vertIndices[i], vertIndices[i+1],
-                    tvertIndices[0], tvertIndices[i], tvertIndices[i+1],
-                    cvertIndices[0], cvertIndices[i], cvertIndices[i+1],
-                    tex);
+
+    if (numVertices < 3)
+      return;
+
+    MIntArray mvertIndices;
+    MIntArray mtvertIndices;
+    for (int i = 0; i < numVertices; i++) {
+      mvertIndices.append(vertIndices[i]);
+      mtvertIndices.append(tvertIndices[i]);
     }
+    if (poly->has_color()) {
+      if (mayaloader_cat.is_spam()) {
+          mayaloader_cat.spam() << "found a face color of " << poly->get_color() << endl;
+      }
+      mesh->_faceIndices.append(mesh->_face_count);
+      mesh->_faceColorArray.append(MakeMayaColor(poly->get_color()));
+    }
+    mesh->AddFace(numVertices, mvertIndices, mtvertIndices, tex);
     
     // [gjeon] to handle double-sided flag
     if (poly->get_bface_flag()) {
@@ -1938,11 +1948,13 @@ bool MayaEggLoader::ConvertEggData(EggData *data, bool merge, bool model, bool a
 void MayaEggLoader::PrintData(MayaEggMesh *mesh)
 {
     if (mayaloader_cat.is_spam()) {
+      mayaloader_cat.spam() << "Mesh: " << mesh->_name << endl;
       mayaloader_cat.spam() << "num vertexArray: " << mesh->_vertexArray.length() << endl;
       ostringstream stream3;
       for (unsigned int i=0; i < mesh->_vertexArray.length(); ++i) {
         stream3 << "[" << mesh->_vertexArray[i].x << " " << mesh->_vertexArray[i].y << " " << mesh->_vertexArray[i].z << "]" << endl;
       }
+
       mayaloader_cat.spam() << "vertexArray: \n" << stream3.str() << endl;
       mayaloader_cat.spam() << "num polygonConnects: " << mesh->_polygonConnects.length() << endl;
       mayaloader_cat.spam() << "num uvCounts: " << mesh->_polygonCounts.length() << endl;
