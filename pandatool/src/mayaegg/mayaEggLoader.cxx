@@ -317,6 +317,8 @@ public:
   string  _name;
   MObject _parent;
   MObject _group;
+
+  bool _addedEggFlag;
 };
 
 MayaEggGroup *MayaEggLoader::MakeGroup(EggGroup *group, EggGroup *context)
@@ -336,6 +338,7 @@ MayaEggGroup *MayaEggLoader::MakeGroup(EggGroup *group, EggGroup *context)
 
   result->_name = group->get_name();
   result->_group = dgn.create("transform", MString(result->_name.c_str()), parent, &status);
+  result->_addedEggFlag = false;
 
   if (group->has_transform3d()) {
     LMatrix4d tMat = group->get_transform3d();
@@ -357,6 +360,25 @@ MayaEggGroup *MayaEggLoader::MakeGroup(EggGroup *group, EggGroup *context)
   if (status != MStatus::kSuccess) {
     status.perror("MFnDagNode:create failed!");
   }
+
+  if ((pg) && (pg->_addedEggFlag == false)){
+    // [gjeon] to handle other flags
+    MStringArray eggFlags;
+    for (int i = 0; i < context->get_num_object_types(); i++) {
+      eggFlags.append(MString(context->get_object_type(i).c_str()));
+    }    
+
+    for (unsigned i = 0; i < eggFlags.length(); i++) {
+      MString attrName = "eggObjectTypes";
+      attrName += (int)(i + 1);
+      status = create_enum_attribute(parent, attrName, attrName, eggFlags, i);
+      if (status != MStatus::kSuccess) {
+        status.perror("create_enum_attribute failed!");
+      }
+    }
+    pg->_addedEggFlag = true;
+  }
+
   _group_tab[group] = result;
   return result;
 }
@@ -1318,6 +1340,7 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     if (poly->empty()) {
       return;
     }
+    poly->cleanup();
 
     MayaEggTex *tex = 0;
     LMatrix3d uvtrans = LMatrix3d::ident_mat();
