@@ -302,7 +302,17 @@ next_context() {
 void ThreadSimpleManager::
 prepare_for_exit() {
   if (!_current_thread->_parent_obj->is_exact_type(MainThread::get_class_type())) {
+    if (thread_cat->is_debug()) {
+      thread_cat.debug()
+        << "Ignoring prepare_for_exit called from " 
+        << *(_current_thread->_parent_obj) << "\n";
+    }
     return;
+  }
+
+  if (thread_cat->is_debug()) {
+    thread_cat.debug()
+      << "prepare_for_exit\n";
   }
 
   nassertv(_waiting_for_exit == NULL);
@@ -586,20 +596,23 @@ choose_next_context() {
         
       } else {
         // No threads are ready!
+        if (_waiting_for_exit != NULL) {
+          // This is a shutdown situation.  In this case, we quietly
+          // abandoned the remaining blocked threads, if any, and
+          // switch back to the main thread to finish shutting down.
+          _ready.push_back(_waiting_for_exit);
+          _waiting_for_exit = NULL;
+          break;
+        }
+
+        // No threads are ready to rull, but we're not explicitly
+        // shutting down.  This is an error condition, an
+        // unintentional deadlock.
         if (!_blocked.empty()) {
           thread_cat->error()
             << "Deadlock!  All threads blocked.\n";
           report_deadlock();
           abort();
-        }
-        
-        // All threads have finished execution.
-        if (_waiting_for_exit != NULL) {
-          // And one thread--presumably the main thread--was waiting for
-          // that.
-          _ready.push_back(_waiting_for_exit);
-          _waiting_for_exit = NULL;
-          break;
         }
         
         // No threads are queued anywhere.  This is some kind of
