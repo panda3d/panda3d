@@ -902,6 +902,9 @@ global proc string argsBuilder()
 
         $args += " ";
 
+        // We always want polygons, never nurbs.
+        $args += "-p ";
+
         //check back face culling
         if ( `checkBox -query -value bfaceCB` )
         {
