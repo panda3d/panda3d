@@ -881,38 +881,6 @@ get_ram_mipmap_image(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::set_ram_mipmap_image
-//       Access: Published
-//  Description: Replaces the current system-RAM image for the
-//               indicated mipmap level with the new data.  If
-//               compression is not CM_off, it indicates that the new
-//               data is already pre-compressed in the indicated
-//               format.
-//
-//               This does *not* affect keep_ram_image.
-////////////////////////////////////////////////////////////////////
-void Texture::
-set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size) {
-  MutexHolder holder(_lock);
-  nassertv(_ram_image_compression != CM_off || image.size() == do_get_expected_ram_mipmap_image_size(n));
-
-  while (n >= (int)_ram_images.size()) {
-    _ram_images.push_back(RamImage());
-    _ram_images.back()._page_size = 0;
-  }
-  if (page_size == 0) {
-    page_size = image.size();
-  }
-
-  if (_ram_images[n]._image != image ||
-      _ram_images[n]._page_size != page_size) {
-    _ram_images[n]._image = image.cast_non_const();
-    _ram_images[n]._page_size = page_size;
-    ++_image_modified;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_ram_mipmap_image
 //       Access: Published
 //  Description: Discards the current system-RAM image for the nth
@@ -2543,7 +2511,7 @@ do_read_dds(istream &in, const string &filename, bool header_only) {
   header.caps.caps2 = dds.get_uint32();
   header.caps.ddsx = dds.get_uint32();
   dds.skip_bytes(4);
-
+  
   // Pad out to 32 words
   dds.skip_bytes(4);
   
@@ -2558,9 +2526,34 @@ do_read_dds(istream &in, const string &filename, bool header_only) {
     header.num_levels = 1;
   }
 
+  TextureType texture_type;
+  if (header.caps.caps2 & DDSCAPS2_CUBEMAP) {
+    static const int all_faces = 
+      (DDSCAPS2_CUBEMAP_POSITIVEX |
+       DDSCAPS2_CUBEMAP_POSITIVEY |
+       DDSCAPS2_CUBEMAP_POSITIVEZ |
+       DDSCAPS2_CUBEMAP_NEGATIVEX |
+       DDSCAPS2_CUBEMAP_NEGATIVEY |
+       DDSCAPS2_CUBEMAP_NEGATIVEZ);
+    if ((header.caps.caps2 & all_faces) != all_faces) {
+      gobj_cat.error()
+        << filename << " is missing some cube map faces; cannot load.\n";
+      return false;
+    }
+    header.depth = 6;
+    texture_type = TT_cube_map;
+
+  } else if (header.caps.caps2 & DDSCAPS2_VOLUME) {
+    texture_type = TT_3d_texture;
+
+  } else {
+    texture_type = TT_2d_texture;
+    header.depth = 1;
+  }
+
   // Determine the function to use to read the DDS image.
-  typedef bool (*ReadDDSLevelFunc)(Texture *tex, const DDSHeader &header, 
-                                   int n, istream &in);
+  typedef PTA_uchar (*ReadDDSLevelFunc)(Texture *tex, const DDSHeader &header, 
+                                        int n, istream &in);
   ReadDDSLevelFunc func = NULL;
 
   Format format = F_rgb;
@@ -2570,6 +2563,12 @@ do_read_dds(istream &in, const string &filename, bool header_only) {
 
   if (header.pf.pf_flags & DDPF_FOURCC) {
     // Some compressed texture format.
+    if (texture_type == TT_3d_texture) {
+      gobj_cat.error()
+        << filename << ": unsupported compression on 3-d texture.\n";
+      return false;
+    }
+
     if (header.pf.four_cc == 0x31545844) {   // 'DXT1', little-endian.
       compression = CM_dxt1;
       func = read_dds_level_dxt1;
@@ -2631,7 +2630,7 @@ do_read_dds(istream &in, const string &filename, bool header_only) {
     }
   }
 
-  do_setup_texture(TT_2d_texture, header.width, header.height, 1,
+  do_setup_texture(texture_type, header.width, header.height, header.depth,
                    T_unsigned_byte, format);
 
   _orig_file_x_size = _x_size;
@@ -2640,9 +2639,94 @@ do_read_dds(istream &in, const string &filename, bool header_only) {
   _ram_image_compression = compression;
 
   if (!header_only) {
-    for (int n = 0; n < (int)header.num_levels; ++n) {
-      if (!func(this, header, n, in)) {
-        return false;
+    switch (texture_type) {
+    case TT_3d_texture:
+      {
+        // 3-d textures store all the depth slices for mipmap level 0,
+        // then all the depth slices for mipmap level 1, and so on.
+        for (int n = 0; n < (int)header.num_levels; ++n) {
+          int z_size = do_get_expected_mipmap_z_size(n);
+          pvector<PTA_uchar> pages;
+          size_t page_size = 0;
+          int z;
+          for (z = 0; z < z_size; ++z) {
+            PTA_uchar page = func(this, header, n, in);
+            if (page.is_null()) {
+              return false;
+            }
+            nassertr(page_size == 0 || page_size == page.size(), false);
+            page_size = page.size();
+            pages.push_back(page);
+          }
+          // Now reassemble the pages into one big image.  Because
+          // this is a Microsoft format, the images are stacked in
+          // reverse order; re-reverse them.
+          PTA_uchar image = PTA_uchar::empty_array(page_size * z_size);
+          unsigned char *imagep = (unsigned char *)image.p();
+          for (z = 0; z < z_size; ++z) {
+            int fz = z_size - 1 - z;
+            memcpy(imagep + z * page_size, pages[fz].p(), page_size);
+          }
+            
+          do_set_ram_mipmap_image(n, image, page_size);
+        }
+      }
+      break;
+
+    case TT_cube_map:
+      {
+        // Cube maps store all the mipmap levels for face 0, then all
+        // the mipmap levels for face 1, and so on.
+        pvector<pvector<PTA_uchar> > pages;
+        pages.reserve(6);
+        int z, n;
+        for (z = 0; z < 6; ++z) {
+          pages.push_back(pvector<PTA_uchar>());
+          pvector<PTA_uchar> &levels = pages.back();
+          levels.reserve(header.num_levels);
+
+          for (n = 0; n < (int)header.num_levels; ++n) {
+            PTA_uchar image = func(this, header, n, in);
+            if (image.is_null()) {
+              return false;
+            }
+            levels.push_back(image);
+          }
+        }
+
+        // Now, for each level, reassemble the pages into one big
+        // image.  Because this is a Microsoft format, the levels are
+        // arranged in a rotated order.
+        static const int level_remap[6] = {
+          //          0, 1, 2, 3, 4, 5
+          //          0, 1, 4, 5, 3, 2
+          0, 1, 5, 4, 2, 3
+        };
+        for (n = 0; n < (int)header.num_levels; ++n) {
+          size_t page_size = pages[0][n].size();
+          PTA_uchar image = PTA_uchar::empty_array(page_size * 6);
+          unsigned char *imagep = (unsigned char *)image.p();
+          for (z = 0; z < 6; ++z) {
+            int fz = level_remap[z];
+            nassertr(pages[fz][n].size() == page_size, false);
+            memcpy(imagep + z * page_size, pages[fz][n].p(), page_size);
+          }
+
+          do_set_ram_mipmap_image(n, image, page_size);
+        }
+      }
+      break;
+
+    default:
+      // Normal 2-d textures simply store the mipmap levels.
+      {
+        for (int n = 0; n < (int)header.num_levels; ++n) {
+          PTA_uchar image = func(this, header, n, in);
+          if (image.is_null()) {
+            return false;
+          }
+          do_set_ram_mipmap_image(n, image, 0);
+        }
       }
     }
     _has_read_pages = true;
@@ -3165,6 +3249,31 @@ do_make_ram_mipmap_image(int n) {
   _ram_images[n]._image = PTA_uchar::empty_array(do_get_expected_ram_mipmap_image_size(n), get_class_type());
   _ram_images[n]._page_size = do_get_expected_ram_mipmap_page_size(n);
   return _ram_images[n]._image;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_set_ram_mipmap_image
+//       Access: Published
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void Texture::
+do_set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size) {
+  nassertv(_ram_image_compression != CM_off || image.size() == do_get_expected_ram_mipmap_image_size(n));
+
+  while (n >= (int)_ram_images.size()) {
+    _ram_images.push_back(RamImage());
+    _ram_images.back()._page_size = 0;
+  }
+  if (page_size == 0) {
+    page_size = image.size();
+  }
+
+  if (_ram_images[n]._image != image ||
+      _ram_images[n]._page_size != page_size) {
+    _ram_images[n]._image = image.cast_non_const();
+    _ram_images[n]._page_size = page_size;
+    ++_image_modified;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4530,25 +4639,22 @@ convert_to_pnmimage(PNMImage &pnmimage, int x_size, int y_size,
 //       Access: Private, Static
 //  Description: Called by read_dds for a DDS file in BGR8 format.
 ////////////////////////////////////////////////////////////////////
-bool Texture::
-read_dds_level_bgr8(Texture *tex, const DDSHeader &header, 
-                    int n, istream &in) { 
+PTA_uchar Texture::
+read_dds_level_bgr8(Texture *tex, const DDSHeader &header, int n, istream &in) { 
   // This is in order B, G, R.
-  int x_size = tex->get_expected_mipmap_x_size(n);
-  int y_size = tex->get_expected_mipmap_y_size(n);
+  int x_size = tex->do_get_expected_mipmap_x_size(n);
+  int y_size = tex->do_get_expected_mipmap_y_size(n);
 
-  size_t size = tex->get_expected_ram_mipmap_image_size(n);
+  size_t size = tex->do_get_expected_ram_mipmap_page_size(n);
   size_t row_bytes = x_size * 3;
   PTA_uchar image = PTA_uchar::empty_array(size);
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
-    nassertr(p + row_bytes <= image.p() + size, false);
+    nassertr(p + row_bytes <= image.p() + size, PTA_uchar());
     in.read((char *)p, row_bytes);
   }
 
-  tex->set_ram_mipmap_image(n, image);
-
-  return true;
+  return image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4556,19 +4662,18 @@ read_dds_level_bgr8(Texture *tex, const DDSHeader &header,
 //       Access: Private, Static
 //  Description: Called by read_dds for a DDS file in RGB8 format.
 ////////////////////////////////////////////////////////////////////
-bool Texture::
-read_dds_level_rgb8(Texture *tex, const DDSHeader &header, 
-                    int n, istream &in) {
+PTA_uchar Texture::
+read_dds_level_rgb8(Texture *tex, const DDSHeader &header, int n, istream &in) {
   // This is in order R, G, B.
-  int x_size = tex->get_expected_mipmap_x_size(n);
-  int y_size = tex->get_expected_mipmap_y_size(n);
+  int x_size = tex->do_get_expected_mipmap_x_size(n);
+  int y_size = tex->do_get_expected_mipmap_y_size(n);
 
-  size_t size = tex->get_expected_ram_mipmap_image_size(n);
+  size_t size = tex->do_get_expected_ram_mipmap_page_size(n);
   size_t row_bytes = x_size * 3;
   PTA_uchar image = PTA_uchar::empty_array(size);
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
-    nassertr(p + row_bytes <= image.p() + size, false);
+    nassertr(p + row_bytes <= image.p() + size, PTA_uchar());
     in.read((char *)p, row_bytes);
 
     // Now reverse the r, g, b triples.
@@ -4578,12 +4683,10 @@ read_dds_level_rgb8(Texture *tex, const DDSHeader &header,
       p[2] = r;
       p += 3;
     }
-    nassertr(p <= image.p() + size, false);
+    nassertr(p <= image.p() + size, PTA_uchar());
   }
 
-  tex->set_ram_mipmap_image(n, image);
-
-  return true;
+  return image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4591,14 +4694,13 @@ read_dds_level_rgb8(Texture *tex, const DDSHeader &header,
 //       Access: Private, Static
 //  Description: Called by read_dds for a DDS file in ABGR8 format.
 ////////////////////////////////////////////////////////////////////
-bool Texture::
-read_dds_level_abgr8(Texture *tex, const DDSHeader &header, 
-                     int n, istream &in) {
+PTA_uchar Texture::
+read_dds_level_abgr8(Texture *tex, const DDSHeader &header, int n, istream &in) {
   // This is laid out in order R, G, B, A.
-  int x_size = tex->get_expected_mipmap_x_size(n);
-  int y_size = tex->get_expected_mipmap_y_size(n);
+  int x_size = tex->do_get_expected_mipmap_x_size(n);
+  int y_size = tex->do_get_expected_mipmap_y_size(n);
 
-  size_t size = tex->get_expected_ram_mipmap_image_size(n);
+  size_t size = tex->do_get_expected_ram_mipmap_page_size(n);
   size_t row_bytes = x_size * 4;
   PTA_uchar image = PTA_uchar::empty_array(size);
   for (int y = y_size - 1; y >= 0; --y) {
@@ -4618,12 +4720,10 @@ read_dds_level_abgr8(Texture *tex, const DDSHeader &header,
       *pw = w;
       ++pw;
     }
-    nassertr((unsigned char *)pw <= image.p() + size, false);
+    nassertr((unsigned char *)pw <= image.p() + size, PTA_uchar());
   }
 
-  tex->set_ram_mipmap_image(n, image);
-
-  return true;
+  return image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4631,25 +4731,22 @@ read_dds_level_abgr8(Texture *tex, const DDSHeader &header,
 //       Access: Private, Static
 //  Description: Called by read_dds for a DDS file in RGBA8 format.
 ////////////////////////////////////////////////////////////////////
-bool Texture::
-read_dds_level_rgba8(Texture *tex, const DDSHeader &header, 
-                     int n, istream &in) {
+PTA_uchar Texture::
+read_dds_level_rgba8(Texture *tex, const DDSHeader &header, int n, istream &in) {
   // This is actually laid out in order B, G, R, A.
-  int x_size = tex->get_expected_mipmap_x_size(n);
-  int y_size = tex->get_expected_mipmap_y_size(n);
+  int x_size = tex->do_get_expected_mipmap_x_size(n);
+  int y_size = tex->do_get_expected_mipmap_y_size(n);
 
-  size_t size = tex->get_expected_ram_mipmap_image_size(n);
+  size_t size = tex->do_get_expected_ram_mipmap_page_size(n);
   size_t row_bytes = x_size * 4;
   PTA_uchar image = PTA_uchar::empty_array(size);
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
-    nassertr(p + row_bytes <= image.p() + size, false);
+    nassertr(p + row_bytes <= image.p() + size, PTA_uchar());
     in.read((char *)p, row_bytes);
   }
 
-  tex->set_ram_mipmap_image(n, image);
-
-  return true;
+  return image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4658,11 +4755,11 @@ read_dds_level_rgba8(Texture *tex, const DDSHeader &header,
 //  Description: Called by read_dds for a DDS file whose format isn't
 //               one we've specifically optimized.
 ////////////////////////////////////////////////////////////////////
-bool Texture::
+PTA_uchar Texture::
 read_dds_level_generic_uncompressed(Texture *tex, const DDSHeader &header, 
                                     int n, istream &in) {
-  int x_size = tex->get_expected_mipmap_x_size(n);
-  int y_size = tex->get_expected_mipmap_y_size(n);
+  int x_size = tex->do_get_expected_mipmap_x_size(n);
+  int y_size = tex->do_get_expected_mipmap_y_size(n);
 
   int pitch = (x_size * header.pf.rgb_bitcount) / 8;
 
@@ -4680,7 +4777,7 @@ read_dds_level_generic_uncompressed(Texture *tex, const DDSHeader &header,
 
   int bpp = header.pf.rgb_bitcount / 8;
   int skip_bytes = pitch - (bpp * x_size);
-  nassertr(skip_bytes >= 0, false);
+  nassertr(skip_bytes >= 0, PTA_uchar());
 
   unsigned int r_mask = header.pf.r_mask;
   unsigned int g_mask = header.pf.g_mask;
@@ -4715,8 +4812,8 @@ read_dds_level_generic_uncompressed(Texture *tex, const DDSHeader &header,
 
   bool add_alpha = has_alpha(tex->_format);
 
-  size_t size = tex->get_expected_ram_mipmap_image_size(n);
-  size_t row_bytes = x_size * tex->get_num_components();
+  size_t size = tex->do_get_expected_ram_mipmap_page_size(n);
+  size_t row_bytes = x_size * tex->_num_components;
   PTA_uchar image = PTA_uchar::empty_array(size);
   for (int y = y_size - 1; y >= 0; --y) {
     unsigned char *p = image.p() + y * row_bytes;
@@ -4746,15 +4843,13 @@ read_dds_level_generic_uncompressed(Texture *tex, const DDSHeader &header,
         store_unscaled_byte(p, a);
       }
     }
-    nassertr(p <= image.p() + size, false);
+    nassertr(p <= image.p() + size, PTA_uchar());
     for (int bi = 0; bi < skip_bytes; ++bi) {
       in.get();
     }
   }
 
-  tex->set_ram_mipmap_image(n, image);
-
-  return true;
+  return image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4762,11 +4857,10 @@ read_dds_level_generic_uncompressed(Texture *tex, const DDSHeader &header,
 //       Access: Private, Static
 //  Description: Called by read_dds for DXT1 file format.
 ////////////////////////////////////////////////////////////////////
-bool Texture::
-read_dds_level_dxt1(Texture *tex, const DDSHeader &header, 
-                    int n, istream &in) {
-  int x_size = tex->get_expected_mipmap_x_size(n);
-  int y_size = tex->get_expected_mipmap_y_size(n);
+PTA_uchar Texture::
+read_dds_level_dxt1(Texture *tex, const DDSHeader &header, int n, istream &in) {
+  int x_size = tex->do_get_expected_mipmap_x_size(n);
+  int y_size = tex->do_get_expected_mipmap_y_size(n);
 
   static const int div = 4;
   static const int block_bytes = 8;
@@ -4780,7 +4874,7 @@ read_dds_level_dxt1(Texture *tex, const DDSHeader &header,
 
   if (n == 0) {
     if (header.dds_flags & DDSD_LINEARSIZE) {
-      nassertr(linear_size == header.pitch, false);
+      nassertr(linear_size == header.pitch, PTA_uchar());
     }
   }
 
@@ -4826,9 +4920,7 @@ read_dds_level_dxt1(Texture *tex, const DDSHeader &header,
     in.read((char *)p, row_length);
   }
 
-  tex->set_ram_mipmap_image(n, image);
-
-  return true;
+  return image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4836,11 +4928,10 @@ read_dds_level_dxt1(Texture *tex, const DDSHeader &header,
 //       Access: Private, Static
 //  Description: Called by read_dds for DXT2 or DXT3 file format.
 ////////////////////////////////////////////////////////////////////
-bool Texture::
-read_dds_level_dxt23(Texture *tex, const DDSHeader &header, 
-                     int n, istream &in) {
-  int x_size = tex->get_expected_mipmap_x_size(n);
-  int y_size = tex->get_expected_mipmap_y_size(n);
+PTA_uchar Texture::
+read_dds_level_dxt23(Texture *tex, const DDSHeader &header, int n, istream &in) {
+  int x_size = tex->do_get_expected_mipmap_x_size(n);
+  int y_size = tex->do_get_expected_mipmap_y_size(n);
 
   static const int div = 4;
   static const int block_bytes = 16;
@@ -4856,7 +4947,7 @@ read_dds_level_dxt23(Texture *tex, const DDSHeader &header,
 
   if (n == 0) {
     if (header.dds_flags & DDSD_LINEARSIZE) {
-      nassertr(linear_size == header.pitch, false);
+      nassertr(linear_size == header.pitch, PTA_uchar());
     }
   }
 
@@ -4918,9 +5009,7 @@ read_dds_level_dxt23(Texture *tex, const DDSHeader &header,
     in.read((char *)p, row_length);
   }
 
-  tex->set_ram_mipmap_image(n, image);
-
-  return true;
+  return image;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4928,11 +5017,10 @@ read_dds_level_dxt23(Texture *tex, const DDSHeader &header,
 //       Access: Private, Static
 //  Description: Called by read_dds for DXT4 or DXT5 file format.
 ////////////////////////////////////////////////////////////////////
-bool Texture::
-read_dds_level_dxt45(Texture *tex, const DDSHeader &header, 
-                     int n, istream &in) {
-  int x_size = tex->get_expected_mipmap_x_size(n);
-  int y_size = tex->get_expected_mipmap_y_size(n);
+PTA_uchar Texture::
+read_dds_level_dxt45(Texture *tex, const DDSHeader &header, int n, istream &in) {
+  int x_size = tex->do_get_expected_mipmap_x_size(n);
+  int y_size = tex->do_get_expected_mipmap_y_size(n);
 
   static const int div = 4;
   static const int block_bytes = 16;
@@ -4947,7 +5035,7 @@ read_dds_level_dxt45(Texture *tex, const DDSHeader &header,
 
   if (n == 0) {
     if (header.dds_flags & DDSD_LINEARSIZE) {
-      nassertr(linear_size == header.pitch, false);
+      nassertr(linear_size == header.pitch, PTA_uchar());
     }
   }
 
@@ -5026,9 +5114,7 @@ read_dds_level_dxt45(Texture *tex, const DDSHeader &header,
     in.read((char *)p, row_length);
   }
 
-  tex->set_ram_mipmap_image(n, image);
-
-  return true;
+  return image;
 }
 
 ////////////////////////////////////////////////////////////////////

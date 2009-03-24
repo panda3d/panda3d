@@ -1413,6 +1413,23 @@ make_ram_mipmap_image(int n) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_ram_mipmap_image
+//       Access: Published
+//  Description: Replaces the current system-RAM image for the
+//               indicated mipmap level with the new data.  If
+//               compression is not CM_off, it indicates that the new
+//               data is already pre-compressed in the indicated
+//               format.
+//
+//               This does *not* affect keep_ram_image.
+////////////////////////////////////////////////////////////////////
+INLINE void Texture::
+set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size) {
+  MutexHolder holder(_lock);
+  do_set_ram_mipmap_image(n, image, page_size);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::clear_ram_mipmap_images
 //       Access: Published
 //  Description: Discards the current system-RAM image for all

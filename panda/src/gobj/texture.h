@@ -330,7 +330,7 @@ PUBLISHED:
   CPTA_uchar get_ram_mipmap_image(int n);
   INLINE PTA_uchar modify_ram_mipmap_image(int n);
   INLINE PTA_uchar make_ram_mipmap_image(int n);
-  void set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size = 0);
+  INLINE void set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size = 0);
   void clear_ram_mipmap_image(int n);
   INLINE void clear_ram_mipmap_images();
   INLINE void generate_ram_mipmap_images();
@@ -484,6 +484,7 @@ protected:
   PTA_uchar do_make_ram_image();
   PTA_uchar do_modify_ram_mipmap_image(int n);
   PTA_uchar do_make_ram_mipmap_image(int n);
+  void do_set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size);
 
   bool consider_auto_process_ram_image(bool generate_mipmaps, 
                                        bool allow_compression);
@@ -558,26 +559,26 @@ private:
                                   int num_components, int component_width,
                                   CPTA_uchar image, size_t page_size, 
                                   int z);
-  static bool read_dds_level_rgb8(Texture *tex, const DDSHeader &header, 
-                                  int n, istream &in);
-  static bool read_dds_level_bgr8(Texture *tex, const DDSHeader &header, 
-                                  int n, istream &in);
-  static bool read_dds_level_abgr8(Texture *tex, const DDSHeader &header, 
-                                   int n, istream &in);
-  static bool read_dds_level_rgba8(Texture *tex, const DDSHeader &header, 
-                                   int n, istream &in);
-  static bool read_dds_level_generic_uncompressed(Texture *tex, 
-                                                  const DDSHeader &header, 
-                                                  int n, istream &in);
-  static bool read_dds_level_dxt1(Texture *tex, 
-                                  const DDSHeader &header, 
-                                  int n, istream &in);
-  static bool read_dds_level_dxt23(Texture *tex, 
-                                   const DDSHeader &header, 
-                                   int n, istream &in);
-  static bool read_dds_level_dxt45(Texture *tex, 
-                                   const DDSHeader &header, 
-                                   int n, istream &in);
+  static PTA_uchar read_dds_level_rgb8(Texture *tex, const DDSHeader &header, 
+                                       int n, istream &in);
+  static PTA_uchar read_dds_level_bgr8(Texture *tex, const DDSHeader &header, 
+                                       int n, istream &in);
+  static PTA_uchar read_dds_level_abgr8(Texture *tex, const DDSHeader &header, 
+                                        int n, istream &in);
+  static PTA_uchar read_dds_level_rgba8(Texture *tex, const DDSHeader &header, 
+                                        int n, istream &in);
+  static PTA_uchar read_dds_level_generic_uncompressed(Texture *tex, 
+                                                       const DDSHeader &header, 
+                                                       int n, istream &in);
+  static PTA_uchar read_dds_level_dxt1(Texture *tex, 
+                                       const DDSHeader &header, 
+                                       int n, istream &in);
+  static PTA_uchar read_dds_level_dxt23(Texture *tex, 
+                                        const DDSHeader &header, 
+                                        int n, istream &in);
+  static PTA_uchar read_dds_level_dxt45(Texture *tex, 
+                                        const DDSHeader &header, 
+                                        int n, istream &in);
 
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
