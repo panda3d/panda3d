@@ -302,6 +302,35 @@ new_connection(const PT(Connection) &connection) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConnectionManager::flush_read_connection
+//       Access: Protected, Virtual
+//  Description: An internal function called by ConnectionWriter only
+//               when a write failure has occurred.  This method
+//               ensures that all of the read data has been flushed
+//               from the pipe before the connection is fully removed.
+////////////////////////////////////////////////////////////////////
+void ConnectionManager::
+flush_read_connection(Connection *connection) {
+  {
+    LightMutexHolder holder(_set_mutex);
+    Connections::iterator ci = _connections.find(connection);
+    if (ci == _connections.end()) {
+      // Already closed, or not part of this ConnectionManager.
+      return;
+    }
+    _connections.erase(ci);
+    
+    Readers::iterator ri;
+    for (ri = _readers.begin(); ri != _readers.end(); ++ri) {
+      (*ri)->flush_read_connection(connection);
+    }
+  }
+
+  Socket_IP *socket = connection->get_socket();
+  socket->Close();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConnectionManager::connection_reset
 //       Access: Protected, Virtual
 //  Description: An internal function called by the ConnectionReader,
