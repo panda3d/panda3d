@@ -77,6 +77,7 @@ ZTriangleStub = """
 /* This file is generated code--do not edit.  See ztriangle.py. */
 #include <stdlib.h>
 #include <stdio.h>
+#include "pandabase.h"
 #include "zbuffer.h"
 
 /* Pick up all of the generated code references to ztriangle_two.h,
@@ -178,6 +179,7 @@ print >> table_decl, ''
 table_def = open('ztriangle_table.cxx', 'wb')
 print >> table_def, '/* This file is generated code--do not edit.  See ztriangle.py. */'
 print >> table_def, ''
+print >> table_def, '#include "pandabase.h"'
 print >> table_def, '#include "zbuffer.h"'
 print >> table_def, '#include "ztriangle_table.h"'
 print >> table_def, ''
@@ -189,7 +191,7 @@ def writeExterns(ops):
     if i + 1 == len(FullOptions):
         # The last level: write out the actual function names.
         for j in range(numOps):
-            print >> table_def, 'extern ZB_fillTriangleFunc %s;' % (getFname(ops + [j]))
+            print >> table_def, 'extern "C" ZB_fillTriangleFunc %s;' % (getFname(ops + [j]))
     else:
         # Intermediate levels: recurse.
         for j in range(numOps):

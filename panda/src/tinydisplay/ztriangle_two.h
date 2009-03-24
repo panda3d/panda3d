@@ -1,5 +1,10 @@
-void FNAME(white_untextured) (ZBuffer *zb,
-                              ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+extern "C" void
+FNAME(white_untextured) (ZBuffer *zb,
+                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void
+FNAME(white_untextured) (ZBuffer *zb,
+                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
 #define INTERP_Z
 
@@ -26,8 +31,13 @@ void FNAME(white_untextured) (ZBuffer *zb,
 #include "ztriangle.h"
 }
 
-void FNAME(flat_untextured) (ZBuffer *zb,
-                             ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+extern "C" void
+FNAME(flat_untextured) (ZBuffer *zb,
+                        ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void
+FNAME(flat_untextured) (ZBuffer *zb,
+                        ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   int color;
   int or0, og0, ob0, oa0;
@@ -70,8 +80,13 @@ void FNAME(flat_untextured) (ZBuffer *zb,
  * The code below is very tricky :)
  */
 
-void FNAME(smooth_untextured) (ZBuffer *zb,
-                               ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+extern "C" void
+FNAME(smooth_untextured) (ZBuffer *zb,
+                          ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void
+FNAME(smooth_untextured) (ZBuffer *zb,
+                          ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
 #define INTERP_Z
 #define INTERP_RGB
@@ -114,8 +129,13 @@ void FNAME(smooth_untextured) (ZBuffer *zb,
 #include "ztriangle.h"
 }
 
-void FNAME(white_textured) (ZBuffer *zb,
-                            ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+extern "C" void
+FNAME(white_textured) (ZBuffer *zb,
+                       ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void
+FNAME(white_textured) (ZBuffer *zb,
+                       ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   ZTextureDef *texture_def;
 
@@ -151,8 +171,13 @@ void FNAME(white_textured) (ZBuffer *zb,
 #include "ztriangle.h"
 }
 
-void FNAME(flat_textured) (ZBuffer *zb,
-                           ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+extern "C" void
+FNAME(flat_textured) (ZBuffer *zb,
+                      ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void
+FNAME(flat_textured) (ZBuffer *zb,
+                      ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   ZTextureDef *texture_def;
   int or0, og0, ob0, oa0;
@@ -206,8 +231,13 @@ void FNAME(flat_textured) (ZBuffer *zb,
 #include "ztriangle.h"
 }
 
-void FNAME(smooth_textured) (ZBuffer *zb,
-                             ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+extern "C" void
+FNAME(smooth_textured) (ZBuffer *zb,
+                        ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void
+FNAME(smooth_textured) (ZBuffer *zb,
+                        ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   ZTextureDef *texture_def;
 
@@ -276,8 +306,13 @@ void FNAME(smooth_textured) (ZBuffer *zb,
  * We use the gradient method to make less divisions.
  * TODO: pipeline the division
  */
-void FNAME(white_perspective) (ZBuffer *zb,
-                               ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+extern "C" void
+FNAME(white_perspective) (ZBuffer *zb,
+                          ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void
+FNAME(white_perspective) (ZBuffer *zb,
+                          ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   ZTextureDef *texture_def;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
@@ -385,8 +420,13 @@ void FNAME(white_perspective) (ZBuffer *zb,
  * Flat shaded triangle, with perspective-correct mapping.
  */
 
-void FNAME(flat_perspective) (ZBuffer *zb,
-                              ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+extern "C" void
+FNAME(flat_perspective) (ZBuffer *zb,
+                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void
+FNAME(flat_perspective) (ZBuffer *zb,
+                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   ZTextureDef *texture_def;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
@@ -515,8 +555,13 @@ void FNAME(flat_perspective) (ZBuffer *zb,
  * Smooth filled triangle, with perspective-correct mapping.
  */
 
-void FNAME(smooth_perspective) (ZBuffer *zb,
-                                ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+extern "C" void
+FNAME(smooth_perspective) (ZBuffer *zb,
+                           ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void
+FNAME(smooth_perspective) (ZBuffer *zb,
+                           ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   ZTextureDef *texture_def;
   float fdzdx,fndzdx,ndszdx,ndtzdx;
@@ -655,8 +700,13 @@ void FNAME(smooth_perspective) (ZBuffer *zb,
  * stages of multitexture.
  */
 
-void FNAME(smooth_multitex2) (ZBuffer *zb,
-                              ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+extern "C" void
+FNAME(smooth_multitex2) (ZBuffer *zb,
+                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void
+FNAME(smooth_multitex2) (ZBuffer *zb,
+                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   float fdzdx,fndzdx,ndszdx,ndtzdx,ndszadx,ndtzadx;
 
@@ -809,8 +859,13 @@ void FNAME(smooth_multitex2) (ZBuffer *zb,
  * stages of multitexture.
  */
 
-void FNAME(smooth_multitex3) (ZBuffer *zb,
-                              ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
+extern "C" void
+FNAME(smooth_multitex3) (ZBuffer *zb,
+                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2);
+
+void
+FNAME(smooth_multitex3) (ZBuffer *zb,
+                         ZBufferPoint *p0,ZBufferPoint *p1,ZBufferPoint *p2)
 {
   float fdzdx,fndzdx,ndszdx,ndtzdx,ndszadx,ndtzadx,ndszbdx,ndtzbdx;
 
