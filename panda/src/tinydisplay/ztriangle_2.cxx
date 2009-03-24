@@ -1,3 +1,5 @@
+
+/* This file is generated code--do not edit.  See ztriangle.py. */
 #include <stdlib.h>
 #include <stdio.h>
 #include "zbuffer.h"
@@ -6,4 +8,5 @@
    which ultimately calls ztriangle.h, many, many times. */
 
 #include "ztriangle_table.h"
-#include "ztriangle_code.h"
+#include "ztriangle_code_2.h"
+

@@ -37,8 +37,12 @@
     msghandling.h \
     zbuffer.h zfeatures.h zgl.h \
     zline.h zmath.h \
-    ztriangle.cxx ztriangle.h ztriangle_two.h \
-    ztriangle_code.h ztriangle_table.h \
+    ztriangle_1.cxx ztriangle_2.cxx \
+    ztriangle_3.cxx ztriangle_4.cxx \
+    ztriangle.h ztriangle_two.h \
+    ztriangle_code_1.h ztriangle_code_2.h \
+    ztriangle_code_3.h ztriangle_code_4.h \
+    ztriangle_table.h ztriangle_table.cxx \
     store_pixel.h store_pixel_code.h store_pixel_table.h
 
   #define INCLUDED_SOURCES \
