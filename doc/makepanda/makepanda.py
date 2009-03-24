@@ -3578,6 +3578,7 @@ def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
         os.remove(file)
     if (os.path.exists("nsis-output.exe")):
         os.remove("nsis-output.exe")
+    WriteFile("built/tmp/__init__.py", "")
     psource=os.path.abspath(".")
     panda=os.path.abspath(GetOutputDir())
     cmd="thirdparty/win-nsis/makensis /V2 "
@@ -3614,15 +3615,17 @@ Maintainer: etc-panda3d@lists.andrew.cmu.edu
 Description: The Panda3D free 3D engine
 """
 
+# We're not putting "python" in the "Requires" field,
+# since the rpm-based distros don't have a common
+# naming for the Python package.
 INSTALLER_SPEC_FILE="""
-Summary: Panda 3D Engine
+Summary: The Panda3D free 3D engine
 Name: panda3d
 Version: VERSION
 Release: 1
 License: BSD License
 Group: Development/Libraries
 BuildRoot: PANDASOURCE/linuxroot
-Requires: python (>= PV)
 %description
 The Panda3D engine.
 %post

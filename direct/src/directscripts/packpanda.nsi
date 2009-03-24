@@ -106,8 +106,8 @@ Section "${SMDIRECTORY}" SecCore
         File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\filter\*.sha"
         SetOutPath $INSTDIR\direct
         File /r /x CVS /x Opt?-Win32 "${PSOURCE}\direct\src\*.py"
+        File "${PANDA}\tmp\__init__.py"
         !endif
-        File "${PANDA}\direct\__init__.py"
         SetOutPath $INSTDIR\pandac
         File /r "${PANDA}\pandac\*.py"
         SetOutPath $INSTDIR\python
