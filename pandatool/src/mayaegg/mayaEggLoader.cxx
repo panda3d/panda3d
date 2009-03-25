@@ -34,6 +34,8 @@
 #include "eggVertexPool.h"
 #include "eggPolysetMaker.h"
 #include "eggNurbsSurface.h"
+#include "texture.h"
+#include "texturePool.h"
 
 #include "pre_maya_include.h"
 #include <maya/MStatus.h>
@@ -97,7 +99,7 @@ public:
   MayaEggJoint *MakeJoint(EggGroup *joint, EggGroup *context);
   MayaEggGroup *FindGroup(EggGroup *group);
   MayaEggGroup *MakeGroup(EggGroup *group, EggGroup *context);
-  MayaEggTex   *GetTex(const string &name, const string &fn);
+  MayaEggTex   *GetTex(EggTexture *etex);
   void          CreateSkinCluster(MayaEggGeom *M);
 
   MayaAnim *GetAnim(EggXfmSAnim *pool);
@@ -230,8 +232,15 @@ void MayaEggTex::AssignNames(void)
   }
 }
 
-MayaEggTex *MayaEggLoader::GetTex(const string &name, const string &fn)
+MayaEggTex *MayaEggLoader::GetTex(EggTexture* etex)
 {
+  string name = "";
+  string fn = "";
+  if (etex != NULL) {
+    name = etex->get_name();
+    fn = etex->get_fullpath().to_os_specific();
+  }
+
   if (_tex_tab.count(fn)) {
     return _tex_tab[fn];
   }
@@ -283,10 +292,10 @@ MayaEggTex *MayaEggLoader::GetTex(const string &name, const string &fn)
       dgmod.connect(filetex.findPlug("outColor"),shader.findPlug("color"));
 
       // [gjeon] to create alpha channel connection
-      unsigned len_fn = fn_str.length(); 
-      if ((len_fn > 5) && (fn_str.toLowerCase().substring(len_fn - 5, len_fn-1) == ".rgba")) {
+      LoaderOptions options;
+      PT(Texture) tex = TexturePool::load_texture(etex->get_fullpath(), 0, false, options);
+      if ((tex != NULL) && (tex->get_num_components() == 4))
         dgmod.connect(filetex.findPlug("outTransparency"),shader.findPlug("transparency"));
-      }
     }
     status = dgmod.doIt();
     if (status != MStatus::kSuccess) {
@@ -1352,11 +1361,14 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
  
     if (poly->has_texture()) {
       EggTexture *etex = poly->get_texture(0);
-      tex = GetTex(etex->get_name(), etex->get_fullpath().to_os_specific());
+      if (mayaloader_cat.is_spam()) {
+        mayaloader_cat.spam() << "Texture format : " << etex->get_format() << endl;
+      }
+      tex = GetTex(etex);
       if (etex->has_transform())
         uvtrans = etex->get_transform2d();
     } else {
-      tex = GetTex("","");
+      tex = GetTex(NULL);
     }
     
     EggPolygon::const_iterator ci;
@@ -1411,7 +1423,21 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
     if (context->get_model_flag()) {
       mesh->AddEggFlag("model");
     }
-    
+
+    // [gjeon] to handle billboard flag
+    switch (context->get_billboard_type()) {
+    case EggGroup::BT_axis:
+      mesh->AddEggFlag("billboard");
+      break;
+
+    case EggGroup::BT_point_camera_relative:
+      mesh->AddEggFlag("billboard-point");
+      break;
+     
+    default:
+      ;
+    }
+
     // [gjeon] to handle other flags
     for (int i = 0; i < context->get_num_object_types(); i++) {
       mesh->AddEggFlag(MString(context->get_object_type(i).c_str()));
@@ -1436,14 +1462,14 @@ void MayaEggLoader::TraverseEggNode(EggNode *node, EggGroup *context, string del
  
     if (eggNurbsSurface->has_texture()) {
       EggTexture *etex = eggNurbsSurface->get_texture(0);
-      tex = GetTex(etex->get_name(), etex->get_fullpath().to_os_specific());
+      tex = GetTex(etex);
       if (etex->has_transform())
       {
         mayaloader_cat.debug() << "uvtrans?" << endl;
         uvtrans = etex->get_transform2d();
       }
     } else {
-      tex = GetTex("","");
+      tex = GetTex(NULL);
     }
 
     surface->_tex = tex;

@@ -10,7 +10,7 @@
     linmath:c putil:c panda:m \
     express:c pandaexpress:m \
     dtoolutil:c dtoolbase:c prc:c dconfig:c dtoolconfig:m dtool:m pystub \
-    pipeline:c interrogatedb:c
+    pipeline:c interrogatedb:c gobj:c
 
   #define UNIX_SYS_LIBS \
     m
