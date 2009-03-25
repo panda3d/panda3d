@@ -87,7 +87,6 @@ PUBLISHED:
   int get_tcp_header_size() const;
 
 protected:
-  virtual void flush_read_connection(Connection *connection);
   virtual void receive_datagram(const NetDatagram &datagram)=0;
 
   class SocketInfo {

@@ -542,7 +542,6 @@ check_send_error(bool okflag) {
     // Assume any error means the connection has been reset; tell
     // our manager about it and ignore it.
     if (_manager != (ConnectionManager *)NULL) {
-      _manager->flush_read_connection(this);
       _manager->connection_reset(this, okflag);
     }
     return false;

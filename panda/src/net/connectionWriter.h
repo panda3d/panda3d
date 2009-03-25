@@ -71,7 +71,6 @@ protected:
 private:
   void thread_run(int thread_index);
   bool send_datagram(const NetDatagram &datagram);
-  void shutdown();
 
 protected:
   ConnectionManager *_manager;

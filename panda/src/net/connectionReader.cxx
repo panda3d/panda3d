@@ -387,46 +387,6 @@ get_tcp_header_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConnectionReader::flush_read_connection
-//       Access: Protected, Virtual
-//  Description: Attempts to read all the possible data from the
-//               indicated connection, which has just delivered a
-//               write error (and has therefore already been closed).
-//               If the connection is not monitered by this reader,
-//               does nothing.
-////////////////////////////////////////////////////////////////////
-void ConnectionReader::
-flush_read_connection(Connection *connection) {
-  // Ensure it doesn't get deleted.
-  SocketInfo sinfo(connection);
-
-  if (!remove_connection(connection)) {
-    // Not already in the reader.
-    return;
-  }
-
-  // The connection was previously in the reader, but has now been
-  // removed.  Now we can flush it completely.  We check if there is
-  // any read data available on just this one socket; we can do this
-  // right here in this thread, since we've already removed this
-  // connection from the reader.
-
-  Socket_fdset fdset;
-  fdset.clear();
-  fdset.setForSocket(*(sinfo.get_socket()));
-  int num_results = fdset.WaitForRead(true, 0);
-  cerr << "num_results = " << num_results << "\n";
-  while (num_results != 0) {
-    sinfo._busy = true;
-    process_incoming_data(&sinfo);
-    fdset.setForSocket(*(sinfo.get_socket()));
-    num_results = fdset.WaitForRead(true, 0);
-    cerr << "b num_results = " << num_results << "\n";
-  }
-  cerr << "done\n";
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::shutdown
 //       Access: Protected
 //  Description: Terminates all threads cleanly.  Normally this is
