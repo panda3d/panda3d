@@ -96,15 +96,7 @@ ConnectionWriter::
     _manager->remove_writer(this);
   }
 
-  // First, shutdown the queue.  This will tell our threads they're
-  // done.
-  _queue.shutdown();
-
-  // Now wait for all threads to terminate.
-  Threads::iterator ti;
-  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
-    (*ti)->join();
-  }
+  shutdown();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -341,6 +333,7 @@ get_tcp_header_size() const {
 void ConnectionWriter::
 clear_manager() {
   _manager = (ConnectionManager *)NULL;
+  shutdown();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -361,4 +354,23 @@ thread_run(int thread_index) {
       datagram.get_connection()->send_datagram(datagram, _tcp_header_size);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConnectionWriter::shutdown
+//       Access: Private
+//  Description: Stops all the threads and cleans them up.
+////////////////////////////////////////////////////////////////////
+void ConnectionWriter::
+shutdown() {
+  // First, shutdown the queue.  This will tell our threads they're
+  // done.
+  _queue.shutdown();
+
+  // Now wait for all threads to terminate.
+  Threads::iterator ti;
+  for (ti = _threads.begin(); ti != _threads.end(); ++ti) {
+    (*ti)->join();
+  }
+  _threads.clear();
 }
