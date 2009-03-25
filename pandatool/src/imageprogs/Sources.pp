@@ -27,6 +27,12 @@
 #end bin_target
 
 #begin bin_target
+  #define TARGET image-transform-colors
+  #define SOURCES \
+    imageTransformColors.cxx imageTransformColors.h imageTransformColors.I
+#end bin_target
+
+#begin bin_target
   #define TARGET image-info
   #define SOURCES \
     imageInfo.cxx imageInfo.h
