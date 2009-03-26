@@ -62,6 +62,7 @@ PUBLISHED:
 
 protected:
   void new_connection(const PT(Connection) &connection);
+  virtual void flush_read_connection(Connection *connection);
   virtual void connection_reset(const PT(Connection) &connection, 
                                 bool okflag);
 

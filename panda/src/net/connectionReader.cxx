@@ -387,6 +387,45 @@ get_tcp_header_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ConnectionReader::flush_read_connection
+//       Access: Protected, Virtual
+//  Description: Attempts to read all the possible data from the
+//               indicated connection, which has just delivered a
+//               write error (and has therefore already been closed).
+//               If the connection is not monitered by this reader,
+//               does nothing.
+////////////////////////////////////////////////////////////////////
+void ConnectionReader::
+flush_read_connection(Connection *connection) {
+  // Ensure it doesn't get deleted.
+  SocketInfo sinfo(connection);
+
+  if (!remove_connection(connection)) {
+    // Not already in the reader.
+    return;
+  }
+
+  // The connection was previously in the reader, but has now been
+  // removed.  Now we can flush it completely.  We check if there is
+  // any read data available on just this one socket; we can do this
+  // right here in this thread, since we've already removed this
+  // connection from the reader.
+
+  Socket_fdset fdset;
+  fdset.clear();
+  fdset.setForSocket(*(sinfo.get_socket()));
+  int num_results = fdset.WaitForRead(true, 0);
+  while (num_results != 0) {
+    sinfo._busy = true;
+    if (!process_incoming_data(&sinfo)) {
+      break;
+    }
+    fdset.setForSocket(*(sinfo.get_socket()));
+    num_results = fdset.WaitForRead(true, 0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ConnectionReader::shutdown
 //       Access: Protected
 //  Description: Terminates all threads cleanly.  Normally this is
@@ -444,21 +483,23 @@ finish_socket(SocketInfo *sinfo) {
 //       Access: Protected, Virtual
 //  Description: This is run within a thread when the call to
 //               select() indicates there is data available on a
-//               socket.
+//               socket.  Returns true if the data is read
+//               successfully, false on failure (for instance, because
+//               the connection is closed).
 ////////////////////////////////////////////////////////////////////
-void ConnectionReader::
+bool ConnectionReader::
 process_incoming_data(SocketInfo *sinfo) {
   if (_raw_mode) {
     if (sinfo->is_udp()) {
-      process_raw_incoming_udp_data(sinfo);
+      return process_raw_incoming_udp_data(sinfo);
     } else {
-      process_raw_incoming_tcp_data(sinfo);
+      return process_raw_incoming_tcp_data(sinfo);
     }
   } else {
     if (sinfo->is_udp()) {
-      process_incoming_udp_data(sinfo);
+      return process_incoming_udp_data(sinfo);
     } else {
-      process_incoming_tcp_data(sinfo);
+      return process_incoming_tcp_data(sinfo);
     }
   }
 }
@@ -468,10 +509,10 @@ process_incoming_data(SocketInfo *sinfo) {
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void ConnectionReader::
+bool ConnectionReader::
 process_incoming_udp_data(SocketInfo *sinfo) {
   Socket_UDP *socket;
-  DCAST_INTO_V(socket, sinfo->get_socket());
+  DCAST_INTO_R(socket, sinfo->get_socket(), false);
   Socket_Address addr;
 
   // Read as many bytes as we can.
@@ -482,7 +523,7 @@ process_incoming_udp_data(SocketInfo *sinfo) {
 
   if (!okflag) {
     finish_socket(sinfo);
-    return;
+    return false;
 
   } else if (bytes_read == 0) {
     // The socket was closed (!).  This shouldn't happen with a UDP
@@ -491,7 +532,7 @@ process_incoming_udp_data(SocketInfo *sinfo) {
       _manager->connection_reset(sinfo->_connection, 0);
     }
     finish_socket(sinfo);
-    return;
+    return false;
   }
 
   // Since we are not running in raw mode, we decode the header to
@@ -501,7 +542,7 @@ process_incoming_udp_data(SocketInfo *sinfo) {
     net_cat.error()
       << "Did not read entire header, discarding UDP datagram.\n";
     finish_socket(sinfo);
-    return;
+    return true;
   }
   
   DatagramUDPHeader header(buffer);
@@ -516,7 +557,7 @@ process_incoming_udp_data(SocketInfo *sinfo) {
   finish_socket(sinfo);
   
   if (_shutdown) {
-    return;
+    return false;
   }
   
   // And now do whatever we need to do to process the datagram.
@@ -528,6 +569,8 @@ process_incoming_udp_data(SocketInfo *sinfo) {
     datagram.set_address(NetAddress(addr));
     receive_datagram(datagram);
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -535,10 +578,10 @@ process_incoming_udp_data(SocketInfo *sinfo) {
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void ConnectionReader::
+bool ConnectionReader::
 process_incoming_tcp_data(SocketInfo *sinfo) {
   Socket_TCP *socket;
-  DCAST_INTO_V(socket, sinfo->get_socket());
+  DCAST_INTO_R(socket, sinfo->get_socket(), false);
 
   // Read only the header bytes to start with.
   char buffer[read_buffer_size];
@@ -563,7 +606,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
         _manager->connection_reset(sinfo->_connection, 0);
       }
       finish_socket(sinfo);
-      return;
+      return false;
     }
 
     header_bytes_read += bytes_read;
@@ -577,7 +620,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     net_cat.error()
       << "Did not read entire header, discarding TCP datagram.\n";
     finish_socket(sinfo);
-    return;
+    return true;
   }
 
   DatagramTCPHeader header(buffer, _tcp_header_size);
@@ -609,7 +652,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
         _manager->connection_reset(sinfo->_connection, 0);
       }
       finish_socket(sinfo);
-      return;
+      return false;
     }
 
     int datagram_bytes =
@@ -630,7 +673,7 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
   finish_socket(sinfo);
 
   if (_shutdown) {
-    return;
+    return false;
   }
 
   // And now do whatever we need to do to process the datagram.
@@ -642,6 +685,8 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
     datagram.set_address(NetAddress(socket->GetPeerName()));
     receive_datagram(datagram);
   }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -649,10 +694,10 @@ process_incoming_tcp_data(SocketInfo *sinfo) {
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void ConnectionReader::
+bool ConnectionReader::
 process_raw_incoming_udp_data(SocketInfo *sinfo) {
   Socket_UDP *socket;
-  DCAST_INTO_V(socket, sinfo->get_socket());
+  DCAST_INTO_R(socket, sinfo->get_socket(), false);
   Socket_Address addr;
 
   // Read as many bytes as we can.
@@ -663,7 +708,7 @@ process_raw_incoming_udp_data(SocketInfo *sinfo) {
 
   if (!okflag) {
     finish_socket(sinfo);
-    return;
+    return false;
 
   } else if (bytes_read == 0) {
     // The socket was closed (!).  This shouldn't happen with a UDP
@@ -672,7 +717,7 @@ process_raw_incoming_udp_data(SocketInfo *sinfo) {
       _manager->connection_reset(sinfo->_connection, 0);
     }
     finish_socket(sinfo);
-    return;
+    return false;
   }
 
   // In raw mode, we simply extract all the bytes and make that a
@@ -684,12 +729,14 @@ process_raw_incoming_udp_data(SocketInfo *sinfo) {
   finish_socket(sinfo);
   
   if (_shutdown) {
-    return;
+    return false;
   }
   
   datagram.set_connection(sinfo->_connection);
   datagram.set_address(NetAddress(addr));
   receive_datagram(datagram);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -697,10 +744,10 @@ process_raw_incoming_udp_data(SocketInfo *sinfo) {
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
-void ConnectionReader::
+bool ConnectionReader::
 process_raw_incoming_tcp_data(SocketInfo *sinfo) {
   Socket_TCP *socket;
-  DCAST_INTO_V(socket, sinfo->get_socket());
+  DCAST_INTO_R(socket, sinfo->get_socket(), false);
 
   // Read as many bytes as we can.
   char buffer[read_buffer_size];
@@ -718,7 +765,7 @@ process_raw_incoming_tcp_data(SocketInfo *sinfo) {
       _manager->connection_reset(sinfo->_connection, 0);
     }
     finish_socket(sinfo);
-    return;
+    return false;
   }
 
   // In raw mode, we simply extract all the bytes and make that a
@@ -730,12 +777,14 @@ process_raw_incoming_tcp_data(SocketInfo *sinfo) {
   finish_socket(sinfo);
   
   if (_shutdown) {
-    return;
+    return false;
   }
   
   datagram.set_connection(sinfo->_connection);
   datagram.set_address(NetAddress(socket->GetPeerName()));
   receive_datagram(datagram);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

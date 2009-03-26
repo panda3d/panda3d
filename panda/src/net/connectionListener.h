@@ -42,7 +42,7 @@ protected:
                                  const NetAddress &address,
                                  const PT(Connection) &new_connection)=0;
 
-  virtual void process_incoming_data(SocketInfo *sinfo);
+  virtual bool process_incoming_data(SocketInfo *sinfo);
 
 private:
 };

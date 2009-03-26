@@ -87,6 +87,7 @@ PUBLISHED:
   int get_tcp_header_size() const;
 
 protected:
+  virtual void flush_read_connection(Connection *connection);
   virtual void receive_datagram(const NetDatagram &datagram)=0;
 
   class SocketInfo {
@@ -105,11 +106,11 @@ protected:
   void clear_manager();
   void finish_socket(SocketInfo *sinfo);
 
-  virtual void process_incoming_data(SocketInfo *sinfo);
-  virtual void process_incoming_udp_data(SocketInfo *sinfo);
-  virtual void process_incoming_tcp_data(SocketInfo *sinfo);
-  virtual void process_raw_incoming_udp_data(SocketInfo *sinfo);
-  virtual void process_raw_incoming_tcp_data(SocketInfo *sinfo);
+  virtual bool process_incoming_data(SocketInfo *sinfo);
+  virtual bool process_incoming_udp_data(SocketInfo *sinfo);
+  virtual bool process_incoming_tcp_data(SocketInfo *sinfo);
+  virtual bool process_raw_incoming_udp_data(SocketInfo *sinfo);
+  virtual bool process_raw_incoming_tcp_data(SocketInfo *sinfo);
 
 protected:
   ConnectionManager *_manager;

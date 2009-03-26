@@ -50,10 +50,10 @@ receive_datagram(const NetDatagram &) {
 //               detected on a rendezvous port.  In this case, it
 //               performs the accept().
 ////////////////////////////////////////////////////////////////////
-void ConnectionListener::
+bool ConnectionListener::
 process_incoming_data(SocketInfo *sinfo) {
   Socket_TCP_Listen *socket;
-  DCAST_INTO_V(socket, sinfo->get_socket());
+  DCAST_INTO_R(socket, sinfo->get_socket(), false);
 
   Socket_Address addr;
   Socket_TCP *session = new Socket_TCP;
@@ -70,20 +70,22 @@ process_incoming_data(SocketInfo *sinfo) {
     net_cat.error()
       << "Error when accepting new connection.\n";
     delete session;
-
-  } else {
-    NetAddress net_addr(addr);
-    net_cat.info()
-      << "Received TCP connection from client " << net_addr.get_ip_string()
-      << " on port " << sinfo->_connection->get_address().get_port()
-      << "\n";
-
-    PT(Connection) new_connection = new Connection(_manager, session);
-    if (_manager != (ConnectionManager *)NULL) {
-      _manager->new_connection(new_connection);
-    }
-    connection_opened(sinfo->_connection, net_addr, new_connection);
+    finish_socket(sinfo);
+    return false;
   }
 
+  NetAddress net_addr(addr);
+  net_cat.info()
+    << "Received TCP connection from client " << net_addr.get_ip_string()
+    << " on port " << sinfo->_connection->get_address().get_port()
+    << "\n";
+  
+  PT(Connection) new_connection = new Connection(_manager, session);
+  if (_manager != (ConnectionManager *)NULL) {
+    _manager->new_connection(new_connection);
+  }
+  connection_opened(sinfo->_connection, net_addr, new_connection);
+
   finish_socket(sinfo);
+  return true;
 }
