@@ -226,7 +226,8 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
                     assert self.notify.debug(
                         "processVisibility: %s: changing location" %
                         (self.doId))
-                    self.handleAvatarZoneChange(self.visAvatar, zoneId)
+                    messenger.send("avatarZoneChanged", [self.visAvatar, self.doId, zoneId])
+                    #self.handleAvatarZoneChange(self.visAvatar, zoneId)
             self.visDirty = False
             return Task.cont
 
@@ -239,7 +240,8 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         # Figure out what zone in that island grid
         zoneId = self.getZoneFromXYZ(pos)
         # Do the wrtReparenting to the grid node
-        self.handleAvatarZoneChange(av, zoneId)
+        messenger.send("avatarZoneChanged", [av, self.doId, zoneId])
+        #self.handleAvatarZoneChange(av, zoneId)
 
     def removeObjectFromGrid(self, av):
         assert self.notify.debug("removeObjectFromGrid %s" % av)
