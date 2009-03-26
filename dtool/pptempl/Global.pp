@@ -499,7 +499,7 @@
 // component libraries.  If it is nonempty, then we do need to
 // generate a module, and $[get_igatemout] is the name of the .cxx file
 // that interrogate will produce to make this module.
-#defer get_igatemscan $[components $[get_igatedb:%=$[RELDIR]/%],$[active_component_libs]]
+#defer get_igatemscan $[components $[get_igatedb:%=$[RELDIR]/%],$[active_component_libs]] $[if $[not $[module $[TARGET],$[TARGET]]],$[get_igatedb]]
 #defer get_igatemout $[if $[get_igatemscan],$[ODIR]/lib$[TARGET]_module.cxx]
 
 // This variable returns the set of external packages used by this
