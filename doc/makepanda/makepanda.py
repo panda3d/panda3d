@@ -3586,7 +3586,7 @@ def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
         os.remove(file)
     if (os.path.exists("nsis-output.exe")):
         os.remove("nsis-output.exe")
-    WriteFile("built/tmp/__init__.py", "")
+    WriteFile(GetOutputDir()+"/tmp/__init__.py", "")
     psource=os.path.abspath(".")
     panda=os.path.abspath(GetOutputDir())
     cmd="thirdparty/win-nsis/makensis /V2 "
