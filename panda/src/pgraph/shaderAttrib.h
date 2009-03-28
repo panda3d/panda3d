@@ -67,6 +67,8 @@ PUBLISHED:
 
   CPT(RenderAttrib) clear_shader_input(InternalName *id) const;
   CPT(RenderAttrib) clear_shader_input(const string &id) const;
+  
+  CPT(RenderAttrib) clear_all_shader_inputs() const;
 
   INLINE bool        get_flag(int flag) const;
   

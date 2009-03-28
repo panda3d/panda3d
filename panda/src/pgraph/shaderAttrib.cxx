@@ -282,6 +282,18 @@ clear_shader_input(const string &id) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ShaderAttrib::clear_all_shader_inputs
+//       Access: Published
+//  Description: Clears all the shader inputs on the attrib.
+////////////////////////////////////////////////////////////////////
+CPT(RenderAttrib) ShaderAttrib::
+clear_all_shader_inputs() const {
+  ShaderAttrib *result = new ShaderAttrib(*this);
+  result->_inputs.clear();
+  return return_new(result);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ShaderAttrib::get_shader_input
 //       Access: Published
 //  Description: Returns the ShaderInput of the given name.  If
