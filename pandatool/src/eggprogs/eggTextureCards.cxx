@@ -81,10 +81,42 @@ EggTextureCards() : EggWriter(true, true) {
      &EggTextureCards::dispatch_color, NULL, &_polygon_color[0]);
 
   add_option
-    ("wm", "[repeat | clamp]", 0,
-     "Indicates the wrap mode of the texture: either \"repeat\" or \"clamp\" "
-     "(or \"r\" or \"c\").  The default is to leave this unspecified.",
+    ("wm", "wrap", 0,
+     "Indicates the wrap mode of the texture: \"repeat\", \"clamp\", "
+     "or any of the other modes supported by egg syntax.  "
+     "The default is to leave this unspecified.",
      &EggTextureCards::dispatch_wrap_mode, NULL, &_wrap_mode);
+
+  add_option
+    ("wmu", "wrap_u", 0,
+     "Indicates the wrap mode of the texture in the U direction.  This "
+     "overrides -wm, if specified.",
+     &EggTextureCards::dispatch_wrap_mode, NULL, &_wrap_u);
+
+  add_option
+    ("wmv", "wrap_v", 0,
+     "Indicates the wrap mode of the texture in the V direction.  This "
+     "overrides -wm, if specified.",
+     &EggTextureCards::dispatch_wrap_mode, NULL, &_wrap_v);
+
+  add_option
+    ("minf", "filter", 0,
+     "Indicates the minfilter mode of the texture: \"linear\", \"mipmap\", "
+     "or any of the other modes supported by egg syntax.  "
+     "The default is to leave this unspecified.",
+     &EggTextureCards::dispatch_filter_type, NULL, &_minfilter);
+
+  add_option
+    ("magf", "filter", 0,
+     "Indicates the magfilter mode of the texture: \"linear\" or \"nearest\".  "
+     "The default is to leave this unspecified.",
+     &EggTextureCards::dispatch_filter_type, NULL, &_magfilter);
+
+  add_option
+    ("aniso", "degree", 0,
+     "Indicates the anisotropic degree of the texture.  "
+     "The default is to leave this unspecified.",
+     &EggTextureCards::dispatch_int, &_got_aniso_degree, &_aniso_degree);
 
   add_option
     ("ql", "[default | fastest | normal | best]", 0,
@@ -148,6 +180,11 @@ EggTextureCards() : EggWriter(true, true) {
   _polygon_geometry.set(-0.5, 0.5, -0.5, 0.5);
   _polygon_color.set(1.0, 1.0, 1.0, 1.0);
   _wrap_mode = EggTexture::WM_unspecified;
+  _wrap_u = EggTexture::WM_unspecified;
+  _wrap_v = EggTexture::WM_unspecified;
+  _minfilter = EggTexture::FT_unspecified;
+  _magfilter = EggTexture::FT_unspecified;
+  _aniso_degree = 0;
   _quality_level = EggTexture::QL_unspecified;
   _format = EggTexture::F_unspecified;
   _format_1 = EggTexture::F_unspecified;
@@ -206,6 +243,29 @@ dispatch_wrap_mode(const string &opt, const string &arg, void *var) {
            << arg << "\n";
       return false;
     }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggTextureCards::dispatch_filter_type
+//       Access: Protected, Static
+//  Description: Standard dispatch function for an option that takes
+//               one parameter, which is to be interpreted as a
+//               FilterType string.  The data pointer is to a
+//               FilterType enum variable.
+////////////////////////////////////////////////////////////////////
+bool EggTextureCards::
+dispatch_filter_type(const string &opt, const string &arg, void *var) {
+  EggTexture::FilterType *ftp = (EggTexture::FilterType *)var;
+
+  *ftp = EggTexture::string_filter_type(arg);
+  if (*ftp == EggTexture::FT_unspecified) {
+    // An unknown string.
+    nout << "Invalid filter type parameter for -" << opt << ": "
+         << arg << "\n";
+    return false;
   }
 
   return true;
@@ -388,6 +448,13 @@ run() {
 
     EggTexture *tref = new EggTexture(name, filename);
     tref->set_wrap_mode(_wrap_mode);
+    tref->set_wrap_u(_wrap_u);
+    tref->set_wrap_v(_wrap_v);
+    tref->set_minfilter(_minfilter);
+    tref->set_magfilter(_magfilter);
+    if (_got_aniso_degree) {
+      tref->set_anisotropic_degree(_aniso_degree);
+    }
     tref->set_quality_level(_quality_level);
 
     if (texture_ok) {
