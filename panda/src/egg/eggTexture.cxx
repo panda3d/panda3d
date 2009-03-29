@@ -829,7 +829,9 @@ string_filter_type(const string &string) {
   } else if (cmp_nocase_uh(string, "bilinear") == 0) {
     return FT_linear;
   } else if (cmp_nocase_uh(string, "trilinear") == 0) {
-    return FT_linear;
+    return FT_linear_mipmap_linear;
+  } else if (cmp_nocase_uh(string, "mipmap") == 0) {
+    return FT_linear_mipmap_linear;
   } else if (cmp_nocase_uh(string, "mipmap_point") == 0) {
     return FT_nearest_mipmap_nearest;
   } else if (cmp_nocase_uh(string, "mipmap_linear") == 0) {
