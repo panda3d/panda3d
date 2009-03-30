@@ -628,7 +628,7 @@ def CompileLib(lib, obj, opts):
 def CompileLink(dll, obj, opts):
     if (COMPILER=="MSVC"):
         cmd = 'link /nologo /NOD:MFC80.LIB /NOD:MFC90.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
-        cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk /FORCE:MULTIPLE"
+        cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk"
         if (GetOrigExt(dll) != ".exe"): cmd = cmd + " /DLL"
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:EXPORTS"
@@ -2485,18 +2485,10 @@ TargetAdd('pview.exe', opts=['ADVAPI'])
 OPTS=['DIR:panda/src/tinydisplay', 'BUILDING:TINYDISPLAY']
 TargetAdd('tinydisplay_composite1.obj', opts=OPTS, input='tinydisplay_composite1.cxx')
 TargetAdd('tinydisplay_composite2.obj', opts=OPTS, input='tinydisplay_composite2.cxx')
-TargetAdd('tinydisplay_ztriangle_1.obj', opts=OPTS, input='ztriangle_1.cxx')
-TargetAdd('tinydisplay_ztriangle_2.obj', opts=OPTS, input='ztriangle_2.cxx')
-TargetAdd('tinydisplay_ztriangle_3.obj', opts=OPTS, input='ztriangle_3.cxx')
-TargetAdd('tinydisplay_ztriangle_4.obj', opts=OPTS, input='ztriangle_4.cxx')
-TargetAdd('tinydisplay_ztriangle_table.obj', opts=OPTS, input='ztriangle_table.cxx')
+TargetAdd('tinydisplay_ztriangle.obj', opts=OPTS, input='ztriangle.cxx')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_composite1.obj')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_composite2.obj')
-TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_1.obj')
-TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_2.obj')
-TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_3.obj')
-TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_4.obj')
-TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_table.obj')
+TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle.obj')
 TargetAdd('libtinydisplay.dll', input=COMMON_PANDA_LIBS)
 if (sys.platform == "win32"):
     TargetAdd('libtinydisplay.dll', input='libp3windisplay.dll')
@@ -3626,6 +3618,9 @@ Description: The Panda3D free 3D engine
 # We're not putting "python" in the "Requires" field,
 # since the rpm-based distros don't have a common
 # naming for the Python package.
+# The "AutoReqProv: no" field is necessary, otherwise
+# the user will be required to install Maya in order
+# to install the resulting RPM.
 INSTALLER_SPEC_FILE="""
 Summary: The Panda3D free 3D engine
 Name: panda3d
@@ -3634,6 +3629,7 @@ Release: 1
 License: BSD License
 Group: Development/Libraries
 BuildRoot: PANDASOURCE/linuxroot
+AutoReqProv: no
 %description
 The Panda3D engine.
 %post
