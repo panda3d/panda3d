@@ -146,3 +146,14 @@ mark_unloaded() {
 
   set_resident(false);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureContext::mark_needs_reload
+//       Access: Public
+//  Description: Should be called to indicate the texture should be
+//               reloaded at the nearest opportunity.
+////////////////////////////////////////////////////////////////////
+INLINE void TextureContext::
+mark_needs_reload() {
+  _image_modified = UpdateSeq::old();
+}

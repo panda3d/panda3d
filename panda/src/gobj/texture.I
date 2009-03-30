@@ -646,10 +646,14 @@ set_magfilter(Texture::FilterType filter) {
 //     Function: Texture::set_anisotropic_degree
 //       Access: Published
 //  Description: Specifies the level of anisotropic filtering to apply
-//               to the texture.  Normally, this is 1, to indicate
-//               anisotropic filtering is disabled.  This may be set
-//               to a number higher than one to enable anisotropic
-//               filtering, if the rendering backend supports this.
+//               to the texture.  Set this 0 to indicate the default
+//               value, which is specified in the
+//               texture-anisotropic-degree config variable.
+//
+//               To explicitly disable anisotropic filtering, set this
+//               value to 1.  To explicitly enable anisotropic
+//               filtering, set it to a value higher than 1; larger
+//               numbers indicate greater degrees of filtering.
 ////////////////////////////////////////////////////////////////////
 INLINE void Texture::
 set_anisotropic_degree(int anisotropic_degree) {
@@ -757,7 +761,9 @@ get_wrap_w() const {
 //       Access: Published
 //  Description: Returns the filter mode of the texture for
 //               minification.  If this is one of the mipmap
-//               constants, then the texture requires mipmaps.
+//               constants, then the texture requires mipmaps.  This
+//               may return FT_default; see also
+//               get_effective_minfilter().
 ////////////////////////////////////////////////////////////////////
 INLINE Texture::FilterType Texture::
 get_minfilter() const {
@@ -769,7 +775,8 @@ get_minfilter() const {
 //       Access: Published
 //  Description: Returns the filter mode of the texture for
 //               magnification.  The mipmap constants are invalid
-//               here.
+//               here.  This may return FT_default; see also
+//               get_effective_minfilter().
 ////////////////////////////////////////////////////////////////////
 INLINE Texture::FilterType Texture::
 get_magfilter() const {
@@ -780,15 +787,29 @@ get_magfilter() const {
 //     Function: Texture::get_anisotropic_degree
 //       Access: Published
 //  Description: Returns the degree of anisotropic filtering that
-//               should be applied to the texture.  Normally, this is
-//               1, to indicate that anisotropic filtering should be
-//               disabled.  If this is a number higher than 1,
-//               anisotropic filtering should be enabled (if the
-//               rendering backend supports it).
+//               should be applied to the texture.  This value may
+//               return 0, indicating the default value; see also
+//               get_effective_anisotropic_degree.
 ////////////////////////////////////////////////////////////////////
 INLINE int Texture::
 get_anisotropic_degree() const {
   return _anisotropic_degree;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_effective_anisotropic_degree
+//       Access: Published
+//  Description: Returns the degree of anisotropic filtering that
+//               should be applied to the texture.  This value will
+//               normally not return 0, unless there is an error in
+//               the config file.
+////////////////////////////////////////////////////////////////////
+INLINE int Texture::
+get_effective_anisotropic_degree() const {
+  if (_anisotropic_degree != 0) {
+    return _anisotropic_degree;
+  }
+  return texture_anisotropic_degree;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -870,7 +891,7 @@ get_render_to_texture() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool Texture::
 uses_mipmaps() const {
-  return is_mipmap(get_minfilter());
+  return is_mipmap(get_effective_minfilter());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -892,10 +913,28 @@ set_quality_level(Texture::QualityLevel quality_level) {
 //     Function: Texture::get_quality_level
 //       Access: Public
 //  Description: Returns the current quality_level hint.  See
-//               set_quality_level().
+//               set_quality_level().  This value may return
+//               QL_default; see get_effective_quality_level().
 ////////////////////////////////////////////////////////////////////
 INLINE Texture::QualityLevel Texture::
 get_quality_level() const {
+  return _quality_level;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_effective_quality_level
+//       Access: Public
+//  Description: Returns the current quality_level hint, or the global
+//               default quality_level if this texture doesn't specify
+//               a quality level.  This value will not normally return
+//               QL_default (unless there is an error in the config
+//               file)
+////////////////////////////////////////////////////////////////////
+INLINE Texture::QualityLevel Texture::
+get_effective_quality_level() const {
+  if (_quality_level == QL_default) {
+    return texture_quality_level;
+  }
   return _quality_level;
 }
 

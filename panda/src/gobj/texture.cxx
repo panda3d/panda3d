@@ -55,6 +55,36 @@ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level
           "it has little or no effect on normal, hardware-accelerated "
           "renderers.  See Texture::set_quality_level()."));
 
+ConfigVariableEnum<Texture::FilterType> texture_minfilter
+("texture-minfilter", Texture::FT_linear,
+ PRC_DESC("This specifies the default minfilter that is applied to a texture "
+          "in the absence of a specific minfilter setting.  Normally this "
+          "is either 'linear' to disable mipmapping by default, or "
+          "'mipmap', to enable trilinear mipmapping by default.  This "
+          "does not apply to depth textures.  Note if this variable is "
+          "changed at runtime, you may need to reload textures explicitly "
+          "in order to change their visible properties."));
+
+ConfigVariableEnum<Texture::FilterType> texture_magfilter
+("texture-magfilter", Texture::FT_linear,
+ PRC_DESC("This specifies the default magfilter that is applied to a texture "
+          "in the absence of a specific magfilter setting.  Normally this "
+          "is 'linear' (since mipmapping does not apply to magfilters).  This "
+          "does not apply to depth textures.  Note if this variable is "
+          "changed at runtime, you may need to reload textures explicitly "
+          "in order to change their visible properties."));
+
+ConfigVariableInt texture_anisotropic_degree
+("texture-anisotropic-degree", 1,
+ PRC_DESC("This specifies the default anisotropic degree that is applied "
+          "to a texture in the absence of a particular anisotropic degree "
+          "setting (that is, a texture for which the anisotropic degree "
+          "is 0, meaning the default setting).  It should be 1 to disable "
+          "anisotropic filtering, or a higher number to enable it.  "
+          "Note if this variable is "
+          "changed at runtime, you may need to reload textures explicitly "
+          "in order to change their visible properties."));
+
 PStatCollector Texture::_texture_read_pcollector("*:Texture:Read");
 TypeHandle Texture::_type_handle;
 AutoTextureScale Texture::_textures_power_2 = ATS_UNSPECIFIED;
@@ -149,7 +179,7 @@ Texture(const string &name) :
   _wrap_u = WM_repeat;
   _wrap_v = WM_repeat;
   _wrap_w = WM_repeat;
-  _anisotropic_degree = 1;
+  _anisotropic_degree = 0;
   _keep_ram_image = true;
   _border_color.set(0.0f, 0.0f, 0.0f, 1.0f);
   _compression = CM_default;
@@ -583,7 +613,7 @@ estimate_texture_memory() const {
   }
 
   size_t bytes = pixels * bpp;
-  if (is_mipmap(_minfilter)) {
+  if (uses_mipmaps()) {
     bytes = (bytes * 4) / 3;
   }
 
@@ -770,6 +800,46 @@ load_related(const InternalName *suffix) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_effective_minfilter
+//       Access: Published
+//  Description: Returns the filter mode of the texture for
+//               minification, with special treatment for FT_default.
+//               This will normally not return FT_default, unless
+//               there is an error in the config file.
+////////////////////////////////////////////////////////////////////
+Texture::FilterType Texture::
+get_effective_minfilter() const {
+  if (_minfilter != FT_default) {
+    return _minfilter;
+  }
+  if (_format == Texture::F_depth_stencil ||
+      _format == Texture::F_depth_component) {
+    return FT_nearest;
+  }
+  return texture_minfilter;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_effective_magfilter
+//       Access: Published
+//  Description: Returns the filter mode of the texture for
+//               magnification, with special treatment for FT_default.
+//               This will normally not return FT_default, unless
+//               there is an error in the config file.
+////////////////////////////////////////////////////////////////////
+Texture::FilterType Texture::
+get_effective_magfilter() const {
+  if (_magfilter != FT_default) {
+    return _magfilter;
+  }
+  if (_format == Texture::F_depth_stencil ||
+      _format == Texture::F_depth_component) {
+    return FT_nearest;
+  }
+  return texture_magfilter;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::set_ram_image
 //       Access: Published
 //  Description: Replaces the current system-RAM image with the new
@@ -841,7 +911,7 @@ get_num_loadable_ram_mipmap_images() const {
     // If we don't even have a base image, the answer is none.
     return 0;
   }
-  if (!is_mipmap(_minfilter)) {
+  if (!uses_mipmaps()) {
     // If we have a base image and don't require mipmapping, the
     // answer is 1.
     return 1;
@@ -3463,7 +3533,7 @@ do_has_all_ram_mipmap_images() const {
     // If we don't even have a base image, the answer is no.
     return false;
   }
-  if (!is_mipmap(_minfilter)) {
+  if (!uses_mipmaps()) {
     // If we have a base image and don't require mipmapping, the
     // answer is yes.
     return true;
@@ -5968,12 +6038,23 @@ fillin_from(Texture *dummy) {
   do_set_wrap_u(dummy->get_wrap_u());
   do_set_wrap_v(dummy->get_wrap_v());
   do_set_wrap_w(dummy->get_wrap_w());
-  do_set_minfilter(dummy->get_minfilter());
-  do_set_magfilter(dummy->get_magfilter());
-  do_set_anisotropic_degree(dummy->get_anisotropic_degree());
   do_set_border_color(dummy->get_border_color());
-  do_set_compression(dummy->get_compression());
-  do_set_quality_level(dummy->get_quality_level());
+
+  if (dummy->get_minfilter() != FT_default) {
+    do_set_minfilter(dummy->get_minfilter());
+  }
+  if (dummy->get_magfilter() != FT_default) {
+    do_set_magfilter(dummy->get_magfilter());
+  }
+  if (dummy->get_anisotropic_degree() != 0) {
+    do_set_anisotropic_degree(dummy->get_anisotropic_degree());
+  }
+  if (dummy->get_compression() != CM_default) {
+    do_set_compression(dummy->get_compression());
+  }
+  if (dummy->get_quality_level() != QL_default) {
+    do_set_quality_level(dummy->get_quality_level());
+  }
 
   Format format = dummy->get_format();
   int num_components = dummy->get_num_components();

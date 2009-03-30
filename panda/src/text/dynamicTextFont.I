@@ -337,8 +337,8 @@ get_magfilter() const {
 //       Access: Published
 //  Description: Enables or disables anisotropic filtering on the
 //               textures created for this font.  The default value is
-//               usually 1, or off.  See
-//               Texture::set_anisotropic_degree().
+//               specified by the text-anisotropic-degree variable.
+//               See Texture::set_anisotropic_degree().
 ////////////////////////////////////////////////////////////////////
 INLINE void DynamicTextFont::
 set_anisotropic_degree(int anisotropic_degree) {

@@ -280,7 +280,10 @@ PUBLISHED:
   INLINE WrapMode get_wrap_w() const;
   INLINE FilterType get_minfilter() const;
   INLINE FilterType get_magfilter() const;
+  FilterType get_effective_minfilter() const;
+  FilterType get_effective_magfilter() const;
   INLINE int get_anisotropic_degree() const;
+  INLINE int get_effective_anisotropic_degree() const;
   INLINE Colorf get_border_color() const;
   INLINE CompressionMode get_compression() const;
   INLINE bool has_compression() const;
@@ -289,6 +292,7 @@ PUBLISHED:
 
   INLINE void set_quality_level(QualityLevel quality_level);
   INLINE QualityLevel get_quality_level() const;
+  INLINE QualityLevel get_effective_quality_level() const;
 
   INLINE int get_expected_num_mipmap_levels() const;
   INLINE int get_expected_mipmap_x_size(int n) const;
@@ -767,6 +771,9 @@ private:
 };
 
 extern EXPCL_PANDA_GOBJ ConfigVariableEnum<Texture::QualityLevel> texture_quality_level;
+extern EXPCL_PANDA_GOBJ ConfigVariableEnum<Texture::FilterType> texture_minfilter;
+extern EXPCL_PANDA_GOBJ ConfigVariableEnum<Texture::FilterType> texture_magfilter;
+extern EXPCL_PANDA_GOBJ ConfigVariableInt texture_anisotropic_degree;
 
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::TextureType tt);
 EXPCL_PANDA_GOBJ ostream &operator << (ostream &out, Texture::ComponentType ct);

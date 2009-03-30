@@ -2806,6 +2806,7 @@ update_texture(TextureContext *tc, bool force) {
     // need to reload the texture.
     if (specify_texture(gtc)) {
       // Actually, looks like the texture *does* need to be reloaded.
+      gtc->mark_needs_reload();
       bool okflag = upload_texture(gtc, force);
       if (!okflag) {
         GLCAT.error()
@@ -5098,8 +5099,7 @@ get_panda_wrap_mode(GLenum wm) {
 //               to GL's.
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
-get_texture_filter_type(Texture::FilterType ft, Texture::Format fmt,
-                        bool ignore_mipmaps) {
+get_texture_filter_type(Texture::FilterType ft, bool ignore_mipmaps) {
   if (CLP(ignore_filters)) {
     return GL_NEAREST;
 
@@ -5116,11 +5116,6 @@ get_texture_filter_type(Texture::FilterType ft, Texture::Format fmt,
     case Texture::FT_shadow:
       return GL_LINEAR;
     case Texture::FT_default:
-      if (fmt == Texture::F_depth_stencil || fmt == Texture::F_depth_component) {
-        return GL_NEAREST;
-      } else {
-        return GL_LINEAR;
-      }
     case Texture::FT_invalid:
       break;
     }
@@ -5142,11 +5137,6 @@ get_texture_filter_type(Texture::FilterType ft, Texture::Format fmt,
     case Texture::FT_shadow:
       return GL_LINEAR;
     case Texture::FT_default:
-      if (fmt == Texture::F_depth_stencil || fmt == Texture::F_depth_component) {
-        return GL_NEAREST;
-      } else {
-        return GL_LINEAR;
-      }
     case Texture::FT_invalid:
       break;
     }
@@ -7238,9 +7228,9 @@ specify_texture(CLP(TextureContext) *gtc) {
   GLP(TexParameterfv)(target, GL_TEXTURE_BORDER_COLOR,
                       border_color.get_data());
 
-  Texture::FilterType minfilter = tex->get_minfilter();
-  Texture::FilterType magfilter = tex->get_magfilter();
-  bool uses_mipmaps = tex->uses_mipmaps() && !CLP(ignore_mipmaps);
+  Texture::FilterType minfilter = tex->get_effective_minfilter();
+  Texture::FilterType magfilter = tex->get_effective_magfilter();
+  bool uses_mipmaps = Texture::is_mipmap(minfilter) && !CLP(ignore_mipmaps);
 
 #ifndef NDEBUG
   if (CLP(force_mipmaps)) {
@@ -7264,12 +7254,12 @@ specify_texture(CLP(TextureContext) *gtc) {
   }
 
   GLP(TexParameteri)(target, GL_TEXTURE_MIN_FILTER,
-                     get_texture_filter_type(minfilter, tex->get_format(), !uses_mipmaps));
+                     get_texture_filter_type(minfilter, !uses_mipmaps));
   GLP(TexParameteri)(target, GL_TEXTURE_MAG_FILTER,
-                     get_texture_filter_type(magfilter, tex->get_format(), true));
+                     get_texture_filter_type(magfilter, true));
 
   // Set anisotropic filtering.
-  float anisotropy = tex->get_anisotropic_degree();
+  float anisotropy = tex->get_effective_anisotropic_degree();
   if (anisotropy > _max_anisotropy) {
     anisotropy = _max_anisotropy;
   }
@@ -7451,10 +7441,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
   }
 
   if (image_compression != Texture::CM_off) {
-    Texture::QualityLevel quality_level = tex->get_quality_level();
-    if (quality_level == Texture::QL_default) {
-      quality_level = texture_quality_level;
-    }
+    Texture::QualityLevel quality_level = tex->get_effective_quality_level();
 
     switch (quality_level) {
     case Texture::QL_fastest:

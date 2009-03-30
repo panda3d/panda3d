@@ -52,6 +52,7 @@ public:
   INLINE void mark_loaded();
   INLINE void mark_simple_loaded();
   INLINE void mark_unloaded();
+  INLINE void mark_needs_reload();
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, int indent_level) const;

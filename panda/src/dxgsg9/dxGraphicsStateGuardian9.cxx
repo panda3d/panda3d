@@ -253,8 +253,8 @@ apply_texture(int i, TextureContext *tc) {
 
   set_sampler_state(i, D3DSAMP_BORDERCOLOR, border_color);
 
-  uint aniso_degree = tex->get_anisotropic_degree();
-  Texture::FilterType ft = tex->get_magfilter();
+  uint aniso_degree = tex->get_effective_anisotropic_degree();
+  Texture::FilterType ft = tex->get_effective_magfilter();
 
   if (aniso_degree >= 1) {
     set_sampler_state(i, D3DSAMP_MAXANISOTROPY, aniso_degree);
@@ -279,10 +279,8 @@ apply_texture(int i, TextureContext *tc) {
   }
 
   // map Panda composite min+mip filter types to d3d's separate min & mip filter types
-  D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(tex->get_minfilter(),
-                                                         tex->get_format());
-  D3DTEXTUREFILTERTYPE new_mip_filter = get_d3d_mip_type(tex->get_minfilter(),
-                                                         tex->get_format());
+  D3DTEXTUREFILTERTYPE new_min_filter = get_d3d_min_type(tex->get_effective_minfilter());
+  D3DTEXTUREFILTERTYPE new_mip_filter = get_d3d_mip_type(tex->get_effective_minfilter());
 
   if (!tex->might_have_ram_image()) {
     // If the texture is completely dynamic, don't try to issue
@@ -4961,8 +4959,7 @@ copy_pres_reset(DXScreenData *screen) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian9::
-get_d3d_min_type(Texture::FilterType filter_type,
-                 Texture::Format format) {
+get_d3d_min_type(Texture::FilterType filter_type) {
   switch (filter_type) {
   case Texture::FT_nearest:
     return D3DTEXF_POINT;
@@ -4998,8 +4995,7 @@ get_d3d_min_type(Texture::FilterType filter_type,
 //  Description:
 ////////////////////////////////////////////////////////////////////
 D3DTEXTUREFILTERTYPE DXGraphicsStateGuardian9::
-get_d3d_mip_type(Texture::FilterType filter_type,
-                 Texture::Format format) {
+get_d3d_mip_type(Texture::FilterType filter_type) {
   switch (filter_type) {
   case Texture::FT_nearest:
     return D3DTEXF_NONE;
