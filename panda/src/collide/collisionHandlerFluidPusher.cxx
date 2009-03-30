@@ -106,12 +106,6 @@ handle_entries() {
     return okflag;
   }
 
-  if (!_horizontal) {
-    collide_cat.error() << "collisionHandlerFluidPusher::handle_entries is only supported in "
-      "horizontal mode" << endl;
-    nassertr(false, false);
-  }
-  
   // for every fluid mover being pushed...
   FromEntries::iterator fei;
   for (fei = _from_entries.begin(); fei != _from_entries.end(); ++fei) {
@@ -139,18 +133,12 @@ handle_entries() {
       
       // this is the original position delta for the entire frame, before collision response
       LVector3f M(from_node_path.get_pos_delta(wrt_node));
-      if (_horizontal) {
-        M[2] = 0.0f;
-      }
       // this is used to track position deltas every time we collide against a solid
       LVector3f N(M);
-      collide_cat.info() << "N: " << N << endl;
       
       const LPoint3f orig_pos(from_node_path.get_pos(wrt_node));
       CPT(TransformState) prev_trans(from_node_path.get_prev_transform(wrt_node));
       const LPoint3f orig_prev_pos(prev_trans->get_pos());
-      collide_cat.info() << "orig_pos: " << orig_pos << endl;
-      collide_cat.info() << "orig_prev_pos: " << orig_prev_pos << endl;
       
       // currently we only support spheres as the collider
       const CollisionSphere *sphere;
@@ -160,41 +148,22 @@ handle_entries() {
       LPoint3f sphere_offset = (sphere->get_center() *
                                 from_node_path.get_transform(wrt_node)->get_mat());
       from_node_path.set_pos(wrt_node, orig_pos);
-      collide_cat.info() << "sphere_offset: " << sphere_offset << endl;
       
       // this will hold the final calculated position at each iteration
       LPoint3f candidate_final_pos(orig_pos);
-      if (_horizontal) {
-        candidate_final_pos[2] = 0.0f;
-      }
       // this holds the position before reacting to collisions
       LPoint3f uncollided_pos(candidate_final_pos);
-      collide_cat.info() << "candidate_final_pos: " << candidate_final_pos << endl;
       
       // unit vector facing back into original direction of motion
       LVector3f reverse_vec(-M);
-      if (_horizontal) {
-        reverse_vec[2] = 0.0f;
-      }
       reverse_vec.normalize();
-      collide_cat.info() << "reverse_vec: " << reverse_vec << endl;
       
       // unit vector pointing out to the right relative to the direction of motion,
       // looking into the direction of motion
       const LVector3f right_unit(LVector3f::up().cross(reverse_vec));
-      collide_cat.info() << "right_unit: " << right_unit << endl;
-      
-      // if both of these become true, we're stuck in a 'corner'
-      bool left_halfspace_obstructed = false;
-      bool right_halfspace_obstructed = false;
-      LVector3f left_halfspace_normal;
-      LVector3f right_halfspace_normal;
-      float left_plane_dot = 200.0f;
-      float right_plane_dot = 200.0f;
       
       // iterate until the mover runs out of movement or gets stuck
       while (true) {
-        collide_cat.info() << "while (true)" << endl;
         const CollisionEntry *C = 0;
         // find the first (earliest) collision
         Entries::const_iterator cei;
@@ -213,8 +182,6 @@ handle_entries() {
           break;
         }
         
-        collide_cat.info() << "t: " << C->get_t() << endl;
-        
         // move back to initial contact position
         LPoint3f contact_pos;
         LVector3f contact_normal;
@@ -227,107 +194,40 @@ handle_entries() {
         }
         // calculate the position of the target node at the point of contact
         contact_pos -= sphere_offset;
-        collide_cat.info() << "contact_pos: " << contact_pos << endl;
         
         uncollided_pos = candidate_final_pos;
         candidate_final_pos = contact_pos;
         
         LVector3f proj_surface_normal(contact_normal);
-        if (_horizontal) {
-          proj_surface_normal[2] = 0.0f;
-        }
-        collide_cat.info() << "normal: " << contact_normal << endl;
-        collide_cat.info() << "proj_surface_normal: " << proj_surface_normal << endl;
-        
+
         LVector3f norm_proj_surface_normal(proj_surface_normal);
         norm_proj_surface_normal.normalize();
-        collide_cat.info() << "norm_proj_surface_normal: " << norm_proj_surface_normal << endl;
-        
-        // check to see if we're stuck, given this collision
-        float dot = right_unit.dot(norm_proj_surface_normal);
-        collide_cat.info() << "dot: " << dot << endl;
-        
-        if (dot > 0.0f) {
-          // positive dot means plane is coming from the left (looking along original
-          // direction of motion)
-          if (right_halfspace_obstructed) {
-            // we have obstructions from both directions, we're stuck
-            break;
-          }
-          left_halfspace_obstructed = true;
-          if (dot < left_plane_dot) {
-            left_halfspace_normal = norm_proj_surface_normal;
-          } else {
-            // detected collision has a steeper plane wrt fwd motion than a previous collision
-            // continue colliding against the shallower plane
-            norm_proj_surface_normal = left_halfspace_normal;
-          }
-        } else {
-          // negative dot means plane is coming from the right (looking along original
-          // direction of motion)
-          if (left_halfspace_obstructed) {
-            // we have obstructions from both directions, we're stuck
-            break;
-          }
-          right_halfspace_obstructed = true;
-          dot = -dot;
-          if (dot < right_plane_dot) {
-            right_halfspace_normal = norm_proj_surface_normal;
-          } else {
-            // detected collision has a steeper plane wrt fwd motion than a previous collision
-            // continue colliding against the shallower plane
-            norm_proj_surface_normal = right_halfspace_normal;
-          }
-        }
         
         LVector3f blocked_movement(uncollided_pos - contact_pos);
-        if (_horizontal) {
-          blocked_movement[2] = 0.0f;
-        }
-        collide_cat.info() << "blocked movement: " << blocked_movement << endl;
         
         float push_magnitude(-blocked_movement.dot(proj_surface_normal));
-        LVector3f push;
         if (push_magnitude < 0.0f) {
-          // don't ever push into plane, always push out along plane normal
-          push = LVector3f(0,0,0);
+          // don't ever push into plane
+          candidate_final_pos = contact_pos;
         } else {
-          push = norm_proj_surface_normal * push_magnitude;
+          // calculate new position given that you collided with this thing
+          // project the final position onto the plane of the obstruction
+          candidate_final_pos = uncollided_pos + (norm_proj_surface_normal * push_magnitude);
         }
-        
-        // calculate new position given that you collided with this thing
-        // project the final position onto the plane of the obstruction
-        candidate_final_pos = uncollided_pos + push;
-        
-        collide_cat.info() << "candidate_final_pos: " << candidate_final_pos << endl;
-        
-        // set up new current/last positions, re-calculate collisions
-        candidate_final_pos[2] = orig_pos[2];
         
         from_node_path.set_pos(wrt_node, candidate_final_pos);
         CPT(TransformState) prev_trans(from_node_path.get_prev_transform(wrt_node));
-        collide_cat.info() << "prev_trans->get_pos: " << prev_trans->get_pos() << endl;
         prev_trans = prev_trans->set_pos(contact_pos);
-        collide_cat.info() << "contact_pos: " << contact_pos << endl;
-        collide_cat.info() << "prev_trans->get_pos: " << prev_trans->get_pos() << endl;
         from_node_path.set_prev_transform(wrt_node, prev_trans);
-        
-        candidate_final_pos[2] = 0.0f;
         
         {
           const LPoint3f new_pos(from_node_path.get_pos(wrt_node));
           CPT(TransformState) new_prev_trans(from_node_path.get_prev_transform(wrt_node));
           const LPoint3f new_prev_pos(new_prev_trans->get_pos());
-          collide_cat.info() << "new_pos: " << new_pos << endl;
-          collide_cat.info() << "new_prev_pos: " << new_prev_pos << endl;
         }
 
         // recalculate the position delta
         N = from_node_path.get_pos_delta(wrt_node);
-        if (_horizontal) {
-          N[2] = 0.0f;
-        }
-        collide_cat.info() << "N: " << N << endl;
         
         // calculate new collisions given new movement vector
         Entries::iterator ei;
@@ -355,16 +255,9 @@ handle_entries() {
       prev_trans = prev_trans->set_pos(orig_prev_pos);
       from_node_path.set_prev_transform(wrt_node, prev_trans);
       
-      // don't move in Z
-      candidate_final_pos[2] = orig_pos[2];
-
       LVector3f net_shove(candidate_final_pos - orig_pos);
       LVector3f force_normal(net_shove);
       force_normal.normalize();
-      
-      collide_cat.info() << "candidate_final_pos: " << candidate_final_pos << endl;
-      collide_cat.info() << "orig_pos: " << orig_pos << endl;
-      collide_cat.info() << "net_shove: " << net_shove << endl;
       
       // This is the part where the node actually gets moved:
       def._target.set_pos(wrt_node, candidate_final_pos);
@@ -373,8 +266,6 @@ handle_entries() {
       // fix-ups as they see fit:
       apply_net_shove(def, net_shove, force_normal);
       apply_linear_force(def, force_normal);
-      
-      collide_cat.info() << endl;
     }
   }
   
