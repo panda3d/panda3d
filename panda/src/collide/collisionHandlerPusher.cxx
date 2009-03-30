@@ -43,6 +43,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 CollisionHandlerPusher::
 CollisionHandlerPusher() {
+  _horizontal = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,9 +120,12 @@ handle_entries() {
           } else {
             // Shove it just enough to clear the volume.
             if (!surface_point.almost_equal(interior_point)) {
+              if (_horizontal) {
+                normal[2] = 0.0f;
+              }
               // Just to be on the safe size, we normalize the normal
               // vector, even though it really ought to be unit-length
-              // already.
+              // already (unless we just forced it horizontal, above).
               normal.normalize();
 
               ShoveData sd;

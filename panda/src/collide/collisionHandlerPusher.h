@@ -31,12 +31,17 @@ PUBLISHED:
   CollisionHandlerPusher();
   virtual ~CollisionHandlerPusher();
 
+  INLINE void set_horizontal(bool flag);
+  INLINE bool get_horizontal() const;
+
 protected:
   virtual bool handle_entries();
   virtual void apply_net_shove(
       ColliderDef &def, const LVector3f &net_shove,
       const LVector3f &force_normal);
   virtual void apply_linear_force(ColliderDef &def, const LVector3f &force);
+
+  bool _horizontal;
 
 
 public:
