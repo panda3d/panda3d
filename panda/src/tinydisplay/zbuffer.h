@@ -114,8 +114,7 @@ typedef struct ZBuffer ZBuffer;
 typedef struct ZBufferPoint ZBufferPoint;
 typedef struct ZTextureDef ZTextureDef;
 
-typedef void (*ZB_fillTriangleFunc)(ZBuffer  *,
-                                    ZBufferPoint *,ZBufferPoint *,ZBufferPoint *);
+typedef void (*ZB_fillTriangleFunc)(ZBuffer *, ZBufferPoint *, ZBufferPoint *, ZBufferPoint *);
 
 typedef void (*ZB_storePixelFunc)(ZBuffer *zb, PIXEL &result, int r, int g, int b, int a);
 
