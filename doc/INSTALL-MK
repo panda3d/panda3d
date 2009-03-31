@@ -39,10 +39,9 @@ directory will contain the following subdirectories:
     makepanda	- piece 1, source code from sourceforge
     models	- piece 1, source code from sourceforge
     panda	- piece 1, source code from sourceforge
-    pandaapp	- piece 1, source code from sourceforge
     pandatool	- piece 1, source code from sourceforge
     ppremake	- piece 1, source code from sourceforge
-    SceneEditor - piece 1, source code from sourceforge
+    contrib     - piece 1, source code from sourceforge
     thirdparty  - piece 2, third party tools
     samples	- piece 3, sample programs
 
