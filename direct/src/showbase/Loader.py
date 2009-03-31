@@ -481,7 +481,8 @@ class Loader(DirectObject):
 
     # texture loading funcs
     def loadTexture(self, texturePath, alphaPath = None,
-                    readMipmaps = False, okMissing = False):
+                    readMipmaps = False, okMissing = False,
+                    minfilter = None, magfilter = None, anisotropicDegree = None):
         """
         texturePath is a string.
 
@@ -502,7 +503,20 @@ class Loader(DirectObject):
         individually which define the n mipmap levels of the texture.
         The base level is mipmap level 0, and this defines the size of
         the texture and the number of expected mipmap images.
-        
+
+        If minfilter or magfilter is not None, they should be a symbol
+        like Texture.FTLinear or Texture.FTNearest.  (minfilter may be
+        further one of the Mipmap filter type symbols.)  These specify
+        the filter mode that will automatically be applied to the
+        texture when it is loaded.  Note that this setting may
+        override the texture's existing settings, even if it has
+        already been loaded.  See egg-texture-cards for a more robust
+        way to apply per-texture filter types and settings.
+
+        If anisotropicDegree is not None, it specifies the anisotropic degree
+        to apply to the texture when it is loaded.  Like minfilter and
+        magfilter, egg-texture-cards may be a more robust way to apply
+        this setting.
         """
         if alphaPath is None:
             assert Loader.notify.debug("Loading texture: %s" % (texturePath))
@@ -517,9 +531,18 @@ class Loader(DirectObject):
         if not texture and not okMissing:
             message = 'Could not load texture: %s' % (texturePath)
             raise IOError, message
+
+        if minfilter is not None:
+            texture.setMinfilter(minfilter)
+        if magfilter is not None:
+            texture.setMagfilter(magfilter)
+        if anisotropicDegree is not None:
+            texture.setAnisotropicDegree(anisotropicDegree)
+        
         return texture
 
-    def load3DTexture(self, texturePattern, readMipmaps = False, okMissing = False):
+    def load3DTexture(self, texturePattern, readMipmaps = False, okMissing = False,
+                      minfilter = None, magfilter = None, anisotropicDegree = None):
         """
         texturePattern is a string that contains a sequence of one or
         more hash characters ('#'), which will be filled in with the
@@ -543,9 +566,18 @@ class Loader(DirectObject):
         if not texture and not okMissing:
             message = 'Could not load 3-D texture: %s' % (texturePattern)
             raise IOError, message
+
+        if minfilter is not None:
+            texture.setMinfilter(minfilter)
+        if magfilter is not None:
+            texture.setMagfilter(magfilter)
+        if anisotropicDegree is not None:
+            texture.setAnisotropicDegree(anisotropicDegree)
+
         return texture
 
-    def loadCubeMap(self, texturePattern, readMipmaps = False, okMissing = False):
+    def loadCubeMap(self, texturePattern, readMipmaps = False, okMissing = False,
+                    minfilter = None, magfilter = None, anisotropicDegree = None):
         """
         texturePattern is a string that contains a sequence of one or
         more hash characters ('#'), which will be filled in with the
@@ -569,6 +601,14 @@ class Loader(DirectObject):
         if not texture and not okMissing:
             message = 'Could not load cube map: %s' % (texturePattern)
             raise IOError, message
+
+        if minfilter is not None:
+            texture.setMinfilter(minfilter)
+        if magfilter is not None:
+            texture.setMagfilter(magfilter)
+        if anisotropicDegree is not None:
+            texture.setAnisotropicDegree(anisotropicDegree)
+
         return texture
 
     def unloadTexture(self, texture):
