@@ -15,6 +15,7 @@
 import sys,os,platform,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil
 
 from makepandacore import *
+from installpanda import *
 
 ########################################################################
 ##
@@ -3655,7 +3656,6 @@ The Panda3D engine.
 /usr/include/panda3d
 """
 
-
 def MakeInstallerLinux():
     import compileall
     PYTHONV=SDK["PYTHONVERSION"]
@@ -3666,38 +3666,10 @@ def MakeInstallerLinux():
         oscmd("rm -rf `rpm -E '%_target_cpu'`")
     if (os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("rm -rf `dpkg --print-architecture`")
-    oscmd("mkdir -p linuxroot/usr/bin")
-    oscmd("mkdir -p linuxroot/usr/include")
-    oscmd("mkdir -p linuxroot/usr/share/panda3d")
-    oscmd("mkdir -p linuxroot/usr/share/panda3d/direct")
-    oscmd("mkdir -p linuxroot/usr/lib/panda3d")
-    oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/lib-dynload")
-    oscmd("mkdir -p linuxroot/usr/lib/"+PYTHONV+"/site-packages")
-    oscmd("mkdir -p linuxroot/etc/ld.so.conf.d")
-    WriteFile("linuxroot/usr/share/panda3d/direct/__init__.py", "")
-    oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/usr/share/panda3d@' < "+GetOutputDir()+"/etc/Config.prc > linuxroot/etc/Config.prc")
-    oscmd("cp "+GetOutputDir()+"/etc/Confauto.prc  linuxroot/etc/Confauto.prc")
-    oscmd("cp --recursive "+GetOutputDir()+"/include linuxroot/usr/include/panda3d")
-    oscmd("cp --recursive direct/src/*               linuxroot/usr/share/panda3d/direct")
-    oscmd("cp --recursive "+GetOutputDir()+"/pandac  linuxroot/usr/share/panda3d/pandac")
-    oscmd("cp --recursive "+GetOutputDir()+"/models  linuxroot/usr/share/panda3d/models")
-    if os.path.isdir("samples"):                  oscmd("cp --recursive samples                    linuxroot/usr/share/panda3d/samples")
-    if os.path.isdir(GetOutputDir()+"/Pmw"):      oscmd("cp --recursive "+GetOutputDir()+"/Pmw     linuxroot/usr/share/panda3d/Pmw")
-    if os.path.isdir(GetOutputDir()+"/plugins"):  oscmd("cp --recursive "+GetOutputDir()+"/plugins linuxroot/usr/share/panda3d/plugins")
-    oscmd("cp doc/LICENSE               linuxroot/usr/share/panda3d/LICENSE")
-    oscmd("cp doc/LICENSE               linuxroot/usr/include/panda3d/LICENSE")
-    oscmd("cp doc/ReleaseNotes          linuxroot/usr/share/panda3d/ReleaseNotes")
-    oscmd("echo '/usr/lib/panda3d'   >  linuxroot/etc/ld.so.conf.d/panda3d.conf")
-    oscmd("echo '/usr/share/panda3d' >  linuxroot/usr/lib/"+PYTHONV+"/site-packages/panda3d.pth")
-    oscmd("echo '/usr/lib/panda3d'   >> linuxroot/usr/lib/"+PYTHONV+"/site-packages/panda3d.pth")
-    oscmd("cp "+GetOutputDir()+"/bin/*               linuxroot/usr/bin/")
-    for base in os.listdir(GetOutputDir()+"/lib"):
-        oscmd("cp "+GetOutputDir()+"/lib/"+base+" linuxroot/usr/lib/panda3d/"+base)
-    for base in os.listdir("linuxroot/usr/share/panda3d/direct"):
-        if ((base != "extensions") and (base != "extensions_native")):
-            compileall.compile_dir("linuxroot/usr/share/panda3d/direct/"+base)
-    compileall.compile_dir("linuxroot/usr/share/panda3d/Pmw")
-    DeleteCVS("linuxroot")
+    oscmd("mkdir linuxroot")
+    
+    # Invoke installpanda.py to install it into a temporary dir
+    InstallPanda(destdir = "linuxroot", outputdir = GetOutputDir())
     oscmd("chmod -R 555 linuxroot/usr/share/panda3d")
     
     if (os.path.exists("/usr/bin/rpmbuild") and not os.path.exists("/usr/bin/dpkg-deb")):
