@@ -119,6 +119,21 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SequenceNode::get_first_visible_child
+//       Access: Public, Virtual
+//  Description: Returns the index number of the first visible child
+//               of this node, or a number >= get_num_children() if
+//               there are no visible children of this node.  This is
+//               called during the cull traversal, but only if
+//               has_selective_visibility() has already returned true.
+//               See has_selective_visibility().
+////////////////////////////////////////////////////////////////////
+int SequenceNode::
+get_first_visible_child() const {
+  return get_frame();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SequenceNode::has_single_child_visibility
 //       Access: Public, Virtual
 //  Description: Should be overridden by derived classes to return
@@ -137,6 +152,18 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 bool SequenceNode::
 has_single_child_visibility() const {
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SequenceNode::get_visible_child
+//       Access: Public, Virtual
+//  Description: Returns the index number of the currently visible
+//               child of this node.  This is only meaningful if
+//               has_single_child_visibility() has returned true.
+////////////////////////////////////////////////////////////////////
+int SequenceNode::
+get_visible_child() const {
+  return get_frame();
 }
 
 ////////////////////////////////////////////////////////////////////

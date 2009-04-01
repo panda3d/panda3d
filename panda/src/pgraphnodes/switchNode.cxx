@@ -137,6 +137,21 @@ cull_callback(CullTraverser *, CullTraverserData &) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SwitchNode::get_first_visible_child
+//       Access: Public, Virtual
+//  Description: Returns the index number of the first visible child
+//               of this node, or a number >= get_num_children() if
+//               there are no visible children of this node.  This is
+//               called during the cull traversal, but only if
+//               has_selective_visibility() has already returned true.
+//               See has_selective_visibility().
+////////////////////////////////////////////////////////////////////
+int SwitchNode::
+get_first_visible_child() const {
+  return get_visible_child();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SwitchNode::has_single_child_visibility
 //       Access: Public, Virtual
 //  Description: Should be overridden by derived classes to return
