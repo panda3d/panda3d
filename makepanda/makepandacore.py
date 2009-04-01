@@ -541,6 +541,15 @@ def DeleteCVS(dir):
                     shutil.rmtree(subdir)
                 else:
                     DeleteCVS(subdir)
+            elif (os.path.isfile(subdir) and entry == ".cvsignore"):
+                os.remove(subdir)
+
+def DeleteCXX(dir):
+    for entry in os.listdir(dir):
+        if (entry != ".") and (entry != ".."):
+            subdir = dir + "/" + entry
+            if (os.path.isfile(subdir) and os.path.splitext(subdir)[-1] in [".h", ".I", ".c", ".cxx", ".cpp"]):
+                os.remove(subdir)
 
 def CreateFile(file):
     if (os.path.exists(file)==0):
