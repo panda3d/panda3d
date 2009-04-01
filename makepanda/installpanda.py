@@ -13,6 +13,7 @@
 ########################################################################
 
 import os, sys, platform, compileall
+from distutils.sysconfig import get_python_lib
 from makepandacore import *
 
 if (platform.architecture()[0] == "64bit"):
@@ -22,15 +23,14 @@ else:
 
 def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     if (not prefix.startswith("/")): prefix = "/" + prefix
-    #FIXME: this might not be the correct python version
-    PYTHONV="python"+sys.version[:3]
+    PPATH=get_python_lib()
     oscmd("mkdir -p "+destdir+prefix+"/bin")
     oscmd("mkdir -p "+destdir+prefix+"/include")
     oscmd("mkdir -p "+destdir+prefix+"/share/panda3d")
     oscmd("mkdir -p "+destdir+prefix+"/share/panda3d/direct")
     oscmd("mkdir -p "+destdir+prefix+libdir+"/panda3d")
-    oscmd("mkdir -p "+destdir+prefix+libdir+"/"+PYTHONV+"/lib-dynload")
-    oscmd("mkdir -p "+destdir+prefix+libdir+"/"+PYTHONV+"/site-packages")
+    oscmd("mkdir -p "+destdir+prefix+libdir+"/"+os.path.abspath(PPATH+"/../lib-dynload"))
+    oscmd("mkdir -p "+destdir+prefix+libdir+"/"+PPATH+"/site-packages")
     oscmd("mkdir -p "+destdir+"/etc/ld.so.conf.d")
     WriteFile(destdir+prefix+"/share/panda3d/direct/__init__.py", "")
     oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@"+prefix+"/share/panda3d@' < "+outputdir+"/etc/Config.prc > "+destdir+"/etc/Config.prc")
@@ -46,16 +46,20 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("cp doc/LICENSE                       "+destdir+prefix+"/include/panda3d/LICENSE")
     oscmd("cp doc/ReleaseNotes                  "+destdir+prefix+"/share/panda3d/ReleaseNotes")
     oscmd("echo '"+prefix+libdir+"/panda3d'>    "+destdir+"/etc/ld.so.conf.d/panda3d.conf")
-    oscmd("echo '"+prefix+"/share/panda3d' >    "+destdir+prefix+libdir+"/"+PYTHONV+"/site-packages/panda3d.pth")
-    oscmd("echo '"+prefix+libdir+"/panda3d'>>   "+destdir+prefix+libdir+"/"+PYTHONV+"/site-packages/panda3d.pth")
+    oscmd("echo '"+prefix+"/share/panda3d' >    "+destdir+prefix+libdir+PPATH+"/panda3d.pth")
+    oscmd("echo '"+prefix+libdir+"/panda3d'>>   "+destdir+prefix+libdir+PPATH+"/panda3d.pth")
     oscmd("cp "+outputdir+"/bin/*               "+destdir+prefix+"/bin/")
     for base in os.listdir(outputdir+"/lib"):
         oscmd("cp "+outputdir+"/lib/"+base+" "+destdir+prefix+libdir+"/panda3d/"+base)
-    for base in os.listdir(destdir+prefix+"/share/panda3d/direct"):
-        if ((base != "extensions") and (base != "extensions_native")):
-            compileall.compile_dir(destdir+prefix+"/share/panda3d/direct/"+base)
-    compileall.compile_dir(destdir+prefix+"/share/panda3d/Pmw")
+    # rpmlint doesn't like it if we compile it.
+    #for base in os.listdir(destdir+prefix+"/share/panda3d/direct"):
+    #    if ((base != "extensions") and (base != "extensions_native")):
+    #        compileall.compile_dir(destdir+prefix+"/share/panda3d/direct/"+base)
+    #compileall.compile_dir(destdir+prefix+"/share/panda3d/Pmw")
     DeleteCVS(destdir)
+    # rpmlint doesn't like these files, for some reason.
+    DeleteCXX(destdir+"/usr/share/panda3d")
+    os.remove("/usr/share/panda3d/direct/leveleditor/copyfiles.pl")
 
 if (__name__ == "__main__"):
     if (sys.platform != "linux2"):
