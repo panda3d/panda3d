@@ -82,11 +82,11 @@ PUBLISHED:
         return false;
     }
 
-    char * GetOption(std::string in)
+    const char * GetOption(std::string in)
     {
         const std::string * answer = _parser.GetOption(in);
         if(answer != NULL)
-	   return (char *)answer->c_str();
+	   return answer->c_str();
         return "";
     }
     std::string   GetRequestOptionString()
