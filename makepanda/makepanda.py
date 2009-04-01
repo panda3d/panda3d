@@ -37,6 +37,7 @@ GENMAN=0
 VERBOSE=1
 COMPRESSOR="zlib"
 THREADCOUNT=0
+CFLAGS=""
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN",
@@ -136,6 +137,12 @@ def parseopts(args):
     else: usage("Invalid setting for OPTIMIZE")
 
 parseopts(sys.argv[1:])
+
+# Now check if CFLAGS happens to be set
+if (os.environ.has_key("CFLAGS")):
+  CFLAGS=os.environ["CFLAGS"]
+if (os.environ.has_key("RPM_OPT_FLAGS")):
+  CFLAGS+=os.environ["RPM_OPT_FLAGS"]
 
 ########################################################################
 ##
@@ -482,6 +489,7 @@ def CompileCxx(obj,src,opts):
         if (optlevel==2): cmd = cmd + " -O1"
         if (optlevel==3): cmd = cmd + " -O2"
         if (optlevel==4): cmd = cmd + " -O2 -DNDEBUG"
+        if (CFLAGS !=""): cmd = cmd + " " + CFLAGS
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd = cmd + " -DBUILDING_" + building
         cmd = cmd + ' ' + src
