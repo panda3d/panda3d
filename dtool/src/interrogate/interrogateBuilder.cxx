@@ -958,6 +958,46 @@ should_include(const string &filename) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: InterrogateBuilder::is_inherited_published
+//       Access: Private
+//  Description: Recursively looks for the first inherited version of
+//               this function in the derivation chain of this class.
+//               Returns true if this function is declared published,
+//               or false if it is not published, or if it can't be
+//               found.
+////////////////////////////////////////////////////////////////////
+bool InterrogateBuilder::
+is_inherited_published(CPPInstance *function, CPPStructType *struct_type) {
+  nassertr(struct_type->_derivation.size() == 1, false);
+  CPPStructType *base = struct_type->_derivation[0]._base->as_struct_type();
+  nassertr(base != (CPPStructType *)NULL, false);
+
+  CPPScope *base_scope = base->get_scope();
+  CPPDeclaration *symbol = base_scope->find_symbol(function->get_simple_name(), true);
+  if (symbol == (CPPDeclaration *)NULL) {
+    // Couldn't find the inherited function.
+    return false;
+  }
+
+  CPPFunctionGroup *fgroup = symbol->as_function_group();
+  if (fgroup == (CPPFunctionGroup *)NULL) {
+    // Weird, it wasn't a function.
+    return false;
+  }
+
+  CPPFunctionGroup::Instances::iterator ii;
+  for (ii = fgroup->_instances.begin(); ii != fgroup->_instances.end(); ++ii) {
+    CPPInstance *inst = (*ii);
+    if (inst->_vis != V_published) {
+      // Some flavors of the method are not published.  Take no chances.
+      return false;
+    }
+  }
+  // It appears that all flavors of the inherited method are published.
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: InterrogateBuilder::remap_indices
 //       Access: Private
 //  Description: Resequences all of the index numbers so that
@@ -2292,7 +2332,7 @@ define_method(CPPInstance *function, InterrogateType &itype,
   if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
     // A destructor is a special case.  If it's public, we export it
     // (even if it's not published), but if it's protected or private,
-    // we don't exported it, and we flag it so we don't try to
+    // we don't export it, and we flag it so we don't try to
     // synthesize one later.
     if (function->_vis > V_public) {
       itype._flags |= InterrogateType::F_private_destructor;
@@ -2340,8 +2380,15 @@ define_method(CPPInstance *function, InterrogateType &itype,
     // inheritance.
     if ((ftype->_flags & CPPFunctionType::F_destructor) != 0) {
       itype._flags |= InterrogateType::F_inherited_destructor;
+      return;
     }
-    return;
+
+    // Let's make sure the that first appearance of the function is
+    // actually declared published.
+    if (is_inherited_published(function, struct_type)) {
+      return;
+    }
+    // If it isn't, we should publish this method anyway.
   }
 
 

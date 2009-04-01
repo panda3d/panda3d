@@ -66,7 +66,6 @@ public:
   static string hash_string(const string &name, int shift_offset);
   TypeIndex get_type(CPPType *type, bool global);
 
-private:
 public:
   typedef set<string> Commands;
   typedef map<string, string> CommandParams;
@@ -83,6 +82,8 @@ public:
   bool in_ignoremember(const string &name) const;
   bool in_noinclude(const string &name) const;
   bool should_include(const string &filename) const;
+
+  bool is_inherited_published(CPPInstance *function, CPPStructType *struct_type);
 
   void remap_indices(vector<FunctionRemap *> &remaps);
   void scan_function(CPPFunctionGroup *fgroup);
