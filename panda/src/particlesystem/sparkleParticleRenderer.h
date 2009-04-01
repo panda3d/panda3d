@@ -51,8 +51,10 @@ PUBLISHED:
 
   virtual ~SparkleParticleRenderer();
 
+public:
   virtual BaseParticleRenderer *make_copy();
 
+PUBLISHED:
   INLINE void set_center_color(const Colorf& c);
   INLINE void set_edge_color(const Colorf& c);
   INLINE void set_birth_radius(float radius);

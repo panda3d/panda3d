@@ -33,7 +33,8 @@ public:
 
   void integrate(Physical *physical, LinearForceVector &forces,
                  float dt);
-  
+
+PUBLISHED:  
   virtual void output(ostream &out) const;
   virtual void write(ostream &out, unsigned int indent=0) const;
 

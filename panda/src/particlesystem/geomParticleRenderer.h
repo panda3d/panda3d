@@ -55,6 +55,7 @@ PUBLISHED:
   INLINE float get_initial_z_scale() const;
   INLINE float get_final_z_scale() const;
 
+public:
   virtual BaseParticleRenderer *make_copy();
 
   virtual void output(ostream &out) const;

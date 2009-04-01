@@ -164,8 +164,10 @@ PUBLISHED:
   SpriteParticleRenderer(const SpriteParticleRenderer &copy);
   virtual ~SpriteParticleRenderer();
 
+public:
   virtual BaseParticleRenderer *make_copy();
 
+PUBLISHED:
   void set_from_node(const NodePath &node_path, bool size_from_texels = false);
   void set_from_node(const NodePath &node_path, const string &model, const string &node, bool size_from_texels = false);
   void add_from_node(const NodePath &node_path, bool size_from_texels = false, bool resize = false);

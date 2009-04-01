@@ -51,8 +51,10 @@ PUBLISHED:
 
   virtual ~PointParticleRenderer();
 
+public:
   virtual BaseParticleRenderer *make_copy();
 
+PUBLISHED:
   INLINE void set_point_size(float point_size);
   INLINE void set_start_color(const Colorf& sc);
   INLINE void set_end_color(const Colorf& ec);

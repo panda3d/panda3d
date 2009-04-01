@@ -40,8 +40,10 @@ PUBLISHED:
 
   virtual ~LineParticleRenderer();
 
+public:
   virtual BaseParticleRenderer *make_copy();
 
+PUBLISHED:
   INLINE void set_head_color(const Colorf& c);
   INLINE void set_tail_color(const Colorf& c);
 

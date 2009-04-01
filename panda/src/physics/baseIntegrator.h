@@ -40,7 +40,8 @@ public:
   typedef pvector<PT(AngularForce)> AngularForceVector;
 
   virtual ~BaseIntegrator();
-  
+
+PUBLISHED:  
   virtual void output(ostream &out) const;
   virtual void write_precomputed_linear_matrices(ostream &out,
                                                  unsigned int indent=0) const;
