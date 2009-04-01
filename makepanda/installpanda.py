@@ -59,7 +59,8 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     DeleteCVS(destdir)
     # rpmlint doesn't like these files, for some reason.
     DeleteCXX(destdir+"/usr/share/panda3d")
-    os.remove("/usr/share/panda3d/direct/leveleditor/copyfiles.pl")
+    if (os.path.isfile(destdir+"/usr/share/panda3d/direct/leveleditor/copyfiles.pl")):
+      os.remove(destdir+"/usr/share/panda3d/direct/leveleditor/copyfiles.pl")
 
 if (__name__ == "__main__"):
     if (sys.platform != "linux2"):
