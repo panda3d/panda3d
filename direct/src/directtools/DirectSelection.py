@@ -86,8 +86,11 @@ class SelectedNodePaths(DirectObject):
         id = nodePath.id()
         # First see if its already in the selected dictionary
         dnp = self.getSelectedDict(id)
-        # If so, we're done
-        if not dnp:
+        # If so, deselect it
+        if dnp:
+            self.deselect(nodePath)
+            return None
+        else:
             # See if it is in the deselected dictionary
             dnp = self.getDeselectedDict(id)
             if dnp:
@@ -103,6 +106,7 @@ class SelectedNodePaths(DirectObject):
             # Add it to the selected dictionary
             self.selectedDict[dnp.id()] = dnp
             self.selectedList.append(dnp) # [gjeon]
+
         # And update last
         __builtins__["last"] = self.last = dnp
         # Update cluster servers if this is a cluster client
