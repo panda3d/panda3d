@@ -169,7 +169,9 @@ init_libputil() {
   FactoryParam::init_type();
   Namable::init_type();
   NodeCachedReferenceCount::init_type();
+#ifdef HAVE_PYTHON
   PythonCallbackObject::init_type();
+#endif
   QuadBitMaskNative::init_type();
   ReferenceCount::init_type();
   SparseArray::init_type();
