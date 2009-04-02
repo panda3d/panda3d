@@ -7,48 +7,48 @@
   float fdx1, fdx2, fdy1, fdy2, fz, d1, d2;
   ZPOINT *pz1;
   PIXEL *pp1;
-  int part,update_left,update_right;
+  int part, update_left, update_right;
 
-  int nb_lines,dx1,dy1,tmp,dx2,dy2;
+  int nb_lines, dx1, dy1, tmp, dx2, dy2;
 
-  int error,derror;
-  int x1,dxdy_min,dxdy_max;
+  int error, derror;
+  int x1, dxdy_min, dxdy_max;
 /* warning: x2 is multiplied by 2^16 */
-  int x2,dx2dy2;  
+  int x2, dx2dy2;  
 
 #ifdef INTERP_Z
-  int z1,dzdx,dzdy,dzdl_min,dzdl_max;
+  int z1 = 0, dzdx = 0, dzdy = 0, dzdl_min = 0, dzdl_max = 0;
 #endif
 #ifdef INTERP_RGB
-  int r1,drdx,drdy,drdl_min,drdl_max;
-  int g1,dgdx,dgdy,dgdl_min,dgdl_max;
-  int b1,dbdx,dbdy,dbdl_min,dbdl_max;
-  int a1,dadx,dady,dadl_min,dadl_max;
+  int r1 = 0, drdx = 0, drdy = 0, drdl_min = 0, drdl_max = 0;
+  int g1 = 0, dgdx = 0, dgdy = 0, dgdl_min = 0, dgdl_max = 0;
+  int b1 = 0, dbdx = 0, dbdy = 0, dbdl_min = 0, dbdl_max = 0;
+  int a1 = 0, dadx = 0, dady = 0, dadl_min = 0, dadl_max = 0;
 #endif
 #ifdef INTERP_ST
-  int s1,dsdx,dsdy,dsdl_min,dsdl_max;
-  int t1,dtdx,dtdy,dtdl_min,dtdl_max;
+  int s1 = 0, dsdx = 0, dsdy = 0, dsdl_min = 0, dsdl_max = 0;
+  int t1 = 0, dtdx = 0, dtdy = 0, dtdl_min = 0, dtdl_max = 0;
 #endif
 #ifdef INTERP_STZ
-  float sz1,dszdx,dszdy,dszdl_min,dszdl_max;
-  float tz1,dtzdx,dtzdy,dtzdl_min,dtzdl_max;
+  float sz1 = 0, dszdx = 0, dszdy = 0, dszdl_min = 0, dszdl_max = 0;
+  float tz1 = 0, dtzdx = 0, dtzdy = 0, dtzdl_min = 0, dtzdl_max = 0;
 #endif
 #ifdef INTERP_STZA
-  float sza1,dszadx,dszady,dszadl_min,dszadl_max;
-  float tza1,dtzadx,dtzady,dtzadl_min,dtzadl_max;
+  float sza1 = 0, dszadx = 0, dszady = 0, dszadl_min = 0, dszadl_max = 0;
+  float tza1 = 0, dtzadx = 0, dtzady = 0, dtzadl_min = 0, dtzadl_max = 0;
 #endif
 #ifdef INTERP_STZB
-  float szb1,dszbdx,dszbdy,dszbdl_min,dszbdl_max;
-  float tzb1,dtzbdx,dtzbdy,dtzbdl_min,dtzbdl_max;
+  float szb1 = 0, dszbdx = 0, dszbdy = 0, dszbdl_min = 0, dszbdl_max = 0;
+  float tzb1 = 0, dtzbdx = 0, dtzbdy = 0, dtzbdl_min = 0, dtzbdl_max = 0;
 #endif
 #if defined(INTERP_MIPMAP) && (defined(INTERP_ST) || defined(INTERP_STZ))
-  unsigned int mipmap_dx, mipmap_level;
+  unsigned int mipmap_dx = 0, mipmap_level = 0;
 #endif
-#ifdef INTERP_STZA
-  unsigned int mipmap_dxa, mipmap_levela;
+#if defined(INTERP_MIPMAP) && defined(INTERP_STZA)
+  unsigned int mipmap_dxa = 0, mipmap_levela = 0;
 #endif
-#ifdef INTERP_STZB
-  unsigned int mipmap_dxb, mipmap_levelb;
+#if defined(INTERP_MIPMAP) && defined(INTERP_STZB)
+  unsigned int mipmap_dxb = 0, mipmap_levelb = 0;
 #endif
 
   EARLY_OUT();
