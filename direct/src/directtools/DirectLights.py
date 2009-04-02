@@ -8,15 +8,9 @@ class DirectLight(NodePath):
         NodePath.__init__(self)
         # Record light and name
         self.light = light
-
-        # Upcast the light object to its node base pointer
-        if isinstance(light, Spotlight):
-            node = light.upcastToLensNode()
-        else:
-            node = light.upcastToPandaNode()
-
+        
         # Attach node to self
-        self.assign(parent.attachNewNode(node))
+        self.assign(parent.attachNewNode(self.light))
 
     def getName(self):
         return self.light.getName()
