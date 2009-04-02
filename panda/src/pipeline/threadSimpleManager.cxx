@@ -41,7 +41,7 @@ ThreadSimpleManager() :
             "in seconds, that should be considered the "
             "typical timeslice for one epoch (to run all threads once).")),
   _simple_thread_volunteer_delay
-  ("simple-thread-volunteer-delay", 0.0001,
+  ("simple-thread-volunteer-delay", 0.0,
    PRC_DESC("When SIMPLE_THREADS is defined, this defines the amount of time, "
             "in seconds, for which a task that voluntarily yields should "
             "be delayed.")),
