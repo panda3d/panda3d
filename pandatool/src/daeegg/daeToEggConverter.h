@@ -59,7 +59,7 @@ private:
   
   PT(EggTable) _table;
   FCDocument* _document;
-  FUErrorSimpleHandler _error_handler;
+  FUErrorSimpleHandler* _error_handler;
   pmap<const string, PT(EggGroup)> _joints;
   pmap<const string, PT(EggVertexPool)> _vertex_pools;
   pvector<string> _skeletons;

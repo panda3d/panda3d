@@ -59,6 +59,7 @@ DAEToEggConverter() {
   _document = NULL;
   _table = NULL;
   _frame_rate = -1;
+  _error_handler = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,6 +80,9 @@ DAEToEggConverter(const DAEToEggConverter &copy) :
 ////////////////////////////////////////////////////////////////////
 DAEToEggConverter::
 ~DAEToEggConverter() {
+  if (_error_handler != NULL) {
+    delete _error_handler;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -129,6 +133,9 @@ convert_file(const Filename &filename) {
   _vertex_pools.clear();
   _skeletons.clear();
   _frame_rate = -1;
+  if (_error_handler == NULL) {
+    _error_handler = new FUErrorSimpleHandler;
+  }
   
   // The default coordinate system is Y-up
   if (_egg_data->get_coordinate_system() == CS_default) {
@@ -139,7 +146,7 @@ convert_file(const Filename &filename) {
   FCollada::Initialize();
   _document = FCollada::LoadDocument(filename.to_os_specific().c_str());
   if (_document == NULL) {
-    daeegg_cat.error() << "Failed to load document: " << _error_handler.GetErrorString() << endl;
+    daeegg_cat.error() << "Failed to load document: " << _error_handler->GetErrorString() << endl;
     FCollada::Release();
     return false;
   }
