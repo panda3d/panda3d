@@ -758,6 +758,7 @@ DTOOL_CONFIG=[
     ("HAVE_SOFTIMAGE",                 'UNDEF',                  'UNDEF'),
     ("SSL_097",                        'UNDEF',                  'UNDEF'),
     ("REPORT_OPENSSL_ERRORS",          '1',                      '1'),
+    ("USE_PANDAFILESTREAM",            '1',                      '1'),
     ("HAVE_GL",                        '1',                      '1'),
     ("HAVE_MESA",                      'UNDEF',                  'UNDEF'),
     ("MESA_MGL",                       'UNDEF',                  'UNDEF'),
