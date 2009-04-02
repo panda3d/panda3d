@@ -116,13 +116,14 @@ class Messenger:
         notifyDebug = Messenger.notify.getDebug()
         if notifyDebug:
             Messenger.notify.debug(
-                "object: %s\n accepting: %s\n method: %s\n extraArgs: %s\n persistent: %s" %
-                (object, event, method, extraArgs, persistent))
+                "object: %s (%s)\n accepting: %s\n method: %s\n extraArgs: %s\n persistent: %s" %
+                (safeRepr(object), self._getMessengerId(object), event, safeRepr(method),
+                 safeRepr(extraArgs), persistent))
 
         # Make sure that the method is callable
         assert callable(method), (
             "method not callable in accept (ignoring): %s %s"%
-            (method, extraArgs))
+            (safeRepr(method), safeRepr(extraArgs)))
 
         # Make sure extraArgs is a list or tuple
         if not (isinstance(extraArgs, list) or isinstance(extraArgs, tuple) or isinstance(extraArgs, set)):
@@ -136,24 +137,26 @@ class Messenger:
 
             # Make sure we are not inadvertently overwriting an existing event
             # on this particular object.
-            if notifyDebug:        
-                if acceptorDict.has_key(id):
+            if acceptorDict.has_key(id):
+                # TODO: we're replacing the existing callback. should this be an error?
+                if notifyDebug:        
                     oldMethod = acceptorDict[id][0]
                     if oldMethod == method:
                         self.notify.warning(
                             "object: %s was already accepting: \"%s\" with same callback: %s()" %
-                            (object.__class__.__name__, event, method.__name__))
+                            (object.__class__.__name__, safeRepr(event), method.__name__))
                     else:
                         self.notify.warning(
                             "object: %s accept: \"%s\" new callback: %s() supplanting old callback: %s()" %
-                            (object.__class__.__name__, event, method.__name__, oldMethod.__name__))
+                            (object.__class__.__name__, safeRepr(event), method.__name__, oldMethod.__name__))
+            else:
+                self._storeObject(object)
 
             acceptorDict[id] = [method, extraArgs, persistent]
 
             # Remember that this object is listening for this event
             eventDict = self.__objectEvents.setdefault(id, {})
             eventDict.setdefault(event, None)
-            self._storeObject(object)
         finally:
             self.lock.release()
 
@@ -163,7 +166,8 @@ class Messenger:
         It is safe to call even if it was not already accepting
         """
         if Messenger.notify.getDebug():
-            Messenger.notify.debug(`object` + '\n now ignoring: ' + `event`)
+            Messenger.notify.debug(
+                safeRepr(object) + ' (%s)\n now ignoring: ' % (self._getMessengerId(object), ) + safeRepr(event))
 
         self.lock.acquire()
         try:
@@ -186,7 +190,7 @@ class Messenger:
                 if (len(eventDict) == 0):
                     del self.__objectEvents[id]
 
-            self._releaseObject(object)
+                self._releaseObject(object)
         finally:
             self.lock.release()
 
@@ -196,7 +200,8 @@ class Messenger:
         Useful for cleanup
         """
         if Messenger.notify.getDebug():
-            Messenger.notify.debug(`object` + '\n now ignoring all events')
+            Messenger.notify.debug(
+                safeRepr(object) + ' (%s)\n now ignoring all events' % (self._getMessengerId(object), ))
 
         self.lock.acquire()
         try:
@@ -214,9 +219,8 @@ class Messenger:
                         # entry from the Messenger alltogether
                         if (len(acceptorDict) == 0):
                             del self.__callbacks[event]
+                        self._releaseObject(object)
                 del self.__objectEvents[id]
-            if id in self._id2object:
-                del self._id2object[id]
         finally:
             self.lock.release()
 
