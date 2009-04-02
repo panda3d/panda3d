@@ -716,6 +716,7 @@ get_quality_level_string(EggTexture::QualityLevel quality_level) {
   case EggTexture::QL_best:
     return "b";
   }
+  return "";
 }
 
 ////////////////////////////////////////////////////////////////////
