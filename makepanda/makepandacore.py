@@ -544,12 +544,14 @@ def DeleteCVS(dir):
             elif (os.path.isfile(subdir) and entry == ".cvsignore"):
                 os.remove(subdir)
 
-def DeleteCXX(dir):
+def DeleteBuildFiles(dir):
     for entry in os.listdir(dir):
         if (entry != ".") and (entry != ".."):
             subdir = dir + "/" + entry
-            if (os.path.isfile(subdir) and os.path.splitext(subdir)[-1] in [".h", ".I", ".c", ".cxx", ".cpp"]):
+            if (os.path.isfile(subdir) and os.path.splitext(subdir)[-1] in [".h", ".I", ".c", ".cxx", ".cpp", ".pp"]):
                 os.remove(subdir)
+            elif (os.path.isdir(subdir)):
+                DeleteBuildFiles(subdir)
 
 def CreateFile(file):
     if (os.path.exists(file)==0):
