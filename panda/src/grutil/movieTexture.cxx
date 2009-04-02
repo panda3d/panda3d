@@ -48,7 +48,7 @@ MovieTexture::
 MovieTexture(PT(MovieVideo) video) : 
   Texture(video->get_name())
 {
-  do_load_one(video->open(), NULL, 0);
+  do_load_one(video->open(), NULL, 0, LoaderOptions());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,7 +154,7 @@ VideoPage() :
 //               Assumes the lock is already held.
 ////////////////////////////////////////////////////////////////////
 void MovieTexture::
-do_recalculate_image_properties(CDWriter &cdata) {
+do_recalculate_image_properties(CDWriter &cdata, const LoaderOptions &options) {
   int x_max = 1;
   int y_max = 1;
   bool alpha = false;
@@ -196,7 +196,7 @@ do_recalculate_image_properties(CDWriter &cdata) {
   
   do_reconsider_image_properties(x_max, y_max, alpha?4:3, 
                                  T_unsigned_byte, cdata->_pages.size(),
-                                 LoaderOptions());
+                                 options);
   do_set_pad_size(x_max - x_size, y_max - y_size, 0);
 }
 
@@ -210,6 +210,7 @@ do_recalculate_image_properties(CDWriter &cdata) {
 bool MovieTexture::
 do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
             int z, int n, int primary_file_num_channels, int alpha_file_channel,
+            const LoaderOptions &options,
             bool header_only, BamCacheRecord *record) {
 
   nassertr(n == 0, false);
@@ -249,7 +250,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
   _primary_file_num_channels = primary_file_num_channels;
   _alpha_file_channel = alpha_file_channel;
   
-  if (!do_load_one(color, alpha, z)) {
+  if (!do_load_one(color, alpha, z, options)) {
     return false;
   }
   
@@ -265,14 +266,15 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
 //  Description: Loads movie objects into the texture.
 ////////////////////////////////////////////////////////////////////
 bool MovieTexture::
-do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z) {
+do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z,
+            const LoaderOptions &options) {
   
   {
     CDWriter cdata(_cycler);
     cdata->_pages.resize(z+1);
     cdata->_pages[z]._color = color;
     cdata->_pages[z]._alpha = alpha;
-    do_recalculate_image_properties(cdata);
+    do_recalculate_image_properties(cdata, options);
   }
   
   return true;
@@ -285,7 +287,8 @@ do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z) {
 //               an error.
 ////////////////////////////////////////////////////////////////////
 bool MovieTexture::
-do_load_one(const PNMImage &pnmimage, const string &name, int z, int n) {
+do_load_one(const PNMImage &pnmimage, const string &name, int z, int n,
+            const LoaderOptions &options) {
   grutil_cat.error() << "You cannot load a static image into a MovieTexture\n";
   return false;
 }
@@ -450,7 +453,7 @@ do_assign(const MovieTexture &copy) {
         cdata->_pages[i]._alpha = alpha[i]->get_source()->open();
       }
     }
-    do_recalculate_image_properties(cdata);
+    do_recalculate_image_properties(cdata, LoaderOptions());
   }
 }
 

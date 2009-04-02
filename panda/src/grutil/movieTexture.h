@@ -69,10 +69,12 @@ protected:
   virtual bool get_keep_ram_image() const;
   virtual bool do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
                            int z, int n, int primary_file_num_channels, int alpha_file_channel,
+                           const LoaderOptions &options,
                            bool header_only, BamCacheRecord *record);
   virtual bool do_load_one(const PNMImage &pnmimage, const string &name,
-                           int z, int n);
-  bool do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, int z);
+                           int z, int n, const LoaderOptions &options);
+  bool do_load_one(PT(MovieVideoCursor) color, PT(MovieVideoCursor) alpha, 
+                   int z, const LoaderOptions &options);
 
   class VideoPage {
   public:
@@ -109,7 +111,7 @@ protected:
   typedef CycleDataReader<CData> CDReader;
   typedef CycleDataWriter<CData> CDWriter;
   
-  void do_recalculate_image_properties(CDWriter &cdata);
+  void do_recalculate_image_properties(CDWriter &cdata, const LoaderOptions &options);
 
 public:
   static void register_with_read_factory();
