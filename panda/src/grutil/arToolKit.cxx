@@ -409,6 +409,7 @@ analyze(Texture *tex, bool do_flip_texture) {
         arGetTransMatCont(inf, _prev_conv, center, _marker_size, _prev_conv);
       } else {
         arGetTransMat(inf, center, _marker_size, _prev_conv);
+        _have_prev_conv = true;
       }
       LMatrix4f mat;
       for (int i=0; i<4; i++) {
