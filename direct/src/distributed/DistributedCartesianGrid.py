@@ -162,6 +162,9 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
         if self.visAvatar == None:
             # no avatar to process visibility for
             return Task.done
+        if(self.visAvatar.isDisabled()):
+            self.visAvatar = None
+            return Task.done
         if self.visAvatar.gameFSM.state == 'Cutscene':
             return Task.cont
         
