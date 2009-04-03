@@ -1,7 +1,7 @@
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 
-#define USE_PACKAGES opencv ffmpeg
+#define USE_PACKAGES opencv ffmpeg artoolkit
 
 #begin lib_target
   #define TARGET grutil
