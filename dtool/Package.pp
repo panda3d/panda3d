@@ -282,6 +282,11 @@
 #set FCOLLADA_LIBS $[FCOLLADA_LIBS]
 #set HAVE_FCOLLADA $[HAVE_FCOLLADA]
 
+#set ARTOOLKIT_IPATH $[unixfilename $[ARTOOLKIT_IPATH]]
+#set ARTOOLKIT_LPATH $[unixfilename $[ARTOOLKIT_LPATH]]
+#set ARTOOLKIT_LIBS $[ARTOOLKIT_LIBS]
+#set HAVE_ARTOOLKIT $[HAVE_ARTOOLKIT]
+
 // Now infer a few more variables based on what was defined.
 #if $[and $[HAVE_GTK],$[PKG_CONFIG]]
   #define cflags $[shell $[PKG_CONFIG] gtk+-2.0 --cflags]

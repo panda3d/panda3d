@@ -378,6 +378,12 @@
   #define fcollada_libs $[FCOLLADA_LIBS]
 #endif
 
+#if $[HAVE_ARTOOLKIT]
+  #define fcollada_ipath $[wildcard $[ARTOOLKIT_IPATH]]
+  #define fcollada_lpath $[wildcard $[ARTOOLKIT_LPATH]]
+  #define fcollada_libs $[ARTOOLKIT_LIBS]
+#endif
+
 // We define these two variables true here in the global scope; a
 // particular Sources.pp file can redefine these to be false to
 // prevent a particular directory or target from being built in

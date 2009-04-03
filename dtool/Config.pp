@@ -861,6 +861,12 @@
 #define FCOLLADA_LIBS FColladaSD
 #defer HAVE_FCOLLADA $[libtest $[FCOLLADA_LPATH],$[FCOLLADA_LIBS]]
 
+// Also for the ARToolKit library, for augmented reality
+#define ARTOOLKIT_IPATH
+#define ARTOOLKIT_LPATH
+#define ARTOOLKIT_LIBS $[if $[WINDOWS_PLATFORM],libAR.lib,AR]
+#defer HAVE_ARTOOLKIT $[libtest $[ARTOOLKIT_LPATH],$[ARTOOLKIT_LIBS]]
+
 // Define this to generate static libraries and executables, rather than
 // dynamic libraries.
 //#define LINK_ALL_STATIC yes

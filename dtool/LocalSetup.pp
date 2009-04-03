@@ -161,6 +161,11 @@
 #else
 #print - Did not find FCollada
 #endif
+#if $[HAVE_ARTOOLKIT]
+#print + ARToolKit
+#else
+#print - Did not find ARToolKit
+#endif
 
 #print
 #if $[and $[HAVE_INTERROGATE],$[HAVE_PYTHON]]
@@ -221,6 +226,9 @@ $[cdefine HAVE_SOFTIMAGE]
 
 /* Define if we have FCollada available. */
 $[cdefine HAVE_FCOLLADA]
+
+/* Define if we have ARToolKit available. */
+$[cdefine HAVE_ARTOOLKIT]
 
 /* Define if we have OpenSSL installed.  */
 $[cdefine HAVE_OPENSSL]
