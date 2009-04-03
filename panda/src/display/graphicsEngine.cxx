@@ -1517,10 +1517,11 @@ make_contexts(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::
 process_events(const GraphicsEngine::Windows &wlist, Thread *current_thread) {
-  Windows::const_iterator wi;
-  for (wi = wlist.begin(); wi != wlist.end(); ++wi) {
-    GraphicsOutput *win = (*wi);
-    win->process_events();
+  // We're not using a vector iterator here, since it's possible that
+  // the window list changes in an event, which would invalidate the
+  // iterator and cause a crash.
+  for (int i = 0; i < wlist.size(); ++i) {
+    wlist[i]->process_events();
   }
 }
 
