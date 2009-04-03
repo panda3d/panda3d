@@ -94,6 +94,10 @@ class Thread(ThreadBase):
         self.__args = args
         self.__kwargs = kwargs
 
+        if not name:
+            import threading2
+            name = threading2._newname()
+
         current = current_thread()
         self.__dict__['daemon'] = current.daemon
         self.__dict__['name'] = name
@@ -110,10 +114,10 @@ class Thread(ThreadBase):
 
     def start(self):
         if self.__thread.isStarted():
-            raise RuntimeException
+            raise RuntimeError
         
         if not self.__thread.start(pm.TPNormal, True):
-            raise RuntimeException
+            raise RuntimeError
 
     def run(self):
         if _settrace_func:
@@ -146,13 +150,13 @@ class ExternalThread(ThreadBase):
         self.__dict__['ident'] = threadId
 
     def start(self):
-        raise RuntimeException
+        raise RuntimeError
     
     def run(self):
-        raise RuntimeException
+        raise RuntimeError
         
     def join(self, timeout = None):
-        raise RuntimeException
+        raise RuntimeError
 
     def setDaemon(self, daemon):
         raise RuntimeError
