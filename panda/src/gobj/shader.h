@@ -51,6 +51,11 @@ PUBLISHED:
   INLINE static void set_shader_utilization(ShaderUtilization utl);
   INLINE static bool have_shader_utilization();
   
+#ifdef HAVE_CG
+  void set_vertex_profile(const string &profile);
+  void set_fragment_profile(const string &profile);
+#endif
+  
   void prepare(PreparedGraphicsObjects *prepared_objects);
   bool is_prepared(PreparedGraphicsObjects *prepared_objects) const;
   bool release(PreparedGraphicsObjects *prepared_objects);
@@ -268,6 +273,8 @@ public:
   CGcontext  _cg_context;
   CGprogram  _cg_vprogram;
   CGprogram  _cg_fprogram;
+  int        _cg_vprofile;
+  int        _cg_fprofile;
   
  public:
 

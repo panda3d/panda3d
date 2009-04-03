@@ -1040,6 +1040,7 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, bool fshader)
   CGerror err;
   const char *compiler_args[100];
   int nargs = 0;
+  int override = fshader ? _cg_fprofile : _cg_vprofile;
   int active = fshader ? caps._active_fprofile : caps._active_vprofile;
   int ultimate = fshader ? caps._ultimate_fprofile : caps._ultimate_vprofile;
 
@@ -1051,6 +1052,26 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, bool fshader)
   }
   compiler_args[nargs] = 0;
 
+  // If someone has explicitly set a profile, use it.
+  if (override != (int)CG_PROFILE_UNKNOWN) {
+    prog = cgCreateProgram(_cg_context, CG_SOURCE, _text.c_str(),
+                           (CGprofile)override, entry, (const char **)compiler_args);
+    if (cgGetError() == CG_NO_ERROR) {
+      return prog;
+    }
+    if (prog != 0) {
+      cgDestroyProgram(prog);
+    }
+    if (fshader) {
+      gobj_cat.error() << "Fragment shader failed to compile with profile '"
+        << cgGetProfileString((CGprofile)override) << "!\n";
+    } else {
+      gobj_cat.error() << "Vertex shader failed to compile with profile '"
+        << cgGetProfileString((CGprofile)override) << "!\n";
+    }
+    return 0;
+  }
+  
   if ((active != (int)CG_PROFILE_UNKNOWN) && (active != ultimate)) {
     prog = cgCreateProgram(_cg_context, CG_SOURCE, _text.c_str(),
                            (CGprofile)active, entry, (const char **)compiler_args);
@@ -1353,7 +1374,8 @@ cg_compile_for(const ShaderCaps &caps,
   
   if ((cgGetProgramProfile(_cg_vprogram) != caps._active_vprofile)||
       (cgGetProgramProfile(_cg_fprogram) != caps._active_fprofile)) {
-    gobj_cat.error() << "Cg program too complex for driver:" << get_filename() << "\n";
+    gobj_cat.error() << "Cg program too complex for driver:"
+      << get_filename() << ". Try choosing a different profile.\n";
     return false;
   }
   
@@ -1424,6 +1446,8 @@ Shader(const Filename &filename, const string &text) :
   _cg_context = 0;
   _cg_vprogram = 0;
   _cg_fprogram = 0;
+  _cg_vprofile = CG_PROFILE_UNKNOWN;
+  _cg_fprofile = CG_PROFILE_UNKNOWN;
   if (_default_caps._ultimate_vprofile == 0) {
     _default_caps._active_vprofile = CG_PROFILE_UNKNOWN;
     _default_caps._active_fprofile = CG_PROFILE_UNKNOWN;
@@ -1617,6 +1641,52 @@ bool Shader::
 parse_eof() {
   return (int)_text.size() == _parse;
 }
+
+#ifdef HAVE_CG
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::set_vertex_profile
+//       Access: Published
+//  Description: Sets the profile for the vertex shader. This
+//               overrides all other profile settings (it even
+//               overrides basic-shaders-only) and forces the shader
+//               to use the given profile. If that fails, it will
+//               throw an error.
+////////////////////////////////////////////////////////////////////
+void Shader::
+set_vertex_profile(const string &profile) {
+  if (profile.empty()) {
+    _cg_vprofile = CG_PROFILE_UNKNOWN;
+    return;
+  }
+  CGprofile p = cgGetProfile(profile.c_str());
+  if (p == CG_PROFILE_UNKNOWN) {
+    gobj_cat.error() << "Invalid vertex profile: " << profile << "\n";
+  }
+  _cg_vprofile = p;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::set_fragment_profile
+//       Access: Published
+//  Description: Sets the profile for the vertex shader. This
+//               overrides all other profile settings (it even
+//               overrides basic-shaders-only) and forces the shader
+//               to use the given profile. If that fails, it will
+//               throw an error.
+////////////////////////////////////////////////////////////////////
+void Shader::
+set_fragment_profile(const string &profile) {
+  if (profile.empty()) {
+    _cg_fprofile = CG_PROFILE_UNKNOWN;
+    return;
+  }
+  CGprofile p = cgGetProfile(profile.c_str());
+  if (p == CG_PROFILE_UNKNOWN) {
+    gobj_cat.error() << "Invalid fragment profile: " << profile << "\n";
+  }
+  _cg_fprofile = p;
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::prepare
