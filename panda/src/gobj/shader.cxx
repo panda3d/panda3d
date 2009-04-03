@@ -1511,7 +1511,7 @@ Shader::
 ////////////////////////////////////////////////////////////////////
 PT(Shader) Shader::
 load(const string &file, const string &vprofile, const string &fprofile) {
-  return load(Filename(file));
+  return load(Filename(file), vprofile, fprofile);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1536,7 +1536,7 @@ load(const Filename &file, const string &vprofile, const string &fprofile) {
     gobj_cat.error() << "Could not read shader file: " << file << "\n";
     return NULL;
   }
-  PT(Shader) result = new Shader(file, body);
+  PT(Shader) result = new Shader(file, body, vprofile, fprofile);
   result->_loaded = true;
   _load_table[file] = result;
   return result;
@@ -1558,7 +1558,7 @@ make(const string &body, const string &vprofile, const string &fprofile) {
   if (i != _make_table.end()) {
     return i->second;
   }
-  PT(Shader) result = new Shader("created-shader", body);
+  PT(Shader) result = new Shader("created-shader", body, vprofile, fprofile);
   _make_table[body] = result;
   if (dump_generated_shaders) {
     ostringstream fns;
