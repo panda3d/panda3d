@@ -1430,7 +1430,7 @@ cg_compile_for(const ShaderCaps &caps,
 //  Description: Construct a Shader.
 ////////////////////////////////////////////////////////////////////
 Shader::
-Shader(const Filename &filename, const string &text) :
+Shader(const Filename &filename, const string &text, const string &vprofile, const string &fprofile) :
   _filename(filename),
   _text(text),
   _header(""),
@@ -1443,11 +1443,28 @@ Shader(const Filename &filename, const string &text) :
   parse_line(_header, true, true);
   
 #ifdef HAVE_CG
+  _error_flag = false;
   _cg_context = 0;
   _cg_vprogram = 0;
   _cg_fprogram = 0;
   _cg_vprofile = CG_PROFILE_UNKNOWN;
   _cg_fprofile = CG_PROFILE_UNKNOWN;
+  if (vprofile != "") {
+    CGprofile p = cgGetProfile(vprofile.c_str());
+    if (p == CG_PROFILE_UNKNOWN) {
+      gobj_cat.error() << "Invalid vertex profile: " << vprofile << "\n";
+      _error_flag = true;
+    }
+    _cg_vprofile = (int)p;
+  }
+  if (fprofile != "") {
+    CGprofile p = cgGetProfile(fprofile.c_str());
+    if (p == CG_PROFILE_UNKNOWN) {
+      gobj_cat.error() << "Invalid fragment profile: " << fprofile << "\n";
+      _error_flag = true;
+    }
+    _cg_fprofile = (int)p;
+  }
   if (_default_caps._ultimate_vprofile == 0) {
     _default_caps._active_vprofile = CG_PROFILE_UNKNOWN;
     _default_caps._active_fprofile = CG_PROFILE_UNKNOWN;
@@ -1455,8 +1472,8 @@ Shader(const Filename &filename, const string &text) :
     _default_caps._ultimate_fprofile = JCG_PROFILE_GLSLF;
   }
   if (_header == "//Cg") {
-    if (cg_analyze_shader(_default_caps)) {
-      _error_flag = false;
+    if (!cg_analyze_shader(_default_caps)) {
+      _error_flag = true;
     }
   } else {
     gobj_cat.error()
@@ -1485,20 +1502,30 @@ Shader::
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::load
 //       Access: Published, Static
-//  Description:
+//  Description: Loads the shader with the given filename.
+//               If the optional vshader or fshader parameters
+//               are set and non-empty, it will be used to override
+//               all other profile settings (it even overrides
+//               the basic-shaders-only flag) and forces the shader
+//               to use the given profile.
 ////////////////////////////////////////////////////////////////////
 PT(Shader) Shader::
-load(const string &file) {
+load(const string &file, const string &vprofile, const string &fprofile) {
   return load(Filename(file));
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::load
 //       Access: Published, Static
-//  Description:
+//  Description: Loads the shader with the given filename.
+//               If the optional vshader or fshader parameters
+//               are set and non-empty, it will be used to override
+//               all other profile settings (it even overrides
+//               the basic-shaders-only flag) and forces the shader
+//               to use the given profile.
 ////////////////////////////////////////////////////////////////////
 PT(Shader) Shader::
-load(const Filename &file) {
+load(const Filename &file, const string &vprofile, const string &fprofile) {
   LoadTable::const_iterator i = _load_table.find(file);
   if (i != _load_table.end()) {
     return i->second;
@@ -1518,10 +1545,15 @@ load(const Filename &file) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::make
 //       Access: Published, Static
-//  Description:
+//  Description: Loads the shader, using the string as shader body.
+//               If the optional vshader or fshader parameters
+//               are set and non-empty, it will be used to override
+//               all other profile settings (it even overrides
+//               the basic-shaders-only flag) and forces the shader
+//               to use the given profile.
 ////////////////////////////////////////////////////////////////////
 PT(Shader) Shader::
-make(const string &body) {
+make(const string &body, const string &vprofile, const string &fprofile) {
   MakeTable::const_iterator i = _make_table.find(body);
   if (i != _make_table.end()) {
     return i->second;
@@ -1641,52 +1673,6 @@ bool Shader::
 parse_eof() {
   return (int)_text.size() == _parse;
 }
-
-#ifdef HAVE_CG
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::set_vertex_profile
-//       Access: Published
-//  Description: Sets the profile for the vertex shader. This
-//               overrides all other profile settings (it even
-//               overrides basic-shaders-only) and forces the shader
-//               to use the given profile. If that fails, it will
-//               throw an error.
-////////////////////////////////////////////////////////////////////
-void Shader::
-set_vertex_profile(const string &profile) {
-  if (profile.empty()) {
-    _cg_vprofile = CG_PROFILE_UNKNOWN;
-    return;
-  }
-  CGprofile p = cgGetProfile(profile.c_str());
-  if (p == CG_PROFILE_UNKNOWN) {
-    gobj_cat.error() << "Invalid vertex profile: " << profile << "\n";
-  }
-  _cg_vprofile = p;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Shader::set_fragment_profile
-//       Access: Published
-//  Description: Sets the profile for the vertex shader. This
-//               overrides all other profile settings (it even
-//               overrides basic-shaders-only) and forces the shader
-//               to use the given profile. If that fails, it will
-//               throw an error.
-////////////////////////////////////////////////////////////////////
-void Shader::
-set_fragment_profile(const string &profile) {
-  if (profile.empty()) {
-    _cg_fprofile = CG_PROFILE_UNKNOWN;
-    return;
-  }
-  CGprofile p = cgGetProfile(profile.c_str());
-  if (p == CG_PROFILE_UNKNOWN) {
-    gobj_cat.error() << "Invalid fragment profile: " << profile << "\n";
-  }
-  _cg_fprofile = p;
-}
-#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::prepare
