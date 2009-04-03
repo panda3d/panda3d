@@ -379,9 +379,9 @@
 #endif
 
 #if $[HAVE_ARTOOLKIT]
-  #define fcollada_ipath $[wildcard $[ARTOOLKIT_IPATH]]
-  #define fcollada_lpath $[wildcard $[ARTOOLKIT_LPATH]]
-  #define fcollada_libs $[ARTOOLKIT_LIBS]
+  #define artoolkit_ipath $[wildcard $[ARTOOLKIT_IPATH]]
+  #define artoolkit_lpath $[wildcard $[ARTOOLKIT_LPATH]]
+  #define artoolkit_libs $[ARTOOLKIT_LIBS]
 #endif
 
 // We define these two variables true here in the global scope; a
