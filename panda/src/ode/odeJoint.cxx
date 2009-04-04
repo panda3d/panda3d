@@ -37,6 +37,7 @@ OdeJoint::
 
 void OdeJoint::
 destroy() {
+  nassertv(_id);
   dJointDestroy(_id);
 }
 
@@ -50,6 +51,7 @@ destroy() {
 ////////////////////////////////////////////////////////////////////
 void OdeJoint::
 attach_bodies(const OdeBody &body1, const OdeBody &body2) {
+  nassertv(_id);
   nassertv(body1.get_id() != 0 && body2.get_id() != 0);
   dJointAttach(_id, body1.get_id(), body2.get_id());
 }
@@ -65,6 +67,7 @@ attach_bodies(const OdeBody &body1, const OdeBody &body2) {
 ////////////////////////////////////////////////////////////////////
 void OdeJoint::
 attach_body(const OdeBody &body, int index) {
+  nassertv(_id);
   nassertv(body.get_id() != 0);
   nassertv(index == 0 || index == 1);
   if (index == 0) {
@@ -76,6 +79,7 @@ attach_body(const OdeBody &body, int index) {
 
 void OdeJoint::
 detach() {
+  nassertv(_id);
   dJointAttach(_id, 0, 0);
 }
 
