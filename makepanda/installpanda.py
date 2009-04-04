@@ -7,8 +7,8 @@
 #
 # To install panda using this script, type 'installpanda.py'.
 # To specify an alternate location than the filesystem root /,
-# set the DESTDIR environment variable.
-# This script only functions on Linux, for now.
+# either pass it as only argument or set the DESTDIR environment
+# variable. This script only functions on Linux, for now.
 #
 ########################################################################
 
@@ -66,7 +66,15 @@ if (__name__ == "__main__"):
     if (sys.platform != "linux2"):
         exit("This script only works on linux at the moment!")
     destdir = ""
-    if (os.environ.has_key("DESTDIR")):
+    if (len(sys.argv) > 1):
+        print "Reading out commandline arguments"
+        destdir = " ".join(sys.argv[1:])
+        if (destdir.endswith("/")):
+            destdir = destdir[:-1]
+        if (destdir != "" and not os.path.isdir(destdir)):
+            exit("Directory '%s' does not exist!" % destdir)
+        print "Installing Panda3D into " + destdir
+    elif (os.environ.has_key("DESTDIR")):
         print "Reading out DESTDIR"
         destdir = os.environ["DESTDIR"]
         if (destdir.endswith("/")):
