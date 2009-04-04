@@ -101,6 +101,10 @@ write(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
+OdeSpace::
+operator bool () const {
+  return (_id != NULL);
+}
 
 void OdeSpace::
 set_auto_collide_world(OdeWorld &world)

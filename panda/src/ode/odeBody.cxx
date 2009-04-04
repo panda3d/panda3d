@@ -53,3 +53,8 @@ write(ostream &out, unsigned int indent) const {
 			 << ")";
   #endif //] NDEBUG
 }
+
+OdeBody::
+operator bool () const {
+  return (_id != NULL);
+}

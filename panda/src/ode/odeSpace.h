@@ -81,6 +81,7 @@ PUBLISHED:
   INLINE OdeSpace get_space() const;
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  operator bool () const;
 
   OdeSimpleSpace convert_to_simple_space() const;
   OdeHashSpace convert_to_hash_space() const;

@@ -112,6 +112,11 @@ write(ostream &out, unsigned int indent) const {
   #endif //] NDEBUG
 }
 
+OdeJoint::
+operator bool () const {
+  return (_id != NULL);
+}
+
 OdeBallJoint OdeJoint::
 convert_to_ball() const {
   nassertr(_id != 0, OdeBallJoint(0));

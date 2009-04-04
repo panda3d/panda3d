@@ -97,7 +97,7 @@ PUBLISHED:
                          dReal dampen);
   float apply_dampening(float dt, OdeBody& body);
   
-  
+  operator bool () const;
     
 public: 
   INLINE dWorldID get_id() const;

@@ -83,6 +83,7 @@ PUBLISHED:
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
   INLINE int compare_to(const OdeJoint &other) const;
   INLINE bool operator == (const OdeJoint &other) const;
+  operator bool () const;
 
   OdeBallJoint convert_to_ball() const;
   OdeHingeJoint convert_to_hinge() const;
