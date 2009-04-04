@@ -294,7 +294,9 @@ MayaEggTex *MayaEggLoader::GetTex(EggTexture* etex)
       // [gjeon] to create alpha channel connection
       LoaderOptions options;
       PT(Texture) tex = TexturePool::load_texture(etex->get_fullpath(), 0, false, options);
-      if ((tex != NULL) && (tex->get_num_components() == 4))
+      if (((tex != NULL) && (tex->get_num_components() == 4)) 
+          || (etex->get_format() == EggTexture::F_alpha) 
+          || (etex->get_format() == EggTexture::F_luminance_alpha))
         dgmod.connect(filetex.findPlug("outTransparency"),shader.findPlug("transparency"));
     }
     status = dgmod.doIt();
