@@ -51,6 +51,7 @@ protected:
 PUBLISHED:
   virtual ~OdeSpace();
   void destroy();
+  INLINE bool is_empty() const;
 
   INLINE void set_cleanup(int mode);
   INLINE int get_cleanup() const;

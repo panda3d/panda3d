@@ -70,6 +70,7 @@ PUBLISHED:
 
   virtual ~OdeGeom();
   void destroy();
+  INLINE bool is_empty() const;
 
   //INLINE void set_data(void* data);
   INLINE void set_body(OdeBody &body);

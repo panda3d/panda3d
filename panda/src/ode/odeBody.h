@@ -43,6 +43,7 @@ PUBLISHED:
   OdeBody(OdeWorld &world);
   virtual ~OdeBody();
   void destroy();
+  INLINE bool is_empty() const;
 
   INLINE void set_auto_disable_linear_threshold(dReal linear_threshold);
   INLINE void set_auto_disable_angular_threshold(dReal angular_threshold);

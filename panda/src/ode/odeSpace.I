@@ -12,7 +12,24 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////
+//     Function: OdeSpace::is_empty
+//       Access: Published
+//  Description: Returns true if the ID is 0, meaning the OdeSpace
+//               does not point to a valid space. It is an error to
+//               call a method on an empty space.
+//               Note that an empty OdeSpace also evaluates to False.
+////////////////////////////////////////////////////////////////////
+INLINE bool OdeSpace::
+is_empty() const {
+  return (_id == 0);
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: OdeSpace::get_id
+//       Access: Published
+//  Description: Returns the underlying dSpaceID.
+////////////////////////////////////////////////////////////////////
 INLINE dSpaceID OdeSpace::
 get_id() const {
   return _id;

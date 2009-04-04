@@ -68,6 +68,7 @@ PUBLISHED:
 
   virtual ~OdeJoint();
   void destroy();
+  INLINE bool is_empty() const;
   
   /* INLINE void set_data(void *data); */
   /* INLINE void *get_data(); */

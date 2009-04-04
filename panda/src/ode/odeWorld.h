@@ -42,6 +42,7 @@ PUBLISHED:
   OdeWorld(const OdeWorld &copy);
   virtual ~OdeWorld();
   void destroy();
+  INLINE bool is_empty() const;
 
   INLINE void set_gravity(dReal x, dReal y, dReal z);
   INLINE void set_gravity(const LVecBase3f &vec);
