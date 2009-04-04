@@ -708,7 +708,7 @@ open_window() {
     _ic = XCreateIC
       (im,
        XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-       NULL);
+       (void*)NULL);
     if (_ic == (XIC)NULL) {
       glxdisplay_cat.warning()
         << "Couldn't create input context.\n";
