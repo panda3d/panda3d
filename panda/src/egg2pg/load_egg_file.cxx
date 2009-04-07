@@ -46,7 +46,13 @@ load_from_loader(EggLoader &loader) {
 
     int num_reduced = gr.flatten(loader._root, combine_siblings_bits);
     egg2pg_cat.info() << "Flattened " << num_reduced << " nodes.\n";
+
     if (egg_unify) {
+      // We want to premunge before unifying, since otherwise we risk
+      // needlessly duplicating vertices.
+      if (premunge_data) {
+        gr.premunge(loader._root, RenderState::make_empty());
+      }
       gr.collect_vertex_data(loader._root);
       gr.unify(loader._root, true);
       if (egg2pg_cat.is_debug()) {
