@@ -2503,6 +2503,7 @@ TargetAdd('tinydisplay_ztriangle_table.obj', opts=OPTS, input='ztriangle_table.c
 if (sys.platform == "darwin"):
     TargetAdd('tinydisplay_tinyOsxGraphicsWindow.obj', opts=OPTS, input='tinyOsxGraphicsWindow.mm')
     TargetAdd('libtinydisplay.dll', input='tinydisplay_tinyOsxGraphicsWindow.obj')
+    TargetAdd('libtinydisplay.dll', opts=['CARBON', 'AGL', 'COCOA'])
 TargetAdd('libtinydisplay.dll', input='tinydisplay_composite1.obj')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_composite2.obj')
 TargetAdd('libtinydisplay.dll', input='tinydisplay_ztriangle_1.obj')
