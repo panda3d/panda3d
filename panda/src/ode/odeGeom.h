@@ -37,6 +37,7 @@ class OdeSimpleSpace;
 class OdeHashSpace;
 class OdeQuadTreeSpace;
 
+class OdeUtil;
 class OdeCollisionEntry;
 
 ////////////////////////////////////////////////////////////////////
@@ -46,6 +47,7 @@ class OdeCollisionEntry;
 class EXPCL_PANDAODE OdeGeom : public TypedObject {
   friend class OdeContactGeom;
   friend class OdeSpace;
+  friend class OdeUtil;
   friend class OdeCollisionEntry;
 
 protected:
