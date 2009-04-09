@@ -102,7 +102,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             child.gridParent.delete()
             child.gridParent = None
             
-    @report(types = ['deltaStamp', 'avLocation', 'args'], dConfigParam = ['want-connector-report','want-shipboard-report'])
+    @report(types = ['deltaStamp', 'avLocation', 'args'], dConfigParam = ['connector','shipboard'])
     def startProcessVisibility(self, avatar):
         if not self._onOffState:
             # if we've been told that we're OFF, don't try
@@ -124,7 +124,7 @@ class DistributedCartesianGrid(DistributedNode, CartesianGridBase):
             self.processVisibility, self.taskName("processVisibility"))
         self.processVisibility(0)
 
-    @report(types = ['deltaStamp', 'avLocation', 'args'], dConfigParam = ['want-connector-report','want-shipboard-report'])
+    @report(types = ['deltaStamp', 'avLocation', 'args'], dConfigParam = ['connector','shipboard'])
     def stopProcessVisibility(self, clearAll=False, event=None):
         self.ignore(self.cr.StopVisibilityEvent)
         taskMgr.remove(self.taskName("processVisibility"))

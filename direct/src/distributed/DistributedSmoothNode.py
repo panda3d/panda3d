@@ -280,30 +280,30 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
     ### These are the component functions that are invoked
     ### remotely by the above composite functions.
 
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def setComponentX(self, x):
         self.smoother.setX(x)
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def setComponentY(self, y):
         self.smoother.setY(y)
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def setComponentZ(self, z):
         self.smoother.setZ(z)
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def setComponentH(self, h):
         self.smoother.setH(h)
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def setComponentP(self, p):
         self.smoother.setP(p)
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def setComponentR(self, r):
         self.smoother.setR(r)
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def setComponentL(self, l):
         if (l != self.zoneId):
             # only perform set location if location is different
             self.setLocation(self.parentId,l)
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def setComponentT(self, timestamp):
         # This is a little bit hacky.  If *this* function is called,
         # it must have been called directly by the server, for
@@ -328,7 +328,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         # path
         self.forceToTruePosition()
 
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def setComponentTLive(self, timestamp):
         # This is the variant of setComponentT() that will be called
         # whenever we receive a live update directly from the other
@@ -379,7 +379,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
            self.smoother.getLatestPosition():
             self.smoother.applySmoothPosHpr(self, self)
                 
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def clearSmoothing(self, bogus = None):
         # Call this to invalidate all the old position reports
         # (e.g. just before popping to a new position).
@@ -387,7 +387,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         self.smoother.clearPositions(1)
 
 
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def wrtReparentTo(self, parent):
         # We override this NodePath method to force it to
         # automatically reset the smoothing position when we call it.
@@ -403,7 +403,7 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         else:
             NodePath.wrtReparentTo(self, parent)
 
-    @report(types = ['args'], dConfigParam = 'want-smoothnode-report')
+    @report(types = ['args'], dConfigParam = 'smoothnode')
     def d_setParent(self, parentToken):
         # We override this DistributedNode method to force a full position
         # update immediately after the distributed setParent is sent.

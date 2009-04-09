@@ -3134,7 +3134,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             else:
                 dConfigParamList = dConfigParam
             for param in dConfigParamList:
-                if(config.GetBool(param, 0)):
+                if(config.GetBool('want-%s-report' % (param,), 0)):
                     doPrint = True
                     break
 

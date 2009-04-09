@@ -314,7 +314,7 @@ class DoInterestManager(DirectObject.DirectObject):
         assert self.printInterestsIfDebug()
         return existed
 
-    @report(types = ['args'], dConfigParam = 'want-guildmgr-report')
+    @report(types = ['args'], dConfigParam = 'guildmgr')
     def removeAIInterest(self, handle):
         """
         handle is NOT an InterestHandle.  It's just a bare integer representing an
