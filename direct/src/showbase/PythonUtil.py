@@ -1202,11 +1202,11 @@ def extractProfile(*args, **kArgs):
     # restore stdout to what it was before
     sc.destroy()
 
-def getSetterName(valueName, prefix='set'):
+def getSetterName(valueName):
     # getSetterName('color') -> 'setColor'
     # getSetterName('color', 'get') -> 'getColor'
     return '%s%s%s' % (prefix, string.upper(valueName[0]), valueName[1:])
-def getSetter(targetObj, valueName, prefix='set'):
+def getSetter(targetObj, valueName):
     # getSetter(smiley, 'pos') -> smiley.setPos
     return getattr(targetObj, getSetterName(valueName, prefix))
 
@@ -3071,7 +3071,7 @@ class ClassTree:
         return self._getStr()
 
 
-def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigParam = []):
+def report(types = [], xform = None, notifyFunc = None, dConfigParam = []):
     """
     This is a decorator generating function.  Use is similar to
     a @decorator, except you must be sure to call it as a function.
@@ -3117,8 +3117,10 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                   specify this param, it will only print if one of the
                   specified config strings resolve to True.
     """
+
     def decorator(f):
         return f
+    
     try:
         if not (__dev__ or config.GetBool('force-reports', 0)):
             return decorator
@@ -3133,13 +3135,29 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 dConfigParamList = (dConfigParam,)
             else:
                 dConfigParamList = dConfigParam
-            for param in dConfigParamList:
-                if(config.GetBool('want-%s-report' % (param,), 0)):
-                    doPrint = True
-                    break
 
+            dConfigParamList = [param for param in dConfigParamList \
+                                if config.GetBool('want-%s-report' % (param,), 0)]
+                
+            doPrint = bool(dConfigParamList)
+            pass
+        
         if not doPrint:
             return decorator
+
+        # Determine any prefixes defined in our Config.prc.
+        if prefix:
+            prefixes = set([prefix])
+        else:
+            prefixes = set()
+            pass
+        
+        for param in dConfigParamList:
+            prefix = config.GetString('prefix-%s-report' % (param,), '')
+            if prefix:
+                prefixes.add(prefix)
+                pass
+            pass
         
     except NameError,e:
         return decorator
@@ -3166,8 +3184,9 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
 
             outStr = '%s%s' % (f.func_name, rArgs)
 
-            if prefix:
-                outStr = '%s %s' % (prefix, outStr)
+            # Insert prefix place holder, if needed
+            if prefixes:
+                outStr = '%%s %s' % (outStr,)
 
             preStr = ''
 
@@ -3188,11 +3207,18 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
 
             if xform:
                 outStr = '%s : %s' % (outStr, xform(args[0]))
-                
-            if notifyFunc:
-                notifyFunc(outStr)
+
+            if prefixes:
+                for prefix in prefixes:
+                    if notifyFunc:
+                        notifyFunc(outStr % (prefix,))
+                    else:
+                        print outStr % (prefix,)
             else:
-                print outStr
+                if notifyFunc:
+                    notifyFunc(outStr)
+                else:
+                    print outStr
 
             if 'interests' in types:
                 base.cr.printInterestSets()
