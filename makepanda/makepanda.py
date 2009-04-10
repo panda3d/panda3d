@@ -340,7 +340,7 @@ if (COMPILER=="LINUX"):
     else:
       if (PkgSkip("NVIDIACG")==0): LibName("CGGL", "-lCgGL")
       if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCg")
-      if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lpandaopenal")
+      if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lopenal")
       if (PkgSkip("TIFF")==0):     LibName("TIFF", "-ltiff")
     if (PkgSkip("SQUISH")==0):     LibName("SQUISH", "-lsquish")
     if (PkgSkip("FCOLLADA")==0):   LibName("FCOLLADA", "-lFCollada")
@@ -556,6 +556,7 @@ def CompileIgate(woutd,wsrc,opts):
         ConditionalWriteFile(woutd,"")
         return
     cmd = GetOutputDir()+"/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
+    cmd = cmd + ' -Dvolatile -Dmutable'
     if (COMPILER=="MSVC"):
         cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
         #NOTE: this 1500 value is the version number for VC2008.
@@ -829,6 +830,7 @@ DTOOL_CONFIG=[
     ("HAVE_GLOB_H",                    'UNDEF',                  '1'),
     ("HAVE_DIRENT_H",                  'UNDEF',                  '1'),
     ("HAVE_SYS_SOUNDCARD_H",           'UNDEF',                  '1'),
+    ("HAVE_UCONTEXT_H",                'UNDEF',                  '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
     ("IS_OSX",                         'UNDEF',                  'UNDEF'),
@@ -1502,6 +1504,7 @@ TargetAdd('libpandaexpress.dll', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB']
 
 OPTS=['DIR:panda/src/pipeline', 'BUILDING:PANDA']
 TargetAdd('pipeline_composite.obj', opts=OPTS, input='pipeline_composite.cxx')
+TargetAdd('pipeline_contextSwitch.obj', opts=OPTS, input='contextSwitch.c')
 IGATEFILES=GetDirectoryContents('panda/src/pipeline', ["*.h", "*_composite.cxx"])
 TargetAdd('libpipeline.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libpipeline.in', opts=['IMOD:panda', 'ILIB:libpipeline', 'SRCDIR:panda/src/pipeline'])
@@ -1941,6 +1944,7 @@ TargetAdd('libpanda.dll', input='libdgraph_igate.obj')
 TargetAdd('libpanda.dll', input='display_composite.obj')
 TargetAdd('libpanda.dll', input='libdisplay_igate.obj')
 TargetAdd('libpanda.dll', input='pipeline_composite.obj')
+TargetAdd('libpanda.dll', input='pipeline_contextSwitch.obj')
 TargetAdd('libpanda.dll', input='libpipeline_igate.obj')
 TargetAdd('libpanda.dll', input='event_composite.obj')
 TargetAdd('libpanda.dll', input='libevent_igate.obj')
