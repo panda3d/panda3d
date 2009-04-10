@@ -51,7 +51,7 @@ FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
                  const FLOATNAME(LPoint3) &c) {
   FLOATNAME(LVector3) u = b - a;
   FLOATNAME(LVector3) v = c - a;
-  FLOATNAME(LVector3) p = normalize(cross(u, v));
+  FLOATNAME(LVector3) p = ::normalize(cross(u, v));
 
   _v.v._0 = p[0];
   _v.v._1 = p[1];
@@ -68,7 +68,7 @@ FLOATNAME(Plane)(const FLOATNAME(LPoint3) &a, const FLOATNAME(LPoint3) &b,
 INLINE_MATHUTIL FLOATNAME(Plane)::
 FLOATNAME(Plane)(const FLOATNAME(LVector3) &normal, 
                  const FLOATNAME(LPoint3) &point) {
-  FLOATNAME(LVector3) p = normalize(normal);
+  FLOATNAME(LVector3) p = ::normalize(normal);
 
   _v.v._0 = p[0];
   _v.v._1 = p[1];
