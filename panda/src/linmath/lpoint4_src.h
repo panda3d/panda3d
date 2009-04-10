@@ -47,6 +47,7 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATNAME(LPoint4) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LPoint4) operator / (FLOATTYPE scalar) const;
+  INLINE_LINMATH FLOATNAME(LPoint4) project(const FLOATNAME(LVecBase4) &onto) const;
 
 #ifdef HAVE_PYTHON
   INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;

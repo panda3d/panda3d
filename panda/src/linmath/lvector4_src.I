@@ -176,49 +176,6 @@ operator - (const FLOATNAME(LVector4) &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LVector4::length
-//       Access: Public
-//  Description: Returns the length of the vector, by the Pythagorean
-//               theorem.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATTYPE FLOATNAME(LVector4)::
-length() const {
-  return csqrt((*this).dot(*this));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVector4::length_squared
-//       Access: Public
-//  Description: Returns the square of the vector's length, cheap and
-//               easy.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH FLOATTYPE FLOATNAME(LVector4)::
-length_squared() const {
-  return (*this).dot(*this);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: LVector4::normalize
-//       Access: Public
-//  Description: Normalizes the vector in place.  Returns true if the
-//               vector was normalized, false if it was a zero-length
-//               vector.
-////////////////////////////////////////////////////////////////////
-INLINE_LINMATH bool FLOATNAME(LVector4)::
-normalize() {
-  FLOATTYPE l2 = length_squared();
-  if (l2 == (FLOATTYPE)0.0f) {
-    set(0.0f, 0.0f, 0.0f, 0.0f);
-    return false;
-
-  } else if (!IS_THRESHOLD_EQUAL(l2, 1.0f, NEARLY_ZERO(FLOATTYPE) * NEARLY_ZERO(FLOATTYPE))) {
-    (*this) /= csqrt(l2);
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: LVector4::operator * scalar
 //       Access: Public
 //  Description:
@@ -237,6 +194,18 @@ INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
 operator / (FLOATTYPE scalar) const {
   FLOATTYPE recip_scalar = 1.0f/scalar;
   return FLOATNAME(LVector4)(FLOATNAME(LVecBase4)::operator * (recip_scalar));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LVector4::project
+//       Access: Published
+//  Description: Returns a new vector representing the projection of
+//               this vector onto another one.  The resulting vector
+//               will be a scalar multiple of onto.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector4) FLOATNAME(LVector4)::
+project(const FLOATNAME(LVecBase4) &onto) const {
+  return FLOATNAME(LVecBase4)::project(onto);
 }
 
 #ifdef HAVE_PYTHON

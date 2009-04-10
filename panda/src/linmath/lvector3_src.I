@@ -209,6 +209,18 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVector3::project
+//       Access: Published
+//  Description: Returns a new vector representing the projection of
+//               this vector onto another one.  The resulting vector
+//               will be a scalar multiple of onto.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVector3) FLOATNAME(LVector3)::
+project(const FLOATNAME(LVecBase3) &onto) const {
+  return FLOATNAME(LVecBase3)::project(onto);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVector::angle_rad
 //       Access: Published
 //  Description: Returns the unsigned angle between this vector and

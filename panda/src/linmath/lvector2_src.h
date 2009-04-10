@@ -37,12 +37,10 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase2) operator - (const FLOATNAME(LVecBase2) &other) const;
   INLINE_LINMATH FLOATNAME(LVector2) operator - (const FLOATNAME(LVector2) &other) const;
 
-  INLINE_LINMATH FLOATTYPE length() const;
-  INLINE_LINMATH FLOATTYPE length_squared() const;
-  INLINE_LINMATH bool normalize();
   INLINE_LINMATH FLOATNAME(LVector2) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LVector2) operator / (FLOATTYPE scalar) const;
 
+  INLINE_LINMATH FLOATNAME(LVector2) project(const FLOATNAME(LVecBase2) &onto) const;
   INLINE_LINMATH FLOATTYPE signed_angle_rad(const FLOATNAME(LVector2) &other) const;
   INLINE_LINMATH FLOATTYPE signed_angle_deg(const FLOATNAME(LVector2) &other) const;
 

@@ -78,7 +78,12 @@ PUBLISHED:
   INLINE_LINMATH void fill(FLOATTYPE fill_value);
   INLINE_LINMATH void set(FLOATTYPE x, FLOATTYPE y);
 
+  INLINE_LINMATH FLOATTYPE length() const;
+  INLINE_LINMATH FLOATTYPE length_squared() const;
+  INLINE_LINMATH bool normalize();
+
   INLINE_LINMATH FLOATTYPE dot(const FLOATNAME(LVecBase2) &other) const;
+  INLINE_LINMATH FLOATNAME(LVecBase2) project(const FLOATNAME(LVecBase2) &onto) const;
 
   INLINE_LINMATH bool operator < (const FLOATNAME(LVecBase2) &other) const;
   INLINE_LINMATH bool operator == (const FLOATNAME(LVecBase2) &other) const;

@@ -512,6 +512,18 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LVecBase3::project
+//       Access: Published
+//  Description: Returns a new vector representing the projection of
+//               this vector onto another one.  The resulting vector
+//               will be a scalar multiple of onto.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LVecBase3) FLOATNAME(LVecBase3)::
+project(const FLOATNAME(LVecBase3) &onto) const {
+  return onto * (dot(onto) / onto.length_squared());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LVecBase3::operator <
 //       Access: Published
 //  Description: This performs a lexicographical comparison.  It's of

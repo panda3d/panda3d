@@ -89,6 +89,7 @@ PUBLISHED:
 
   INLINE_LINMATH FLOATTYPE dot(const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH FLOATNAME(LVecBase3) cross(const FLOATNAME(LVecBase3) &other) const;
+  INLINE_LINMATH FLOATNAME(LVecBase3) project(const FLOATNAME(LVecBase3) &onto) const;
 
   INLINE_LINMATH bool operator < (const FLOATNAME(LVecBase3) &other) const;
   INLINE_LINMATH bool operator == (const FLOATNAME(LVecBase3) &other) const;

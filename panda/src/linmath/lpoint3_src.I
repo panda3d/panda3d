@@ -219,6 +219,18 @@ cross(const FLOATNAME(LVecBase3) &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: LPoint3::project
+//       Access: Published
+//  Description: Returns a new vector representing the projection of
+//               this vector onto another one.  The resulting vector
+//               will be a scalar multiple of onto.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint3) FLOATNAME(LPoint3)::
+project(const FLOATNAME(LVecBase3) &onto) const {
+  return FLOATNAME(LVecBase3)::project(onto);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: LPoint3::operator * scalar
 //       Access: Public
 //  Description:

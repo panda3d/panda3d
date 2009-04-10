@@ -185,6 +185,18 @@ operator / (FLOATTYPE scalar) const {
   return FLOATNAME(LPoint2)(FLOATNAME(LVecBase2)::operator / (scalar));
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LPoint2::project
+//       Access: Published
+//  Description: Returns a new vector representing the projection of
+//               this vector onto another one.  The resulting vector
+//               will be a scalar multiple of onto.
+////////////////////////////////////////////////////////////////////
+INLINE_LINMATH FLOATNAME(LPoint2) FLOATNAME(LPoint2)::
+project(const FLOATNAME(LVecBase2) &onto) const {
+  return FLOATNAME(LVecBase2)::project(onto);
+}
+
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: LPoint2::python_repr

@@ -55,6 +55,7 @@ PUBLISHED:
   operator - (const FLOATNAME(LVector3) &other) const;
 
   INLINE_LINMATH FLOATNAME(LPoint3) cross(const FLOATNAME(LVecBase3) &other) const;
+  INLINE_LINMATH FLOATNAME(LPoint3) project(const FLOATNAME(LVecBase3) &onto) const;
   INLINE_LINMATH FLOATNAME(LPoint3) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LPoint3) operator / (FLOATTYPE scalar) const;
 

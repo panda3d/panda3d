@@ -39,11 +39,10 @@ PUBLISHED:
   INLINE_LINMATH FLOATNAME(LVecBase4) operator - (const FLOATNAME(LVecBase4) &other) const;
   INLINE_LINMATH FLOATNAME(LVector4)  operator - (const FLOATNAME(LVector4) &other) const;
 
-  INLINE_LINMATH FLOATTYPE length() const;
-  INLINE_LINMATH FLOATTYPE length_squared() const;
-  INLINE_LINMATH bool normalize();
   INLINE_LINMATH FLOATNAME(LVector4) operator * (FLOATTYPE scalar) const;
   INLINE_LINMATH FLOATNAME(LVector4) operator / (FLOATTYPE scalar) const;
+
+  INLINE_LINMATH FLOATNAME(LVector4) project(const FLOATNAME(LVecBase4) &onto) const;
 
 #ifdef HAVE_PYTHON
   INLINE_LINMATH void python_repr(ostream &out, const string &class_name) const;
