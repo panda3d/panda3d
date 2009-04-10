@@ -70,6 +70,9 @@ AsyncTask(const string &name) :
 AsyncTask::
 ~AsyncTask() {
   nassertv(_state == S_inactive && _manager == NULL && _chain == NULL);
+#ifdef HAVE_PYTHON
+  set_python_object(NULL);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
