@@ -23,7 +23,7 @@
 
 // What additional flags should we pass to interrogate?
 #if $[eq $[shell uname -m], x86_64] // if Linux is 64bit
-  #define SYSTEM_IGATE_FLAGS -D_LP64
+  #define SYSTEM_IGATE_FLAGS -D_LP64 -D__const=const -Dvolatile -Dmutable
 #else
   #define SYSTEM_IGATE_FLAGS -D__i386__ -D__const=const -Dvolatile -Dmutable
 #endif
