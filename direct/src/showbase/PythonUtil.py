@@ -1202,11 +1202,11 @@ def extractProfile(*args, **kArgs):
     # restore stdout to what it was before
     sc.destroy()
 
-def getSetterName(valueName):
+def getSetterName(valueName, prefix='set'):
     # getSetterName('color') -> 'setColor'
     # getSetterName('color', 'get') -> 'getColor'
     return '%s%s%s' % (prefix, string.upper(valueName[0]), valueName[1:])
-def getSetter(targetObj, valueName):
+def getSetter(targetObj, valueName, prefix='set'):
     # getSetter(smiley, 'pos') -> smiley.setPos
     return getattr(targetObj, getSetterName(valueName, prefix))
 
@@ -3071,7 +3071,7 @@ class ClassTree:
         return self._getStr()
 
 
-def report(types = [], xform = None, notifyFunc = None, dConfigParam = []):
+def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigParam = []):
     """
     This is a decorator generating function.  Use is similar to
     a @decorator, except you must be sure to call it as a function.
