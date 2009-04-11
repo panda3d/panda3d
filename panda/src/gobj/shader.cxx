@@ -1371,9 +1371,10 @@ cg_compile_for(const ShaderCaps &caps,
   // If the compile routine used the ultimate profile instead of the
   // active one, it means the active one isn't powerful enough to
   // compile the shader.
+  // This does not apply when a custom profile is set.
   
-  if ((cgGetProgramProfile(_cg_vprogram) != caps._active_vprofile)||
-      (cgGetProgramProfile(_cg_fprogram) != caps._active_fprofile)) {
+  if ((_cg_vprofile == CG_PROFILE_UNKNOWN && cgGetProgramProfile(_cg_vprogram) != caps._active_vprofile) ||
+      (_cg_fprofile == CG_PROFILE_UNKNOWN && cgGetProgramProfile(_cg_fprogram) != caps._active_fprofile)) {
     gobj_cat.error() << "Cg program too complex for driver: "
       << get_filename() << ". Try choosing a different profile.\n";
     return false;
