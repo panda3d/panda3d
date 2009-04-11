@@ -3769,6 +3769,7 @@ def MakeInstallerOSX():
                   if len(line.strip()) > 0:
                       libname = line.strip().split(GetOutputDir()+"/lib/")[1].split(" ")[0]
                       oscmd("install_name_tool -change %s/lib/%s %s %s%s" % (GetOutputDir(), libname, libname, bindir, fn), True)
+              oscmd("chmod +x %s%s" % (bindir, fn), True)
       for fn in os.listdir(libdir):
           if os.path.isfile(libdir + fn):
               oscmd("install_name_tool -id %s %s%s" % (fn, libdir, fn), True)
@@ -3777,6 +3778,7 @@ def MakeInstallerOSX():
                   if len(line.strip()) > 0:
                       libname = line.strip().split(GetOutputDir()+"/lib/")[1].split(" ")[0]
                       oscmd("install_name_tool -change %s/lib/%s %s %s%s" % (GetOutputDir(), libname, libname, libdir, fn), True)
+              oscmd("chmod +x %s%s" % (libdir, fn), True)
       # Compile the python files
       for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct"):
           if ((base != "extensions") and (base != "extensions_native")):
