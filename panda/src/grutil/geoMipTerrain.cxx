@@ -107,21 +107,18 @@ generate_block(unsigned short mx,
 
   // This is the number of vertices at the certain level.
   unsigned short lowblocksize = _block_size / level + 1;
-srand(time(NULL));  
+  
   for (int x = 0; x <= _block_size; x++) {
     for (int y = 0; y <= _block_size; y++) {
       if ((x % level) == 0 && (y % level) == 0) {
         if (_has_color_map) {
-          //LVecBase4d color = _color_map.get_xel_a(int((mx * _block_size + x)
-                                  /// double(_xsize) * _color_map.get_x_size()),
-//                                                      int((my * _block_size + y)
-//                                  / double(_ysize) * _color_map.get_y_size()));
-          //cwriter.add_data4f(LCAST(float, color));
-
-          cwriter.add_data4f(rand() / float(RAND_MAX), rand() / float(RAND_MAX), rand() / float(RAND_MAX), 1);
+          LVecBase4d color = _color_map.get_xel_a(int((mx * _block_size + x)
+                                  / double(_xsize) * _color_map.get_x_size()),
+                                                      int((my * _block_size + y)
+                                  / double(_ysize) * _color_map.get_y_size()));
+          cwriter.add_data4f(LCAST(float, color));
         }
-        float pval = get_pixel_value(mx, my, x, y);
-        vwriter.add_data3f(x - 0.5 * _block_size, y - 0.5 * _block_size, pval);
+        vwriter.add_data3f(x - 0.5 * _block_size, y - 0.5 * _block_size, get_pixel_value(mx, my, x, y));
         twriter.add_data2f((mx * _block_size + x) / double(_xsize - 1),
                            (my * _block_size + y) / double(_ysize - 1));
         nwriter.add_data3f(get_normal(mx, my, x, y));
