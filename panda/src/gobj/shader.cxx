@@ -1064,10 +1064,10 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, bool fshader)
     }
     if (fshader) {
       gobj_cat.error() << "Fragment shader failed to compile with profile '"
-        << cgGetProfileString((CGprofile)override) << "!\n";
+        << cgGetProfileString((CGprofile)override) << "'!\n";
     } else {
       gobj_cat.error() << "Vertex shader failed to compile with profile '"
-        << cgGetProfileString((CGprofile)override) << "!\n";
+        << cgGetProfileString((CGprofile)override) << "'!\n";
     }
     return 0;
   }
@@ -1374,7 +1374,7 @@ cg_compile_for(const ShaderCaps &caps,
   
   if ((cgGetProgramProfile(_cg_vprogram) != caps._active_vprofile)||
       (cgGetProgramProfile(_cg_fprogram) != caps._active_fprofile)) {
-    gobj_cat.error() << "Cg program too complex for driver:"
+    gobj_cat.error() << "Cg program too complex for driver: "
       << get_filename() << ". Try choosing a different profile.\n";
     return false;
   }
