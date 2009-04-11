@@ -1,6 +1,5 @@
 // Filename: geoMipTerrain.h
 // Created by:  pro-rsoft (29jun07)
-// Last updated by: pro-rsoft (25sep08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -44,8 +43,7 @@ PUBLISHED:
   INLINE ~GeoMipTerrain();
   
   INLINE PNMImage &heightfield();
-  INLINE bool set_heightfield(const Filename &filename,
-                                    PNMFileType *type = NULL);
+  bool set_heightfield(const Filename &filename, PNMFileType *type = NULL);
   INLINE bool set_heightfield(const PNMImage &image);
   INLINE bool set_heightfield(const string &path);
   INLINE PNMImage &color_map();
@@ -104,6 +102,8 @@ PUBLISHED:
   INLINE const NodePath get_block_node_path(unsigned short mx,
                                             unsigned short my);
   INLINE LVecBase2f get_block_from_pos(double x, double y);
+  INLINE void set_border_stitching(bool stitching);
+  INLINE bool get_border_stitching();
   
   PNMImage make_slope_image();
   void generate();
@@ -118,8 +118,6 @@ private:
   void auto_flatten();
   bool root_flattened();
   
-  INLINE std::string int_to_str(int i);
-  INLINE int str_to_int(std::string str);
   INLINE bool is_power_of_two(unsigned int i);
   INLINE float f_part(float i);
   INLINE double f_part(double i);
@@ -127,6 +125,7 @@ private:
   INLINE double get_pixel_value(int x, int y);
   INLINE double get_pixel_value(unsigned short mx, unsigned short my, int x, int y);
   INLINE unsigned short lod_decide(unsigned short mx, unsigned short my);
+  unsigned short get_neighbor_level(unsigned short mx, unsigned short my, short dmx, short dmy);
   
   NodePath _root;
   int _auto_flatten;
@@ -147,6 +146,7 @@ private:
   NodePath _focal_point;
   bool _focal_is_temporary;
   unsigned short _min_level;
+  bool _stitching;
   pvector<pvector<NodePath> > _blocks;
   pvector<pvector<unsigned short> > _levels;
   pvector<pvector<unsigned short> > _old_levels;

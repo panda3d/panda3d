@@ -1,6 +1,5 @@
 // Filename: geoMipTerrain.I
 // Created by:  pro-rsoft (29jun07)
-// Last updated by: pro-rsoft (30oct08)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -40,6 +39,7 @@ GeoMipTerrain(const string &name) {
   _focal_is_temporary = true;
   _is_dirty = true;
   _bruteforce = false;
+  _stitching = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -421,45 +421,6 @@ lod_decide(unsigned short mx, unsigned short my) {
 //               it is scaled up using a gaussian filter.
 ////////////////////////////////////////////////////////////////////
 INLINE bool GeoMipTerrain::
-set_heightfield(const Filename &filename, PNMFileType *ftype) {
-  // First, we need to load the header to determine the size and format.
-  PNMImageHeader imgheader;
-  if (imgheader.read_header(filename, ftype)) {
-    // Copy over the header to the heightfield image.
-    _heightfield.copy_header_from(imgheader);
-    
-    if(!is_power_of_two(imgheader.get_x_size() - 1) || !is_power_of_two(imgheader.get_y_size() - 1)) {
-      // Calculate the nearest power-of-two-plus-one size.
-      unsigned int reqx, reqy;
-      reqx = max(3, (int) pow(2.0, ceil(log((double) max(2, imgheader.get_x_size() - 1)) / log(2.0))) + 1);
-      reqy = max(3, (int) pow(2.0, ceil(log((double) max(2, imgheader.get_y_size() - 1)) / log(2.0))) + 1);
-      
-      // If it's not a valid size, tell PNMImage to resize it.
-      if (reqx != imgheader.get_x_size() || reqy != imgheader.get_y_size()) {
-        grutil_cat.warning() << "Rescaling heightfield image " << filename << " to "
-                                             << reqx << " by " << reqy << " pixels\n";
-        _heightfield.set_read_size(reqx, reqy);
-      }
-    }
-    
-    // Read the real image now
-    if (!_heightfield.read(filename, ftype)) {
-      _heightfield.clear_read_size();
-      grutil_cat.error() << "Failed to read heightfield image " << filename << "!\n";
-      return false;
-    }
-    
-    _is_dirty = true;
-    _xsize = _heightfield.get_x_size();
-    _ysize = _heightfield.get_y_size();
-    return true;
-  } else {
-    grutil_cat.error() << "Failed to load heightfield image " << filename << "!\n";
-  }
-  return false;
-}
-
-INLINE bool GeoMipTerrain::
 set_heightfield(const PNMImage &image) {
   // Before we apply anything, validate the size.
   if(is_power_of_two(image.get_x_size() - 1) && is_power_of_two(image.get_y_size() - 1)) {
@@ -542,6 +503,37 @@ clear_color_map() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GeoMipTerrain::set_border_stitching
+//       Access: Published
+//  Description: If this value is true, the LOD level at the
+//               borders of the terrain will be 0. This is useful
+//               if you have multiple terrains attached and you
+//               want to stitch them together, to fix seams.
+//               This setting also has effect when bruteforce is
+//               enabled, although in that case you are probably
+//               better off with setting the minlevels to the same
+//               value.
+////////////////////////////////////////////////////////////////////
+INLINE void GeoMipTerrain::
+set_border_stitching(bool stitching) {
+  if (stitching && !_stitching) {
+    _is_dirty = true;
+  }
+  _stitching = stitching;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GeoMipTerrain::get_stitching
+//       Access: Published
+//  Description: Returns the current stitching setting. False by
+//               default, unless set_stitching has been set.
+////////////////////////////////////////////////////////////////////
+INLINE bool GeoMipTerrain::
+get_border_stitching() {
+  return _stitching;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GeoMipTerrain::get_pixel_value
 //       Access: Private
 //  Description: Get the elevation at a certain pixel of the image.
@@ -585,33 +577,6 @@ get_normal(unsigned short mx, unsigned short my, int x, int y) {
   nassertr_always(my < (_ysize - 1) / _block_size, false);
   return get_normal(mx * _block_size + x, (_ysize - 1) -
                     (my * _block_size + y));
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::int2str
-//       Access: Private
-//  Description: Converts the given int to a std::string.
-////////////////////////////////////////////////////////////////////
-INLINE std::string GeoMipTerrain::
-int_to_str(int i) {
-  std::stringstream ss;
-  std::string str;
-  ss << i;
-  ss >> str;
-  return str;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: GeoMipTerrain::str2int
-//       Access: Private
-//  Description: Converts the given std::string to an int.
-////////////////////////////////////////////////////////////////////
-INLINE int GeoMipTerrain::
-str_to_int(std::string str) {
-  std::istringstream strin(str);
-  int i;
-  strin >> i;
-  return i;
 }
 
 ////////////////////////////////////////////////////////////////////
