@@ -150,11 +150,11 @@ class FilterManager(DirectObject):
           offscreen buffer.  A shader is applied that tints the
           results pink.
 
-        * Automatic shader generation is enabled by default for
-          the main camera.  You can override this by setting
-          shaders on individual nodes, or on the root of your
-          scene graph, but if you do, your own shaders need to
-          generate the outputs that the filter manager is expecting.
+        * Automatic shader generation NOT enabled.
+          If you have a filter that depends on a render target from
+          the auto-shader, you either need to set an auto-shader
+          attrib on the main camera or scene, or, you need to provide
+          these outputs in your own shader.
 
         * All clears are disabled on the original display region.
           If the display region fills the whole window, then clears
