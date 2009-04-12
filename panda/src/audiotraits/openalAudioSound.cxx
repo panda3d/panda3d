@@ -630,6 +630,9 @@ get_balance() const {
 void OpenALAudioSound::
 set_play_rate(float play_rate) {
   _play_rate = play_rate;
+  if (_source) {
+    alSourcef(_source, AL_PITCH, play_rate);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
