@@ -62,13 +62,24 @@ get_body2() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OdeCollisionEntry::get_num_contact_points
+//     Function: OdeCollisionEntry::get_num_contacts
 //       Access: Published
-//  Description: Returns the number of contact points.
+//  Description: Returns the number of contacts in the collision.
 ////////////////////////////////////////////////////////////////////
 INLINE const size_t OdeCollisionEntry::
-get_num_contact_points() {
-  return _num_points;
+get_num_contacts() {
+  return _num_contacts;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: OdeCollisionEntry::get_contact_geom
+//       Access: Published
+//  Description: Returns the nth contact geom in the collision.
+////////////////////////////////////////////////////////////////////
+INLINE const OdeContactGeom OdeCollisionEntry::
+get_contact_geom(size_t n) {
+  nassertr(n >= 0 && n < _num_contacts, OdeContactGeom());
+  return _contact_geoms[n];
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,7 +89,7 @@ get_num_contact_points() {
 ////////////////////////////////////////////////////////////////////
 INLINE const LPoint3f OdeCollisionEntry::
 get_contact_point(size_t n) {
-  nassertr(n >= 0 && n < _num_points, LPoint3f::zero());
-  return _points[n];
+  nassertr(n >= 0 && n < _num_contacts, LPoint3f::zero());
+  return _contact_geoms[n].get_pos();
 }
 

@@ -206,8 +206,8 @@ auto_callback(void *data, dGeomID o1, dGeomID o2) {
       entry->_geom2 = o2;
       entry->_body1 = b1;
       entry->_body2 = b2;
-      entry->_num_points = numc;
-      entry->_points = new LPoint3f[numc];
+      entry->_num_contacts = numc;
+      entry->_contact_geoms = new OdeContactGeom[numc];
     }
     
     for(i=0; i < numc; i++) {
@@ -216,9 +216,7 @@ auto_callback(void *data, dGeomID o1, dGeomID o2) {
         dJointAttach(c, b1, b2);
       }
       if (!_collide_space->_collision_event.empty()) {
-        entry->_points[i][0] = contact[i].geom.pos[0];
-        entry->_points[i][1] = contact[i].geom.pos[1];
-        entry->_points[i][2] = contact[i].geom.pos[2];
+        entry->_contact_geoms[i] = contact[i].geom;
       }
       // this creates contact position data for python. It is useful for debugging only 64 points are stored
       if(contactCount < 64) {

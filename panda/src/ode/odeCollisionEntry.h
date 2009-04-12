@@ -18,7 +18,7 @@
 #include "pandabase.h"
 #include "typedReferenceCount.h"
 
-class OdeGeom;
+#include "odeContactGeom.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeCollisionEntry
@@ -27,23 +27,25 @@ class OdeGeom;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeCollisionEntry : public TypedReferenceCount {
 PUBLISHED:
-  virtual ~OdeCollisionEntry() {};
+  virtual ~OdeCollisionEntry();
   
   INLINE const OdeGeom get_geom1();
   INLINE const OdeGeom get_geom2();
   INLINE const OdeBody get_body1();
   INLINE const OdeBody get_body2();
   
+  INLINE const size_t get_num_contacts();
   INLINE const LPoint3f get_contact_point(size_t n);
-  INLINE const size_t get_num_contact_points();
-  MAKE_SEQ(get_contact_points, get_num_contact_points, get_contact_point);
+  INLINE const OdeContactGeom get_contact_geom(size_t n);
+  MAKE_SEQ(get_contact_points, get_num_contacts, get_contact_point);
+  MAKE_SEQ(get_contact_geoms, get_num_contacts, get_contact_geom);
 
 private:
   INLINE OdeCollisionEntry();
   dGeomID _geom1, _geom2;
   dBodyID _body1, _body2;
-  size_t _num_points;
-  LPoint3f *_points;
+  size_t _num_contacts;
+  OdeContactGeom *_contact_geoms;
 
 public:
   static TypeHandle get_class_type() {

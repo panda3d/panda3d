@@ -22,12 +22,15 @@
 #include "ode_includes.h"
 #include "odeGeom.h"
 
+class OdeSpace;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeContactGeom
 // Description : 
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAODE OdeContactGeom : public TypedReferenceCount {
   friend class OdeContact;
+  friend class OdeSpace;
 
 PUBLISHED:
   OdeContactGeom();
