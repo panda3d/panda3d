@@ -31,7 +31,7 @@ OdeContactGeom(const OdeContactGeom &copy) :
 OdeContactGeom::
 OdeContactGeom(const dContactGeom &copy) : 
   _contact_geom() {
-  *this = _contact_geom;
+  *this = copy;
 }
 
 OdeContactGeom::
