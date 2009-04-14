@@ -191,3 +191,8 @@ convert_to_quad_tree_space() const {
   return OdeQuadTreeSpace((dSpaceID)_id);
 }
 
+OdeGeom::
+operator bool () const {
+  return (_id != NULL);
+}
+

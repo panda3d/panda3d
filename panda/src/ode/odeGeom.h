@@ -120,6 +120,7 @@ PUBLISHED:
   OdeSpace get_space() const;
 
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
+  operator bool () const;
   INLINE int compare_to(const OdeGeom &other) const;
 
   OdeBoxGeom convert_to_box() const;
