@@ -11,5 +11,4 @@
 #include "odeSurfaceParameters.cxx"
 #include "odeContactGeom.cxx"
 #include "odeContact.cxx"
-#include "odeContactCollection.cxx"
 

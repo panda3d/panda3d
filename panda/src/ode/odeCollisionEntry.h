@@ -20,6 +20,8 @@
 
 #include "odeContactGeom.h"
 
+class OdeUtil;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeCollisionEntry
 // Description : A class used to hold information about a collision
@@ -29,16 +31,20 @@ class EXPCL_PANDAODE OdeCollisionEntry : public TypedReferenceCount {
 PUBLISHED:
   virtual ~OdeCollisionEntry();
   
-  INLINE const OdeGeom get_geom1();
-  INLINE const OdeGeom get_geom2();
-  INLINE const OdeBody get_body1();
-  INLINE const OdeBody get_body2();
+  INLINE const OdeGeom get_geom1() const;
+  INLINE const OdeGeom get_geom2() const;
+  INLINE const OdeBody get_body1() const;
+  INLINE const OdeBody get_body2() const;
   
-  INLINE const size_t get_num_contacts();
-  INLINE const LPoint3f get_contact_point(size_t n);
-  INLINE const OdeContactGeom get_contact_geom(size_t n);
+  INLINE const size_t get_num_contacts() const;
+  INLINE const LPoint3f get_contact_point(size_t n) const;
+  INLINE const OdeContactGeom get_contact_geom(size_t n) const;
+  INLINE const OdeContactGeom operator [] (size_t n) const;
   MAKE_SEQ(get_contact_points, get_num_contacts, get_contact_point);
   MAKE_SEQ(get_contact_geoms, get_num_contacts, get_contact_geom);
+  
+  INLINE operator bool () const;
+  INLINE bool is_empty() const;
 
 private:
   INLINE OdeCollisionEntry();
@@ -66,6 +72,7 @@ private:
   static TypeHandle _type_handle;
 
   friend class OdeSpace;
+  friend class OdeUtil;
 };
 
 #include "odeCollisionEntry.I"

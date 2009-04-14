@@ -23,6 +23,7 @@
 #include "odeGeom.h"
 
 class OdeSpace;
+class OdeUtil;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : OdeContactGeom
@@ -31,6 +32,7 @@ class OdeSpace;
 class EXPCL_PANDAODE OdeContactGeom : public TypedReferenceCount {
   friend class OdeContact;
   friend class OdeSpace;
+  friend class OdeUtil;
 
 PUBLISHED:
   OdeContactGeom();

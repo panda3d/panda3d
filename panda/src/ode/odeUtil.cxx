@@ -94,21 +94,25 @@ are_connected_excluding(const OdeBody &body1,
 //       Access: Public, Static
 //  Description: Given two geometry objects that potentially touch
 //               (geom1 and geom2), generate contact information
-//               for them. Returns a collection of OdeContacts.
+//               for them. Returns an OdeCollisionEntry.
 ////////////////////////////////////////////////////////////////////
-OdeContactCollection OdeUtil::
+PT(OdeCollisionEntry) OdeUtil::
 collide(const OdeGeom &geom1, const OdeGeom &geom2, const short int max_contacts) {
   dContactGeom *contact_list = (dContactGeom *)PANDA_MALLOC_ARRAY(max_contacts * sizeof(dContactGeom));
   int num_contacts = dCollide(geom1.get_id(), geom2.get_id(), max_contacts, contact_list, sizeof(contact_list));
-  OdeContactCollection contacts;
+  PT(OdeCollisionEntry) entry = new OdeCollisionEntry();
+  entry->_geom1 = geom1.get_id();
+  entry->_geom2 = geom2.get_id();
+  entry->_body1 = dGeomGetBody(geom1.get_id());
+  entry->_body2 = dGeomGetBody(geom2.get_id());
+  entry->_num_contacts = num_contacts;
+  entry->_contact_geoms = new OdeContactGeom[num_contacts];
   for (int i = 0; i < num_contacts; i++) {
-    PT(OdeContact) contact = new OdeContact();
-    contact->set_geom(OdeContactGeom(contact_list[i]));
-    contacts.add_contact(contact);
+    entry->_contact_geoms[i] = contact_list[i];
   }
   
   PANDA_FREE_ARRAY(contact_list);
-  return contacts;
+  return entry;
 }
 
 #ifdef HAVE_PYTHON
@@ -153,3 +157,4 @@ OdeGeom OdeUtil::
 space_to_geom(const OdeSpace &space) {
   return OdeGeom((dGeomID)space.get_id());
 }
+
