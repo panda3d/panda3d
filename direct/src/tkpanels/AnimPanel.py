@@ -406,14 +406,14 @@ class ActorControl(Pmw.MegaWidget):
         self._label.pack(side = LEFT, fill = X)
 
         # Combo box to select current animation
-        animMenu = self.createcomponent(
+        self.animMenu = self.createcomponent(
             'animMenu', (), None,
             Pmw.ComboBox, (interior,),
             labelpos = W, label_text = 'Anim:',
             entry_width = 12, selectioncommand = self.selectAnimNamed,
             scrolledlist_items = self['animList'])
-        animMenu.selectitem(self['active'])
-        animMenu.pack(side = 'left', padx = 5, expand = 0)
+        self.animMenu.selectitem(self['active'])
+        self.animMenu.pack(side = 'left', padx = 5, expand = 0)
 
         # Combo box to select frame rate
         playRateList = ['1/24.0', '0.1', '0.5', '1.0', '2.0', '5.0', '10.0']
