@@ -25,9 +25,7 @@
 #include "xFileToEggConverter.h"
 
 #ifdef HAVE_FCOLLADA
-#ifndef WIN32
 #include "daeToEggConverter.h"
-#endif
 #endif
 
 #include "dconfig.h"
@@ -86,10 +84,8 @@ init_libptloader() {
   reg->register_type(new LoaderFileTypePandatool(xfile));
 
 #ifdef HAVE_FCOLLADA
-#ifndef WIN32
   DAEToEggConverter *dae = new DAEToEggConverter;
   reg->register_type(new LoaderFileTypePandatool(dae));
-#endif
 #endif
 
 #ifdef HAVE_MAYA
