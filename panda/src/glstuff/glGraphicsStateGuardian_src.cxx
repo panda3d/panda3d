@@ -3513,17 +3513,10 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
 
   if (new_image) {
     // We have to create a new image.
-    if (w != width || h != height) {
-      // This means a two-step process, to create a texture of the
-      // appropriate size.
-      GLP(TexImage2D)(target, 0, internal_format, width, height, 0,
-                      GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-      GLP(CopyTexSubImage2D)(target, 0, 0, 0, xo, yo, w, h);
-
-    } else {
-      // One-step process.
-      GLP(CopyTexImage2D)(target, 0, internal_format, xo, yo, w, h, 0);
-    }
+    // It seems that OpenGL accepts a size higher than the framebuffer,
+    // but if we run into trouble we'll have to replace this with
+    // something smarter.
+    GLP(CopyTexImage2D)(target, 0, internal_format, xo, yo, w, h, 0);
   } else {
     // We can overlay the existing image.
     GLP(CopyTexSubImage2D)(target, 0, 0, 0, xo, yo, w, h);
