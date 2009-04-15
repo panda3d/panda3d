@@ -102,9 +102,9 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
 
   // We only collide with things we are impacting with.
   // Remove the collisions:
-  _current_colliding.clear();
+  //_current_colliding.clear();
   // Add only the one that we're impacting with:
-  add_entry(highest);
+  // add_entry(highest);
   
   return max_height;
 }
@@ -172,9 +172,9 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   
   // We only collide with things we are impacting with.
   // Remove the collisions:
-  _current_colliding.clear();
+  //_current_colliding.clear();
   // Add only the one that we're impacting with:
-  add_entry(highest);
+  //add_entry(highest);
   
   // Set the contact normal so that other code can make use of the
   // surface slope:
