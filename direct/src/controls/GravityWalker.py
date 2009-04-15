@@ -189,6 +189,7 @@ class GravityWalker(DirectObject.DirectObject):
         self.lifter = CollisionHandlerGravity()
         self.lifter.setGravity(self.__gravity)
         self.lifter.addInPattern("enter%in")
+        self.lifter.addAgainPattern("again%in")
         self.lifter.addOutPattern("exit%in")
         self.lifter.setOffset(floorOffset)
         self.lifter.setReach(reach)
