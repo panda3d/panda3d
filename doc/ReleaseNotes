@@ -1,3 +1,26 @@
+------------------------  RELEASE 1.6.1  ------------------------
+
+This release fixes some bugs found in 1.6.0, and adds some
+minor features as well.
+
+* Threading layer is now enabled by default
+* cTrav.showCollisions fixed
+* Fixed broken MovieTexture
+* OpenAL is now stable on Linux, too
+* OpenAL now supports dynamic playrate changing
+* MayaPandaTool now handles NURBS correctly
+* Fixed particle panel and directtools bugs
+* Fix crash with collada exporter on Windows
+* ARToolkit jittering fixed
+* Now possible to override shader vertex/fragment profiles
+* Fixed depth texture crash for padded textures
+* Fixed bug that made OdeUtil.collide return empty geoms
+* Several improvements to the ODE layer
+* Performance improvements to GeoMipTerrain
+* GeoMipTerrain.setBorderStitching to fix seams between terrains
+* installpanda.py for installing Panda on Linux without deb/rpm
+* Several other minor bugfixes
+
 ------------------------  RELEASE 1.6.0  ------------------------
 
 This release introduces several major new features and
