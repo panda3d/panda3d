@@ -87,6 +87,7 @@ MsgName2Id = {
     'CLIENT_SET_FIELD_SENDABLE':                     120,
     
     'CLIENT_SYSTEMMESSAGE_AKNOWLEDGE':               123,
+    'CLIENT_CHANGE_GENERATE_ORDER':               124,
     }
 
 # create id->name table for debugging
