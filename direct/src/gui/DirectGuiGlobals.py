@@ -137,7 +137,7 @@ def setDefaultFontFunc(newFontFunc):
 def getDefaultDialogGeom():
     global defaultDialogGeom
     if defaultDialogGeom == None:
-        defaultDialogGeom = loader.loadModel('models/gui/dialog_box_gui')
+        defaultDialogGeom = loader.loadModel('models/gui/dialog_box_gui', okMissing = True)
     return defaultDialogGeom
 
 def setDefaultDialogGeom(newDialogGeom):
