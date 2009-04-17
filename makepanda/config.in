@@ -8,6 +8,8 @@
 # run using OpenGL or DirectX rendering.
 
 load-display pandagl
+#load-display pandadx9
+#load-display pandadx8
 
 # These control the placement and size of the default rendering window.
 
