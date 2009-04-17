@@ -85,6 +85,33 @@ open_framework(int &argc, char **&argv) {
 
   _is_open = true;
 
+#ifdef LINK_ALL_STATIC
+  // If we're statically linking, we need to explicitly link with
+  // at least one of the available renderers.
+  #ifdef HAVE_GL
+  extern EXPCL_PANDAGL void init_libpandagl();
+  init_libpandagl();
+  #elif HAVE_DX9
+  extern EXPCL_PANDADX9 void init_libpandadx9();
+  init_libpandadx9();
+  #elif HAVE_DX8
+  extern EXPCL_PANDADX8 void init_libpandadx8();
+  init_libpandadx8();
+  #elif HAVE_TINYDISPLAY
+  extern EXPCL_TINYDISPLAY void init_libtinydisplay();
+  init_libtinydisplay();
+  #endif
+
+  // Get the available image types too.
+  extern EXPCL_PANDA_PNMIMAGETYPES void init_libpnmimagetypes();
+  init_libpnmimagetypes();
+
+  // We also want the egg loader.
+  extern EXPCL_PANDAEGG void init_libpandaegg();
+  init_libpandaegg();
+
+#endif
+
   reset_frame_rate();
 
   {

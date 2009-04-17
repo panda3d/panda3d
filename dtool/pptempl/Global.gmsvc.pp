@@ -57,12 +57,10 @@
 
 // Define LINK_ALL_STATIC to generate static libs instead of DLL's.
 #if $[ne $[LINK_ALL_STATIC],]
-  #define dlink_all_static LINK_ALL_STATIC
   #define build_dlls
   #define build_libs yes
   #define dlllib lib
 #else
-  #define dlink_all_static
   #define build_dlls yes
   #define build_libs
   #define dlllib dll
@@ -77,10 +75,10 @@
 #endif
 
 // do NOT try to do #defer #defer CDEFINES_OPT1 $[CDEFINES_OPT1] here!  it wont let Sources.pp define their own CDEFINES_OPT1!  they must use EXTRA_CDEFS!
-#defer CDEFINES_OPT1 $[if $[NO_DEBUG_CDEF],,_DEBUG] $[dlink_all_static] $[EXTRA_CDEFS]
-#defer CDEFINES_OPT2 $[if $[NO_DEBUG_CDEF],,_DEBUG] $[dlink_all_static] $[EXTRA_CDEFS]
-#defer CDEFINES_OPT3 $[dlink_all_static] $[EXTRA_CDEFS]
-#defer CDEFINES_OPT4 NDEBUG $[dlink_all_static] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT1 $[if $[NO_DEBUG_CDEF],,_DEBUG] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT2 $[if $[NO_DEBUG_CDEF],,_DEBUG] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT3 $[EXTRA_CDEFS]
+#defer CDEFINES_OPT4 NDEBUG $[EXTRA_CDEFS]
 
 #defer cdefines $[CDEFINES_OPT$[OPTIMIZE]]
 

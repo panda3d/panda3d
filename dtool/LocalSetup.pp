@@ -604,6 +604,8 @@ $[cdefine WANT_NATIVE_NET]
 /* Can we define a modern-style STL allocator? */
 $[cdefine USE_STL_ALLOCATOR]
 
+/* Static linkage instead of the normal dynamic linkage? */
+$[cdefine LINK_ALL_STATIC]
 
 /* Platform-identifying defines. */
 $[cdefine IS_OSX]

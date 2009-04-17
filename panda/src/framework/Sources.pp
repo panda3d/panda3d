@@ -8,6 +8,24 @@
     recorder pgui pgraph putil collide chan text \
     pnmimage pnmimagetypes event
 
+#if $[LINK_ALL_STATIC]
+  // If we're statically linking, we need to explicitly link with
+  // at least one of the available renderers.
+  #if $[HAVE_GL]
+    #define LOCAL_LIBS pandagl $[LOCAL_LIBS]
+  #elif $[HAVE_DX9]
+    #define LOCAL_LIBS pandadx9 $[LOCAL_LIBS]
+  #elif $[HAVE_DX8]
+    #define LOCAL_LIBS pandadx8 $[LOCAL_LIBS]
+  #elif $[HAVE_TINYDISPLAY]
+    #define LOCAL_LIBS tinydisplay $[LOCAL_LIBS]
+  #endif
+
+  // And we might like to have the egg loader available.
+  #define LOCAL_LIBS pandaegg $[LOCAL_LIBS]
+#endif
+
+
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
   #define INCLUDED_SOURCES \
