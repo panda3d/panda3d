@@ -25,10 +25,21 @@ LoaderOptions::
 LoaderOptions(int flags) : 
   _flags(flags), _texture_flags(0)  
 {
-  if (preload_textures) {
+  // Shadowing the variables in config_util for static init ordering
+  // issues.
+  static ConfigVariableBool *preload_textures;
+  static ConfigVariableBool *preload_simple_textures;
+  if (preload_textures == NULL) {
+    preload_textures = new ConfigVariableBool("preload-textures", true);
+  }
+  if (preload_simple_textures == NULL) {
+    preload_simple_textures = new ConfigVariableBool("preload-simple-textures", false);
+  }
+
+  if (*preload_textures) {
     _texture_flags |= TF_preload;
   }
-  if (preload_simple_textures) {
+  if (*preload_simple_textures) {
     _texture_flags |= TF_preload_simple;
   }
 }
