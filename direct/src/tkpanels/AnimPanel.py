@@ -332,7 +332,12 @@ class AnimPanel(AppShell):
 
     def resetAllToEnd(self):
         for actorControl in self.actorControlList:
-            actorControl.resetToEnd()
+            actorControl.resetToEnd()            
+                        
+    def destroy(self):    
+        # First clean up 
+        taskMgr.remove(self.id + '_UpdateTask')
+        AppShell.destroy(self)    
 
 class ActorControl(Pmw.MegaWidget):
     def __init__(self, parent = None, **kw):
@@ -561,12 +566,12 @@ class ActorControl(Pmw.MegaWidget):
             self.currT = self.currT + deltaT
             if fLoop and self.duration:
                 # If its looping compute modulo
-                loopT = self.currT % self.duration
+                loopT = self.currT % self.duration                
                 self.goToT(loopT)
             else:
                 if (self.currT > self.maxSeconds):
                     # Clear this actor control from play list
-                    self['animPanel'].playList.remove(self)
+                    taskMgr.remove()
                 else:
                     self.goToT(self.currT)
         else:
