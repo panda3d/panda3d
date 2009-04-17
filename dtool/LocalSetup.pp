@@ -609,6 +609,6 @@ $[cdefine USE_STL_ALLOCATOR]
 $[cdefine IS_OSX]
 $[cdefine IS_LINUX]
 $[cdefine IS_FREEBSD]
-
+$[cdefine BUILD_IPHONE]
 
 #end dtool_config.h

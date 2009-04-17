@@ -10,7 +10,8 @@
   #define TARGET osxdisplay
   #define LOCAL_LIBS \
     display putil glgsg
-    
+
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
   
   #define INSTALL_HEADERS \
      config_osxdisplay.h \
@@ -22,6 +23,6 @@
     config_osxdisplay.cxx osxGraphicsPipe.cxx osxGraphicsWindow.mm osxGraphicsStateGuardian.cxx osxGraphicsBuffer.cxx
 
   #define SOURCES \
-    osxDisplay.xx $[INCLUDED_SOURCES] $[INSTALL_HEADERS]
+    $[INSTALL_HEADERS] osxGraphicsWindow.mm
 
 #end lib_target

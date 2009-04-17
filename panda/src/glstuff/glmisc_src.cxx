@@ -147,11 +147,15 @@ void CLP(init_classes)() {
   CLP(GeomMunger)::init_type();
   CLP(GraphicsStateGuardian)::init_type();
   CLP(IndexBufferContext)::init_type();
-  CLP(OcclusionQueryContext)::init_type();
   CLP(ShaderContext)::init_type();
   CLP(TextureContext)::init_type();
   CLP(VertexBufferContext)::init_type();
   CLP(GraphicsBuffer)::init_type();
+
+#ifndef OPENGLES_1
+  CLP(OcclusionQueryContext)::init_type();
+#endif
+
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->add_system(GLSYSTEM_NAME);
 

@@ -181,6 +181,10 @@
   #define WIN_SYS_LIBS \
      advapi32.lib ws2_32.lib $[WIN_SYS_LIBS]
 
+  // These frameworks are used by dtoolutil; we redefine it here 
+  // so it gets into the panda build system.
+  #define OSX_SYS_FRAMEWORKS Foundation $[if $[not $[BUILD_IPHONE_DEVKIT]],AppKit]
+
 #end lib_target
 
 #begin test_bin_target

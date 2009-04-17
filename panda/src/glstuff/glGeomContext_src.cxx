@@ -37,6 +37,12 @@ CLP(GeomContext)::
 bool CLP(GeomContext)::
 get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
                  UpdateSeq modified) {
+#ifdef OPENGLES_1
+  // Display lists not supported by OpenGL ES.
+  nassertr(false, false);
+  return false;
+
+#else
   DisplayList &dl = _display_lists[(CLP(GeomMunger) *)munger];
   bool list_current = (dl._modified == modified);
   if (dl._index == 0) {
@@ -50,6 +56,7 @@ get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
   index = dl._index;
   dl._modified = modified;
   return list_current;
+#endif  // OPENGLES_1
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -61,15 +68,11 @@ get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
 ////////////////////////////////////////////////////////////////////
 void CLP(GeomContext)::
 release_display_lists() {
-  if (_deprecated_index != 0) {
-    if (GLCAT.is_debug()) {
-      GLCAT.debug()
-        << "releasing index " << _deprecated_index << "\n";
-    }
-    GLP(DeleteLists)(_deprecated_index, 1);
-    _deprecated_index = 0;
-  }
+#ifdef OPENGLES_1
+  // Display lists not supported by OpenGL ES.
+  nassertv(_display_lists.empty());
 
+#else
   DisplayLists::iterator dli;
   for (dli = _display_lists.begin();
        dli != _display_lists.end();
@@ -88,6 +91,7 @@ release_display_lists() {
   }
 
   _display_lists.clear();
+#endif  // OPENGLES_1
 }
 
 ////////////////////////////////////////////////////////////////////

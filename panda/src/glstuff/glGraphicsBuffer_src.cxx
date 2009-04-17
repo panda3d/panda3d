@@ -177,7 +177,6 @@ check_fbo() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 rebuild_bitplanes() {
-  
   check_host_valid();
   if (_gsg == 0) {
     return;
@@ -380,7 +379,6 @@ rebuild_bitplanes() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum attachpoint) {
-  
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 

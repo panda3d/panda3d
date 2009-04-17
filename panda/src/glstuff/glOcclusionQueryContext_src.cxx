@@ -17,6 +17,8 @@
 #include "lightMutexHolder.h"
 #include "pStatTimer.h"
 
+#ifndef OPENGLES_1  // Occlusion queries not supported by OpenGL ES.
+
 TypeHandle CLP(OcclusionQueryContext)::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -111,3 +113,5 @@ get_num_fragments() const {
   glgsg->report_my_gl_errors();
   return result;
 }
+
+#endif  // OPENGLES_1

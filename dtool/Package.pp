@@ -100,6 +100,8 @@
   #print Environment variable PPREMAKE_CONFIG not set; using defaults.
 #endif
 
+#include $[THISDIRPREFIX]pptempl/PostConfig.pp
+
 // Now evaluate all of our deferred variable definitions from
 // Config.pp.
 #set PYTHON_IPATH $[unixfilename $[PYTHON_IPATH]]

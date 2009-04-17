@@ -22,7 +22,6 @@ INLINE CLP(GeomContext)::
 CLP(GeomContext)(Geom *geom) :
   GeomContext(geom)
 {
-  _deprecated_index = 0;
 #ifdef DO_PSTATS
   _num_verts = 0;
 #endif

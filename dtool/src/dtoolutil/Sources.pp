@@ -5,6 +5,7 @@
     #define UNIX_SYS_LIBS dl
   #endif
   #define WIN_SYS_LIBS shell32.lib
+  #define OSX_SYS_FRAMEWORKS Foundation $[if $[not $[BUILD_IPHONE]],AppKit]
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx  $[TARGET]_composite2.cxx
   
@@ -12,7 +13,9 @@
     checkPandaVersion.h \
     config_dtoolutil.h \
     executionEnvironment.I executionEnvironment.h filename.I  \
-    filename.h load_dso.h dSearchPath.I dSearchPath.h \
+    filename.h \
+    $[if $[IS_OSX],filename_assist.mm filename_assist.h,] \
+    load_dso.h dSearchPath.I dSearchPath.h \
     pandaFileStream.h pandaFileStream.I \
     pandaFileStreamBuf.h \
     pandaSystem.h pandaVersion.h \

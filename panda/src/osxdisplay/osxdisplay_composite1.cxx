@@ -2,4 +2,3 @@
 #include "osxGraphicsBuffer.cxx"
 #include "osxGraphicsPipe.cxx"
 #include "osxGraphicsStateGuardian.cxx"
-#include "osxGraphicsWindow.mm"

@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "filename.h"
+#include "filename_assist.h"
 #include "dSearchPath.h"
 #include "executionEnvironment.h"
 #include "vector_string.h"
@@ -47,8 +48,12 @@
 #include <unistd.h>
 #endif
 
+bool Filename::_got_home_directory;
+Filename Filename::_home_directory;
 bool Filename::_got_temp_directory;
 Filename Filename::_temp_directory;
+bool Filename::_got_app_directory;
+Filename Filename::_app_directory;
 bool Filename::_got_user_appdata_directory;
 Filename Filename::_user_appdata_directory;
 bool Filename::_got_common_appdata_directory;
@@ -440,6 +445,63 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_home_directory
+//       Access: Published
+//  Description: Returns a path to the user's home directory, if such
+//               a thing makes sense in the current OS, or to the
+//               nearest equivalent.  This may or may not be directly
+//               writable by the application.
+////////////////////////////////////////////////////////////////////
+const Filename &Filename::
+get_home_directory() {
+  if (!_got_home_directory) {
+    // In all environments, check $HOME first.
+    char *home = getenv("HOME");
+    if (home != (char *)NULL) {
+      _home_directory = from_os_specific(home);
+      if (_home_directory.is_directory()) {
+        if (_home_directory.make_canonical()) {
+          _got_home_directory = true;
+        }
+      }
+    }
+    if (_got_home_directory) {
+      return _home_directory;
+    }
+
+#ifdef WIN32
+    char buffer[MAX_PATH];
+
+    // On Windows, fall back to the "My Documents" folder.
+    if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_PERSONAL, true)) {
+      _user_appdata_directory = from_os_specific(buffer);
+      if (_user_appdata_directory.is_directory()) {
+        if (_user_appdata_directory.make_canonical()) {
+          _got_user_appdata_directory = true;
+        }
+      }
+    }
+
+#elif defined(IS_OSX)
+    _home_directory = get_osx_home_directory();
+    _got_home_directory = true;
+
+#else
+    // Posix case: check /etc/passwd?
+
+#endif  // WIN32
+
+    if (!_got_home_directory) {
+      // Fallback case.
+      _home_directory = ExecutionEnvironment::get_cwd();
+      _got_home_directory = true;
+    }
+  }
+
+  return _home_directory;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::get_temp_directory
 //       Access: Published
 //  Description: Returns a path to a system-defined temporary
@@ -460,6 +522,10 @@ get_temp_directory() {
       }
     }
 
+#elif defined(IS_OSX)
+    _temp_directory = get_osx_temp_directory();
+    _got_temp_directory = true;
+
 #else
     // Posix case.
     _temp_directory = "/tmp";
@@ -474,6 +540,47 @@ get_temp_directory() {
   }
 
   return _temp_directory;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::get_app_directory
+//       Access: Published
+//  Description: Returns a path to the current application's
+//               directory, as nearly as this can be determined.
+////////////////////////////////////////////////////////////////////
+const Filename &Filename::
+get_app_directory() {
+  if (!_got_app_directory) {
+#if defined(IS_OSX)
+    _app_directory = get_osx_app_directory();
+    _got_app_directory = !_app_directory.empty();
+
+#endif  // WIN32
+
+    if (!_got_app_directory) {
+      // Fallback case.
+      Filename binary_name = ExecutionEnvironment::get_binary_name();
+      if (!binary_name.empty()) {
+        _app_directory = binary_name.get_dirname();
+        _got_app_directory = !_app_directory.empty();
+      }
+    }
+    if (!_got_app_directory) {
+      // Another fallback.
+      Filename dtool_name = ExecutionEnvironment::get_dtool_name();
+      if (!dtool_name.empty()) {
+        _app_directory = dtool_name.get_dirname();
+        _got_app_directory = !_app_directory.empty();
+      }
+    }
+    if (!_got_app_directory) {
+      // The final fallback.
+      _app_directory = ExecutionEnvironment::get_cwd();
+      _got_app_directory = true;
+    }
+  }
+
+  return _app_directory;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -499,17 +606,15 @@ get_user_appdata_directory() {
       }
     }
 
+#elif defined(IS_OSX)
+    _user_appdata_directory = get_osx_user_appdata_directory();
+    _got_user_appdata_directory = true;
+
 #else
     // Posix case.
-    char *home = getenv("HOME");
-    if (home != (char *)NULL) {
-      _user_appdata_directory = from_os_specific(home);
-      if (_user_appdata_directory.is_directory()) {
-        if (_user_appdata_directory.make_canonical()) {
-          _got_user_appdata_directory = true;
-        }
-      }
-    }
+    _user_appdata_directory = get_home_directory();
+    _got_user_appdata_directory = true;
+
 #endif  // WIN32
 
     if (!_got_user_appdata_directory) {
@@ -543,6 +648,10 @@ get_common_appdata_directory() {
         }
       }
     }
+
+#elif defined(IS_OSX)
+    _common_appdata_directory = get_osx_common_appdata_directory();
+    _got_common_appdata_directory = true;
 
 #else
     // Posix case.

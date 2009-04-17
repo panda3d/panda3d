@@ -14,30 +14,6 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::draw_display_list
-//       Access: Public
-//  Description: If the GeomContext is non-NULL and contains a valid
-//               display list, uses it to draw the geometry if
-//               appropriate, and returns true.  If the display list
-//               is absent or cannot be used for some reason, does
-//               nothing and returns false.
-////////////////////////////////////////////////////////////////////
-INLINE bool CLP(GraphicsStateGuardian)::
-draw_display_list(GeomContext *gc) {
-  if (gc != (GeomContext *)NULL && _vertex_colors_enabled) {
-    _draw_primitive_pcollector.start();
-    CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
-    GLP(CallList)(ggc->_deprecated_index);
-#ifdef DO_PSTATS
-    _vertices_display_list_pcollector.add_level(ggc->_num_verts);
-#endif
-    _draw_primitive_pcollector.stop();
-    return true;
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::report_errors
 //       Access: Public, Static
 //  Description: Checks for any outstanding error codes and outputs
@@ -280,6 +256,7 @@ enable_point_smooth(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_polygon_smooth(bool val) {
+#ifndef OPENGLES_1  // GL_POLYGON_SMOOTH not supported in OpenGL ES.
   if (_polygon_smooth_enabled != val) {
     _polygon_smooth_enabled = val;
     if (val) {
@@ -288,6 +265,7 @@ enable_polygon_smooth(bool val) {
       GLP(Disable)(GL_POLYGON_SMOOTH);
     }
   }
+#endif  // OPENGLES_1
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -502,16 +480,16 @@ enable_polygon_offset(bool val) {
         << "glEnable(GL_POLYGON_OFFSET_*)" << endl;
 #endif
       GLP(Enable)(GL_POLYGON_OFFSET_FILL);
-      GLP(Enable)(GL_POLYGON_OFFSET_LINE);
-      GLP(Enable)(GL_POLYGON_OFFSET_POINT);
+      //GLP(Enable)(GL_POLYGON_OFFSET_LINE);  // not widely supported anyway
+      //GLP(Enable)(GL_POLYGON_OFFSET_POINT);
     } else {
 #ifdef GSG_VERBOSE
       GLCAT.spam()
         << "glDisable(GL_POLYGON_OFFSET_*)" << endl;
 #endif
       GLP(Disable)(GL_POLYGON_OFFSET_FILL);
-      GLP(Disable)(GL_POLYGON_OFFSET_LINE);
-      GLP(Disable)(GL_POLYGON_OFFSET_POINT);
+      //GLP(Disable)(GL_POLYGON_OFFSET_LINE);  // not widely supported anyway
+      //GLP(Disable)(GL_POLYGON_OFFSET_POINT);
     }
   }
 }

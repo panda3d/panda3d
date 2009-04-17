@@ -1072,6 +1072,7 @@ reset() {
   }
 
   GLint max_elements_vertices = 0, max_elements_indices = 0;
+#ifndef OPENGLES_1
   GLP(GetIntegerv)(GL_MAX_ELEMENTS_VERTICES, &max_elements_vertices);
   GLP(GetIntegerv)(GL_MAX_ELEMENTS_INDICES, &max_elements_indices);
   if (max_elements_vertices > 0) {
@@ -1080,6 +1081,7 @@ reset() {
   if (max_elements_indices > 0) {
     _max_vertices_per_primitive = max_elements_indices;
   }
+#endif  // OPENGLES_1
 
   if (GLCAT.is_debug()) {
     GLCAT.debug()
@@ -1199,7 +1201,9 @@ reset() {
   GLP(FrontFace)(GL_CCW);
   GLP(Disable)(GL_LINE_SMOOTH);
   GLP(Disable)(GL_POINT_SMOOTH);
+#ifndef OPENGLES_1
   GLP(Disable)(GL_POLYGON_SMOOTH);
+#endif  // OPENGLES_1
 
   if (_supports_multisample) {
     GLP(Disable)(GL_MULTISAMPLE);
@@ -1221,8 +1225,10 @@ reset() {
   _decal_level = 0;
   _tex_gen_point_sprite = false;
 
+#ifndef OPENGLES_1
   // Dither is on by default in GL; let's turn it off
   GLP(Disable)(GL_DITHER);
+#endif  // OPENGLES_1
   _dithering_enabled = false;
 
   _current_shader = (Shader *)NULL;
@@ -1459,7 +1465,9 @@ clear(DrawableRegion *clearable) {
   }
   
   if (clearable->get_clear_depth_active()) {
+#ifndef OPENGLES_1  // Temporary: need glClearDepthf() instead for OpenGL ES.
     GLP(ClearDepth)(clearable->get_clear_depth());
+#endif  // OPENGLES_1
     GLP(DepthMask)(GL_TRUE);
     _state_mask.clear_bit(DepthWriteAttrib::get_class_slot());
     mask |= GL_DEPTH_BUFFER_BIT;
@@ -1666,7 +1674,7 @@ begin_frame(Thread *current_thread) {
              ui != _usage_textures.end();
              ++ui) {
           GLuint index = (*ui).second;
-          GLP(DeleteLists)(index, 1);
+          GLP(DeleteTextures)(1, &index);
         }
         _usage_textures.clear();
         _show_texture_usage_max_size = max_size;
@@ -1767,6 +1775,7 @@ end_frame(Thread *current_thread) {
   _vertices_immediate_pcollector.flush_level();
 
   // Now is a good time to delete any pending display lists.
+#ifndef OPENGLES_1
   {
     LightMutexHolder holder(_lock);
     if (!_deleted_display_lists.empty()) {
@@ -1798,6 +1807,7 @@ end_frame(Thread *current_thread) {
       _deleted_queries.clear();
     }
   }
+#endif  // OPENGLES_1
 
   // Calling glFlush() at the end of the frame is particularly
   // necessary if this is a single-buffered visual, so that the frame
@@ -1962,6 +1972,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     GLP(LoadIdentity)();
   }
 
+#ifndef OPENGLES_1  // Display lists not supported by OpenGL ES.
   if (geom_reader->get_usage_hint() == Geom::UH_static &&
       _data_reader->get_usage_hint() == Geom::UH_static &&
       display_lists && (!hardware_animation || display_list_animation)) {
@@ -1976,6 +1987,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     nassertr(gc != (GeomContext *)NULL, false);
     CLP(GeomContext) *ggc = DCAST(CLP(GeomContext), gc);
     const CLP(GeomMunger) *gmunger = DCAST(CLP(GeomMunger), _munger);
+
     UpdateSeq modified = max(geom_reader->get_modified(), _data_reader->get_modified());
     if (ggc->get_display_list(_geom_display_list, gmunger, modified)) {
       // If it hasn't been modified, just play the display list again.
@@ -2022,6 +2034,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     }
 #endif
   }
+#endif  // OPENGLES_1
 
   // Enable the appropriate vertex arrays, and disable any
   // extra vertex arrays used by the previous rendering mode.
@@ -2684,6 +2697,7 @@ draw_points(const GeomPrimitivePipelineReader *reader, bool force) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 end_draw_primitives() {
+#ifndef OPENGLES_1  // Display lists not supported by OpenGL ES.
   if (_geom_display_list != 0) {
     // If we were building a display list, close it now.
     GLP(EndList)();
@@ -2695,6 +2709,7 @@ end_draw_primitives() {
     _primitive_batches_display_list_pcollector.add_level(1);
   }
   _geom_display_list = 0;
+#endif  // OPENGLES_1
 
   // Clean up the vertex blending state.
   if (_vertex_blending_enabled) {
@@ -2738,6 +2753,7 @@ end_draw_primitives() {
 ////////////////////////////////////////////////////////////////////
 TextureContext *CLP(GraphicsStateGuardian)::
 prepare_texture(Texture *tex) {
+  report_my_gl_errors();
   // Make sure we'll support this texture when it's rendered.  Don't
   // bother to prepare it if we won't.
   switch (tex->get_texture_type()) {
@@ -2760,7 +2776,9 @@ prepare_texture(Texture *tex) {
     break;
   }
 
+  report_my_gl_errors();
   CLP(TextureContext) *gtc = new CLP(TextureContext)(_prepared_objects, tex);
+  report_my_gl_errors();
   GLP(GenTextures)(1, &gtc->_index);
   report_my_gl_errors();
 
@@ -3333,6 +3351,10 @@ setup_primitive(const unsigned char *&client_pointer,
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 begin_occlusion_query() {
+#ifdef OPENGLES_1  // Occlusion queries not supported by OpenGL ES.
+  nassertv(false);
+
+#else
   nassertv(_supports_occlusion_query);
   nassertv(_current_occlusion_query == (OcclusionQueryContext *)NULL);
   PT(CLP(OcclusionQueryContext)) query = new CLP(OcclusionQueryContext)(this);
@@ -3348,6 +3370,7 @@ begin_occlusion_query() {
   _current_occlusion_query = query;
   
   report_my_gl_errors();
+#endif  // OPENGLES_1
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3361,6 +3384,11 @@ begin_occlusion_query() {
 ////////////////////////////////////////////////////////////////////
 PT(OcclusionQueryContext) CLP(GraphicsStateGuardian)::
 end_occlusion_query() {
+#ifdef OPENGLES_1  // Occlusion queries not supported by OpenGL ES.
+  nassertr(false, NULL);
+  return NULL;
+
+#else
   nassertr(_current_occlusion_query != (OcclusionQueryContext *)NULL, NULL);
   PT(OcclusionQueryContext) result = _current_occlusion_query;
 
@@ -3391,6 +3419,7 @@ end_occlusion_query() {
   report_my_gl_errors();
 
   return result;
+#endif  // OPENGLES_1
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3700,7 +3729,7 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
 void CLP(GraphicsStateGuardian)::
 apply_fog(Fog *fog) {
   Fog::Mode fmode = fog->get_mode();
-  GLP(Fogi)(GL_FOG_MODE, get_fog_mode_type(fmode));
+  GLP(Fogf)(GL_FOG_MODE, get_fog_mode_type(fmode));
 
   if (fmode == Fog::M_linear) {
     float onset, opaque;
@@ -3821,6 +3850,7 @@ do_issue_render_mode() {
   _point_size = target_render_mode->get_thickness();
   _point_perspective = target_render_mode->get_perspective();
 
+#ifndef OPENGLES_1  // glPolygonMode not supported by OpenGL ES.
   switch (_render_mode) {
   case RenderModeAttrib::M_unchanged:
   case RenderModeAttrib::M_filled:
@@ -3840,6 +3870,7 @@ do_issue_render_mode() {
     GLCAT.error()
       << "Unknown render mode " << (int)_render_mode << endl;
   }
+#endif  // OPENGLES_1
 
   // The thickness affects both the line width and the point size.
   GLP(LineWidth)(_point_size);
@@ -3887,19 +3918,25 @@ do_issue_antialias() {
   case AntialiasAttrib::M_faster:
     GLP(Hint)(GL_LINE_SMOOTH_HINT, GL_FASTEST);
     GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_FASTEST);
+#ifndef OPENGLES_1
     GLP(Hint)(GL_POLYGON_SMOOTH_HINT, GL_FASTEST);
+#endif  // OPENGLES_1
     break;
 
   case AntialiasAttrib::M_better:
     GLP(Hint)(GL_LINE_SMOOTH_HINT, GL_NICEST);
     GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_NICEST);
+#ifndef OPENGLES_1
     GLP(Hint)(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+#endif  // OPENGLES_1
     break;
 
   default:
     GLP(Hint)(GL_LINE_SMOOTH_HINT, GL_DONT_CARE);
     GLP(Hint)(GL_POINT_SMOOTH_HINT, GL_DONT_CARE);
+#ifndef OPENGLES_1
     GLP(Hint)(GL_POLYGON_SMOOTH_HINT, GL_DONT_CARE);
+#endif  // OPENGLES_1
     break;
   }
 
@@ -4117,7 +4154,11 @@ do_issue_material() {
   }
 #endif  // NDEBUG
 
+#ifndef OPENGLES_1
   GLenum face = material->get_twoside() ? GL_FRONT_AND_BACK : GL_FRONT;
+#else
+  static const GLenum face = GL_FRONT_AND_BACK;
+#endif  // OPENGLES_1
 
   GLP(Materialfv)(face, GL_SPECULAR, material->get_specular().get_data());
   GLP(Materialfv)(face, GL_EMISSION, material->get_emission().get_data());
@@ -4138,7 +4179,9 @@ do_issue_material() {
       GLP(Disable)(GL_COLOR_MATERIAL);
       GLP(Materialfv)(face, GL_DIFFUSE, _material_force_color.get_data());
     } else {
+#ifndef OPENGLES_1
       GLP(ColorMaterial)(face, GL_DIFFUSE);
+#endif  // OPENGLES_1
       GLP(Enable)(GL_COLOR_MATERIAL);
     }
 
@@ -4150,7 +4193,9 @@ do_issue_material() {
       GLP(Disable)(GL_COLOR_MATERIAL);
       GLP(Materialfv)(face, GL_AMBIENT, _material_force_color.get_data());
     } else {
+#ifndef OPENGLES_1
       GLP(ColorMaterial)(face, GL_AMBIENT);
+#endif  // OPENGLES_1
       GLP(Enable)(GL_COLOR_MATERIAL);
     }
 
@@ -4162,13 +4207,17 @@ do_issue_material() {
       GLP(Materialfv)(face, GL_AMBIENT, _material_force_color.get_data());
       GLP(Materialfv)(face, GL_DIFFUSE, _material_force_color.get_data());
     } else {
+#ifndef OPENGLES_1
       GLP(ColorMaterial)(face, GL_AMBIENT_AND_DIFFUSE);
+#endif  // OPENGLES_1
       GLP(Enable)(GL_COLOR_MATERIAL);
     }
   }
 
+#ifndef OPENGLES_1
   GLP(LightModeli)(GL_LIGHT_MODEL_LOCAL_VIEWER, material->get_local());
   GLP(LightModeli)(GL_LIGHT_MODEL_TWO_SIDE, material->get_twoside());
+#endif  // OPENGLES_1
   report_my_gl_errors();
 }
 
@@ -4789,7 +4838,7 @@ get_extension_func(const char *, const char *) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 set_draw_buffer(int rbtype) {
-
+#ifndef OPENGLES_1  // Draw buffers not supported by OpenGL ES.
   if (_current_fbo) {
 
     GLuint buffers[16];
@@ -4861,6 +4910,7 @@ set_draw_buffer(int rbtype) {
       break;
     }
   }
+#endif  // OPENGLES_1
   
   // Also ensure that any global color channels are masked out.
   if (CLP(color_mask)) {
@@ -4883,7 +4933,7 @@ set_draw_buffer(int rbtype) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 set_read_buffer(int rbtype) {
-
+#ifndef OPENGLES_1  // Draw buffers not supported by OpenGL ES.
   if (rbtype & (RenderBuffer::T_depth | RenderBuffer::T_stencil)) {
     // Special case: don't have to call ReadBuffer for these.
     return;
@@ -4954,6 +5004,7 @@ set_read_buffer(int rbtype) {
   }
 
   report_my_gl_errors();
+#endif  // OPENGLES_1
 }
 
 
@@ -6091,8 +6142,10 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
   DCAST_INTO_V(plane_node, plane.node());
   Planef xformed_plane = plane_node->get_plane() * transform->get_mat();
 
+#ifndef OPENGLES_1  // Temporary: need glClipPlanef() instead for OpenGL ES.
   Planed double_plane(LCAST(double, xformed_plane));
   GLP(ClipPlane)(id, double_plane.get_data());
+#endif  // OPENGLES_1
 
   report_my_gl_errors();
 }
@@ -6533,7 +6586,9 @@ update_standard_texture_bindings() {
     _glActiveTexture(GL_TEXTURE0 + i);
 
     // First, turn off the previous texture mode.
+#ifndef OPENGLES_1
     GLP(Disable)(GL_TEXTURE_1D);
+#endif  // OPENGLES_1
     GLP(Disable)(GL_TEXTURE_2D);
     if (_supports_3d_texture) {
       GLP(Disable)(GL_TEXTURE_3D);
@@ -6686,7 +6741,9 @@ update_standard_texture_bindings() {
   // Disable the texture stages that are no longer used.
   for (i = num_stages; i < _num_active_texture_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
+#ifndef OPENGLES_1
     GLP(Disable)(GL_TEXTURE_1D);
+#endif  // OPENGLES_1
     GLP(Disable)(GL_TEXTURE_2D);
     if (_supports_3d_texture) {
       GLP(Disable)(GL_TEXTURE_3D);
@@ -6933,6 +6990,10 @@ do_issue_tex_matrix() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_tex_gen() {
+#ifdef OPENGLES_1
+  // Temporary hack
+  return;
+#endif  // OPENGLES_1
   bool force_normal = false;
 
   nassertv(_num_active_texture_stages <= _max_texture_stages);
@@ -6962,6 +7023,7 @@ do_issue_tex_gen() {
       GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_FALSE);
     }
 
+#ifndef OPENGLES_1  // TexGen not supported by OpenGL ES.
     TexGenAttrib::Mode mode = _target_tex_gen->get_mode(stage);
     switch (mode) {
     case TexGenAttrib::M_off:
@@ -7176,6 +7238,7 @@ do_issue_tex_gen() {
     case TexGenAttrib::M_unused:
       break;
     }
+#endif  // OPENGLES_1
   }
 
   if (got_point_sprites != _tex_gen_point_sprite) {
@@ -7217,9 +7280,11 @@ specify_texture(CLP(TextureContext) *gtc) {
                        get_texture_wrap_mode(tex->get_wrap_w()));
   }
 
+#ifndef OPENGLES_1
   Colorf border_color = tex->get_border_color();
   GLP(TexParameterfv)(target, GL_TEXTURE_BORDER_COLOR,
                       border_color.get_data());
+#endif  // OPENGLES_1
 
   Texture::FilterType minfilter = tex->get_effective_minfilter();
   Texture::FilterType magfilter = tex->get_effective_magfilter();
@@ -7302,6 +7367,7 @@ apply_texture(TextureContext *tc) {
   if (target == GL_NONE) {
     return false;
   }
+  report_my_gl_errors();
   GLP(BindTexture)(target, gtc->_index);
 
   report_my_gl_errors();
@@ -7672,6 +7738,10 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
   int highest_level = 0;
 
+#ifdef OPENGLES_1  // OpenGL ES doesn't support texture subloads.
+  static const bool needs_reload = true;
+
+#else 
   bool needs_reload = false;
   if (!gtc->_already_applied ||
       gtc->_uses_mipmaps != uses_mipmaps ||
@@ -7782,6 +7852,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
       needs_reload = true;
     }
   }
+#endif  // OPENGLES_1
 
   if (needs_reload) {
     // Load the image up from scratch, creating a new GL Texture
@@ -7841,6 +7912,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
 #endif
       switch (texture_target) {
       case GL_TEXTURE_1D:
+#ifndef OPENGLES_1  // 1-d textures not supported by OpenGL ES.  Fall through.
         if (image_compression == Texture::CM_off) {
           GLP(TexImage1D)(page_target, n - mipmap_bias, internal_format,
                           width, 0,
@@ -7850,7 +7922,9 @@ upload_texture_image(CLP(TextureContext) *gtc,
                                   0, image_size, image_ptr);
         }
         break;
+#endif  // OPENGLES_1  // OpenGL ES will fall through.
 
+#ifndef OPENGLES_1  // 3-d textures not supported by OpenGL ES.  Fall through.
       case GL_TEXTURE_3D:
         if (_supports_3d_texture) {
           if (image_compression == Texture::CM_off) {
@@ -7867,6 +7941,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
           return false;
         }
         break;
+#endif  // OPENGLES_1  // OpenGL ES will fall through.
 
       default:
         if (image_compression == Texture::CM_off) {
@@ -7991,6 +8066,16 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 ////////////////////////////////////////////////////////////////////
 size_t CLP(GraphicsStateGuardian)::
 get_texture_memory_size(Texture *tex) {
+#ifdef OPENGLES_1  // Texture querying not supported on OpenGL ES.
+  int width = tex->get_x_size();
+  int height = tex->get_y_size();
+  int depth = 1;
+  int scale = 1;
+  bool has_mipmaps = tex->uses_mipmaps();
+
+  size_t num_bytes = 2;  // Temporary assumption?
+
+#else
   GLenum target = get_texture_target(tex->get_texture_type());
 
   GLenum page_target = target;
@@ -8003,11 +8088,12 @@ get_texture_memory_size(Texture *tex) {
 
   GLint minfilter;
   GLP(GetTexParameteriv)(target, GL_TEXTURE_MIN_FILTER, &minfilter);
+  bool has_mipmaps = is_mipmap_filter(minfilter);
+
+  report_my_gl_errors();
 
   GLint internal_format;
   GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
-
-  report_my_gl_errors();
 
   if (is_compressed_format(internal_format)) {
     // Try to get the compressed size.
@@ -8062,9 +8148,10 @@ get_texture_memory_size(Texture *tex) {
 
   size_t num_bits = (red_size + green_size + blue_size + alpha_size + luminance_size + intensity_size + depth_size);
   size_t num_bytes = (num_bits + 7) / 8;
+#endif  // OPENGLES_1
 
   size_t result = num_bytes * width * height * depth * scale;
-  if (is_mipmap_filter(minfilter)) {
+  if (has_mipmaps) {
     result = (result * 4) / 3;
   }
 
@@ -8079,6 +8166,7 @@ get_texture_memory_size(Texture *tex) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 check_nonresident_texture(BufferContextChain &chain) {
+#ifndef OPENGLES_1  // Residency queries not supported by OpenGL ES.
   size_t num_textures = chain.get_count();
   if (num_textures == 0) {
     return;
@@ -8109,6 +8197,7 @@ check_nonresident_texture(BufferContextChain &chain) {
       }
     }
   }
+#endif  // OPENGLES_1
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -8150,7 +8239,8 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     page_target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
   }
 
-  GLint width = 1, height = 1, depth = 1;
+  GLint width = gtc->_width, height = gtc->_height, depth = gtc->_depth;
+#ifndef OPENGLES_1
   GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_WIDTH, &width);
   if (target != GL_TEXTURE_1D) {
     GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_HEIGHT, &height);
@@ -8160,6 +8250,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   } else if (target == GL_TEXTURE_CUBE_MAP) {
     depth = 6;
   }
+#endif  // OPENGLES_1
   report_my_gl_errors();
 
   if (width <= 0 || height <= 0 || depth <= 0) {
@@ -8168,8 +8259,10 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     return false;
   }
 
-  GLint internal_format = 0;
+  GLint internal_format = GL_RGBA;
+#ifndef OPENGLES_1
   GLP(GetTexLevelParameteriv)(page_target, 0, GL_TEXTURE_INTERNAL_FORMAT, &internal_format);
+#endif  // OPENGLES_1
 
   // Make sure we were able to query those parameters properly.
   GLenum error_code = GLP(GetError)();
@@ -8364,6 +8457,10 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
                       Texture *tex, GLenum target, GLenum page_target,
                       Texture::ComponentType type,
                       Texture::CompressionMode compression, int n) {
+#ifdef OPENGLES_1  // Extracting texture data unsupported in OpenGL ES.
+    nassertr(false, false);
+    return false;
+#else
   if (target == GL_TEXTURE_CUBE_MAP) {
     // A cube map, compressed or uncompressed.  This we must extract
     // one page at a time.
@@ -8456,7 +8553,7 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
       // aside.  If it does, we assume the driver might have
       // overfilled even our provided extra buffer.
       nassertr(count != extra_space, true)
-#endif
+#endif  // NDEBUG
     } else {
       _glGetCompressedTexImage(target, n, image.p());
     }
@@ -8474,6 +8571,7 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
   }
 
   return true;
+#endif  // OPENGLES_1
 }
 
 ////////////////////////////////////////////////////////////////////

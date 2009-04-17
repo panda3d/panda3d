@@ -40,10 +40,10 @@
   // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
   // list of binaries that are to be built only when specifically asked
   // for.
-  #define lib_targets $[active_target(metalib_target lib_target ss_lib_target noinst_lib_target):%=$[ODIR]/lib%$[DYNAMIC_LIB_EXT]]
+  #define lib_targets $[active_target(metalib_target lib_target ss_lib_target noinst_lib_target):%=$[ODIR]/lib%$[dynamic_lib_ext]]
   #define bundle_targets
-  #if $[BUNDLE_EXT]
-    #define bundle_targets $[active_target(metalib_target):%=$[ODIR]/lib%$[BUNDLE_EXT]]
+  #if $[bundle_ext]
+    #define bundle_targets $[active_target(metalib_target):%=$[ODIR]/lib%$[bundle_ext]]
   #endif
 
   #define static_lib_targets $[active_target(static_lib_target):%=$[ODIR]/lib%.a]
@@ -114,7 +114,8 @@
 
 // And $[frameworks] is the set of OSX-style frameworks we will link with.
 #defer frameworks $[unique $[get_frameworks]]
-#defer bin_frameworks $[unique $[get_frameworks]]
+#defer bin_frameworks $[unique $[all_libs $[get_frameworks],$[complete_local_libs]]]
+//#defer bin_frameworks $[unique $[get_frameworks]]
 
 // This is the set of files we might copy into *.prebuilt, if we have
 // bison and flex (or copy from *.prebuilt if we don't have them).
@@ -342,21 +343,21 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
   #define cxx_ld $[or $[get_ld],$[CXX]]
 
   #define varname $[subst -,_,lib$[TARGET]_so]
-$[varname] = $[sources] $[if $[not $[BUNDLE_EXT]],$[interrogate_sources]]
-  #define target $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
+$[varname] = $[sources] $[if $[not $[bundle_ext]],$[interrogate_sources]]
+  #define target $[ODIR]/lib$[TARGET]$[dynamic_lib_ext]
   #define sources $($[varname])
 
 $[target] : $[sources] $[static_lib_dependencies]
-  #if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+  #if $[filter %.mm %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[shared_lib_c++]
   #else  
 $[TAB] $[shared_lib_c]
   #endif
 
-  #if $[BUNDLE_EXT]
+  #if $[bundle_ext]
     // Also generate the bundles (on OSX only).
-    #define target $[ODIR]/lib$[TARGET]$[BUNDLE_EXT]
-    #define sources $[interrogate_sources] $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
+    #define target $[ODIR]/lib$[TARGET]$[bundle_ext]
+    #define sources $[interrogate_sources] $[ODIR]/lib$[TARGET]$[dynamic_lib_ext]
 $[target] : $[sources] $[static_lib_dependencies] 
 $[TAB] $[BUNDLE_LIB_C++]
   #endif  // BUNDLE_EXT
@@ -365,8 +366,8 @@ $[TAB] $[BUNDLE_LIB_C++]
 // Here are the rules to install and uninstall the library and
 // everything that goes along with it.
 #define installed_files \
-    $[install_lib_dir]/lib$[TARGET]$[DYNAMIC_LIB_EXT] \
-    $[if $[BUNDLE_EXT],$[install_lib_dir]/lib$[TARGET]$[BUNDLE_EXT]] \
+    $[install_lib_dir]/lib$[TARGET]$[dynamic_lib_ext] \
+    $[if $[bundle_ext],$[install_lib_dir]/lib$[TARGET]$[bundle_ext]] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -380,14 +381,14 @@ uninstall-lib$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[DYNAMIC_LIB_EXT] : $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
-#define local $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
+$[install_lib_dir]/lib$[TARGET]$[dynamic_lib_ext] : $[ODIR]/lib$[TARGET]$[dynamic_lib_ext]
+#define local $[ODIR]/lib$[TARGET]$[dynamic_lib_ext]
 #define dest $[install_lib_dir]
 $[TAB] $[INSTALL]
 
-#if $[BUNDLE_EXT]
-$[install_lib_dir]/lib$[TARGET]$[BUNDLE_EXT] : $[ODIR]/lib$[TARGET]$[BUNDLE_EXT]
-#define local $[ODIR]/lib$[TARGET]$[BUNDLE_EXT]
+#if $[bundle_ext]
+$[install_lib_dir]/lib$[TARGET]$[bundle_ext] : $[ODIR]/lib$[TARGET]$[bundle_ext]
+#define local $[ODIR]/lib$[TARGET]$[bundle_ext]
 #define dest $[install_lib_dir]
 $[TAB] $[INSTALL]
 #endif  // BUNDLE_EXT
@@ -454,10 +455,10 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 #forscopes noinst_lib_target
 #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[ODIR]/lib$[TARGET]$[DYNAMIC_LIB_EXT]
+#define target $[ODIR]/lib$[TARGET]$[dynamic_lib_ext]
 #define sources $($[varname])
 $[target] : $[sources] $[static_lib_dependencies]
-#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+#if $[filter %.mm %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[shared_lib_c++]
 #else
 $[TAB] $[shared_lib_c]
@@ -479,7 +480,7 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define target $[ODIR]/lib$[TARGET]$[dllext].a
 #define sources $($[varname])
 $[target] : $[sources]
-#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+#if $[filter %.mm %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[STATIC_LIB_C++]
 #else
 $[TAB] $[STATIC_LIB_C]
@@ -558,7 +559,7 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define cxx_ld $[or $[get_ld],$[CXX]]
 #define flags $[lflags]
 $[target] : $[sources] $[static_lib_dependencies]
-#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+#if $[filter %.mm %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[link_bin_c++]
 #else
 $[TAB] $[link_bin_c]
@@ -603,7 +604,7 @@ $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
 #define cxx_ld $[or $[get_ld],$[CXX]]
 #define flags $[lflags]
 $[target] : $[sources] $[static_lib_dependencies]
-#if $[filter %.cxx %.yxx %.lxx,$[get_sources]]
+#if $[filter %.mm %.cxx %.yxx %.lxx,$[get_sources]]
 $[TAB] $[link_bin_c++]
 #else
 $[TAB] $[link_bin_c]

@@ -38,9 +38,6 @@ public:
 
   void remove_munger(CLP(GeomMunger) *munger);
 
-  // This is used only for the old Geom interface.
-  GLuint _deprecated_index;
-
   // The different variants of the display list, for storing the
   // different states the geom might have been rendered in (each using
   // a different munger).

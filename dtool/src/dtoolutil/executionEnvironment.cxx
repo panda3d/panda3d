@@ -29,7 +29,7 @@
 #ifdef __APPLE__
 // This is for _NSGetExecutablePath() and _NSGetEnviron().
 #include <mach-o/dyld.h>
-#include <crt_externs.h>
+//#include <crt_externs.h>
 #define environ (*_NSGetEnviron())
 #endif
 
@@ -192,9 +192,13 @@ ns_get_environment_variable(const string &var) const {
 
   // Some special case variables.  We virtually stuff these values
   // into the Panda environment, shadowing whatever values they have
-  // the true environment, so they can be used in config files.
-  if (var == "TEMP") {
+  // in the true environment, so they can be used in config files.
+  if (var == "HOME") {
+    return Filename::get_home_directory().to_os_specific();
+  } else if (var == "TEMP") {
     return Filename::get_temp_directory().to_os_specific();
+  } else if (var == "APP") {
+    return Filename::get_app_directory().to_os_specific();
   } else if (var == "USER_APPDATA") {
     return Filename::get_user_appdata_directory().to_os_specific();
   } else if (var == "COMMON_APPDATA") {
@@ -476,8 +480,8 @@ read_args() {
   // And on Mac, we have _NSGetExecutablePath.
   if (_binary_name.empty()) {
     char *pathbuf = new char[PATH_MAX];
-    uint32_t *bufsize;
-    if (_NSGetExecutablePath(pathbuf, bufsize) == 0) {
+    uint32_t bufsize = PATH_MAX;
+    if (_NSGetExecutablePath(pathbuf, &bufsize) == 0) {
       _binary_name = pathbuf;
     }
     delete[] pathbuf;

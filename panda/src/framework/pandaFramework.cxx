@@ -1510,7 +1510,7 @@ task_event(GenericAsyncTask *task, void *data) {
 AsyncTask::DoneStatus PandaFramework::
 task_igloop(GenericAsyncTask *task, void *data) {
   PandaFramework *self = (PandaFramework *)data;
-  
+
   if (self->_engine != (GraphicsEngine *)NULL) {
     self->_engine->render_frame();
   }

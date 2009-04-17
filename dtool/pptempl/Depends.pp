@@ -53,6 +53,11 @@
       #define lib_is_static 1
     #end static_lib_target
   #endif
+  #if $[LINK_ALL_STATIC]
+    #forscopes ss_lib_target lib_target
+      #define lib_is_static 1
+    #end ss_lib_target lib_target
+  #endif
 
   #forscopes metalib_target lib_target noinst_lib_target test_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
     // We can optimize quite a bit by evaluating now several of the key

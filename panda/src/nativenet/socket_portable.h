@@ -257,9 +257,9 @@ const int LOCAL_CONNECT_BLOCKING = EINPROGRESS;
 #include <signal.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <netinet/in_systm.h>
+//#include <netinet/in_systm.h>
 #include <netinet/tcp.h>
-#include <netinet/ip.h>
+//#include <netinet/ip.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>

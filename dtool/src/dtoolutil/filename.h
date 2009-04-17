@@ -84,7 +84,9 @@ PUBLISHED:
                             const string &suffix = string(),
                             Type type = T_general);
 
+  static const Filename &get_home_directory();
   static const Filename &get_temp_directory();
+  static const Filename &get_app_directory();
   static const Filename &get_user_appdata_directory();
   static const Filename &get_common_appdata_directory();
 
@@ -230,8 +232,12 @@ protected:
 
   int _flags;
 
+  static bool _got_home_directory;
+  static Filename _home_directory;
   static bool _got_temp_directory;
   static Filename _temp_directory;
+  static bool _got_app_directory;
+  static Filename _app_directory;
   static bool _got_user_appdata_directory;
   static Filename _user_appdata_directory;
   static bool _got_common_appdata_directory;

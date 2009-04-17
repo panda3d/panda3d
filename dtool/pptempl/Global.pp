@@ -432,6 +432,16 @@
 #defer shared_lib_c++ $[SHARED_LIB_C++]
 #endif  // USE_TAU
 
+#defer dynamic_lib_ext $[DYNAMIC_LIB_EXT]
+#defer bundle_ext $[BUNDLE_EXT]
+
+#if $[LINK_ALL_STATIC]
+#defer shared_lib_c $[STATIC_LIB_C]
+#defer shared_lib_c++ $[STATIC_LIB_C++]
+#defer dynamic_lib_ext $[STATIC_LIB_EXT]
+#defer bundle_ext
+#endif  // LINK_ALL_STATIC
+
 
 // This takes advantage of the above two variables to get the actual
 // list of local libraries we are to link with, eliminating those that
