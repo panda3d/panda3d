@@ -3834,7 +3834,7 @@ class Default:
     pass
 
 superLogFile = None
-def startSuperLog():
+def startSuperLog(customFunction = None):
     global superLogFile
     
     if(not superLogFile):
@@ -3848,8 +3848,11 @@ def startSuperLog():
                     del vars['__builtins__']
                 for i in vars:
                     vars[i] = safeReprTypeOnFail(vars[i]) 
+                if(customFunction):
+                    superLogFile.write( "before = %s"%customFunction())
                 superLogFile.write( "%s(%s):%s:%s\n"%(a.f_code.co_filename.split("\\")[-1],a.f_code.co_firstlineno, a.f_code.co_name, vars))
-
+                if(customFunction):
+                    superLogFile.write( "after = %s"%customFunction())
                 return trace_dispatch
         sys.settrace(trace_dispatch)
       
