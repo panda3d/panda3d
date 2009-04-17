@@ -1,4 +1,4 @@
-#define BUILD_DIRECTORY $[BUILD_IPHONE_DEVKIT]
+#define BUILD_DIRECTORY $[BUILD_IPHONE]
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c 

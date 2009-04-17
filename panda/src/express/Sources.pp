@@ -187,7 +187,7 @@
     #define UNIX_SYS_LIBS dl
   #endif
   #define WIN_SYS_LIBS shell32.lib
-  #define OSX_SYS_FRAMEWORKS Foundation $[if $[not $[BUILD_IPHONE_DEVKIT]],AppKit]
+  #define OSX_SYS_FRAMEWORKS Foundation $[if $[not $[BUILD_IPHONE]],AppKit]
 
 #end lib_target
 
