@@ -7,12 +7,8 @@
 #define DIR_TYPE metalib
 #define BUILDING_DLL BUILDING_PANDAPHYSICS
 
-#if $[eq $[LINK_IN_PHYSICS],]
-  // We don't have any components if we're linking the Physics library
-  // directly into Panda.
-  #define COMPONENT_LIBS \
-      physics particlesystem
-#endif
+#define COMPONENT_LIBS \
+    physics particlesystem
 
 #define LOCAL_LIBS linmath putil express
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \

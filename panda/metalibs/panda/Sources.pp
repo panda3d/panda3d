@@ -26,18 +26,6 @@
   interrogatedb:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m prc:c
 
-#if $[LINK_IN_GL]
-  #define BUILDING_DLL $[BUILDING_DLL] BUILDING_PANDAGL
-  #define COMPONENT_LIBS $[COMPONENT_LIBS] \
-    glgsg glxdisplay wgldisplay
-#endif
-
-#if $[LINK_IN_PHYSICS]
-  #define BUILDING_DLL $[BUILDING_DLL] BUILDING_PANDAPHYSICS
-  #define COMPONENT_LIBS $[COMPONENT_LIBS] \
-    physics particlesystem
-#endif
-
 #begin metalib_target
   #define TARGET panda
 

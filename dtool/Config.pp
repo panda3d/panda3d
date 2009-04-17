@@ -883,13 +883,6 @@
 // on Windows.  Some Windows compilers may not support this syntax.
 #defer EXPORT_TEMPLATES yes
 
-// Define this to explicitly link in the various external drivers, which
-// are normally separate, as part of the Panda library.
-//#define LINK_IN_GL yes
-//#define LINK_IN_DX yes
-//#define LINK_IN_EGG yes
-//#define LINK_IN_PHYSICS yes
-
 // Define USE_COMPILER to switch the particular compiler that should
 // be used.  A handful of tokens are recognized, depending on BUILD_TYPE.
 // This may also be further customized within Global.$[BUILD_TYPE].pp.

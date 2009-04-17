@@ -8,13 +8,9 @@
 #define BUILDING_DLL BUILDING_PANDAGL
 #define BUILD_DIRECTORY $[HAVE_GL]
 
-#if $[eq $[LINK_IN_GL],]
-  // We don't have any components if we're linking the GL library
-  // directly into Panda.
-  #define COMPONENT_LIBS \
-      glgsg glxdisplay  \
-      wgldisplay osxdisplay
-#endif
+#define COMPONENT_LIBS \
+    glgsg glxdisplay  \
+    wgldisplay osxdisplay
 
 #define LOCAL_LIBS gsgbase display express
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \

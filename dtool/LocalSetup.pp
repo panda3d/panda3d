@@ -380,12 +380,6 @@ $[cdefine NOTIFY_DEBUG]
    makes sense to MSVC++. */
 $[cdefine EXPORT_TEMPLATES]
 
-/* Define if we are linking PANDAGL in with PANDA. */
-$[cdefine LINK_IN_GL]
-
-/* Define if we are linking PANDAPHYSICS in with PANDA. */
-$[cdefine LINK_IN_PHYSICS]
-
 /* The compiled-in character(s) to expect to separate different
    components of a path list (e.g. $PRC_PATH). */
 # define DEFAULT_PATHSEP "$[DEFAULT_PATHSEP]"

@@ -13,18 +13,6 @@
 #include "config_pstats.h"
 #endif
 
-#ifdef LINK_IN_GL
-#include "config_glgsg.h"
-#ifdef HAVE_WGL
-#include "config_wgldisplay.h"
-#endif
-#endif
-
-#ifdef LINK_IN_PHYSICS
-#include "config_physics.h"
-#include "config_particlesystem.h"
-#endif
-
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to load libpanda.so/.dll will fail if they inadvertently
 // link with the wrong version of libdtool.so/.dll.
@@ -47,17 +35,5 @@ init_libpanda() {
   init_libpnmimagetypes();
 #ifdef DO_PSTATS
   init_libpstatclient();
-#endif
-
-#ifdef LINK_IN_GL
-  init_libglgsg();
-#ifdef HAVE_WGL
-  init_libwgldisplay();
-#endif
-#endif
-
-#ifdef LINK_IN_PHYSICS
-  init_libphysics();
-  init_libparticlesystem();
 #endif
 }

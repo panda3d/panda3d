@@ -4,11 +4,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pandaphysics.h"
-
-#ifndef LINK_IN_PHYSICS
 #include "config_physics.h"
 #include "config_particlesystem.h"
-#endif
 
 // By including checkPandaVersion.h, we guarantee that runtime
 // attempts to load libpandaphysics.so/.dll will fail if they
@@ -26,8 +23,6 @@
 ////////////////////////////////////////////////////////////////////
 void
 init_libpandaphysics() {
-#ifndef LINK_IN_PHYSICS
   init_libphysics();
   init_libparticlesystem();
-#endif
 }
