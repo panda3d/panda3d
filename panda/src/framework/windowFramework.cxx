@@ -162,9 +162,6 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
                         FrameBufferProperties::get_default(),
                         props, GraphicsPipe::BF_require_window,
                         gsg, NULL);
-  framework_cat.info()
-    << "winout = " << winout << "\n";
-  
   if (winout != (GraphicsOutput *)NULL) {
     _window = DCAST(GraphicsWindow, winout);
     _window->request_properties(props);
