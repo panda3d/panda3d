@@ -181,7 +181,18 @@ set_description(const string &description) {
       }
       return;
     }
-      
+
+    if (description.empty()) {
+      // If the new description is empty, we don't do anything.
+      return;
+    }
+
+    if (_description.empty()) {
+      // If the previous description was empty, we quietly replace it.
+      _description = description;
+      return;
+    }
+
     prc_cat->warning()
       << "changing description for ConfigVariable " 
       << get_name() << ".\n";

@@ -67,6 +67,10 @@ PUBLISHED:
   INLINE void set_int_word(int n, int value);
   INLINE void set_int64_word(int n, PN_int64 value);
   INLINE void set_double_word(int n, double value);
+
+protected:
+  INLINE bool is_constructed() const;
+  void report_unconstructed() const;
 };
 
 #include "configVariable.I"

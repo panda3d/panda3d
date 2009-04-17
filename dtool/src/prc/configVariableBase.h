@@ -21,6 +21,7 @@
 #include "configDeclaration.h"
 #include "configVariableManager.h"
 #include "vector_string.h"
+#include "pset.h"
 
 // Use this macro to wrap around a description passed to a
 // ConfigVariable constructor.  This allows the description to be
@@ -69,7 +70,13 @@ PUBLISHED:
   INLINE void write(ostream &out) const;
 
 protected:
+  void record_unconstructed() const;
+  bool was_unconstructed() const;
+
   ConfigVariableCore *_core;
+
+  typedef pset<const ConfigVariableBase *> Unconstructed;
+  static Unconstructed *_unconstructed;
 };
 
 INLINE ostream &operator << (ostream &out, const ConfigVariableBase &variable);

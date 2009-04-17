@@ -14,6 +14,8 @@
 
 #include "configVariableBase.h"
 
+ConfigVariableBase::Unconstructed *ConfigVariableBase::_unconstructed;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: ConfigVariableBase::Constructor
 //       Access: Protected
@@ -26,6 +28,13 @@ ConfigVariableBase(const string &name,
                    const string &description, int flags) :
   _core(ConfigVariableManager::get_global_ptr()->make_variable(name))
 {
+#ifndef NDEBUG
+  if (was_unconstructed()) {
+    prc_cat->error()
+      << "Late constructing " << this << ": " << name << "\n";
+  }
+#endif  // NDEBUG
+
   if (value_type != VT_undefined) {
     _core->set_value_type(value_type);
   }
@@ -38,3 +47,43 @@ ConfigVariableBase(const string &name,
     _core->set_flags(flags);
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableBase::record_unconstructed
+//       Access: Protected
+//  Description: Records that this config variable was referenced
+//               before it was constructed (presumably a static-init
+//               ordering issue).  This is used to print a useful
+//               error message later, when the constructor is actually
+//               called (and we then know what the name of the
+//               variable is).
+////////////////////////////////////////////////////////////////////
+void ConfigVariableBase::
+record_unconstructed() const {
+#ifndef NDEBUG
+  if (_unconstructed == (Unconstructed *)NULL) {
+    _unconstructed = new Unconstructed;
+  }
+  _unconstructed->insert(this);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ConfigVariableBase::was_unconstructed
+//       Access: Protected
+//  Description: Returns true if record_unconstructed() was ever
+//               called on this pointer, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool ConfigVariableBase::
+was_unconstructed() const {
+#ifndef NDEBUG
+  if (_unconstructed != (Unconstructed *)NULL) {
+    Unconstructed::const_iterator ui = _unconstructed->find(this);
+    if (ui != _unconstructed->end()) {
+      return true;
+    }
+  }
+#endif
+  return false;
+}
+
