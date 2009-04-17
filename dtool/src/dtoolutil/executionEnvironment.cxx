@@ -29,7 +29,9 @@
 #ifdef __APPLE__
 // This is for _NSGetExecutablePath() and _NSGetEnviron().
 #include <mach-o/dyld.h>
-//#include <crt_externs.h>
+#ifndef BUILDING_IPHONE
+#include <crt_externs.h>  // For some reason, not in the IPhone SDK.
+#endif
 #define environ (*_NSGetEnviron())
 #endif
 
