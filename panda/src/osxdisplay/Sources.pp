@@ -20,7 +20,7 @@
      osxGraphicsStateGuardian.h
     
   #define INCLUDED_SOURCES \
-    config_osxdisplay.cxx osxGraphicsPipe.cxx osxGraphicsWindow.mm osxGraphicsStateGuardian.cxx osxGraphicsBuffer.cxx
+    config_osxdisplay.cxx osxGraphicsPipe.cxx osxGraphicsStateGuardian.cxx osxGraphicsBuffer.cxx
 
   #define SOURCES \
     $[INSTALL_HEADERS] osxGraphicsWindow.mm
