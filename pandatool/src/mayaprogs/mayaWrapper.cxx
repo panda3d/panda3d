@@ -33,8 +33,12 @@
   #include <unistd.h>
   #define _putenv putenv
 #endif
+#ifdef __APPLE__
+  #include <sys/malloc.h>
+#else
+  #include <malloc.h>
+#endif
 #include <stdlib.h>
-#include <malloc.h>
 #include <stdio.h>
 #include <signal.h>
 #define PATH_MAX 1024
