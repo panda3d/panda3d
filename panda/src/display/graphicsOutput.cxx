@@ -329,10 +329,15 @@ add_render_texture(Texture *tex, RenderTextureMode mode,
   tex->set_size_padded(get_x_size(), get_y_size());
   
   if (mode == RTM_bind_or_copy) {
-    if (!_gsg->get_supports_render_texture() || !support_render_texture) {
-      // Binding is not supported or it is disabled, so just fall back
-      // to copy instead.
+    // Binding is not supported or it is disabled, so just fall back
+    // to copy instead.
+    if (!support_render_texture) {
       mode = RTM_copy_texture;
+    } else {
+      nassertv(_gsg != NULL);
+      if (!_gsg->get_supports_render_texture()) {
+        mode = RTM_copy_texture;
+      }
     }
   }
 
