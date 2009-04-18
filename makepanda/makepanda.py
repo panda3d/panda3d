@@ -2141,22 +2141,23 @@ if PkgSkip("OPENSSL")==0:
 # DIRECTORY: panda/src/downloadertools/
 #
 
-OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'ADVAPI']
+if PkgSkip("ZLIB")==0:
+    OPTS=['DIR:panda/src/downloadertools', 'ZLIB', 'ADVAPI']
 
-TargetAdd('multify_multify.obj', opts=OPTS, input='multify.cxx')
-TargetAdd('multify.exe', input=['multify_multify.obj'])
-TargetAdd('multify.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-TargetAdd('multify.exe', opts=OPTS)
+    TargetAdd('multify_multify.obj', opts=OPTS, input='multify.cxx')
+    TargetAdd('multify.exe', input=['multify_multify.obj'])
+    TargetAdd('multify.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+    TargetAdd('multify.exe', opts=OPTS)
 
-TargetAdd('pzip_pzip.obj', opts=OPTS, input='pzip.cxx')
-TargetAdd('pzip.exe', input=['pzip_pzip.obj'])
-TargetAdd('pzip.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-TargetAdd('pzip.exe', opts=OPTS)
+    TargetAdd('pzip_pzip.obj', opts=OPTS, input='pzip.cxx')
+    TargetAdd('pzip.exe', input=['pzip_pzip.obj'])
+    TargetAdd('pzip.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+    TargetAdd('pzip.exe', opts=OPTS)
 
-TargetAdd('punzip_punzip.obj', opts=OPTS, input='punzip.cxx')
-TargetAdd('punzip.exe', input=['punzip_punzip.obj'])
-TargetAdd('punzip.exe', input=COMMON_PANDA_LIBS_PYSTUB)
-TargetAdd('punzip.exe', opts=OPTS)
+    TargetAdd('punzip_punzip.obj', opts=OPTS, input='punzip.cxx')
+    TargetAdd('punzip.exe', input=['punzip_punzip.obj'])
+    TargetAdd('punzip.exe', input=COMMON_PANDA_LIBS_PYSTUB)
+    TargetAdd('punzip.exe', opts=OPTS)
 
 #
 # DIRECTORY: panda/src/windisplay/
@@ -2365,13 +2366,15 @@ if (sys.platform != "win32" and sys.platform != "darwin"):
 
 if (sys.platform == 'darwin'):
     OPTS=['DIR:panda/src/osxdisplay', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
-    TargetAdd('osxdisplay_composite.obj', opts=OPTS, input='osxdisplay_composite.mm')
+    TargetAdd('osxdisplay_composite1.obj', opts=OPTS, input='osxdisplay_composite1.cxx')
+    TargetAdd('osxdisplay_osxGraphicsWindow.obj', opts=OPTS, input='osxGraphicsWindow.mm')
     OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
     TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
     TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
     TargetAdd('libpandagl.dll', input='glgsg_config_glgsg.obj')
     TargetAdd('libpandagl.dll', input='glgsg_glgsg.obj')
-    TargetAdd('libpandagl.dll', input='osxdisplay_composite.obj')
+    TargetAdd('libpandagl.dll', input='osxdisplay_composite1.obj')
+    TargetAdd('libpandagl.dll', input='osxdisplay_osxGraphicsWindow.obj')
     TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
     TargetAdd('libpandagl.dll', input='libpandafx.dll')
     TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
