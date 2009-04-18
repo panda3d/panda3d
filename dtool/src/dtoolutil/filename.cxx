@@ -17,6 +17,7 @@
 #include "dSearchPath.h"
 #include "executionEnvironment.h"
 #include "vector_string.h"
+#include "atomicAdjust.h"
 
 #include <stdio.h>  // For rename() and tempnam()
 #include <time.h>   // for clock() and time()
@@ -48,16 +49,11 @@
 #include <unistd.h>
 #endif
 
-bool Filename::_got_home_directory;
-Filename Filename::_home_directory;
-bool Filename::_got_temp_directory;
-Filename Filename::_temp_directory;
-bool Filename::_got_app_directory;
-Filename Filename::_app_directory;
-bool Filename::_got_user_appdata_directory;
-Filename Filename::_user_appdata_directory;
-bool Filename::_got_common_appdata_directory;
-Filename Filename::_common_appdata_directory;
+Filename *Filename::_home_directory;
+Filename *Filename::_temp_directory;
+Filename *Filename::_app_directory;
+Filename *Filename::_user_appdata_directory;
+Filename *Filename::_common_appdata_directory;
 TypeHandle Filename::_type_handle;
 
 #ifdef WIN32
@@ -454,51 +450,57 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_home_directory() {
-  if (!_got_home_directory) {
+  if (AtomicAdjust::get_ptr(_home_directory) == NULL) {
+    Filename home_directory;
+
     // In all environments, check $HOME first.
     char *home = getenv("HOME");
     if (home != (char *)NULL) {
-      _home_directory = from_os_specific(home);
-      if (_home_directory.is_directory()) {
-        if (_home_directory.make_canonical()) {
-          _got_home_directory = true;
+      Filename dirname = from_os_specific(home);
+      if (dirname.is_directory()) {
+        if (dirname.make_canonical()) {
+          home_directory = dirname;
         }
       }
     }
-    if (_got_home_directory) {
-      return _home_directory;
-    }
 
+    if (home_directory.empty()) {
 #ifdef WIN32
-    char buffer[MAX_PATH];
-
-    // On Windows, fall back to the "My Documents" folder.
-    if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_PERSONAL, true)) {
-      _user_appdata_directory = from_os_specific(buffer);
-      if (_user_appdata_directory.is_directory()) {
-        if (_user_appdata_directory.make_canonical()) {
-          _got_user_appdata_directory = true;
+      char buffer[MAX_PATH];
+      
+      // On Windows, fall back to the "My Documents" folder.
+      if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_PERSONAL, true)) {
+        Filename dirname = from_os_specific(buffer);
+        if (dirname.is_directory()) {
+          if (dirname.make_canonical()) {
+            home_directory = dirname;
+          }
         }
       }
-    }
 
 #elif defined(IS_OSX)
-    _home_directory = get_osx_home_directory();
-    _got_home_directory = true;
-
+      home_directory = get_osx_home_directory();
+      
 #else
-    // Posix case: check /etc/passwd?
-
+      // Posix case: check /etc/passwd?
+      
 #endif  // WIN32
-
-    if (!_got_home_directory) {
+    }
+      
+    if (home_directory.empty()) {
       // Fallback case.
-      _home_directory = ExecutionEnvironment::get_cwd();
-      _got_home_directory = true;
+      home_directory = ExecutionEnvironment::get_cwd();
+    }
+
+    Filename *newdir = new Filename(home_directory);
+    if (AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_home_directory, NULL, newdir) != NULL) {
+      // Didn't store it.  Must have been stored by someone else.
+      assert(_home_directory != NULL);
+      delete newdir;
     }
   }
-
-  return _home_directory;
+  
+  return (*_home_directory);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -509,37 +511,43 @@ get_home_directory() {
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_temp_directory() {
-  if (!_got_temp_directory) {
+  if (AtomicAdjust::get_ptr(_temp_directory) == NULL) {
+    Filename temp_directory;
+
 #ifdef WIN32
     static const size_t buffer_size = 4096;
     char buffer[buffer_size];
     if (GetTempPath(buffer_size, buffer) != 0) {
-      _temp_directory = from_os_specific(buffer);
-      if (_temp_directory.is_directory()) {
-        if (_temp_directory.make_canonical()) {
-          _got_temp_directory = true;
+      Filename dirname = from_os_specific(buffer);
+      if (dirname.is_directory()) {
+        if (dirname.make_canonical()) {
+          temp_directory = dirname;
         }
       }
     }
 
 #elif defined(IS_OSX)
-    _temp_directory = get_osx_temp_directory();
-    _got_temp_directory = true;
+    temp_directory = get_osx_temp_directory();
 
 #else
     // Posix case.
-    _temp_directory = "/tmp";
-    _got_temp_directory = true;
+    temp_directory = "/tmp";
 #endif  // WIN32
 
-    if (!_got_temp_directory) {
+    if (temp_directory.empty()) {
       // Fallback case.
-      _temp_directory = ExecutionEnvironment::get_cwd();
-      _got_temp_directory = true;
+      temp_directory = ExecutionEnvironment::get_cwd();
+    }
+
+    Filename *newdir = new Filename(temp_directory);
+    if (AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_temp_directory, NULL, newdir) != NULL) {
+      // Didn't store it.  Must have been stored by someone else.
+      assert(_temp_directory != NULL);
+      delete newdir;
     }
   }
 
-  return _temp_directory;
+  return (*_temp_directory);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -550,37 +558,42 @@ get_temp_directory() {
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_app_directory() {
-  if (!_got_app_directory) {
+  if (AtomicAdjust::get_ptr(_app_directory) == NULL) {
+    Filename app_directory;
+
 #if defined(IS_OSX)
-    _app_directory = get_osx_app_directory();
-    _got_app_directory = !_app_directory.empty();
+    app_directory = get_osx_app_directory();
 
 #endif  // WIN32
 
-    if (!_got_app_directory) {
+    if (app_directory.empty()) {
       // Fallback case.
       Filename binary_name = ExecutionEnvironment::get_binary_name();
       if (!binary_name.empty()) {
-        _app_directory = binary_name.get_dirname();
-        _got_app_directory = !_app_directory.empty();
+        app_directory = binary_name.get_dirname();
       }
     }
-    if (!_got_app_directory) {
+    if (app_directory.empty()) {
       // Another fallback.
       Filename dtool_name = ExecutionEnvironment::get_dtool_name();
       if (!dtool_name.empty()) {
-        _app_directory = dtool_name.get_dirname();
-        _got_app_directory = !_app_directory.empty();
+        app_directory = dtool_name.get_dirname();
       }
     }
-    if (!_got_app_directory) {
+    if (app_directory.empty()) {
       // The final fallback.
-      _app_directory = ExecutionEnvironment::get_cwd();
-      _got_app_directory = true;
+      app_directory = ExecutionEnvironment::get_cwd();
+    }
+
+    Filename *newdir = new Filename(app_directory);
+    if (AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_app_directory, NULL, newdir) != NULL) {
+      // Didn't store it.  Must have been stored by someone else.
+      assert(_app_directory != NULL);
+      delete newdir;
     }
   }
 
-  return _app_directory;
+  return (*_app_directory);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -593,38 +606,44 @@ get_app_directory() {
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_user_appdata_directory() {
-  if (!_got_user_appdata_directory) {
+  if (AtomicAdjust::get_ptr(_user_appdata_directory) == NULL) {
+    Filename user_appdata_directory;
+
 #ifdef WIN32
     char buffer[MAX_PATH];
 
     if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_APPDATA, true)) {
-      _user_appdata_directory = from_os_specific(buffer);
-      if (_user_appdata_directory.is_directory()) {
-        if (_user_appdata_directory.make_canonical()) {
-          _got_user_appdata_directory = true;
+      Filename dirname = from_os_specific(buffer);
+      if (dirname.is_directory()) {
+        if (dirname.make_canonical()) {
+          user_appdata_directory = dirname;
         }
       }
     }
 
 #elif defined(IS_OSX)
-    _user_appdata_directory = get_osx_user_appdata_directory();
-    _got_user_appdata_directory = true;
+    user_appdata_directory = get_osx_user_appdata_directory();
 
 #else
     // Posix case.
-    _user_appdata_directory = get_home_directory();
-    _got_user_appdata_directory = true;
+    user_appdata_directory = get_home_directory();
 
 #endif  // WIN32
 
-    if (!_got_user_appdata_directory) {
+    if (user_appdata_directory.empty()) {
       // Fallback case.
-      _user_appdata_directory = ExecutionEnvironment::get_cwd();
-      _got_user_appdata_directory = true;
+      user_appdata_directory = ExecutionEnvironment::get_cwd();
+    }
+
+    Filename *newdir = new Filename(user_appdata_directory);
+    if (AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_user_appdata_directory, NULL, newdir) != NULL) {
+      // Didn't store it.  Must have been stored by someone else.
+      assert(_user_appdata_directory != NULL);
+      delete newdir;
     }
   }
 
-  return _user_appdata_directory;
+  return (*_user_appdata_directory);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -636,37 +655,43 @@ get_user_appdata_directory() {
 ////////////////////////////////////////////////////////////////////
 const Filename &Filename::
 get_common_appdata_directory() {
-  if (!_got_common_appdata_directory) {
+  if (AtomicAdjust::get_ptr(_common_appdata_directory) == NULL) {
+    Filename common_appdata_directory;
+
 #ifdef WIN32
     char buffer[MAX_PATH];
 
     if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_COMMON_APPDATA, true)) {
-      _common_appdata_directory = from_os_specific(buffer);
-      if (_common_appdata_directory.is_directory()) {
-        if (_common_appdata_directory.make_canonical()) {
-          _got_common_appdata_directory = true;
+      Filename dirname = from_os_specific(buffer);
+      if (dirname.is_directory()) {
+        if (dirname.make_canonical()) {
+          common_appdata_directory = dirname;
         }
       }
     }
 
 #elif defined(IS_OSX)
-    _common_appdata_directory = get_osx_common_appdata_directory();
-    _got_common_appdata_directory = true;
+    common_appdata_directory = get_osx_common_appdata_directory();
 
 #else
     // Posix case.
-    _common_appdata_directory = "/var";
-    _got_common_appdata_directory = true;
+    common_appdata_directory = "/var";
 #endif  // WIN32
 
-    if (!_got_common_appdata_directory) {
+    if (common_appdata_directory.empty()) {
       // Fallback case.
-      _common_appdata_directory = ExecutionEnvironment::get_cwd();
-      _got_common_appdata_directory = true;
+      common_appdata_directory = ExecutionEnvironment::get_cwd();
+    }
+
+    Filename *newdir = new Filename(common_appdata_directory);
+    if (AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_common_appdata_directory, NULL, newdir) != NULL) {
+      // Didn't store it.  Must have been stored by someone else.
+      assert(_common_appdata_directory != NULL);
+      delete newdir;
     }
   }
 
-  return _common_appdata_directory;
+  return (*_common_appdata_directory);
 }
 
 ////////////////////////////////////////////////////////////////////

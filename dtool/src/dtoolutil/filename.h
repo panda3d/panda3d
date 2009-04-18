@@ -232,16 +232,11 @@ protected:
 
   int _flags;
 
-  static bool _got_home_directory;
-  static Filename _home_directory;
-  static bool _got_temp_directory;
-  static Filename _temp_directory;
-  static bool _got_app_directory;
-  static Filename _app_directory;
-  static bool _got_user_appdata_directory;
-  static Filename _user_appdata_directory;
-  static bool _got_common_appdata_directory;
-  static Filename _common_appdata_directory;
+  static Filename *_home_directory;
+  static Filename *_temp_directory;
+  static Filename *_app_directory;
+  static Filename *_user_appdata_directory;
+  static Filename *_common_appdata_directory;
 
 public:
   static TypeHandle get_class_type() {
