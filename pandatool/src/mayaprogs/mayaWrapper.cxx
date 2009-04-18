@@ -1,14 +1,13 @@
 ///////////////////////////////////////////////////////////////////////
 //
-// Under windows, when multiple versions of maya are installed, 
-// maya2egg can accidentally use the wrong version of OpenMaya.dll.
-// This small wrapper program alters your PATH and MAYA_LOCATION
+// When multiple versions of maya are installed, maya2egg can
+// accidentally use the wrong version of the OpenMaya libraries.
+// This small wrapper program alters your PATH, MAYA_LOCATION, etc
 // environment variables in order to ensure that maya2egg finds the
-// right DLLs.
+// right ligraries.
 //
-// To use this wrapper, maya2egg.exe must be renamed to 
-// maya2egg-wrapped.exe.  Then, this wrapper program must be
-// installed as maya2egg.exe
+// To use this wrapper, maya2egg must be renamed to maya2egg-wrapped.
+// Then, this wrapper program must be installed as maya2egg.
 //
 ///////////////////////////////////////////////////////////////////////
 
@@ -48,8 +47,7 @@
   #include <mach-o/dyld.h>
 #endif
 
-#if defined(_WIN32)
-struct { char *ver, *key; } reg_keys[] = {
+struct { char *ver, *key; } maya_versions[] = {
   { "MAYA6",    "6.0" },
   { "MAYA65",   "6.5" },
   { "MAYA7",    "7.0" },
@@ -60,15 +58,16 @@ struct { char *ver, *key; } reg_keys[] = {
   { 0, 0 },
 };
 
-char *getRegistryKey(char *ver) {
-  for (int i=0; reg_keys[i].ver != 0; i++) {
-    if (strcmp(reg_keys[i].ver, ver)==0) {
-      return reg_keys[i].key;
+char *getVersionNumber(char *ver) {
+  for (int i=0; maya_versions[i].ver != 0; i++) {
+    if (strcmp(maya_versions[i].ver, ver)==0) {
+      return maya_versions[i].key;
     }
   }
   return 0;
 }
 
+#if defined(_WIN32)
 void getMayaLocation(char *ver, char *loc)
 {
   char fullkey[1024], *developer;
@@ -114,17 +113,50 @@ void getWrapperName(char *prog)
   }
   prog[len-4] = 0;
 }
+
 #elif defined(__APPLE__)
+void getMayaLocation(char *ver, char *loc)
+{
+  char mpath[64];
+  sprintf(mpath, "/Applications/Autodesk/maya%s/Maya.app/Contents", ver);
+  struct stat st;
+  if(stat(mpath, &st) == 0) {
+    strcpy(loc, mpath);
+  } else {
+    loc[0] = 0;
+  }
+}
+
 void getWrapperName(char *prog)
 {
   char *pathbuf = new char[PATH_MAX];
-  uint32_t *bufsize;
-  if (_NSGetExecutablePath(pathbuf, bufsize) == 0) {
+  uint32_t bufsize = PATH_MAX;
+  if (_NSGetExecutablePath(pathbuf, &bufsize) == 0) {
     strcpy(prog, pathbuf);
+  } else {
+    prog[0] = 0;
   }
   delete[] pathbuf;
 }
+
 #else
+void getMayaLocation(char *ver, char *loc)
+{
+  char mpath[64];
+  sprintf(mpath, "/usr/autodesk/maya%s", ver);
+  struct stat st;
+  if(stat(mpath, &st) == 0) {
+    strcpy(loc, mpath);
+  } else {
+    sprintf(mpath, "/usr/aw/maya%s", ver);
+    if(stat(mpath, &st) == 0) {
+      strcpy(loc, mpath);
+    } else {
+      loc[0] = 0;
+    }
+  }
+}
+
 void getWrapperName(char *prog)
 {
   char readlinkbuf[PATH_MAX];
@@ -132,6 +164,8 @@ void getWrapperName(char *prog)
   if (pathlen > 0) {
     readlinkbuf[pathlen] = 0;
     strcpy(prog, readlinkbuf);
+  } else {
+    prog[0] = 0;
   }
 }
 #endif
@@ -139,54 +173,35 @@ void getWrapperName(char *prog)
 int main(int argc, char **argv)
 {
   char loc[1024], prog[1024];
-  char *path, *env1, *env2, *env3, *env4; int len;
+  char *key, *path, *env1, *env2, *env3, *env4; int len;
   
-#ifdef _WIN32
-  STARTUPINFO si; PROCESS_INFORMATION pi;
-  char *key, *cmd;
-  
-  key = getRegistryKey(TOSTRING(MAYAVERSION));
+  key = getVersionNumber(TOSTRING(MAYAVERSION));
   if (key == 0) {
     printf("MayaWrapper: unknown maya version %s\n", TOSTRING(MAYAVERSION));
     exit(1);
   }
+  
   getMayaLocation(key, loc);
   if (loc[0]==0) {
     printf("Cannot locate %s - it does not appear to be installed\n", TOSTRING(MAYAVERSION));
     exit(1);
   }
-
-  getWrapperName(prog);
-  if (prog[0]==0) {
-    printf("mayaWrapper cannot determine its own filename (bug)\n");
-    exit(1);
-  }
-  strcat(prog, "-wrapped.exe");
-#else
-  if (getenv("MAYA_LOCATION") == NULL) {
-    printf("$MAYA_LOCATION is not set!\n");
-    exit(1);
-  } else {
-    strcpy(loc, getenv("MAYA_LOCATION"));
-  }
   
-  struct stat st;
-  if(stat(loc, &st) != 0) {
-    printf("The directory referred to by $MAYA_LOCATION does not exist!\n");
-    exit(1);
-  }
-
   getWrapperName(prog);
   if (prog[0]==0) {
     printf("mayaWrapper cannot determine its own filename (bug)\n");
     exit(1);
   }  
+  
+#ifdef _WIN32
+  strcat(prog, "-wrapped.exe");
+#else
   strcat(prog, "-wrapped");
 #endif
 
+#ifdef _WIN32
   path = getenv("PATH");
   if (path == 0) path = "";
-#ifdef _WIN32
   env1 = (char*)malloc(100 + strlen(loc) + strlen(path));
   sprintf(env1, "PATH=%s\\bin;%s", loc, path);
   env2 = (char*)malloc(100 + strlen(loc));
@@ -194,23 +209,32 @@ int main(int argc, char **argv)
   env3 = (char*)malloc(300 + 5*strlen(loc));
   sprintf(env3, "PYTHONPATH=%s\\bin;%s\\Python;%s\\Python\\DLLs;%s\\Python\\lib;%s\\Python\\lib\\site-packages", loc, loc, loc, loc, loc);
 #else
+#ifdef __APPLE__
+  path = getenv("DYLD_LIBRARY_PATH");
+  if (path == 0) path = "";
   env1 = (char*)malloc(100 + strlen(loc) + strlen(path));
-  sprintf(env1, "PATH=%s/bin:%s", loc, path);
+  sprintf(env1, "DYLD_LIBRARY_PATH=%s/MacOS:%s", loc, path);
+#else
+  path = getenv("LD_LIBRARY_PATH");
+  if (path == 0) path = "";
+  env1 = (char*)malloc(100 + strlen(loc) + strlen(path));
+  sprintf(env1, "LD_LIBRARY_PATH=%s/lib:%s", loc, path);
+#endif // __APPLE__
   env2 = (char*)malloc(100 + strlen(loc));
   sprintf(env2, "MAYA_LOCATION=%s", loc);
   env3 = (char*)malloc(100 + strlen(loc));
-  sprintf(env3, "PYTHONHOME=%s", loc);
-  env4 = (char*)malloc(100 + strlen(loc));
-  sprintf(env4, "LD_LIBRARY_PATH=%s/lib", loc);
+  sprintf(env3, "PYTHONHOME=%s/Frameworks/Python.framework/Versions/Current", loc);
   
   _putenv(env3);
-  _putenv(env4);
-#endif
+#endif // _WIN32
   _putenv(env1);
   _putenv(env2);
   //  _putenv(env3);
   
 #ifdef _WIN32
+  STARTUPINFO si; PROCESS_INFORMATION pi;
+  char *cmd;
+  
   cmd = GetCommandLine();
   memset(&si, 0, sizeof(si));
   si.cb = sizeof(STARTUPINFO);
