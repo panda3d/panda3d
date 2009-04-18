@@ -457,7 +457,8 @@
 // within this tree) that we must link a particular target with.  It
 // is the transitive closure of our dependent libs: the libraries we
 // depend on, plus the libraries *those* libraries depend on, and so on.
-#defer complete_local_libs $[unique $[closure all_libs,$[active_libs]]]
+#defer nonunique_complete_local_libs $[closure all_libs,$[active_libs]]
+#defer complete_local_libs $[unique $[nonunique_complete_local_libs]]
 
 // And $[complete_ipath] is the list of directories (from within this
 // tree) we should add to our -I list.  It's basically just one for

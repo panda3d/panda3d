@@ -1,6 +1,6 @@
 #define BUILD_DIRECTORY $[HAVE_INTERROGATE]
 
-#define LOCAL_LIBS cppParser pystub interrogatedb dconfig dtoolutil dtoolbase
+#define LOCAL_LIBS cppParser interrogatedb dconfig dtoolutil dtoolbase pystub
 #define USE_PACKAGES openssl
 
 #begin bin_target

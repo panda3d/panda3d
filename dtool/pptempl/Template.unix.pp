@@ -110,7 +110,15 @@
 #defer lpath $[sort $[complete_lpath]] $[other_trees_lib] $[install_lib_dir] $[get_lpath]
 
 // And $[libs] is the set of libraries we will link with.
-#defer libs $[unique $[actual_local_libs:%=%$[dllext]] $[patsubst %:m,,%:c %,%$[dllext],$[OTHER_LIBS]] $[get_libs]]
+#defer nonunique_libs $[nonunique_complete_local_libs:%=%$[dllext]] $[patsubst %:m,,%:c %,%$[dllext],$[OTHER_LIBS]] $[get_libs]
+
+// Don't use $[unique] here, since some libraries actually do need to be
+// named multiple times (when linking static).
+#if $[LINK_ALL_STATIC]
+  #defer libs $[nonunique_libs]
+#else
+  #defer libs $[unique $[nonunique_libs]]
+#endif
 
 // And $[frameworks] is the set of OSX-style frameworks we will link with.
 #defer frameworks $[unique $[get_frameworks]]

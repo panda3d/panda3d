@@ -1,4 +1,4 @@
-#define LOCAL_LIBS pystub interrogatedb dconfig dtoolutil dtoolbase
+#define LOCAL_LIBS interrogatedb dconfig dtoolutil dtoolbase pystub
 #define USE_PACKAGES openssl
 
 #begin bin_target
