@@ -29,8 +29,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("mkdir -p "+destdir+prefix+"/share/panda3d")
     oscmd("mkdir -p "+destdir+prefix+"/share/panda3d/direct")
     oscmd("mkdir -p "+destdir+prefix+libdir+"/panda3d")
-    oscmd("mkdir -p "+destdir+os.path.abspath(PPATH+"/../lib-dynload"))
-    oscmd("mkdir -p "+destdir+PPATH+"/site-packages")
+    oscmd("mkdir -p "+destdir+PPATH)
     oscmd("mkdir -p "+destdir+"/etc/ld.so.conf.d")
     WriteFile(destdir+prefix+"/share/panda3d/direct/__init__.py", "")
     oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@"+prefix+"/share/panda3d@' < "+outputdir+"/etc/Config.prc > "+destdir+"/etc/Config.prc")
@@ -51,7 +50,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("cp "+outputdir+"/bin/*               "+destdir+prefix+"/bin/")
     for base in os.listdir(outputdir+"/lib"):
         oscmd("cp "+outputdir+"/lib/"+base+" "+destdir+prefix+libdir+"/panda3d/"+base)
-    # rpmlint doesn't like it if we compile it.
+    # rpmlint doesn't like it if we compile pyc.
     #for base in os.listdir(destdir+prefix+"/share/panda3d/direct"):
     #    if ((base != "extensions") and (base != "extensions_native")):
     #        compileall.compile_dir(destdir+prefix+"/share/panda3d/direct/"+base)
