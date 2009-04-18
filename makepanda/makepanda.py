@@ -328,7 +328,12 @@ if (COMPILER=="LINUX"):
     
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
-            LibDirectory(pkg, SDK[pkg] + '/lib')
+            # On OSX, the dir *can* be named 'MacOS' instead of 'lib'.
+            if (sys.platform == "darwin"):
+                if (os.path.isdir(SDK[pkg] + "/lib")):   LibDirectory(pkg, SDK[pkg] + "/lib")
+                if (os.path.isdir(SDK[pkg] + "/MacOS")): LibDirectory(pkg, SDK[pkg] + "/MacOS")
+            else:
+                LibDirectory(pkg, SDK[pkg] + "/lib")
             IncDirectory(pkg, SDK[pkg] + "/include")
             DefSymbol(pkg, "MAYAVERSION", pkg)
     
