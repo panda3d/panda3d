@@ -65,8 +65,8 @@ TypeHandle RenderState::_type_handle;
 ////////////////////////////////////////////////////////////////////
 RenderState::
 RenderState() : 
-  _lock("RenderState"),
-  _flags(0)
+  _flags(0),
+  _lock("RenderState")
 {
   // Allocate the _attributes array.
   RenderAttribRegistry *reg = RenderAttribRegistry::get_global_ptr();
@@ -94,9 +94,9 @@ RenderState() :
 ////////////////////////////////////////////////////////////////////
 RenderState::
 RenderState(const RenderState &copy) :
-  _lock("RenderState"),
   _filled_slots(copy._filled_slots),
-  _flags(0)
+  _flags(0),
+  _lock("RenderState")
 {
   // Allocate the _attributes array.
   RenderAttribRegistry *reg = RenderAttribRegistry::get_global_ptr();
@@ -170,7 +170,6 @@ RenderState::
 ////////////////////////////////////////////////////////////////////
 bool RenderState::
 operator < (const RenderState &other) const {
-  RenderAttribRegistry *reg = RenderAttribRegistry::quick_get_global_ptr();
   SlotMask mask = _filled_slots | other._filled_slots;
   int slot = mask.get_lowest_on_bit();
   while (slot >= 0) {
