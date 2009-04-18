@@ -1056,11 +1056,22 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, bool fshader)
   if (override != (int)CG_PROFILE_UNKNOWN) {
     prog = cgCreateProgram(_cg_context, CG_SOURCE, _text.c_str(),
                            (CGprofile)override, entry, (const char **)compiler_args);
-    if (cgGetError() == CG_NO_ERROR) {
+    err = cgGetError();
+    if (err == CG_NO_ERROR) {
       return prog;
     }
-    if (prog != 0) {
-      cgDestroyProgram(prog);
+    if (err == CG_COMPILER_ERROR) {
+      string listing = cgGetLastListing(_cg_context);
+      vector_string errlines;
+      tokenize(listing, errlines, "\n");
+      for (int i=0; i<(int)errlines.size(); i++) {
+        string line = trim(errlines[i]);
+        if (line != "") {
+          gobj_cat.error() << get_filename() << ": " << errlines[i] << "\n";
+        }
+      }
+    } else {
+      gobj_cat.error() << get_filename() << ": " << cgGetErrorString(err) << "\n";
     }
     if (fshader) {
       gobj_cat.error() << "Fragment shader failed to compile with profile '"
@@ -1068,6 +1079,9 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, bool fshader)
     } else {
       gobj_cat.error() << "Vertex shader failed to compile with profile '"
         << cgGetProfileString((CGprofile)override) << "'!\n";
+    }
+    if (prog != 0) {
+      cgDestroyProgram(prog);
     }
     return 0;
   }
