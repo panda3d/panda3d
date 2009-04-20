@@ -35,7 +35,7 @@ PUBLISHED:
   PandaNode *get_node() const;
 
 private:
-  PandaNode *_node;
+  PT(PandaNode) _node;
 
 protected:
   // Inherited from DataNode
