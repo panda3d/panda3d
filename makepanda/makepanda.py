@@ -653,15 +653,15 @@ def CompileLink(dll, obj, opts):
         cmd = cmd + " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
         cmd = cmd + ' /OUT:' + dll
         if (dll.endswith(".dll")):
-            cmd = cmd + ' /IMPLIB:' + GetOutputDir() + '/lib/'+dll[10:-4]+".lib"
+            cmd = cmd + ' /IMPLIB:' + GetOutputDir() + '/lib/'+dll[len(GetOutputDir()+"/bin/"):-4]+".lib"
         for (opt, dir) in LIBDIRECTORIES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /LIBPATH:"' + dir + '"'
         for x in obj:
             if (x.endswith(".dll")):
-                cmd = cmd + ' ' + GetOutputDir() + '/lib/' + x[10:-4] + ".lib"
+                cmd = cmd + ' ' + GetOutputDir() + '/lib/' + x[len(GetOutputDir()+"/bin/"):-4] + ".lib"
             elif (x.endswith(".lib")):
                 dname = x[:-4]+".dll"
-                if (os.path.exists(GetOutputDir()+"/bin/" + x[10:-4] + ".dll")):
+                if (os.path.exists(GetOutputDir()+"/bin/" + x[len(GetOutputDir()+"/bin/"):-4] + ".dll")):
                     exit("Error: in makepanda, specify "+dname+", not "+x)
                 cmd = cmd + ' ' + x
             elif (x.endswith(".def")):
