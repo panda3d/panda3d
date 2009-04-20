@@ -13,8 +13,10 @@ minor features as well.
 * Fix crash with collada exporter on Windows
 * ARToolkit jittering fixed
 * Now possible to override shader vertex/fragment profiles
+* Maya exporter fixed on OSX
 * Fixed depth texture crash for padded textures
 * Fixed bug that made OdeUtil.collide return empty geoms
+* Fixed crash with render.flattenStrong() when using trackball
 * Several improvements to the ODE layer
 * Performance improvements to GeoMipTerrain
 * GeoMipTerrain.setBorderStitching to fix seams between terrains
