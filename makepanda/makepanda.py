@@ -2065,7 +2065,7 @@ TargetAdd('pandafx_pandafx.obj', opts=OPTS, input='pandafx.cxx')
 TargetAdd('libpandafx_module.obj', input='libdistort.in')
 TargetAdd('libpandafx_module.obj', input='libeffects.in')
 TargetAdd('libpandafx_module.obj', opts=OPTS)
-TargetAdd('libpandafx_module.obj', opts=['IMOD:pandfx', 'ILIB:libpandafx'])
+TargetAdd('libpandafx_module.obj', opts=['IMOD:pandafx', 'ILIB:libpandafx'])
 
 TargetAdd('libpandafx.dll', input='pandafx_pandafx.obj')
 TargetAdd('libpandafx.dll', input='libpandafx_module.obj')
