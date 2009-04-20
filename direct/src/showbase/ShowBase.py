@@ -1043,7 +1043,11 @@ class ShowBase(DirectObject.DirectObject):
         # self.camera is the parent node of all cameras: a node that
         # we can move around to move all cameras as a group.
         if self.camera == None:
-            self.camera = self.render.attachNewNode('camera')
+            # We make it a ModelNode with the PTLocal flag, so that
+            # a wayward flatten operations won't attempt to mangle the
+            # camera.
+            self.camera = self.render.attachNewNode(ModelNode('camera'))
+            self.camera.node().setPreserveTransform(ModelNode.PTLocal)
             __builtin__.camera = self.camera
 
         if useCamera:
