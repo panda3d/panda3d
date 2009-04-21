@@ -372,6 +372,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lml")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcxcore")
     if (sys.platform == "darwin"):
+        LibName("ALWAYS", "-framework AppKit")
         if (PkgSkip("OPENCV")==0):   LibName("OPENCV", "-framework QuickTime")
         LibName("AGL", "-framework AGL")
         LibName("CARBON", "-framework Carbon")
@@ -1328,6 +1329,8 @@ OPTS=['DIR:dtool/src/dtoolutil', 'BUILDING:DTOOL']
 TargetAdd('dtoolutil_gnu_getopt.obj',  opts=OPTS, input='gnu_getopt.c')
 TargetAdd('dtoolutil_gnu_getopt1.obj', opts=OPTS, input='gnu_getopt1.c')
 TargetAdd('dtoolutil_composite.obj',   opts=OPTS, input='dtoolutil_composite.cxx')
+if (sys.platform == 'darwin'):
+    TargetAdd('dtoolutil_filename_assist.obj',   opts=OPTS, input='filename_assist.mm')
 
 #
 # DIRECTORY: dtool/metalibs/dtool/
@@ -1339,6 +1342,8 @@ TargetAdd('libp3dtool.dll', input='dtool_dtool.obj')
 TargetAdd('libp3dtool.dll', input='dtoolutil_gnu_getopt.obj')
 TargetAdd('libp3dtool.dll', input='dtoolutil_gnu_getopt1.obj')
 TargetAdd('libp3dtool.dll', input='dtoolutil_composite.obj')
+if (sys.platform == 'darwin'):
+    TargetAdd('libp3dtool.dll',   opts=OPTS, input='dtoolutil_filename_assist.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_composite1.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_composite2.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_indent.obj')
