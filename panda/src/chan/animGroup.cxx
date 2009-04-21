@@ -41,7 +41,8 @@ TypeHandle AnimGroup::_type_handle;
 AnimGroup::
 AnimGroup(const string &name) : 
   Namable(name),
-  _children(get_class_type())
+  _children(get_class_type()),
+  _root(NULL)
 {
 }
 
@@ -301,9 +302,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 ////////////////////////////////////////////////////////////////////
 int AnimGroup::
 complete_pointers(TypedWritable **p_list, BamReader *) {
-  nassertr(p_list[0] != TypedWritable::Null, 0);
   _root = DCAST(AnimBundle, p_list[0]);
-  for(int i = 1; i < _num_children+1; i++) {
+  for (int i = 1; i < _num_children+1; i++) {
     if (p_list[i] == TypedWritable::Null) {
       chan_cat->warning() << get_type().get_name()
                           << " Ignoring null child" << endl;

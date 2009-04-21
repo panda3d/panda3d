@@ -367,3 +367,65 @@ determine_effective_channels(const CycleData *root_cdata) {
 
   PartGroup::determine_effective_channels(root_cdata);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovingPartBase::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void MovingPartBase::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  PartGroup::write_datagram(manager, dg);
+
+  manager->write_pointer(dg, _forced_channel);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovingPartBase::complete_pointers
+//       Access: Public, Virtual
+//  Description: Receives an array of pointers, one for each time
+//               manager->read_pointer() was called in fillin().
+//               Returns the number of pointers processed.
+//
+//               This is the callback function that is made by the
+//               BamReader at some later point, after all of the
+//               required pointers have been filled in.  It is
+//               necessary because there might be forward references
+//               in a bam file; when we call read_pointer() in
+//               fillin(), the object may not have been read from the
+//               file yet, so we do not have a pointer available at
+//               that time.  Thus, instead of returning a pointer,
+//               read_pointer() simply reserves a later callback.
+//               This function provides that callback.  The calling
+//               object is responsible for keeping track of the number
+//               of times it called read_pointer() and extracting the
+//               same number of pointers out of the supplied vector,
+//               and storing them appropriately within the object.
+////////////////////////////////////////////////////////////////////
+int MovingPartBase::
+complete_pointers(TypedWritable **p_list, BamReader *manager) {
+  int pi = PartGroup::complete_pointers(p_list, manager);
+
+  if (manager->get_file_minor_ver() >= 20) {
+    _forced_channel = DCAST(AnimChannelBase, p_list[pi++]);
+  }
+
+  return pi;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MovingPartBase::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new MovingPartBase.
+////////////////////////////////////////////////////////////////////
+void MovingPartBase::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  PartGroup::fillin(scan, manager);
+
+  if (manager->get_file_minor_ver() >= 20) {
+    manager->read_pointer(scan);
+  }
+}

@@ -142,6 +142,7 @@ ConfigureFn(config_chan) {
   AnimBundleNode::register_with_read_factory();
   AnimChannelMatrixXfmTable::register_with_read_factory();
   AnimChannelMatrixDynamic::register_with_read_factory();
+  AnimChannelMatrixFixed::register_with_read_factory();
   AnimChannelScalarTable::register_with_read_factory();
   AnimChannelScalarDynamic::register_with_read_factory();
   AnimPreloadTable::register_with_read_factory();

@@ -138,7 +138,7 @@ get_shear(int, LVecBase3f &shear) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AnimChannelFixed::output
+//     Function: AnimChannelMatrixFixed::output
 //       Access: Public, Virtual
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -146,4 +146,66 @@ void AnimChannelMatrixFixed::
 output(ostream &out) const {
   AnimChannel<ACMatrixSwitchType>::output(out);
   out << ": pos " << _pos << " hpr " << _hpr << " scale " << _scale;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixFixed::register_with_read_factory
+//       Access: Public, Static
+//  Description: Tells the BamReader how to create objects of type
+//               AnimChannelMatrixFixed.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixFixed::
+register_with_read_factory() {
+  BamReader::get_factory()->register_factory(get_class_type(), make_from_bam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixFixed::write_datagram
+//       Access: Public, Virtual
+//  Description: Writes the contents of this object to the datagram
+//               for shipping out to a Bam file.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixFixed::
+write_datagram(BamWriter *manager, Datagram &dg) {
+  AnimChannel<ACMatrixSwitchType>::write_datagram(manager, dg);
+
+  _pos.write_datagram(dg);
+  _hpr.write_datagram(dg);
+  _scale.write_datagram(dg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixFixed::make_from_bam
+//       Access: Protected, Static
+//  Description: This function is called by the BamReader's factory
+//               when a new object of type AnimChannelMatrixFixed is encountered
+//               in the Bam file.  It should create the AnimChannelMatrixFixed
+//               and extract its information from the file.
+////////////////////////////////////////////////////////////////////
+TypedWritable *AnimChannelMatrixFixed::
+make_from_bam(const FactoryParams &params) {
+  AnimChannelMatrixFixed *chan = new AnimChannelMatrixFixed("", LVecBase3f::zero(), LVecBase3f::zero(), LVecBase3f::zero());
+  DatagramIterator scan;
+  BamReader *manager;
+
+  parse_params(params, scan, manager);
+  chan->fillin(scan, manager);
+
+  return chan;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AnimChannelMatrixFixed::fillin
+//       Access: Protected
+//  Description: This internal function is called by make_from_bam to
+//               read in all of the relevant data from the BamFile for
+//               the new AnimChannelMatrixFixed.
+////////////////////////////////////////////////////////////////////
+void AnimChannelMatrixFixed::
+fillin(DatagramIterator &scan, BamReader *manager) {
+  AnimChannel<ACMatrixSwitchType>::fillin(scan, manager);
+
+  _pos.read_datagram(scan);
+  _hpr.read_datagram(scan);
+  _scale.read_datagram(scan);
 }

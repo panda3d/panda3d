@@ -50,6 +50,14 @@ private:
   LVecBase3f _pos, _hpr, _scale;
 
 public:
+  static void register_with_read_factory();
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+
+protected:
+  static TypedWritable *make_from_bam(const FactoryParams &params);
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
+public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }

@@ -98,6 +98,13 @@ protected:
   PT(AnimChannelBase) _forced_channel;
 
 public:
+  virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
+
+protected:
+  void fillin(DatagramIterator &scan, BamReader *manager);
+
+public:
   virtual TypeHandle get_type() const {
     return get_class_type();
   }
