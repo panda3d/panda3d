@@ -17,7 +17,7 @@
 
 #import "EAGLView.h"
 
-#define USE_DEPTH_BUFFER 0
+#define USE_DEPTH_BUFFER 1
 
 // A class extension to declare private methods
 @interface EAGLView ()
@@ -93,6 +93,7 @@
         glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
         glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, backingWidth, backingHeight);
         glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
+        glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
     }
     
     if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {

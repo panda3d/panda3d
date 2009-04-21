@@ -1008,7 +1008,11 @@ reset() {
     _glBlendColor = null_glBlendColor;
   }
 
+#ifdef OPENGLES_1
+  _edge_clamp = GL_REPEAT;
+#else
   _edge_clamp = GL_CLAMP;
+#endif
   if (has_extension("GL_SGIS_texture_edge_clamp") ||
       is_at_least_version(1, 2)) {
     _edge_clamp = GL_CLAMP_TO_EDGE;
@@ -5514,20 +5518,29 @@ get_internal_image_format(Texture *tex) const {
     } else {
       return GL_DEPTH_COMPONENT;
     }
+
   case Texture::F_rgba:
   case Texture::F_rgbm:
     return GL_RGBA;
   case Texture::F_rgba4:
     return GL_RGBA4;
+
+#ifdef OPENGLES_1
+  case Texture::F_rgba8:
+  case Texture::F_rgba12:
+  case Texture::F_rgba16:
+  case Texture::F_rgba32:
+    return GL_RGBA;
+#else
   case Texture::F_rgba8:
     return GL_RGBA8;
   case Texture::F_rgba12:
     return GL_RGBA12;
-
   case Texture::F_rgba16:
     return GL_RGBA16F_ARB;
   case Texture::F_rgba32:
     return GL_RGBA32F_ARB;
+#endif  // OPENGLES_1
 
   case Texture::F_rgb:
     return GL_RGB;
@@ -5535,10 +5548,18 @@ get_internal_image_format(Texture *tex) const {
     return GL_RGB5;
   case Texture::F_rgba5:
     return GL_RGB5_A1;
+
+#ifdef OPENGLES_1
+  case Texture::F_rgb8:
+  case Texture::F_rgb12:
+    return GL_RGB;
+#else
   case Texture::F_rgb8:
     return GL_RGB8;
   case Texture::F_rgb12:
     return GL_RGB12;
+#endif  // OPENGLES_1
+
   case Texture::F_rgb332:
     return GL_R3_G3_B2;
 

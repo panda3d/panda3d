@@ -24,10 +24,46 @@
 @synthesize animationInterval;
 
 PandaFramework framework;
-int startup = 0;
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application { 
-  animationInterval = 1.0 / 60.0;
+  ConfigVariableString pview_args("pview-args", "");
+  int argc = pview_args.get_num_words() + 1;
+  typedef char *charp;
+  char **argv = new charp[argc + 1];
+  argv[0] = (char *)"pview";
+  for (int i = 1; i < argc; ++i) {
+    cerr << i << ". " << pview_args.get_word(i - 1) << "\n";
+    argv[i] = strdup(pview_args.get_word(i - 1).c_str());
+  }
+  argv[argc] = NULL;
+
+  framework.open_framework(argc, argv);
+  
+  WindowFramework *window = framework.open_window();
+  if (window != (WindowFramework *)NULL) {
+    window->enable_keyboard();
+    window->setup_trackball();
+    framework.get_models().instance_to(window->get_render());
+
+    if (argc < 2) {
+      window->load_default_model(framework.get_models());
+    } else {
+      window->load_models(framework.get_models(), argc, argv);
+    }
+    int hierarchy_match_flags = PartGroup::HMF_ok_part_extra |
+                                PartGroup::HMF_ok_anim_extra;
+    window->loop_animations(hierarchy_match_flags);
+    
+    window->center_trackball(framework.get_models());
+
+    ConfigVariableBool want_pstats("want-pstats", false);
+    if (want_pstats) {
+      PStatClient::connect();
+    }
+  }
+
+  ConfigVariableDouble timer_fps("timer-fps", 60.0);
+  animationInterval = 1.0 / timer_fps;
   [self startAnimation];
 } 
 
@@ -57,28 +93,8 @@ int startup = 0;
 }
 
 - (void)drawView {
-  if (startup == 0) {
-    int argc = 0;
-    char **argv = NULL;
-    framework.open_framework(argc, argv);
-    startup = 1;
-
-  } else if (startup == 1) {
-    WindowFramework *window = framework.open_window();
-    if (window != (WindowFramework *)NULL) {
-      window->enable_keyboard();
-      window->setup_trackball();
-      framework.get_models().instance_to(window->get_render());
-      
-      window->load_default_model(framework.get_models());
-      window->center_trackball(framework.get_models());
-    }
-    startup = 2;
-    
-  } else {
-    Thread *current_thread = Thread::get_current_thread();
-    framework.do_frame(current_thread);
-  }
+  Thread *current_thread = Thread::get_current_thread();
+  framework.do_frame(current_thread);
 }
 
 - (void)dealloc { 
