@@ -8308,6 +8308,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_depth_component;
     break;
   case GL_DEPTH_STENCIL_EXT:
+  case GL_DEPTH24_STENCIL8_EXT:
     type = Texture::T_float;
     format = Texture::F_depth_stencil;
     break;
