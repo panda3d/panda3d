@@ -56,6 +56,8 @@ init_libiphone() {
   PandaSystem *ps = PandaSystem::get_global_ptr();
   ps->set_system_tag("OpenGL", "window_system", "IPhone");
   ps->set_system_tag("OpenGL ES", "window_system", "IPhone");
+
+  GLESinit_classes();
 }
 
 ////////////////////////////////////////////////////////////////////
