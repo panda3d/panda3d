@@ -416,6 +416,12 @@ calc_r_c(int &r, int &c, int n) const {
       c = _text_block[r]._string.size();
     }
     return true;
+
+  } else if (n == 0) {
+    // Another special case for the beginning.
+    r = 0;
+    c = 0;
+    return true;
   }
 
   r = 0;
@@ -427,12 +433,8 @@ calc_r_c(int &r, int &c, int n) const {
   const TextRow &row = _text_block[r];
   bool is_real_char = true;
 
-  if (n == 0) {
-    // If there are no characters before n, no need to mess with soft
-    // hyphens.
-    c = row._string.size();
-    
-  } else if (row._got_soft_hyphens) {
+  nassertr(n > 0, false);
+  if (row._got_soft_hyphens) {
     // If there are any soft hyphen or soft break keys in the source
     // text, we have to scan past them to get c precisely.
     c = 0;
