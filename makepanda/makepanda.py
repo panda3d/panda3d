@@ -684,7 +684,7 @@ def CompileLink(dll, obj, opts):
         if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
         else:
             if (sys.platform == "darwin"):
-                cmd = 'g++ -undefined dynamic_lookup -dynamic -dynamiclib -o ' + dll + ' -install_name ' + GetOutputDir() + '/lib/' + os.path.basename(dll) + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
+                cmd = 'g++ -undefined dynamic_lookup -dynamic -dynamiclib -o ' + dll + ' -install_name @executable_path/../lib/' + os.path.basename(dll) + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
             else:
                 cmd = 'g++ -shared -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
         for x in obj:
@@ -3772,25 +3772,16 @@ def MakeInstallerOSX():
       if os.path.isdir(GetOutputDir()+"/plugins"): oscmd("cp -R %s/plugins Panda3D-tpl-rw/Panda3D/%s/plugins" % (GetOutputDir(), VERSION))
       for base in os.listdir(GetOutputDir()+"/lib"):
           oscmd("cp "+GetOutputDir()+"/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
-      # Loop through the binaries and libraries and execute install_name_tool on them
-      bindir = "Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION
+      # Loop through the libraries and execute install_name_tool on them
       libdir = "Panda3D-tpl-rw/Panda3D/%s/lib/" % VERSION
-      for fn in os.listdir(bindir):
-          if os.path.isfile(bindir + fn):
-              oscmd("otool -L %s%s | grep %s/lib/ > %s/tmp/otool-libs.txt" % (bindir, fn, GetOutputDir(), GetOutputDir()), True)
-              for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
-                  if len(line.strip()) > 0:
-                      libname = line.strip().split(GetOutputDir()+"/lib/")[1].split(" ")[0]
-                      oscmd("install_name_tool -change %s/lib/%s %s %s%s" % (GetOutputDir(), libname, libname, bindir, fn), True)
-              oscmd("chmod +x %s%s" % (bindir, fn), True)
       for fn in os.listdir(libdir):
           if os.path.isfile(libdir + fn):
               oscmd("install_name_tool -id %s %s%s" % (fn, libdir, fn), True)
-              oscmd("otool -L %s%s | grep %s/lib/ > %s/tmp/otool-libs.txt" % (libdir, fn, GetOutputDir(), GetOutputDir()), True)
+              oscmd("otool -L %s%s | grep @executable_path/../lib/ > %s/tmp/otool-libs.txt" % (libdir, fn, GetOutputDir()), True)
               for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
                   if len(line.strip()) > 0:
-                      libname = line.strip().split(GetOutputDir()+"/lib/")[1].split(" ")[0]
-                      oscmd("install_name_tool -change %s/lib/%s %s %s%s" % (GetOutputDir(), libname, libname, libdir, fn), True)
+                      libname = line.strip().split("@executable_path/../lib/")[1].split(" ")[0]
+                      oscmd("install_name_tool -change @executable_path/../lib/%s %s %s%s" % (libname, libname, libdir, fn), True)
               oscmd("chmod +x %s%s" % (libdir, fn), True)
       # Compile the python files
       for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct"):
