@@ -1994,6 +1994,38 @@ do_issue_light() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::framebuffer_copy_to_texture
+//       Access: Public, Virtual
+//  Description: Copy the pixels within the indicated display
+//               region from the framebuffer into texture memory.
+//
+//               If z > -1, it is the cube map index into which to
+//               copy.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+framebuffer_copy_to_texture(Texture *, int, const DisplayRegion *,
+                            const RenderBuffer &) {
+  return false;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::framebuffer_copy_to_ram
+//       Access: Public, Virtual
+//  Description: Copy the pixels within the indicated display region
+//               from the framebuffer into system memory, not texture
+//               memory.  Returns true on success, false on failure.
+//
+//               This completely redefines the ram image of the
+//               indicated texture.
+////////////////////////////////////////////////////////////////////
+bool GraphicsStateGuardian::
+framebuffer_copy_to_ram(Texture *, int, const DisplayRegion *,
+                        const RenderBuffer &) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::bind_light
 //       Access: Public, Virtual
 //  Description: Called the first time a particular light has been

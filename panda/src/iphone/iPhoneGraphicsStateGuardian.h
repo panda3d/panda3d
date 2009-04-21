@@ -14,7 +14,6 @@
 
 #ifndef IPHONEGRAPHICSSTATEGUARDIAN_H
 #define IPHONEGRAPHICSSTATEGUARDIAN_H
-//#include <ApplicationServices/ApplicationServices.h>
         
 #include "pandabase.h"
 #include "glesgsg.h"
@@ -34,9 +33,6 @@ public:
   virtual ~IPhoneGraphicsStateGuardian();
   virtual void reset();
 
-  void draw_resize_box();
-  
-        
 protected:
   virtual void *get_extension_func(const char *prefix, const char *name);
   

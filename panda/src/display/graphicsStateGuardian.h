@@ -285,6 +285,11 @@ public:
   void do_issue_color_scale();
   virtual void do_issue_light();
 
+  virtual bool framebuffer_copy_to_texture
+  (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
+  virtual bool framebuffer_copy_to_ram
+  (Texture *tex, int z, const DisplayRegion *dr, const RenderBuffer &rb);
+
   virtual void bind_light(PointLight *light_obj, const NodePath &light,
                           int light_id);
   virtual void bind_light(DirectionalLight *light_obj, const NodePath &light,

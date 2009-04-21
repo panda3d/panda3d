@@ -1590,7 +1590,7 @@ calc_projection_mat(const Lens *lens) {
   // choice in the modelview matrix.
 
   LMatrix4f result =
-    LMatrix4f::convert_mat(CS_yup_right, _current_lens->get_coordinate_system()) *
+    LMatrix4f::convert_mat(CS_yup_right, lens->get_coordinate_system()) *
     lens->get_projection_mat(_current_stereo_channel);
 
   if (_scene_setup->get_inverted()) {
@@ -1598,7 +1598,7 @@ calc_projection_mat(const Lens *lens) {
     // projection matrix.
     result *= LMatrix4f::scale_mat(1.0f, -1.0f, 1.0f);
   }
-
+  
   return TransformState::make_mat(result);
 }
 

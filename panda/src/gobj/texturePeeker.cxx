@@ -94,6 +94,7 @@ TexturePeeker(Texture *tex) {
 
   switch (_format) {
   case Texture::F_depth_stencil:
+  case Texture::F_depth_component:
   case Texture::F_color_index:
     // Not supported.
     _image.clear();

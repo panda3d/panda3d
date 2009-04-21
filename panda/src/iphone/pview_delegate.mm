@@ -24,22 +24,9 @@
 @synthesize animationInterval;
 
 PandaFramework framework;
+int startup = 0;
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application { 
-  int argc = 0;
-  char **argv = NULL;
-  framework.open_framework(argc, argv);
-
-  WindowFramework *window = framework.open_window();
-  if (window != (WindowFramework *)NULL) {
-    window->enable_keyboard();
-    window->setup_trackball();
-    framework.get_models().instance_to(window->get_render());
-
-    window->load_default_model(framework.get_models());
-    window->center_trackball(framework.get_models());
-  }
-
   animationInterval = 1.0 / 60.0;
   [self startAnimation];
 } 
@@ -70,9 +57,29 @@ PandaFramework framework;
 }
 
 - (void)drawView {
-  Thread *current_thread = Thread::get_current_thread();
-  framework.do_frame(current_thread);
- }
+  if (startup == 0) {
+    int argc = 0;
+    char **argv = NULL;
+    framework.open_framework(argc, argv);
+    startup = 1;
+
+  } else if (startup == 1) {
+    WindowFramework *window = framework.open_window();
+    if (window != (WindowFramework *)NULL) {
+      window->enable_keyboard();
+      window->setup_trackball();
+      framework.get_models().instance_to(window->get_render());
+      
+      window->load_default_model(framework.get_models());
+      window->center_trackball(framework.get_models());
+    }
+    startup = 2;
+    
+  } else {
+    Thread *current_thread = Thread::get_current_thread();
+    framework.do_frame(current_thread);
+  }
+}
 
 - (void)dealloc { 
   [self stopAnimation];

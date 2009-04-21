@@ -131,46 +131,6 @@
 #defer INSTALL $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_DATA] $[install_dash_p] $[notdir $[local]] $[dest]/
 #defer INSTALL_PROG $[if $[ne $[dir $[local]], ./],cd ./$[dir $[local]] &&] install -m $[INSTALL_UMASK_PROG] $[install_dash_p] $[notdir $[local]] $[dest]/
 
-// Variable definitions for building with the Irix MIPSPro compiler.
-#if $[eq $[USE_COMPILER], MIPS]
-  #define CC cc -n32 -mips3
-  #define CXX CC -n32 -mips3
-
-  // Turn off a few annoying warning messages.
-  // 1174 - function 'blah' was declared but never used
-  // 1201 - trailing comma is nonstandard.
-  // 1209 - controlling expression is constant, e.g. if (0) { ... }
-  // 1234 - access control not specified, 'public' by default
-  // 1355 - extra ";" ignored
-  // 1375 - destructor for base class is not virtual.
-  //    this one actually is bad.  But we got alot of them from the classes
-  //    that we've derived from STL collections.  Beware of this.
-  // 3322 - omission of explicit type is nonstandard ("int" assumed)
-  #define WOFF_LIST -woff 1174,1201,1209,1234,1355,1375,3322
-
-  // Linker warnings
-  // 85 - definition of SOMESYMBOL in SOMELIB preempts that of definition in
-  //      SOMEOTHERLIB.
-  #define WOFF_LIST $[WOFF_LIST] -Wl,-LD_MSG:off=85
-
-  #defer OPTFLAGS -O2 -OPT:Olimit=2500
-
-  #defer CFLAGS_OPT1 $[CDEFINES_OPT1:%=-D%] $[WOFF_LIST] -g
-  #defer CFLAGS_OPT2 $[CDEFINES_OPT2:%=-D%] $[WOFF_LIST]
-  #defer CFLAGS_OPT3 $[CDEFINES_OPT3:%=-D%] $[WOFF_LIST]
-  #defer CFLAGS_OPT4 $[CDEFINES_OPT4:%=-D%] $[WOFF_LIST]
-
-  #defer CFLAGS_SHARED
-
-  #defer STATIC_LIB_C $[CC] -ar -o $[target] $[sources]
-  #defer STATIC_LIB_C++ $[CXX] -ar -o $[target] $[sources]
-  #defer RANLIB
-
-  #defer SHARED_FLAGS -Wl,-none -Wl,-update_registry,$[SO_LOCATIONS]
-  #defer SHARED_LIB_C $[cc_ld] -shared $[SHARED_FLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
-  #defer SHARED_LIB_C++ $[cxx_ld] -shared $[SHARED_FLAGS] -o $[target] $[sources] $[lpath:%=-L%] $[libs:%=-l%]
-#endif
-
 
 // Assume that OSX has OpenGL available.
 #define HAVE_GL 1

@@ -596,6 +596,7 @@ estimate_texture_memory() const {
     break;
 
   case Texture::F_depth_stencil:
+  case Texture::F_depth_component:
     bpp = 32;
     break;
     
@@ -1350,6 +1351,9 @@ write(ostream &out, int indent_level) const {
   case F_depth_stencil:
     out << "depth_stencil";
     break;
+  case F_depth_component:
+    out << "depth_component";
+    break;
 
   case F_rgba:
     out << "rgba";
@@ -1844,6 +1848,7 @@ adjust_size(int &x_size, int &y_size, const string &name) {
     break;
 
   case ATS_none:
+  case ATS_UNSPECIFIED:
     break;
   }
 
@@ -1857,6 +1862,7 @@ adjust_size(int &x_size, int &y_size, const string &name) {
     break;
 
   case ATS_none:
+  case ATS_UNSPECIFIED:
     break;
   }
 
@@ -2598,7 +2604,7 @@ do_read_dds(istream &in, const string &filename, bool header_only) {
 
   TextureType texture_type;
   if (header.caps.caps2 & DDSCAPS2_CUBEMAP) {
-    static const int all_faces = 
+    static const unsigned int all_faces = 
       (DDSCAPS2_CUBEMAP_POSITIVEX |
        DDSCAPS2_CUBEMAP_POSITIVEY |
        DDSCAPS2_CUBEMAP_POSITIVEZ |
@@ -3426,9 +3432,14 @@ do_compress_ram_image(Texture::CompressionMode compression,
     case Texture::F_rgba:
     case Texture::F_rgba8:
     case Texture::F_rgba12:
+    case Texture::F_rgba16:
+    case Texture::F_rgba32:
       if (gsg == NULL || gsg->get_supports_compressed_texture_format(CM_dxt5)) {
         compression = CM_dxt5;
       }
+      break;
+
+    default:
       break;
     }
   }
@@ -3798,6 +3809,7 @@ do_set_format(Texture::Format format) {
   switch (_format) {
   case F_color_index:
   case F_depth_stencil:
+  case F_depth_component:
   case F_red:
   case F_green:
   case F_blue:
@@ -4167,7 +4179,7 @@ get_ram_image_as(const string &requested_format) {
   }
   int imgsize = _x_size * _y_size;
   nassertr(_num_components > 0 && _num_components <= 4, CPTA_uchar(get_class_type()));
-  nassertr(data.size() == _component_width * _num_components * imgsize, CPTA_uchar(get_class_type()));
+  nassertr(data.size() == (size_t)(_component_width * _num_components * imgsize), CPTA_uchar(get_class_type()));
   
   // Check if the format is already what we have internally.
   if ((_num_components == 1 && format.size() == 1) || 
@@ -4942,7 +4954,7 @@ read_dds_level_dxt1(Texture *tex, const DDSHeader &header, int n, istream &in) {
 
   if (n == 0) {
     if (header.dds_flags & DDSD_LINEARSIZE) {
-      nassertr(linear_size == header.pitch, PTA_uchar());
+      nassertr(linear_size == (int)header.pitch, PTA_uchar());
     }
   }
 
@@ -5015,7 +5027,7 @@ read_dds_level_dxt23(Texture *tex, const DDSHeader &header, int n, istream &in) 
 
   if (n == 0) {
     if (header.dds_flags & DDSD_LINEARSIZE) {
-      nassertr(linear_size == header.pitch, PTA_uchar());
+      nassertr(linear_size == (int)header.pitch, PTA_uchar());
     }
   }
 
@@ -5103,7 +5115,7 @@ read_dds_level_dxt45(Texture *tex, const DDSHeader &header, int n, istream &in) 
 
   if (n == 0) {
     if (header.dds_flags & DDSD_LINEARSIZE) {
-      nassertr(linear_size == header.pitch, PTA_uchar());
+      nassertr(linear_size == (int)header.pitch, PTA_uchar());
     }
   }
 
@@ -6265,6 +6277,8 @@ operator << (ostream &out, Texture::Format f) {
   switch (f) {
   case Texture::F_depth_stencil:
     return out << "depth_stencil";
+  case Texture::F_depth_component:
+    return out << "depth_component";
   case Texture::F_color_index:
     return out << "color_index";
   case Texture::F_red:

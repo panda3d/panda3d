@@ -1449,9 +1449,9 @@ Shader(const Filename &filename, const string &text, const string &vprofile, con
   _filename(filename),
   _text(text),
   _header(""),
-  _loaded(false),
   _error_flag(true),
-  _parse(0)
+  _parse(0),
+  _loaded(false)
 {
   string header;
   parse_init();

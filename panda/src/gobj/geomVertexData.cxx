@@ -202,8 +202,6 @@ GeomVertexData::
 ////////////////////////////////////////////////////////////////////
 int GeomVertexData::
 compare_to(const GeomVertexData &other) const {
-  Thread *current_thread = Thread::get_current_thread();
-
   CDReader cdata(_cycler);
   CDReader other_cdata(other._cycler);
 

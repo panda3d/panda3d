@@ -58,7 +58,7 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   xy = normalize(xy);
   
   // Compute the rotation about the +Z (back) axis.  This is roll.
-  FLOATTYPE roll = rad_2_deg(((FLOATTYPE)atan2(xy[1], xy[0])));
+  FLOATTYPE roll = rad_2_deg(((FLOATTYPE)catan2(xy[1], xy[0])));
   
   // Unwind the roll from the axes, and continue.
   Matrix rot_z;
@@ -75,7 +75,7 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Compute the rotation about the +Y (up) axis.  This is yaw, or
   // "heading".
-  FLOATTYPE heading = rad_2_deg(((FLOATTYPE)-atan2(xz[1], xz[0])));
+  FLOATTYPE heading = rad_2_deg(((FLOATTYPE)-catan2(xz[1], xz[0])));
   
   // Unwind the heading, and continue.
   Matrix rot_y;
@@ -91,7 +91,7 @@ unwind_yup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   yz = normalize(yz);
   
   // Compute the rotation about the +X (right) axis.  This is pitch.
-  FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)-atan2(yz[0], yz[1])));
+  FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)-catan2(yz[0], yz[1])));
   
   // Unwind the pitch.
   Matrix rot_x;
@@ -139,7 +139,7 @@ unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   xz = normalize(xz);
   
   // Compute the rotation about the -Y (back) axis.  This is roll.
-  FLOATTYPE roll = rad_2_deg(((FLOATTYPE)atan2(xz[1], xz[0])));
+  FLOATTYPE roll = rad_2_deg(((FLOATTYPE)catan2(xz[1], xz[0])));
   
   if (y[1] < 0.0f) {
     if (roll < 0.0f) {
@@ -164,7 +164,7 @@ unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Compute the rotation about the +Z (up) axis.  This is yaw, or
   // "heading".
-  FLOATTYPE heading = rad_2_deg(((FLOATTYPE)atan2(xy[1], xy[0])));
+  FLOATTYPE heading = rad_2_deg(((FLOATTYPE)catan2(xy[1], xy[0])));
   
   // Unwind the heading, and continue.
   Matrix rot_z;
@@ -180,7 +180,7 @@ unwind_zup_rotation_old_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   yz = normalize(yz);
   
   // Compute the rotation about the +X (right) axis.  This is pitch.
-  FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)atan2(yz[1], yz[0])));
+  FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)catan2(yz[1], yz[0])));
   
   // Unwind the pitch.
   Matrix rot_x;
@@ -369,7 +369,7 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Compute the rotation about the +Y (up) axis.  This is yaw, or
   // "heading".
-  FLOATTYPE heading = rad_2_deg(((FLOATTYPE)atan2(xz[0], xz[1])));
+  FLOATTYPE heading = rad_2_deg(((FLOATTYPE)catan2(xz[0], xz[1])));
   
   // Unwind the heading, and continue.
   Matrix rot_y;
@@ -385,7 +385,7 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   yz = normalize(yz);
   
   // Compute the rotation about the +X (right) axis.  This is pitch.
-  FLOATTYPE pitch = rad_2_deg((FLOATTYPE)(-atan2(yz[0], yz[1])));
+  FLOATTYPE pitch = rad_2_deg((FLOATTYPE)(-catan2(yz[0], yz[1])));
   
   // Unwind the pitch.
   Matrix rot_x;
@@ -401,7 +401,7 @@ unwind_yup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   xy = normalize(xy);
   
   // Compute the rotation about the +Z (back) axis.  This is roll.
-  FLOATTYPE roll = -rad_2_deg(((FLOATTYPE)atan2(xy[1], xy[0])));
+  FLOATTYPE roll = -rad_2_deg(((FLOATTYPE)catan2(xy[1], xy[0])));
   
   // Unwind the roll from the axes, and continue.
   Matrix rot_z;
@@ -449,7 +449,7 @@ unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   
   // Compute the rotation about the +Z (up) axis.  This is yaw, or
   // "heading".
-  FLOATTYPE heading = -rad_2_deg(((FLOATTYPE)atan2(xy[0], xy[1])));
+  FLOATTYPE heading = -rad_2_deg(((FLOATTYPE)catan2(xy[0], xy[1])));
   
   // Unwind the heading, and continue.
   Matrix rot_z;
@@ -465,7 +465,7 @@ unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   yz = normalize(yz);
   
   // Compute the rotation about the +X (right) axis.  This is pitch.
-  FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)atan2(yz[1], yz[0])));
+  FLOATTYPE pitch = rad_2_deg(((FLOATTYPE)catan2(yz[1], yz[0])));
   
   // Unwind the pitch.
   Matrix rot_x;
@@ -481,7 +481,7 @@ unwind_zup_rotation_new_hpr(FLOATNAME(LMatrix3) &mat, FLOATNAME(LVecBase3) &hpr)
   xz = normalize(xz);
   
   // Compute the rotation about the -Y (back) axis.  This is roll.
-  FLOATTYPE roll = -rad_2_deg(((FLOATTYPE)atan2(xz[1], xz[0])));
+  FLOATTYPE roll = -rad_2_deg(((FLOATTYPE)catan2(xz[1], xz[0])));
   
   // Unwind the roll from the axes, and continue.
   Matrix rot_y;

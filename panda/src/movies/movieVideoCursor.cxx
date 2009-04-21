@@ -29,6 +29,7 @@ TypeHandle MovieVideoCursor::_type_handle;
 ////////////////////////////////////////////////////////////////////
 MovieVideoCursor::
 MovieVideoCursor(MovieVideo *src) :
+  _conversion_buffer(0),
   _source(src),
   _size_x(1),
   _size_y(1),
@@ -39,7 +40,6 @@ MovieVideoCursor(MovieVideo *src) :
   _aborted(false),
   _last_start(-1.0),
   _next_start(0.0),
-  _conversion_buffer(0),
   _streaming(false),
   _ready(false)
 {

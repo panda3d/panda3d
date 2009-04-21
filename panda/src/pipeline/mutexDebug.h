@@ -20,6 +20,7 @@
 #include "conditionVarImpl.h"
 #include "thread.h"
 #include "namable.h"
+#include "pmap.h"
 
 #ifdef DEBUG_THREADS
 

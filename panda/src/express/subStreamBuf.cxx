@@ -240,7 +240,7 @@ underflow() {
     bool eof;
     _source->seek_read(_cur, gptr(), num_bytes, read_count, eof);
 
-    if (read_count != num_bytes) {
+    if (read_count != (streamsize)num_bytes) {
       // Oops, we didn't read what we thought we would.
       if (read_count == 0) {
         _unused = buffer_size;

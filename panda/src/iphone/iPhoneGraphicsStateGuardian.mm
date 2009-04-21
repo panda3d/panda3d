@@ -21,8 +21,6 @@
 #include "pnmImage.h"
 #include "glesgsg.h"
 
-#import <mach-o/dyld.h>
-
 TypeHandle IPhoneGraphicsStateGuardian::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -72,20 +70,6 @@ IPhoneGraphicsStateGuardian::
 void IPhoneGraphicsStateGuardian::
 reset() {
   GLESGraphicsStateGuardian::reset();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: IPhoneGraphicsStateGuardian::draw_resize_box
-//       Access: Public, Virtual
-//  Description: Draws an OSX-style resize icon in the bottom right
-//               corner of the current display region.  This is
-//               normally done automatically at the end of each frame
-//               when the window is indicated as resizable, since the
-//               3-D graphics overlay the normal, OS-drawn resize icon
-//               and the user won't be able see it.
-////////////////////////////////////////////////////////////////////
-void IPhoneGraphicsStateGuardian::
-draw_resize_box() {
 }
 
 ////////////////////////////////////////////////////////////////////

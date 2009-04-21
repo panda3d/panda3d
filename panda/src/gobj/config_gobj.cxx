@@ -541,6 +541,9 @@ operator << (ostream &out, AutoTextureScale ats) {
     
   case ATS_up:
     return out << "up";
+
+  case ATS_UNSPECIFIED:
+    return out << "UNSPECIFIED";
   }
 
   return out << "**invalid AutoTextureScale (" << (int)ats << ")**";
@@ -585,6 +588,9 @@ operator << (ostream &out, ShaderUtilization sgc) {
     
   case SUT_advanced:
     return out << "advanced";
+
+  case SUT_UNSPECIFIED:
+    return out << "UNSPECIFIED";
   }
 
   return out << "**invalid ShaderUtilization (" << (int)sgc << ")**";

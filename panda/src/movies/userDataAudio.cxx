@@ -28,8 +28,8 @@ UserDataAudio(int rate, int channels) :
   MovieAudio("User Data Audio"),
   _desired_rate(rate),
   _desired_channels(channels),
-  _aborted(false),
-  _cursor(NULL)
+  _cursor(NULL),
+  _aborted(false)
 {
 }
 
