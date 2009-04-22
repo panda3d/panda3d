@@ -23,44 +23,26 @@
 @synthesize animationTimer;
 @synthesize animationInterval;
 
+int startup = 0;
+
 PandaFramework framework;
+
+int argc = 0;
+char **argv = NULL;
 
 - (void)applicationDidFinishLaunching:(UIApplication *)application { 
   ConfigVariableString pview_args("pview-args", "");
-  int argc = pview_args.get_num_words() + 1;
+  argc = pview_args.get_num_words() + 1;
   typedef char *charp;
-  char **argv = new charp[argc + 1];
+  argv = new charp[argc + 1];
   argv[0] = (char *)"pview";
   for (int i = 1; i < argc; ++i) {
-    cerr << i << ". " << pview_args.get_word(i - 1) << "\n";
-    argv[i] = strdup(pview_args.get_word(i - 1).c_str());
+   argv[i] = strdup(pview_args.get_word(i - 1).c_str());
   }
   argv[argc] = NULL;
 
   framework.open_framework(argc, argv);
-  
-  WindowFramework *window = framework.open_window();
-  if (window != (WindowFramework *)NULL) {
-    window->enable_keyboard();
-    window->setup_trackball();
-    framework.get_models().instance_to(window->get_render());
-
-    if (argc < 2) {
-      window->load_default_model(framework.get_models());
-    } else {
-      window->load_models(framework.get_models(), argc, argv);
-    }
-    int hierarchy_match_flags = PartGroup::HMF_ok_part_extra |
-                                PartGroup::HMF_ok_anim_extra;
-    window->loop_animations(hierarchy_match_flags);
-    
-    window->center_trackball(framework.get_models());
-
-    ConfigVariableBool want_pstats("want-pstats", false);
-    if (want_pstats) {
-      PStatClient::connect();
-    }
-  }
+  startup = 0;
 
   ConfigVariableDouble timer_fps("timer-fps", 60.0);
   animationInterval = 1.0 / timer_fps;
@@ -93,8 +75,49 @@ PandaFramework framework;
 }
 
 - (void)drawView {
-  Thread *current_thread = Thread::get_current_thread();
-  framework.do_frame(current_thread);
+  if (startup == 0) {
+    // We are still just initializing the app.  Open the window and
+    // load the models.  We have this funny deferred-window technique,
+    // so SpringBoard will see that the app has fully initialized and
+    // won't kill us if we take a while loading models.
+    WindowFramework *window = framework.open_window();
+    startup = 1;
+
+  } else if (startup == 1) {
+    if (framework.get_num_windows() > 0) {
+      WindowFramework *window = framework.get_window(0);
+      window->enable_keyboard();
+      window->setup_trackball();
+      framework.get_models().instance_to(window->get_render());
+      
+      if (argc < 2) {
+        window->load_default_model(framework.get_models());
+      } else {
+        window->load_models(framework.get_models(), argc, argv);
+      }
+      int hierarchy_match_flags = PartGroup::HMF_ok_part_extra |
+        PartGroup::HMF_ok_anim_extra;
+      window->loop_animations(hierarchy_match_flags);
+      
+      window->center_trackball(framework.get_models());
+      
+      ConfigVariableBool pview_lighting("pview-lighting", false);
+      if (pview_lighting) {
+        window->set_lighting(true);
+      }
+      
+      ConfigVariableBool want_pstats("want-pstats", false);
+      if (want_pstats) {
+        PStatClient::connect();
+      }
+    }
+    startup = 2;
+
+  } else {
+    // We are fully initialized and running.  Render frames.
+    Thread *current_thread = Thread::get_current_thread();
+    framework.do_frame(current_thread);
+  }
 }
 
 - (void)dealloc { 
