@@ -39,6 +39,10 @@ typedef WCHAR *BSTR;
 typedef struct _MediaType AM_MEDIA_TYPE;
 typedef struct _VIDEO_STREAM_CONFIG_CAPS VIDEO_STREAM_CONFIG_CAPS;
 typedef struct _GUID GUID;
+typedef struct _STICKYKEYS STICKYKEYS;
+typedef struct _TOGGLEKEYS TOGGLEKEYS;
+typedef struct _FILTERKEYS FILTERKEYS;
+
 #define CALLBACK 
 
 #define WINAPI

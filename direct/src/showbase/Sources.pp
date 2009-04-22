@@ -12,6 +12,9 @@
     interrogatedb:c dconfig:c dtoolconfig:m \
     dtoolutil:c dtoolbase:c dtool:m
 
+  #define WIN_SYS_LIBS \
+    User32.lib
+
   #define SOURCES \
     showBase.cxx showBase.h
 

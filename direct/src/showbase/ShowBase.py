@@ -75,6 +75,11 @@ class ShowBase(DirectObject.DirectObject):
         # Setup wantVerifyPdb as soon as reasonable:
         Verify.wantVerifyPdb = self.config.GetBool('want-verify-pdb', 0)
 
+        # [gjeon] to disable sticky keys
+        storeAccessibilityShortcutKeys()
+        if self.config.GetBool('disable-sticky-keys', 0):
+            allowAccessibilityShortcutKeys(False)
+
         self.printEnvDebugInfo()
         vfs = VirtualFileSystem.getGlobalPtr()
 
@@ -417,6 +422,9 @@ class ShowBase(DirectObject.DirectObject):
         automatically.
 
         This function is designed to be safe to call multiple times."""
+
+        # [gjeon] restore sticky key settings
+        allowAccessibilityShortcutKeys(True)
 
         taskMgr.destroy()
 
