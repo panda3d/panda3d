@@ -15,6 +15,7 @@
 #include "mayaApi.h"
 #include "config_maya.h"
 #include "string_utils.h"
+#include "thread.h"
 
 #include "pre_maya_include.h"
 #include <maya/MGlobal.h>
@@ -65,6 +66,14 @@ MayaApi(const string &program_name) {
   // any Maya function!  Egad!
   _cwd = ExecutionEnvironment::get_cwd();
   MStatus stat = MLibrary::initialize((char *)program_name.c_str());
+
+  int error_count = init_maya_repeat_count;
+  while (!stat && error_count > 1) {
+    stat.perror("MLibrary::initialize");
+    Thread::sleep(init_maya_timeout);
+    stat = MLibrary::initialize((char *)program_name.c_str());
+    --error_count;
+  }
   
   // Restore the current directory.
   string dirname = _cwd.to_os_specific();

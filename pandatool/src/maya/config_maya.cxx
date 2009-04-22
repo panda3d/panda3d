@@ -23,6 +23,16 @@ ConfigureFn(config_maya) {
   init_libmaya();
 }
 
+ConfigVariableInt init_maya_repeat_count
+("init-maya-repeat-count", 5,
+ PRC_DESC("The number of times to attempt to initialize Maya and acquire the "
+          "Maya license before giving up."));
+
+ConfigVariableDouble init_maya_timeout
+("init-maya-timeout", 5.0,
+ PRC_DESC("The number of seconds to wait between attempts to acquire the "
+          "Maya license."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libmaya
 //  Description: Initializes the library.  This must be called at

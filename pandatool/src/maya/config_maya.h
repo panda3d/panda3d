@@ -17,8 +17,13 @@
 
 #include "pandatoolbase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableInt.h"
+#include "configVariableDouble.h"
 
 NotifyCategoryDeclNoExport(maya);
+
+extern ConfigVariableInt init_maya_repeat_count;
+extern ConfigVariableDouble init_maya_timeout;
 
 extern void init_libmaya();
 
