@@ -53,7 +53,9 @@ public:
 PUBLISHED:
   INLINE int get_num_bundles() const;
   INLINE PartBundle *get_bundle(int n) const;
+  MAKE_SEQ(get_bundles, get_num_bundles, get_bundle);
   INLINE PartBundleHandle *get_bundle_handle(int n) const;
+  MAKE_SEQ(get_bundle_handles, get_num_bundles, get_bundle_handle);
 
 protected:
   void add_bundle(PartBundle *bundle);
