@@ -78,6 +78,7 @@ enum EmptyNodePathType {
   ENP_future,
   ENP_transition,
   ENP_deprecated,
+  ENP_notify,
 };
 
 ostream &operator << (ostream &out, EmptyNodePathType enp) {
@@ -88,6 +89,8 @@ ostream &operator << (ostream &out, EmptyNodePathType enp) {
     return out << "transition";
   case ENP_deprecated:
     return out << "deprecated";
+  case ENP_notify:
+    return out << "notify";
   }
   return out << "**invalid EmptyNodePathType value (" << (int)enp << ")**";
 }
@@ -101,6 +104,8 @@ istream &operator >> (istream &in, EmptyNodePathType &enp) {
     enp = ENP_transition;
   } else if (word == "deprecated") {
     enp = ENP_deprecated;
+  } else if (word == "notify") {
+    enp = ENP_notify;
   } else {
     pgraph_cat.warning()
       << "Invalid EmptyNodePathType value (\"" << word << "\")\n";
@@ -137,11 +142,20 @@ operator bool () const {
   case ENP_deprecated:
     return true;
 
+  case ENP_notify:
+    {
+      const char *msg = "NodePath being used as a Boolean (talk to Zac)";
+#ifdef HAVE_PYTHON
+      PyErr_Warn(PyExc_FutureWarning, (char *)msg);
+#endif
+    }
+      return true;
+
   case ENP_transition:
     if (!is_empty()) {
       return true;
     }
-
+    
     {
       const char *message = "Using an empty NodePath as a boolean value.  Because the meaning of this operation is changing, you should avoid doing this to avoid ambiguity, or set the config variable empty-node-path to 'future' or 'deprecated' to specify the desired behavior.";
       pgraph_cat.warning()
