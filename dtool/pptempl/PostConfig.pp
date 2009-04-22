@@ -8,11 +8,13 @@
   #define IPH_VERSION 2.0
   
   #if $[eq $[IPH_PLATFORM], iPhoneOS]
-    #define ARCH_FLAGS -arch armv6 -mapcs-frame
-    #define osflags -miphoneos-version-min=2.0 -mno-sched-prolog
+    #define ARCH_FLAGS -arch armv6
+    #define osflags -miphoneos-version-min=2.0
+    #define DEBUGFLAGS
   #elif $[eq $[IPH_PLATFORM], iPhoneSimulator]
     #define ARCH_FLAGS -arch i386
     #define osflags -mmacosx-version-min=10.5
+    #define DEBUGFLAGS -gdwarf-2
   #else
     #error Inappropriate value for BUILD_IPHONE.
   #endif
@@ -23,7 +25,6 @@
   #define CXX $[env] $[dev]/usr/bin/g++-4.0
   #define OSX_CDEFS __IPHONE_OS_VERSION_MIN_REQUIRED=20000
   #define OSX_CFLAGS -isysroot $[dev]/SDKs/$[IPH_PLATFORM]$[IPH_VERSION].sdk $[osflags]
-  #define DEBUGFLAGS -gdwarf-2
 
   #defer ODIR_SUFFIX -$[IPH_PLATFORM]
 
