@@ -191,8 +191,10 @@ class DistributedObject(DistributedObjectBase):
                 # another instance of the same object gets generated while
                 # this instance is still delayDeleted.
                 messenger.send(self.getDelayDeleteEvent())
-                self.delayDelete()
-                self._deactivateDO()
+                if len(self._token2delayDeleteName) > 0:
+                    self.delayDelete()
+                    if len(self._token2delayDeleteName) > 0:
+                        self._deactivateDO()
         else:
             self.disableAnnounceAndDelete()
 
