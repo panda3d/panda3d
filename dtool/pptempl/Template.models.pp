@@ -114,6 +114,9 @@
      $[build_maya_eggs] \
      $[build_soft_eggs]]
 
+#define optchar_dirs \
+   $[unique $[forscopes optchar_egg,$[TARGET_DIR]]]
+
 #if $[LANGUAGES]
   #forscopes install_egg filter_egg
     #if $[SOURCES]
@@ -264,6 +267,11 @@ $[TAB]$[DEL_CMD] $[build_maya_eggs]
 clean-soft :
 #if $[build_soft_eggs]
 $[TAB]$[DEL_CMD] $[build_soft_eggs]
+#endif
+
+clean-optchar :
+#if $[optchar_dirs]
+$[TAB]rm -rf $[optchar_dirs]
 #endif
 
 clean : clean-pal
@@ -770,7 +778,7 @@ all : egg pal repal $[subdirs]
 
 install : all $[subdirs:%=install-%]
 
-#define sub_targets egg flt lwo maya soft bam pal clean-bam clean-pal clean-flt clean-lwo clean-maya clean-soft clean cleanall unpack-soft install-bam install-other uninstall-bam uninstall-other uninstall
+#define sub_targets egg flt lwo maya soft bam pal clean-bam clean-pal clean-flt clean-lwo clean-maya clean-soft clean-optchar clean cleanall unpack-soft install-bam install-other uninstall-bam uninstall-other uninstall
 
 // Define the rules to propogate these targets to the Makefile within
 // each directory.
