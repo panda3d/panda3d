@@ -148,8 +148,9 @@ operator bool () const {
 #ifdef HAVE_PYTHON
       PyErr_Warn(PyExc_FutureWarning, (char *)msg);
 #endif
+      return !is_empty();
     }
-      return true;
+
 
   case ENP_transition:
     if (!is_empty()) {
