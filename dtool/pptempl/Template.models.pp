@@ -486,6 +486,19 @@ $[TAB]$[COMMAND]
 
 // Character optimization.
 #forscopes optchar_egg
+#if $[LIMIT_OPTCHAR]
+  // With LIMIT_OPTCHAR enabled, we only want to make local optchar
+  // operations, allowing one operation at a time.
+  #foreach egg $[SOURCES]
+    #define source $[source_prefix]$[egg]
+    #define target $[TARGET_DIR]/$[notdir $[egg]]
+$[target] : $[source] $[TARGET_DIR]/stamp
+$[TAB]egg-optchar -keepall $[OPTCHAR_OPTS] -d $[TARGET_DIR] $[source]
+  #end egg
+
+#else
+  // In the normal mode, we allow global optchar operations, requiring
+  // all egg files to be processed in a single pass.
   #define sources $[SOURCES:%=$[source_prefix]%]
   #define target $[TARGET_DIR]/$[notdir $[firstword $[SOURCES]]]
 
@@ -503,6 +516,8 @@ $[TAB]$[TOUCH_CMD] $[TARGET_DIR]/$[egg]
    // And this is the actual optchar pass.
 $[target] : $[sources] $[TARGET_DIR]/stamp
 $[TAB]egg-optchar $[OPTCHAR_OPTS] -d $[TARGET_DIR] $[sources]
+#endif
+
 #end optchar_egg
 
 
