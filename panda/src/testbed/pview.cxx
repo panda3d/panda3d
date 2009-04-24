@@ -54,7 +54,7 @@ output_screenshot(Filename &fn)
   framework.do_frame(current_thread);
 
   WindowFramework *wf = framework.get_window(0);
-  bool ok = wf->get_graphics_window()->save_screenshot(fn, "from pview");
+  bool ok = wf->get_graphics_output()->save_screenshot(fn, "from pview");
   if (!ok) {
     cerr << "Could not generate screenshot " << fn << "\n";
   }
@@ -71,7 +71,7 @@ event_W(const Event *, void *) {
 
   if (framework.get_num_windows() > 0) {
     WindowFramework *old_window = framework.get_window(0);
-    GraphicsWindow *win = old_window->get_graphics_window();
+    GraphicsOutput *win = old_window->get_graphics_output();
     pipe = win->get_pipe();
     //    gsg = win->get_gsg();
   }
@@ -100,19 +100,23 @@ event_Enter(const Event *, void *) {
 
   WindowProperties props;
 
-  if (framework.get_num_windows() > 0) {
-    WindowFramework *old_window = framework.get_window(0);
+  for (int i = 0; i < framework.get_num_windows(); ++i) {
+    WindowFramework *old_window = framework.get_window(i);
     GraphicsWindow *win = old_window->get_graphics_window();
-    pipe = win->get_pipe();
-    gsg = win->get_gsg();
-    props = win->get_properties();
-    framework.close_window(old_window);
+    if (win != (GraphicsWindow *)NULL) {
+      pipe = win->get_pipe();
+      gsg = win->get_gsg();
+      props = win->get_properties();
+      framework.close_window(old_window);
+      break;
+    }
   }
 
   // set the toggle
   props.set_fullscreen(!props.get_fullscreen());
+  int flags = GraphicsPipe::BF_require_window;
   
-  WindowFramework *window = framework.open_window(props, pipe, gsg);
+  WindowFramework *window = framework.open_window(props, flags, pipe, gsg);
   if (window != (WindowFramework *)NULL) {
     window->enable_keyboard();
     window->setup_trackball();
@@ -144,7 +148,7 @@ event_0(const Event *event, void *) {
   DCAST_INTO_V(wf, param.get_ptr());
 
   // Create a new offscreen buffer.
-  GraphicsWindow *win = wf->get_graphics_window();
+  GraphicsOutput *win = wf->get_graphics_output();
   PT(GraphicsOutput) buffer = win->make_texture_buffer("tex", 256, 256);
   cerr << buffer->get_type() << "\n";
 
@@ -339,7 +343,7 @@ main(int argc, char *argv[]) {
     window->loop_animations(hierarchy_match_flags);
 
     // Make sure the textures are preloaded.
-    framework.get_models().prepare_scene(window->get_graphics_window()->get_gsg());
+    framework.get_models().prepare_scene(window->get_graphics_output()->get_gsg());
     
     loading_np.remove_node();
 

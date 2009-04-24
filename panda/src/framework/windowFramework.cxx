@@ -142,13 +142,13 @@ WindowFramework::
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::open_window
 //       Access: Protected
-//  Description: Opens the actual window.  This is normally called
-//               only from PandaFramework::open_window().
+//  Description: Opens the actual window or buffer.  This is normally
+//               called only from PandaFramework::open_window().
 ////////////////////////////////////////////////////////////////////
-GraphicsWindow *WindowFramework::
-open_window(const WindowProperties &props, GraphicsEngine *engine,
+GraphicsOutput *WindowFramework::
+open_window(const WindowProperties &props, int flags, GraphicsEngine *engine,
             GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
-  nassertr(_window == (GraphicsWindow *)NULL, _window);
+  nassertr(_window == (GraphicsOutput *)NULL, _window);
 
   static int next_window_index = 1;
   ostringstream stream;
@@ -160,11 +160,10 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
   GraphicsOutput *winout = 
     engine->make_output(pipe, name, 0,
                         FrameBufferProperties::get_default(),
-                        props, GraphicsPipe::BF_require_window,
-                        gsg, NULL);
+                        props, flags, gsg, NULL);
   if (winout != (GraphicsOutput *)NULL) {
-    _window = DCAST(GraphicsWindow, winout);
-    _window->request_properties(props);
+    _window = winout;
+    //    _window->request_properties(props);
 
     // Create a display region that covers the entire window.
     _display_region_3d = _window->make_display_region();
@@ -193,7 +192,7 @@ open_window(const WindowProperties &props, GraphicsEngine *engine,
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::close_window
 //       Access: Protected
-//  Description: Closes the window.  This is normally called
+//  Description: Closes the window or buffer.  This is normally called
 //               from PandaFramework::close_window().
 ////////////////////////////////////////////////////////////////////
 void WindowFramework::
@@ -328,13 +327,12 @@ get_aspect_2d() {
       // An aspect ratio of 0.0 means to try to infer it.
       this_aspect_ratio = 1.0f;
 
-      WindowProperties properties = _window->get_properties();
-      if (!properties.has_size()) {
-        properties = _window->get_requested_properties();
-      }
-      if (properties.has_size() && properties.get_y_size() != 0.0f) {
-        this_aspect_ratio =
-          (float)properties.get_x_size() / (float)properties.get_y_size();
+      if (_window->has_size()) {
+        int x_size = _window->get_x_size();
+        int y_size = _window->get_y_size();
+        if (y_size != 0) {
+          this_aspect_ratio = (float)x_size / (float)y_size;
+        }
       }
     }
 
@@ -382,7 +380,8 @@ enable_keyboard() {
     return;
   }
 
-  if (_window->get_num_input_devices() > 0) {
+  if (_window->is_of_type(GraphicsWindow::get_class_type()) &&
+      DCAST(GraphicsWindow, _window)->get_num_input_devices() > 0) {
     NodePath mouse = get_mouse();
 
     // Create a button thrower to listen for our keyboard events and
@@ -412,7 +411,8 @@ setup_trackball() {
     return;
   }
 
-  if (_window->get_num_input_devices() > 0) {
+  if (_window->is_of_type(GraphicsWindow::get_class_type()) &&
+      DCAST(GraphicsWindow, _window)->get_num_input_devices() > 0) {
     NodePath mouse = get_mouse();
     NodePath camera = get_camera_group();
 
@@ -1088,12 +1088,12 @@ make_camera() {
   } else {
     // Otherwise, infer the aspect ratio from the window size.  This
     // does assume we have square pixels on our output device.
-    WindowProperties properties = _window->get_properties();
-    if (!properties.has_size()) {
-      properties = _window->get_requested_properties();
-    }
-    if (properties.has_size()) {
-      lens->set_film_size(properties.get_x_size(), properties.get_y_size());
+    if (_window->has_size()) {
+      int x_size = _window->get_x_size();
+      int y_size = _window->get_y_size();
+      if (y_size != 0) {
+        lens->set_film_size(x_size, y_size);
+      }
     }
   }
 

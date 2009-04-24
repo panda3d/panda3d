@@ -233,7 +233,7 @@ get_default_pipe() {
 //               GraphicsWindow to share the same mouse.
 ////////////////////////////////////////////////////////////////////
 NodePath PandaFramework::
-get_mouse(GraphicsWindow *window) {
+get_mouse(GraphicsOutput *window) {
   Mouses::iterator mi = _mouses.find(window);
   if (mi != _mouses.end()) {
     return (*mi).second;
@@ -241,18 +241,21 @@ get_mouse(GraphicsWindow *window) {
 
   NodePath mouse;
 
-  NodePath data_root = get_data_root();
-  MouseAndKeyboard *mouse_node = new MouseAndKeyboard(window, 0, "mouse");
-  mouse = data_root.attach_new_node(mouse_node);
-
-  RecorderController *recorder = get_recorder();
-  if (recorder != (RecorderController *)NULL) {
-    // If we're in recording or playback mode, associate a recorder.
-    MouseRecorder *mouse_recorder = new MouseRecorder("mouse");
-    mouse = mouse.attach_new_node(mouse_recorder);
-    recorder->add_recorder("mouse", mouse_recorder);
+  if (window->is_of_type(GraphicsWindow::get_class_type())) {
+    NodePath data_root = get_data_root();
+    GraphicsWindow *win = DCAST(GraphicsWindow, window);
+    MouseAndKeyboard *mouse_node = new MouseAndKeyboard(win, 0, "mouse");
+    mouse = data_root.attach_new_node(mouse_node);
+    
+    RecorderController *recorder = get_recorder();
+    if (recorder != (RecorderController *)NULL) {
+      // If we're in recording or playback mode, associate a recorder.
+      MouseRecorder *mouse_recorder = new MouseRecorder("mouse");
+      mouse = mouse.attach_new_node(mouse_recorder);
+      recorder->add_recorder("mouse", mouse_recorder);
+    }
   }
-
+    
   _mouses[window] = mouse;
 
   return mouse;
@@ -265,7 +268,7 @@ get_mouse(GraphicsWindow *window) {
 //               earlier call to get_mouse().
 ////////////////////////////////////////////////////////////////////
 void PandaFramework::
-remove_mouse(const GraphicsWindow *window) {
+remove_mouse(const GraphicsOutput *window) {
   Mouses::iterator mi = _mouses.find(window);
   if (mi != _mouses.end()) {
     (*mi).second.remove_node();
@@ -391,7 +394,12 @@ open_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
   WindowProperties props;
   get_default_window_props(props);
 
-  return open_window(props, pipe, gsg);
+  int flags = GraphicsPipe::BF_require_window;
+  if (window_type == "offscreen") {
+    flags = GraphicsPipe::BF_refuse_window;
+  }
+  
+  return open_window(props, flags, pipe, gsg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -405,8 +413,8 @@ open_window(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
 //               NULL if not.
 ////////////////////////////////////////////////////////////////////
 WindowFramework *PandaFramework::
-open_window(const WindowProperties &props, GraphicsPipe *pipe,
-            GraphicsStateGuardian *gsg) {
+open_window(const WindowProperties &props, int flags,
+            GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
   if (pipe == (GraphicsPipe *)NULL) {
     pipe = get_default_pipe();
     if (pipe == (GraphicsPipe *)NULL) {
@@ -424,18 +432,18 @@ open_window(const WindowProperties &props, GraphicsPipe *pipe,
   wf->set_perpixel(get_perpixel());
   wf->set_background_type(get_background_type());
 
-  GraphicsWindow *win = wf->open_window(props, get_graphics_engine(), 
+  GraphicsOutput *win = wf->open_window(props, flags, get_graphics_engine(), 
                                         pipe, gsg);
   _engine->open_windows();
-  if (win != (GraphicsWindow *)NULL && !win->is_valid()) {
+  if (win != (GraphicsOutput *)NULL && !win->is_valid()) {
     // The window won't open.
     _engine->remove_window(win);
     wf->close_window();
     win = NULL;
   }
 
-  if (win == (GraphicsWindow *)NULL) {
-    // Oops, couldn't make an actual window.
+  if (win == (GraphicsOutput *)NULL) {
+    // Oops, couldn't make a window or buffer.
     framework_cat.error()
       << "Unable to create window.\n";
     return NULL;
@@ -449,14 +457,14 @@ open_window(const WindowProperties &props, GraphicsPipe *pipe,
 //     Function: PandaFramework::find_window
 //       Access: Public
 //  Description: Returns the index of the first WindowFramework object
-//               found that references the indicated GraphicsWindow
+//               found that references the indicated GraphicsOutput
 //               pointer, or -1 if none do.
 ////////////////////////////////////////////////////////////////////
 int PandaFramework::
-find_window(const GraphicsWindow *win) const {
+find_window(const GraphicsOutput *win) const {
   int n;
   for (n = 0; n < (int)_windows.size(); n++) {
-    if (_windows[n]->get_graphics_window() == win) {
+    if (_windows[n]->get_graphics_output() == win) {
       return n;
     }
   }
@@ -494,8 +502,8 @@ close_window(int n) {
   nassertv(n >= 0 && n < (int)_windows.size());
   WindowFramework *wf = _windows[n];
 
-  GraphicsWindow *win = wf->get_graphics_window();
-  if (win != (GraphicsWindow *)NULL) {
+  GraphicsOutput *win = wf->get_graphics_output();
+  if (win != (GraphicsOutput *)NULL) {
     _engine->remove_window(win);
   }
   
@@ -515,8 +523,8 @@ close_all_windows() {
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     WindowFramework *wf = (*wi);
 
-    GraphicsWindow *win = wf->get_graphics_window();
-    if (win != (GraphicsWindow *)NULL) {
+    GraphicsOutput *win = wf->get_graphics_output();
+    if (win != (GraphicsOutput *)NULL) {
       _engine->remove_window(win);
     }
     
@@ -543,7 +551,7 @@ all_windows_closed() const {
   Windows::const_iterator wi;
   for (wi = _windows.begin(); wi != _windows.end(); ++wi) {
     WindowFramework *wf = (*wi);
-    if (wf->get_graphics_window()->get_properties().get_open()) {
+    if (wf->get_graphics_output()->is_valid()) {
       return false;
     }
   }
@@ -938,7 +946,7 @@ event_esc(const Event *event, void *data) {
     WindowFramework *wf;
     DCAST_INTO_V(wf, param.get_ptr());
 
-    PT(GraphicsWindow) win = wf->get_graphics_window();
+    PT(GraphicsOutput) win = wf->get_graphics_output();
 
     PandaFramework *self = (PandaFramework *)data;
     self->close_window(wf);
@@ -1341,7 +1349,7 @@ event_f9(const Event *event, void *data) {
       self->_engine->render_frame();
     }
 
-    Filename filename = wf->get_graphics_window()->save_screenshot_default();
+    Filename filename = wf->get_graphics_output()->save_screenshot_default();
     string text;
     if (filename.empty()) {
       text = "Screenshot failed";
@@ -1467,7 +1475,7 @@ event_window_event(const Event *event, void *data) {
     // than the window framework object (which is the parameter of all
     // of the keyboard events).
     EventParameter param = event->get_parameter(0);
-    const GraphicsWindow *win;
+    const GraphicsOutput *win;
     DCAST_INTO_V(win, param.get_ptr());
 
     // Is this a window we've heard about?
@@ -1477,7 +1485,7 @@ event_window_event(const Event *event, void *data) {
         << "Ignoring message from unknown window.\n";
 
     } else {
-      if (!win->get_properties().get_open()) {
+      if (!win->is_valid()) {
         int window_index = self->find_window(win);
         while (window_index != -1) {
           self->close_window(window_index);

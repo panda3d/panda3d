@@ -28,10 +28,26 @@ get_panda_framework() const {
 //     Function: WindowFramework::get_graphics_window
 //       Access: Public
 //  Description: Returns a pointer to the underlying GraphicsWindow
-//               object.
+//               object, if it is in fact a window; or NULL if it is
+//               not.
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsWindow *WindowFramework::
 get_graphics_window() const {
+  if (_window != (GraphicsOutput *)NULL && 
+      _window->is_of_type(GraphicsWindow::get_class_type())) {
+    return DCAST(GraphicsWindow, _window);
+  }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::get_graphics_output
+//       Access: Public
+//  Description: Returns a pointer to the underlying GraphicsOutput
+//               object
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsOutput *WindowFramework::
+get_graphics_output() const {
   return _window;
 }
 

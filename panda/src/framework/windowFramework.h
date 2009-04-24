@@ -18,6 +18,7 @@
 #include "pandabase.h"
 #include "nodePath.h"
 #include "camera.h"
+#include "graphicsOutput.h"
 #include "graphicsWindow.h"
 #include "animControlCollection.h"
 #include "trackball.h"
@@ -27,7 +28,6 @@
 #include "partGroup.h"
 #include "pvector.h"
 #include "typedWritableReferenceCount.h"
-#include "graphicsWindow.h"
 #include "loaderOptions.h"
 #include "pgSliderBar.h"
 #include "textNode.h"
@@ -48,7 +48,7 @@ class DisplayRegion;
 //               display region within a window.  (In the case where a
 //               window has been subdivided with split_window(), there
 //               may be multiple WindowFrameworks objects that share
-//               the same GraphicsWindow pointer, but reference
+//               the same GraphicsOutput pointer, but reference
 //               different display regions within that window).
 ////////////////////////////////////////////////////////////////////
 class EXPCL_FRAMEWORK WindowFramework : public TypedWritableReferenceCount {
@@ -60,7 +60,7 @@ public:
   virtual ~WindowFramework();
 
 protected:
-  GraphicsWindow *open_window(const WindowProperties &props,
+  GraphicsOutput *open_window(const WindowProperties &props, int flags,
                               GraphicsEngine *engine, GraphicsPipe *pipe,
                               GraphicsStateGuardian *gsg = NULL);
   void close_window();
@@ -68,6 +68,7 @@ protected:
 public:
   INLINE PandaFramework *get_panda_framework() const;
   INLINE GraphicsWindow *get_graphics_window() const;
+  INLINE GraphicsOutput *get_graphics_output() const;
   NodePath get_camera_group();
 
   INLINE int get_num_cameras() const;
@@ -156,7 +157,7 @@ private:
 
 private:
   PandaFramework *_panda_framework;
-  PT(GraphicsWindow) _window;
+  PT(GraphicsOutput) _window;
   PT(DisplayRegion) _display_region_2d;
   PT(DisplayRegion) _display_region_3d;
 

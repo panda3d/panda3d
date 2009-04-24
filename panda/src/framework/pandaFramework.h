@@ -50,8 +50,8 @@ public:
   INLINE const NodePath &get_data_root() const;
   INLINE EventHandler &get_event_handler();
   INLINE AsyncTaskManager &get_task_mgr();
-  NodePath get_mouse(GraphicsWindow *window);
-  void remove_mouse(const GraphicsWindow *window);
+  NodePath get_mouse(GraphicsOutput *window);
+  void remove_mouse(const GraphicsOutput *window);
 
   void define_key(const string &event_name, 
                   const string &description,
@@ -64,13 +64,13 @@ public:
   WindowFramework *open_window();
   WindowFramework *open_window(GraphicsPipe *pipe,
                                GraphicsStateGuardian *gsg = NULL);
-  WindowFramework *open_window(const WindowProperties &props,
+  WindowFramework *open_window(const WindowProperties &props, int flags,
                                GraphicsPipe *pipe = NULL,
                                GraphicsStateGuardian *gsg = NULL);
 
   INLINE int get_num_windows() const;
   INLINE WindowFramework *get_window(int n) const;
-  int find_window(const GraphicsWindow *win) const;
+  int find_window(const GraphicsOutput *win) const;
   int find_window(const WindowFramework *wf) const;
   void close_window(int n);
   INLINE void close_window(WindowFramework *wf);
@@ -176,7 +176,7 @@ private:
   typedef pvector< PT(WindowFramework) > Windows;
   Windows _windows;
 
-  typedef pmap< const GraphicsWindow *, NodePath > Mouses;
+  typedef pmap< const GraphicsOutput *, NodePath > Mouses;
   Mouses _mouses;
 
   NodePath _models;
