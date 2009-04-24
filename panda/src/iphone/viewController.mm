@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #import "viewController.h" 
+#include "pnotify.h"
 
 @implementation ControllerDemoViewController 
 
@@ -65,6 +66,7 @@
 - (void)didReceiveMemoryWarning { 
     [ super didReceiveMemoryWarning ]; 
     /* Add custom low-memory code here */ 
+    nout << "low-memory handler in view controller\n";
 } 
 
 - (void)dealloc { 

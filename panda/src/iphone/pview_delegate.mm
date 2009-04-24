@@ -30,7 +30,31 @@ PandaFramework framework;
 int argc = 0;
 char **argv = NULL;
 
-- (void)applicationDidFinishLaunching:(UIApplication *)application { 
+void 
+signal_handler(int i) {
+  nout << "Caught signal " << i << "\n";
+  exit(1);
+}
+
+- (void)applicationDidFinishLaunching: (UIApplication *)application { 
+  ConfigVariableBool pview_trap_signals("pview-trap-signals", false);
+  if (pview_trap_signals) {
+    // Set up a signal handler on every signal, so we can report this to
+    // the log.
+    struct sigaction sa;
+    sa.sa_handler = signal_handler;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = 0;
+    for (int i = 1; i < 32; ++i) {
+      if (sigaction(i, &sa, NULL) < 0) {
+        ostringstream strm;
+        strm << "sigaction(" << i << ")";
+        perror(strm.str().c_str());
+      }
+    }
+  }
+
+  // Parse the "command-line arguments" provided in the Config file.
   ConfigVariableString pview_args("pview-args", "");
   argc = pview_args.get_num_words() + 1;
   typedef char *charp;
@@ -48,6 +72,10 @@ char **argv = NULL;
   animationInterval = 1.0 / timer_fps;
   [self startAnimation];
 } 
+
+- (void)applicationDidReceiveMemoryWarning: (UIApplication *)application { 
+  nout << "applicationDidReceiveMemoryWarning\n";
+}
 
 - (void)startAnimation {
     self.animationTimer = [NSTimer scheduledTimerWithTimeInterval:animationInterval target:self selector:@selector(drawView) userInfo:nil repeats:YES];

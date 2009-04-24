@@ -27,9 +27,3 @@
     main.mm
 
 #end bin_target
-
-//#begin bin_target
-//  #define TARGET iphone_pview
-//  #define SOURCES main.mm
-//#end bin_target
-

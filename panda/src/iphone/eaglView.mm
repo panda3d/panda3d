@@ -100,6 +100,12 @@
         NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
         return NO;
     }
+
+    // Make sure the buffer is initially cleared, so we don't look at
+    // whatever happened to be in the framebuffer.
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    [context presentRenderbuffer:GL_RENDERBUFFER_OES];
     
     return YES;
 }

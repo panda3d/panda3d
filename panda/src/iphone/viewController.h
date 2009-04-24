@@ -12,6 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "pandabase.h"
+
 #import <UIKit/UIKit.h> 
 #import <UIKit/UITextView.h> 
 
