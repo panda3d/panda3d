@@ -30,7 +30,7 @@ validate(void *ptr) {
     return false;
   }
 
-#ifdef USE_DELETEDCHAINFLAG
+#if defined(USE_DELETEDCHAINFLAG) && defined(USE_DELETED_CHAIN)
   const ObjectNode *obj = buffer_to_node(ptr);
   return AtomicAdjust::get(obj->_flag) == DCF_alive;
 #else
@@ -56,7 +56,7 @@ get_buffer_size() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void *DeletedBufferChain::
 node_to_buffer(DeletedBufferChain::ObjectNode *node) {
-#ifdef USE_DELETEDCHAINFLAG
+#if defined(USE_DELETEDCHAINFLAG) && defined(USE_DELETED_CHAIN)
   // In development mode, we increment the pointer so that the
   // returned data does not overlap our _flag member.
   return (void *)(((AtomicAdjust::Integer *)node) + 1);
@@ -72,7 +72,7 @@ node_to_buffer(DeletedBufferChain::ObjectNode *node) {
 ////////////////////////////////////////////////////////////////////
 INLINE DeletedBufferChain::ObjectNode *DeletedBufferChain::
 buffer_to_node(void *ptr) {
-#ifdef USE_DELETEDCHAINFLAG
+#if defined(USE_DELETEDCHAINFLAG) && defined(USE_DELETED_CHAIN)
   // In development mode, we decrement the pointer to undo the
   // increment we did above.
   return (ObjectNode *)(((AtomicAdjust::Integer *)ptr) - 1);

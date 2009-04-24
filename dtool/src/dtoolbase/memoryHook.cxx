@@ -189,9 +189,15 @@ heap_alloc_single(size_t size) {
   void *alloc = call_malloc(inflate_size(size));
 #endif
 
-  if (alloc == (void *)NULL) {
-    cerr << "Out of memory!\n";
-    abort();
+  while (alloc == (void *)NULL) {
+    alloc_fail();
+#ifdef MEMORY_HOOK_MALLOC_LOCK
+    _lock.acquire();
+    alloc = call_malloc(inflate_size(size));
+    _lock.release();
+#else
+    alloc = call_malloc(inflate_size(size));
+#endif
   }
 
 #ifdef DO_MEMORY_USAGE
@@ -255,9 +261,15 @@ heap_alloc_array(size_t size) {
   void *alloc = call_malloc(inflate_size(size));
 #endif
 
-  if (alloc == (void *)NULL) {
-    cerr << "Out of memory!\n";
-    abort();
+  while (alloc == (void *)NULL) {
+    alloc_fail();
+#ifdef MEMORY_HOOK_MALLOC_LOCK
+    _lock.acquire();
+    alloc = call_malloc(inflate_size(size));
+    _lock.release();
+#else
+    alloc = call_malloc(inflate_size(size));
+#endif
   }
 
 #ifdef DO_MEMORY_USAGE
@@ -298,9 +310,19 @@ heap_realloc_array(void *ptr, size_t size) {
   alloc = call_realloc(alloc, inflate_size(size));
 #endif
 
-  if (alloc == (void *)NULL) {
-    cerr << "Out of memory!\n";
-    abort();
+  while (alloc == (void *)NULL) {
+    alloc_fail();
+    
+    // Recover the original pointer.
+    alloc = ptr_to_alloc(ptr, orig_size);
+
+#ifdef MEMORY_HOOK_MALLOC_LOCK
+    _lock.acquire();
+    alloc = call_realloc(alloc, inflate_size(size));
+    _lock.release();
+#else
+    alloc = call_realloc(alloc, inflate_size(size));
+#endif
   }
 
   return alloc_to_ptr(alloc, size);
@@ -497,6 +519,29 @@ get_deleted_chain(size_t buffer_size) {
   
   _lock.release();
   return chain;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MemoryHook::alloc_fail
+//       Access: Protected, Virtual
+//  Description: This callback method is called whenever a low-level
+//               call to call_malloc() has returned NULL, indicating
+//               failure.
+//
+//               Since this method is called very low-level, and may
+//               be in the middle of any number of critical sections,
+//               it will be difficult for this callback initiate any
+//               emergency high-level operation to make more memory
+//               available.  However, this module is set up to assume
+//               that that's what this method does, and will make
+//               another alloc attempt after it returns.  Probably the
+//               only sensible thing this method can do, however, is
+//               just to display a message and abort.
+////////////////////////////////////////////////////////////////////
+void MemoryHook::
+alloc_fail() {
+  cerr << "Out of memory!\n";
+  abort();
 }
 
 #ifdef DO_MEMORY_USAGE

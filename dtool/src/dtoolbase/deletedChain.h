@@ -87,6 +87,7 @@ public:
   static DeletedChain<Type> _chain;
 };
 
+#ifdef USE_DELETED_CHAIN
 // Place this macro within a class definition to define appropriate
 // operator new and delete methods that take advantage of
 // DeletedChain.
@@ -130,6 +131,20 @@ public:
 // also put this line in the .cxx file defining that class body.
 #define ALLOC_DELETED_CHAIN_DEF(Type)                        \
   DeletedChain< Type > Type::_deleted_chain;
+
+#else  // USE_DELETED_CHAIN
+
+#define ALLOC_DELETED_CHAIN(Type)                            \
+  inline static bool validate_ptr(const void *ptr) {         \
+    return (ptr != NULL);                                    \
+  }
+#define ALLOC_DELETED_CHAIN_DECL(Type)                       \
+  inline static bool validate_ptr(const void *ptr) {         \
+    return (ptr != NULL);                                    \
+  }
+#define ALLOC_DELETED_CHAIN_DEF(Type)
+
+#endif  // USE_DELETED_CHAIN
 
 #include "deletedChain.T"
 

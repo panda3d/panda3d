@@ -395,6 +395,13 @@
 //#defer ALTERNATIVE_MALLOC $[or $[WINDOWS_PLATFORM],$[DO_MEMORY_USAGE],$[not $[HAVE_THREADS]]]
 #define ALTERNATIVE_MALLOC
 
+// Define this true to use the DELETED_CHAIN macros, which support
+// fast re-use of existing allocated blocks, minimizing the low-level
+// calls to malloc() and free() for frequently-created and -deleted
+// objects.  There's usually no reason to set this false, unless you
+// suspect a bug in Panda's memory management code.
+#define USE_DELETED_CHAIN 1
+
 // Define this true to build the low-level native network
 // implementation.  Normally this should be set true.
 #define WANT_NATIVE_NET 1
@@ -406,6 +413,11 @@
 // on top of the low-level native_net interface, specified above.
 // Normally, if you build NATIVE_NET, you will also build NET.
 #defer HAVE_NET $[WANT_NATIVE_NET]
+
+// Do you want to build the egg loader?  Usually there's no reason to
+// avoid building this, unless you really want to make a low-footprint
+// build (such as, for instance, for the iPhone).
+#define HAVE_EGG 1
 
 // Is a third-party STL library installed, and where?  This is only
 // necessary if the default include and link lines that come with the
@@ -459,6 +471,17 @@
 #define TIFF_LPATH
 #define TIFF_LIBS tiff z
 #defer HAVE_TIFF $[libtest $[TIFF_LPATH],$[TIFF_LIBS]]
+
+// These image file formats don't require the assistance of a
+// third-party library to read and write, so there's normally no
+// reason to disable them in the build, unless you are looking to
+// reduce the memory footprint.
+#define HAVE_SGI_RGB 1
+#define HAVE_TGA 1
+#define HAVE_IMG 1
+#define HAVE_SOFTIMAGE_PIC 1
+#define HAVE_BMP 1
+#define HAVE_PNM 1
 
 // Is libtar installed, and where?  This is used to optimize patch
 // generation against tar files.

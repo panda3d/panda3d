@@ -8,12 +8,13 @@
   #define IPH_VERSION 2.0
   
   #if $[eq $[IPH_PLATFORM], iPhoneOS]
-    #define ARCH_FLAGS -arch armv6
-    #define osflags -miphoneos-version-min=2.0
-    #define DEBUGFLAGS
+    #define ARCH_FLAGS -arch armv6 -mcpu=arm1176jzf-s
+    #define osflags -fpascal-strings -fasm-blocks -fvisibility=hidden -fvisibility-inlines-hidden -miphoneos-version-min=2.0
+    #define DEBUGFLAGS -gdwarf-2
+    //#define DEBUGFLAGS
   #elif $[eq $[IPH_PLATFORM], iPhoneSimulator]
     #define ARCH_FLAGS -arch i386
-    #define osflags -mmacosx-version-min=10.5
+    #define osflags -fpascal-strings -fasm-blocks -fvisibility=hidden -fvisibility-inlines-hidden -mmacosx-version-min=10.5
     #define DEBUGFLAGS -gdwarf-2
   #else
     #error Inappropriate value for BUILD_IPHONE.

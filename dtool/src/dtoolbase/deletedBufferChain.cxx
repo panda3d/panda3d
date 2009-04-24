@@ -46,6 +46,7 @@ DeletedBufferChain(size_t buffer_size) {
 ////////////////////////////////////////////////////////////////////
 void *DeletedBufferChain::
 allocate(size_t size, TypeHandle type_handle) {
+#ifdef USE_DELETED_CHAIN
   TAU_PROFILE("void *DeletedBufferChain::allocate(size_t, TypeHandle)", " ", TAU_USER);
   assert(size <= _buffer_size);
 
@@ -89,6 +90,10 @@ allocate(size_t size, TypeHandle type_handle) {
 #endif  // DO_MEMORY_USAGE
 
   return ptr;
+
+#else  // USE_DELETED_CHAIN
+  return PANDA_MALLOC_SINGLE(_buffer_size);
+#endif  // USE_DELETED_CHAIN
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -99,6 +104,7 @@ allocate(size_t size, TypeHandle type_handle) {
 ////////////////////////////////////////////////////////////////////
 void DeletedBufferChain::
 deallocate(void *ptr, TypeHandle type_handle) {
+#ifdef USE_DELETED_CHAIN
   TAU_PROFILE("void DeletedBufferChain::deallocate(void *, TypeHandle)", " ", TAU_USER);
   assert(ptr != (void *)NULL);
 
@@ -127,4 +133,8 @@ deallocate(void *ptr, TypeHandle type_handle) {
   _deleted_chain = obj;
 
   _lock.release();
+
+#else  // USE_DELETED_CHAIN
+  PANDA_FREE_SINGLE(ptr);
+#endif  // USE_DELETED_CHAIN
 }

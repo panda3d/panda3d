@@ -67,6 +67,8 @@ public:
 
   DeletedBufferChain *get_deleted_chain(size_t buffer_size);
 
+  virtual void alloc_fail();
+
 private:
   INLINE static size_t inflate_size(size_t size);
   INLINE static void *alloc_to_ptr(void *alloc, size_t size);

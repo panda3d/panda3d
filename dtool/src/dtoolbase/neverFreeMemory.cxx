@@ -25,6 +25,10 @@ static const size_t min_page_remaining_size = 16;
 // We always allocate at least this many bytes at a time.
 static const size_t min_page_size = 128 * 1024;  // 128K
 
+// We always allocate integer multiples of this many bytes, to
+// guarantee this minimum alignment.
+static const size_t alignment_size = sizeof(long);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NeverFreeMemory::Constructor
 //       Access: Private
@@ -44,6 +48,9 @@ NeverFreeMemory() {
 void *NeverFreeMemory::
 ns_alloc(size_t size) {
   _lock.acquire();
+
+  // Round up to the next alignment_size.
+  size = ((size + alignment_size - 1) / alignment_size) * alignment_size;
 
   _total_used += size;
   

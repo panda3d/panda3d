@@ -244,6 +244,14 @@ $[cdefine HAVE_PNG]
 /* Define if we have libtiff installed.  */
 $[cdefine HAVE_TIFF]
 
+/* Define if we want to build these other image file formats. */
+$[cdefine HAVE_SGI_RGB]
+$[cdefine HAVE_TGA]
+$[cdefine HAVE_IMG]
+$[cdefine HAVE_SOFTIMAGE_PIC]
+$[cdefine HAVE_BMP]
+$[cdefine HAVE_PNM]
+
 /* Define if we have libtar installed.  */
 $[cdefine HAVE_TAR]
 
@@ -343,6 +351,9 @@ $[cdefine USE_PANDAFILESTREAM]
 
 /* Define if we want to compile the net code.  */
 $[cdefine HAVE_NET]
+
+/* Define if we want to compile the egg code.  */
+$[cdefine HAVE_EGG]
 
 /* Define if we want to compile the audio code.  */
 $[cdefine HAVE_AUDIO]
@@ -583,6 +594,9 @@ $[cdefine USE_MEMORY_DLMALLOC]
 $[cdefine USE_MEMORY_PTMALLOC2]
 $[cdefine USE_MEMORY_MALLOC]
 $[cdefine USE_MEMORY_NOWRAPPERS]
+
+// To activate the DELETED_CHAIN macros.
+$[cdefine USE_DELETED_CHAIN]
 
 // If we are to build the native net interfaces.
 $[cdefine WANT_NATIVE_NET]
