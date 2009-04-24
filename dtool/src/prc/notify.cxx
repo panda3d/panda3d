@@ -22,6 +22,10 @@
 
 #include <ctype.h>
 
+#ifdef BUILD_IPHONE
+#include <fcntl.h>
+#endif
+
 Notify *Notify::_global_ptr = (Notify *)NULL;
 
 ////////////////////////////////////////////////////////////////////
@@ -543,6 +547,22 @@ config_initialized() {
       } else {
         Filename filename = notify_output;
         filename.set_text();
+#ifdef BUILD_IPHONE
+        // On the iPhone, route everything through cerr, and then send
+        // cerr to the log file, since we can't get the cerr output
+        // otherwise.
+        string os_specific = filename.to_os_specific();
+        int logfile_fd = open(os_specific.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        if (logfile_fd < 0) {
+          nout << "Unable to open file " << filename << " for output.\n";
+        } else {
+          dup2(logfile_fd, STDOUT_FILENO);
+          dup2(logfile_fd, STDERR_FILENO);
+          close(logfile_fd);
+          
+          set_ostream_ptr(&cerr, false);
+        }
+#else
         pofstream *out = new pofstream;
         if (!filename.open_write(*out)) {
           nout << "Unable to open file " << filename << " for output.\n";
@@ -551,6 +571,7 @@ config_initialized() {
           out->setf(ios::unitbuf);
           set_ostream_ptr(out, true);
         }
+#endif  // BUILD_IPHONE
       }
     }
   }
