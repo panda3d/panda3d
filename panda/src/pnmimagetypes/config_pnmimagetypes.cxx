@@ -14,7 +14,6 @@
 
 #include "config_pnmimagetypes.h"
 #include "pnmFileTypeSGI.h"
-#include "pnmFileTypeAlias.h"
 #include "pnmFileTypeTGA.h"
 #include "pnmFileTypeIMG.h"
 #include "pnmFileTypeSoftImage.h"
@@ -33,7 +32,6 @@
 
 Configure(config_pnmimagetypes);
 NotifyCategoryDefName(pnmimage_sgi, "sgi", pnmimage_cat);
-NotifyCategoryDefName(pnmimage_alias, "alias", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_tga, "tga", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_img, "img", pnmimage_cat);
 NotifyCategoryDefName(pnmimage_soft, "soft", pnmimage_cat);
@@ -179,59 +177,61 @@ init_libpnmimagetypes() {
   initialized = true;
 
   init_libpnmimage();
-  PNMFileTypeSGI::init_type();
-  PNMFileTypeAlias::init_type();
-  PNMFileTypeTGA::init_type();
-  PNMFileTypeIMG::init_type();
-  PNMFileTypeSoftImage::init_type();
-  PNMFileTypeBMP::init_type();
-  PNMFileTypePNM::init_type();
-#ifdef HAVE_JPEG
-  PNMFileTypeJPG::init_type();
-#endif
-#ifdef HAVE_PNG
-  PNMFileTypePNG::init_type();
-#endif
-#ifdef HAVE_TIFF
-  PNMFileTypeTIFF::init_type();
-#endif
 
-  // Register each type with the PNMFileTypeRegistry.
   PNMFileTypeRegistry *tr = PNMFileTypeRegistry::get_global_ptr();
 
+#ifdef HAVE_SGI_RGB
+  PNMFileTypeSGI::init_type();
+  PNMFileTypeSGI::register_with_read_factory();
   tr->register_type(new PNMFileTypeSGI);
-  tr->register_type(new PNMFileTypeAlias);
-  tr->register_type(new PNMFileTypeTGA);
-  tr->register_type(new PNMFileTypeIMG);
-  tr->register_type(new PNMFileTypeSoftImage);
-  tr->register_type(new PNMFileTypeBMP);
-  tr->register_type(new PNMFileTypePNM);
-#ifdef HAVE_JPEG
-  tr->register_type(new PNMFileTypeJPG);
-#endif
-#ifdef HAVE_PNG
-  tr->register_type(new PNMFileTypePNG);
-#endif
-#ifdef HAVE_TIFF
-  tr->register_type(new PNMFileTypeTIFF);
 #endif
 
-  // Also register with the Bam reader.
-  PNMFileTypeSGI::register_with_read_factory();
-  PNMFileTypeAlias::register_with_read_factory();
+#ifdef HAVE_TGA
+  PNMFileTypeTGA::init_type();
   PNMFileTypeTGA::register_with_read_factory();
+  tr->register_type(new PNMFileTypeTGA);
+#endif
+
+#ifdef HAVE_IMG
+  PNMFileTypeIMG::init_type();
   PNMFileTypeIMG::register_with_read_factory();
+  tr->register_type(new PNMFileTypeIMG);
+#endif
+
+#ifdef HAVE_SOFTIMAGE_PIC
+  PNMFileTypeSoftImage::init_type();
   PNMFileTypeSoftImage::register_with_read_factory();
+  tr->register_type(new PNMFileTypeSoftImage);
+#endif  // HAVE_SOFTIMAGE_PIC
+
+#ifdef HAVE_BMP
+  PNMFileTypeBMP::init_type();
   PNMFileTypeBMP::register_with_read_factory();
+  tr->register_type(new PNMFileTypeBMP);
+#endif
+
+#ifdef HAVE_PNM
+  PNMFileTypePNM::init_type();
   PNMFileTypePNM::register_with_read_factory();
+  tr->register_type(new PNMFileTypePNM);
+#endif
+
 #ifdef HAVE_JPEG
+  PNMFileTypeJPG::init_type();
   PNMFileTypeJPG::register_with_read_factory();
+  tr->register_type(new PNMFileTypeJPG);
 #endif
+
 #ifdef HAVE_PNG
+  PNMFileTypePNG::init_type();
   PNMFileTypePNG::register_with_read_factory();
+  tr->register_type(new PNMFileTypePNG);
 #endif
+
 #ifdef HAVE_TIFF
+  PNMFileTypeTIFF::init_type();
   PNMFileTypeTIFF::register_with_read_factory();
+  tr->register_type(new PNMFileTypeTIFF);
 #endif
 
   // And register with the PandaSystem.

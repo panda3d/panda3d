@@ -17,6 +17,8 @@
 
 #include "pandabase.h"
 
+#ifdef HAVE_SGI_RGB
+
 #include "pnmFileType.h"
 #include "pnmReader.h"
 #include "pnmWriter.h"
@@ -130,6 +132,8 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#endif  // HAVE_SGI_RGB
 
 #endif
 

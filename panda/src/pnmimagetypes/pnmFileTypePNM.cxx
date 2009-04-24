@@ -13,6 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypePNM.h"
+
+#ifdef HAVE_PNM
+
 #include "config_pnmimagetypes.h"
 
 #include "pnmFileTypeRegistry.h"
@@ -1273,3 +1276,5 @@ TypedWritable *PNMFileTypePNM::
 make_PNMFileTypePNM(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());
 }
+
+#endif  // HAVE_PNM

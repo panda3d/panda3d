@@ -13,6 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeSGI.h"
+
+#ifdef HAVE_SGI_RGB
+
 #include "config_pnmimagetypes.h"
 #include "sgi.h"
 
@@ -515,3 +518,4 @@ compression_name(char compr) {
     }
 }
 
+#endif  // HAVE_SGI_RGB

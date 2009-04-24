@@ -43,6 +43,9 @@
 */
 
 #include "pnmFileTypeTGA.h"
+
+#ifdef HAVE_TGA
+
 #include "config_pnmimagetypes.h"
 
 #include "pnmFileTypeRegistry.h"
@@ -940,3 +943,5 @@ put_rgb( pixel* pP, pixval maxval ) {
     _file->put( PPM_GETR( p ) );
   }
 }
+
+#endif  // HAVE_TGA

@@ -13,6 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeSoftImage.h"
+
+#ifdef HAVE_SOFTIMAGE_PIC
+
 #include "config_pnmimagetypes.h"
 
 #include "pnmFileTypeRegistry.h"
@@ -787,3 +790,5 @@ TypedWritable *PNMFileTypeSoftImage::
 make_PNMFileTypeSoftImage(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());
 }
+
+#endif  // HAVE_SOFTIMAGE_PIC

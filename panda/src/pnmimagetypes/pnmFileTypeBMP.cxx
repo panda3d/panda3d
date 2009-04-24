@@ -13,6 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeBMP.h"
+
+#ifdef HAVE_BMP
+
 #include "config_pnmimagetypes.h"
 
 #include "pnmFileTypeRegistry.h"
@@ -159,3 +162,5 @@ TypedWritable *PNMFileTypeBMP::
 make_PNMFileTypeBMP(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());
 }
+
+#endif  // HAVE_BMP

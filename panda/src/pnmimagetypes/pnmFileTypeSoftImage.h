@@ -17,6 +17,8 @@
 
 #include "pandabase.h"
 
+#ifdef HAVE_SOFTIMAGE_PIC
+
 #include "pnmFileType.h"
 #include "pnmReader.h"
 #include "pnmWriter.h"
@@ -89,6 +91,8 @@ public:
 private:
   static TypeHandle _type_handle;
 };
+
+#endif  // HAVE_SOFTIMAGE_PIC
 
 #endif
 

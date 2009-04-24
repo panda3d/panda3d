@@ -13,6 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeBMP.h"
+
+#ifdef HAVE_BMP
+
 #include "config_pnmimagetypes.h"
 #include "bmp.h"
 #include "pnmbitio.h"
@@ -507,3 +510,5 @@ read_data(xel *array, xelval *) {
 
   return _y_size;
 }
+
+#endif  // HAVE_BMP

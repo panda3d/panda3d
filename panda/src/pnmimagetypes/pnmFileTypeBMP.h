@@ -17,6 +17,8 @@
 
 #include "pandabase.h"
 
+#ifdef HAVE_BMP
+
 #include "pnmFileType.h"
 #include "pnmReader.h"
 #include "pnmWriter.h"
@@ -96,6 +98,6 @@ private:
   static TypeHandle _type_handle;
 };
 
+#endif  // HAVE_BMP
+
 #endif
-
-

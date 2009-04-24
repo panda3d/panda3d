@@ -13,6 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeIMG.h"
+
+#ifdef HAVE_IMG
+
 #include "config_pnmimagetypes.h"
 
 #include "pnmFileTypeRegistry.h"
@@ -373,3 +376,5 @@ TypedWritable *PNMFileTypeIMG::
 make_PNMFileTypeIMG(const FactoryParams &params) {
   return PNMFileTypeRegistry::get_global_ptr()->get_type_by_handle(get_class_type());
 }
+
+#endif  // HAVE_IMG

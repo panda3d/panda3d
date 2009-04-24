@@ -13,6 +13,9 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "pnmFileTypeSGI.h"
+
+#ifdef HAVE_SGI_RGB
+
 #include "config_pnmimagetypes.h"
 #include "sgi.h"
 
@@ -368,3 +371,4 @@ rle_compress(ScanElem *inbuf, int size) {
     return(out);
 }
 
+#endif  // HAVE_SGI_RGB

@@ -11,7 +11,7 @@
      $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 
   #define SOURCES  \
-     config_pnmimagetypes.h pnmFileTypeAlias.h pnmFileTypeBMP.h  \
+     config_pnmimagetypes.h pnmFileTypeBMP.h  \
      pnmFileTypeIMG.h  \
      pnmFileTypePNG.h \
      pnmFileTypePNM.h \
@@ -21,7 +21,7 @@
      pnmFileTypeJPG.h
 
   #define INCLUDED_SOURCES  \
-     config_pnmimagetypes.cxx pnmFileTypeAlias.cxx  \
+     config_pnmimagetypes.cxx  \
      pnmFileTypeBMPReader.cxx pnmFileTypeBMPWriter.cxx  \
      pnmFileTypeBMP.cxx \
      pnmFileTypeIMG.cxx \
