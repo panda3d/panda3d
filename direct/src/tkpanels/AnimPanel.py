@@ -56,7 +56,9 @@ class AnimPanel(AppShell):
 
 
         # Execute option callbacks
-        self.initialiseoptions(AnimPanel)
+        self.initialiseoptions(AnimPanel)                
+        # We need to know when AnimPanel is closed
+        self.destroyCallBack = None
 
     def createInterface(self):
         # Handle to the toplevels interior
@@ -176,7 +178,7 @@ class AnimPanel(AppShell):
 
         controlFrame.pack(fill = X)
 
-    def createActorControls(self):
+    def createActorControls(self): 
         # Create a frame to hold all the actor controls
         self.actorFrame = Frame(self.interior())
         # Create a control for each actor
@@ -332,11 +334,16 @@ class AnimPanel(AppShell):
 
     def resetAllToEnd(self):
         for actorControl in self.actorControlList:
-            actorControl.resetToEnd()            
+            actorControl.resetToEnd()                        
+                        
+    def setDestroyCallBack(self, callBack):    
+        self.destroyCallBack = callBack
                         
     def destroy(self):    
         # First clean up 
-        taskMgr.remove(self.id + '_UpdateTask')
+        taskMgr.remove(self.id + '_UpdateTask')        
+        self.destroyCallBack()        
+        self.destroyCallBack = None
         AppShell.destroy(self)    
 
 class ActorControl(Pmw.MegaWidget):
