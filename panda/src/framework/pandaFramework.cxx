@@ -106,9 +106,15 @@ open_framework(int &argc, char **&argv) {
   extern EXPCL_PANDA_PNMIMAGETYPES void init_libpnmimagetypes();
   init_libpnmimagetypes();
 
+  // Ensure the animation subsystem is available.
+  extern EXPCL_PANDA_CHAR void init_libchar();
+  init_libchar();
+
   // We also want the egg loader.
+  #ifdef HAVE_EGG
   extern EXPCL_PANDAEGG void init_libpandaegg();
   init_libpandaegg();
+  #endif
 
 #endif
 

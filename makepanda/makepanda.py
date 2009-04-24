@@ -864,6 +864,7 @@ DTOOL_CONFIG=[
     ("HAVE_FFTW",                      'UNDEF',                  'UNDEF'),
     ("HAVE_OPENSSL",                   'UNDEF',                  'UNDEF'),
     ("HAVE_NET",                       'UNDEF',                  'UNDEF'),
+    ("HAVE_EGG",                       '1',                      '1'),
     ("HAVE_CG",                        'UNDEF',                  'UNDEF'),
     ("HAVE_CGGL",                      'UNDEF',                  'UNDEF'),
     ("HAVE_CGDX9",                     'UNDEF',                  'UNDEF'),

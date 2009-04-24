@@ -1,3 +1,5 @@
+#define BUILD_DIRECTORY $[HAVE_EGG]
+
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c
 

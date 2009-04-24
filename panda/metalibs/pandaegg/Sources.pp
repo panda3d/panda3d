@@ -5,6 +5,7 @@
 // under Windows).
 
 #define DIR_TYPE metalib
+#define BUILD_DIRECTORY $[HAVE_EGG]
 #define BUILDING_DLL BUILDING_PANDAEGG
 
 #define COMPONENT_LIBS \
