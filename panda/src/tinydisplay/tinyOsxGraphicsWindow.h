@@ -17,7 +17,7 @@
 
 #include "pandabase.h"
 
-#ifdef IS_OSX
+#if defined(IS_OSX) && !defined(BUILD_IPHONE)
 
 #include <Carbon/Carbon.h>
 

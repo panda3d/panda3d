@@ -1,7 +1,7 @@
 #define BUILD_DIRECTORY $[HAVE_TINYDISPLAY]
 #define BUILDING_DLL BUILDING_TINYDISPLAY
 
-#define OSX_SYS_FRAMEWORKS ApplicationServices Carbon CoreServices Cocoa  
+#define OSX_SYS_FRAMEWORKS $[if $[not $[BUILD_IPHONE]],ApplicationServices Carbon CoreServices Cocoa ]
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m prc:c 
 

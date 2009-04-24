@@ -14,7 +14,7 @@
 
 #include "pandabase.h"
 
-#ifdef IS_OSX
+#if defined(IS_OSX) && !defined(BUILD_IPHONE)
 
 #include "tinyOsxGraphicsPipe.h"
 #include "config_tinydisplay.h"

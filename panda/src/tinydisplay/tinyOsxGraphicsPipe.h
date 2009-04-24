@@ -17,7 +17,7 @@
 
 #include "pandabase.h"
 
-#ifdef IS_OSX
+#if defined(IS_OSX) && !defined(BUILD_IPHONE)
 
 // We have to include this early, before anyone includes
 // netinet/tcp.h, which will define TCP_NODELAY and other symbols and

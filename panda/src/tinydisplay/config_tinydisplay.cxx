@@ -151,7 +151,7 @@ init_libtinydisplay() {
   ps->set_system_tag("TinyPanda", "native_window_system", "Win");
 #endif
 
-#ifdef IS_OSX
+#if defined(IS_OSX) && !defined(BUILD_IPHONE)
   TinyOsxGraphicsPipe::init_type();
   TinyOsxGraphicsWindow::init_type();
   selection->add_pipe_type(TinyOsxGraphicsPipe::get_class_type(),
@@ -185,7 +185,7 @@ get_pipe_type_tinydisplay() {
   return TinyWinGraphicsPipe::get_class_type().get_index();
 #endif
 
-#ifdef IS_OSX
+#if defined(IS_OSX) && !defined(BUILD_IPHONE)
   return TinyOsxGraphicsPipe::get_class_type().get_index();
 #endif
 

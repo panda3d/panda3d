@@ -8,6 +8,11 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
+
+#include "pandabase.h"
+
+#if defined(IS_OSX) && !defined(BUILD_IPHONE)
+
 #include <Carbon/Carbon.h>
 #include <Cocoa/Cocoa.h>
 
@@ -1791,3 +1796,5 @@ create_frame_buffer() {
 
   _frame_buffer = ZB_open(_properties.get_x_size(), _properties.get_y_size(), ZB_MODE_RGBA, 0, 0, 0, 0);
 }
+
+#endif  // IS_OSX
