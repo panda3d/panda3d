@@ -76,8 +76,8 @@ class ShowBase(DirectObject.DirectObject):
         Verify.wantVerifyPdb = self.config.GetBool('want-verify-pdb', 0)
 
         # [gjeon] to disable sticky keys
-        storeAccessibilityShortcutKeys()
         if self.config.GetBool('disable-sticky-keys', 0):
+            storeAccessibilityShortcutKeys()
             allowAccessibilityShortcutKeys(False)
 
         self.printEnvDebugInfo()
@@ -424,7 +424,8 @@ class ShowBase(DirectObject.DirectObject):
         This function is designed to be safe to call multiple times."""
 
         # [gjeon] restore sticky key settings
-        allowAccessibilityShortcutKeys(True)
+        if self.config.GetBool('disable-sticky-keys', 0):
+            allowAccessibilityShortcutKeys(True)
 
         taskMgr.destroy()
 
