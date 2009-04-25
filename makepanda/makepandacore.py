@@ -835,7 +835,12 @@ def SdkLocateMax():
 def SdkLocatePython():
     if (PkgSkip("PYTHON")==0):
         if (sys.platform == "win32"):
-            SDK["PYTHON"]="thirdparty/win-python"
+            (arch, osName) = platform.architecture()
+            if arch=='32bit':
+                SDK["PYTHON"]="thirdparty/win32/win-python"
+            else:
+                SDK["PYTHON"]="thirdparty/win64/win-python"
+
             SDK["PYTHONVERSION"]="python2.5"
         elif (sys.platform == "darwin"):
             if not SDK.has_key("MACOSX"): SdkLocateMacOSX()
@@ -863,6 +868,9 @@ def SdkLocateVisualStudio():
     if (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
         vcdir = vcdir[:-3]
         SDK["VISUALSTUDIO"] = vcdir
+    else:
+        if os.environ.has_key("VCINSTALLDIR"):
+            SDK["VISUALSTUDIO"] = os.environ["VCINSTALLDIR"]
 
 def SdkLocateMSPlatform():
     if (sys.platform != "win32"): return
@@ -876,7 +884,11 @@ def SdkLocateMSPlatform():
     # Doesn't work with the Express versions, so we're checking for the "atlmfc" dir, which is not in the Express 
     if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\atlmfc"))):
         platsdk = os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\PlatformSDK")
-    
+	//This may not be the best idea but it does give a warning
+    if (platsdk == 0):
+        if( os.environ.has_key("WindowsSdkDir") ):
+            print "Warning: Windows SDK directory not found in registry, found in Environment variables instead"
+            platsdk = os.environ["WindowsSdkDir"]
     if (platsdk != 0):
         if (not platsdk.endswith("//")):
             platsdk += "//"
