@@ -176,7 +176,12 @@ SdkAutoDisableMax()
 if (sys.platform == "win32"):
     SetupVisualStudioEnviron()
     COMPILER="MSVC"
-    THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
+
+    (arch, osName) = platform.architecture()
+    if arch=='32bit':
+        THIRDPARTYLIBS="thirdparty/win32/win-libs-vc9/"
+    else:
+        THIRDPARTYLIBS="thirdparty/win64/win-libs-vc9/"
     VC90CRTVERSION = GetVC90CRTVersion(THIRDPARTYLIBS+"extras/bin/Microsoft.VC90.CRT.manifest")
 else:
     CheckLinkerLibraryPath()
@@ -208,9 +213,13 @@ if (INSTALLER) and (PkgSkip("PYTHON")):
 ########################################################################
 
 if (COMPILER=="MSVC"):
+    (arch, osName) = platform.architecture()
+    archName = 'win64'
+    if arch=='32bit': archName = 'win32'
+    thirdPartyPrefix = "thirdparty/" + archName + "/win-libs-vc9/"
     if (PkgSkip("PYTHON")==0):
-        IncDirectory("ALWAYS", "thirdparty/win-python/include")
-        LibDirectory("ALWAYS", "thirdparty/win-python/libs")
+        IncDirectory("ALWAYS", "thirdparty/" + archName + "/win-python/include")
+        LibDirectory("ALWAYS", "thirdparty/" + archName + "/win-python/libs")
     for pkg in PkgListGet():
         if (PkgSkip(pkg)==0):
             if (pkg[:4]=="MAYA"):
@@ -223,7 +232,7 @@ if (COMPILER=="MSVC"):
             elif (pkg[:2]=="DX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
             else:
-                IncDirectory(pkg, "thirdparty/win-libs-vc9/" + pkg.lower() + "/include")
+                IncDirectory(pkg, thirdPartyPrefix + pkg.lower() + "/include")
     for pkg in DXVERSIONS:
         if (PkgSkip(pkg)==0):
             vnum=pkg[2:]
@@ -253,40 +262,40 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "quartz.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbc32.lib")
     if (PkgSkip("DIRECTCAM")==0): LibName("DIRECTCAM", "odbccp32.lib")
-    if (PkgSkip("PNG")==0):      LibName("PNG",      "thirdparty/win-libs-vc9/png/lib/libpandapng.lib")
-    if (PkgSkip("JPEG")==0):     LibName("JPEG",     "thirdparty/win-libs-vc9/jpeg/lib/libpandajpeg.lib")
-    if (PkgSkip("TIFF")==0):     LibName("TIFF",     "thirdparty/win-libs-vc9/tiff/lib/libpandatiff.lib")
-    if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     "thirdparty/win-libs-vc9/zlib/lib/libpandazlib1.lib")
-    if (PkgSkip("VRPN")==0):     LibName("VRPN",     "thirdparty/win-libs-vc9/vrpn/lib/vrpn.lib")
-    if (PkgSkip("VRPN")==0):     LibName("VRPN",     "thirdparty/win-libs-vc9/vrpn/lib/quat.lib")
-    if (PkgSkip("FMODEX")==0):   LibName("FMODEX",   "thirdparty/win-libs-vc9/fmodex/lib/fmodex_vc.lib")
-    if (PkgSkip("OPENAL")==0):   LibName("OPENAL",   "thirdparty/win-libs-vc9/openal/lib/pandaopenal32.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     "thirdparty/win-libs-vc9/nvidiacg/lib/cgGL.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    "thirdparty/win-libs-vc9/nvidiacg/lib/cgD3D9.lib")
-    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "thirdparty/win-libs-vc9/nvidiacg/lib/cg.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "thirdparty/win-libs-vc9/openssl/lib/libpandassl.lib")
-    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "thirdparty/win-libs-vc9/openssl/lib/libpandaeay.lib")
-    if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", "thirdparty/win-libs-vc9/freetype/lib/freetype.lib")
-    if (PkgSkip("FFTW")==0):     LibName("FFTW",     "thirdparty/win-libs-vc9/fftw/lib/rfftw.lib")        
-    if (PkgSkip("FFTW")==0):     LibName("FFTW",     "thirdparty/win-libs-vc9/fftw/lib/fftw.lib")        
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc9/ffmpeg/lib/avcodec-51-panda.lib")
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc9/ffmpeg/lib/avformat-50-panda.lib")
-    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   "thirdparty/win-libs-vc9/ffmpeg/lib/avutil-49-panda.lib")
-    if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT","thirdparty/win-libs-vc9/artoolkit/lib/libAR.lib")
-    if (PkgSkip("ODE")==0):      LibName("ODE",      "thirdparty/win-libs-vc9/ode/lib/ode.lib")
-    if (PkgSkip("FCOLLADA")==0): LibName("FCOLLADA", "thirdparty/win-libs-vc9/fcollada/lib/FCollada.lib")
-    if (PkgSkip("SQUISH")==0):   LibName("SQUISH",   "thirdparty/win-libs-vc9/squish/lib/squish.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc9/opencv/lib/cv.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc9/opencv/lib/highgui.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc9/opencv/lib/cvaux.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc9/opencv/lib/ml.lib")
-    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   "thirdparty/win-libs-vc9/opencv/lib/cxcore.lib")
+    if (PkgSkip("PNG")==0):      LibName("PNG",      thirdPartyPrefix + "png/lib/libpandapng.lib")
+    if (PkgSkip("JPEG")==0):     LibName("JPEG",     thirdPartyPrefix + "jpeg/lib/libpandajpeg.lib")
+    if (PkgSkip("TIFF")==0):     LibName("TIFF",     thirdPartyPrefix + "tiff/lib/libpandatiff.lib")
+    if (PkgSkip("ZLIB")==0):     LibName("ZLIB",     thirdPartyPrefix + "zlib/lib/libpandazlib1.lib")
+    if (PkgSkip("VRPN")==0):     LibName("VRPN",     thirdPartyPrefix + "vrpn/lib/vrpn.lib")
+    if (PkgSkip("VRPN")==0):     LibName("VRPN",     thirdPartyPrefix + "vrpn/lib/quat.lib")
+    if (PkgSkip("FMODEX")==0):   LibName("FMODEX",   thirdPartyPrefix + "fmodex/lib/fmodex_vc.lib")
+    if (PkgSkip("OPENAL")==0):   LibName("OPENAL",   thirdPartyPrefix + "openal/lib/pandaopenal32.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("CGGL",     thirdPartyPrefix + "nvidiacg/lib/cgGL.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("CGDX9",    thirdPartyPrefix + "nvidiacg/lib/cgD3D9.lib")
+    if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", thirdPartyPrefix + "nvidiacg/lib/cg.lib")
+    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  thirdPartyPrefix + "openssl/lib/libpandassl.lib")
+    if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  thirdPartyPrefix + "openssl/lib/libpandaeay.lib")
+    if (PkgSkip("FREETYPE")==0): LibName("FREETYPE", thirdPartyPrefix + "freetype/lib/freetype.lib")
+    if (PkgSkip("FFTW")==0):     LibName("FFTW",     thirdPartyPrefix + "fftw/lib/rfftw.lib")        
+    if (PkgSkip("FFTW")==0):     LibName("FFTW",     thirdPartyPrefix + "fftw/lib/fftw.lib")        
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   thirdPartyPrefix + "ffmpeg/lib/avcodec-51-panda.lib")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   thirdPartyPrefix + "ffmpeg/lib/avformat-50-panda.lib")
+    if (PkgSkip("FFMPEG")==0):   LibName("FFMPEG",   thirdPartyPrefix + "ffmpeg/lib/avutil-49-panda.lib")
+    if (PkgSkip("ARTOOLKIT")==0):LibName("ARTOOLKIT",thirdPartyPrefix + "artoolkit/lib/libAR.lib")
+    if (PkgSkip("ODE")==0):      LibName("ODE",      thirdPartyPrefix + "ode/lib/ode.lib")
+    if (PkgSkip("FCOLLADA")==0): LibName("FCOLLADA", thirdPartyPrefix + "fcollada/lib/FCollada.lib")
+    if (PkgSkip("SQUISH")==0):   LibName("SQUISH",   thirdPartyPrefix + "squish/lib/squish.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   thirdPartyPrefix + "opencv/lib/cv.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   thirdPartyPrefix + "opencv/lib/highgui.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   thirdPartyPrefix + "opencv/lib/cvaux.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   thirdPartyPrefix + "opencv/lib/ml.lib")
+    if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   thirdPartyPrefix + "opencv/lib/cxcore.lib")
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
-            LibName(pkg, SDK[pkg] + '/lib/Foundation.lib')
-            LibName(pkg, SDK[pkg] + '/lib/OpenMaya.lib')
-            LibName(pkg, SDK[pkg] + '/lib/OpenMayaAnim.lib')
-            LibName(pkg, SDK[pkg] + '/lib/OpenMayaUI.lib')
+            LibName(pkg, '"' + SDK[pkg] + '/lib/Foundation.lib"')
+            LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMaya.lib"')
+            LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMayaAnim.lib"')
+            LibName(pkg, '"' + SDK[pkg] + '/lib/OpenMayaUI.lib"')
     for pkg in MAXVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, SDK[pkg] +  '/lib/core.lib')
@@ -462,7 +471,7 @@ printStatus("Makepanda Initial Status Report", WARNINGS)
 def CompileCxx(obj,src,opts):
     ipath = GetListOption(opts, "DIR:")
     if (COMPILER=="MSVC"):
-        cmd = "cl /wd4996 /Fo" + obj + " /nologo /c "
+        cmd = "cl /favor:blend /wd4996 /wd4275 /wd4267 /wd4101 /Fo" + obj + " /nologo /c "
         for x in ipath: cmd = cmd + " /I" + x
         for (opt,dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /I"' + dir + '"'
@@ -478,6 +487,8 @@ def CompileCxx(obj,src,opts):
         cmd = cmd + " /Fd" + obj[:-4] + ".pdb"
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd = cmd + " /DBUILDING_" + building
+        bigObjFlag = GetValueOption(opts, "BIGOBJ:")
+        if (bigObjFlag): cmd += " /bigobj"
         cmd = cmd + " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + src
         oscmd(cmd)
     if (COMPILER=="LINUX"):
@@ -624,7 +635,11 @@ def CompileImod(wobj, wsrc, opts):
 
 def CompileLib(lib, obj, opts):
     if (COMPILER=="MSVC"):
-        cmd = 'link /lib /nologo /OUT:' + lib
+        cmd = 'link /lib /nologo '
+        (arch, osName) = platform.architecture()
+        if arch=='64bit':
+            cmd += "/MACHINE:X64 "
+        cmd += '/OUT:' + lib
         for x in obj: cmd = cmd + ' ' + x
         oscmd(cmd)
     if (COMPILER=="LINUX"):
@@ -643,7 +658,11 @@ def CompileLib(lib, obj, opts):
 
 def CompileLink(dll, obj, opts):
     if (COMPILER=="MSVC"):
-        cmd = 'link /nologo /NOD:MFC80.LIB /NOD:MFC90.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
+        cmd = 'link /nologo '
+        (arch, osName) = platform.architecture()
+        if arch == "64bit":
+            cmd += "/MACHINE:X64 "
+        cmd += '/NOD:MFC80.LIB /NOD:MFC90.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
         cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk"
         if (GetOrigExt(dll) != ".exe"): cmd = cmd + " /DLL"
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
@@ -670,7 +689,7 @@ def CompileLink(dll, obj, opts):
             elif (x.endswith(".dat")):
                 pass
             else: cmd = cmd + ' ' + x
-        if (GetOrigExt(dll)==".exe"):
+        if (GetOrigExt(dll)==".exe" and platform.architecture()[0] == "32bit"):
             cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
@@ -1105,8 +1124,11 @@ if (COMPILER=="MSVC"):
     CopyAllFiles(GetOutputDir()+"/bin/", THIRDPARTYLIBS+"extras"+"/bin/")
 if (sys.platform == "win32"):
     if (PkgSkip("PYTHON")==0):
-        CopyFile(GetOutputDir()+'/bin/python25.dll', 'thirdparty/win-python/python25.dll')
-        CopyTree(GetOutputDir()+'/python', 'thirdparty/win-python')
+        (arch, osName) = platform.architecture()
+        archName = "win64"
+        if arch=='32bit': archName = "win32"
+        CopyFile(GetOutputDir()+'/bin/python25.dll', 'thirdparty/' + archName + '/win-python/python25.dll')
+        CopyTree(GetOutputDir()+'/python', 'thirdparty/' + archName + '/win-python')
         ConditionalWriteFile(GetOutputDir()+'/python/panda.pth',"..\n../bin\n")
 
 ########################################################################
@@ -1356,7 +1378,7 @@ TargetAdd('libp3dtool.dll', input='dtoolbase_composite1.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_composite2.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_indent.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_lookup3.obj')
-TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL'])
+TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL'])
 
 #
 # DIRECTORY: dtool/src/cppparser/
@@ -1687,15 +1709,15 @@ TargetAdd('libpgraphnodes_igate.obj', input='libpgraphnodes.in', opts=["DEPENDEN
 
 OPTS=['DIR:panda/src/pgraph', 'BUILDING:PANDA']
 TargetAdd('pgraph_nodePath.obj', opts=OPTS, input='nodePath.cxx')
-TargetAdd('pgraph_composite1.obj', opts=OPTS, input='pgraph_composite1.cxx')
-TargetAdd('pgraph_composite2.obj', opts=OPTS, input='pgraph_composite2.cxx')
-TargetAdd('pgraph_composite3.obj', opts=OPTS, input='pgraph_composite3.cxx')
-TargetAdd('pgraph_composite4.obj', opts=OPTS, input='pgraph_composite4.cxx')
+TargetAdd('pgraph_composite1.obj', opts=OPTS+['BIGOBJ:True'], input='pgraph_composite1.cxx')
+TargetAdd('pgraph_composite2.obj', opts=OPTS+['BIGOBJ:True'], input='pgraph_composite2.cxx')
+TargetAdd('pgraph_composite3.obj', opts=OPTS+['BIGOBJ:True'], input='pgraph_composite3.cxx')
+TargetAdd('pgraph_composite4.obj', opts=OPTS+['BIGOBJ:True'], input='pgraph_composite4.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/pgraph', ["*.h", "nodePath.cxx", "*_composite.cxx"])
 # IGATEFILES.remove("antialiasAttrib.h")
-TargetAdd('libpgraph.in', opts=OPTS, input=IGATEFILES)
+TargetAdd('libpgraph.in', opts=OPTS+["BIGOBJ:TRUE"], input=IGATEFILES)
 TargetAdd('libpgraph.in', opts=['IMOD:panda', 'ILIB:libpgraph', 'SRCDIR:panda/src/pgraph'])
-TargetAdd('libpgraph_igate.obj', input='libpgraph.in', opts=["DEPENDENCYONLY"])
+TargetAdd('libpgraph_igate.obj', input='libpgraph.in', opts=["DEPENDENCYONLY","BIGOBJ:TRUE"])
 
 #
 # DIRECTORY: panda/src/cull/
@@ -1748,7 +1770,7 @@ TargetAdd('libdgraph_igate.obj', input='libdgraph.in', opts=["DEPENDENCYONLY"])
 #
 
 OPTS=['DIR:panda/src/display', 'BUILDING:PANDA']
-TargetAdd('display_composite.obj', opts=OPTS, input='display_composite.cxx')
+TargetAdd('display_composite.obj', opts=OPTS+["BIGOBJ:TRUE"], input='display_composite.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/display', ["*.h", "*_composite.cxx"])
 IGATEFILES.remove("renderBuffer.h")
 TargetAdd('libdisplay.in', opts=OPTS, input=IGATEFILES)
@@ -1782,7 +1804,7 @@ if (PkgSkip("FREETYPE")==0):
 # DIRECTORY: panda/src/text/
 #
 
-OPTS=['DIR:panda/src/text', 'BUILDING:PANDA', 'ZLIB',  'FREETYPE']
+OPTS=['DIR:panda/src/text', 'BUILDING:PANDA', 'ZLIB',  'FREETYPE', 'BIGOBJ:TRUE']
 TargetAdd('text_composite.obj', opts=OPTS, input='text_composite.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/text', ["*.h", "*_composite.cxx"])
 TargetAdd('libtext.in', opts=OPTS, input=IGATEFILES)
@@ -1804,10 +1826,10 @@ TargetAdd('libmovies_igate.obj', input='libmovies.in', opts=["DEPENDENCYONLY"])
 # DIRECTORY: panda/src/grutil/
 #
 
-OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA',  'FFMPEG', 'ARTOOLKIT', 'OPENCV']
+OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA',  'FFMPEG', 'ARTOOLKIT', 'OPENCV', 'BIGOBJ:TRUE']
 TargetAdd('grutil_multitexReducer.obj', opts=OPTS, input='multitexReducer.cxx')
-TargetAdd('grutil_composite1.obj', opts=OPTS, input='grutil_composite1.cxx')
-TargetAdd('grutil_composite2.obj', opts=OPTS, input='grutil_composite2.cxx')
+TargetAdd('grutil_composite1.obj', opts=OPTS+["BIGOBJ:TRUE"], input='grutil_composite1.cxx')
+TargetAdd('grutil_composite2.obj', opts=OPTS+["BIGOBJ:TRUE"], input='grutil_composite2.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/grutil', ["*.h", "*_composite.cxx"])
 TargetAdd('libgrutil.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libgrutil.in', opts=['IMOD:panda', 'ILIB:libgrutil', 'SRCDIR:panda/src/grutil'])
@@ -1817,7 +1839,7 @@ TargetAdd('libgrutil_igate.obj', input='libgrutil.in', opts=["DEPENDENCYONLY"])
 # DIRECTORY: panda/src/tform/
 #
 
-OPTS=['DIR:panda/src/tform', 'BUILDING:PANDA']
+OPTS=['DIR:panda/src/tform', 'BUILDING:PANDA', 'BIGOBJ:TRUE']
 TargetAdd('tform_composite.obj', opts=OPTS, input='tform_composite.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/tform', ["*.h", "*_composite.cxx"])
 TargetAdd('libtform.in', opts=OPTS, input=IGATEFILES)
@@ -1829,7 +1851,7 @@ TargetAdd('libtform_igate.obj', input='libtform.in', opts=["DEPENDENCYONLY"])
 #
 
 OPTS=['DIR:panda/src/collide', 'BUILDING:PANDA']
-TargetAdd('collide_composite.obj', opts=OPTS, input='collide_composite.cxx')
+TargetAdd('collide_composite.obj', opts=OPTS+["BIGOBJ:TRUE"], input='collide_composite.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/collide', ["*.h", "*_composite.cxx"])
 TargetAdd('libcollide.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libcollide.in', opts=['IMOD:panda', 'ILIB:libcollide', 'SRCDIR:panda/src/collide'])
@@ -1851,7 +1873,7 @@ TargetAdd('libparametrics_igate.obj', input='libparametrics.in', opts=["DEPENDEN
 #
 
 OPTS=['DIR:panda/src/pgui', 'BUILDING:PANDA']
-TargetAdd('pgui_composite.obj', opts=OPTS, input='pgui_composite.cxx')
+TargetAdd('pgui_composite.obj', opts=OPTS+["BIGOBJ:TRUE"], input='pgui_composite.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/pgui', ["*.h", "*_composite.cxx"])
 TargetAdd('libpgui.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libpgui.in', opts=['IMOD:panda', 'ILIB:libpgui', 'SRCDIR:panda/src/pgui'])
@@ -2183,14 +2205,14 @@ if PkgSkip("ZLIB")==0:
 
 if (sys.platform == "win32"):
     OPTS=['DIR:panda/src/windisplay', 'BUILDING:PANDAWIN']
-    TargetAdd('windisplay_composite.obj', opts=OPTS, input='windisplay_composite.cxx')
+    TargetAdd('windisplay_composite.obj', opts=OPTS+["BIGOBJ:TRUE"], input='windisplay_composite.cxx')
     TargetAdd('windisplay_windetectdx8.obj', opts=OPTS + ["DX8"], input='winDetectDx8.cxx')
     TargetAdd('windisplay_windetectdx9.obj', opts=OPTS + ["DX9"], input='winDetectDx9.cxx')
     TargetAdd('libp3windisplay.dll', input='windisplay_composite.obj')
     TargetAdd('libp3windisplay.dll', input='windisplay_windetectdx8.obj')
     TargetAdd('libp3windisplay.dll', input='windisplay_windetectdx9.obj')
     TargetAdd('libp3windisplay.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3windisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM'])
+    TargetAdd('libp3windisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',"BIGOBJ:TRUE"])
 
 #
 # DIRECTORY: panda/metalibs/pandadx8/
@@ -3239,7 +3261,7 @@ if (PkgSkip("PANDATOOL")==0):
     TargetAdd('libp3ptloader.dll', input='libpvrml.lib')
     TargetAdd('libp3ptloader.dll', input='libxfileegg.lib')
     TargetAdd('libp3ptloader.dll', input='libxfile.lib')
-    TargetAdd('libp3ptloader.dll', input='libdaeegg.lib')
+    if (PkgSkip("FCOLLADA")==0): TargetAdd('libp3ptloader.dll', input='libdaeegg.lib')
     TargetAdd('libp3ptloader.dll', input='libeggbase.lib')
     TargetAdd('libp3ptloader.dll', input='libprogbase.lib')
     TargetAdd('libp3ptloader.dll', input='libconverter.lib')
@@ -3603,8 +3625,12 @@ if (PkgSkip("PYTHON")==0):
     for x in GetDirectoryContents(GetOutputDir()+"/pandac/input", ["*.in"]):
         inputs.append(GetOutputDir()+"/pandac/input/" + x)
     if (NeedsBuild([GetOutputDir()+'/pandac/PandaModules.py'],inputs)):
-        if (GENMAN): oscmd(GetOutputDir()+"/bin/genpycode -d")
-        else       : oscmd(GetOutputDir()+"/bin/genpycode")
+        cmdstr = GetOutputDir()+"/bin/genpycode"
+        if (GENMAN): cmdstr += " -d"
+        cmdstr += " -r libpandaexpress libpanda libpandaphysics libpandafx libp3direct libpandaskel libpandaegg"
+        if (PkgSkip("ODE")==0):
+            cmdstr += " libpandaode"
+        oscmd(cmdstr)
         JustBuilt([GetOutputDir()+'/pandac/PandaModules.py'],inputs)
 
 ##########################################################################################
