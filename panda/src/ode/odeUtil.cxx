@@ -99,7 +99,7 @@ are_connected_excluding(const OdeBody &body1,
 PT(OdeCollisionEntry) OdeUtil::
 collide(const OdeGeom &geom1, const OdeGeom &geom2, const short int max_contacts) {
   dContactGeom *contact_list = (dContactGeom *)PANDA_MALLOC_ARRAY(max_contacts * sizeof(dContactGeom));
-  int num_contacts = dCollide(geom1.get_id(), geom2.get_id(), max_contacts, contact_list, sizeof(contact_list));
+  int num_contacts = dCollide(geom1.get_id(), geom2.get_id(), max_contacts, contact_list, sizeof(dContactGeom));
   PT(OdeCollisionEntry) entry = new OdeCollisionEntry();
   entry->_geom1 = geom1.get_id();
   entry->_geom2 = geom2.get_id();
