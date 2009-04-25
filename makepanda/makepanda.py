@@ -796,7 +796,7 @@ DTOOL_CONFIG=[
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
     ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
     ("HAVE_THREADS",                   '1',                      '1'),
-    ("SIMPLE_THREADS",                 'UNDEF',                  '1'),
+    ("SIMPLE_THREADS",                 '1',                      '1'),
     ("HAVE_AUDIO",                     '1',                      '1'),
     ("NOTIFY_DEBUG",                   'UNDEF',                  'UNDEF'),
     ("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
@@ -974,6 +974,9 @@ def WriteConfigSettings():
     
     if (OPTIMIZE <= 3):
         dtool_config["NOTIFY_DEBUG"] = '1'
+
+    if (sys.platform.startswith('win') and platform.architecture()[0] == '64bit'):
+        dtool_config["SIMPLE_THREADS"] = 'UNDEF'
 
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in prc_parameters.keys():
