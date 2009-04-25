@@ -1907,7 +1907,7 @@ do_add_gsg(GraphicsStateGuardian *gsg, GraphicsPipe *pipe,
 void GraphicsEngine::
 do_remove_window(GraphicsOutput *window, Thread *current_thread) {
   PT(GraphicsPipe) pipe = window->get_pipe();
-  window->_pipe = (GraphicsPipe *)NULL;
+  window->clear_pipe();
 
   if (!_windows_sorted) {
     do_resort_windows();

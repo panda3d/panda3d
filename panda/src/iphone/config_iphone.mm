@@ -30,6 +30,12 @@ ConfigureFn(config_iphone) {
   init_libiphone();
 }
 
+ConfigVariableBool iphone_autorotate_view
+("iphone-autorotate-view", true,
+ PRC_DESC("Set this true to enable the iphone application to rotate its "
+          "view automatically according to the phone's orientation, or "
+          "false for its view to remain fixed."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libiphone
 //  Description: Initializes the library.  This must be called at

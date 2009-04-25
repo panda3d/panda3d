@@ -195,6 +195,7 @@ public:
 
   virtual void set_close_now();
   virtual void reset_window(bool swapchain);
+  virtual void clear_pipe();
 
   void set_size_and_recalc(int x, int y);
   

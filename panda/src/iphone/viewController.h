@@ -17,8 +17,13 @@
 #import <UIKit/UIKit.h> 
 #import <UIKit/UITextView.h> 
 
+class IPhoneGraphicsPipe;
+
 @interface ControllerDemoViewController : UIViewController { 
-  //    NSString *helloWorld, *woahDizzy; 
+
+@private
+  IPhoneGraphicsPipe *_pipe;
 } 
 
+- (id)initWithPipe: (IPhoneGraphicsPipe *)pipe;
 @end 

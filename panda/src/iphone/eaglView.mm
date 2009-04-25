@@ -12,10 +12,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#import "EAGLView.h"
+
 #import <QuartzCore/QuartzCore.h>
 #import <OpenGLES/EAGLDrawable.h>
 
-#import "EAGLView.h"
+#include "pandabase.h"
+#include "pnotify.h"
+#include "iPhoneGraphicsWindow.h"
 
 #define USE_DEPTH_BUFFER 1
 
@@ -42,86 +46,95 @@
 
 
 - (id)initWithFrame:(CGRect)frame {
+  if ((self = [super initWithFrame:frame])) {
+    // Get the layer
+    CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
     
-    if ((self = [super initWithFrame:frame])) {
-        // Get the layer
-        CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
-        
-        eaglLayer.opaque = YES;
-        eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                        [NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
-        
-        context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
-        
-        if (!context || ![EAGLContext setCurrentContext:context]) {
-            [self release];
-            return nil;
-        }
+    eaglLayer.opaque = YES;
+    eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
+                                                   [NSNumber numberWithBool:NO], kEAGLDrawablePropertyRetainedBacking, kEAGLColorFormatRGBA8, kEAGLDrawablePropertyColorFormat, nil];
+    
+    context = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES1];
+    
+    if (!context || ![EAGLContext setCurrentContext:context]) {
+      [self release];
+      return nil;
     }
-    return self;
+    _window = NULL;
+    viewFramebuffer = 0;
+    viewRenderbuffer = 0;
+    depthRenderbuffer = 0;
+  }
+  return self;
 }
 
 
 - (void)presentView {
-    [context presentRenderbuffer:GL_RENDERBUFFER_OES];
+  [context presentRenderbuffer:GL_RENDERBUFFER_OES];
 }
 
 
 - (void)layoutSubviews {
-    [EAGLContext setCurrentContext:context];
-    [self destroyFramebuffer];
-    [self createFramebuffer];
-    //    [self drawView];
+  [EAGLContext setCurrentContext:context];
+  [self destroyFramebuffer];
+  [self createFramebuffer];
+
+  if (_window != NULL) {
+    _window->rotate_window();
+  }
 }
 
 
 - (BOOL)createFramebuffer {
-    
-    glGenFramebuffersOES(1, &viewFramebuffer);
-    glGenRenderbuffersOES(1, &viewRenderbuffer);
-    
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+  glGenFramebuffersOES(1, &viewFramebuffer);
+  glGenRenderbuffersOES(1, &viewRenderbuffer);
+  
+  glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+  glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+  [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)self.layer];
+  glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
+  
+  glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
+  glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+  
+  if (USE_DEPTH_BUFFER) {
+    glGenRenderbuffersOES(1, &depthRenderbuffer);
+    glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
+    glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, backingWidth, backingHeight);
+    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
     glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)self.layer];
-    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
-    
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
-    
-    if (USE_DEPTH_BUFFER) {
-        glGenRenderbuffersOES(1, &depthRenderbuffer);
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
-        glRenderbufferStorageOES(GL_RENDERBUFFER_OES, GL_DEPTH_COMPONENT16_OES, backingWidth, backingHeight);
-        glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    }
-    
-    if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-        NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
-        return NO;
-    }
-
-    // Make sure the buffer is initially cleared, so we don't look at
-    // whatever happened to be in the framebuffer.
-    glClearColor(0, 0, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT);
-    [context presentRenderbuffer:GL_RENDERBUFFER_OES];
-    
-    return YES;
+  }
+  
+  if(glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
+    NSLog(@"failed to make complete framebuffer object %x", glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES));
+    return NO;
+  }
+  
+  // Make sure the buffer is initially cleared, so we don't look at
+  // whatever happened to be in the framebuffer.
+  glClearColor(0, 0, 0, 1);
+  glClear(GL_COLOR_BUFFER_BIT);
+  [context presentRenderbuffer:GL_RENDERBUFFER_OES];
+  
+  return YES;
 }
 
 
 - (void)destroyFramebuffer {
-    
+  if (viewFramebuffer != 0) {
     glDeleteFramebuffersOES(1, &viewFramebuffer);
     viewFramebuffer = 0;
+  }
+
+  if (viewRenderbuffer != 0) {
     glDeleteRenderbuffersOES(1, &viewRenderbuffer);
     viewRenderbuffer = 0;
+  }
     
-    if(depthRenderbuffer) {
-        glDeleteRenderbuffersOES(1, &depthRenderbuffer);
-        depthRenderbuffer = 0;
-    }
+  if (depthRenderbuffer) {
+    glDeleteRenderbuffersOES(1, &depthRenderbuffer);
+    depthRenderbuffer = 0;
+  }
 }
 
 - (void)dealloc {

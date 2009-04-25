@@ -14,66 +14,43 @@
 
 #import "viewController.h" 
 #include "pnotify.h"
+#include "iPhoneGraphicsPipe.h"
+#include "config_iphone.h"
 
 @implementation ControllerDemoViewController 
 
-- (id)init { 
-
-    self = [ super init ]; 
-
-    /*
-    if (self != nil) { 
-        helloWorld = [ [ NSString alloc ] initWithString: @"Hello, World!" ]; 
-        woahDizzy = [ [ NSString alloc ] initWithString: @"Woah, I'm Dizzy!" ]; 
-    } 
-    */
-
-    return self; 
-} 
-
-- (void)loadView { 
-
-    [ super loadView ]; 
-
-    /*
-    glView = [ [ EAGLView alloc ] initWithFrame: 
-        [ [ UIScreen mainScreen ] applicationFrame ] 
-    ];
-    //    [ glView startAnimation ];
-
-   self.view = glView; 
-    */
-} 
-
-/*
--(BOOL)shouldAutorotateToInterfaceOrientation: 
-(UIInterfaceOrientation)interfaceOrientation 
+- (id)initWithPipe:
+  (IPhoneGraphicsPipe *)pipe
 { 
-  return YES; 
+  self = [ super init ]; 
+  _pipe = pipe;
+  return self; 
 } 
-*/
 
--  (void)didRotateFromInterfaceOrientation: 
-(UIInterfaceOrientation)fromInterfaceOrientation 
+- (BOOL)shouldAutorotateToInterfaceOrientation:
+  (UIInterfaceOrientation)interfaceOrientation 
 { 
+  return iphone_autorotate_view;
+} 
+
+- (void)didRotateFromInterfaceOrientation: 
+  (UIInterfaceOrientation)fromInterfaceOrientation 
+{ 
+  _pipe->rotate_windows();
 } 
 
 - (void)viewDidLoad { 
-    [ super viewDidLoad ]; 
-    /* Add custom post-load code here */ 
+  [ super viewDidLoad ]; 
+  /* Add custom post-load code here */ 
 } 
 
 - (void)didReceiveMemoryWarning { 
-    [ super didReceiveMemoryWarning ]; 
-    /* Add custom low-memory code here */ 
-    nout << "low-memory handler in view controller\n";
+  [ super didReceiveMemoryWarning ]; 
+  /* Add custom low-memory code here */ 
+  nout << "low-memory handler in view controller\n";
 } 
 
 - (void)dealloc { 
-    /* Here, the objects we've allocated are released */ 
-  //[ helloWorld release ]; 
-  //    [ woahDizzy release ]; 
-  //    [ glView release ]; 
   [ super dealloc ]; 
 } 
 

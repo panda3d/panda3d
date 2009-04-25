@@ -974,13 +974,25 @@ set_close_now() {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::reset_window
 //       Access: Protected, Virtual
-//  Description: resets the window framebuffer from its derived
+//  Description: Resets the window framebuffer from its derived
 //               children. Does nothing here.
 ////////////////////////////////////////////////////////////////////
 void GraphicsOutput::
 reset_window(bool swapchain) {
   display_cat.info()
     << "Resetting " << get_type() << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsOutput::clear_pipe
+//       Access: Protected, Virtual
+//  Description: Sets the window's _pipe pointer to NULL; this is
+//               generally called only as a precursor to deleting the
+//               window.
+////////////////////////////////////////////////////////////////////
+void GraphicsOutput::
+clear_pipe() {
+  _pipe = (GraphicsPipe *)NULL;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -33,7 +33,7 @@ IPhoneGraphicsPipe() {
   CGRect screenBounds = [ [ UIScreen mainScreen ] bounds ]; 
 
   _window = [ [ UIWindow alloc ] initWithFrame: screenBounds ];
-  _view_controller = [ [ ControllerDemoViewController alloc ] init ]; 
+  _view_controller = [ [ ControllerDemoViewController alloc ] initWithPipe: this ]; 
 
   [ _window addSubview:_view_controller.view ]; 
   [ _window makeKeyAndVisible ];
@@ -95,6 +95,22 @@ pipe_constructor() {
 GraphicsPipe::PreferredWindowThread 
 IPhoneGraphicsPipe::get_preferred_window_thread() const {
   return PWT_app;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: IPhoneGraphicsPipe::rotate_windows
+//       Access: Public, Virtual
+//  Description: Called in response to an orientation change event,
+//               this tells all of the windows created on the pipe to
+//               resize themselves according to the new orientation.
+////////////////////////////////////////////////////////////////////
+void IPhoneGraphicsPipe::
+rotate_windows() {
+  GraphicsWindows::iterator gwi;
+  for (gwi = _graphics_windows.begin(); gwi != _graphics_windows.end(); ++gwi) {
+    IPhoneGraphicsWindow *win = (*gwi);
+    win->rotate_window();
+  }
 }
 
 

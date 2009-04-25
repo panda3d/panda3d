@@ -17,10 +17,12 @@
 
 #include "pandabase.h"
 #include "graphicsPipe.h"
+#include "pset.h"
 #import "viewController.h"
 #import <UIKit/UIKit.h>
 
 class IPhoneGraphicsStateGuardian;
+class IPhoneGraphicsWindow;
 class PNMImage;
 
 ////////////////////////////////////////////////////////////////////
@@ -38,6 +40,8 @@ public:
   static PT(GraphicsPipe) pipe_constructor();
   virtual PreferredWindowThread get_preferred_window_thread() const;
 
+  void rotate_windows();
+
 protected:
   virtual PT(GraphicsOutput) make_output(const string &name,
                                          const FrameBufferProperties &fb_prop,
@@ -52,6 +56,9 @@ protected:
 public:
   UIWindow *_window; 
   ControllerDemoViewController *_view_controller;
+
+  typedef pset<IPhoneGraphicsWindow *> GraphicsWindows;
+  GraphicsWindows _graphics_windows;
 
 private:
   static IPhoneGraphicsPipe *_global_ptr;

@@ -44,6 +44,9 @@ public:
   virtual void process_events();
 
   virtual void set_properties_now(WindowProperties &properties);
+  virtual void clear_pipe();
+
+  void rotate_window();
 
 protected:
   virtual void close_window();

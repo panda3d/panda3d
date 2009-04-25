@@ -17,10 +17,10 @@
 // gets included later (in particular, TCP_NODELAY must not be a
 // #define symbol for these headers to be included properly).
 
-//#include <ApplicationServices/ApplicationServices.h>
 #include <UIKit/UIKit.h>
 
 #include "iPhoneGraphicsWindow.h"
+#include "dcast.h"
 #include "config_iphone.h"
 #include "iPhoneGraphicsPipe.h"
 #include "pStatTimer.h"
@@ -53,6 +53,9 @@ IPhoneGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                      GraphicsOutput *host) :
   GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
+  IPhoneGraphicsPipe *ipipe;
+  DCAST_INTO_V(ipipe, _pipe);
+  ipipe->_graphics_windows.insert(this);
   _gl_view = nil;
 
   GraphicsWindowInputDevice device =
@@ -196,23 +199,24 @@ close_window() {
 ////////////////////////////////////////////////////////////////////
 bool IPhoneGraphicsWindow::
 open_window() {
-  iphone_cat.info() << "open_window\n";
-
   nassertr(_gsg == (GraphicsStateGuardian *)NULL, false);
 
   _gl_view = [ [ EAGLView alloc ] initWithFrame: 
         [ [ UIScreen mainScreen ] applicationFrame ] 
     ]; 
+  _gl_view->_window = this;
+  
   IPhoneGraphicsPipe *iphonepipe = DCAST(IPhoneGraphicsPipe, _pipe);
   nassertr(iphonepipe != NULL, false);
 
   iphonepipe->_view_controller.view = _gl_view;
   [ _gl_view layoutSubviews ];
 
-  WindowProperties req_properties = _properties;
-
   _gsg = new IPhoneGraphicsStateGuardian(_engine, _pipe, NULL);
 
+  CGRect bounds = [_gl_view bounds];
+
+  _properties.set_size(bounds.size.width, bounds.size.height);
   _properties.set_foreground(true);
   _properties.set_minimized(false);
   _properties.set_open(true);
@@ -261,4 +265,36 @@ set_properties_now(WindowProperties &properties) {
   }
  
   GraphicsWindow::set_properties_now(properties);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: IPhoneGraphicsWindow::clear_pipe
+//       Access: Protected, Virtual
+//  Description: Sets the window's _pipe pointer to NULL; this is
+//               generally called only as a precursor to deleting the
+//               window.
+////////////////////////////////////////////////////////////////////
+void IPhoneGraphicsWindow::
+clear_pipe() {
+  IPhoneGraphicsPipe *ipipe;
+  DCAST_INTO_V(ipipe, _pipe);
+  ipipe->_graphics_windows.erase(this);
+
+  GraphicsWindow::clear_pipe();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: IPhoneGraphicsWindow::rotate_window
+//       Access: Public, Virtual
+//  Description: Called in response to an orientation change event,
+//               this tells the window to resize itself according to
+//               the new orientation.
+////////////////////////////////////////////////////////////////////
+void IPhoneGraphicsWindow::
+rotate_window() {
+  CGRect bounds = [_gl_view bounds];
+
+  WindowProperties properties;
+  properties.set_size(bounds.size.width, bounds.size.height);
+  system_changed_properties(properties);
 }

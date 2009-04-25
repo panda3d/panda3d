@@ -1492,6 +1492,7 @@ event_window_event(const Event *event, void *data) {
 
     } else {
       if (!win->is_valid()) {
+        // The window has been closed.
         int window_index = self->find_window(win);
         while (window_index != -1) {
           self->close_window(window_index);
@@ -1506,6 +1507,13 @@ event_window_event(const Event *event, void *data) {
           framework_cat.info()
             << "Last window was closed by user.\n";
           self->_exit_flag = true;
+        }
+      } else {
+        // Adjust aspect ratio.
+        for (int n = 0; n < (int)self->_windows.size(); n++) {
+          if (self->_windows[n]->get_graphics_output() == win) {
+            return self->_windows[n]->adjust_aspect_ratio();
+          }
         }
       }
     }

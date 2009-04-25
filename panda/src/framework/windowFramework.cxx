@@ -770,6 +770,49 @@ set_anim_controls(bool enable) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: WindowFramework::adjust_aspect_ratio
+//       Access: Public
+//  Description: Reevaluates the aspect ratio of the window,
+//               presumably after the window has been resized by the
+//               user or some other force.  Adjusts the render film
+//               size and aspect2d scale as necessary according to the
+//               new window shape, or new config setting.
+////////////////////////////////////////////////////////////////////
+void WindowFramework::
+adjust_aspect_ratio() {
+  float this_aspect_ratio = aspect_ratio;
+  int x_size = 0, y_size = 0;
+  if (this_aspect_ratio == 0.0f) {
+    // An aspect ratio of 0.0 means to try to infer it.
+    this_aspect_ratio = 1.0f;
+    
+    if (_window->has_size()) {
+      x_size = _window->get_x_size();
+      y_size = _window->get_y_size();
+      if (y_size != 0) {
+        this_aspect_ratio = (float)x_size / (float)y_size;
+      }
+    }
+  }
+
+  if (!_aspect_2d.is_empty()) {
+    _aspect_2d.set_scale(1.0f / this_aspect_ratio, 1.0f, 1.0f);
+  }
+
+  Cameras::iterator ci;
+  for (ci = _cameras.begin(); ci != _cameras.end(); ++ci) {
+    Lens *lens = (*ci)->get_lens();
+    if (lens != (Lens *)NULL) {
+      if (y_size != 0) {
+        lens->set_film_size(x_size, y_size);
+      } else {
+        lens->set_aspect_ratio(this_aspect_ratio);
+      }
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: WindowFramework::split_window
 //       Access: Public
 //  Description: Divides the window into two display regions, each of

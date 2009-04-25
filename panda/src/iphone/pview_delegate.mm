@@ -108,7 +108,7 @@ signal_handler(int i) {
     // load the models.  We have this funny deferred-window technique,
     // so SpringBoard will see that the app has fully initialized and
     // won't kill us if we take a while loading models.
-    WindowFramework *window = framework.open_window();
+    framework.open_window();
     startup = 1;
 
   } else if (startup == 1) {
@@ -148,9 +148,14 @@ signal_handler(int i) {
   }
 }
 
-- (void)dealloc { 
+- (void)applicationWillTerminate:
+(UIApplication *)application
+{
   [self stopAnimation];
   framework.close_framework();
+}
+
+- (void)dealloc { 
   [super dealloc]; 
 } 
 

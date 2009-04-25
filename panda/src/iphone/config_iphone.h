@@ -19,6 +19,8 @@
 
 NotifyCategoryDecl(iphone, EXPCL_PANDAGL, EXPTP_PANDAGL);
 
+extern ConfigVariableBool iphone_autorotate_view;
+
 extern EXPCL_PANDAGL void init_libiphone();
 extern "C" EXPCL_PANDAGL int get_pipe_type_iphone();
 

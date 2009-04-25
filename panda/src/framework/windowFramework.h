@@ -96,6 +96,7 @@ public:
   void next_anim_control();
   void set_anim_controls(bool enable);
   INLINE bool get_anim_controls() const;
+  void adjust_aspect_ratio();
 
   enum BackgroundType {
     BT_other = 0,
