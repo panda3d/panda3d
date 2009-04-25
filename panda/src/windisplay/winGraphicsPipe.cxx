@@ -21,6 +21,11 @@
 #include "psapi.h"
 #include "powrprof.h"
 
+#ifdef _WIN64
+#include <intrin.h>
+#endif
+
+
 TypeHandle WinGraphicsPipe::_type_handle;
 
 #define MAXIMUM_PROCESSORS 32
@@ -121,6 +126,9 @@ typedef union
 LONG_INTEGER;
 
 PN_uint64 cpu_time_function (void) {
+#ifdef _WIN64
+  return __rdtsc();
+#else
   LONG_INTEGER long_integer;
   LONG_INTEGER *long_integer_pointer;
   
@@ -135,6 +143,7 @@ PN_uint64 cpu_time_function (void) {
   }
 
   return long_integer.long_integer;
+#endif
 }
 
 typedef union
@@ -486,6 +495,12 @@ int cpuid (int input_eax, CPU_ID_REGISTERS *cpu_id_registers) {
   {
     if (input_eax == 0) {
       // the order of ecx and edx is swapped when saved to make a proper vendor string
+#ifdef _WIN64
+		__cpuid((int*)cpu_id_registers, input_eax);
+		unsigned int tmp = cpu_id_registers->edx;
+		cpu_id_registers->edx = cpu_id_registers->ecx;
+		cpu_id_registers->ecx = tmp;
+#else
       __asm
       {
           mov   eax, [input_eax]
@@ -498,8 +513,12 @@ int cpuid (int input_eax, CPU_ID_REGISTERS *cpu_id_registers) {
           mov   [edi + 8], edx
           mov   [edi + 12], ecx
       }
+#endif
     }
     else {
+#ifdef _WIN64
+		__cpuid((int*)cpu_id_registers, input_eax);
+#else
       __asm
       {
           mov   eax, [input_eax]
@@ -512,6 +531,7 @@ int cpuid (int input_eax, CPU_ID_REGISTERS *cpu_id_registers) {
           mov   [edi + 8], ecx
           mov   [edi + 12], edx
       }
+#endif
     }
 
     state = true;
