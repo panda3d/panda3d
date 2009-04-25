@@ -137,7 +137,7 @@ set_cpu_affinity(PN_uint32 mask) const {
     if (gp != 0 && sp != 0) {
       DWORD proc_mask;
       DWORD sys_mask;
-      if (gp(GetCurrentProcess(), &proc_mask, &sys_mask)) {
+      if (gp(GetCurrentProcess(), (PDWORD_PTR)&proc_mask, (PDWORD_PTR)&sys_mask)) {
         // make sure we don't reference CPUs that don't exist
         proc_mask = mask & sys_mask;
         if (proc_mask) {
