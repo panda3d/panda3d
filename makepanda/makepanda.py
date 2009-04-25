@@ -796,7 +796,7 @@ DTOOL_CONFIG=[
     ("HAVE_DX9",                       'UNDEF',                  'UNDEF'),
     ("HAVE_CHROMIUM",                  'UNDEF',                  'UNDEF'),
     ("HAVE_THREADS",                   '1',                      '1'),
-    ("SIMPLE_THREADS",                 '1',                      '1'),
+    ("SIMPLE_THREADS",                 'UNDEF',                  '1'),
     ("HAVE_AUDIO",                     '1',                      '1'),
     ("NOTIFY_DEBUG",                   'UNDEF',                  'UNDEF'),
     ("DO_PSTATS",                      'UNDEF',                  'UNDEF'),
@@ -917,7 +917,7 @@ def WriteConfigSettings():
     dtool_config={}
     prc_parameters={}
 
-    if (sys.platform == "win32"):
+    if (sys.platform == "win32") or (sys.platform == "win64"):
         for key,win,unix in DTOOL_CONFIG:
             dtool_config[key] = win
         for key,win,unix in PRC_PARAMETERS:
