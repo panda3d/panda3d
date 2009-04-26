@@ -1674,7 +1674,7 @@ TargetAdd('libpstatclient_igate.obj', input='libpstatclient.in', opts=["DEPENDEN
 # DIRECTORY: panda/src/gobj/
 #
 
-OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH']
+OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH', "BIGOBJ:TRUE"]
 TargetAdd('gobj_composite1.obj', opts=OPTS, input='gobj_composite1.cxx')
 TargetAdd('gobj_composite2.obj', opts=OPTS, input='gobj_composite2.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite.cxx"])
