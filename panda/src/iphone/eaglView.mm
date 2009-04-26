@@ -64,6 +64,8 @@
     viewFramebuffer = 0;
     viewRenderbuffer = 0;
     depthRenderbuffer = 0;
+
+    self.multipleTouchEnabled = YES;
   }
   return self;
 }
@@ -72,6 +74,41 @@
 - (void)presentView {
   [context presentRenderbuffer:GL_RENDERBUFFER_OES];
 }
+
+- (void)touchesBegan: (NSSet *)touches 
+           withEvent: (UIEvent *)event
+{
+  // Pass the multi-touch input to the _window for processing.
+  _window->touches_began(touches, event);
+  [super touchesBegan: touches withEvent: event];
+}
+
+- (void)touchesMoved: (NSSet *)touches 
+           withEvent: (UIEvent *)event
+{
+  _window->touches_moved(touches, event);
+  [super touchesMoved: touches withEvent: event];
+}
+
+- (void)touchesEnded: (NSSet *)touches 
+           withEvent: (UIEvent *)event
+{
+  _window->touches_ended(touches, event);
+  [super touchesEnded: touches withEvent: event];
+}
+
+- (void)touchesCancelled: (NSSet *)touches 
+               withEvent: (UIEvent *)event
+{
+  _window->touches_cancelled(touches, event);
+  [super touchesCancelled: touches withEvent: event];
+}
+
+/*
+- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event; 
+- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event; 
+- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event; 
+*/
 
 
 - (void)layoutSubviews {

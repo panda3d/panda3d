@@ -21,6 +21,8 @@
 #include "glesgsg.h"
 #import "eaglView.h"
 
+#import <UIKit/UIKit.h>
+
 ////////////////////////////////////////////////////////////////////
 //       Class : IPhoneGraphicsWindow
 // Description : An interface to the osx/ system for managing GL
@@ -47,20 +49,26 @@ public:
   virtual void clear_pipe();
 
   void rotate_window();
+  void touches_began(NSSet *touches, UIEvent *event);
+  void touches_moved(NSSet *touches, UIEvent *event);
+  void touches_ended(NSSet *touches, UIEvent *event);
+  void touches_cancelled(NSSet *touches, UIEvent *event);
+
+  CGPoint get_average_location(NSSet *touches);
+
 
 protected:
   virtual void close_window();
   virtual bool open_window();
 
 private:
-  void system_close_window();
-  void system_set_window_foreground(bool foreground);	
-
   void set_pointer_in_window(int x, int y);
   void set_pointer_out_of_window();
+  void handle_button_delta(int num_touches);
 
 private:
   EAGLView *_gl_view; 
+  int _last_buttons;
 
 public:
   static TypeHandle get_class_type() {

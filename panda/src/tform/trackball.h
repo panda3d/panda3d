@@ -101,7 +101,7 @@ private:
   void reextract();
   void recompute();
 
-
+  int _last_button;
   float _lastx, _lasty;
 
   float _rotscale;

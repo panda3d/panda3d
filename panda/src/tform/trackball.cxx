@@ -48,6 +48,7 @@ Trackball(const string &name) :
   _rotscale = 0.3f;
   _fwdscale = 0.3f;
 
+  _last_button = 0;
   _lastx = _lasty = 0.5f;
 
   _rotation = LMatrix4f::ident_mat();
@@ -582,11 +583,16 @@ do_transmit_data(DataGraphTraverser *, const DataNodeTransmit &input,
     
     float x = this_x - _lastx;
     float y = this_y - _lasty;
+
+    if (this_button == _last_button) {
+      apply(x, y, this_button);
+    }
     
-    apply(x, y, this_button);
-    
+    _last_button = this_button;
     _lastx = this_x;
     _lasty = this_y;
+  } else {
+    _last_button = 0;
   }
 
   // Now send our matrix down the pipe.
