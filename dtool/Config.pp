@@ -827,7 +827,7 @@
 // note this may be overwritten in wintools Config.pp
 #define FMODEX_IPATH /usr/local/fmod/api/inc
 #define FMODEX_LPATH /usr/local/fmod/api/lib
-#define FMODEX_LIBS fmodex
+#define FMODEX_LIBS $[if $[libtest $[FMODEX_LPATH],fmodex64],fmodex64,fmodex]
 #defer HAVE_FMODEX $[libtest $[FMODEX_LPATH],$[FMODEX_LIBS]]
 
 // Info for http://www.sourceforge.net/projects/chromium
