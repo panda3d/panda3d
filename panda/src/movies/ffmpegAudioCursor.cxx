@@ -190,9 +190,9 @@ reload_buffer() {
       return;
     } else if (_packet_size > 0) {
       int bufsize = _buffer_size * 2;
-      int len = avcodec_decode_audio(_audio_ctx, _buffer, &bufsize,
-                                     _packet_data, _packet_size);
-      movies_debug("avcodec_decode_audio returned " << len);
+      int len = avcodec_decode_audio2(_audio_ctx, _buffer, &bufsize,
+                                      _packet_data, _packet_size);
+      movies_debug("avcodec_decode_audio2 returned " << len);
       if (len <= 0) {
         break;
       }
