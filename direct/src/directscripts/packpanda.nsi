@@ -176,9 +176,9 @@ Section "${SMDIRECTORY}" SecCore
             SkipCaching:
 
             SetOutPath $INSTDIR
-            WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
-            WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/wiki/index.php"
-            WriteINIStr $INSTDIR\Samples.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/wiki/index.php/Sample_Programs_in_the_Distribution"
+            WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.org/"
+            WriteINIStr $INSTDIR\Manual.url "InternetShortcut" "URL" "http://panda3d.org/wiki/index.php"
+            WriteINIStr $INSTDIR\Samples.url "InternetShortcut" "URL" "http://panda3d.org/wiki/index.php/Sample_Programs_in_the_Distribution"
             SetOutPath $INSTDIR
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Manual.lnk" "$INSTDIR\Manual.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Panda Manual"
             CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Panda Website.lnk" "$INSTDIR\Website.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Panda Website"
@@ -203,7 +203,7 @@ Section "${SMDIRECTORY}" SecCore
                 StrCpy $MANPAGE $R0
                 CreateDirectory "$SMPROGRAMS\${SMDIRECTORY}\Sample Programs\$READABLE"
                 SetOutPath $INSTDIR\samples\$1
-                WriteINIStr $INSTDIR\samples\$1\ManualPage.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/wiki/index.php/Sample_Programs:_$MANPAGE"
+                WriteINIStr $INSTDIR\samples\$1\ManualPage.url "InternetShortcut" "URL" "http://panda3d.org/wiki/index.php/Sample_Programs:_$MANPAGE"
                 CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Sample Programs\$READABLE\Manual Page.lnk" "$INSTDIR\samples\$1\ManualPage.url" "" "$INSTDIR\bin\eggcacher.exe" 0 "" "" "Manual Entry on this Sample Program"
                 CreateShortCut "$SMPROGRAMS\${SMDIRECTORY}\Sample Programs\$READABLE\View Source Code.lnk" "$INSTDIR\samples\$1"
                 FindFirst $2 $3 $INSTDIR\samples\$1\Tut-*.py
@@ -257,8 +257,7 @@ Section -post
         DetailPrint "Adding registry keys for python..."
         WriteRegStr HKLM "Software\Python\PythonCore\2.5\InstallPath" "" "$INSTDIR\python"
         WriteRegStr HKLM "Software\Python\PythonCore\2.5\Help" "" ""
-        WriteRegStr HKLM "Software\Python\PythonCore\2.5\Help\Main Python Documentation" "" "$INSTDIR\python\Doc\Python24.chm"
-        WriteRegStr HKLM "Software\Python\PythonCore\2.5\Help\Pythonwin Reference" "" "$INSTDIR\python\Lib\site-packages\PyWin32.chm"
+        WriteRegStr HKLM "Software\Python\PythonCore\2.5\Help\Main Python Documentation" "" "$INSTDIR\python\Doc\Python25.chm"
         SkipRegPath:
         !endif
 
@@ -267,6 +266,7 @@ Section -post
         WriteUninstaller "$INSTDIR\uninst.exe"
         WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${SMDIRECTORY}" "DisplayName" "${SMDIRECTORY}"
         WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${SMDIRECTORY}" "UninstallString" '"$INSTDIR\uninst.exe"'
+        SetOutPath $INSTDIR
         CreateShortcut "$SMPROGRAMS\${SMDIRECTORY}\Uninstall ${NAME}.lnk" "$INSTDIR\uninst.exe" ""
 
 SectionEnd
