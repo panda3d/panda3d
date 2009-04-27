@@ -84,6 +84,7 @@ class EggCacher:
                 self.pandaloader.loadSync(fn, self.loaderopts)
             gc.collect()
             ModelPool.releaseAllModels()
+            TexturePool.releaseAllTextures()
             progress += size
 
 
