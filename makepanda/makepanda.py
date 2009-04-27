@@ -858,6 +858,7 @@ DTOOL_CONFIG=[
     ("HAVE_SYS_SOUNDCARD_H",           'UNDEF',                  '1'),
     ("HAVE_UCONTEXT_H",                'UNDEF',                  '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
+    ("HAVE_X11",                       'UNDEF',                  '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
     ("IS_OSX",                         'UNDEF',                  'UNDEF'),
     ("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
@@ -947,6 +948,7 @@ def WriteConfigSettings():
         dtool_config["HAVE_MALLOC_H"] = 'UNDEF'
         dtool_config["HAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
+        dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
         dtool_config["HAVE_PROC_SELF_EXE"] = 'UNDEF'
