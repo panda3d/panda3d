@@ -163,6 +163,9 @@ Section "${SMDIRECTORY}" SecCore
             File /r /x CVS "${PANDA}\models\*"
             SetOutPath $INSTDIR\samples
             File /r /x CVS "${PSOURCE}\samples\*"
+            MessageBox MB_YESNO|MB_ICONQUESTION \
+               "EGG caching is about to begin.$\nThis process may take a couple minute and approximately 270 MB of RAM.$\nWARNING : It might stuck if your computer resources are low.$\n$\nDo you really want to do this optional step ?" \
+               IDNO SkipCaching
             # Preload all EGG files into the model-cache
             SetOutPath $INSTDIR
             SetDetailsPrint both
@@ -170,6 +173,7 @@ Section "${SMDIRECTORY}" SecCore
             nsExec::ExecToLog '"$INSTDIR\bin\eggcacher.exe" --concise models samples'
             SetDetailsPrint none
             SetDetailsView hide
+            SkipCaching:
 
             SetOutPath $INSTDIR
             WriteINIStr $INSTDIR\Website.url "InternetShortcut" "URL" "http://panda3d.etc.cmu.edu/"
