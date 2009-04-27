@@ -2338,6 +2338,7 @@ TargetAdd('libpandaegg.dll', opts=['ADVAPI'])
 
 OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA',  'FFTW', 'PNG', 'JPEG', 'TIFF', 'ZLIB', 'OPENSSL', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
 TargetAdd('libpandastripped.dll', input='pipeline_composite.obj')
+TargetAdd('libpandastripped.dll', input='pipeline_contextSwitch.obj')
 TargetAdd('libpandastripped.dll', input='event_composite.obj')
 TargetAdd('libpandastripped.dll', input='net_composite.obj')
 TargetAdd('libpandastripped.dll', input='nativenet_composite.obj')
