@@ -71,6 +71,7 @@ public:
     
     SMO_attr_material,
     SMO_attr_color,
+    SMO_attr_colorscale,
     
     SMO_alight_x,
     SMO_dlight_x,

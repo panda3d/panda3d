@@ -652,6 +652,17 @@ compile_parameter(const ShaderArgId  &arg_id,
       bind._arg[0] = NULL;
       bind._part[1] = SMO_identity;
       bind._arg[1] = NULL;
+    } else if (pieces[1] == "colorscale") {
+      if (!cp_errchk_parameter_float(p,3,4)) {
+        return false;
+      }
+      bind._id = arg_id;
+      bind._piece = SMP_row3;
+      bind._func = SMF_first;
+      bind._part[0] = SMO_attr_colorscale;
+      bind._arg[0] = NULL;
+      bind._part[1] = SMO_identity;
+      bind._arg[1] = NULL;
     } else {
       cp_report_error(p,"Unknown attr parameter.");
       return false;
