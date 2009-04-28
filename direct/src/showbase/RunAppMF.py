@@ -103,5 +103,4 @@ if __name__ == '__main__':
     except ArgumentError, e:
         print e.args[0]
         sys.exit(1)
-        
-    
+    run()
