@@ -1079,6 +1079,14 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     t = LMatrix4f(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],0,d[0],d[1],d[2],cutoff);
     return &t;
   }
+  case Shader::SMO_plane_x: {
+    const NodePath &np = _target_shader->get_shader_input_nodepath(name);
+    nassertr(!np.is_empty(), &LMatrix4f::zeros_mat());
+    nassertr(np.node()->is_of_type(PlaneNode::get_class_type()), &LMatrix4f::zeros_mat());
+    Planef p = DCAST(PlaneNode, np.node())->get_plane();
+    t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,p[0],p[1],p[2],p[3]);
+    return &t;
+  }
   case Shader::SMO_mat_constant_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
