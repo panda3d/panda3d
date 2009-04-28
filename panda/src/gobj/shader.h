@@ -78,6 +78,7 @@ public:
     SMO_plight_x,
     SMO_slight_x,
     SMO_satten_x,
+    SMO_plane_x,
     
     SMO_mat_constant_x,
     SMO_vec_constant_x,
@@ -150,8 +151,9 @@ public:
     SSD_general       =  1,
     SSD_transform     =  2,
     SSD_color         =  4,
-    SSD_material      =  8,
-    SSD_shaderinputs  = 16,
+    SSD_colorscale    =  8,
+    SSD_material      = 16,
+    SSD_shaderinputs  = 32,
   };
 
   enum ShaderBug {

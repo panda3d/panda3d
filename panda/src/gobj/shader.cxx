@@ -339,6 +339,9 @@ cp_dependency(ShaderMatInput inp) {
   if (inp == SMO_attr_color) {
     dep |= SSD_color;
   }
+  if (inp == SMO_attr_colorscale) {
+    dep |= SSD_colorscale;
+  }
   if ((inp == SMO_model_to_view)||
       (inp == SMO_view_to_model)) {
     dep |= SSD_transform;
@@ -766,6 +769,27 @@ compile_parameter(const ShaderArgId  &arg_id,
     if (!cp_parse_eol(p, pieces, next)) {
       return false;
     }
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    return true;
+  }
+  
+  if (pieces[0] == "plane") {
+    if ((!cp_errchk_parameter_words(p,2))||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,4,4))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = arg_id;
+    bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_plane_x;
+    bind._arg[0] = InternalName::make(pieces[1]);
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = NULL;
+
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
     return true;
