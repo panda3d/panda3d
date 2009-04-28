@@ -13,28 +13,15 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "config_iphone.h"
-#include "iPhoneGraphicsPipe.h"
-#include "iPhoneGraphicsStateGuardian.h"
-#include "iPhoneGraphicsWindow.h"
-
-#include "graphicsPipeSelection.h"
 #include "dconfig.h"
-#include "pandaSystem.h"
-
 
 Configure(config_iphone);
 
-NotifyCategoryDef(iphone, "display");
+NotifyCategoryDef(iphone, "");
 
 ConfigureFn(config_iphone) {
   init_libiphone();
 }
-
-ConfigVariableBool iphone_autorotate_view
-("iphone-autorotate-view", true,
- PRC_DESC("Set this true to enable the iphone application to rotate its "
-          "view automatically according to the phone's orientation, or "
-          "false for its view to remain fixed."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libiphone
@@ -51,27 +38,4 @@ init_libiphone() {
     return;
   }
   initialized = true;
-
-  IPhoneGraphicsPipe::init_type();
-  IPhoneGraphicsWindow::init_type();
-  IPhoneGraphicsStateGuardian::init_type();
-
-  GraphicsPipeSelection *selection = GraphicsPipeSelection::get_global_ptr();
-  selection->add_pipe_type(IPhoneGraphicsPipe::get_class_type(), IPhoneGraphicsPipe::pipe_constructor);
-
-  PandaSystem *ps = PandaSystem::get_global_ptr();
-  ps->set_system_tag("OpenGL", "window_system", "IPhone");
-  ps->set_system_tag("OpenGL ES", "window_system", "IPhone");
-
-  GLESinit_classes();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: get_pipe_type_iphone
-//  Description: Returns the TypeHandle index of the recommended
-//               graphics pipe type defined by this module.
-////////////////////////////////////////////////////////////////////
-int
-get_pipe_type_iphone() {
-  return IPhoneGraphicsPipe::get_class_type().get_index();
 }

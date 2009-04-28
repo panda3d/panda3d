@@ -1,4 +1,4 @@
-// Filename: main.mm
+// Filename: pview_main.mm
 // Created by:  drose (10Apr09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -14,10 +14,6 @@
 
 #import <UIKit/UIKit.h>
 
-#include <mach-o/dyld.h>
-#include <dlfcn.h>
-#include <iostream>
-
 extern "C" int main(int argc, char *argv[]);
 
 int
@@ -25,7 +21,7 @@ main(int argc, char *argv[]) {
   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; 
 
   /* Call with the name of our application delegate class */ 
-  int retVal = UIApplicationMain(argc, argv, nil, @"ControllerDemoAppDelegate"); 
+  int retVal = UIApplicationMain(argc, argv, nil, @"PviewAppDelegate"); 
   [pool release]; 
   return retVal; 
 } 

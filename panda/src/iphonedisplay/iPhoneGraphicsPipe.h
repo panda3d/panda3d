@@ -31,7 +31,7 @@ class PNMImage;
 //               creating OpenGL graphics windows on the various
 //               IPHONE's.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDAGL IPhoneGraphicsPipe : public GraphicsPipe {
+class EXPCL_MISC IPhoneGraphicsPipe : public GraphicsPipe {
 public:
   IPhoneGraphicsPipe();
   virtual ~IPhoneGraphicsPipe();

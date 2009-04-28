@@ -15,7 +15,7 @@
 #import "viewController.h" 
 #include "pnotify.h"
 #include "iPhoneGraphicsPipe.h"
-#include "config_iphone.h"
+#include "config_iphonedisplay.h"
 
 @implementation ControllerDemoViewController 
 

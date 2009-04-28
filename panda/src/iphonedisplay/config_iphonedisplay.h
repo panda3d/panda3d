@@ -1,3 +1,6 @@
+// Filename: config_iphonedisplay.h
+// Created by:  drose (08Apr09)
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -9,16 +12,19 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_IPHONE_H
-#define CONFIG_IPHONE_H
+#ifndef CONFIG_IPHONEDISPLAY_H
+#define CONFIG_IPHONEDISPLAY_H
 
 #include "pandabase.h"
 #include "notifyCategoryProxy.h"
 #include "configVariableBool.h"
 #include "configVariableInt.h"
 
-NotifyCategoryDecl(iphone, EXPCL_MISC, EXPTP_MISC);
+NotifyCategoryDecl(iphonedisplay, EXPCL_MISC, EXPTP_MISC);
 
-extern EXPCL_MISC void init_libiphone();
+extern ConfigVariableBool iphone_autorotate_view;
 
-#endif  // CONFIG_IPHONE_H
+extern EXPCL_MISC void init_libiphonedisplay();
+extern "C" EXPCL_MISC int get_pipe_type_iphonedisplay();
+
+#endif  // CONFIG_IPHONEDISPLAY_H

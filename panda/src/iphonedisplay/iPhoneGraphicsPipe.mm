@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "iPhoneGraphicsPipe.h"
-#include "config_iphone.h"
+#include "config_iphonedisplay.h"
 #include "iPhoneGraphicsWindow.h"
 #include "iPhoneGraphicsStateGuardian.h"
 #include "pnmImage.h"

@@ -68,7 +68,9 @@ Thread(const string &name, const string &sync_name) :
 #if defined(HAVE_PYTHON) && !defined(SIMPLE_THREADS)
   // Ensure that the Python threading system is initialized and ready
   // to go.
+#ifdef WITH_THREAD  // This symbol defined within Python.h
   PyEval_InitThreads();
+#endif
 #endif
 }
 
@@ -315,6 +317,12 @@ call_python_func(PyObject *function, PyObject *args) {
     }
 
   } else {
+#ifndef HAVE_THREADS
+    // Shouldn't be possible to come here without having some kind of
+    // threading support enabled.
+    nassertr(false, NULL);
+#else
+
 #ifdef SIMPLE_THREADS
     // We can't use the PyGILState interface, which assumes we are
     // using true OS-level threading.  PyGILState enforces policies
@@ -397,6 +405,7 @@ call_python_func(PyObject *function, PyObject *args) {
     
 
 #endif  // SIMPLE_THREADS
+#endif  // HAVE_THREADS
   }
 
   return result;

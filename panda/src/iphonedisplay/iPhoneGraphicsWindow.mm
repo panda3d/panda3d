@@ -21,7 +21,7 @@
 
 #include "iPhoneGraphicsWindow.h"
 #include "dcast.h"
-#include "config_iphone.h"
+#include "config_iphonedisplay.h"
 #include "iPhoneGraphicsPipe.h"
 #include "pStatTimer.h"
 #include "glesgsg.h"
@@ -92,8 +92,7 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   begin_frame_spam(mode);
   if (_gsg == (GraphicsStateGuardian *)NULL) {
     // not powered up .. just abort..
-    iphone_cat.info() << "no gsg\n";
-    return false;
+   return false;
   }
 
   _gsg->reset_if_new();
@@ -180,10 +179,10 @@ process_events() {
 ////////////////////////////////////////////////////////////////////
 void IPhoneGraphicsWindow::
 set_properties_now(WindowProperties &properties) {
-  if (iphone_cat.is_debug()) {
-    iphone_cat.debug()
+  if (iphonedisplay_cat.is_debug()) {
+    iphonedisplay_cat.debug()
       << "------------------------------------------------------\n";
-    iphone_cat.debug()
+    iphonedisplay_cat.debug()
       << "set_properties_now " << properties << "\n";
   }
  

@@ -14,8 +14,8 @@
 
 #import <UIKit/UIKit.h> 
 
-@class ControllerDemoViewController; 
-@interface ControllerDemoAppDelegate : NSObject <UIApplicationDelegate> { 
+@class PviewViewController; 
+@interface PviewAppDelegate : NSObject <UIApplicationDelegate> { 
   NSTimer *animationTimer;
   NSTimeInterval animationInterval;
 } 

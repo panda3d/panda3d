@@ -14,7 +14,7 @@
 
 #include "iPhoneGraphicsStateGuardian.h"
 #include "string_utils.h"
-#include "config_iphone.h"
+#include "config_iphonedisplay.h"
 #include "depthWriteAttrib.h"
 #include "depthTestAttrib.h"
 #include "textureAttrib.h"

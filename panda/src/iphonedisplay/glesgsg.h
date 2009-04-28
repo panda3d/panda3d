@@ -19,7 +19,7 @@
 // that is OpenGL ES.
 
 #include "pandabase.h"
-#include "config_iphone.h"
+#include "config_iphonedisplay.h"
 
 #define GLP(name) gl##name
 #define GLUP(name) glu##name
@@ -27,10 +27,10 @@
 #define GLPREFIX_QUOTED "gl"
 #define CLASSPREFIX_QUOTED "GLES"
 #define GLSYSTEM_NAME "OpenGL ES"
-#define CONFIGOBJ config_iphone
-#define GLCAT iphone_cat
-#define EXPCL_GL EXPCL_PANDAGL
-#define EXPTP_GL EXPTP_PANDAGL
+#define CONFIGOBJ config_iphonedisplay
+#define GLCAT iphonedisplay_cat
+#define EXPCL_GL EXPCL_MISC
+#define EXPTP_GL EXPTP_MISC
 #define OPENGLES_1
 #undef HAVE_GLU
 

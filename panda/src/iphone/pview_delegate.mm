@@ -14,11 +14,11 @@
     
 #import "pview_delegate.h" 
 #import "viewController.h"
-#include "config_iphone.h"
 #include "dcast.h"
 #include "pandaFramework.h"
+#include "config_iphonedisplay.h"
 
-@implementation ControllerDemoAppDelegate 
+@implementation PviewAppDelegate 
 
 @synthesize animationTimer;
 @synthesize animationInterval;
@@ -65,6 +65,9 @@ signal_handler(int i) {
   }
   argv[argc] = NULL;
 
+  // Ensure the IPhoneDisplay is available.
+  init_libiphonedisplay();
+  
   framework.open_framework(argc, argv);
   startup = 0;
 
@@ -108,7 +111,12 @@ signal_handler(int i) {
     // load the models.  We have this funny deferred-window technique,
     // so SpringBoard will see that the app has fully initialized and
     // won't kill us if we take a while loading models.
-    framework.open_window();
+    WindowFramework *window = framework.open_window();
+    if (window == (WindowFramework *)NULL) {
+      // Couldn't get a window.
+      framework.close_framework();
+      exit(0);
+    }
     startup = 1;
 
   } else if (startup == 1) {

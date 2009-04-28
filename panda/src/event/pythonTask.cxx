@@ -49,7 +49,9 @@ PythonTask(PyObject *function, const string &name) :
 #ifndef SIMPLE_THREADS
   // Ensure that the Python threading system is initialized and ready
   // to go.
+#ifdef WITH_THREAD  // This symbol defined within Python.h
   PyEval_InitThreads();
+#endif
 #endif
 }
 
