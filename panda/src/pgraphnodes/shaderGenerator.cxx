@@ -586,10 +586,11 @@ synthesize_shader(const RenderState *rs) {
   }
   text << "\t out float4 o_color : COLOR0,\n";
   if (_vertex_colors) {
-    text << "\t in float4 l_color : COLOR\n";
+    text << "\t in float4 l_color : COLOR,\n";
   } else {
-    text << "\t uniform float4 attr_color\n";
+    text << "\t uniform float4 attr_color,\n";
   }
+  text << "\t uniform float4 attr_colorscale\n";
   text << ") {\n";
   text << "\t float4 result;\n";
   if (_out_aux_any) {
@@ -812,6 +813,8 @@ synthesize_shader(const RenderState *rs) {
       text << "\t result = float4(1,1,1,1);\n";
     }
   }
+  // Apply the color scale.
+  text << "\t result *= attr_colorscale;\n";
   
   text << "\t float4 primary_color = result;\n";
   text << "\t float4 last_saved_result = result;\n";
@@ -850,10 +853,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\n";
       break;
     case TextureStage::M_blend_color_scale: {
-      const ColorScaleAttrib *color_scale = DCAST(ColorScaleAttrib, rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
-      LVecBase4f c = color_scale->get_scale();
-      text << "\t result.rgb = lerp(result, tex" << i << " * float4("
-           << c[0] << ", " << c[1] << ", " << c[2] << ", " << c[3] << "), tex" << i << ".r).rgb;\n";
+      text << "\t result.rgb = lerp(result, tex" << i << " * attr_colorscale, tex" << i << ".r).rgb;\n";
       break; }
     default:
       break;
@@ -923,14 +923,7 @@ synthesize_shader(const RenderState *rs) {
     break;
   default: break;
   }
-  
-  // Apply color scale, if any.
-  const ColorScaleAttrib *color_scale = DCAST(ColorScaleAttrib, rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
-  if (!color_scale->is_identity()) {
-    LVecBase4f s = color_scale->get_scale();
-    text << "\t result *= float4(" << s[0] << ", " << s[1] << ", " << s[2] << ", " << s[3] << ");\n";
-  }
-    
+   
   // The multiply is a workaround for a radeon driver bug.
   // It's annoying as heck, since it produces an extra instruction.
   text << "\t o_color = result * 1.000001;\n"; 
