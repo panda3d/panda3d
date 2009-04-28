@@ -1001,6 +1001,15 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,c[0],c[1],c[2],c[3]);
     return &t;
   }
+  case Shader::SMO_attr_colorscale: {
+    const ColorScaleAttrib *target_color = DCAST(ColorScaleAttrib, _target_rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
+    if (target_color->is_identity()) {
+      return &LMatrix4f::ones_mat();
+    }
+    LVecBase4f cs = target_color->get_scale();
+    t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,cs[0],cs[1],cs[2],cs[3]);
+    return &t;
+  }
   case Shader::SMO_alight_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::zeros_mat());
