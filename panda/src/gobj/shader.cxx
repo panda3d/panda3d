@@ -353,6 +353,7 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_plight_x)||
       (inp == SMO_slight_x)||
       (inp == SMO_satten_x)||
+      (inp == SMO_clipplane_x)||
       (inp == SMO_mat_constant_x)||
       (inp == SMO_vec_constant_x)||
       (inp == SMO_view_x_to_view)||
@@ -786,6 +787,27 @@ compile_parameter(const ShaderArgId  &arg_id,
     bind._piece = SMP_row3;
     bind._func = SMF_first;
     bind._part[0] = SMO_plane_x;
+    bind._arg[0] = InternalName::make(pieces[1]);
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = NULL;
+
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    return true;
+  }
+
+  if (pieces[0] == "clipplane") {
+    if ((!cp_errchk_parameter_words(p,2))||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,4,4))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = arg_id;
+    bind._piece = SMP_row3;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_clipplane_x;
     bind._arg[0] = InternalName::make(pieces[1]);
     bind._part[1] = SMO_identity;
     bind._arg[1] = NULL;

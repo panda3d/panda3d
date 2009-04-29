@@ -79,6 +79,7 @@ public:
     SMO_slight_x,
     SMO_satten_x,
     SMO_plane_x,
+    SMO_clipplane_x,
     
     SMO_mat_constant_x,
     SMO_vec_constant_x,
