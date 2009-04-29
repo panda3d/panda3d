@@ -76,6 +76,7 @@ private:
   void quantize_vertex(EggVertex *egg_vertex);
 
   void do_flag_groups(EggGroupNode *egg_group);
+  void rename_joints();
   void rename_primitives(EggGroupNode *egg_group, const string &name);
   void do_preload();
   void do_defpose();
@@ -95,6 +96,7 @@ private:
   StringPairs _new_joints;
   StringPairs _reparent_joints;
   StringPairs _zero_channels;
+  StringPairs _rename_joints;
 
   vector_string _keep_components;
   vector_string _drop_components;

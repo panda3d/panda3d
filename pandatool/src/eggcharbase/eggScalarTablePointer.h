@@ -38,6 +38,8 @@ public:
   virtual void extend_to(int num_frames);
   virtual double get_frame(int n) const;
 
+  virtual void set_name(const string &name);
+
 private:
   PT(EggSAnimData) _data;
 

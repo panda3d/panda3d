@@ -157,6 +157,11 @@ EggOptchar() {
      "joint will inherit the same net transform as its parent.",
      &EggOptchar::dispatch_vector_string_pair, NULL, &_new_joints);
 
+  add_option
+    ("rename", "joint,newjoint", 0,
+     "Renames the indicated joint, if present, to the given name.",
+     &EggOptchar::dispatch_vector_string_pair, NULL, &_rename_joints);
+
   if (FFTCompressor::is_compression_available()) {
     add_option
       ("optimal", "", 0,
@@ -261,6 +266,8 @@ run() {
     // to add this at some point; it's quite easy.  Identity and empty
     // morph sliders can simply be removed, while static sliders need
     // to be applied to the vertices and then removed.
+
+    rename_joints();
 
     // Quantize the vertex memberships.  We call this even if
     // _vref_quantum is 0, because this also normalizes the vertex
@@ -1353,6 +1360,42 @@ do_flag_groups(EggGroupNode *egg_group) {
     if (child->is_of_type(EggGroupNode::get_class_type())) {
       EggGroupNode *group = DCAST(EggGroupNode, child);
       do_flag_groups(group);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::rename_joints
+//       Access: Private
+//  Description: Rename all the joints named with the -rename
+//               command-line option.
+////////////////////////////////////////////////////////////////////
+void EggOptchar::
+rename_joints() {
+  for (StringPairs::iterator spi = _rename_joints.begin();
+       spi != _rename_joints.end();
+       ++spi) {
+    const StringPair &sp = (*spi);
+    int num_characters = _collection->get_num_characters();
+    int ci;
+    for (ci = 0; ci < num_characters; ++ci) {
+      EggCharacterData *char_data = _collection->get_character(ci);
+      EggJointData *joint = char_data->find_joint(sp._a);
+      if (joint != (EggJointData *)NULL) {
+        nout << "Renaming joint " << sp._a << " to " << sp._b << "\n";
+        joint->set_name(sp._b);
+
+        int num_models = joint->get_num_models();
+        for (int mn = 0; mn < num_models; ++mn) {
+          if (joint->has_model(mn)) {
+            EggBackPointer *model = joint->get_model(mn);
+            model->set_name(sp._b);
+          }
+        }
+
+      } else {
+        nout << "Couldn't find joint " << sp._a << "\n";
+      }
     }
   }
 }

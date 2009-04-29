@@ -45,6 +45,8 @@ public:
 
   virtual EggJointPointer *make_new_joint(const string &name);
 
+  virtual void set_name(const string &name);
+
 private:
   PT(EggGroup) _joint;
 

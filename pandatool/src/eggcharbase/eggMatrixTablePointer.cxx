@@ -314,3 +314,13 @@ make_new_joint(const string &name) {
 
   return new EggMatrixTablePointer(new_table);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggMatrixTablePointer::set_name
+//       Access: Public, Virtual
+//  Description: Applies the indicated name change to the egg file.
+////////////////////////////////////////////////////////////////////
+void EggMatrixTablePointer::
+set_name(const string &name) {
+  _table->set_name(name);
+}

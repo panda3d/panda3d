@@ -60,3 +60,12 @@ bool EggBackPointer::
 has_vertices() const {
   return false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggBackPointer::set_name
+//       Access: Public, Virtual
+//  Description: Applies the indicated name change to the egg file.
+////////////////////////////////////////////////////////////////////
+void EggBackPointer::
+set_name(const string &name) {
+}

@@ -41,6 +41,8 @@ public:
   virtual void extend_to(int num_frames);
   virtual bool has_vertices() const;
 
+  virtual void set_name(const string &name);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

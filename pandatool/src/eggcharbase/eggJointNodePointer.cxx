@@ -229,3 +229,13 @@ make_new_joint(const string &name) {
   _joint->add_child(new_joint);
   return new EggJointNodePointer(new_joint);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggJointNodePointer::set_name
+//       Access: Public, Virtual
+//  Description: Applies the indicated name change to the egg file.
+////////////////////////////////////////////////////////////////////
+void EggJointNodePointer::
+set_name(const string &name) {
+  _joint->set_name(name);
+}

@@ -97,3 +97,16 @@ get_frame(int n) const {
   nassertr(n >= 0 && n < get_num_frames(), 0.0);
   return _data->get_value(n);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggScalarTablePointer::set_name
+//       Access: Public, Virtual
+//  Description: Applies the indicated name change to the egg file.
+////////////////////////////////////////////////////////////////////
+void EggScalarTablePointer::
+set_name(const string &name) {
+  // Actually, let's not rename the slider table (yet), because we
+  // haven't written the code to rename all of the morph targets.
+
+  //  _data->set_name(name);
+}
