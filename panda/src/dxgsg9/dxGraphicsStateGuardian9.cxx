@@ -3277,6 +3277,10 @@ set_state_and_transform(const RenderState *target,
     do_issue_color_scale();
     _state_mask.set_bit(color_slot);
     _state_mask.set_bit(color_scale_slot);
+    if (_current_shader_context) {
+      _current_shader_context->issue_parameters(this, Shader::SSD_color);
+      _current_shader_context->issue_parameters(this, Shader::SSD_colorscale);
+    }
   }
 
   int cull_face_slot = CullFaceAttrib::get_class_slot();
