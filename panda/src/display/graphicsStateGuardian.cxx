@@ -1087,6 +1087,22 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,p[0],p[1],p[2],p[3]);
     return &t;
   }
+  case Shader::SMO_clipplane_x: {
+    const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
+    int planenr = atoi(name->get_name().c_str());
+    if (planenr >= cpa->get_num_on_planes()) {
+      // The identity matrix happens to have 0,0,0,1 in the last row,
+      // which is exactly what we need, because that won't clip anything.
+      return &LMatrix4f::zeros_mat();
+    }
+    const NodePath &np = cpa->get_on_plane(planenr);
+    nassertr(!np.is_empty(), &LMatrix4f::zeros_mat());
+    nassertr(np.node()->is_of_type(PlaneNode::get_class_type()), &LMatrix4f::zeros_mat());
+    Planef p (DCAST(PlaneNode, np.node())->get_plane());
+    p.xform(np.get_net_transform()->get_mat()); // World-space
+    t = LMatrix4f(0,0,0,0,0,0,0,0,0,0,0,0,p[0],p[1],p[2],p[3]);
+    return &t;
+  }
   case Shader::SMO_mat_constant_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::ident_mat());
