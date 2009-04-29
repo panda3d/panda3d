@@ -124,6 +124,7 @@ protected:
   bool _calc_primary_alpha;
   bool _subsume_alpha_test;
   bool _disable_alpha_write;
+  int _num_clip_planes;
   
   bool _need_material_props;
   
