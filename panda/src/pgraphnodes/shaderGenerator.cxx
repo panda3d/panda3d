@@ -328,6 +328,11 @@ analyze_renderstate(const RenderState *rs) {
     (_have_emission && (_material->has_emission()))||
     (_have_specular && (_material->has_specular()));
 
+  // Check for clip planes.
+
+  const ClipPlaneAttrib *clip_plane = DCAST(ClipPlaneAttrib, rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
+  _num_clip_planes = clip_plane->get_num_on_planes();
+
   // Check for unimplemented features and issue warnings.
 
   const TexMatrixAttrib *tex_matrix = DCAST(TexMatrixAttrib, rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
@@ -372,6 +377,7 @@ clear_analysis() {
   _have_alpha_blend = false;
   _subsume_alpha_test = false;
   _disable_alpha_write = false;
+  _num_clip_planes = 0;
   _out_primary_glow  = false;
   _out_aux_normal = false;
   _out_aux_glow   = false;
@@ -461,7 +467,6 @@ synthesize_shader(const RenderState *rs) {
   char *tangent_freg = 0;
   char *binormal_vreg = 0;
   char *binormal_freg = 0;
-  char *clip_freg = 0;
   pvector<char *> texcoord_vreg;
   pvector<char *> texcoord_freg;
   pvector<char *> tslightvec_freg;
@@ -487,6 +492,10 @@ synthesize_shader(const RenderState *rs) {
   if (_vertex_colors) {
     text << "\t in float4 vtx_color : COLOR,\n";
     text << "\t out float4 l_color : COLOR,\n";
+  }
+  if (_num_clip_planes > 0) {
+    text << "\t out float4 l_worldpos,\n";
+    text << "\t uniform float4x4 trans_model_to_world,\n";
   }
   if (_lighting) {
     pos_freg = alloc_freg();
@@ -521,6 +530,9 @@ synthesize_shader(const RenderState *rs) {
   text << ") {\n";
   
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
+  if (_num_clip_planes > 0) {
+    text << "\t l_worldpos = mul(trans_model_to_world, vtx_position);\n";
+  }
   for (int i=0; i<_num_textures; i++) {
     text << "\t l_texcoord" << i << " = vtx_texcoord" << i << ";\n";
   }
@@ -543,7 +555,9 @@ synthesize_shader(const RenderState *rs) {
   text << "}\n\n";
   
   text << "void fshader(\n";
-  
+  if (_num_clip_planes > 0) {
+    text << "\t in float4 l_worldpos,\n";
+  }
   for (int i=0; i<_num_textures; i++) {
     text << "\t in float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
     text << "\t uniform sampler2D tex_" << i << ",\n";
@@ -590,8 +604,18 @@ synthesize_shader(const RenderState *rs) {
   } else {
     text << "\t uniform float4 attr_color,\n";
   }
+  for (int i=0; i<_num_clip_planes; ++i) {
+    text << "\t uniform float4 clipplane_" << i << ",\n";
+  }
   text << "\t uniform float4 attr_colorscale\n";
   text << ") {\n";
+  // Clipping first!
+  for (int i=0; i<_num_clip_planes; ++i) {
+    text << "\t if (l_worldpos.x * clipplane_" << i << ".x + l_worldpos.y ";
+    text << "* clipplane_" << i << ".y + l_worldpos.z * clipplane_" << i << ".z + clipplane_" << i << ".w <= 0) {\n";
+    text << "\t discard;\n";
+    text << "\t }\n";
+  }
   text << "\t float4 result;\n";
   if (_out_aux_any) {
     text << "\t o_aux = float4(0,0,0,0);\n";
@@ -813,8 +837,6 @@ synthesize_shader(const RenderState *rs) {
       text << "\t result = float4(1,1,1,1);\n";
     }
   }
-  // Apply the color scale.
-  text << "\t result *= attr_colorscale;\n";
   
   text << "\t float4 primary_color = result;\n";
   text << "\t float4 last_saved_result = result;\n";
@@ -867,6 +889,8 @@ synthesize_shader(const RenderState *rs) {
       }
     }
   }
+  // Apply the color scale.
+  text << "\t result *= attr_colorscale;\n";
 
   if (_subsume_alpha_test) {
     const AlphaTestAttrib *alpha_test = DCAST(AlphaTestAttrib, rs->get_attrib_def(AlphaTestAttrib::get_class_slot()));
