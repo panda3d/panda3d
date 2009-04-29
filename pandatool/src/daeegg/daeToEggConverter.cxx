@@ -315,6 +315,7 @@ void DAEToEggConverter::process_instance(PT(EggGroup) parent, const FCDEntityIns
 // Processes the given mesh.
 void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh* mesh, PT(DaeMaterials) materials) {
   nassertv(mesh != NULL);
+  daeegg_cat.debug() << "Processing mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << endl;
   // Create the egg stuff to hold this mesh
   PT(EggGroup) mesh_group = new EggGroup(FROM_FSTRING(mesh->GetDaeId()));
   parent->add_child(mesh_group);
@@ -325,17 +326,21 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
   if (mesh->GetSourceCount() == 0) return;
   const FCDGeometrySource* vsource = mesh->FindSourceByType(FUDaeGeometryInput::POSITION);
   if (vsource == NULL) return;
-  // Stores which group holds the primitives.
-  PT(EggGroup) primitiveholder;
   // Loop through the polygon groups and add them
+  daeegg_cat.spam() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has " << mesh->GetPolygonsCount() << " polygon groups" << endl;
+  PT(EggGroup) primitive_holders[mesh->GetPolygonsCount()];
   for (size_t gr = 0; gr < mesh->GetPolygonsCount(); ++gr) {
     const FCDGeometryPolygons* polygons = mesh->GetPolygons(gr);
-    primitiveholder = mesh_group;
+    // Stores which group holds the primitives.
+    PT(EggGroup) primitiveholder;
     // If we have materials, make a group for each material. Then, apply the material's per-group stuff.
     if (materials != NULL && (!polygons->GetMaterialSemantic().empty()) && mesh->GetPolygonsCount() > 1) {
-      primitiveholder = new EggGroup(FROM_FSTRING(mesh->GetDaeId()) + FROM_FSTRING(polygons->GetMaterialSemantic()));
+      primitiveholder = new EggGroup(FROM_FSTRING(mesh->GetDaeId()) + "." + FROM_FSTRING(polygons->GetMaterialSemantic()));
       mesh_group->add_child(primitiveholder);
+    } else {
+      primitiveholder = mesh_group;
     }
+    primitive_holders[gr] = primitiveholder;
     // Apply the per-group data of the materials, if we have it.
     if (materials != NULL) {
       materials->apply_to(FROM_FSTRING(polygons->GetMaterialSemantic()), primitiveholder);
@@ -372,17 +377,17 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
     // Get a name for potential coordinate sets
     string tcsetname ("");
     if (materials != NULL && tcinput != NULL) {
-      daeegg_cat.debug() << "Assigning texcoord set " << tcinput->GetSet() << " to semantic " << FROM_FSTRING(polygons->GetMaterialSemantic()) << "\n";
+      daeegg_cat.debug() << "Assigning texcoord set " << tcinput->GetSet() << " to semantic '" << FROM_FSTRING(polygons->GetMaterialSemantic()) << "'\n";
       tcsetname = materials->get_uvset_name(FROM_FSTRING(polygons->GetMaterialSemantic()), FUDaeGeometryInput::TEXCOORD, tcinput->GetSet());
     }
     string tbsetname ("");
     if (materials != NULL && binput != NULL) {
-      daeegg_cat.debug() << "Assigning texbinormal set " << binput->GetSet() << " to semantic " << FROM_FSTRING(polygons->GetMaterialSemantic()) << "\n";
+      daeegg_cat.debug() << "Assigning texbinormal set " << binput->GetSet() << " to semantic '" << FROM_FSTRING(polygons->GetMaterialSemantic()) << "'\n";
       tbsetname = materials->get_uvset_name(FROM_FSTRING(polygons->GetMaterialSemantic()), FUDaeGeometryInput::TEXBINORMAL, binput->GetSet());
     }
     string ttsetname ("");
     if (materials != NULL && tinput != NULL) {
-      daeegg_cat.debug() << "Assigning textangent set " << tinput->GetSet() << " to semantic " << FROM_FSTRING(polygons->GetMaterialSemantic()) << "\n";
+      daeegg_cat.debug() << "Assigning textangent set " << tinput->GetSet() << " to semantic '" << FROM_FSTRING(polygons->GetMaterialSemantic()) << "'\n";
       ttsetname = materials->get_uvset_name(FROM_FSTRING(polygons->GetMaterialSemantic()), FUDaeGeometryInput::TEXTANGENT, tinput->GetSet());
     }
     // Loop through the indices and add the vertices.
@@ -435,8 +440,13 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
       }
       vertex->transform(parent->get_node_to_vertex());
     }
+  }
+  // Loop again for the polygons
+  for (size_t gr = 0; gr < mesh->GetPolygonsCount(); ++gr) {
+    const FCDGeometryPolygons* polygons = mesh->GetPolygons(gr);
     // Now loop through the faces
-    for (size_t fa = polygons->GetFaceOffset(); fa < polygons->GetFaceOffset() + polygons->GetFaceCount(); ++fa) {
+    uint32 offset = 0;
+    for (size_t fa = 0; fa < polygons->GetFaceVertexCountCount(); ++fa) {
       PT(EggPrimitive) primitive = NULL;
       // Create a primitive that matches the fcollada type
       switch (polygons->GetPrimitiveType()) {
@@ -459,18 +469,19 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
           daeegg_cat.warning() << "Linestrips not yet supported!" << endl;
           break;
         default:
-          daeegg_cat.warning() << "Unsupported primitive type found!\n";
+          daeegg_cat.warning() << "Unsupported primitive type found!" << endl;
       }
       if (primitive != NULL) {
-        primitiveholder->add_child(primitive);
+        primitive_holders[gr]->add_child(primitive);
         if (materials != NULL) {
           materials->apply_to(FROM_FSTRING(polygons->GetMaterialSemantic()), primitive);
         }
-        for (size_t ve = polygons->GetFaceVertexOffset(fa); ve < polygons->GetFaceVertexOffset(fa) + polygons->GetFaceVertexCount(fa); ++ve) {
-          assert(mesh_pool->has_vertex(ve));
-          primitive->add_vertex(mesh_pool->get_vertex(ve));
+        for (size_t ve = 0; ve < polygons->GetFaceVertexCount(fa); ++ve) {
+          assert(mesh_pool->has_vertex(ve + polygons->GetFaceVertexOffset() + offset));
+          primitive->add_vertex(mesh_pool->get_vertex(ve + polygons->GetFaceVertexOffset() + offset));
         }
       }
+      offset += polygons->GetFaceVertexCount(fa);
     }
   }
 }
@@ -521,7 +532,9 @@ void DAEToEggConverter::process_controller(PT(EggGroup) parent, const FCDControl
   if (geometry != NULL) {
     if (geometry->IsMesh()) {
       process_mesh(parent, geometry->GetMesh(), new DaeMaterials((const FCDGeometryInstance*) instance));
+      daeegg_cat.spam() << "Processing mesh for controller\n";
       if (_vertex_pools.count(FROM_FSTRING(geometry->GetMesh()->GetDaeId()))) {
+        daeegg_cat.debug() << "Using vertex pool " << FROM_FSTRING(geometry->GetMesh()->GetDaeId()) << "\n";
         vertex_pool = _vertex_pools[FROM_FSTRING(geometry->GetMesh()->GetDaeId())];
       }
     }
