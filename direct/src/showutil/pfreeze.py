@@ -34,6 +34,11 @@ Options:
      the resulting file, even if they do not appear to be referenced.
      You may also repeat the -i command for each module.
 
+  -p module[,module...]
+     Specifies a list of Python modules that do run-time manipulation
+     of the __path__ variable, and thus must be actually imported to
+     determine the true value of __path__.
+
 """
 
 import getopt
@@ -52,7 +57,7 @@ if __name__ == '__main__':
     basename = None
     
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'o:i:x:h')
+        opts, args = getopt.getopt(sys.argv[1:], 'o:i:x:p:h')
     except getopt.error, msg:
         usage(1, msg)
 
@@ -65,6 +70,9 @@ if __name__ == '__main__':
         elif opt == '-x':
             for module in arg.split(','):
                 freezer.excludeModule(module)
+        elif opt == '-p':
+            for module in arg.split(','):
+                freezer.handleCustomPath(module)
         elif opt == '-h':
             usage(0)
 

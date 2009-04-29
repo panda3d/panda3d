@@ -6,7 +6,6 @@ import sys
 import os
 import marshal
 import imp
-import struct
 
 import direct
 from pandac.PandaModules import *
@@ -360,6 +359,19 @@ class Freezer:
         else:
             self.modules[moduleName] = self.MTExclude
 
+    def handleCustomPath(self, moduleName):
+        """ Indicates a module that may perform runtime manipulation
+        of its __path__ variable, and which must therefore be actually
+        imported at runtime in order to determine the true value of
+        __path__. """
+
+        str = 'import %s' % (moduleName)
+        exec str
+
+        module = sys.modules[moduleName]
+        for path in module.__path__:
+            modulefinder.AddPackagePath(moduleName, path)
+
     def getModulePath(self, moduleName):
         """ Looks for the indicated directory module and returns its
         __path__ member: the list of directories in which its python
@@ -582,16 +594,16 @@ class Freezer:
                 co = self.mf.replace_paths_in_code(module.__code__)
                 module.__code__ = co;
 
-    def __addPyc(self, mf, filename, code):
+    def __addPyc(self, multifile, filename, code):
         if code:
-            data = imp.get_magic() + \
-                   struct.pack('<I', self.timestamp) + \
+            data = imp.get_magic() + '\0\0\0\0' + \
                    marshal.dumps(code)
 
             stream = StringStream(data)
-            mf.addSubfile(filename, stream, 0)
+            multifile.addSubfile(filename, stream, 0)
+            multifile.flush()
 
-    def __addPythonDirs(self, mf, moduleDirs, dirnames):
+    def __addPythonDirs(self, multifile, moduleDirs, dirnames):
         """ Adds all of the names on dirnames as a module directory. """
         if not dirnames:
             return
@@ -600,41 +612,60 @@ class Freezer:
         if str not in moduleDirs:
             # Add an implicit __init__.py file.
             moduleName = '.'.join(dirnames)
-            filename = '/'.join(dirnames) + '/__init__.pyc'
-            code = compile('', moduleName, 'exec')
-            self.__addPyc(mf, filename, code)
-            moduleDirs[str] = True
-            self.__addPythonDirs(mf, moduleDirs, dirnames[:-1])
+            filename = '/'.join(dirnames) + '/__init__.py'
 
-    def __addPythonFile(self, mf, moduleDirs, moduleName):
+            stream = StringStream('')
+            multifile.addSubfile(filename, stream, 0)
+            multifile.flush()
+
+            moduleDirs[str] = True
+            self.__addPythonDirs(multifile, moduleDirs, dirnames[:-1])
+
+    def __addPythonFile(self, multifile, moduleDirs, moduleName):
         """ Adds the named module to the multifile as a .pyc file. """
+        module = self.mf.modules.get(moduleName, None)
+        if getattr(module, '__path__', None) is not None:
+            # It's actually a package.  In this case, we really write
+            # the file moduleName/__init__.py.
+            moduleName += '.__init__'
 
         # First, split the module into its subdirectory names.
         dirnames = moduleName.split('.')
-        self.__addPythonDirs(mf, moduleDirs, dirnames[:-1])
+        self.__addPythonDirs(multifile, moduleDirs, dirnames[:-1])
 
-        module = self.mf.modules.get(moduleName, None)
-        code = getattr(module, "__code__", None)
+        # Attempt to add the original source file if we can.
+        if getattr(module, '__file__', None):
+            sourceFilename = Filename.fromOsSpecific(module.__file__)
+            sourceFilename.setExtension("py")
+            if sourceFilename.exists():
+                filename = '/'.join(dirnames) + '.py'
+                multifile.addSubfile(filename, sourceFilename, 0)
+                return
+
+        # If we can't find the source file, add the compiled pyc instead.
         filename = '/'.join(dirnames) + '.pyc'
-        self.__addPyc(mf, filename, code)
+        code = getattr(module, "__code__", None)
+        self.__addPyc(multifile, filename, code)
 
     
     def writeMultifile(self, mfname):
         """Instead of generating a frozen file, put all of the Python
         code in a multifile. """
         self.__replacePaths()
-        
-        mf = Multifile()
-        if not mf.openWrite(mfname):
+
+        Filename(mfname).unlink()
+        multifile = Multifile()
+        if not multifile.openReadWrite(mfname):
             raise StandardError
 
         moduleDirs = {}
         for moduleName in self.__getModuleNames():
             token = self.modules[moduleName]
             if token != self.MTForbid:
-                self.__addPythonFile(mf, moduleDirs, moduleName)
+                self.__addPythonFile(multifile, moduleDirs, moduleName)
 
-        mf.close()
+        multifile.flush()
+        multifile.repack()
 
     def generateCode(self, basename):
         self.__replacePaths()
