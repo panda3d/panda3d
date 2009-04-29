@@ -114,6 +114,7 @@ xfile:
 template:
          TOKEN_TEMPLATE singleword_name TOKEN_OBRACE class_id
 {
+  $<u.node>$ = current_node;
   XFileTemplate *templ = new XFileTemplate(x_file, $2, $4);
   current_node->add_child(templ);
   current_node = templ;
@@ -347,6 +348,7 @@ object:
         singleword_name optional_multiword_name TOKEN_OBRACE
 {
   XFileTemplate *xtemplate = x_file->find_template($1);
+  $<u.node>$ = current_node;
   
   if (xtemplate == (XFileTemplate *)NULL) {
     yyerror("Unknown template: " + $1);
