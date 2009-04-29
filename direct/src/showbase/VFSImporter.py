@@ -37,7 +37,7 @@ class VFSImporter:
         path = Filename(self.dir_path, basename)
 
         # First, look for Python files.
-        filename = path
+        filename = Filename(path)
         filename.setExtension('py')
         vfile = vfs.getFile(filename, True)
         if vfile:
@@ -45,7 +45,7 @@ class VFSImporter:
 
         # If there's no .py file, but there's a .pyc file, load that
         # anyway.
-        filename = path
+        filename = Filename(path)
         filename.setExtension(pycExtension)
         vfile = vfs.getFile(filename, True)
         if vfile:
@@ -56,7 +56,7 @@ class VFSImporter:
             if desc[2] != imp.C_EXTENSION:
                 continue
             
-            filename = path
+            filename = Filename(path)
             filename.setExtension(desc[0][1:])
             vfile = vfs.getFile(filename, True)
             if vfile:
@@ -70,12 +70,12 @@ class VFSImporter:
         vfile = vfs.getFile(filename, True)
         if vfile:
             return VFSLoader(self, vfile, filename, FTPythonSource,
-                             package = True)
+                             packagePath = path)
         filename = Filename(path, '__init__.' + pycExtension)
         vfile = vfs.getFile(filename, True)
         if vfile:
             return VFSLoader(self, vfile, filename, FTPythonCompiled,
-                             package = True)
+                             packagePath = path)
 
         return None
 
@@ -84,14 +84,14 @@ class VFSLoader:
     particular .py file or directory. """
     
     def __init__(self, importer, vfile, filename, fileType,
-                 desc = None, package = False):
+                 desc = None, packagePath = None):
         self.importer = importer
         self.dir_path = importer.dir_path
         self.timestamp = vfile.getTimestamp()
         self.filename = filename
         self.fileType = fileType
         self.desc = desc
-        self.package = package
+        self.packagePath = packagePath
     
     def load_module(self, fullname):
         if self.fileType == FTCompiledModule:
@@ -104,8 +104,9 @@ class VFSLoader:
         mod = sys.modules.setdefault(fullname, new.module(fullname))
         mod.__file__ = self.filename.cStr()
         mod.__loader__ = self
-        if self.package:
-            mod.__path__ = []
+        if self.packagePath:
+            mod.__path__ = [self.packagePath.cStr()]
+
         exec code in mod.__dict__
         return mod
 
@@ -115,7 +116,7 @@ class VFSLoader:
         return f.read()
 
     def is_package(self, fullname):
-        return self.package
+        return bool(self.packagePath)
 
     def get_code(self, fullname):
         return self._read_code()
@@ -142,8 +143,6 @@ class VFSLoader:
     def _import_compiled_module(self, fullname):
         """ Loads the compiled C/C++ shared object as a Python module,
         and returns it. """
-
-        print "importing %s" % (fullname)
 
         vfile = vfs.getFile(self.filename, False)
 
@@ -184,7 +183,7 @@ class VFSLoader:
             # It's a pyc file; just read it directly.
             pycVfile = vfs.getFile(self.filename, False)
             if pycVfile:
-                return self._loadPyc(pycVfile)
+                return self._loadPyc(pycVfile, None)
             return None
 
         elif self.fileType == FTCompiledModule:
@@ -202,7 +201,7 @@ class VFSLoader:
 
         code = None
         if t_pyc and t_pyc >= self.timestamp:
-            code = self._loadPyc(pycVfile)
+            code = self._loadPyc(pycVfile, self.timestamp)
 
         if not code:
             source = self._read_source()
@@ -212,13 +211,13 @@ class VFSLoader:
 
         return code
 
-    def _loadPyc(self, vfile):
+    def _loadPyc(self, vfile, timestamp):
         """ Reads and returns the marshal data from a .pyc file. """
         code = None
         f = open(vfile, 'rb')
         if f.read(4) == imp.get_magic():
             t = struct.unpack('<I', f.read(4))[0]
-            if t == self.timestamp:
+            if not timestamp or t == timestamp:
                 code = marshal.loads(f.read())
         f.close()
         return code
