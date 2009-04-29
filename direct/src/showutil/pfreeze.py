@@ -21,6 +21,8 @@ Options:
 
   -o output
      Specifies the name of the resulting executable file to produce.
+     If this ends in ".mf", a multifile is written instead of a frozen
+     binary.
 
   -x module[,module...]
      Specifies a comma-separated list of Python modules to exclude from
@@ -78,4 +80,7 @@ if __name__ == '__main__':
     freezer.setMain(args[0])
     freezer.done()
 
-    freezer.generateCode(basename)
+    if basename.lower().endswith('.mf'):
+        freezer.writeMultifile(basename)
+    else:
+        freezer.generateCode(basename)

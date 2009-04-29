@@ -6,6 +6,7 @@ import sys
 import os
 import marshal
 import imp
+import struct
 
 import direct
 from pandac.PandaModules import *
@@ -540,8 +541,7 @@ class Freezer:
     def mangleName(self, moduleName):
         return 'M_' + moduleName.replace('.', '__')
 
-    def generateCode(self, basename):
-
+    def __getModuleNames(self):
         # Collect a list of all of the modules we will be explicitly
         # referencing.
         moduleNames = []
@@ -560,6 +560,10 @@ class Freezer:
                 if prevToken != self.MTForbid:
                     moduleNames.append(moduleName)
 
+        moduleNames.sort()
+        return moduleNames
+
+    def __replacePaths(self):
         # Build up the replacement pathname table, so we can eliminate
         # the personal information in the frozen pathnames.  The
         # actual filename we put in there is meaningful only for stack
@@ -578,13 +582,68 @@ class Freezer:
                 co = self.mf.replace_paths_in_code(module.__code__)
                 module.__code__ = co;
 
-        # Now generate the actual export table.
-        moduleNames.sort()
+    def __addPyc(self, mf, filename, code):
+        if code:
+            data = imp.get_magic() + \
+                   struct.pack('<I', self.timestamp) + \
+                   marshal.dumps(code)
 
+            stream = StringStream(data)
+            mf.addSubfile(filename, stream, 0)
+
+    def __addPythonDirs(self, mf, moduleDirs, dirnames):
+        """ Adds all of the names on dirnames as a module directory. """
+        if not dirnames:
+            return
+        
+        str = '.'.join(dirnames)
+        if str not in moduleDirs:
+            # Add an implicit __init__.py file.
+            moduleName = '.'.join(dirnames)
+            filename = '/'.join(dirnames) + '/__init__.pyc'
+            code = compile('', moduleName, 'exec')
+            self.__addPyc(mf, filename, code)
+            moduleDirs[str] = True
+            self.__addPythonDirs(mf, moduleDirs, dirnames[:-1])
+
+    def __addPythonFile(self, mf, moduleDirs, moduleName):
+        """ Adds the named module to the multifile as a .pyc file. """
+
+        # First, split the module into its subdirectory names.
+        dirnames = moduleName.split('.')
+        self.__addPythonDirs(mf, moduleDirs, dirnames[:-1])
+
+        module = self.mf.modules.get(moduleName, None)
+        code = getattr(module, "__code__", None)
+        filename = '/'.join(dirnames) + '.pyc'
+        self.__addPyc(mf, filename, code)
+
+    
+    def writeMultifile(self, mfname):
+        """Instead of generating a frozen file, put all of the Python
+        code in a multifile. """
+        self.__replacePaths()
+        
+        mf = Multifile()
+        if not mf.openWrite(mfname):
+            raise StandardError
+
+        moduleDirs = {}
+        for moduleName in self.__getModuleNames():
+            token = self.modules[moduleName]
+            if token != self.MTForbid:
+                self.__addPythonFile(mf, moduleDirs, moduleName)
+
+        mf.close()
+
+    def generateCode(self, basename):
+        self.__replacePaths()
+
+        # Now generate the actual export table.
         moduleDefs = []
         moduleList = []
         
-        for moduleName in moduleNames:
+        for moduleName in self.__getModuleNames():
             token = self.modules[moduleName]
             if token == self.MTForbid:
                 # Explicitly disallow importing this module.
