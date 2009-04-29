@@ -285,11 +285,7 @@ def makePackedApp(args):
         raise ArgumentError, "No destination app specified.  Use:\npython MakeAppMF.py app.mf"
 
     multifile_name = args[0]
-    root = '.'
     if len(args) > 1:
-        root = args[1]
-
-    if len(args) > 2:
         raise ArgumentError, "Too many arguments."
 
     p = AppPacker(multifile_name)
