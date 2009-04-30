@@ -50,15 +50,15 @@ PNMFileTypeRegistry::
 ////////////////////////////////////////////////////////////////////
 void PNMFileTypeRegistry::
 register_type(PNMFileType *type) {
-  if (pnmimage_cat.is_debug()) {
-    pnmimage_cat.debug()
+  if (pnmimage_cat->is_debug()) {
+    pnmimage_cat->debug()
       << "Registering image type " << type->get_name() << "\n";
   }
 
   // Make sure we haven't already registered this type.
   Handles::iterator hi = _handles.find(type->get_type());
   if (hi != _handles.end()) {
-    pnmimage_cat.warning()
+    pnmimage_cat->warning()
       << "Attempt to register PNMFileType " << type->get_name()
       << " (" << type->get_type() << ") more than once.\n";
     return;
@@ -74,7 +74,7 @@ register_type(PNMFileType *type) {
     string extension = downcase(type->get_extension(i));
 
     if (!unique_extensions.insert(extension).second) {
-      pnmimage_cat.warning()
+      pnmimage_cat->warning()
         << "PNMFileType " << type->get_name()
         << " (" << type->get_type() << ") defined extension "
         << extension << " more than once.\n";
