@@ -12,14 +12,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "pandabase.h"
-
 #import <UIKit/UIKit.h> 
-    
-#import "viewController.h"
-#include "dcast.h"
-#include "config_iphonedisplay.h"
+#include <fcntl.h>
+#include <iostream>
+using namespace std;
 
+#include "pnotify.h"
+    
 #ifdef LINK_ALL_STATIC
 extern "C" void initlibpandaexpress();
 extern "C" void initlibpanda();
@@ -28,11 +27,13 @@ extern "C" void initlibpandafx();
 extern "C" void initlibdirect();
 #endif  // LINK_ALL_STATIC
 
-@class AppMFViewController; 
+//@class AppMFViewController; 
 @interface AppMFAppDelegate : NSObject <UIApplicationDelegate> { 
+  NSString *app_directory;
   NSTimer *animationTimer;
   NSTimeInterval animationInterval;
 } 
+@property (nonatomic, assign) NSString *app_directory;
 @property (nonatomic, assign) NSTimer *animationTimer;
 @property NSTimeInterval animationInterval;
 
@@ -44,22 +45,34 @@ extern "C" void initlibdirect();
 
 @implementation AppMFAppDelegate 
 
+@synthesize app_directory;
 @synthesize animationTimer;
 @synthesize animationInterval;
 
 int startup = 0;
 
 - (void)applicationDidFinishLaunching: (UIApplication *)application { 
-  // Ensure the IPhoneDisplay is available.
-  init_libiphonedisplay();
+#ifdef LINK_ALL_STATIC
+  // Ensure that all the relevant Panda modules are initialized.
+  extern void init_libpanda();
+  init_libpanda();
 
-  ConfigVariableDouble timer_fps("timer-fps", 60.0);
-  animationInterval = 1.0 / timer_fps;
+  // Ensure the IPhoneDisplay is available.
+  extern void init_libiphonedisplay();
+  init_libiphonedisplay();
+#endif
+
+  NSBundle *bundle = [NSBundle mainBundle];
+  if (bundle != nil) {
+    app_directory = [bundle bundlePath];
+  }
+
+  animationInterval = 1.0 / 60.0;
   [self startAnimation];
 } 
 
 - (void)applicationDidReceiveMemoryWarning: (UIApplication *)application { 
-  nout << "applicationDidReceiveMemoryWarning\n";
+  cerr << "applicationDidReceiveMemoryWarning\n";
 }
 
 - (void)startAnimation {
@@ -95,15 +108,19 @@ int startup = 0;
     // if we take a while starting up.
 
     Py_FrozenFlag = 1; /* Suppress errors from getpath.c */
-    Filename app_pathname(Filename::get_app_directory(), "iphone_runmf");
-    Py_SetProgramName((char *)app_pathname.c_str());
+    NSString *app_pathname = [app_directory stringByAppendingString: @"/iphone_runappmf" ];
+    const char *app_pathname_cstr = [app_pathname cStringUsingEncoding: NSASCIIStringEncoding];
+    Py_SetProgramName((char *)app_pathname_cstr);
     Py_Initialize();
 
     int argv = 1;
-    Filename script_pathname(Filename::get_app_directory(), "iphone.mf");
-    char *argc[] = { (char *)script_pathname.c_str(), NULL };
+    NSString *script_pathname = [app_directory stringByAppendingString: @"/iphone.mf" ];
+    const char *script_pathname_cstr = [script_pathname cStringUsingEncoding: NSASCIIStringEncoding];
+    char *argc[] = { (char *)script_pathname_cstr, NULL };
     PySys_SetArgv(argv, argc);
-    Py_SetPythonHome((char *)Filename::get_app_directory().c_str());
+
+    const char *app_directory_cstr = [app_directory cStringUsingEncoding: NSASCIIStringEncoding];
+    Py_SetPythonHome((char *)app_directory_cstr);
 
 #ifdef LINK_ALL_STATIC
     // Construct the Python modules for the interrogate-generated data
@@ -115,7 +132,7 @@ int startup = 0;
     initlibdirect();
 #endif  // LINK_ALL_STATIC
 
-    /*
+#if 0
     PyImport_ImportFrozenModule("direct");
     PyImport_ImportFrozenModule("direct.showbase");
     int n = PyImport_ImportFrozenModule("direct.showbase.RunAppMF");
@@ -128,7 +145,7 @@ int startup = 0;
       Py_Finalize();
       exit(1);
     }
-    */
+#endif
 
     PyObject *module = PyImport_ImportModule("direct");
     if (module == (PyObject *)NULL) {
@@ -162,8 +179,9 @@ int startup = 0;
     if (module != (PyObject *)NULL) {
       PyObject *func = PyObject_GetAttrString(module, "runPackedApp");
       if (func != (PyObject *)NULL) {
-        Filename script_pathname(Filename::get_app_directory(), "iphone.mf");
-        PyObject *result = PyObject_CallFunction(func, "([s])", script_pathname.c_str());
+        NSString *script_pathname = [app_directory stringByAppendingString: @"/iphone.mf" ];
+        const char *script_pathname_cstr = [script_pathname cStringUsingEncoding: NSASCIIStringEncoding];
+        PyObject *result = PyObject_CallFunction(func, "([s])", script_pathname_cstr);
         Py_XDECREF(result);
         Py_DECREF(func);
       }
@@ -217,6 +235,15 @@ extern "C" int main(int argc, char *argv[]);
 
 int
 main(int argc, char *argv[]) { 
+  /*
+  int logfile_fd = open("/tmp/foo.txt", O_WRONLY | O_CREAT | O_TRUNC, 0666);
+  if (logfile_fd >= 0) {
+    dup2(logfile_fd, STDOUT_FILENO);
+    dup2(logfile_fd, STDERR_FILENO);
+    close(logfile_fd);
+  }
+  */
+
   PyImport_FrozenModules = _PyImport_FrozenModules;
   NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; 
 

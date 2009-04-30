@@ -25,6 +25,7 @@ if __name__ == '__main__':
     freezer = FreezeTool.Freezer()
 
     basename = 'iphone_runappmf'
+    link_all_static = True
     
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h')
@@ -52,6 +53,8 @@ if __name__ == '__main__':
     cc = '%s %s/usr/bin/g++-4.0' % (env, dev)
     sysroot = '-isysroot %s/SDKs/%s%s.sdk' % (dev, platform, version)
     cflags = '-D__IPHONE_OS_VERSION_MIN_REQUIRED=20000 %s' % (sysroot)
+    if link_all_static:
+        cflags += ' -DLINK_ALL_STATIC'
     arch = ''
     if target == 'phone':
         arch = ' -arch armv6 -mcpu=arm1176jzf-s -miphoneos-version-min=2.0'
@@ -59,12 +62,18 @@ if __name__ == '__main__':
 
     ipath = '-I/Users/drose/Python-2.5.4.%s/Include -I/Users/drose/Python-2.5.4.%s -I/usr/local/panda/%s/include' % (target, target, target)
     lpath = '-L/Users/drose/Python-2.5.4.%s -L/usr/local/panda/%s/lib' % (target, target)
-    libs = '-lframework -lputil -lcollide -lpgraph -lchan -ltext -lpnmimage -lpnmimagetypes -levent -leffects -lgobj -ldisplay -lmathutil -lexpress -ldgraph -ldevice -ltform -llinmath -lpstatclient -lpanda -lglstuff -lrecorder -lpgui -lchar -lpipeline -lpandabase -llerp -lgsgbase -ldownloader -lparametrics -lpgraphnodes -lcull -lgrutil -lnet -lmovies -lnativenet -laudio -linterrogatedb -ldconfig -ldtoolutil -ldtoolbase -lprc -liphonedisplay -lpandaexpress -lpanda'
-    libs += ' -lphysics -lparticlesystem -lpandaphysics'
-    libs += ' -ldistort -leffects -lpandafx'
-    libs += ' -ldirectbase -ldcparser -ldeadrec -ldistributed -lhttp -lshowbase -linterval -lmotiontrail -ldirect'
+    libs = ''
+    libs += ' -framework Foundation -framework UIKit'
+    if link_all_static:
+        libs += ' -lframework -lputil -lcollide -lpgraph -lchan -ltext -lpnmimage -lpnmimagetypes -levent -leffects -lgobj -ldisplay -lmathutil -lexpress -ldgraph -ldevice -ltform -llinmath -lpstatclient -lpanda -lglstuff -lrecorder -lpgui -lchar -lpipeline -lpandabase -llerp -lgsgbase -ldownloader -lparametrics -lpgraphnodes -lcull -lgrutil -lnet -lmovies -lnativenet -laudio -linterrogatedb -ldconfig -ldtoolutil -ldtoolbase -lprc -liphonedisplay -lpandaexpress -lpanda'
+        libs += ' -lphysics -lparticlesystem -lpandaphysics'
+        libs += ' -ldistort -leffects -lpandafx'
+        libs += ' -ldirectbase -ldcparser -ldeadrec -ldistributed -lhttp -lshowbase -linterval -lmotiontrail -ldirect'
+        libs += ' -framework QuartzCore -framework OpenGLES'
     libs += ' -lpython2.5'
-    libs += ' -framework Foundation -framework QuartzCore -framework UIKit -framework OpenGLES'
+
+    lpath += ' -L/Users/drose/iphone_thirdparty/lib'
+    libs += ' -ljpeg -lrfftw -lfftw'
 
     freezer.sourceExtension = '.mm'
     freezer.compileObj = '%s -c %s %s -o %%(basename)s.o %s %%(filename)s' % (cc, arch, cflags, ipath)
