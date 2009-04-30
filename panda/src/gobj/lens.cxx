@@ -141,6 +141,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_film_size(float width) {
+  nassertv(!cnan(width));
   _film_size.set(width, width / get_aspect_ratio());
 
   // We can't specify all three of focal length, fov, and film size.
@@ -185,6 +186,7 @@ set_film_size(float width) {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_film_size(const LVecBase2f &film_size) {
+  nassertv(!film_size.is_nan());
   _film_size = film_size;
 
   // We can't specify all three of focal length, fov, and film size.
@@ -241,6 +243,7 @@ get_film_size() const {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_focal_length(float focal_length) {
+  nassertv(!cnan(focal_length));
   _focal_length = focal_length;
 
   // We can't specify all three of focal length, fov, and film size.
@@ -297,6 +300,7 @@ get_focal_length() const {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_min_fov(float min_fov) {
+  nassertv(!cnan(min_fov));
   _min_fov = min_fov;
 
   // We can't specify all three of focal length, fov, and film size.
@@ -333,6 +337,7 @@ set_min_fov(float min_fov) {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_fov(float hfov) {
+  nassertv(!cnan(hfov));
   _fov[0] = hfov;
 
   // We can't specify all three of focal length, fov, and film size.
@@ -374,6 +379,7 @@ set_fov(float hfov) {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_fov(const LVecBase2f &fov) {
+  nassertv(!fov.is_nan());
   _fov = fov;
 
   // We can't specify all three of focal length, fov, and film size.
@@ -440,6 +446,7 @@ get_min_fov() const {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_aspect_ratio(float aspect_ratio) {
+  nassertv(!cnan(aspect_ratio));
   _aspect_ratio = aspect_ratio;
   adjust_user_flags(UF_film_height | UF_vfov,
                     UF_aspect_ratio);
@@ -499,6 +506,7 @@ get_default_far() {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_view_hpr(const LVecBase3f &view_hpr) {
+  nassertv(!view_hpr.is_nan());
   _view_hpr = view_hpr;
   adjust_user_flags(UF_view_vector | UF_view_mat,
                     UF_view_hpr);
@@ -531,6 +539,7 @@ get_view_hpr() const {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_view_vector(const LVector3f &view_vector, const LVector3f &up_vector) {
+  nassertv(!view_vector.is_nan());
   _view_vector = view_vector;
   _up_vector = up_vector;
   adjust_user_flags(UF_view_hpr | UF_view_mat,
@@ -595,6 +604,7 @@ get_nodal_point() const {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_interocular_distance(float interocular_distance) {
+  nassertv(!cnan(interocular_distance));
   _interocular_distance = interocular_distance;
   if (_interocular_distance == 0.0f) {
     adjust_user_flags(UF_interocular_distance, 0);
@@ -640,6 +650,7 @@ get_interocular_distance() const {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_convergence_distance(float convergence_distance) {
+  nassertv(!cnan(convergence_distance));
   _convergence_distance = convergence_distance;
   if (_convergence_distance == 0.0f) {
     adjust_user_flags(UF_convergence_distance, 0);
@@ -678,6 +689,7 @@ get_convergence_distance() const {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_view_mat(const LMatrix4f &view_mat) {
+  nassertv(!view_mat.is_nan());
   _lens_mat = view_mat;
   adjust_user_flags(UF_view_vector | UF_view_hpr,
                     UF_view_mat);
@@ -736,6 +748,7 @@ clear_view_mat() {
 ////////////////////////////////////////////////////////////////////
 void Lens::
 set_keystone(const LVecBase2f &keystone) {
+  nassertv(!keystone.is_nan());
   _keystone = keystone;
   adjust_user_flags(0, UF_keystone);
   adjust_comp_flags(CF_projection_mat | CF_projection_mat_inv |
@@ -822,6 +835,7 @@ void Lens::
 set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
                          const LVecBase3f &ll, const LVecBase3f &lr,
                          int flags) {
+  nassertv(!ul.is_nan() && !ur.is_nan() && !ll.is_nan() && !lr.is_nan());
   // We'll need to know the pre-existing eyepoint translation from the
   // center, so we can preserve it in the new frustum.  This is
   // usually (0, 0, 0), but it could be an arbitrary vector.
@@ -839,6 +853,7 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
   } else {
     Planef plane(ll, ul, ur);
     view_vector = plane.get_normal();
+    nassertv(!view_vector.is_nan() && view_vector.length_squared() != 0.0f);
   }
 
   // Now determine the up axis.  If FC_roll is specified, or if our
@@ -849,6 +864,7 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
   if (view_vector == up_vector || ((flags & FC_roll) != 0)) {
     LVector3f top = ul - ur;
     up_vector = view_vector.cross(top);
+    nassertv(!up_vector.is_nan() && up_vector.length_squared() != 0.0f);
   }
 
   // Now compute the matrix that applies this rotation.
@@ -868,6 +884,7 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
 
   // Project all points into the Y == 1 plane, so we can do 2-d
   // manipulation on them.
+  nassertv(cul[1] != 0.0f && cur[1] != 0.0f && cll[1] != 0.0f && clr[1] != 0.0f);
   cul /= cul[1];
   cur /= cur[1];
   cll /= cll[1];
@@ -900,6 +917,7 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
   LPoint3f flr = inv_view_mat.xform_point(lr);
 
   // Normalize *these* points into the y == 1 plane.
+  nassertv(ful[1] != 0.0f && fur[1] != 0.0f && fll[1] != 0.0f && flr[1] != 0.0f);
   ful /= ful[1];
   fur /= fur[1];
   fll /= fll[1];
@@ -930,6 +948,7 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
   }
 
   float aspect_ratio = get_aspect_ratio();
+  nassertv(aspect_ratio != 0.0f);
   if ((flags & FC_aspect_ratio) == 0) {
     // If we must preserve the aspect ratio, then the x and z spreads
     // must be adjusted to match.
@@ -955,6 +974,7 @@ set_frustum_from_corners(const LVecBase3f &ul, const LVecBase3f &ur,
   }
 
   const LVecBase2f &film_size = get_film_size();
+  nassertv(x_spread != 0.0f && z_spread != 0.0f);
   set_film_offset(film_size[0] * x_center / (x_spread * 2.0f),
                   film_size[1] * z_center / (z_spread * 2.0f));
 }
