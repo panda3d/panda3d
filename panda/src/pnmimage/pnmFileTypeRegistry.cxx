@@ -50,6 +50,11 @@ PNMFileTypeRegistry::
 ////////////////////////////////////////////////////////////////////
 void PNMFileTypeRegistry::
 register_type(PNMFileType *type) {
+  if (pnmimage_cat.is_debug()) {
+    pnmimage_cat.debug()
+      << "Registering image type " << type->get_name() << "\n";
+  }
+
   // Make sure we haven't already registered this type.
   Handles::iterator hi = _handles.find(type->get_type());
   if (hi != _handles.end()) {
