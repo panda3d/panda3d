@@ -21,8 +21,6 @@ from JobManagerGlobal import *
 from EventManagerGlobal import *
 from PythonUtil import *
 from direct.showbase import PythonUtil
-from direct.particles.ParticleManagerGlobal import *
-from PhysicsManagerGlobal import *
 #from direct.interval.IntervalManager import ivalMgr
 from direct.interval import IntervalManager
 from InputStateGlobal import inputState
@@ -243,14 +241,11 @@ class ShowBase(DirectObject.DirectObject):
         self.jobMgr = jobMgr
 
         # Particle manager
-        self.particleMgr = particleMgr
-        self.particleMgr.setFrameStepping(1)
+        self.particleMgr = None
         self.particleMgrEnabled = 0
 
         # Physics manager
-        self.physicsMgr = physicsMgr
-        integrator = LinearEulerIntegrator()
-        self.physicsMgr.attachLinearIntegrator(integrator)
+        self.physicsMgr = None
         self.physicsMgrEnabled = 0
         self.physicsMgrAngular = 0
 
@@ -1362,6 +1357,17 @@ class ShowBase(DirectObject.DirectObject):
 
     def enableParticles(self):
         if not self.particleMgrEnabled:
+            if not self.particleMgr:
+                from direct.particles.ParticleManagerGlobal import particleMgr
+                self.particleMgr = particleMgr
+                self.particleMgr.setFrameStepping(1)
+
+            if not self.physicsMgr:
+                from PhysicsManagerGlobal import physicsMgr
+                self.physicsMgr = physicsMgr
+                integrator = LinearEulerIntegrator()
+                self.physicsMgr.attachLinearIntegrator(integrator)
+
             self.particleMgrEnabled = 1
             self.physicsMgrEnabled = 1
             self.taskMgr.remove('manager-update')

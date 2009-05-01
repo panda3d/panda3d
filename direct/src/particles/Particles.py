@@ -1,6 +1,4 @@
 from pandac.PandaModules import *
-from direct.particles.ParticleManagerGlobal import *
-from direct.showbase.PhysicsManagerGlobal import *
 
 from pandac.PandaModules import ParticleSystem
 from pandac.PandaModules import BaseParticleFactory
@@ -83,14 +81,14 @@ class Particles(ParticleSystem):
 
     def enable(self):
         if (self.fEnabled == 0):
-            physicsMgr.attachPhysical(self)
-            particleMgr.attachParticlesystem(self)
+            base.physicsMgr.attachPhysical(self)
+            base.particleMgr.attachParticlesystem(self)
             self.fEnabled = 1
 
     def disable(self):
         if (self.fEnabled == 1):
-            physicsMgr.removePhysical(self)
-            particleMgr.removeParticlesystem(self)
+            base.physicsMgr.removePhysical(self)
+            base.particleMgr.removeParticlesystem(self)
             self.fEnabled = 0
 
     def isEnabled(self):
