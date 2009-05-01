@@ -462,7 +462,7 @@ get_extra_extensions() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: glxGraphicsStateGuardian::get_extension_func
+//     Function: glxGraphicsStateGuardian::do_get_extension_func
 //       Access: Public, Virtual
 //  Description: Returns the pointer to the GL extension function with
 //               the indicated name.  It is the responsibility of the
@@ -472,7 +472,7 @@ get_extra_extensions() {
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *glxGraphicsStateGuardian::
-get_extension_func(const char *prefix, const char *name) {
+do_get_extension_func(const char *prefix, const char *name) {
   string fullname = string(prefix) + string(name);
 
   if (glx_get_proc_address) {

@@ -107,17 +107,6 @@ get_gl_version_minor() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_gl_version_release
-//       Access: Public
-//  Description: Returns the release part of the reported GL version
-//               number.
-////////////////////////////////////////////////////////////////////
-INLINE int CLP(GraphicsStateGuardian)::
-get_gl_version_release() const {
-  return _gl_version_release;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::maybe_gl_finish
 //       Access: Protected
 //  Description: Calls glFinish() if the config variable gl-finish is
@@ -130,6 +119,56 @@ maybe_gl_finish() const {
     GLP(Finish)();
   }
 #endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::is_at_least_gl_version
+//       Access: Public
+//  Description: Returns true if we are compiled for mainline OpenGL,
+//               and the runtime GL version number is at least the
+//               indicated value, false otherwise.  Under OpenGL ES,
+//               this always returns false.
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(GraphicsStateGuardian)::
+is_at_least_gl_version(int major_version, int minor_version) const {
+#ifdef OPENGLES_1
+  return false;
+#else
+  if (_gl_version_major < major_version) {
+    return false;
+  } else if (_gl_version_major == major_version) {
+    if (_gl_version_minor < minor_version) {
+      return false;
+    }
+  }
+
+  return true;
+#endif  // OPENGLES_1
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLGraphicsStateGuardian::is_at_least_gles_version
+//       Access: Public
+//  Description: Returns true if we are compiled for OpenGL ES,
+//               and the runtime GL ES version number is at least the
+//               indicated value, false otherwise.  Under mainline
+//               OpenGL, this always returns false.
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(GraphicsStateGuardian)::
+is_at_least_gles_version(int major_version, int minor_version) const {
+#ifndef OPENGLES_1
+  return false;
+#else
+  if (_gl_version_major < major_version) {
+    return false;
+  } else if (_gl_version_major == major_version) {
+    if (_gl_version_minor < minor_version) {
+      return false;
+    }
+  }
+
+  return true;
+#endif  // OPENGLES_1
 }
 
 ////////////////////////////////////////////////////////////////////

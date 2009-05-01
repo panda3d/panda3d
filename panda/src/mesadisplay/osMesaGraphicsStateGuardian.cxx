@@ -52,7 +52,7 @@ OSMesaGraphicsStateGuardian::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: OSMesaGraphicsStateGuardian::get_extension_func
+//     Function: OSMesaGraphicsStateGuardian::do_get_extension_func
 //       Access: Public, Virtual
 //  Description: Returns the pointer to the GL extension function with
 //               the indicated name.  It is the responsibility of the
@@ -62,7 +62,7 @@ OSMesaGraphicsStateGuardian::
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *OSMesaGraphicsStateGuardian::
-get_extension_func(const char *prefix, const char *name) {
+do_get_extension_func(const char *prefix, const char *name) {
 #if (OSMESA_MAJOR_VERSION == 4 && OSMESA_MINOR_VERSION >= 1) || OSMESA_MAJOR_VERSION > 4
   // If we've got at least OSMesa version 4.1, then we can use
   // OSMesaGetProcAddress.

@@ -216,7 +216,6 @@ public:
   INLINE const string &get_gl_version() const;
   INLINE int get_gl_version_major() const;
   INLINE int get_gl_version_minor() const;
-  INLINE int get_gl_version_release() const;
 
   virtual void set_state_and_transform(const RenderState *state,
                                        const TransformState *transform);
@@ -258,8 +257,10 @@ protected:
   virtual void get_extra_extensions();
   void report_extensions() const;
   bool has_extension(const string &extension) const;
-  bool is_at_least_version(int major_version, int minor_version, int release_version = 0) const;
-  virtual void *get_extension_func(const char *prefix, const char *name);
+  INLINE bool is_at_least_gl_version(int major_version, int minor_version) const;
+  INLINE bool is_at_least_gles_version(int major_version, int minor_version) const;
+  void *get_extension_func(const char *prefix, const char *name);
+  virtual void *do_get_extension_func(const char *prefix, const char *name);
 
   virtual void reissue_transforms();
   virtual void enable_lighting(bool enable);
@@ -429,7 +430,7 @@ protected:
   string _gl_vendor;
   string _gl_renderer;
   string _gl_version;
-  int _gl_version_major, _gl_version_minor, _gl_version_release;
+  int _gl_version_major, _gl_version_minor;
   pset<string> _extensions;
 
 public:

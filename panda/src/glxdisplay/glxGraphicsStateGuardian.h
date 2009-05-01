@@ -113,7 +113,7 @@ protected:
 
   virtual void query_gl_version();
   virtual void get_extra_extensions();
-  virtual void *get_extension_func(const char *prefix, const char *name);
+  virtual void *do_get_extension_func(const char *prefix, const char *name);
 
 private:
   void *get_system_func(const char *name);

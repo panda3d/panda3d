@@ -534,7 +534,7 @@ get_extra_extensions() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: wglGraphicsStateGuardian::get_extension_func
+//     Function: wglGraphicsStateGuardian::do_get_extension_func
 //       Access: Public, Virtual
 //  Description: Returns the pointer to the GL extension function with
 //               the indicated name.  It is the responsibility of the
@@ -544,7 +544,7 @@ get_extra_extensions() {
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *wglGraphicsStateGuardian::
-get_extension_func(const char *prefix, const char *name) {
+do_get_extension_func(const char *prefix, const char *name) {
   string fullname = string(prefix) + string(name);
   return wglGetProcAddress(fullname.c_str());
 }

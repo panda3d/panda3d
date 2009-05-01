@@ -47,7 +47,7 @@ public:
   void restore_gamma();
         
 protected:
-  virtual void *get_extension_func(const char *prefix, const char *name);
+  virtual void *do_get_extension_func(const char *prefix, const char *name);
   
 public:
   OSStatus build_gl(bool full_screen, bool pbuffer, FrameBufferProperties &fb_props);

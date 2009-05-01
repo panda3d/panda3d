@@ -25,7 +25,8 @@ if __name__ == '__main__':
     freezer = FreezeTool.Freezer()
 
     basename = 'iphone_runappmf'
-    link_all_static = True
+    #link_all_static = True
+    link_all_static = False
     
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h')
@@ -39,8 +40,8 @@ if __name__ == '__main__':
     main = open('iphone_runappmf_src.mm', 'r').read()
     freezer.mainInitCode = main
 
-    #target = 'sim'
-    target = 'phone'
+    target = 'sim'
+    #target = 'phone'
 
     if target == 'sim':
         platform = 'IPhoneSimulator'
@@ -60,8 +61,8 @@ if __name__ == '__main__':
         arch = ' -arch armv6 -mcpu=arm1176jzf-s -miphoneos-version-min=2.0'
     lflags = sysroot
 
-    ipath = '-I/Users/drose/Python-2.5.4.%s/Include -I/Users/drose/Python-2.5.4.%s -I/usr/local/panda/%s/include' % (target, target, target)
-    lpath = '-L/Users/drose/Python-2.5.4.%s -L/usr/local/panda/%s/lib' % (target, target)
+    ipath = '-I/Users/drose/thirdparty.%s/Python-2.5.4/Include -I/Users/drose/thirdparty.%s/Python-2.5.4 -I/usr/local/panda/%s/include' % (target, target, target)
+    lpath = '-L/Users/drose/thirdparty.%s/Python-2.5.4 -L/usr/local/panda/%s/lib' % (target, target)
     libs = ''
     libs += ' -framework Foundation -framework UIKit'
     if link_all_static:
@@ -72,14 +73,15 @@ if __name__ == '__main__':
         libs += ' -framework QuartzCore -framework OpenGLES'
     libs += ' -lpython2.5'
 
-    lpath += ' -L/Users/drose/iphone_thirdparty/lib'
-    libs += ' -ljpeg -lrfftw -lfftw'
+    lpath += ' -L/Users/drose/thirdparty.%s/lib' % (target)
+    #libs += ' -ljpeg -lrfftw -lfftw'
 
     freezer.sourceExtension = '.mm'
     freezer.compileObj = '%s -c %s %s -o %%(basename)s.o %s %%(filename)s' % (cc, arch, cflags, ipath)
     freezer.linkExe = "%s %s %s -o %%(basename)s %s %s %%(basename)s.o" % (cc, arch, lflags, lpath, libs)
 
     freezer.addModule('direct.*.*')
+    freezer.addModule('direct.showbase.RunAppMF')
     freezer.excludeModule('direct.extensions.*')
     freezer.compileToExe = True
     freezer.done()

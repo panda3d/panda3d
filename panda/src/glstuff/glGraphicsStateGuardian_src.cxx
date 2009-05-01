@@ -352,18 +352,10 @@ reset() {
 
   _supports_point_parameters = false;
 
-  if (is_at_least_version(1, 4)) {
+  if (is_at_least_gl_version(1, 4)) {
     _supports_point_parameters = true;
-#ifdef EXPECT_GL_VERSION_1_4
-    GLCAT.debug()
-      << "Getting compile-time PointParameter pointers\n";
-    _glPointParameterfv = (PFNGLPOINTPARAMETERFVPROC)&GLP(PointParameterfv);
-#else  // EXPECT_GL_VERSION_1_4
-    GLCAT.debug()
-      << "Getting run-time PointParameter pointers\n";
     _glPointParameterfv = (PFNGLPOINTPARAMETERFVPROC)
       get_extension_func(GLPREFIX_QUOTED, "PointParameterfv");
-#endif  // EXPECT_GL_VERSION_1_4
 
   } else if (has_extension("GL_ARB_point_parameters")) {
     _supports_point_parameters = true;
@@ -471,18 +463,10 @@ reset() {
 
   _supports_draw_range_elements = false;
 
-  if (is_at_least_version(1, 2)) {
+  if (is_at_least_gl_version(1, 2)) {
     _supports_draw_range_elements = true;
-#ifdef EXPECT_GL_VERSION_1_2
-    GLCAT.debug()
-      << "Getting compile-time DrawRangeElements pointers\n";
-    _glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)&GLP(DrawRangeElements);
-#else  // EXPECT_GL_VERSION_1_2
-    GLCAT.debug()
-      << "Getting run-time DrawRangeElements pointers\n";
     _glDrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)
       get_extension_func(GLPREFIX_QUOTED, "DrawRangeElements");
-#endif  // EXPECT_GL_VERSION_1_2
 
   } else if (has_extension("GL_EXT_draw_range_elements")) {
     _supports_draw_range_elements = true;
@@ -501,7 +485,7 @@ reset() {
   }
 
   _supports_depth_texture =
-    has_extension("GL_ARB_depth_texture") || is_at_least_version(1, 4);
+    has_extension("GL_ARB_depth_texture") || is_at_least_gl_version(1, 4);
 
   _supports_depth_stencil = false;
   if (_supports_depth_texture) {
@@ -511,22 +495,13 @@ reset() {
   
   _supports_3d_texture = false;
 
-  if (is_at_least_version(1, 2)) {
+  if (is_at_least_gl_version(1, 2)) {
     _supports_3d_texture = true;
 
-#ifdef EXPECT_GL_VERSION_1_2
-    GLCAT.debug()
-      << "Getting compile-time 3-D textures pointers\n";
-    _glTexImage3D = (PFNGLTEXIMAGE3DPROC)&GLP(TexImage3D);
-    _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)&GLP(TexSubImage3D);
-#else  // EXPECT_GL_VERSION_1_2
-    GLCAT.debug()
-      << "Getting run-time 3-D textures pointers\n";
     _glTexImage3D = (PFNGLTEXIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexImage3D");
     _glTexSubImage3D = (PFNGLTEXSUBIMAGE3DPROC)
       get_extension_func(GLPREFIX_QUOTED, "TexSubImage3D");
-#endif  // EXPECT_GL_VERSION_1_2
 
   } else if (has_extension("GL_EXT_texture3D")) {
     _supports_3d_texture = true;
@@ -546,25 +521,13 @@ reset() {
   }
 
   _supports_cube_map =
-    has_extension("GL_ARB_texture_cube_map") || is_at_least_version(1, 3);
+    has_extension("GL_ARB_texture_cube_map") || is_at_least_gl_version(1, 3);
 
   _supports_compressed_texture = false;
-  if (is_at_least_version(1, 3)) {
+
+  if (is_at_least_gl_version(1, 3)) {
     _supports_compressed_texture = true;
 
-#ifdef EXPECT_GL_VERSION_1_3
-    GLCAT.debug()
-      << "Getting compile-time compressed textures pointers\n";
-    _glCompressedTexImage1D = (PFNGLCOMPRESSEDTEXIMAGE1DPROC)&GLP(CompressedTexImage1D);
-    _glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)&GLP(CompressedTexImage2D);
-    _glCompressedTexImage3D = (PFNGLCOMPRESSEDTEXIMAGE3DPROC)&GLP(CompressedTexImage3D);
-    _glCompressedTexSubImage1D = (PFNGLCOMPRESSEDTEXSUBIMAGE1DPROC)&GLP(CompressedTexSubImage1D);
-    _glCompressedTexSubImage2D = (PFNGLCOMPRESSEDTEXSUBIMAGE2DPROC)&GLP(CompressedTexSubImage2D);
-    _glCompressedTexSubImage3D = (PFNGLCOMPRESSEDTEXSUBIMAGE3DPROC)&GLP(CompressedTexSubImage3D);
-    _glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)&GLP(GetCompressedTexImage);
-#else  // EXPECT_GL_VERSION_1_3
-    GLCAT.debug()
-      << "Getting run-time compressed textures pointers\n";
     _glCompressedTexImage1D = (PFNGLCOMPRESSEDTEXIMAGE1DPROC)
       get_extension_func(GLPREFIX_QUOTED, "CompressedTexImage1D");
     _glCompressedTexImage2D = (PFNGLCOMPRESSEDTEXIMAGE2DPROC)
@@ -579,7 +542,6 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "CompressedTexSubImage3D");
     _glGetCompressedTexImage = (PFNGLGETCOMPRESSEDTEXIMAGEPROC)
       get_extension_func(GLPREFIX_QUOTED, "GetCompressedTexImage");
-#endif  // EXPECT_GL_VERSION_1_3
 
   } else if (has_extension("GL_ARB_texture_compression")) {
     _supports_compressed_texture = true;
@@ -649,17 +611,17 @@ reset() {
   }
 
   _supports_bgr =
-    has_extension("GL_EXT_bgra") || is_at_least_version(1, 2);
+    has_extension("GL_EXT_bgra") || is_at_least_gl_version(1, 2);
 
   _supports_rescale_normal =
     CLP(support_rescale_normal) &&
-    (has_extension("GL_EXT_rescale_normal") || is_at_least_version(1, 2));
+    (has_extension("GL_EXT_rescale_normal") || is_at_least_gl_version(1, 2));
 
   _supports_multisample =
     has_extension("GL_ARB_multisample");
 
   _supports_generate_mipmap =
-    has_extension("GL_SGIS_generate_mipmap") || is_at_least_version(1, 4);
+    has_extension("GL_SGIS_generate_mipmap") || is_at_least_gl_version(1, 4) || is_at_least_gles_version(1, 1);
 
   _supports_multitexture = false;
 
@@ -671,22 +633,9 @@ reset() {
   _supports_tex_non_pow2 =
     has_extension("GL_ARB_texture_non_power_of_two");
 
-  if (is_at_least_version(1, 3)) {
+  if (is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1)) {
     _supports_multitexture = true;
 
-#ifdef EXPECT_GL_VERSION_1_3
-    GLCAT.debug()
-      << "Getting compile-time multitexture pointers\n";
-    _glActiveTexture = (PFNGLACTIVETEXTUREPROC)&GLP(ActiveTexture);
-    _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)&GLP(ClientActiveTexture);
-    _glMultiTexCoord1f = (PFNGLMULTITEXCOORD1FPROC)&GLP(MultiTexCoord1f);
-    _glMultiTexCoord2f = (PFNGLMULTITEXCOORD2FPROC)&GLP(MultiTexCoord2f);
-    _glMultiTexCoord3f = (PFNGLMULTITEXCOORD3FPROC)&GLP(MultiTexCoord3f);
-    _glMultiTexCoord4f = (PFNGLMULTITEXCOORD4FPROC)&GLP(MultiTexCoord4f);
-
-#else  // EXPECT_GL_VERSION_1_3
-    GLCAT.debug() 
-      << "Getting run-time multitexture pointers\n";
     _glActiveTexture = (PFNGLACTIVETEXTUREPROC)
       get_extension_func(GLPREFIX_QUOTED, "ActiveTexture");
     _glClientActiveTexture = (PFNGLACTIVETEXTUREPROC)
@@ -699,7 +648,6 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord3f");
     _glMultiTexCoord4f = (PFNGLMULTITEXCOORD4FPROC)
       get_extension_func(GLPREFIX_QUOTED, "MultiTexCoord4f");
-#endif  // EXPECT_GL_VERSION_1_3
 
   } else if (has_extension("GL_ARB_multitexture")) {
     _supports_multitexture = true;
@@ -719,9 +667,12 @@ reset() {
   }
 
   if (_supports_multitexture) {
-    if (_glActiveTexture == NULL || _glClientActiveTexture == NULL ||
-        _glMultiTexCoord1f == NULL || _glMultiTexCoord2f == NULL ||
-        _glMultiTexCoord3f == NULL || _glMultiTexCoord4f == NULL) {
+    if (_glActiveTexture == NULL || _glClientActiveTexture == NULL
+#ifdef SUPPORT_IMMEDIATE_MODE
+        || _glMultiTexCoord1f == NULL || _glMultiTexCoord2f == NULL
+        || _glMultiTexCoord3f == NULL || _glMultiTexCoord4f == NULL
+#endif
+        ) {
       GLCAT.warning()
         << "Multitexture advertised as supported by OpenGL runtime, but could not get pointers to extension functions.\n";
       _supports_multitexture = false;
@@ -747,28 +698,17 @@ reset() {
   }
   
   _supports_texture_combine =
-    has_extension("GL_ARB_texture_env_combine") || is_at_least_version(1, 3);
+    has_extension("GL_ARB_texture_env_combine") || is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1);
   _supports_texture_saved_result =
-    has_extension("GL_ARB_texture_env_crossbar") || is_at_least_version(1, 4);
+    has_extension("GL_ARB_texture_env_crossbar") || is_at_least_gl_version(1, 4);
   _supports_texture_dot3 =
-    has_extension("GL_ARB_texture_env_dot3") || is_at_least_version(1, 3);
+    has_extension("GL_ARB_texture_env_dot3") || is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1);
 
   _supports_buffers = false;
 
-  if (is_at_least_version(1, 5)) {
+  if (is_at_least_gl_version(1, 5) || is_at_least_gles_version(1, 1)) {
     _supports_buffers = true;
 
-#ifdef EXPECT_GL_VERSION_1_5
-    GLCAT.debug()
-      << "Getting compile-time buffer pointers\n";
-    _glGenBuffers = (PFNGLGENBUFFERSPROC)&GLP(GenBuffers);
-    _glBindBuffer = (PFNGLBINDBUFFERPROC)&GLP(BindBuffer);
-    _glBufferData = (PFNGLBUFFERDATAPROC)&GLP(BufferData);
-    _glBufferSubData = (PFNGLBUFFERSUBDATAPROC)&GLP(BufferSubData);
-    _glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)&GLP(DeleteBuffers);
-#else  // EXPECT_GL_VERSION_1_5
-    GLCAT.debug()
-      << "Getting run-time buffer pointers\n";
     _glGenBuffers = (PFNGLGENBUFFERSPROC)
       get_extension_func(GLPREFIX_QUOTED, "GenBuffers");
     _glBindBuffer = (PFNGLBINDBUFFERPROC)
@@ -779,7 +719,6 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "BufferSubData");
     _glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)
       get_extension_func(GLPREFIX_QUOTED, "DeleteBuffers");
-#endif  // EXPECT_GL_VERSION_1_5
 
   } else if (has_extension("GL_ARB_vertex_buffer_object")) {
     _supports_buffers = true;
@@ -870,7 +809,7 @@ reset() {
   }
 
   _glDrawBuffers = NULL;
-  if (is_at_least_version(2, 0)) {
+  if (is_at_least_gl_version(2, 0)) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func(GLPREFIX_QUOTED, "DrawBuffers");
   } else if (has_extension("GL_ARB_draw_buffers")) {
@@ -887,22 +826,9 @@ reset() {
 
   _supports_occlusion_query = false;
   if (CLP(support_occlusion_query)) {
-    if (is_at_least_version(1, 5)) {
+    if (is_at_least_gl_version(1, 5)) {
       _supports_occlusion_query = true;
 
-#ifdef EXPECT_GL_VERSION_1_5
-      GLCAT.debug()
-        << "Getting compile-time occlusion pointers\n";
-      _glGenQueries = (PFNGLGENQUERIESPROC)&GLP(GenQueries);
-      _glBeginQuery = (PFNGLBEGINQUERYPROC)&GLP(BeginQuery);
-      _glEndQuery = (PFNGLENDQUERYPROC)&GLP(EndQuery);
-      _glDeleteQueries = (PFNGLDELETEQUERIESPROC)&GLP(DeleteQueries);
-      _glGetQueryiv = (PFNGLGETQUERYIVPROC)&GLP(GetQueryiv);
-      _glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVPROC)&GLP(GetQueryObjectuiv);
-
-#else  // EXPECT_GL_VERSION_1_5
-      GLCAT.debug()
-        << "Getting run-time occlusion pointers\n";
       _glGenQueries = (PFNGLGENQUERIESPROC)
         get_extension_func(GLPREFIX_QUOTED, "GenQueries");
       _glBeginQuery = (PFNGLBEGINQUERYPROC)
@@ -915,7 +841,6 @@ reset() {
         get_extension_func(GLPREFIX_QUOTED, "GetQueryiv");
       _glGetQueryObjectuiv = (PFNGLGETQUERYOBJECTUIVPROC)
         get_extension_func(GLPREFIX_QUOTED, "GetQueryObjectuiv");
-#endif  // EXPECT_GL_VERSION_1_5
 
     } else if (has_extension("GL_ARB_occlusion_query")) {
       _supports_occlusion_query = true;
@@ -956,18 +881,10 @@ reset() {
 
   _glBlendEquation = NULL;
   bool supports_blend_equation = false;
-  if (is_at_least_version(1, 2)) {
+  if (is_at_least_gl_version(1, 2)) {
     supports_blend_equation = true;
-#ifdef EXPECT_GL_VERSION_1_2
-    GLCAT.debug()
-      << "Getting compile-time BlendEquation pointers\n";
-    _glBlendEquation = (PFNGLBLENDEQUATIONPROC)&GLP(BlendEquation);
-#else  // EXPECT_GL_VERSION_1_2
-    GLCAT.debug()
-      << "Getting run-time blend pointers\n";
     _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
       get_extension_func(GLPREFIX_QUOTED, "BlendEquation");
-#endif  // EXPECT_GL_VERSION_1_2
   } else if (has_extension("GL_EXT_blend_minmax")) {
     supports_blend_equation = true;
     _glBlendEquation = (PFNGLBLENDEQUATIONPROC)
@@ -983,18 +900,10 @@ reset() {
 
   _glBlendColor = NULL;
   bool supports_blend_color = false;
-  if (is_at_least_version(1, 2)) {
+  if (is_at_least_gl_version(1, 2)) {
     supports_blend_color = true;
-#ifdef EXPECT_GL_VERSION_1_2
-    GLCAT.debug()
-      << "Getting compile-time BlendColor pointers\n";
-    _glBlendColor = (PFNGLBLENDCOLORPROC)&GLP(BlendColor);
-#else  // EXPECT_GL_VERSION_1_2
-    GLCAT.debug()
-      << "Getting run-time BlendColor pointers\n";
     _glBlendColor = (PFNGLBLENDCOLORPROC)
       get_extension_func(GLPREFIX_QUOTED, "BlendColor");
-#endif  // EXPECT_GL_VERSION_1_2
   } else if (has_extension("GL_EXT_blend_color")) {
     supports_blend_color = true;
     _glBlendColor = (PFNGLBLENDCOLORPROC)
@@ -1008,30 +917,27 @@ reset() {
     _glBlendColor = null_glBlendColor;
   }
 
-#ifdef OPENGLES_1
-  _edge_clamp = GL_REPEAT;
-#else
   _edge_clamp = GL_CLAMP;
-#endif
   if (has_extension("GL_SGIS_texture_edge_clamp") ||
-      is_at_least_version(1, 2)) {
+      is_at_least_gl_version(1, 2) || is_at_least_gles_version(1, 1)) {
     _edge_clamp = GL_CLAMP_TO_EDGE;
   }
 
   _border_clamp = _edge_clamp;
   if (CLP(support_clamp_to_border) &&
       (has_extension("GL_ARB_texture_border_clamp") ||
-       is_at_least_version(1, 3))) {
+       is_at_least_gl_version(1, 3))) {
     _border_clamp = GL_CLAMP_TO_BORDER;
   }
 
   _mirror_repeat = GL_REPEAT;
   if (has_extension("GL_ARB_texture_mirrored_repeat") ||
-      is_at_least_version(1, 4)) {
+      is_at_least_gl_version(1, 4) ||
+      has_extension("GL_OES_texture_mirrored_repeat")) {
     _mirror_repeat = GL_MIRRORED_REPEAT;
   }
 
-  _mirror_clamp = GL_CLAMP;
+  _mirror_clamp = _edge_clamp;
   _mirror_edge_clamp = _edge_clamp;
   _mirror_border_clamp = _border_clamp;
   if (has_extension("GL_EXT_texture_mirror_clamp")) {
@@ -1469,7 +1375,9 @@ clear(DrawableRegion *clearable) {
   }
   
   if (clearable->get_clear_depth_active()) {
-#ifndef OPENGLES_1  // Temporary: need glClearDepthf() instead for OpenGL ES.
+#ifdef OPENGLES_1
+    GLP(ClearDepthf)(clearable->get_clear_depth());
+#else
     GLP(ClearDepth)(clearable->get_clear_depth());
 #endif  // OPENGLES_1
     GLP(DepthMask)(GL_TRUE);
@@ -4681,11 +4589,9 @@ void CLP(GraphicsStateGuardian)::
 query_gl_version() {
   _gl_vendor = show_gl_string("GL_VENDOR", GL_VENDOR);
   _gl_renderer = show_gl_string("GL_RENDERER", GL_RENDERER);
-  _gl_version = show_gl_string("GL_VERSION", GL_VERSION);
 
   _gl_version_major = 0;
   _gl_version_minor = 0;
-  _gl_version_release = 0;
 
   const GLubyte *text = GLP(GetString)(GL_VERSION);
   if (text == (const GLubyte *)NULL) {
@@ -4693,8 +4599,24 @@ query_gl_version() {
       << "Unable to query GL_VERSION\n";
   } else {
     string version((const char *)text);
+    _gl_version = version;
 
     string input = version;
+
+    // Skip any initial words that don't begin with a digit.
+    while (!input.empty() && !isdigit(input[0])) {
+      size_t space = input.find(' ');
+      if (space == string::npos) {
+        break;
+      }
+      size_t next = space + 1;
+      while (next < input.length() && isspace(input[next])) {
+        ++next;
+      }
+      input = input.substr(next);
+    }
+
+    // Truncate after the first space.
     size_t space = input.find(' ');
     if (space != string::npos) {
       input = input.substr(0, space);
@@ -4708,15 +4630,12 @@ query_gl_version() {
     if (components.size() >= 2) {
       string_to_int(components[1], _gl_version_minor);
     }
-    if (components.size() >= 3) {
-      string_to_int(components[2], _gl_version_release);
-    }
 
     if (GLCAT.is_debug()) {
       GLCAT.debug()
         << "GL_VERSION = " << version << ", decoded to "
         << _gl_version_major << "." << _gl_version_minor
-        << "." << _gl_version_release << "\n";
+        << "\n";
     }
   }
 }
@@ -4793,41 +4712,98 @@ has_extension(const string &extension) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::is_at_least_version
+//     Function: GLGraphicsStateGuardian::get_extension_func
 //       Access: Public
-//  Description: Returns true if the runtime GL version number is at
-//               least the indicated value, false otherwise.
+//  Description: Returns the pointer to the GL extension function with
+//               the indicated name, or NULL if the function is not
+//               available.
 ////////////////////////////////////////////////////////////////////
-bool CLP(GraphicsStateGuardian)::
-is_at_least_version(int major_version, int minor_version,
-                    int release_version) const {
-  if (_gl_version_major < major_version) {
-    return false;
-  } else if (_gl_version_major == major_version) {
-    if (_gl_version_minor < minor_version) {
-      return false;
-    } else if (_gl_version_minor == minor_version) {
-      if (_gl_version_release < release_version) {
-        return false;
-      }
+void *CLP(GraphicsStateGuardian)::
+get_extension_func(const char *prefix, const char *name) {
+  // First, look in the static-compiled namespace.  If we were
+  // compiled to expect at least a certain minimum runtime version of
+  // OpenGL, then we can expect those extension functions to be
+  // available at compile time.  Somewhat more reliable than poking
+  // around in the runtime pointers.
+  static struct {
+    const char *name;
+    void *fptr;
+  } compiled_function_table[] = {
+#ifdef EXPECT_GL_VERSION_1_2
+    { "BlendColor", (void *)&GLP(BlendColor) },
+    { "BlendEquation", (void *)&GLP(BlendEquation) },
+    { "DrawRangeElements", (void *)&GLP(DrawRangeElements) },
+    { "TexImage3D", (void *)&GLP(TexImage3D) },
+    { "TexSubImage3D", (void *)&GLP(TexSubImage3D) },
+#endif
+#ifdef EXPECT_GL_VERSION_1_3
+    { "ActiveTexture", (void *)&GLP(ActiveTexture) },
+    { "ClientActiveTexture", (void *)&GLP(ClientActiveTexture) },
+    { "CompressedTexImage1D", (void *)&GLP(CompressedTexImage1D) },
+    { "CompressedTexImage2D", (void *)&GLP(CompressedTexImage2D) },
+    { "CompressedTexImage3D", (void *)&GLP(CompressedTexImage3D) },
+    { "CompressedTexSubImage1D", (void *)&GLP(CompressedTexSubImage1D) },
+    { "CompressedTexSubImage2D", (void *)&GLP(CompressedTexSubImage2D) },
+    { "CompressedTexSubImage3D", (void *)&GLP(CompressedTexSubImage3D) },
+    { "GetCompressedTexImage", (void *)&GLP(GetCompressedTexImage) },
+    { "MultiTexCoord1f", (void *)&GLP(MultiTexCoord1f) },
+    { "MultiTexCoord2f", (void *)&GLP(MultiTexCoord2f) },
+    { "MultiTexCoord3f", (void *)&GLP(MultiTexCoord3f) },
+    { "MultiTexCoord4f", (void *)&GLP(MultiTexCoord4f) },
+#endif
+#ifdef EXPECT_GL_VERSION_1_4
+    { "PointParameterfv", (void *)&GLP(PointParameterfv) },
+#endif
+#ifdef EXPECT_GL_VERSION_1_5
+    { "BeginQuery", (void *)&GLP(BeginQuery) },
+    { "BindBuffer", (void *)&GLP(BindBuffer) },
+    { "BufferData", (void *)&GLP(BufferData) },
+    { "BufferSubData", (void *)&GLP(BufferSubData) },
+    { "DeleteBuffers", (void *)&GLP(DeleteBuffers) },
+    { "DeleteQueries", (void *)&GLP(DeleteQueries) },
+    { "EndQuery", (void *)&GLP(EndQuery) },
+    { "GenBuffers", (void *)&GLP(GenBuffers) },
+    { "GenQueries", (void *)&GLP(GenQueries) },
+    { "GetQueryObjectuiv", (void *)&GLP(GetQueryObjectuiv) },
+    { "GetQueryiv", (void *)&GLP(GetQueryiv) },
+#endif
+#ifdef OPENGLES_1
+    { "ActiveTexture", (void *)&GLP(ActiveTexture) },
+    { "ClientActiveTexture", (void *)&GLP(ClientActiveTexture) },
+    { "BindBuffer", (void *)&GLP(BindBuffer) },
+    { "BufferData", (void *)&GLP(BufferData) },
+    { "BufferSubData", (void *)&GLP(BufferSubData) },
+    { "DeleteBuffers", (void *)&GLP(DeleteBuffers) },
+    { "GenBuffers", (void *)&GLP(GenBuffers) },
+#endif
+    { NULL, NULL }
+  };
+
+  int i = 0;
+  while (compiled_function_table[i].name != NULL) {
+    if (strcmp(compiled_function_table[i].name, name) == 0) {
+      return compiled_function_table[i].fptr;
     }
+    ++i;
   }
 
-  return true;
+  // If the extension function wasn't compiled in, then go get it from
+  // the runtime.  There's a different interface for each API.
+  return do_get_extension_func(prefix, name);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: GLGraphicsStateGuardian::get_extension_func
+//     Function: GLGraphicsStateGuardian::do_get_extension_func
 //       Access: Public, Virtual
-//  Description: Returns the pointer to the GL extension function with
-//               the indicated name.  It is the responsibility of the
-//               caller to ensure that the required extension is
-//               defined in the OpenGL runtime prior to calling this;
-//               it is an error to call this for a function that is
-//               not defined.
+//  Description: This is the virtual implementation of
+//               get_extension_func().  Each API-specific GL
+//               implementation will map this method to the
+//               appropriate API call to retrieve the extension
+//               function pointer.  Returns NULL if the function is
+//               not available.
 ////////////////////////////////////////////////////////////////////
 void *CLP(GraphicsStateGuardian)::
-get_extension_func(const char *, const char *) {
+do_get_extension_func(const char *, const char *) {
   return NULL;
 }
 
@@ -6163,7 +6139,11 @@ bind_clip_plane(const NodePath &plane, int plane_id) {
   DCAST_INTO_V(plane_node, plane.node());
   Planef xformed_plane = plane_node->get_plane() * transform->get_mat();
 
-#ifndef OPENGLES_1  // Temporary: need glClipPlanef() instead for OpenGL ES.
+#ifdef OPENGLES_1
+  // OpenGL ES uses a single-precision call.
+  GLP(ClipPlanef)(id, xformed_plane.get_data());
+#else
+  // Mainline OpenGL uses a double-precision call.
   Planed double_plane(LCAST(double, xformed_plane));
   GLP(ClipPlane)(id, double_plane.get_data());
 #endif  // OPENGLES_1
@@ -7015,10 +6995,6 @@ do_issue_tex_matrix() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_tex_gen() {
-#ifdef OPENGLES_1
-  // Temporary hack
-  return;
-#endif  // OPENGLES_1
   bool force_normal = false;
 
   nassertv(_num_active_texture_stages <= _max_texture_stages);
@@ -7040,15 +7016,16 @@ do_issue_tex_gen() {
   for (int i = 0; i < _num_active_texture_stages; i++) {
     TextureStage *stage = _target_texture->get_on_ff_stage(i);
     _glActiveTexture(GL_TEXTURE0 + i);
-    GLP(Disable)(GL_TEXTURE_GEN_S);
-    GLP(Disable)(GL_TEXTURE_GEN_T);
-    GLP(Disable)(GL_TEXTURE_GEN_R);
-    GLP(Disable)(GL_TEXTURE_GEN_Q);
     if (_supports_point_sprite) {
       GLP(TexEnvi)(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_FALSE);
     }
 
 #ifndef OPENGLES_1  // TexGen not supported by OpenGL ES.
+    GLP(Disable)(GL_TEXTURE_GEN_S);
+    GLP(Disable)(GL_TEXTURE_GEN_T);
+    GLP(Disable)(GL_TEXTURE_GEN_R);
+    GLP(Disable)(GL_TEXTURE_GEN_Q);
+
     TexGenAttrib::Mode mode = _target_tex_gen->get_mode(stage);
     switch (mode) {
     case TexGenAttrib::M_off:
@@ -7995,7 +7972,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
   }
 
-  if (is_at_least_version(1, 2)) {
+  if (is_at_least_gl_version(1, 2)) {
     if (load_ram_mipmaps) {
       // By the time we get here, we have successfully loaded a certain
       // number of mipmap levels.  Tell the GL that's all it's going to
@@ -8063,7 +8040,7 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
 
   // Turn off mipmaps for the simple texture.
   if (tex->uses_mipmaps()) {
-    if (is_at_least_version(1, 2)) {
+    if (is_at_least_gl_version(1, 2)) {
       GLP(TexParameteri)(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
     }
   }
@@ -8455,7 +8432,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     // Also get the mipmap levels.
     GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
     GLint highest_level = num_expected_levels;
-    if (is_at_least_version(1, 2)) {
+    if (is_at_least_gl_version(1, 2)) {
       GLP(GetTexParameteriv)(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
       highest_level = min(highest_level, num_expected_levels);
     }

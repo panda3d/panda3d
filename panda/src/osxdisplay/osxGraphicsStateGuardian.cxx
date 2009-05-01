@@ -29,7 +29,7 @@
 TypeHandle osxGraphicsStateGuardian::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
-//     Function: osxGraphicsStateGuardian::get_extension_func
+//     Function: osxGraphicsStateGuardian::do_get_extension_func
 //       Access: Public, Virtual
 //  Description: Returns the pointer to the GL extension function with
 //               the indicated name.  It is the responsibility of the
@@ -39,7 +39,7 @@ TypeHandle osxGraphicsStateGuardian::_type_handle;
 //               not defined.
 ////////////////////////////////////////////////////////////////////
 void *osxGraphicsStateGuardian::
-get_extension_func(const char *prefix, const char *name) {      
+do_get_extension_func(const char *prefix, const char *name) {      
   string fullname = "_" + string(prefix) + string(name);
   NSSymbol symbol = NULL;
   
