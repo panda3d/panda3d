@@ -5851,7 +5851,11 @@ GLenum CLP(GraphicsStateGuardian)::
 get_usage(Geom::UsageHint usage_hint) {
   switch (usage_hint) {
   case Geom::UH_stream:
+#ifdef OPENGLES_1
+    return GL_DYNAMIC_DRAW;
+#else
     return GL_STREAM_DRAW;
+#endif  // OPENGLES_1
 
   case Geom::UH_static:
   case Geom::UH_unspecified:
