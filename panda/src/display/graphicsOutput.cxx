@@ -267,7 +267,6 @@ clear_render_textures() {
 void GraphicsOutput::
 add_render_texture(Texture *tex, RenderTextureMode mode,
                    RenderTexturePlane plane) {
-  nassertv(is_valid());
   
   if (mode == RTM_none) {
     return;
