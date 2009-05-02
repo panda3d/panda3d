@@ -17,11 +17,11 @@ FTPythonSource = 0
 FTPythonCompiled = 1
 FTCompiledModule = 2
 
-pycExtension = 'pyc'
+compiledExtensions = [ 'pyc', 'pyo' ]
 if not __debug__:
-    # In optimized mode, we actually operate on .pyo files, not .pyc
-    # files.
-    pycExtension = 'pyo'
+    # In optimized mode, we prefer loading .pyo files over .pyc files.
+    # We implement that by reversing the extension names.
+    compiledExtensions = [ 'pyo', 'pyc' ]
 
 class VFSImporter:
     """ This class serves as a Python importer to support loading
@@ -45,11 +45,12 @@ class VFSImporter:
 
         # If there's no .py file, but there's a .pyc file, load that
         # anyway.
-        filename = Filename(path)
-        filename.setExtension(pycExtension)
-        vfile = vfs.getFile(filename, True)
-        if vfile:
-            return VFSLoader(self, vfile, filename, FTPythonCompiled)
+        for ext in compiledExtensions:
+            filename = Filename(path)
+            filename.setExtension(ext)
+            vfile = vfs.getFile(filename, True)
+            if vfile:
+                return VFSLoader(self, vfile, filename, FTPythonCompiled)
 
         # Look for a compiled C/C++ module.
         for desc in imp.get_suffixes():
@@ -71,11 +72,12 @@ class VFSImporter:
         if vfile:
             return VFSLoader(self, vfile, filename, FTPythonSource,
                              packagePath = path)
-        filename = Filename(path, '__init__.' + pycExtension)
-        vfile = vfs.getFile(filename, True)
-        if vfile:
-            return VFSLoader(self, vfile, filename, FTPythonCompiled,
-                             packagePath = path)
+        for ext in compiledExtensions:
+            filename = Filename(path, '__init__.' + ext)
+            vfile = vfs.getFile(filename, True)
+            if vfile:
+                return VFSLoader(self, vfile, filename, FTPythonCompiled,
+                                 packagePath = path)
 
         return None
 
@@ -192,12 +194,14 @@ class VFSLoader:
         # It's a .py file (or an __init__.py file; same thing).  Read
         # the .pyc file if it is available and current; otherwise read
         # the .py file and compile it.
-        pycFilename = Filename(self.filename)
-        pycFilename.setExtension(pycExtension)
-        pycVfile = vfs.getFile(pycFilename, False)
         t_pyc = None
-        if pycVfile:
-            t_pyc = pycVfile.getTimestamp()
+        for ext in compiledExtensions:
+            pycFilename = Filename(self.filename)
+            pycFilename.setExtension(ext)
+            pycVfile = vfs.getFile(pycFilename, False)
+            if pycVfile:
+                t_pyc = pycVfile.getTimestamp()
+                break
 
         code = None
         if t_pyc and t_pyc >= self.timestamp:
@@ -233,7 +237,7 @@ class VFSLoader:
 
         # try to cache the compiled code
         pycFilename = Filename(filename)
-        pycFilename.setExtension(pycExtension)
+        pycFilename.setExtension(compiledExtensions[0])
         try:
             f = open(pycFilename, 'wb')
         except IOError:

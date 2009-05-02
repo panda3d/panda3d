@@ -23,11 +23,22 @@ Options:
      (this is preferable to having the module start itself immediately
      upon importing).
 
+  -c [py,pyc,pyo]
+
+     Specifies the compilation mode of python files.  'py' means to
+     leave them as source files, 'pyc' and 'pyo' are equivalent, and
+     mean to compile to byte code.  pyc files will be written if the
+     interpreter is running in normal debug mode, while pyo files will
+     be written if it is running in optimize mode (-O or -OO).
+
 """
 
 import sys
 import getopt
+import imp
+import marshal
 import direct
+from direct.stdpy.file import open
 from pandac.PandaModules import *
 
 vfs = VirtualFileSystem.getGlobalPtr()
@@ -51,6 +62,9 @@ class AppPacker:
     # without compression.
     uncompressible_extensions = [ 'mp3' ]
 
+    # Specifies how or if python files are compiled.
+    compilation_mode = 'pyc'
+
     def __init__(self, multifile_name):
         # Make sure any pre-existing file is removed.
         Filename(multifile_name).unlink()
@@ -67,6 +81,12 @@ class AppPacker:
             self.image_extensions += type.getExtensions()
 
     def scan(self, root, main):
+        if self.compilation_mode != 'py':
+            if __debug__:
+                self.compilation_mode = 'pyc'
+            else:
+                self.compilation_mode = 'pyo'
+
         self.root = Filename(root)
         self.root.makeAbsolute(vfs.getCwd())
 
@@ -131,15 +151,30 @@ class AppPacker:
             self.addUncompressibleFile(filename)
 
     def addPyFile(self, filename):
-        # For now, just add it as an ordinary file.  Later we'll
-        # precompile these to .pyo's.
+        targetFilename = self.makeRelFilename(filename)
+
         if filename == self.main:
             # This one is the "main.py"; the starter file.
-            self.multifile.addSubfile('main.py', filename, self.compression_level)
-        else:
-            # Any other Python file; add it normally.
-            self.addTextFile(filename)
+            targetFilename = Filename('main.py')
 
+        if self.compilation_mode == 'py':
+            # Add python files as source files.
+            self.multifile.addSubfile(targetFilename.cStr(), filename, self.compression_level)
+        elif self.compilation_mode == 'pyc' or self.compilation_mode == 'pyo':
+            # Compile it to bytecode.
+            targetFilename.setExtension(self.compilation_mode)
+            source = open(filename, 'r').read()
+            if source and source[-1] != '\n':
+                source = source + '\n'
+            code = compile(source, targetFilename.cStr(), 'exec')
+            data = imp.get_magic() + '\0\0\0\0' + marshal.dumps(code)
+
+            stream = StringStream(data)
+            self.multifile.addSubfile(targetFilename.cStr(), stream, self.compression_level)
+            self.multifile.flush()
+        else:
+            raise StandardError, 'Unsupported compilation mode %s' % (self.compilation_mode)
+            
     def addEggFile(self, filename, outFilename):
         # Precompile egg files to bam's.
         node = loadEggFile(filename)
@@ -268,15 +303,18 @@ class AppPacker:
 
 
 def makePackedApp(args):
-    opts, args = getopt.getopt(args, 'r:m:h')
+    opts, args = getopt.getopt(args, 'r:m:c:h')
 
     root = '.'
     main = None
+    compilation_mode = AppPacker.compilation_mode
     for option, value in opts:
         if option == '-r':
             root = value
         elif option == '-m':
             main = value
+        elif option == '-c':
+            compilation_mode = value
         elif option == '-h':
             print __doc__
             sys.exit(1)
@@ -289,6 +327,7 @@ def makePackedApp(args):
         raise ArgumentError, "Too many arguments."
 
     p = AppPacker(multifile_name)
+    p.compilation_mode = compilation_mode
     p.scan(root = root, main = main)
 
 if __name__ == '__main__':
