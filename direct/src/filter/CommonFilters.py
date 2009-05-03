@@ -64,6 +64,7 @@ class CommonFilters:
         self.textures = {}
         self.finalQuad = None
         self.bloom = []
+        self.blur = []
 
     def reconfigure(self, fullrebuild, changed):
 
@@ -84,6 +85,9 @@ class CommonFilters:
             if (configuration.has_key("CartoonInk")):
                 needtex["aux"] = True
                 auxbits |= AuxBitplaneAttrib.ABOAuxNormal
+            if (configuration.has_key("BlurSharpen")):
+                needtex["blur0"] = True
+                needtex["blur1"] = True
             if (configuration.has_key("Bloom")):
                 needtex["bloom0"] = True
                 needtex["bloom1"] = True
@@ -102,6 +106,16 @@ class CommonFilters:
             if (self.finalQuad == None):
                 self.cleanup()
                 return False
+
+            if (configuration.has_key("BlurSharpen")):
+                blur0=self.textures["blur0"]
+                blur1=self.textures["blur1"]
+                self.blur.append(self.manager.renderQuadInto(colortex=blur0,div=2))
+                self.blur.append(self.manager.renderQuadInto(colortex=blur1))
+                self.blur[0].setShaderInput("src", self.textures["color"])
+                self.blur[0].setShader(self.loadShader("filter-blurx.sha"))
+                self.blur[1].setShaderInput("src", blur0)
+                self.blur[1].setShader(self.loadShader("filter-blury.sha"))
 
             if (configuration.has_key("Bloom")):
                 bloomconf = configuration["Bloom"]
@@ -144,6 +158,9 @@ class CommonFilters:
             if (configuration.has_key("Bloom")):
                 text += " uniform float4 texpad_txbloom3,\n"
                 text += " out float4 l_texcoordB : TEXCOORD2,\n"
+            if (configuration.has_key("BlurSharpen")):
+                text += " uniform float4 texpad_txblur1,\n"
+                text += " out float4 l_texcoordBS : TEXCOORD3,\n"
             text += " uniform float4x4 mat_modelproj)\n"
             text += "{\n"
             text += " l_position=mul(mat_modelproj, vtx_position);\n"
@@ -152,6 +169,8 @@ class CommonFilters:
                 text += " l_texcoordN=(vtx_position.xzxz * texpad_txaux) + texpad_txaux;\n"
             if (configuration.has_key("Bloom")):
                 text += " l_texcoordB=(vtx_position.xzxz * texpad_txbloom3) + texpad_txbloom3;\n"
+            if (configuration.has_key("BlurSharpen")):
+                text += " l_texcoordBS=(vtx_position.xzxz * texpad_txblur1) + texpad_txblur1;\n"
             if (configuration.has_key("HalfPixelShift")):
                 text += " l_texcoordC+=texpix_txcolor*0.5;\n"
                 if (configuration.has_key("CartoonInk")):
@@ -166,6 +185,9 @@ class CommonFilters:
                 text += "uniform float4 texpix_txaux,\n"
             if (configuration.has_key("Bloom")):
                 text += "float4 l_texcoordB : TEXCOORD2,\n"
+            if (configuration.has_key("BlurSharpen")):
+                text += "float4 l_texcoordBS : TEXCOORD3,\n"
+                text += "uniform float4 k_blurval,\n"
             for key in self.textures:
                 text += "uniform sampler2D k_tx" + key + ",\n"
             if (configuration.has_key("CartoonInk")):
@@ -178,6 +200,8 @@ class CommonFilters:
             text += " o_color = tex2D(k_txcolor, l_texcoordC.xy);\n"
             if (configuration.has_key("CartoonInk")):
                 text += CARTOON_BODY
+            if (configuration.has_key("BlurSharpen")):
+                text += " o_color = lerp(tex2D(k_txblur1, l_texcoordBS.xy), o_color, k_blurval.x);\n"
             if (configuration.has_key("Bloom")):
                 text += "o_color = saturate(o_color);\n";
                 text += "float4 bloom = 0.5*tex2D(k_txbloom3, l_texcoordB.xy);\n"
@@ -211,7 +235,12 @@ class CommonFilters:
             if (configuration.has_key("CartoonInk")):
                 separation = configuration["CartoonInk"]
                 self.finalQuad.setShaderInput("cartoonseparation", Vec4(separation,0,separation,0))
-        
+
+        if (changed == "BlurSharpen") or fullrebuild:
+            if (configuration.has_key("BlurSharpen")):
+                blurval = configuration["BlurSharpen"]
+                self.finalQuad.setShaderInput("blurval", Vec4(blurval, blurval, blurval, blurval))
+
         if (changed == "Bloom") or fullrebuild:
             if (configuration.has_key("Bloom")):
                 bloomconf = configuration["Bloom"]
@@ -329,5 +358,18 @@ class CommonFilters:
         if (self.configuration.has_key("VolumetricLighting")):
             del self.configuration["VolumetricLighting"]
             return self.reconfigure(True, "VolumetricLighting")
+        return True
+
+    def setBlurSharpen(self, amount=0.0):
+        """Enables the blur/sharpen filter. If the 'amount' parameter is 1.0, it will not have effect.
+        A value of 0.0 means fully blurred, and a value higher than 1.0 sharpens the image."""
+        fullrebuild = (self.configuration.has_key("BlurSharpen") == False)
+        self.configuration["BlurSharpen"] = amount
+        return self.reconfigure(fullrebuild, "BlurSharpen")
+
+    def delBlurSharpen(self):
+        if (self.configuration.has_key("BlurSharpen")):
+            del self.configuration["BlurSharpen"]
+            return self.reconfigure(True, "BlurSharpen")
         return True
 
