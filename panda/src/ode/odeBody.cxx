@@ -34,6 +34,9 @@ OdeBody::
 
 void OdeBody::
 destroy() {
+#ifdef HAVE_PYTHON
+  Py_XDECREF((PyObject*) dBodyGetData(_id));
+#endif
   nassertv(_id);
   dBodyDestroy(_id);
 }

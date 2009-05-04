@@ -98,6 +98,7 @@ set_data(void *data) {
 #ifdef HAVE_PYTHON
 INLINE void OdeBody::
 set_data(PyObject *data) {
+  Py_XDECREF((PyObject*) dBodyGetData(_id));
   Py_XINCREF(data);
   dBodySetData(_id, data);
 }
