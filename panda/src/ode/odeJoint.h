@@ -69,6 +69,7 @@ PUBLISHED:
   virtual ~OdeJoint();
   void destroy();
   INLINE bool is_empty() const;
+  INLINE dJointID get_id() const;
   
   /* INLINE void set_data(void *data); */
   /* INLINE void *get_data(); */
@@ -97,9 +98,6 @@ PUBLISHED:
   OdeAMotorJoint convert_to_a_motor() const;
   OdeLMotorJoint convert_to_l_motor() const;
   OdePlane2dJoint convert_to_plane2d() const;
-
-public: 
-  INLINE dJointID get_id() const;
 
 protected:
   dJointID _id;

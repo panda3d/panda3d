@@ -30,13 +30,12 @@ PUBLISHED:
   OdeJointGroup();
   virtual ~OdeJointGroup();
   void destroy();
+  INLINE dJointGroupID get_id() const;
 
   INLINE void empty() const;
 
   INLINE int compare_to(const OdeJointGroup &other) const;
 
-public: 
-  INLINE dJointGroupID get_id() const;
 
 private:
   dJointGroupID _id;

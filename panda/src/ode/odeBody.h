@@ -22,6 +22,9 @@
 #include "ode_includes.h"
 #include "odeWorld.h"
 #include "odeMass.h"
+#ifdef HAVE_PYTHON
+#include "Python.h"
+#endif
 
 class OdeJoint;
 class OdeGeom;
@@ -44,6 +47,7 @@ PUBLISHED:
   virtual ~OdeBody();
   void destroy();
   INLINE bool is_empty() const;
+  INLINE dBodyID get_id() const;
 
   INLINE void set_auto_disable_linear_threshold(dReal linear_threshold);
   INLINE void set_auto_disable_angular_threshold(dReal angular_threshold);
@@ -52,6 +56,9 @@ PUBLISHED:
   INLINE void set_auto_disable_flag(int do_auto_disable);
   INLINE void set_auto_disable_defaults();
   INLINE void set_data(void *data);
+#ifdef HAVE_PYTHON
+  INLINE void set_data(PyObject *data);
+#endif
 
   INLINE void set_position(dReal x, dReal y, dReal z);
   INLINE void set_position(const LVecBase3f &pos);
@@ -69,7 +76,11 @@ PUBLISHED:
   INLINE int   get_auto_disable_steps() const;
   INLINE dReal get_auto_disable_time() const;
   INLINE int   get_auto_disable_flag() const;
+#ifdef HAVE_PYTHON
+  INLINE PyObject* get_data() const;
+#else
   INLINE void* get_data() const;
+#endif
 
   INLINE LVecBase3f  get_position() const;
   INLINE LMatrix3f  get_rotation() const;
@@ -138,9 +149,6 @@ PUBLISHED:
   virtual void write(ostream &out = cout, unsigned int indent=0) const;
   operator bool () const;
   INLINE int compare_to(const OdeBody &other) const;
-
-public:
-  INLINE dBodyID get_id() const;
 
 private:
   dBodyID _id;

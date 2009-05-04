@@ -43,6 +43,7 @@ PUBLISHED:
   virtual ~OdeWorld();
   void destroy();
   INLINE bool is_empty() const;
+  INLINE dWorldID get_id() const;
 
   INLINE void set_gravity(dReal x, dReal y, dReal z);
   INLINE void set_gravity(const LVecBase3f &vec);
@@ -100,8 +101,7 @@ PUBLISHED:
   
   operator bool () const;
     
-public: 
-  INLINE dWorldID get_id() const;
+public:
   INLINE sSurfaceParams& get_surface(PN_uint8 surface1, PN_uint8 surface2);
   INLINE void set_surface(int pos1, int pos2, sSurfaceParams& entry);
   INLINE sBodyParams get_surface_body(dBodyID id);

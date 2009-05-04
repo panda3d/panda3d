@@ -73,6 +73,7 @@ PUBLISHED:
   virtual ~OdeGeom();
   void destroy();
   INLINE bool is_empty() const;
+  INLINE dGeomID get_id() const;
 
   //INLINE void set_data(void* data);
   INLINE void set_body(OdeBody &body);
@@ -139,8 +140,6 @@ PUBLISHED:
   
 
 public:
-  INLINE dGeomID get_id() const;
-
   INLINE static int get_geom_class() { return -1; };
 
 protected:

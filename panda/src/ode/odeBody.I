@@ -95,10 +95,26 @@ set_data(void *data) {
   dBodySetData(_id, data);
 }
 
+#ifdef HAVE_PYTHON
+INLINE void OdeBody::
+set_data(PyObject *data) {
+  Py_XINCREF(data);
+  dBodySetData(_id, data);
+}
+
+INLINE PyObject* OdeBody::
+get_data() const {
+  PyObject* data = (PyObject*) dBodyGetData(_id);
+  Py_XINCREF(data);
+  return data;
+}
+#else
+
 INLINE void* OdeBody::
 get_data() const {
   return dBodyGetData(_id);
 }
+#endif
 
 INLINE void OdeBody::
 set_position(dReal x, dReal y, dReal z) {
