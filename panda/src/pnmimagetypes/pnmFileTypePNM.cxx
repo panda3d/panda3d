@@ -191,11 +191,19 @@ pm_getuint(istream * const ifP) {
 -----------------------------------------------------------------------------*/
     char ch;
     unsigned int i;
-
+    
+    // skip whitespace
     do {
         ch = ifP->get();
-	} while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r');
 
+        if (ch == '#') {
+          // Skip a comment
+          do {
+            ch = ifP->get();
+          } while (ch != EOF && ch != '\n');
+        }
+    } while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r');
+      
     if (ch < '0' || ch > '9')
         pm_error("junk in file where an unsigned integer should be");
 
