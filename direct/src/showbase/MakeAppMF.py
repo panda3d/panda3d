@@ -39,6 +39,7 @@ import imp
 import marshal
 import direct
 from direct.stdpy.file import open
+from direct.showbase import Loader
 from pandac.PandaModules import *
 
 vfs = VirtualFileSystem.getGlobalPtr()
@@ -80,6 +81,8 @@ class AppPacker:
         for type in PNMFileTypeRegistry.getGlobalPtr().getTypes():
             self.image_extensions += type.getExtensions()
 
+        self.loader = Loader.Loader(self)
+        
     def scan(self, root, main):
         if self.compilation_mode != 'py':
             if __debug__:
@@ -177,11 +180,11 @@ class AppPacker:
             
     def addEggFile(self, filename, outFilename):
         # Precompile egg files to bam's.
-        node = loadEggFile(filename)
-        if not node:
+        np = self.loader.loadModel(filename, okMissing = True)
+        if np.isEmpty():
             raise StandardError, 'Could not read egg file %s' % (filename)
 
-        self.addNode(node, outFilename)
+        self.addNode(np.node(), outFilename)
 
     def addBamFile(self, filename, outFilename):
         # Load the bam file so we can massage its textures.
