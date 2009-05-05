@@ -1409,11 +1409,7 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
   output.set_data(_pixel_size_output, pixel_size);
   _pixel_size = pixel_size;
 
-  if (!input.has_data(_xy_input)) {
-    // No mouse in the window.
-    set_no_mouse();
-
-  } else {
+  if (input.has_data(_xy_input)) {
     // The mouse is within the window.  Get the current mouse position.
     const EventStoreVec2 *xy, *pixel_xy;
     DCAST_INTO_V(xy, input.get_data(_xy_input).get_ptr());
@@ -1568,6 +1564,14 @@ do_transmit_data(DataGraphTraverser *trav, const DataNodeTransmit &input,
         break;
       }
     }
+  }
+
+  if (!input.has_data(_xy_input)) {
+    // No mouse in the window.  We check this down here, below the
+    // button checking, in case the mouse left the window in the same
+    // frame it released a button (particularly likely with a
+    // touchscreen input that's emulating a mouse).
+    set_no_mouse();
   }
 
   // Now check the inactivity timer.
