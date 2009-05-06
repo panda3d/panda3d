@@ -116,8 +116,6 @@ class Loader(DirectObject):
         """
         
         assert Loader.notify.debug("Loading model: %s" % (modelPath))
-        if phaseChecker:
-            phaseChecker(modelPath)
         if loaderOptions == None:
             loaderOptions = LoaderOptions()
         else:
@@ -144,6 +142,9 @@ class Loader(DirectObject):
            isinstance(modelPath, Filename):
             # We were given a single model pathname.
             modelList = [modelPath]
+            if phaseChecker:
+                phaseChecker(modelPath, loaderOptions)
+
             gotList = False
         else:
             # Assume we were given a list of model pathnames.
@@ -423,7 +424,10 @@ class Loader(DirectObject):
         """
         assert Loader.notify.debug("Loading font: %s" % (modelPath))
         if phaseChecker:
-            phaseChecker(modelPath)
+            loaderOptions = LoaderOptions()
+            if(okMissing):
+                loaderOptions.setFlags(loaderOptions.getFlags() & ~LoaderOptions.LFReportErrors)
+            phaseChecker(modelPath, loaderOptions)
 
         font = FontPool.loadFont(modelPath)
         if font == None:
@@ -520,13 +524,9 @@ class Loader(DirectObject):
         """
         if alphaPath is None:
             assert Loader.notify.debug("Loading texture: %s" % (texturePath))
-            if phaseChecker:
-                phaseChecker(texturePath)
             texture = TexturePool.loadTexture(texturePath, 0, readMipmaps)
         else:
             assert Loader.notify.debug("Loading texture: %s %s" % (texturePath, alphaPath))
-            if phaseChecker:
-                phaseChecker(texturePath)
             texture = TexturePool.loadTexture(texturePath, alphaPath, 0, 0, readMipmaps)
         if not texture and not okMissing:
             message = 'Could not load texture: %s' % (texturePath)
@@ -560,8 +560,6 @@ class Loader(DirectObject):
         index number.
         """
         assert Loader.notify.debug("Loading 3-D texture: %s" % (texturePattern))
-        if phaseChecker:
-            phaseChecker(texturePattern)
         texture = TexturePool.load3dTexture(texturePattern, readMipmaps)
         if not texture and not okMissing:
             message = 'Could not load 3-D texture: %s' % (texturePattern)
@@ -595,8 +593,6 @@ class Loader(DirectObject):
         mipmap index number.
         """
         assert Loader.notify.debug("Loading cube map: %s" % (texturePattern))
-        if phaseChecker:
-            phaseChecker(texturePattern)
         texture = TexturePool.loadCubeMap(texturePattern, readMipmaps)
         if not texture and not okMissing:
             message = 'Could not load cube map: %s' % (texturePattern)
