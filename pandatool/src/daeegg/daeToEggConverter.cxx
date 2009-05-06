@@ -328,7 +328,9 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
   if (vsource == NULL) return;
   // Loop through the polygon groups and add them
   daeegg_cat.spam() << "Mesh with id " << FROM_FSTRING(mesh->GetDaeId()) << " has " << mesh->GetPolygonsCount() << " polygon groups" << endl;
-  PT(EggGroup) primitive_holders[mesh->GetPolygonsCount()];
+  if (mesh->GetPolygonsCount() == 0) return;
+  // This is an array of pointers, I know. But since they are refcounted, I don't have a better idea.
+  PT(EggGroup) *primitive_holders = new PT(EggGroup) [mesh->GetPolygonsCount()];
   for (size_t gr = 0; gr < mesh->GetPolygonsCount(); ++gr) {
     const FCDGeometryPolygons* polygons = mesh->GetPolygons(gr);
     // Stores which group holds the primitives.
@@ -484,6 +486,7 @@ void DAEToEggConverter::process_mesh(PT(EggGroup) parent, const FCDGeometryMesh*
       offset += polygons->GetFaceVertexCount(fa);
     }
   }
+  delete[] primitive_holders;
 }
 
 void DAEToEggConverter::process_spline(PT(EggGroup) parent, const string group_name, FCDGeometrySpline* geometry_spline) {
