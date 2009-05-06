@@ -806,7 +806,6 @@ class ShowBase(DirectObject.DirectObject):
 
             self.setFrameRateMeter(self.config.GetBool(
                 'show-frame-rate-meter', 0))
-
         return success
 
     def setSleep(self, amount):
@@ -2419,6 +2418,9 @@ class ShowBase(DirectObject.DirectObject):
             base.direct.enable()
         else:
             __builtin__.direct = self.direct = None
+
+    def getRepository(self):
+        return None
 
     def __doStartDirect(self):
         if self.__directStarted:
