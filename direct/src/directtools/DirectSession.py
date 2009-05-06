@@ -18,9 +18,9 @@ from DirectGrid import DirectGrid
 from DirectLights import DirectLights
 from direct.cluster.ClusterClient import createClusterClient, DummyClusterClient
 from direct.cluster.ClusterServer import ClusterServer
-from direct.tkpanels import Placer
-from direct.tkwidgets import Slider
-from direct.tkwidgets import SceneGraphExplorer
+## from direct.tkpanels import Placer
+## from direct.tkwidgets import Slider
+## from direct.tkwidgets import SceneGraphExplorer
 from direct.gui import OnscreenText
 from direct.showbase import Loader
 
@@ -152,12 +152,18 @@ class DirectSession(DirectObject):
             ['SGE_Toggle Vis', self.toggleVis],
             ['SGE_Show All', self.showAllDescendants],
             ['SGE_Fit', self.fitOnNodePath],
-            ['SGE_Place', Placer.place],
-            ['SGE_Set Color', Slider.rgbPanel],
-            ['SGE_Explore', SceneGraphExplorer.explore],
             ['SGE_Delete', self.removeNodePath],
             ['SGE_Set Name', self.getAndSetName],
             ]
+
+        if base.wantTk:
+            from direct.tkpanels import Placer
+            from direct.tkwidgets import Slider
+            from direct.tkwidgets import SceneGraphExplorer            
+            self.actionEvents.extend([
+            ['SGE_Place', Placer.place],
+            ['SGE_Set Color', Slider.rgbPanel],
+            ['SGE_Explore', SceneGraphExplorer.explore],])
         self.modifierEvents = ['control', 'control-up',
                               'shift', 'shift-up',
                               'alt', 'alt-up',
