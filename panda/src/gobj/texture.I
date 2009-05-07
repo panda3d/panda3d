@@ -29,7 +29,11 @@
 INLINE PT(Texture) Texture::
 make_copy() {
   MutexHolder holder(_lock);
-  return do_make_copy();
+  PT(Texture) tex = do_make_copy();
+  ++(tex->_properties_modified);
+  ++(tex->_image_modified);
+  ++(tex->_simple_image_modified);
+  return tex;
 }
 
 ////////////////////////////////////////////////////////////////////
