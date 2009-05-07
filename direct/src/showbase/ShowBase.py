@@ -53,7 +53,7 @@ class ShowBase(DirectObject.DirectObject):
 
     notify = directNotify.newCategory("ShowBase")
 
-    def __init__(self):
+    def __init__(self, fStartDirect = True):
         __builtin__.__dev__ = config.GetBool('want-dev', 0)
         if config.GetBool('want-variable-dump', 0):
             ExceptionVarDump.install()
@@ -367,7 +367,8 @@ class ShowBase(DirectObject.DirectObject):
             self.bufferViewer.setRenderParent(self.render2dp)
 
         if self.windowType != 'none':
-            self.__doStartDirect()
+            if fStartDirect: # [gjeon] if this is False let them start direct manually
+                self.__doStartDirect()
 
             if self.config.GetBool('show-tex-mem', False):
                 if not self.texmem or self.texmem.cleanedUp:
