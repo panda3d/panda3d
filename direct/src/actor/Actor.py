@@ -700,10 +700,14 @@ class Actor(DirectObject, NodePath):
         # add the switch distance info
 ##         sortedKeys = self.switches.keys()
 ##         sortedKeys.sort()
-        sortedKeys = self.__sortedLODNames
-        index = sortedKeys.index(str(lodName))
-        self.__LODNode.node().setSwitch(index, inDist, outDist)
+        self.__LODNode.node().setSwitch(self.getLODIndex(lodName), inDist, outDist)
 
+    def getLODIndex(self, lodName):
+        """getLODIndex(self)
+        safe method (but expensive) for retrieving the child index
+        """
+        return list(self.__LODNode.getChildren()).index(self.getLOD(lodName))
+        
     def getLOD(self, lodName):
         """getLOD(self, string)
         Get the named node under the LOD to which we parent all LOD
