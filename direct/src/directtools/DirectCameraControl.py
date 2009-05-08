@@ -15,6 +15,7 @@ class DirectCameraControl(DirectObject):
     notify = DirectNotifyGlobal.directNotify.newCategory('DirectCameraControl')
     
     def __init__(self):
+        self.camera = base.direct.camera # [gjeon] initially it will control base.direct.camera
         # Create the grid
         self.startT = 0.0
         self.startF = 0
@@ -74,6 +75,10 @@ class DirectCameraControl(DirectObject):
         self.useMayaCamControls = 0
         self.altDown = 0
 
+    # [gjeon] you can change which camera will be controlled
+    def setCamera(self, camera):
+        self.camera = camera
+
     def toggleMarkerVis(self):
 ##        if base.direct.cameraControl.coaMarker.isHidden():
 ##            base.direct.cameraControl.coaMarker.show()
@@ -116,6 +121,7 @@ class DirectCameraControl(DirectObject):
             self.spawnXZTranslate()
             self.altDown = 1
         elif not self.useMayaCamControls:
+            print base.direct.dr.mouseX
             # Where are we in the display region?
             if ((abs(base.direct.dr.mouseX) < 0.9) and (abs(base.direct.dr.mouseY) < 0.9)):
                 # MOUSE IS IN CENTRAL REGION
@@ -184,7 +190,7 @@ class DirectCameraControl(DirectObject):
         # Spawn the new task
         t = Task.Task(self.XZTranslateOrHPanYZoomTask)
         # For HPanYZoom
-        t.zoomSF = Vec3(self.coaMarker.getPos(base.direct.camera)).length()
+        t.zoomSF = Vec3(self.coaMarker.getPos(self.camera)).length()
         taskMgr.add(t, 'manipulateCamera')
 
     def spawnXZTranslateOrHPPan(self):
@@ -205,7 +211,7 @@ class DirectCameraControl(DirectObject):
         taskMgr.remove('manipulateCamera')
         # Spawn new task
         t = Task.Task(self.HPanYZoomTask)
-        t.zoomSF = Vec3(self.coaMarker.getPos(base.direct.camera)).length()
+        t.zoomSF = Vec3(self.coaMarker.getPos(self.camera)).length()
         taskMgr.add(t, 'manipulateCamera')
 
     def spawnHPPan(self):
@@ -229,9 +235,9 @@ class DirectCameraControl(DirectObject):
             return self.XZTranslateTask(state)
 
     def XZTranslateTask(self, state):
-        coaDist = Vec3(self.coaMarker.getPos(base.direct.camera)).length()
+        coaDist = Vec3(self.coaMarker.getPos(self.camera)).length()
         xlateSF = (coaDist / base.direct.dr.near)
-        base.direct.camera.setPos(base.direct.camera,
+        self.camera.setPos(self.camera,
                              (-0.5 * base.direct.dr.mouseDeltaX *
                               base.direct.dr.nearWidth *
                               xlateSF),
@@ -243,12 +249,13 @@ class DirectCameraControl(DirectObject):
 
     def HPanYZoomTask(self, state):
         # If the cam is orthogonal, don't rotate or zoom.
-        if (hasattr(base.direct.camera.node(), "getLens") and
-            base.direct.camera.node().getLens().__class__.__name__ == "OrthographicLens"):
+        if (hasattr(self.camera.node(), "getLens") and
+            self.camera.node().getLens().__class__.__name__ == "OrthographicLens"):
+            print "Currently, ortho can't zoom either"
             return
 
         if base.direct.fControl:
-            moveDir = Vec3(self.coaMarker.getPos(base.direct.camera))
+            moveDir = Vec3(self.coaMarker.getPos(self.camera))
             # If marker is behind camera invert vector
             if moveDir[1] < 0.0:
                 moveDir.assign(moveDir * -1)
@@ -268,7 +275,7 @@ class DirectCameraControl(DirectObject):
 
             hVal = 0.5 * base.direct.dr.mouseDeltaX * base.direct.dr.fovH
 
-        base.direct.camera.setPosHpr(base.direct.camera,
+        self.camera.setPosHpr(self.camera,
                                 moveDir[0],
                                 moveDir[1],
                                 moveDir[2],
@@ -276,12 +283,12 @@ class DirectCameraControl(DirectObject):
                                 0.0, 0.0)
         if (self.lockRoll == True):
             # flatten roll
-            base.direct.camera.setR(0)
+            self.camera.setR(0)
 
         return Task.cont
 
     def HPPanTask(self, state):
-        base.direct.camera.setHpr(base.direct.camera,
+        self.camera.setHpr(self.camera,
                              (0.5 * base.direct.dr.mouseDeltaX *
                               base.direct.dr.fovH),
                              (-0.5 * base.direct.dr.mouseDeltaY *
@@ -294,7 +301,7 @@ class DirectCameraControl(DirectObject):
         taskMgr.remove('manipulateCamera')
         # Set at markers position in render coordinates
         self.camManipRef.setPos(self.coaMarkerPos)
-        self.camManipRef.setHpr(base.direct.camera, ZERO_POINT)
+        self.camManipRef.setHpr(self.camera, ZERO_POINT)
         t = Task.Task(self.mouseRotateTask)
         if abs(base.direct.dr.mouseX) > 0.9:
             t.constrainedDir = 'y'
@@ -304,8 +311,9 @@ class DirectCameraControl(DirectObject):
 
     def mouseRotateTask(self, state):
         # If the cam is orthogonal, don't rotate.
-        if (hasattr(base.direct.camera.node(), "getLens") and
-            base.direct.camera.node().getLens().__class__.__name__ == "OrthographicLens"):
+        if (hasattr(self.camera.node(), "getLens") and
+            self.camera.node().getLens().__class__.__name__ == "OrthographicLens"):
+            print "orthogonal don't rotate"
             return
         # If moving outside of center, ignore motion perpendicular to edge
         if ((state.constrainedDir == 'y') and (abs(base.direct.dr.mouseX) > 0.9)):
@@ -318,17 +326,17 @@ class DirectCameraControl(DirectObject):
             deltaX = base.direct.dr.mouseDeltaX
             deltaY = base.direct.dr.mouseDeltaY
         if base.direct.fShift:
-            base.direct.camera.setHpr(base.direct.camera,
+            self.camera.setHpr(self.camera,
                                  (deltaX * base.direct.dr.fovH),
                                  (-deltaY * base.direct.dr.fovV),
                                  0.0)
             if (self.lockRoll == True):
                 # flatten roll
-                base.direct.camera.setR(0)
+                self.camera.setR(0)
             self.camManipRef.setPos(self.coaMarkerPos)
-            self.camManipRef.setHpr(base.direct.camera, ZERO_POINT)
+            self.camManipRef.setHpr(self.camera, ZERO_POINT)
         else:
-            wrt = base.direct.camera.getTransform(self.camManipRef)
+            wrt = self.camera.getTransform(self.camManipRef)
             self.camManipRef.setHpr(self.camManipRef,
                                     (-1 * deltaX * 180.0),
                                     (deltaY * 180.0),
@@ -336,7 +344,7 @@ class DirectCameraControl(DirectObject):
             if (self.lockRoll == True):
                 # flatten roll
                 self.camManipRef.setR(0)
-            base.direct.camera.setTransform(self.camManipRef, wrt)
+            self.camera.setTransform(self.camManipRef, wrt)
         return Task.cont
 
     def spawnMouseRollTask(self):
@@ -344,12 +352,12 @@ class DirectCameraControl(DirectObject):
         taskMgr.remove('manipulateCamera')
         # Set at markers position in render coordinates
         self.camManipRef.setPos(self.coaMarkerPos)
-        self.camManipRef.setHpr(base.direct.camera, ZERO_POINT)
+        self.camManipRef.setHpr(self.camera, ZERO_POINT)
         t = Task.Task(self.mouseRollTask)
         t.coaCenter = getScreenXY(self.coaMarker)
         t.lastAngle = getCrankAngle(t.coaCenter)
         # Store the camera/manipRef offset transform
-        t.wrt = base.direct.camera.getTransform(self.camManipRef)
+        t.wrt = self.camera.getTransform(self.camManipRef)
         taskMgr.add(t, 'manipulateCamera')
 
     def mouseRollTask(self, state):
@@ -361,7 +369,7 @@ class DirectCameraControl(DirectObject):
         if (self.lockRoll == True):
             # flatten roll
             self.camManipRef.setR(0)
-        base.direct.camera.setTransform(self.camManipRef, wrt)
+        self.camera.setTransform(self.camManipRef, wrt)
         return Task.cont
 
     def lockCOA(self):
@@ -387,7 +395,7 @@ class DirectCameraControl(DirectObject):
             self.cqEntries = self.cqEntries[1:] + self.cqEntries[:1]
             # Filter out object's under camera
             nodePath = entry.getIntoNodePath()
-            if base.direct.camera not in nodePath.getAncestors():
+            if self.camera not in nodePath.getAncestors():
                 # Compute new hit point
                 hitPt = entry.getSurfacePoint(entry.getFromNodePath())
                 # Move coa marker to new point
@@ -403,7 +411,7 @@ class DirectCameraControl(DirectObject):
         if self.fLockCOA:
             # COA is locked, use existing point
             # Use existing point
-            coa.assign(self.coaMarker.getPos(base.direct.camera))
+            coa.assign(self.coaMarker.getPos(self.camera))
             # Reset hit point count
             self.nullHitPointCount = 0
         elif entry:
@@ -416,7 +424,7 @@ class DirectCameraControl(DirectObject):
             if ((hitPtDist < (1.1 * dr.near)) or
                 (hitPtDist > dr.far)):
                 # Just use existing point
-                coa.assign(self.coaMarker.getPos(base.direct.camera))
+                coa.assign(self.coaMarker.getPos(self.camera))
             # Reset hit point count
             self.nullHitPointCount = 0
         else:
@@ -461,7 +469,7 @@ class DirectCameraControl(DirectObject):
 
     def updateCoaMarkerSize(self, coaDist = None):
         if not coaDist:
-            coaDist = Vec3(self.coaMarker.getPos(base.direct.camera)).length()
+            coaDist = Vec3(self.coaMarker.getPos(self.camera)).length()
         # Nominal size based on default 30 degree vertical FOV
         # Need to adjust size based on distance and current FOV
         sf = COA_MARKER_SF * coaDist * (base.direct.drList.getCurrentDr().fovV/30.0)
@@ -482,19 +490,19 @@ class DirectCameraControl(DirectObject):
 
     def homeCam(self):
         # Record undo point
-        base.direct.pushUndo([base.direct.camera])
-        base.direct.camera.reparentTo(render)
-        base.direct.camera.clearMat()
+        base.direct.pushUndo([self.camera])
+        self.camera.reparentTo(render)
+        self.camera.clearMat()
         # Resize coa marker
         self.updateCoaMarkerSize()
 
     def uprightCam(self):
         taskMgr.remove('manipulateCamera')
         # Record undo point
-        base.direct.pushUndo([base.direct.camera])
+        base.direct.pushUndo([self.camera])
         # Pitch camera till upright
-        currH = base.direct.camera.getH()
-        base.direct.camera.lerpHpr(currH, 0, 0,
+        currH = self.camera.getH()
+        self.camera.lerpHpr(currH, 0, 0,
                               CAM_MOVE_DURATION,
                               other = render,
                               blendType = 'easeInOut',
@@ -503,10 +511,10 @@ class DirectCameraControl(DirectObject):
     def orbitUprightCam(self):
         taskMgr.remove('manipulateCamera')
         # Record undo point
-        base.direct.pushUndo([base.direct.camera])
+        base.direct.pushUndo([self.camera])
         # Transform camera z axis to render space
         mCam2Render = Mat4(Mat4.identMat()) # [gjeon] fixed to give required argument
-        mCam2Render.assign(base.direct.camera.getMat(render))
+        mCam2Render.assign(self.camera.getMat(render))
         zAxis = Vec3(mCam2Render.xformVec(Z_AXIS))
         zAxis.normalize()
         # Compute rotation angle needed to upright cam
@@ -527,8 +535,8 @@ class DirectCameraControl(DirectObject):
         self.camManipRef.setPos(self.coaMarker, Vec3(0))
         self.camManipRef.setHpr(render, rotAngle, 0, 0)
         # Reparent Cam to ref Coordinate system
-        parent = base.direct.camera.getParent()
-        base.direct.camera.wrtReparentTo(self.camManipRef)
+        parent = self.camera.getParent()
+        self.camera.wrtReparentTo(self.camManipRef)
         # Rotate ref CS to final orientation
         t = self.camManipRef.lerpHpr(rotAngle, orbitAngle, 0,
                                      CAM_MOVE_DURATION,
@@ -548,14 +556,14 @@ class DirectCameraControl(DirectObject):
     def centerCamIn(self, t):
         taskMgr.remove('manipulateCamera')
         # Record undo point
-        base.direct.pushUndo([base.direct.camera])
+        base.direct.pushUndo([self.camera])
         # Determine marker location
-        markerToCam = self.coaMarker.getPos(base.direct.camera)
+        markerToCam = self.coaMarker.getPos(self.camera)
         dist = Vec3(markerToCam - ZERO_POINT).length()
         scaledCenterVec = Y_AXIS * dist
         delta = markerToCam - scaledCenterVec
-        self.camManipRef.setPosHpr(base.direct.camera, Point3(0), Point3(0))
-        t = base.direct.camera.lerpPos(Point3(delta),
+        self.camManipRef.setPosHpr(self.camera, Point3(0), Point3(0))
+        t = self.camera.lerpPos(Point3(delta),
                                   CAM_MOVE_DURATION,
                                   other = self.camManipRef,
                                   blendType = 'easeInOut',
@@ -565,14 +573,14 @@ class DirectCameraControl(DirectObject):
     def zoomCam(self, zoomFactor, t):
         taskMgr.remove('manipulateCamera')
         # Record undo point
-        base.direct.pushUndo([base.direct.camera])
+        base.direct.pushUndo([self.camera])
         # Find a point zoom factor times the current separation
         # of the widget and cam
-        zoomPtToCam = self.coaMarker.getPos(base.direct.camera) * zoomFactor
+        zoomPtToCam = self.coaMarker.getPos(self.camera) * zoomFactor
         # Put a target nodePath there
-        self.camManipRef.setPos(base.direct.camera, zoomPtToCam)
+        self.camManipRef.setPos(self.camera, zoomPtToCam)
         # Move to that point
-        t = base.direct.camera.lerpPos(ZERO_POINT,
+        t = self.camera.lerpPos(ZERO_POINT,
                                   CAM_MOVE_DURATION,
                                   other = self.camManipRef,
                                   blendType = 'easeInOut',
@@ -583,7 +591,7 @@ class DirectCameraControl(DirectObject):
         # Kill any existing tasks
         taskMgr.remove('manipulateCamera')
         # Record undo point
-        base.direct.pushUndo([base.direct.camera])
+        base.direct.pushUndo([self.camera])
         # Calc hprOffset
         hprOffset = VBase3()
         if view == 8:
@@ -612,7 +620,7 @@ class DirectCameraControl(DirectObject):
         self.camManipRef.setPosHpr(self.coaMarker, ZERO_VEC,
                                    hprOffset)
         # Scale center vec by current distance to target
-        offsetDistance = Vec3(base.direct.camera.getPos(self.camManipRef) -
+        offsetDistance = Vec3(self.camera.getPos(self.camManipRef) -
                               ZERO_POINT).length()
         scaledCenterVec = Y_AXIS * (-1.0 * offsetDistance)
         # Now put the camManipRef at that point
@@ -621,7 +629,7 @@ class DirectCameraControl(DirectObject):
                                    ZERO_VEC)
         # Record view for next time around
         self.lastView = view
-        t = base.direct.camera.lerpPosHpr(ZERO_POINT,
+        t = self.camera.lerpPosHpr(ZERO_POINT,
                                      VBase3(0, 0, self.orthoViewRoll),
                                      CAM_MOVE_DURATION,
                                      other = self.camManipRef,
@@ -635,15 +643,15 @@ class DirectCameraControl(DirectObject):
         taskMgr.remove('manipulateCamera')
 
         # Record undo point
-        base.direct.pushUndo([base.direct.camera])
+        base.direct.pushUndo([self.camera])
 
         # Coincident with widget
         self.camManipRef.setPos(self.coaMarker, ZERO_POINT)
         # But aligned with render space
         self.camManipRef.setHpr(ZERO_POINT)
 
-        parent = base.direct.camera.getParent()
-        base.direct.camera.wrtReparentTo(self.camManipRef)
+        parent = self.camera.getParent()
+        self.camera.wrtReparentTo(self.camManipRef)
 
         manipTask = self.camManipRef.lerpHpr(VBase3(degrees, 0, 0),
                                              CAM_MOVE_DURATION,
@@ -654,7 +662,7 @@ class DirectCameraControl(DirectObject):
         manipTask.setUponDeath(self.reparentCam)
 
     def reparentCam(self, state):
-        base.direct.camera.wrtReparentTo(state.parent)
+        self.camera.wrtReparentTo(state.parent)
         self.updateCoaMarkerSize()
 
     def fitOnWidget(self, nodePath = 'None Given'):
@@ -674,20 +682,20 @@ class DirectCameraControl(DirectObject):
         centerVec = Y_AXIS * camY
 
         # Where is the node relative to the viewpoint
-        vWidget2Camera = base.direct.widget.getPos(base.direct.camera)
+        vWidget2Camera = base.direct.widget.getPos(self.camera)
 
         # How far do you move the camera to be this distance from the node?
         deltaMove = vWidget2Camera - centerVec
         
         # Move a target there
         try:
-            self.camManipRef.setPos(base.direct.camera, deltaMove)
+            self.camManipRef.setPos(self.camera, deltaMove)
         except Exception:
             self.notify.debug
 
-        parent = base.direct.camera.getParent()
-        base.direct.camera.wrtReparentTo(self.camManipRef)
-        fitTask = base.direct.camera.lerpPos(Point3(0, 0, 0),
+        parent = self.camera.getParent()
+        self.camera.wrtReparentTo(self.camManipRef)
+        fitTask = self.camera.lerpPos(Point3(0, 0, 0),
                                         CAM_MOVE_DURATION,
                                         blendType = 'easeInOut',
                                         task = 'manipulateCamera')
@@ -717,7 +725,7 @@ class DirectCameraControl(DirectObject):
         # Spawn a task to move the widget
         t = base.direct.widget.lerpPos(Point3(centerVec),
                                   CAM_MOVE_DURATION,
-                                  other = base.direct.camera,
+                                  other = self.camera,
                                   blendType = 'easeInOut',
                                   task = 'moveToFitTask')
         t.setUponDeath(lambda state: taskMgr.remove('stickToWidget'))
