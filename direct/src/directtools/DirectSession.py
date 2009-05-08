@@ -1,4 +1,3 @@
-
 import math
 import types
 import string
@@ -385,6 +384,16 @@ class DirectSession(DirectObject):
             self.ignore(event)
 
     def inputHandler(self, input):
+        # [gjeon] change current camera dr, iRay, mouseWatcher accordingly to support multiple windows
+        for winCtrl in base.winControls:
+            if winCtrl.mouseWatcher.node().hasMouse():
+                base.direct.cameraControl.setCamera(winCtrl.camera)
+                base.direct.dr = base.direct.drList[base.camList.index(NodePath(winCtrl.camNode))]
+                base.direct.iRay = base.direct.dr.iRay
+                base.mouseWatcher = winCtrl.mouseWatcher
+                base.mouseWatcherNode = winCtrl.mouseWatcher.node()
+                break
+
         # Deal with keyboard and mouse input
         if input == 'mouse1-up':
             self.fMouse1 = 0 # [gjeon] to update alt key information while mouse1 is pressed
