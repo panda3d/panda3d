@@ -1174,6 +1174,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         SetCapture(hwnd);
         _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
         _input_devices[0].button_down(MouseButton::button(0), get_message_time());
+        SetFocus(hwnd); // [gjeon] to get the keyboard event
         break;
         
       case WM_MBUTTONDOWN:
@@ -1183,6 +1184,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         SetCapture(hwnd);
         _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
         _input_devices[0].button_down(MouseButton::button(1), get_message_time());
+        SetFocus(hwnd); // [gjeon] to get the keyboard event
         break;
 
       case WM_RBUTTONDOWN:
@@ -1192,6 +1194,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
         SetCapture(hwnd);
         _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
         _input_devices[0].button_down(MouseButton::button(2), get_message_time());
+        SetFocus(hwnd); // [gjeon] to get the keyboard event
         break;
 
       case WM_XBUTTONDOWN:
