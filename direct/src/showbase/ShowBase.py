@@ -842,14 +842,14 @@ class ShowBase(DirectObject.DirectObject):
                 self.frameRateMeter.clearWindow()
                 self.frameRateMeter = None
 
-    def setupWindowControls(self):
-        if not self.winControls:
+    # [gjeon] now you can add more winControls after creating a showbase instance
+    def setupWindowControls(self, winCtrl=None):
+        if winCtrl is None:
             winCtrl = WindowControls(
                 self.win, mouseWatcher=self.mouseWatcher,
-                cam=self.camera, cam2d=self.camera2d,
+                cam=self.camera, camNode = self.camNode, cam2d=self.camera2d,
                 mouseKeyboard = self.dataRoot.find("**/*"))
-            self.winControls.append(winCtrl)
-
+        self.winControls.append(winCtrl)
 
     def setupRender(self):
         """
@@ -1221,65 +1221,31 @@ class ShowBase(DirectObject.DirectObject):
         self.dataRootNode = self.dataRoot.node()
         self.dataUnused = NodePath('dataUnused')
 
-    def setupMouse(self, win):
+    # [gjeon] now you can create multiple mouse watchers to support multiple windows
+    def setupMouse(self, win, fMultiWin=False):
         """
         Creates the structures necessary to monitor the mouse input,
         using the indicated window.  If the mouse has already been set
         up for a different window, those structures are deleted first.
         """
-        if self.buttonThrowers != None:
+        if not fMultiWin and self.buttonThrowers != None:
             for bt in self.buttonThrowers:
                 mw = bt.getParent()
                 mk = mw.getParent()
                 bt.removeNode()
                 mw.removeNode()
                 mk.removeNode()
-        # For each mouse/keyboard device, we create
-        #  - MouseAndKeyboard
-        #  - MouseWatcher
-        #  - ButtonThrower
-        # The ButtonThrowers are stored in a list, self.buttonThrowers.
-        # Given a ButtonThrower, one can access the MouseWatcher and
-        # MouseAndKeyboard using getParent.
-        #
-        # The MouseAndKeyboard generates mouse events and mouse
-        # button/keyboard events; the MouseWatcher passes them through
-        # unchanged when the mouse is not over a 2-d button, and passes
-        # nothing through when the mouse *is* over a 2-d button.  Therefore,
-        # objects that don't want to get events when the mouse is over a
-        # button, like the driveInterface, should be parented to
-        # MouseWatcher, while objects that want events in all cases, like the
-        # chat interface, should be parented to the MouseAndKeyboard.
 
-        self.buttonThrowers = []
-        self.pointerWatcherNodes = []
-        for i in range(win.getNumInputDevices()):
-            name = win.getInputDeviceName(i)
-            mk = self.dataRoot.attachNewNode(MouseAndKeyboard(win, i, name))
-            mw = mk.attachNewNode(MouseWatcher("watcher%s" % (i)))
-            mb = mw.node().getModifierButtons()
-            mb.addButton(KeyboardButton.shift())
-            mb.addButton(KeyboardButton.control())
-            mb.addButton(KeyboardButton.alt())
-            mb.addButton(KeyboardButton.meta())
-            mw.node().setModifierButtons(mb)
-            bt = mw.attachNewNode(ButtonThrower("buttons%s" % (i)))
-            if (i != 0):
-                bt.node().setPrefix('mousedev%s-' % (i))
-            mods = ModifierButtons()
-            mods.addButton(KeyboardButton.shift())
-            mods.addButton(KeyboardButton.control())
-            mods.addButton(KeyboardButton.alt())
-            mods.addButton(KeyboardButton.meta())
-            bt.node().setModifierButtons(mods)
-            self.buttonThrowers.append(bt)
-            if (win.hasPointer(i)):
-                self.pointerWatcherNodes.append(mw.node())
+        bts, pws = self.setupMouseCB(win)
+
+        if fMultiWin:
+            return bts[0]
+        
+        self.buttonThrowers = bts[:]
+        self.pointerWatcherNodes = pws[:]
 
         self.mouseWatcher = self.buttonThrowers[0].getParent()
-        self.mouseWatcherNode = self.mouseWatcher.node()
-        # print "ButtonThrowers = ", self.buttonThrowers
-        # print "PointerWatcherNodes = ", self.pointerWatcherNodes
+        self.mouseWatcherNode = self.mouseWatcher.node()  
 
         if self.recorder:
             # If we have a recorder, the mouseWatcher belongs under a
@@ -1314,6 +1280,52 @@ class ShowBase(DirectObject.DirectObject):
         self.aspect2d.node().setMouseWatcher(mw.node())
         self.aspect2dp.node().setMouseWatcher(mw.node())
         mw.node().addRegion(PGMouseWatcherBackground())
+
+    # [gjeon] this function is seperated from setupMouse to allow multiple mouse watchers
+    def setupMouseCB(self, win):
+        # For each mouse/keyboard device, we create
+        #  - MouseAndKeyboard
+        #  - MouseWatcher
+        #  - ButtonThrower
+        # The ButtonThrowers are stored in a list, self.buttonThrowers.
+        # Given a ButtonThrower, one can access the MouseWatcher and
+        # MouseAndKeyboard using getParent.
+        #
+        # The MouseAndKeyboard generates mouse events and mouse
+        # button/keyboard events; the MouseWatcher passes them through
+        # unchanged when the mouse is not over a 2-d button, and passes
+        # nothing through when the mouse *is* over a 2-d button.  Therefore,
+        # objects that don't want to get events when the mouse is over a
+        # button, like the driveInterface, should be parented to
+        # MouseWatcher, while objects that want events in all cases, like the
+        # chat interface, should be parented to the MouseAndKeyboard.
+
+        buttonThrowers = []
+        pointerWatcherNodes = []
+        for i in range(win.getNumInputDevices()):
+            name = win.getInputDeviceName(i)
+            mk = self.dataRoot.attachNewNode(MouseAndKeyboard(win, i, name))
+            mw = mk.attachNewNode(MouseWatcher("watcher%s" % (i)))
+            mb = mw.node().getModifierButtons()
+            mb.addButton(KeyboardButton.shift())
+            mb.addButton(KeyboardButton.control())
+            mb.addButton(KeyboardButton.alt())
+            mb.addButton(KeyboardButton.meta())
+            mw.node().setModifierButtons(mb)
+            bt = mw.attachNewNode(ButtonThrower("buttons%s" % (i)))
+            if (i != 0):
+                bt.node().setPrefix('mousedev%s-' % (i))
+            mods = ModifierButtons()
+            mods.addButton(KeyboardButton.shift())
+            mods.addButton(KeyboardButton.control())
+            mods.addButton(KeyboardButton.alt())
+            mods.addButton(KeyboardButton.meta())
+            bt.node().setModifierButtons(mods)
+            buttonThrowers.append(bt)
+            if (win.hasPointer(i)):
+                pointerWatcherNodes.append(mw.node())
+
+        return buttonThrowers, pointerWatcherNodes
 
     def enableSoftwareMousePointer(self):
         """
@@ -2444,10 +2456,11 @@ class ShowBase(DirectObject.DirectObject):
 # A class to encapsulate information necessary for multiwindow support.
 class WindowControls:
     def __init__(
-            self, win, cam=None, cam2d=None, mouseWatcher=None,
+            self, win, cam=None, camNode=None, cam2d=None, mouseWatcher=None,
             mouseKeyboard=None, closeCmd=lambda: 0):
         self.win = win
         self.camera = cam
+        self.camNode = camNode
         self.camera2d = cam2d
         self.mouseWatcher = mouseWatcher
         self.mouseKeyboard = mouseKeyboard
