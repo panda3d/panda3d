@@ -38,6 +38,12 @@
 
 struct ThreadContext {
   ucontext_t _ucontext;
+#if defined(__APPLE__)
+  // Due to a bug in OSX 10.5, the system ucontext_t declaration
+  // doesn't reserve enough space, and we need to reserve some
+  // additional space to make room.
+  _STRUCT_MCONTEXT _extra_padding;
+#endif
 };
 
 #else  /* HAVE_UCONTEXT_H */

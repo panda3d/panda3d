@@ -15,6 +15,7 @@
 #include "contextSwitch.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 #ifdef THREAD_SIMPLE_IMPL
 
@@ -31,7 +32,11 @@ void
 init_thread_context(struct ThreadContext *context, 
                     unsigned char *stack, size_t stack_size,
                     ContextFunction *thread_func, void *data) {
-  getcontext(&context->_ucontext);
+  if (getcontext(&context->_ucontext) != 0) {
+    fprintf(stderr, "getcontext failed in init_thread_context!\n");
+    // Too bad for you.
+    abort();
+  }
 
   context->_ucontext.uc_stack.ss_sp = stack;
   context->_ucontext.uc_stack.ss_size = stack_size;
@@ -49,7 +54,12 @@ save_thread_context(struct ThreadContext *context,
      (return from setcontext). */
   volatile int context_return = 0;
 
-  getcontext(&context->_ucontext);
+  if (getcontext(&context->_ucontext) != 0) {
+    fprintf(stderr, "getcontext failed!\n");
+    // Nothing to do here.
+    abort();
+  }
+
   if (context_return) {
     /* We have just returned from setcontext.  In this case, return
        from the function.  The stack is still good. */
