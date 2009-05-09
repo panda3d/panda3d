@@ -956,8 +956,6 @@ def WriteConfigSettings():
         dtool_config["HAVE_PROC_SELF_MAPS"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_CMDLINE"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_ENVIRON"] = 'UNDEF'
-        # OSX has ucontext.h, but it doesn't seem to be stable somehow.
-        dtool_config["HAVE_UCONTEXT_H"] = 'UNDEF'
         # OSX still doesn't always recognize the <auto> correctly. Might have been fixed by now though.
         prc_parameters["DEFAULT_PRC_DIR"] = '"/Applications/Panda3D/' + VERSION + '/etc"'
     
