@@ -118,8 +118,8 @@ Section "${SMDIRECTORY}" SecCore
 
         !ifdef PPGAME
 
-            SetOutPath $INSTDIR\models\audio
-            File /r /x CVS "${PANDA}\models\audio\*"
+            SetOutPath $INSTDIR\models
+            File /r /x CVS "${PANDA}\models\*"
             SetOutPath $INSTDIR\bin
             File /r "${PANDA}\bin\eggcacher.exe"
             SetOutpath $INSTDIR\game
