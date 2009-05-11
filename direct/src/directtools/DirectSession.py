@@ -387,7 +387,7 @@ class DirectSession(DirectObject):
         # [gjeon] change current camera dr, iRay, mouseWatcher accordingly to support multiple windows
         for winCtrl in base.winControls:
             if winCtrl.mouseWatcher.node().hasMouse():
-                base.direct.cameraControl.setCamera(winCtrl.camera)
+                self.camera = winCtrl.camera
                 base.direct.dr = base.direct.drList[base.camList.index(NodePath(winCtrl.camNode))]
                 base.direct.iRay = base.direct.dr.iRay
                 base.mouseWatcher = winCtrl.mouseWatcher
