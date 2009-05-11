@@ -1,3 +1,25 @@
+------------------------  RELEASE 1.6.2  ------------------------
+
+This is mainly a bugfix release. Also fixes some bugs that
+were accidentally introduced in 1.6.1.
+
+* Fixed a static-init issue in ptloader on Windows
+* Fixed texture scaling issue when using buffers
+* x2egg is no longer broken
+* Threading in OSX build fixed
+* Fixed issue with flickering colors in Shader Generator
+* Eggcacher now uses less RAM
+* Missing 'models' dirs in packpanda games fixed
+* Eggcacher step in Panda3D installer is now optional
+* Fixes broken shortcut links in Start Menu on Windows
+* Shader Generator now supports clip planes
+* Bug with combine modes in Shader Generator fixed
+* Fixed bug with Texture::make_copy()
+* Bug with Actor LOD fixed
+* Fixed bug with missing geometry in Collada converter
+* OdeUtil.collide instability fixed
+* OdeBody setData/getData methods exposed to Python
+
 ------------------------  RELEASE 1.6.1  ------------------------
 
 This release fixes some bugs found in 1.6.0, and adds some
