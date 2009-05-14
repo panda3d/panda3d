@@ -2472,7 +2472,7 @@ class WindowControls:
             mouseKeyboard=None, closeCmd=lambda: 0):
         self.win = win
         self.camera = cam
-        if camNode is None:
+        if camNode is None and cam is not None:
             camNode = cam.node()
         self.camNode = camNode
         self.camera2d = cam2d
