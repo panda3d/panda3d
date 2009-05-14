@@ -2473,7 +2473,8 @@ class WindowControls:
         self.win = win
         self.camera = cam
         if camNode is None:
-            self.camNode = cam.node()
+            camNode = cam.node()
+        self.camNode = camNode
         self.camera2d = cam2d
         self.mouseWatcher = mouseWatcher
         self.mouseKeyboard = mouseKeyboard

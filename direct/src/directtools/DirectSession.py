@@ -959,14 +959,14 @@ class DisplayRegionContext(DirectObject):
             self.camLens.setFov(hfov, vfov)
 
     def getWidth(self):
-        prop = self.win.getProperties()
+        prop = base.direct.win.getProperties()
         if prop.hasSize():
             return prop.getXSize()
         else:
             return 640
 
     def getHeight(self):
-        prop = self.win.getProperties()
+        prop = base.direct.win.getProperties()
         if prop.hasSize():
             return prop.getYSize()
         else:
