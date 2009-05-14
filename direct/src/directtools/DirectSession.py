@@ -42,6 +42,8 @@ class DirectSession(DirectObject):
         self.iRayList = map(lambda x: x.iRay, self.drList)
         self.dr = self.drList[0]
         self.camera = base.camera
+        self.cam = base.cam
+        self.camNode = base.camNode
         self.trueCamera = self.camera
         self.iRay = self.dr.iRay
         self.coaMode = COA_ORIGIN
@@ -314,7 +316,7 @@ class DirectSession(DirectObject):
             self.oobeCamera.reparentTo(cameraParent)
             self.oobeCamera.iPosHpr(self.trueCamera)
             # Put camera under new oobe camera
-            base.cam.reparentTo(self.oobeCamera)
+            self.cam.reparentTo(self.oobeCamera)
             # Position a target point to lerp the oobe camera to
             base.direct.cameraControl.camManipRef.setPos(
                 self.trueCamera, Vec3(-2, -20, 5))
@@ -337,7 +339,7 @@ class DirectSession(DirectObject):
         # Make sure we've reached our final destination
         self.oobeCamera.iPosHpr(self.trueCamera)
         # Disable OOBE mode.
-        base.cam.reparentTo(self.trueCamera)
+        self.cam.reparentTo(self.trueCamera)
         base.direct.camera = self.trueCamera
         # Get rid of ancillary node paths
         self.oobeVis.reparentTo(hidden)
@@ -385,14 +387,19 @@ class DirectSession(DirectObject):
 
     def inputHandler(self, input):
         # [gjeon] change current camera dr, iRay, mouseWatcher accordingly to support multiple windows
-        for winCtrl in base.winControls:
-            if winCtrl.mouseWatcher.node().hasMouse():
-                self.camera = winCtrl.camera
-                base.direct.dr = base.direct.drList[base.camList.index(NodePath(winCtrl.camNode))]
-                base.direct.iRay = base.direct.dr.iRay
-                base.mouseWatcher = winCtrl.mouseWatcher
-                base.mouseWatcherNode = winCtrl.mouseWatcher.node()
-                break
+        if not hasattr(self, 'oobeMode') or self.oobeMode == 0:
+            for winCtrl in base.winControls:
+                if winCtrl.mouseWatcher.node().hasMouse():
+                    base.win = winCtrl.win
+                    self.camera = winCtrl.camera
+                    self.trueCamera = self.camera
+                    self.cam = NodePath(winCtrl.camNode)
+                    self.camNode = winCtrl.camNode
+                    base.direct.dr = base.direct.drList[base.camList.index(NodePath(winCtrl.camNode))]
+                    base.direct.iRay = base.direct.dr.iRay
+                    base.mouseWatcher = winCtrl.mouseWatcher
+                    base.mouseWatcherNode = winCtrl.mouseWatcher.node()
+                    break
 
         # Deal with keyboard and mouse input
         if input == 'mouse1-up':
@@ -884,6 +891,8 @@ class DisplayRegionContext(DirectObject):
         self.nearVec = Vec3(0)
         self.mouseX = 0.0
         self.mouseY = 0.0
+
+        self.orthoFactor = 0.1
         # A Camera node can have more than one display region
         # associated with it.  Here I assume that there is only
         # one display region per camera, since we are defining a
@@ -962,6 +971,13 @@ class DisplayRegionContext(DirectObject):
         else:
             return 480
 
+    def updateFilmSize(self, width, height):
+        if self.camLens.__class__.__name__ == "OrthographicLens":
+            width *= self.orthoFactor
+            height *= self.orthoFactor
+
+        self.camLens.setFilmSize(width, height)
+
     def camUpdate(self, lens = None):
         # Window Data
         self.near = self.camLens.getNear()
@@ -980,6 +996,7 @@ class DisplayRegionContext(DirectObject):
         # Last frame
         self.mouseLastX = self.mouseX
         self.mouseLastY = self.mouseY
+
         # Values for this frame
         # This ranges from -1 to 1
         if (base.mouseWatcherNode.hasMouse()):
@@ -1065,7 +1082,7 @@ class DisplayRegionList(DirectObject):
     def mouseUpdate(self, modifiers = DIRECT_NO_MOD):
         for dr in self.displayRegionList:
             dr.mouseUpdate()
-        base.direct.dr = self.getCurrentDr()
+        #base.direct.dr = self.getCurrentDr()
 
     def getCurrentDr(self):
         for dr in self.displayRegionList:
