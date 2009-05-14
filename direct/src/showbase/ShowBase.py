@@ -657,14 +657,13 @@ class ShowBase(DirectObject.DirectObject):
                     self.cam2dp = None
                 cam.removeNode()
 
-        # Now we can actually close the window.
-        self.graphicsEngine.removeWindow(win)
         # [gjeon] remove winControl
         for winCtrl in self.winControls:
             if winCtrl.win == win:
                 self.winControls.remove(winCtrl)
                 break
-
+        # Now we can actually close the window.
+        self.graphicsEngine.removeWindow(win)
         self.winList.remove(win)
 
         mainWindow = False
@@ -2473,7 +2472,8 @@ class WindowControls:
             mouseKeyboard=None, closeCmd=lambda: 0):
         self.win = win
         self.camera = cam
-        self.camNode = camNode
+        if camNode is None:
+            self.camNode = cam.node()
         self.camera2d = cam2d
         self.mouseWatcher = mouseWatcher
         self.mouseKeyboard = mouseKeyboard
@@ -2482,6 +2482,7 @@ class WindowControls:
     def __str__(self):
         s = "window = " + str(self.win) + "\n"
         s += "camera = " + str(self.camera) + "\n"
+        s += "camNode = " + str(self.camNode) + "\n"
         s += "camera2d = " + str(self.camera2d) + "\n"
         s += "mouseWatcher = " + str(self.mouseWatcher) + "\n"
         s += "mouseAndKeyboard = " + str(self.mouseKeyboard) + "\n"
