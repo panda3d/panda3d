@@ -41,6 +41,7 @@ class DirectSession(DirectObject):
         self.drList = DisplayRegionList()
         self.iRayList = map(lambda x: x.iRay, self.drList)
         self.dr = self.drList[0]
+        self.win = base.win
         self.camera = base.camera
         self.cam = base.cam
         self.camNode = base.camNode
@@ -390,7 +391,7 @@ class DirectSession(DirectObject):
         if not hasattr(self, 'oobeMode') or self.oobeMode == 0:
             for winCtrl in base.winControls:
                 if winCtrl.mouseWatcher.node().hasMouse():
-                    base.win = winCtrl.win
+                    self.win = winCtrl.win
                     self.camera = winCtrl.camera
                     self.trueCamera = self.camera
                     self.cam = NodePath(winCtrl.camNode)
@@ -958,14 +959,14 @@ class DisplayRegionContext(DirectObject):
             self.camLens.setFov(hfov, vfov)
 
     def getWidth(self):
-        prop = base.win.getProperties()
+        prop = self.win.getProperties()
         if prop.hasSize():
             return prop.getXSize()
         else:
             return 640
 
     def getHeight(self):
-        prop = base.win.getProperties()
+        prop = self.win.getProperties()
         if prop.hasSize():
             return prop.getYSize()
         else:
