@@ -628,6 +628,13 @@ class ShowBase(DirectObject.DirectObject):
         numRegions = win.getNumDisplayRegions()        
         for i in range(numRegions):
             dr = win.getDisplayRegion(i)
+            # [gjeon] remove drc in base.direct.drList
+            if base.direct is not None:
+                for drc in base.direct.drList:
+                    if drc.cam == dr.getCamera():
+                        base.direct.drList.displayRegionList.remove(drc)
+                        break
+                    
             cam = NodePath(dr.getCamera())
             
             dr.setCamera(NodePath())
@@ -652,6 +659,12 @@ class ShowBase(DirectObject.DirectObject):
 
         # Now we can actually close the window.
         self.graphicsEngine.removeWindow(win)
+        # [gjeon] remove winControl
+        for winCtrl in self.winControls:
+            if winCtrl.win == win:
+                self.winControls.remove(winCtrl)
+                break
+
         self.winList.remove(win)
 
         mainWindow = False
