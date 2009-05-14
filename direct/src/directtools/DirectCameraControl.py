@@ -97,8 +97,13 @@ class DirectCameraControl(DirectObject):
             # Record time of start of mouse interaction
             self.startT= globalClock.getFrameTime()
             self.startF = globalClock.getFrameCount()
-            # Start manipulation
-            self.spawnHPanYZoom()
+            # If the cam is orthogonal, spawn differentTask
+            if (hasattr(base.direct.cam.node(), "getLens") and
+                base.direct.cam.node().getLens().__class__.__name__ == "OrthographicLens"):
+                self.spawnOrthoZoom()
+            else:
+                # Start manipulation
+                self.spawnHPanYZoom()
             
     def mouseDollyStop(self):
         taskMgr.remove('manipulateCamera')
@@ -208,6 +213,13 @@ class DirectCameraControl(DirectObject):
         t.zoomSF = Vec3(self.coaMarker.getPos(base.direct.camera)).length()
         taskMgr.add(t, 'manipulateCamera')
 
+    def spawnOrthoZoom(self):
+        # Kill any existing tasks
+        taskMgr.remove('manipulateCamera')
+        # Spawn new task
+        t = Task.Task(self.OrthoZoomTask)
+        taskMgr.add(t, 'manipulateCamera')        
+
     def spawnHPPan(self):
         # Kill any existing tasks
         taskMgr.remove('manipulateCamera')
@@ -243,8 +255,8 @@ class DirectCameraControl(DirectObject):
 
     def HPanYZoomTask(self, state):
         # If the cam is orthogonal, don't rotate or zoom.
-        if (hasattr(base.direct.camera.node(), "getLens") and
-            base.direct.camera.node().getLens().__class__.__name__ == "OrthographicLens"):
+        if (hasattr(base.direct.cam.node(), "getLens") and
+            base.direct.cam.node().getLens().__class__.__name__ == "OrthographicLens"):
             return
 
         if base.direct.fControl:
@@ -280,6 +292,15 @@ class DirectCameraControl(DirectObject):
 
         return Task.cont
 
+    def OrthoZoomTask(self, state):
+        filmSize = base.direct.camNode.getLens().getFilmSize()
+        factor = (base.direct.dr.mouseDeltaX -1.0 * base.direct.dr.mouseDeltaY) * 0.1
+        x = base.direct.dr.getWidth()
+        y = base.direct.dr.getHeight()
+        base.direct.dr.orthoFactor -= factor
+        base.direct.dr.updateFilmSize(x, y)
+        return Task.cont
+    
     def HPPanTask(self, state):
         base.direct.camera.setHpr(base.direct.camera,
                              (0.5 * base.direct.dr.mouseDeltaX *
@@ -304,8 +325,8 @@ class DirectCameraControl(DirectObject):
 
     def mouseRotateTask(self, state):
         # If the cam is orthogonal, don't rotate.
-        if (hasattr(base.direct.camera.node(), "getLens") and
-            base.direct.camera.node().getLens().__class__.__name__ == "OrthographicLens"):
+        if (hasattr(base.direct.cam.node(), "getLens") and
+            base.direct.cam.node().getLens().__class__.__name__ == "OrthographicLens"):
             return
         # If moving outside of center, ignore motion perpendicular to edge
         if ((state.constrainedDir == 'y') and (abs(base.direct.dr.mouseX) > 0.9)):
