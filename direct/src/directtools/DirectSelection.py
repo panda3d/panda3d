@@ -516,13 +516,18 @@ class SelectionQueue(CollisionHandlerQueue):
             # Well, no way to tell.  Assume we're not backfacing.
             return 0
 
+        if direct:
+            cam = base.direct.cam
+        else:
+            cam = base.cam
+
         fromNodePath = entry.getFromNodePath()
         v = Vec3(entry.getSurfacePoint(fromNodePath))
         n = entry.getSurfaceNormal(fromNodePath)
         # Convert to camera space for backfacing test
-        if self.collisionNodePath.getParent() != base.direct.cam:
+        if self.collisionNodePath.getParent() != cam:
             # Problem: assumes base.cam is the camera in question
-            p2cam = self.collisionNodePath.getParent().getMat(base.direct.cam)
+            p2cam = self.collisionNodePath.getParent().getMat(cam)
             v = Vec3(p2cam.xformPoint(v))
             n = p2cam.xformVec(n)
         # Normalize and check angle between to vectors
@@ -583,7 +588,10 @@ class SelectionRay(SelectionQueue):
             mx = base.mouseWatcherNode.getMouseX()
             my = base.mouseWatcherNode.getMouseY()
 
-        self.collider.setFromLens(base.direct.camNode, mx, my)
+        if direct:
+            self.collider.setFromLens(base.direct.camNode, mx, my)
+        else:
+            self.collider.setFromLens(base.camNode, mx, my)            
         self.ct.traverse(targetNodePath)
         self.sortEntries()
 
