@@ -390,7 +390,7 @@ class DirectSession(DirectObject):
         # [gjeon] change current camera dr, iRay, mouseWatcher accordingly to support multiple windows
         if not hasattr(self, 'oobeMode') or self.oobeMode == 0:
             for winCtrl in base.winControls:
-                if winCtrl.mouseWatcher.node().hasMouse():
+                if winCtrl.mouseWatcher and winCtrl.mouseWatcher.node().hasMouse():
                     self.win = winCtrl.win
                     self.camera = winCtrl.camera
                     self.trueCamera = self.camera
