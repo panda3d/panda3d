@@ -328,7 +328,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
   }
 
   nassertr(n == 0, false);
-  nassertr(z >= 0 && z < get_z_size(), false);
+  nassertr(z >= 0 && z < _z_size, false);
 
   VideoPage &page = modify_page(z);
   if (!page._color.read(fullpath)) {
@@ -349,13 +349,14 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     if (!has_name()) {
       set_name(fullpath.get_basename_wo_extension());
     }
-    if (!has_filename()) {
-      set_filename(fullpath);
-      set_alpha_filename(alpha_fullpath);
+    // Don't use has_filename() here, it will cause a deadlock
+    if (_filename.empty()) {
+      _filename = fullpath;
+      _alpha_filename = alpha_fullpath;
     }
 
-    set_fullpath(fullpath);
-    set_alpha_fullpath(alpha_fullpath);
+    _fullpath = fullpath;
+    _alpha_fullpath = alpha_fullpath;
   }
 
   _primary_file_num_channels = 3;
