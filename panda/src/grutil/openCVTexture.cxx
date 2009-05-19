@@ -249,7 +249,7 @@ update_frame(int frame, int z) {
     const unsigned char *source = page._color.get_frame_data(frame);
     if (source != NULL) {
       nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
-      unsigned char *dest = _ram_images[0]._image.p() + get_expected_ram_page_size() * z;
+      unsigned char *dest = _ram_images[0]._image.p() + do_get_expected_ram_page_size() * z;
 
       int dest_row_width = (_x_size * _num_components * _component_width);
       int source_row_width = get_video_width() * 3;
@@ -288,7 +288,7 @@ update_frame(int frame, int z) {
     const unsigned char *source = page._alpha.get_frame_data(frame);
     if (source != NULL) {
       nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
-      unsigned char *dest = _ram_images[0]._image.p() + get_expected_ram_page_size() * z;
+      unsigned char *dest = _ram_images[0]._image.p() + do_get_expected_ram_page_size() * z;
 
       int dest_row_width = (_x_size * _num_components * _component_width);
       int source_row_width = get_video_width() * 3;
