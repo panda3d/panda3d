@@ -241,7 +241,7 @@ update_frame(int frame, int z) {
   grutil_cat.spam() << "Updating OpenCVTexture page " << z << "\n";
   VideoPage &page = _pages[z];
   if (page._color.is_valid() || page._alpha.is_valid()) {
-    modify_ram_image();
+    do_modify_ram_image();
   }
   if (page._color.is_valid()) {
     nassertv(get_num_components() >= 3 && get_component_width() == 1);
