@@ -12,6 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "config_pgraph.h"
 #include "cullTraverser.h"
 #include "cullTraverserData.h"
 #include "transformState.h"
@@ -132,9 +133,11 @@ traverse(const NodePath &root) {
       
     // This local_frustum is in camera space
     PortalClipper portal_viewer(local_frustum, _scene_setup);
-    portal_viewer.draw_camera_frustum();
+    if (show_portal_debug) {
+      portal_viewer.draw_camera_frustum();
+    }
     
-    // store this pointer in this
+    // Store this pointer in this
     set_portal_clipper(&portal_viewer);
 
     CullTraverserData data(root, TransformState::make_identity(),
@@ -143,8 +146,10 @@ traverse(const NodePath &root) {
     
     traverse(data);
     
-    // finally add the lines to be drawn
-    portal_viewer.draw_lines();
+    // Finally add the lines to be drawn
+    if (show_portal_debug) {
+      portal_viewer.draw_lines();
+    }
     
     // Render the frustum relative to the cull center.
     NodePath cull_center = _scene_setup->get_cull_center();

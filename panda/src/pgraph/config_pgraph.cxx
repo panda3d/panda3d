@@ -121,6 +121,12 @@ ConfigVariableBool allow_portal_cull
           "renderer to cull more objects that are clipped if not in the "
           "current list of portals.  This is still somewhat experimental."));
 
+ConfigVariableBool show_portal_debug
+("show-portal-debug", true,
+ PRC_DESC("Set this true to show debug lines for portals.  This will draw "
+          "lines from the screen corners to the portal corners, this can "
+          "be useful when debugging."));
+
 ConfigVariableBool unambiguous_graph
 ("unambiguous-graph", false,
  PRC_DESC("Set this true to make ambiguous path warning messages generate an "
