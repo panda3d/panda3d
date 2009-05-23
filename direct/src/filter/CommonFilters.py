@@ -50,8 +50,8 @@ class CommonFilters:
     def __init__(self, win, cam):
         self.manager = FilterManager(win, cam)
         self.configuration = {}
+        self.task = None
         self.cleanup()
-        self.task = taskMgr.add(self.update, "common-filters-update")
 
     def loadShader(self, name):
         fn = os.path.join(os.path.abspath(os.path.dirname(__file__)), name)
@@ -65,6 +65,9 @@ class CommonFilters:
         self.finalQuad = None
         self.bloom = []
         self.blur = []
+        if self.task != None:
+          taskMgr.remove(self.task)
+          self.task = None
 
     def reconfigure(self, fullrebuild, changed):
 
@@ -230,6 +233,8 @@ class CommonFilters:
             self.finalQuad.setShader(Shader.make(text))
             for tex in self.textures:
                 self.finalQuad.setShaderInput("tx"+tex, self.textures[tex])
+            
+            self.task = taskMgr.add(self.update, "common-filters-update")
         
         if (changed == "CartoonInk") or fullrebuild:
             if (configuration.has_key("CartoonInk")):
