@@ -77,7 +77,6 @@ def usage(problem):
     print "  --help            (print the help message you're reading now)"
     print "  --target T        (target can be 'all','panda3d','plugins','installer')"
     print "  --optimize X      (optimization level can be 1,2,3,4)"
-    print "  --installer       (build an installer)"
     print "  --version         (set the panda version number)"
     print "  --lzma            (use lzma compression when building installer)"
     print "  --threads N       (use the multithreaded build system. see manual)"
@@ -99,7 +98,7 @@ def parseopts(args):
     global TARGET,OPTIMIZE,INSTALLER,GENMAN
     global VERSION,COMPRESSOR,VERBOSE,THREADCOUNT
     longopts = [
-        "help","target",
+        "help","target=",
         "optimize=","everything","nothing",
         "version=","lzma","no-python","threads=","outputdir="]
     anything = 0
@@ -156,7 +155,7 @@ if (os.environ.has_key("RPM_OPT_FLAGS")):
 MakeBuildTree()
 
 SdkLocateDirectX()
-if TARGET not in ["all", "plugins"]:
+if TARGET in ["all", "plugins"]:
   SdkLocateMaya()
   SdkLocateMax()
 SdkLocateMacOSX()
@@ -165,7 +164,7 @@ SdkLocateVisualStudio()
 SdkLocateMSPlatform()
 
 SdkAutoDisableDirectX()
-if TARGET not in ["all", "plugins"]:
+if TARGET in ["all", "plugins"]:
   SdkAutoDisableMaya()
   SdkAutoDisableMax()
 
@@ -3859,7 +3858,7 @@ def MakeInstallerOSX():
     oscmd("rm -f Panda3D-tpl-rw.dmg")
     oscmd("rm -rf Panda3D-tpl-rw")
 
-if (INSTALLER != 0 and TARGET in ["all", "installer"]):
+if (INSTALLER != 0 or (TARGET in ["all", "installer"])):
     if (sys.platform == "win32"):
         MakeInstallerNSIS("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
     elif (sys.platform == "linux2"):
