@@ -18,6 +18,7 @@
 #include "pandabase.h"
 
 #include "lensNode.h"
+#include "perspectiveLens.h"
 #include "nodePath.h"
 #include "weakNodePath.h"
 #include "drawMask.h"
@@ -35,7 +36,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH Camera : public LensNode {
 PUBLISHED:
-  Camera(const string &name);
+  Camera(const string &name, Lens *lens = new PerspectiveLens());
   Camera(const Camera &copy);
 
 public:

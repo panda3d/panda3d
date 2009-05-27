@@ -17,6 +17,7 @@
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "graphicsEngine.h"
 
 TypeHandle LightLensNode::_type_handle;
 
@@ -26,9 +27,26 @@ TypeHandle LightLensNode::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 LightLensNode::
-LightLensNode(const string &name) : 
-  LensNode(name) 
+LightLensNode(const string &name, Lens *lens) :
+  Camera(name, lens)
 {
+  set_active(false);
+  _shadow_caster = false;
+  _sb_xsize = 512;
+  _sb_ysize = 512;
+  _sb_sort = -10;
+  _push_bias = 0.5;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightLensNode::Destructor
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+LightLensNode::
+~LightLensNode() {
+  set_active(false);
+  clear_shadow_buffers();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -37,10 +55,31 @@ LightLensNode(const string &name) :
 //  Description:
 ////////////////////////////////////////////////////////////////////
 LightLensNode::
-LightLensNode(const LightLensNode &copy) : 
+LightLensNode(const LightLensNode &copy) :
   Light(copy),
-  LensNode(copy)
+  Camera(copy)
 {
+  _shadow_caster = false;
+  _sb_xsize = 512;
+  _sb_ysize = 512;
+  _sb_sort = -10;
+  _push_bias = 0.5;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightLensNode::clear_shadow_buffers
+//       Access: Protected
+//  Description: Clears the shadow buffers, meaning they will be
+//               automatically recreated when the Shader Generator
+//               needs them.
+////////////////////////////////////////////////////////////////////
+void LightLensNode::
+clear_shadow_buffers() {
+  ShadowBuffers::iterator it;
+  for(it = _sbuffers.begin(); it != _sbuffers.end(); ++it) {
+    it->first->get_engine()->remove_window(it->second);
+  }
+  _sbuffers.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,8 +132,14 @@ write(ostream &out, int indent_level) const {
 ////////////////////////////////////////////////////////////////////
 void LightLensNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  LensNode::write_datagram(manager, dg);
+  Camera::write_datagram(manager, dg);
   Light::write_datagram(manager, dg);
+  
+  dg.add_bool(_shadow_caster);
+  dg.add_int32(_sb_xsize);
+  dg.add_int32(_sb_ysize);
+  dg.add_int32(_sb_sort);
+  dg.add_float64(_push_bias);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,6 +151,13 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 void LightLensNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  LensNode::fillin(scan, manager);
+  Camera::fillin(scan, manager);
   Light::fillin(scan, manager);
+  
+  bool shadow_caster = scan.get_bool();
+  int sb_xsize = scan.get_int32();
+  int sb_ysize = scan.get_int32();
+  int sb_sort = scan.get_int32();
+  set_shadow_caster(shadow_caster, sb_xsize, sb_ysize, sb_sort);
+  set_push_bias(scan.get_float64());
 }

@@ -25,8 +25,8 @@ TypeHandle Camera::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 Camera::
-Camera(const string &name) :
-  LensNode(name),
+Camera(const string &name, Lens *lens) :
+  LensNode(name, lens),
   _active(true),
   _camera_mask(~PandaNode::get_overall_bit()),
   _initial_state(RenderState::make_empty())

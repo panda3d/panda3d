@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "directionalLight.h"
+#include "orthographicLens.h"
 #include "graphicsStateGuardianBase.h"
 #include "bamWriter.h"
 #include "bamReader.h"
@@ -65,7 +66,7 @@ fillin(DatagramIterator &scan, BamReader *) {
 ////////////////////////////////////////////////////////////////////
 DirectionalLight::
 DirectionalLight(const string &name) : 
-  LightNode(name) 
+  LightLensNode(name, new OrthographicLens())
 {
 }
 
@@ -78,7 +79,7 @@ DirectionalLight(const string &name) :
 ////////////////////////////////////////////////////////////////////
 DirectionalLight::
 DirectionalLight(const DirectionalLight &copy) :
-  LightNode(copy),
+  LightLensNode(copy),
   _cycler(copy._cycler)
 {
 }
@@ -106,7 +107,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void DirectionalLight::
 xform(const LMatrix4f &mat) {
-  LightNode::xform(mat);
+  LightLensNode::xform(mat);
   CDWriter cdata(_cycler);
   cdata->_point = cdata->_point * mat;
   cdata->_direction = cdata->_direction * mat;
@@ -199,7 +200,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void DirectionalLight::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  LightNode::write_datagram(manager, dg);
+  LightLensNode::write_datagram(manager, dg);
   manager->write_cdata(dg, _cycler);
 }
 
@@ -232,6 +233,6 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void DirectionalLight::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  LightNode::fillin(scan, manager);
+  LightLensNode::fillin(scan, manager);
   manager->read_cdata(scan, _cycler);
 }

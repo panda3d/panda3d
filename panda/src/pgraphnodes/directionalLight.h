@@ -17,14 +17,14 @@
 
 #include "pandabase.h"
 
-#include "lightNode.h"
+#include "lightLensNode.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : DirectionalLight
 // Description : A light shining from infinitely far away in a
 //               particular direction, like sunlight.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPHNODES DirectionalLight : public LightNode {
+class EXPCL_PANDA_PGRAPHNODES DirectionalLight : public LightLensNode {
 PUBLISHED:
   DirectionalLight(const string &name);
 
@@ -91,9 +91,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    LightNode::init_type();
+    LightLensNode::init_type();
     register_type(_type_handle, "DirectionalLight",
-                  LightNode::get_class_type());
+                  LightLensNode::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
