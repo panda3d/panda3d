@@ -29,9 +29,9 @@ TypeHandle LensNode::_type_handle;
 //  Description:
 ////////////////////////////////////////////////////////////////////
 LensNode::
-LensNode(const string &name) :
+LensNode(const string &name, Lens *lens) :
   PandaNode(name),
-  _lens(new PerspectiveLens())
+  _lens(lens)
 {
 }
 

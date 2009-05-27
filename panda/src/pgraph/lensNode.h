@@ -19,6 +19,7 @@
 
 #include "pandaNode.h"
 #include "lens.h"
+#include "perspectiveLens.h"
 #include "pointerTo.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -30,7 +31,7 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH LensNode : public PandaNode {
 PUBLISHED:
-  LensNode(const string &name);
+  LensNode(const string &name, Lens *lens = new PerspectiveLens());
 
 protected:
   LensNode(const LensNode &copy);
