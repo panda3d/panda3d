@@ -125,6 +125,17 @@ ConfigVariableBool prefer_parasite_buffer
           "cause problems if the user subsequently resizes the window "
           "smaller than the buffer."));
 
+ConfigVariableBool force_parasite_buffer
+("force-parasite-buffer", false,
+ PRC_DESC("Set this true to make GraphicsOutput::make_texture_buffer() really "
+          "strongly prefer ParasiteBuffers over conventional offscreen buffers.  "
+          "With this set, it will create a ParasiteBuffer every time an offscreen "
+          "buffer is requested, even if this means reducing the buffer size to fit "
+          "within the window.  The only exceptions are for buffers that, by their "
+          "nature, really cannot use ParasiteBuffers (like depth textures).  You might "
+          "set this true if you don't trust your graphics driver's support for "
+          "offscreen buffers."));
+
 ConfigVariableBool prefer_single_buffer
 ("prefer-single-buffer", true,
  PRC_DESC("Set this true to make GraphicsOutput::make_render_texture() first "

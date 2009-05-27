@@ -47,6 +47,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableString screenshot_extension;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool prefer_texture_buffer;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool prefer_parasite_buffer;
+extern EXPCL_PANDA_DISPLAY ConfigVariableBool force_parasite_buffer;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool prefer_single_buffer;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt max_texture_stages;

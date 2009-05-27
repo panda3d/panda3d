@@ -365,6 +365,17 @@ make_output(GraphicsPipe *pipe,
     return buffer;
   }
 
+  // If force-parasite-buffer is set, we create a parasite buffer even
+  // if it's less than ideal.  You might set this if you really don't
+  // trust your graphics driver's support for offscreen buffers.
+  if (force_parasite_buffer && can_use_parasite) {
+    ParasiteBuffer *buffer = new ParasiteBuffer(host, name, x_size, y_size, flags);
+    buffer->_sort = sort;
+    do_add_window(buffer, threading_model);
+    do_add_gsg(host->get_gsg(), pipe, threading_model);
+    return buffer;
+  }
+
   // Ask the pipe to create a window.
   
   for (int retry=0; retry<10; retry++) {
