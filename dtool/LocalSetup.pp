@@ -199,6 +199,15 @@
 #format straight
 /* dtool_config.h.  Generated automatically by $[PPREMAKE] from $[SOURCEFILE]. */
 
+/* Debug / non-debug symbols.  OPTIMIZE = $[OPTIMIZE] */
+#if $[<= $[OPTIMIZE],2]
+#define _DEBUG 1
+#elif $[= $[OPTIMIZE],4]
+#define NDEBUG 1
+#endif
+$[cdefine _DEBUG]
+$[cdefine NDEBUG]
+
 /* Define if we have Python installed.  */
 $[cdefine HAVE_PYTHON]
 $[cdefine USE_DEBUG_PYTHON]

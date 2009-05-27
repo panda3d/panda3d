@@ -75,10 +75,10 @@
 #endif
 
 // do NOT try to do #defer #defer CDEFINES_OPT1 $[CDEFINES_OPT1] here!  it wont let Sources.pp define their own CDEFINES_OPT1!  they must use EXTRA_CDEFS!
-#defer CDEFINES_OPT1 $[if $[NO_DEBUG_CDEF],,_DEBUG] $[EXTRA_CDEFS]
-#defer CDEFINES_OPT2 $[if $[NO_DEBUG_CDEF],,_DEBUG] $[EXTRA_CDEFS]
+#defer CDEFINES_OPT1 $[EXTRA_CDEFS]
+#defer CDEFINES_OPT2 $[EXTRA_CDEFS]
 #defer CDEFINES_OPT3 $[EXTRA_CDEFS]
-#defer CDEFINES_OPT4 NDEBUG $[EXTRA_CDEFS]
+#defer CDEFINES_OPT4 $[EXTRA_CDEFS]
 
 #defer cdefines $[CDEFINES_OPT$[OPTIMIZE]]
 
@@ -144,7 +144,7 @@
 #defer STATIC_LIB_C++ $[STATIC_LIB_C]
 
 #defer COMPILE_IDL midl /nologo /env win32 /Oicf $[DECYGWINED_INC_PATHLIST_ARGS]
-#defer COMPILE_RC rc /R /D "NDEBUG" /L 0x409 $[DECYGWINED_INC_PATHLIST_ARGS]
+#defer COMPILE_RC rc /R /L 0x409 $[DECYGWINED_INC_PATHLIST_ARGS]
 
 // if we're attached, use dllbase.txt.  otherwise let OS loader resolve dll addrspace collisions
 #if $[ne $[CTPROJS],]
