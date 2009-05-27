@@ -17,7 +17,6 @@
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
-#include "graphicsEngine.h"
 
 TypeHandle LightLensNode::_type_handle;
 
@@ -76,9 +75,13 @@ LightLensNode(const LightLensNode &copy) :
 void LightLensNode::
 clear_shadow_buffers() {
   ShadowBuffers::iterator it;
+  // drose: Temporarily commenting out--can't call get_engine() or
+  // remove_window() on an undefined class.
+  /*
   for(it = _sbuffers.begin(); it != _sbuffers.end(); ++it) {
     it->first->get_engine()->remove_window(it->second);
   }
+  */
   _sbuffers.clear();
 }
 

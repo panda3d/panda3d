@@ -19,8 +19,8 @@
 
 #include "light.h"
 #include "camera.h"
-#include "graphicsStateGuardian.h"
-#include "graphicsOutput.h"
+#include "graphicsStateGuardianBase.h"
+#include "typedWritableReferenceCount.h"
 
 class ShaderGenerator;
 
@@ -48,7 +48,11 @@ protected:
   bool _shadow_caster;
   int _sb_xsize, _sb_ysize, _sb_sort;
   double _push_bias;
-  typedef pmap<CPT(GraphicsStateGuardian), PT(GraphicsOutput) > ShadowBuffers;
+
+  // drose: This is really a map of GSG -> GraphicsOutput.
+  // Temporarily changed it to TypedWritableReferenceCount to allow
+  // compilation without circular dependencies.
+  typedef pmap<CPT(GraphicsStateGuardianBase), PT(TypedWritableReferenceCount) > ShadowBuffers;
   ShadowBuffers _sbuffers;
 
 public:
