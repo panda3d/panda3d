@@ -7430,6 +7430,13 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
     image_compression = Texture::CM_off;
   } 
 
+  if (GLCAT.is_debug()) {
+    if (image.is_null()) {
+      GLCAT.debug()
+        << "Got NULL image: " << tex->get_name() << "\n";
+    }
+  }
+
   /*
   if (image.is_null()) {
     // If we don't have an image, we can't upload.
@@ -7693,6 +7700,11 @@ upload_texture_image(CLP(TextureContext) *gtc,
   bool load_ram_mipmaps = false;
 
   if (image.is_null()) {
+    if (GLCAT.is_debug()) {
+      GLCAT.debug()
+        << "Not loading NULL image " << tex->get_name() << "\n";
+    }
+
     if (uses_mipmaps) {
       if (_supports_generate_mipmap) {
         GLP(TexParameteri)(texture_target, GL_GENERATE_MIPMAP, true);
