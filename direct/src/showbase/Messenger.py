@@ -30,9 +30,12 @@ class Messenger:
         Or, for an example with more real data:
             {'mouseDown': {avatar: [avatar.jump, [2.0], 1]}}
         """
+        # eventName->objMsgrId->callbackInfo
         self.__callbacks = {}
+        # objMsgrId->set(eventName)
         self.__objectEvents = {}
         self._messengerIdGen = 0
+        # objMsgrId->listenerObject
         self._id2object = {}
 
         # A mapping of taskChain -> eventList, used for sending events
@@ -61,10 +64,10 @@ class Messenger:
         # accept/ignore more than once over their lifetime)
         # get unique messenger id for this object
         # assumes lock is held.
-        if not hasattr(object, '_messengerId'):
-            object._messengerId = (object.__class__.__name__, self._messengerIdGen)
+        if not hasattr(object, '_MSGRmessengerId'):
+            object._MSGRmessengerId = (object.__class__.__name__, self._messengerIdGen)
             self._messengerIdGen += 1
-        return object._messengerId
+        return object._MSGRmessengerId
 
     def _storeObject(self, object):
         # store reference-counted reference to object in case we need to
@@ -149,14 +152,14 @@ class Messenger:
                         self.notify.warning(
                             "object: %s accept: \"%s\" new callback: %s() supplanting old callback: %s()" %
                             (object.__class__.__name__, safeRepr(event), method.__name__, oldMethod.__name__))
-            else:
-                self._storeObject(object)
 
             acceptorDict[id] = [method, extraArgs, persistent]
 
             # Remember that this object is listening for this event
             eventDict = self.__objectEvents.setdefault(id, {})
-            eventDict.setdefault(event, None)
+            if event not in eventDict:
+                self._storeObject(object)
+                eventDict[event] = None
         finally:
             self.lock.release()
 
@@ -219,7 +222,7 @@ class Messenger:
                         # entry from the Messenger alltogether
                         if (len(acceptorDict) == 0):
                             del self.__callbacks[event]
-                        self._releaseObject(object)
+                    self._releaseObject(object)
                 del self.__objectEvents[id]
         finally:
             self.lock.release()
@@ -343,7 +346,8 @@ class Messenger:
                         del eventDict[event]
                         if (len(eventDict) == 0):
                             del self.__objectEvents[id]
-
+                        self._releaseObject(self._getObject(id))
+                        
                     del acceptorDict[id]
                     # If the dictionary at this event is now empty, remove
                     # the event entry from the Messenger altogether
@@ -384,6 +388,7 @@ class Messenger:
         try:
             self.__callbacks.clear()
             self.__objectEvents.clear()
+            self._id2object.clear()
         finally:
             self.lock.release()
 
