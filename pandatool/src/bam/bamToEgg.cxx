@@ -400,7 +400,9 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
       const GeomPrimitive *primitive = geom->get_primitive(j);
       CPT(GeomPrimitive) simple = primitive->decompose();
       if (simple->is_of_type(GeomTriangles::get_class_type())) {
-        convert_triangles(geom->get_vertex_data(),
+        CPT(GeomVertexData) vdata = geom->get_vertex_data();
+        vdata = vdata->animate_vertices(true, Thread::get_current_thread());
+        convert_triangles(vdata,
                           DCAST(GeomTriangles, simple), geom_state,
                           net_mat, egg_parent);
       }
