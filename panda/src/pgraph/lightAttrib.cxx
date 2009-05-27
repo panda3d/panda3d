@@ -22,6 +22,7 @@
 #include "datagramIterator.h"
 #include "config_pgraph.h"
 #include "attribNodeRegistry.h"
+#include "indent.h"
 
 CPT(RenderAttrib) LightAttrib::_empty_attrib;
 int LightAttrib::_attrib_slot;
@@ -611,7 +612,11 @@ output(ostream &out) const {
     Lights::const_iterator fi;
     for (fi = _off_lights.begin(); fi != _off_lights.end(); ++fi) {
       NodePath light = (*fi);
-      out << " " << light;
+      if (light.is_empty()) {
+        out << " " << light;
+      } else {
+        out << " " << light.get_name();
+      }        
     }
 
     if (!_on_lights.empty()) {
@@ -622,7 +627,54 @@ output(ostream &out) const {
   Lights::const_iterator li;
   for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
     NodePath light = (*li);
-    out << " " << light;
+    if (light.is_empty()) {
+      out << " " << light;
+    } else {
+      out << " " << light.get_name();
+    }        
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LightAttrib::write
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void LightAttrib::
+write(ostream &out, int indent_level) const {
+  indent(out, indent_level) << get_type() << ":";
+  if (_off_lights.empty()) {
+    if (_on_lights.empty()) {
+      if (_off_all_lights) {
+        out << "all off\n";
+      } else {
+        out << "identity\n";
+      }
+    } else {
+      if (_off_all_lights) {
+        out << "set\n";
+      } else {
+        out << "on\n";
+      }
+    }
+
+  } else {
+    out << "off\n";
+    Lights::const_iterator fi;
+    for (fi = _off_lights.begin(); fi != _off_lights.end(); ++fi) {
+      NodePath light = (*fi);
+      indent(out, indent_level + 2) << light << "\n";
+    }
+
+    if (!_on_lights.empty()) {
+      indent(out, indent_level) << "on\n";
+    }
+  }
+    
+  Lights::const_iterator li;
+  for (li = _on_lights.begin(); li != _on_lights.end(); ++li) {
+    NodePath light = (*li);
+    indent(out, indent_level + 2) << light << "\n";
   }
 }
 
@@ -925,58 +977,75 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 int LightAttrib::
 complete_pointers(TypedWritable **p_list, BamReader *manager) {
   int pi = RenderAttrib::complete_pointers(p_list, manager);
-  AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
 
-  Lights::iterator ci = _off_lights.begin();
-  while (ci != _off_lights.end()) {
+  BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
+  nassertr(aux != NULL, pi);
+
+  int i;
+  aux->_off_list.reserve(aux->_num_off_lights);
+  for (i = 0; i < aux->_num_off_lights; ++i) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
-    
-    // We go through some effort to look up the node in the registry
-    // without creating a NodePath around it first (which would up,
-    // and then down, the reference count, possibly deleting the
-    // node).
-    int ni = areg->find_node(node->get_type(), node->get_name());
-    if (ni != -1) {
-      (*ci) = areg->get_node(ni);
-    } else {
-      (*ci) = NodePath(node);
-    }
-    ++ci;
+    aux->_off_list.push_back(node);
   }
-  _off_lights.sort();
 
-  ci = _on_lights.begin();
-  while (ci != _on_lights.end()) {
+  aux->_on_list.reserve(aux->_num_on_lights);
+  for (i = 0; i < aux->_num_on_lights; ++i) {
     PandaNode *node;
     DCAST_INTO_R(node, p_list[pi++], pi);
-
-    int ni = areg->find_node(node->get_type(), node->get_name());
-    if (ni != -1) {
-      (*ci) = areg->get_node(ni);
-    } else {
-      (*ci) = NodePath(node);
-    }
-    ++ci;
+    aux->_on_list.push_back(node);
   }
-  _on_lights.sort();
 
   return pi;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: LightAttrib::require_fully_complete
+//     Function: LightAttrib::finalize
 //       Access: Public, Virtual
-//  Description: Some objects require all of their nested pointers to
-//               have been completed before the objects themselves can
-//               be completed.  If this is the case, override this
-//               method to return true, and be careful with circular
-//               references (which would make the object unreadable
-//               from a bam file).
+//  Description: Called by the BamReader to perform any final actions
+//               needed for setting up the object after all objects
+//               have been read and all pointers have been completed.
 ////////////////////////////////////////////////////////////////////
-bool LightAttrib::
-require_fully_complete() const {
-  return true;
+void LightAttrib::
+finalize(BamReader *manager) {
+  // Now it's safe to convert our saved PandaNodes into NodePaths.
+  BamAuxData *aux = (BamAuxData *)manager->get_aux_data(this, "lights");
+  nassertv(aux != NULL);
+  nassertv(aux->_num_off_lights == (int)aux->_off_list.size());
+  nassertv(aux->_num_on_lights == (int)aux->_on_list.size());
+
+  AttribNodeRegistry *areg = AttribNodeRegistry::get_global_ptr();
+
+  _off_lights.reserve(aux->_off_list.size());
+  NodeList::iterator ni;
+  for (ni = aux->_off_list.begin(); ni != aux->_off_list.end(); ++ni) {
+    PandaNode *node = (*ni);
+    int n = areg->find_node(node->get_type(), node->get_name());
+    if (n != -1) {
+      // If it's in the registry, add that NodePath.
+      _off_lights.push_back(areg->get_node(n));
+    } else {
+      // Otherwise, add any arbitrary NodePath.  Complain if it's
+      // ambiguous.
+      _off_lights.push_back(NodePath(node));
+    }
+  }
+  _off_lights.sort();
+
+  _on_lights.reserve(aux->_on_list.size());
+  for (ni = aux->_on_list.begin(); ni != aux->_on_list.end(); ++ni) {
+    PandaNode *node = (*ni);
+    int n = areg->find_node(node->get_type(), node->get_name());
+    if (n != -1) {
+      // If it's in the registry, add that NodePath.
+      _on_lights.push_back(areg->get_node(n));
+    } else {
+      // Otherwise, add any arbitrary NodePath.  Complain if it's
+      // ambiguous.
+      _on_lights.push_back(NodePath(node));
+    }
+  }
+  _on_lights.sort();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -996,6 +1065,8 @@ make_from_bam(const FactoryParams &params) {
   parse_params(params, scan, manager);
   attrib->fillin(scan, manager);
 
+  manager->register_finalize(attrib);
+
   return attrib;
 }
 
@@ -1010,31 +1081,14 @@ void LightAttrib::
 fillin(DatagramIterator &scan, BamReader *manager) {
   RenderAttrib::fillin(scan, manager);
 
-  // We cheat a little bit here.  In the middle of bam version 4.10,
-  // we completely redefined the bam storage definition for
-  // LightAttribs, without bothering to up the bam version or even to
-  // attempt to read the old definition.  We get away with this,
-  // knowing that the egg loader doesn't create LightAttribs, and
-  // hence no old bam files have the old definition for LightAttrib
-  // within them.
-
   _off_all_lights = scan.get_bool();
 
-  int num_off_lights = scan.get_uint16();
+  BamAuxData *aux = new BamAuxData;
+  manager->set_aux_data(this, "lights", aux);
+
+  aux->_num_off_lights = scan.get_uint16();
+  manager->read_pointers(scan, aux->_num_off_lights);
     
-  // Push back an empty NodePath for each off Light for now, until we
-  // get the actual list of pointers later in complete_pointers().
-  _off_lights.reserve(num_off_lights);
-  int i;
-  for (i = 0; i < num_off_lights; i++) {
-    manager->read_pointer(scan);
-    _off_lights.push_back(NodePath());
-  }
-    
-  int num_on_lights = scan.get_uint16();
-  _on_lights.reserve(num_on_lights);
-  for (i = 0; i < num_on_lights; i++) {
-    manager->read_pointer(scan);
-    _on_lights.push_back(NodePath());
-  }
+  aux->_num_on_lights = scan.get_uint16();
+  manager->read_pointers(scan, aux->_num_on_lights);
 }

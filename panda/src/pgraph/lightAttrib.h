@@ -95,6 +95,7 @@ PUBLISHED:
 
 public:
   virtual void output(ostream &out) const;
+  virtual void write(ostream &out, int indent_level) const;
 
 protected:
   virtual int compare_to_impl(const RenderAttrib *other) const;
@@ -127,10 +128,25 @@ PUBLISHED:
   }
 
 public:
+  // This data is only needed when reading from a bam file.
+  typedef pvector<PT(PandaNode) > NodeList;
+  class BamAuxData : public BamReader::AuxData {
+  public:
+    // We hold a pointer to each of the PandaNodes on the on_list and
+    // off_list.  We will later convert these to NodePaths in
+    // finalize().
+    int _num_off_lights;
+    int _num_on_lights;
+    NodeList _off_list;
+    NodeList _on_list;
+  };
+
+public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
   virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
-  virtual bool require_fully_complete() const;
+
+  virtual void finalize(BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);
