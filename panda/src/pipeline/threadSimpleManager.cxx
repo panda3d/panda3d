@@ -682,8 +682,11 @@ do_timeslice_accounting(ThreadSimpleImpl *thread, double now) {
       << *thread->_parent_obj << " ran for " << elapsed << " s of "
       << thread->_stop_time - thread->_start_time << " requested.\n";
   }
-    
-  nassertv(elapsed >= 0.0);
+
+  // Clamp the elapsed time at 0.  (If it's less than 0, the clock is
+  // running backwards, ick.)
+  elapsed = max(elapsed, 0.0);
+
   unsigned int ticks = (unsigned int)(elapsed * _tick_scale + 0.5);
   thread->_run_ticks += ticks;
 
