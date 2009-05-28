@@ -74,9 +74,14 @@ erase(DynamicTextFont *font) {
   nassertv(_page != (DynamicTextPage *)NULL);
   nassertv(_page->has_ram_image());
 
+  // The glyph covers the pixels from (_x, _y) over the rectangle
+  // (_x_size, _y_size), but it doesn't include _margin pixels around
+  // the interior of the rectangle.  Erase all the pixels that the
+  // glyph covers.
   _page->fill_region(_x + _margin, 
-                     _page->get_y_size() - (_y + _y_size + _margin),
-                     _x_size, _y_size, font->get_bg());
+                     _page->get_y_size() - (_y + _y_size - _margin),
+                     _x_size - _margin * 2, _y_size - _margin * 2,
+                     font->get_bg());
 }
 
 ////////////////////////////////////////////////////////////////////
