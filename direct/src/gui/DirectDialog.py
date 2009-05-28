@@ -200,7 +200,10 @@ class DirectDialog(DirectFrame):
                           extraArgs = [value])
         # Position buttons and text
         pad = self['pad']
-        image = self.component('image0')
+        if self.hascomponent('image0'):
+            image = self.component('image0')
+        else:
+            image = None
         # Get size of text/geom without image (for state 0)
         if image:
             image.reparentTo(hidden)
