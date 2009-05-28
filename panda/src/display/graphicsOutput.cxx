@@ -436,7 +436,7 @@ set_inverted(bool inverted) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsOutput::set_sort
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Adjusts the sorting order of this particular
 //               GraphicsOutput, relative to other GraphicsOutputs.
 ////////////////////////////////////////////////////////////////////

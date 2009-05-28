@@ -23,6 +23,7 @@
 #include "graphicsStateGuardian.h"
 #include "drawableRegion.h"
 #include "renderBuffer.h"
+#include "graphicsOutputBase.h"
 
 #include "typedWritableReferenceCount.h"
 #include "pandaNode.h"
@@ -58,7 +59,7 @@ class GraphicsEngine;
 //               TypedWritableReferenceCount instead of
 //               TypedReferenceCount for that convenience.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_DISPLAY GraphicsOutput : public TypedWritableReferenceCount, public DrawableRegion {
+class EXPCL_PANDA_DISPLAY GraphicsOutput : public GraphicsOutputBase, public DrawableRegion {
 protected:
   GraphicsOutput(GraphicsEngine *engine,
                  GraphicsPipe *pipe, 
@@ -135,7 +136,7 @@ PUBLISHED:
   INLINE void clear_delete_flag();
   INLINE bool get_delete_flag() const;
 
-  void set_sort(int sort);
+  virtual void set_sort(int sort);
   INLINE int get_sort() const;
 
   INLINE void set_child_sort(int child_sort);
@@ -313,9 +314,9 @@ public:
     return _type_handle;
   }
   static void init_type() {
-    TypedWritableReferenceCount::init_type();
+    GraphicsOutputBase::init_type();
     register_type(_type_handle, "GraphicsOutput",
-                  TypedWritableReferenceCount::get_class_type());
+                  GraphicsOutputBase::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

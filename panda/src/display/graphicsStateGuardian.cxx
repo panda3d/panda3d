@@ -1306,6 +1306,23 @@ clear_state_and_transform() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::remove_window
+//       Access: Public, Virtual
+//  Description: This is simply a transparent call to
+//               GraphicsEngine::remove_window().  It exists primary
+//               to support removing a window from that compiles
+//               before the display module, and therefore has no
+//               knowledge of a GraphicsEngine object.
+////////////////////////////////////////////////////////////////////
+void GraphicsStateGuardian::
+remove_window(GraphicsOutputBase *window) {
+  nassertv(_engine != (GraphicsEngine *)NULL);
+  GraphicsOutput *win;
+  DCAST_INTO_V(win, window);
+  _engine->remove_window(win);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::prepare_lens
 //       Access: Public, Virtual
 //  Description: Makes the current lens (whichever lens was most

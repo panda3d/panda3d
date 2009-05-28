@@ -1,5 +1,5 @@
-// Filename: config_gsgbase.cxx
-// Created by:  drose (06Oct99)
+// Filename: graphicsOutputBase.I
+// Created by:  drose (27May09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,17 +12,3 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "config_gsgbase.h"
-#include "displayRegionBase.h"
-#include "graphicsOutputBase.h"
-#include "graphicsStateGuardianBase.h"
-
-#include "dconfig.h"
-
-Configure(config_gsgbase);
-
-ConfigureFn(config_gsgbase) {
-  DisplayRegionBase::init_type();
-  GraphicsOutputBase::init_type();
-  GraphicsStateGuardianBase::init_type();
-}

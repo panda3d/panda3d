@@ -61,14 +61,10 @@ set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int buffer_so
   _sb_xsize = buffer_xsize;
   _sb_ysize = buffer_ysize;
   if (buffer_sort != _sb_sort) {
-    // drose: Temporarily commenting out--can't call set_sort() on an
-    // undefined class.
-    /*
     ShadowBuffers::iterator it;
     for(it = _sbuffers.begin(); it != _sbuffers.end(); ++it) {
-      it->second->set_sort(buffer_sort);
+      (*it).second->set_sort(buffer_sort);
     }
-    */
     _sb_sort = buffer_sort;
   }
   set_active(caster);

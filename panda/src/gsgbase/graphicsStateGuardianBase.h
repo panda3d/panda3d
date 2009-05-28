@@ -27,6 +27,7 @@ class Thread;
 class RenderBuffer;
 class GraphicsWindow;
 class NodePath;
+class GraphicsOutputBase;
 
 class VertexBufferContext;
 class IndexBufferContext;
@@ -130,6 +131,8 @@ public:
 
   virtual void clear_before_callback()=0;
   virtual void clear_state_and_transform()=0;
+
+  virtual void remove_window(GraphicsOutputBase *window)=0;
 
 #ifndef CPPPARSER
   // We hide this from interrogate, so that it will be properly

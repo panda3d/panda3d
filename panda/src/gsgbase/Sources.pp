@@ -11,15 +11,18 @@
   #define SOURCES \
     config_gsgbase.h \
     displayRegionBase.I displayRegionBase.h \
+    graphicsOutputBase.I graphicsOutputBase.h \
     graphicsStateGuardianBase.h    
 
   #define INCLUDED_SOURCES \
     config_gsgbase.cxx \
     displayRegionBase.cxx \
+    graphicsOutputBase.cxx \
     graphicsStateGuardianBase.cxx
 
   #define INSTALL_HEADERS \
     displayRegionBase.I displayRegionBase.h \
+    graphicsOutputBase.I graphicsOutputBase.h \
     graphicsStateGuardianBase.h
 
   #define IGATESCAN all

@@ -228,6 +228,8 @@ public:
   virtual void clear_before_callback();
   virtual void clear_state_and_transform();
 
+  virtual void remove_window(GraphicsOutputBase *window);
+
   virtual CPT(TransformState) calc_projection_mat(const Lens *lens);
   virtual bool prepare_lens();
 
