@@ -16,6 +16,11 @@
     config_interval.cxx config_interval.h \
     cInterval.cxx cInterval.I cInterval.h \
     cIntervalManager.cxx cIntervalManager.I cIntervalManager.h \
+    cConstraintInterval.cxx cConstraintInterval.I cConstraintInterval.h \
+    cConstrainTransformInterval.cxx cConstrainTransformInterval.I cConstrainTransformInterval.h \
+    cConstrainPosInterval.cxx cConstrainPosInterval.I cConstrainPosInterval.h \
+    cConstrainHprInterval.cxx cConstrainHprInterval.I cConstrainHprInterval.h \
+    cConstrainPosHprInterval.cxx cConstrainPosHprInterval.I cConstrainPosHprInterval.h \
     cLerpInterval.cxx cLerpInterval.I cLerpInterval.h \
     cLerpNodePathInterval.cxx cLerpNodePathInterval.I cLerpNodePathInterval.h \
     cLerpAnimEffectInterval.cxx cLerpAnimEffectInterval.I cLerpAnimEffectInterval.h \
@@ -29,6 +34,11 @@
     config_interval.h \
     cInterval.I cInterval.h \
     cIntervalManager.I cIntervalManager.h \
+    cConstraintInterval.I cConstraintInterval.h \
+    cConstrainTransformInterval.I cConstrainTransformInterval.h \
+    cConstrainPosInterval.I cConstrainPosInterval.h \
+    cConstrainHprInterval.I cConstrainHprInterval.h \
+    cConstrainPosHprInterval.I cConstrainPosHprInterval.h \
     cLerpInterval.I cLerpInterval.h \
     cLerpNodePathInterval.I cLerpNodePathInterval.h \
     cLerpAnimEffectInterval.I cLerpAnimEffectInterval.h \

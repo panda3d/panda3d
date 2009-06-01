@@ -7,7 +7,7 @@ class Mopath(DirectObject):
 
     nameIndex = 1
 
-    def __init__(self, name = None, fluid = 1):
+    def __init__(self, name = None, fluid = 1, objectToLoad = None, upVectorNodePath = None, reverseUpVector = False):
         if (name == None):
             name = 'mopath%d' % self.nameIndex
             self.nameIndex = self.nameIndex + 1
@@ -19,7 +19,15 @@ class Mopath(DirectObject):
         self.tangentVec = Vec3(0)
         self.fFaceForward = 0
         self.timeScale = 1
+        self.upVectorNodePath = upVectorNodePath
+        self.reverseUpVector = reverseUpVector
         self.reset()
+        if isinstance( objectToLoad, NodePath ):
+            self.loadNodePath( objectToLoad )
+        elif isinstance( objectToLoad, str ):
+            self.loadFile( objectToLoad )
+        elif objectToLoad is not None:
+            print "Mopath: Unable to load object '%s', objectToLoad must be a file name string or a NodePath" % objectToLoad
 
     def getMaxT(self):
         return self.maxT * self.timeScale
@@ -45,7 +53,7 @@ class Mopath(DirectObject):
         elif (self.hprNurbsCurve != None):
             self.maxT = self.hprNurbsCurve.getMaxT()
         else:
-            print 'Mopath: no valid curves in file.'
+            print 'Mopath: no valid curves in nodePath: %s' % nodePath
 
 
     def reset(self):
@@ -67,7 +75,7 @@ class Mopath(DirectObject):
                 if (self.xyzNurbsCurve == None):
                     self.xyzNurbsCurve = node
                 else:
-                    print 'Mopath: got a PCT_NONE curve and an XYZ Curve!'
+                    print 'Mopath: got a PCT_NONE curve and an XYZ Curve in nodePath: %s' % nodePath
             elif (node.getCurveType() == PCTT):
                 self.tNurbsCurve.append(node)
         else:
@@ -111,7 +119,16 @@ class Mopath(DirectObject):
             node.setHpr(self.hprPoint)
         elif (self.fFaceForward and (self.xyzNurbsCurve != None)):
             self.xyzNurbsCurve.getTangent(self.playbackTime, self.tangentVec)
-            node.lookAt(Point3(self.posPoint + self.tangentVec))
+            #use the self.upVectorNodePath position if it exists to create an up vector for lookAt
+            if (self.upVectorNodePath is None):
+                node.lookAt(Point3(self.posPoint + self.tangentVec))
+            else:
+                if (self.reverseUpVector == False):
+                     node.lookAt(Point3(self.posPoint + self.tangentVec),
+                                 self.upVectorNodePath.getPos() - self.posPoint)
+                else:
+                     node.lookAt(Point3(self.posPoint + self.tangentVec),
+                                 self.posPoint - self.upVectorNodePath.getPos())
 
     def play(self, node, time = 0.0, loop = 0):
         if (self.xyzNurbsCurve == None) and (self.hprNurbsCurve == None):

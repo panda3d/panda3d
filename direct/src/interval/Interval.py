@@ -346,11 +346,43 @@ class Interval(DirectObject):
                     self.__clockStart += numLoops * timePerLoop
 
         else:
-            # Playing backwards.  Not supported at the moment for
-            # Python-style intervals.  To add support, copy the code
-            # from C++-style intervals in cInterval.cxx, and modify it
-            # for Python (as the above).
-            pass
+            # Playing backwards
+            t = (now - self.__clockStart) * self.__playRate + self.__endT
+
+            if t >= self.__startT:
+                # In the middle of the interval, not a problem.
+                if self.isStopped():
+                    self.privInitialize(t)
+                else:
+                    self.privStep(t)
+            else:
+                # Past the ending point; time to finalize.
+                if self.__startTAtStart:
+                    # Only finalize if the playback cycle includes the
+                    # whole interval.
+                    if self.isStopped():
+                        if self.getOpenEnded() or self.__loopCount != 0:
+                            self.privReverseInstant()
+                    else:
+                        self.privReverseFinalize()
+                else:
+                    if self.isStopped():
+                        self.privReverseInitialize(self.__startT)
+                    else:
+                        self.privStep(self.__startT)
+
+                # Advance the clock for the next loop cycle.
+                if self.__endT == self.__startT:
+                    # If the interval has no length, we loop exactly once.
+                    self.__loopCount += 1
+
+                else:
+                    # Otherwise, figure out how many loops we need to
+                    # skip.
+                    timePerLoop = (self.__endT - self.__startT) / -self.__playRate
+                    numLoops = math.floor((now - self.__clockStart) / timePerLoop)
+                    self.__loopCount += numLoops
+                    self.__clockStart += numLoops * timePerLoop
 
         shouldContinue = (self.__loopCount == 0 or self.__doLoop)
 

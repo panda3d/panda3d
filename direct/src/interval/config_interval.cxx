@@ -14,6 +14,11 @@
 
 #include "config_interval.h"
 #include "cInterval.h"
+#include "cConstraintInterval.h"
+#include "cConstrainTransformInterval.h"
+#include "cConstrainPosInterval.h"
+#include "cConstrainHprInterval.h"
+#include "cConstrainPosHprInterval.h"
 #include "cLerpInterval.h"
 #include "cLerpNodePathInterval.h"
 #include "cLerpAnimEffectInterval.h"
@@ -59,6 +64,11 @@ init_libinterval() {
   initialized = true;
 
   CInterval::init_type();
+  CConstraintInterval::init_type();
+  CConstrainTransformInterval::init_type();
+  CConstrainPosInterval::init_type();
+  CConstrainHprInterval::init_type();
+  CConstrainPosHprInterval::init_type();
   CLerpInterval::init_type();
   CLerpNodePathInterval::init_type();
   CLerpAnimEffectInterval::init_type();
