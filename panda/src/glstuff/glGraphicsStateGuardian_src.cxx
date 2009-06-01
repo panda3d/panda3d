@@ -762,12 +762,16 @@ reset() {
       _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
 #ifdef CG_CL_GEOMETRY
       _shader_caps._active_gprofile = (int)cgGLGetLatestProfile(CG_GL_GEOMETRY);  // CG2 CHANGE
+#else
+      _shader_caps._active_gprofile = (int)0;
 #endif
     }
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
 #ifdef CG_PROFILE_GPU_CP
     _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;   // CG2 CHANGE
+#else
+    _shader_caps._ultimate_gprofile = (int)0;
 #endif
     _glBindProgram = (PFNGLBINDPROGRAMARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "BindProgramARB");
