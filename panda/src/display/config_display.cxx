@@ -283,6 +283,13 @@ ConfigVariableEnum<WindowProperties::ZOrder> z_order
 ConfigVariableString window_title
 ("window-title", "Panda");
 
+ConfigVariableInt parent_window_handle
+("parent-window-title", 0,
+ PRC_DESC("The window handle of the parent window to attach the Panda window "
+          "to, for the purposes of creating an embedded window.  This is "
+          "an HWND on Windows, or the NSWindow pointer or XWindow pointer "
+          "converted to an integer, on OSX and X11."));
+
 ConfigVariableString framebuffer_mode
 ("framebuffer-mode", "",
  PRC_DESC("No longer has any effect.  Do not use."));

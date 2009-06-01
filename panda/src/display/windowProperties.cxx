@@ -83,6 +83,9 @@ get_default() {
     props.set_z_order(z_order);
   }
   props.set_title(window_title);
+  if (parent_window_handle.get_value() != 0) {
+    props.set_parent_window(parent_window_handle);
+  }
   props.set_mouse_mode(M_absolute);
   return props;
 }
