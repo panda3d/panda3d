@@ -57,7 +57,7 @@ void gl_shade_vertex(GLContext *c,GLVertex *v)
         d.v[2]*=tmp;
       }
       att=1.0f/(l->attenuation[0]+dist*(l->attenuation[1]+
-				     dist*l->attenuation[2]));
+                                        dist*l->attenuation[2]));
     }
     dot=d.v[0]*n.v[0]+d.v[1]*n.v[1]+d.v[2]*n.v[2];
     if (twoside && dot < 0) dot = -dot;

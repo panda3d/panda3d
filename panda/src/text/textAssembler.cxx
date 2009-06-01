@@ -630,7 +630,7 @@ assemble_text() {
       //placement->copy_graphic_to(shadow_node, shadow_state, shadow_xform);
       any_shadow = true;
     }
-	
+
     if (_dynamic_merge) {
       placement->assign_append_to(geom_collector_map, text_state, LMatrix4f::ident_mat());
     } else {

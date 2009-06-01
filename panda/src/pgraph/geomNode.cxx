@@ -450,8 +450,8 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point, bool &found_any,
   for (gi = geoms->begin(); gi != geoms->end(); ++gi) {
     CPT(Geom) geom = (*gi)._geom.get_read_pointer();
     geom->calc_tight_bounds(min_point, max_point, found_any,
-			    geom->get_vertex_data(current_thread)->animate_vertices(true, current_thread),
-			    !next_transform->is_identity(), mat,
+                            geom->get_vertex_data(current_thread)->animate_vertices(true, current_thread),
+                            !next_transform->is_identity(), mat,
                             current_thread);
   }
 

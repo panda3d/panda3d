@@ -21,6 +21,12 @@
 #include "milesAudioSample.h"
 #include "milesAudioSequence.h"
 
+#ifdef WIN32
+// For midiOutReset()
+#include <windows.h>  
+#include <mmsystem.h>
+#endif
+
 GlobalMilesManager *GlobalMilesManager::_global_ptr;
 
 ////////////////////////////////////////////////////////////////////

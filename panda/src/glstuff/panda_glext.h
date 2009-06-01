@@ -3390,7 +3390,7 @@ extern "C" {
 #include <stddef.h>
 #ifndef GL_VERSION_2_0
 /* GL type for program/shader text */
-typedef char GLchar;			/* native character */
+typedef char GLchar;            /* native character */
 #endif
 
 #ifndef GL_VERSION_1_5
@@ -3407,8 +3407,8 @@ typedef ptrdiff_t GLsizeiptrARB;
 
 #ifndef GL_ARB_shader_objects
 /* GL types for handling shader object handles and program/shader text */
-typedef char GLcharARB;		/* native character */
-typedef unsigned int GLhandleARB;	/* shader object handle */
+typedef char GLcharARB;     /* native character */
+typedef unsigned int GLhandleARB;   /* shader object handle */
 #endif
 
 /* GL types for "half" precision (s10e5) float data in host memory */
@@ -6924,6 +6924,15 @@ GLAPI void APIENTRY glRenderbufferStorageMultisampleEXT (GLenum, GLsizei, GLenum
 #endif /* GL_GLEXT_PROTOTYPES */
 typedef void (APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC) (GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
 #endif
+
+#ifndef GL_NV_framebuffer_multisample_coverage
+#define GL_NV_framebuffer_multisample_coverage 1
+#ifdef GL_GLEXT_PROTOTYPES
+GLAPI void APIENTRY glRenderbufferStorageMultisampleCoverageNV (GLenum, GLsizei, GLsizei, GLenum, GLsizei, GLsizei);
+#endif /* GL_GLEXT_PROTOTYPES */
+typedef void (APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC) (GLenum target, GLsizei coverage_samples, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
+#endif
+
 
 #ifndef GL_MESAX_texture_stack
 #define GL_MESAX_texture_stack 1

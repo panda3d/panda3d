@@ -614,14 +614,18 @@ read(const Filename &filename) {
   
   string os_specific = filename.to_os_specific();
   // Open video file
-  if (av_open_input_file(&_format_context, os_specific.c_str(), NULL, 
-                         0, NULL) != 0) {
-    // Don't do anything, because nothing happened yet
+  int result = av_open_input_file(&_format_context, os_specific.c_str(), NULL, 
+                                  0, NULL);
+  if (result != 0) {
+    grutil_cat.error() << "ffmpeg AVERROR: " << result << endl;
+    // Don't call clear(), because nothing happened yet
     return false;
   }
 
   // Retrieve stream information
-  if (av_find_stream_info(_format_context) < 0) {
+  result = av_find_stream_info(_format_context);
+  if (result < 0) {
+    grutil_cat.error() << "ffmpeg AVERROR: " << result << endl;
     clear();
     return false;
   }
@@ -636,6 +640,8 @@ read(const Filename &filename) {
   }
 
   if (_stream_number == -1) {
+    grutil_cat.error()
+      << "ffmpeg: no stream found with codec of type CODEC_TYPE_VIDEO" << endl;
     clear();
     return false;
   }
@@ -643,21 +649,28 @@ read(const Filename &filename) {
   // Get a pointer to the codec context for the video stream
   AVCodecContext *codec_context = _format_context->streams[_stream_number]->codec;
   
+  if (grutil_cat.is_debug()) {
+    grutil_cat.debug()
+      << "ffmpeg: codec id is " << codec_context->codec_id << endl;
+  }
+
   // Find the decoder for the video stream
-  // printf("codec id is %d\n",codec_context->codec_id);
   _codec = avcodec_find_decoder(codec_context->codec_id);
   if (_codec == NULL) {
+    grutil_cat.error() << "ffmpeg: no appropriate decoder found" << endl;
     clear();
     return false;
   }
-  
+
   if (_codec->capabilities & CODEC_CAP_TRUNCATED) {
     codec_context->flags |= CODEC_FLAG_TRUNCATED;
   }
 
   // Open codec
   _codec_context = codec_context;
-  if (avcodec_open(_codec_context, _codec) < 0) {
+  result = avcodec_open(_codec_context, _codec);
+  if (result < 0) {
+    grutil_cat.error() << "ffmpeg AVERROR: " << result << endl;
     _codec_context = NULL;
     clear();
     return false;
@@ -668,10 +681,12 @@ read(const Filename &filename) {
   if (_codec_context->pix_fmt != PIX_FMT_RGBA32) {
     _frame_out = avcodec_alloc_frame();
     if (_frame_out == NULL) {
+      grutil_cat.error()
+        << "ffmpeg: unable to allocate AVPFrame (BGR24)" << endl;
       clear();
       return false;
     }
-    
+
     // Determine required buffer size and allocate buffer
     _image_size_bytes = avpicture_get_size(PIX_FMT_BGR24, _codec_context->width,
                                            _codec_context->height);
@@ -685,6 +700,8 @@ read(const Filename &filename) {
   } else {
     _frame_out = avcodec_alloc_frame();
     if (_frame_out == NULL) {
+      grutil_cat.error()
+        << "ffmpeg: unable to allocate AVPFrame (RGBA32)" << endl;
       clear();
       return false;
     }

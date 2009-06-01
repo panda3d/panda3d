@@ -71,7 +71,7 @@ protected:
 
 private:
   PT(BoundingVolume) do_recompute_bounds(const NodePath &rel_to,
-					 int pipeline_stage,
+                                         int pipeline_stage,
                                          Thread *current_thread) const;
   void render_sheet(CullTraverser *trav, CullTraverserData &data, 
                     NurbsSurfaceResult *result);

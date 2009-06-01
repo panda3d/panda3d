@@ -366,6 +366,12 @@
   #define fmodex_libs $[FMODEX_LIBS]
 #endif
 
+#if $[HAVE_PHYSX]
+  #define physx_ipath $[wildcard $[PHYSX_IPATH]]
+  #define physx_lpath $[wildcard $[PHYSX_LPATH]]
+  #define physx_libs $[PHYSX_LIBS]
+#endif
+
 #if $[HAVE_CHROMIUM]
   #define chromium_ipath $[wildcard $[CHROMIUM_IPATH]]
   #define chromium_lpath $[wildcard $[CHROMIUM_LPATH]]

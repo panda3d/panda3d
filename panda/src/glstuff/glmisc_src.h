@@ -37,6 +37,8 @@ extern ConfigVariableInt CLP(max_errors);
 extern ConfigVariableEnum<GeomEnums::UsageHint> CLP(min_buffer_usage_hint);
 extern ConfigVariableBool CLP(debug_buffers);
 extern ConfigVariableBool CLP(finish);
+extern ConfigVariableBool CLP(force_depth_stencil);
+extern ConfigVariableBool CLP(matrix_palette);
 
 extern EXPCL_GL void CLP(init_classes)();
 

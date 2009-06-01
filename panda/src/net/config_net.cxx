@@ -106,12 +106,12 @@ get_max_poll_cycle() {
     max_poll_cycle = new ConfigVariableDouble
       ("max-poll-cycle", 0.2,
        PRC_DESC("Specifies the maximum amount of time, in seconds, to "
-		"continue to read data within one cycle of the poll() "
-		"call.  If this is negative, the program will wait as "
-		"long as data is available to be read.  Setting this to "
-		"a reasonable value prevents poll() from completely "
-		"starving the rest of the application when data is coming "
-		"in faster than it can be processed."));
+                "continue to read data within one cycle of the poll() "
+                "call.  If this is negative, the program will wait as "
+                "long as data is available to be read.  Setting this to "
+                "a reasonable value prevents poll() from completely "
+                "starving the rest of the application when data is coming "
+                "in faster than it can be processed."));
   }
 
   return *max_poll_cycle;

@@ -200,8 +200,8 @@ ConfigVariableBool window_inverted
 ConfigVariableBool red_blue_stereo
 ("red-blue-stereo", false,
  PRC_DESC("Set this true to create windows with red-blue stereo mode enabled "
-	  "by default, if the framebuffer does not support true stereo "
-	  "rendering."));
+          "by default, if the framebuffer does not support true stereo "
+          "rendering."));
 
 ConfigVariableString red_blue_stereo_colors
 ("red-blue-stereo-colors", "red cyan",

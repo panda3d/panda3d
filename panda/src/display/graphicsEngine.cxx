@@ -1671,7 +1671,7 @@ setup_scene(GraphicsStateGuardian *gsg, DisplayRegionPipelineReader *dr) {
   }
   camera_node->cleanup_aux_scene_data(current_thread);
 
-  Lens *lens = camera_node->get_lens();
+  Lens *lens = camera_node->get_lens( dr->get_lens_index() );
   if (lens == (Lens *)NULL) {
     // No lens, no draw.
     return NULL;

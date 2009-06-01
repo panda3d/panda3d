@@ -257,6 +257,11 @@
 #set FMODEX_LIBS $[FMODEX_LIBS]
 #set HAVE_FMODEX $[HAVE_FMODEX]
 
+#set PHYSX_IPATH $[unixfilename $[PHYSX_IPATH]]
+#set PHYSX_LPATH $[unixfilename $[PHYSX_LPATH]]
+#set PHYSX_LIBS $[PHYSX_LIBS]
+#set HAVE_PHYSX $[HAVE_PHYSX]
+
 #set CHROMIUM_IPATH $[unixfilename $[CHROMIUM_IPATH]]
 #set CHROMIUM_LPATH $[unixfilename $[CHROMIUM_LPATH]]
 #set CHROMIUM_LIBS $[CHROMIUM_LIBS]
@@ -310,6 +315,9 @@
   #define FREETYPE_LIBS $[patsubst -l%,%,$[filter -l%,$[libs]]]
 #endif
 
+#if $[HAVE_PHYSX]
+  #define GENPYCODE_LIBS $[GENPYCODE_LIBS] libpandaphysx
+#endif
 
 // Finally, include the system configure file.
 #include $[THISDIRPREFIX]pptempl/System.pp

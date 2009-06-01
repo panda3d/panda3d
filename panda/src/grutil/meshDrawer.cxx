@@ -225,10 +225,10 @@ void MeshDrawer::billboard(LVector3f pos, int frame, float size, LVector4f _colo
 //               billboarding effect.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::segment(LVector3f start, LVector3f stop, int frame,
-           float thickness, LVector4f color) {
-	link_segment(start, frame, thickness, color);
-	link_segment(stop, frame, thickness, color);
-	link_segment_end(frame, color);
+                         float thickness, LVector4f color) {
+  link_segment(start, frame, thickness, color);
+  link_segment(stop, frame, thickness, color);
+  link_segment_end(frame, color);
 }
 ////////////////////////////////////////////////////////////////////
 //     Function: MeshDrawer::cross_segment
@@ -238,8 +238,7 @@ void MeshDrawer::segment(LVector3f start, LVector3f stop, int frame,
 //               and instead draws 2 planes in a cross.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::cross_segment(LVector3f start, LVector3f stop, int frame,
-           float thickness, LVector4f color) {
-
+                               float thickness, LVector4f color) {
   float u = float(int(frame%_plate_size))*_frame_size;
   float v = 1.0f-float(int(frame/_plate_size+1))*_frame_size;
 
@@ -279,37 +278,35 @@ void MeshDrawer::cross_segment(LVector3f start, LVector3f stop, int frame,
 //               and color on both sides.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::uneven_segment(LVector3f start, LVector3f stop,
-		int frame, int multi_frame,
-		float thickness_start, LVector4f color_start,
-		float thickness_stop, LVector4f color_stop) {
-
-	float u = float(int(frame%_plate_size))*_frame_size;
-	float v = 1.0f-float(int(frame/_plate_size+1))*_frame_size;
-
-	LVector3f v1 = start - _up*thickness_start;
-	LVector3f v2 = stop - _up*thickness_stop;
-	LVector3f v3 = stop + _up*thickness_stop;
-	LVector3f v4 = start + _up*thickness_start;
-
-	tri(v1, color_start, LVector2f(u,v),
-		  v2, color_stop, LVector2f(u+_frame_size*multi_frame,v),
-		  v3, color_stop, LVector2f(u+_frame_size*multi_frame,v+_frame_size));
-	tri(v3, color_stop, LVector2f(u+_frame_size*multi_frame,v+_frame_size),
-		  v4, color_start, LVector2f(u,v+_frame_size),
-		  v1, color_start, LVector2f(u,v));
-
-	v1 = start - _right*thickness_start;
-	v2 = stop - _right*thickness_stop;
-	v3 = stop + _right*thickness_stop;
-	v4 = start + _right*thickness_start;
-
-	tri(v1, color_start, LVector2f(u,v),
-		  v2, color_stop, LVector2f(u+_frame_size*multi_frame,v),
-		  v3, color_stop, LVector2f(u+_frame_size*multi_frame,v+_frame_size));
-	tri(v3, color_stop, LVector2f(u+_frame_size*multi_frame,v+_frame_size),
-		  v4, color_start, LVector2f(u,v+_frame_size),
-		  v1, color_start, LVector2f(u,v));
-
+                                int frame, int multi_frame,
+                                float thickness_start, LVector4f color_start,
+                                float thickness_stop, LVector4f color_stop) {
+  float u = float(int(frame%_plate_size))*_frame_size;
+  float v = 1.0f-float(int(frame/_plate_size+1))*_frame_size;
+  
+  LVector3f v1 = start - _up*thickness_start;
+  LVector3f v2 = stop - _up*thickness_stop;
+  LVector3f v3 = stop + _up*thickness_stop;
+  LVector3f v4 = start + _up*thickness_start;
+  
+  tri(v1, color_start, LVector2f(u,v),
+      v2, color_stop, LVector2f(u+_frame_size*multi_frame,v),
+      v3, color_stop, LVector2f(u+_frame_size*multi_frame,v+_frame_size));
+  tri(v3, color_stop, LVector2f(u+_frame_size*multi_frame,v+_frame_size),
+      v4, color_start, LVector2f(u,v+_frame_size),
+      v1, color_start, LVector2f(u,v));
+  
+  v1 = start - _right*thickness_start;
+  v2 = stop - _right*thickness_stop;
+  v3 = stop + _right*thickness_stop;
+  v4 = start + _right*thickness_start;
+  
+  tri(v1, color_start, LVector2f(u,v),
+      v2, color_stop, LVector2f(u+_frame_size*multi_frame,v),
+      v3, color_stop, LVector2f(u+_frame_size*multi_frame,v+_frame_size));
+  tri(v3, color_stop, LVector2f(u+_frame_size*multi_frame,v+_frame_size),
+      v4, color_start, LVector2f(u,v+_frame_size),
+      v1, color_start, LVector2f(u,v));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -426,36 +423,36 @@ void MeshDrawer::geometry(NodePath draw_node) {
 //               parameters.
 ////////////////////////////////////////////////////////////////////
 void MeshDrawer::link_segment(LVector3f pos, int frame,
-		float thickness, LVector4f color) {
+        float thickness, LVector4f color) {
   assert(_render.get_error_type() == NodePath::ET_ok);
   assert(_camera.get_error_type() == NodePath::ET_ok);
-	/*
-	 * X
-	 * ---X
-	 * ===0---X
-	 * ===0===0---X
-	 * ===0===0===O---X
-	 * ===0===0===0===End
-	 *
-	 * first call marks position X
-	 * second call moves position and promises to draw segment
-	 * it can't draw it yet because next segment might bend it
-	 * third call finally draws segment
-	 * and the chain continues till
-	 * link_segment_end to flush the linking segments is called.
-	 */
+    /*
+     * X
+     * ---X
+     * ===0---X
+     * ===0===0---X
+     * ===0===0===O---X
+     * ===0===0===0===End
+     *
+     * first call marks position X
+     * second call moves position and promises to draw segment
+     * it can't draw it yet because next segment might bend it
+     * third call finally draws segment
+     * and the chain continues till
+     * link_segment_end to flush the linking segments is called.
+     */
 
-	// mark 1st position
-	if(_at_start==0) {
-		_last_pos = pos;
-		_last_thickness = thickness;
-		_last_color = color;
-		_at_start=1;
-		return;
-	}
+    // mark 1st position
+    if(_at_start==0) {
+        _last_pos = pos;
+        _last_thickness = thickness;
+        _last_color = color;
+        _at_start=1;
+        return;
+    }
 
-	LVector3f start = _last_pos;
-	LVector3f stop = pos;
+    LVector3f start = _last_pos;
+    LVector3f stop = pos;
 
   LVector3f cam_start3d = _camera.get_relative_point(_render, start);
   LPoint2f cam_start2d = LVector2f();
@@ -481,12 +478,12 @@ void MeshDrawer::link_segment(LVector3f pos, int frame,
   // we need to draw it when we know what the next segment looks like
   // because it can bend it a little
   if(_at_start==1) {
-		_last_v1 = now_v1;
-		_last_v2 = now_v2;
-		_last_v3 = now_v3;
-		_last_v4 = now_v4;
-		_at_start = 2;
-		return;
+        _last_v1 = now_v1;
+        _last_v2 = now_v2;
+        _last_v3 = now_v3;
+        _last_v4 = now_v4;
+        _at_start = 2;
+        return;
   }
 
   // draw the last segment a little bent

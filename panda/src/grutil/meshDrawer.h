@@ -66,9 +66,9 @@ PUBLISHED:
   void segment(LVector3f start, LVector3f stop, int frame, float thickness, LVector4f color);
   void cross_segment(LVector3f start, LVector3f stop, int frame, float thickness, LVector4f color);
   void uneven_segment(LVector3f start, LVector3f stop,
-  		int frame, int multi_frame,
-  		float thickness_start, LVector4f color_start,
-  		float thickness_stop, LVector4f color_stop);
+        int frame, int multi_frame,
+        float thickness_start, LVector4f color_start,
+        float thickness_stop, LVector4f color_stop);
 
   void link_segment(LVector3f pos, int frame, float thickness, LVector4f color);
   void link_segment_end(int frame, LVector4f color);

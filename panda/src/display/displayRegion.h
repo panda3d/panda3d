@@ -101,6 +101,9 @@ PUBLISHED:
   virtual void set_texture_reload_priority(int texture_reload_priority);
   INLINE int get_texture_reload_priority() const;
 
+  INLINE int  get_lens_index() const;
+  void set_lens_index(int index);
+
   virtual void set_cull_traverser(CullTraverser *trav);
   CullTraverser *get_cull_traverser();
 
@@ -192,6 +195,7 @@ private:
     int _pt;
     int _pbi;
     int _pti;
+    int _lens_index; // index into which lens of a camera is associated with this display region.  0 is default
     
     NodePath _camera;
     Camera *_camera_node;
@@ -302,6 +306,8 @@ public:
 
   INLINE int get_pixel_width() const;
   INLINE int get_pixel_height() const;
+
+  INLINE int get_lens_index() const;
 
 private:
   DisplayRegion *_object;

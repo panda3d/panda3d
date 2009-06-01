@@ -377,26 +377,26 @@ private:
   // parent-child manipulation for NodePath support.  Don't try to
   // call these directly.
   static PT(NodePathComponent) attach(NodePathComponent *parent, 
-				      PandaNode *child, int sort,
-				      int pipeline_stage, Thread *current_thread);
+                                      PandaNode *child, int sort,
+                                      int pipeline_stage, Thread *current_thread);
   static void detach(NodePathComponent *child, int pipeline_stage, Thread *current_thread);
   static void detach_one_stage(NodePathComponent *child, int pipeline_stage, Thread *current_thread);
   static bool reparent(NodePathComponent *new_parent,
                        NodePathComponent *child, int sort, bool as_stashed,
-		       int pipeline_stage, Thread *current_thread);
+                       int pipeline_stage, Thread *current_thread);
   static bool reparent_one_stage(NodePathComponent *new_parent,
-				 NodePathComponent *child, int sort, 
-				 bool as_stashed, int pipeline_stage, Thread *current_thread);
+                                 NodePathComponent *child, int sort, 
+                                 bool as_stashed, int pipeline_stage, Thread *current_thread);
   static PT(NodePathComponent) get_component(NodePathComponent *parent,
-					     PandaNode *child,
-					     int pipeline_stage, Thread *current_thread);
+                                             PandaNode *child,
+                                             int pipeline_stage, Thread *current_thread);
   static PT(NodePathComponent) get_top_component(PandaNode *child, bool force,
-						 int pipeline_stage, Thread *current_thread);
+                                                 int pipeline_stage, Thread *current_thread);
   PT(NodePathComponent) get_generic_component(bool accept_ambiguity,
-					      int pipeline_stage, Thread *current_thread);
+                                              int pipeline_stage, Thread *current_thread);
   PT(NodePathComponent) r_get_generic_component(bool accept_ambiguity, 
-						bool &ambiguity_detected,
-						int pipeline_stage, Thread *current_thread);
+                                                bool &ambiguity_detected,
+                                                int pipeline_stage, Thread *current_thread);
   void delete_component(NodePathComponent *component);
   static void sever_connection(PandaNode *parent_node, PandaNode *child_node,
                                int pipeline_stage, Thread *current_thread);
@@ -404,7 +404,7 @@ private:
                              int pipeline_stage, Thread *current_thread);
   void fix_path_lengths(int pipeline_stage, Thread *current_thread);
   void r_list_descendants(ostream &out, int indent_level) const;
-
+  
   INLINE void set_dirty_prev_transform();
   INLINE void clear_dirty_prev_transform();
 

@@ -21,9 +21,18 @@
 //               changed or destroyed, this LensNode is not
 //               affected.
 ////////////////////////////////////////////////////////////////////
+
 INLINE void LensNode::
 copy_lens(const Lens &lens) {
-  _lens = lens.make_copy();
+    return copy_lens(0, lens);
+}
+
+INLINE void LensNode::
+copy_lens(long index, const Lens &lens) {
+  if ( (index > (long) (_additional_lenses.size() + 1) ) || (index <= 0) )
+    _lens = lens.make_copy();
+  else
+    _additional_lenses[index-1] = lens.make_copy();
   if (_shown_frustum != (PandaNode *)NULL) {
     show_frustum();
   }
@@ -36,9 +45,26 @@ copy_lens(const Lens &lens) {
 //               pointer.  If the lens is subsequently modified, the
 //               LensNode properties immediately reflect the change.
 ////////////////////////////////////////////////////////////////////
+
 INLINE void LensNode::
 set_lens(Lens *lens) {
-  _lens = lens;
+    return set_lens(0, lens);
+}
+
+INLINE void LensNode::
+set_lens(long index, Lens *lens) {
+  if (index > MAX_LENSES)
+    return;  // Sanity check
+  while ( index >= (long) (_additional_lenses.size() + 1) ) {
+    _additional_lenses.push_back(lens);
+    _lens_is_active.push_back(false);
+  }
+  
+  if (index <= 0)
+    _lens = lens;
+  else
+    _additional_lenses[index-1] = lens;
+  activate_lens(index);
   if (_shown_frustum != (PandaNode *)NULL) {
     show_frustum();
   }
@@ -52,6 +78,26 @@ set_lens(Lens *lens) {
 //               not yet a Lens associated.
 ////////////////////////////////////////////////////////////////////
 INLINE Lens *LensNode::
-get_lens() const {
-  return _lens;
+get_lens(long index) const {
+  if ( ( index > (long) _additional_lenses.size() ) || (index <= 0) )
+    return _lens;
+  return _additional_lenses[index-1];
+}
+
+INLINE bool LensNode::
+activate_lens(long index) {
+  if ( ( index >= (long) (_additional_lenses.size() + 1) ) || (index < 0) )
+    return false;
+  if ( _lens_is_active[index] )
+    return false;
+  _lens_is_active[index] = true;
+  return true;
+}
+
+INLINE bool LensNode::
+deactivate_lens(long index) {
+  if ( ( index > (long) (_additional_lenses.size() + 1) ) || (index < 0) )
+    return false;
+  _lens_is_active[index] = true;
+  return true;
 }

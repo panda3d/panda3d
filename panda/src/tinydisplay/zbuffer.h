@@ -191,17 +191,17 @@ extern int pixel_count_smooth_multitex3;
 #endif  // DO_PSTATS
 
 ZBuffer *ZB_open(int xsize,int ysize,int mode,
-		 int nb_colors,
-		 unsigned char *color_indexes,
-		 unsigned int *color_table,
-		 void *frame_buffer);
+                 int nb_colors,
+                 unsigned char *color_indexes,
+                 unsigned int *color_table,
+                 void *frame_buffer);
 
 
 void ZB_close(ZBuffer *zb);
 
 void ZB_resize(ZBuffer *zb,void *frame_buffer,int xsize,int ysize);
 void ZB_clear(ZBuffer *zb, int clear_z, ZPOINT z,
-	      int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a);
+              int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a);
 void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
                        int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a,
                        int xmin, int ymin, int xsize, int ysize);
@@ -238,10 +238,10 @@ void ZB_zoomFrameBuffer(ZBuffer *dest, int dest_xmin, int dest_ymin,
 /* zdither.c */
 
 void ZB_initDither(ZBuffer *zb,int nb_colors,
-		   unsigned char *color_indexes,int *color_table);
+                   unsigned char *color_indexes,int *color_table);
 void ZB_closeDither(ZBuffer *zb);
 void ZB_ditherFrameBuffer(ZBuffer *zb,unsigned char *dest,
-			  int linesize);
+                          int linesize);
 
 /* zline.c */
 

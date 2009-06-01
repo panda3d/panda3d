@@ -1,4 +1,5 @@
 #include "adaptiveLru.cxx"
+#include "animateVerticesRequest.cxx"
 #include "bufferContext.cxx"
 #include "bufferContextChain.cxx"
 #include "bufferResidencyTracker.cxx"

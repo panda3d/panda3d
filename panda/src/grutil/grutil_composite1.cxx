@@ -6,3 +6,5 @@
 #include "lineSegs.cxx"
 #include "fisheyeMaker.cxx"
 #include "frameRateMeter.cxx"
+#include "sceneGraphAnalyzerMeter.cxx"
+

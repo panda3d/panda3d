@@ -14,6 +14,7 @@
 
 #include "config_grutil.h"
 #include "frameRateMeter.h"
+#include "sceneGraphAnalyzerMeter.h"
 #include "meshDrawer.h"
 #include "geoMipTerrain.h"
 #include "openCVTexture.h"
@@ -49,6 +50,18 @@ ConfigVariableDouble frame_rate_meter_scale
 ConfigVariableDouble frame_rate_meter_side_margins
 ("frame-rate-meter-side-margins", 0.5);
 
+ConfigVariableDouble scene_graph_analyzer_meter_update_interval
+("scene-graph-analyzer-meter-update-interval", 2.0);
+
+ConfigVariableInt scene_graph_analyzer_meter_layer_sort
+("scene-graph-analyzer-meter-layer-sort", 1000);
+
+ConfigVariableDouble scene_graph_analyzer_meter_scale
+("scene-graph-analyzer-meter-scale", 0.05);
+
+ConfigVariableDouble scene_graph_analyzer_meter_side_margins
+("scene-graph-analyzer-meter-side-margins", 0.5);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libgrutil
 //  Description: Initializes the library.  This must be called at
@@ -79,6 +92,7 @@ init_libgrutil() {
   NodeVertexTransform::init_type();
   RigidBodyCombiner::init_type();
   PipeOcclusionCullTraverser::init_type();
+  SceneGraphAnalyzerMeter::init_type();
 
   MovieTexture::init_type();
   MovieTexture::register_with_read_factory();

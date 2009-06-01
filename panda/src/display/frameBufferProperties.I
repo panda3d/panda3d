@@ -164,6 +164,17 @@ get_multisamples() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::get_coverage_samples
+//       Access: Published
+//  Description: If coverage samples are specified, and there is
+//               hardware support, we use coverage multisampling.
+////////////////////////////////////////////////////////////////////
+INLINE int FrameBufferProperties::
+get_coverage_samples() const {
+  return _property[FBP_coverage_samples];
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FrameBufferProperties::get_back_buffers
 //       Access: Published
 //  Description: 
@@ -323,6 +334,18 @@ INLINE void FrameBufferProperties::
 set_multisamples(int n) {
   _property[FBP_multisamples] = n;
   _specified[FBP_multisamples] = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: FrameBufferProperties::set_coverage_samples
+//       Access: Published
+//  Description: If coverage samples are specified, and there is
+//               hardware support, we use coverage multisampling
+////////////////////////////////////////////////////////////////////
+INLINE void FrameBufferProperties::
+set_coverage_samples(int n) {
+  _property[FBP_coverage_samples] = n;
+  _specified[FBP_coverage_samples] = true;
 }
 
 ////////////////////////////////////////////////////////////////////

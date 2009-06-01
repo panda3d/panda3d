@@ -16,8 +16,8 @@
 
 inline void TinyOsxGraphicsWindow::SendKeyEvent( ButtonHandle  key, bool down)
 {
-    if(down)
-		_input_devices[0].button_down(key);
-	else
-		_input_devices[0].button_up(key);
+  if(down)
+    _input_devices[0].button_down(key);
+  else
+    _input_devices[0].button_up(key);
 }

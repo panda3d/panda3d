@@ -96,7 +96,7 @@ static inline void interpolate(GLVertex *q,GLVertex *p0,GLVertex *p1,float t)
 static inline int ClipLine1(float denom,float num,float *tmin,float *tmax)
 {
   float t;
-	 
+
   if (denom>0) {
     t=num/denom;
     if (t>*tmax) return 0;
@@ -158,7 +158,7 @@ void gl_draw_line(GLContext *c,GLVertex *p1,GLVertex *p2)
   }
 }
 
-	 
+
 /* triangle */
 
 /*
@@ -169,7 +169,7 @@ void gl_draw_line(GLContext *c,GLVertex *p1,GLVertex *p2)
  * We compute the point 'c' of intersection and the value of the parameter 't'
  * of the intersection if x=a+t(b-a). 
  */
-	 
+
 #define clip_func(name, sign, dir, dir1, dir2) \
 static float name(V4 *c, V4 *a, V4 *b) \
 {\
@@ -210,7 +210,7 @@ float (*clip_proc[6])(V4 *,V4 *,V4 *)=  {
 };
 
 static inline void updateTmp(GLContext *c,
-			     GLVertex *q,GLVertex *p0,GLVertex *p1,float t)
+                 GLVertex *q,GLVertex *p0,GLVertex *p1,float t)
 {
   if (c->smooth_shade_model) {
     q->color.v[0]=p0->color.v[0] + (p1->color.v[0]-p0->color.v[0])*t;

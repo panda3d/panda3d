@@ -67,7 +67,7 @@ typedef int Py_ssize_t;
 // 2.4 macros which aren't available in 2.3
 #ifndef Py_RETURN_NONE
 inline PyObject* doPy_RETURN_NONE()
-{	Py_INCREF(Py_None); return Py_None; }
+{   Py_INCREF(Py_None); return Py_None; }
 #define Py_RETURN_NONE return doPy_RETURN_NONE()
 #endif
 

@@ -35,7 +35,7 @@ set_parameters(dReal themass,
 
 INLINE void OdeMass::
 set_parameters(dReal themass,
-	       const LVecBase3f &center,
+               const LVecBase3f &center,
                const LMatrix3f &i) {
   set_parameters(themass,
                  center[0], center[1], center[2], 
@@ -87,14 +87,14 @@ INLINE void OdeMass::
 set_box(dReal density,
         dReal lx, dReal ly, dReal lz) {
   _mass.setBox(density,
-	       lx, ly, lz);
+               lx, ly, lz);
 }
 
 INLINE void OdeMass::
 set_box(dReal density,
-	const LVecBase3f &size) {
+        const LVecBase3f &size) {
   _mass.setBox(density,
-	       size[0], size[1], size[2]);
+               size[0], size[1], size[2]);
 }
 
 INLINE void OdeMass::

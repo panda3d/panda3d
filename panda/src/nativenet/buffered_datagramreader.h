@@ -15,10 +15,10 @@ inline unsigned short GetUnsignedShort(char * in)
 
 class Buffered_DatagramReader : protected RingBuffer
 {
-	inline bool GetMessageFromBuffer(Datagram &inmsg);
+    inline bool GetMessageFromBuffer(Datagram &inmsg);
 public:
-	inline Buffered_DatagramReader(int in_size = 8192) ;
-	inline void ReSet(void); 
+    inline Buffered_DatagramReader(int in_size = 8192) ;
+    inline void ReSet(void); 
     //
     // SOCK_TYPE is used to allow for 
     // abstract socket type to be used .. 
@@ -43,9 +43,9 @@ public:
 
     template < class SOCK_TYPE>
     inline int ReadPump(SOCK_TYPE &sck)
-    {		
-        int		answer = 0;
-        size_t		readsize = BufferAvailabe();
+    {
+        int     answer = 0;
+        size_t      readsize = BufferAvailabe();
 
         if(readsize < 1)
         {
@@ -73,7 +73,7 @@ public:
             else if(gotbytes > 0) // ok got some lets process it
             {
 
-                _EndPos	+=  gotbytes;
+                _EndPos +=  gotbytes;
                 answer = 1;
             }
             else   // 0 mean other end disconect arggggg
@@ -81,7 +81,7 @@ public:
                 answer = -1;
                 nativenet_cat.error() << "buffered_datagram_reader:ReadPump other end of socket closed -- " <<  sck.GetPeerName().get_ip_port().c_str() << "\n";
             }
-        }		
+        }
         else
         {
             answer = -2;

@@ -71,7 +71,7 @@ public:
   static void init_type() {
     OdeJoint::init_type();
     register_type(_type_handle, "OdeHinge2Joint",
-		  OdeJoint::get_class_type());
+                  OdeJoint::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

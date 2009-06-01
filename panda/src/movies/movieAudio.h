@@ -26,7 +26,7 @@ class MovieAudioCursor;
   // Non-release build:
   #define movies_debug(msg) \
   if (movies_cat.is_debug()) { \
-	  movies_cat->debug() << msg << endl; \
+      movies_cat->debug() << msg << endl; \
   } else {}
 #else //][
   // Release build:

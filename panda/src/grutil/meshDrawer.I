@@ -55,7 +55,7 @@ INLINE MeshDrawer::
 //               Geom drawer expects a plate of square image for
 //               most of its billboard operatoins.  If plate size is
 //               3 the frame numbering would look like this:
-//				   0 1 2
+//                 0 1 2
 //                 3 4 5
 //                 6 7 8
 //               you can select any frame you like for many of the

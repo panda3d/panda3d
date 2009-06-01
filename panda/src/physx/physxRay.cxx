@@ -1,0 +1,101 @@
+// Filename: physxRay.cxx
+// Created by:  pratt (Dec 12, 2007)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_PHYSX
+
+#include "physxRay.h"
+
+#include "luse.h"
+
+
+////////////////////////////////////////////////////////////////////
+//     Function : PhysxRay
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxRay::
+PhysxRay() {
+  nRay = new NxRay();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : PhysxRay
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxRay::
+PhysxRay(const LVecBase3f & _orig, const LVecBase3f & _dir) {
+  nRay = new NxRay(PhysxManager::lVecBase3_to_nxVec3(_orig), PhysxManager::lVecBase3_to_nxVec3(_dir));
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : ~PhysxRay
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxRay::
+~PhysxRay() {
+  delete nRay;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_dir
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+LVecBase3f PhysxRay::
+get_dir() const {
+  nassertr(nRay != NULL, *((LVecBase3f *)NULL));
+
+  return PhysxManager::nxVec3_to_lVecBase3(nRay->dir);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_orig
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+LVecBase3f PhysxRay::
+get_orig() const {
+  nassertr(nRay != NULL, *((LVecBase3f *)NULL));
+
+  return PhysxManager::nxVec3_to_lVecBase3(nRay->orig);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_dir
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxRay::
+set_dir(LVecBase3f value) {
+  nassertv(nRay != NULL);
+
+  nRay->dir = PhysxManager::lVecBase3_to_nxVec3(value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_orig
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxRay::
+set_orig(LVecBase3f value) {
+  nassertv(nRay != NULL);
+
+  nRay->orig = PhysxManager::lVecBase3_to_nxVec3(value);
+}
+
+#endif // HAVE_PHYSX
+

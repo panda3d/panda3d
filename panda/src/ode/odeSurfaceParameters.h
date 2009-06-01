@@ -35,35 +35,35 @@ protected:
 
 PUBLISHED:
   enum ModeFlags { MF_contact_mu2      = 0x001,
-		   MF_contactFDir1     = 0x002,
-		   MF_contactBounce    = 0x004,
-		   MF_contactSoftERP   = 0x008,
-		   MF_contactSoftCFM   = 0x010,
-		   MF_contactMotion1   = 0x020,
-		   MF_contactMotion2   = 0x040,
-		   MF_contactSlip1     = 0x080,
-		   MF_contactSlip2     = 0x100,
+                   MF_contactFDir1     = 0x002,
+                   MF_contactBounce    = 0x004,
+                   MF_contactSoftERP   = 0x008,
+                   MF_contactSoftCFM   = 0x010,
+                   MF_contactMotion1   = 0x020,
+                   MF_contactMotion2   = 0x040,
+                   MF_contactSlip1     = 0x080,
+                   MF_contactSlip2     = 0x100,
 
-		   MF_contactApprox0   = 0x0000,
-		   MF_contactApprox1_1 = 0x1000,
-		   MF_contactApprox1_2 = 0x2000,
-		   MF_contactApprox1   = 0x3000 };
+                   MF_contactApprox0   = 0x0000,
+                   MF_contactApprox1_1 = 0x1000,
+                   MF_contactApprox1_2 = 0x2000,
+                   MF_contactApprox1   = 0x3000 };
   
   /*
   // Interrogate doesn't seem to handle this so well
   enum ModeFlags { MF_contact_mu2      = dContactMu2,
-		   MF_contactFDir1     = dContactFDir1,
-		   MF_contactBounce    = dContactBounce,
-		   MF_contactSoftERP   = dContactSoftERP,
-		   MF_contactSoftCFM   = dContactSoftCFM,
-		   MF_contactMotion1   = dContactMotion1,
-		   MF_contactMotion2   = dContactMotion2,
-		   MF_contactSlip1     = dContactSlip1,
-		   MF_contactSlip2     = dContactSlip2,
-		   // MF_contactApprox0   = dContactApprox0,
-		   MF_contactApprox1_1 = dContactApprox1_1,
-		   MF_contactApprox1_2 = dContactApprox1_2,
-		   MF_contactApprox1   = dContactApprox1 };
+                   MF_contactFDir1     = dContactFDir1,
+                   MF_contactBounce    = dContactBounce,
+                   MF_contactSoftERP   = dContactSoftERP,
+                   MF_contactSoftCFM   = dContactSoftCFM,
+                   MF_contactMotion1   = dContactMotion1,
+                   MF_contactMotion2   = dContactMotion2,
+                   MF_contactSlip1     = dContactSlip1,
+                   MF_contactSlip2     = dContactSlip2,
+                   // MF_contactApprox0   = dContactApprox0,
+                   MF_contactApprox1_1 = dContactApprox1_1,
+                   MF_contactApprox1_2 = dContactApprox1_2,
+                   MF_contactApprox1   = dContactApprox1 };
   */
 
   OdeSurfaceParameters(int mode = 0, dReal mu = 0);
@@ -107,7 +107,7 @@ public:
   static void init_type() {
     TypedObject::init_type();
     register_type(_type_handle, "OdeSurfaceParameters",
-		  TypedObject::get_class_type());
+                  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

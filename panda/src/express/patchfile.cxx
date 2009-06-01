@@ -265,7 +265,7 @@ read_header(const Filename &patch_file) {
 //       Access: Published
 //  Description: Perform one buffer's worth of patching
 //               Returns EU_ok while patching
-//				 Returns EU_success when done
+//               Returns EU_success when done
 //               If error happens will return one of:
 //               EU_error_abort : Patching has not been initiated
 //               EU_error_file_invalid : file is corrupted

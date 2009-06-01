@@ -119,7 +119,7 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &cycler,
                 CycleDataLockedReader<CycleDataType> &take_from,
-		bool force_to_0) :
+        bool force_to_0) :
   _cycler(&cycler),
   _current_thread(take_from.get_current_thread())
 {
@@ -267,7 +267,7 @@ template<class CycleDataType>
 INLINE CycleDataWriter<CycleDataType>::
 CycleDataWriter(PipelineCycler<CycleDataType> &,
                 CycleDataLockedReader<CycleDataType> &take_from,
-		bool force_to_0) :
+        bool force_to_0) :
   _pointer((CycleDataType *)take_from.take_pointer())
 {
 }

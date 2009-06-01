@@ -11,3 +11,15 @@
 // with this source code in a file named "LICENSE."
 //
 ////////////////////////////////////////////////////////////////////
+
+INLINE int CLP(GraphicsBuffer)::
+get_multisample_count()
+{
+    return _requested_multisamples;
+}
+
+INLINE int CLP(GraphicsBuffer)::
+get_coverage_sample_count()
+{
+    return _requested_coverage_samples;
+}

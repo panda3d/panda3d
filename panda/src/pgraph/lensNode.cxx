@@ -33,6 +33,7 @@ LensNode(const string &name, Lens *lens) :
   PandaNode(name),
   _lens(lens)
 {
+    _lens_is_active.push_back(true); // The default lens is on by default.
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,6 +46,7 @@ LensNode(const LensNode &copy) :
   PandaNode(copy),
   _lens(copy._lens)
 {
+    _lens_is_active.push_back(true); // The default lens is on by default.
 }
 
 ////////////////////////////////////////////////////////////////////

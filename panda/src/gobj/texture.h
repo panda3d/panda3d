@@ -73,6 +73,7 @@ PUBLISHED:
     T_unsigned_byte,
     T_unsigned_short,
     T_float,
+    T_unsigned_int_24_8,
   };
 
   enum Format {
@@ -112,6 +113,9 @@ PUBLISHED:
     F_rgba32,  // 32 bits per R,G,B,A channel
 
     F_depth_component,
+    F_depth_component16,
+    F_depth_component24,
+    F_depth_component32,
   };
 
   enum FilterType {

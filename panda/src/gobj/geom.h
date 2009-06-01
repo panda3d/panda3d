@@ -148,18 +148,18 @@ public:
             const GeomMunger *munger,
             const GeomVertexData *vertex_data,
             bool force, Thread *current_thread) const;
-
+  
   INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-				bool &found_any, 
-				const GeomVertexData *vertex_data,
-				bool got_mat, const LMatrix4f &mat,
+                                bool &found_any, 
+                                const GeomVertexData *vertex_data,
+                                bool got_mat, const LMatrix4f &mat,
                                 Thread *current_thread) const;
   INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                                 bool &found_any, Thread *current_thread) const;
   INLINE void calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-				bool &found_any, 
-				const GeomVertexData *vertex_data,
-				bool got_mat, const LMatrix4f &mat,
+                                bool &found_any, 
+                                const GeomVertexData *vertex_data,
+                                bool got_mat, const LMatrix4f &mat,
                                 const InternalName *column_name,
                                 Thread *current_thread) const;
 
@@ -172,9 +172,9 @@ private:
   void compute_internal_bounds(CData *cdata, Thread *current_thread) const;
 
   void do_calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
-			    bool &found_any, 
-			    const GeomVertexData *vertex_data,
-			    bool got_mat, const LMatrix4f &mat,
+                            bool &found_any, 
+                            const GeomVertexData *vertex_data,
+                            bool got_mat, const LMatrix4f &mat,
                             const InternalName *column_name,
                             const CData *cdata, Thread *current_thread) const;
 

@@ -66,7 +66,7 @@ protected:
   virtual bool open_window();
 
 private:
-	
+
   bool OSOpenWindow(WindowProperties &properties);
 
     //
@@ -89,7 +89,7 @@ public: // do not call direct ..
 
   virtual void user_close_request();
   void SystemCloseWindow();
-  void SystemSetWindowForground(bool forground);	
+  void SystemSetWindowForground(bool forground);
   void SystemPointToLocalPoint(Point &qdGlobalPoint);
   void LocalPointToSystemPoint(Point &qdLocalPoint);
   bool set_icon_filename(const Filename &icon_filename);
@@ -124,7 +124,7 @@ private:
   bool _display_hide_cursor;
 
   SInt32 _wheel_delta;
-	 
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

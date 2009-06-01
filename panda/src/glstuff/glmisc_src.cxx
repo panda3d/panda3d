@@ -140,6 +140,14 @@ ConfigVariableBool CLP(finish)
             "more accurately reflect where the graphics bottlenecks are.  "
             "This variable is enabled only if PStats is compiled in."));
 
+ConfigVariableBool CLP(force_depth_stencil)
+  ("gl-force-depth-stencil", false, 
+   PRC_DESC("Temporary hack variable 7x00 vs 8x00 nVidia bug.  See glGraphicsStateGuardian_src.cxx."));
+
+ConfigVariableBool CLP(matrix_palette)
+  ("gl-matrix-palette", false, 
+   PRC_DESC("Temporary hack variable protecting untested code.  See glGraphicsStateGuardian_src.cxx."));
+
 extern ConfigVariableBool CLP(parallel_arrays);
 
 void CLP(init_classes)() {

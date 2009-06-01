@@ -43,15 +43,15 @@ inline void Time_Accumulator::Set(const Time_Span & in)
     }
 }
 //////////////////////////////////////////////////////////////
-// Function name	: Time_Accumulator::Time_Accumulator
-// Description	    : 
+// Function name    : Time_Accumulator::Time_Accumulator
+// Description      : 
 //////////////////////////////////////////////////////////////
 inline Time_Accumulator::Time_Accumulator() : _total_time(0,0,0,0,0), _accum_start(NULL)
 {
 }
 //////////////////////////////////////////////////////////////
-// Function name	: Time_Accumulator::~Time_Accumulator
-// Description	    : 
+// Function name    : Time_Accumulator::~Time_Accumulator
+// Description      : 
 //////////////////////////////////////////////////////////////
 inline Time_Accumulator::~Time_Accumulator()
 {
@@ -59,8 +59,8 @@ inline Time_Accumulator::~Time_Accumulator()
         delete _accum_start;
 }
 //////////////////////////////////////////////////////////////
-// Function name	:    void Time_Accumulator::Start
-// Description	    : 
+// Function name    :    void Time_Accumulator::Start
+// Description      : 
 //////////////////////////////////////////////////////////////
 inline     void Time_Accumulator::Start() 
 {   
@@ -68,8 +68,8 @@ inline     void Time_Accumulator::Start()
         _accum_start = new Time_Clock();
 }
 //////////////////////////////////////////////////////////////
-// Function name	:    void Time_Accumulator::Stop
-// Description	    : 
+// Function name    :    void Time_Accumulator::Stop
+// Description      : 
 //////////////////////////////////////////////////////////////
 inline     void Time_Accumulator::Stop()
 {
@@ -82,8 +82,8 @@ inline     void Time_Accumulator::Stop()
     }
 }
 //////////////////////////////////////////////////////////////
-// Function name	: Time_Accumulator::Reset
-// Description	    : 
+// Function name    : Time_Accumulator::Reset
+// Description      : 
 //////////////////////////////////////////////////////////////
 void Time_Accumulator::Reset()
 {
@@ -95,8 +95,8 @@ void Time_Accumulator::Reset()
     _total_time.Set(0,0,0,0,0);
 }
 //////////////////////////////////////////////////////////////
-// Function name	:  Time_Accumulator::Report
-// Description	    : 
+// Function name    :  Time_Accumulator::Report
+// Description      : 
 //////////////////////////////////////////////////////////////
 inline Time_Span  Time_Accumulator::Report() 
 {

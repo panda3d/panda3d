@@ -43,16 +43,16 @@ ConfigVariableBool x_error_abort
 ConfigVariableBool glx_get_proc_address
 ("glx-get-proc-address", true,
  PRC_DESC("Set this to true to allow the use of glxGetProcAddress(), if "
-	  "it is available, to query the OpenGL extension functions.  This "
-	  "is the standard way to query extension functions."));
+          "it is available, to query the OpenGL extension functions.  This "
+          "is the standard way to query extension functions."));
 
 
 ConfigVariableBool glx_get_os_address
 ("glx-get-os-address", true,
  PRC_DESC("Set this to true to allow Panda to query the OpenGL library "
-	  "directly using standard operating system calls to locate "
-	  "addresses of extension functions.  This will be done only "
-	  "if glxGetProcAddress() cannot be used for some reason."));
+          "directly using standard operating system calls to locate "
+          "addresses of extension functions.  This will be done only "
+          "if glxGetProcAddress() cannot be used for some reason."));
 
 ConfigVariableInt x_wheel_up_button
 ("x-wheel-up-button", 4,

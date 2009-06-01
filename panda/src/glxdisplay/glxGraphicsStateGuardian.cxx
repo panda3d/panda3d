@@ -29,7 +29,7 @@ TypeHandle glxGraphicsStateGuardian::_type_handle;
 ////////////////////////////////////////////////////////////////////
 glxGraphicsStateGuardian::
 glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
-			 glxGraphicsStateGuardian *share_with) :
+                         glxGraphicsStateGuardian *share_with) :
   GLGraphicsStateGuardian(engine, pipe)
 {
   _share_context=0;
@@ -137,7 +137,7 @@ get_properties(FrameBufferProperties &properties, XVisualInfo *visual) {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
 get_properties_advanced(FrameBufferProperties &properties, 
-			bool &pbuffer_supported, bool &pixmap_supported,
+                        bool &pbuffer_supported, bool &pixmap_supported,
                         bool &slow, fbconfig config) {
 
   properties.clear();
@@ -218,8 +218,8 @@ get_properties_advanced(FrameBufferProperties &properties,
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsStateGuardian::
 choose_pixel_format(const FrameBufferProperties &properties,
-		    Display *display,
-		    int screen, bool need_pbuffer, bool need_pixmap) {
+                    Display *display,
+                    int screen, bool need_pbuffer, bool need_pixmap) {
 
   _display = display;
   _screen = screen;
@@ -291,8 +291,8 @@ choose_pixel_format(const FrameBufferProperties &properties,
       _visuals = glXGetVisualFromFBConfig(_display, _fbconfig);
       _visual = _visuals;
       if (_visual) {
-	_fbprops = best_props;
-	return;
+        _fbprops = best_props;
+        return;
       }
     }
     // This really shouldn't happen, so I'm not too careful about cleanup.
@@ -319,9 +319,9 @@ choose_pixel_format(const FrameBufferProperties &properties,
       get_properties(fbprops, _visuals+i);
       int quality = fbprops.get_quality(properties);
       if (quality > best_quality) {
-	best_quality = quality;
-	best_result = i;
-	best_props = fbprops;
+        best_quality = quality;
+        best_result = i;
+        best_props = fbprops;
       }
     }
   }
@@ -499,19 +499,19 @@ do_get_extension_func(const char *prefix, const char *name) {
       const char *funcName = NULL;
       
       if (glx_is_at_least_version(1, 4)) {
-	funcName = "glXGetProcAddress";
-	
+        funcName = "glXGetProcAddress";
+
       } else if (has_extension("GLX_ARB_get_proc_address")) {
-	funcName = "glXGetProcAddressARB";
+        funcName = "glXGetProcAddressARB";
       }
       
       if (funcName != NULL) {
-	_glXGetProcAddress = (PFNGLXGETPROCADDRESSPROC)get_system_func(funcName);
-	if (_glXGetProcAddress == NULL) {
-	  glxdisplay_cat.warning()
-	    << "Couldn't load function " << funcName
-	    << ", GL extensions may be unavailable.\n";
-	}
+        _glXGetProcAddress = (PFNGLXGETPROCADDRESSPROC)get_system_func(funcName);
+        if (_glXGetProcAddress == NULL) {
+          glxdisplay_cat.warning()
+            << "Couldn't load function " << funcName
+            << ", GL extensions may be unavailable.\n";
+        }
       }
 
       _checked_get_proc_address = true;

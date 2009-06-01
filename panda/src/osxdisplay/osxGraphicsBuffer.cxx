@@ -79,12 +79,12 @@ begin_frame(FrameMode mode, Thread *current_thread) {
   if (!aglSetPBuffer(osxgsg->get_context(), _pbuffer, 0, 0, 0)) {
     report_agl_error("aglSetPBuffer");
     return false;
-  }	
+  }
 
   if (!aglSetCurrentContext(osxgsg->get_context())) {
     report_agl_error("aglSetCurrentContext");
     return false;
-  }	
+  }
 
   osxgsg->reset_if_new();
 
@@ -193,7 +193,7 @@ open_buffer() {
   if (!aglSetCurrentContext(osxgsg->get_context())) {
     report_agl_error("aglSetCurrentContext");
     return false;
-  }	
+  }
 
   osxgsg->reset_if_new();
   if (!osxgsg->is_valid()) {

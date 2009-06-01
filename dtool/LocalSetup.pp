@@ -91,6 +91,11 @@
 #else
 #print - Did not find FMOD Ex sound library
 #endif
+#if $[HAVE_PHYSX]
+#print + Ageia PhysX
+#else
+#print - Did not find Ageia PhysX
+#endif
 #if $[HAVE_GTK]
 #print + gtk+-2
 #else
@@ -219,6 +224,9 @@ $[cdefine HAVE_RAD_MSS]
 
 /* Define if we have FMODex installed. */
 $[cdefine HAVE_FMODEX]
+
+/* Define if we have Ageia PhysX SDK installed. */
+$[cdefine HAVE_PHYSX]
 
 /* Define if we have Freetype 2.0 or better available. */
 $[cdefine HAVE_FREETYPE]
@@ -399,6 +407,9 @@ $[cdefine NOTIFY_DEBUG]
 /* Define if we want to export template classes from the DLL.  Only
    makes sense to MSVC++. */
 $[cdefine EXPORT_TEMPLATES]
+
+/* Define if we are linking PANDAPHYSX in with PANDA. */
+$[cdefine LINK_IN_PHYSX]
 
 /* The compiled-in character(s) to expect to separate different
    components of a path list (e.g. $PRC_PATH). */

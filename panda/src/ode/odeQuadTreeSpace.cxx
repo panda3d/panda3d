@@ -37,22 +37,22 @@ OdeQuadTreeSpace(dSpaceID id) :
 
 OdeQuadTreeSpace::
 OdeQuadTreeSpace(const LPoint3f &center,
-		 const LVecBase3f &extents,
-		 const int depth) :
+                 const LVecBase3f &extents,
+                 const int depth) :
   OdeSpace(dQuadTreeSpaceCreate(0,
-				LVec3_to_sdVector4(center).vec,
-				LVec3_to_sdVector4(extents).vec,
-				depth)) {
+                                LVec3_to_sdVector4(center).vec,
+                                LVec3_to_sdVector4(extents).vec,
+                                depth)) {
 }
 
 OdeQuadTreeSpace::
 OdeQuadTreeSpace(OdeSpace &space,
                  const LPoint3f &center,
-		 const LVecBase3f &extents,
-		 const int depth) :
+                 const LVecBase3f &extents,
+                 const int depth) :
   OdeSpace(dQuadTreeSpaceCreate(space.get_id(),
                                 LVec3_to_sdVector4(center).vec,
-				LVec3_to_sdVector4(extents).vec,
+                                LVec3_to_sdVector4(extents).vec,
                                 depth)) {
 }
 

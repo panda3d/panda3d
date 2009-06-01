@@ -111,7 +111,7 @@ private:
 // accepted ie a server socket ??
 inline Socket_TCP_SSL::Socket_TCP_SSL(SOCKET sck) : ::Socket_IP(sck)
 { 
-	SetNonBlocking(); // maybe should be blocking?
+    SetNonBlocking(); // maybe should be blocking?
   
     _ssl = SSL_new (global_ssl_ctx);                         
     if(_ssl == NULL) 
@@ -290,7 +290,7 @@ inline bool Socket_TCP_SSL::ErrorIs_WouldBlocking(int err)
             break;
         default:
             DetailErrorFormat();
-//    	    LOGWARNING("Socket_TCP_SSL::ErrorIs_WouldBlocking-> Not A blocking Error2 SSl_CODe=[%d] OS=[%d]",ssl_error_code,GETERROR());
+//          LOGWARNING("Socket_TCP_SSL::ErrorIs_WouldBlocking-> Not A blocking Error2 SSl_CODe=[%d] OS=[%d]",ssl_error_code,GETERROR());
             answer = false;
             break;
     }

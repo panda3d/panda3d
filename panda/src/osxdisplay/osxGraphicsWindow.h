@@ -89,7 +89,7 @@ public: // do not call direct ..
 
   virtual void user_close_request();
   void system_close_window();
-  void system_set_window_foreground(bool foreground);	
+  void system_set_window_foreground(bool foreground);
   void system_point_to_local_point(Point &global_point);
   void local_point_to_system_point(Point &local_point);
   AGLContext get_gsg_context();
@@ -125,7 +125,7 @@ private:
 
   SInt32 _wheel_hdelta;
   SInt32 _wheel_vdelta;
-	 
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

@@ -619,7 +619,6 @@ compile_parameter(const ShaderArgId  &arg_id,
     if (!cp_parse_eol(p, pieces, next)) {
       return false;
     }
-    
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
     return true;
@@ -1079,6 +1078,12 @@ cg_release_resources() {
     cgDestroyProgram(_cg_fprogram);
     _cg_fprogram = 0;
   }
+  // BEGIN CG2 CHANGE
+  if (_cg_gprogram != 0) {
+    cgDestroyProgram(_cg_gprogram);
+    _cg_gprogram = 0;
+  }
+  // END CG2 CHANGE
   if (_cg_context != 0) {
     cgDestroyContext(_cg_context);
     _cg_context = 0;
@@ -1091,69 +1096,55 @@ cg_release_resources() {
 //  Description: xyz
 ////////////////////////////////////////////////////////////////////
 CGprogram Shader::
-cg_compile_entry_point(const char *entry, const ShaderCaps &caps, bool fshader)
+cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type)  // CG2 CHANGE
 {
   CGprogram prog;
   CGerror err;
   const char *compiler_args[100];
   int nargs = 0;
-  int override = fshader ? _cg_fprofile : _cg_vprofile;
-  int active = fshader ? caps._active_fprofile : caps._active_vprofile;
-  int ultimate = fshader ? caps._ultimate_fprofile : caps._ultimate_vprofile;
+  
+  int active, ultimate;
+
+  switch(type)
+  {
+  case ST_VERTEX:
+      active   = caps._active_vprofile;
+      ultimate = caps._ultimate_vprofile;
+      break;
+
+  case ST_FRAGMENT:
+      active   = caps._active_fprofile;
+      ultimate = caps._ultimate_fprofile;
+      break;
+
+  case ST_GEOMETRY:
+      active   = caps._active_gprofile;
+      ultimate = caps._ultimate_gprofile;
+      break;
+  };
+  
+  // END CG2 CHANGE
 
   cgGetError();
 
-  if (fshader && caps._bug_list.count(SBUG_ati_draw_buffers)) {
+  if (type == ST_FRAGMENT && caps._bug_list.count(SBUG_ati_draw_buffers)) { // CG2 CHANGE
     compiler_args[nargs++] = "-po";
     compiler_args[nargs++] = "ATI_draw_buffers";
   }
   compiler_args[nargs] = 0;
 
-  // If someone has explicitly set a profile, use it.
-  if (override != (int)CG_PROFILE_UNKNOWN) {
+  if ((active != (int)CG_PROFILE_UNKNOWN) && (active != ultimate)) {
     prog = cgCreateProgram(_cg_context, CG_SOURCE, _text.c_str(),
-                           (CGprofile)override, entry, (const char **)compiler_args);
+                           (CGprofile)active, entry, (const char **)compiler_args);
     err = cgGetError();
     if (err == CG_NO_ERROR) {
       return prog;
     }
-    if (err == CG_COMPILER_ERROR) {
-      string listing = cgGetLastListing(_cg_context);
-      vector_string errlines;
-      tokenize(listing, errlines, "\n");
-      for (int i=0; i<(int)errlines.size(); i++) {
-        string line = trim(errlines[i]);
-        if (line != "") {
-          gobj_cat.error() << get_filename() << ": " << errlines[i] << "\n";
-        }
-      }
-    } else {
-      gobj_cat.error() << get_filename() << ": " << cgGetErrorString(err) << "\n";
-    }
-    if (fshader) {
-      gobj_cat.error() << "Fragment shader failed to compile with profile '"
-        << cgGetProfileString((CGprofile)override) << "'!\n";
-    } else {
-      gobj_cat.error() << "Vertex shader failed to compile with profile '"
-        << cgGetProfileString((CGprofile)override) << "'!\n";
-    }
-    if (prog != 0) {
-      cgDestroyProgram(prog);
-    }
-    return 0;
-  }
-  
-  if ((active != (int)CG_PROFILE_UNKNOWN) && (active != ultimate)) {
-    prog = cgCreateProgram(_cg_context, CG_SOURCE, _text.c_str(),
-                           (CGprofile)active, entry, (const char **)compiler_args);
-    if (cgGetError() == CG_NO_ERROR) {
-      return prog;
-    }
     if (prog != 0) {
       cgDestroyProgram(prog);
     }
   }
-  
+
   prog = cgCreateProgram(_cg_context, CG_SOURCE, _text.c_str(),
                          (CGprofile)ultimate, entry, (const char **)NULL);
   err = cgGetError();
@@ -1211,8 +1202,18 @@ cg_compile_shader(const ShaderCaps &caps) {
     return false;
   }
   
-  _cg_vprogram = cg_compile_entry_point("vshader", caps, false);
-  _cg_fprogram = cg_compile_entry_point("fshader", caps, true);
+  _cg_vprogram = cg_compile_entry_point("vshader", caps, ST_VERTEX);    // CG2 CHANGE
+  _cg_fprogram = cg_compile_entry_point("fshader", caps, ST_FRAGMENT);  // CG2 CHANGE
+
+  // BEGIN CG2 CHANGE
+  if (_text.find("gshader") != -1)
+  {
+      _cg_gprogram = cg_compile_entry_point("gshader", caps, ST_GEOMETRY);
+  }
+  else
+  {
+  }
+  // END CG2 CHANGE
 
   if ((_cg_vprogram == 0)||(_cg_fprogram == 0)) {
     cg_release_resources();
@@ -1228,17 +1229,19 @@ cg_compile_shader(const ShaderCaps &caps) {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 bool Shader::
-cg_analyze_entry_point(CGprogram prog, bool fshader) {
+cg_analyze_entry_point(CGprogram prog, ShaderType type /*bool fshader*/) {  // CG2 CHANGE
   CGparameter parameter;
   bool success = true;
   for (parameter = cgGetFirstLeafParameter(prog, CG_PROGRAM);
        parameter != 0;
        parameter = cgGetNextLeafParameter(parameter)) {
     CGenum vbl = cgGetParameterVariability(parameter);
+
     if ((vbl==CG_VARYING)||(vbl==CG_UNIFORM)) {
       ShaderArgId id;
       id._name = cgGetParameterName(parameter);
-      id._fshader = fshader;
+
+      id._type  = type;         // CG2 CHANGE
       id._seqno = -1;
       success &= compile_parameter(id,
                                    cg_parameter_type(parameter),
@@ -1290,7 +1293,7 @@ cg_analyze_shader(const ShaderCaps &caps) {
     return false;
   }
 
-  if (!cg_analyze_entry_point(_cg_fprogram, true)) {
+  if (!cg_analyze_entry_point(_cg_fprogram, ST_FRAGMENT)) { // CG2 CHANGE
     cg_release_resources();
     clear_parameters();
     return false;
@@ -1303,12 +1306,23 @@ cg_analyze_shader(const ShaderCaps &caps) {
     return false;
   }
 
-  if (!cg_analyze_entry_point(_cg_vprogram, false)) {
+  if (!cg_analyze_entry_point(_cg_vprogram, ST_VERTEX)) {   // CG2 CHANGE
     cg_release_resources();
     clear_parameters();
     return false;
   }
   
+  // BEGIN CG2 CHANGE
+  if (_cg_gprogram != 0)
+  {
+      if (!cg_analyze_entry_point(_cg_gprogram, ST_GEOMETRY)) {
+          cg_release_resources();
+          clear_parameters();
+          return false;
+      }
+  }
+  // END CG2 CHANGE
+
   // Assign sequence numbers to all parameters.
   int seqno = 0;
   for (int i=0; i<(int)_mat_spec.size(); i++) {
@@ -1325,12 +1339,23 @@ cg_analyze_shader(const ShaderCaps &caps) {
   if (gobj_cat.is_debug()) {
     const char *vertex_program;
     const char *pixel_program;
+    const char *geometry_program;   // CG2 CHANGE
 
-    vertex_program = cgGetProgramString (_cg_vprogram, CG_COMPILED_PROGRAM);
-    pixel_program = cgGetProgramString (_cg_fprogram, CG_COMPILED_PROGRAM);
+    vertex_program   = cgGetProgramString (_cg_vprogram, CG_COMPILED_PROGRAM);
+    pixel_program    = cgGetProgramString (_cg_fprogram, CG_COMPILED_PROGRAM);
+
+    // BEGIN CG2 CHANGE
+    if (_cg_gprogram != 0)
+        geometry_program = cgGetProgramString (_cg_gprogram, CG_COMPILED_PROGRAM);
+    // END CG2 CHANGE
 
     gobj_cat.debug() << vertex_program << "\n";
     gobj_cat.debug() << pixel_program << "\n";
+
+    // BEGIN CG2 CHANGE
+    if (_cg_gprogram != 0)
+        gobj_cat.debug() << geometry_program << "\n";
+    // END CG2 CHANGE
   }
 
   //  // The following code is present to work around a bug in the Cg compiler.
@@ -1409,6 +1434,31 @@ cg_analyze_shader(const ShaderCaps &caps) {
   return true;
 }
 
+// BEGIN CG2 CHANGE
+CGprogram Shader::
+cg_program_from_shadertype(ShaderType type)
+{
+    CGprogram prog = 0;
+
+    switch(type)
+    {
+    case ST_VERTEX:
+        prog = _cg_vprogram;
+        break;
+
+    case ST_FRAGMENT:
+        prog = _cg_fprogram;
+        break;
+
+    case ST_GEOMETRY:
+        prog = _cg_gprogram;
+        break;
+    };
+
+    return prog;
+}
+// END CG2 CHANGE
+
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::cg_compile_for
 //  Access: Public
@@ -1422,6 +1472,7 @@ cg_compile_for(const ShaderCaps &caps,
                CGcontext &ctx,
                CGprogram &vprogram,
                CGprogram &fprogram,
+               CGprogram &gprogram,     // CG2 CHANGE
                pvector<CGparameter> &map) {
 
   // Initialize the return values to empty.
@@ -1429,6 +1480,8 @@ cg_compile_for(const ShaderCaps &caps,
   ctx = 0;
   vprogram = 0;
   fprogram = 0;
+  gprogram = 0;   // CG2 CHANGE
+
   map.clear();
   
   // Make sure the shader is compiled for the target caps.
@@ -1461,12 +1514,13 @@ cg_compile_for(const ShaderCaps &caps,
   
   for (int i=0; i<n_mat; i++) {
     const ShaderArgId &id = _mat_spec[i]._id;
-    CGprogram prog = (id._fshader) ? _cg_fprogram : _cg_vprogram;
+
+    CGprogram prog = cg_program_from_shadertype(id._type);  // CG2 CHANGE
     map[id._seqno] = cgGetNamedParameter(prog, id._name.c_str());
   }
   for (int i=0; i<n_tex; i++) {
     const ShaderArgId &id = _tex_spec[i]._id;
-    CGprogram prog = (id._fshader) ? _cg_fprogram : _cg_vprogram;
+    CGprogram prog = cg_program_from_shadertype(id._type);  // CG2 CHANGE
     map[id._seqno] = cgGetNamedParameter(prog, id._name.c_str());
     if (cgGetParameterBaseResource(map[id._seqno]) == CG_UNDEFINED) {
       map[id._seqno] = 0;
@@ -1474,7 +1528,8 @@ cg_compile_for(const ShaderCaps &caps,
   }
   for (int i=0; i<n_var; i++) {
     const ShaderArgId &id = _var_spec[i]._id;
-    CGprogram prog = (id._fshader) ? _cg_fprogram : _cg_vprogram;
+
+    CGprogram prog = cg_program_from_shadertype(id._type);      // CG2 CHANGE
     map[id._seqno] = cgGetNamedParameter(prog, id._name.c_str());
     if (cgGetParameterBaseResource(map[id._seqno]) == CG_UNDEFINED) {
       map[id._seqno] = 0;
@@ -1486,10 +1541,13 @@ cg_compile_for(const ShaderCaps &caps,
   ctx = _cg_context;
   vprogram = _cg_vprogram;
   fprogram = _cg_fprogram;
-  
+  gprogram = _cg_gprogram;  // CG2 CHANGE
+
   _cg_context = 0;
   _cg_vprogram = 0;
   _cg_fprogram = 0;
+  _cg_gprogram = 0;     // CG2 CHANGE
+
   _cg_last_caps.clear();
 
   return true;
@@ -1519,8 +1577,10 @@ Shader(const Filename &filename, const string &text, const string &vprofile, con
   _cg_context = 0;
   _cg_vprogram = 0;
   _cg_fprogram = 0;
+  _cg_gprogram = 0; // CG2 CHANGE
   _cg_vprofile = CG_PROFILE_UNKNOWN;
   _cg_fprofile = CG_PROFILE_UNKNOWN;
+  _cg_gprofile = CG_PROFILE_UNKNOWN;
   if (vprofile != "") {
     CGprofile p = cgGetProfile(vprofile.c_str());
     if (p == CG_PROFILE_UNKNOWN) {
@@ -1540,10 +1600,14 @@ Shader(const Filename &filename, const string &text, const string &vprofile, con
   if (_default_caps._ultimate_vprofile == 0) {
     _default_caps._active_vprofile = CG_PROFILE_UNKNOWN;
     _default_caps._active_fprofile = CG_PROFILE_UNKNOWN;
-    _default_caps._ultimate_vprofile = JCG_PROFILE_GLSLV;
-    _default_caps._ultimate_fprofile = JCG_PROFILE_GLSLF;
+    _default_caps._ultimate_vprofile = cgGetProfile("glslv");
+    _default_caps._ultimate_fprofile = cgGetProfile("glslf");
+    _default_caps._ultimate_gprofile = cgGetProfile("gp4gp");
   }
   if (_header == "//Cg") {
+
+    cg_get_profile_from_header(_default_caps);  // CG2 CHANGE
+
     if (!cg_analyze_shader(_default_caps)) {
       _error_flag = true;
     }
@@ -1555,6 +1619,115 @@ Shader(const Filename &filename, const string &text, const string &vprofile, con
 #endif
 
 }
+
+// BEGIN CG2 CHANGE
+
+////////////////////////////////////////////////////////////////////
+//  Function: Shader::cg_get_profile_from_header
+//  Access: Private
+//  Description: Determines the appropriate active shader profile settings
+//               based on any profile directives stored within the shader header
+////////////////////////////////////////////////////////////////////
+
+void Shader::
+cg_get_profile_from_header(ShaderCaps& caps) {
+
+    // Note this forces profile based on what is specified in the shader
+    // header string.  Should probably be relying on card caps eventually.
+
+    string buf;
+    parse_init();
+
+    // Assume that if parse doesn't extend after a parse line then
+    // we've reached the end of _text
+    int lastParse;
+
+    do
+    {
+        lastParse = _parse;
+        parse_line(buf, true, true);
+        int profilePos = buf.find("//Cg profile");
+        if (profilePos >= 0)
+        {
+            // Scan the line for known cg2 vertex program profiles
+            if ((int)buf.find("gp4vp") >= 0)
+                caps._active_vprofile = cgGetProfile("gp4vp");
+
+            // older
+            if ((int)buf.find("glslv") >= 0)
+                caps._active_vprofile = cgGetProfile("glslv");
+
+            if ((int)buf.find("arbvp1") >= 0)
+                caps._active_vprofile = cgGetProfile("arbvp1");
+
+            if ((int)buf.find("vp40") >= 0)
+                caps._active_vprofile = cgGetProfile("vp40");
+
+            if ((int)buf.find("vp30") >= 0)
+                caps._active_vprofile = cgGetProfile("vp30");
+
+            if ((int)buf.find("vp20") >= 0)
+                caps._active_vprofile = cgGetProfile("vp20");
+
+            if ((int)buf.find("vs_1_1") >= 0)
+                caps._active_vprofile = cgGetProfile("vs_1_1");
+
+            if ((int)buf.find("vs_2_0") >= 0)
+                caps._active_vprofile = cgGetProfile("vs_2_0");
+
+            if ((int)buf.find("vs_2_x") >= 0)
+                caps._active_vprofile = cgGetProfile("vs_2_x");
+
+            if ((int)buf.find("vs_3_0") >= 0)
+                caps._active_vprofile = cgGetProfile("vs_3_0");
+
+            // Scan the line for known cg2 fragment program profiles
+            if ((int)buf.find("gp4fp") >= 0)
+                caps._active_fprofile = cgGetProfile("gp4fp");
+
+            // older
+            if ((int)buf.find("glslf") >= 0)
+                caps._active_fprofile = cgGetProfile("glslf");
+
+            if ((int)buf.find("arbfp1") >= 0)
+                caps._active_fprofile = cgGetProfile("arbfp1");
+
+            if ((int)buf.find("fp40") >= 0)
+                caps._active_fprofile = cgGetProfile("fp40");
+
+            if ((int)buf.find("fp30") >= 0)
+                caps._active_fprofile = cgGetProfile("fp30");
+
+            if ((int)buf.find("fp20") >= 0)
+                caps._active_fprofile = cgGetProfile("fp20");
+
+            if ((int)buf.find("ps_1_1") >= 0)
+                caps._active_fprofile = cgGetProfile("ps_1_1");
+
+            if ((int)buf.find("ps_1_2") >= 0)
+                caps._active_fprofile = cgGetProfile("ps_1_2");
+
+            if ((int)buf.find("ps_1_3") >= 0)
+                caps._active_fprofile = cgGetProfile("ps_1_3");
+
+            if ((int)buf.find("ps_2_0") >= 0)
+                caps._active_fprofile = cgGetProfile("ps_2_0");
+
+            if ((int)buf.find("ps_2_x") >= 0)
+                caps._active_fprofile = cgGetProfile("ps_2_x");
+
+            if ((int)buf.find("ps_3_0") >= 0)
+                caps._active_fprofile = cgGetProfile("ps_3_0");
+
+            // Scan the line for known cg2 geometry program profiles
+            if ((int)buf.find("gp4gp") >= 0)
+                caps._active_gprofile = cgGetProfile("gp4gp");
+        }
+
+    } while(_parse > lastParse);
+}
+
+// END CG2 CHANGE
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::Destructor
@@ -1571,6 +1744,7 @@ Shader::
   }
 }
 
+// Removed for now, as the profiles are now taken from the shader source.
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::load
 //       Access: Published, Static
@@ -1583,7 +1757,7 @@ Shader::
 ////////////////////////////////////////////////////////////////////
 PT(Shader) Shader::
 load(const string &file, const string &vprofile, const string &fprofile) {
-  return load(Filename(file), vprofile, fprofile);
+ return load(Filename(file), vprofile, fprofile);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1614,7 +1788,7 @@ load(const Filename &file, const string &vprofile, const string &fprofile) {
   return result;
 }
 
-////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 //     Function: Shader::make
 //       Access: Published, Static
 //  Description: Loads the shader, using the string as shader body.
@@ -1902,6 +2076,11 @@ clear() {
   _active_fprofile = 0;
   _ultimate_vprofile = 0;
   _ultimate_fprofile = 0;
+
+  // BEGIN CG2 CHANGE
+  _active_gprofile = 0;
+  _ultimate_gprofile = 0;
+  // END CG2 CHANGE
 #endif
 }
 

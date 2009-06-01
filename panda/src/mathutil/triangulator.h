@@ -85,15 +85,15 @@ private:
   } point_t, vector_t;
   
 
-  struct segment_t {	
+  struct segment_t {
     INLINE segment_t();
     INLINE segment_t(Triangulator *t, int v0_i, int v1_i, int prev, int next);
 
-    point_t v0, v1;		/* two endpoints */
-    int is_inserted;		/* inserted in trapezoidation yet ? */
-    int root0, root1;		/* root nodes in Q */
-    int next;			/* Next logical segment */
-    int prev;			/* Previous segment */
+    point_t v0, v1;             /* two endpoints */
+    int is_inserted;            /* inserted in trapezoidation yet ? */
+    int root0, root1;           /* root nodes in Q */
+    int next;                   /* Next logical segment */
+    int prev;                   /* Previous segment */
     int v0_i; // index to user's vertex number
   };
 
@@ -105,12 +105,12 @@ private:
   /* Trapezoid attributes */
 
   typedef struct {
-    int lseg, rseg;		/* two adjoining segments */
-    point_t hi, lo;		/* max/min y-values */
+    int lseg, rseg;             /* two adjoining segments */
+    point_t hi, lo;             /* max/min y-values */
     int u0, u1;
     int d0, d1;
-    int sink;			/* pointer to corresponding in Q */
-    int usave, uside;		/* I forgot what this means */
+    int sink;                   /* pointer to corresponding in Q */
+    int usave, uside;           /* I forgot what this means */
     int state;
   } trap_t;
   
@@ -118,27 +118,27 @@ private:
   /* Node attributes for every node in the query structure */
   
   typedef struct {
-    int nodetype;			/* Y-node or S-node */
+    int nodetype;                       /* Y-node or S-node */
     int segnum;
     point_t yval;
     int trnum;
-    int parent;			/* doubly linked DAG */
-    int left, right;		/* children */
+    int parent;                 /* doubly linked DAG */
+    int left, right;            /* children */
   } node_t;
 
 
   typedef struct {
     int vnum;
-    int next;			/* Circularly linked list  */
-    int prev;			/* describing the monotone */
-    int marked;			/* polygon */
-  } monchain_t;			
+    int next;                   /* Circularly linked list  */
+    int prev;                   /* describing the monotone */
+    int marked;                 /* polygon */
+  } monchain_t;
   
   
   typedef struct {
     point_t pt;
-    int vnext[4];			/* next vertices for the 4 chains */
-    int vpos[4];			/* position of v in the 4 chains */
+    int vnext[4];                       /* next vertices for the 4 chains */
+    int vpos[4];                        /* position of v in the 4 chains */
     int nextfree;
     int user_i;  // index to user's vertex number
   } vertexchain_t;

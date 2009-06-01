@@ -152,6 +152,14 @@
   #define EXPTP_PANDAPHYSICS extern
 #endif
 
+#ifdef BUILDING_PANDAPHYSX
+  #define EXPCL_PANDAPHYSX __declspec(dllexport)
+  #define EXPTP_PANDAPHYSX
+#else
+  #define EXPCL_PANDAPHYSX __declspec(dllimport)
+  #define EXPTP_PANDAPHYSX extern
+#endif
+
 #ifdef BUILDING_PANDARIB
   #define EXPCL_PANDARIB __declspec(dllexport)
   #define EXPTP_PANDARIB
@@ -241,6 +249,9 @@
 
 #define EXPCL_PANDAPHYSICS
 #define EXPTP_PANDAPHYSICS
+
+#define EXPCL_PANDAPHYSX
+#define EXPTP_PANDAPHYSX
 
 #define EXPCL_PANDARIB
 #define EXPTP_PANDARIB

@@ -25,6 +25,17 @@ operator < (const DisplayRegion &other) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::get_lens_index
+//       Access: Public
+//  Description: Gets the index into a lens_node lens array. 0 default
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegion::
+get_lens_index() const {
+  CDReader cdata(_cycler);
+  return cdata->_lens_index;
+}
+
+///////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_dimensions
 //       Access: Published
 //  Description: Retrieves the coordinates of the DisplayRegion's
@@ -761,6 +772,17 @@ get_region_pixels_i(int &xo, int &yo, int &w, int &h) const {
 INLINE int DisplayRegionPipelineReader::
 get_pixel_width() const {
   return _cdata->_pr - _cdata->_pl;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegionPipelineReader::get_lens_index
+//       Access: Public
+//  Description: Gets the index into a lens_node lens array. 0 default
+////////////////////////////////////////////////////////////////////
+INLINE int DisplayRegionPipelineReader::
+get_lens_index() const
+{
+  return _cdata->_lens_index;
 }
 
 ////////////////////////////////////////////////////////////////////

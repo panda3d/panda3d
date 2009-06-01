@@ -28,11 +28,11 @@
   #endif
 #endif
 
-#include <vrpn_Connection.h>
-#include <vrpn_Tracker.h>
-#include <vrpn_Analog.h>
-#include <vrpn_Button.h>
-#include <vrpn_Dial.h>
+#include "vrpn_Connection.h"
+#include "vrpn_Tracker.h"
+#include "vrpn_Analog.h"
+#include "vrpn_Button.h"
+#include "vrpn_Dial.h"
 
 #ifdef sleep
 #undef sleep

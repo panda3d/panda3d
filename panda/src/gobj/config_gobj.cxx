@@ -12,6 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#include "animateVerticesRequest.h"
 #include "bufferContext.h"
 #include "config_util.h"
 #include "config_gobj.h"
@@ -108,9 +109,9 @@ ConfigVariableBool keep_texture_ram
 ConfigVariableBool compressed_textures
 ("compressed-textures", false,
  PRC_DESC("Set this to true to compress textures as they are loaded into "
-	  "texture memory, if the driver supports this.  Specifically, this "
-	  "changes the meaning of set_compression(Texture::CM_default) to "
-	  "Texture::CM_on."));
+          "texture memory, if the driver supports this.  Specifically, this "
+          "changes the meaning of set_compression(Texture::CM_default) to "
+          "Texture::CM_on."));
 
 ConfigVariableBool driver_compress_textures
 ("driver-compress-textures", false,
@@ -453,6 +454,7 @@ PRC_DESC("If this is nonzero, it represents an artificial delay, "
  
 
 ConfigureFn(config_gobj) {
+  AnimateVerticesRequest::init_type();
   BufferContext::init_type();
   Geom::init_type();
   GeomPipelineReader::init_type();

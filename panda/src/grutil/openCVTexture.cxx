@@ -339,7 +339,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
   if (!alpha_fullpath.empty()) {
     if (!page._alpha.read(alpha_fullpath)) {
       grutil_cat.error()
-	<< "OpenCV couldn't read " << alpha_fullpath << " as video.\n";
+        << "OpenCV couldn't read " << alpha_fullpath << " as video.\n";
       page._color.clear();
       return false;
     }

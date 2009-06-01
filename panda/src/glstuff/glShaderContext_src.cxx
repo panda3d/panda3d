@@ -39,6 +39,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                            _cg_context,
                            _cg_vprogram,
                            _cg_fprogram, 
+                           _cg_gprogram,    // CG2 CHANGE
                            _cg_parameter_map)) {
       return;
     }
@@ -64,6 +65,27 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
     if (glGetError() != GL_NO_ERROR) {
       GLCAT.error() << "GL error in ShaderContext constructor\n";
     }
+    // BEGIN CG2 CHANGE
+    if (_cg_gprogram != 0)
+    {
+        cgGLLoadProgram(_cg_gprogram);
+        if (GLCAT.is_debug()) {
+          GLCAT.debug()
+            << "Loaded geom prog: " << _cg_gprogram << "\n";
+        }
+
+        CGerror gerror = cgGetError();
+        if (gerror != CG_NO_ERROR) {
+          const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
+          GLCAT.error() << "Could not load Cg geometry program:" << s->get_filename() << " (" << 
+            cgGetProfileString(cgGetProgramProfile(_cg_gprogram)) << " " << str << ")\n";
+          release_resources();
+        }
+        if (glGetError() != GL_NO_ERROR) {
+          GLCAT.error() << "GL error in ShaderContext constructor\n";
+        }
+    }
+    // END CG2 CHANGE
   }
 #endif
 }
@@ -89,9 +111,10 @@ release_resources() {
 #ifdef HAVE_CG
   if (_cg_context) {
     cgDestroyContext(_cg_context);
-    _cg_context = 0;
+    _cg_context  = 0;
     _cg_vprogram = 0;
     _cg_fprogram = 0;
+    _cg_gprogram = 0;   // CG2 CHANGE
     _cg_parameter_map.clear();
   }
   if (glGetError() != GL_NO_ERROR) {
@@ -120,6 +143,15 @@ bind(GSG *gsg) {
     cgGLBindProgram(_cg_vprogram);
     cgGLEnableProfile(cgGetProgramProfile(_cg_fprogram));
     cgGLBindProgram(_cg_fprogram);
+
+    // BEGIN CG2 CHANGE
+    if (_cg_gprogram != 0)
+    {
+        cgGLEnableProfile(cgGetProgramProfile(_cg_gprogram));
+        cgGLBindProgram(_cg_gprogram);
+    }
+    // END CG2 CHANGE
+
     cg_report_errors();
     if (glGetError() != GL_NO_ERROR) {
       GLCAT.error() << "GL error in ShaderContext::bind\n";
@@ -139,6 +171,14 @@ unbind() {
   if (_cg_context != 0) {
     cgGLDisableProfile(cgGetProgramProfile(_cg_vprogram));
     cgGLDisableProfile(cgGetProgramProfile(_cg_fprogram));
+
+    // BEGIN CG2 CHANGE
+    if (_cg_gprogram != 0)
+    {
+        cgGLDisableProfile(cgGetProgramProfile(_cg_gprogram));
+    }
+    // END CG2 CHANGE
+
     cg_report_errors();
     if (glGetError() != GL_NO_ERROR) {
       GLCAT.error() << "GL error in ShaderContext::unbind\n";

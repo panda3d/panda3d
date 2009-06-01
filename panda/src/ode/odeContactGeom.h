@@ -69,7 +69,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "OdeContactGeom",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

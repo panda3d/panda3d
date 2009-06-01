@@ -830,6 +830,13 @@
 #define FMODEX_LIBS $[if $[libtest $[FMODEX_LPATH],fmodex64],fmodex64,fmodex]
 #defer HAVE_FMODEX $[libtest $[FMODEX_LPATH],$[FMODEX_LIBS]]
 
+// Info for the Ageia PhysX SDK
+// note this may be overwritten in wintools Config.pp
+#define PHYSX_IPATH
+#define PHYSX_LPATH
+#define PHYSX_LIBS PhysXLoader.lib NxCharacter.lib NxCooking.lib NxExtensions.lib
+#defer HAVE_PHYSX $[libtest $[PHYSX_LPATH],$[PHYSX_LIBS]]
+
 // Info for http://www.sourceforge.net/projects/chromium
 // note this may be overwritten in wintools Config.pp
 #define CHROMIUM_IPATH /usr/include/chromium/include

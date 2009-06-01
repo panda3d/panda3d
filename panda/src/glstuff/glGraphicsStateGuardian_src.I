@@ -552,6 +552,40 @@ get_clip_plane_id(int index) const {
   return GL_CLIP_PLANE0 + index;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_supports_framebuffer_multisample
+//       Access: Public
+//  Description: Returns if this glGsg supports multisample 
+//               antialiasing for framebuffer objects.
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(GraphicsStateGuardian)::
+get_supports_framebuffer_multisample() {
+    return _supports_framebuffer_multisample;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_supports_framebuffer_multisample
+//       Access: Public
+//  Description: Returns if this glGsg supports multisample 
+//               antialiasing for framebuffer objects.
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(GraphicsStateGuardian)::
+get_supports_framebuffer_multisample_coverage_nv() {
+    return _supports_framebuffer_multisample_coverage_nv;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: CLP(GraphicsStateGuardian)::get_supports_framebuffer_blit
+//       Access: Public
+//  Description: Returns if this glGsg supports multisample 
+//               antialiasing for framebuffer objects.
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(GraphicsStateGuardian)::
+get_supports_framebuffer_blit() {
+    return _supports_framebuffer_blit;
+}
+
 #ifndef NDEBUG
 ////////////////////////////////////////////////////////////////////
 //     Function: GLGraphicsStateGuardian::UsageTextureKey::Constructor

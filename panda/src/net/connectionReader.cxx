@@ -292,8 +292,8 @@ poll() {
     if (max_poll_cycle < 0.0) {
       // Continue to read all data.
       while (sinfo != (SocketInfo *)NULL) {
-	process_incoming_data(sinfo);
-	sinfo = get_next_available_socket(false, -2);
+        process_incoming_data(sinfo);
+        sinfo = get_next_available_socket(false, -2);
       }
 
     } else {
@@ -302,11 +302,11 @@ poll() {
       double stop = global_clock->get_short_time() + max_poll_cycle;
 
       while (sinfo != (SocketInfo *)NULL) {
-	process_incoming_data(sinfo);
-	if (global_clock->get_short_time() >= stop) {
-	  return;
-	}
-	sinfo = get_next_available_socket(false, -2);
+        process_incoming_data(sinfo);
+        if (global_clock->get_short_time() >= stop) {
+          return;
+        }
+        sinfo = get_next_available_socket(false, -2);
       }
     }
   }

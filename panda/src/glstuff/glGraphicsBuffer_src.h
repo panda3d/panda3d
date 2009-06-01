@@ -1,5 +1,6 @@
 // Filename: glGraphicsBuffer_src.h
 // Created by:  jyelon (15Jan06)
+// Modified by: kleonard (27Jun07)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -31,6 +32,7 @@
 //               * Supports cumulative render-to-texture.
 //               * Faster than pbuffers.
 //               * Can render onto a texture without clearing it first.
+//               * Supports multisample antialiased rendering.
 //
 //               Some of these deserve a little explanation. 
 //               Auxiliary bitplanes are additional bitplanes above
@@ -47,6 +49,12 @@
 //               available, then the glGraphicsBuffer will not be
 //               available (although it may still be possible to
 //               create a wglGraphicsBuffer or glxGraphicsBuffer).
+//
+//               This class now also uses the extensions 
+//               EXT_framebuffer_multisample and EXT_framebuffer_blit
+//               to allow for multisample antialiasing these offscreen
+//               render targets.  If these extensions are unavailable
+//               the buffer will render as if multisamples is 0.
 //
 ////////////////////////////////////////////////////////////////////
 
@@ -84,17 +92,25 @@ private:
   
   void bind_slot(bool rb_resize, Texture **attach,
                  RenderTexturePlane plane, GLenum attachpoint);
+  void bind_slot_multisample(bool rb_resize, Texture **attach,
+                 RenderTexturePlane plane, GLenum attachpoint);
   bool check_fbo();
   void generate_mipmaps();
   void rebuild_bitplanes();
   
-  GLuint      _fbo;
+  GLuint      _fbo; // allows for textures to be attached for render to texture.
+  GLuint      _fbo_multisample; // all render buffers, resolves to _fbo at end of frame.
+  int         _requested_multisamples;
+  int         _requested_coverage_samples;
+  bool        _use_depth_stencil;
+
   int         _rb_size_x;
   int         _rb_size_y;
   int         _cube_face_active;
   PT(Texture) _tex[RTP_COUNT];
   GLuint      _rb[RTP_COUNT];
   GLenum      _attach_point[RTP_COUNT];
+  GLuint      _rbm[RTP_COUNT];  // A mirror of _rb, for the multisample FBO.
 
   GLuint      _cubemap_fbo [6];
   
@@ -114,6 +130,9 @@ public:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+
+  INLINE int get_multisample_count();
+  INLINE int get_coverage_sample_count();
 
 private:
   static TypeHandle _type_handle;

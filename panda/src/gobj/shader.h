@@ -169,10 +169,18 @@ public:
     SMF_first,
   };
 
+  // BEGIN CG2 CHANGE
+  enum ShaderType {
+    ST_VERTEX,
+    ST_FRAGMENT,
+    ST_GEOMETRY,
+  };
+  // END CG2 CHANGE
+
   struct ShaderArgId {
-    string _name;
-    bool   _fshader;
-    int    _seqno;
+    string     _name;
+    ShaderType _type;       // CG2 CHANGE
+    int        _seqno;
   };
   
   struct ShaderMatSpec {
@@ -212,8 +220,12 @@ public:
 #ifdef HAVE_CG
     int _active_vprofile;
     int _active_fprofile;
+    int _active_gprofile;   // CG CHANGE   Geometry shader
+
     int _ultimate_vprofile;
     int _ultimate_fprofile;
+    int _ultimate_gprofile; // CG CHANGE   Geometry shader
+
     pset <ShaderBug> _bug_list;
 #endif
     void clear();
@@ -261,26 +273,41 @@ public:
  private:
   ShaderArgType cg_parameter_type(CGparameter p);
   ShaderArgDir  cg_parameter_dir(CGparameter p);
-  CGprogram     cg_compile_entry_point(const char *entry, const ShaderCaps &caps, bool fshader);
-  bool          cg_analyze_entry_point(CGprogram prog, bool fshader);
+
+  CGprogram     cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type = ST_VERTEX); // CG2 CHANGE
+
+  bool          cg_analyze_entry_point(CGprogram prog, ShaderType type);    // CG2 CHANGE
+
   bool          cg_analyze_shader(const ShaderCaps &caps);
   bool          cg_compile_shader(const ShaderCaps &caps);
   void          cg_release_resources();
   void          cg_report_errors();
   
+  // BEGIN CG2 CHANGE
+  // Determines the appropriate cg profile settings and stores them in the active shader caps
+  // based on any profile settings stored in the shader's header
+  void          cg_get_profile_from_header(ShaderCaps& caps);
+  // END CG2 CHANGE
+
   ShaderCaps _cg_last_caps;
   CGcontext  _cg_context;
   CGprogram  _cg_vprogram;
   CGprogram  _cg_fprogram;
+  CGprogram  _cg_gprogram;  // CG2 CHANGE
+
   int        _cg_vprofile;
   int        _cg_fprofile;
-  
+  int        _cg_gprofile;
+
+  CGprogram     cg_program_from_shadertype(ShaderType type);    // CG2 CHANGE
+
  public:
 
   bool          cg_compile_for(const ShaderCaps &caps,
                                CGcontext &ctx,
                                CGprogram &vprogram,
                                CGprogram &fprogram,
+                   CGprogram &gprogram,     // CG2 CHANGE
                                pvector<CGparameter> &map);
   
 #endif

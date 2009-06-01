@@ -255,36 +255,36 @@ get_triangle_v2(int n) const {
 #define T_SINK  3
 
 
-#define FIRSTPT 1		/* checking whether pt. is inserted */ 
+#define FIRSTPT 1               /* checking whether pt. is inserted */ 
 #define LASTPT  2
 
 
 #define REALLY_BIG 1<<30
-#define C_EPS 1.0e-7		/* tolerance value: Used for making */
-				/* all decisions about collinearity or */
-				/* left/right of segment. Decrease */
-				/* this value if the input points are */
-				/* spaced very close together */
+#define C_EPS 1.0e-7            /* tolerance value: Used for making */
+                                /* all decisions about collinearity or */
+                                /* left/right of segment. Decrease */
+                                /* this value if the input points are */
+                                /* spaced very close together */
 
 
-#define S_LEFT 1		/* for merge-direction */
+#define S_LEFT 1                /* for merge-direction */
 #define S_RIGHT 2
 
 
-#define ST_VALID 1		/* for trapezium state */
+#define ST_VALID 1              /* for trapezium state */
 #define ST_INVALID 2
 
 
-#define SP_SIMPLE_LRUP 1	/* for splitting trapezoids */
+#define SP_SIMPLE_LRUP 1        /* for splitting trapezoids */
 #define SP_SIMPLE_LRDN 2
 #define SP_2UP_2DN     3
 #define SP_2UP_LEFT    4
 #define SP_2UP_RIGHT   5
 #define SP_2DN_LEFT    6
 #define SP_2DN_RIGHT   7
-#define SP_NOSPLIT    -1	
+#define SP_NOSPLIT    -1
 
-#define TR_FROM_UP 1		/* for traverse-direction */
+#define TR_FROM_UP 1            /* for traverse-direction */
 #define TR_FROM_DN 2
 
 #define TRI_LHS 1
@@ -292,7 +292,7 @@ get_triangle_v2(int n) const {
 
 
 #define CROSS(v0, v1, v2) (((v1).x - (v0).x)*((v2).y - (v0).y) - \
-			   ((v1).y - (v0).y)*((v2).x - (v0).x))
+                           ((v1).y - (v0).y)*((v2).x - (v0).x))
 
 #define DOT(v0, v1) ((v0).x * (v1).x + (v0).y * (v1).y)
 
@@ -442,9 +442,9 @@ int Triangulator::_max(point_t *yval, point_t *v0, point_t *v1) {
   else if (FP_EQUAL(v0->y, v1->y))
     {
       if (v0->x > v1->x + C_EPS)
-	*yval = *v0;
+        *yval = *v0;
       else
-	*yval = *v1;
+        *yval = *v1;
     }
   else
     *yval = *v1;
@@ -460,9 +460,9 @@ int Triangulator::_min(point_t *yval, point_t *v0, point_t *v1) {
   else if (FP_EQUAL(v0->y, v1->y))
     {
       if (v0->x < v1->x)
-	*yval = *v0;
+        *yval = *v0;
       else
-	*yval = *v1;
+        *yval = *v1;
     }
   else
     *yval = *v1;
@@ -514,9 +514,9 @@ _less_than(point_t *v0, point_t *v1) {
  *    
  *                4
  *   -----------------------------------
- *  		  \
- *  	1	   \        2
- *  		    \
+ *                \
+ *      1          \        2
+ *                  \
  *   -----------------------------------
  *                3
  */
@@ -572,10 +572,10 @@ init_query_structure(int segnum) {
   qs[i7].nodetype = T_SINK;
   qs[i7].parent = i5;
 
-  t1 = newtrap();		/* middle left */
-  t2 = newtrap();		/* middle right */
-  t3 = newtrap();		/* bottom-most */
-  t4 = newtrap();		/* topmost */
+  t1 = newtrap();               /* middle left */
+  t2 = newtrap();               /* middle right */
+  t3 = newtrap();               /* bottom-most */
+  t4 = newtrap();               /* topmost */
 
   tr[t4].lo = qs[i1].yval;
   tr[t2].hi = qs[i1].yval;
@@ -631,40 +631,40 @@ is_left_of(int segnum, point_t *v) {
   if (_greater_than(&s->v1, &s->v0)) /* seg. going upwards */
     {
       if (FP_EQUAL(s->v1.y, v->y))
-	{
-	  if (v->x < s->v1.x)
-	    area = 1.0;
-	  else
-	    area = -1.0;
-	}
+        {
+          if (v->x < s->v1.x)
+            area = 1.0;
+          else
+            area = -1.0;
+        }
       else if (FP_EQUAL(s->v0.y, v->y))
-	{
-	  if (v->x < s->v0.x)
-	    area = 1.0;
-	  else
-	    area = -1.0;
-	}
+        {
+          if (v->x < s->v0.x)
+            area = 1.0;
+          else
+            area = -1.0;
+        }
       else
-	area = CROSS(s->v0, s->v1, (*v));
+        area = CROSS(s->v0, s->v1, (*v));
     }
-  else				/* v0 > v1 */
+  else                          /* v0 > v1 */
     {
       if (FP_EQUAL(s->v1.y, v->y))
-	{
-	  if (v->x < s->v1.x)
-	    area = 1.0;
-	  else
-	    area = -1.0;
-	}
+        {
+          if (v->x < s->v1.x)
+            area = 1.0;
+          else
+            area = -1.0;
+        }
       else if (FP_EQUAL(s->v0.y, v->y))
-	{
-	  if (v->x < s->v0.x)
-	    area = 1.0;
-	  else
-	    area = -1.0;
-	}
+        {
+          if (v->x < s->v0.x)
+            area = 1.0;
+          else
+            area = -1.0;
+        }
       else
-	area = CROSS(s->v1, s->v0, (*v));
+        area = CROSS(s->v1, s->v0, (*v));
     }
   
   if (area > 0.0)
@@ -703,38 +703,38 @@ locate_endpoint(point_t *v, point_t *vo, int r) {
       
     case T_Y:
       if (_greater_than(v, &rptr->yval)) /* above */
-	return locate_endpoint(v, vo, rptr->right);
+        return locate_endpoint(v, vo, rptr->right);
       else if (_equal_to(v, &rptr->yval)) /* the point is already */
-	{			          /* inserted. */
-	  if (_greater_than(vo, &rptr->yval)) /* above */
-	    return locate_endpoint(v, vo, rptr->right);
-	  else 
-	    return locate_endpoint(v, vo, rptr->left); /* below */	    
-	}
+        {                                 /* inserted. */
+          if (_greater_than(vo, &rptr->yval)) /* above */
+            return locate_endpoint(v, vo, rptr->right);
+          else 
+            return locate_endpoint(v, vo, rptr->left); /* below */
+        }
       else
-	return locate_endpoint(v, vo, rptr->left); /* below */
+        return locate_endpoint(v, vo, rptr->left); /* below */
 
     case T_X:
       if (_equal_to(v, &seg[rptr->segnum].v0) || 
-	       _equal_to(v, &seg[rptr->segnum].v1))
-	{
-	  if (FP_EQUAL(v->y, vo->y)) /* horizontal segment */
-	    {
-	      if (vo->x < v->x)
-		return locate_endpoint(v, vo, rptr->left); /* left */
-	      else
-		return locate_endpoint(v, vo, rptr->right); /* right */
-	    }
+               _equal_to(v, &seg[rptr->segnum].v1))
+        {
+          if (FP_EQUAL(v->y, vo->y)) /* horizontal segment */
+            {
+              if (vo->x < v->x)
+                return locate_endpoint(v, vo, rptr->left); /* left */
+              else
+                return locate_endpoint(v, vo, rptr->right); /* right */
+            }
 
-	  else if (is_left_of(rptr->segnum, vo))
-	    return locate_endpoint(v, vo, rptr->left); /* left */
-	  else
-	    return locate_endpoint(v, vo, rptr->right); /* right */
-	}
+          else if (is_left_of(rptr->segnum, vo))
+            return locate_endpoint(v, vo, rptr->left); /* left */
+          else
+            return locate_endpoint(v, vo, rptr->right); /* right */
+        }
       else if (is_left_of(rptr->segnum, v))
-	return locate_endpoint(v, vo, rptr->left); /* left */
+        return locate_endpoint(v, vo, rptr->left); /* left */
       else
-	return locate_endpoint(v, vo, rptr->right); /* right */	
+        return locate_endpoint(v, vo, rptr->right); /* right */
 
     default:
       fprintf(stderr, "Haggu !!!!!\n");
@@ -763,50 +763,50 @@ merge_trapezoids(int segnum, int tfirst, int tlast, int side) {
   while ((t > 0) && _greater_than_equal_to(&tr[t].lo, &tr[tlast].lo))
     {
       if (side == S_LEFT)
-	cond = ((((tnext = tr[t].d0) > 0) && (tr[tnext].rseg == segnum)) ||
-		(((tnext = tr[t].d1) > 0) && (tr[tnext].rseg == segnum)));
+        cond = ((((tnext = tr[t].d0) > 0) && (tr[tnext].rseg == segnum)) ||
+                (((tnext = tr[t].d1) > 0) && (tr[tnext].rseg == segnum)));
       else
-	cond = ((((tnext = tr[t].d0) > 0) && (tr[tnext].lseg == segnum)) ||
-		(((tnext = tr[t].d1) > 0) && (tr[tnext].lseg == segnum)));
+        cond = ((((tnext = tr[t].d0) > 0) && (tr[tnext].lseg == segnum)) ||
+                (((tnext = tr[t].d1) > 0) && (tr[tnext].lseg == segnum)));
       
       if (cond)
-	{
-	  if ((tr[t].lseg == tr[tnext].lseg) &&
-	      (tr[t].rseg == tr[tnext].rseg)) /* good neighbours */
-	    {			              /* merge them */
-	      /* Use the upper node as the new node i.e. t */
-	      
-	      ptnext = qs[tr[tnext].sink].parent;
-	      
-	      if (qs[ptnext].left == tr[tnext].sink)
-		qs[ptnext].left = tr[t].sink;
-	      else
-		qs[ptnext].right = tr[t].sink;	/* redirect parent */
-	      
-	      
-	      /* Change the upper neighbours of the lower trapezoids */
-	      
-	      if ((tr[t].d0 = tr[tnext].d0) > 0)
-		if (tr[tr[t].d0].u0 == tnext)
-		  tr[tr[t].d0].u0 = t;
-		else if (tr[tr[t].d0].u1 == tnext)
-		  tr[tr[t].d0].u1 = t;
-	      
-	      if ((tr[t].d1 = tr[tnext].d1) > 0)
-		if (tr[tr[t].d1].u0 == tnext)
-		  tr[tr[t].d1].u0 = t;
-		else if (tr[tr[t].d1].u1 == tnext)
-		  tr[tr[t].d1].u1 = t;
-	      
-	      tr[t].lo = tr[tnext].lo;
-	      tr[tnext].state = ST_INVALID; /* invalidate the lower */
-				            /* trapezium */
-	    }
-	  else		    /* not good neighbours */
-	    t = tnext;
-	}
-      else		    /* do not satisfy the outer if */
-	t = tnext;
+        {
+          if ((tr[t].lseg == tr[tnext].lseg) &&
+              (tr[t].rseg == tr[tnext].rseg)) /* good neighbours */
+            {                                 /* merge them */
+              /* Use the upper node as the new node i.e. t */
+
+              ptnext = qs[tr[tnext].sink].parent;
+
+              if (qs[ptnext].left == tr[tnext].sink)
+                qs[ptnext].left = tr[t].sink;
+              else
+                qs[ptnext].right = tr[t].sink;  /* redirect parent */
+
+
+              /* Change the upper neighbours of the lower trapezoids */
+
+              if ((tr[t].d0 = tr[tnext].d0) > 0)
+                if (tr[tr[t].d0].u0 == tnext)
+                  tr[tr[t].d0].u0 = t;
+                else if (tr[tr[t].d0].u1 == tnext)
+                  tr[tr[t].d0].u1 = t;
+
+              if ((tr[t].d1 = tr[tnext].d1) > 0)
+                if (tr[tr[t].d1].u0 == tnext)
+                  tr[tr[t].d1].u0 = t;
+                else if (tr[tr[t].d1].u1 == tnext)
+                  tr[tr[t].d1].u1 = t;
+
+              tr[t].lo = tr[tnext].lo;
+              tr[tnext].state = ST_INVALID; /* invalidate the lower */
+                                            /* trapezium */
+            }
+          else              /* not good neighbours */
+            t = tnext;
+        }
+      else                  /* do not satisfy the outer if */
+        t = tnext;
       
     } /* end-while */
        
@@ -852,7 +852,7 @@ add_segment(int segnum) {
       int tmp_d;
 
       tu = locate_endpoint(&s.v0, &s.v1, s.root0);
-      tl = newtrap();		/* tl is the new lower trapezoid */
+      tl = newtrap();           /* tl is the new lower trapezoid */
       tr[tl].state = ST_VALID;
       tr[tl] = tr[tu];
       tr[tl].hi.y = s.v0.y;
@@ -865,25 +865,25 @@ add_segment(int segnum) {
       tr[tl].u1 = 0;
 
       if (((tmp_d = tr[tl].d0) > 0) && (tr[tmp_d].u0 == tu))
-	tr[tmp_d].u0 = tl;
+        tr[tmp_d].u0 = tl;
       if (((tmp_d = tr[tl].d0) > 0) && (tr[tmp_d].u1 == tu))
-	tr[tmp_d].u1 = tl;
+        tr[tmp_d].u1 = tl;
 
       if (((tmp_d = tr[tl].d1) > 0) && (tr[tmp_d].u0 == tu))
-	tr[tmp_d].u0 = tl;
+        tr[tmp_d].u0 = tl;
       if (((tmp_d = tr[tl].d1) > 0) && (tr[tmp_d].u1 == tu))
-	tr[tmp_d].u1 = tl;
+        tr[tmp_d].u1 = tl;
 
       /* Now update the query structure and obtain the sinks for the */
       /* two trapezoids */ 
       
-      i1 = newnode();		/* Upper trapezoid sink */
-      i2 = newnode();		/* Lower trapezoid sink */
+      i1 = newnode();           /* Upper trapezoid sink */
+      i2 = newnode();           /* Lower trapezoid sink */
       sk = tr[tu].sink;
       
       qs[sk].nodetype = T_Y;
       qs[sk].yval = s.v0;
-      qs[sk].segnum = segnum;	/* not really reqd ... maybe later */
+      qs[sk].segnum = segnum;   /* not really reqd ... maybe later */
       qs[sk].left = i2;
       qs[sk].right = i1;
 
@@ -899,7 +899,7 @@ add_segment(int segnum) {
       tr[tl].sink = i2;
       tfirst = tl;
     }
-  else				/* v0 already present */
+  else                          /* v0 already present */
     {       /* Get the topmost intersecting trapezoid */
       tfirst = locate_endpoint(&s.v0, &s.v1, s.root0);
       tritop = 1;
@@ -913,7 +913,7 @@ add_segment(int segnum) {
 
       tu = locate_endpoint(&s.v1, &s.v0, s.root1);
 
-      tl = newtrap();		/* tl is the new lower trapezoid */
+      tl = newtrap();           /* tl is the new lower trapezoid */
       tr[tl].state = ST_VALID;
       tr[tl] = tr[tu];
       tr[tl].hi.y = s.v1.y;
@@ -926,25 +926,25 @@ add_segment(int segnum) {
       tr[tl].u1 = 0;
 
       if (((tmp_d = tr[tl].d0) > 0) && (tr[tmp_d].u0 == tu))
-	tr[tmp_d].u0 = tl;
+        tr[tmp_d].u0 = tl;
       if (((tmp_d = tr[tl].d0) > 0) && (tr[tmp_d].u1 == tu))
-	tr[tmp_d].u1 = tl;
+        tr[tmp_d].u1 = tl;
 
       if (((tmp_d = tr[tl].d1) > 0) && (tr[tmp_d].u0 == tu))
-	tr[tmp_d].u0 = tl;
+        tr[tmp_d].u0 = tl;
       if (((tmp_d = tr[tl].d1) > 0) && (tr[tmp_d].u1 == tu))
-	tr[tmp_d].u1 = tl;
+        tr[tmp_d].u1 = tl;
       
       /* Now update the query structure and obtain the sinks for the */
       /* two trapezoids */ 
       
-      i1 = newnode();		/* Upper trapezoid sink */
-      i2 = newnode();		/* Lower trapezoid sink */
+      i1 = newnode();           /* Upper trapezoid sink */
+      i2 = newnode();           /* Lower trapezoid sink */
       sk = tr[tu].sink;
       
       qs[sk].nodetype = T_Y;
       qs[sk].yval = s.v1;
-      qs[sk].segnum = segnum;	/* not really reqd ... maybe later */
+      qs[sk].segnum = segnum;   /* not really reqd ... maybe later */
       qs[sk].left = i2;
       qs[sk].right = i1;
 
@@ -960,7 +960,7 @@ add_segment(int segnum) {
       tr[tl].sink = i2;
       tlast = tu;
     }
-  else				/* v1 already present */
+  else                          /* v1 already present */
     {       /* Get the lowermost intersecting trapezoid */
       tlast = locate_endpoint(&s.v1, &s.v0, s.root1);
       tribot = 1;
@@ -970,36 +970,36 @@ add_segment(int segnum) {
   /* First, split all the trapezoids which are intersected by s into */
   /* two */
 
-  t = tfirst;			/* topmost trapezoid */
+  t = tfirst;                   /* topmost trapezoid */
   
   while ((t > 0) && 
-	 _greater_than_equal_to(&tr[t].lo, &tr[tlast].lo))
-				/* traverse from top to bot */
+         _greater_than_equal_to(&tr[t].lo, &tr[tlast].lo))
+                                /* traverse from top to bot */
     {
       int t_sav, tn_sav;
       sk = tr[t].sink;
-      i1 = newnode();		/* left trapezoid sink */
-      i2 = newnode();		/* right trapezoid sink */
+      i1 = newnode();           /* left trapezoid sink */
+      i2 = newnode();           /* right trapezoid sink */
       
       qs[sk].nodetype = T_X;
       qs[sk].segnum = segnum;
       qs[sk].left = i1;
       qs[sk].right = i2;
 
-      qs[i1].nodetype = T_SINK;	/* left trapezoid (use existing one) */
+      qs[i1].nodetype = T_SINK; /* left trapezoid (use existing one) */
       qs[i1].trnum = t;
       qs[i1].parent = sk;
 
-      qs[i2].nodetype = T_SINK;	/* right trapezoid (allocate new) */
+      qs[i2].nodetype = T_SINK; /* right trapezoid (allocate new) */
       tn = newtrap();
       qs[i2].trnum = tn;
       tr[tn].state = ST_VALID;
       qs[i2].parent = sk;
 
       if (t == tfirst)
-	tfirstr = tn;
+        tfirstr = tn;
       if (_equal_to(&tr[t].lo, &tr[tlast].lo))
-	tlastr = tn;
+        tlastr = tn;
 
       tr[tn] = tr[t];
       tr[t].sink = i1;
@@ -1010,397 +1010,397 @@ add_segment(int segnum) {
       /* error */
 
       if ((tr[t].d0 <= 0) && (tr[t].d1 <= 0)) /* case cannot arise */
-	{
-	  fprintf(stderr, "add_segment: error\n");
-	  break;
-	}
+        {
+          fprintf(stderr, "add_segment: error\n");
+          break;
+        }
       
       /* only one trapezoid below. partition t into two and make the */
       /* two resulting trapezoids t and tn as the upper neighbours of */
       /* the sole lower trapezoid */
       
       else if ((tr[t].d0 > 0) && (tr[t].d1 <= 0))
-	{			/* Only one trapezoid below */
-	  if ((tr[t].u0 > 0) && (tr[t].u1 > 0))
-	    {			/* continuation of a chain from abv. */
-	      if (tr[t].usave > 0) /* three upper neighbours */
-		{
-		  if (tr[t].uside == S_LEFT)
-		    {
-		      tr[tn].u0 = tr[t].u1;
-		      tr[t].u1 = -1;
-		      tr[tn].u1 = tr[t].usave;
-		      
-		      tr[tr[t].u0].d0 = t;
-		      tr[tr[tn].u0].d0 = tn;
-		      tr[tr[tn].u1].d0 = tn;
-		    }
-		  else		/* intersects in the right */
-		    {
-		      tr[tn].u1 = -1;
-		      tr[tn].u0 = tr[t].u1;
-		      tr[t].u1 = tr[t].u0;
-		      tr[t].u0 = tr[t].usave;
+        {                       /* Only one trapezoid below */
+          if ((tr[t].u0 > 0) && (tr[t].u1 > 0))
+            {                   /* continuation of a chain from abv. */
+              if (tr[t].usave > 0) /* three upper neighbours */
+                {
+                  if (tr[t].uside == S_LEFT)
+                    {
+                      tr[tn].u0 = tr[t].u1;
+                      tr[t].u1 = -1;
+                      tr[tn].u1 = tr[t].usave;
 
-		      tr[tr[t].u0].d0 = t;
-		      tr[tr[t].u1].d0 = t;
-		      tr[tr[tn].u0].d0 = tn;		      
-		    }
-		  tr[tn].usave = 0;
-		  tr[t].usave = 0;
-		}
-	      else		/* No usave.... simple case */
-		{
-		  tr[tn].u0 = tr[t].u1;
+                      tr[tr[t].u0].d0 = t;
+                      tr[tr[tn].u0].d0 = tn;
+                      tr[tr[tn].u1].d0 = tn;
+                    }
+                  else          /* intersects in the right */
+                    {
+                      tr[tn].u1 = -1;
+                      tr[tn].u0 = tr[t].u1;
+                      tr[t].u1 = tr[t].u0;
+                      tr[t].u0 = tr[t].usave;
+
+                      tr[tr[t].u0].d0 = t;
+                      tr[tr[t].u1].d0 = t;
+                      tr[tr[tn].u0].d0 = tn;
+                    }
+                  tr[tn].usave = 0;
+                  tr[t].usave = 0;
+                }
+              else              /* No usave.... simple case */
+                {
+                  tr[tn].u0 = tr[t].u1;
                   tr[tn].u1 = -1;
-		  tr[t].u1 = -1;
-		  tr[tr[tn].u0].d0 = tn;
-		}
-	    }
-	  else 
-	    {			/* fresh seg. or upward cusp */
-	      int tmp_u = tr[t].u0;
-	      int td0, td1;
-	      if (((td0 = tr[tmp_u].d0) > 0) && 
-		  ((td1 = tr[tmp_u].d1) > 0))
-		{		/* upward cusp */
-		  if ((tr[td0].rseg > 0) &&
-		      !is_left_of(tr[td0].rseg, &s.v1))
-		    {
+                  tr[t].u1 = -1;
+                  tr[tr[tn].u0].d0 = tn;
+                }
+            }
+          else 
+            {                   /* fresh seg. or upward cusp */
+              int tmp_u = tr[t].u0;
+              int td0, td1;
+              if (((td0 = tr[tmp_u].d0) > 0) && 
+                  ((td1 = tr[tmp_u].d1) > 0))
+                {               /* upward cusp */
+                  if ((tr[td0].rseg > 0) &&
+                      !is_left_of(tr[td0].rseg, &s.v1))
+                    {
                       tr[tn].u1 = -1;
                       tr[t].u1 = -1;
-		      tr[t].u0 = -1;
-		      tr[tr[tn].u0].d1 = tn;
-		    }
-		  else		/* cusp going leftwards */
-		    { 
+                      tr[t].u0 = -1;
+                      tr[tr[tn].u0].d1 = tn;
+                    }
+                  else          /* cusp going leftwards */
+                    { 
                       tr[t].u1 = -1;
                       tr[tn].u1 = -1;
-		      tr[tn].u0 = -1;
-		      tr[tr[t].u0].d0 = t;
-		    }
-		}
-	      else		/* fresh segment */
-		{
-		  tr[tr[t].u0].d0 = t;
-		  tr[tr[t].u0].d1 = tn;
-		}	      
-	    }
-	  
-	  if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) && 
-	      FP_EQUAL(tr[t].lo.x, tr[tlast].lo.x) && tribot)
-	    {		/* bottom forms a triangle */
+                      tr[tn].u0 = -1;
+                      tr[tr[t].u0].d0 = t;
+                    }
+                }
+              else              /* fresh segment */
+                {
+                  tr[tr[t].u0].d0 = t;
+                  tr[tr[t].u0].d1 = tn;
+                }
+            }
 
-	      if (is_swapped)	
-		tmptriseg = seg[segnum].prev;
-	      else
-		tmptriseg = seg[segnum].next;
-	      
-	      if ((tmptriseg > 0) && is_left_of(tmptriseg, &s.v0))
-		{
-				/* L-R downward cusp */
-		  tr[tr[t].d0].u0 = t;
+          if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) && 
+              FP_EQUAL(tr[t].lo.x, tr[tlast].lo.x) && tribot)
+            {           /* bottom forms a triangle */
+
+              if (is_swapped)
+                tmptriseg = seg[segnum].prev;
+              else
+                tmptriseg = seg[segnum].next;
+
+              if ((tmptriseg > 0) && is_left_of(tmptriseg, &s.v0))
+                {
+                                /* L-R downward cusp */
+                  tr[tr[t].d0].u0 = t;
                   tr[tn].d1 = -1;
-		  tr[tn].d0 = -1;
-		}
-	      else
-		{
-				/* R-L downward cusp */
-		  tr[tr[tn].d0].u1 = tn;
+                  tr[tn].d0 = -1;
+                }
+              else
+                {
+                                /* R-L downward cusp */
+                  tr[tr[tn].d0].u1 = tn;
                   tr[t].d1 = -1;
-		  tr[t].d0 = -1;
-		}
-	    }
-	  else
-	    {
-	      if ((tr[tr[t].d0].u0 > 0) && (tr[tr[t].d0].u1 > 0))
-		{
-		  if (tr[tr[t].d0].u0 == t) /* passes thru LHS */
-		    {
-		      tr[tr[t].d0].usave = tr[tr[t].d0].u1;
-		      tr[tr[t].d0].uside = S_LEFT;
-		    }
-		  else
-		    {
-		      tr[tr[t].d0].usave = tr[tr[t].d0].u0;
-		      tr[tr[t].d0].uside = S_RIGHT;
-		    }		    
-		}
-	      tr[tr[t].d0].u0 = t;
-	      tr[tr[t].d0].u1 = tn;
-	    }
-	  
-	  t = tr[t].d0;
-	}
+                  tr[t].d0 = -1;
+                }
+            }
+          else
+            {
+              if ((tr[tr[t].d0].u0 > 0) && (tr[tr[t].d0].u1 > 0))
+                {
+                  if (tr[tr[t].d0].u0 == t) /* passes thru LHS */
+                    {
+                      tr[tr[t].d0].usave = tr[tr[t].d0].u1;
+                      tr[tr[t].d0].uside = S_LEFT;
+                    }
+                  else
+                    {
+                      tr[tr[t].d0].usave = tr[tr[t].d0].u0;
+                      tr[tr[t].d0].uside = S_RIGHT;
+                    }
+                }
+              tr[tr[t].d0].u0 = t;
+              tr[tr[t].d0].u1 = tn;
+            }
+
+          t = tr[t].d0;
+        }
 
 
       else if ((tr[t].d0 <= 0) && (tr[t].d1 > 0))
-	{			/* Only one trapezoid below */
-	  if ((tr[t].u0 > 0) && (tr[t].u1 > 0))
-	    {			/* continuation of a chain from abv. */
-	      if (tr[t].usave > 0) /* three upper neighbours */
-		{
-		  if (tr[t].uside == S_LEFT)
-		    {
-		      tr[tn].u0 = tr[t].u1;
-		      tr[t].u1 = -1;
-		      tr[tn].u1 = tr[t].usave;
-		      
-		      tr[tr[t].u0].d0 = t;
-		      tr[tr[tn].u0].d0 = tn;
-		      tr[tr[tn].u1].d0 = tn;
-		    }
-		  else		/* intersects in the right */
-		    {
-		      tr[tn].u1 = -1;
-		      tr[tn].u0 = tr[t].u1;
-		      tr[t].u1 = tr[t].u0;
-		      tr[t].u0 = tr[t].usave;
+        {                       /* Only one trapezoid below */
+          if ((tr[t].u0 > 0) && (tr[t].u1 > 0))
+            {                   /* continuation of a chain from abv. */
+              if (tr[t].usave > 0) /* three upper neighbours */
+                {
+                  if (tr[t].uside == S_LEFT)
+                    {
+                      tr[tn].u0 = tr[t].u1;
+                      tr[t].u1 = -1;
+                      tr[tn].u1 = tr[t].usave;
 
-		      tr[tr[t].u0].d0 = t;
-		      tr[tr[t].u1].d0 = t;
-		      tr[tr[tn].u0].d0 = tn;		      
-		    }
-		  
+                      tr[tr[t].u0].d0 = t;
+                      tr[tr[tn].u0].d0 = tn;
+                      tr[tr[tn].u1].d0 = tn;
+                    }
+                  else          /* intersects in the right */
+                    {
+                      tr[tn].u1 = -1;
+                      tr[tn].u0 = tr[t].u1;
+                      tr[t].u1 = tr[t].u0;
+                      tr[t].u0 = tr[t].usave;
+
+                      tr[tr[t].u0].d0 = t;
+                      tr[tr[t].u1].d0 = t;
+                      tr[tr[tn].u0].d0 = tn;
+                    }
+
                   tr[tn].usave = 0;
-		  tr[t].usave = 0;
-		}
-	      else		/* No usave.... simple case */
-		{
-		  tr[tn].u0 = tr[t].u1;
+                  tr[t].usave = 0;
+                }
+              else              /* No usave.... simple case */
+                {
+                  tr[tn].u0 = tr[t].u1;
                   tr[tn].u1 = -1;
-		  tr[t].u1 = -1;
-		  tr[tr[tn].u0].d0 = tn;
-		}
-	    }
-	  else 
-	    {			/* fresh seg. or upward cusp */
-	      int tmp_u = tr[t].u0;
-	      int td0, td1;
-	      if (((td0 = tr[tmp_u].d0) > 0) && 
-		  ((td1 = tr[tmp_u].d1) > 0))
-		{		/* upward cusp */
-		  if ((tr[td0].rseg > 0) &&
-		      !is_left_of(tr[td0].rseg, &s.v1))
-		    {
+                  tr[t].u1 = -1;
+                  tr[tr[tn].u0].d0 = tn;
+                }
+            }
+          else 
+            {                   /* fresh seg. or upward cusp */
+              int tmp_u = tr[t].u0;
+              int td0, td1;
+              if (((td0 = tr[tmp_u].d0) > 0) && 
+                  ((td1 = tr[tmp_u].d1) > 0))
+                {               /* upward cusp */
+                  if ((tr[td0].rseg > 0) &&
+                      !is_left_of(tr[td0].rseg, &s.v1))
+                    {
                       tr[tn].u1 = -1;
                       tr[t].u1 = -1;
-		      tr[t].u0 = -1;
-		      tr[tr[tn].u0].d1 = tn;
-		    }
-		  else 
-		    {
+                      tr[t].u0 = -1;
+                      tr[tr[tn].u0].d1 = tn;
+                    }
+                  else 
+                    {
                       tr[t].u1 = -1;
                       tr[tn].u1 = -1;
-		      tr[tn].u0 = -1;
-		      tr[tr[t].u0].d0 = t;
-		    }
-		}
-	      else		/* fresh segment */
-		{
-		  tr[tr[t].u0].d0 = t;
-		  tr[tr[t].u0].d1 = tn;
-		}
-	    }
-	  
-	  if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) && 
-	      FP_EQUAL(tr[t].lo.x, tr[tlast].lo.x) && tribot)
-	    {		/* bottom forms a triangle */
-	      if (is_swapped)	
-		tmptriseg = seg[segnum].prev;
-	      else
-		tmptriseg = seg[segnum].next;
+                      tr[tn].u0 = -1;
+                      tr[tr[t].u0].d0 = t;
+                    }
+                }
+              else              /* fresh segment */
+                {
+                  tr[tr[t].u0].d0 = t;
+                  tr[tr[t].u0].d1 = tn;
+                }
+            }
 
-	      if ((tmptriseg > 0) && is_left_of(tmptriseg, &s.v0))
-		{
-		  /* L-R downward cusp */
-		  tr[tr[t].d1].u0 = t;
+          if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) && 
+              FP_EQUAL(tr[t].lo.x, tr[tlast].lo.x) && tribot)
+            {           /* bottom forms a triangle */
+              if (is_swapped)
+                tmptriseg = seg[segnum].prev;
+              else
+                tmptriseg = seg[segnum].next;
+
+              if ((tmptriseg > 0) && is_left_of(tmptriseg, &s.v0))
+                {
+                  /* L-R downward cusp */
+                  tr[tr[t].d1].u0 = t;
                   tr[tn].d1 = -1;
-		  tr[tn].d0 = -1;
-		}
-	      else
-		{
-		  /* R-L downward cusp */
-		  tr[tr[tn].d1].u1 = tn;
+                  tr[tn].d0 = -1;
+                }
+              else
+                {
+                  /* R-L downward cusp */
+                  tr[tr[tn].d1].u1 = tn;
                   tr[t].d1 = -1;
-		  tr[t].d0 = -1;
-		}
-	    }		
-	  else
-	    {
-	      if ((tr[tr[t].d1].u0 > 0) && (tr[tr[t].d1].u1 > 0))
-		{
-		  if (tr[tr[t].d1].u0 == t) /* passes thru LHS */
-		    {
-		      tr[tr[t].d1].usave = tr[tr[t].d1].u1;
-		      tr[tr[t].d1].uside = S_LEFT;
-		    }
-		  else
-		    {
-		      tr[tr[t].d1].usave = tr[tr[t].d1].u0;
-		      tr[tr[t].d1].uside = S_RIGHT;
-		    }		    
-		}
-	      tr[tr[t].d1].u0 = t;
-	      tr[tr[t].d1].u1 = tn;
-	    }
-	  
-	  t = tr[t].d1;
-	}
+                  tr[t].d0 = -1;
+                }
+            }
+          else
+            {
+              if ((tr[tr[t].d1].u0 > 0) && (tr[tr[t].d1].u1 > 0))
+                {
+                  if (tr[tr[t].d1].u0 == t) /* passes thru LHS */
+                    {
+                      tr[tr[t].d1].usave = tr[tr[t].d1].u1;
+                      tr[tr[t].d1].uside = S_LEFT;
+                    }
+                  else
+                    {
+                      tr[tr[t].d1].usave = tr[tr[t].d1].u0;
+                      tr[tr[t].d1].uside = S_RIGHT;
+                    }
+                }
+              tr[tr[t].d1].u0 = t;
+              tr[tr[t].d1].u1 = tn;
+            }
+
+          t = tr[t].d1;
+        }
 
       /* two trapezoids below. Find out which one is intersected by */
       /* this segment and proceed down that one */
       
       else
-	{
-          //	  int tmpseg = tr[tr[t].d0].rseg;
-	  double y0, yt;
-	  point_t tmppt;
-	  int tnext, i_d0, i_d1;
+        {
+          //      int tmpseg = tr[tr[t].d0].rseg;
+          double y0, yt;
+          point_t tmppt;
+          int tnext, i_d0, i_d1;
 
           i_d1 = false;
-	  i_d0 = false;
-	  if (FP_EQUAL(tr[t].lo.y, s.v0.y))
-	    {
-	      if (tr[t].lo.x > s.v0.x)
-		i_d0 = true;
-	      else
-		i_d1 = true;
-	    }
-	  else
-	    {
+          i_d0 = false;
+          if (FP_EQUAL(tr[t].lo.y, s.v0.y))
+            {
+              if (tr[t].lo.x > s.v0.x)
+                i_d0 = true;
+              else
+                i_d1 = true;
+            }
+          else
+            {
               y0 = tr[t].lo.y;
-	      tmppt.y = y0;
-	      yt = (y0 - s.v0.y)/(s.v1.y - s.v0.y);
-	      tmppt.x = s.v0.x + yt * (s.v1.x - s.v0.x);
-	      
-	      if (_less_than(&tmppt, &tr[t].lo))
-		i_d0 = true;
-	      else
-		i_d1 = true;
-	    }
-	  
-	  /* check continuity from the top so that the lower-neighbour */
-	  /* values are properly filled for the upper trapezoid */
+              tmppt.y = y0;
+              yt = (y0 - s.v0.y)/(s.v1.y - s.v0.y);
+              tmppt.x = s.v0.x + yt * (s.v1.x - s.v0.x);
 
-	  if ((tr[t].u0 > 0) && (tr[t].u1 > 0))
-	    {			/* continuation of a chain from abv. */
-	      if (tr[t].usave > 0) /* three upper neighbours */
-		{
-		  if (tr[t].uside == S_LEFT)
-		    {
-		      tr[tn].u0 = tr[t].u1;
-		      tr[t].u1 = -1;
-		      tr[tn].u1 = tr[t].usave;
-		      
-		      tr[tr[t].u0].d0 = t;
-		      tr[tr[tn].u0].d0 = tn;
-		      tr[tr[tn].u1].d0 = tn;
-		    }
-		  else		/* intersects in the right */
-		    {
-		      tr[tn].u1 = -1;
-		      tr[tn].u0 = tr[t].u1;
-		      tr[t].u1 = tr[t].u0;
-		      tr[t].u0 = tr[t].usave;
+              if (_less_than(&tmppt, &tr[t].lo))
+                i_d0 = true;
+              else
+                i_d1 = true;
+            }
 
-		      tr[tr[t].u0].d0 = t;
-		      tr[tr[t].u1].d0 = t;
-		      tr[tr[tn].u0].d0 = tn;		      
-		    }
-		  
+          /* check continuity from the top so that the lower-neighbour */
+          /* values are properly filled for the upper trapezoid */
+
+          if ((tr[t].u0 > 0) && (tr[t].u1 > 0))
+            {                   /* continuation of a chain from abv. */
+              if (tr[t].usave > 0) /* three upper neighbours */
+                {
+                  if (tr[t].uside == S_LEFT)
+                    {
+                      tr[tn].u0 = tr[t].u1;
+                      tr[t].u1 = -1;
+                      tr[tn].u1 = tr[t].usave;
+
+                      tr[tr[t].u0].d0 = t;
+                      tr[tr[tn].u0].d0 = tn;
+                      tr[tr[tn].u1].d0 = tn;
+                    }
+                  else          /* intersects in the right */
+                    {
+                      tr[tn].u1 = -1;
+                      tr[tn].u0 = tr[t].u1;
+                      tr[t].u1 = tr[t].u0;
+                      tr[t].u0 = tr[t].usave;
+
+                      tr[tr[t].u0].d0 = t;
+                      tr[tr[t].u1].d0 = t;
+                      tr[tr[tn].u0].d0 = tn;
+                    }
+
                   tr[tn].usave = 0;
-		  tr[t].usave = 0;
-		}
-	      else		/* No usave.... simple case */
-		{
-		  tr[tn].u0 = tr[t].u1;
-		  tr[tn].u1 = -1;
-		  tr[t].u1 = -1;
-		  tr[tr[tn].u0].d0 = tn;
-		}
-	    }
-	  else 
-	    {			/* fresh seg. or upward cusp */
-	      int tmp_u = tr[t].u0;
-	      int td0, td1;
-	      if (((td0 = tr[tmp_u].d0) > 0) && 
-		  ((td1 = tr[tmp_u].d1) > 0))
-		{		/* upward cusp */
-		  if ((tr[td0].rseg > 0) &&
-		      !is_left_of(tr[td0].rseg, &s.v1))
-		    {
+                  tr[t].usave = 0;
+                }
+              else              /* No usave.... simple case */
+                {
+                  tr[tn].u0 = tr[t].u1;
+                  tr[tn].u1 = -1;
+                  tr[t].u1 = -1;
+                  tr[tr[tn].u0].d0 = tn;
+                }
+            }
+          else 
+            {                   /* fresh seg. or upward cusp */
+              int tmp_u = tr[t].u0;
+              int td0, td1;
+              if (((td0 = tr[tmp_u].d0) > 0) && 
+                  ((td1 = tr[tmp_u].d1) > 0))
+                {               /* upward cusp */
+                  if ((tr[td0].rseg > 0) &&
+                      !is_left_of(tr[td0].rseg, &s.v1))
+                    {
                       tr[tn].u1 = -1;
                       tr[t].u1 = -1;
-		      tr[t].u0 = -1;
-		      tr[tr[tn].u0].d1 = tn;
-		    }
-		  else 
-		    {
+                      tr[t].u0 = -1;
+                      tr[tr[tn].u0].d1 = tn;
+                    }
+                  else 
+                    {
                       tr[t].u1 = -1;
                       tr[tn].u1 = -1;
-		      tr[tn].u0 = -1;
-		      tr[tr[t].u0].d0 = t;
-		    }
-		}
-	      else		/* fresh segment */
-		{
-		  tr[tr[t].u0].d0 = t;
-		  tr[tr[t].u0].d1 = tn;
-		}
-	    }
-	  
-	  if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) && 
-	      FP_EQUAL(tr[t].lo.x, tr[tlast].lo.x) && tribot)
-	    {
-	      /* this case arises only at the lowest trapezoid.. i.e.
-		 tlast, if the lower endpoint of the segment is
-		 already inserted in the structure */
-	      
-	      tr[tr[t].d0].u0 = t;
-	      tr[tr[t].d0].u1 = -1;
-	      tr[tr[t].d1].u0 = tn;
-	      tr[tr[t].d1].u1 = -1;
+                      tr[tn].u0 = -1;
+                      tr[tr[t].u0].d0 = t;
+                    }
+                }
+              else              /* fresh segment */
+                {
+                  tr[tr[t].u0].d0 = t;
+                  tr[tr[t].u0].d1 = tn;
+                }
+            }
 
-	      tr[tn].d0 = tr[t].d1;
+          if (FP_EQUAL(tr[t].lo.y, tr[tlast].lo.y) && 
+              FP_EQUAL(tr[t].lo.x, tr[tlast].lo.x) && tribot)
+            {
+              /* this case arises only at the lowest trapezoid.. i.e.
+                 tlast, if the lower endpoint of the segment is
+                 already inserted in the structure */
+
+              tr[tr[t].d0].u0 = t;
+              tr[tr[t].d0].u1 = -1;
+              tr[tr[t].d1].u0 = tn;
+              tr[tr[t].d1].u1 = -1;
+
+              tr[tn].d0 = tr[t].d1;
               tr[tn].d1 = -1;
-	      tr[t].d1 = -1;
-	      
-	      tnext = tr[t].d1;	      
-	    }
-	  else if (i_d0)
-				/* intersecting d0 */
-	    {
-	      tr[tr[t].d0].u0 = t;
-	      tr[tr[t].d0].u1 = tn;
-	      tr[tr[t].d1].u0 = tn;
-	      tr[tr[t].d1].u1 = -1;
-	      
-	      /* new code to determine the bottom neighbours of the */
-	      /* newly partitioned trapezoid */
-	      
-	      tr[t].d1 = -1;
+              tr[t].d1 = -1;
 
-	      tnext = tr[t].d0;
-	    }
-	  else			/* intersecting d1 */
-	    {
-	      tr[tr[t].d0].u0 = t;
-	      tr[tr[t].d0].u1 = -1;
-	      tr[tr[t].d1].u0 = t;
-	      tr[tr[t].d1].u1 = tn;
+              tnext = tr[t].d1;
+            }
+          else if (i_d0)
+                                /* intersecting d0 */
+            {
+              tr[tr[t].d0].u0 = t;
+              tr[tr[t].d0].u1 = tn;
+              tr[tr[t].d1].u0 = tn;
+              tr[tr[t].d1].u1 = -1;
 
-	      /* new code to determine the bottom neighbours of the */
-	      /* newly partitioned trapezoid */
-	      
-	      tr[tn].d0 = tr[t].d1;
-	      tr[tn].d1 = -1;
-	      
-	      tnext = tr[t].d1;
-	    }	    
-	  
-	  t = tnext;
-	}
+              /* new code to determine the bottom neighbours of the */
+              /* newly partitioned trapezoid */
+
+              tr[t].d1 = -1;
+
+              tnext = tr[t].d0;
+            }
+          else                  /* intersecting d1 */
+            {
+              tr[tr[t].d0].u0 = t;
+              tr[tr[t].d0].u1 = -1;
+              tr[tr[t].d1].u0 = t;
+              tr[tr[t].d1].u1 = tn;
+
+              /* new code to determine the bottom neighbours of the */
+              /* newly partitioned trapezoid */
+
+              tr[tn].d0 = tr[t].d1;
+              tr[tn].d1 = -1;
+
+              tnext = tr[t].d1;
+            }
+
+          t = tnext;
+        }
       
       tr[tn_sav].lseg  = segnum;
       tr[t_sav].rseg = segnum;
@@ -1462,12 +1462,12 @@ construct_trapezoids(int nseg) {
   for (h = 1; h <= math_logstar_n(nseg); h++)
     {
       for (i = math_N(nseg, h -1) + 1; i <= math_N(nseg, h); i++) {
-	add_segment(choose_segment());
+        add_segment(choose_segment());
       }
       
       /* Find a new root for each of the segment endpoints */
       for (i = 1; i <= nseg; i++)
-	find_new_roots(i);
+        find_new_roots(i);
     }
   
   for (i = math_N(nseg, math_logstar_n(nseg)) + 1; i <= nseg; i++)
@@ -1527,7 +1527,7 @@ get_angle(point_t *vp0, point_t *vpnext, point_t *vp1) {
   v1.x = vp1->x - vp0->x;
   v1.y = vp1->y - vp0->y;
 
-  if (CROSS_SINE(v0, v1) >= 0)	/* sine is positive */
+  if (CROSS_SINE(v0, v1) >= 0)  /* sine is positive */
     return DOT(v0, v1)/LENGTH(v0)/LENGTH(v1);
   else
     return (-1.0 * DOT(v0, v1)/LENGTH(v0)/LENGTH(v1) - 2);
@@ -1554,13 +1554,13 @@ get_vertex_positions(int v0, int v1, int *ip, int *iq) {
   for (i = 0; i < 4; i++)
     {
       if (vp0->vnext[i] <= 0)
-	continue;
+        continue;
       if ((temp = get_angle(&vp0->pt, &(vert[vp0->vnext[i]].pt), 
-			    &vp1->pt)) > angle)
-	{
-	  angle = temp;
-	  tp = i;
-	}
+                            &vp1->pt)) > angle)
+        {
+          angle = temp;
+          tp = i;
+        }
     }
 
   *ip = tp;
@@ -1571,13 +1571,13 @@ get_vertex_positions(int v0, int v1, int *ip, int *iq) {
   for (i = 0; i < 4; i++)
     {
       if (vp1->vnext[i] <= 0)
-	continue;      
+        continue;      
       if ((temp = get_angle(&vp1->pt, &(vert[vp1->vnext[i]].pt), 
-			    &vp0->pt)) > angle)
-	{
-	  angle = temp;
-	  tq = i;
-	}
+                            &vp0->pt)) > angle)
+        {
+          angle = temp;
+          tq = i;
+        }
     }
 
   *iq = tq;
@@ -1612,7 +1612,7 @@ make_new_monotone_poly(int mcur, int v0, int v1) {
   /* At this stage, we have got the positions of v0 and v1 in the */
   /* desired chain. Now modify the linked lists */
 
-  i = new_chain_element();	/* for the new list */
+  i = new_chain_element();      /* for the new list */
   j = new_chain_element();
 
   mchain[i].vnum = v0;
@@ -1643,7 +1643,7 @@ make_new_monotone_poly(int mcur, int v0, int v1) {
 
 #ifdef DEBUG
   fprintf(stderr, "make_poly: mcur = %d, (v0, v1) = (%d, %d)\n", 
-	  mcur, v0, v1);
+          mcur, v0, v1);
   fprintf(stderr, "next posns = (p, q) = (%d, %d)\n", p, q);
 #endif
 
@@ -1693,8 +1693,8 @@ monotonate_trapezoids(int n) {
       mchain[i].next = i + 1;
       mchain[i].vnum = i;
       vert[i].pt = seg[i].v0;
-      vert[i].vnext[0] = i + 1;	/* next vertex */
-      vert[i].vpos[0] = i;	/* locn. of next vertex */
+      vert[i].vnext[0] = i + 1; /* next vertex */
+      vert[i].vpos[0] = i;      /* locn. of next vertex */
       vert[i].nextfree = 1;
       vert[i].user_i = seg[i].v0_i;
     }
@@ -1714,7 +1714,7 @@ monotonate_trapezoids(int n) {
       mchain[i].vnum = i;
       vert[i].pt = seg[i].v0;
       vert[i].vnext[0] = seg[i].next; /* next vertex */
-      vert[i].vpos[0] = i;	/* locn. of next vertex */
+      vert[i].vpos[0] = i;      /* locn. of next vertex */
       vert[i].nextfree = 1;
       vert[i].user_i = seg[i].v0_i;
     }
@@ -1770,252 +1770,252 @@ traverse_polygon(int mcur, int trnum, int from, int dir) {
   if ((t->u0 <= 0) && (t->u1 <= 0))
     {
       if ((t->d0 > 0) && (t->d1 > 0)) /* downward opening triangle */
-	{
-	  v0 = tr[t->d1].lseg;
-	  v1 = t->lseg;
-	  if (from == t->d1)
-	    {
-	      do_switch = true;
-	      mnew = make_new_monotone_poly(mcur, v1, v0);
-	      traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
-	      traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);	    
-	    }
-	  else
-	    {
-	      mnew = make_new_monotone_poly(mcur, v0, v1);
-	      traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
-	      traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
-	    }
-	}
+        {
+          v0 = tr[t->d1].lseg;
+          v1 = t->lseg;
+          if (from == t->d1)
+            {
+              do_switch = true;
+              mnew = make_new_monotone_poly(mcur, v1, v0);
+              traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
+              traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
+            }
+          else
+            {
+              mnew = make_new_monotone_poly(mcur, v0, v1);
+              traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
+              traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
+            }
+        }
       else
-	{
-	  retval = SP_NOSPLIT;	/* Just traverse all neighbours */
-	  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
-	  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
-	  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
-	  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
-	}
+        {
+          retval = SP_NOSPLIT;  /* Just traverse all neighbours */
+          traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
+          traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
+          traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
+          traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
+        }
     }
   
   else if ((t->d0 <= 0) && (t->d1 <= 0))
     {
       if ((t->u0 > 0) && (t->u1 > 0)) /* upward opening triangle */
-	{
-	  v0 = t->rseg;
-	  v1 = tr[t->u0].rseg;
-	  if (from == t->u1)
-	    {
-	      do_switch = true;
-	      mnew = make_new_monotone_poly(mcur, v1, v0);
-	      traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
-	      traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);	    
-	    }
-	  else
-	    {
-	      mnew = make_new_monotone_poly(mcur, v0, v1);
-	      traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
-	      traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
-	    }
-	}
+        {
+          v0 = t->rseg;
+          v1 = tr[t->u0].rseg;
+          if (from == t->u1)
+            {
+              do_switch = true;
+              mnew = make_new_monotone_poly(mcur, v1, v0);
+              traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
+              traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
+            }
+          else
+            {
+              mnew = make_new_monotone_poly(mcur, v0, v1);
+              traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
+              traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
+            }
+        }
       else
-	{
-	  retval = SP_NOSPLIT;	/* Just traverse all neighbours */
-	  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
-	  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
-	  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
-	  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
-	}
+        {
+          retval = SP_NOSPLIT;  /* Just traverse all neighbours */
+          traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
+          traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
+          traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
+          traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
+        }
     }
   
   else if ((t->u0 > 0) && (t->u1 > 0)) 
     {
       if ((t->d0 > 0) && (t->d1 > 0)) /* downward + upward cusps */
-	{
-	  v0 = tr[t->d1].lseg;
-	  v1 = tr[t->u0].rseg;
-	  retval = SP_2UP_2DN;
-	  if (((dir == TR_FROM_DN) && (t->d1 == from)) ||
-	      ((dir == TR_FROM_UP) && (t->u1 == from)))
-	    {
-	      do_switch = true;
-	      mnew = make_new_monotone_poly(mcur, v1, v0);
-	      traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
-	      traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
-	      traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
-	      traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
-	    }
-	  else
-	    {
-	      mnew = make_new_monotone_poly(mcur, v0, v1);
-	      traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
-	      traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
-	      traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
-	      traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);	      
-	    }
-	}
-      else			/* only downward cusp */
-	{
-	  if (_equal_to(&t->lo, &seg[t->lseg].v1))
-	    {
-	      v0 = tr[t->u0].rseg;
-	      v1 = seg[t->lseg].next;
+        {
+          v0 = tr[t->d1].lseg;
+          v1 = tr[t->u0].rseg;
+          retval = SP_2UP_2DN;
+          if (((dir == TR_FROM_DN) && (t->d1 == from)) ||
+              ((dir == TR_FROM_UP) && (t->u1 == from)))
+            {
+              do_switch = true;
+              mnew = make_new_monotone_poly(mcur, v1, v0);
+              traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
+              traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
+              traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
+              traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
+            }
+          else
+            {
+              mnew = make_new_monotone_poly(mcur, v0, v1);
+              traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
+              traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
+              traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
+              traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
+            }
+        }
+      else                      /* only downward cusp */
+        {
+          if (_equal_to(&t->lo, &seg[t->lseg].v1))
+            {
+              v0 = tr[t->u0].rseg;
+              v1 = seg[t->lseg].next;
 
-	      retval = SP_2UP_LEFT;
-	      if ((dir == TR_FROM_UP) && (t->u0 == from))
-		{
-		  do_switch = true;
-		  mnew = make_new_monotone_poly(mcur, v1, v0);
-		  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
-		  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
-		}
-	      else
-		{
-		  mnew = make_new_monotone_poly(mcur, v0, v1);
-		  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
-		  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
-		  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
-		  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
-		}
-	    }
-	  else
-	    {
-	      v0 = t->rseg;
-	      v1 = tr[t->u0].rseg;	
-	      retval = SP_2UP_RIGHT;
-	      if ((dir == TR_FROM_UP) && (t->u1 == from))
-		{
-		  do_switch = true;
-		  mnew = make_new_monotone_poly(mcur, v1, v0);
-		  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
-		  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
-		  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
-		}
-	      else
-		{
-		  mnew = make_new_monotone_poly(mcur, v0, v1);
-		  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
-		  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
-		  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
-		  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
-		}
-	    }
-	}
+              retval = SP_2UP_LEFT;
+              if ((dir == TR_FROM_UP) && (t->u0 == from))
+                {
+                  do_switch = true;
+                  mnew = make_new_monotone_poly(mcur, v1, v0);
+                  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
+                  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
+                }
+              else
+                {
+                  mnew = make_new_monotone_poly(mcur, v0, v1);
+                  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
+                  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
+                  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
+                  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
+                }
+            }
+          else
+            {
+              v0 = t->rseg;
+              v1 = tr[t->u0].rseg;
+              retval = SP_2UP_RIGHT;
+              if ((dir == TR_FROM_UP) && (t->u1 == from))
+                {
+                  do_switch = true;
+                  mnew = make_new_monotone_poly(mcur, v1, v0);
+                  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
+                  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
+                  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
+                }
+              else
+                {
+                  mnew = make_new_monotone_poly(mcur, v0, v1);
+                  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
+                  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
+                  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
+                  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
+                }
+            }
+        }
     }
   else if ((t->u0 > 0) || (t->u1 > 0)) /* no downward cusp */
     {
       if ((t->d0 > 0) && (t->d1 > 0)) /* only upward cusp */
-	{
-	  if (_equal_to(&t->hi, &seg[t->lseg].v0))
-	    {
-	      v0 = tr[t->d1].lseg;
-	      v1 = t->lseg;
-	      retval = SP_2DN_LEFT;
-	      if (!((dir == TR_FROM_DN) && (t->d0 == from)))
-		{
-		  do_switch = true;
-		  mnew = make_new_monotone_poly(mcur, v1, v0);
-		  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
-		  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
-		  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
-		}
-	      else
-		{
-		  mnew = make_new_monotone_poly(mcur, v0, v1);
-		  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
-		  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);	      
-		}
-	    }
-	  else
-	    {
-	      v0 = tr[t->d1].lseg;
-	      v1 = seg[t->rseg].next;
+        {
+          if (_equal_to(&t->hi, &seg[t->lseg].v0))
+            {
+              v0 = tr[t->d1].lseg;
+              v1 = t->lseg;
+              retval = SP_2DN_LEFT;
+              if (!((dir == TR_FROM_DN) && (t->d0 == from)))
+                {
+                  do_switch = true;
+                  mnew = make_new_monotone_poly(mcur, v1, v0);
+                  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
+                  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
+                  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
+                }
+              else
+                {
+                  mnew = make_new_monotone_poly(mcur, v0, v1);
+                  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
+                  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
+                }
+            }
+          else
+            {
+              v0 = tr[t->d1].lseg;
+              v1 = seg[t->rseg].next;
 
-	      retval = SP_2DN_RIGHT;	    
-	      if ((dir == TR_FROM_DN) && (t->d1 == from))
-		{
-		  do_switch = true;
-		  mnew = make_new_monotone_poly(mcur, v1, v0);
-		  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
-		  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
-		}
-	      else
-		{
-		  mnew = make_new_monotone_poly(mcur, v0, v1);
-		  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
-		  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
-		  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
-		}
-	    }
-	}
-      else			/* no cusp */
-	{
-	  if (_equal_to(&t->hi, &seg[t->lseg].v0) &&
-	      _equal_to(&t->lo, &seg[t->rseg].v0))
-	    {
-	      v0 = t->rseg;
-	      v1 = t->lseg;
-	      retval = SP_SIMPLE_LRDN;
-	      if (dir == TR_FROM_UP)
-		{
-		  do_switch = true;
-		  mnew = make_new_monotone_poly(mcur, v1, v0);
-		  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
-		  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
-		  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
-		}
-	      else
-		{
-		  mnew = make_new_monotone_poly(mcur, v0, v1);
-		  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
-		  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
-		  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
-		}
-	    }
-	  else if (_equal_to(&t->hi, &seg[t->rseg].v1) &&
-		   _equal_to(&t->lo, &seg[t->lseg].v1))
-	    {
-	      v0 = seg[t->rseg].next;
-	      v1 = seg[t->lseg].next;
+              retval = SP_2DN_RIGHT;
+              if ((dir == TR_FROM_DN) && (t->d1 == from))
+                {
+                  do_switch = true;
+                  mnew = make_new_monotone_poly(mcur, v1, v0);
+                  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
+                  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
+                }
+              else
+                {
+                  mnew = make_new_monotone_poly(mcur, v0, v1);
+                  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
+                  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
+                  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
+                }
+            }
+        }
+      else                      /* no cusp */
+        {
+          if (_equal_to(&t->hi, &seg[t->lseg].v0) &&
+              _equal_to(&t->lo, &seg[t->rseg].v0))
+            {
+              v0 = t->rseg;
+              v1 = t->lseg;
+              retval = SP_SIMPLE_LRDN;
+              if (dir == TR_FROM_UP)
+                {
+                  do_switch = true;
+                  mnew = make_new_monotone_poly(mcur, v1, v0);
+                  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
+                  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
+                  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
+                }
+              else
+                {
+                  mnew = make_new_monotone_poly(mcur, v0, v1);
+                  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
+                  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
+                  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
+                }
+            }
+          else if (_equal_to(&t->hi, &seg[t->rseg].v1) &&
+                   _equal_to(&t->lo, &seg[t->lseg].v1))
+            {
+              v0 = seg[t->rseg].next;
+              v1 = seg[t->lseg].next;
 
-	      retval = SP_SIMPLE_LRUP;
-	      if (dir == TR_FROM_UP)
-		{
-		  do_switch = true;
-		  mnew = make_new_monotone_poly(mcur, v1, v0);
-		  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
-		  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
-		  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
-		}
-	      else
-		{
-		  mnew = make_new_monotone_poly(mcur, v0, v1);
-		  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
-		  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
-		  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
-		  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
-		}
-	    }
-	  else			/* no split possible */
-	    {
-	      retval = SP_NOSPLIT;
-	      traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
-	      traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
-	      traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
-	      traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);	      	      
-	    }
-	}
+              retval = SP_SIMPLE_LRUP;
+              if (dir == TR_FROM_UP)
+                {
+                  do_switch = true;
+                  mnew = make_new_monotone_poly(mcur, v1, v0);
+                  traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
+                  traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->d1, trnum, TR_FROM_UP);
+                  traverse_polygon(mnew, t->d0, trnum, TR_FROM_UP);
+                }
+              else
+                {
+                  mnew = make_new_monotone_poly(mcur, v0, v1);
+                  traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
+                  traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
+                  traverse_polygon(mnew, t->u0, trnum, TR_FROM_DN);
+                  traverse_polygon(mnew, t->u1, trnum, TR_FROM_DN);
+                }
+            }
+          else                  /* no split possible */
+            {
+              retval = SP_NOSPLIT;
+              traverse_polygon(mcur, t->u0, trnum, TR_FROM_DN);
+              traverse_polygon(mcur, t->d0, trnum, TR_FROM_UP);
+              traverse_polygon(mcur, t->u1, trnum, TR_FROM_DN);
+              traverse_polygon(mcur, t->d1, trnum, TR_FROM_UP);
+            }
+        }
     }
 
   return retval;
@@ -2042,14 +2042,14 @@ triangulate_monotone_polygons(int nvert, int nmonpoly) {
       p = mchain[mon[i]].next;
       fprintf (stderr, "%d ", mchain[mon[i]].vnum);
       while (mchain[p].vnum != vfirst)
-	{
-	  fprintf(stderr, "%d ", mchain[p].vnum);
+        {
+          fprintf(stderr, "%d ", mchain[p].vnum);
           if (mchain[p].vnum == -1) {
             fprintf(stderr, " xx");
             break;
           }
-	  p = mchain[p].next;
-	}
+          p = mchain[p].next;
+        }
     }
   fprintf(stderr, "\n");
   #endif
@@ -2069,51 +2069,51 @@ triangulate_monotone_polygons(int nvert, int nmonpoly) {
       mchain[mon[i]].marked = true;
       p = mchain[mon[i]].next;
       while ((v = mchain[p].vnum) != vfirst)
-	{
+        {
           if (v <= 0) {
             return;
           }
           if (mchain[p].marked)
-	   {
-	     processed = true;
-	     break;		/* break from while */
-	   }
+           {
+             processed = true;
+             break;             /* break from while */
+           }
           else
             mchain[p].marked = true;
           
-	  if (_greater_than(&vert[v].pt, &ymax))
-	    {
-	      ymax = vert[v].pt;
-	      posmax = p;
-	    }
-	  if (_less_than(&vert[v].pt, &ymin))
-	    {
-	      ymin = vert[v].pt;
-	      posmin = p;
-	    }
-	  p = mchain[p].next;
-	  vcount++;
+          if (_greater_than(&vert[v].pt, &ymax))
+            {
+              ymax = vert[v].pt;
+              posmax = p;
+            }
+          if (_less_than(&vert[v].pt, &ymin))
+            {
+              ymin = vert[v].pt;
+              posmin = p;
+            }
+          p = mchain[p].next;
+          vcount++;
        }
 
-      if (processed)		/* Go to next polygon */
-	continue;
+      if (processed)            /* Go to next polygon */
+        continue;
       
-      if (vcount == 3)		/* already a triangle */
-	{
+      if (vcount == 3)          /* already a triangle */
+        {
           _result.push_back(Triangle(this, mchain[p].vnum,
                                      mchain[mchain[p].next].vnum,
                                      mchain[mchain[p].prev].vnum));
-	}
-      else			/* triangulate the polygon */
-	{
-	  v = mchain[mchain[posmax].next].vnum;
-	  if (_equal_to(&vert[v].pt, &ymin))
-	    {			/* LHS is a single line */
-	      triangulate_single_polygon(nvert, posmax, TRI_LHS);
-	    }
-	  else
-	    triangulate_single_polygon(nvert, posmax, TRI_RHS);
-	}
+        }
+      else                      /* triangulate the polygon */
+        {
+          v = mchain[mchain[posmax].next].vnum;
+          if (_equal_to(&vert[v].pt, &ymin))
+            {                   /* LHS is a single line */
+              triangulate_single_polygon(nvert, posmax, TRI_LHS);
+            }
+          else
+            triangulate_single_polygon(nvert, posmax, TRI_RHS);
+        }
     }
 }
 
@@ -2125,13 +2125,13 @@ triangulate_monotone_polygons(int nvert, int nmonpoly) {
 void Triangulator::
 triangulate_single_polygon(int nvert, int posmax, int side) {
   int v;
-  vector_int rc;	/* reflex chain */
+  vector_int rc;        /* reflex chain */
   int ri;
   int endv, tmp, vpos;
 
   //  cerr << "triangulate_single_polygon(" << nvert << ", " << posmax << ", " << side << ")\n";
 
-  if (side == TRI_RHS)		/* RHS segment is a single segment */
+  if (side == TRI_RHS)          /* RHS segment is a single segment */
     {
       rc.push_back(mchain[posmax].vnum);
       tmp = mchain[posmax].next;
@@ -2142,9 +2142,9 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
       v = mchain[vpos].vnum;
       
       if ((endv = mchain[mchain[posmax].prev].vnum) == 0)
-	endv = nvert;
+        endv = nvert;
     }
-  else				/* LHS is a single segment */
+  else                          /* LHS is a single segment */
     {
       tmp = mchain[posmax].next;
       rc.push_back(mchain[tmp].vnum);
@@ -2164,7 +2164,7 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
         // Something went wrong.
         return;
       }
-      if (ri > 0)		/* reflex chain is non-empty */
+      if (ri > 0)               /* reflex chain is non-empty */
         {
           float crossResult = CROSS(vert[v].pt, vert[rc[ri - 1]].pt,
                                     vert[rc[ri]].pt);
@@ -2186,14 +2186,14 @@ triangulate_single_polygon(int nvert, int posmax, int side) {
               v = mchain[vpos].vnum;
             }
         }
-      else			/* reflex-chain empty: add v to the */
-	{			/* reflex chain and advance it  */
+      else                      /* reflex-chain empty: add v to the */
+        {                       /* reflex chain and advance it  */
           ri++;
           rc.push_back(v);
           nassertv(ri + 1 == (int)rc.size());
-	  vpos = mchain[vpos].next;
-	  v = mchain[vpos].vnum;
-	}
+          vpos = mchain[vpos].next;
+          v = mchain[vpos].vnum;
+        }
     } /* end-while */
   
   /* reached the bottom vertex. Add in the triangle formed */

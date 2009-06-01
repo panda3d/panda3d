@@ -18,6 +18,7 @@
 
 #include "config_audio.h"
 #include "audioSound.h"
+#include "lvecBase3.h"
 #include "filterProperties.h"
 #include "movieAudio.h"
 
@@ -189,6 +190,9 @@ PUBLISHED:
 
   virtual void output(ostream &out) const;
   virtual void write(ostream &out) const;
+
+  // set_speaker_configuration is a Miles only method.
+  virtual void set_speaker_configuration(LVecBase3f *speaker1, LVecBase3f *speaker2=NULL, LVecBase3f *speaker3=NULL, LVecBase3f *speaker4=NULL, LVecBase3f *speaker5=NULL, LVecBase3f *speaker6=NULL, LVecBase3f *speaker7=NULL, LVecBase3f *speaker8=NULL, LVecBase3f *speaker9=NULL);
 
 public:
   static void register_AudioManager_creator(Create_AudioManager_proc* proc);

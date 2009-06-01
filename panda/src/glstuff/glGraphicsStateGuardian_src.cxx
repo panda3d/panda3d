@@ -74,6 +74,10 @@ PStatCollector CLP(GraphicsStateGuardian)::_primitive_batches_display_list_pcoll
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_display_list_pcollector("Vertices:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_immediate_pcollector("Vertices:Immediate mode");
 
+// KZL hack.  These track PRC settings.
+bool _track_errors = 1;
+bool _allow_flush = 1;
+
 // The following noop functions are assigned to the corresponding
 // glext function pointers in the class, in case the functions are not
 // defined by the GL, just so it will always be safe to call the
@@ -442,7 +446,7 @@ reset() {
     In the meantime, you must put both "matrix-palette 1" and
     "gl-matrix-palette 1" in your Config.prc to exercise the new
     code. */
-  if (!ConfigVariableBool("gl-matrix-palette", false, PRC_DESC("Temporary hack variable protecting untested code.  See glGraphicsStateGuardian_src.cxx."))) {
+  if (!CLP(matrix_palette)) {
     if (_supports_matrix_palette) {
       if (GLCAT.is_debug()) {
         GLCAT.debug() << "Forcing off matrix palette support.\n";
@@ -752,12 +756,15 @@ reset() {
     if (basic_shaders_only) {
       _shader_caps._active_vprofile = (int)CG_PROFILE_ARBVP1;
       _shader_caps._active_fprofile = (int)CG_PROFILE_ARBFP1;
+      _shader_caps._active_gprofile = (int)0;                     // CG2 CHANGE: No geometry shader if only using basic
     } else { 
       _shader_caps._active_vprofile = (int)cgGLGetLatestProfile(CG_GL_VERTEX);
       _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
+      _shader_caps._active_gprofile = (int)cgGLGetLatestProfile(CG_GL_GEOMETRY);  // CG2 CHANGE
     }
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
+    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;   // CG2 CHANGE
     _glBindProgram = (PFNGLBINDPROGRAMARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "BindProgramARB");
     // Bug workaround for radeons.
@@ -806,6 +813,24 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "GetFramebufferAttachmentParameterivEXT");
     _glGenerateMipmap = (PFNGLGENERATEMIPMAPEXTPROC)
       get_extension_func(GLPREFIX_QUOTED, "GenerateMipmapEXT");
+  }
+
+  if ( has_extension("GL_EXT_framebuffer_multisample") ) {
+    _supports_framebuffer_multisample = true;
+    _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
+        get_extension_func(GLPREFIX_QUOTED, "RenderbufferStorageMultisampleEXT");
+  }
+
+  if ( has_extension("GL_NV_framebuffer_multisample_coverage") ) {
+    _supports_framebuffer_multisample_coverage_nv = true;
+    _glRenderbufferStorageMultisampleCoverage = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC)
+        get_extension_func(GLPREFIX_QUOTED, "RenderbufferStorageMultisampleCoverageNV");
+  }
+
+  if ( has_extension("GL_EXT_framebuffer_blit") ) {
+    _supports_framebuffer_blit = true;
+    _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
+        get_extension_func(GLPREFIX_QUOTED, "BlitFramebufferEXT");
   }
 
   _glDrawBuffers = NULL;
@@ -1140,6 +1165,16 @@ reset() {
   GLP(Disable)(GL_DITHER);
 #endif  // OPENGLES_1
   _dithering_enabled = false;
+
+  // calling glGetError() forces a sync, this turns it off if you want to.
+  if (ConfigVariableBool("gl-force-no-error", false, PRC_DESC("make the gl GSG not report errors, as doing so is a performance hit.")))
+      _track_errors = false;
+  else
+      _track_errors = true;
+  if (ConfigVariableBool("gl-force-no-flush", false, PRC_DESC("make the gl GSG not flush, as doing so is a performance hit.  This is a dangerour setting.")))
+      _allow_flush = false;
+  else
+      _allow_flush = true;
 
   _current_shader = (Shader *)NULL;
   _current_shader_context = (CLP(ShaderContext) *)NULL;
@@ -1725,7 +1760,9 @@ end_frame(Thread *current_thread) {
   // necessary if this is a single-buffered visual, so that the frame
   // will be finished drawing before we return to the application.
   // It's not clear what effect this has on our total frame time.
-  gl_flush();
+  if (_allow_flush) {
+    gl_flush();
+  }
   maybe_gl_finish();
 
   report_my_gl_errors();
@@ -4494,7 +4531,8 @@ draw_immediate_composite_primitives(const GeomPrimitivePipelineReader *reader, G
 void CLP(GraphicsStateGuardian)::
 gl_flush() const {
   PStatTimer timer(_flush_pcollector);
-  GLP(Flush)();
+  if (_allow_flush)
+      GLP(Flush)();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4504,7 +4542,10 @@ gl_flush() const {
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
 gl_get_error() const {
-  return GLP(GetError)();
+  if (_track_errors)
+      return GLP(GetError)();
+  else
+      return GL_NO_ERROR;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4518,6 +4559,8 @@ gl_get_error() const {
 bool CLP(GraphicsStateGuardian)::
 report_errors_loop(int line, const char *source_file, GLenum error_code,
                    int &error_count) {
+  if (!_track_errors)
+    return GL_NO_ERROR;
 #ifndef NDEBUG
   while ((CLP(max_errors) < 0 || error_count < CLP(max_errors)) &&
          (error_code != GL_NO_ERROR)) {
@@ -5210,7 +5253,11 @@ get_component_type(Texture::ComponentType component_type) {
     return GL_UNSIGNED_SHORT;
   case Texture::T_float:
     return GL_FLOAT;
-
+  case Texture::T_unsigned_int_24_8:
+    if (_supports_depth_stencil)
+      return GL_UNSIGNED_INT_24_8_EXT;
+    else
+      return GL_UNSIGNED_BYTE;
   default:
     GLCAT.error() << "Invalid Texture::Type value!\n";
     return GL_UNSIGNED_BYTE;
@@ -5304,7 +5351,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_depth_component:
     return GL_DEPTH_COMPONENT;
   case Texture::F_depth_stencil:
-    if (_supports_depth_stencil) {
+    if (CLP(force_depth_stencil)) {
       return GL_DEPTH_STENCIL_EXT;
     } else {
       return GL_DEPTH_COMPONENT;
@@ -5488,6 +5535,12 @@ get_internal_image_format(Texture *tex) const {
     return GL_COLOR_INDEX;
   case Texture::F_depth_component:
     return GL_DEPTH_COMPONENT;
+  case Texture::F_depth_component16:
+    return GL_DEPTH_COMPONENT16;
+  case Texture::F_depth_component24:
+    return GL_DEPTH_COMPONENT24;
+  case Texture::F_depth_component32:
+    return GL_DEPTH_COMPONENT32;
   case Texture::F_depth_stencil:
     if (_supports_depth_stencil) {
       return GL_DEPTH_STENCIL_EXT;
@@ -7753,7 +7806,6 @@ upload_texture_image(CLP(TextureContext) *gtc,
       }
     }
   }
-
   int highest_level = 0;
 
 #ifdef OPENGLES_1  // OpenGL ES doesn't support texture subloads.
@@ -7883,10 +7935,15 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
 
     if (num_ram_mipmap_levels == 0) {
-      if (external_format == GL_DEPTH_STENCIL_EXT || external_format == GL_DEPTH_COMPONENT) {
+      if ( (external_format == GL_DEPTH_STENCIL_EXT) && get_supports_depth_stencil() ) {
+        GLP(TexImage2D)(page_target, 0, GL_DEPTH_STENCIL_EXT,
+                        width, height, 0,
+                        GL_DEPTH_STENCIL_EXT, GL_UNSIGNED_INT_24_8_EXT, NULL);
+      }
+      else if (external_format == GL_DEPTH_COMPONENT) {
         GLP(TexImage2D)(page_target, 0, internal_format,
                         width, height, 0,
-                        external_format, GL_UNSIGNED_INT_24_8_EXT, NULL);
+                        GL_DEPTH_COMPONENT, GL_UNSIGNED_BYTE, NULL);
       } else {
         GLP(TexImage2D)(page_target, 0, internal_format,
                         width, height, 0,
@@ -8579,16 +8636,18 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
   }
 
   // Now see if we were successful.
-  GLenum error_code = GLP(GetError)();
-  if (error_code != GL_NO_ERROR) {
-    GLCAT.error()
-      << "Unable to extract texture for " << *tex
-      << ", mipmap level " << n
-      << " : " << get_error_string(error_code) << "\n";
+  if (_track_errors)
+  {
+    GLenum error_code = GLP(GetError)();
+    if (error_code != GL_NO_ERROR) {
+        GLCAT.error()
+        << "Unable to extract texture for " << *tex
+        << ", mipmap level " << n
+        << " : " << get_error_string(error_code) << "\n";
     nassertr(false, false);
-    return false;
+        return false;
+    }
   }
-
   return true;
 #endif  // OPENGLES_1
 }

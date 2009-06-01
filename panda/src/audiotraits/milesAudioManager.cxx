@@ -433,6 +433,203 @@ stop_all_sounds() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::audio_3d_set_listener_attributes
+//       Access: Public
+//  Description: Set spatial attributes of the listener for 3D
+//               sounds.  Note that Y and Z are switched to
+//               translate into Miles's coordinate system.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float vy, float vz, float fx, float fy, float fz, float ux, float uy, float uz) {
+  audio_debug("MilesAudioManager::audio_3d_set_listener_attributes()");
+
+  GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+  AIL_set_listener_3D_position(mgr->_digital_driver, px, pz, py);
+  AIL_set_listener_3D_velocity_vector(mgr->_digital_driver, vx, vz, vy);
+  AIL_set_listener_3D_orientation(mgr->_digital_driver, fx, fz, fy, ux, uz, uy);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::audio_3d_get_listener_attributes
+//       Access: Public
+//  Description: Get spatial attributes of the listener for 3D
+//               sounds.  Note that Y and Z are switched to
+//               translate from Miles's coordinate system.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz, float *fx, float *fy, float *fz, float *ux, float *uy, float *uz) {
+  audio_debug("MilesAudioManager::audio_3d_get_listener_attributes()");
+
+  GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+  AIL_listener_3D_position(mgr->_digital_driver, px, pz, py);
+  AIL_listener_3D_velocity(mgr->_digital_driver, vx, vz, vy);
+  AIL_listener_3D_orientation(mgr->_digital_driver, fx, fz, fy, ux, uz, uy);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::audio_3d_set_distance_factor
+//       Access: Public
+//  Description: Set factor to allow user to easily work in a
+//               different scale.  1.0 represents meters.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::audio_3d_set_distance_factor(float factor) {
+  audio_debug("MilesAudioManager::audio_3d_set_distance_factor( factor= " << factor << ")");
+
+  GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+  AIL_set_3D_distance_factor(mgr->_digital_driver, factor);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::audio_3d_get_distance_factor
+//       Access: Public
+//  Description: Get factor controlling working units.
+////////////////////////////////////////////////////////////////////
+float MilesAudioManager::audio_3d_get_distance_factor() const {
+  audio_debug("MilesAudioManager::audio_3d_get_distance_factor()");
+
+  GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+  return AIL_3D_distance_factor(mgr->_digital_driver);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::audio_3d_set_doppler_factor
+//       Access: Public
+//  Description: Exaggerates or diminishes the Doppler effect. 
+//               Defaults to 1.0
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::audio_3d_set_doppler_factor(float factor) {
+  audio_debug("MilesAudioManager::audio_3d_set_doppler_factor(factor="<<factor<<")");
+
+  GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+  AIL_set_3D_doppler_factor(mgr->_digital_driver, factor);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::audio_3d_get_doppler_factor
+//       Access: Public
+//  Description: Get the factor controlling the Doppler effect.
+////////////////////////////////////////////////////////////////////
+float MilesAudioManager::audio_3d_get_doppler_factor() const {
+  audio_debug("MilesAudioManager::audio_3d_get_doppler_factor()");
+
+  GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+  return AIL_3D_doppler_factor(mgr->_digital_driver);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::audio_3d_set_drop_off_factor
+//       Access: Public
+//  Description: Control the effect distance has on audability.
+//               Defaults to 1.0
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::audio_3d_set_drop_off_factor(float factor) {
+  audio_debug("MilesAudioManager::audio_3d_set_drop_off_factor("<<factor<<")");
+
+  GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+  AIL_set_3D_rolloff_factor(mgr->_digital_driver, factor);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::audio_3d_get_drop_off_factor
+//       Access: Public
+//  Description: Get the factor controlling how quickly sound falls
+//               off with distance.
+////////////////////////////////////////////////////////////////////
+float MilesAudioManager::audio_3d_get_drop_off_factor() const {
+  audio_debug("MilesAudioManager::audio_3d_get_drop_off_factor()");
+
+  GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+  return AIL_3D_rolloff_factor(mgr->_digital_driver);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: MilesAudioManager::set_speaker_configuration
+//       Access: Published
+//  Description: Works similarly to MilesAudioSound::set_speaker_levels,
+//               but specifies the 3D positions of the speakers in space.
+//
+//               Once a NULL value is found for a speaker position,
+//               no more speaker positions will be used.
+//
+//               Note that Y and Z are switched to translate from Miles's
+//               coordinate system.
+////////////////////////////////////////////////////////////////////
+void MilesAudioManager::
+set_speaker_configuration(LVecBase3f *speaker1, LVecBase3f *speaker2, LVecBase3f *speaker3, LVecBase3f *speaker4, LVecBase3f *speaker5, LVecBase3f *speaker6, LVecBase3f *speaker7, LVecBase3f *speaker8, LVecBase3f *speaker9) {
+  audio_debug("MilesAudioManager::set_speaker_configuration()");
+
+  GlobalMilesManager *mgr = GlobalMilesManager::get_global_ptr();
+
+  MSSVECTOR3D speakers[9];
+
+  if(speaker1 != NULL) {
+    speakers[0].x = speaker1->get_x();
+    speakers[0].y = speaker1->get_z();
+    speakers[0].z = speaker1->get_y();
+  }
+  if(speaker2 != NULL) {
+    speakers[1].x = speaker2->get_x();
+    speakers[1].y = speaker2->get_z();
+    speakers[1].z = speaker2->get_y();
+  }
+  if(speaker3 != NULL) {
+    speakers[2].x = speaker3->get_x();
+    speakers[2].y = speaker3->get_z();
+    speakers[2].z = speaker3->get_y();
+  }
+  if(speaker4 != NULL) {
+    speakers[3].x = speaker4->get_x();
+    speakers[3].y = speaker4->get_z();
+    speakers[3].z = speaker4->get_y();
+  }
+  if(speaker5 != NULL) {
+    speakers[4].x = speaker5->get_x();
+    speakers[4].y = speaker5->get_z();
+    speakers[4].z = speaker5->get_y();
+  }
+  if(speaker6 != NULL) {
+    speakers[5].x = speaker6->get_x();
+    speakers[5].y = speaker6->get_z();
+    speakers[5].z = speaker6->get_y();
+  }
+  if(speaker7 != NULL) {
+    speakers[6].x = speaker7->get_x();
+    speakers[6].y = speaker7->get_z();
+    speakers[6].z = speaker7->get_y();
+  }
+  if(speaker8 != NULL) {
+    speakers[7].x = speaker8->get_x();
+    speakers[7].y = speaker8->get_z();
+    speakers[7].z = speaker8->get_y();
+  }
+  if(speaker9 != NULL) {
+    speakers[8].x = speaker9->get_x();
+    speakers[8].y = speaker9->get_z();
+    speakers[8].z = speaker9->get_y();
+  }
+
+  if(speaker1 == NULL) {
+    audio_error("No valid speaker positions specified in MilesAudioManager::set_speaker_configuration().");
+  } else if(speaker2 == NULL) {
+    AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 1, 1.0);
+  } else if(speaker3 == NULL) {
+    AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 2, 1.0);
+  } else if(speaker4 == NULL) {
+    AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 3, 1.0);
+  } else if(speaker5 == NULL) {
+    AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 4, 1.0);
+  } else if(speaker6 == NULL) {
+    AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 5, 1.0);
+  } else if(speaker7 == NULL) {
+    AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 6, 1.0);
+  } else if(speaker8 == NULL) {
+    AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 7, 1.0);
+  } else if(speaker9 == NULL) {
+    AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 8, 1.0);
+  } else {
+    AIL_set_speaker_configuration(mgr->_digital_driver, speakers, 9, 1.0);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::update()
 //       Access: Public, Virtual
 //  Description: Must be called every frame.  Failure to call this
@@ -754,7 +951,6 @@ stopping_sound(MilesAudioSound *audio) {
   }
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: MilesAudioManager::load
 //       Access: Private
@@ -788,6 +984,7 @@ load(const Filename &file_name) {
   if (extension == "pz") {
     extension = Filename(sd->_basename.get_basename_wo_extension()).get_extension();
   }
+
   bool is_midi_file = (downcase(extension) == "mid");
 
   if ((miles_audio_preload_threshold == -1 || file->get_file_size() < (off_t)miles_audio_preload_threshold) ||

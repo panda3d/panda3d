@@ -10,8 +10,8 @@
   #define BUILDING_DLL BUILDING_MILES_AUDIO
   #define LOCAL_LIBS audio event pipeline
   #define WIN_SYS_LIBS $[WIN_SYS_LIBS] user32.lib advapi32.lib winmm.lib
-  
-  #define COMBINED_SOURCES $[TARGET]_composite1.cxx  
+
+  #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 
   #define SOURCES \
       config_milesAudio.h \
@@ -21,7 +21,7 @@
       milesAudioSequence.I milesAudioSequence.h \
       milesAudioStream.I milesAudioStream.h \
       globalMilesManager.I globalMilesManager.h
-      
+
   #define INCLUDED_SOURCES \
       config_milesAudio.cxx milesAudioManager.cxx milesAudioSound.cxx \
       milesAudioStream.cxx globalMilesManager.cxx milesAudioSample.cxx \

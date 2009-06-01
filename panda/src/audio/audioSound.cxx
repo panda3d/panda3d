@@ -70,25 +70,45 @@ get_3d_max_distance() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioSound::getSpeakerMix
+//     Function: AudioSound::get_speaker_mix
 //       Access: Published
-//  Description: 
+//  Description: For use only with FMOD.
 ////////////////////////////////////////////////////////////////////
 float AudioSound::
 get_speaker_mix(int speaker) {
-	// intentionally blank
-	return 0.0;
+    // intentionally blank
+    return 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: AudioSound::setSpeakerMix
+//     Function: AudioSound::set_speaker_mix
 //       Access: Published
-//  Description: 
+//  Description: For use only with FMOD.
 ////////////////////////////////////////////////////////////////////
 void AudioSound::
 set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright) {
-	// intentionally blank
-	;
+    // intentionally blank
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioSound::get_speaker_level
+//       Access: Published
+//  Description: For use only with Miles.
+////////////////////////////////////////////////////////////////////
+float AudioSound::
+get_speaker_level(int index) {
+  // intentionally blank
+  return 0.0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioSound::set_speaker_levels
+//       Access: Published
+//  Description: For use only with Miles.
+////////////////////////////////////////////////////////////////////
+void AudioSound::
+set_speaker_levels(float level1, float level2, float level3, float level4, float level5, float level6, float level7, float level8, float level9) {
+  // intentionally blank
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -119,8 +139,8 @@ configure_filters(FilterProperties *config) {
 ////////////////////////////////////////////////////////////////////
 int AudioSound::
 get_priority() {
-	// intentionally blank
-	return 0;
+    // intentionally blank
+    return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,8 +150,8 @@ get_priority() {
 ////////////////////////////////////////////////////////////////////
 void AudioSound::
 set_priority(int priority) {
-	// intentionally blank
-	;
+    // intentionally blank
+    ;
 }
 
 ////////////////////////////////////////////////////////////////////

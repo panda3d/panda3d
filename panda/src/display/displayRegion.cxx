@@ -97,6 +97,21 @@ cleanup() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: DisplayRegion::set_lens_index
+//       Access: Published
+//  Description: Sets the lens index, allows for multiple lenses to
+//               be attached to a camera.  This is useful for a 
+//               variety of setups, such as fish eye rendering.
+//               The default is 0.
+////////////////////////////////////////////////////////////////////
+void DisplayRegion::set_lens_index(int index) {
+  int pipeline_stage = Thread::get_current_pipeline_stage();
+  nassertv(pipeline_stage == 0);
+  CDWriter cdata(_cycler);
+  cdata->_lens_index = index;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::set_dimensions
 //       Access: Published, Virtual
 //  Description: Changes the portion of the framebuffer this
@@ -734,7 +749,7 @@ DisplayRegion::CData::
 CData() :
   _l(0.), _r(1.), _b(0.), _t(1.),
   _pl(0), _pr(0), _pb(0), _pt(0),
-  _pbi(0), _pti(0),
+  _pbi(0), _pti(0), _lens_index(0),
   _camera_node((Camera *)NULL),
   _active(true),
   _sort(0),
@@ -760,6 +775,7 @@ CData(const DisplayRegion::CData &copy) :
   _pt(copy._pt),
   _pbi(copy._pbi),
   _pti(copy._pti),
+  _lens_index(copy._lens_index),
   _camera(copy._camera),
   _camera_node(copy._camera_node),
   _active(copy._active),

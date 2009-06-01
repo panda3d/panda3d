@@ -304,14 +304,14 @@ void WebcamVideoDS::
 add_device(WebcamVideoList &list, IMoniker *pMoniker, AM_MEDIA_TYPE *media) {
   for (int i=0; i<(int)list.size(); i++) {
     if ((list[i]->_moniker == pMoniker)&&
-	(media_x(list[i]->_media) == media_x(media))&&
-	(media_y(list[i]->_media) == media_y(media))) {
+        (media_x(list[i]->_media) == media_x(media))&&
+        (media_y(list[i]->_media) == media_y(media))) {
       int oldscore = media_score(list[i]->_media);
       if (media_score(media) < oldscore) {
-	delete_media_type(list[i]->_media);
-	list[i]->_media = media;
+        delete_media_type(list[i]->_media);
+        list[i]->_media = media;
       } else {
-	delete_media_type(media);
+        delete_media_type(media);
       }
       return;
     }
@@ -352,10 +352,10 @@ find_all_webcams_ds() {
   ULONG cFetched;
   
   hResult=CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC,
-			   IID_IGraphBuilder,(void**)&pGraphBuilder);
+                           IID_IGraphBuilder,(void**)&pGraphBuilder);
   if (hResult != S_OK) goto cleanup;
   hResult=CoCreateInstance(CLSID_CaptureGraphBuilder2, NULL, CLSCTX_INPROC,
-			   IID_ICaptureGraphBuilder2, (void**)&pCaptureGraphBuilder2);
+                           IID_ICaptureGraphBuilder2, (void**)&pCaptureGraphBuilder2);
   if (hResult != S_OK) goto cleanup;
   hResult = pCaptureGraphBuilder2->SetFiltergraph(pGraphBuilder);
   if (hResult != S_OK) goto cleanup;
@@ -363,7 +363,7 @@ find_all_webcams_ds() {
                            IID_ICreateDevEnum, (void**)&pCreateDevEnum);
   if (hResult != S_OK) goto cleanup;
   hResult=pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
-						&pEnumMoniker, 0);
+                                                &pEnumMoniker, 0);
   if(hResult != S_OK) goto cleanup;
   
   while(1) {
@@ -377,7 +377,7 @@ find_all_webcams_ds() {
     hResult = pMoniker->BindToObject(NULL,NULL,IID_IBaseFilter, (void**)&pBaseFilter);
     if (hResult != S_OK) continue;
     hResult = pCaptureGraphBuilder2->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video, pBaseFilter,
-						   IID_IAMStreamConfig, (void **)&pStreamConfig);
+                                                   IID_IAMStreamConfig, (void **)&pStreamConfig);
     if (hResult != S_OK) continue;  
     int iCount, iSize;
     hResult = pStreamConfig->GetNumberOfCapabilities(&iCount, &iSize);
@@ -387,10 +387,10 @@ find_all_webcams_ds() {
       VIDEO_STREAM_CONFIG_CAPS caps;
       hResult = pStreamConfig->GetStreamCaps(iFormat, &mtype, (BYTE*)&caps);
       if (mtype->majortype == MEDIATYPE_Video) {
-	VIDEOINFOHEADER *header = (VIDEOINFOHEADER*)(mtype->pbFormat);
-	header->bmiHeader.biWidth  = caps.MaxOutputSize.cx;
-	header->bmiHeader.biHeight = caps.MaxOutputSize.cy;
-	add_device(list, pMoniker, mtype);
+        VIDEOINFOHEADER *header = (VIDEOINFOHEADER*)(mtype->pbFormat);
+        header->bmiHeader.biWidth  = caps.MaxOutputSize.cx;
+        header->bmiHeader.biHeight = caps.MaxOutputSize.cy;
+        add_device(list, pMoniker, mtype);
       }
     }
     
@@ -479,7 +479,7 @@ WebcamVideoCursorDS(WebcamVideoDS *src) :
   
   
   hResult = _pCaptureBuilder->FindInterface(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video, _pSrcFilter,
-					    IID_IAMStreamConfig, (void **)&_pStreamConfig);
+                                            IID_IAMStreamConfig, (void **)&_pStreamConfig);
   if (hResult != S_OK) {
     cerr << "Could not get stream config interface.\n";
     cleanup(); return;
@@ -489,7 +489,7 @@ WebcamVideoCursorDS(WebcamVideoDS *src) :
     cerr << "Could not select desired video resolution\n";
     cleanup(); return;
   }
-
+  
   _pSampleGrabber.CoCreateInstance(CLSID_SampleGrabber);
   if(!_pSampleGrabber)
     {  cerr << "  Can not create the sample grabber, maybe qedit.dll is not registered?";
@@ -526,9 +526,9 @@ WebcamVideoCursorDS(WebcamVideoDS *src) :
     {  cerr << "  Fail to add the Null Renderer to the graph.";
     cleanup(); return;  }
   cerr << "  The Null Renderer has been added to the graph.\n";
-
+  
   hResult=_pCaptureBuilder->RenderStream(&PIN_CATEGORY_CAPTURE,
-					 &MEDIATYPE_Video, _pSrcFilter, pGrabberFilter, _pStreamRenderer);
+                                         &MEDIATYPE_Video, _pSrcFilter, pGrabberFilter, _pStreamRenderer);
   if(hResult != S_OK) {
     cerr << "  ICaptureGraphBuilder2::RenderStream() can not connect the pins\n";
     cleanup(); return;
@@ -663,14 +663,14 @@ fetch_into_buffer(double time, unsigned char *block, bool bgra) {
     int size = _saved->GetActualDataLength();
     if (size == pixels * 3) {
       if (bgra) {
-	for (int i=0; i<pixels; i++) {
-	  block[i*4+0] = ptr[i*3+0];
-	  block[i*4+1] = ptr[i*3+1];
-	  block[i*4+2] = ptr[i*3+2];
-	  block[i*4+3] = 255;
-	}
+        for (int i=0; i<pixels; i++) {
+          block[i*4+0] = ptr[i*3+0];
+          block[i*4+1] = ptr[i*3+1];
+          block[i*4+2] = ptr[i*3+2];
+          block[i*4+3] = 255;
+        }
       } else {
-	memcpy(block, ptr, pixels * 3);
+        memcpy(block, ptr, pixels * 3);
       }
     }
   }
@@ -768,13 +768,13 @@ HRESULT __stdcall WebcamVideoCursorDS::CSampleGrabberCB::BufferCB(double dblSamp
 //      PIN_DIRECTION pPinDir;
 //      hr = pSearchPin->QueryDirection(&pPinDir);
 //      if (FAILED(hr))
-//	return E_FAIL;
+//  return E_FAIL;
 //      if (pPinDir == PINDIR_INPUT)
-//	{
-//	  //Found out pin
-//	  *ppPin = pSearchPin;
-//	  break;
-//	}
+//  {
+//    //Found out pin
+//    *ppPin = pSearchPin;
+//    break;
+//  }
 //    }
 //  pPinEnum->Release();
 //  return hr;

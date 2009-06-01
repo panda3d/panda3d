@@ -192,32 +192,32 @@ inline std::string Socket_Address::get_ip_port() const
 ////////////////////////////////////////////////////////////////////
 inline bool Socket_Address::set_host(const std::string &hostname, int port) 
 {
-	struct hostent  *hp = NULL;
-	
-	//
-	// hmm inet_addr does not resolve 255.255.255.255 on ME/98 ??
-	//
-	// * HACK * ?? 
-	if(hostname  == "255.255.255.255")
-		return set_broadcast(port);
-	//
-	//
+    struct hostent  *hp = NULL;
 
-	PN_uint32 addr =  (long)inet_addr (hostname.c_str());                
-	if(addr == INADDR_NONE)
-	{
-		hp = gethostbyname(hostname.c_str());
-		if(hp== NULL)
-			return false;
-		else
-			memcpy(&(_addr.sin_addr),hp->h_addr_list[0] ,  (unsigned int) hp->h_length);                    
-	}
-	else
-		(void) memcpy(&_addr.sin_addr,&addr,sizeof(addr));
-	
-	_addr.sin_port = htons(port);
-	_addr.sin_family = AF_INET;
-	return true;
+    //
+    // hmm inet_addr does not resolve 255.255.255.255 on ME/98 ??
+    //
+    // * HACK * ?? 
+    if(hostname  == "255.255.255.255")
+        return set_broadcast(port);
+    //
+    //
+
+    PN_uint32 addr =  (long)inet_addr (hostname.c_str());                
+    if(addr == INADDR_NONE)
+    {
+        hp = gethostbyname(hostname.c_str());
+        if(hp== NULL)
+            return false;
+        else
+            memcpy(&(_addr.sin_addr),hp->h_addr_list[0] ,  (unsigned int) hp->h_length);                    
+    }
+    else
+        (void) memcpy(&_addr.sin_addr,&addr,sizeof(addr));
+
+    _addr.sin_port = htons(port);
+    _addr.sin_family = AF_INET;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////

@@ -520,7 +520,7 @@ has_bits_in_common(const BitArray &other) const {
          ai != _array.end();
          ++ai) {
       if (!(*ai).is_zero()) {
-	return true;
+        return true;
       }
     }
     
@@ -533,7 +533,7 @@ has_bits_in_common(const BitArray &other) const {
          ai != other._array.end();
          ++ai) {
       if (!(*ai).is_zero()) {
-	return true;
+        return true;
       }
     }
   }

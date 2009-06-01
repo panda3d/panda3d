@@ -60,7 +60,7 @@ get_datagram(Datagram &data) {
     }
     while (!thing_available()) {
       if (is_eof()) {
-	return false;
+        return false;
       }
       poll();
       Thread::force_yield();
@@ -74,7 +74,7 @@ get_datagram(Datagram &data) {
     MutexHolder holder(_dg_lock);
     while (!thing_available()) {
       if (is_eof()) {
-	return false;
+        return false;
       }
       _dg_received.wait();
     }

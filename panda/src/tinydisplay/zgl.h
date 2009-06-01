@@ -47,7 +47,7 @@ typedef struct GLLight {
   V4 ambient;
   V4 diffuse;
   V4 specular;
-  V4 position;	
+  V4 position;
   V3 spot_direction;
   float spot_exponent;
   float spot_cutoff;

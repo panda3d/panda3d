@@ -48,7 +48,7 @@
 class EXPCL_PANDA_PGRAPH NodePathComponent : public ReferenceCount {
 private:
   NodePathComponent(PandaNode *node, NodePathComponent *next,
-		    int pipeline_stage, Thread *current_thread);
+                    int pipeline_stage, Thread *current_thread);
   INLINE NodePathComponent(const NodePathComponent &copy);
   INLINE void operator = (const NodePathComponent &copy);
 

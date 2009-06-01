@@ -751,7 +751,7 @@ void MultitexReducer::
 make_texture_layer(const NodePath &render, 
                    const MultitexReducer::StageInfo &stage_info, 
                    const MultitexReducer::GeomList &geom_list,
-		   const TexCoordf &min_uv, const TexCoordf &max_uv,
+                   const TexCoordf &min_uv, const TexCoordf &max_uv,
                    bool force_use_geom, bool transparent_base) {
   CPT(RenderAttrib) cba;
 
@@ -807,45 +807,45 @@ make_texture_layer(const NodePath &render,
     switch (stage_info._stage->get_combine_rgb_mode()) {
     case TextureStage::CM_modulate:
       {
-	TextureStage::CombineSource source0 = stage_info._stage->get_combine_rgb_source0();
-	TextureStage::CombineOperand operand0 = stage_info._stage->get_combine_rgb_operand0();
-	TextureStage::CombineSource source1 = stage_info._stage->get_combine_rgb_source1();
-	TextureStage::CombineOperand operand1 = stage_info._stage->get_combine_rgb_operand1();
-	// Since modulate doesn't care about order, let's establish
-	// the convention that the lowest-numbered source 
-	// operand is in slot 0 (just for purposes of comparison).
-	if (source1 < source0) {
-	  source0 = stage_info._stage->get_combine_rgb_source1();
-	  operand0 = stage_info._stage->get_combine_rgb_operand1();
-	  source1 = stage_info._stage->get_combine_rgb_source0();
-	  operand1 = stage_info._stage->get_combine_rgb_operand0();
-	}
-
-	if (source0 == TextureStage::CS_primary_color &&
-	    source1 == TextureStage::CS_previous) {
-	  // This is just a trick to re-apply the vertex (lighting)
-	  // color on the top of the texture stack.  We can ignore it,
-	  // since the flattened texture will do this anyway.
-	  return;
-	  
-	} else if (source0 == TextureStage::CS_texture &&
-		   source1 == TextureStage::CS_constant) {
-	  // Scaling the texture by a flat color.
-	  cba = ColorBlendAttrib::make
-	    (ColorBlendAttrib::M_add, ColorBlendAttrib::O_constant_color,
-	     ColorBlendAttrib::O_zero, stage_info._stage->get_color());
-	  
-	} else if (source0 == TextureStage::CS_texture &&
-		   source1 == TextureStage::CS_previous) {
-	  // Just an ordinary modulate.
-	  cba = ColorBlendAttrib::make
-	    (ColorBlendAttrib::M_add, ColorBlendAttrib::O_fbuffer_color,
-	     ColorBlendAttrib::O_zero);
-	  
-	} else {
-	  // Some other kind of modulate; we don't support it.
-	  return;
-	}
+        TextureStage::CombineSource source0 = stage_info._stage->get_combine_rgb_source0();
+        TextureStage::CombineOperand operand0 = stage_info._stage->get_combine_rgb_operand0();
+        TextureStage::CombineSource source1 = stage_info._stage->get_combine_rgb_source1();
+        TextureStage::CombineOperand operand1 = stage_info._stage->get_combine_rgb_operand1();
+        // Since modulate doesn't care about order, let's establish
+        // the convention that the lowest-numbered source 
+        // operand is in slot 0 (just for purposes of comparison).
+        if (source1 < source0) {
+          source0 = stage_info._stage->get_combine_rgb_source1();
+          operand0 = stage_info._stage->get_combine_rgb_operand1();
+          source1 = stage_info._stage->get_combine_rgb_source0();
+          operand1 = stage_info._stage->get_combine_rgb_operand0();
+        }
+        
+        if (source0 == TextureStage::CS_primary_color &&
+            source1 == TextureStage::CS_previous) {
+          // This is just a trick to re-apply the vertex (lighting)
+          // color on the top of the texture stack.  We can ignore it,
+          // since the flattened texture will do this anyway.
+          return;
+          
+        } else if (source0 == TextureStage::CS_texture &&
+                   source1 == TextureStage::CS_constant) {
+          // Scaling the texture by a flat color.
+          cba = ColorBlendAttrib::make
+            (ColorBlendAttrib::M_add, ColorBlendAttrib::O_constant_color,
+             ColorBlendAttrib::O_zero, stage_info._stage->get_color());
+          
+        } else if (source0 == TextureStage::CS_texture &&
+                   source1 == TextureStage::CS_previous) {
+          // Just an ordinary modulate.
+          cba = ColorBlendAttrib::make
+            (ColorBlendAttrib::M_add, ColorBlendAttrib::O_fbuffer_color,
+             ColorBlendAttrib::O_zero);
+          
+        } else {
+          // Some other kind of modulate; we don't support it.
+          return;
+        }
       }
       break;
 

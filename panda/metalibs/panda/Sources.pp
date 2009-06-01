@@ -26,6 +26,11 @@
   interrogatedb:c dconfig:c dtoolconfig:m \
   dtoolutil:c dtoolbase:c dtool:m prc:c
 
+#if $[LINK_IN_PHYSX]
+  #define BUILDING_DLL $[BUILDING_DLL] BUILDING_PANDAPHYSX
+  #define COMPONENT_LIBS $[COMPONENT_LIBS] physx
+#endif
+
 #begin metalib_target
   #define TARGET panda
 

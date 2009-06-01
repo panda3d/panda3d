@@ -15,6 +15,8 @@
 #ifndef LENSNODE_H
 #define LENSNODE_H
 
+#define MAX_LENSES 5
+
 #include "pandabase.h"
 
 #include "pandaNode.h"
@@ -45,7 +47,11 @@ public:
 PUBLISHED:
   INLINE void copy_lens(const Lens &lens);
   INLINE void set_lens(Lens *lens);
-  INLINE Lens *get_lens() const;
+  INLINE void copy_lens(long index, const Lens &lens);
+  INLINE void set_lens(long index, Lens *lens);
+  INLINE Lens *get_lens(long index = 0) const;
+  INLINE bool activate_lens(long index);
+  INLINE bool deactivate_lens(long index);
 
   bool is_in_view(const LPoint3f &pos);
 
@@ -55,6 +61,9 @@ PUBLISHED:
 protected:
   PT(Lens) _lens;
   PT(PandaNode) _shown_frustum;
+
+  vector<PT(Lens)> _additional_lenses;
+  vector<bool> _lens_is_active;
 
 public:
   static void register_with_read_factory();

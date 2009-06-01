@@ -385,7 +385,7 @@ get_child(int n, Thread *current_thread) const {
   NodePath child;
   int pipeline_stage = current_thread->get_pipeline_stage();
   child._head = PandaNode::get_component(_head, _head->get_node()->get_child(n, current_thread),
-					 pipeline_stage, current_thread);
+                                         pipeline_stage, current_thread);
   return child;
 }
 

@@ -92,6 +92,11 @@ private:
   CGcontext _cg_context;
   CGprogram _cg_vprogram;
   CGprogram _cg_fprogram;
+
+  // BEGIN CG2 CHANGE
+  CGprogram _cg_gprogram;   // Geometry program
+  // END CG2 CHANGE
+
   pvector <CGparameter> _cg_parameter_map;
 #endif
 

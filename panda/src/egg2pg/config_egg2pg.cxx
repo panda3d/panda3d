@@ -82,16 +82,16 @@ ConfigVariableBool egg_rigid_geometry
 ConfigVariableBool egg_flat_shading
 ("egg-flat-shading", false,
  PRC_DESC("Set this true to allow the egg loader to create geometry with the "
-	  "ShadeModelAttrib::M_flat attribute set.  It will do this only "
-	  "for geometry that has per-polygon normals and/or colors.  This "
-	  "allows the egg loader to avoid duplicating vertices when they "
- 	  "are shared between connected polygons with different normals or "
-	  "colors, but it prevents the flat-shaded geometry from being "
-	  "combined with any adjacent smooth-shaded geometry (for instance, "
-	  "as the result of a flatten_strong operation).  It is false by "
-	  "default, since flat-shaded geometry is rare; but you may wish "
-	  "to set it true if your scene largely or entirely consists of "
-	  "flat-shaded polygons."));
+          "ShadeModelAttrib::M_flat attribute set.  It will do this only "
+          "for geometry that has per-polygon normals and/or colors.  This "
+          "allows the egg loader to avoid duplicating vertices when they "
+          "are shared between connected polygons with different normals or "
+          "colors, but it prevents the flat-shaded geometry from being "
+          "combined with any adjacent smooth-shaded geometry (for instance, "
+          "as the result of a flatten_strong operation).  It is false by "
+          "default, since flat-shaded geometry is rare; but you may wish "
+          "to set it true if your scene largely or entirely consists of "
+          "flat-shaded polygons."));
 
 ConfigVariableBool egg_load_old_curves
 ("egg-load-old-curves", true,

@@ -3,8 +3,8 @@
 
 /* Define BYTE_ORDER correctly where missing */
 #ifndef BYTE_ORDER
-#define LITTLE_ENDIAN	1234
-#define BIG_ENDIAN	4321
+#define LITTLE_ENDIAN  1234
+#define BIG_ENDIAN     4321
 
 #if (defined(__i386__) || defined(__i386)) || \
      defined(__ia64__) || defined(WIN32) || \
@@ -14,9 +14,9 @@
      defined(__SYMBIAN32__) || \
      defined(__x86_64__) || \
      defined(__LITTLE_ENDIAN__)
-#define BYTE_ORDER	LITTLE_ENDIAN
+#define BYTE_ORDER  LITTLE_ENDIAN
 #else
-#define BYTE_ORDER	BIG_ENDIAN
+#define BYTE_ORDER  BIG_ENDIAN
 #endif
 
 #endif

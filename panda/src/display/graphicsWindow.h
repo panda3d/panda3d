@@ -23,6 +23,7 @@
 #include "mouseData.h"
 #include "modifierButtons.h"
 #include "buttonEvent.h"
+#include "keyboardButton.h"
 #include "pnotify.h"
 #include "lightMutex.h"
 #include "lightReMutex.h"

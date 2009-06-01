@@ -24,128 +24,128 @@ int pixel_count_smooth_multitex2;
 int pixel_count_smooth_multitex3;
 #endif  // DO_PSTATS
 
-ZBuffer *ZB_open(int xsize, int ysize, int mode,
-		 int nb_colors,
-		 unsigned char *color_indexes,
-		 unsigned int *color_table,
-		 void *frame_buffer)
-{
-    ZBuffer *zb;
-    int size;
+ZBuffer *
+ZB_open(int xsize, int ysize, int mode,
+        int nb_colors,
+        unsigned char *color_indexes,
+        unsigned int *color_table,
+        void *frame_buffer) {
+  ZBuffer *zb;
+  int size;
 
-    zb = (ZBuffer *)gl_malloc(sizeof(ZBuffer));
-    if (zb == NULL)
-	return NULL;
-    memset(zb, 0, sizeof(ZBuffer));
+  zb = (ZBuffer *)gl_malloc(sizeof(ZBuffer));
+  if (zb == NULL)
+    return NULL;
+  memset(zb, 0, sizeof(ZBuffer));
 
-    /* xsize must be a multiple of 4 */
-    xsize = (xsize + 3) & ~3;
+  /* xsize must be a multiple of 4 */
+  xsize = (xsize + 3) & ~3;
 
-    zb->xsize = xsize;
-    zb->ysize = ysize;
-    zb->mode = mode;
-    zb->linesize = (xsize * PSZB + 3) & ~3;
+  zb->xsize = xsize;
+  zb->ysize = ysize;
+  zb->mode = mode;
+  zb->linesize = (xsize * PSZB + 3) & ~3;
 
-    switch (mode) {
+  switch (mode) {
 #ifdef TGL_FEATURE_8_BITS
-    case ZB_MODE_INDEX:
-	ZB_initDither(zb, nb_colors, color_indexes, color_table);
-	break;
+  case ZB_MODE_INDEX:
+    ZB_initDither(zb, nb_colors, color_indexes, color_table);
+    break;
 #endif
 #ifdef TGL_FEATURE_32_BITS
-    case ZB_MODE_RGBA:
+  case ZB_MODE_RGBA:
 #endif
 #ifdef TGL_FEATURE_24_BITS
-    case ZB_MODE_RGB24:
+  case ZB_MODE_RGB24:
 #endif
-    case ZB_MODE_5R6G5B:
-	zb->nb_colors = 0;
-	break;
-    default:
-	goto error;
+  case ZB_MODE_5R6G5B:
+    zb->nb_colors = 0;
+    break;
+  default:
+    goto error;
+  }
+
+  size = zb->xsize * zb->ysize * sizeof(ZPOINT);
+
+  zb->zbuf = (ZPOINT *)gl_malloc(size);
+  if (zb->zbuf == NULL)
+    goto error;
+
+  if (frame_buffer == NULL) {
+    zb->pbuf = (PIXEL *)gl_malloc(zb->ysize * zb->linesize);
+    if (zb->pbuf == NULL) {
+      gl_free(zb->zbuf);
+      goto error;
     }
+    zb->frame_buffer_allocated = 1;
+  } else {
+    zb->frame_buffer_allocated = 0;
+    zb->pbuf = (PIXEL *)frame_buffer;
+  }
 
-    size = zb->xsize * zb->ysize * sizeof(ZPOINT);
-
-    zb->zbuf = (ZPOINT *)gl_malloc(size);
-    if (zb->zbuf == NULL)
-	goto error;
-
-    if (frame_buffer == NULL) {
-	zb->pbuf = (PIXEL *)gl_malloc(zb->ysize * zb->linesize);
-	if (zb->pbuf == NULL) {
-	    gl_free(zb->zbuf);
-	    goto error;
-	}
-	zb->frame_buffer_allocated = 1;
-    } else {
-	zb->frame_buffer_allocated = 0;
-	zb->pbuf = (PIXEL *)frame_buffer;
-    }
-
-    return zb;
-  error:
-    gl_free(zb);
-    return NULL;
+  return zb;
+ error:
+  gl_free(zb);
+  return NULL;
 }
 
-void ZB_close(ZBuffer * zb)
-{
+void
+ZB_close(ZBuffer * zb) {
 #ifdef TGL_FEATURE_8_BITS
-    if (zb->mode == ZB_MODE_INDEX)
-	ZB_closeDither(zb);
+  if (zb->mode == ZB_MODE_INDEX)
+    ZB_closeDither(zb);
 #endif
 
-    if (zb->frame_buffer_allocated)
-	gl_free(zb->pbuf);
+  if (zb->frame_buffer_allocated)
+    gl_free(zb->pbuf);
 
-    gl_free(zb->zbuf);
-    gl_free(zb);
+  gl_free(zb->zbuf);
+  gl_free(zb);
 }
 
-void ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize)
-{
-    int size;
+void
+ZB_resize(ZBuffer * zb, void *frame_buffer, int xsize, int ysize) {
+  int size;
 
-    /* xsize must be a multiple of 4 */
-    xsize = (xsize + 3) & ~3;
+  /* xsize must be a multiple of 4 */
+  xsize = (xsize + 3) & ~3;
 
-    zb->xsize = xsize;
-    zb->ysize = ysize;
-    zb->linesize = (xsize * PSZB + 3) & ~3;
+  zb->xsize = xsize;
+  zb->ysize = ysize;
+  zb->linesize = (xsize * PSZB + 3) & ~3;
 
-    size = zb->xsize * zb->ysize * sizeof(ZPOINT);
-    gl_free(zb->zbuf);
-    zb->zbuf = (ZPOINT *)gl_malloc(size);
+  size = zb->xsize * zb->ysize * sizeof(ZPOINT);
+  gl_free(zb->zbuf);
+  zb->zbuf = (ZPOINT *)gl_malloc(size);
 
-    if (zb->frame_buffer_allocated)
-	gl_free(zb->pbuf);
+  if (zb->frame_buffer_allocated)
+    gl_free(zb->pbuf);
 
-    if (frame_buffer == NULL) {
-	zb->pbuf = (PIXEL *)gl_malloc(zb->ysize * zb->linesize);
-	zb->frame_buffer_allocated = 1;
-    } else {
-	zb->pbuf = (PIXEL *)frame_buffer;
-	zb->frame_buffer_allocated = 0;
-    }
+  if (frame_buffer == NULL) {
+    zb->pbuf = (PIXEL *)gl_malloc(zb->ysize * zb->linesize);
+    zb->frame_buffer_allocated = 1;
+  } else {
+    zb->pbuf = (PIXEL *)frame_buffer;
+    zb->frame_buffer_allocated = 0;
+  }
 }
 
-static void ZB_copyBuffer(const ZBuffer * zb,
-                          void *buf,
-                          int linesize)
-{
-    unsigned char *p1;
-    PIXEL *q;
-    int y, n;
+static void 
+ZB_copyBuffer(const ZBuffer * zb,
+              void *buf,
+              int linesize) {
+  unsigned char *p1;
+  PIXEL *q;
+  int y, n;
 
-    q = zb->pbuf;
-    p1 = (unsigned char *)buf;
-    n = zb->xsize * PSZB;
-    for (y = 0; y < zb->ysize; y++) {
-	memcpy(p1, q, n);
-	p1 += linesize;
-	q = (PIXEL *) ((char *) q + zb->linesize);
-    }
+  q = zb->pbuf;
+  p1 = (unsigned char *)buf;
+  n = zb->xsize * PSZB;
+  for (y = 0; y < zb->ysize; y++) {
+    memcpy(p1, q, n);
+    p1 += linesize;
+    q = (PIXEL *) ((char *) q + zb->linesize);
+  }
 }
 
 static void
@@ -179,101 +179,101 @@ ZB_copyBufferNoAlpha(const ZBuffer * zb, void *buf, int linesize) {
 static void ZB_copyFrameBuffer5R6G5B(const ZBuffer * zb, 
                                      void *buf, int linesize) 
 {
-    PIXEL *q;
-    unsigned short *p, *p1;
-    int y, n;
+  PIXEL *q;
+  unsigned short *p, *p1;
+  int y, n;
 
-    q = zb->pbuf;
-    p1 = (unsigned short *) buf;
+  q = zb->pbuf;
+  p1 = (unsigned short *) buf;
 
-    for (y = 0; y < zb->ysize; y++) {
-	p = p1;
-	n = zb->xsize >> 2;
-	do {
-            p[0] = RGB32_TO_RGB16(q[0]);
-            p[1] = RGB32_TO_RGB16(q[1]);
-            p[2] = RGB32_TO_RGB16(q[2]);
-            p[3] = RGB32_TO_RGB16(q[3]);
-	    q += 4;
-	    p += 4;
-	} while (--n > 0);
-	p1 = (unsigned short *)((char *)p1 + linesize);
-    }
+  for (y = 0; y < zb->ysize; y++) {
+    p = p1;
+    n = zb->xsize >> 2;
+    do {
+      p[0] = RGB32_TO_RGB16(q[0]);
+      p[1] = RGB32_TO_RGB16(q[1]);
+      p[2] = RGB32_TO_RGB16(q[2]);
+      p[3] = RGB32_TO_RGB16(q[3]);
+      q += 4;
+      p += 4;
+    } while (--n > 0);
+    p1 = (unsigned short *)((char *)p1 + linesize);
+  }
 }
 
 /* XXX: not optimized */
 static void ZB_copyFrameBufferRGB24(const ZBuffer * zb, 
                                     void *buf, int linesize) 
 {
-    PIXEL *q;
-    unsigned char *p, *p1;
-    int y, n;
+  PIXEL *q;
+  unsigned char *p, *p1;
+  int y, n;
 
-    fprintf(stderr, "copyFrameBufferRGB24\n");
+  fprintf(stderr, "copyFrameBufferRGB24\n");
     
-    q = zb->pbuf;
-    p1 = (unsigned char *) buf;
+  q = zb->pbuf;
+  p1 = (unsigned char *) buf;
 
-    for (y = 0; y < zb->ysize; y++) {
-	p = p1;
-	n = zb->xsize;
-	do {
-          p[0] = q[0];
-          p[1] = q[1];
-          p[2] = q[2];
-          q += 4;
-          p += 3;
-	} while (--n > 0);
-	p1 += linesize;
-    }
+  for (y = 0; y < zb->ysize; y++) {
+    p = p1;
+    n = zb->xsize;
+    do {
+      p[0] = q[0];
+      p[1] = q[1];
+      p[2] = q[2];
+      q += 4;
+      p += 3;
+    } while (--n > 0);
+    p1 += linesize;
+  }
 }
 
-void ZB_copyFrameBuffer(const ZBuffer * zb, void *buf,
-			int linesize)
-{
-    switch (zb->mode) {
+void
+ZB_copyFrameBuffer(const ZBuffer * zb, void *buf,
+                   int linesize) {
+  switch (zb->mode) {
 #ifdef TGL_FEATURE_16_BITS
-    case ZB_MODE_5R6G5B:
-	ZB_copyFrameBuffer5R6G5B(zb, buf, linesize);
-	break;
+  case ZB_MODE_5R6G5B:
+    ZB_copyFrameBuffer5R6G5B(zb, buf, linesize);
+    break;
 #endif
 #ifdef TGL_FEATURE_24_BITS
-    case ZB_MODE_RGB24:
-	ZB_copyFrameBufferRGB24(zb, buf, linesize);
-	break;
+  case ZB_MODE_RGB24:
+    ZB_copyFrameBufferRGB24(zb, buf, linesize);
+    break;
 #endif
 #ifdef TGL_FEATURE_32_BITS
-    case ZB_MODE_RGBA:
-	ZB_copyBuffer(zb, buf, linesize);
-	break;
+  case ZB_MODE_RGBA:
+    ZB_copyBuffer(zb, buf, linesize);
+    break;
 #endif
-    default:
-	assert(0);
-    }
+  default:
+    assert(0);
+  }
 }
 
-void ZB_copyFrameBufferNoAlpha(const ZBuffer * zb, void *buf,
-                               int linesize)
-{
-    switch (zb->mode) {
+void
+ZB_copyFrameBufferNoAlpha(const ZBuffer * zb, void *buf,
+                          int linesize) {
+  switch (zb->mode) {
 #ifdef TGL_FEATURE_16_BITS
-    case ZB_MODE_5R6G5B:
-	ZB_copyFrameBuffer5R6G5B(zb, buf, linesize);
-	break;
+  case ZB_MODE_5R6G5B:
+    ZB_copyFrameBuffer5R6G5B(zb, buf, linesize);
+    break;
 #endif
 #ifdef TGL_FEATURE_24_BITS
-    case ZB_MODE_RGB24:
-	ZB_copyFrameBufferRGB24(zb, buf, linesize);
-	break;
+  case ZB_MODE_RGB24:
+    ZB_copyFrameBufferRGB24(zb, buf, linesize);
+    break;
 #endif
 #ifdef TGL_FEATURE_32_BITS
-    case ZB_MODE_RGBA:
-	ZB_copyBufferNoAlpha(zb, buf, linesize);
-	break;
+  case ZB_MODE_RGBA:
+    ZB_copyBufferNoAlpha(zb, buf, linesize);
+    break;
 #endif
-    default:
-	assert(0);
-    }
+  default:
+    assert(0);
+  }
 }
 
 // Copy from (source_xmin,source_ymin)+(source_xsize,source_ysize) to 
@@ -307,85 +307,85 @@ void ZB_zoomFrameBuffer(ZBuffer *dest, int dest_xmin, int dest_ymin, int dest_xs
 /*
  * adr must be aligned on an 'int'
  */
-void memset_s(void *adr, int val, int count)
-{
-    int i, n, v;
-    unsigned int *p;
-    unsigned short *q;
+void
+memset_s(void *adr, int val, int count) {
+  int i, n, v;
+  unsigned int *p;
+  unsigned short *q;
 
-    p = (unsigned int *)adr;
-    v = val | (val << 16);
+  p = (unsigned int *)adr;
+  v = val | (val << 16);
 
-    n = count >> 3;
-    for (i = 0; i < n; i++) {
-	p[0] = v;
-	p[1] = v;
-	p[2] = v;
-	p[3] = v;
-	p += 4;
-    }
+  n = count >> 3;
+  for (i = 0; i < n; i++) {
+    p[0] = v;
+    p[1] = v;
+    p[2] = v;
+    p[3] = v;
+    p += 4;
+  }
 
-    q = (unsigned short *) p;
-    n = count & 7;
-    for (i = 0; i < n; i++)
-	*q++ = val;
+  q = (unsigned short *) p;
+  n = count & 7;
+  for (i = 0; i < n; i++)
+    *q++ = val;
 }
 
-void memset_l(void *adr, int val, int count)
-{
-    int i, n, v;
-    unsigned int *p;
+void
+memset_l(void *adr, int val, int count) {
+  int i, n, v;
+  unsigned int *p;
 
-    p = (unsigned int *)adr;
-    v = val;
-    n = count >> 2;
-    for (i = 0; i < n; i++) {
-	p[0] = v;
-	p[1] = v;
-	p[2] = v;
-	p[3] = v;
-	p += 4;
-    }
+  p = (unsigned int *)adr;
+  v = val;
+  n = count >> 2;
+  for (i = 0; i < n; i++) {
+    p[0] = v;
+    p[1] = v;
+    p[2] = v;
+    p[3] = v;
+    p += 4;
+  }
 
-    n = count & 3;
-    for (i = 0; i < n; i++)
-	*p++ = val;
+  n = count & 3;
+  for (i = 0; i < n; i++)
+    *p++ = val;
 }
 
 /* count must be a multiple of 4 and >= 4 */
-void memset_RGB24(void *adr,int r, int v, int b,long count)
-{
-    long i, n;
-    register long v1,v2,v3,*pt=(long *)(adr);
-    unsigned char *p,R=(unsigned char)r,V=(unsigned char)v,B=(unsigned char)b;
+void
+memset_RGB24(void *adr,int r, int v, int b,long count) {
+  long i, n;
+  register long v1,v2,v3,*pt=(long *)(adr);
+  unsigned char *p,R=(unsigned char)r,V=(unsigned char)v,B=(unsigned char)b;
 
-    p=(unsigned char *)adr;
-    *p++=R;
-    *p++=V;
-    *p++=B;
-    *p++=R;
-    *p++=V;
-    *p++=B;
-    *p++=R;
-    *p++=V;
-    *p++=B;
-    *p++=R;
-    *p++=V;
-    *p++=B;
-    v1=*pt++;
-    v2=*pt++;
-    v3=*pt++;
-    n = count >> 2;
-    for(i=1;i<n;i++) {
-        *pt++=v1;
-        *pt++=v2;
-        *pt++=v3;
-    }
+  p=(unsigned char *)adr;
+  *p++=R;
+  *p++=V;
+  *p++=B;
+  *p++=R;
+  *p++=V;
+  *p++=B;
+  *p++=R;
+  *p++=V;
+  *p++=B;
+  *p++=R;
+  *p++=V;
+  *p++=B;
+  v1=*pt++;
+  v2=*pt++;
+  v3=*pt++;
+  n = count >> 2;
+  for(i=1;i<n;i++) {
+    *pt++=v1;
+    *pt++=v2;
+    *pt++=v3;
+  }
 }
 
-void ZB_clear(ZBuffer * zb, int clear_z, ZPOINT z,
-	      int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a)
-{
+void
+ZB_clear(ZBuffer * zb, int clear_z, ZPOINT z,
+         int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a) {
   unsigned int color;
   int y;
   PIXEL *pp;
@@ -403,10 +403,10 @@ void ZB_clear(ZBuffer * zb, int clear_z, ZPOINT z,
   }
 }
 
-void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
-                       int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a,
-                       int xmin, int ymin, int xsize, int ysize)
-{
+void
+ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
+                  int clear_color, unsigned int r, unsigned int g, unsigned int b, unsigned int a,
+                  int xmin, int ymin, int xsize, int ysize) {
   unsigned int color;
   int y;
   PIXEL *pp;
@@ -448,14 +448,14 @@ void ZB_clear_viewport(ZBuffer * zb, int clear_z, ZPOINT z,
 
 // Grab the nearest texel from the base level.  This is also
 // implemented inline as ZB_LOOKUP_TEXTURE_NEAREST.
-PIXEL lookup_texture_nearest(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
-{
+PIXEL
+lookup_texture_nearest(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   return ZB_LOOKUP_TEXTURE_NEAREST(texture_def, s, t);
 }
 
 // Bilinear filter four texels in the base level.
-PIXEL lookup_texture_bilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
-{
+PIXEL
+lookup_texture_bilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   PIXEL p1, p2, p3, p4;
   int sf, tf;
   int r, g, b, a;
@@ -478,14 +478,14 @@ PIXEL lookup_texture_bilinear(ZTextureDef *texture_def, int s, int t, unsigned i
 
 // Grab the nearest texel from the nearest mipmap level.  This is also
 // implemented inline as ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST.
-PIXEL lookup_texture_mipmap_nearest(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
-{
+PIXEL
+lookup_texture_mipmap_nearest(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   return ZB_LOOKUP_TEXTURE_MIPMAP_NEAREST(texture_def, s, t, level);
 }
 
 // Linear filter the two texels from the two nearest mipmap levels.
-PIXEL lookup_texture_mipmap_linear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
-{
+PIXEL
+lookup_texture_mipmap_linear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   PIXEL p1, p2;
   int r, g, b, a;
 
@@ -502,8 +502,8 @@ PIXEL lookup_texture_mipmap_linear(ZTextureDef *texture_def, int s, int t, unsig
 }
 
 // Bilinear filter four texels in the nearest mipmap level.
-PIXEL lookup_texture_mipmap_bilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
-{
+PIXEL
+lookup_texture_mipmap_bilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   PIXEL p1, p2, p3, p4;
   int sf, tf;
   int r, g, b, a;
@@ -526,8 +526,8 @@ PIXEL lookup_texture_mipmap_bilinear(ZTextureDef *texture_def, int s, int t, uns
 
 // Bilinear filter four texels in each of the nearest two mipmap
 // levels, then linear filter them together.
-PIXEL lookup_texture_mipmap_trilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx)
-{
+PIXEL
+lookup_texture_mipmap_trilinear(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   PIXEL p1a, p2a;
 
   {
@@ -583,12 +583,15 @@ PIXEL lookup_texture_mipmap_trilinear(ZTextureDef *texture_def, int s, int t, un
 
 // Apply the wrap mode to s and t coordinates by calling the generic
 // wrap mode function.
-PIXEL apply_wrap_general_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+PIXEL
+apply_wrap_general_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   s = (*texture_def->tex_wrap_u_func)(s, texture_def->s_max);
   t = (*texture_def->tex_wrap_v_func)(t, texture_def->t_max);
   return (*texture_def->tex_minfilter_func_impl)(texture_def, s, t, level, level_dx);
 }
-PIXEL apply_wrap_general_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+
+PIXEL
+apply_wrap_general_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   s = (*texture_def->tex_wrap_u_func)(s, texture_def->s_max);
   t = (*texture_def->tex_wrap_v_func)(t, texture_def->t_max);
   return (*texture_def->tex_magfilter_func_impl)(texture_def, s, t, level, level_dx);
@@ -596,13 +599,16 @@ PIXEL apply_wrap_general_magfilter(ZTextureDef *texture_def, int s, int t, unsig
 
 // Outside the legal range of s and t, return just the texture's
 // border color.
-PIXEL apply_wrap_border_color_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+PIXEL
+apply_wrap_border_color_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   if (s < 0 || t < 0 || s > texture_def->s_max || t > texture_def->t_max) {
     return texture_def->border_color;
   }
   return (*texture_def->tex_minfilter_func_impl)(texture_def, s, t, level, level_dx);
 }
-PIXEL apply_wrap_border_color_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+
+PIXEL
+apply_wrap_border_color_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   if (s < 0 || t < 0 || s > texture_def->s_max || t > texture_def->t_max) {
     return texture_def->border_color;
   }
@@ -612,33 +618,40 @@ PIXEL apply_wrap_border_color_magfilter(ZTextureDef *texture_def, int s, int t, 
 // Outside the legal range of s and t, clamp s and t to the edge.
 // This is also duplicated by texcoord_clamp(), but using these
 // functions instead saves two additional function calls per pixel.
-PIXEL apply_wrap_clamp_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+PIXEL
+apply_wrap_clamp_minfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   s = min(max(s, 0), texture_def->s_max);
   t = min(max(t, 0), texture_def->t_max);
   return (*texture_def->tex_minfilter_func_impl)(texture_def, s, t, level, level_dx);
 }
-PIXEL apply_wrap_clamp_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
+
+PIXEL
+apply_wrap_clamp_magfilter(ZTextureDef *texture_def, int s, int t, unsigned int level, unsigned int level_dx) {
   s = min(max(s, 0), texture_def->s_max);
   t = min(max(t, 0), texture_def->t_max);
   return (*texture_def->tex_magfilter_func_impl)(texture_def, s, t, level, level_dx);
 }
 
-int texcoord_clamp(int coord, int max_coord) {
+int
+texcoord_clamp(int coord, int max_coord) {
   return min(max(coord, 0), max_coord);
 }
 
-int texcoord_repeat(int coord, int max_coord) {
+int
+texcoord_repeat(int coord, int max_coord) {
   return coord;
 }
 
-int texcoord_mirror(int coord, int max_coord) {
+int
+texcoord_mirror(int coord, int max_coord) {
   if ((coord & ((max_coord << 1) - 1)) > max_coord) {
     coord = (max_coord << 1) - coord;
   }
   return coord;
 }
 
-int texcoord_mirror_once(int coord, int max_coord) {
+int
+texcoord_mirror_once(int coord, int max_coord) {
   if (coord > max_coord) {
     coord = (max_coord << 1) - coord;
   }

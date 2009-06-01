@@ -23,7 +23,7 @@ TypeHandle OSMesaGraphicsStateGuardian::_type_handle;
 ////////////////////////////////////////////////////////////////////
 OSMesaGraphicsStateGuardian::
 OSMesaGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
-			    OSMesaGraphicsStateGuardian *share_with) : 
+                            OSMesaGraphicsStateGuardian *share_with) : 
   MesaGraphicsStateGuardian(engine, pipe)
 {
   OSMesaContext share_context = NULL;

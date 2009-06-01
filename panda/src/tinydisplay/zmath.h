@@ -4,29 +4,29 @@
 /* Matrix & Vertex */
 
 typedef struct {
-	float m[4][4];
+  float m[4][4];
 } M4;
 
 typedef struct {
-	float m[3][3];
+  float m[3][3];
 } M3;
 
 typedef struct {
-	 float m[3][4];
+  float m[3][4];
 } M34;
 
 typedef struct {
-	 float v[2];
+  float v[2];
 } V2;
 
 typedef struct {
-	 float v[3];
+  float v[3];
 } V3;
 
 typedef struct {
-	 float v[4];
+  float v[4];
 } V4;
-	
+
 void gl_M4_Id(M4 *a);
 int gl_M4_IsId(M4 *a);
 void gl_M4_Move(M4 *a,M4 *b);

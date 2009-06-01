@@ -43,7 +43,7 @@ init_libFmodAudio() {
   if (initialized) {
     return;
   }
-  
+
   initialized = true;
   FmodAudioManager::init_type();
   FmodAudioSound::init_type();

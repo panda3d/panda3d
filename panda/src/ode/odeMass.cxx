@@ -26,9 +26,9 @@ OdeMass::
 OdeMass(const OdeMass &copy) : 
   _mass() {
   _mass.setParameters(copy._mass.mass, 
-		      copy._mass.c[0], copy._mass.c[1], copy._mass.c[2],
-		      copy._mass.I[0], copy._mass.I[5], copy._mass.I[10],
-		      copy._mass.I[1], copy._mass.I[2], copy._mass.I[4]);
+                      copy._mass.c[0], copy._mass.c[1], copy._mass.c[2],
+                      copy._mass.I[0], copy._mass.I[5], copy._mass.I[10],
+                      copy._mass.I[1], copy._mass.I[2], copy._mass.I[4]);
 }
 
 OdeMass::
@@ -43,10 +43,10 @@ get_mass_ptr() {
 void OdeMass::
 operator = (const OdeMass &copy) {
   _mass.setParameters(copy._mass.mass, 
-		      copy._mass.c[0], copy._mass.c[1], copy._mass.c[2],
-		      copy._mass.I[0], copy._mass.I[5], copy._mass.I[10],
-		      copy._mass.I[1], copy._mass.I[2], copy._mass.I[4]);
-		      
+                      copy._mass.c[0], copy._mass.c[1], copy._mass.c[2],
+                      copy._mass.I[0], copy._mass.I[5], copy._mass.I[10],
+                      copy._mass.I[1], copy._mass.I[2], copy._mass.I[4]);
+
 }
 
 

@@ -303,7 +303,7 @@ get_children(Thread *current_thread) const {
   for (int i = 0; i < num_children; i++) {
     NodePath child;
     child._head = PandaNode::get_component(_head, cr.get_child(i),
-					   pipeline_stage, current_thread);
+                                           pipeline_stage, current_thread);
     result.add_path(child);
   }
 
@@ -331,7 +331,7 @@ get_stashed_children(Thread *current_thread) const {
   for (int i = 0; i < num_stashed; i++) {
     NodePath stashed;
     stashed._head = PandaNode::get_component(_head, bottom_node->get_stashed(i),
-					     pipeline_stage, current_thread);
+                                             pipeline_stage, current_thread);
     result.add_path(stashed);
   }
 
@@ -481,7 +481,7 @@ reparent_to(const NodePath &other, int sort, Thread *current_thread) {
 
   int pipeline_stage = current_thread->get_pipeline_stage();
   bool reparented = PandaNode::reparent(other._head, _head, sort, false,
-					pipeline_stage, current_thread);
+                                        pipeline_stage, current_thread);
   nassertv(reparented);
 }
 
@@ -505,7 +505,7 @@ stash_to(const NodePath &other, int sort, Thread *current_thread) {
 
   int pipeline_stage = current_thread->get_pipeline_stage();
   bool reparented = PandaNode::reparent(other._head, _head, sort, true,
-					pipeline_stage, current_thread);
+                                        pipeline_stage, current_thread);
   nassertv(reparented);
 }
 
@@ -5755,7 +5755,7 @@ stash(int sort, Thread *current_thread) {
 
   int pipeline_stage = current_thread->get_pipeline_stage();
   bool reparented = PandaNode::reparent(_head->get_next(pipeline_stage, current_thread),
-					_head, sort, true, pipeline_stage,
+                                        _head, sort, true, pipeline_stage,
                                         current_thread);
   nassertv(reparented);
 }
@@ -5775,7 +5775,7 @@ unstash(int sort, Thread *current_thread) {
 
   int pipeline_stage = current_thread->get_pipeline_stage();
   bool reparented = PandaNode::reparent(_head->get_next(pipeline_stage, current_thread),
-					_head, sort, false, pipeline_stage,
+                                        _head, sort, false, pipeline_stage,
                                         current_thread);
   nassertv(reparented);
 }
@@ -5876,7 +5876,7 @@ verify_complete(Thread *current_thread) const {
       pgraph_cat.warning()
         << *this << " is incomplete; length at " << *next_node
         << " indicates " << comp->get_length(pipeline_stage, current_thread)
-	<< " while length at " << *node << " indicates " << length << "\n";
+        << " while length at " << *node << " indicates " << length << "\n";
       return false;
     }
 

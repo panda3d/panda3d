@@ -94,10 +94,10 @@ PUBLISHED:
   inline void AddAddress(Socket_Address &inadr);
   inline void ClearAddresses(void);
 private:
-  Buffered_DatagramWriter _Writer;		// buffered writing
-  Buffered_DatagramReader _Reader;		// buffered reader
+  Buffered_DatagramWriter _Writer;      // buffered writing
+  Buffered_DatagramReader _Reader;      // buffered reader
   AddressQueue            _Addresslist;   // the location of the round robin address list
-  Socket_Address          _Adddress;	// the conection address ( active one from list being used)
+  Socket_Address          _Adddress;    // the conection address ( active one from list being used)
 
   friend class Buffered_DatagramReader;
   friend class Buffered_DatagramWriter;
@@ -121,10 +121,10 @@ private:
 };
 
 ////////////////////////////////////////////////////////////////////
-// Function name	: Buffered_DatagramConnection::ClearAll
-// Description	    :  used to do a full reset of buffers
+// Function name    : Buffered_DatagramConnection::ClearAll
+// Description      :  used to do a full reset of buffers
 //  
-// Return type		: inline void 
+// Return type      : inline void 
 // Argument         : void
 ////////////////////////////////////////////////////////////////////
 inline void Buffered_DatagramConnection::ClearAll(void) {
@@ -132,7 +132,7 @@ inline void Buffered_DatagramConnection::ClearAll(void) {
   Close();
   _Writer.ReSet();
   _Reader.ReSet();
-}	
+}
 
 inline bool Buffered_DatagramConnection::DoConnect(void) {
   if(!_Addresslist.GetNext(_Adddress)) // lookup the proper value...
@@ -151,10 +151,10 @@ inline bool Buffered_DatagramConnection::DoConnect(void) {
 
 /*
 ////////////////////////////////////////////////////////////////////
-// Function name	: Buffered_DatagramConnection::DoConnect
-// Description	    : This is the function thah does the conection for us
+// Function name    : Buffered_DatagramConnection::DoConnect
+// Description      : This is the function thah does the conection for us
 //  
-// Return type		: inline bool 
+// Return type      : inline bool 
 // Argument         : void
 ////////////////////////////////////////////////////////////////////
 inline bool Buffered_DatagramConnection::DoConnect(void) {
@@ -199,48 +199,48 @@ inline bool Buffered_DatagramConnection::DoConnect(void) {
 */
 
 ////////////////////////////////////////////////////////////////////
-// Function name	: Buffered_DatagramConnection::~Buffered_DatagramConnection
-// Description	    : 
+// Function name    : Buffered_DatagramConnection::~Buffered_DatagramConnection
+// Description      : 
 //  
-// Return type		: inline 
+// Return type      : inline 
 // Argument         : void
 ////////////////////////////////////////////////////////////////////
 inline Buffered_DatagramConnection::~Buffered_DatagramConnection(void) 
 {
-	Close();
+    Close();
 }
 ////////////////////////////////////////////////////////////////////
-// Function name	: Buffered_DatagramConnection::Buffered_DatagramConnection
-// Description	    : 
+// Function name    : Buffered_DatagramConnection::Buffered_DatagramConnection
+// Description      : 
 //  
-// Return type		: inline 
+// Return type      : inline 
 // Argument         : bool do_blocking_writes
 // Argument         : int rbufsize
 // Argument         : int wbufsize
 ////////////////////////////////////////////////////////////////////
 inline Buffered_DatagramConnection::Buffered_DatagramConnection(int rbufsize, int wbufsize, int write_flush_point) 
-	:  _Writer(wbufsize,write_flush_point) , _Reader(rbufsize) 
+    :  _Writer(wbufsize,write_flush_point) , _Reader(rbufsize) 
 {
   nativenet_cat.error() << "Buffered_DatagramConnection Constructor rbufsize = " << rbufsize 
                         << " wbufsize = " << wbufsize << " write_flush_point = " << write_flush_point << "\n";
 }
 ////////////////////////////////////////////////////////////////////
-// Function name	:  Buffered_DatagramConnection::SendMessage
-// Description	    : send the message 
+// Function name    :  Buffered_DatagramConnection::SendMessage
+// Description      : send the message 
 //  
-// Return type		: inline bool 
+// Return type      : inline bool 
 // Argument         : DataGram &msg
 ////////////////////////////////////////////////////////////////////
 inline bool  Buffered_DatagramConnection::SendMessage(const Datagram &msg)
 {
-      if(IsConnected()) {	
+      if(IsConnected()) {
 //        printf(" DO SendMessage %d\n",msg.get_length()); 
         int val = 0;        
         val = _Writer.AddData(msg.get_data(),msg.get_length(),*this);
         
-	if(val >= 0)
-	  return true;
-	nativenet_cat.error() << "Buffered_DatagramConnection::SendMessage->Error On Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
+    if(val >= 0)
+      return true;
+    nativenet_cat.error() << "Buffered_DatagramConnection::SendMessage->Error On Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
         ClearAll();
       }
       return false;
@@ -249,19 +249,19 @@ inline bool  Buffered_DatagramConnection::SendMessage(const Datagram &msg)
 inline bool  Buffered_DatagramConnection::SendMessageBufferOnly(Datagram &msg)
 {
     int val = _Writer.AddData(msg.get_data(),msg.get_length());
-	if(val >= 0)
-	    return true;
+    if(val >= 0)
+        return true;
 
-	nativenet_cat.error() << "Buffered_DatagramConnection::SendMessageBufferOnly->Error On Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
-	ClearAll();
+    nativenet_cat.error() << "Buffered_DatagramConnection::SendMessageBufferOnly->Error On Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
+    ClearAll();
     return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-// Function name	: Buffered_DatagramConnection::Init
-// Description	    :  must be called to set value to the server
+// Function name    : Buffered_DatagramConnection::Init
+// Description      :  must be called to set value to the server
 //  
-// Return type		: inline void 
+// Return type      : inline void 
 // Argument         : Socket_Address &inadr
 ////////////////////////////////////////////////////////////////////
 inline void Buffered_DatagramConnection::AddAddress(Socket_Address &inadr)
@@ -274,13 +274,13 @@ inline void Buffered_DatagramConnection::ClearAddresses(void)
     _Addresslist.clear();
 }
 ////////////////////////////////////////////////////////////////////
-// Function name	: Buffered_DatagramConnection::GetMessage
-// Description	    :  read a message
+// Function name    : Buffered_DatagramConnection::GetMessage
+// Description      :  read a message
 //  
-//	false means something bad happened..
+//  false means something bad happened..
 //
 //
-// Return type		: inline bool 
+// Return type      : inline bool 
 // Argument         : Datagram &val
 ////////////////////////////////////////////////////////////////////
 inline bool Buffered_DatagramConnection::GetMessage(Datagram  &val)
@@ -303,34 +303,34 @@ inline bool Buffered_DatagramConnection::GetMessage(Datagram  &val)
 
 
 ////////////////////////////////////////////////////////////////////
-// Function name	: Buffered_DatagramConnection::Flush
-// Description	    : flush all wrightes
+// Function name    : Buffered_DatagramConnection::Flush
+// Description      : flush all wrightes
 //  
-// Return type		: bool 
+// Return type      : bool 
 // Argument         : void
 ////////////////////////////////////////////////////////////////////
 bool Buffered_DatagramConnection::Flush(void)
 {
-	if (IsConnected())
-	{
+    if (IsConnected())
+    {
         int flush_resp = _Writer.FlushNoBlock(*this);
-		if(flush_resp < 0)
-		{
+        if(flush_resp < 0)
+        {
                   nativenet_cat.error() << "Buffered_DatagramConnection::Flush->Error On Flush [" <<GetLastError() << "]\n" 
 
                                        << "Buffered_DatagramConnection::Flush->Error ..Write--Out Buffer = " << _Writer.AmountBuffered() << "\n";
-			ClearAll();  
-			return false;
-		}
-		return true;
-	}
-	return false;
+            ClearAll();  
+            return false;
+        }
+        return true;
+    }
+    return false;
 }
 ////////////////////////////////////////////////////////////////////
-// Function name	: Buffered_DatagramConnection::Reset
-// Description	    : Reset 
+// Function name    : Buffered_DatagramConnection::Reset
+// Description      : Reset 
 //  
-// Return type		: void 
+// Return type      : void 
 // Argument         : void
 ////////////////////////////////////////////////////////////////////
 inline void Buffered_DatagramConnection::Reset()

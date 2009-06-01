@@ -896,7 +896,7 @@ private:
   typedef phash_set<InternalName *, pointer_hash> InternalNames;
   bool r_has_vertex_column(PandaNode *node, const InternalName *name) const;
   void r_find_all_vertex_columns(PandaNode *node, 
-				 InternalNames &vertex_columns) const;
+                                 InternalNames &vertex_columns) const;
 
   typedef phash_set<Texture *, pointer_hash> Textures;
   Texture *r_find_texture(PandaNode *node, const RenderState *state,

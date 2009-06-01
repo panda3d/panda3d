@@ -96,11 +96,11 @@ OdeTriMeshData(const NodePath& model, bool use_normals) :
 
   if (!use_normals) {
     build_single(_vertices, sizeof(StridedVertex), _num_vertices,
-		 _faces, _num_faces * 3, sizeof(StridedTri));
+                 _faces, _num_faces * 3, sizeof(StridedTri));
   } else {
     build_single1(_vertices, sizeof(StridedVertex), _num_vertices,
-		  _faces, _num_faces * 3, sizeof(StridedTri),
-		  _normals);
+                  _faces, _num_faces * 3, sizeof(StridedTri),
+                  _normals);
   }
 
   preprocess();
@@ -176,7 +176,7 @@ process_model(const NodePath& model, bool &use_normals) {
   }
 
   odetrimeshdata_cat.debug() << "Filled " << _num_faces << " triangles(" \
-		      << _num_vertices << " vertices)\n";
+                      << _num_vertices << " vertices)\n";
 }
 
 void OdeTriMeshData::
@@ -205,7 +205,7 @@ process_geom(const Geom *geom) {
 
 void OdeTriMeshData::
 process_primitive(const GeomPrimitive *primitive, 
-		   CPT(GeomVertexData) vData) {
+                   CPT(GeomVertexData) vData) {
   GeomVertexReader vReader(vData, "vertex");
   GeomVertexReader nReader(vData, "normal");
   LVecBase3f vertex, normal;
@@ -221,19 +221,19 @@ process_primitive(const GeomPrimitive *primitive,
       int e = dPrimitive->get_primitive_end(i);
       out.width(8); out << "" << "primitive " << i << ":" << "\n";
       for (int j = s, m = 0; j < e; j++, m++, _num_vertices++) {
-	int vRowIndex = dPrimitive->get_vertex(j);
-	vReader.set_row(vRowIndex);
-	nReader.set_row(vRowIndex);
-	vertex = vReader.get_data3f();
-	//normal = nReader.get_data3f();
-	_faces[_num_faces].Indices[m] = _num_vertices;
-	
-	_vertices[_num_vertices].Vertex[0] = vertex[0];
-	_vertices[_num_vertices].Vertex[1] = vertex[1];
-	_vertices[_num_vertices].Vertex[2] = vertex[2];
-	
-	out.width(10); out << "" << "vertex " << j << " has: pos(" \
-			   << vertex << ") normal(" << "normal"  << ")" << "\n";
+        int vRowIndex = dPrimitive->get_vertex(j);
+        vReader.set_row(vRowIndex);
+        nReader.set_row(vRowIndex);
+        vertex = vReader.get_data3f();
+        //normal = nReader.get_data3f();
+        _faces[_num_faces].Indices[m] = _num_vertices;
+
+        _vertices[_num_vertices].Vertex[0] = vertex[0];
+        _vertices[_num_vertices].Vertex[1] = vertex[1];
+        _vertices[_num_vertices].Vertex[2] = vertex[2];
+
+        out.width(10); out << "" << "vertex " << j << " has: pos(" \
+                           << vertex << ") normal(" << "normal"  << ")" << "\n";
       }
     }
   } else if (dPrimitive->get_type() == GeomTristrips::get_class_type()){
@@ -242,31 +242,31 @@ process_primitive(const GeomPrimitive *primitive,
       int e = dPrimitive->get_primitive_end(i);
       out.width(8); out << "" << "primitive " << i << ":" << "\n";
       for (int j = s, m = 0; j < e; j++, m++, _num_vertices++) {
-	int vRowIndex = dPrimitive->get_vertex(j);
-	vReader.set_row(vRowIndex);
-	nReader.set_row(vRowIndex);
-	vertex = vReader.get_data3f();
-	//normal = nReader.get_data3f();
-	
-	_vertices[_num_vertices].Vertex[0] = vertex[0];
-	_vertices[_num_vertices].Vertex[1] = vertex[1];
-	_vertices[_num_vertices].Vertex[2] = vertex[2];
-	out.width(10); out << "" << "vertex " << j << " has: pos(" \
-			   << vertex << ") normal(" << "normal" << ")" << "\n";
-	if (m < 3) {
-	  _faces[_num_faces].Indices[m] = _num_vertices;
-	} else {
-	  _num_faces++;
-	  if ( m & 1) {
-	    _faces[_num_faces].Indices[0] = _num_vertices-1;
-	    _faces[_num_faces].Indices[1] = _num_vertices-2;
-	    _faces[_num_faces].Indices[2] = _num_vertices;
-	  } else {
-	    _faces[_num_faces].Indices[0] = _num_vertices-2;
-	    _faces[_num_faces].Indices[1] = _num_vertices-1;
-	    _faces[_num_faces].Indices[2] = _num_vertices;
-	  }
-	}      
+        int vRowIndex = dPrimitive->get_vertex(j);
+        vReader.set_row(vRowIndex);
+        nReader.set_row(vRowIndex);
+        vertex = vReader.get_data3f();
+        //normal = nReader.get_data3f();
+
+        _vertices[_num_vertices].Vertex[0] = vertex[0];
+        _vertices[_num_vertices].Vertex[1] = vertex[1];
+        _vertices[_num_vertices].Vertex[2] = vertex[2];
+        out.width(10); out << "" << "vertex " << j << " has: pos(" \
+                           << vertex << ") normal(" << "normal" << ")" << "\n";
+        if (m < 3) {
+          _faces[_num_faces].Indices[m] = _num_vertices;
+        } else {
+          _num_faces++;
+          if ( m & 1) {
+            _faces[_num_faces].Indices[0] = _num_vertices-1;
+            _faces[_num_faces].Indices[1] = _num_vertices-2;
+            _faces[_num_faces].Indices[2] = _num_vertices;
+          } else {
+            _faces[_num_faces].Indices[0] = _num_vertices-2;
+            _faces[_num_faces].Indices[1] = _num_vertices-1;
+            _faces[_num_faces].Indices[2] = _num_vertices;
+          }
+        }      
       }
       out << "\n";
     }
@@ -306,8 +306,8 @@ write_faces(ostream &out) const {
     for (int j = 0; j < 3; ++j) {
       out.width(4); 
       out << "(" << _vertices[_faces[i].Indices[j]].Vertex[0] \
-	  << ", " << _vertices[_faces[i].Indices[j]].Vertex[1] \
-	  << ", " << _vertices[_faces[i].Indices[j]].Vertex[2] << ")\n" ;
+          << ", " << _vertices[_faces[i].Indices[j]].Vertex[1] \
+          << ", " << _vertices[_faces[i].Indices[j]].Vertex[2] << ")\n" ;
     }
   }
 }
@@ -315,6 +315,6 @@ write_faces(ostream &out) const {
 void OdeTriMeshData::
 write(ostream &out, unsigned int indent) const {
   out.width(indent); out << "" << get_type() << "(id = " << _id << ") : " \
-			 << "" << "Vertices: " << (_id ? _num_vertices : 0) << ", " \
-			 << "" << "Triangles: " << (_id ? _num_faces : 0);
+                         << "" << "Vertices: " << (_id ? _num_vertices : 0) << ", " \
+                         << "" << "Triangles: " << (_id ? _num_faces : 0);
 }

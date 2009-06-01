@@ -13,7 +13,7 @@
 
   int error, derror;
   int x1, dxdy_min, dxdy_max;
-/* warning: x2 is multiplied by 2^16 */
+  /* warning: x2 is multiplied by 2^16 */
   int x2, dx2dy2;  
 
 #ifdef INTERP_Z
@@ -219,33 +219,33 @@
   for(part=0;part<2;part++) {
     if (part == 0) {
       if (fz > 0) {
-	update_left=1;
-	update_right=1;
-	l1=p0;
-	l2=p2;
-	pr1=p0;
-	pr2=p1;
+        update_left=1;
+        update_right=1;
+        l1=p0;
+        l2=p2;
+        pr1=p0;
+        pr2=p1;
       } else {
-	update_left=1;
-	update_right=1;
-	l1=p0;
-	l2=p1;
-	pr1=p0;
-	pr2=p2;
+        update_left=1;
+        update_right=1;
+        l1=p0;
+        l2=p1;
+        pr1=p0;
+        pr2=p2;
       }
       nb_lines = p1->y - p0->y;
     } else {
       /* second part */
       if (fz > 0) {
-	update_left=0;
-	update_right=1;
-	pr1=p1;
-	pr2=p2;
+        update_left=0;
+        update_right=1;
+        pr1=p1;
+        pr2=p2;
       } else {
-	update_left=1;
-	update_right=0;
-	l1=p1; 
-	l2=p2;
+        update_left=1;
+        update_right=0;
+        l1=p1; 
+        l2=p2;
       }
       nb_lines = p2->y - p1->y + 1;
     }
@@ -256,9 +256,9 @@
       dy1 = l2->y - l1->y;
       dx1 = l2->x - l1->x;
       if (dy1 > 0) 
-	tmp = (dx1 << 16) / dy1;
+        tmp = (dx1 << 16) / dy1;
       else
-	tmp = 0;
+        tmp = 0;
       x1 = l1->x;
       error = 0;
       derror = tmp & 0x0000ffff;
@@ -331,9 +331,9 @@
       dx2 = (pr2->x - pr1->x);
       dy2 = (pr2->y - pr1->y);
       if (dy2>0) 
-	dx2dy2 = ( dx2 << 16) / dy2;
+        dx2dy2 = ( dx2 << 16) / dy2;
       else
-	dx2dy2 = 0;
+        dx2dy2 = 0;
       x2 = pr1->x << 16;
     }
 
@@ -344,75 +344,75 @@
 #ifndef DRAW_LINE
       /* generic draw line */
       {
-          register PIXEL *pp;
-          register int n;
+        register PIXEL *pp;
+        register int n;
 #ifdef INTERP_Z
-          register ZPOINT *pz;
-          register unsigned int z,zz;
+        register ZPOINT *pz;
+        register unsigned int z,zz;
 #endif
 #ifdef INTERP_RGB
-          register unsigned int or1,og1,ob1,oa1;
+        register unsigned int or1,og1,ob1,oa1;
 #endif
 #ifdef INTERP_ST
-          register unsigned int s,t;
+        register unsigned int s,t;
 #endif
 #ifdef INTERP_STZ
-          float sz,tz;
+        float sz,tz;
 #endif
 #ifdef INTERP_STZA
-          float sza,tza;
+        float sza,tza;
 #endif
 #ifdef INTERP_STZB
-          float szb,tzb;
+        float szb,tzb;
 #endif
 
-          n=(x2 >> 16) - x1;
-          pp=(PIXEL *)((char *)pp1 + x1 * PSZB);
+        n=(x2 >> 16) - x1;
+        pp=(PIXEL *)((char *)pp1 + x1 * PSZB);
 #ifdef INTERP_Z
-          pz=pz1+x1;
-          z=z1;
+        pz=pz1+x1;
+        z=z1;
 #endif
 #ifdef INTERP_RGB
-          or1 = r1;
-          og1 = g1;
-          ob1 = b1;
-          oa1 = a1;
+        or1 = r1;
+        og1 = g1;
+        ob1 = b1;
+        oa1 = a1;
 #endif
 #ifdef INTERP_ST
-          s=s1;
-          t=t1;
+        s=s1;
+        t=t1;
 #endif
 #ifdef INTERP_STZ
-          sz=sz1;
-          tz=tz1;
+        sz=sz1;
+        tz=tz1;
 #endif
 #ifdef INTERP_STZA
-          sza=sza1;
-          tza=tza1;
+        sza=sza1;
+        tza=tza1;
 #endif
 #ifdef INTERP_STZB
-          szb=szb1;
-          tzb=tzb1;
+        szb=szb1;
+        tzb=tzb1;
 #endif
-          while (n>=3) {
-              PUT_PIXEL(0);
-              PUT_PIXEL(1);
-              PUT_PIXEL(2);
-              PUT_PIXEL(3);
+        while (n>=3) {
+          PUT_PIXEL(0);
+          PUT_PIXEL(1);
+          PUT_PIXEL(2);
+          PUT_PIXEL(3);
 #ifdef INTERP_Z
-              pz+=4;
+          pz+=4;
 #endif
-              pp=(PIXEL *)((char *)pp + 4 * PSZB);
-              n-=4;
-          }
-          while (n>=0) {
-              PUT_PIXEL(0);
+          pp=(PIXEL *)((char *)pp + 4 * PSZB);
+          n-=4;
+        }
+        while (n>=0) {
+          PUT_PIXEL(0);
 #ifdef INTERP_Z
-              pz+=1;
+          pz+=1;
 #endif
-              pp=(PIXEL *)((char *)pp + PSZB);
-              n-=1;
-          }
+          pp=(PIXEL *)((char *)pp + PSZB);
+          n-=1;
+        }
       }
 #else
       DRAW_LINE();
@@ -421,59 +421,59 @@
       /* left edge */
       error+=derror;
       if (error > 0) {
-	error-=0x10000;
-	x1+=dxdy_max;
+        error-=0x10000;
+        x1+=dxdy_max;
 #ifdef INTERP_Z
-	z1+=dzdl_max;
+        z1+=dzdl_max;
 #endif      
 #ifdef INTERP_RGB
-	r1+=drdl_max;
-	g1+=dgdl_max;
-	b1+=dbdl_max;
-	a1+=dadl_max;
+        r1+=drdl_max;
+        g1+=dgdl_max;
+        b1+=dbdl_max;
+        a1+=dadl_max;
 #endif
 #ifdef INTERP_ST
-	s1+=dsdl_max;
-	t1+=dtdl_max;
+        s1+=dsdl_max;
+        t1+=dtdl_max;
 #endif
 #ifdef INTERP_STZ
-	sz1+=dszdl_max;
-	tz1+=dtzdl_max;
+        sz1+=dszdl_max;
+        tz1+=dtzdl_max;
 #endif
 #ifdef INTERP_STZA
-	sza1+=dszadl_max;
-	tza1+=dtzadl_max;
+        sza1+=dszadl_max;
+        tza1+=dtzadl_max;
 #endif
 #ifdef INTERP_STZB
-	szb1+=dszbdl_max;
-	tzb1+=dtzbdl_max;
+        szb1+=dszbdl_max;
+        tzb1+=dtzbdl_max;
 #endif
       } else {
-	x1+=dxdy_min;
+        x1+=dxdy_min;
 #ifdef INTERP_Z
-	z1+=dzdl_min;
+        z1+=dzdl_min;
 #endif      
 #ifdef INTERP_RGB
-	r1+=drdl_min;
-	g1+=dgdl_min;
-	b1+=dbdl_min;
-	a1+=dadl_min;
+        r1+=drdl_min;
+        g1+=dgdl_min;
+        b1+=dbdl_min;
+        a1+=dadl_min;
 #endif
 #ifdef INTERP_ST
-	s1+=dsdl_min;
-	t1+=dtdl_min;
+        s1+=dsdl_min;
+        t1+=dtdl_min;
 #endif
 #ifdef INTERP_STZ
-	sz1+=dszdl_min;
-	tz1+=dtzdl_min;
+        sz1+=dszdl_min;
+        tz1+=dtzdl_min;
 #endif
 #ifdef INTERP_STZA
-	sza1+=dszadl_min;
-	tza1+=dtzadl_min;
+        sza1+=dszadl_min;
+        tza1+=dtzadl_min;
 #endif
 #ifdef INTERP_STZB
-	szb1+=dszbdl_min;
-	tzb1+=dtzbdl_min;
+        szb1+=dszbdl_min;
+        tzb1+=dtzbdl_min;
 #endif
       } 
       

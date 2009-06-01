@@ -30,6 +30,11 @@ extern ConfigVariableInt frame_rate_meter_layer_sort;
 extern ConfigVariableDouble frame_rate_meter_scale;
 extern ConfigVariableDouble frame_rate_meter_side_margins;
 
+extern ConfigVariableDouble scene_graph_analyzer_meter_update_interval;
+extern ConfigVariableInt scene_graph_analyzer_meter_layer_sort;
+extern ConfigVariableDouble scene_graph_analyzer_meter_scale;
+extern ConfigVariableDouble scene_graph_analyzer_meter_side_margins;
+
 extern EXPCL_PANDA_GRUTIL void init_libgrutil();
 
 #endif

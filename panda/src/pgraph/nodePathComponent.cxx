@@ -42,7 +42,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 NodePathComponent::
 NodePathComponent(PandaNode *node, NodePathComponent *next,
-		  int pipeline_stage, Thread *current_thread) :
+                  int pipeline_stage, Thread *current_thread) :
   _node(node),
   _key(0)
 {

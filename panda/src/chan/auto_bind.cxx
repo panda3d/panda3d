@@ -217,9 +217,9 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
     while (ai != anims.end()) {
       // Here's an anim with no matching parts.
       if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
-	AnimBundles::const_iterator abi;
-	for (abi = (*ai).second.begin(); abi != (*ai).second.end(); ++abi) {
-	  extra_anims.insert(*abi);
+        AnimBundles::const_iterator abi;
+        for (abi = (*ai).second.begin(); abi != (*ai).second.end(); ++abi) {
+          extra_anims.insert(*abi);
         }
       }
       ++ai;
@@ -228,9 +228,9 @@ auto_bind(PandaNode *root_node, AnimControlCollection &controls,
     while (pi != parts.end()) {
       // And here's a part with no matching anims.
       if (hierarchy_match_flags & PartGroup::HMF_ok_wrong_root_name) {
-	PartBundles::const_iterator pbi;
-	for (pbi = (*pi).second.begin(); pbi != (*pi).second.end(); ++pbi) {
-	  extra_parts.insert(*pbi);
+        PartBundles::const_iterator pbi;
+        for (pbi = (*pi).second.begin(); pbi != (*pi).second.end(); ++pbi) {
+          extra_parts.insert(*pbi);
         }
       }
       ++pi;

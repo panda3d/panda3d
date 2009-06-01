@@ -456,6 +456,8 @@ protected:
   bool _supports_depth_stencil;
   bool _supports_shadow_filter;
   bool _supports_basic_shaders;
+  bool _supports_framebuffer_multisample;
+  bool _supports_framebuffer_blit;
   
   bool _supports_stencil;
   bool _supports_stencil_wrap;

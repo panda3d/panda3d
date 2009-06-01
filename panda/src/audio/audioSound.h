@@ -120,8 +120,17 @@ PUBLISHED:
   virtual void set_3d_max_distance(float dist);
   virtual float get_3d_max_distance() const;
 
+  // *_speaker_mix and *_speaker_level(s) serve the same purpose.
+  // *_speaker_mix is for use with FMOD.
+  // *_speaker_level(s) is for use with Miles.
+  // Both interfaces exist because of a significant difference in the
+  // two APIs.  Hopefully the difference can be reconciled into a single
+  // interface at some point.
   virtual float get_speaker_mix(int speaker);
   virtual void set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright);
+
+  virtual float get_speaker_level(int index);
+  virtual void set_speaker_levels(float level1, float level2=-1.0f, float level3=-1.0f, float level4=-1.0f, float level5=-1.0f, float level6=-1.0f, float level7=-1.0f, float level8=-1.0f, float level9=-1.0f);
 
   virtual int get_priority();
   virtual void set_priority(int priority);

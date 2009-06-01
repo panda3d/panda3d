@@ -1,0 +1,458 @@
+// Filename: physxD6JointDesc.cxx
+// Created by:  pratt (Jun 20, 2006)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_PHYSX
+
+#include "physxD6JointDesc.h"
+
+#include "luse.h"
+#include "physxJointDriveDesc.h"
+#include "physxJointLimitSoftDesc.h"
+#include "physxJointLimitSoftPairDesc.h"
+
+
+////////////////////////////////////////////////////////////////////
+//     Function : PhysxD6JointDesc
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxD6JointDesc::
+PhysxD6JointDesc()
+: PhysxJointDesc( &nD6JointDesc ) {
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_drive_angular_velocity
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+LVecBase3f PhysxD6JointDesc::
+get_drive_angular_velocity() const {
+  return PhysxManager::nxVec3_to_lVecBase3(nD6JointDesc.driveAngularVelocity);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_drive_linear_velocity
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+LVecBase3f PhysxD6JointDesc::
+get_drive_linear_velocity() const {
+  return PhysxManager::nxVec3_to_lVecBase3(nD6JointDesc.driveLinearVelocity);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_drive_orientation
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+LQuaternionf PhysxD6JointDesc::
+get_drive_orientation() const {
+  return PhysxManager::nxQuat_to_lQuaternion(nD6JointDesc.driveOrientation);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_drive_position
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+LVecBase3f PhysxD6JointDesc::
+get_drive_position() const {
+  return PhysxManager::nxVec3_to_lVecBase3(nD6JointDesc.drivePosition);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_linear_limit
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxJointLimitSoftDesc & PhysxD6JointDesc::
+get_linear_limit() const {
+  throw "Not Implemented"; // return nD6JointDesc.linearLimit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_projection_mode
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxJointProjectionMode PhysxD6JointDesc::
+get_projection_mode() const {
+  return (PhysxJointProjectionMode)nD6JointDesc.projectionMode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_slerp_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxJointDriveDesc & PhysxD6JointDesc::
+get_slerp_drive() const {
+  throw "Not Implemented"; // return nD6JointDesc.slerpDrive;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_swing1_limit
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxJointLimitSoftDesc & PhysxD6JointDesc::
+get_swing1_limit() const {
+  throw "Not Implemented"; // return nD6JointDesc.swing1Limit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_swing1_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxD6JointMotion PhysxD6JointDesc::
+get_swing1_motion() const {
+  return (PhysxD6JointMotion)nD6JointDesc.swing1Motion;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_swing2_limit
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxJointLimitSoftDesc & PhysxD6JointDesc::
+get_swing2_limit() const {
+  throw "Not Implemented"; // return nD6JointDesc.swing2Limit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_swing2_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxD6JointMotion PhysxD6JointDesc::
+get_swing2_motion() const {
+  return (PhysxD6JointMotion)nD6JointDesc.swing2Motion;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_swing_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxJointDriveDesc & PhysxD6JointDesc::
+get_swing_drive() const {
+  throw "Not Implemented"; // return nD6JointDesc.swingDrive;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_twist_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxJointDriveDesc & PhysxD6JointDesc::
+get_twist_drive() const {
+  throw "Not Implemented"; // return nD6JointDesc.twistDrive;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_twist_limit
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxJointLimitSoftPairDesc & PhysxD6JointDesc::
+get_twist_limit() const {
+  throw "Not Implemented"; // return nD6JointDesc.twistLimit;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_twist_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxD6JointMotion PhysxD6JointDesc::
+get_twist_motion() const {
+  return (PhysxD6JointMotion)nD6JointDesc.twistMotion;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_x_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxJointDriveDesc & PhysxD6JointDesc::
+get_x_drive() const {
+  throw "Not Implemented"; // return nD6JointDesc.xDrive;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_x_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxD6JointMotion PhysxD6JointDesc::
+get_x_motion() const {
+  return (PhysxD6JointMotion)nD6JointDesc.xMotion;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_y_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxJointDriveDesc & PhysxD6JointDesc::
+get_y_drive() const {
+  throw "Not Implemented"; // return nD6JointDesc.yDrive;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_y_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxD6JointMotion PhysxD6JointDesc::
+get_y_motion() const {
+  return (PhysxD6JointMotion)nD6JointDesc.yMotion;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_z_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxJointDriveDesc & PhysxD6JointDesc::
+get_z_drive() const {
+  throw "Not Implemented"; // return nD6JointDesc.zDrive;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_z_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxD6JointMotion PhysxD6JointDesc::
+get_z_motion() const {
+  return (PhysxD6JointMotion)nD6JointDesc.zMotion;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_drive_angular_velocity
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_drive_angular_velocity(LVecBase3f value) {
+  nD6JointDesc.driveAngularVelocity = PhysxManager::lVecBase3_to_nxVec3(value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_drive_linear_velocity
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_drive_linear_velocity(LVecBase3f value) {
+  nD6JointDesc.driveLinearVelocity = PhysxManager::lVecBase3_to_nxVec3(value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_drive_orientation
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_drive_orientation(LQuaternionf value) {
+  nD6JointDesc.driveOrientation = PhysxManager::lQuaternion_to_nxQuat(value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_drive_position
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_drive_position(LVecBase3f value) {
+  nD6JointDesc.drivePosition = PhysxManager::lVecBase3_to_nxVec3(value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_linear_limit
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_linear_limit(PhysxJointLimitSoftDesc & value) {
+  nD6JointDesc.linearLimit = value.nJointLimitSoftDesc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_projection_mode
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_projection_mode(PhysxJointProjectionMode value) {
+  nD6JointDesc.projectionMode = (NxJointProjectionMode)value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_slerp_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_slerp_drive(PhysxJointDriveDesc & value) {
+  nD6JointDesc.slerpDrive = value.nJointDriveDesc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_swing1_limit
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_swing1_limit(PhysxJointLimitSoftDesc & value) {
+  nD6JointDesc.swing1Limit = value.nJointLimitSoftDesc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_swing1_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_swing1_motion(PhysxD6JointMotion value) {
+  nD6JointDesc.swing1Motion = (NxD6JointMotion)value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_swing2_limit
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_swing2_limit(PhysxJointLimitSoftDesc & value) {
+  nD6JointDesc.swing2Limit = value.nJointLimitSoftDesc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_swing2_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_swing2_motion(PhysxD6JointMotion value) {
+  nD6JointDesc.swing2Motion = (NxD6JointMotion)value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_swing_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_swing_drive(PhysxJointDriveDesc & value) {
+  nD6JointDesc.swingDrive = value.nJointDriveDesc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_twist_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_twist_drive(PhysxJointDriveDesc & value) {
+  nD6JointDesc.twistDrive = value.nJointDriveDesc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_twist_limit
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_twist_limit(PhysxJointLimitSoftPairDesc & value) {
+  nD6JointDesc.twistLimit = value.nJointLimitSoftPairDesc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_twist_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_twist_motion(PhysxD6JointMotion value) {
+  nD6JointDesc.twistMotion = (NxD6JointMotion)value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_x_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_x_drive(PhysxJointDriveDesc & value) {
+  nD6JointDesc.xDrive = value.nJointDriveDesc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_x_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_x_motion(PhysxD6JointMotion value) {
+  nD6JointDesc.xMotion = (NxD6JointMotion)value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_y_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_y_drive(PhysxJointDriveDesc & value) {
+  nD6JointDesc.yDrive = value.nJointDriveDesc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_y_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_y_motion(PhysxD6JointMotion value) {
+  nD6JointDesc.yMotion = (NxD6JointMotion)value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_z_drive
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_z_drive(PhysxJointDriveDesc & value) {
+  nD6JointDesc.zDrive = value.nJointDriveDesc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_z_motion
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxD6JointDesc::
+set_z_motion(PhysxD6JointMotion value) {
+  nD6JointDesc.zMotion = (NxD6JointMotion)value;
+}
+
+#endif // HAVE_PHYSX
+

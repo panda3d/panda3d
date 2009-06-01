@@ -349,3 +349,13 @@ void AudioManager::
 write(ostream &out) const {
   out << (*this) << "\n";
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: AudioManager::set_speaker_configuration
+//       Access: Published
+//  Description: For use only with Miles.
+////////////////////////////////////////////////////////////////////
+void AudioManager::
+set_speaker_configuration(LVecBase3f *speaker1, LVecBase3f *speaker2, LVecBase3f *speaker3, LVecBase3f *speaker4, LVecBase3f *speaker5, LVecBase3f *speaker6, LVecBase3f *speaker7, LVecBase3f *speaker8, LVecBase3f *speaker9) {
+  // intentionally blank
+}

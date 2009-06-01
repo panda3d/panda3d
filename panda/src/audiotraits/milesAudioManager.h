@@ -71,6 +71,20 @@ public:
   void release_sound(MilesAudioSound *audioSound);
   void cleanup();
 
+  // 3D spatialized sound support.
+  // Spatialized sound was originally added for FMOD, so there are parts of the
+  // interface in the Miles implementation that are a little more awkward than
+  // they would be otherwise.
+  virtual void audio_3d_set_listener_attributes(float px, float py, float pz, float vx, float xy, float xz, float fx, float fy, float fz, float ux, float uy, float uz);
+  virtual void audio_3d_get_listener_attributes(float *px, float *py, float *pz, float *vx, float *vy, float *vz, float *fx, float *fy, float *fz, float *ux, float *uy, float *uz);
+  virtual void audio_3d_set_distance_factor(float factor);
+  virtual float audio_3d_get_distance_factor() const;
+  virtual void audio_3d_set_doppler_factor(float factor);
+  virtual float audio_3d_get_doppler_factor() const;
+  virtual void audio_3d_set_drop_off_factor(float factor);
+  virtual float audio_3d_get_drop_off_factor() const;
+  virtual void set_speaker_configuration(LVecBase3f *speaker1, LVecBase3f *speaker2=NULL, LVecBase3f *speaker3=NULL, LVecBase3f *speaker4=NULL, LVecBase3f *speaker5=NULL, LVecBase3f *speaker6=NULL, LVecBase3f *speaker7=NULL, LVecBase3f *speaker8=NULL, LVecBase3f *speaker9=NULL);
+
   virtual void output(ostream &out) const;
   virtual void write(ostream &out) const;
 

@@ -98,23 +98,23 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   virtual ~FmodAudioManager();
 
   virtual bool is_valid();
-          
+
   virtual PT(AudioSound) get_sound(const string&, bool positional = false, int mode=SM_heuristic);
   virtual PT(AudioSound) get_sound(MovieAudio *,  bool positional = false, int mode=SM_heuristic);
-    
+
   virtual int getSpeakerSetup();
   virtual void setSpeakerSetup(SpeakerModeCategory cat);
 
   virtual void set_volume(float);
   virtual float get_volume() const;
-          
+
   virtual void set_active(bool);
   virtual bool get_active() const;
 
   virtual void stop_all_sounds();
 
   virtual void update();
-  
+
   // This controls the "set of ears" that listens to 3D spacialized sound
   // px, py, pz are position coordinates. Can be 0.0f to ignore.
   // vx, vy, vz are a velocity vector in UNITS PER SECOND (default: meters).
@@ -122,7 +122,7 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   // ux, uy and uz are the respective components of a unit up-vector
   // These changes will NOT be invoked until audio_3d_update() is called.
   virtual void audio_3d_set_listener_attributes(float px, float py, float pz,
-                                                float vx, float xy, float xz, 
+                                                float vx, float xy, float xz,
                                                 float fx, float fy, float fz,
                                                 float ux, float uy, float uz);
 
@@ -131,13 +131,13 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
                                                 float *vx, float *vy, float *vz,
                                                 float *fx, float *fy, float *fz,
                                                 float *ux, float *uy, float *uz);
-          
+
   // Control the "relative distance factor" for 3D spacialized audio. Default is 1.0
   // Fmod uses meters internally, so give a float in Units-per meter
   // Don't know what Miles uses.
   virtual void audio_3d_set_distance_factor(float factor);
   virtual float audio_3d_get_distance_factor() const;
-
+  void most_recently_used(const string& path);
   // Control the presence of the Doppler effect. Default is 1.0
   // Exaggerated Doppler, use >1.0
   // Diminshed Doppler, use <1.0
@@ -164,27 +164,27 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
   ////////////////////////////////////////////////////////////////////
 
 private:
-  static FMOD_RESULT F_CALLBACK 
+  static FMOD_RESULT F_CALLBACK
   open_callback(const char *name, int unicode, unsigned int *file_size,
                 void **handle, void **user_data);
 
-  static FMOD_RESULT F_CALLBACK 
+  static FMOD_RESULT F_CALLBACK
   close_callback(void *handle, void *user_data);
 
-  static FMOD_RESULT F_CALLBACK 
+  static FMOD_RESULT F_CALLBACK
   read_callback(void *handle, void *buffer, unsigned int size_bytes,
                 unsigned int *bytes_read, void *user_data);
-  
-  static FMOD_RESULT F_CALLBACK 
+
+  static FMOD_RESULT F_CALLBACK
   seek_callback(void *handle, unsigned int pos, void *user_data);
-  
+
   FMOD::DSP *make_dsp(const FilterProperties::FilterConfig &conf);
   void update_dsp_chain(FMOD::DSP *head, FilterProperties *config);
   virtual bool configure_filters(FilterProperties *config);
-  
+
  private:
-  
-  static FMOD::System *_system; 
+
+  static FMOD::System *_system;
   static pset<FmodAudioManager *> _all_managers;
 
   static bool _system_is_valid;
@@ -201,10 +201,10 @@ private:
   // DLS info for MIDI files
   string _dlsname;
   FMOD_CREATESOUNDEXINFO _midi_info;
-  
+
   bool _is_valid;
   bool _active;
-  
+
   // The set of all sounds.  Needed only to implement stop_all_sounds.
   typedef pset<FmodAudioSound *> SoundSet;
   SoundSet _all_sounds;
@@ -225,7 +225,7 @@ private:
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {
-    init_type(); 
+    init_type();
     return get_class_type();
   }
 

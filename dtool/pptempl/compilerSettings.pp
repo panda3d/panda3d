@@ -88,9 +88,13 @@
   #define COMMONFLAGS /DHAVE_DINKUM /Zc:forScope
 
   // use "unsafe" QIfist flt->int rounding only if FAST_FLT_TO_INT is defined
-  #define REGULAR_OPTFLAGS /O2 /Ob2 /G7 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
-
-  #defer OPTFLAGS $[if $[OPT_MINSIZE],/Ox /Og /Ob1 /Oi /Os /Oy /GL /G7,$[REGULAR_OPTFLAGS]]
+  #if $[or $[eq $[USE_COMPILER], MSVC7], $[eq $[USE_COMPILER], MSVC7_1]]
+    #define REGULAR_OPTFLAGS /O2 /Ob2 /G7 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
+    #defer OPTFLAGS $[if $[OPT_MINSIZE],/Ox /Og /Ob1 /Oi /Os /Oy /GL /G7,$[REGULAR_OPTFLAGS]]
+  #else
+    #define REGULAR_OPTFLAGS /O2 /Ob2 $[if $[ne $[FAST_FLT_TO_INT],], /QIfist,]
+    #defer OPTFLAGS $[if $[OPT_MINSIZE],/Ox /Og /Ob1 /Oi /Os /Oy /GL,$[REGULAR_OPTFLAGS]]
+  #endif
 
   //  #define OPT1FLAGS /RTCsu /GS  removing /RTCu because it crashes in dxgsg with internal compiler bug
   #define OPT1FLAGS /RTCs /GS
@@ -108,7 +112,11 @@
   #defer DEBUGFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MTd, /MDd] $[BROWSEINFO_FLAG] $[DEBUGINFOFLAGS] $[DEBUGPDBFLAGS]
   #defer RELEASEFLAGS $[if $[ne $[LINK_FORCE_STATIC_RELEASE_C_RUNTIME],],/MT, /MD]
 
-  #define MAPINFOFLAGS /MAPINFO:EXPORTS /MAPINFO:LINES
+  #if $[or $[eq $[USE_COMPILER], MSVC7], $[eq $[USE_COMPILER], MSVC7_1]]
+    #define MAPINFOFLAGS /MAPINFO:EXPORTS /MAPINFO:LINES
+  #else
+    #define MAPINFOFLAGS /MAPINFO:EXPORTS
+  #endif
 
   #if $[ENABLE_PROFILING]
     #define PROFILE_FLAG /FIXED:NO

@@ -496,10 +496,10 @@ int cpuid (int input_eax, CPU_ID_REGISTERS *cpu_id_registers) {
     if (input_eax == 0) {
       // the order of ecx and edx is swapped when saved to make a proper vendor string
 #ifdef _WIN64
-		__cpuid((int*)cpu_id_registers, input_eax);
-		unsigned int tmp = cpu_id_registers->edx;
-		cpu_id_registers->edx = cpu_id_registers->ecx;
-		cpu_id_registers->ecx = tmp;
+        __cpuid((int*)cpu_id_registers, input_eax);
+        unsigned int tmp = cpu_id_registers->edx;
+        cpu_id_registers->edx = cpu_id_registers->ecx;
+        cpu_id_registers->ecx = tmp;
 #else
       __asm
       {
@@ -517,7 +517,7 @@ int cpuid (int input_eax, CPU_ID_REGISTERS *cpu_id_registers) {
     }
     else {
 #ifdef _WIN64
-		__cpuid((int*)cpu_id_registers, input_eax);
+        __cpuid((int*)cpu_id_registers, input_eax);
 #else
       __asm
       {
@@ -819,7 +819,6 @@ WinGraphicsPipe() {
       (PFN_TRACKMOUSEEVENT)GetProcAddress(_hUser32, "TrackMouseEvent");
   }
 
-  
 #ifdef HAVE_DX9
   DisplaySearchParameters display_search_parameters_dx9;
   int dx9_display_information (DisplaySearchParameters &display_search_parameters_dx9, DisplayInformation *display_information);

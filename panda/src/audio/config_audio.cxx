@@ -51,15 +51,15 @@ ConfigVariableDouble audio_volume
 
 // Config variables for OpenAL:
 
-ConfigVariableDouble audio_doppler_factor 	 
-("audio-doppler-factor", 1.0f); 	 
-	  	 
-ConfigVariableDouble audio_distance_factor 	 
-("audio-distance-factor", 1.0f); 	 
-	  	 
-ConfigVariableDouble audio_drop_off_factor 	 
-("audio-drop-off-factor", 1.0f); 	 
-	  	 
+ConfigVariableDouble audio_doppler_factor 
+("audio-doppler-factor", 1.0f); 
+
+ConfigVariableDouble audio_distance_factor 
+("audio-distance-factor", 1.0f); 
+
+ConfigVariableDouble audio_drop_off_factor 
+("audio-drop-off-factor", 1.0f); 
+
 ConfigVariableDouble audio_buffering_seconds
 ("audio-buffering-seconds", 3.0f,
  PRC_DESC("Controls the amount of audio buffering when streaming audio. "
@@ -81,9 +81,9 @@ ConfigVariableInt audio_preload_threshold
 
 // Unknown
 
-ConfigVariableInt audio_min_hw_channels 	 
-("audio-min-hw-channels", 15, 	 
-PRC_DESC("Guarantee this many channels on the local sound card, or just " 	 
+ConfigVariableInt audio_min_hw_channels 
+("audio-min-hw-channels", 15, 
+PRC_DESC("Guarantee this many channels on the local sound card, or just " 
          "play EVERYTHING in software."));
 
 // Config variables for Fmod:

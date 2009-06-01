@@ -42,6 +42,7 @@ private:
 
     // This section can be in any order.
     FBP_multisamples,
+    FBP_coverage_samples,
     FBP_back_buffers,
     FBP_indexed_color,
     FBP_rgb_color,
@@ -68,6 +69,7 @@ PUBLISHED:
   INLINE int get_aux_hrgba() const;
   INLINE int get_aux_float() const;
   INLINE int get_multisamples() const;
+  INLINE int get_coverage_samples() const;
   INLINE int get_back_buffers() const;
   INLINE int get_indexed_color() const;
   INLINE int get_rgb_color() const;
@@ -85,6 +87,7 @@ PUBLISHED:
   INLINE void set_aux_hrgba(int n);
   INLINE void set_aux_float(int n);
   INLINE void set_multisamples(int n);
+  INLINE void set_coverage_samples(int n);
   INLINE void set_back_buffers(int n);
   INLINE void set_indexed_color(int n);
   INLINE void set_rgb_color(int n);

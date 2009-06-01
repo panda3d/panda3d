@@ -10,10 +10,10 @@
 // so as not to confuse it with the previous Template.msvc.pp which
 // attempts to create visual studio projects.
 //
-// Steven "Sauce" Osman, July 17, 2003 
+// Steven "Sauce" Osman, July 17, 2003
 //
 // Note:
-// There's one wierd behavior when running interrogate, specifically
+// There's one weird behavior when running interrogate, specifically
 // with its -od directive.  This is because the pathname specified
 // in -od is dropped into a string in a c++ source file.  This makes
 // the c++ compiler interpret all back-slashes as escape sequences.
@@ -419,6 +419,9 @@ $[TAB] $[SHARED_LIB_C++]
 $[TAB] $[SHARED_LIB_C]
   #endif
 #endif
+#if $[eq $[USE_COMPILER], MSVC8]
+$[TAB] mt -nologo -manifest $[target].manifest -outputresource:$[target];2
+#endif
 
 #if $[build_dlls]
 $[osfilename $[ODIR]/$[get_dllname $[TARGET]].lib] : $[patsubst %,$[osfilename %],$[ODIR]/$[get_dllname $[TARGET]].$[dlllib]]
@@ -456,7 +459,11 @@ $[TAB] if exist $[file] del /f $[file]
 $[osfilename $[install_lib_dir]/$[get_dllname $[TARGET]].$[dlllib]] : $[patsubst %,$[osfilename %],$[ODIR]/$[get_dllname $[TARGET]].$[dlllib]]
 #define local $[get_dllname $[TARGET]].$[dlllib]
 #define dest $[install_lib_dir]
+#if $[eq $[USE_COMPILER], MSVC8]
+$[TAB] mt -nologo -manifest $[ODIR]/$[local].manifest -outputresource:$[ODIR]/$[local];2
+#endif
 $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local].manifest] $[osfilename $[dest]]
 #endif
 
 $[osfilename $[install_lib_dir]/$[get_dllname $[TARGET]].lib] : $[patsubst %,$[osfilename %],$[ODIR]/$[get_dllname $[TARGET]].lib]
@@ -499,7 +506,7 @@ $[osfilename $[igateoutput]] : $[patsubst %,$[osfilename %],$[sort $[patsubst %.
 //// There's a bug here.  The -od is being passed into a string in the file.  This
 //// makes slashes look like escape sequences.
 //// The hacky fix is to use \\ instead of \.  Windows seems to still let you open files if you
-//// include multiple slashes in them.  Then, when quoted, the string will properly 
+//// include multiple slashes in them.  Then, when quoted, the string will properly
 //// be created.
 //$[TAB] $[INTERROGATE] -od $[subst \,\\,$[osfilename $[igatedb]]] -oc $[osfilename $[igateoutput]] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
 // Actually, drose kindly fixed that
@@ -546,6 +553,9 @@ $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources] $[static_lib_d
 $[TAB] $[SHARED_LIB_C++] $[COMPILED_RESOURCES]
 #else
 $[TAB] $[SHARED_LIB_C] $[COMPILED_RESOURCES]
+#endif
+#if $[eq $[USE_COMPILER], MSVC8]
+$[TAB] mt -nologo -manifest $[target].manifest -outputresource:$[target];2
 #endif
 
 #if $[build_dlls]
@@ -716,6 +726,9 @@ $[TAB] $[LINK_BIN_C++]
 $[TAB] $[LINK_BIN_C]
   #endif
 #endif
+#if $[eq $[USE_COMPILER], MSVC8]
+$[TAB] mt -nologo -manifest $[target].manifest -outputresource:$[target];1
+#endif
 
 #if $[build_pdbs]
 $[osfilename $[ODIR]/$[TARGET].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[TARGET].exe]
@@ -743,6 +756,7 @@ $[osfilename $[install_bin_dir]/$[TARGET].exe] : $[patsubst %,$[osfilename %],$[
 #define local $[TARGET].exe
 #define dest $[install_bin_dir]
 $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
+$[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local].manifest] $[osfilename $[dest]]
 
 #if $[build_pdbs]
 $[osfilename $[install_bin_dir]/$[TARGET].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[TARGET].pdb]
@@ -783,6 +797,9 @@ $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources] $[static_lib_d
 $[TAB] $[LINK_BIN_C++]
 #else
 $[TAB] $[LINK_BIN_C]
+#endif
+#if $[eq $[USE_COMPILER], MSVC8]
+$[TAB] mt -nologo -manifest $[target].manifest -outputresource:$[target];1
 #endif
 
 #end noinst_bin_target test_bin_target test_lib_target
@@ -939,7 +956,7 @@ $[osfilename $[install_py_dir]/$[file]] : $[patsubst %,$[osfilename %],$[file]]
 #define dest $[install_py_dir]
 $[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
 #end file
-   
+
 #if $[install_py]
 $[osfilename $[install_py_package_dir]/__init__.py] :
 $[TAB] echo. > $[osfilename $[install_py_package_dir]/__init__.py]
@@ -1114,7 +1131,7 @@ $[TAB] ppremake
 #elif $[or $[eq $[DIR_TYPE], models],$[eq $[DIR_TYPE], models_toplevel],$[eq $[DIR_TYPE], models_group]]
 //////////////////////////////////////////////////////////////////////
 
-#include $[THISDIRPREFIX]Template.models.pp
+#include $[THISDIRPREFIX]Template.models.nmake.pp
 
 //////////////////////////////////////////////////////////////////////
 #endif // DIR_TYPE

@@ -306,7 +306,7 @@ protected:
   static GLenum get_texture_filter_type(Texture::FilterType ft,
                                         bool ignore_mipmaps);
   static Texture::FilterType get_panda_filter_type(GLenum ft);
-  static GLenum get_component_type(Texture::ComponentType component_type);
+  GLenum get_component_type(Texture::ComponentType component_type);
   GLint get_external_image_format(Texture *tex) const;
   GLint get_internal_image_format(Texture *tex) const;
   static bool is_mipmap_filter(GLenum min_filter);
@@ -505,6 +505,15 @@ public:
   PFNGLGENERATEMIPMAPEXTPROC _glGenerateMipmap;
   PFNGLBINDPROGRAMARBPROC _glBindProgram;
 
+  bool _supports_framebuffer_multisample;
+  bool _supports_framebuffer_multisample_coverage_nv;
+  INLINE bool get_supports_framebuffer_multisample();
+  INLINE bool get_supports_framebuffer_multisample_coverage_nv();
+  PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC _glRenderbufferStorageMultisample;
+  PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC _glRenderbufferStorageMultisampleCoverage;
+  bool _supports_framebuffer_blit;
+  INLINE bool get_supports_framebuffer_blit();
+  PFNGLBLITFRAMEBUFFEREXTPROC _glBlitFramebuffer;
   PFNGLDRAWBUFFERSPROC _glDrawBuffers;
   int _max_draw_buffers;
 

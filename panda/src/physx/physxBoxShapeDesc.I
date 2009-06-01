@@ -1,0 +1,34 @@
+// Filename: physxBoxShapeDesc.I
+// Created by:  pratt (Apr 7, 2006)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////
+//     Function : is_valid
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+INLINE bool PhysxBoxShapeDesc::
+is_valid() const {
+  return nBoxShapeDesc.isValid();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_to_default
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+INLINE void PhysxBoxShapeDesc::
+set_to_default() {
+  nBoxShapeDesc.setToDefault();
+}
+

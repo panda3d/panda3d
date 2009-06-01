@@ -78,15 +78,15 @@ public:
   INLINE const FrameBufferProperties &get_fb_properties() const;
   void get_properties(FrameBufferProperties &properties, XVisualInfo *visual);
   void get_properties_advanced(FrameBufferProperties &properties,
-			       bool &pbuffer_supported, bool &pixmap_supported,
+                               bool &pbuffer_supported, bool &pixmap_supported,
                                bool &slow, fbconfig config);
   void choose_pixel_format(const FrameBufferProperties &properties, 
-			   Display *_display,
-			   int _screen,
-			   bool need_pbuffer, bool need_pixmap);
+                           Display *_display,
+                           int _screen,
+                           bool need_pbuffer, bool need_pixmap);
   
   glxGraphicsStateGuardian(GraphicsEngine *engine, GraphicsPipe *pipe,
-			   glxGraphicsStateGuardian *share_with);
+                           glxGraphicsStateGuardian *share_with);
 
   virtual ~glxGraphicsStateGuardian();
 

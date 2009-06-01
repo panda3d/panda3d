@@ -98,21 +98,21 @@ PUBLISHED:
   INLINE void add_rel_torque(dReal fx, dReal fy, dReal fz);
   INLINE void add_rel_torque(const LVecBase3f &f);
   INLINE void add_force_at_pos(dReal fx, dReal fy, dReal fz, 
-			       dReal px, dReal py, dReal pz);
+                               dReal px, dReal py, dReal pz);
   INLINE void add_force_at_pos(const LVecBase3f &f, 
-			       const LVecBase3f &pos);
+                               const LVecBase3f &pos);
   INLINE void add_force_at_rel_pos(dReal fx, dReal fy, dReal fz, 
-				   dReal px, dReal py, dReal pz);
+                                   dReal px, dReal py, dReal pz);
   INLINE void add_force_at_rel_pos(const LVecBase3f &f, 
-				   const LVecBase3f &pos);
+                                   const LVecBase3f &pos);
   INLINE void add_rel_force_at_pos(dReal fx, dReal fy, dReal fz, 
-				   dReal px, dReal py, dReal pz);
+                                   dReal px, dReal py, dReal pz);
   INLINE void add_rel_force_at_pos(const LVecBase3f &f, 
-				   const LVecBase3f &pos);
+                                   const LVecBase3f &pos);
   INLINE void add_rel_force_at_rel_pos(dReal fx, dReal fy, dReal fz, 
-				       dReal px, dReal py, dReal pz);
+                                       dReal px, dReal py, dReal pz);
   INLINE void add_rel_force_at_rel_pos(const LVecBase3f &f, 
-				       const LVecBase3f &pos);
+                                       const LVecBase3f &pos);
   INLINE void set_force(dReal x, dReal y, dReal z);
   INLINE void set_force(const LVecBase3f &f);
   INLINE void set_torque(dReal x, dReal y, dReal z);
@@ -160,7 +160,7 @@ public:
   static void init_type() {
     TypedObject::init_type();
     register_type(_type_handle, "OdeBody",
-		  TypedObject::get_class_type());
+                  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

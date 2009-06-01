@@ -4,8 +4,8 @@ FNAME(white_untextured) (ZBuffer *zb,
 {
 #define INTERP_Z
 
-#define EARLY_OUT() 				\
-  {						\
+#define EARLY_OUT()                             \
+  {                                             \
   }
 
 #define DRAW_INIT()                             \
@@ -36,8 +36,8 @@ FNAME(flat_untextured) (ZBuffer *zb,
 
 #define INTERP_Z
 
-#define EARLY_OUT() 				\
-  {						\
+#define EARLY_OUT()                             \
+  {                                             \
   }
 
 #define DRAW_INIT()                             \
@@ -92,8 +92,8 @@ FNAME(smooth_untextured) (ZBuffer *zb,
     }                                                   \
   }
   
-#define DRAW_INIT() 				\
-  {						\
+#define DRAW_INIT()                             \
+  {                                             \
   }
 
 #define PUT_PIXEL(_a)                                                   \
@@ -126,20 +126,20 @@ FNAME(white_textured) (ZBuffer *zb,
 #define INTERP_Z
 #define INTERP_ST
 
-#define EARLY_OUT() 				\
-  {						\
+#define EARLY_OUT()                             \
+  {                                             \
   }
 
-#define DRAW_INIT()				\
-  {						\
-    texture_def = &zb->current_textures[0];       \
+#define DRAW_INIT()                             \
+  {                                             \
+    texture_def = &zb->current_textures[0];     \
   }
 
 #define PUT_PIXEL(_a)                                                   \
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx); \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -165,28 +165,28 @@ FNAME(flat_textured) (ZBuffer *zb,
 #define INTERP_Z
 #define INTERP_ST
 
-#define EARLY_OUT() 				\
-  {						\
+#define EARLY_OUT()                             \
+  {                                             \
   }
 
-#define DRAW_INIT()				\
-  {						\
-    if (p2->a == 0 && !ACMP(zb, p2->a)) {       \
+#define DRAW_INIT()                                                     \
+  {                                                                     \
+    if (p2->a == 0 && !ACMP(zb, p2->a)) {                               \
       /* This alpha is zero, and we'll never get other than 0. */       \
-      return;                                   \
-    }                                           \
-    texture_def = &zb->current_textures[0];       \
-    or0 = p2->r;                                \
-    og0 = p2->g;                                \
-    ob0 = p2->b;                                \
-    oa0 = p2->a;                                \
+      return;                                                           \
+    }                                                                   \
+    texture_def = &zb->current_textures[0];                             \
+    or0 = p2->r;                                                        \
+    og0 = p2->g;                                                        \
+    ob0 = p2->b;                                                        \
+    oa0 = p2->a;                                                        \
   }
 
 #define PUT_PIXEL(_a)                                                   \
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx); \
       int a = PALPHA_MULT(oa0, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -241,14 +241,14 @@ FNAME(smooth_textured) (ZBuffer *zb,
 
 #define DRAW_INIT()                             \
   {                                             \
-    texture_def = &zb->current_textures[0];       \
+    texture_def = &zb->current_textures[0];     \
   }
 
 #define PUT_PIXEL(_a)                                                   \
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx); \
       int a = PALPHA_MULT(oa1, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -295,13 +295,13 @@ FNAME(white_perspective) (ZBuffer *zb,
 
 #define NB_INTERP 8
 
-#define EARLY_OUT()                                     \
-  {                                                     \
+#define EARLY_OUT()                             \
+  {                                             \
   }
 
-#define DRAW_INIT()				\
-  {						\
-    texture_def = &zb->current_textures[0];       \
+#define DRAW_INIT()                             \
+  {                                             \
+    texture_def = &zb->current_textures[0];     \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -313,7 +313,7 @@ FNAME(white_perspective) (ZBuffer *zb,
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx); \
       if (ACMP(zb, PIXEL_A(tmp))) {                                     \
         STORE_PIX(pp[_a], tmp, PIXEL_R(tmp), PIXEL_G(tmp), PIXEL_B(tmp), PIXEL_A(tmp)); \
         STORE_Z(pz[_a], zz);                                            \
@@ -324,64 +324,64 @@ FNAME(white_perspective) (ZBuffer *zb,
     t+=dtdx;                                                            \
   }
 
-#define DRAW_LINE()                                     \
-  {                                                     \
-    register ZPOINT *pz;                                \
-    register PIXEL *pp;                                 \
-    register int s,t,z,zz;                     \
-    register int n,dsdx,dtdx;                           \
-    float sz,tz,fz,zinv;                                \
-    n=(x2>>16)-x1;                                      \
-    fz=(float)z1;                                       \
-    zinv=1.0f / fz;                                     \
-    pp=(PIXEL *)((char *)pp1 + x1 * PSZB);              \
-    pz=pz1+x1;                                          \
-    z=z1;						\
-    sz=sz1;                                             \
-    tz=tz1;                                             \
-    while (n>=(NB_INTERP-1)) {                          \
-      {                                                 \
-        float ss,tt;                                    \
-        ss=(sz * zinv);                                 \
-        tt=(tz * zinv);                                 \
-        s=(int) ss;                            \
-        t=(int) tt;                            \
-        dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
-        dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
-        CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);   \
-        fz+=fndzdx;                                     \
-        zinv=1.0f / fz;                                 \
-      }                                                 \
-      PUT_PIXEL(0);                                     \
-      PUT_PIXEL(1);                                     \
-      PUT_PIXEL(2);                                     \
-      PUT_PIXEL(3);                                     \
-      PUT_PIXEL(4);                                     \
-      PUT_PIXEL(5);                                     \
-      PUT_PIXEL(6);                                     \
-      PUT_PIXEL(7);                                     \
-      pz+=NB_INTERP;                                    \
-      pp=(PIXEL *)((char *)pp + NB_INTERP * PSZB);      \
-      n-=NB_INTERP;                                     \
-      sz+=ndszdx;                                       \
-      tz+=ndtzdx;                                       \
-    }                                                   \
-    {                                                   \
-      float ss,tt;                                      \
-      ss=(sz * zinv);                                   \
-      tt=(tz * zinv);                                   \
-      s=(int) ss;                              \
-      t=(int) tt;                              \
-      dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
-      dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
-      CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);    \
-    }                                                   \
-    while (n>=0) {                                      \
-      PUT_PIXEL(0);                                     \
-      pz+=1;                                            \
-      pp=(PIXEL *)((char *)pp + PSZB);                  \
-      n-=1;                                             \
-    }                                                   \
+#define DRAW_LINE()                                             \
+  {                                                             \
+    register ZPOINT *pz;                                        \
+    register PIXEL *pp;                                         \
+    register int s,t,z,zz;                                      \
+    register int n,dsdx,dtdx;                                   \
+    float sz,tz,fz,zinv;                                        \
+    n=(x2>>16)-x1;                                              \
+    fz=(float)z1;                                               \
+    zinv=1.0f / fz;                                             \
+    pp=(PIXEL *)((char *)pp1 + x1 * PSZB);                      \
+    pz=pz1+x1;                                                  \
+    z=z1;                                                       \
+    sz=sz1;                                                     \
+    tz=tz1;                                                     \
+    while (n>=(NB_INTERP-1)) {                                  \
+      {                                                         \
+        float ss,tt;                                            \
+        ss=(sz * zinv);                                         \
+        tt=(tz * zinv);                                         \
+        s=(int) ss;                                             \
+        t=(int) tt;                                             \
+        dsdx= (int)( (dszdx - ss*fdzdx)*zinv );                 \
+        dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );                 \
+        CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx); \
+        fz+=fndzdx;                                             \
+        zinv=1.0f / fz;                                         \
+      }                                                         \
+      PUT_PIXEL(0);                                             \
+      PUT_PIXEL(1);                                             \
+      PUT_PIXEL(2);                                             \
+      PUT_PIXEL(3);                                             \
+      PUT_PIXEL(4);                                             \
+      PUT_PIXEL(5);                                             \
+      PUT_PIXEL(6);                                             \
+      PUT_PIXEL(7);                                             \
+      pz+=NB_INTERP;                                            \
+      pp=(PIXEL *)((char *)pp + NB_INTERP * PSZB);              \
+      n-=NB_INTERP;                                             \
+      sz+=ndszdx;                                               \
+      tz+=ndtzdx;                                               \
+    }                                                           \
+    {                                                           \
+      float ss,tt;                                              \
+      ss=(sz * zinv);                                           \
+      tt=(tz * zinv);                                           \
+      s=(int) ss;                                               \
+      t=(int) tt;                                               \
+      dsdx= (int)( (dszdx - ss*fdzdx)*zinv );                   \
+      dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );                   \
+      CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);   \
+    }                                                           \
+    while (n>=0) {                                              \
+      PUT_PIXEL(0);                                             \
+      pz+=1;                                                    \
+      pp=(PIXEL *)((char *)pp + PSZB);                          \
+      n-=1;                                                     \
+    }                                                           \
   }
   
 #define PIXEL_COUNT pixel_count_white_perspective
@@ -405,32 +405,32 @@ FNAME(flat_perspective) (ZBuffer *zb,
 #define INTERP_STZ
 #define INTERP_RGB
 
-#define EARLY_OUT()                                     \
-  {                                                     \
+#define EARLY_OUT()                             \
+  {                                             \
   }
 
-#define DRAW_INIT() 				\
-  {						\
-    if (p2->a == 0 && !ACMP(zb, p2->a)) {       \
+#define DRAW_INIT()                                                     \
+  {                                                                     \
+    if (p2->a == 0 && !ACMP(zb, p2->a)) {                               \
       /* This alpha is zero, and we'll never get other than 0. */       \
-      return;                                   \
-    }                                           \
-    texture_def = &zb->current_textures[0];       \
-    fdzdx=(float)dzdx;                          \
-    fndzdx=NB_INTERP * fdzdx;                   \
-    ndszdx=NB_INTERP * dszdx;                   \
-    ndtzdx=NB_INTERP * dtzdx;                   \
-    or0 = p2->r;                                \
-    og0 = p2->g;                                \
-    ob0 = p2->b;                                \
-    oa0 = p2->a;                                \
+      return;                                                           \
+    }                                                                   \
+    texture_def = &zb->current_textures[0];                             \
+    fdzdx=(float)dzdx;                                                  \
+    fndzdx=NB_INTERP * fdzdx;                                           \
+    ndszdx=NB_INTERP * dszdx;                                           \
+    ndtzdx=NB_INTERP * dtzdx;                                           \
+    or0 = p2->r;                                                        \
+    og0 = p2->g;                                                        \
+    ob0 = p2->b;                                                        \
+    oa0 = p2->a;                                                        \
   }
 
 #define PUT_PIXEL(_a)                                                   \
   {                                                                     \
     zz=z >> ZB_POINT_Z_FRAC_BITS;                                       \
     if (ZCMP(pz[_a], zz)) {                                             \
-      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx);      \
+      tmp = ZB_LOOKUP_TEXTURE(texture_def, s, t, mipmap_level, mipmap_dx); \
       int a = PALPHA_MULT(oa0, PIXEL_A(tmp));                           \
       if (ACMP(zb, a)) {                                                \
         STORE_PIX(pp[_a],                                               \
@@ -450,69 +450,69 @@ FNAME(flat_perspective) (ZBuffer *zb,
     t+=dtdx;                                                            \
   }
 
-#define DRAW_LINE()                                     \
-  {                                                     \
-    register ZPOINT *pz;                                \
-    register PIXEL *pp;                                 \
-    register int s,t,z,zz;                     \
-    register int n,dsdx,dtdx;                           \
-    register int or1,og1,ob1,oa1;              \
-    float sz,tz,fz,zinv;                                \
-    n=(x2>>16)-x1;                                      \
-    fz=(float)z1;                                       \
-    zinv=1.0f / fz;                                     \
-    pp=(PIXEL *)((char *)pp1 + x1 * PSZB);              \
-    pz=pz1+x1;                                          \
-    z=z1;						\
-    sz=sz1;                                             \
-    tz=tz1;                                             \
-    or1 = r1;                                           \
-    og1 = g1;                                           \
-    ob1 = b1;                                           \
-    oa1 = a1;                                           \
-    while (n>=(NB_INTERP-1)) {                          \
-      {                                                 \
-        float ss,tt;                                    \
-        ss=(sz * zinv);                                 \
-        tt=(tz * zinv);                                 \
-        s=(int) ss;                            \
-        t=(int) tt;                            \
-        dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
-        dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
-        CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);  \
-        fz+=fndzdx;                                     \
-        zinv=1.0f / fz;                                 \
-      }                                                 \
-      PUT_PIXEL(0);                                     \
-      PUT_PIXEL(1);                                     \
-      PUT_PIXEL(2);                                     \
-      PUT_PIXEL(3);                                     \
-      PUT_PIXEL(4);                                     \
-      PUT_PIXEL(5);                                     \
-      PUT_PIXEL(6);                                     \
-      PUT_PIXEL(7);                                     \
-      pz+=NB_INTERP;                                    \
-      pp=(PIXEL *)((char *)pp + NB_INTERP * PSZB);      \
-      n-=NB_INTERP;                                     \
-      sz+=ndszdx;                                       \
-      tz+=ndtzdx;                                       \
-    }                                                   \
-    {                                                   \
-      float ss,tt;                                      \
-      ss=(sz * zinv);                                   \
-      tt=(tz * zinv);                                   \
-      s=(int) ss;                              \
-      t=(int) tt;                              \
-      dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
-      dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
-      CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);    \
-    }                                                   \
-    while (n>=0) {                                      \
-      PUT_PIXEL(0);                                     \
-      pz+=1;                                            \
-      pp=(PIXEL *)((char *)pp + PSZB);                  \
-      n-=1;                                             \
-    }                                                   \
+#define DRAW_LINE()                                             \
+  {                                                             \
+    register ZPOINT *pz;                                        \
+    register PIXEL *pp;                                         \
+    register int s,t,z,zz;                                      \
+    register int n,dsdx,dtdx;                                   \
+    register int or1,og1,ob1,oa1;                               \
+    float sz,tz,fz,zinv;                                        \
+    n=(x2>>16)-x1;                                              \
+    fz=(float)z1;                                               \
+    zinv=1.0f / fz;                                             \
+    pp=(PIXEL *)((char *)pp1 + x1 * PSZB);                      \
+    pz=pz1+x1;                                                  \
+    z=z1;                                                       \
+    sz=sz1;                                                     \
+    tz=tz1;                                                     \
+    or1 = r1;                                                   \
+    og1 = g1;                                                   \
+    ob1 = b1;                                                   \
+    oa1 = a1;                                                   \
+    while (n>=(NB_INTERP-1)) {                                  \
+      {                                                         \
+        float ss,tt;                                            \
+        ss=(sz * zinv);                                         \
+        tt=(tz * zinv);                                         \
+        s=(int) ss;                                             \
+        t=(int) tt;                                             \
+        dsdx= (int)( (dszdx - ss*fdzdx)*zinv );                 \
+        dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );                 \
+        CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx); \
+        fz+=fndzdx;                                             \
+        zinv=1.0f / fz;                                         \
+      }                                                         \
+      PUT_PIXEL(0);                                             \
+      PUT_PIXEL(1);                                             \
+      PUT_PIXEL(2);                                             \
+      PUT_PIXEL(3);                                             \
+      PUT_PIXEL(4);                                             \
+      PUT_PIXEL(5);                                             \
+      PUT_PIXEL(6);                                             \
+      PUT_PIXEL(7);                                             \
+      pz+=NB_INTERP;                                            \
+      pp=(PIXEL *)((char *)pp + NB_INTERP * PSZB);              \
+      n-=NB_INTERP;                                             \
+      sz+=ndszdx;                                               \
+      tz+=ndtzdx;                                               \
+    }                                                           \
+    {                                                           \
+      float ss,tt;                                              \
+      ss=(sz * zinv);                                           \
+      tt=(tz * zinv);                                           \
+      s=(int) ss;                                               \
+      t=(int) tt;                                               \
+      dsdx= (int)( (dszdx - ss*fdzdx)*zinv );                   \
+      dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );                   \
+      CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);   \
+    }                                                           \
+    while (n>=0) {                                              \
+      PUT_PIXEL(0);                                             \
+      pz+=1;                                                    \
+      pp=(PIXEL *)((char *)pp + PSZB);                          \
+      n-=1;                                                     \
+    }                                                           \
   }
 
 #define PIXEL_COUNT pixel_count_flat_perspective
@@ -553,9 +553,9 @@ FNAME(smooth_perspective) (ZBuffer *zb,
     }                                                   \
   }
 
-#define DRAW_INIT() 				\
-  {						\
-    texture_def = &zb->current_textures[0];       \
+#define DRAW_INIT()                             \
+  {                                             \
+    texture_def = &zb->current_textures[0];     \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
@@ -590,69 +590,69 @@ FNAME(smooth_perspective) (ZBuffer *zb,
     t+=dtdx;                                                            \
   }
 
-#define DRAW_LINE()                                     \
-  {                                                     \
-    register ZPOINT *pz;                                \
-    register PIXEL *pp;                                 \
-    register int s,t,z,zz;                     \
-    register int n,dsdx,dtdx;                           \
-    register int or1,og1,ob1,oa1;              \
-    float sz,tz,fz,zinv;                                \
-    n=(x2>>16)-x1;                                      \
-    fz=(float)z1;                                       \
-    zinv=1.0f / fz;                                     \
-    pp=(PIXEL *)((char *)pp1 + x1 * PSZB);              \
-    pz=pz1+x1;                                          \
-    z=z1;						\
-    sz=sz1;                                             \
-    tz=tz1;                                             \
-    or1 = r1;                                           \
-    og1 = g1;                                           \
-    ob1 = b1;                                           \
-    oa1 = a1;                                           \
-    while (n>=(NB_INTERP-1)) {                          \
-      {                                                 \
-        float ss,tt;                                    \
-        ss=(sz * zinv);                                 \
-        tt=(tz * zinv);                                 \
-        s=(int) ss;                            \
-        t=(int) tt;                            \
-        dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
-        dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
-        CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);  \
-        fz+=fndzdx;                                     \
-        zinv=1.0f / fz;                                 \
-      }                                                 \
-      PUT_PIXEL(0);                                     \
-      PUT_PIXEL(1);                                     \
-      PUT_PIXEL(2);                                     \
-      PUT_PIXEL(3);                                     \
-      PUT_PIXEL(4);                                     \
-      PUT_PIXEL(5);                                     \
-      PUT_PIXEL(6);                                     \
-      PUT_PIXEL(7);                                     \
-      pz+=NB_INTERP;                                    \
-      pp=(PIXEL *)((char *)pp + NB_INTERP * PSZB);      \
-      n-=NB_INTERP;                                     \
-      sz+=ndszdx;                                       \
-      tz+=ndtzdx;                                       \
-    }                                                   \
-    {                                                   \
-      float ss,tt;                                      \
-      ss=(sz * zinv);                                   \
-      tt=(tz * zinv);                                   \
-      s=(int) ss;                              \
-      t=(int) tt;                              \
-      dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
-      dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
-      CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);  \
-    }                                                   \
-    while (n>=0) {                                      \
-      PUT_PIXEL(0);                                     \
-      pz+=1;                                            \
-      pp=(PIXEL *)((char *)pp + PSZB);                  \
-      n-=1;                                             \
-    }                                                   \
+#define DRAW_LINE()                                             \
+  {                                                             \
+    register ZPOINT *pz;                                        \
+    register PIXEL *pp;                                         \
+    register int s,t,z,zz;                                      \
+    register int n,dsdx,dtdx;                                   \
+    register int or1,og1,ob1,oa1;                               \
+    float sz,tz,fz,zinv;                                        \
+    n=(x2>>16)-x1;                                              \
+    fz=(float)z1;                                               \
+    zinv=1.0f / fz;                                             \
+    pp=(PIXEL *)((char *)pp1 + x1 * PSZB);                      \
+    pz=pz1+x1;                                                  \
+    z=z1;                                                       \
+    sz=sz1;                                                     \
+    tz=tz1;                                                     \
+    or1 = r1;                                                   \
+    og1 = g1;                                                   \
+    ob1 = b1;                                                   \
+    oa1 = a1;                                                   \
+    while (n>=(NB_INTERP-1)) {                                  \
+      {                                                         \
+        float ss,tt;                                            \
+        ss=(sz * zinv);                                         \
+        tt=(tz * zinv);                                         \
+        s=(int) ss;                                             \
+        t=(int) tt;                                             \
+        dsdx= (int)( (dszdx - ss*fdzdx)*zinv );                 \
+        dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );                 \
+        CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx); \
+        fz+=fndzdx;                                             \
+        zinv=1.0f / fz;                                         \
+      }                                                         \
+      PUT_PIXEL(0);                                             \
+      PUT_PIXEL(1);                                             \
+      PUT_PIXEL(2);                                             \
+      PUT_PIXEL(3);                                             \
+      PUT_PIXEL(4);                                             \
+      PUT_PIXEL(5);                                             \
+      PUT_PIXEL(6);                                             \
+      PUT_PIXEL(7);                                             \
+      pz+=NB_INTERP;                                            \
+      pp=(PIXEL *)((char *)pp + NB_INTERP * PSZB);              \
+      n-=NB_INTERP;                                             \
+      sz+=ndszdx;                                               \
+      tz+=ndtzdx;                                               \
+    }                                                           \
+    {                                                           \
+      float ss,tt;                                              \
+      ss=(sz * zinv);                                           \
+      tt=(tz * zinv);                                           \
+      s=(int) ss;                                               \
+      t=(int) tt;                                               \
+      dsdx= (int)( (dszdx - ss*fdzdx)*zinv );                   \
+      dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );                   \
+      CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);   \
+    }                                                           \
+    while (n>=0) {                                              \
+      PUT_PIXEL(0);                                             \
+      pz+=1;                                                    \
+      pp=(PIXEL *)((char *)pp + PSZB);                          \
+      n-=1;                                                     \
+    }                                                           \
   }
 
 #define PIXEL_COUNT pixel_count_smooth_perspective
@@ -676,18 +676,18 @@ FNAME(smooth_multitex2) (ZBuffer *zb,
 #define INTERP_STZA
 #define INTERP_RGB
 
-#define EARLY_OUT() 				\
-  {						\
+#define EARLY_OUT()                             \
+  {                                             \
   }
 
-#define DRAW_INIT() 				\
-  {						\
+#define DRAW_INIT()                             \
+  {                                             \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
     ndtzdx=NB_INTERP * dtzdx;                   \
-    ndszadx=NB_INTERP * dszadx;                   \
-    ndtzadx=NB_INTERP * dtzadx;                   \
+    ndszadx=NB_INTERP * dszadx;                 \
+    ndtzadx=NB_INTERP * dtzadx;                 \
   }
 
 #define PUT_PIXEL(_a)                                                   \
@@ -699,13 +699,13 @@ FNAME(smooth_multitex2) (ZBuffer *zb,
       if (ACMP(zb, a)) {                                                \
         int tmpa = ZB_LOOKUP_TEXTURE(&zb->current_textures[1], sa, ta, mipmap_levela, mipmap_dxa); \
         STORE_PIX(pp[_a],                                               \
-                  RGBA_TO_PIXEL(PCOMPONENT_MULT3(or1, PIXEL_R(tmp), PIXEL_R(tmpa)),     \
-                                PCOMPONENT_MULT3(og1, PIXEL_G(tmp), PIXEL_G(tmpa)),     \
-                                PCOMPONENT_MULT3(ob1, PIXEL_B(tmp), PIXEL_B(tmpa)),     \
+                  RGBA_TO_PIXEL(PCOMPONENT_MULT3(or1, PIXEL_R(tmp), PIXEL_R(tmpa)), \
+                                PCOMPONENT_MULT3(og1, PIXEL_G(tmp), PIXEL_G(tmpa)), \
+                                PCOMPONENT_MULT3(ob1, PIXEL_B(tmp), PIXEL_B(tmpa)), \
                                 a),                                     \
-                  PCOMPONENT_MULT3(or1, PIXEL_R(tmp), PIXEL_R(tmpa)),                   \
-                  PCOMPONENT_MULT3(og1, PIXEL_G(tmp), PIXEL_G(tmpa)),                   \
-                  PCOMPONENT_MULT3(ob1, PIXEL_B(tmp), PIXEL_B(tmpa)),                   \
+                  PCOMPONENT_MULT3(or1, PIXEL_R(tmp), PIXEL_R(tmpa)),   \
+                  PCOMPONENT_MULT3(og1, PIXEL_G(tmp), PIXEL_G(tmpa)),   \
+                  PCOMPONENT_MULT3(ob1, PIXEL_B(tmp), PIXEL_B(tmpa)),   \
                   a);                                                   \
         STORE_Z(pz[_a], zz);                                            \
       }                                                                 \
@@ -717,97 +717,97 @@ FNAME(smooth_multitex2) (ZBuffer *zb,
     oa1+=dadx;                                                          \
     s+=dsdx;                                                            \
     t+=dtdx;                                                            \
-    sa+=dsadx;                                                            \
-    ta+=dtadx;                                                            \
+    sa+=dsadx;                                                          \
+    ta+=dtadx;                                                          \
   }
 
-#define DRAW_LINE()                                     \
-  {                                                     \
-    register ZPOINT *pz;                                \
-    register PIXEL *pp;                                 \
-    register int s,t,sa,ta,z,zz;                     \
-    register int n,dsdx,dtdx,dsadx,dtadx;                           \
-    register int or1,og1,ob1,oa1;              \
-    float sz,tz,sza,tza,fz,zinv;                                \
-    n=(x2>>16)-x1;                                      \
-    fz=(float)z1;                                       \
-    zinv=1.0f / fz;                                     \
-    pp=(PIXEL *)((char *)pp1 + x1 * PSZB);              \
-    pz=pz1+x1;                                          \
-    z=z1;						\
-    sz=sz1;                                             \
-    tz=tz1;                                             \
-    sza=sza1;                                             \
-    tza=tza1;                                             \
-    or1 = r1;                                           \
-    og1 = g1;                                           \
-    ob1 = b1;                                           \
-    oa1 = a1;                                           \
-    while (n>=(NB_INTERP-1)) {                          \
-      {                                                 \
-        float ss,tt;                                    \
-        ss=(sz * zinv);                                 \
-        tt=(tz * zinv);                                 \
-        s=(int) ss;                            \
-        t=(int) tt;                            \
-        dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
-        dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
-        CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);     \
-      }                                                 \
-      {                                                 \
-        float ssa,tta;                                    \
-        ssa=(sza * zinv);                                 \
-        tta=(tza * zinv);                                 \
-        sa=(int) ssa;                            \
-        ta=(int) tta;                            \
-        dsadx= (int)( (dszadx - ssa*fdzdx)*zinv );         \
-        dtadx= (int)( (dtzadx - tta*fdzdx)*zinv );         \
-        CALC_MIPMAP_LEVEL(mipmap_levela, mipmap_dxa, dsadx, dtadx);   \
-      }                                                 \
-      fz+=fndzdx;                                     \
-      zinv=1.0f / fz;                                 \
-      PUT_PIXEL(0);                                     \
-      PUT_PIXEL(1);                                     \
-      PUT_PIXEL(2);                                     \
-      PUT_PIXEL(3);                                     \
-      PUT_PIXEL(4);                                     \
-      PUT_PIXEL(5);                                     \
-      PUT_PIXEL(6);                                     \
-      PUT_PIXEL(7);                                     \
-      pz+=NB_INTERP;                                    \
-      pp=(PIXEL *)((char *)pp + NB_INTERP * PSZB);      \
-      n-=NB_INTERP;                                     \
-      sz+=ndszdx;                                       \
-      tz+=ndtzdx;                                       \
-      sza+=ndszadx;                                       \
-      tza+=ndtzadx;                                       \
-    }                                                   \
-    {                                                   \
-      float ss,tt;                                      \
-      ss=(sz * zinv);                                   \
-      tt=(tz * zinv);                                   \
-      s=(int) ss;                              \
-      t=(int) tt;                              \
-      dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
-      dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
-      CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);     \
-    }                                                   \
-    {                                                   \
-      float ssa,tta;                                      \
-      ssa=(sza * zinv);                                   \
-      tta=(tza * zinv);                                   \
-      sa=(int) ssa;                              \
-      ta=(int) tta;                              \
-      dsadx= (int)( (dszadx - ssa*fdzdx)*zinv );           \
-      dtadx= (int)( (dtzadx - tta*fdzdx)*zinv );           \
-      CALC_MIPMAP_LEVEL(mipmap_levela, mipmap_dxa, dsadx, dtadx);   \
-    }                                                   \
-    while (n>=0) {                                      \
-      PUT_PIXEL(0);                                     \
-      pz+=1;                                            \
-      pp=(PIXEL *)((char *)pp + PSZB);                  \
-      n-=1;                                             \
-    }                                                   \
+#define DRAW_LINE()                                                     \
+  {                                                                     \
+    register ZPOINT *pz;                                                \
+    register PIXEL *pp;                                                 \
+    register int s,t,sa,ta,z,zz;                                        \
+    register int n,dsdx,dtdx,dsadx,dtadx;                               \
+    register int or1,og1,ob1,oa1;                                       \
+    float sz,tz,sza,tza,fz,zinv;                                        \
+    n=(x2>>16)-x1;                                                      \
+    fz=(float)z1;                                                       \
+    zinv=1.0f / fz;                                                     \
+    pp=(PIXEL *)((char *)pp1 + x1 * PSZB);                              \
+    pz=pz1+x1;                                                          \
+    z=z1;                                                               \
+    sz=sz1;                                                             \
+    tz=tz1;                                                             \
+    sza=sza1;                                                           \
+    tza=tza1;                                                           \
+    or1 = r1;                                                           \
+    og1 = g1;                                                           \
+    ob1 = b1;                                                           \
+    oa1 = a1;                                                           \
+    while (n>=(NB_INTERP-1)) {                                          \
+      {                                                                 \
+        float ss,tt;                                                    \
+        ss=(sz * zinv);                                                 \
+        tt=(tz * zinv);                                                 \
+        s=(int) ss;                                                     \
+        t=(int) tt;                                                     \
+        dsdx= (int)( (dszdx - ss*fdzdx)*zinv );                         \
+        dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );                         \
+        CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);         \
+      }                                                                 \
+      {                                                                 \
+        float ssa,tta;                                                  \
+        ssa=(sza * zinv);                                               \
+        tta=(tza * zinv);                                               \
+        sa=(int) ssa;                                                   \
+        ta=(int) tta;                                                   \
+        dsadx= (int)( (dszadx - ssa*fdzdx)*zinv );                      \
+        dtadx= (int)( (dtzadx - tta*fdzdx)*zinv );                      \
+        CALC_MIPMAP_LEVEL(mipmap_levela, mipmap_dxa, dsadx, dtadx);     \
+      }                                                                 \
+      fz+=fndzdx;                                                       \
+      zinv=1.0f / fz;                                                   \
+      PUT_PIXEL(0);                                                     \
+      PUT_PIXEL(1);                                                     \
+      PUT_PIXEL(2);                                                     \
+      PUT_PIXEL(3);                                                     \
+      PUT_PIXEL(4);                                                     \
+      PUT_PIXEL(5);                                                     \
+      PUT_PIXEL(6);                                                     \
+      PUT_PIXEL(7);                                                     \
+      pz+=NB_INTERP;                                                    \
+      pp=(PIXEL *)((char *)pp + NB_INTERP * PSZB);                      \
+      n-=NB_INTERP;                                                     \
+      sz+=ndszdx;                                                       \
+      tz+=ndtzdx;                                                       \
+      sza+=ndszadx;                                                     \
+      tza+=ndtzadx;                                                     \
+    }                                                                   \
+    {                                                                   \
+      float ss,tt;                                                      \
+      ss=(sz * zinv);                                                   \
+      tt=(tz * zinv);                                                   \
+      s=(int) ss;                                                       \
+      t=(int) tt;                                                       \
+      dsdx= (int)( (dszdx - ss*fdzdx)*zinv );                           \
+      dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );                           \
+      CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);           \
+    }                                                                   \
+    {                                                                   \
+      float ssa,tta;                                                    \
+      ssa=(sza * zinv);                                                 \
+      tta=(tza * zinv);                                                 \
+      sa=(int) ssa;                                                     \
+      ta=(int) tta;                                                     \
+      dsadx= (int)( (dszadx - ssa*fdzdx)*zinv );                        \
+      dtadx= (int)( (dtzadx - tta*fdzdx)*zinv );                        \
+      CALC_MIPMAP_LEVEL(mipmap_levela, mipmap_dxa, dsadx, dtadx);       \
+    }                                                                   \
+    while (n>=0) {                                                      \
+      PUT_PIXEL(0);                                                     \
+      pz+=1;                                                            \
+      pp=(PIXEL *)((char *)pp + PSZB);                                  \
+      n-=1;                                                             \
+    }                                                                   \
   }
 
 #define PIXEL_COUNT pixel_count_smooth_multitex2
@@ -832,20 +832,20 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
 #define INTERP_STZB
 #define INTERP_RGB
 
-#define EARLY_OUT() 				\
-  {						\
+#define EARLY_OUT()                             \
+  {                                             \
   }
 
-#define DRAW_INIT() 				\
-  {						\
+#define DRAW_INIT()                             \
+  {                                             \
     fdzdx=(float)dzdx;                          \
     fndzdx=NB_INTERP * fdzdx;                   \
     ndszdx=NB_INTERP * dszdx;                   \
     ndtzdx=NB_INTERP * dtzdx;                   \
-    ndszadx=NB_INTERP * dszadx;                   \
-    ndtzadx=NB_INTERP * dtzadx;                   \
-    ndszbdx=NB_INTERP * dszbdx;                   \
-    ndtzbdx=NB_INTERP * dtzbdx;                   \
+    ndszadx=NB_INTERP * dszadx;                 \
+    ndtzadx=NB_INTERP * dtzadx;                 \
+    ndszbdx=NB_INTERP * dszbdx;                 \
+    ndtzbdx=NB_INTERP * dtzbdx;                 \
   }
 
 #define PUT_PIXEL(_a)                                                   \
@@ -858,13 +858,13 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
         int tmpa = ZB_LOOKUP_TEXTURE(&zb->current_textures[1], sa, ta, mipmap_levela, mipmap_dxa); \
         int tmpb = ZB_LOOKUP_TEXTURE(&zb->current_textures[2], sb, tb, mipmap_levelb, mipmap_dxb); \
         STORE_PIX(pp[_a],                                               \
-                  RGBA_TO_PIXEL(PCOMPONENT_MULT4(or1, PIXEL_R(tmp), PIXEL_R(tmpa), PIXEL_R(tmpb)),     \
-                                PCOMPONENT_MULT4(og1, PIXEL_G(tmp), PIXEL_G(tmpa), PIXEL_G(tmpb)),     \
-                                PCOMPONENT_MULT4(ob1, PIXEL_B(tmp), PIXEL_B(tmpa), PIXEL_B(tmpb)),     \
+                  RGBA_TO_PIXEL(PCOMPONENT_MULT4(or1, PIXEL_R(tmp), PIXEL_R(tmpa), PIXEL_R(tmpb)), \
+                                PCOMPONENT_MULT4(og1, PIXEL_G(tmp), PIXEL_G(tmpa), PIXEL_G(tmpb)), \
+                                PCOMPONENT_MULT4(ob1, PIXEL_B(tmp), PIXEL_B(tmpa), PIXEL_B(tmpb)), \
                                 a),                                     \
-                  PCOMPONENT_MULT4(or1, PIXEL_R(tmp), PIXEL_R(tmpa), PIXEL_R(tmpb)),                   \
-                  PCOMPONENT_MULT4(og1, PIXEL_G(tmp), PIXEL_G(tmpa), PIXEL_G(tmpb)),                   \
-                  PCOMPONENT_MULT4(ob1, PIXEL_B(tmp), PIXEL_B(tmpa), PIXEL_B(tmpb)),                   \
+                  PCOMPONENT_MULT4(or1, PIXEL_R(tmp), PIXEL_R(tmpa), PIXEL_R(tmpb)), \
+                  PCOMPONENT_MULT4(og1, PIXEL_G(tmp), PIXEL_G(tmpa), PIXEL_G(tmpb)), \
+                  PCOMPONENT_MULT4(ob1, PIXEL_B(tmp), PIXEL_B(tmpa), PIXEL_B(tmpb)), \
                   a);                                                   \
         STORE_Z(pz[_a], zz);                                            \
       }                                                                 \
@@ -876,123 +876,123 @@ FNAME(smooth_multitex3) (ZBuffer *zb,
     oa1+=dadx;                                                          \
     s+=dsdx;                                                            \
     t+=dtdx;                                                            \
-    sa+=dsadx;                                                            \
-    ta+=dtadx;                                                            \
-    sb+=dsbdx;                                                            \
-    tb+=dtbdx;                                                            \
+    sa+=dsadx;                                                          \
+    ta+=dtadx;                                                          \
+    sb+=dsbdx;                                                          \
+    tb+=dtbdx;                                                          \
   }
 
-#define DRAW_LINE()                                     \
-  {                                                     \
-    register ZPOINT *pz;                                \
-    register PIXEL *pp;                                 \
-    register int s,t,sa,ta,sb,tb,z,zz;                     \
-    register int n,dsdx,dtdx,dsadx,dtadx,dsbdx,dtbdx;                           \
-    register int or1,og1,ob1,oa1;              \
+#define DRAW_LINE()                                                     \
+  {                                                                     \
+    register ZPOINT *pz;                                                \
+    register PIXEL *pp;                                                 \
+    register int s,t,sa,ta,sb,tb,z,zz;                                  \
+    register int n,dsdx,dtdx,dsadx,dtadx,dsbdx,dtbdx;                   \
+    register int or1,og1,ob1,oa1;                                       \
     float sz,tz,sza,tza,szb,tzb,fz,zinv;                                \
-    n=(x2>>16)-x1;                                      \
-    fz=(float)z1;                                       \
-    zinv=1.0f / fz;                                     \
-    pp=(PIXEL *)((char *)pp1 + x1 * PSZB);              \
-    pz=pz1+x1;                                          \
-    z=z1;						\
-    sz=sz1;                                             \
-    tz=tz1;                                             \
-    sza=sza1;                                             \
-    tza=tza1;                                             \
-    szb=szb1;                                             \
-    tzb=tzb1;                                             \
-    or1 = r1;                                           \
-    og1 = g1;                                           \
-    ob1 = b1;                                           \
-    oa1 = a1;                                           \
-    while (n>=(NB_INTERP-1)) {                          \
-      {                                                 \
-        float ss,tt;                                    \
-        ss=(sz * zinv);                                 \
-        tt=(tz * zinv);                                 \
-        s=(int) ss;                            \
-        t=(int) tt;                            \
-        dsdx= (int)( (dszdx - ss*fdzdx)*zinv );         \
-        dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );         \
-        CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);     \
-      }                                                 \
-      {                                                 \
-        float ssa,tta;                                    \
-        ssa=(sza * zinv);                                 \
-        tta=(tza * zinv);                                 \
-        sa=(int) ssa;                            \
-        ta=(int) tta;                            \
-        dsadx= (int)( (dszadx - ssa*fdzdx)*zinv );         \
-        dtadx= (int)( (dtzadx - tta*fdzdx)*zinv );         \
-        CALC_MIPMAP_LEVEL(mipmap_levela, mipmap_dxa, dsadx, dtadx);   \
-      }                                                 \
-      {                                                 \
-        float ssb,ttb;                                    \
-        ssb=(szb * zinv);                                 \
-        ttb=(tzb * zinv);                                 \
-        sb=(int) ssb;                            \
-        tb=(int) ttb;                            \
-        dsbdx= (int)( (dszbdx - ssb*fdzdx)*zinv );         \
-        dtbdx= (int)( (dtzbdx - ttb*fdzdx)*zinv );         \
-        CALC_MIPMAP_LEVEL(mipmap_levelb, mipmap_dxb, dsbdx, dtbdx);   \
-      }                                                 \
-      fz+=fndzdx;                                     \
-      zinv=1.0f / fz;                                 \
-      PUT_PIXEL(0);                                     \
-      PUT_PIXEL(1);                                     \
-      PUT_PIXEL(2);                                     \
-      PUT_PIXEL(3);                                     \
-      PUT_PIXEL(4);                                     \
-      PUT_PIXEL(5);                                     \
-      PUT_PIXEL(6);                                     \
-      PUT_PIXEL(7);                                     \
-      pz+=NB_INTERP;                                    \
-      pp=(PIXEL *)((char *)pp + NB_INTERP * PSZB);      \
-      n-=NB_INTERP;                                     \
-      sz+=ndszdx;                                       \
-      tz+=ndtzdx;                                       \
-      sza+=ndszadx;                                       \
-      tza+=ndtzadx;                                       \
-      szb+=ndszbdx;                                       \
-      tzb+=ndtzbdx;                                       \
-    }                                                   \
-    {                                                   \
-      float ss,tt;                                      \
-      ss=(sz * zinv);                                   \
-      tt=(tz * zinv);                                   \
-      s=(int) ss;                              \
-      t=(int) tt;                              \
-      dsdx= (int)( (dszdx - ss*fdzdx)*zinv );           \
-      dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );           \
-      CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);     \
-    }                                                   \
-    {                                                   \
-      float ssa,tta;                                      \
-      ssa=(sza * zinv);                                   \
-      tta=(tza * zinv);                                   \
-      sa=(int) ssa;                              \
-      ta=(int) tta;                              \
-      dsadx= (int)( (dszadx - ssa*fdzdx)*zinv );           \
-      dtadx= (int)( (dtzadx - tta*fdzdx)*zinv );           \
-      CALC_MIPMAP_LEVEL(mipmap_levela, mipmap_dxa, dsadx, dtadx);   \
-    }                                                   \
-    {                                                   \
-      float ssb,ttb;                                      \
-      ssb=(szb * zinv);                                   \
-      ttb=(tzb * zinv);                                   \
-      sb=(int) ssb;                              \
-      tb=(int) ttb;                              \
-      dsbdx= (int)( (dszbdx - ssb*fdzdx)*zinv );           \
-      dtbdx= (int)( (dtzbdx - ttb*fdzdx)*zinv );           \
-      CALC_MIPMAP_LEVEL(mipmap_levelb, mipmap_dxb, dsbdx, dtbdx);   \
-    }                                                   \
-    while (n>=0) {                                      \
-      PUT_PIXEL(0);                                     \
-      pz+=1;                                            \
-      pp=(PIXEL *)((char *)pp + PSZB);                  \
-      n-=1;                                             \
-    }                                                   \
+    n=(x2>>16)-x1;                                                      \
+    fz=(float)z1;                                                       \
+    zinv=1.0f / fz;                                                     \
+    pp=(PIXEL *)((char *)pp1 + x1 * PSZB);                              \
+    pz=pz1+x1;                                                          \
+    z=z1;                                                               \
+    sz=sz1;                                                             \
+    tz=tz1;                                                             \
+    sza=sza1;                                                           \
+    tza=tza1;                                                           \
+    szb=szb1;                                                           \
+    tzb=tzb1;                                                           \
+    or1 = r1;                                                           \
+    og1 = g1;                                                           \
+    ob1 = b1;                                                           \
+    oa1 = a1;                                                           \
+    while (n>=(NB_INTERP-1)) {                                          \
+      {                                                                 \
+        float ss,tt;                                                    \
+        ss=(sz * zinv);                                                 \
+        tt=(tz * zinv);                                                 \
+        s=(int) ss;                                                     \
+        t=(int) tt;                                                     \
+        dsdx= (int)( (dszdx - ss*fdzdx)*zinv );                         \
+        dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );                         \
+        CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);         \
+      }                                                                 \
+      {                                                                 \
+        float ssa,tta;                                                  \
+        ssa=(sza * zinv);                                               \
+        tta=(tza * zinv);                                               \
+        sa=(int) ssa;                                                   \
+        ta=(int) tta;                                                   \
+        dsadx= (int)( (dszadx - ssa*fdzdx)*zinv );                      \
+        dtadx= (int)( (dtzadx - tta*fdzdx)*zinv );                      \
+        CALC_MIPMAP_LEVEL(mipmap_levela, mipmap_dxa, dsadx, dtadx);     \
+      }                                                                 \
+      {                                                                 \
+        float ssb,ttb;                                                  \
+        ssb=(szb * zinv);                                               \
+        ttb=(tzb * zinv);                                               \
+        sb=(int) ssb;                                                   \
+        tb=(int) ttb;                                                   \
+        dsbdx= (int)( (dszbdx - ssb*fdzdx)*zinv );                      \
+        dtbdx= (int)( (dtzbdx - ttb*fdzdx)*zinv );                      \
+        CALC_MIPMAP_LEVEL(mipmap_levelb, mipmap_dxb, dsbdx, dtbdx);     \
+      }                                                                 \
+      fz+=fndzdx;                                                       \
+      zinv=1.0f / fz;                                                   \
+      PUT_PIXEL(0);                                                     \
+      PUT_PIXEL(1);                                                     \
+      PUT_PIXEL(2);                                                     \
+      PUT_PIXEL(3);                                                     \
+      PUT_PIXEL(4);                                                     \
+      PUT_PIXEL(5);                                                     \
+      PUT_PIXEL(6);                                                     \
+      PUT_PIXEL(7);                                                     \
+      pz+=NB_INTERP;                                                    \
+      pp=(PIXEL *)((char *)pp + NB_INTERP * PSZB);                      \
+      n-=NB_INTERP;                                                     \
+      sz+=ndszdx;                                                       \
+      tz+=ndtzdx;                                                       \
+      sza+=ndszadx;                                                     \
+      tza+=ndtzadx;                                                     \
+      szb+=ndszbdx;                                                     \
+      tzb+=ndtzbdx;                                                     \
+    }                                                                   \
+    {                                                                   \
+      float ss,tt;                                                      \
+      ss=(sz * zinv);                                                   \
+      tt=(tz * zinv);                                                   \
+      s=(int) ss;                                                       \
+      t=(int) tt;                                                       \
+      dsdx= (int)( (dszdx - ss*fdzdx)*zinv );                           \
+      dtdx= (int)( (dtzdx - tt*fdzdx)*zinv );                           \
+      CALC_MIPMAP_LEVEL(mipmap_level, mipmap_dx, dsdx, dtdx);           \
+    }                                                                   \
+    {                                                                   \
+      float ssa,tta;                                                    \
+      ssa=(sza * zinv);                                                 \
+      tta=(tza * zinv);                                                 \
+      sa=(int) ssa;                                                     \
+      ta=(int) tta;                                                     \
+      dsadx= (int)( (dszadx - ssa*fdzdx)*zinv );                        \
+      dtadx= (int)( (dtzadx - tta*fdzdx)*zinv );                        \
+      CALC_MIPMAP_LEVEL(mipmap_levela, mipmap_dxa, dsadx, dtadx);       \
+    }                                                                   \
+    {                                                                   \
+      float ssb,ttb;                                                    \
+      ssb=(szb * zinv);                                                 \
+      ttb=(tzb * zinv);                                                 \
+      sb=(int) ssb;                                                     \
+      tb=(int) ttb;                                                     \
+      dsbdx= (int)( (dszbdx - ssb*fdzdx)*zinv );                        \
+      dtbdx= (int)( (dtzbdx - ttb*fdzdx)*zinv );                        \
+      CALC_MIPMAP_LEVEL(mipmap_levelb, mipmap_dxb, dsbdx, dtbdx);       \
+    }                                                                   \
+    while (n>=0) {                                                      \
+      PUT_PIXEL(0);                                                     \
+      pz+=1;                                                            \
+      pp=(PIXEL *)((char *)pp + PSZB);                                  \
+      n-=1;                                                             \
+    }                                                                   \
   }
 
 #define PIXEL_COUNT pixel_count_smooth_multitex3

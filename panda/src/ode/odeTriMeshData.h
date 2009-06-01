@@ -47,7 +47,7 @@ private:
 PUBLISHED:
 
   enum DataType { DT_face_normals = 0,
-		  DT_last_transformation };
+                  DT_last_transformation };
 
   OdeTriMeshData(const NodePath& model, bool use_normals = false);
   virtual ~OdeTriMeshData();
@@ -64,15 +64,15 @@ PUBLISHED:
 
 public: 
   INLINE void build_single(const void* vertices, int vertex_stride, int vertex_count, \
-			   const void* indices, int index_count, int tri_stride);
+                           const void* indices, int index_count, int tri_stride);
   INLINE void build_single1(const void* vertices, int vertex_stride, int vertex_count, \
-			    const void* indices, int index_count, int tri_stride, \
-			    const void* normals);
+                            const void* indices, int index_count, int tri_stride, \
+                            const void* normals);
   INLINE void build_double(const void* vertices, int vertex_stride, int vertex_count, \
-			   const void* indices, int index_count, int tri_stride);
+                           const void* indices, int index_count, int tri_stride);
   INLINE void build_double1(const void* vertices, int vertex_stride, int vertex_count, \
-			    const void* indices, int index_count, int tri_stride, \
-			    const void* normals);
+                            const void* indices, int index_count, int tri_stride, \
+                            const void* normals);
 
   // Temporarily commenting these two out--ODE had an API change from
   // (int *indices) to (dTriIndex *indices).  But since there's no
@@ -82,10 +82,10 @@ public:
 
   /*
   INLINE void build_simple(const dReal* vertices, int vertex_count, \
-			   const int* indices, int index_count);
+                           const int* indices, int index_count);
   INLINE void build_simple1(const dReal* vertices, int vertex_count, \
-			    const int* indices, int index_count, \
-			    const int* normals);
+                            const int* indices, int index_count, \
+                            const int* normals);
   */
   INLINE void preprocess();
 
@@ -96,7 +96,7 @@ private:
   void process_geom_node(const GeomNode *geomNode);
   void process_geom(const Geom *geom);
   void process_primitive(const GeomPrimitive *primitive, 
-			 CPT(GeomVertexData) vData);
+                         CPT(GeomVertexData) vData);
   void analyze(const GeomNode *geomNode);
   void analyze(const Geom *geom);
   void analyze(const GeomPrimitive *geom);
@@ -130,7 +130,7 @@ public:
   static void init_type() {
     TypedReferenceCount::init_type();
     register_type(_type_handle, "OdeTriMeshData",
-		  TypedReferenceCount::get_class_type());
+                  TypedReferenceCount::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

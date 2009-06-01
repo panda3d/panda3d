@@ -20,7 +20,7 @@
 // *******************************************************************
 
 // What additional flags should we pass to interrogate?
-#define SYSTEM_IGATE_FLAGS -longlong __int64 -D_X86_ -DWIN32_VC -D"_declspec(param)=" -D"__declspec(param)=" -D_near  -D_far -D__near  -D__far -D_WIN32 -D__stdcall -Dvolatile -Dmutable
+#define SYSTEM_IGATE_FLAGS -longlong __int64 -D_X86_ -DWIN32_VC -D"_declspec(param)=" -D"__declspec(param)=" -D_near  -D_far -D__near  -D__far -D_WIN32 -D__stdcall -Dvolatile -Dmutable -DWIN32
 
 // Additional flags to pass to the Tau instrumentor.
 #define TAU_INSTRUMENTOR_FLAGS -DTAU_USE_C_API -DPROFILING_ON -DWIN32_VC -D_WIN32 -D__cdecl= -D__stdcall= -D__fastcall= -D__i386 -D_MSC_VER=1310 -D_W64=  -D_INTEGRAL_MAX_BITS=64 --exceptions --late_tiebreaker --no_class_name_injection --no_warnings --restrict --microsoft --new_for_init

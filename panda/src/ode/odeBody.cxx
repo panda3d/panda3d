@@ -52,8 +52,8 @@ void OdeBody::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out << "" << get_type() \
-			 << "(id = " << _id \
-			 << ")";
+                         << "(id = " << _id \
+                         << ")";
   #endif //] NDEBUG
 }
 

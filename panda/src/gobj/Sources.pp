@@ -12,6 +12,7 @@
 
   #define SOURCES \
     adaptiveLru.I adaptiveLru.h \
+    animateVerticesRequest.I animateVerticesRequest.h \
     bufferContext.I bufferContext.h \
     bufferContextChain.I bufferContextChain.h \
     bufferResidencyTracker.I bufferResidencyTracker.h \
@@ -79,6 +80,7 @@
     
   #define INCLUDED_SOURCES \
     adaptiveLru.cxx \
+    animateVerticesRequest.cxx \
     bufferContext.cxx \
     bufferContextChain.cxx \
     bufferResidencyTracker.cxx \
@@ -146,6 +148,7 @@
 
   #define INSTALL_HEADERS \
     adaptiveLru.I adaptiveLru.h \
+    animateVerticesRequest.I animateVerticesRequest.h \
     bufferContext.I bufferContext.h \
     bufferContextChain.I bufferContextChain.h \
     bufferResidencyTracker.I bufferResidencyTracker.h \

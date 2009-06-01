@@ -437,7 +437,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
   ++_properties_modified;
   ++_image_modified;
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
-		 alpha_file_channel, 0, 0, false, false, 
+                 alpha_file_channel, 0, 0, false, false, 
                  options, NULL);
 }
 
@@ -541,7 +541,7 @@ read(const Filename &fullpath, const Filename &alpha_fullpath,
   ++_properties_modified;
   ++_image_modified;
   return do_read(fullpath, alpha_fullpath, primary_file_num_channels,
-		 alpha_file_channel, z, n, read_pages, read_mipmaps,
+                 alpha_file_channel, z, n, read_pages, read_mipmaps,
                  options, record);
 }
 

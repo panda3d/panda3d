@@ -1,0 +1,123 @@
+// Filename: physxSegment.cxx
+// Created by:  pratt (Apr 7, 2006)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_PHYSX
+
+#include "physxSegment.h"
+
+#include "luse.h"
+
+
+////////////////////////////////////////////////////////////////////
+//     Function : PhysxSegment
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxSegment::
+PhysxSegment() {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : PhysxSegment
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxSegment::
+PhysxSegment(const LVecBase3f &p0, const LVecBase3f &p1) {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : PhysxSegment
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxSegment::
+PhysxSegment(const PhysxSegment & seg) {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : ~PhysxSegment
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+PhysxSegment::
+~PhysxSegment() {
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_origin
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+LVecBase3f PhysxSegment::
+get_origin() const {
+  nassertr(nSegment != NULL, *((LVecBase3f *)NULL));
+
+  return PhysxManager::nxVec3_to_lVecBase3(nSegment->getOrigin());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_p0
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+LVecBase3f PhysxSegment::
+get_p0() const {
+  nassertr(nSegment != NULL, *((LVecBase3f *)NULL));
+
+  return PhysxManager::nxVec3_to_lVecBase3(nSegment->p0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : get_p1
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+LVecBase3f PhysxSegment::
+get_p1() const {
+  nassertr(nSegment != NULL, *((LVecBase3f *)NULL));
+
+  return PhysxManager::nxVec3_to_lVecBase3(nSegment->p1);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_p0
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxSegment::
+set_p0(LVecBase3f value) {
+  nassertv(nSegment != NULL);
+
+  nSegment->p0 = PhysxManager::lVecBase3_to_nxVec3(value);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function : set_p1
+//       Access : Published
+//  Description :
+////////////////////////////////////////////////////////////////////
+void PhysxSegment::
+set_p1(LVecBase3f value) {
+  nassertv(nSegment != NULL);
+
+  nSegment->p1 = PhysxManager::lVecBase3_to_nxVec3(value);
+}
+
+#endif // HAVE_PHYSX
+

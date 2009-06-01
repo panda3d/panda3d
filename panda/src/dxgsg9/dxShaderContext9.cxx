@@ -51,6 +51,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                            _cg_context,
                            _cg_vprogram,
                            _cg_fprogram, 
+                           _cg_gprogram,        // CG2 CHANGE
                            _cg_parameter_map)) {
       return;
     }
@@ -94,6 +95,24 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       }
       success = false;
     }    
+
+    // BEGIN CG2 CHANGE
+    if (_cg_gprogram != 0)
+    {
+        hr = cgD3D9LoadProgram(_cg_gprogram, paramater_shadowing, assembly_flags);
+        if (FAILED (hr)) {
+          dxgsg9_cat.error()
+            << "geometry shader cgD3D9LoadProgram failed "
+            << D3DERRORSTRING(hr);
+
+          CGerror error = cgGetError();
+          if (error != CG_NO_ERROR) {
+            dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
+          }
+          success = false;
+        }
+    }
+    // END CG2 CHANGE
 
     if (!success) {
       release_resources();
@@ -179,6 +198,7 @@ release_resources() {
     _cg_context = 0;
     _cg_vprogram = 0;
     _cg_fprogram = 0;
+    _cg_gprogram = 0;   // CG2 CHANGE
     _cg_parameter_map.clear();
   }
 #endif
@@ -232,6 +252,23 @@ bind(GSG *gsg) {
       
       bind_state = false;
     }
+
+    // BEGIN CG2 CHANGE
+    if (_cg_gprogram != 0)
+    {
+        hr = cgD3D9BindProgram(_cg_gprogram);
+        if (FAILED (hr)) {
+          dxgsg9_cat.error() << "cgD3D9BindProgram geometry shader failed " << D3DERRORSTRING(hr);
+
+          CGerror error = cgGetError();
+          if (error != CG_NO_ERROR) {
+            dxgsg9_cat.error() << "  CG ERROR: " << cgGetErrorString(error) << "\n";
+          }
+
+          bind_state = false;
+        }
+    }
+    // END CG2 CHANGE
   }
 #endif
 

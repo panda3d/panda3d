@@ -92,21 +92,21 @@ void gl_resizeImage(unsigned char *dest,int xsize_dest,int ysize_dest,
       yf=(int) ((y1 - floor(y1)) * INTERP_NORM);
       
       if ((xf+yf) <= INTERP_NORM) {
-	for(j=0;j<4;j++) {
-	  pix[j]=interpolate(pix_src[(yi*xsize_src+xi)*4+j],
-			     pix_src[(yi*xsize_src+xi+1)*4+j],
-			     pix_src[((yi+1)*xsize_src+xi)*4+j],
-			     xf,yf);
-	}
+        for(j=0;j<4;j++) {
+          pix[j]=interpolate(pix_src[(yi*xsize_src+xi)*4+j],
+                             pix_src[(yi*xsize_src+xi+1)*4+j],
+                             pix_src[((yi+1)*xsize_src+xi)*4+j],
+                             xf,yf);
+        }
       } else {
-	xf=INTERP_NORM - xf;
-	yf=INTERP_NORM - yf;
-	for(j=0;j<4;j++) {
-	  pix[j]=interpolate(pix_src[((yi+1)*xsize_src+xi+1)*4+j],
-			     pix_src[((yi+1)*xsize_src+xi)*4+j],
-			     pix_src[(yi*xsize_src+xi+1)*4+j],
-			     xf,yf);
-	}
+        xf=INTERP_NORM - xf;
+        yf=INTERP_NORM - yf;
+        for(j=0;j<4;j++) {
+          pix[j]=interpolate(pix_src[((yi+1)*xsize_src+xi+1)*4+j],
+                             pix_src[((yi+1)*xsize_src+xi)*4+j],
+                             pix_src[(yi*xsize_src+xi+1)*4+j],
+                             xf,yf);
+        }
       }
       
       pix+=4;

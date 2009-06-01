@@ -69,15 +69,16 @@ generate() {
   if (_has_normals) {
     if (_has_uvs) {
       if (_has_3d_uvs) {
-	format = GeomVertexFormat::register_format(new GeomVertexArrayFormat
-						   (InternalName::get_vertex(), 3,
-						    GeomEnums::NT_float32, GeomEnums::C_point,
-						    InternalName::get_normal(), 3,
-						    GeomEnums::NT_float32, GeomEnums::C_vector,
-						    InternalName::get_texcoord(), 3,
-						    GeomEnums::NT_float32, GeomEnums::C_texcoord));
+        format = GeomVertexFormat::register_format
+          (new GeomVertexArrayFormat
+           (InternalName::get_vertex(), 3,
+            GeomEnums::NT_float32, GeomEnums::C_point,
+            InternalName::get_normal(), 3,
+            GeomEnums::NT_float32, GeomEnums::C_vector,
+            InternalName::get_texcoord(), 3,
+            GeomEnums::NT_float32, GeomEnums::C_texcoord));
       } else {
-	format = GeomVertexFormat::get_v3n3t2();
+        format = GeomVertexFormat::get_v3n3t2();
       }
     } else {
       format = GeomVertexFormat::get_v3n3();
@@ -85,13 +86,14 @@ generate() {
   } else {
     if (_has_uvs) {
       if (_has_3d_uvs) {
-	format = GeomVertexFormat::register_format(new GeomVertexArrayFormat
-						   (InternalName::get_vertex(), 3,
-						    GeomEnums::NT_float32, GeomEnums::C_point,
-						    InternalName::get_texcoord(), 3,
-						    GeomEnums::NT_float32, GeomEnums::C_texcoord));
+        format = GeomVertexFormat::register_format
+          (new GeomVertexArrayFormat
+           (InternalName::get_vertex(), 3,
+            GeomEnums::NT_float32, GeomEnums::C_point,
+            InternalName::get_texcoord(), 3,
+            GeomEnums::NT_float32, GeomEnums::C_texcoord));
       } else {
-	format = GeomVertexFormat::get_v3t2();
+        format = GeomVertexFormat::get_v3t2();
       }
     } else {
       format = GeomVertexFormat::get_v3();

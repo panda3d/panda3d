@@ -4,7 +4,7 @@
 
 #begin lib_target
   #define TARGET audio
-  #define LOCAL_LIBS putil event movies
+  #define LOCAL_LIBS putil event movies linmath
   
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx
 

@@ -108,7 +108,7 @@ private:
 #define OPEN_ITERATE_CURRENT_AND_UPSTREAM(cycler, current_thread) { \
     CyclerHolder cholder(cycler);                                   \
     int pipeline_stage;                                             \
-    for (pipeline_stage = current_thread->get_pipeline_stage();	    \
+    for (pipeline_stage = current_thread->get_pipeline_stage();     \
          pipeline_stage >= 0;                                       \
          --pipeline_stage)
 
@@ -122,7 +122,7 @@ private:
          pipeline_stage >= 0;                                       \
          --pipeline_stage)
 
-#define CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler)	\
+#define CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler)   \
   }
 
 // Iterates through all of the pipeline stages.
@@ -156,7 +156,7 @@ private:
 #define OPEN_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler, current_thread) {  \
     const int pipeline_stage = 0;                                       \
     
-#define CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler)	\
+#define CLOSE_ITERATE_CURRENT_AND_UPSTREAM_NOLOCK(cycler)   \
   }
 
 #define OPEN_ITERATE_ALL_STAGES(cycler) {                               \

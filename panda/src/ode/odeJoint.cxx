@@ -94,8 +94,8 @@ void OdeJoint::
 write(ostream &out, unsigned int indent) const {
   #ifndef NDEBUG //[
   out.width(indent); out << "" << get_type() \
-			 << "(id = " << _id \
-			 << ", body1 = ";
+                         << "(id = " << _id \
+                         << ", body1 = ";
   OdeBody body = get_body(0);
   if (body.get_id() != 0) {
     body.write(out);

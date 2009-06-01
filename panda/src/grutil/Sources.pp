@@ -21,6 +21,7 @@
     frameRateMeter.I frameRateMeter.h \
     meshDrawer.I meshDrawer.h \
     geoMipTerrain.I geoMipTerrain.h \
+    sceneGraphAnalyzerMeter.I sceneGraphAnalyzerMeter.h \
     heightfieldTesselator.I heightfieldTesselator.h \
     lineSegs.I lineSegs.h \
     multitexReducer.I multitexReducer.h multitexReducer.cxx \
@@ -38,9 +39,10 @@
     frameRateMeter.cxx \
     meshDrawer.cxx \
     geoMipTerrain.cxx \
+    sceneGraphAnalyzerMeter.cxx \
     heightfieldTesselator.cxx \
     nodeVertexTransform.cxx \
-    openCVTexture.cxx \    	 
+    openCVTexture.cxx \    
     pipeOcclusionCullTraverser.cxx \
     lineSegs.cxx \
     rigidBodyCombiner.cxx
@@ -54,6 +56,7 @@
     frameRateMeter.I frameRateMeter.h \
     meshDrawer.I meshDrawer.h \
     geoMipTerrain.I geoMipTerrain.h \
+    sceneGraphAnalyzerMeter.I sceneGraphAnalyzerMeter.h \
     heightfieldTesselator.I heightfieldTesselator.h \
     lineSegs.I lineSegs.h \
     multitexReducer.I multitexReducer.h \
