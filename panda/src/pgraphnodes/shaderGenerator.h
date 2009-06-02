@@ -19,13 +19,15 @@
 #include "graphicsStateGuardianBase.h"
 #include "graphicsOutputBase.h"
 #include "nodePath.h"
+#include "shaderAttrib.h"
+#include "renderState.h"
+#include "renderAttrib.h"
 
 class AmbientLight;
 class DirectionalLight;
 class PointLight;
 class Spotlight;
 class LightAttrib;
-class ShaderAttrib;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : ShaderGenerator
