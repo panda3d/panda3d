@@ -21,21 +21,19 @@
 //               changed or destroyed, this LensNode is not
 //               affected.
 ////////////////////////////////////////////////////////////////////
-
 INLINE void LensNode::
 copy_lens(const Lens &lens) {
-    return copy_lens(0, lens);
+  return copy_lens(0, lens);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LensNode::copy_lens
+//       Access: Published
+//  Description: Copies the indicated lens into the specified slot.
+////////////////////////////////////////////////////////////////////
 INLINE void LensNode::
-copy_lens(long index, const Lens &lens) {
-  if ( (index > (long) (_additional_lenses.size() + 1) ) || (index <= 0) )
-    _lens = lens.make_copy();
-  else
-    _additional_lenses[index-1] = lens.make_copy();
-  if (_shown_frustum != (PandaNode *)NULL) {
-    show_frustum();
-  }
+copy_lens(int index, const Lens &lens) {
+  set_lens(index, lens.make_copy());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -45,29 +43,9 @@ copy_lens(long index, const Lens &lens) {
 //               pointer.  If the lens is subsequently modified, the
 //               LensNode properties immediately reflect the change.
 ////////////////////////////////////////////////////////////////////
-
 INLINE void LensNode::
 set_lens(Lens *lens) {
-    return set_lens(0, lens);
-}
-
-INLINE void LensNode::
-set_lens(long index, Lens *lens) {
-  if (index > MAX_LENSES)
-    return;  // Sanity check
-  while ( index >= (long) (_additional_lenses.size() + 1) ) {
-    _additional_lenses.push_back(lens);
-    _lens_is_active.push_back(false);
-  }
-  
-  if (index <= 0)
-    _lens = lens;
-  else
-    _additional_lenses[index-1] = lens;
-  activate_lens(index);
-  if (_shown_frustum != (PandaNode *)NULL) {
-    show_frustum();
-  }
+  return set_lens(0, lens);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,29 +53,65 @@ set_lens(long index, Lens *lens) {
 //       Access: Published
 //  Description: Returns a pointer to the particular Lens
 //               associated with this LensNode, or NULL if there is
-//               not yet a Lens associated.
+//               not yet a Lens associated.  If an index number is
+//               specified, returns the nth lens.
 ////////////////////////////////////////////////////////////////////
 INLINE Lens *LensNode::
-get_lens(long index) const {
-  if ( ( index > (long) _additional_lenses.size() ) || (index <= 0) )
-    return _lens;
-  return _additional_lenses[index-1];
+get_lens(int index) const {
+  nassertr(index >= 0 && index < max_lenses, NULL); // Sanity check
+
+  if (index < (int)_lenses.size()) {
+    return _lenses[index]._lens;
+  }
+  return NULL;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LensNode::get_lens_active
+//       Access: Published
+//  Description: Returns the active flag for the nth lens.
+////////////////////////////////////////////////////////////////////
 INLINE bool LensNode::
-activate_lens(long index) {
-  if ( ( index >= (long) (_additional_lenses.size() + 1) ) || (index < 0) )
-    return false;
-  if ( _lens_is_active[index] )
-    return false;
-  _lens_is_active[index] = true;
-  return true;
+get_lens_active(int index) const {
+  nassertr(index >= 0 && index < max_lenses, false);
+
+  if (index < (int)_lenses.size()) {
+    return _lenses[index]._is_active;
+  }
+  return false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: LensNode::activate_lens
+//       Access: Published
+//  Description: An alternate way to call set_lens_active(index,
+//               true).
+////////////////////////////////////////////////////////////////////
 INLINE bool LensNode::
-deactivate_lens(long index) {
-  if ( ( index > (long) (_additional_lenses.size() + 1) ) || (index < 0) )
-    return false;
-  _lens_is_active[index] = true;
-  return true;
+activate_lens(int index) {
+  return set_lens_active(index, true);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: LensNode::deactivate_lens
+//       Access: Published
+//  Description: An alternate way to call set_lens_active(index,
+//               false).
+////////////////////////////////////////////////////////////////////
+INLINE bool LensNode::
+deactivate_lens(int index) {
+  return set_lens_active(index, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: LensNode::is_in_view
+//       Access: Published
+//  Description: Returns true if the given point is within the bounds
+//               of the lens of the LensNode (i.e. if the camera can
+//               see the point).
+////////////////////////////////////////////////////////////////////
+INLINE bool LensNode::
+is_in_view(const LPoint3f &pos) {
+  return is_in_view(0, pos);
+}
+

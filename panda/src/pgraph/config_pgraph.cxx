@@ -294,6 +294,15 @@ ConfigVariableBool flatten_geoms
           "only the NodePath interfaces; you may still make the lower-level "
           "SceneGraphReducer calls directly."));
 
+ConfigVariableInt max_lenses
+("max-lenses", 100,
+ PRC_DESC("Specifies an upper limit on the maximum number of lenses "
+          "and the maximum lens index number) that may be associated with "
+          "a single LensNode.  There is no technical reason for this "
+          "limitation, but very large numbers are probably a mistake, so "
+          "this can be used as a simple sanity check.  Set it larger or "
+          "smaller to suit your needs."));
+
 ConfigVariableBool polylight_info
 ("polylight-info", false,
  PRC_DESC("Set this true to view some info statements regarding the polylight. "

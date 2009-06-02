@@ -104,7 +104,8 @@ cleanup() {
 //               variety of setups, such as fish eye rendering.
 //               The default is 0.
 ////////////////////////////////////////////////////////////////////
-void DisplayRegion::set_lens_index(int index) {
+void DisplayRegion::
+set_lens_index(int index) {
   int pipeline_stage = Thread::get_current_pipeline_stage();
   nassertv(pipeline_stage == 0);
   CDWriter cdata(_cycler);

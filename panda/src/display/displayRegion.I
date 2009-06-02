@@ -27,7 +27,10 @@ operator < (const DisplayRegion &other) const {
 ////////////////////////////////////////////////////////////////////
 //     Function: DisplayRegion::get_lens_index
 //       Access: Public
-//  Description: Gets the index into a lens_node lens array. 0 default
+//  Description: Returns the specific lens of the associated Camera
+//               that will be used for rendering this scene.  Most
+//               Cameras hold only one lens, but for multiple lenses
+//               this method may be used to selected between them.
 ////////////////////////////////////////////////////////////////////
 INLINE int DisplayRegion::
 get_lens_index() const {

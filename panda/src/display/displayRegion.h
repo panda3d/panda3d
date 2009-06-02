@@ -101,8 +101,8 @@ PUBLISHED:
   virtual void set_texture_reload_priority(int texture_reload_priority);
   INLINE int get_texture_reload_priority() const;
 
-  INLINE int  get_lens_index() const;
   void set_lens_index(int index);
+  INLINE int get_lens_index() const;
 
   virtual void set_cull_traverser(CullTraverser *trav);
   CullTraverser *get_cull_traverser();
