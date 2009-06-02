@@ -35,7 +35,6 @@
 #include "lightReMutexHolder.h"
 #include "lightMutexHolder.h"
 #include "thread.h"
-#include "shaderGeneratorBase.h"
 #include "renderAttribRegistry.h"
 #include "py_panda.h"
   

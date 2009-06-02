@@ -13,7 +13,6 @@
 #include "shaderInput.cxx"
 #include "shaderAttrib.cxx"
 #include "shaderPool.cxx"
-#include "shaderGeneratorBase.cxx"
 #include "showBoundsEffect.cxx"
 #include "stateMunger.cxx"
 #include "stencilAttrib.cxx"

@@ -34,7 +34,6 @@
 #include "pointLight.h"
 #include "spotlight.h"
 #include "lightLensNode.h"
-#include "graphicsEngine.h"
 #include "lvector4.h"
 
 TypeHandle ShaderGenerator::_type_handle;
@@ -48,7 +47,7 @@ TypeHandle ShaderGenerator::_type_handle;
 //               which the shader generator belongs.
 ////////////////////////////////////////////////////////////////////
 ShaderGenerator::
-ShaderGenerator(PT(GraphicsStateGuardian) gsg, PT(GraphicsOutput) host) :
+ShaderGenerator(PT(GraphicsStateGuardianBase) gsg, PT(GraphicsOutputBase) host) :
   _gsg (gsg), _host (host) {
 }
 

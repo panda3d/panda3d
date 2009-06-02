@@ -99,7 +99,6 @@
     scissorEffect.I scissorEffect.h \
     shadeModelAttrib.I shadeModelAttrib.h \
     shaderAttrib.I shaderAttrib.h \
-    shaderGeneratorBase.I shaderGeneratorBase.h \
     shaderInput.I shaderInput.h \
     shaderPool.I shaderPool.h \
     showBoundsEffect.I showBoundsEffect.h \
@@ -202,7 +201,6 @@
     scissorEffect.cxx \
     shadeModelAttrib.cxx \
     shaderAttrib.cxx \
-    shaderGeneratorBase.cxx \
     shaderInput.cxx \
     shaderPool.cxx \
     showBoundsEffect.cxx \
@@ -303,7 +301,6 @@
     scissorEffect.I scissorEffect.h \
     shadeModelAttrib.I shadeModelAttrib.h \
     shaderAttrib.I shaderAttrib.h \
-    shaderGeneratorBase.I shaderGeneratorBase.h \
     shaderInput.I shaderInput.h \
     shaderPool.I shaderPool.h \
     showBoundsEffect.I showBoundsEffect.h \

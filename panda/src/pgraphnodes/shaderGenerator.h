@@ -16,9 +16,8 @@
 #define SHADERGENERATOR_H
 
 #include "pandabase.h"
-#include "graphicsStateGuardian.h"
-#include "graphicsWindow.h"
-#include "shaderGeneratorBase.h"
+#include "graphicsStateGuardianBase.h"
+#include "graphicsOutputBase.h"
 #include "nodePath.h"
 
 class AmbientLight;
@@ -64,7 +63,7 @@ class ShaderAttrib;
 
 class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedObject {
 PUBLISHED:
-  ShaderGenerator(PT(GraphicsStateGuardian) gsg, PT(GraphicsOutput) host);
+  ShaderGenerator(PT(GraphicsStateGuardianBase) gsg, PT(GraphicsOutputBase) host);
   virtual ~ShaderGenerator();
   virtual CPT(RenderAttrib) synthesize_shader(const RenderState *rs);
 
@@ -138,8 +137,8 @@ protected:
   void analyze_renderstate(const RenderState *rs);
   void clear_analysis();
 
-  PT(GraphicsStateGuardian) _gsg;
-  PT(GraphicsOutput) _host;
+  PT(GraphicsStateGuardianBase) _gsg;
+  PT(GraphicsOutputBase) _host;
   pmap<WCPT(RenderState), CPT(ShaderAttrib)> _generated_shaders;
 
 public:

@@ -122,6 +122,7 @@ PUBLISHED:
   virtual bool get_supports_multisample() const=0;
   virtual int get_supported_geom_rendering() const=0;
   virtual bool get_supports_occlusion_query() const=0;
+  virtual bool get_supports_shadow_filter() const=0;
 
 public:
   // These are some general interface functions; they're defined here
