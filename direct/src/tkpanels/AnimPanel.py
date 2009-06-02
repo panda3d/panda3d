@@ -578,7 +578,7 @@ class ActorControl(Pmw.MegaWidget):
             else:
                 if (self.currT > self.maxSeconds):
                     # Clear this actor control from play list
-                    taskMgr.remove()
+                    self['animPanel'].playList.remove(self)
                 else:
                     self.goToT(self.currT)
         else:
