@@ -16,6 +16,8 @@
 #define SHADERGENERATOR_H
 
 #include "pandabase.h"
+#include "graphicsStateGuardian.h"
+#include "graphicsWindow.h"
 #include "shaderGeneratorBase.h"
 #include "nodePath.h"
 
@@ -31,22 +33,23 @@ class ShaderAttrib;
 // Description : The ShaderGenerator is a device that effectively
 //               replaces the classic fixed function pipeline with
 //               a 'next-gen' fixed function pipeline.  The next-gen
-//               fixed function pipeline supports features like 
+//               fixed function pipeline supports features like
 //               normal mapping, gloss mapping, cartoon lighting,
 //               and so forth.  It works by automatically generating
 //               a shader from a given RenderState.
 //
-//               Currently, there is a single default ShaderGenerator
-//               object.  It is our intent that in time, people will
-//               write classes that derive from ShaderGenerator but
-//               which yield slightly different results.
+//               Currently, there is one ShaderGenerator object per
+//               GraphicsStateGuardian.  It is our intent that in
+//               time, people will write classes that derive from
+//               ShaderGenerator but which yield slightly different
+//               results.
 //
-//               The ShaderGenerator owes its existence to the 
+//               The ShaderGenerator owes its existence to the
 //               'Bamboo Team' at Carnegie Mellon's Entertainment
 //               Technology Center.  This is a group of students
 //               who, as a semester project, decided that next-gen
 //               graphics should be accessible to everyone, even if
-//               they don't know shader programming.  The group 
+//               they don't know shader programming.  The group
 //               consisted of:
 //
 //               Aaron Lo, Programmer
@@ -59,18 +62,19 @@ class ShaderAttrib;
 //
 ////////////////////////////////////////////////////////////////////
 
-class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public ShaderGeneratorBase {
+class EXPCL_PANDA_PGRAPHNODES ShaderGenerator : public TypedObject {
 PUBLISHED:
-  ShaderGenerator();
+  ShaderGenerator(PT(GraphicsStateGuardian) gsg, PT(GraphicsOutput) host);
   virtual ~ShaderGenerator();
   virtual CPT(RenderAttrib) synthesize_shader(const RenderState *rs);
-  
+
 protected:
   CPT(RenderAttrib) create_shader_attrib(const string &txt);
+  PT(Texture) update_shadow_buffer(NodePath light_np);
   static const string combine_mode_as_string(CPT(TextureStage) stage,
-                TextureStage::CombineMode c_mode, bool single_value, short texindex, const RenderState *rs);
+               TextureStage::CombineMode c_mode, bool single_value, short texindex);
   static const string combine_source_as_string(CPT(TextureStage) stage,
-                short num, bool single_value, short texindex, const RenderState *rs);
+                                      short num, bool single_value, short texindex);
 
   // Shader register allocation:
 
@@ -87,7 +91,7 @@ protected:
   CPT(RenderState) _state;
   Material *_material;
   int _num_textures;
-  
+
   pvector <AmbientLight *>     _alights;
   pvector <DirectionalLight *> _dlights;
   pvector <PointLight *>       _plights;
@@ -96,19 +100,20 @@ protected:
   pvector <NodePath>           _dlights_np;
   pvector <NodePath>           _plights_np;
   pvector <NodePath>           _slights_np;
-  
+
   bool _vertex_colors;
   bool _flat_colors;
-  
+
   bool _lighting;
+  bool _shadows;
 
   bool _have_ambient;
   bool _have_diffuse;
   bool _have_emission;
   bool _have_specular;
-  
+
   bool _separate_ambient_diffuse;
-  
+
   int _map_index_normal;
   int _map_index_height;
   int _map_index_glow;
@@ -124,21 +129,27 @@ protected:
   bool _calc_primary_alpha;
   bool _subsume_alpha_test;
   bool _disable_alpha_write;
+
   int _num_clip_planes;
-  
+  bool _use_shadow_filter;
+
   bool _need_material_props;
-  
+
   void analyze_renderstate(const RenderState *rs);
   void clear_analysis();
-  
+
+  PT(GraphicsStateGuardian) _gsg;
+  PT(GraphicsOutput) _host;
+  pmap<WCPT(RenderState), CPT(ShaderAttrib)> _generated_shaders;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    ShaderGeneratorBase::init_type();
+    TypedObject::init_type();
     register_type(_type_handle, "ShaderGenerator",
-                  ShaderGeneratorBase::get_class_type());
+                  TypedObject::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

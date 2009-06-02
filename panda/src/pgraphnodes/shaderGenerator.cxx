@@ -33,6 +33,9 @@
 #include "directionalLight.h"
 #include "pointLight.h"
 #include "spotlight.h"
+#include "lightLensNode.h"
+#include "graphicsEngine.h"
+#include "lvector4.h"
 
 TypeHandle ShaderGenerator::_type_handle;
 
@@ -41,9 +44,12 @@ TypeHandle ShaderGenerator::_type_handle;
 //       Access: Published
 //  Description: Create a ShaderGenerator.  This has no state,
 //               except possibly to cache certain results.
+//               The parameter that must be passed is the GSG to
+//               which the shader generator belongs.
 ////////////////////////////////////////////////////////////////////
 ShaderGenerator::
-ShaderGenerator() {
+ShaderGenerator(PT(GraphicsStateGuardian) gsg, PT(GraphicsOutput) host) :
+  _gsg (gsg), _host (host) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -73,7 +79,7 @@ reset_register_allocator() {
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderGenerator::alloc_vreg
 //       Access: Protected
-//  Description: Allocate a vreg.  
+//  Description: Allocate a vreg.
 ////////////////////////////////////////////////////////////////////
 INLINE char *ShaderGenerator::
 alloc_vreg() {
@@ -135,7 +141,7 @@ analyze_renderstate(const RenderState *rs) {
   int outputs = aux_bitplane->get_outputs();
 
   // Decide whether or not we need alpha testing or alpha blending.
-  
+
   const AlphaTestAttrib *alpha_test = DCAST(AlphaTestAttrib, rs->get_attrib_def(AlphaTestAttrib::get_class_slot()));
   if ((alpha_test->get_mode() != RenderAttrib::M_none)&&
       (alpha_test->get_mode() != RenderAttrib::M_always)) {
@@ -150,9 +156,9 @@ analyze_renderstate(const RenderState *rs) {
       (transparency->get_mode() == TransparencyAttrib::M_dual)) {
     _have_alpha_blend = true;
   }
-  
+
   // Decide what to send to the framebuffer alpha, if anything.
-  
+
   if (outputs & AuxBitplaneAttrib::ABO_glow) {
     if (_have_alpha_blend) {
       _calc_primary_alpha = true;
@@ -171,18 +177,18 @@ analyze_renderstate(const RenderState *rs) {
       _calc_primary_alpha = true;
     }
   }
-  
+
   // Determine what to put into the aux bitplane.
 
   _out_aux_normal = (outputs & AuxBitplaneAttrib::ABO_aux_normal) ? true:false;
   _out_aux_glow = (outputs & AuxBitplaneAttrib::ABO_aux_glow) ? true:false;
   _out_aux_any = (_out_aux_normal || _out_aux_glow);
-  
+
   // Count number of textures.
 
   const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
   _num_textures = texture->get_num_on_stages();
-  
+
   // Determine whether or not vertex colors or flat colors are present.
 
   const ColorAttrib *color = DCAST(ColorAttrib, rs->get_attrib_def(ColorAttrib::get_class_slot()));
@@ -194,13 +200,14 @@ analyze_renderstate(const RenderState *rs) {
 
   // Break out the lights by type.
 
+  _shadows = false;
   const LightAttrib *la = DCAST(LightAttrib, rs->get_attrib_def(LightAttrib::get_class_slot()));
   for (int i=0; i<la->get_num_on_lights(); i++) {
     NodePath light = la->get_on_light(i);
     nassertv(!light.is_empty());
     PandaNode *light_obj = light.node();
     nassertv(light_obj != (PandaNode *)NULL);
-    
+
     if (light_obj->get_type() == AmbientLight::get_class_type()) {
       _alights_np.push_back(light);
       _alights.push_back((AmbientLight*)light_obj);
@@ -208,6 +215,9 @@ analyze_renderstate(const RenderState *rs) {
     else if (light_obj->get_type() == DirectionalLight::get_class_type()) {
       _dlights_np.push_back(light);
       _dlights.push_back((DirectionalLight*)light_obj);
+      if (DCAST(LightLensNode, light_obj)->is_shadow_caster()) {
+        _shadows = true;
+      }
     }
     else if (light_obj->get_type() == PointLight::get_class_type()) {
       _plights_np.push_back(light);
@@ -216,11 +226,14 @@ analyze_renderstate(const RenderState *rs) {
     else if (light_obj->get_type() == Spotlight::get_class_type()) {
       _slights_np.push_back(light);
       _slights.push_back((Spotlight*)light_obj);
+      if (DCAST(LightLensNode, light_obj)->is_shadow_caster()) {
+        _shadows = true;
+      }
     }
   }
 
   // See if there is a normal map, height map, gloss map, or glow map.
-  
+
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = texture->get_on_stage(i);
     TextureStage::Mode mode = stage->get_mode();
@@ -237,25 +250,25 @@ analyze_renderstate(const RenderState *rs) {
       _map_index_gloss = i;
     }
   }
-  
+
   // Determine whether lighting is needed.
 
   if (la->get_num_on_lights() > 0) {
     _lighting = true;
   }
-  
+
   // Find the material.
 
   const MaterialAttrib *material = DCAST(MaterialAttrib, rs->get_attrib_def(MaterialAttrib::get_class_slot()));
-  
+
   if (!material->is_off()) {
     _material = material->get_material();
   } else {
     _material = Material::get_default();
   }
-  
+
   // Decide which material modes need to be calculated.
-  
+
   if (_lighting && (_alights.size() > 0)) {
     if (_material->has_ambient()) {
       Colorf a = _material->get_ambient();
@@ -277,14 +290,14 @@ analyze_renderstate(const RenderState *rs) {
       _have_diffuse = true;
     }
   }
-  
+
   if (_lighting && (_material->has_emission())) {
     Colorf e = _material->get_emission();
     if ((e[0]!=0.0)||(e[1]!=0.0)||(e[2]!=0.0)) {
       _have_emission = true;
     }
   }
-  
+
   if (_lighting && (_dlights.size() + _plights.size() + _slights.size())) {
     if (_material->has_specular()) {
       Colorf s = _material->get_specular();
@@ -295,7 +308,7 @@ analyze_renderstate(const RenderState *rs) {
       _have_specular = true;
     }
   }
-  
+
   // Decide whether to separate ambient and diffuse calculations.
 
   if (_have_ambient && _have_diffuse) {
@@ -315,14 +328,19 @@ analyze_renderstate(const RenderState *rs) {
   }
 
   const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
-  if (_lighting && 
+  if (_lighting &&
       (light_ramp->get_mode() != LightRampAttrib::LRT_identity)) {
     _separate_ambient_diffuse = true;
   }
-  
+
+  // Do we want to use the ARB_shadow extension?
+  // This also allows us to use hardware shadows / PCF.
+
+  _use_shadow_filter = _gsg->get_supports_shadow_filter();
+
   // Does the shader need material properties as input?
-  
-  _need_material_props = 
+
+  _need_material_props =
     (_have_ambient  && (_material->has_ambient()))||
     (_have_diffuse  && (_material->has_diffuse()))||
     (_have_emission && (_material->has_emission()))||
@@ -349,8 +367,6 @@ analyze_renderstate(const RenderState *rs) {
   }
 }
 
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: ShaderGenerator::clear_analysis
 //       Access: Protected
@@ -363,6 +379,7 @@ clear_analysis() {
   _vertex_colors = false;
   _flat_colors = false;
   _lighting = false;
+  _shadows = false;
   _have_ambient = false;
   _have_diffuse = false;
   _have_emission = false;
@@ -378,10 +395,11 @@ clear_analysis() {
   _subsume_alpha_test = false;
   _disable_alpha_write = false;
   _num_clip_planes = 0;
+  _use_shadow_filter = false;
   _out_primary_glow  = false;
-  _out_aux_normal = false;
-  _out_aux_glow   = false;
-  _out_aux_any    = false;
+  _out_aux_normal   = false;
+  _out_aux_glow     = false;
+  _out_aux_any      = false;
   _material = (Material*)NULL;
   _need_material_props = false;
   _alights.clear();
@@ -412,15 +430,101 @@ create_shader_attrib(const string &txt) {
     }
     for (int i=0; i<(int)_dlights.size(); i++) {
       shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("dlight", i), _dlights_np[i]);
+      if (_shadows && _dlights[i]->_shadow_caster) {
+        PT(Texture) tex = update_shadow_buffer(_dlights_np[i]);
+        if (tex == NULL) {
+          pgraph_cat.error() << "Failed to create shadow buffer for DirectionalLight '" << _dlights[i]->get_name() << "'!\n";
+        }
+        shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("dlighttex", i), tex);
+      } else {
+        _dlights[i]->clear_shadow_buffers();
+      }
     }
     for (int i=0; i<(int)_plights.size(); i++) {
       shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("plight", i), _plights_np[i]);
     }
     for (int i=0; i<(int)_slights.size(); i++) {
       shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("slight", i), _slights_np[i]);
+      if (_shadows && _slights[i]->_shadow_caster) {
+        PT(Texture) tex = update_shadow_buffer(_slights_np[i]);
+        if (tex == NULL) {
+          pgraph_cat.error() << "Failed to create shadow buffer for Spotlight '" << _slights[i]->get_name() << "'!\n";
+        }
+        shattr=DCAST(ShaderAttrib, shattr)->set_shader_input(InternalName::make("slighttex", i), tex);
+      } else {
+        _slights[i]->clear_shadow_buffers();
+      }
     }
   }
   return shattr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::update_shadow_buffer
+//       Access: Protected, Virtual
+//  Description: Updates the depth buffer of the specified light,
+//               if it is configured to cast shadows.
+//               Only call this function for DirectionalLights
+//               and Spotlights. Returns the depth texture.
+////////////////////////////////////////////////////////////////////
+PT(Texture) ShaderGenerator::
+update_shadow_buffer(NodePath light_np) {
+  // Make sure everything is valid.
+  nassertr(light_np.node()->is_of_type(DirectionalLight::get_class_type()) ||
+           light_np.node()->is_of_type(Spotlight::get_class_type()), NULL);
+  PT(LightLensNode) light = DCAST(LightLensNode, light_np.node());
+  if (light == NULL || !light->_shadow_caster) {
+    return NULL;
+  }
+
+  // See if we already have a buffer. If not, create one.
+  PT(GraphicsOutput) sbuffer;
+  PT(Texture) tex;
+  if (light->_sbuffers.count(DCAST(GraphicsStateGuardianBase, _gsg)) == 0) {
+
+    // Nope, the light doesn't have a buffer for our GSG.
+    FrameBufferProperties fbp;
+    fbp.set_depth_bits(1); // We only need depth
+    pgraph_cat.debug() << "Constructing shadow buffer for light '" << light->get_name()
+      << "', size=" << light->_sb_xsize << "x" << light->_sb_ysize
+      << ", sort=" << light->_sb_sort << "\n";
+    sbuffer = _gsg->get_engine()->make_output(_gsg->get_pipe(), light->get_name(),
+      light->_sb_sort, fbp, WindowProperties::size(light->_sb_xsize, light->_sb_ysize),
+      GraphicsPipe::BF_refuse_window, _gsg, _host);
+    nassertr(sbuffer != NULL, NULL);
+
+    // Create a texture and fill it in with some data to workaround an OpenGL error
+    tex = new Texture(light->get_name());
+    tex->setup_2d_texture(light->_sb_xsize, light->_sb_ysize, Texture::T_float, Texture::F_depth_stencil);
+    tex->make_ram_image();
+    sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy,
+                                     DrawableRegion::RTP_depth_stencil);
+    // Set the wrap mode to BORDER_COLOR
+    tex->set_wrap_u(Texture::WM_border_color);
+    tex->set_wrap_v(Texture::WM_border_color);
+    tex->set_border_color(LVecBase4f(1, 1, 1, 1));
+
+    if (_use_shadow_filter) {
+      // If we have the ARB_shadow extension, enable shadow filtering.
+      tex->set_minfilter(Texture::FT_shadow);
+      tex->set_magfilter(Texture::FT_shadow);
+    } else {
+      // We only accept linear - this tells the GPU to use hardware PCF.
+      tex->set_minfilter(Texture::FT_linear);
+      tex->set_magfilter(Texture::FT_linear);
+    }
+    sbuffer->make_display_region(0, 1, 0, 1)->set_camera(light_np);
+    light->_sbuffers[DCAST(GraphicsStateGuardianBase, _gsg)] = DCAST(GraphicsOutputBase, sbuffer);
+
+  } else {
+
+    // There's already a buffer - use that.
+    sbuffer = DCAST(GraphicsOutput, light->_sbuffers[DCAST(GraphicsStateGuardianBase, _gsg)]);
+    tex = sbuffer->get_texture();
+    nassertr(tex != NULL, NULL);
+  }
+
+  return tex;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -428,6 +532,8 @@ create_shader_attrib(const string &txt) {
 //       Access: Published, Virtual
 //  Description: This is the routine that implements the next-gen
 //               fixed function pipeline by synthesizing a shader.
+//               It also takes care of setting up any buffers
+//               needed to produce the requested effects.
 //
 //               Currently supports:
 //               - flat colors
@@ -441,6 +547,7 @@ create_shader_attrib(const string &txt) {
 //               - all texture stage modes, including combine modes
 //               - color scale attrib
 //               - light ramps (for cartoon shading)
+//               - shadow mapping
 //
 //               Not yet supported:
 //               - 3D textures, cube textures
@@ -458,6 +565,8 @@ synthesize_shader(const RenderState *rs) {
   analyze_renderstate(rs);
   reset_register_allocator();
 
+  pgraph_cat.info() << "Generating shader for render state " << rs << "\n";
+
   // These variables will hold the results of register allocation.
 
   char *pos_freg = 0;
@@ -470,7 +579,7 @@ synthesize_shader(const RenderState *rs) {
   pvector<char *> texcoord_vreg;
   pvector<char *> texcoord_freg;
   pvector<char *> tslightvec_freg;
-  
+
   if (_vertex_colors) {
     _vcregs_used = 1;
     _fcregs_used = 1;
@@ -479,7 +588,7 @@ synthesize_shader(const RenderState *rs) {
   // Generate the shader's text.
 
   ostringstream text;
-  
+
   text << "//Cg\n";
 
   text << "void vshader(\n";
@@ -516,6 +625,20 @@ synthesize_shader(const RenderState *rs) {
       text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
       text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
     }
+    if (_shadows) {
+      for (int i=0; i<(int)_dlights.size(); i++) {
+        if (_dlights[i]->_shadow_caster) {
+          text << "\t uniform float4x4 trans_model_to_clip_of_dlight" << i << ",\n";
+          text << "\t out float4 l_dlightcoord" << i << ",\n";
+        }
+      }
+      for (int i=0; i<(int)_slights.size(); i++) {
+        if (_slights[i]->_shadow_caster) {
+          text << "\t uniform float4x4 trans_model_to_clip_of_slight" << i << ",\n";
+          text << "\t out float4 l_slightcoord" << i << ",\n";
+        }
+      }
+    }
   } else if (_out_aux_normal) {
     normal_vreg = alloc_vreg();
     normal_freg = alloc_freg();
@@ -523,12 +646,12 @@ synthesize_shader(const RenderState *rs) {
     text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
     text << "\t out float4 l_normal : " << normal_freg << ",\n";
   }
-  
+
   text << "\t float4 vtx_position : POSITION,\n";
   text << "\t out float4 l_position : POSITION,\n";
   text << "\t uniform float4x4 mat_modelproj\n";
   text << ") {\n";
-  
+
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
   if (_num_clip_planes > 0) {
     text << "\t l_worldpos = mul(trans_model_to_world, vtx_position);\n";
@@ -552,8 +675,23 @@ synthesize_shader(const RenderState *rs) {
     text << "\t l_binormal.xyz = mul((float3x3)tpose_view_to_model, -vtx_binormal" << _map_index_normal << ".xyz);\n";
     text << "\t l_binormal.w = 0;\n";
   }
+  if (_shadows) {
+    text << "\t float4x4 biasmat = {0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f};\n";
+    for (int i=0; i<(int)_dlights.size(); i++) {
+      if (_dlights[i]->_shadow_caster) {
+        text << "\t l_dlightcoord" << i << " = mul(biasmat, mul(trans_model_to_clip_of_dlight"
+          << i << ", vtx_position + " << _dlights[i]->_push_bias << " * vtx_normal));\n";
+      }
+    }
+    for (int i=0; i<(int)_slights.size(); i++) {
+      if (_slights[i]->_shadow_caster) {
+        text << "\t l_slightcoord" << i << " = mul(biasmat, mul(trans_model_to_clip_of_slight"
+          << i << ", vtx_position + " << _slights[i]->_push_bias << " * vtx_normal));\n";
+      }
+    }
+  }
   text << "}\n\n";
-  
+
   text << "void fshader(\n";
   if (_num_clip_planes > 0) {
     text << "\t in float4 l_worldpos,\n";
@@ -571,11 +709,22 @@ synthesize_shader(const RenderState *rs) {
   }
   if (_lighting) {
     text << "\t in float4 l_pos : " << pos_freg << ",\n";
+    if (_shadows) {
+      text << "\t in float4 l_position : " << alloc_freg() << ",\n";
+    }
     for (int i=0; i<(int)_alights.size(); i++) {
       text << "\t uniform float4 alight_alight" << i << ",\n";
     }
     for (int i=0; i<(int)_dlights.size(); i++) {
       text << "\t uniform float4x4 dlight_dlight" << i << "_rel_view,\n";
+      if (_shadows && _dlights[i]->_shadow_caster) {
+        if (_use_shadow_filter) {
+          text << "\t uniform sampler2DShadow k_dlighttex" << i << ",\n";
+        } else {
+          text << "\t uniform sampler2D k_dlighttex" << i << ",\n";
+        }
+        text << "\t float4 l_dlightcoord" << i << ",\n";
+      }
     }
     for (int i=0; i<(int)_plights.size(); i++) {
       text << "\t uniform float4x4 plight_plight" << i << "_rel_view,\n";
@@ -583,6 +732,14 @@ synthesize_shader(const RenderState *rs) {
     for (int i=0; i<(int)_slights.size(); i++) {
       text << "\t uniform float4x4 slight_slight" << i << "_rel_view,\n";
       text << "\t uniform float4   satten_slight" << i << ",\n";
+      if (_shadows && _slights[i]->_shadow_caster) {
+        if (_use_shadow_filter) {
+          text << "\t uniform sampler2DShadow k_slighttex" << i << ",\n";
+        } else {
+          text << "\t uniform sampler2D k_slighttex" << i << ",\n";
+        }
+        text << "\t float4 l_slightcoord" << i << ",\n";
+      }
     }
     if (_need_material_props) {
       text << "\t uniform float4x4 attr_material,\n";
@@ -644,7 +801,10 @@ synthesize_shader(const RenderState *rs) {
   if (_lighting) {
     text << "\t // Begin view-space light calculations\n";
     text << "\t float ldist,lattenv,langle;\n";
-    text << "\t float4 lcolor,lspec,lvec,lpoint,latten,ldir,leye,lhalf;\n";
+    text << "\t float4 lcolor,lspec,lvec,lpoint,latten,ldir,leye,lhalf;";
+    if (_shadows) {
+      text << "\t float lshad;\n";
+    }
     if (_separate_ambient_diffuse) {
       if (_have_ambient) {
         text << "\t float4 tot_ambient = float4(0,0,0,0);\n";
@@ -680,6 +840,15 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lspec  = dlight_dlight" << i << "_rel_view[1];\n";
       text << "\t lvec   = dlight_dlight" << i << "_rel_view[2];\n";
       text << "\t lcolor *= saturate(dot(l_normal, lvec.xyz));\n";
+      if (_shadows && _dlights[i]->_shadow_caster) {
+        if (_use_shadow_filter) {
+          text << "\t lshad = shadow2DProj(k_dlighttex" << i << ", l_dlightcoord" << i << ").r;\n";
+        } else {
+          text << "\t lshad = tex2Dproj(k_dlighttex" << i << ", l_dlightcoord" << i << ").r > l_dlightcoord" << i << ".z / l_dlightcoord" << i << ".w;\n";
+        }
+        text << "\t lcolor *= lshad;\n";
+        text << "\t lspec *= lshad;\n";
+      }
       if (_have_diffuse) {
         text << "\t tot_diffuse += lcolor;\n";
       }
@@ -733,6 +902,16 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lattenv *= pow(langle, latten.w);\n";
       text << "\t if (langle < ldir.w) lattenv = 0;\n";
       text << "\t lcolor *= lattenv * saturate(dot(l_normal, lvec.xyz));\n";
+      if (_shadows && _slights[i]->_shadow_caster) {
+        if (_use_shadow_filter) {
+          text << "\t lshad = shadow2DProj(k_slighttex" << i << ", l_slightcoord" << i << ").r;\n";
+        } else {
+          text << "\t lshad = tex2Dproj(k_slighttex" << i << ", l_slightcoord" << i << ").r > l_slightcoord" << i << ".z / l_slightcoord" << i << ".w;\n";
+        }
+        text << "\t lcolor *= lshad;\n";
+        text << "\t lspec *= lshad;\n";
+      }
+
       if (_have_diffuse) {
         text << "\t tot_diffuse += lcolor;\n";
       }
@@ -837,9 +1016,8 @@ synthesize_shader(const RenderState *rs) {
       text << "\t result = float4(1,1,1,1);\n";
     }
   }
-  
+
   text << "\t float4 primary_color = result;\n";
-  text << "\t float4 last_saved_result = result;\n";
   const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
   bool have_saved_result = false;
   for (int i=0; i<_num_textures; i++) {
@@ -869,14 +1047,14 @@ synthesize_shader(const RenderState *rs) {
       break;
     case TextureStage::M_combine:
       text << "\t result.rgb = ";
-      text << combine_mode_as_string(stage, stage->get_combine_rgb_mode(), false, i, rs);
-      text << "\n\t result.a = ";
-      text << combine_mode_as_string(stage, stage->get_combine_alpha_mode(), true, i, rs);
-      text << "\n";
+      text << combine_mode_as_string(stage, stage->get_combine_rgb_mode(), false, i);
+      text << ";\n\t result.a = ";
+      text << combine_mode_as_string(stage, stage->get_combine_alpha_mode(), true, i);
+      text << ";\n";
       break;
-    case TextureStage::M_blend_color_scale: {
+    case TextureStage::M_blend_color_scale:
       text << "\t result.rgb = lerp(result, tex" << i << " * attr_colorscale, tex" << i << ".r).rgb;\n";
-      break; }
+      break;
     default:
       break;
     }
@@ -906,7 +1084,7 @@ synthesize_shader(const RenderState *rs) {
     case RenderAttrib::M_greater_equal:  text<<"\t if (result.a <  "<<ref<<") discard;\n";
     }
   }
-  
+
   if (_out_primary_glow) {
     if (_map_index_glow >= 0) {
       text << "\t result.a = tex" << _map_index_glow << ".a;\n";
@@ -921,7 +1099,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t o_aux.a = 0.5;\n";
     }
   }
-  
+
   if (_lighting) {
     if (_have_specular) {
       if (_material->has_specular()) {
@@ -933,7 +1111,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t result.rgb = result.rgb + tot_specular.rgb;\n";
     }
   }
-  
+
   const LightRampAttrib *light_ramp = DCAST(LightRampAttrib, rs->get_attrib_def(LightRampAttrib::get_class_slot()));
   switch (light_ramp->get_mode()) {
   case LightRampAttrib::LRT_hdr0:
@@ -947,10 +1125,10 @@ synthesize_shader(const RenderState *rs) {
     break;
   default: break;
   }
-   
+
   // The multiply is a workaround for a radeon driver bug.
   // It's annoying as heck, since it produces an extra instruction.
-  text << "\t o_color = result * 1.000001;\n"; 
+  text << "\t o_color = result * 1.000001;\n";
   if (_subsume_alpha_test) {
     text << "\t // Shader subsumes normal alpha test.\n";
   }
@@ -958,7 +1136,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t // Shader disables alpha write.\n";
   }
   text << "}\n";
-  
+
   // Insert the shader into the shader attrib.
   CPT(RenderAttrib) shattr = create_shader_attrib(text.str());
   if (_subsume_alpha_test) {
@@ -978,44 +1156,45 @@ synthesize_shader(const RenderState *rs) {
 //  Description: This 'synthesizes' a combine mode into a string.
 ////////////////////////////////////////////////////////////////////
 const string ShaderGenerator::
-combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode, bool single_value, short texindex, const RenderState *rs) {
+combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode, bool single_value, short texindex) {
   ostringstream text;
   switch (c_mode) {
-    case TextureStage::CM_replace:
-      text << combine_source_as_string(stage, 0, single_value, texindex, rs);
-      break;
     case TextureStage::CM_modulate:
-      text << combine_source_as_string(stage, 0, single_value, texindex, rs);
+      text << combine_source_as_string(stage, 0, single_value, texindex);
       text << " * ";
-      text << combine_source_as_string(stage, 1, single_value, texindex, rs);
+      text << combine_source_as_string(stage, 1, single_value, texindex);
       break;
     case TextureStage::CM_add:
-      text << combine_source_as_string(stage, 0, single_value, texindex, rs);
+      text << combine_source_as_string(stage, 0, single_value, texindex);
       text << " + ";
-      text << combine_source_as_string(stage, 1, single_value, texindex, rs);
+      text << combine_source_as_string(stage, 1, single_value, texindex);
       break;
     case TextureStage::CM_add_signed:
       pgraph_cat.error() << "TextureStage::CombineMode ADD_SIGNED not yet supported in per-pixel mode.\n";
       break;
     case TextureStage::CM_interpolate:
       text << "lerp(";
-      text << combine_source_as_string(stage, 0, single_value, texindex, rs);
+      text << combine_source_as_string(stage, 1, single_value, texindex);
       text << ", ";
-      text << combine_source_as_string(stage, 1, single_value, texindex, rs);
+      text << combine_source_as_string(stage, 0, single_value, texindex);
       text << ", ";
-      text << combine_source_as_string(stage, 2, true, texindex, rs);
+      text << combine_source_as_string(stage, 2, true, texindex);
       text << ")";
       break;
     case TextureStage::CM_subtract:
-      text << combine_source_as_string(stage, 0, single_value, texindex, rs);
+      text << combine_source_as_string(stage, 0, single_value, texindex);
       text << " + ";
-      text << combine_source_as_string(stage, 1, single_value, texindex, rs);
+      text << combine_source_as_string(stage, 1, single_value, texindex);
       break;
     case TextureStage::CM_dot3_rgb:
       pgraph_cat.error() << "TextureStage::CombineMode DOT3_RGB not yet supported in per-pixel mode.\n";
       break;
     case TextureStage::CM_dot3_rgba:
       pgraph_cat.error() << "TextureStage::CombineMode DOT3_RGBA not yet supported in per-pixel mode.\n";
+      break;
+    case TextureStage::CM_replace:
+    default: // Not sure if this is correct as default value.
+      text << combine_source_as_string(stage, 0, single_value, texindex);
       break;
   }
   return text.str();
@@ -1027,7 +1206,7 @@ combine_mode_as_string(CPT(TextureStage) stage, TextureStage::CombineMode c_mode
 //  Description: This 'synthesizes' a combine source into a string.
 ////////////////////////////////////////////////////////////////////
 const string ShaderGenerator::
-combine_source_as_string(CPT(TextureStage) stage, short num, bool single_value, short texindex, const RenderState *rs) {
+combine_source_as_string(CPT(TextureStage) stage, short num, bool single_value, short texindex) {
   TextureStage::CombineSource c_src = TextureStage::CS_undefined;
   TextureStage::CombineOperand c_op = TextureStage::CO_undefined;
   switch (num) {
@@ -1063,11 +1242,9 @@ combine_source_as_string(CPT(TextureStage) stage, short num, bool single_value, 
     case TextureStage::CS_previous:
       csource << "result";
       break;
-    case TextureStage::CS_constant_color_scale: {
-      const ColorScaleAttrib *color_scale = DCAST(ColorScaleAttrib, rs->get_attrib_def(ColorScaleAttrib::get_class_slot()));
-      LVecBase4f s = color_scale->get_scale();
-      csource << "float4(" << s[0] << ", " << s[1] << ", " << s[2] << ", " << s[3] << ")";
-      break; }
+    case TextureStage::CS_constant_color_scale:
+      csource << "attr_colorscale";
+      break;
     case TextureStage::CS_last_saved_result:
       csource << "last_saved_result";
       break;
@@ -1088,3 +1265,4 @@ combine_source_as_string(CPT(TextureStage) stage, short num, bool single_value, 
   }
   return csource.str();
 }
+

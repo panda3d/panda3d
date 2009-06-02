@@ -46,6 +46,7 @@
 #include "depthWriteAttrib.h"
 #include "lightAttrib.h"
 #include "texGenAttrib.h"
+#include "shaderGenerator.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -231,6 +232,8 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   
   _gamma = 1.0f;
   _texture_quality_override = Texture::QL_default;
+  
+  _shader_generator = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -245,6 +248,11 @@ GraphicsStateGuardian::
   if (_stencil_render_states) {
     delete _stencil_render_states;
     _stencil_render_states = 0;
+  }
+  
+  if (_shader_generator) {
+    delete _shader_generator;
+    _shader_generator = 0;
   }
 
   GeomMunger::unregister_mungers_for_gsg(this);

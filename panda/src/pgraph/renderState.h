@@ -153,7 +153,6 @@ PUBLISHED:
   INLINE int get_draw_order() const;
   INLINE int get_bin_index() const;
   int get_geom_rendering(int geom_rendering) const;
-  const ShaderAttrib *get_generated_shader() const;
   
 public:
   static void bin_removed(int bin_index);
@@ -205,6 +204,12 @@ private:
 
 public:
   static void init_states();
+
+  // If this state contains an "auto" ShaderAttrib, then an explicit
+  // ShaderAttrib will be synthesized by the runtime and stored here.
+  // I can't declare this as a ShaderAttrib because that would create
+  // a circular include-file dependency problem.  Aaargh.
+  CPT(RenderAttrib) _generated_shader;
 
 private:
   // This mutex protects _states.  It also protects any modification
@@ -290,12 +295,6 @@ private:
   // be a CullBinAttrib in the state.
   int _bin_index;
   int _draw_order;
-
-  // If this state contains an "auto" ShaderAttrib, then an explicit
-  // ShaderAttrib will be synthesized by the runtime and stored here.
-  // I can't declare this as a ShaderAttrib because that would create
-  // a circular include-file dependency problem.  Aaargh.
-  CPT(RenderAttrib) _generated_shader;
 
   enum Flags {
     F_checked_bin_index     = 0x000001,

@@ -50,6 +50,7 @@
 
 class DrawableRegion;
 class GraphicsEngine;
+class ShaderGenerator;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsStateGuardian
@@ -483,6 +484,8 @@ protected:
 
   float _gamma;
   Texture::QualityLevel _texture_quality_override;
+  
+  ShaderGenerator* _shader_generator;
 
 #ifndef NDEBUG
   PT(Texture) _flash_texture;

@@ -79,6 +79,4 @@ init_libpgraphnodes() {
   SequenceNode::register_with_read_factory();
   Spotlight::register_with_read_factory();
   SwitchNode::register_with_read_factory();
-
-  ShaderGenerator::set_default(new ShaderGenerator());
 }

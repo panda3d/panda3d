@@ -1367,29 +1367,6 @@ get_geom_rendering(int geom_rendering) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: RenderState::get_generated_shader
-//       Access: Public
-//  Description: Generate a ShaderAttrib for this RenderState.  This
-//               generated ShaderAttrib can be thought of as a
-//               replacement for the regular ShaderAttrib that is a
-//               standard part of the RenderState.
-////////////////////////////////////////////////////////////////////
-const ShaderAttrib *RenderState::
-get_generated_shader() const {
-  // This method cannot be declared inline, because of the circular
-  // dependency on shaderAttrib.h.
-
-  if (_generated_shader != (RenderAttrib*)NULL) {
-    return DCAST(ShaderAttrib, _generated_shader);
-  }
-  ShaderGeneratorBase *gen = ShaderGeneratorBase::get_default();
-  ((RenderState*)this)->_generated_shader =
-    gen->synthesize_shader(this);
-  return DCAST(ShaderAttrib, _generated_shader);
-}
-
-
-////////////////////////////////////////////////////////////////////
 //     Function: RenderState::bin_removed
 //       Access: Public, Static
 //  Description: Intended to be called by
@@ -1598,7 +1575,16 @@ do_compose(const RenderState *other) const {
     mask.clear_bit(slot);
     slot = mask.get_lowest_on_bit();
   }
-
+  
+  // If we have any ShaderAttrib with auto-shader enabled,
+  // remove any shader inputs on it. This is a workaround for an
+  // issue that makes the shader-generator regenerate the shader
+  // every time a shader input changes.
+  CPT(ShaderAttrib) sattrib = DCAST(ShaderAttrib, new_state->get_attrib_def(ShaderAttrib::get_class_slot()));
+  if (sattrib->auto_shader()) {
+    sattrib = DCAST(ShaderAttrib, sattrib->clear_all_shader_inputs());
+  }
+  
   return return_new(new_state);
 }
 
