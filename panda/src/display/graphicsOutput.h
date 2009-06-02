@@ -99,7 +99,7 @@ PUBLISHED:
 
   INLINE int count_textures() const;
   INLINE bool has_texture() const;
-  INLINE Texture *get_texture(int i=0) const;
+  virtual INLINE Texture *get_texture(int i=0) const;
   INLINE RenderTexturePlane get_texture_plane(int i=0) const;
   INLINE RenderTextureMode get_rtm_mode(int i=0) const;
   void clear_render_textures();

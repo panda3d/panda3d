@@ -475,53 +475,17 @@ update_shadow_buffer(NodePath light_np) {
   if (light == NULL || !light->_shadow_caster) {
     return NULL;
   }
-
+  
   // See if we already have a buffer. If not, create one.
-  PT(GraphicsOutput) sbuffer;
   PT(Texture) tex;
-  if (light->_sbuffers.count(DCAST(GraphicsStateGuardianBase, _gsg)) == 0) {
-
-    // Nope, the light doesn't have a buffer for our GSG.
-    FrameBufferProperties fbp;
-    fbp.set_depth_bits(1); // We only need depth
-    pgraph_cat.debug() << "Constructing shadow buffer for light '" << light->get_name()
-      << "', size=" << light->_sb_xsize << "x" << light->_sb_ysize
-      << ", sort=" << light->_sb_sort << "\n";
-    sbuffer = _gsg->get_engine()->make_output(_gsg->get_pipe(), light->get_name(),
-      light->_sb_sort, fbp, WindowProperties::size(light->_sb_xsize, light->_sb_ysize),
-      GraphicsPipe::BF_refuse_window, _gsg, _host);
-    nassertr(sbuffer != NULL, NULL);
-
-    // Create a texture and fill it in with some data to workaround an OpenGL error
-    tex = new Texture(light->get_name());
-    tex->setup_2d_texture(light->_sb_xsize, light->_sb_ysize, Texture::T_float, Texture::F_depth_stencil);
-    tex->make_ram_image();
-    sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy,
-                                     DrawableRegion::RTP_depth_stencil);
-    // Set the wrap mode to BORDER_COLOR
-    tex->set_wrap_u(Texture::WM_border_color);
-    tex->set_wrap_v(Texture::WM_border_color);
-    tex->set_border_color(LVecBase4f(1, 1, 1, 1));
-
-    if (_use_shadow_filter) {
-      // If we have the ARB_shadow extension, enable shadow filtering.
-      tex->set_minfilter(Texture::FT_shadow);
-      tex->set_magfilter(Texture::FT_shadow);
-    } else {
-      // We only accept linear - this tells the GPU to use hardware PCF.
-      tex->set_minfilter(Texture::FT_linear);
-      tex->set_magfilter(Texture::FT_linear);
-    }
-    sbuffer->make_display_region(0, 1, 0, 1)->set_camera(light_np);
-    light->_sbuffers[DCAST(GraphicsStateGuardianBase, _gsg)] = DCAST(GraphicsOutputBase, sbuffer);
-
+  if (light->_sbuffers.count(_gsg) == 0) {
+    // Nope, the light doesn't have a buffer for our GSG. Make one.
+    tex = _gsg->make_shadow_buffer(light_np, _host);
   } else {
-
     // There's already a buffer - use that.
-    sbuffer = DCAST(GraphicsOutput, light->_sbuffers[DCAST(GraphicsStateGuardianBase, _gsg)]);
-    tex = sbuffer->get_texture();
-    nassertr(tex != NULL, NULL);
+    tex = light->_sbuffers[_gsg]->get_texture();
   }
+  nassertr(tex != NULL, NULL);
 
   return tex;
 }

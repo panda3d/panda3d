@@ -47,6 +47,7 @@
 #include "lightAttrib.h"
 #include "texGenAttrib.h"
 #include "shaderGenerator.h"
+#include "lightLensNode.h"
 
 #include <algorithm>
 #include <limits.h>
@@ -2541,3 +2542,61 @@ async_reload_texture(TextureContext *tc) {
   request->set_priority(priority);
   _loader->load_async(request);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::make_shadow_buffer
+//       Access: Protected
+//  Description: Creates a depth buffer for shadow mapping. This
+//               is a convenience function for the ShaderGenerator;
+//               putting this directly in the ShaderGenerator would
+//               cause circular dependency issues.
+//               Returns the depth texture.
+////////////////////////////////////////////////////////////////////
+PT(Texture) GraphicsStateGuardian::
+make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host) {
+  // Make sure everything is valid.
+  nassertr(light_np.node()->is_of_type(DirectionalLight::get_class_type()) ||
+           light_np.node()->is_of_type(Spotlight::get_class_type()), NULL);
+  PT(LightLensNode) light = DCAST(LightLensNode, light_np.node());
+  if (light == NULL || !light->_shadow_caster) {
+    return NULL;
+  }
+  
+  nassertr(light->_sbuffers.count(this) == 0, NULL);
+  
+  display_cat.debug() << "Constructing shadow buffer for light '" << light->get_name()
+    << "', size=" << light->_sb_xsize << "x" << light->_sb_ysize
+    << ", sort=" << light->_sb_sort << "\n";
+  FrameBufferProperties fbp;
+  fbp.set_depth_bits(1); // We only need depth
+  PT(GraphicsOutput) sbuffer = get_engine()->make_output(get_pipe(), light->get_name(),
+      light->_sb_sort, fbp, WindowProperties::size(light->_sb_xsize, light->_sb_ysize),
+      GraphicsPipe::BF_refuse_window, this, DCAST(GraphicsOutput, host));
+  nassertr(sbuffer != NULL, NULL);
+  
+  // Create a texture and fill it in with some data to workaround an OpenGL error
+  PT(Texture) tex = new Texture(light->get_name());
+  tex->setup_2d_texture(light->_sb_xsize, light->_sb_ysize, Texture::T_float, Texture::F_depth_stencil);
+  tex->make_ram_image();
+  sbuffer->add_render_texture(tex, GraphicsOutput::RTM_bind_or_copy,
+                                   GraphicsOutput::RTP_depth_stencil);
+  // Set the wrap mode to BORDER_COLOR
+  tex->set_wrap_u(Texture::WM_border_color);
+  tex->set_wrap_v(Texture::WM_border_color);
+  tex->set_border_color(LVecBase4f(1, 1, 1, 1));
+
+  if (get_supports_shadow_filter()) {
+    // If we have the ARB_shadow extension, enable shadow filtering.
+    tex->set_minfilter(Texture::FT_shadow);
+    tex->set_magfilter(Texture::FT_shadow);
+  } else {
+    // We only accept linear - this tells the GPU to use hardware PCF.
+    tex->set_minfilter(Texture::FT_linear);
+    tex->set_magfilter(Texture::FT_linear);
+  }
+  sbuffer->make_display_region(0, 1, 0, 1)->set_camera(light_np);
+  light->_sbuffers[this] = sbuffer;
+  
+  return tex;
+}
+

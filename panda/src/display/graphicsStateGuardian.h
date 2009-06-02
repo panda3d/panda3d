@@ -302,6 +302,8 @@ public:
 
   static void create_gamma_table (float gamma, unsigned short *red_table, unsigned short *green_table, unsigned short *blue_table);
 
+  virtual PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host);
+
 #ifdef DO_PSTATS
   static void init_frame_pstats();
 #endif

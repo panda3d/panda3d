@@ -18,6 +18,8 @@
 #include "pandabase.h"
 #include "typedWritableReferenceCount.h"
 
+class Texture;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : GraphicsOutputBase
 // Description : An abstract base class for GraphicsOutput, for all
@@ -26,6 +28,7 @@
 class EXPCL_PANDA_GSGBASE GraphicsOutputBase : public TypedWritableReferenceCount {
 PUBLISHED:
   virtual void set_sort(int sort)=0;
+  virtual Texture *get_texture(int i=0) const=0;
   
 public:
   static TypeHandle get_class_type() {

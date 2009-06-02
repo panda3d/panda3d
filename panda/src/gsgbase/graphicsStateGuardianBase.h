@@ -87,6 +87,7 @@ class PointLight;
 class DirectionalLight;
 class Spotlight;
 class AmbientLight;
+class LightLensNode;
 
 class DisplayRegion;
 class Lens;
@@ -218,6 +219,10 @@ public:
                           int light_id) { }
   virtual void bind_light(Spotlight *light_obj, const NodePath &light,
                           int light_id) { }
+
+  // This function creates a shadow mapping buffer. This is not put in ShaderGenerator
+  // because that would cause circular dependencies.
+  virtual PT(Texture) make_shadow_buffer(const NodePath &light_np, GraphicsOutputBase *host)=0;
 
 PUBLISHED:
   static GraphicsStateGuardianBase *get_default_gsg();

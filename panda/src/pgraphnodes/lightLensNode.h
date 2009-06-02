@@ -23,6 +23,7 @@
 #include "graphicsOutputBase.h"
 
 class ShaderGenerator;
+class GraphicsStateGuardian;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : LightLensNode
@@ -88,6 +89,7 @@ public:
 private:
   static TypeHandle _type_handle;
 
+  friend class GraphicsStateGuardian;
   friend class ShaderGenerator;
 };
 
