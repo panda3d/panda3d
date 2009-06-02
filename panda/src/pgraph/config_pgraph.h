@@ -57,7 +57,7 @@ extern ConfigVariableInt max_collect_indices;
 extern EXPCL_PANDA_PGRAPH ConfigVariableBool premunge_data;
 extern ConfigVariableBool preserve_geom_nodes;
 extern ConfigVariableBool flatten_geoms;
-extern ConfigVariableInt max_lenses;
+extern EXPCL_PANDA_PGRAPH ConfigVariableInt max_lenses;
 
 extern ConfigVariableBool polylight_info;
 extern ConfigVariableDouble lod_fade_time;
