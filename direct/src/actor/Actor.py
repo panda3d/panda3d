@@ -2198,7 +2198,6 @@ class Actor(DirectObject, NodePath):
         if self.mergeLODBundles:
             # Re-merge all bundles, and restore the common bundle map.
             self.__commonBundleHandles = {}
-
             for lodName, bundleDict in self.__partBundleDict.items():
                 for partName, partDef in bundleDict.items():
                     loadedBundleHandle = self.__commonBundleHandles.get(partName, None)
@@ -2241,17 +2240,9 @@ class Actor(DirectObject, NodePath):
             partNames = [partName]
 
         if (anims==None):
-            if len(lodNames) > 0 and len(partNames) > 0:
-                anims = self.__animControlDict[lodNames[0]][partNames[0]].keys()
-            else:
-                anims = []
-
-        for lodName in lodNames:
-            for partName in partNames:
-                for animName in anims:
-                    # delete the anim control
-                    try:
-                        animDef = self.__animControlDict[lodName][partName][animName]
+            for lodName in lodNames:
+                for partName in partNames:
+                    for animDef in self.__animControlDict[lodName][partName].values():
                         if animDef.animControl != None:
                             # Try to clear any control effects before we let
                             # our handle on them go. This is especially
@@ -2259,8 +2250,19 @@ class Actor(DirectObject, NodePath):
                             # animations.
                             animDef.animControl.getPart().clearControlEffects()
                             animDef.animControl = None
-                    except:
-                        return
+        else:
+            for lodName in lodNames:
+                for partName in partNames:
+                    for anim in anims:
+                        animDef = self.__animControlDict[lodName][partName].get(anim)
+                        if animDef and animDef.animControl != None:
+                            # Try to clear any control effects before we let
+                            # our handle on them go. This is especially
+                            # important if the anim control was blending
+                            # animations.
+                            animDef.animControl.getPart().clearControlEffects()
+                            animDef.animControl = None
+
 
     def bindAnim(self, animName, partName = None, lodName = None,
                  allowAsyncBind = False):
