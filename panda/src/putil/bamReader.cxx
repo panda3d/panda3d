@@ -334,8 +334,12 @@ resolve() {
             }
             _created_objs_by_pointer.erase(object_ptr);
 
-            // We can't finalize the old pointer any more either.
-            _finalize_list.erase(object_ptr);
+            Finalize::iterator fi = _finalize_list.find(object_ptr);
+            if (fi != _finalize_list.end()) {
+              // Change the pointer in the finalize list.
+              _finalize_list.erase(fi);
+              _finalize_list.insert(new_ptr);
+            }
           }
           created_obj._ptr = new_ptr;
           created_obj._change_this = NULL;
@@ -978,9 +982,17 @@ p_read_object() {
       // immediately.
       ObjectPointers::const_iterator ri = _object_pointers.find(object_id);
       if (ri == _object_pointers.end()) {
+        Finalize::iterator fi = _finalize_list.find((TypedWritable *)object);
+
         object = created_obj._change_this(object, this);
         created_obj._ptr = object;
         created_obj._change_this = NULL;
+
+        if (fi != _finalize_list.end()) {
+          // Change the pointer in the finalize list.
+          _finalize_list.erase(fi);
+          _finalize_list.insert(object);
+        }
       }
     }
 
