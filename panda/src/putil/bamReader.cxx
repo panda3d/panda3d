@@ -333,6 +333,9 @@ resolve() {
               new_refs.push_back(*oi);
             }
             _created_objs_by_pointer.erase(object_ptr);
+
+            // We can't finalize the old pointer any more either.
+            _finalize_list.erase(object_ptr);
           }
           created_obj._ptr = new_ptr;
           created_obj._change_this = NULL;
