@@ -518,6 +518,7 @@ public:
   PFNGLBLITFRAMEBUFFEREXTPROC _glBlitFramebuffer;
   PFNGLDRAWBUFFERSPROC _glDrawBuffers;
   int _max_draw_buffers;
+  int _max_fb_samples;
 
   PFNGLGENQUERIESPROC _glGenQueries;
   PFNGLBEGINQUERYPROC _glBeginQuery;
@@ -541,6 +542,9 @@ public:
   DeletedDisplayLists _deleted_queries;
 
   RenderState::SlotMask _inv_state_mask;
+
+  bool _track_errors;
+  bool _allow_flush;
 
 #ifndef NDEBUG
   bool _show_texture_usage;

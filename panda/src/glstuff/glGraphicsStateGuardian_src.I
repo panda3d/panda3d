@@ -45,10 +45,12 @@ report_errors(int line, const char *source_file) {
 INLINE void CLP(GraphicsStateGuardian)::
 report_my_errors(int line, const char *source_file) {
 #ifndef NDEBUG
-  GLenum error_code = gl_get_error();
-  if (error_code != GL_NO_ERROR) {
-    if (!report_errors_loop(line, source_file, error_code, _error_count)) {
-      panic_deactivate();
+  if (_track_errors) {
+    GLenum error_code = gl_get_error();
+    if (error_code != GL_NO_ERROR) {
+      if (!report_errors_loop(line, source_file, error_code, _error_count)) {
+        panic_deactivate();
+      }
     }
   }
 #endif

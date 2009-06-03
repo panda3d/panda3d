@@ -41,8 +41,7 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
 
   if ( glgsg->get_supports_framebuffer_multisample() && glgsg->get_supports_framebuffer_blit() ) {
     _requested_multisamples = fb_prop.get_multisamples();
-  }
-  else {
+  } else {
     _requested_multisamples = 0;
   }
 
@@ -52,24 +51,22 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
     if ( (_requested_coverage_samples <= 8) && (_requested_coverage_samples > 0) ) {
       _requested_multisamples = 4;
       _requested_coverage_samples = 8;
-    }
-    else if (_requested_coverage_samples > 8) {
-      if (_requested_multisamples < 8)
+    } else if (_requested_coverage_samples > 8) {
+      if (_requested_multisamples < 8) {
         _requested_multisamples = 4;
-      else
+      } else {
         _requested_multisamples = 8;
+      }
       _requested_coverage_samples = 16;
     }
-  }
-  else {
+
+  } else {
     _requested_coverage_samples = 0;
   }
 
-  float maxMultisamples = 0.0f;
-  glGetFloatv(GL_MAX_SAMPLES_EXT, &maxMultisamples);
-
-  if (_requested_multisamples > maxMultisamples)
-      _requested_multisamples = maxMultisamples;
+  if (_requested_multisamples > glgsg->_max_fb_samples) {
+    _requested_multisamples = glgsg->_max_fb_samples;
+  }
 
   _rb_size_x = 0;
   _rb_size_y = 0;
@@ -85,6 +82,7 @@ CLP(GraphicsBuffer)(GraphicsEngine *engine, GraphicsPipe *pipe,
   }
 
   _shared_depth_buffer = 0;
+  report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -874,6 +872,7 @@ select_cube_map(int cube_map_index) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsBuffer)::
 open_buffer() {
+  report_my_gl_errors();
 
   // Double check that we have a host
   nassertr(_host != 0, false);
@@ -934,6 +933,7 @@ void CLP(GraphicsBuffer)::
 close_buffer() {
 
   check_host_valid();
+  report_my_gl_errors();
   
   _active = false;
   if (_gsg == 0) {

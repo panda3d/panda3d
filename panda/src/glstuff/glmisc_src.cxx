@@ -148,6 +148,14 @@ ConfigVariableBool CLP(matrix_palette)
   ("gl-matrix-palette", false, 
    PRC_DESC("Temporary hack variable protecting untested code.  See glGraphicsStateGuardian_src.cxx."));
 
+ConfigVariableBool CLP(force_no_error)
+  ("gl-force-no-error", false,
+   PRC_DESC("Avoid reporting OpenGL errors, for a small performance benefit."));
+
+ConfigVariableBool CLP(force_no_flush)
+  ("gl-force-no-flush", false, 
+   PRC_DESC("Avoid calling glFlush(), for a potential performance benefit.  This may be a little dangerous."));
+
 extern ConfigVariableBool CLP(parallel_arrays);
 
 void CLP(init_classes)() {

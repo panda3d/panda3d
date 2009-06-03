@@ -75,10 +75,6 @@ PStatCollector CLP(GraphicsStateGuardian)::_primitive_batches_display_list_pcoll
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_display_list_pcollector("Vertices:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_immediate_pcollector("Vertices:Immediate mode");
 
-// KZL hack.  These track PRC settings.
-bool _track_errors = 1;
-bool _allow_flush = 1;
-
 // The following noop functions are assigned to the corresponding
 // glext function pointers in the class, in case the functions are not
 // defined by the GL, just so it will always be safe to call the
@@ -272,6 +268,10 @@ CLP(GraphicsStateGuardian)(GraphicsEngine *engine, GraphicsPipe *pipe) :
   // Assume that we will get a hardware-accelerated context, unless
   // the window tells us otherwise.
   _is_hardware = true;
+
+  // calling glGetError() forces a sync, this turns it off if you want to.
+  _track_errors = !CLP(force_no_error);
+  _allow_flush = !CLP(force_no_flush);
 
 #ifdef DO_PSTATS
   if (CLP(finish)) {
@@ -824,22 +824,25 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "GenerateMipmapEXT");
   }
 
+  _supports_framebuffer_multisample = false;
   if ( has_extension("GL_EXT_framebuffer_multisample") ) {
     _supports_framebuffer_multisample = true;
     _glRenderbufferStorageMultisample = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC)
-        get_extension_func(GLPREFIX_QUOTED, "RenderbufferStorageMultisampleEXT");
+      get_extension_func(GLPREFIX_QUOTED, "RenderbufferStorageMultisampleEXT");
   }
 
+  _supports_framebuffer_multisample_coverage_nv = false;
   if ( has_extension("GL_NV_framebuffer_multisample_coverage") ) {
     _supports_framebuffer_multisample_coverage_nv = true;
     _glRenderbufferStorageMultisampleCoverage = (PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC)
-        get_extension_func(GLPREFIX_QUOTED, "RenderbufferStorageMultisampleCoverageNV");
+      get_extension_func(GLPREFIX_QUOTED, "RenderbufferStorageMultisampleCoverageNV");
   }
 
+  _supports_framebuffer_blit = false;
   if ( has_extension("GL_EXT_framebuffer_blit") ) {
     _supports_framebuffer_blit = true;
     _glBlitFramebuffer = (PFNGLBLITFRAMEBUFFEREXTPROC)
-        get_extension_func(GLPREFIX_QUOTED, "BlitFramebufferEXT");
+      get_extension_func(GLPREFIX_QUOTED, "BlitFramebufferEXT");
   }
 
   _glDrawBuffers = NULL;
@@ -856,6 +859,13 @@ reset() {
     GLP(GetIntegerv)(GL_MAX_DRAW_BUFFERS, &max_draw_buffers);
     _max_draw_buffers = max_draw_buffers;
     _maximum_simultaneous_render_targets = max_draw_buffers;
+  }
+
+  _max_fb_samples = 0;
+  if (_supports_framebuffer_multisample) {
+    GLfloat max_samples;
+    GLP(GetFloatv)(GL_MAX_SAMPLES_EXT, &max_samples);
+    _max_fb_samples = max_samples;
   }
 
   _supports_occlusion_query = false;
@@ -1175,16 +1185,6 @@ reset() {
 #endif  // OPENGLES_1
   _dithering_enabled = false;
 
-  // calling glGetError() forces a sync, this turns it off if you want to.
-  if (ConfigVariableBool("gl-force-no-error", false, PRC_DESC("make the gl GSG not report errors, as doing so is a performance hit.")))
-      _track_errors = false;
-  else
-      _track_errors = true;
-  if (ConfigVariableBool("gl-force-no-flush", false, PRC_DESC("make the gl GSG not flush, as doing so is a performance hit.  This is a dangerour setting.")))
-      _allow_flush = false;
-  else
-      _allow_flush = true;
-
   _current_shader = (Shader *)NULL;
   _current_shader_context = (CLP(ShaderContext) *)NULL;
   _vertex_array_shader = (Shader *)NULL;
@@ -1365,13 +1365,14 @@ reset() {
 void CLP(GraphicsStateGuardian)::
 clear(DrawableRegion *clearable) {
   PStatTimer timer(_clear_pcollector);
+  report_my_gl_errors();
 
   if ((!clearable->get_clear_color_active())&&
       (!clearable->get_clear_depth_active())&&
       (!clearable->get_clear_stencil_active())) {
     return;
   }
-  
+
   set_state_and_transform(RenderState::make_empty(), _internal_transform);
 
   int mask = 0;
@@ -1603,6 +1604,7 @@ begin_frame(Thread *current_thread) {
   if (!GraphicsStateGuardian::begin_frame(current_thread)) {
     return false;
   }
+  report_my_gl_errors();
 
 #ifdef DO_PSTATS
   _vertices_display_list_pcollector.clear_level();
@@ -1705,6 +1707,7 @@ end_scene() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 end_frame(Thread *current_thread) {
+  report_my_gl_errors();
 #ifdef DO_PSTATS
   // Check for textures, etc., that are no longer resident.  These
   // calls might be measurably expensive, and they don't have any
@@ -4540,8 +4543,9 @@ draw_immediate_composite_primitives(const GeomPrimitivePipelineReader *reader, G
 void CLP(GraphicsStateGuardian)::
 gl_flush() const {
   PStatTimer timer(_flush_pcollector);
-  if (_allow_flush)
-      GLP(Flush)();
+  if (_allow_flush) {
+    GLP(Flush)();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4551,10 +4555,11 @@ gl_flush() const {
 ////////////////////////////////////////////////////////////////////
 GLenum CLP(GraphicsStateGuardian)::
 gl_get_error() const {
-  if (_track_errors)
-      return GLP(GetError)();
-  else
-      return GL_NO_ERROR;
+  if (_track_errors) {
+    return GLP(GetError)();
+  } else {
+    return GL_NO_ERROR;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4568,8 +4573,6 @@ gl_get_error() const {
 bool CLP(GraphicsStateGuardian)::
 report_errors_loop(int line, const char *source_file, GLenum error_code,
                    int &error_count) {
-  if (!_track_errors)
-    return GL_NO_ERROR;
 #ifndef NDEBUG
   while ((CLP(max_errors) < 0 || error_count < CLP(max_errors)) &&
          (error_code != GL_NO_ERROR)) {
@@ -6252,6 +6255,7 @@ end_bind_clip_planes() {
 void CLP(GraphicsStateGuardian)::
 set_state_and_transform(const RenderState *target,
                         const TransformState *transform) {
+  report_my_gl_errors();
 #ifndef NDEBUG
   if (gsg_cat.is_spam()) {
     gsg_cat.spam() << "Setting GSG state to " << (void *)target << ":\n";
@@ -8652,16 +8656,15 @@ extract_texture_image(PTA_uchar &image, size_t &page_size,
   }
 
   // Now see if we were successful.
-  if (_track_errors)
-  {
+  if (_track_errors) {
     GLenum error_code = GLP(GetError)();
     if (error_code != GL_NO_ERROR) {
-        GLCAT.error()
+      GLCAT.error()
         << "Unable to extract texture for " << *tex
         << ", mipmap level " << n
         << " : " << get_error_string(error_code) << "\n";
-    nassertr(false, false);
-        return false;
+      nassertr(false, false);
+      return false;
     }
   }
   return true;

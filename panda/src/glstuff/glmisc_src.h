@@ -39,6 +39,8 @@ extern ConfigVariableBool CLP(debug_buffers);
 extern ConfigVariableBool CLP(finish);
 extern ConfigVariableBool CLP(force_depth_stencil);
 extern ConfigVariableBool CLP(matrix_palette);
+extern ConfigVariableBool CLP(force_no_error);
+extern ConfigVariableBool CLP(force_no_flush);
 
 extern EXPCL_GL void CLP(init_classes)();
 
