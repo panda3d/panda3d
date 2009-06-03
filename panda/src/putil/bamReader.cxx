@@ -334,12 +334,9 @@ resolve() {
             }
             _created_objs_by_pointer.erase(object_ptr);
 
-            Finalize::iterator fi = _finalize_list.find(object_ptr);
-            if (fi != _finalize_list.end()) {
-              // Change the pointer in the finalize list.
-              _finalize_list.erase(fi);
-              _finalize_list.insert(new_ptr);
-            }
+            // Remove the pointer from the finalize list (the new
+            // pointer presumably doesn't require finalizing).
+            _finalize_list.erase(object_ptr);
           }
           created_obj._ptr = new_ptr;
           created_obj._change_this = NULL;
@@ -984,15 +981,16 @@ p_read_object() {
       if (ri == _object_pointers.end()) {
         Finalize::iterator fi = _finalize_list.find((TypedWritable *)object);
 
-        object = created_obj._change_this(object, this);
-        created_obj._ptr = object;
+        TypedWritable *new_ptr = created_obj._change_this(object, this);
+        created_obj._ptr = new_ptr;
         created_obj._change_this = NULL;
 
-        if (fi != _finalize_list.end()) {
-          // Change the pointer in the finalize list.
-          _finalize_list.erase(fi);
-          _finalize_list.insert(object);
+        // Remove the pointer from the finalize list (the new
+        // pointer presumably doesn't require finalizing).
+        if (new_ptr != object) {
+          _finalize_list.erase(object);
         }
+        object = new_ptr;
       }
     }
 
