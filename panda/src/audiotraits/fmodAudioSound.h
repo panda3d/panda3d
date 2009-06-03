@@ -85,34 +85,34 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 
   FmodAudioSound(AudioManager *manager, Filename fn, bool positional );
   ~FmodAudioSound();
-
+            
   // For best compatability, set the loop_count, start_time,
   // volume, and balance, prior to calling play().  You may
   // set them while they're playing, but it's implementation
   // specific whether you get the results.
   void play();
   void stop();
-
+            
   // loop: false = play once; true = play forever.
   // inits to false.
   void set_loop(bool loop=true);
   bool get_loop() const;
-
+            
   // loop_count: 0 = forever; 1 = play once; n = play n times.
   // inits to 1.
   void set_loop_count(unsigned long loop_count=1);
   unsigned long get_loop_count() const;
-
+            
   // 0 = begining; length() = end.
   // inits to 0.0.
   void set_time(float start_time=0.0);
   float get_time() const;
-
+            
   // 0 = minimum; 1.0 = maximum.
   // inits to 1.0.
   void set_volume(float volume=1.0);
   float get_volume() const;
-
+            
   // -1.0 is hard left
   // 0.0 is centered
   // 1.0 is hard right
@@ -126,7 +126,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
   float get_play_rate() const;
 
   const string &get_name() const;
-
+            
   // return: playing time in seconds.
   float length() const;
 
@@ -141,11 +141,12 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 
   void set_3d_max_distance(float dist);
   float get_3d_max_distance() const;
-
+            
   AudioSound::SoundStatus status() const;
 
   virtual float get_speaker_mix(AudioManager::SpeakerId speaker);
   virtual void set_speaker_mix(float frontleft, float frontright, float center, float sub, float backleft, float backright, float sideleft, float  sideright);
+
   void set_active(bool active=true);
   bool get_active() const;
 
@@ -160,7 +161,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 
   Filename _file_name;
 
-  float _volume;
+  float _volume; 
   float _balance;
   float _playrate;
   int   _priority;
@@ -187,10 +188,10 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
 
   virtual int get_priority();
   virtual void set_priority(int priority);
-
+  
   bool _active;
   bool _paused;
-
+  
   string _finished_event;
 
   // This reference-counting pointer is set to this while the sound is
@@ -222,7 +223,7 @@ class EXPCL_FMOD_AUDIO FmodAudioSound : public AudioSound {
     return get_class_type();
   }
   virtual TypeHandle force_init_type() {
-    init_type();
+    init_type(); 
     return get_class_type();
   }
 
