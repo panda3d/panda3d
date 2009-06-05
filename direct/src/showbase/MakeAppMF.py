@@ -209,13 +209,21 @@ class AppPacker:
         # them their new location within the multifile.
         
         for tex in NodePath(node).findAllTextures():
-            if not tex.hasFullpath():
-                continue
-            
-            if tex.hasFilename():
-                tex.setFilename(self.addTexture(tex.getFullpath()))
-            if tex.hasAlphaFilename():
-                tex.setAlphaFilename(self.addTexture(tex.getAlphaFullpath()))
+            if not tex.hasFullpath() and tex.hasRamImage():
+                # We need to store this texture as a raw-data image.
+                # Clear the filename so this will happen
+                # automatically.
+                tex.clearFilename()
+                tex.clearAlphaFilename()
+
+            else:
+                # We can store this texture as a file reference to its
+                # image.  Copy the file into our multifile, and rename
+                # its reference in the texture.
+                if tex.hasFilename():
+                    tex.setFilename(self.addTexture(tex.getFullpath()))
+                if tex.hasAlphaFilename():
+                    tex.setAlphaFilename(self.addTexture(tex.getAlphaFullpath()))
                 
         # Now generate an in-memory bam file.  Tell the bam writer to
         # keep the textures referenced by their in-multifile path.
