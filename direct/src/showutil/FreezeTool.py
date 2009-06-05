@@ -36,15 +36,25 @@ linkDll = 'error'
 Python = None
 
 # The directory that includes Python.h.
-PythonIPath = '/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Python.framework/Versions/2.5/include/python2.5'
+PythonIPath = None
+
+# The root directory of Microsoft Visual Studio (if relevant)
+MSVS = None
 
 if sys.platform == 'win32':
-    compileObj = "cl /wd4996 /Fo%(basename)s.obj /nologo /c /MD /Zi /O2 /Ob2 /EHsc /Zm300 /W3 %(filename)s"
-    linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /out:%(basename)s.exe; mt -manifest %(basename)s.manifest -outputresource:%(basename)s.exe;2'
-    linkDll = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /out:%(basename)s.dll; mt -manifest %(basename)s.manifest -outputresource:%(basename)s.dll;1'
+    wtpython = '$WINTOOLS/sdk/python/Python-2.4.1'
+    Python = Filename(ExecutionEnvironment.expandString(wtpython)).toOsSpecific()
+
+    MSVS = Filename('/c/Program Files/Microsoft Visual Studio .NET 2003').toOsSpecific()
+    compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c /MD /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(python)s\Include" /I"%(python)s\PC" /I"%(msvs)s\Vc7\PlatformSDK\include" /I"%(msvs)s\Vc7\include" %(filename)s'
+    linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /out:%(basename)s.exe %(basename)s.obj'
+    linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(msvs)s\Vc7\PlatformSDK\lib" /LIBPATH:"%(msvs)s\Vc7\lib" /LIBPATH:"%(python)s\PCbuild"  /out:%(basename)s.pyd %(basename)s.obj'
 
 elif sys.platform == 'darwin':
     # OSX
+
+    PythonIPath = '/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Python.framework/Versions/2.5/include/python2.5'
+
     compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 -arch i386 -arch ppc -I %(pythonIPath)s %(filename)s"
     linkExe = "gcc -o %(basename)s %(basename)s.o -framework Python"
     linkDll = "gcc -shared -o %(basename)s.so %(basename)s.o -framework Python"
@@ -733,7 +743,7 @@ class Freezer:
                 
             initCode = dllInitCode % {
                 'dllexport' : dllexport,
-                'moduleName' : basename,
+                'moduleName' : basename.split('.')[0],
                 'newcount' : len(moduleList),
                 }
             doCompile = self.compileDll
@@ -757,6 +767,8 @@ class Freezer:
 
     def compileExe(self, filename, basename):
         compile = self.compileObj % {
+            'python' : Python,
+            'msvs' : MSVS,
             'pythonIPath' : PythonIPath,
             'filename' : filename,
             'basename' : basename,
@@ -766,6 +778,8 @@ class Freezer:
             raise StandardError
 
         link = self.linkExe % {
+            'python' : Python,
+            'msvs' : MSVS,
             'filename' : filename,
             'basename' : basename,
             }
@@ -775,6 +789,8 @@ class Freezer:
 
     def compileDll(self, filename, basename):
         compile = self.compileObj % {
+            'python' : Python,
+            'msvs' : MSVS,
             'pythonIPath' : PythonIPath,
             'filename' : filename,
             'basename' : basename,
@@ -784,6 +800,8 @@ class Freezer:
             raise StandardError
 
         link = self.linkDll % {
+            'python' : Python,
+            'msvs' : MSVS,
             'filename' : filename,
             'basename' : basename,
             }

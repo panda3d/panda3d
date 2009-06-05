@@ -22,7 +22,8 @@ Options:
   -o output
      Specifies the name of the resulting executable file to produce.
      If this ends in ".mf", a multifile is written instead of a frozen
-     binary.
+     binary.  If it ends in ".dll", ".pyd", or ".so", a shared library
+     is written.
 
   -x module[,module...]
      Specifies a comma-separated list of Python modules to exclude from
@@ -85,10 +86,20 @@ if __name__ == '__main__':
     if len(args) != 1:
         usage(1, 'Only one main file may be specified.')
 
-    freezer.setMain(args[0])
+    outputType = 'exe'
+    bl = basename.lower()
+    if bl.endswith('.mf'):
+        outputType = 'mf'
+    elif bl.endswith('.dll') or bl.endswith('.pyd') or bl.endswith('.so'):
+        basename = os.path.splitext(basename)[0]
+        outputType = 'dll'
+
+    freezer.addModule(args[0])
+    if outputType != 'dll':
+        freezer.setMain(args[0])
     freezer.done()
 
-    if basename.lower().endswith('.mf'):
+    if outputType == 'mf':
         freezer.writeMultifile(basename)
     else:
         freezer.generateCode(basename)
