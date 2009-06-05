@@ -26,8 +26,11 @@ def getCirclePoints(segCount, centerX, centerY, radius, wideX= 1.0, wideY = 1.0)
     returnShape.append((coordX, coordY, 1))
     return returnShape
     
-def addCircle(attachNode, vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0), layer = 0):
-    targetGN=GeomNode("Circle Geom")
+    
+def addCircle(attachNode, vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0), centerColor = None, layer = 0):
+    targetGN=GeomNode("target Circle")
+    if centerColor == None:
+        centerColor = color
     zFloat = 0.025
     targetCircleShape = getCirclePoints(5 + (vertexCount), 0.0, 0.0, radius)
     gFormat = GeomVertexFormat.getV3cp()
@@ -35,13 +38,14 @@ def addCircle(attachNode, vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0),
     targetCircleVertexWriter = GeomVertexWriter(targetCircleVertexData, "vertex")
     targetCircleColorWriter = GeomVertexWriter(targetCircleVertexData, "color")
     targetCircleVertexWriter.addData3f(0.0, 0.0, zFloat) #center
-    targetCircleColorWriter.addData4f(color[0], color[1], color[2], color[3])
+    targetCircleColorWriter.addData4f(centerColor[0], centerColor[1], centerColor[2], centerColor[3])
     
     for vertex in targetCircleShape:
         targetCircleVertexWriter.addData3f(0.0 + vertex[0] , 0.0 + vertex[1] , zFloat)
         targetCircleColorWriter.addData4f(color[0], color[1], color[2], color[3])
+        #targetCircleColorWriter.addData4f(1.0, 1.0, 1.0, 1.0)
         
-    targetTris=GeomTrifans(Geom.UHStatic) # triangle obejcet
+    targetTris=GeomTrifans(Geom.UHStatic) # triangle object
     
     sizeTarget = len(targetCircleShape)
     targetTris.addVertex(0)        
@@ -49,18 +53,18 @@ def addCircle(attachNode, vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0),
         targetTris.addVertex(countVertex)
     targetTris.addVertex(1)      
     targetTris.closePrimitive()
-    
+
     targetGeom=Geom(targetCircleVertexData)
     targetGeom.addPrimitive(targetTris)
     attachNode.addGeom(targetGeom)
     return targetGeom
     
-def addCircleGeom(rootNode,  vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0), layer = 0):
+def addCircleGeom(rootNode,  vertexCount, radius, color = Vec4(1.0, 1.0, 1.0, 1.0), centerColor = None, layer = 0):
      global GEO_ID
      GN=GeomNode("Circle %s" % (GEO_ID))
      GEO_ID += 1
      NodePathGeom = rootNode.attachNewNode(GN)
-     geo = addCircle(GN, vertexCount, radius, color, layer)
+     geo = addCircle(GN, vertexCount, radius, color, centerColor,layer)
      return NodePathGeom, GN, geo
      
 def addSquare(attachNode, sizeX, sizeY, color = Vec4(1.0, 1.0, 1.0, 1.0), layer = 0):
