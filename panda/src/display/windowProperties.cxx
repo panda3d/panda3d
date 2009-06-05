@@ -121,7 +121,8 @@ operator == (const WindowProperties &other) const {
           _title == other._title &&
           _icon_filename == other._icon_filename &&
           _cursor_filename == other._cursor_filename &&
-          _mouse_mode == other._mouse_mode);
+          _mouse_mode == other._mouse_mode &&
+          _parent_window == other._parent_window);
   
 }
 
