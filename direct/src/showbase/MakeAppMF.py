@@ -209,7 +209,11 @@ class AppPacker:
         # them their new location within the multifile.
         
         for tex in NodePath(node).findAllTextures():
-            tex.setFilename(self.addTexture(tex.getFullpath()))
+            if not tex.hasFullpath():
+                continue
+            
+            if tex.hasFilename():
+                tex.setFilename(self.addTexture(tex.getFullpath()))
             if tex.hasAlphaFilename():
                 tex.setAlphaFilename(self.addTexture(tex.getAlphaFullpath()))
                 
