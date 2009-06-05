@@ -3071,6 +3071,77 @@ class ClassTree:
         return self._getStr()
 
 
+class PStatScope:
+    collectors = {}
+    
+    def __init__(self, level = None):
+        self.levels = []
+        if level:
+            self.levels.append(level)
+
+    def copy(self, push = None):
+        c = PStatScope()
+        c.levels = self.levels[:]
+        if push:
+            c.push(push)
+        return c
+    
+    def __repr__(self):
+        return 'PStatScope - \'%s\'' % (self,)
+    
+    def __str__(self):
+        return ':'.join(self.levels)
+    
+    def push(self, level):
+        self.levels.append(level.replace('_',''))
+
+    def pop(self):
+        return self.levels.pop()
+
+    def start(self, push = None):
+        if push:
+            self.push(push)
+            pass
+        self.getCollector().start()
+
+    def stop(self, pop = False):
+        self.getCollector().stop()
+        if pop:
+            self.pop()
+        
+    def getCollector(self):
+        label = str(self)
+        if label not in self.collectors:
+            from pandac.PandaModules import PStatCollector
+            self.collectors[label] = PStatCollector(label)
+            pass
+        # print '  ',self.collectors[label]
+        return self.collectors[label]
+            
+def pstatcollect(scope, level = None):
+    def decorator(f):
+        return f
+
+    try:
+        
+        if not (__dev__ or config.GetBool('force-pstatcollect', 0)) or \
+           not scope:
+            return decorator
+        
+        def decorator(f):
+            def wrap(*args, **kw):
+                scope.start(push = (level or f.__name__))
+                val = f(*args, **kw)
+                scope.stop(pop = True)
+                return val
+            return wrap
+        
+        pass
+    except:
+        pass
+
+    return decorator
+                
 def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigParam = []):
     """
     This is a decorator generating function.  Use is similar to
@@ -3106,6 +3177,10 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
     prefix: Optional string to prepend to output, just before the function.
             Allows for easy grepping and is useful when merging AI/Client
             reports into a single file.
+
+    xform:  Optional callback that accepts a single parameter: argument 0 to
+            the decorated function. (assumed to be 'self')
+            It should return a value to be inserted into the report output string.
             
     notifyFunc: A notify function such as info, debug, warning, etc.
                 By default the report will be printed to stdout. This 
@@ -3118,6 +3193,11 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                   specified config strings resolve to True.
     """
 
+    
+    def indent(str):
+        global __report_indent
+        return ' '*__report_indent+str
+    
     def decorator(f):
         return f
     
@@ -3127,18 +3207,20 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
 
         # determine whether we should use the decorator
         # based on the value of dConfigParam.
+        dConfigParamList = []
         doPrint = False
         if not dConfigParam:
             doPrint = True
         else:
-            if not isinstance(dConfigParam, (list,tuple)):
-                dConfigParamList = (dConfigParam,)
-            else:
-                dConfigParamList = dConfigParam
 
-            dConfigParamList = [param for param in dConfigParamList \
+            if not isinstance(dConfigParam, (list,tuple)):
+                dConfigParams = (dConfigParam,)
+            else:
+                dConfigParams = dConfigParam
+
+            dConfigParamList = [param for param in dConfigParams \
                                 if config.GetBool('want-%s-report' % (param,), 0)]
-                
+            
             doPrint = bool(dConfigParamList)
             pass
         
@@ -3161,8 +3243,7 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
         
     except NameError,e:
         return decorator
-
-
+    
     from direct.distributed.ClockDelta import globalClockDelta
 
     def decorator(f):
@@ -3188,19 +3269,18 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             if prefixes:
                 outStr = '%%s %s' % (outStr,)
 
-            preStr = ''
 
             if 'module' in types:
                 outStr = '%s {M:%s}' % (outStr, f.__module__.split('.')[-1])
                 
             if 'frameCount' in types:
-                outStr = '%8d : %s' % (globalClock.getFrameCount(), outStr)
+                outStr = '%-8d : %s' % (globalClock.getFrameCount(), outStr)
                 
             if 'timeStamp' in types:
-                outStr = '%8.3f : %s' % (globalClock.getFrameTime(), outStr)
+                outStr = '%-8.3f : %s' % (globalClock.getFrameTime(), outStr)
 
             if 'deltaStamp' in types:
-                outStr = '%8.2f : %s' % (globalClock.getRealTime() - \
+                outStr = '%-8.2f : %s' % (globalClock.getRealTime() - \
                                          globalClockDelta.delta, outStr)                
             if 'avLocation' in types:
                 outStr = '%s : %s' % (outStr, str(localAvatar.getLocation()))
@@ -3209,31 +3289,43 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
                 outStr = '%s : %s' % (outStr, xform(args[0]))
 
             if prefixes:
+                # This will print the same report once for each prefix
                 for prefix in prefixes:
                     if notifyFunc:
                         notifyFunc(outStr % (prefix,))
                     else:
-                        print outStr % (prefix,)
+                        print indent(outStr % (prefix,))
             else:
                 if notifyFunc:
                     notifyFunc(outStr)
                 else:
-                    print outStr
+                    print indent(outStr)
 
             if 'interests' in types:
                 base.cr.printInterestSets()
                     
             if 'stackTrace' in types:
                 print StackTrace()
-
-            return f(*args,**kwargs)
+                
+            global __report_indent
+            rVal = None
+            try:
+                __report_indent += 1
+                global rVal
+                rVal = f(*args,**kwargs)
+            finally:
+                __report_indent -= 1
+                if rVal:
+                    print indent(' -> '+repr(rVal))
+                    pass
+                pass
+            return rVal
 
         wrap.func_name = f.func_name
         wrap.func_dict = f.func_dict
         wrap.func_doc = f.func_doc
         wrap.__module__ = f.__module__
         return wrap
-    
     return decorator
 
 def getBase():
@@ -3952,6 +4044,7 @@ __builtin__.loopGen = loopGen
 __builtin__.StackTrace = StackTrace
 __builtin__.choice = choice
 __builtin__.report = report
+__builtin__.pstatcollect = pstatcollect
 __builtin__.MiniLog = MiniLog
 __builtin__.MiniLogSentry = MiniLogSentry
 __builtin__.logBlock = logBlock
