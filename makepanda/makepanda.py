@@ -142,9 +142,9 @@ parseopts(sys.argv[1:])
 
 # Now check if CFLAGS happens to be set
 if (os.environ.has_key("CFLAGS")):
-  CFLAGS=os.environ["CFLAGS"]
+    CFLAGS=os.environ["CFLAGS"]
 if (os.environ.has_key("RPM_OPT_FLAGS")):
-  CFLAGS+=os.environ["RPM_OPT_FLAGS"]
+    CFLAGS+=os.environ["RPM_OPT_FLAGS"]
 
 ########################################################################
 ##
@@ -156,8 +156,8 @@ MakeBuildTree()
 
 SdkLocateDirectX()
 if TARGET in ["all", "plugins"]:
-  SdkLocateMaya()
-  SdkLocateMax()
+    SdkLocateMaya()
+    SdkLocateMax()
 SdkLocateMacOSX()
 SdkLocatePython()
 SdkLocateVisualStudio()
@@ -165,8 +165,8 @@ SdkLocateMSPlatform()
 
 SdkAutoDisableDirectX()
 if TARGET in ["all", "plugins"]:
-  SdkAutoDisableMaya()
-  SdkAutoDisableMax()
+    SdkAutoDisableMaya()
+    SdkAutoDisableMax()
 
 ########################################################################
 ##
@@ -468,6 +468,17 @@ printStatus("Makepanda Initial Status Report", WARNINGS)
 
 ########################################################################
 ##
+## BracketNameWithQuotes
+##
+########################################################################
+
+def BracketNameWithQuotes(name):
+    # Account for quoted name (leave as is) but quote everything else (e.g., to protect spaces within paths from improper parsing)
+    if (name.startswith('"') and name.endswith('"')): return name
+    else: return '"' + name + '"'
+
+########################################################################
+##
 ## CompileCxx
 ##
 ########################################################################
@@ -478,7 +489,7 @@ def CompileCxx(obj,src,opts):
         cmd = "cl /favor:blend /wd4996 /wd4275 /wd4267 /wd4101 /Fo" + obj + " /nologo /c "
         for x in ipath: cmd = cmd + " /I" + x
         for (opt,dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /I"' + dir + '"'
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /I' + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /D' + var + "=" + val
         if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
@@ -493,13 +504,13 @@ def CompileCxx(obj,src,opts):
         if (building): cmd = cmd + " /DBUILDING_" + building
         bigObjFlag = GetValueOption(opts, "BIGOBJ:")
         if (bigObjFlag): cmd += " /bigobj"
-        cmd = cmd + " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + src
+        cmd = cmd + " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
         oscmd(cmd)
     if (COMPILER=="LINUX"):
         if (src.endswith(".c")): cmd = 'gcc -fPIC -c -o ' + obj
         else:                    cmd = 'g++ -ftemplate-depth-30 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -I"' + dir + '"'
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -I' + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -D' + var + '=' + val
         for x in ipath: cmd = cmd + ' -I' + x
@@ -513,7 +524,7 @@ def CompileCxx(obj,src,opts):
         if (CFLAGS !=""): cmd = cmd + " " + CFLAGS
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd = cmd + " -DBUILDING_" + building
-        cmd = cmd + ' ' + src
+        cmd = cmd + ' ' + BracketNameWithQuotes(src)
         oscmd(cmd)
 
 ########################################################################
@@ -594,15 +605,15 @@ def CompileIgate(woutd,wsrc,opts):
     cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
     cmd = cmd + ' -fnames -string -refcount -assert -python-native'
     cmd = cmd + ' -S' + GetOutputDir() + '/include/parser-inc'
-    for x in ipath: cmd = cmd + ' -I' + x
+    for x in ipath: cmd = cmd + ' -I' + BracketNameWithQuotes(x)
     for (opt,dir) in INCDIRECTORIES:
-        if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -S"' + dir + '"'
+        if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -S' + BracketNameWithQuotes(dir)
     for (opt,var,val) in DEFSYMBOLS:
         if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -D' + var + '=' + val
     building = GetValueOption(opts, "BUILDING:")
     if (building): cmd = cmd + " -DBUILDING_"+building
     cmd = cmd + ' -module ' + module + ' -library ' + library
-    for x in wsrc: cmd = cmd + ' ' + os.path.basename(x)
+    for x in wsrc: cmd = cmd + ' ' + BracketNameWithQuotes(os.path.basename(x))
     oscmd(cmd)
     CompileCxx(wobj,woutc,opts)
     return
@@ -626,7 +637,7 @@ def CompileImod(wobj, wsrc, opts):
         return
     cmd = GetOutputDir() + '/bin/interrogate_module '
     cmd = cmd + ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
-    for x in wsrc: cmd = cmd + ' ' + x
+    for x in wsrc: cmd = cmd + ' ' + BracketNameWithQuotes(x)
     oscmd(cmd)
     CompileCxx(wobj,woutc,opts)
     return
@@ -643,15 +654,15 @@ def CompileLib(lib, obj, opts):
         (arch, osName) = platform.architecture()
         if arch=='64bit':
             cmd += "/MACHINE:X64 "
-        cmd += '/OUT:' + lib
-        for x in obj: cmd = cmd + ' ' + x
+        cmd += '/OUT:' + BracketNameWithQuotes(lib)
+        for x in obj: cmd = cmd + ' ' + BracketNameWithQuotes(x)
         oscmd(cmd)
     if (COMPILER=="LINUX"):
         if sys.platform == 'darwin':
-            cmd = 'libtool -static -o ' + lib
+            cmd = 'libtool -static -o ' + BracketNameWithQuotes(lib)
         else:
             cmd = 'ar cru ' + lib
-        for x in obj: cmd=cmd + ' ' + x
+        for x in obj: cmd=cmd + ' ' + BracketNameWithQuotes(x)
         oscmd(cmd)
 
 ########################################################################
@@ -675,11 +686,11 @@ def CompileLink(dll, obj, opts):
         if (optlevel==3): cmd = cmd + " /MAP:NUL "
         if (optlevel==4): cmd = cmd + " /MAP:NUL /LTCG "
         cmd = cmd + " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
-        cmd = cmd + ' /OUT:' + dll
+        cmd = cmd + ' /OUT:' + BracketNameWithQuotes(dll)
         if (dll.endswith(".dll")):
             cmd = cmd + ' /IMPLIB:' + GetOutputDir() + '/lib/'+dll[len(GetOutputDir()+"/bin/"):-4]+".lib"
         for (opt, dir) in LIBDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /LIBPATH:"' + dir + '"'
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /LIBPATH:' + BracketNameWithQuotes(dir)
         for x in obj:
             if (x.endswith(".dll")):
                 cmd = cmd + ' ' + GetOutputDir() + '/lib/' + x[len(GetOutputDir()+"/bin/"):-4] + ".lib"
@@ -687,16 +698,16 @@ def CompileLink(dll, obj, opts):
                 dname = x[:-4]+".dll"
                 if (os.path.exists(GetOutputDir()+"/bin/" + x[len(GetOutputDir()+"/bin/"):-4] + ".dll")):
                     exit("Error: in makepanda, specify "+dname+", not "+x)
-                cmd = cmd + ' ' + x
+                cmd = cmd + ' ' + BracketNameWithQuotes(x)
             elif (x.endswith(".def")):
-                cmd = cmd + ' /DEF:"' + x + '"'
+                cmd = cmd + ' /DEF:' + BracketNameWithQuotes(x)
             elif (x.endswith(".dat")):
                 pass
-            else: cmd = cmd + ' ' + x
+            else: cmd = cmd + ' ' + BracketNameWithQuotes(x)
         if (GetOrigExt(dll)==".exe" and platform.architecture()[0] == "32bit"):
             cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
         for (opt, name) in LIBNAMES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + BracketNameWithQuotes(name)
         oscmd(cmd)
         SetVC90CRTVersion(dll+".manifest", VC90CRTVERSION)
         mtcmd = 'mt -manifest ' + dll + '.manifest -outputresource:' + dll
@@ -718,9 +729,9 @@ def CompileLink(dll, obj, opts):
                 else:
                     cmd = cmd + ' ' + x
         for (opt, dir) in LIBDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -L"' + dir + '"'
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -L' + BracketNameWithQuotes(dir)
         for (opt, name) in LIBNAMES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + name
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + BracketNameWithQuotes(name)
         cmd = cmd + " -lpthread -ldl"
         if (sys.platform == "darwin"):
             cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch ppc -arch i386"
@@ -737,8 +748,8 @@ def CompileEggPZ(eggpz, src, opts):
     if (src.endswith(".egg")):
         CopyFile(eggpz[:-3], src)
     elif (src.endswith(".flt")):
-        oscmd(GetOutputDir()+"/bin/flt2egg -ps keep -o " + eggpz[:-3] + " " + src)
-    oscmd(GetOutputDir()+"/bin/pzip " + eggpz[:-3])
+        oscmd(GetOutputDir()+"/bin/flt2egg -ps keep -o " + BracketNameWithQuotes(eggpz[:-3]) + " " + BracketNameWithQuotes(src))
+    oscmd(GetOutputDir()+"/bin/pzip " + BracketNameWithQuotes(eggpz[:-3]))
 
 ##########################################################################################
 #
