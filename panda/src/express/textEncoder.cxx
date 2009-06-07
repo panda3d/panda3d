@@ -374,7 +374,7 @@ operator >> (istream &in, TextEncoder::Encoding &encoding) {
 
   if (word == "iso8859") {
     encoding = TextEncoder::E_iso8859;
-  } else if (word == "utf8") {
+  } else if (word == "utf8" || word == "utf-8") {
     encoding = TextEncoder::E_utf8;
   } else if (word == "unicode") {
     encoding = TextEncoder::E_unicode;
