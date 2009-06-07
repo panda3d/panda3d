@@ -56,6 +56,7 @@ class Messenger:
         self.quieting={"NewFrame":1,
                        "avatarMoving":1,
                        "event-loop-done":1,
+                       'collisionLoopFinished':1,
                        } # see def quiet()
 
     def _getMessengerId(self, object):
