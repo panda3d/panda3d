@@ -3761,17 +3761,31 @@ void Texture::
 do_setup_texture(Texture::TextureType texture_type, int x_size, int y_size,
                  int z_size, Texture::ComponentType component_type,
                  Texture::Format format) {
-  if (texture_type == TT_cube_map) {
+  switch (texture_type) {
+  case TT_1d_texture:
+    nassertv(y_size == 1 && z_size == 1);
+    break;
+
+  case TT_2d_texture:
+    nassertv(z_size == 1);
+    break;
+
+  case TT_3d_texture:
+    break;
+    
+  case TT_cube_map:
     // Cube maps must always consist of six square images.
     nassertv(x_size == y_size && z_size == 6);
-
+    
     // In principle the wrap mode shouldn't mean anything to a cube
     // map, but some drivers seem to misbehave if it's other than
     // WM_clamp.
     _wrap_u = WM_clamp;
     _wrap_v = WM_clamp;
     _wrap_w = WM_clamp;
+    break;
   }
+
   if (texture_type != TT_2d_texture) {
     do_clear_simple_ram_image();
   }
