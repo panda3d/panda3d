@@ -73,6 +73,9 @@ PUBLISHED:
   INLINE void set_client_datagram(bool client_datagram);
   INLINE bool get_client_datagram() const;
 
+  INLINE void set_handle_datagrams_internally(bool handle_datagrams_internally);
+  INLINE bool get_handle_datagrams_internally() const;
+
 #ifdef HAVE_PYTHON
   INLINE void set_python_repository(PyObject *python_repository);
 #endif
@@ -185,6 +188,7 @@ private:
   bool _has_owner_view;
   bool _handle_c_updates;
   bool _client_datagram;
+  bool _handle_datagrams_internally;
   bool _simulated_disconnect;
   bool _verbose;
 

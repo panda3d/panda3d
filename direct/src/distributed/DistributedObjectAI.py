@@ -3,7 +3,6 @@
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.distributed.DistributedObjectBase import DistributedObjectBase
 from direct.showbase import PythonUtil
-from otp.ai.AIZoneData import AIZoneData
 from pandac.PandaModules import *
 #from PyDatagram import PyDatagram
 #from PyDatagramIterator import PyDatagramIterator
@@ -303,6 +302,7 @@ class DistributedObjectAI(DistributedObjectBase):
         # setLocation destroys self._zoneData if we move away to
         # a different zone
         if self._zoneData is None:
+            from otp.ai.AIZoneData import AIZoneData
             self._zoneData = AIZoneData(self.air, self.parentId, self.zoneId)
         return self._zoneData
 
@@ -334,9 +334,7 @@ class DistributedObjectAI(DistributedObjectBase):
     def sendUpdate(self, fieldName, args = []):
         assert self.notify.debugStateCall(self)
         if self.air:
-            dg = self.dclass.aiFormatUpdate(
-                fieldName, self.doId, self.doId, self.air.ourChannel, args)
-            self.air.sendDatagram(dg)        
+            self.air.sendUpdate(self, fieldName, args)
 
     def GetPuppetConnectionChannel(self, doId):
         return doId + (1L << 32)
@@ -510,14 +508,14 @@ class DistributedObjectAI(DistributedObjectBase):
             self.__barriers[context] = barrier
 
             # Send the context number to each involved client.
-            self.sendUpdate("setBarrierData", [self.__getBarrierData()])
+            self.sendUpdate("setBarrierData", [self.getBarrierData()])
         else:
             # No avatars; just call the callback immediately.
             callback(avIds)
 
         return context
 
-    def __getBarrierData(self):
+    def getBarrierData(self):
         # Returns the barrier data formatted for sending to the
         # clients.  This lists all of the current outstanding barriers
         # and the avIds waiting for them.
@@ -565,5 +563,9 @@ class DistributedObjectAI(DistributedObjectBase):
         return 0
 
     def execCommand(self, string, mwMgrId, avId, zoneId):
+        pass
+    
+    def _retrieveCachedData(self):
+        """ This is a no-op on the AI. """
         pass
     

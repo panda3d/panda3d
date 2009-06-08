@@ -23,6 +23,9 @@ class DoCollectionManager:
     def getDo(self, doId):
         return self.doId2do.get(doId)
 
+    def getGameDoId(self):
+        return self.GameGlobalsId
+
     def callbackWithDo(self, doId, callback):
         do = self.doId2do.get(doId)
         if do is not None:
@@ -337,14 +340,14 @@ class DoCollectionManager:
             parentObj = self.doId2do.get(parentId)
             if parentObj is not None:
                 parentObj.handleChildArrive(object, zoneId)
-            elif parentId not in (0, self.getGameDoId()):
+            elif parentId not in (None, 0, self.getGameDoId()):
                 self.notify.warning('storeObjectLocation(%s): parent %s not present' %
                                     (object.doId, parentId))
         elif oldZoneId != zoneId:
             parentObj = self.doId2do.get(parentId)
             if parentObj is not None:
                 parentObj.handleChildArriveZone(object, zoneId)
-            elif parentId not in (0, self.getGameDoId()):
+            elif parentId not in (None, 0, self.getGameDoId()):
                 self.notify.warning('storeObjectLocation(%s): parent %s not present' %
                                     (object.doId, parentId))
             

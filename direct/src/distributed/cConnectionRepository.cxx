@@ -62,6 +62,7 @@ CConnectionRepository(bool has_owner_view) :
   _native(false),
 #endif
   _client_datagram(true),
+  _handle_datagrams_internally(handle_datagrams_internally),
   _simulated_disconnect(false),
   _verbose(distributed_cat.is_spam()),
 //  _msg_channels(),
@@ -275,15 +276,13 @@ check_datagram() {
     // Start breaking apart the datagram.
     _di = DatagramIterator(_dg);
 
-    if (!_client_datagram) 
-    {
+    if (!_client_datagram) {
       unsigned char  wc_cnt;
       wc_cnt = _di.get_uint8();
       _msg_channels.clear();
-      for(unsigned char lp1 = 0; lp1 < wc_cnt; lp1++)
-      {
-            CHANNEL_TYPE  schan  = _di.get_uint64();
-            _msg_channels.push_back(schan);
+      for (unsigned char lp1 = 0; lp1 < wc_cnt; lp1++) {
+        CHANNEL_TYPE  schan  = _di.get_uint64();
+        _msg_channels.push_back(schan);
       }
       _msg_sender = _di.get_uint64();
       
@@ -301,6 +300,10 @@ check_datagram() {
 
     _msg_type = _di.get_uint16();
     // Is this a message that we can process directly?
+    if (!_handle_datagrams_internally) {
+      return true;
+    }
+
     switch (_msg_type) {
 #ifdef HAVE_PYTHON
     case CLIENT_OBJECT_UPDATE_FIELD:
@@ -321,7 +324,7 @@ check_datagram() {
       }
       break;
 #endif  // HAVE_PYTHON
-
+      
     default:
       // Some unknown message; let the caller deal with it.
       return true;

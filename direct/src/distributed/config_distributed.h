@@ -20,12 +20,14 @@
 #include "dconfig.h"
 #include "configVariableInt.h"
 #include "configVariableDouble.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDecl(distributed, EXPCL_DIRECT, EXPTP_DIRECT);
 
 extern ConfigVariableInt game_server_timeout_ms;
 extern ConfigVariableDouble min_lag;
 extern ConfigVariableDouble max_lag;
+extern ConfigVariableBool handle_datagrams_internally;
 
 extern EXPCL_DIRECT void init_libdistributed();
 

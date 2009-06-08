@@ -2,7 +2,7 @@
 
 from pandac.PandaModules import *
 #from TaskManagerGlobal import *
-from direct.distributed.MsgTypes import *
+from direct.distributed.MsgTypesCMU import *
 from direct.task import Task
 from direct.directnotify import DirectNotifyGlobal
 from direct.distributed.PyDatagram import PyDatagram
@@ -15,33 +15,128 @@ class ServerRepository:
     """ This maintains the server-side connection with a Panda server.
     It is only for use with the Panda LAN server provided by CMU."""
 
-    notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepository")
+    notify = DirectNotifyGlobal.directNotify.newCategory("ServerRepository")
 
-    def __init__(self, tcpPort, udpPort, dcFileNames = None):
+    class Client:
+        """ This internal class keeps track of the data associated
+        with each connected client. """
+        def __init__(self, connection, netAddress, doIdBase):
+            # The connection used to communicate with the client.
+            self.connection = connection
+
+            # The net address to the client, including IP address.
+            # Used for reporting purposes only.
+            self.netAddress = netAddress
+
+            # The first doId in the range assigned to the client.
+            # This also serves as a unique numeric ID for this client.
+            # (It is sometimes called "avatarId" in some update
+            # messages, even though the client is not required to use
+            # this particular number as an avatar ID.)
+            self.doIdBase = doIdBase
+
+            # The set of zoneIds that the client explicitly has
+            # interest in.  The client will receive updates for all
+            # distributed objects appearing in one of these zones.
+            # (The client will also receive updates for all zones in
+            # which any one of the distributed obejcts that it has
+            # created still exist.)
+            self.explicitInterestZoneIds = set()
+
+            # The set of interest zones sent to the client at the last
+            # update.  This is the actual set of zones the client is
+            # informed of.  Changing the explicitInterestZoneIds,
+            # above, creating or deleting objects in different zones,
+            # or moving objects between zones, might influence this
+            # set.
+            self.currentInterestZoneIds = set()
+            
+            # A dictionary of doId -> Object, for distributed objects
+            # currently in existence that were created by the client.
+            self.objectsByDoId = {}
+
+            # A dictionary of zoneId -> set([Object]), listing the
+            # distributed objects assigned to each zone, of the
+            # objects created by this client.
+            self.objectsByZoneId = {}
+
+    class Object:
+        """ This internal class keeps track of the data associated
+        with each extent distributed object. """
+        def __init__(self, doId, zoneId, dclass):
+            # The object's distributed ID.
+            self.doId = doId
+
+            # The object's current zone.  Each object is associated
+            # with only one zone.
+            self.zoneId = zoneId
+
+            # The object's class type.
+            self.dclass = dclass
+
+            # Note that the server does not store any other data about
+            # the distributed objects; in particular, it doesn't
+            # record its current fields.  That is left to the clients.
+            
+
+    def __init__(self, tcpPort, udpPort = None, dcFileNames = None):
+        # Set up networking interfaces.
         self.qcm = QueuedConnectionManager()
         self.qcl = QueuedConnectionListener(self.qcm, 0)
         self.qcr = QueuedConnectionReader(self.qcm, 0)
         self.cw = ConnectionWriter(self.qcm, 0)
         self.tcpRendezvous = self.qcm.openTCPServerRendezvous(tcpPort, 10)
-        print self.tcpRendezvous
         self.qcl.addConnection(self.tcpRendezvous)
         taskMgr.add(self.listenerPoll, "serverListenerPollTask")
         taskMgr.add(self.readerPollUntilEmpty, "serverReaderPollTask")
         taskMgr.add(self.clientHardDisconnectTask, "clientHardDisconnect")
-        self.ClientIP = {}
-        self.ClientZones = {}
-        self.ClientDOIDbase = {}
-        self.ClientObjects = {}
-        self.DOIDnext = 1
-        self.DOIDrange = 1000000
-        self.DOIDtoClient = {}
-        self.DOIDtoZones = {}
-        self.DOIDtoDClass = {}
-        self.ZonesToClients = {}
-        self.ZonetoDOIDs = {}
+
+        # A set of clients that have recently been written to and may
+        # need to be flushed.
+        self.needsFlush = set()
+
+        collectTcpInterval = ConfigVariableDouble('collect-tcp-interval').getValue()
+        taskMgr.doMethodLater(collectTcpInterval, self.flushTask, 'flushTask')
+
+        # A dictionary of connection -> Client object, tracking all of
+        # the clients we currently have connected.
+        self.clientsByConnection = {}
+
+        # A similar dictionary of doIdBase -> Client object, indexing
+        # by the client's doIdBase number instead.
+        self.clientsByDoIdBase = {}
+
+        # A dictionary of zoneId -> set([Client]), listing the clients
+        # that have an interest in each zoneId.
+        self.zonesToClients = {}
+
+        # A dictionary of zoneId -> set([Object]), listing the
+        # distributed objects assigned to each zone, globally.
+        self.objectsByZoneId = {}
+
+        # The number of doId's to assign to each client.  Must remain
+        # constant during server lifetime.
+        self.doIdRange = base.config.GetInt('server-doid-range', 1000000)
+
+        # An allocator object that assigns the next doIdBase to each
+        # client.
+        self.idAllocator = UniqueIdAllocator(0, 0xffffffff / self.doIdRange)
+        
         self.dcFile = DCFile()
         self.dcSuffix = ''
         self.readDCFile(dcFileNames)
+
+    def flushTask(self, task):
+        """ This task is run periodically to flush any connections
+        that might need it.  It's only necessary in cases where
+        collect-tcp is set true (if this is false, messages are sent
+        immediately and do not require periodic flushing). """
+
+        for client in self.needsFlush:
+            client.connection.flush()
+        self.needsFlush = set()
+
+        return task.again
 
     def importModule(self, dcImports, moduleName, importSymbols):
         """ Imports the indicated moduleName and all of its symbols
@@ -142,7 +237,7 @@ class ServerRepository:
                 classDef = dcImports.get(className)
 
             if classDef == None:
-                self.notify.info("No class definition for %s." % (className))
+                self.notify.debug("No class definition for %s." % (className))
             else:
                 if type(classDef) == types.ModuleType:
                     if not hasattr(classDef, className):
@@ -168,31 +263,38 @@ class ServerRepository:
             newConnection = PointerToConnection()
             retVal = self.qcl.getNewConnection(rendezvous, netAddress,
                                                newConnection)
-            if retVal:
-                # Crazy dereferencing
-                newConnection=newConnection.p()
-                self.qcr.addConnection(newConnection)
-                #  Add clients infomation to dictionary
-                self.ClientIP[newConnection] = netAddress.getIpString()
-                self.ClientZones[newConnection] = []
-                self.ClientObjects[newConnection] = []
-                self.lastConnection = newConnection
-                self.sendDOIDrange(self.lastConnection)
-            else:
-                self.notify.warning(
-                    "getNewConnection returned false")
+            if not retVal:
+                return
+
+            # Crazy dereferencing
+            newConnection=newConnection.p()
+            self.qcr.addConnection(newConnection)
+
+            #  Add clients information to dictionary
+            id = self.idAllocator.allocate()
+            doIdBase = id * self.doIdRange + 1
+
+            self.notify.info(
+                "Got client %s from %s" % (doIdBase, netAddress))
+
+            client = self.Client(newConnection, netAddress, doIdBase)
+            self.clientsByConnection[client.connection] = client
+            self.clientsByDoIdBase[client.doIdBase] = client
+            
+            self.lastConnection = newConnection
+            self.sendDoIdRange(client)
+            
         return Task.cont
 
-# continuously polls for new messages on the server
-
     def readerPollUntilEmpty(self, task):
+        """ continuously polls for new messages on the server """
         while self.readerPollOnce():
             pass
         return Task.cont
 
-# checks for available messages to the server
-
     def readerPollOnce(self):
+        """ checks for available messages to the server """
+
         availGetVal = self.qcr.dataAvailable()
         if availGetVal:
             datagram = NetDatagram()
@@ -200,212 +302,388 @@ class ServerRepository:
             if readRetVal:
                 # need to send to message processing unit
                 self.handleDatagram(datagram)
-            else:
-                self.notify.warning("getData returned false")
         return availGetVal
 
-# switching station for messages
-
     def handleDatagram(self, datagram):
+        """ switching station for messages """
+
+        client = self.clientsByConnection.get(datagram.getConnection())
+
+        if self.notify.getDebug():
+            self.notify.debug(
+                "ServerRepository received datagram from %s:" % (client.doIdBase))
+            datagram.dumpHex(ostream)
+
+        if not client:
+            # This shouldn't be possible.
+            self.notify.error(
+                "Received datagram from unknown connection.")
+
         dgi = DatagramIterator(datagram)
+
         type = dgi.getUint16()
 
-        if type == CLIENT_DISCONNECT:
-            self.handleClientDisconnect(datagram.getConnection())
-        elif type == CLIENT_SET_ZONE_CMU:
-            self.handleSetZone(dgi, datagram.getConnection())
-        elif type == CLIENT_REMOVE_ZONE:
-            self.handleRemoveZone(dgi, datagram.getConnection())
-        elif type == CLIENT_CREATE_OBJECT_REQUIRED:
-            self.handleClientCreateObjectRequired(datagram, dgi)
+        if type == CLIENT_DISCONNECT_CMU:
+            self.handleClientDisconnect(client)
+        elif type == CLIENT_SET_INTEREST_CMU:
+            self.handleClientSetInterest(client, dgi)
+        elif type == CLIENT_OBJECT_GENERATE_CMU:
+            self.handleClientCreateObject(datagram, dgi)
         elif type == CLIENT_OBJECT_UPDATE_FIELD:
-            self.handleClientUpdateField(datagram, dgi)
-        elif type == CLIENT_OBJECT_DELETE:
+            self.handleClientObjectUpdateField(datagram, dgi)
+        elif type == CLIENT_OBJECT_UPDATE_FIELD_TARGETED_CMU:
+            self.handleClientObjectUpdateField(datagram, dgi, targeted = True)
+        elif type == OBJECT_DELETE_CMU:
             self.handleClientDeleteObject(datagram, dgi.getUint32())
-        elif type == CLIENT_OBJECT_DISABLE:
-            self.handleClientDisable(datagram, dgi.getUint32())
+        elif type == OBJECT_SET_ZONE_CMU:
+            self.handleClientObjectSetZone(datagram, dgi)
         else:
             self.handleMessageType(type, dgi)
 
     def handleMessageType(self, msgType, di):
-        self.notify.error("unrecognized message")
+        self.notify.warning("unrecognized message type %s" % (msgType))
 
-# client wants to create an object, so we store appropriate data,
-# and then pass message along to corresponding zones
+    def handleClientCreateObject(self, datagram, dgi):
+        """ client wants to create an object, so we store appropriate
+        data, and then pass message along to corresponding zones """
 
-    def handleClientCreateObjectRequired(self, datagram, dgi):
         connection = datagram.getConnection()
-        # no need to create a new message, just forward the received
-        # message as it has the same msg type number
-        zone    = dgi.getUint32()
-        classid = dgi.getUint16()
-        doid    = dgi.getUint32()
-        rest    = dgi.getRemainingBytes()
-        datagram = NetDatagram()
-        datagram.addUint16(CLIENT_CREATE_OBJECT_REQUIRED)
-        datagram.addUint16(classid)
-        datagram.addUint32(doid)
-        datagram.appendData(rest)
-        dclass = self.dclassesByNumber[classid]
-        if self.ClientObjects[connection].count(doid) == 0:
-            self.ClientObjects[connection].append(doid)
-        self.DOIDtoZones[doid] = zone
-        self.DOIDtoDClass[doid] = dclass
-        if zone in self.ZonetoDOIDs:
-            if self.ZonetoDOIDs[zone].count(doid)==0:
-                self.ZonetoDOIDs[zone].append(doid)
+        zoneId  = dgi.getUint32()
+        classId = dgi.getUint16()
+        doId    = dgi.getUint32()
+
+        client = self.clientsByConnection[connection]
+
+        if self.getDoIdBase(doId) != client.doIdBase:
+            self.notify.warning(
+                "Ignoring attempt to create invalid doId %s from client %s" % (doId, client.doIdBase))
+            return
+
+        dclass = self.dclassesByNumber[classId]
+
+        object = client.objectsByDoId.get(doId)
+        if object:
+            # This doId is already in use; thus, this message is
+            # really just an update.
+            if object.dclass != dclass:
+                self.notify.warning(
+                    "Ignoring attempt to change object %s from %s to %s by client %s" % (
+                    doId, object.dclass.getName(), dclass.getName(), client.doIdBase))
+                return
+            self.setObjectZone(client, object, zoneId)
         else:
-            self.ZonetoDOIDs[zone] = [doid]
-        self.sendToZoneExcept(zone, datagram, connection)
+            if self.notify.getDebug():
+                self.notify.debug(
+                    "Creating object %s of type %s by client %s" % (
+                    doId, dclass.getName(), client.doIdBase))
+                    
+            object = self.Object(doId, zoneId, dclass)
+            client.objectsByDoId[doId] = object
+            client.objectsByZoneId.setdefault(zoneId, set()).add(object)
+            self.objectsByZoneId.setdefault(zoneId, set()).add(object)
+
+            self.updateClientInterestZones(client)
 
 
-    # client wants to update an object, forward message along
-    # to corresponding zone
+        # Rebuild the new datagram that we'll send on.  We shim in the
+        # doIdBase of the owner.
+        dg = PyDatagram()
+        dg.addUint16(OBJECT_GENERATE_CMU)
+        dg.addUint32(client.doIdBase)
+        dg.addUint32(zoneId)
+        dg.addUint16(classId)
+        dg.addUint32(doId)
+        dg.appendData(dgi.getRemainingBytes())
+        
+        self.sendToZoneExcept(zoneId, dg, [client])
 
-    def handleClientUpdateField(self, datagram, dgi):
+    def handleClientObjectUpdateField(self, datagram, dgi, targeted = False):
+        """ Received an update request from a client. """
         connection = datagram.getConnection()
-        doid = dgi.getUint32()
-        fieldid = dgi.getUint16()
-        dclass = self.DOIDtoDClass[doid]
-        dcfield = dclass.getFieldByIndex(fieldid)
+        client = self.clientsByConnection[connection]
+
+        if targeted:
+            targetId = dgi.getUint32()
+        doId = dgi.getUint32()
+        fieldId = dgi.getUint16()
+
+        doIdBase = self.getDoIdBase(doId)
+        owner = self.clientsByDoIdBase.get(doIdBase)
+        object = owner and owner.objectsByDoId.get(doId)
+        if not object:
+            self.notify.warning(
+                "Ignoring update for unknown object %s from client %s" % (
+                doId, client.doIdBase))
+            return
+        
+        dcfield = object.dclass.getFieldByIndex(fieldId)
         if dcfield == None:
-          self.notify.error(
-              "Received update for field %s on object %s; no such field for class %s." % (
-              fieldid, doid, dclass.getName()))
-          return
-        if (dcfield.hasKeyword('broadcast')):
+            self.notify.warning(
+                "Ignoring update for field %s on object %s from client %s; no such field for class %s." % (
+                fieldId, doId, client.doIdBase, object.dclass.getName()))
 
-          if (dcfield.hasKeyword('p2p')):
-            self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, 0)
-          else:
-            self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, connection)
-        elif (dcfield.hasKeyword('p2p')):
-          doidbase = (doid / self.DOIDrange) * self.DOIDrange
-          self.cw.send(datagram, self.DOIDtoClient[doidbase])
+        if client != owner:
+            # This message was not sent by the object's owner.
+            if not dcfield.hasKeyword('clsend') and not dcfield.hasKeyword('p2p'):
+                self.notify.warning(
+                    "Ignoring update for %s.%s on object %s from client %s: not owner" % (
+                    dclass.getName(), dcfield.getName(), doId, client.doIdBase))
+                return
+
+        # We reformat the message slightly to insert the sender's
+        # doIdBase.
+        dg = PyDatagram()
+        dg.addUint16(OBJECT_UPDATE_FIELD_CMU)
+        dg.addUint32(client.doIdBase)
+        dg.addUint32(doId)
+        dg.addUint16(fieldId)
+        dg.appendData(dgi.getRemainingBytes())
+
+        if targeted:
+            # A targeted update: only to the indicated client.
+            target = self.clientsByDoIdBase.get(targetId)
+            if not target:
+                self.notify.warning(
+                    "Ignoring targeted update to %s for %s.%s on object %s from client %s: target not known" % (
+                    targetId,
+                    dclass.getName(), dcfield.getName(), doId, client.doIdBase))
+                return
+            self.cw.send(dg, target.connection)
+            self.needsFlush.add(target)
+            
+        elif dcfield.hasKeyword('p2p'):
+            # p2p: to object owner only
+            self.cw.send(dg, owner.connection)
+            self.needsFlush.add(owner)
+                        
+        elif dcfield.hasKeyword('broadcast'):
+            # Broadcast: to everyone except orig sender
+            self.sendToZoneExcept(object.zoneId, dg, [client])
+            
+        elif dcfield.hasKeyword('reflect'):
+            # Reflect: broadcast to everyone including orig sender
+            self.sendToZoneExcept(object.zoneId, dg, [])
+
         else:
-          self.notify.warning(
-                "Message is not broadcast, p2p, or broadcast+p2p")
+            self.notify.warning(
+                "Message is not broadcast or p2p")
 
-    # client disables an object, let everyone know who is in
-    # that zone know about it
+    def getDoIdBase(self, doId):
+        """ Given a doId, return the corresponding doIdBase.  This
+        will be the owner of the object (clients may only create
+        object doId's within their assigned range). """
 
-    def handleClientDisable(self, datagram, doid):
-        # now send disable message to all clients that need to know
-        if doid in self.DOIDtoZones:
-            self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, 0)
+        return int(doId / self.doIdRange) * self.doIdRange + 1
 
-    # client deletes an object, let everyone who is in zone with
-    # object know about it
+    def handleClientDeleteObject(self, datagram, doId):
+        """ client deletes an object, let everyone who has interest in
+        the object's zone know about it. """
 
-    def handleClientDeleteObject(self, datagram, doid):
-        if doid in self.DOIDtoZones:
-            self.sendToZoneExcept(self.DOIDtoZones[doid], datagram, 0)
-            self.ClientObjects[datagram.getConnection()].remove(doid)
-            self.ZonetoDOIDs[self.DOIDtoZones[doid]].remove(doid)
-            del self.DOIDtoZones[doid]
-            del self.DOIDtoDClass[doid]
+        connection = datagram.getConnection()
+        client = self.clientsByConnection[connection]
+        object = client.objectsByDoId.get(doId)
+        if not object:
+            self.notify.warning(
+                "Ignoring update for unknown object %s from client %s" % (
+                doId, client.doIdBase))
+            return
 
-    def sendAvatarGenerate(self):
+        self.sendToZoneExcept(object.zoneId, datagram, [])
+        
+        self.objectsByZoneId[object.zoneId].remove(object)
+        if not self.objectsByZoneId[object.zoneId]:
+            del self.objectsByZoneId[object.zoneId]
+        client.objectsByZoneId[object.zoneId].remove(object)
+        if not client.objectsByZoneId[object.zoneId]:
+            del client.objectsByZoneId[object.zoneId]
+        del client.objectsByDoId[doId]
+
+        self.updateClientInterestZones(client)
+
+    def handleClientObjectSetZone(self, datagram, dgi):
+        """ The client is telling us the object is changing to a new
+        zone. """
+        doId = dgi.getUint32()
+        zoneId = dgi.getUint32()
+
+        connection = datagram.getConnection()
+        client = self.clientsByConnection[connection]
+        object = client.objectsByDoId.get(doId)
+        if not object:
+            # Don't know this object.
+            self.notify.warning("Ignoring object location for %s: unknown" % (doId))
+            return
+
+        self.setObjectZone(client, object, zoneId)
+
+    def setObjectZone(self, owner, object, zoneId):
+        if object.zoneId == zoneId:
+            # No change.
+            return
+
+        oldZoneId = object.zoneId
+        self.objectsByZoneId[object.zoneId].remove(object)
+        if not self.objectsByZoneId[object.zoneId]:
+            del self.objectsByZoneId[object.zoneId]
+        owner.objectsByZoneId[object.zoneId].remove(object)
+        if not owner.objectsByZoneId[object.zoneId]:
+            del owner.objectsByZoneId[object.zoneId]
+
+        object.zoneId = zoneId
+        self.objectsByZoneId.setdefault(zoneId, set()).add(object)
+        owner.objectsByZoneId.setdefault(zoneId, set()).add(object)
+
+        self.updateClientInterestZones(owner)
+
+        # Any clients that are listening to oldZoneId but not zoneId
+        # should receive a disable message: this object has just gone
+        # out of scope for you.
         datagram = PyDatagram()
-        # Message type is 1
-        datagram.addUint16(ALL_OBJECT_GENERATE_WITH_REQUIRED)
-        # Avatar class type is 2
-        datagram.addUint8(2)
-        # A sample id
-        datagram.addUint32(10)
-        # The only required field is the zone field
-        datagram.addUint32(999)
-        self.cw.send(datagram, self.lastConnection)
+        datagram.addUint16(OBJECT_DISABLE_CMU)
+        datagram.addUint32(object.doId)
+        for client in self.zonesToClients[oldZoneId]:
+            if client != owner:
+                if zoneId not in client.currentInterestZoneIds:
+                    self.cw.send(datagram, client.connection)
+                    self.needsFlush.add(client)
 
-    #  sends the client the range of doid's that the client can use
+        # The client is now responsible for sending a generate for the
+        # object that just switched zones, to inform the clients that
+        # are listening to the new zoneId but not the old zoneId.
 
-    def sendDOIDrange(self, connection):
-        # reuse DOID assignments if we can
-        id = self.DOIDnext + self.DOIDrange
-        self.DOIDnext = self.DOIDnext + self.DOIDrange
-        self.DOIDtoClient[id] = connection
-        self.ClientDOIDbase[connection] = id
+    def sendDoIdRange(self, client):
+        """ sends the client the range of doid's that the client can
+        use """
+
         datagram = NetDatagram()
-        datagram.addUint16(CLIENT_SET_DOID_RANGE)
-        datagram.addUint32(id)
-        datagram.addUint32(self.DOIDrange)
-        print "Sending DOID range: ", id, self.DOIDrange
-        self.cw.send(datagram, connection)
+        datagram.addUint16(SET_DOID_RANGE_CMU)
+        datagram.addUint32(client.doIdBase)
+        datagram.addUint32(self.doIdRange)
 
-    # a client disconnected from us, we need to update our data, also tell other clients to remove
-    # the disconnected clients objects
-    def handleClientDisconnect(self, connection):
-        if (self.ClientIP.has_key(connection)):
-            del self.DOIDtoClient[self.ClientDOIDbase[connection]]
-            for zone in self.ClientZones[connection]:
-                if len(self.ZonesToClients[zone]) == 1:
-                    del self.ZonesToClients[zone]
-                else:
-                    self.ZonesToClients[zone].remove(connection)
-            for obj in self.ClientObjects[connection]:
-                #create and send delete message
-                datagram = NetDatagram()
-                datagram.addUint16(CLIENT_OBJECT_DELETE_RESP)
-                datagram.addUint32(obj)
-                self.sendToZoneExcept(self.DOIDtoZones[obj], datagram, 0)
-                self.ZonetoDOIDs[self.DOIDtoZones[obj]].remove(obj)
-                del self.DOIDtoZones[obj]
-                del self.DOIDtoDClass[obj]
-            del self.ClientIP[connection]
-            del self.ClientZones[connection]
-            del self.ClientDOIDbase[connection]
-            del self.ClientObjects[connection]
+        self.cw.send(datagram, client.connection)
+        self.needsFlush.add(client)
 
-    #  client told us its zone(s), store information
-    def handleSetZone(self, dgi, connection):
-        while dgi.getRemainingSize() > 0:
-            ZoneID = dgi.getUint32()
-            if self.ClientZones[connection].count(ZoneID) == 0:
-                self.ClientZones[connection].append(ZoneID)
-            if ZoneID in self.ZonesToClients:
-                if self.ZonesToClients[ZoneID].count(connection) == 0:
-                    self.ZonesToClients[ZoneID].append(connection)
+    # a client disconnected from us, we need to update our data, also
+    # tell other clients to remove the disconnected clients objects
+    def handleClientDisconnect(self, client):
+        for zoneId in client.currentInterestZoneIds:
+            if len(self.zonesToClients[zoneId]) == 1:
+                del self.zonesToClients[zoneId]
             else:
-                self.ZonesToClients[ZoneID] = [connection]
+                self.zonesToClients[zoneId].remove(client)
 
-            # We have a new member, need to get all of the data from clients who may have objects in this zone
+        for object in client.objectsByDoId.values():
+            #create and send delete message
             datagram = NetDatagram()
-            datagram.addUint16(CLIENT_REQUEST_GENERATES)
-            datagram.addUint32(ZoneID)
-            self.sendToAll(datagram)
-            print "SENDING REQUEST GENERATES (", ZoneID, ") TO ALL"
+            datagram.addUint16(OBJECT_DELETE_CMU)
+            datagram.addUint32(object.doId)
+            self.sendToZoneExcept(object.zoneId, datagram, [])
+            self.objectsByZoneId[object.zoneId].remove(object)
+            if not self.objectsByZoneId[object.zoneId]:
+                del self.objectsByZoneId[object.zoneId]
 
-    # client has moved zones, need to update them
-    def handleRemoveZone(self, dgi, connection):
+        client.objectsByDoId = {}
+        client.objectsByZoneId = {}
+
+        del self.clientsByConnection[client.connection]
+        del self.clientsByDoIdBase[client.doIdBase]
+
+        id = client.doIdBase / self.doIdRange
+        self.idAllocator.free(id)
+
+        self.qcr.removeConnection(client.connection)
+        self.qcm.closeConnection(client.connection)
+        
+
+    def handleClientSetInterest(self, client, dgi):
+        """ The client is specifying a particular set of zones it is
+        interested in. """
+
+        zoneIds = set()
         while dgi.getRemainingSize() > 0:
-            ZoneID = dgi.getUint32()
-            if self.ClientZones[connection].count(ZoneID) == 1:
-                self.ClientZones[connection].remove(ZoneID)
-            if ZoneID in self.ZonesToClients:
-                if self.ZonesToClients[ZoneID].count(connection) == 1:
-                    self.ZonesToClients[ZoneID].remove(connection)
-            for i in self.ZonetoDOIDs[ZoneID]:
-                datagram = NetDatagram()
-                datagram.addUint16(CLIENT_OBJECT_DELETE)
-                datagram.addUint32(i)
-                self.cw.send(datagram, connection)
+            zoneId = dgi.getUint32()
+            zoneIds.add(zoneId)
 
-    # client did not tell us he was leaving but we lost connection to him, so we need to update our data and tell others
+        client.explicitInterestZoneIds = zoneIds
+        self.updateClientInterestZones(client)
+        
+    def updateClientInterestZones(self, client):
+        """ Something about the client has caused its set of interest
+        zones to potentially change.  Recompute them. """
+        
+        origZoneIds = client.currentInterestZoneIds
+        newZoneIds = client.explicitInterestZoneIds | set(client.objectsByZoneId.keys())
+        if origZoneIds == newZoneIds:
+            # No change.
+            return
+
+        client.currentInterestZoneIds = newZoneIds
+        addedZoneIds = newZoneIds - origZoneIds
+        removedZoneIds = origZoneIds - newZoneIds
+
+        for zoneId in addedZoneIds:
+            self.zonesToClients.setdefault(zoneId, set()).add(client)
+
+            # The client is opening interest in this zone. Need to get
+            # all of the data from clients who may have objects in
+            # this zone
+            datagram = NetDatagram()
+            datagram.addUint16(REQUEST_GENERATES_CMU)
+            datagram.addUint32(zoneId)
+            self.sendToZoneExcept(zoneId, datagram, [client])
+
+        datagram = PyDatagram()
+        datagram.addUint16(OBJECT_DISABLE_CMU)
+        for zoneId in removedZoneIds:
+            self.zonesToClients[zoneId].remove(client)
+
+            # The client is abandoning interest in this zone.  Any
+            # objects in this zone should be disabled for the client.
+            for object in self.objectsByZoneId.get(zoneId, []):
+                datagram.addUint32(object.doId)
+        self.cw.send(datagram, client.connection)
+
+        self.needsFlush.add(client)
+            
 
     def clientHardDisconnectTask(self, task):
-        for i in self.ClientIP.keys():
-            if not self.qcr.isConnectionOk(i):
-                self.handleClientDisconnect(i)
+        """ client did not tell us he was leaving but we lost connection to
+        him, so we need to update our data and tell others """
+        for client in self.clientsByConnection.values():
+            if not self.qcr.isConnectionOk(client.connection):
+                self.handleClientDisconnect(client)
         return Task.cont
 
-    # sends a message to everyone who is in the zone
-    def sendToZoneExcept(self, ZoneID, datagram, connection):
-        if ZoneID in self.ZonesToClients:
-            for conn in self.ZonesToClients[ZoneID]:
-                if (conn != connection):
-                    self.cw.send(datagram, conn)
+    def sendToZoneExcept(self, zoneId, datagram, exceptionList):
+        """sends a message to everyone who has interest in the
+        indicated zone, except for the clients on exceptionList."""
+        
+        if self.notify.getDebug():
+            self.notify.debug(
+                "ServerRepository sending to all in zone %s except %s:" % (zoneId, map(lambda c: c.doIdBase, exceptionList)))
+            datagram.dumpHex(ostream)
 
-    # sends a message to all connected clients
-    def sendToAll(self, datagram):
-        for client in self.ClientIP.keys():
-            self.cw.send(datagram, client)
+        for client in self.zonesToClients.get(zoneId, []):
+            if client not in exceptionList:
+                if self.notify.getDebug():
+                    self.notify.debug(
+                        "  -> %s" % (client.doIdBase))
+                self.cw.send(datagram, client.connection)
+                self.needsFlush.add(client)
+
+    def sendToAllExcept(self, datagram, exceptionList):
+        """ sends a message to all connected clients, except for
+        clients on exceptionList. """
+        
+        if self.notify.getDebug():
+            self.notify.debug(
+                "ServerRepository sending to all except %s:" % (map(lambda c: c.doIdBase, exceptionList),))
+            datagram.dumpHex(ostream)
+
+        for client in self.clientsByConnection.values():
+            if client not in exceptionList:
+                if self.notify.getDebug():
+                    self.notify.debug(
+                        "  -> %s" % (client.doIdBase))
+                self.cw.send(datagram, client.connection)
+                self.needsFlush.add(client)

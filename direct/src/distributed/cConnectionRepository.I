@@ -84,6 +84,33 @@ get_client_datagram() const {
   return _client_datagram;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::set_handle_datagrams_internally
+//       Access: Published
+//  Description: Sets the handle_datagrams_internally flag.  When
+//               true, certain message types can be handled by the C++
+//               code in in this module.  When false, all datagrams,
+//               regardless of message type, are passed up to Python
+//               for processing.
+//
+//               The CMU distributed-object implementation requires
+//               this to be set false.
+////////////////////////////////////////////////////////////////////
+INLINE void CConnectionRepository::
+set_handle_datagrams_internally(bool handle_datagrams_internally) {
+  _handle_datagrams_internally = handle_datagrams_internally;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_handle_datagrams_internally
+//       Access: Published
+//  Description: Returns the handle_datagrams_internally flag.
+////////////////////////////////////////////////////////////////////
+INLINE bool CConnectionRepository::
+get_handle_datagrams_internally() const {
+  return _handle_datagrams_internally;
+}
+
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::set_python_repository
@@ -184,7 +211,7 @@ get_datagram_iterator(DatagramIterator &di) {
 ////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::get_msg_channel
 //       Access: Published
-//  Description: Returns the channel from which the current message
+//  Description: Returns the channel(s) to which the current message
 //               was sent, according to the datagram headers.  This
 //               information is not available to the client.
 ////////////////////////////////////////////////////////////////////

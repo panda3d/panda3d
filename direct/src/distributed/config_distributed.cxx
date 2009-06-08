@@ -40,6 +40,13 @@ ConfigVariableDouble max_lag
           "inbound messages.  It is useful to test a game's tolerance of "
           "network latency."));
 
+ConfigVariableBool handle_datagrams_internally
+("handle-datagrams-internally", true,
+ PRC_DESC("When this is true, certain datagram types can be handled "
+          "directly by the C++ cConnectionRepository implementation, "
+          "for performance reasons.  When it is false, all datagrams "
+          "are handled by the Python implementation."));
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libdistributed
 //  Description: Initializes the library.  This must be called at

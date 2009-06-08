@@ -378,6 +378,25 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
         if not self.localControl and not self.smoothStarted and \
            self.smoother.getLatestPosition():
             self.smoother.applySmoothPosHpr(self, self)
+
+    # These are all required by the CMU server, which requires get* to
+    # match set* in more cases than the Disney server does.
+    def getComponentL(self):
+        return self.zoneId
+    def getComponentX(self):
+        return self.getX()
+    def getComponentY(self):
+        return self.getY()
+    def getComponentZ(self):
+        return self.getZ()
+    def getComponentH(self):
+        return self.getH()
+    def getComponentP(self):
+        return self.getP()
+    def getComponentR(self):
+        return self.getR()
+    def getComponentT(self):
+        return 0
                 
     @report(types = ['args'], dConfigParam = 'smoothnode')
     def clearSmoothing(self, bogus = None):

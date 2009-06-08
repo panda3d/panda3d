@@ -22,6 +22,7 @@ class ConnectionRepository(
     """
     notify = DirectNotifyGlobal.directNotify.newCategory("ConnectionRepository")
     taskPriority = -30
+    taskChain = None
 
     CM_HTTP=0
     CM_NET=1
@@ -569,7 +570,7 @@ class ConnectionRepository(
         self.accept(CConnectionRepository.getOverflowEventName(),
                     self.handleReaderOverflow)
         taskMgr.add(self.readerPollUntilEmpty, self.uniqueName("readerPollTask"),
-                    priority = self.taskPriority, taskChain = 'net')
+                    priority = self.taskPriority, taskChain = self.taskChain)
 
     def stopReaderPollTask(self):
         taskMgr.remove(self.uniqueName("readerPollTask"))
@@ -611,7 +612,7 @@ class ConnectionRepository(
         # Zero-length datagrams might freak out the server.  No point
         # in sending them, anyway.
         if datagram.getLength() > 0:
-            if ConnectionRepository.notify.getDebug():
+            if self.notify.getDebug():
                 print "ConnectionRepository sending datagram:"
                 datagram.dumpHex(ostream)
 

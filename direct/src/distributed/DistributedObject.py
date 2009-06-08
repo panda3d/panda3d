@@ -438,14 +438,20 @@ class DistributedObject(DistributedObjectBase):
         # should call doneBarrier(), which will send the context
         # number back to the AI.
         for context, name, avIds in data:
-            if base.localAvatar.doId in avIds:
-                # We found localToon's id; stop here.
-                self.__barrierContext = (context, name)
-                assert self.notify.debug('setBarrierData(%s, %s)' % (context, name))
-                return
+            for avId in avIds:
+                if self.cr.isLocalId(avId):
+                    # We found the local avatar's id; stop here.
+                    self.__barrierContext = (context, name)
+                    assert self.notify.debug('setBarrierData(%s, %s)' % (context, name))
+                    return
 
+        # This barrier didn't involve this client; ignore it.
         assert self.notify.debug('setBarrierData(%s)' % (None))
         self.__barrierContext = None
+
+    def getBarrierData(self):
+        # Return a trivially-empty (context, name, avIds) value.
+        return ((0, '', []),)
 
     def doneBarrier(self, name = None):
         # Tells the AI we have finished handling our task.  If the
@@ -507,9 +513,6 @@ class DistributedObject(DistributedObjectBase):
         # gets some other special handling.  Normally, only the local
         # avatar class overrides this to return true.
         return self.cr and self.cr.isLocalId(self.doId)
-
-    def updateZone(self, zoneId):
-        self.cr.sendUpdateZone(self, zoneId)
 
     def isGridParent(self):
         # If this distributed object is a DistributedGrid return 1.  0 by default

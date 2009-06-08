@@ -25,9 +25,9 @@ class ClientRepositoryBase(ConnectionRepository):
     """
     notify = DirectNotifyGlobal.directNotify.newCategory("ClientRepositoryBase")
 
-    def __init__(self, dcFileNames = None):
-        self.dcSuffix=""
+    def __init__(self, dcFileNames = None, dcSuffix = ''):
         ConnectionRepository.__init__(self, ConnectionRepository.CM_HTTP, base.config, hasOwnerView=True)
+        self.dcSuffix = dcSuffix
         if hasattr(self, 'setVerbose'):
             if self.config.GetBool('verbose-clientrepository'):
                 self.setVerbose(1)
@@ -81,7 +81,7 @@ class ClientRepositoryBase(ConnectionRepository):
 
         if self.deferredGenerates:
             taskMgr.remove('deferredGenerate')
-            taskMgr.doMethodLater(self.deferInterval, self.__doDeferredGenerate, 'deferredGenerate')
+            taskMgr.doMethodLater(self.deferInterval, self.doDeferredGenerate, 'deferredGenerate')
 
     ## def queryObjectAll(self, doID, context=0):
         ## """
@@ -117,18 +117,6 @@ class ClientRepositoryBase(ConnectionRepository):
         # we might get a list of message names, use the first one
         return makeList(MsgId2Names.get(msgId, 'UNKNOWN MESSAGE: %s' % msgId))[0]
 
-    def sendDisconnect(self):
-        if self.isConnected():
-            # Tell the game server that we're going:
-            datagram = PyDatagram()
-            # Add message type
-            datagram.addUint16(CLIENT_DISCONNECT)
-            # Send the message
-            self.send(datagram)
-            self.notify.info("Sent disconnect message to server")
-            self.disconnect()
-        self.stopHeartbeat()
-
     def allocateContext(self):
         self.context+=1
         return self.context
@@ -162,67 +150,7 @@ class ClientRepositoryBase(ConnectionRepository):
         """
         return time.time() + self.serverDelta
 
-    def handleGenerateWithRequired(self, di):
-        parentId = di.getUint32()
-        zoneId = di.getUint32()
-        assert parentId == self.GameGlobalsId or parentId in self.doId2do
-        # Get the class Id
-        classId = di.getUint16()
-        # Get the DO Id
-        doId = di.getUint32()
-        # Look up the dclass
-        dclass = self.dclassesByNumber[classId]
-        dclass.startGenerate()
-        # Create a new distributed object, and put it in the dictionary
-        distObj = self.generateWithRequiredFields(dclass, doId, di, parentId, zoneId)
-        dclass.stopGenerate()
-
-    def handleGenerateWithRequiredOther(self, di):
-        parentId = di.getUint32()
-        zoneId = di.getUint32()
-        # Get the class Id
-        classId = di.getUint16()
-        # Get the DO Id
-        doId = di.getUint32()
-        
-        dclass = self.dclassesByNumber[classId]
-
-        deferrable = getattr(dclass.getClassDef(), 'deferrable', False)
-        if not self.deferInterval or self.noDefer:
-            deferrable = False
-        
-        now = globalClock.getFrameTime()
-        if self.deferredGenerates or deferrable:
-            # This object is deferrable, or there are already deferred
-            # objects in the queue (so all objects have to be held
-            # up).
-            if self.deferredGenerates or now - self.lastGenerate < self.deferInterval:
-                # Queue it for later.
-                assert(self.notify.debug("deferring generate for %s %s" % (dclass.getName(), doId)))
-                self.deferredGenerates.append((CLIENT_CREATE_OBJECT_REQUIRED_OTHER, doId))
-                
-                # Keep a copy of the datagram, and move the di to the copy
-                dg = Datagram(di.getDatagram())
-                di = DatagramIterator(dg, di.getCurrentIndex())
-            
-                self.deferredDoIds[doId] = ((parentId, zoneId, classId, doId, di), deferrable, dg, [])
-                if len(self.deferredGenerates) == 1:
-                    # We just deferred the first object on the queue;
-                    # start the task to generate it.
-                    taskMgr.remove('deferredGenerate')
-                    taskMgr.doMethodLater(self.deferInterval, self.__doDeferredGenerate, 'deferredGenerate')
-                    
-            else:
-                # We haven't generated any deferrable objects in a
-                # while, so it's safe to go ahead and generate this
-                # one immediately.
-                self.lastGenerate = now
-                self.__doGenerate(parentId, zoneId, classId, doId, di)
-                
-        else:
-            self.__doGenerate(parentId, zoneId, classId, doId, di)
-
-    def __doGenerate(self, parentId, zoneId, classId, doId, di):
+    def doGenerate(self, parentId, zoneId, classId, doId, di):
         # Look up the dclass
         assert parentId == self.GameGlobalsId or parentId in self.doId2do
         dclass = self.dclassesByNumber[classId]
@@ -252,7 +180,7 @@ class ClientRepositoryBase(ConnectionRepository):
             if doId in self.deferredDoIds:
                 args, deferrable, dg, updates = self.deferredDoIds[doId]
                 del self.deferredDoIds[doId]
-                self.__doGenerate(*args)
+                self.doGenerate(*args)
 
                 if deferrable:
                     self.lastGenerate = globalClock.getFrameTime()
@@ -272,7 +200,7 @@ class ClientRepositoryBase(ConnectionRepository):
         else:
             self.notify.warning("Ignoring deferred message %s" % (msgType))
 
-    def __doDeferredGenerate(self, task):
+    def doDeferredGenerate(self, task):
         """ This is the task that generates an object on the deferred
         queue. """
         
@@ -289,51 +217,6 @@ class ClientRepositoryBase(ConnectionRepository):
 
         # All objects are generaetd.
         return Task.done
-
-    def handleGenerateWithRequiredOtherOwner(self, di):
-        # Get the class Id
-        classId = di.getUint16()
-        # Get the DO Id
-        doId = di.getUint32()
-        # parentId and zoneId are not relevant here
-        parentId = di.getUint32()
-        zoneId = di.getUint32()
-        # Look up the dclass
-        dclass = self.dclassesByNumber[classId]
-        dclass.startGenerate()
-        # Create a new distributed object, and put it in the dictionary
-        distObj = self.generateWithRequiredOtherFieldsOwner(dclass, doId, di)
-        dclass.stopGenerate()
-
-    def handleQuietZoneGenerateWithRequired(self, di):
-        # Special handler for quiet zone generates -- we need to filter
-        parentId = di.getUint32()
-        zoneId = di.getUint32()
-        assert parentId in self.doId2do
-        # Get the class Id
-        classId = di.getUint16()
-        # Get the DO Id
-        doId = di.getUint32()
-        # Look up the dclass
-        dclass = self.dclassesByNumber[classId]
-        dclass.startGenerate()
-        distObj = self.generateWithRequiredFields(dclass, doId, di, parentId, zoneId)
-        dclass.stopGenerate()
-
-    def handleQuietZoneGenerateWithRequiredOther(self, di):
-        # Special handler for quiet zone generates -- we need to filter
-        parentId = di.getUint32()
-        zoneId = di.getUint32()
-        assert parentId in self.doId2do
-        # Get the class Id
-        classId = di.getUint16()
-        # Get the DO Id
-        doId = di.getUint32()
-        # Look up the dclass
-        dclass = self.dclassesByNumber[classId]
-        dclass.startGenerate()
-        distObj = self.generateWithRequiredOtherFields(dclass, doId, di, parentId, zoneId)
-        dclass.stopGenerate()
 
     def generateWithRequiredFields(self, dclass, doId, di, parentId, zoneId):
         if self.doId2do.has_key(doId):
@@ -471,12 +354,6 @@ class ClientRepositoryBase(ConnectionRepository):
         return distObj
 
 
-    def handleDisable(self, di, ownerView=False):
-        # Get the DO Id
-        doId = di.getUint32()
-        # disable it.
-        self.disableDoId(doId, ownerView)
-
     def disableDoId(self, doId, ownerView=False):
         table, cache = self.getTables(ownerView)
         # Make sure the object exists
@@ -518,7 +395,7 @@ class ClientRepositoryBase(ConnectionRepository):
             " is not in dictionary, ownerView=%s" % ownerView)
 
     def handleDelete(self, di):
-        # overridden by ToontownClientRepository
+        # overridden by ClientRepository
         assert 0
 
     def handleUpdateField(self, di):
@@ -652,25 +529,6 @@ class ClientRepositoryBase(ConnectionRepository):
                 doDict[doId] = do
         return doDict
 
-
-    def sendSetLocation(self, doId, parentId, zoneId):
-        datagram = PyDatagram()
-        datagram.addUint16(CLIENT_OBJECT_LOCATION)
-        datagram.addUint32(doId)
-        datagram.addUint32(parentId)
-        datagram.addUint32(zoneId)
-        self.send(datagram)
-
-    def sendHeartbeat(self):
-        datagram = PyDatagram()
-        # Add message type
-        datagram.addUint16(CLIENT_HEARTBEAT)
-        # Send it!
-        self.send(datagram)
-        self.lastHeartbeat = globalClock.getRealTime()
-        # This is important enough to consider flushing immediately
-        # (particularly if we haven't run readerPollTask recently).
-        self.considerFlush()
 
     def considerHeartbeat(self):
         """Send a heartbeat message if we haven't sent one recently."""

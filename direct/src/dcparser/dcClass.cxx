@@ -949,7 +949,7 @@ ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id,
 
 #ifdef HAVE_PYTHON
 ////////////////////////////////////////////////////////////////////
-//     Function: DCClass::client_format_generate
+//     Function: DCClass::client_format_generate_CMU
 //       Access: Published
 //  Description: Generates a datagram containing the message necessary
 //               to generate a new distributed object from the client.
@@ -958,21 +958,16 @@ ai_format_update_msg_type(const string &field_name, DOID_TYPE do_id,
 //
 //               optional_fields is a list of fieldNames to generate
 //               in addition to the normal required fields.
+//
+//               This method is only called by the CMU implementation.
 ////////////////////////////////////////////////////////////////////
 Datagram DCClass::
-client_format_generate(PyObject *distobj, DOID_TYPE do_id, 
-                   ZONEID_TYPE zone_id, PyObject *optional_fields) const {
+client_format_generate_CMU(PyObject *distobj, DOID_TYPE do_id, 
+                           ZONEID_TYPE zone_id,
+                           PyObject *optional_fields) const {
   DCPacker packer;
 
-  //packer.raw_pack_uint8('A');
-
-  bool has_optional_fields = (PyObject_IsTrue(optional_fields) != 0);
-
-  if (has_optional_fields) {
-    packer.raw_pack_uint16(CLIENT_CREATE_OBJECT_REQUIRED_OTHER);
-  } else {
-    packer.raw_pack_uint16(CLIENT_CREATE_OBJECT_REQUIRED);
-  }
+  packer.raw_pack_uint16(CLIENT_OBJECT_GENERATE_CMU);
 
   packer.raw_pack_uint32(zone_id);
   packer.raw_pack_uint16(_number);
@@ -992,30 +987,31 @@ client_format_generate(PyObject *distobj, DOID_TYPE do_id,
   }
 
   // Also specify the optional fields.
-  if (has_optional_fields) {
-    int num_optional_fields = PySequence_Size(optional_fields);
-    packer.raw_pack_uint16(num_optional_fields);
+  int num_optional_fields = 0;
+  if (PyObject_IsTrue(optional_fields)) {
+    num_optional_fields = PySequence_Size(optional_fields);
+  }
+  packer.raw_pack_uint16(num_optional_fields);
 
-    for (int i = 0; i < num_optional_fields; i++) {
-      PyObject *py_field_name = PySequence_GetItem(optional_fields, i);
-      string field_name = PyString_AsString(py_field_name);
-      Py_XDECREF(py_field_name);
-
-      DCField *field = get_field_by_name(field_name);
-      if (field == (DCField *)NULL) {
-        ostringstream strm;
-        strm << "No field named " << field_name << " in class " << get_name()
-             << "\n";
-        nassert_raise(strm.str());
-        return Datagram();
-      }
-      packer.raw_pack_uint16(field->get_number());
-      packer.begin_pack(field);
-      if (!pack_required_field(packer, distobj, field)) {
-        return Datagram();
-      }
-      packer.end_pack();
+  for (int i = 0; i < num_optional_fields; i++) {
+    PyObject *py_field_name = PySequence_GetItem(optional_fields, i);
+    string field_name = PyString_AsString(py_field_name);
+    Py_XDECREF(py_field_name);
+    
+    DCField *field = get_field_by_name(field_name);
+    if (field == (DCField *)NULL) {
+      ostringstream strm;
+      strm << "No field named " << field_name << " in class " << get_name()
+           << "\n";
+      nassert_raise(strm.str());
+      return Datagram();
     }
+    packer.raw_pack_uint16(field->get_number());
+    packer.begin_pack(field);
+    if (!pack_required_field(packer, distobj, field)) {
+      return Datagram();
+    }
+    packer.end_pack();
   }
 
   return Datagram(packer.get_data(), packer.get_length());
