@@ -9,6 +9,7 @@ __all__ = ['Task', 'TaskManager',
 from direct.directnotify.DirectNotifyGlobal import *
 from direct.showbase import ExceptionVarDump
 from direct.showbase.PythonUtil import *
+from direct.showbase.MessengerGlobal import messenger
 import signal
 import types
 import time
