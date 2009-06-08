@@ -3141,7 +3141,8 @@ def pstatcollect(scope, level = None):
         pass
 
     return decorator
-                
+
+__report_indent = 0
 def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigParam = []):
     """
     This is a decorator generating function.  Use is similar to
