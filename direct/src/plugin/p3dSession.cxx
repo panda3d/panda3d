@@ -15,6 +15,7 @@
 #include "p3dSession.h"
 #include "p3dInstance.h"
 #include "p3dInstanceManager.h"
+#include <tinyxml.h>
 
 #include <malloc.h>
 
@@ -31,7 +32,92 @@ P3DSession::
 P3DSession(P3DInstance *inst) {
   _session_key = inst->get_session_key();
   _python_version = inst->get_python_version();
-  _python = NULL;
+  _python_root_dir = "C:/p3drun";
+
+  string p3dpython = "c:/cygwin/home/drose/player/direct/built/bin/p3dpython.exe";
+
+  // Populate the new process' environment.
+  string env;
+
+  // These are the enviroment variables we forward from the current
+  // environment, if they are set.
+  const char *keep[] = {
+    "TEMP", "HOME", "USER", 
+    NULL
+  };
+  for (int ki = 0; keep[ki] != NULL; ++ki) {
+    char *value = getenv(keep[ki]);
+    if (value != NULL) {
+      env += keep[ki];
+      env += "=";
+      env += value;
+      env += '\0';
+    }
+  }
+
+  // Define some new environment variables.
+  env += "PATH=";
+  env += _python_root_dir;
+  env += '\0';
+
+  env += "PYTHONPATH=";
+  env += _python_root_dir;
+  env += '\0';
+
+  // Create a bi-directional pipe to communicate with the sub-process.
+#ifdef _WIN32
+  cerr << "creating pipe\n";
+  HANDLE orig_stdin = GetStdHandle(STD_INPUT_HANDLE);
+  HANDLE orig_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
+
+  SECURITY_ATTRIBUTES inheritable;
+  inheritable.nLength = sizeof(inheritable);
+  inheritable.lpSecurityDescriptor = NULL;
+  inheritable.bInheritHandle = true;
+
+  HANDLE r_to, w_to, r_from, w_from;
+
+  // Create the pipe to the process.
+  if (!CreatePipe(&r_to, &w_to, &inheritable, 0)) {
+    cerr << "failed to create pipe\n";
+  } else {
+    SetStdHandle(STD_INPUT_HANDLE, r_to);
+  }
+
+  // Create the pipe from the process.
+  if (!CreatePipe(&r_from, &w_from, &inheritable, 0)) {
+    cerr << "failed to create pipe\n";
+  } else {
+    SetStdHandle(STD_OUTPUT_HANDLE, w_from);
+  }
+
+  cerr << "creating process " << p3dpython << "\n";
+  BOOL result = CreateProcess
+    (p3dpython.c_str(), NULL, NULL, NULL, TRUE, 0,
+     /* (void *)env.c_str() */NULL, _python_root_dir.c_str(), NULL, &_p3dpython);
+  cerr << "result = " << result << "\n";
+  _started_p3dpython = (result != 0);
+
+  if (!_started_p3dpython) {
+    cerr << "Failed to create process.\n";
+  } else {
+    cerr << "Created process: " << _p3dpython.dwProcessId << "\n";
+  }
+
+  CloseHandle(r_to);
+  CloseHandle(w_from);
+  SetStdHandle(STD_INPUT_HANDLE, orig_stdin);
+  SetStdHandle(STD_OUTPUT_HANDLE, orig_stdout);
+
+  _pipe_read.open_read(r_from);
+  _pipe_write.open_write(w_to);
+#endif  // _WIN32
+  if (!_pipe_read) {
+    cerr << "unable to open read pipe\n";
+  }
+  if (!_pipe_write) {
+    cerr << "unable to open write pipe\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -42,6 +128,14 @@ P3DSession(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 P3DSession::
 ~P3DSession() {
+  if (_started_p3dpython) {
+    cerr << "Terminating process.\n";
+    // Messy.  Shouldn't use TerminateProcess unless necessary.
+    TerminateProcess(_p3dpython.hProcess, 2);
+
+    CloseHandle(_p3dpython.hProcess);
+    CloseHandle(_p3dpython.hThread);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,7 +150,6 @@ P3DSession::
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 start_instance(P3DInstance *inst) {
-  assert(_python == NULL);
   assert(inst->_session == NULL);
   assert(inst->get_session_key() == _session_key);
   assert(inst->get_python_version() == _python_version);
@@ -66,10 +159,21 @@ start_instance(P3DInstance *inst) {
   assert(inserted);
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  TiXmlDocument doc;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+  TiXmlElement *element = new TiXmlElement("instance");
+  doc.LinkEndChild(decl);
+  doc.LinkEndChild(element);
+
+  _pipe_write << doc;
+
+  /*
   P3DPython *python = inst_mgr->start_python(_python_version);
   if (python != NULL) {
     python->start_session(this, inst);
   }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -81,10 +185,12 @@ start_instance(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 terminate_instance(P3DInstance *inst) {
+  /*
   if (_python != NULL) {
     _python->terminate_session(this);
     assert(_python == NULL);
   }
+  */
 
   if (inst->_session == this) {
     inst->_session = NULL;

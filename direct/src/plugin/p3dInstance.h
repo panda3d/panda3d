@@ -84,7 +84,6 @@ private:
   Requests _pending_requests;
 
   friend class P3DSession;
-  friend class P3DPython;
 };
 
 #include "p3dInstance.I"

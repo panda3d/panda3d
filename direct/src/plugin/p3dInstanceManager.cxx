@@ -15,7 +15,6 @@
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
 #include "p3dSession.h"
-#include "p3dPython.h"
 
 P3DInstanceManager *P3DInstanceManager::_global_ptr;
 
@@ -26,8 +25,8 @@ P3DInstanceManager *P3DInstanceManager::_global_ptr;
 ////////////////////////////////////////////////////////////////////
 P3DInstanceManager::
 P3DInstanceManager() {
+  cerr << "creating instance manager\n";
   _unique_session_index = 0;
-  _current_python = NULL;
 
   _request_seq = 0;
 #ifdef _WIN32
@@ -170,47 +169,6 @@ wait_request() {
     }
     seq = _request_seq;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::start_python
-//       Access: Public
-//  Description: Returns a P3DPython object corresponding to the
-//               requested Python version.  The P3DPython object is
-//               loaded into the current memory address space; because
-//               of Python version conflicts, only one version of
-//               Python may be resident at a given time.  Thus,
-//               calling this will implicitly terminate any running
-//               instances that are currently using a different
-//               version of Python.
-//
-//               This may return NULL if the Python interpreter cannot
-//               be successfully started for some reason.
-////////////////////////////////////////////////////////////////////
-P3DPython *P3DInstanceManager::
-start_python(const string &python_version) {
-  if (_current_python != NULL && !_current_python->is_valid()) {
-    // The current python has gone bad.
-    delete _current_python;
-    _current_python = NULL;
-  }
-
-  if (_current_python != NULL && _current_python->get_python_version() != python_version) {
-    // The current python is the wrong version.  We should kill it and
-    // all of the instances using it.  TODO.
-    return NULL;
-  }
-
-  if (_current_python == NULL) {
-    _current_python = new P3DPython(python_version);
-    if (!_current_python->is_valid()) {
-      // Couldn't successfully start Python.
-      delete _current_python;
-      _current_python = NULL;
-    }
-  }
-
-  return _current_python;
 }
 
 ////////////////////////////////////////////////////////////////////

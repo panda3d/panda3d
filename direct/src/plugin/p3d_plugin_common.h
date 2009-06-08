@@ -15,13 +15,15 @@
 #ifndef P3D_PLUGIN_COMMON
 #define P3D_PLUGIN_COMMON
 
-// This header file is included by all C++ files in this directory; it
-// provides some common symbol declarations.
+// This header file is included by all C++ files in this directory
+// that contribute to p3d_plugin; provides some common symbol
+// declarations.
 
 #define P3D_FUNCTION_PROTOTYPES
 #define BUILDING_P3D_PLUGIN
 
 #include "p3d_plugin.h"
+#include "p3d_lock.h"
 
 #include <iostream>
 #include <string>
@@ -30,14 +32,6 @@
 using namespace std;
 
 #define INLINE inline
-
-#ifdef _WIN32
-#define LOCK CRITICAL_SECTION
-#define INIT_LOCK(lock) InitializeCriticalSection(&(lock))
-#define ACQUIRE_LOCK(lock) EnterCriticalSection(&(lock))
-#define RELEASE_LOCK(lock) LeaveCriticalSection(&(lock))
-#define DESTROY_LOCK(lock) DeleteCriticalSection(&(lock))
-#endif
 
 #endif
 

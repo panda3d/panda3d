@@ -10,8 +10,9 @@ Code given out at the 1985 UNIFORUM conference in Dallas.
 
 #include "wingetopt.h"
 #include <stdio.h>
+#include <string.h>
 
-#define NULL	0
+//#define NULL	0
 #define EOF	(-1)
 #define ERR(s, c)	if(opterr){\
 	char errbuf[2];\

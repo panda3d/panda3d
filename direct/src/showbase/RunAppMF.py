@@ -15,6 +15,7 @@ import sys
 from direct.showbase import VFSImporter
 from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, getModelPath
 from direct.stdpy import file
+from direct.task.TaskManagerGlobal import taskMgr
 import os
 import __builtin__
 
@@ -144,8 +145,13 @@ def setupWindow(windowType, x, y, width, height, parent):
 
     loadPrcFileData("setupWindow", data)
 
-def run():
-    taskMgr.run()
+def add_check_comm(func, this):
+    """ This function is provided just a convenience for
+    p3dPythonRun.cxx.  It adds the indicated function to the task
+    manager with the appropriate parameters for the check_comm
+    task. """
+    return taskMgr.add(func, "check_comm", sort = -50, extraArgs = [this],
+                       appendTask = True)
 
 if __name__ == '__main__':
     try:

@@ -22,7 +22,6 @@
 
 class P3DInstance;
 class P3DSession;
-class P3DPython;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DInstanceManager
@@ -52,8 +51,6 @@ public:
   P3DInstance *check_request();
   void wait_request();
 
-  P3DPython *start_python(const string &python_version);
-
   INLINE int get_num_instances() const;
 
   INLINE const string &get_dll_filename() const;
@@ -73,7 +70,6 @@ private:
   typedef map<string, P3DSession *> Sessions;
   Sessions _sessions;
 
-  P3DPython *_current_python;
   int _unique_session_index;
 
   // Implements a condition-var like behavior.

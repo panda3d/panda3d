@@ -38,16 +38,15 @@ P3DInstance(P3D_request_ready_func *func,
   _parent_window(parent_window)
 {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  cerr << "creating instance\n";
 
   INIT_LOCK(_request_lock);
 
-  // For the moment, all sessions will be shared.
-  /*
+  // For the moment, all sessions will be unique.
   ostringstream strm;
   strm << inst_mgr->get_unique_session_index();
   _session_key = strm.str();
-  */
-  _session_key = "common";
+
   _python_version = "python24";
 
   _session = NULL;

@@ -16,6 +16,7 @@
 #define P3DSESSION_H
 
 #include "p3d_plugin_common.h"
+#include "handleStream.h"
 
 #include <set>
 
@@ -45,12 +46,18 @@ private:
   string _session_key;
   string _python_version;
 
-  P3DPython *_python;
+  string _python_root_dir;
 
   typedef set<P3DInstance *> Instances;
   Instances _instances;
 
-  friend class P3DPython;
+  // Members for communicating with the p3dpython child process.
+  bool _started_p3dpython;
+#ifdef _WIN32
+  PROCESS_INFORMATION _p3dpython;
+#endif
+  HandleStream _pipe_read;
+  HandleStream _pipe_write;
 };
 
 #include "p3dSession.I"
