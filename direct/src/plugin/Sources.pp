@@ -37,6 +37,8 @@
     handleStream.cxx handleStream.h handleStream.I \
     handleStreamBuf.cxx handleStreamBuf.h \
     p3d_lock.h \
+    p3dCInstance.cxx \
+    p3dCInstance.h p3dCInstance.I \
     p3dPythonRun.cxx p3dPythonRun.h p3dPythonRun.I
 
 #end bin_target

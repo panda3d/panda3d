@@ -19,12 +19,14 @@
 
 #include <vector>
 #include <deque>
+#include <tinyxml.h>
 
 class P3DSession;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DInstance
-// Description : This is an instance of a Panda3D window.
+// Description : This is an instance of a Panda3D window, as seen in
+//               the parent-level process.
 ////////////////////////////////////////////////////////////////////
 class P3DInstance : public P3D_instance {
 public:
@@ -53,9 +55,11 @@ public:
                        const unsigned char *this_data, 
                        size_t this_data_size);
 
-  INLINE const string &get_p3d_filename() const;
-  INLINE const string &get_session_key() const;
-  INLINE const string &get_python_version() const;
+  inline const string &get_p3d_filename() const;
+  inline const string &get_session_key() const;
+  inline const string &get_python_version() const;
+
+  TiXmlElement *make_xml();
 
 private:
   void fill_tokens(const P3D_token *tokens[], size_t tokens_size);

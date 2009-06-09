@@ -43,6 +43,9 @@ P3DSession(P3DInstance *inst) {
   // environment, if they are set.
   const char *keep[] = {
     "TEMP", "HOME", "USER", 
+#ifdef _WIN32
+    "SYSTEMROOT",
+#endif
     NULL
   };
   for (int ki = 0; keep[ki] != NULL; ++ki) {
@@ -66,36 +69,43 @@ P3DSession(P3DInstance *inst) {
 
   // Create a bi-directional pipe to communicate with the sub-process.
 #ifdef _WIN32
-  cerr << "creating pipe\n";
-  HANDLE orig_stdin = GetStdHandle(STD_INPUT_HANDLE);
-  HANDLE orig_stdout = GetStdHandle(STD_OUTPUT_HANDLE);
-
-  SECURITY_ATTRIBUTES inheritable;
-  inheritable.nLength = sizeof(inheritable);
-  inheritable.lpSecurityDescriptor = NULL;
-  inheritable.bInheritHandle = true;
-
   HANDLE r_to, w_to, r_from, w_from;
 
   // Create the pipe to the process.
-  if (!CreatePipe(&r_to, &w_to, &inheritable, 0)) {
+  if (!CreatePipe(&r_to, &w_to, NULL, 0)) {
     cerr << "failed to create pipe\n";
   } else {
-    SetStdHandle(STD_INPUT_HANDLE, r_to);
+    // Make sure the right end of the pipe is inheritable.
+    SetHandleInformation(r_to, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+    SetHandleInformation(w_to, HANDLE_FLAG_INHERIT, 0);
   }
 
   // Create the pipe from the process.
-  if (!CreatePipe(&r_from, &w_from, &inheritable, 0)) {
+  if (!CreatePipe(&r_from, &w_from, NULL, 0)) {
     cerr << "failed to create pipe\n";
-  } else {
-    SetStdHandle(STD_OUTPUT_HANDLE, w_from);
+  } else { 
+    // Make sure the right end of the pipe is inheritable.
+    SetHandleInformation(w_from, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+    SetHandleInformation(r_from, HANDLE_FLAG_INHERIT, 0);
   }
 
-  cerr << "creating process " << p3dpython << "\n";
+  // Make sure we see an error dialog if there is a missing DLL.
+  SetErrorMode(0);
+
+  // Pass the appropriate ends of the bi-directional pipe as the
+  // standard input and standard output of the child process.
+  STARTUPINFO startup_info;
+  ZeroMemory(&startup_info, sizeof(STARTUPINFO));
+  startup_info.cb = sizeof(startup_info); 
+  startup_info.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+  startup_info.hStdOutput = w_from;
+  startup_info.hStdInput = r_to;
+  startup_info.dwFlags |= STARTF_USESTDHANDLES;
+ 
   BOOL result = CreateProcess
     (p3dpython.c_str(), NULL, NULL, NULL, TRUE, 0,
-     /* (void *)env.c_str() */NULL, _python_root_dir.c_str(), NULL, &_p3dpython);
-  cerr << "result = " << result << "\n";
+     (void *)env.c_str(), _python_root_dir.c_str(),
+     &startup_info, &_p3dpython);
   _started_p3dpython = (result != 0);
 
   if (!_started_p3dpython) {
@@ -104,10 +114,9 @@ P3DSession(P3DInstance *inst) {
     cerr << "Created process: " << _p3dpython.dwProcessId << "\n";
   }
 
-  CloseHandle(r_to);
+  // Close the pipe handles that are now owned by the child.
   CloseHandle(w_from);
-  SetStdHandle(STD_INPUT_HANDLE, orig_stdin);
-  SetStdHandle(STD_OUTPUT_HANDLE, orig_stdout);
+  CloseHandle(r_to);
 
   _pipe_read.open_read(r_from);
   _pipe_write.open_write(w_to);
@@ -162,11 +171,13 @@ start_instance(P3DInstance *inst) {
 
   TiXmlDocument doc;
   TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
-  TiXmlElement *element = new TiXmlElement("instance");
+  TiXmlElement *xinstance = inst->make_xml();
+  
   doc.LinkEndChild(decl);
-  doc.LinkEndChild(element);
+  doc.LinkEndChild(xinstance);
 
-  _pipe_write << doc;
+  cerr << "sending: " << doc << "\n";
+  _pipe_write << doc << flush;
 
   /*
   P3DPython *python = inst_mgr->start_python(_python_version);

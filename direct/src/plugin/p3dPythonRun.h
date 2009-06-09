@@ -18,11 +18,13 @@
 #include <iostream>
 #include <string>
 #include <deque>
+#include <vector>
 #include <assert.h>
 #include <Python.h>
 #include <tinyxml.h>
 #include "p3d_lock.h"
 #include "handleStream.h"
+#include "p3dCInstance.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -60,6 +62,8 @@ private:
   void spawn_read_thread();
   void join_read_thread();
 
+  void start_instance(P3DCInstance *inst);
+
 private:
   // This method runs only within the read thread.
   void rt_thread_run();
@@ -68,6 +72,17 @@ private:
 #endif
 
 private:
+  typedef vector<P3DCInstance *> Instances;
+  Instances _instances;
+
+  string _program_name;
+  int _py_argc;
+  char **_py_argv;
+
+  PyObject *_runPackedApp;
+  PyObject *_setupWindow;
+
+  // The remaining members are manipulated by the read thread.
   typedef deque<TiXmlDocument *> Commands;
   Commands _commands;
   LOCK _commands_lock;
@@ -79,13 +94,6 @@ private:
 #ifdef _WIN32
   HANDLE _read_thread;
 #endif
-
-  string _program_name;
-  int _py_argc;
-  char **_py_argv;
-
-  PyObject *_runPackedApp;
-  PyObject *_setupWindow;
 };
 
 #include "p3dPythonRun.I"

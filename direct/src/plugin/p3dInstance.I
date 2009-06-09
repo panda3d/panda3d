@@ -19,7 +19,7 @@
 //  Description: Returns the p3d filename that was passed to the
 //               constructor.
 ////////////////////////////////////////////////////////////////////
-INLINE const string &P3DInstance::
+inline const string &P3DInstance::
 get_p3d_filename() const {
   return _p3d_filename;
 }
@@ -35,7 +35,7 @@ get_p3d_filename() const {
 //               each unique session required for different
 //               P3DInstances.
 ////////////////////////////////////////////////////////////////////
-INLINE const string &P3DInstance::
+inline const string &P3DInstance::
 get_session_key() const {
   return _session_key;
 }
@@ -46,7 +46,7 @@ get_session_key() const {
 //  Description: Returns a string that uniquely identifies this
 //               instance's required Python version.
 ////////////////////////////////////////////////////////////////////
-INLINE const string &P3DInstance::
+inline const string &P3DInstance::
 get_python_version() const {
   return _python_version;
 }

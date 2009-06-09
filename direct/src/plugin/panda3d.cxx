@@ -16,6 +16,7 @@
 
 #include <iostream>
 #include <string>
+#include <math.h>
 
 #ifdef _WIN32
 #include "wingetopt.h"
@@ -301,25 +302,62 @@ main(int argc, char *argv[]) {
     return 1;
   }
 
+  int num_instances = argc - 1;
+
   P3D_window_handle parent_window;
   if (window_type == P3D_WT_embedded) {
     // The user asked for an embedded window.  Create a toplevel
     // window to be its parent, of the requested size.
+    if (win_width == 0 && win_height == 0) {
+      win_width = 640;
+      win_height = 480;
+    }
+
     make_parent_window(parent_window, win_width, win_height);
+    
+    // Center the child window(s) within the parent window.
+    RECT rect;
+    GetClientRect(parent_window._hwnd, &rect);
 
-    // And center the graphics window within that parent window.
-    win_x = (int)(win_width * 0.1);
-    win_y = (int)(win_height * 0.1);
-    win_width = (int)(win_width * 0.8);
-    win_height = (int)(win_height * 0.8);
+    win_x = (int)(rect.right * 0.1);
+    win_y = (int)(rect.bottom * 0.1);
+    win_width = (int)(rect.right * 0.8);
+    win_height = (int)(rect.bottom * 0.8);
+
+    // Subdivide the window into num_x_spans * num_y_spans sub-windows.
+    int num_y_spans = int(sqrt((double)num_instances));
+    int num_x_spans = (num_instances + num_y_spans - 1) / num_y_spans;
+    
+    int inst_width = win_width / num_x_spans;
+    int inst_height = win_height / num_y_spans;
+
+    for (int yi = 0; yi < num_y_spans; ++yi) {
+      for (int xi = 0; xi < num_x_spans; ++xi) {
+        int i = yi * num_x_spans + xi;
+        if (i >= num_instances) {
+          continue;
+        }
+
+        // Create instance i at window slot (xi, yi).
+        int inst_x = win_x + xi * inst_width;
+        int inst_y = win_y + yi * inst_height;
+
+        P3D_create_instance
+          (NULL, argv[i + 1], 
+           P3D_WT_embedded, inst_x, inst_y, inst_width, inst_height, parent_window,
+           NULL, 0);
+      }
+    }
+
+  } else {
+    // Not an embedded window.  Create each window with the same parameters.
+    for (int i = 0; i < num_instances; ++i) {
+      P3D_create_instance
+        (NULL, argv[i + 1], 
+         window_type, win_x, win_y, win_width, win_height, parent_window,
+         NULL, 0);
+    }
   }
-
-  // For now, only one instance at a time is supported.  Ignore the
-  // remaining command-line parameters.
-  P3D_create_instance
-    (NULL, argv[1], 
-     window_type, win_x, win_y, win_width, win_height, parent_window,
-     NULL, 0);
 
 #ifdef _WIN32
   // Wait for new messages from Windows, and new requests from the

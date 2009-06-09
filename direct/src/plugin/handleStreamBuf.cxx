@@ -258,7 +258,7 @@ read_chars(char *start, size_t length) {
   BOOL success = ReadFile(_handle, start, length, &bytes_read, NULL);
   if (!success) {
     DWORD error = GetLastError();
-    if (error != ERROR_HANDLE_EOF) {
+    if (error != ERROR_HANDLE_EOF && error != ERROR_BROKEN_PIPE) {
       cerr
         << "Error reading " << length
         << " bytes, windows error code 0x" << hex
@@ -311,10 +311,12 @@ write_chars(const char *start, size_t length) {
   BOOL success = WriteFile(_handle, start, length, &bytes_written, NULL);
   if (!success) {
     DWORD error = GetLastError();
-    cerr
-      << "Error writing " << length
-      << " bytes, windows error code 0x" << hex
-      << error << dec << ".\n";
+    if (error != ERROR_BROKEN_PIPE) {
+      cerr
+        << "Error writing " << length
+        << " bytes, windows error code 0x" << hex
+        << error << dec << ".\n";
+    }
     return bytes_written;
   }
   assert(bytes_written == length);

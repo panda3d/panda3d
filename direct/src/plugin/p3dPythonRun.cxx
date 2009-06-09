@@ -24,6 +24,18 @@ P3DPythonRun(int argc, char *argv[]) {
   _read_thread_alive = false;
   INIT_LOCK(_commands_lock);
 
+  _program_name = argv[0];
+  _py_argc = 1;
+  _py_argv = (char **)malloc(2 * sizeof(char *));
+  _py_argv[0] = argv[0];
+  _py_argv[1] = NULL;
+
+  // Initialize Python.  It appears to be important to do this before
+  // we open the pipe streams and spawn the thread, below.
+  Py_SetProgramName((char *)_program_name.c_str());
+  Py_Initialize();
+  PySys_SetArgv(_py_argc, _py_argv);
+
   // Open the pipe streams with the input and output handles from the
   // parent.
 #ifdef _WIN32
@@ -35,6 +47,7 @@ P3DPythonRun(int argc, char *argv[]) {
   if (!SetStdHandle(STD_OUTPUT_HANDLE, INVALID_HANDLE_VALUE)) {
     cerr << "unable to reset input handle\n";
   }
+
   _pipe_read.open_read(read);
   _pipe_write.open_write(write);
 #endif  // _WIN32
@@ -46,17 +59,6 @@ P3DPythonRun(int argc, char *argv[]) {
   }
 
   spawn_read_thread();
-
-  _program_name = argv[0];
-  _py_argc = 1;
-  _py_argv = (char **)malloc(2 * sizeof(char *));
-  _py_argv[0] = argv[0];
-  _py_argv[1] = NULL;
-
-  // Initialize Python.
-  Py_SetProgramName((char *)_program_name.c_str());
-  Py_Initialize();
-  PySys_SetArgv(_py_argc, _py_argv);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -172,6 +174,12 @@ run_python() {
 void P3DPythonRun::
 handle_command(TiXmlDocument *doc) {
   cerr << "got command: " << *doc << "\n";
+  TiXmlHandle h(doc);
+  TiXmlElement *xinstance = h.FirstChild("instance").ToElement();
+  if (xinstance != (TiXmlElement *)NULL) {
+    P3DCInstance *inst = new P3DCInstance(xinstance);
+    start_instance(inst);
+  }    
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -256,14 +264,63 @@ join_read_thread() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::start_instance
+//       Access: Private
+//  Description: Starts the indicated instance running within the
+//               Python process.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+start_instance(P3DCInstance *inst) {
+  cerr << "starting instance " << inst->get_p3d_filename() << "\n";
+  _instances.push_back(inst);
+
+  string window_type;
+  switch (inst->_window_type) {
+  case P3D_WT_embedded:
+    window_type = "embedded";
+    break;
+  case P3D_WT_toplevel:
+    window_type = "toplevel";
+    break;
+  case P3D_WT_fullscreen:
+    window_type = "fullscreen";
+    break;
+  case P3D_WT_hidden:
+    window_type = "hidden";
+    break;
+  }
+
+  PyObject *result = PyObject_CallFunction
+    (_setupWindow, "siiiii", window_type.c_str(),
+     inst->_win_x, inst->_win_y,
+     inst->_win_width, inst->_win_height,
+#ifdef _WIN32
+     (int)(inst->_parent_window._hwnd)
+#endif
+     );
+  if (result == NULL) {
+    PyErr_Print();
+  }
+  Py_XDECREF(result);
+  
+  result = PyObject_CallFunction(_runPackedApp, "[s]", inst->get_p3d_filename().c_str());
+  if (result == NULL) {
+    PyErr_Print();
+  }
+  Py_XDECREF(result);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonRun::rt_thread_run
 //       Access: Private
 //  Description: The main function for the read thread.
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 rt_thread_run() {
+  cerr << "thread reading.\n";
   while (_read_thread_alive) {
     TiXmlDocument *doc = new TiXmlDocument;
+
     _pipe_read >> *doc;
     if (!_pipe_read || _pipe_read.eof()) {
       // Some error on reading.  Abort.

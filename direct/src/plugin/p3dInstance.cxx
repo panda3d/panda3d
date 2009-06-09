@@ -38,7 +38,6 @@ P3DInstance(P3D_request_ready_func *func,
   _parent_window(parent_window)
 {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  cerr << "creating instance\n";
 
   INIT_LOCK(_request_lock);
 
@@ -193,6 +192,51 @@ feed_url_stream(int unique_id,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::make_xml
+//       Access: Public
+//  Description: Returns a newly-allocated XML structure that
+//               corresponds to the data within this instance.
+////////////////////////////////////////////////////////////////////
+TiXmlElement *P3DInstance::
+make_xml() {
+  TiXmlElement *xinstance = new TiXmlElement("instance");
+  xinstance->SetAttribute("p3d_filename", _p3d_filename);
+
+  switch (_window_type) {
+  case P3D_WT_embedded:
+    xinstance->SetAttribute("window_type", "embedded");
+    xinstance->SetAttribute("win_x", _win_x);
+    xinstance->SetAttribute("win_y", _win_y);
+    xinstance->SetAttribute("win_width", _win_width);
+    xinstance->SetAttribute("win_height", _win_height);
+#ifdef _WIN32
+    xinstance->SetAttribute("parent_hwnd", (int)_parent_window._hwnd);
+#endif
+    break;
+
+  case P3D_WT_toplevel:
+    xinstance->SetAttribute("window_type", "toplevel");
+    xinstance->SetAttribute("win_x", _win_x);
+    xinstance->SetAttribute("win_y", _win_y);
+    xinstance->SetAttribute("win_width", _win_width);
+    xinstance->SetAttribute("win_height", _win_height);
+    break;
+
+  case P3D_WT_fullscreen:
+    xinstance->SetAttribute("window_type", "fullscreen");
+    xinstance->SetAttribute("win_width", _win_width);
+    xinstance->SetAttribute("win_height", _win_height);
+    break;
+
+  case P3D_WT_hidden:
+    xinstance->SetAttribute("window_type", "hidden");
+    break;
+  }
+
+  return xinstance;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::fill_tokens
 //       Access: Private
 //  Description: Copies the C-style tokens array into the internal
@@ -211,3 +255,4 @@ fill_tokens(const P3D_token *tokens[], size_t tokens_size) {
     _tokens.push_back(token);
   }
 }
+
