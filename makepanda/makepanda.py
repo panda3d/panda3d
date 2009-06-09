@@ -2710,7 +2710,7 @@ if TARGET in ["all", "panda3d"]:
     TargetAdd('libp3direct.dll', input='distributed_cDistributedSmoothNodeBase.obj')
     TargetAdd('libp3direct.dll', input='libdistributed_igate.obj')
     TargetAdd('libp3direct.dll', input=COMMON_PANDA_LIBS)
-    TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL'])
+    TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER'])
 
   #
   # DIRECTORY: direct/src/dcparse/
