@@ -871,51 +871,45 @@ open_regular_window() {
   const WindowClass &wclass = register_window_class(_properties);
   HINSTANCE hinstance = GetModuleHandle(NULL);
 
-
-    _hparent = NULL;
-    if(_properties.has_parent_window())
-        _hparent = (HWND) _properties.get_parent_window();
-
-
-    if(!_hparent)
-    {
-        _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style, 
-                       x_origin, y_origin,
-                       win_rect.right - win_rect.left,
-                       win_rect.bottom - win_rect.top,
-                       NULL, NULL, hinstance, 0);
-
-    }
-    else
-    {
-          x_origin = 0;
-          y_origin = 0;
-
-
-        if (_properties.has_origin()) {
-            x_origin = _properties.get_x_origin();
-            y_origin = _properties.get_y_origin();
-        }
-
-      _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), 
-                       WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS ,
-                       //x_origin, y_origin, 
-                       x_origin,y_origin,
-                       x_size, y_size,
-                       _hparent, NULL, hinstance, 0);
-
-
-      if(_hWnd)
-      {
-          // join or keyboard state with the parents
-        AttachThreadInput(GetWindowThreadProcessId(_hparent,NULL), GetCurrentThreadId(),TRUE);
-        // set us as the focus window for keyboard input
-        SetFocus(_hWnd);
-        _properties.set_foreground(true);
-      }
+  _hparent = NULL;
+  if (_properties.has_parent_window()) {
+    _hparent = (HWND) _properties.get_parent_window();
   }
 
+  if (!_hparent) {
+    _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), window_style, 
+                         x_origin, y_origin,
+                         win_rect.right - win_rect.left,
+                         win_rect.bottom - win_rect.top,
+                         NULL, NULL, hinstance, 0);
+    
+  } else {
+    x_origin = 0;
+    y_origin = 0;
+    
+    if (_properties.has_origin()) {
+      x_origin = _properties.get_x_origin();
+      y_origin = _properties.get_y_origin();
+    }
 
+    DWORD process_id;
+    DWORD thread_id = GetWindowThreadProcessId(_hparent, &process_id);
+    _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), 
+                         WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS ,
+                         x_origin,y_origin,
+                         x_size, y_size,
+                         _hparent, NULL, hinstance, 0);
+    
+    
+    if (_hWnd) {
+      // join our keyboard state with the parents
+      AttachThreadInput(GetWindowThreadProcessId(_hparent,NULL), GetCurrentThreadId(),TRUE);
+      // set us as the focus window for keyboard input
+      SetFocus(_hWnd);
+      _properties.set_foreground(true);
+    }
+  }
+  
   if (!_hWnd) {
     windisplay_cat.error()
       << "CreateWindow() failed!" << endl;
