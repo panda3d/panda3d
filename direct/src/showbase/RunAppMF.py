@@ -153,6 +153,9 @@ def add_check_comm(func, this):
     return taskMgr.add(func, "check_comm", sort = -50, extraArgs = [this],
                        appendTask = True)
 
+def exit():
+    taskMgr.stop()
+
 if __name__ == '__main__':
     try:
         runPackedApp(sys.argv[1:])

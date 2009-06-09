@@ -25,6 +25,17 @@ get_p3d_filename() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_instance_id
+//       Access: Public
+//  Description: Returns a unique integer for each instance in the
+//               system.
+////////////////////////////////////////////////////////////////////
+inline int P3DInstance::
+get_instance_id() const {
+  return _instance_id;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::get_session_key
 //       Access: Public
 //  Description: Returns a string that uniquely identifies this

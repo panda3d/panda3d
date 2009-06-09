@@ -21,7 +21,8 @@
 ////////////////////////////////////////////////////////////////////
 P3DPythonRun::
 P3DPythonRun(int argc, char *argv[]) {
-  _read_thread_alive = false;
+  _read_thread_continue = false;
+  _program_continue = true;
   INIT_LOCK(_commands_lock);
 
   _program_name = argv[0];
@@ -101,6 +102,11 @@ run_python() {
     PyErr_Print();
     return false;
   }
+  _exit = PyObject_GetAttrString(appmf, "exit");
+  if (_exit == NULL) {
+    PyErr_Print();
+    return false;
+  }
   _setupWindow = PyObject_GetAttrString(appmf, "setupWindow");
   if (_setupWindow == NULL) {
     PyErr_Print();
@@ -174,12 +180,27 @@ run_python() {
 void P3DPythonRun::
 handle_command(TiXmlDocument *doc) {
   cerr << "got command: " << *doc << "\n";
-  TiXmlHandle h(doc);
-  TiXmlElement *xinstance = h.FirstChild("instance").ToElement();
-  if (xinstance != (TiXmlElement *)NULL) {
-    P3DCInstance *inst = new P3DCInstance(xinstance);
-    start_instance(inst);
-  }    
+  TiXmlElement *xcommand = doc->FirstChildElement("command");
+  if (xcommand != NULL) {
+    const char *cmd = xcommand->Attribute("cmd");
+    if (cmd != NULL) {
+      if (strcmp(cmd, "start_instance") == 0) {
+        TiXmlElement *xinstance = xcommand->FirstChildElement("instance");
+        if (xinstance != (TiXmlElement *)NULL) {
+          P3DCInstance *inst = new P3DCInstance(xinstance);
+          start_instance(inst);
+        }
+      } else if (strcmp(cmd, "terminate_instance") == 0) {
+        int id;
+        if (xcommand->Attribute("id", &id)) {
+          terminate_instance(id);
+        }
+        
+      } else {
+        cerr << "Unhandled command " << cmd << "\n";
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -203,6 +224,13 @@ check_comm() {
     delete doc;
     ACQUIRE_LOCK(_commands_lock);
   }
+
+  if (!_program_continue) {
+    // The low-level thread detected an error, for instance pipe
+    // closed.  We should exit gracefully.
+    terminate_session();
+  }
+
   RELEASE_LOCK(_commands_lock);
 }
 
@@ -236,9 +264,9 @@ py_check_comm(PyObject *, PyObject *args) {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 spawn_read_thread() {
-  assert(!_read_thread_alive);
+  assert(!_read_thread_continue);
 
-  _read_thread_alive = true;
+  _read_thread_continue = true;
 #ifdef _WIN32
   _read_thread = CreateThread(NULL, 0, &win_rt_thread_run, this, 0, NULL);
 #endif
@@ -252,7 +280,7 @@ spawn_read_thread() {
 void P3DPythonRun::
 join_read_thread() {
   cerr << "waiting for thread\n";
-  _read_thread_alive = false;
+  _read_thread_continue = false;
   
 #ifdef _WIN32
   assert(_read_thread != NULL);
@@ -272,7 +300,7 @@ join_read_thread() {
 void P3DPythonRun::
 start_instance(P3DCInstance *inst) {
   cerr << "starting instance " << inst->get_p3d_filename() << "\n";
-  _instances.push_back(inst);
+  _instances[inst->get_instance_id()] = inst;
 
   string window_type;
   switch (inst->_window_type) {
@@ -311,6 +339,51 @@ start_instance(P3DCInstance *inst) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::terminate_instance
+//       Access: Private
+//  Description: Stops the instance with the indicated id.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+terminate_instance(int id) {
+  Instances::iterator ii = _instances.find(id);
+  if (ii == _instances.end()) {
+    cerr << "Can't stop instance " << id << ": not started.\n";
+    return;
+  }
+
+  P3DCInstance *inst = (*ii).second;
+  _instances.erase(ii);
+  delete inst;
+
+  // TODO: we don't currently have any way to stop just one instance
+  // of a multi-instance session.  We could maybe close its window or
+  // something.
+  terminate_session();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::terminate_session
+//       Access: Private
+//  Description: Stops all currently-running instances.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+terminate_session() {
+  Instances::iterator ii;
+  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+    P3DCInstance *inst = (*ii).second;
+    delete inst;
+  }
+  _instances.clear();
+
+  PyObject *result = PyObject_CallFunction(_exit, "");
+  if (result == NULL) {
+    PyErr_Print();
+  }
+  Py_XDECREF(result);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonRun::rt_thread_run
 //       Access: Private
 //  Description: The main function for the read thread.
@@ -318,13 +391,14 @@ start_instance(P3DCInstance *inst) {
 void P3DPythonRun::
 rt_thread_run() {
   cerr << "thread reading.\n";
-  while (_read_thread_alive) {
+  while (_read_thread_continue) {
     TiXmlDocument *doc = new TiXmlDocument;
 
     _pipe_read >> *doc;
     if (!_pipe_read || _pipe_read.eof()) {
       // Some error on reading.  Abort.
       cerr << "Error on reading.\n";
+      _program_continue = false;
       return;
     }
 

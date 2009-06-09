@@ -56,6 +56,7 @@ public:
                        size_t this_data_size);
 
   inline const string &get_p3d_filename() const;
+  inline int get_instance_id() const;
   inline const string &get_session_key() const;
   inline const string &get_python_version() const;
 
@@ -79,6 +80,7 @@ private:
   P3D_window_handle _parent_window;
   Tokens _tokens;
 
+  int _instance_id;
   string _session_key;
   string _python_version;
   P3DSession *_session;
@@ -86,6 +88,8 @@ private:
   LOCK _request_lock;
   typedef deque<P3D_request *> Requests;
   Requests _pending_requests;
+
+  static int _next_instance_id;
 
   friend class P3DSession;
 };

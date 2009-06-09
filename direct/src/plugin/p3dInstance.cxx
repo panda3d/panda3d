@@ -17,6 +17,8 @@
 
 #include <sstream>
 
+int P3DInstance::_next_instance_id = 0;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::Constructor
 //       Access: Public
@@ -37,11 +39,13 @@ P3DInstance(P3D_request_ready_func *func,
   _win_width(win_width), _win_height(win_height),
   _parent_window(parent_window)
 {
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  _instance_id = _next_instance_id;
+  ++_next_instance_id;
 
   INIT_LOCK(_request_lock);
 
   // For the moment, all sessions will be unique.
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   ostringstream strm;
   strm << inst_mgr->get_unique_session_index();
   _session_key = strm.str();
@@ -200,6 +204,7 @@ feed_url_stream(int unique_id,
 TiXmlElement *P3DInstance::
 make_xml() {
   TiXmlElement *xinstance = new TiXmlElement("instance");
+  xinstance->SetAttribute("id", _instance_id);
   xinstance->SetAttribute("p3d_filename", _p3d_filename);
 
   switch (_window_type) {

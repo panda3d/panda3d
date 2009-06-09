@@ -18,7 +18,7 @@
 #include <iostream>
 #include <string>
 #include <deque>
-#include <vector>
+#include <map>
 #include <assert.h>
 #include <Python.h>
 #include <tinyxml.h>
@@ -63,6 +63,8 @@ private:
   void join_read_thread();
 
   void start_instance(P3DCInstance *inst);
+  void terminate_instance(int id);
+  void terminate_session();
 
 private:
   // This method runs only within the read thread.
@@ -72,7 +74,7 @@ private:
 #endif
 
 private:
-  typedef vector<P3DCInstance *> Instances;
+  typedef map<int, P3DCInstance *> Instances;
   Instances _instances;
 
   string _program_name;
@@ -80,6 +82,7 @@ private:
   char **_py_argv;
 
   PyObject *_runPackedApp;
+  PyObject *_exit;
   PyObject *_setupWindow;
 
   // The remaining members are manipulated by the read thread.
@@ -90,7 +93,8 @@ private:
   HandleStream _pipe_read;
   HandleStream _pipe_write;
 
-  bool _read_thread_alive;
+  bool _read_thread_continue;
+  bool _program_continue;
 #ifdef _WIN32
   HANDLE _read_thread;
 #endif

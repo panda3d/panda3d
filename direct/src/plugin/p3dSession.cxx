@@ -167,24 +167,17 @@ start_instance(P3DInstance *inst) {
   bool inserted = _instances.insert(inst).second;
   assert(inserted);
 
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-
   TiXmlDocument doc;
   TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "start_instance");
   TiXmlElement *xinstance = inst->make_xml();
   
   doc.LinkEndChild(decl);
-  doc.LinkEndChild(xinstance);
+  doc.LinkEndChild(xcommand);
+  xcommand->LinkEndChild(xinstance);
 
-  cerr << "sending: " << doc << "\n";
   _pipe_write << doc << flush;
-
-  /*
-  P3DPython *python = inst_mgr->start_python(_python_version);
-  if (python != NULL) {
-    python->start_session(this, inst);
-  }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,12 +189,16 @@ start_instance(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 terminate_instance(P3DInstance *inst) {
-  /*
-  if (_python != NULL) {
-    _python->terminate_session(this);
-    assert(_python == NULL);
-  }
-  */
+  TiXmlDocument doc;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "terminate_instance");
+  xcommand->SetAttribute("id", inst->get_instance_id());
+  
+  doc.LinkEndChild(decl);
+  doc.LinkEndChild(xcommand);
+
+  _pipe_write << doc << flush;
 
   if (inst->_session == this) {
     inst->_session = NULL;
