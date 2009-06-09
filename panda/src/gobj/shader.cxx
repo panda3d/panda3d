@@ -289,7 +289,7 @@ cp_parse_coord_sys(ShaderArgInfo &p,
     to_double   = SMO_view_to_view_x;
     word2 = word1;
   }
-  
+
   if (fromflag) {
     if (word2 == "") {
       bind._part[0] = from_single;
@@ -366,7 +366,7 @@ cp_dependency(ShaderMatInput inp) {
       (inp == SMO_view_to_apiclip_x)) {
     dep |= SSD_shaderinputs;
   }
-  
+
   return dep;
 }
 
@@ -383,7 +383,7 @@ void Shader::
 cp_optimize_mat_spec(ShaderMatSpec &spec) {
 
   // If we're composing with identity, simplify.
-  
+
   if (spec._func == SMF_first) {
     spec._part[1] = SMO_INVALID;
     spec._arg[1] = 0;
@@ -402,7 +402,7 @@ cp_optimize_mat_spec(ShaderMatSpec &spec) {
   }
 
   // Calculate state and transform dependencies.
-  
+
   spec._dep[0] = cp_dependency(spec._part[0]);
   spec._dep[1] = cp_dependency(spec._part[1]);
 }
@@ -443,7 +443,7 @@ compile_parameter(const ShaderArgId  &arg_id,
   }
 
   // Implement vtx parameters - the varying kind.
-  
+
   if (pieces[0] == "vtx") {
     if ((!cp_errchk_parameter_in(p)) ||
         (!cp_errchk_parameter_varying(p)) ||
@@ -578,11 +578,11 @@ compile_parameter(const ShaderArgId  &arg_id,
       (pieces[0]=="col1")||
       (pieces[0]=="col2")||
       (pieces[0]=="col3")) {
-    
+
     if ((!cp_errchk_parameter_in(p)) ||
         (!cp_errchk_parameter_uniform(p)))
       return false;
-    
+
     ShaderMatSpec bind;
     bind._id = arg_id;
     bind._func = SMF_compose;
@@ -606,7 +606,7 @@ compile_parameter(const ShaderArgId  &arg_id,
     } else {
       if (!cp_errchk_parameter_float(p, 4, 4)) return false;
     }
-    
+
     if (!cp_parse_coord_sys(p, pieces, next, bind, true)) {
       return false;
     }
@@ -670,7 +670,7 @@ compile_parameter(const ShaderArgId  &arg_id,
       cp_report_error(p,"Unknown attr parameter.");
       return false;
     }
-    
+
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
     return true;
@@ -683,7 +683,7 @@ compile_parameter(const ShaderArgId  &arg_id,
       return false;
     }
     ShaderMatSpec bind;
-    
+
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
     return true;
@@ -773,7 +773,7 @@ compile_parameter(const ShaderArgId  &arg_id,
     _mat_spec.push_back(bind);
     return true;
   }
-  
+
   if (pieces[0] == "plane") {
     if ((!cp_errchk_parameter_words(p,2))||
         (!cp_errchk_parameter_in(p)) ||
@@ -815,9 +815,9 @@ compile_parameter(const ShaderArgId  &arg_id,
     _mat_spec.push_back(bind);
     return true;
   }
-  
+
   // Keywords to access unusual parameters.
-  
+
   if (pieces[0] == "sys") {
     if ((!cp_errchk_parameter_words(p,2)) ||
         (!cp_errchk_parameter_in(p)) ||
@@ -846,14 +846,14 @@ compile_parameter(const ShaderArgId  &arg_id,
       cp_report_error(p,"unknown system parameter");
       return false;
     }
-    
+
     cp_optimize_mat_spec(bind);
     _mat_spec.push_back(bind);
     return true;
   }
-  
+
   // Keywords to access textures.
-  
+
   if (pieces[0] == "tex") {
     if ((!cp_errchk_parameter_in(p)) ||
         (!cp_errchk_parameter_uniform(p)) ||
@@ -958,7 +958,7 @@ compile_parameter(const ShaderArgId  &arg_id,
   }
 
   // Keywords to fetch texture parameter data.
-  
+
   if (pieces[0] == "texpad") {
     if ((!cp_errchk_parameter_words(p,2)) ||
         (!cp_errchk_parameter_in(p)) ||
@@ -1017,7 +1017,7 @@ compile_parameter(const ShaderArgId  &arg_id,
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::clear_parameters
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Shader::
 clear_parameters() {
@@ -1030,7 +1030,7 @@ clear_parameters() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::cg_parameter_type
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Shader::ShaderArgType Shader::
 cg_parameter_type(CGparameter p) {
@@ -1051,7 +1051,7 @@ cg_parameter_type(CGparameter p) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::cg_parameter_dir
 //       Access: Private
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 Shader::ShaderArgDir Shader::
 cg_parameter_dir(CGparameter p) {
@@ -1102,7 +1102,7 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
   CGerror err;
   const char *compiler_args[100];
   int nargs = 0;
-  
+
   int active, ultimate;
 
   switch(type)
@@ -1122,7 +1122,7 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
       ultimate = caps._ultimate_gprofile;
       break;
   };
-  
+
   // END CG2 CHANGE
 
   cgGetError();
@@ -1194,14 +1194,14 @@ cg_compile_shader(const ShaderCaps &caps) {
   _cg_last_caps = caps;
 
   _cg_context = cgCreateContext();
-  
+
   gobj_cat.debug() << "Compiling Shader: \n" << _text << "\n";
 
   if (_cg_context == 0) {
     gobj_cat.error() << "could not create a Cg context object.\n";
     return false;
   }
-  
+
   _cg_vprogram = cg_compile_entry_point("vshader", caps, ST_VERTEX);    // CG2 CHANGE
   _cg_fprogram = cg_compile_entry_point("fshader", caps, ST_FRAGMENT);  // CG2 CHANGE
 
@@ -1257,10 +1257,10 @@ cg_analyze_entry_point(CGprogram prog, ShaderType type /*bool fshader*/) {  // C
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::cg_analyze_shader
 //       Access: Private
-//  Description: This subroutine analyzes the parameters of a Cg 
+//  Description: This subroutine analyzes the parameters of a Cg
 //               shader. The output is stored in instance variables:
 //               _mat_spec, _var_spec, and _tex_spec.
-//               
+//
 //               In order to do this, it is necessary to compile the
 //               shader.  It would be a waste of CPU time to compile
 //               the shader, analyze the parameters, and then discard
@@ -1298,7 +1298,7 @@ cg_analyze_shader(const ShaderCaps &caps) {
     clear_parameters();
     return false;
   }
-    
+
   if (_var_spec.size() != 0) {
     gobj_cat.error() << "Cannot use vtx parameters in an fshader\n";
     cg_release_resources();
@@ -1311,7 +1311,7 @@ cg_analyze_shader(const ShaderCaps &caps) {
     clear_parameters();
     return false;
   }
-  
+
   // BEGIN CG2 CHANGE
   if (_cg_gprogram != 0)
   {
@@ -1476,17 +1476,17 @@ cg_compile_for(const ShaderCaps &caps,
                pvector<CGparameter> &map) {
 
   // Initialize the return values to empty.
-  
+
   ctx = 0;
   vprogram = 0;
   fprogram = 0;
   gprogram = 0;   // CG2 CHANGE
 
   map.clear();
-  
+
   // Make sure the shader is compiled for the target caps.
   // Most of the time, it will already be - this is usually a no-op.
-  
+
   _default_caps = caps;
   if (!cg_compile_shader(caps)) {
     return false;
@@ -1496,22 +1496,22 @@ cg_compile_for(const ShaderCaps &caps,
   // active one, it means the active one isn't powerful enough to
   // compile the shader.
   // This does not apply when a custom profile is set.
-  
+
   if ((_cg_vprofile == CG_PROFILE_UNKNOWN && cgGetProgramProfile(_cg_vprogram) != caps._active_vprofile) ||
       (_cg_fprofile == CG_PROFILE_UNKNOWN && cgGetProgramProfile(_cg_fprogram) != caps._active_fprofile)) {
     gobj_cat.error() << "Cg program too complex for driver: "
       << get_filename() << ". Try choosing a different profile.\n";
     return false;
   }
-  
+
   // Build a parameter map.
-  
+
   int n_mat = (int)_mat_spec.size();
   int n_tex = (int)_tex_spec.size();
   int n_var = (int)_var_spec.size();
-  
+
   map.resize(n_mat + n_tex + n_var);
-  
+
   for (int i=0; i<n_mat; i++) {
     const ShaderArgId &id = _mat_spec[i]._id;
 
@@ -1535,9 +1535,9 @@ cg_compile_for(const ShaderCaps &caps,
       map[id._seqno] = 0;
     }
   }
-  
+
   // Transfer ownership of the compiled shader.
-  
+
   ctx = _cg_context;
   vprogram = _cg_vprogram;
   fprogram = _cg_fprogram;
@@ -1571,7 +1571,7 @@ Shader(const Filename &filename, const string &text, const string &vprofile, con
   string header;
   parse_init();
   parse_line(_header, true, true);
-  
+
 #ifdef HAVE_CG
   _error_flag = false;
   _cg_context = 0;
@@ -1620,114 +1620,108 @@ Shader(const Filename &filename, const string &text, const string &vprofile, con
 
 }
 
-// BEGIN CG2 CHANGE
-
+#ifdef HAVE_CG
 ////////////////////////////////////////////////////////////////////
 //  Function: Shader::cg_get_profile_from_header
 //  Access: Private
 //  Description: Determines the appropriate active shader profile settings
 //               based on any profile directives stored within the shader header
 ////////////////////////////////////////////////////////////////////
-
 void Shader::
 cg_get_profile_from_header(ShaderCaps& caps) {
+  // Note this forces profile based on what is specified in the shader
+  // header string.  Should probably be relying on card caps eventually.
 
-    // Note this forces profile based on what is specified in the shader
-    // header string.  Should probably be relying on card caps eventually.
+  string buf;
+  parse_init();
 
-    string buf;
-    parse_init();
+  // Assume that if parse doesn't extend after a parse line then
+  // we've reached the end of _text
+  int lastParse;
 
-    // Assume that if parse doesn't extend after a parse line then
-    // we've reached the end of _text
-    int lastParse;
+  do {
+    lastParse = _parse;
+    parse_line(buf, true, true);
+    int profilePos = buf.find("//Cg profile");
+    if (profilePos >= 0) {
+      // Scan the line for known cg2 vertex program profiles
+      if ((int)buf.find("gp4vp") >= 0)
+        caps._active_vprofile = cgGetProfile("gp4vp");
 
-    do
-    {
-        lastParse = _parse;
-        parse_line(buf, true, true);
-        int profilePos = buf.find("//Cg profile");
-        if (profilePos >= 0)
-        {
-            // Scan the line for known cg2 vertex program profiles
-            if ((int)buf.find("gp4vp") >= 0)
-                caps._active_vprofile = cgGetProfile("gp4vp");
+      // older
+      if ((int)buf.find("glslv") >= 0)
+        caps._active_vprofile = cgGetProfile("glslv");
 
-            // older
-            if ((int)buf.find("glslv") >= 0)
-                caps._active_vprofile = cgGetProfile("glslv");
+      if ((int)buf.find("arbvp1") >= 0)
+        caps._active_vprofile = cgGetProfile("arbvp1");
 
-            if ((int)buf.find("arbvp1") >= 0)
-                caps._active_vprofile = cgGetProfile("arbvp1");
+      if ((int)buf.find("vp40") >= 0)
+        caps._active_vprofile = cgGetProfile("vp40");
 
-            if ((int)buf.find("vp40") >= 0)
-                caps._active_vprofile = cgGetProfile("vp40");
+      if ((int)buf.find("vp30") >= 0)
+        caps._active_vprofile = cgGetProfile("vp30");
 
-            if ((int)buf.find("vp30") >= 0)
-                caps._active_vprofile = cgGetProfile("vp30");
+      if ((int)buf.find("vp20") >= 0)
+        caps._active_vprofile = cgGetProfile("vp20");
 
-            if ((int)buf.find("vp20") >= 0)
-                caps._active_vprofile = cgGetProfile("vp20");
+      if ((int)buf.find("vs_1_1") >= 0)
+        caps._active_vprofile = cgGetProfile("vs_1_1");
 
-            if ((int)buf.find("vs_1_1") >= 0)
-                caps._active_vprofile = cgGetProfile("vs_1_1");
+      if ((int)buf.find("vs_2_0") >= 0)
+        caps._active_vprofile = cgGetProfile("vs_2_0");
 
-            if ((int)buf.find("vs_2_0") >= 0)
-                caps._active_vprofile = cgGetProfile("vs_2_0");
+      if ((int)buf.find("vs_2_x") >= 0)
+        caps._active_vprofile = cgGetProfile("vs_2_x");
 
-            if ((int)buf.find("vs_2_x") >= 0)
-                caps._active_vprofile = cgGetProfile("vs_2_x");
+      if ((int)buf.find("vs_3_0") >= 0)
+        caps._active_vprofile = cgGetProfile("vs_3_0");
 
-            if ((int)buf.find("vs_3_0") >= 0)
-                caps._active_vprofile = cgGetProfile("vs_3_0");
+      // Scan the line for known cg2 fragment program profiles
+      if ((int)buf.find("gp4fp") >= 0)
+        caps._active_fprofile = cgGetProfile("gp4fp");
 
-            // Scan the line for known cg2 fragment program profiles
-            if ((int)buf.find("gp4fp") >= 0)
-                caps._active_fprofile = cgGetProfile("gp4fp");
+      // older
+      if ((int)buf.find("glslf") >= 0)
+        caps._active_fprofile = cgGetProfile("glslf");
 
-            // older
-            if ((int)buf.find("glslf") >= 0)
-                caps._active_fprofile = cgGetProfile("glslf");
+      if ((int)buf.find("arbfp1") >= 0)
+        caps._active_fprofile = cgGetProfile("arbfp1");
 
-            if ((int)buf.find("arbfp1") >= 0)
-                caps._active_fprofile = cgGetProfile("arbfp1");
+      if ((int)buf.find("fp40") >= 0)
+        caps._active_fprofile = cgGetProfile("fp40");
 
-            if ((int)buf.find("fp40") >= 0)
-                caps._active_fprofile = cgGetProfile("fp40");
+      if ((int)buf.find("fp30") >= 0)
+        caps._active_fprofile = cgGetProfile("fp30");
 
-            if ((int)buf.find("fp30") >= 0)
-                caps._active_fprofile = cgGetProfile("fp30");
+      if ((int)buf.find("fp20") >= 0)
+        caps._active_fprofile = cgGetProfile("fp20");
 
-            if ((int)buf.find("fp20") >= 0)
-                caps._active_fprofile = cgGetProfile("fp20");
+      if ((int)buf.find("ps_1_1") >= 0)
+        caps._active_fprofile = cgGetProfile("ps_1_1");
 
-            if ((int)buf.find("ps_1_1") >= 0)
-                caps._active_fprofile = cgGetProfile("ps_1_1");
+      if ((int)buf.find("ps_1_2") >= 0)
+        caps._active_fprofile = cgGetProfile("ps_1_2");
 
-            if ((int)buf.find("ps_1_2") >= 0)
-                caps._active_fprofile = cgGetProfile("ps_1_2");
+      if ((int)buf.find("ps_1_3") >= 0)
+        caps._active_fprofile = cgGetProfile("ps_1_3");
 
-            if ((int)buf.find("ps_1_3") >= 0)
-                caps._active_fprofile = cgGetProfile("ps_1_3");
+      if ((int)buf.find("ps_2_0") >= 0)
+        caps._active_fprofile = cgGetProfile("ps_2_0");
 
-            if ((int)buf.find("ps_2_0") >= 0)
-                caps._active_fprofile = cgGetProfile("ps_2_0");
+      if ((int)buf.find("ps_2_x") >= 0)
+        caps._active_fprofile = cgGetProfile("ps_2_x");
 
-            if ((int)buf.find("ps_2_x") >= 0)
-                caps._active_fprofile = cgGetProfile("ps_2_x");
+      if ((int)buf.find("ps_3_0") >= 0)
+        caps._active_fprofile = cgGetProfile("ps_3_0");
 
-            if ((int)buf.find("ps_3_0") >= 0)
-                caps._active_fprofile = cgGetProfile("ps_3_0");
+      // Scan the line for known cg2 geometry program profiles
+      if ((int)buf.find("gp4gp") >= 0)
+        caps._active_gprofile = cgGetProfile("gp4gp");
+    }
+  } while(_parse > lastParse);
 
-            // Scan the line for known cg2 geometry program profiles
-            if ((int)buf.find("gp4gp") >= 0)
-                caps._active_gprofile = cgGetProfile("gp4gp");
-        }
-
-    } while(_parse > lastParse);
 }
-
-// END CG2 CHANGE
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::Destructor
@@ -1996,7 +1990,7 @@ release(PreparedGraphicsObjects *prepared_objects) {
 //               rendered.
 ////////////////////////////////////////////////////////////////////
 ShaderContext *Shader::
-prepare_now(PreparedGraphicsObjects *prepared_objects, 
+prepare_now(PreparedGraphicsObjects *prepared_objects,
             GraphicsStateGuardianBase *gsg) {
   Contexts::const_iterator ci;
   ci = _contexts.find(prepared_objects);
@@ -2056,7 +2050,7 @@ release_all() {
       prepared_objects->release_shader(sc);
     }
   }
-  
+
   // There might still be some outstanding contexts in the map, if
   // there were any NULL pointers there.  Eliminate them.
   _contexts.clear();
@@ -2067,7 +2061,7 @@ release_all() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::ShaderCapabilities::clear()
 //       Access: Public
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Shader::ShaderCaps::
 clear() {
@@ -2087,7 +2081,7 @@ clear() {
 ////////////////////////////////////////////////////////////////////
 //     Function: Shader::register_with_read_factory
 //       Access: Public, Static
-//  Description: 
+//  Description:
 ////////////////////////////////////////////////////////////////////
 void Shader::
 register_with_read_factory() {
