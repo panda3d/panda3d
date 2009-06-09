@@ -35,6 +35,12 @@ public:
   virtual ~PandaFileStreamBuf();
 
   void open(const char *filename, ios::openmode mode);
+#ifdef _WIN32
+  void attach(const char *filename, HANDLE handle, ios::openmode mode);
+#else
+  void attach(const char *filename, int fd, ios::openmode mode);
+#endif
+
   bool is_open() const;
   void close();
 

@@ -177,6 +177,72 @@ open(const char *filename, ios::openmode mode) {
 
 }
 
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFileStreamBuf::attach
+//       Access: Public
+//  Description: Connects the file stream to the existing OS-defined
+//               stream, presumably opened via a low-level OS call.
+//               The filename is for reporting only.  When the file
+//               stream is closed, it will also close the underlying
+//               OS handle.
+//
+//               This function is the Windows-specific variant.
+////////////////////////////////////////////////////////////////////
+void PandaFileStreamBuf::
+attach(const char *filename, HANDLE handle, ios::openmode mode) {
+  close();
+
+  _filename = filename;
+  _open_mode = mode;
+  _is_open = false;
+
+  if (_open_mode & ios::app) {
+    // ios::app implies ios::out.
+    _open_mode |= ios::out;
+  }
+
+  _handle = handle;
+  if (_handle != INVALID_HANDLE_VALUE) {
+    // Presumably the handle is valid.
+    _is_open = true;
+  }
+}
+#endif  // _WIN32
+
+#ifndef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: PandaFileStreamBuf::attach
+//       Access: Public
+//  Description: Connects the file stream to the existing OS-defined
+//               stream, presumably opened via a low-level OS call.
+//               The filename is for reporting only.  When the file
+//               stream is closed, it will also close the underlying
+//               OS handle.
+//
+//               This function is the Posix-specific variant.
+////////////////////////////////////////////////////////////////////
+void PandaFileStreamBuf::
+attach(const char *filename, int fd, ios::openmode mode) {
+  close();
+
+  _filename = filename;
+  _open_mode = mode;
+  _is_open = false;
+
+  if (_open_mode & ios::app) {
+    // ios::app implies ios::out.
+    _open_mode |= ios::out;
+  }
+
+  _fd = fd;
+  if (_fd != -1) {
+    // Presumably the file descriptor is valid.
+    _is_open = true;
+  }
+}
+#endif  // _WIN32
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaFileStreamBuf::is_open
 //       Access: Public
@@ -596,7 +662,7 @@ read_chars_raw(char *start, size_t length) {
     if (error == ERROR_IO_INCOMPLETE || error == ERROR_IO_PENDING) {
       // Wait for more later.
       thread_yield();
-    } else if (error == ERROR_HANDLE_EOF) {
+    } else if (error == ERROR_HANDLE_EOF || error == ERROR_BROKEN_PIPE) {
       // End-of-file, normal result.
       break;
     } else {
@@ -671,6 +737,10 @@ write_chars_raw(const char *start, size_t length) {
     if (error == ERROR_IO_INCOMPLETE || error == ERROR_IO_PENDING) {
       // Wait for more later.
       thread_yield();
+    } else if (error == ERROR_BROKEN_PIPE) {
+      // Broken pipe, we're done.
+      cerr << "Pipe closed on " << _filename << "\n";
+      return bytes_written;
     } else {
       cerr
         << "Error writing " << length

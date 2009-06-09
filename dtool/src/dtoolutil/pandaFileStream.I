@@ -56,6 +56,50 @@ open(const char *filename, ios::openmode mode) {
   }
 }
 
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: IFileStream::attach
+//       Access: Public
+//  Description: Connects the file stream to the existing OS-defined
+//               stream, presumably opened via a low-level OS call.
+//               The filename is for reporting only.  When the file
+//               stream is closed, it will also close the underlying
+//               OS handle.
+//
+//               This function is the Windows-specific variant.
+////////////////////////////////////////////////////////////////////
+void IFileStream::
+attach(const char *filename, HANDLE handle, ios::openmode mode) {
+  clear((ios_iostate)0);
+  _buf.attach(filename, handle, mode);
+  if (!_buf.is_open()) {
+    clear(ios::failbit);
+  }
+}
+#endif  // _WIN32
+
+#ifndef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: IFileStream::attach
+//       Access: Public
+//  Description: Connects the file stream to the existing OS-defined
+//               stream, presumably opened via a low-level OS call.
+//               The filename is for reporting only.  When the file
+//               stream is closed, it will also close the underlying
+//               OS handle.
+//
+//               This function is the Posix-specific variant.
+////////////////////////////////////////////////////////////////////
+void IFileStream::
+attach(const char *filename, int fd, ios::openmode mode) {
+  clear((ios_iostate)0);
+  _buf.attach(filename, handle, mode);
+  if (!_buf.is_open()) {
+    clear(ios::failbit);
+  }
+}
+#endif  // _WIN32
+
 ////////////////////////////////////////////////////////////////////
 //     Function: IFileStream::close
 //       Access: Published
@@ -109,6 +153,50 @@ open(const char *filename, ios::openmode mode) {
   }
 }
 
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: OFileStream::attach
+//       Access: Public
+//  Description: Connects the file stream to the existing OS-defined
+//               stream, presumably opened via a low-level OS call.
+//               The filename is for reporting only.  When the file
+//               stream is closed, it will also close the underlying
+//               OS handle.
+//
+//               This function is the Windows-specific variant.
+////////////////////////////////////////////////////////////////////
+void OFileStream::
+attach(const char *filename, HANDLE handle, ios::openmode mode) {
+  clear((ios_iostate)0);
+  _buf.attach(filename, handle, mode);
+  if (!_buf.is_open()) {
+    clear(ios::failbit);
+  }
+}
+#endif  // _WIN32
+
+#ifndef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: OFileStream::attach
+//       Access: Public
+//  Description: Connects the file stream to the existing OS-defined
+//               stream, presumably opened via a low-level OS call.
+//               The filename is for reporting only.  When the file
+//               stream is closed, it will also close the underlying
+//               OS handle.
+//
+//               This function is the Posix-specific variant.
+////////////////////////////////////////////////////////////////////
+void OFileStream::
+attach(const char *filename, int fd, ios::openmode mode) {
+  clear((ios_iostate)0);
+  _buf.attach(filename, handle, mode);
+  if (!_buf.is_open()) {
+    clear(ios::failbit);
+  }
+}
+#endif  // _WIN32
+
 ////////////////////////////////////////////////////////////////////
 //     Function: OFileStream::close
 //       Access: Published
@@ -161,6 +249,50 @@ open(const char *filename, ios::openmode mode) {
     clear(ios::failbit);
   }
 }
+
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: FileStream::attach
+//       Access: Public
+//  Description: Connects the file stream to the existing OS-defined
+//               stream, presumably opened via a low-level OS call.
+//               The filename is for reporting only.  When the file
+//               stream is closed, it will also close the underlying
+//               OS handle.
+//
+//               This function is the Windows-specific variant.
+////////////////////////////////////////////////////////////////////
+void FileStream::
+attach(const char *filename, HANDLE handle, ios::openmode mode) {
+  clear((ios_iostate)0);
+  _buf.attach(filename, handle, mode);
+  if (!_buf.is_open()) {
+    clear(ios::failbit);
+  }
+}
+#endif  // _WIN32
+
+#ifndef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: FileStream::attach
+//       Access: Public
+//  Description: Connects the file stream to the existing OS-defined
+//               stream, presumably opened via a low-level OS call.
+//               The filename is for reporting only.  When the file
+//               stream is closed, it will also close the underlying
+//               OS handle.
+//
+//               This function is the Posix-specific variant.
+////////////////////////////////////////////////////////////////////
+void FileStream::
+attach(const char *filename, int fd, ios::openmode mode) {
+  clear((ios_iostate)0);
+  _buf.attach(filename, handle, mode);
+  if (!_buf.is_open()) {
+    clear(ios::failbit);
+  }
+}
+#endif  // _WIN32
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FileStream::close

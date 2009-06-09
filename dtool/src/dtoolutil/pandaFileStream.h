@@ -37,6 +37,15 @@ PUBLISHED:
   INLINE ~IFileStream();
 
   INLINE void open(const char *filename, ios::openmode mode = ios::in);
+
+public:
+#ifdef _WIN32
+  INLINE void attach(const char *filename, HANDLE handle, ios::openmode mode = ios::in);
+#else
+  INLINE void attach(const char *filename, int fd, ios::openmode mode = ios::in);
+#endif
+
+PUBLISHED:
   INLINE void close();
 
 private:
@@ -59,6 +68,15 @@ PUBLISHED:
   INLINE ~OFileStream();
 
   INLINE void open(const char *filename, ios::openmode mode = ios::out);
+
+public:
+#ifdef _WIN32
+  INLINE void attach(const char *filename, HANDLE handle, ios::openmode mode = ios::out);
+#else
+  INLINE void attach(const char *filename, int fd, ios::openmode mode = ios::out);
+#endif
+
+PUBLISHED:
   INLINE void close();
 
 private:
@@ -81,6 +99,15 @@ PUBLISHED:
   INLINE ~FileStream();
 
   INLINE void open(const char *filename, ios::openmode mode = ios::in);
+
+public:
+#ifdef _WIN32
+  INLINE void attach(const char *filename, HANDLE handle, ios::openmode mode);
+#else
+  INLINE void attach(const char *filename, int fd, ios::openmode mode);
+#endif
+
+PUBLISHED:
   INLINE void close();
 
 private:
