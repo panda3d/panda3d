@@ -35,6 +35,7 @@ P3DSession(P3DInstance *inst) {
   _python_root_dir = "C:/p3drun";
 
   string p3dpython = "c:/cygwin/home/drose/player/direct/built/bin/p3dpython.exe";
+  //  string p3dpython = _python_root_dir + "/p3dpython.exe";
 
   // Populate the new process' environment.
   string env;

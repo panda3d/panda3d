@@ -41,13 +41,18 @@ using namespace std;
 //               launched as a separate executable from the p3d_plugin
 //               dll, because that's the only way Windows can launch a
 //               sub-process, and also because it makes it possible to
-//               compile-time link with the Python dll, instead of
+//               compile-time link with Panda and Python, instead of
 //               having to go through the clumsy dynamic-loading
 //               interface.
 //
 //               Communication is via XML files exchanged via
-//               anonymous pipes from the parent process.  This
-//               executable is not designed to stand alone.
+//               anonymous pipes from the parent process.  This isn't
+//               terribly eficient, of course, but it's easy; and it's
+//               a fairly low-bandwidth channel so efficiency is not
+//               paramount.
+//
+//               This executable is not designed to stand alone; it is
+//               designed to be invoked only by p3d_plugin.
 ////////////////////////////////////////////////////////////////////
 class P3DPythonRun {
 public:
