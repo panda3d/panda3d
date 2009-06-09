@@ -1,6 +1,6 @@
 // This directory is still experimental.  Define HAVE_P3D_PLUGIN in
 // your Config.pp to build it.
-#define BUILD_DIRECTORY $[HAVE_P3D_PLUGIN]
+#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_PYTHON],$[HAVE_TINYXML]]
 
 #begin lib_target
   #define USE_PACKAGES tinyxml
@@ -30,13 +30,20 @@
 #end lib_target
 
 #begin bin_target
-  #define USE_PACKAGES tinyxml
+  #define USE_PACKAGES tinyxml python
   #define TARGET p3dpython
+
+#define OTHER_LIBS \
+    dtoolutil:c dtoolbase:c dtool:m \
+    interrogatedb:c dconfig:c dtoolconfig:m \
+    express:c pandaexpress:m \
+    prc:c pstatclient:c pandabase:c linmath:c putil:c \
+    pipeline:c panda:m
 
   #define SOURCES \
     handleStream.cxx handleStream.h handleStream.I \
     handleStreamBuf.cxx handleStreamBuf.h \
-    p3d_lock.h \
+    p3d_lock.h p3d_plugin.h \
     p3dCInstance.cxx \
     p3dCInstance.h p3dCInstance.I \
     p3dPythonRun.cxx p3dPythonRun.h p3dPythonRun.I

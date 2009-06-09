@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3dPythonRun.h"
+#include "asyncTaskManager.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonRun::Constructor
@@ -114,41 +115,10 @@ run_python() {
   }
   Py_DECREF(appmf);
 
-  // Construct a Python wrapper around our check_comm() method.
-
-  static PyMethodDef p3dpython_methods[] = {
-    {"check_comm", P3DPythonRun::py_check_comm, METH_VARARGS,
-     "Check for communications to and from the plugin host."},
-    {NULL, NULL, 0, NULL}        /* Sentinel */
-  };
-  PyObject *p3dpython = Py_InitModule("p3dpython", p3dpython_methods);
-  if (p3dpython == NULL) {
-    PyErr_Print();
-    return false;
-  }
-
-  PyObject *check_comm = PyObject_GetAttrString(p3dpython, "check_comm");
-  if (check_comm == NULL) {
-    PyErr_Print();
-    return false;
-  }
-
-  // Now add check_comm() as a Python task.
-  PyObject *add_check_comm = PyObject_GetAttrString(appmf, "add_check_comm");
-  if (add_check_comm == NULL) {
-    PyErr_Print();
-    return false;
-  }
-
-  PyObject *task = PyObject_CallFunction
-    (add_check_comm, "Ol", check_comm, (long)this);
-  if (task == NULL) {
-    PyErr_Print();
-    return false;
-  }
-  Py_DECREF(task);
-  Py_DECREF(add_check_comm);
-  Py_DECREF(check_comm);
+  // Now add check_comm() as a task.
+  _check_comm_task = new GenericAsyncTask("check_comm", st_check_comm, this);
+  AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
+  task_mgr->add(_check_comm_task);
 
   // Finally, get lost in taskMgr.run().
 
@@ -212,8 +182,8 @@ handle_command(TiXmlDocument *doc) {
 //               from, and requests to be delivered to, the plugin
 //               host in the parent process.
 ////////////////////////////////////////////////////////////////////
-void P3DPythonRun::
-check_comm() {
+AsyncTask::DoneStatus P3DPythonRun::
+check_comm(GenericAsyncTask *task) {
   ACQUIRE_LOCK(_commands_lock);
   while (!_commands.empty()) {
     TiXmlDocument *doc = _commands.front();
@@ -232,27 +202,21 @@ check_comm() {
   }
 
   RELEASE_LOCK(_commands_lock);
+
+  return AsyncTask::DS_cont;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::py_check_comm
+//     Function: P3DPythonRun::st_check_comm
 //       Access: Private, Static
-//  Description: This method is added as a Python task function on the
-//               task manager.  It is the Python wrapper around the
-//               check_comm method.
+//  Description: This static function wrapper around check_comm is
+//               necessary to add the method function to the
+//               GenericAsyncTask object.
 ////////////////////////////////////////////////////////////////////
-PyObject *P3DPythonRun::
-py_check_comm(PyObject *, PyObject *args) {
-  long this_int;
-  PyObject *task; 
-  if (!PyArg_ParseTuple(args, "lO:check_comm", &this_int, &task)) {
-    return NULL;
-  }
-
-  P3DPythonRun *self = (P3DPythonRun *)(void *)this_int;
-  self->check_comm();
-
-  return PyObject_GetAttrString(task, "cont");
+AsyncTask::DoneStatus P3DPythonRun::
+st_check_comm(GenericAsyncTask *task, void *user_data) {
+  P3DPythonRun *self = (P3DPythonRun *)user_data;
+  return self->check_comm(task);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -265,6 +229,12 @@ py_check_comm(PyObject *, PyObject *args) {
 void P3DPythonRun::
 spawn_read_thread() {
   assert(!_read_thread_continue);
+
+  // We have to use direct OS calls to create the thread instead of
+  // Panda constructs, because it has to be an actual thread, not
+  // necessarily a Panda thread (we can't use Panda's simple threads
+  // implementation, because we can't get overlapped I/O on an
+  // anonymous pipe in Windows).
 
   _read_thread_continue = true;
 #ifdef _WIN32
@@ -356,8 +326,8 @@ terminate_instance(int id) {
   delete inst;
 
   // TODO: we don't currently have any way to stop just one instance
-  // of a multi-instance session.  We could maybe close its window or
-  // something.
+  // of a multi-instance session.  This will require a different
+  // Python interface than ShowBase.
   terminate_session();
 }
 

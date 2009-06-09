@@ -15,9 +15,11 @@
 #ifndef P3DCINSTANCE_H
 #define P3DCINSTANCE_H
 
-#include "p3d_plugin.h"
+#include "pandabase.h"
 
-#include <vector>
+#include "p3d_plugin.h"
+#include "pvector.h"
+
 #include <tinyxml.h>
 
 class P3DSession;
@@ -41,7 +43,7 @@ private:
     string _keyword;
     string _value;
   };
-  typedef vector<Token> Tokens;
+  typedef pvector<Token> Tokens;
 
   P3D_request_ready_func *_func;
   string _p3d_filename;

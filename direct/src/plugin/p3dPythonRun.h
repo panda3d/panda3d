@@ -15,20 +15,22 @@
 #ifndef P3DPYTHONRUN_H
 #define P3DPYTHONRUN_H
 
-#include <iostream>
-#include <string>
-#include <deque>
-#include <map>
-#include <assert.h>
-#include <Python.h>
-#include <tinyxml.h>
+#include "pandabase.h"
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
 #include "p3d_lock.h"
 #include "handleStream.h"
 #include "p3dCInstance.h"
+#include "genericAsyncTask.h"
+#include "pmap.h"
+#include "pdeque.h"
 
-#ifdef _WIN32
-#include <windows.h>
-#endif
+#include <Python.h>
+#include <tinyxml.h>
 
 using namespace std;
 
@@ -56,8 +58,8 @@ public:
 
 private:
   void handle_command(TiXmlDocument *doc);
-  void check_comm();
-  static PyObject *py_check_comm(PyObject *, PyObject *args);
+  AsyncTask::DoneStatus check_comm(GenericAsyncTask *task);
+  static AsyncTask::DoneStatus st_check_comm(GenericAsyncTask *task, void *user_data);
 
   void spawn_read_thread();
   void join_read_thread();
@@ -68,13 +70,14 @@ private:
 
 private:
   // This method runs only within the read thread.
+
   void rt_thread_run();
 #ifdef _WIN32
   static DWORD WINAPI win_rt_thread_run(LPVOID data);
 #endif
 
 private:
-  typedef map<int, P3DCInstance *> Instances;
+  typedef pmap<int, P3DCInstance *> Instances;
   Instances _instances;
 
   string _program_name;
@@ -85,9 +88,15 @@ private:
   PyObject *_exit;
   PyObject *_setupWindow;
 
+  PT(GenericAsyncTask) _check_comm_task;
+
   // The remaining members are manipulated by the read thread.
-  typedef deque<TiXmlDocument *> Commands;
+  typedef pdeque<TiXmlDocument *> Commands;
   Commands _commands;
+  
+  // This has to be an actual OS LOCK instead of Panda's Mutex,
+  // because we have to use a true thread here, not one of Panda's
+  // simple threads.
   LOCK _commands_lock;
 
   HandleStream _pipe_read;
