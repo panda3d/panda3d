@@ -372,6 +372,12 @@
   #define physx_libs $[PHYSX_LIBS]
 #endif
 
+#if $[HAVE_TINYXML]
+  #define tinyxml_ipath $[wildcard $[TINYXML_IPATH]]
+  #define tinyxml_lpath $[wildcard $[TINYXML_LPATH]]
+  #define tinyxml_libs $[TINYXML_LIBS]
+#endif
+
 #if $[HAVE_CHROMIUM]
   #define chromium_ipath $[wildcard $[CHROMIUM_IPATH]]
   #define chromium_lpath $[wildcard $[CHROMIUM_LPATH]]
