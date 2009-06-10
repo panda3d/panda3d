@@ -149,8 +149,11 @@ get_info(const Filename &filename) {
   }
   if (!bam_file.resolve()) {
     nout << "Unable to fully resolve file.\n";
+    return false;
   }
-  bam_file.close();
+
+  // We can't close the bam file until we have examined the objects,
+  // since closing it will decrement reference counts.
 
   if (objects.size() == 1 && 
       objects[0]->is_of_type(PandaNode::get_class_type())) {
@@ -168,6 +171,7 @@ get_info(const Filename &filename) {
     describe_session(DCAST(RecorderHeader, objects[0]), objects);
 
   } else {
+    nout << "file contains " << objects.size() << " objects:\n";
     for (int i = 0; i < (int)objects.size(); i++) {
       describe_general_object(objects[i]);
     }
@@ -280,6 +284,7 @@ describe_session(RecorderHeader *header, const BamInfo::Objects &objects) {
 ////////////////////////////////////////////////////////////////////
 void BamInfo::
 describe_general_object(TypedWritable *object) {
+  nassertv(object != (TypedWritable *)NULL);
   nout << "  " << object->get_type() << "\n";
 }
 

@@ -612,7 +612,7 @@ write_datagram(BamWriter *manager, Datagram &dg, void *extra_data) const {
 
   dg.add_uint32(_buffer.get_size());
 
-  if (manager->get_file_endian() == BE_native) {
+  if (manager->get_file_endian() == BamWriter::BE_native) {
     // For native endianness, we only have to write the data directly.
     dg.append_data(_buffer.get_read_pointer(true), _buffer.get_size());
 
@@ -656,7 +656,7 @@ fillin(DatagramIterator &scan, BamReader *manager, void *extra_data) {
 
   bool endian_reversed = false;
 
-  if (manager->get_file_endian() != BE_native) {
+  if (manager->get_file_endian() != BamReader::BE_native) {
     // For non-native endian files, we have to convert the data.  
 
     if (array_data->_array_format == (GeomVertexArrayFormat *)NULL) {

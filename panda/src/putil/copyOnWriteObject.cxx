@@ -21,7 +21,7 @@ TypeHandle CopyOnWriteObject::_type_handle;
 #ifdef COW_THREADED
 ////////////////////////////////////////////////////////////////////
 //     Function: CopyOnWriteObject::unref
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Explicitly decrements the reference count.  See
 //               ReferenceCount::unref().
 //

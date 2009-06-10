@@ -200,6 +200,14 @@
   #define EXPTP_TINYDISPLAY extern
 #endif
 
+#ifdef BUILDING_CFTALK
+  #define EXPCL_CFTALK __declspec(dllexport)
+  #define EXPTP_CFTALK
+#else
+  #define EXPCL_CFTALK __declspec(dllimport)
+  #define EXPTP_CFTALK extern
+#endif
+
 #else   /* !WIN32_VC */
 
 #define EXPCL_FRAMEWORK
@@ -267,6 +275,9 @@
 
 #define EXPCL_TINYDISPLAY
 #define EXPTP_TINYDISPLAY
+
+#define EXPCL_CFTALK
+#define EXPTP_CFTALK
 
 #endif  /* WIN32_VC */
 

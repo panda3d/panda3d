@@ -40,9 +40,17 @@
 #include "geom.h"
 #include "geomTriangles.h"
 #include "geomVertexReader.h"
+#include "transformTable.h"
+#include "animBundleNode.h"
+#include "animChannelMatrixXfmTable.h"
+#include "characterJoint.h"
+#include "character.h"
 #include "string_utils.h"
 #include "bamFile.h"
 #include "bamCacheRecord.h"
+#include "eggSAnimData.h"
+#include "eggXfmAnimData.h"
+#include "eggXfmSAnim.h"
 #include "eggGroup.h"
 #include "eggVertexPool.h"
 #include "eggVertex.h"
@@ -51,10 +59,10 @@
 #include "eggTexture.h"
 #include "eggMaterial.h"
 #include "eggRenderMode.h"
+#include "eggTable.h"
 #include "somethingToEggConverter.h"
 #include "dcast.h"
 #include "pystub.h"
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamToEgg::Constructor
@@ -170,6 +178,12 @@ convert_node(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
 
   } else if (node->is_of_type(CollisionNode::get_class_type())) {
     convert_collision_node(DCAST(CollisionNode, node), node_path, egg_parent, has_decal);
+
+  } else if (node->is_of_type(AnimBundleNode::get_class_type())) {
+    convert_anim_node(DCAST(AnimBundleNode, node), node_path, egg_parent, has_decal);
+
+  } else if (node->is_of_type(Character::get_class_type())) {
+    convert_character_node(DCAST(Character, node), node_path, egg_parent, has_decal);
 
   } else {
     // Just a generic node.
@@ -294,6 +308,160 @@ convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::convert_animGroup_node
+//       Access: Private
+//  Description: Converts the indicated AnimationGroupNodes to the corresponding
+//               Egg constructs.
+////////////////////////////////////////////////////////////////////
+EggGroupNode * BamToEgg::convert_animGroup_node(AnimGroup *animGroup, double fps ) {
+  int num_children = animGroup->get_num_children();
+
+  EggGroupNode *eggNode = NULL;
+  if (animGroup->is_of_type(AnimBundle::get_class_type())) {
+    EggTable *eggTable = new EggTable(animGroup->get_name());
+    eggTable ->set_table_type(EggTable::TT_bundle);
+    eggNode = eggTable;
+  } else if (animGroup->is_of_type(AnimGroup::get_class_type())) {
+    EggTable *eggTable = new EggTable(animGroup->get_name());
+    eggTable ->set_table_type(EggTable::TT_table);
+    eggNode = eggTable;
+  }
+
+  if (animGroup->is_of_type(AnimChannelMatrixXfmTable::get_class_type())) {
+    AnimChannelMatrixXfmTable *xmfTable = DCAST(AnimChannelMatrixXfmTable, animGroup);
+    EggXfmSAnim *egg_anim = new EggXfmSAnim("xform");
+    egg_anim->set_fps(fps);
+    for (int i = 0; i < num_matrix_components; i++) {
+      string componentName(1, matrix_component_letters[i]);
+      char table_id = matrix_component_letters[i];
+      CPTA_float table = xmfTable ->get_table(table_id);
+
+      if (xmfTable->has_table(table_id)) {
+        for (unsigned int j = 0; j < table.size(); j++) {
+          egg_anim->add_component_data(componentName, table[j]);
+        }
+      }
+    }
+    eggNode->add_child(egg_anim);
+  }
+  for (int i = 0; i < num_children; i++) {
+    AnimGroup *animChild = animGroup->get_child(i);
+    EggGroupNode *eggChildNode = convert_animGroup_node(animChild, fps);
+    if (eggChildNode!=NULL) {
+      nassertr(eggNode!=NULL, NULL);
+      eggNode->add_child(eggChildNode);
+    }
+  } 
+  return eggNode;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::convert_anim_node
+//       Access: Private
+//  Description: Converts the indicated AnimNode to the corresponding
+//               Egg constructs.
+////////////////////////////////////////////////////////////////////
+void BamToEgg::
+convert_anim_node(AnimBundleNode *node, const WorkingNodePath &node_path,
+                    EggGroupNode *egg_parent, bool has_decal) {
+  
+  // A sequence node gets converted to an ordinary EggGroup, we only apply
+  // the appropriate switch attributes to turn it into a sequence
+  EggTable *eggTable = new EggTable();
+  //egg_parent->add_child(eggTable);
+  _data->add_child(eggTable);
+ 
+  AnimBundle *animBundle = node->get_bundle();
+  // turn it into a switch..
+  //egg_group->set_switch_flag(true);
+
+  EggGroupNode *eggAnimation = convert_animGroup_node(animBundle, animBundle->get_base_frame_rate());
+  eggTable->add_child(eggAnimation);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::convert_character_bundle
+//       Access: Private
+//  Description: Converts the indicated Character Bundle to the corresponding
+//               Egg joints structure.
+////////////////////////////////////////////////////////////////////
+void BamToEgg::
+convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *jointMap) {
+  int num_children = bundleNode->get_num_children();
+  
+  EggGroupNode *joint_group = egg_parent;
+  if (bundleNode->is_of_type(CharacterJoint::get_class_type())) {
+    CharacterJoint *character_joint = DCAST(CharacterJoint, bundleNode);
+
+    LMatrix4f transformf;
+    character_joint->get_net_transform(transformf);
+    LMatrix4d transformd(LCAST(double, transformf));
+    EggGroup *joint = new EggGroup(bundleNode->get_name());
+    joint->add_matrix4(transformd);
+    joint->set_group_type(EggGroup::GT_joint);
+    joint_group = joint;
+    egg_parent->add_child(joint_group);
+    if (jointMap!=NULL) {
+      CharacterJointMap::iterator mi = jointMap->find(character_joint);
+      if (mi != jointMap->end()) {
+        pvector<pair<EggVertex*,float> > &joint_vertices = (*mi).second;
+        pvector<pair<EggVertex*,float> >::const_iterator vi;
+        for (vi = joint_vertices.begin(); vi != joint_vertices.end(); ++vi) {
+          joint->set_vertex_membership((*vi).first, (*vi).second);
+        }
+      }
+    }
+  }
+
+  for (int i = 0; i < num_children ; i++) {
+    PartGroup *partGroup= bundleNode->get_child(i);
+    convert_character_bundle(partGroup, joint_group, jointMap);
+  }
+
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamToEgg::convert_character_node
+//       Access: Private
+//  Description: Converts the indicated Character to the corresponding
+//               Egg constructs.
+////////////////////////////////////////////////////////////////////
+void BamToEgg::
+convert_character_node(Character *node, const WorkingNodePath &node_path,
+                    EggGroupNode *egg_parent, bool has_decal) {
+  
+  // A sequence node gets converted to an ordinary EggGroup, we only apply
+  // the appropriate switch attributes to turn it into a sequence
+  EggGroup *egg_group = new EggGroup(node->get_name());
+  egg_group->set_dart_type(EggGroup::DT_default);
+  egg_parent->add_child(egg_group);
+  apply_node_properties(egg_group, node);
+
+  CharacterJointMap jointMap;
+  
+  // turn it into a switch..
+  //egg_group->set_switch_flag(true);
+
+  int num_children = node->get_num_children();
+  int num_bundles = node->get_num_bundles();
+
+  for (int i = 0; i < num_children; i++) {
+    PandaNode *child = node->get_child(i);
+
+    if (child->is_geom_node()) {
+      convert_geom_node(DCAST(GeomNode, child), WorkingNodePath(node_path, child), egg_group, has_decal, &jointMap);
+    }
+  }
+
+  for (int i = 0; i < num_bundles ; i++) {
+    PartBundle *bundle= node->get_bundle(i);
+    convert_character_bundle(bundle, egg_group, &jointMap);
+  }
+
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamToEgg::convert_collision_node
 //       Access: Private
 //  Description: Converts the indicated CollisionNode to the corresponding
@@ -362,7 +530,7 @@ convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
 ////////////////////////////////////////////////////////////////////
 void BamToEgg::
 convert_geom_node(GeomNode *node, const WorkingNodePath &node_path, 
-                  EggGroupNode *egg_parent, bool has_decal) {
+                  EggGroupNode *egg_parent, bool has_decal, CharacterJointMap *jointMap) {
   PT(EggGroup) egg_group = new EggGroup(node->get_name());
   bool fancy_attributes = apply_node_properties(egg_group, node);
 
@@ -401,10 +569,10 @@ convert_geom_node(GeomNode *node, const WorkingNodePath &node_path,
       CPT(GeomPrimitive) simple = primitive->decompose();
       if (simple->is_of_type(GeomTriangles::get_class_type())) {
         CPT(GeomVertexData) vdata = geom->get_vertex_data();
-        vdata = vdata->animate_vertices(true, Thread::get_current_thread());
+        //        vdata = vdata->animate_vertices(true, Thread::get_current_thread());
         convert_triangles(vdata,
                           DCAST(GeomTriangles, simple), geom_state,
-                          net_mat, egg_parent);
+                          net_mat, egg_parent, jointMap);
       }
     }
   }
@@ -421,7 +589,8 @@ void BamToEgg::
 convert_triangles(const GeomVertexData *vertex_data,
                   const GeomTriangles *primitive, 
                   const RenderState *net_state, 
-                  const LMatrix4f &net_mat, EggGroupNode *egg_parent) {
+                  const LMatrix4f &net_mat, EggGroupNode *egg_parent,
+                  CharacterJointMap *jointMap) {
   GeomVertexReader reader(vertex_data);
 
   // Check for a color scale.
@@ -557,6 +726,7 @@ convert_triangles(const GeomVertexData *vertex_data,
 
   Normalf normal;
   Colorf color;
+  CPT(TransformBlendTable) transformBlendTable = vertex_data->get_transform_blend_table();
 
   int nprims = primitive->get_num_primitives();
   for (int i = 0; i < nprims; ++i) {
@@ -607,6 +777,31 @@ convert_triangles(const GeomVertexData *vertex_data,
       }
 
       EggVertex *new_egg_vert = _vpool->create_unique_vertex(egg_vert);
+
+      if ((vertex_data->has_column(InternalName::get_transform_blend())) && 
+      (jointMap!=NULL) && (transformBlendTable!=NULL)) {
+        reader.set_column(InternalName::get_transform_blend());
+        int idx = reader.get_data1i();
+        const TransformBlend &blend = transformBlendTable->get_blend(idx);
+        int num_weights = blend.get_num_transforms();
+        for (int k = 0; k < num_weights; ++k) {
+          float weight = blend.get_weight(k);
+          if (weight!=0) {
+            const VertexTransform *vertex_transform = blend.get_transform(k);
+            if (vertex_transform->is_of_type(JointVertexTransform::get_class_type())) {
+              const JointVertexTransform *joint_vertex_transform = DCAST(const JointVertexTransform, vertex_transform);
+
+              CharacterJointMap::iterator mi = jointMap->find(joint_vertex_transform->get_joint());
+              if (mi == jointMap->end()) {
+                mi = jointMap->insert(CharacterJointMap::value_type(joint_vertex_transform->get_joint(), pvector<pair<EggVertex*,float> >())).first;
+              }
+              pvector<pair<EggVertex*,float> > &joint_vertices = (*mi).second;
+              joint_vertices.push_back(pair<EggVertex*,float>(new_egg_vert, weight));
+            }
+          }
+        }
+      }
+
       egg_poly->add_vertex(new_egg_vert);
     }
   }

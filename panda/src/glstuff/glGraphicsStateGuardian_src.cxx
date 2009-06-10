@@ -7691,7 +7691,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
           BamCache *cache = BamCache::get_global_ptr();
           PT(BamCacheRecord) record = cache->lookup(tex->get_fullpath(), "txo");
           if (record != (BamCacheRecord *)NULL) {
-            record->set_data(tex, false);
+            record->set_data(tex, tex);
             cache->store(record);
           }
         }

@@ -25,8 +25,6 @@
 
 #include "typedWritableReferenceCount.h"
 
-#include <ipc_file.h>
-
 class Child;
 
 class Person : public TypedWritableReferenceCount {
@@ -89,7 +87,7 @@ public:
   void write_datagram(BamWriter*, Datagram&);
 
   static TypedWritable *make_parent(const FactoryParams &params);
-  virtual int complete_pointers(TypedWritable *p_list,
+  virtual int complete_pointers(TypedWritable **p_list,
                                 BamReader *manager);
 protected:
   void fillin(Parent*,DatagramIterator&,BamReader*);

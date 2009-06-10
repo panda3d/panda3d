@@ -38,6 +38,7 @@ public:
   bool write_header(const string &header);
   virtual bool put_datagram(const Datagram &data);
   virtual bool is_error();
+  virtual void flush();
 
 private:
   bool _wrote_first_datagram;

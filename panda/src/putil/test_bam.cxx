@@ -23,19 +23,10 @@ TypeHandle Person::_type_handle;
 TypeHandle Parent::_type_handle;
 TypeHandle Child::_type_handle;
 
-ConfigureFn(config_util)
-{
-  TypedObject::init_type();
-  ReferenceCount::init_type();
-  TypedReferenceCount::init_type();
-  init_system_type_handles();
-  FactoryParam::init_type();
-  Datagram::init_type();
-  TypedWritable::init_type();
-  WritableParam::init_type();
-  BamReaderParam::init_type();
-  TypedWritableReferenceCount::init_type();
+Configure(config_test_bam);
 
+ConfigureFn(config_test_bam)
+{
   Person::init_type();
   Parent::init_type();
   Child::init_type();
@@ -72,17 +63,18 @@ void Person::
 fillin(Person* me, DatagramIterator& scan, BamReader* manager)
 {
   _name = scan.get_string();
-  myGender = scan.get_uint8();
+  myGender = (Person::sex)scan.get_uint8();
   manager->read_pointer(scan);
   manager->read_pointer(scan);
 }
 
 int Person::
-complete_pointers(TypedWritable **p_list, BamReader *)
+complete_pointers(TypedWritable **p_list, BamReader *manager)
 {
-  _bro = (p_list[0] == TypedWritable::Null) ? (Person*)NULL : DCAST(Person, p_list[0]);
-  _sis = (p_list[1] == TypedWritable::Null) ? (Person*)NULL : DCAST(Person, p_list[1]);
-  return 2;
+  int pi = TypedWritable::complete_pointers(p_list, manager);
+  _bro = DCAST(Person, p_list[pi++]);
+  _sis = DCAST(Person, p_list[pi++]);
+  return pi;
 }
 
 void Person::
@@ -123,12 +115,12 @@ fillin(Parent* me, DatagramIterator& scan, BamReader* manager)
 }
 
 int Parent::
-complete_pointers(TypedWritable *p_list, BamReader *manager)
+complete_pointers(TypedWritable **p_list, BamReader *manager)
 {
-  int start = Person::complete_pointers(p_list, manager);
-  _son = (p_list[start] == TypedWritable::Null) ? (Child*)NULL : DCAST(Child, p_list[2]);
-  _daughter = (p_list[start+1] == TypedWritable::Null) ? (Child*)NULL : DCAST(Child, p_list[3]);
-  return start+2;
+  int pi = Person::complete_pointers(p_list, manager);
+  _son = DCAST(Child, p_list[pi++]);
+  _daughter = DCAST(Child, p_list[pi++]);
+  return pi;
 }
 
 void Parent::
@@ -169,7 +161,6 @@ make_child(const FactoryParams &params)
 
   parse_params(params, scan, manager);
   me->fillin(me, scan, manager);
-  me->fillin(me, scan, manager);
 
   return me;
 }
@@ -185,10 +176,10 @@ fillin(Child* me, DatagramIterator& scan, BamReader* manager)
 int Child::
 complete_pointers(TypedWritable ** p_list, BamReader *manager)
 {
-  int start = Person::complete_pointers(p_list, manager);
-  _dad = (p_list[start] == TypedWritable::Null) ? (Parent*)NULL : DCAST(Parent, p_list[2]);
-  _mom = (p_list[start+1] == TypedWritable::Null) ? (Parent*)NULL : DCAST(Parent, p_list[3]);
-  return start+2;
+  int pi = Person::complete_pointers(p_list, manager);
+  _dad = DCAST(Parent, p_list[pi++]);
+  _mom = DCAST(Parent, p_list[pi++]);
+  return pi;
 }
 
 

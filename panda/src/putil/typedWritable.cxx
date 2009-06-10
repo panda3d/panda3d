@@ -56,6 +56,17 @@ write_datagram(BamWriter *, Datagram &) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::update_bam_nested
+//       Access: Public, Virtual
+//  Description: Called by the BamWriter when this object has not
+//               itself been modified recently, but it should check
+//               its nested objects for updates.
+////////////////////////////////////////////////////////////////////
+void TypedWritable::
+update_bam_nested(BamWriter *) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypedWritable::complete_pointers
 //       Access: Public, Virtual
 //  Description: Receives an array of pointers, one for each time
@@ -98,6 +109,21 @@ require_fully_complete() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::fillin
+//       Access: Public, Virtual
+//  Description: This internal function is intended to be called by
+//               each class's make_from_bam() method to read in all of
+//               the relevant data from the BamFile for the new
+//               object.  It is also called directly by the BamReader
+//               to re-read the data for an object that has been
+//               placed on the stream for an update.
+////////////////////////////////////////////////////////////////////
+void TypedWritable::
+fillin(DatagramIterator &, BamReader *) {
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypedWritable::finalize
 //       Access: Public, Virtual
 //  Description: Called by the BamReader to perform any final actions
@@ -108,20 +134,13 @@ void TypedWritable::
 finalize(BamReader *) {
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: TypedWritable::fillin
-//       Access: Protected
-//  Description: This internal function is intended to be called by
-//               each class's make_from_bam() method to read in all of
-//               the relevant data from the BamFile for the new
-//               object.
-//
-//               It is defined at the TypedWritable level so that
-//               derived classes may call up the inheritance chain
-//               from their own fillin() method.
+//     Function: TypedWritable::as_reference_count
+//       Access: Public, Virtual
+//  Description: Returns the pointer cast to a ReferenceCount pointer,
+//               if it is in fact of that type.
 ////////////////////////////////////////////////////////////////////
-void TypedWritable::
-fillin(DatagramIterator &, BamReader *) {
+ReferenceCount *TypedWritable::
+as_reference_count() {
+  return NULL;
 }
-

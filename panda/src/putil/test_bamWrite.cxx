@@ -16,17 +16,16 @@
 #include "pnotify.h"
 
 #include "test_bam.h"
+#include "datagramOutputFile.h"
 
 int main(int argc, char* argv[])
 {
    string test_file("bamTest.out");
-   datagram_file stream(test_file);
+   DatagramOutputFile stream;
+   bool success = stream.open(test_file);
+   nassertr(success, 1);
 
    BamWriter manager(&stream);
-   stream.open(file::FILE_WRITE);
-
-   // This initialization would normally be done by a ConfigureFn
-   // block.
 
    PointerTo<Parent> dad = new Parent("Attila", Person::MALE);
    PointerTo<Parent> mom = new Parent("Brunhilda", Person::FEMALE);
@@ -56,6 +55,6 @@ int main(int argc, char* argv[])
    manager.write_object(sis.p());
 
    stream.close();
-   return 1;
+   return 0;
 }
 

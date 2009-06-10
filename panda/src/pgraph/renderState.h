@@ -110,7 +110,7 @@ PUBLISHED:
 
   INLINE CPT(RenderState) get_unique() const;
 
-  bool unref() const;
+  virtual bool unref() const;
 
   INLINE void cache_ref() const;
   INLINE bool cache_unref() const;

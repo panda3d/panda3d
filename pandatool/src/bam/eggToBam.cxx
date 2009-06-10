@@ -352,10 +352,10 @@ handle_args(ProgramBase::Args &args) {
   // bam-texture-mode Config.prc variable directly to support this
   // (otherwise the bam code will do what it wants to do anyway).
   if (_tex_rawdata) {
-    bam_texture_mode = BTM_rawdata;
+    bam_texture_mode = BamFile::BTM_rawdata;
 
   } else if (_got_path_store) {
-    bam_texture_mode = BTM_unchanged;
+    bam_texture_mode = BamFile::BTM_unchanged;
 
   } else {
     // Otherwise, the default path store is absolute; then the

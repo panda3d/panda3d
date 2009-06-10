@@ -63,9 +63,10 @@ PUBLISHED:
 
   INLINE bool has_data() const;
   INLINE void clear_data();
-  INLINE const TypedWritable *get_data() const;
-  INLINE TypedWritable *extract_data();
-  INLINE void set_data(TypedWritable *data, bool owns_pointer);
+  INLINE TypedWritable *get_data() const;
+  INLINE bool extract_data(TypedWritable *&ptr, ReferenceCount *&ref_ptr);
+  INLINE void set_data(TypedWritable *ptr, ReferenceCount *ref_ptr);
+  INLINE void set_data(TypedWritable *ptr, int dummy);
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level = 0) const;
@@ -97,8 +98,8 @@ private:
   // The following are not recorded to disk; they are preserved
   // in-memory only for the current session.
   Filename _cache_pathname;
-  TypedWritable *_data;
-  bool _owns_pointer;
+  TypedWritable *_ptr;
+  ReferenceCount *_ref_ptr;
 
   // The following are not recorded to disk, nor even returned by the
   // BamCache interface.  They are strictly meaningful to the

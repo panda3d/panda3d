@@ -382,7 +382,7 @@ get_effect(TypeHandle type) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderEffects::unref
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: This method overrides ReferenceCount::unref() to
 //               check whether the remaining reference count is
 //               entirely in the cache, and if so, it checks for and

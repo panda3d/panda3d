@@ -258,10 +258,10 @@ store(BamCacheRecord *record) {
     TypeHandle texture_type = type_registry->find_type("Texture");
     if (record->get_data()->is_of_type(texture_type)) {
       // Texture objects write the actual texture image.
-      writer.set_file_texture_mode(BTM_rawdata);
+      writer.set_file_texture_mode(BamWriter::BTM_rawdata);
     } else {
       // Any other kinds of objects write texture references.
-      writer.set_file_texture_mode(BTM_fullpath);
+      writer.set_file_texture_mode(BamWriter::BTM_fullpath);
     }
     
     if (!writer.write_object(record)) {
@@ -929,16 +929,17 @@ do_read_record(Filename &cache_pathname, bool read_data) {
   if (read_data && record->dependents_unchanged()) {
     // The cache record doesn't appear to be stale.  Load the cached
     // object.
-    object = reader.read_object();
+    TypedWritable *ptr;
+    ReferenceCount *ref_ptr;
 
-    if (object != (TypedWritable *)NULL) {
+    if (reader.read_object(ptr, ref_ptr)) {
       if (!reader.resolve()) {
         util_cat.debug()
           << "Unable to fully resolve cached object in " << cache_pathname << "\n";
         delete object;
       } else {
         // The object is valid.  Store it in the record.
-        record->set_data(object, true);
+        record->set_data(ptr, ref_ptr);
       }
     }
   }

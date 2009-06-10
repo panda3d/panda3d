@@ -112,7 +112,7 @@ get_dependent_pathname(int n) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool BamCacheRecord::
 has_data() const {
-  return (_data != (TypedWritable *)NULL);
+  return (_ptr != (TypedWritable *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -124,57 +124,85 @@ has_data() const {
 ////////////////////////////////////////////////////////////////////
 INLINE void BamCacheRecord::
 clear_data() {
-  if (_owns_pointer) {
-    delete _data;
+  if (_ref_ptr != NULL) {
+    unref_delete(_ref_ptr);
   }
-  _data = NULL;
-  _owns_pointer = false;
+
+  _ptr = NULL;
+  _ref_ptr = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamCacheRecord::get_data
 //       Access: Published
-//  Description: Returns a read-only pointer to the data stored in the
-//               record, or NULL if there is no data.  This does not
-//               change ownership of the data pointer.
+//  Description: Returns a pointer to the data stored in the
+//               record, or NULL if there is no data.  The pointer is
+//               not removed from the record.
 ////////////////////////////////////////////////////////////////////
-INLINE const TypedWritable *BamCacheRecord::
+INLINE TypedWritable *BamCacheRecord::
 get_data() const {
-  return _data;
+  return _ptr;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamCacheRecord::extract_data
 //       Access: Published
-//  Description: Removes the in-memory data object associated with
-//               this record, and returns it.  This transfers
-//               ownership of the data pointer; the caller will be
-//               responsible for subsequently deleting this object.
+//  Description: Fills ptr and ref_ptr with the two different-typed
+//               pointers to the same object, the data stored within
+//               this record.  This transfers ownership of the data
+//               pointer; the caller will be responsible for managing
+//               the reference counts on this object subsequently.
 //
-//               It is an error to call this if the record does not
-//               own the pointer.
+//               Returns true if the record contained any data (and
+//               the pointers have been filled), false if it didn't
+//               (and the pointers are NULL).
 ////////////////////////////////////////////////////////////////////
-INLINE TypedWritable *BamCacheRecord::
-extract_data() {
-  nassertr(_owns_pointer, NULL);
-  TypedWritable *result = _data;
-  _data = NULL;
-  _owns_pointer = false;
-  return result;
+INLINE bool BamCacheRecord::
+extract_data(TypedWritable *&ptr, ReferenceCount *&ref_ptr) {
+  ptr = _ptr;
+  ref_ptr = _ref_ptr;
+  clear_data();
+  return (ptr != (TypedWritable *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamCacheRecord::set_data
 //       Access: Published
-//  Description: Stores a new data object on the record.  If
-//               owns_pointer is true, the record owns the pointer,
-//               and will eventually be responsible for deleting it.
+//  Description: Stores a new data object on the record.  You should
+//               pass the same pointer twice, to both parameters; this
+//               allows the C++ typecasting to automatically convert
+//               the pointer into both a TypedWritable and a
+//               ReferenceCount pointer, so that the BamCacheRecord
+//               object can reliably manage the reference counts.
+//
+//               You may pass 0 or NULL as the second parameter.  If
+//               you do this, the BamCacheRecord will not manage the
+//               object's reference count; it will be up to you to
+//               ensure the object is not deleted during the lifetime
+//               of the BamCacheRecord object.
 ////////////////////////////////////////////////////////////////////
 INLINE void BamCacheRecord::
-set_data(TypedWritable *data, bool owns_pointer) {
-  clear_data();
-  _data = data;
-  _owns_pointer = owns_pointer;
+set_data(TypedWritable *ptr, ReferenceCount *ref_ptr) {
+  if (_ptr != ptr) {
+    clear_data();
+    _ptr = ptr;
+    _ref_ptr = ref_ptr;
+    if (_ref_ptr != NULL) {
+      _ref_ptr->ref();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamCacheRecord::set_data
+//       Access: Published
+//  Description: This variant on set_data() is provided just to allow
+//               Python code to pass a 0 as the second parameter.
+////////////////////////////////////////////////////////////////////
+INLINE void BamCacheRecord::
+set_data(TypedWritable *ptr, int dummy) {
+  nassertv(dummy == 0);
+  set_data(ptr, (ReferenceCount *)NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

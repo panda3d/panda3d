@@ -56,3 +56,16 @@ bool DatagramSinkNet::
 is_error() {
   return (_target == (Connection *)NULL || _target->get_socket() == (Socket_IP *)NULL);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramSinkNet::flush
+//       Access: Public, Virtual
+//  Description: Ensures that all datagrams previously written will be
+//               visible on the stream.
+////////////////////////////////////////////////////////////////////
+void DatagramSinkNet::
+flush() {
+  if (_target != (Connection *)NULL) {
+    _target->flush();
+  }
+}

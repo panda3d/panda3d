@@ -3011,7 +3011,7 @@ do_write_txo(ostream &out, const string &filename) const {
     return false;
   }
 
-  writer.set_file_texture_mode(BTM_rawdata);
+  writer.set_file_texture_mode(BamWriter::BTM_rawdata);
 
   // We have to temporarily release the lock to allow it to write
   // (since the BamWriter will call write_datagram, which in turn
@@ -3155,8 +3155,8 @@ do_reload_ram_image(bool allow_compression) {
     record = cache->lookup(_fullpath, "txo");
     if (record != (BamCacheRecord *)NULL &&
         record->has_data()) {
-      PT(Texture) tex = DCAST(Texture, record->extract_data());
-
+      PT(Texture) tex = DCAST(Texture, record->get_data());
+      
       // But don't use the cache record if the config parameters have
       // changed, and we want a different-sized texture now.
       int x_size = _orig_file_x_size;
@@ -3204,7 +3204,7 @@ do_reload_ram_image(bool allow_compression) {
               // We've re-compressed the image after loading it from the
               // cache.  To keep the cache current, rewrite it to the
               // cache now, in its newly compressed form.
-              record->set_data(this, false);
+              record->set_data(this, this);
               cache->store(record);
             }
           }
@@ -3250,7 +3250,7 @@ do_reload_ram_image(bool allow_compression) {
       if (record != (BamCacheRecord *)NULL) {
         record->add_dependent_file(_fullpath);
       }
-      record->set_data(this, false);
+      record->set_data(this, this);
       cache->store(record);
     }
   }
@@ -6124,9 +6124,9 @@ write_datagram(BamWriter *manager, Datagram &me) {
   // Otherwise, we just write out the filename, and assume whoever
   // loads the bam file later will have access to the image file on
   // disk.
-  BamTextureMode file_texture_mode = manager->get_file_texture_mode();
+  BamWriter::BamTextureMode file_texture_mode = manager->get_file_texture_mode();
   bool has_rawdata =
-    (file_texture_mode == BTM_rawdata || (do_has_ram_image() && _filename.empty()));
+    (file_texture_mode == BamWriter::BTM_rawdata || (do_has_ram_image() && _filename.empty()));
   if (has_rawdata && !do_has_ram_image()) {
     do_get_ram_image();
     if (!do_has_ram_image()) {
@@ -6143,16 +6143,16 @@ write_datagram(BamWriter *manager, Datagram &me) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
 
   switch (file_texture_mode) {
-  case BTM_unchanged:
-  case BTM_rawdata:
+  case BamWriter::BTM_unchanged:
+  case BamWriter::BTM_rawdata:
     break;
 
-  case BTM_fullpath:
+  case BamWriter::BTM_fullpath:
     filename = _fullpath;
     alpha_filename = _alpha_fullpath;
     break;
 
-  case BTM_relative:
+  case BamWriter::BTM_relative:
     filename = _fullpath;
     alpha_filename = _alpha_fullpath;
     bam_dir.make_absolute(vfs->get_cwd());
@@ -6174,7 +6174,7 @@ write_datagram(BamWriter *manager, Datagram &me) {
     }
     break;
 
-  case BTM_basename:
+  case BamWriter::BTM_basename:
     filename = _fullpath.get_basename();
     alpha_filename = _alpha_fullpath.get_basename();
     break;

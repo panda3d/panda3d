@@ -294,7 +294,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
           loader_cat.info()
             << "Model " << pathname << " found in disk cache.\n";
         }
-        PT(PandaNode) result = DCAST(PandaNode, record->extract_data());
+        PT(PandaNode) result = DCAST(PandaNode, record->get_data());
         if (premunge_data) {
           SceneGraphReducer sgr;
           sgr.premunge(result, RenderState::make_empty());
@@ -308,7 +308,7 @@ try_load_file(const Filename &pathname, const LoaderOptions &options,
     PT(PandaNode) result = requested_type->load_file(pathname, options, record);
     if (result != (PandaNode *)NULL){ 
       if (record != (BamCacheRecord *)NULL) {
-        record->set_data(result, false);
+        record->set_data(result, result);
         cache->store(record);
       }
       

@@ -14,10 +14,9 @@
     bamCache.h bamCache.I \
     bamCacheIndex.h bamCacheIndex.I \
     bamCacheRecord.h bamCacheRecord.I \
-    bamEndian.h \
+    bamEnums.h \
     bamReader.I bamReader.N bamReader.h bamReaderParam.I \
     bamReaderParam.h \
-    bamTextureMode.h \
     bamWriter.I bamWriter.h \
     bitArray.I bitArray.h \
     bitMask.I bitMask.h \
@@ -78,9 +77,8 @@
     bamCache.cxx \
     bamCacheIndex.cxx \
     bamCacheRecord.cxx \
-    bamEndian.cxx \
+    bamEnums.cxx \
     bamReader.cxx bamReaderParam.cxx \
-    bamTextureMode.cxx \
     bamWriter.cxx \
     bitArray.cxx \
     bitMask.cxx \
@@ -128,9 +126,8 @@
     bamCache.h bamCache.I \
     bamCacheIndex.h bamCacheIndex.I \
     bamCacheRecord.h bamCacheRecord.I \
-    bamEndian.h \
+    bamEnums.h \
     bamReader.I bamReader.h bamReaderParam.I bamReaderParam.h \
-    bamTextureMode.h \
     bamWriter.I bamWriter.h \
     bitArray.I bitArray.h \
     bitMask.I bitMask.h \

@@ -45,7 +45,7 @@ private:
 
 PUBLISHED:
   virtual ~InternalName();
-  bool unref() const;
+  virtual bool unref() const;
 
   INLINE static PT(InternalName) make(const string &name);
   static PT(InternalName) make(const string &name, int index);

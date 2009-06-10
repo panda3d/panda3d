@@ -38,3 +38,31 @@ TypedWritable(const TypedWritable &) : _bam_writers(NULL) {
 INLINE void TypedWritable::
 operator = (const TypedWritable &) {
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::mark_bam_modified
+//       Access: Public
+//  Description: Increments the bam_modified counter, so that this
+//               object will be invalidated and retransmitted on any
+//               open bam streams.  This should normally not need to
+//               be called by user code; it should be called
+//               internally when the object has been changed in a way
+//               that legitimately requires its retransmission to any
+//               connected clients.
+////////////////////////////////////////////////////////////////////
+INLINE void TypedWritable::
+mark_bam_modified() {
+  ++_bam_modified;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritable::get_bam_modified
+//       Access: Public
+//  Description: Returns the current bam_modified counter.  This
+//               counter is normally incremented automatically
+//               whenever the object is modified.
+////////////////////////////////////////////////////////////////////
+INLINE UpdateSeq TypedWritable::
+get_bam_modified() const {
+  return _bam_modified;
+}

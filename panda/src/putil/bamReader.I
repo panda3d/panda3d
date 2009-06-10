@@ -14,6 +14,15 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamReaderAuxData::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE BamReaderAuxData::
+BamReaderAuxData() {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: BamReader::get_filename
 //       Access: Public
 //  Description: If a BAM is a file, then the BamReader should
@@ -90,7 +99,7 @@ get_file_minor_ver() const {
 //               convention, but individual objects may choose to
 //               respect this flag when recording data.
 ////////////////////////////////////////////////////////////////////
-INLINE BamEndian BamReader::
+INLINE BamReader::BamEndian BamReader::
 get_file_endian() const {
   return _file_endian;
 }
@@ -200,6 +209,65 @@ AuxData() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: BamReader::CreatedObj::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE BamReader::CreatedObj::
+CreatedObj() :
+  _created(false),
+  _ptr(NULL),
+  _ref_ptr(NULL),
+  _change_this(NULL),
+  _change_this_ref(NULL)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::CreatedObj::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE BamReader::CreatedObj::
+~CreatedObj() {
+  set_ptr(NULL, NULL);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: BamReader::CreatedObj::set_ptr
+//       Access: Public
+//  Description: Replaces the pointer to the created object.  There
+//               are actually two pointers to the same object in
+//               different forms: a generic TypedWritable pointer, and
+//               an untyped ReferenceCount pointer.  We need both
+//               pointers because some objects (like PandaNode)
+//               inherit from TypedWritable and ReferenceCount
+//               independently.
+//
+//               Managing a typed pointer and an untyped
+//               ReferenceCount pointer to the same object takes just
+//               a bit of extra care.
+////////////////////////////////////////////////////////////////////
+INLINE void BamReader::CreatedObj::
+set_ptr(TypedWritable *ptr, ReferenceCount *ref_ptr) {
+  if (_ptr != ptr) {
+    if (_ref_ptr != NULL) {
+      nassertv(_ref_ptr != ref_ptr);
+      unref_delete(_ref_ptr);
+    }
+    
+    _ptr = ptr;
+    _ref_ptr = ref_ptr;
+    
+    if (_ref_ptr != NULL) {
+      _ref_ptr->ref();
+    }
+  } else {
+    nassertv(_ref_ptr == ref_ptr);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: parse_params
 //       Access: Private, Static
 //  Description: Takes in a FactoryParams, passed from a WritableFactory
@@ -216,3 +284,4 @@ parse_params(const FactoryParams &params,
   scan = param->get_iterator();
   manager = param->get_manager();
 }
+

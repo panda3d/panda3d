@@ -15,3 +15,14 @@
 #include "typedWritableReferenceCount.h"
 
 TypeHandle TypedWritableReferenceCount::_type_handle;
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypedWritableReferenceCount::as_reference_count
+//       Access: Public, Virtual
+//  Description: Returns the pointer cast to a ReferenceCount pointer,
+//               if it is in fact of that type.
+////////////////////////////////////////////////////////////////////
+ReferenceCount *TypedWritableReferenceCount::
+as_reference_count() {
+  return this;
+}

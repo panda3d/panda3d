@@ -30,6 +30,10 @@ class EggTexture;
 class LODNode;
 class SequenceNode;
 class SwitchNode;
+class AnimBundleNode;
+class AnimGroup;
+class Character;
+class PartGroup;
 class CollisionNode;
 class GeomNode;
 class GeomTri;
@@ -38,6 +42,10 @@ class GeomTriangles;
 class PandaNode;
 class RenderState;
 class Texture;
+class CharacterJoint;
+class EggVertex;
+
+typedef pmap<const CharacterJoint*, pvector<pair<EggVertex*,float> > > CharacterJointMap;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BamToEgg
@@ -60,14 +68,21 @@ private:
                         EggGroupNode *egg_parent, bool has_decal);
   void convert_switch_node(SwitchNode *node, const WorkingNodePath &node_path,
                         EggGroupNode *egg_parent, bool has_decal);
+  EggGroupNode *convert_animGroup_node(AnimGroup *animGroup, double fps );
+  void convert_anim_node(AnimBundleNode *node, const WorkingNodePath &node_path,
+                        EggGroupNode *egg_parent, bool has_decal);
+  void convert_character_node(Character *node, const WorkingNodePath &node_path,
+                        EggGroupNode *egg_parent, bool has_decal);
+  void convert_character_bundle(PartGroup *bundleNode, EggGroupNode *egg_parent, CharacterJointMap *jointMap);
   void convert_collision_node(CollisionNode *node, const WorkingNodePath &node_path,
                         EggGroupNode *egg_parent, bool has_decal);
   void convert_geom_node(GeomNode *node, const WorkingNodePath &node_path, 
-                         EggGroupNode *egg_parent, bool has_decal);
+                         EggGroupNode *egg_parent, bool has_decal, CharacterJointMap *jointMap=NULL);
   void convert_triangles(const GeomVertexData *vertex_data,
                          const GeomTriangles *primitive, 
                          const RenderState *net_state, 
-                         const LMatrix4f &net_mat, EggGroupNode *egg_parent);
+                         const LMatrix4f &net_mat, EggGroupNode *egg_parent,
+                         CharacterJointMap *jointMap);
 
   void recurse_nodes(const WorkingNodePath &node_path, EggGroupNode *egg_parent,
                      bool has_decal);

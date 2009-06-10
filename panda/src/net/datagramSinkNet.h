@@ -35,6 +35,7 @@ PUBLISHED:
   // Inherited from DatagramSink
   virtual bool put_datagram(const Datagram &data);
   virtual bool is_error();
+  virtual void flush();
 
 private:
   PT(Connection) _target;

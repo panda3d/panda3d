@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::get_filename
-//       Access: Public
+//       Access: Published
 //  Description: If a BAM is a file, then the BamWriter should
 //               contain the name of the file.  This enables the
 //               writer to convert pathnames in the BAM to relative
@@ -28,34 +28,34 @@ get_filename() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::get_file_endian
-//       Access: Public
+//       Access: Published
 //  Description: Returns the endian preference indicated by the Bam
 //               file currently being written.  This does not imply
 //               that every number is stored using the indicated
 //               convention, but individual objects may choose to
 //               respect this flag when recording data.
 ////////////////////////////////////////////////////////////////////
-INLINE BamEndian BamWriter::
+INLINE BamWriter::BamEndian BamWriter::
 get_file_endian() const {
   return _file_endian;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::get_file_texture_mode
-//       Access: Public
+//       Access: Published
 //  Description: Returns the BamTextureMode preference indicated by
 //               the Bam file currently being written.  Texture
 //               objects written to this Bam file will be encoded
 //               according to the specified mode.
 ////////////////////////////////////////////////////////////////////
-INLINE BamTextureMode BamWriter::
+INLINE BamWriter::BamTextureMode BamWriter::
 get_file_texture_mode() const {
   return _file_texture_mode;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: BamWriter::set_file_texture_mode
-//       Access: Public
+//       Access: Published
 //  Description: Changes the BamTextureMode preference for
 //               the Bam file currently being written.  Texture
 //               objects written to this Bam file will be encoded

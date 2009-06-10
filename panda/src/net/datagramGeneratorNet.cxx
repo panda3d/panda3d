@@ -56,11 +56,19 @@ get_datagram(Datagram &data) {
   if (is_polling()) {
     // Single-threaded case: we poll.  No need to lock.
     if (!thing_available()) {
+      if (net_cat.is_spam()) {
+        net_cat.spam()
+          << "DatagramGeneratorNet polling\n";
+      }
       poll();
     }
     while (!thing_available()) {
       if (is_eof()) {
-        return false;
+        if (net_cat.is_spam()) {
+          net_cat.spam()
+            << "DatagramGeneratorNet returning EOF\n";
+        }
+	return false;
       }
       poll();
       Thread::force_yield();
@@ -74,7 +82,15 @@ get_datagram(Datagram &data) {
     MutexHolder holder(_dg_lock);
     while (!thing_available()) {
       if (is_eof()) {
-        return false;
+        if (net_cat.is_spam()) {
+          net_cat.spam()
+            << "DatagramGeneratorNet returning EOF\n";
+        }
+	return false;
+      }
+      if (net_cat.is_spam()) {
+        net_cat.spam()
+          << "DatagramGeneratorNet waiting\n";
       }
       _dg_received.wait();
     }
@@ -83,6 +99,12 @@ get_datagram(Datagram &data) {
     _dg_processed.notify();
   }
 
+  if (net_cat.is_spam()) {
+    net_cat.spam()
+      << "DatagramGeneratorNet returning datagram of length " 
+      << data.get_length() << "\n";
+  }
+  
   return true;
 }
 

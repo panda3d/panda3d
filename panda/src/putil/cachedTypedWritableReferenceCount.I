@@ -174,7 +174,7 @@ cache_unref() const {
   nassertr(_cache_ref_count > 0, 0);
   
   AtomicAdjust::dec(((CachedTypedWritableReferenceCount *)this)->_cache_ref_count);
-  return unref();
+  return ReferenceCount::unref();
 }
 
 ////////////////////////////////////////////////////////////////////

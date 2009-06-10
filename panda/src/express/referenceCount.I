@@ -88,16 +88,10 @@ operator = (const ReferenceCount &) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::Destructor
-//       Access: Protected
-//  Description: The ReferenceCount destructor is protected to
-//               discourage users from accidentally trying to delete a
-//               ReferenceCount pointer directly.  This is almost
-//               always a bad idea, since the destructor is not
-//               virtual, and you've almost certainly got some pointer
-//               to something that inherits from ReferenceCount, not
-//               just a plain old ReferenceCount object.
+//       Access: Public, Virtual
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-INLINE ReferenceCount::
+ReferenceCount::
 ~ReferenceCount() {
   TAU_PROFILE("ReferenceCount::~ReferenceCount()", " ", TAU_USER);
   nassertv(this != NULL);
@@ -193,13 +187,12 @@ ref() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: ReferenceCount::unref
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: Explicitly decrements the reference count.  Note that
 //               the object will not be implicitly deleted by unref()
 //               simply because the reference count drops to zero.
 //               (Having a member function delete itself is
-//               problematic; plus, we don't have a virtual destructor
-//               anyway.) However, see the helper function
+//               problematic.) However, see the helper function
 //               unref_delete().
 //
 //               User code should avoid using ref() and unref()

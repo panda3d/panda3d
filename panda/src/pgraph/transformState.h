@@ -173,7 +173,7 @@ PUBLISHED:
 
   INLINE int get_geom_rendering(int geom_rendering) const;
 
-  bool unref() const;
+  virtual bool unref() const;
 
   INLINE void cache_ref() const;
   INLINE bool cache_unref() const;
@@ -370,8 +370,7 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
-  static TypedWritable *change_this(TypedWritable *old_ptr, BamReader *manager);
-  virtual void finalize(BamReader *manager);
+  static PT(TypedWritableReferenceCount) change_this(TypedWritableReferenceCount *old_ptr, BamReader *manager);
 
 protected:
   static TypedWritable *make_from_bam(const FactoryParams &params);

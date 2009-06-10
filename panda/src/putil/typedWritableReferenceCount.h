@@ -38,6 +38,8 @@ public:
   INLINE TypedWritableReferenceCount(const TypedWritableReferenceCount &copy);
   INLINE void operator = (const TypedWritableReferenceCount &copy);
 
+  virtual ReferenceCount *as_reference_count();
+
 public:
   virtual TypeHandle get_type() const {
     return get_class_type();

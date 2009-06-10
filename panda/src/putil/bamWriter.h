@@ -17,8 +17,7 @@
 
 #include "pandabase.h"
 #include "pnotify.h"
-#include "bamEndian.h"
-#include "bamTextureMode.h"
+#include "bamEnums.h"
 #include "typedWritable.h"
 #include "datagramSink.h"
 #include "pdeque.h"
@@ -71,7 +70,7 @@
 //               See also BamFile, which defines a higher-level
 //               interface to read and write Bam files on disk.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PUTIL BamWriter {
+class EXPCL_PANDA_PUTIL BamWriter : public BamEnums {
 PUBLISHED:
   BamWriter(DatagramSink *sink, const Filename &name = "");
   ~BamWriter();
@@ -80,6 +79,7 @@ PUBLISHED:
   INLINE const Filename &get_filename() const;
   bool write_object(const TypedWritable *obj);
   bool has_object(const TypedWritable *obj) const;
+  void flush();
 
   INLINE BamEndian get_file_endian() const;
 
@@ -88,6 +88,8 @@ PUBLISHED:
 
 public:
   // Functions to support classes that write themselves to the Bam.
+
+  void consider_update(const TypedWritable *obj);
 
   void write_pointer(Datagram &packet, const TypedWritable *dest);
   void write_cdata(Datagram &packet, const PipelineCyclerBase &cycler);
@@ -102,6 +104,7 @@ private:
   void write_object_id(Datagram &dg, int object_id);
   void write_pta_id(Datagram &dg, int pta_id);
   int enqueue_object(const TypedWritable *object);
+  bool flush_queue();
 
   // This is the filename of the BAM, or null string if not in a file.
   Filename _filename;
@@ -118,12 +121,25 @@ private:
   class StoreState {
   public:
     int _object_id;
-    bool _written;
+    UpdateSeq _written_seq;
+    UpdateSeq _modified;
 
-    StoreState(int object_id) : _object_id(object_id), _written(false) {}
+    StoreState(int object_id) : _object_id(object_id) {}
   };
   typedef phash_map<const TypedWritable *, StoreState, pointer_hash> StateMap;
   StateMap _state_map;
+
+  // This seq number is incremented each time we write a new object
+  // using the top-level write_object() call.  It indicates the
+  // current sequence number we are writing, which is updated in the
+  // StoreState, above, and used to keep track of which objects may
+  // need to be checked for internal updates.
+  UpdateSeq _writing_seq;
+
+  // This is initialized to BOC_push in write_object(), then cleared
+  // to BOC_adjunct as each object is written, so that only the first
+  // object gets written with BOC_push.
+  BamObjectCode _next_boc;
 
   // This is the next object ID that will be assigned to a new object.
   int _next_object_id;

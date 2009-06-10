@@ -323,7 +323,7 @@ ns_load_texture(const Filename &orig_filename, int primary_file_num_channels,
 
   if (store_record && tex->has_ram_image()) {
     // Store the on-disk cache record for next time.
-    record->set_data(tex, false);
+    record->set_data(tex, tex);
     cache->store(record);
   }
 
@@ -455,7 +455,7 @@ ns_load_texture(const Filename &orig_filename,
 
   if (store_record && tex->has_ram_image()) {
     // Store the on-disk cache record for next time.
-    record->set_data(tex, false);
+    record->set_data(tex, tex);
     cache->store(record);
   }
 
@@ -563,7 +563,7 @@ ns_load_3d_texture(const Filename &filename_pattern,
 
   if (store_record && tex->has_ram_image()) {
     // Store the on-disk cache record for next time.
-    record->set_data(tex, false);
+    record->set_data(tex, tex);
     cache->store(record);
   }
 
@@ -662,7 +662,7 @@ ns_load_cube_map(const Filename &filename_pattern, bool read_mipmaps,
 
   if (store_record && tex->has_ram_image()) {
     // Store the on-disk cache record for next time.
-    record->set_data(tex, false);
+    record->set_data(tex, tex);
     cache->store(record);
   }
 
@@ -941,7 +941,7 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
       record = cache->lookup(filename, "txo");
       if (record != (BamCacheRecord *)NULL) {
         if (record->has_data()) {
-          tex = DCAST(Texture, record->extract_data());
+          tex = DCAST(Texture, record->get_data());
           compressed_cache_record = (tex->get_ram_image_compression() != Texture::CM_off);
           int x_size = tex->get_orig_file_x_size();
           int y_size = tex->get_orig_file_y_size();
@@ -1002,7 +1002,7 @@ try_load_cache(PT(Texture) &tex, BamCache *cache, const Filename &filename,
                   // from the cache.  To keep the cache current,
                   // rewrite it to the cache now, in its newly
                   // compressed form.
-                  record->set_data(tex, false);
+                  record->set_data(tex, tex);
                   cache->store(record);
                   compressed_cache_record = true;
                 }

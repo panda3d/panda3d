@@ -15,16 +15,17 @@
 #include "pandabase.h"
 #include "pnotify.h"
 
-#include <ipc_file.h>
 #include "test_bam.h"
 #include "bamReader.h"
+#include "datagramInputFile.h"
 
 int main(int argc, char* argv[])
 {
   string test_file = "bamTest.out";
-  datagram_file stream(test_file);
+  DatagramInputFile stream;
+  bool success = stream.open(test_file);
+  nassertr(success, 1);
 
-  stream.open(file::FILE_READ);
   BamReader manager(&stream);
 
   manager.init();
@@ -44,5 +45,5 @@ int main(int argc, char* argv[])
   nout << endl;
   sis->print_relationships();
 
-  return 1;
+  return 0;
 }

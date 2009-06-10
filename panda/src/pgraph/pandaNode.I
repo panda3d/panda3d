@@ -13,7 +13,6 @@
 ////////////////////////////////////////////////////////////////////
 
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::get_num_parents
 //       Access: Published
@@ -664,6 +663,7 @@ INLINE void PandaNode::
 set_final(bool flag) {
   CDWriter cdata(_cycler);
   cdata->_final_bounds = flag;
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1873,4 +1873,15 @@ get_stashed() const {
 INLINE PandaNode::Parents PandaNodePipelineReader::
 get_parents() const {
   return PandaNode::Parents(_cdata);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::BamReaderAuxDataDown::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE PandaNode::BamReaderAuxDataDown::
+BamReaderAuxDataDown() :
+  _down_list(PandaNode::get_class_type())
+{
 }

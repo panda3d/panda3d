@@ -200,8 +200,8 @@ read_node(bool report_errors) {
     if (report_errors) {
       loader_cat.error()
         << "Unable to resolve Bam file.\n";
-      result = (PandaNode *)NULL;
     }
+    result = (PandaNode *)NULL;
   }
 
   return result;
@@ -280,7 +280,7 @@ write_object(const TypedWritable *object) {
 void BamFile::
 close() {
   if (_reader != (BamReader *)NULL) {
-    resolve();
+    //    resolve();
     delete _reader;
     _reader = NULL;
   }
@@ -331,7 +331,7 @@ get_file_minor_ver() {
 //  Description: Returns the endian preference indicated by the Bam
 //               file currently being read or written.
 ////////////////////////////////////////////////////////////////////
-BamEndian BamFile::
+BamFile::BamEndian BamFile::
 get_file_endian() const {
   if (_writer != (BamWriter *)NULL) {
     return _writer->get_file_endian();

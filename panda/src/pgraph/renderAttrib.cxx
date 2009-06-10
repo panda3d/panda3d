@@ -137,7 +137,7 @@ cull_callback(CullTraverser *, const CullTraverserData &) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderAttrib::unref
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: This method overrides ReferenceCount::unref() to
 //               clear the pointer from the global object pool when
 //               its reference count goes to zero.

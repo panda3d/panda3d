@@ -33,7 +33,7 @@ static const unsigned short _bam_major_ver = 6;
 // Bumped to major version 6 on 2/11/06 to factor out PandaNode::CData.
 
 static const unsigned short _bam_first_minor_ver = 14;
-static const unsigned short _bam_minor_ver = 20;
+static const unsigned short _bam_minor_ver = 21;
 // Bumped to minor version 14 on 12/19/07 to change default ColorAttrib.
 // Bumped to minor version 15 on 4/9/08 to add TextureAttrib::_implicit_sort.
 // Bumped to minor version 16 on 5/13/08 to add Texture::_quality_level.
@@ -41,6 +41,7 @@ static const unsigned short _bam_minor_ver = 20;
 // Bumped to minor version 18 on 8/14/08 to add Texture::_simple_ram_image.
 // Bumped to minor version 19 on 8/14/08 to add PandaNode::_bounds_type.
 // Bumped to minor version 20 on 4/21/09 to add MovingPartBase::_forced_channel.
+// Bumped to minor version 21 on 2/26/08 to add BamEnums::BamObjectCode.
 
 
 #endif

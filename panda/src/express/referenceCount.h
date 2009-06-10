@@ -43,12 +43,14 @@ protected:
   INLINE ReferenceCount();
   INLINE ReferenceCount(const ReferenceCount &);
   INLINE void operator = (const ReferenceCount &);
-  INLINE ~ReferenceCount();
+
+public:
+  virtual INLINE ~ReferenceCount();
 
 PUBLISHED:
   INLINE int get_ref_count() const;
   INLINE void ref() const;
-  INLINE bool unref() const;
+  virtual INLINE bool unref() const;
 
   INLINE bool test_ref_count_integrity() const;
   INLINE bool test_ref_count_nonzero() const;

@@ -51,8 +51,8 @@ ConfigureDef(config_util);
 NotifyCategoryDef(util, "");
 NotifyCategoryDef(bam, util_cat);
 
-ConfigVariableEnum<BamEndian> bam_endian
-("bam-endian", BE_native,
+ConfigVariableEnum<BamEnums::BamEndian> bam_endian
+("bam-endian", BamEnums::BE_native,
  PRC_DESC("The default endianness to use for writing major numeric data "
           "tables to bam files.  This does not affect all numbers written "
           "to bam files, only those for which the individual object was "
@@ -60,8 +60,8 @@ ConfigVariableEnum<BamEndian> bam_endian
           "may set it to \"littleendian\" or \"bigendian\" to target a "
           "particular platform."));
 
-ConfigVariableEnum<BamTextureMode> bam_texture_mode
-("bam-texture-mode", BTM_relative,
+ConfigVariableEnum<BamEnums::BamTextureMode> bam_texture_mode
+("bam-texture-mode", BamEnums::BTM_relative,
  PRC_DESC("Set this to specify how textures should be written into Bam files."
           "See the panda source or documentation for available options."));
 
@@ -152,6 +152,7 @@ init_libputil() {
   AnimInterface::init_type();
   BamCacheIndex::init_type();
   BamCacheRecord::init_type();
+  BamReaderAuxData::init_type();
   BamReaderParam::init_type();
   BitArray::init_type();
   BitMask32::init_type();
@@ -184,8 +185,6 @@ init_libputil() {
 
   KeyboardButton::init_keyboard_buttons();
   MouseButton::init_mouse_buttons();
-
-  register_type(BamReader::_remove_flag, "remove");
 
   BamCacheIndex::register_with_read_factory();
   BamCacheRecord::register_with_read_factory();

@@ -140,3 +140,16 @@ is_error() {
   }
   return _error;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: DatagramOutputFile::flush
+//       Access: Public, Virtual
+//  Description: Ensures that all datagrams previously written will be
+//               visible in the output file.
+////////////////////////////////////////////////////////////////////
+void DatagramOutputFile::
+flush() {
+  if (_out != (ostream *)NULL) {
+    _out->flush();
+  }
+}

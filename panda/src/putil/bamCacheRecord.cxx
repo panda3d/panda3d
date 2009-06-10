@@ -28,8 +28,8 @@ BamCacheRecord::
 BamCacheRecord() :
   _recorded_time(0),
   _record_size(0),
-  _data(NULL),
-  _owns_pointer(false),
+  _ptr(NULL),
+  _ref_ptr(NULL),
   _record_access_time(0)
 {
 }
@@ -46,8 +46,8 @@ BamCacheRecord(const Filename &source_pathname,
   _cache_filename(cache_filename),
   _recorded_time(0),
   _record_size(0),
-  _data(NULL),
-  _owns_pointer(false),
+  _ptr(NULL),
+  _ref_ptr(NULL),
   _record_access_time(0)
 {
 }
@@ -64,8 +64,8 @@ BamCacheRecord(const BamCacheRecord &copy) :
   _cache_filename(copy._cache_filename),
   _recorded_time(copy._recorded_time),
   _record_size(copy._record_size),
-  _data(NULL),
-  _owns_pointer(false),
+  _ptr(NULL),
+  _ref_ptr(NULL),
   _record_access_time(copy._record_access_time)
 {
 }

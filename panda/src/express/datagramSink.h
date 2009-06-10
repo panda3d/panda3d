@@ -32,6 +32,7 @@ PUBLISHED:
 
   virtual bool put_datagram(const Datagram &data) = 0;
   virtual bool is_error() = 0;
+  virtual void flush() = 0;
 };
 
 #include "datagramSink.I"

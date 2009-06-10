@@ -66,7 +66,7 @@ PUBLISHED:
   void operator = (const GeomVertexFormat &copy);
   virtual ~GeomVertexFormat();
 
-  bool unref() const;
+  virtual bool unref() const;
 
   INLINE bool is_registered() const;
   INLINE static CPT(GeomVertexFormat) register_format(const GeomVertexFormat *format);

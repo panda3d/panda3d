@@ -19,10 +19,12 @@
 #include "pnotify.h"
 
 #include "typedWritable.h"
+#include "typedWritableReferenceCount.h"
+#include "pointerTo.h"
 #include "datagramGenerator.h"
 #include "datagramIterator.h"
 #include "bamReaderParam.h"
-#include "bamEndian.h"
+#include "bamEnums.h"
 #include "loaderOptions.h"
 #include "factory.h"
 #include "vector_int.h"
@@ -30,6 +32,7 @@
 #include "pmap.h"
 #include "dcast.h"
 #include "pipelineCyclerBase.h"
+#include "referenceCount.h"
 
 #include <algorithm>
 
@@ -48,6 +51,37 @@
     array.set_void_ptr(t);                            \
   }                                                   \
 }
+
+////////////////////////////////////////////////////////////////////
+//       Class : BamReaderAuxData
+// Description : Stores auxiliary data that may be piggybacked on the
+//               BamReader during each object's read pass.  To use
+//               this, subclass BamReaderAuxData and add whatever
+//               additional data you require.
+////////////////////////////////////////////////////////////////////
+class BamReaderAuxData : public TypedReferenceCount {
+public:
+  INLINE BamReaderAuxData();
+
+public:
+  virtual TypeHandle get_type() const {
+    return get_class_type();
+  }
+  virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+  static TypeHandle get_class_type() {
+    return _type_handle;
+  }
+
+public:
+  static void init_type() {
+    TypedReferenceCount::init_type();
+    register_type(_type_handle, "BamReaderAuxData",
+                  TypedReferenceCount::get_class_type());
+  }
+
+private:
+  static TypeHandle _type_handle;
+};  
 
 ////////////////////////////////////////////////////////////////////
 //       Class : BamReader
@@ -83,7 +117,7 @@
 //               See also BamFile, which defines a higher-level
 //               interface to read and write Bam files on disk.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PUTIL BamReader {
+class EXPCL_PANDA_PUTIL BamReader : public BamEnums {
 public:
   typedef Factory<TypedWritable> WritableFactory;
   static BamReader *const Null;
@@ -106,6 +140,8 @@ PUBLISHED:
   INLINE void set_loader_options(const LoaderOptions &options);
   
   TypedWritable *read_object();
+  bool read_object(TypedWritable *&ptr, ReferenceCount *&ref_ptr);
+
   INLINE bool is_eof() const;
   bool resolve();
 
@@ -129,10 +165,18 @@ public:
   void read_cdata(DatagramIterator &scan, PipelineCyclerBase &cycler,
                   void *extra_data);
 
+  void set_int_tag(const string &tag, int value);
+  int get_int_tag(const string &tag) const;
+
+  void set_aux_tag(const string &tag, BamReaderAuxData *value);
+  BamReaderAuxData *get_aux_tag(const string &tag) const;
+
   void register_finalize(TypedWritable *whom);
 
   typedef TypedWritable *(*ChangeThisFunc)(TypedWritable *object, BamReader *manager);
+  typedef PT(TypedWritableReferenceCount) (*ChangeThisRefFunc)(TypedWritableReferenceCount *object, BamReader *manager);
   void register_change_this(ChangeThisFunc func, TypedWritable *whom);
+  void register_change_this(ChangeThisRefFunc func, TypedWritableReferenceCount *whom);
 
   void finalize_now(TypedWritable *whom);
 
@@ -164,10 +208,6 @@ private:
   INLINE bool get_datagram(Datagram &datagram);
 
 public:
-  // This special TypeHandle is written to the bam file to indicate an
-  // object id is no longer needed.
-  static TypeHandle _remove_flag;
-
   // Inherit from this class to piggyback additional temporary data on
   // the bamReader (via set_aux_data() and get_aux_data()) for any
   // particular objects during the bam reading process.
@@ -199,8 +239,16 @@ private:
   // to the actual pointers of the corresponding generated objects.
   class CreatedObj {
   public:
+    INLINE CreatedObj();
+    INLINE ~CreatedObj();
+    INLINE void set_ptr(TypedWritable *ptr, ReferenceCount *ref_ptr);
+
+  public:
+    bool _created;
     TypedWritable *_ptr;
+    ReferenceCount *_ref_ptr;
     ChangeThisFunc _change_this;
+    ChangeThisRefFunc _change_this_ref;
   };
   typedef phash_map<int, CreatedObj, int_hash> CreatedObjs;
   CreatedObjs _created_objs;
@@ -222,18 +270,28 @@ private:
   // in the order in which read_pointer() was called, so that we may
   // call the appropriate complete_pointers() later.
   typedef phash_map<PipelineCyclerBase *, vector_int, pointer_hash> CyclerPointers;
+  typedef pmap<string, int> IntTags;
+  typedef pmap<string, PT(BamReaderAuxData) > AuxTags;
   class PointerReference {
   public:
     vector_int _objects;
     CyclerPointers _cycler_pointers;
+    IntTags _int_tags;
+    AuxTags _aux_tags;
   };
   typedef phash_map<int, PointerReference, int_hash> ObjectPointers;
   ObjectPointers _object_pointers;
 
   // This is the number of extra objects that must still be read (and
   // saved in the _created_objs map) before returning from
-  // read_object().
+  // read_object().  It is only used when read bam versions prior to
+  // 6.20.
   int _num_extra_objects;
+
+  // The current nesting level.  We are not done reading an object
+  // until we return to our starting nesting level.  It is only used
+  // when reading bam versions of 6.20 or higher.
+  int _nesting_level;
 
   // This is the set of all objects that registered themselves for
   // finalization.

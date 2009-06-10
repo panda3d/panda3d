@@ -696,20 +696,13 @@ adjust_all_priorities(int adjustment) const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: RenderState::unref
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: This method overrides ReferenceCount::unref() to
 //               check whether the remaining reference count is
 //               entirely in the cache, and if so, it checks for and
 //               breaks a cycle in the cache involving this object.
 //               This is designed to prevent leaks from cyclical
 //               references within the cache.
-//
-//               Note that this is not a virtual method, and cannot be
-//               because ReferenceCount itself declares no virtual
-//               methods (it avoids the overhead of a virtual function
-//               pointer).  But this doesn't matter, because
-//               PT(TransformState) is a template class, and will call
-//               the appropriate method even though it is non-virtual.
 ////////////////////////////////////////////////////////////////////
 bool RenderState::
 unref() const {

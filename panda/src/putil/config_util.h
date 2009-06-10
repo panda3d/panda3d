@@ -20,8 +20,7 @@
 #include "configVariableSearchPath.h"
 #include "configVariableEnum.h"
 #include "configVariableDouble.h"
-#include "bamEndian.h"
-#include "bamTextureMode.h"
+#include "bamEnums.h"
 #include "dconfig.h"
 
 class DSearchPath;
@@ -36,8 +35,8 @@ NotifyCategoryDecl(bam, EXPCL_PANDA_PUTIL, EXPTP_PANDA_PUTIL);
 // MemoryUsage.
 //extern EXPCL_PANDA_PUTIL const bool track_memory_usage;
 
-extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamEndian> bam_endian;
-extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamTextureMode> bam_texture_mode;
+extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamEnums::BamEndian> bam_endian;
+extern EXPCL_PANDA_PUTIL ConfigVariableEnum<BamEnums::BamTextureMode> bam_texture_mode;
 
 BEGIN_PUBLISH
 EXPCL_PANDA_PUTIL ConfigVariableSearchPath &get_model_path();

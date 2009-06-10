@@ -27,7 +27,8 @@ TypeHandle CopyOnWriteObj1<Base, Param1>::_type_handle;
 INLINE CopyOnWriteObject::
 CopyOnWriteObject() 
 #ifdef COW_THREADED
-  : _lock_cvar(_lock_mutex) 
+  : _lock_mutex("CopyOnWriteObject::_lock"),
+    _lock_cvar(_lock_mutex) 
 #endif
 {
 #ifdef DO_MEMORY_USAGE
@@ -48,7 +49,8 @@ INLINE CopyOnWriteObject::
 CopyOnWriteObject(const CopyOnWriteObject &copy) :
   CachedTypedWritableReferenceCount(copy)
 #ifdef COW_THREADED
-  , _lock_cvar(_lock_mutex)
+  , _lock_mutex("CopyOnWriteObject::_lock"),
+  _lock_cvar(_lock_mutex) 
 #endif
 {
 #ifdef DO_MEMORY_USAGE

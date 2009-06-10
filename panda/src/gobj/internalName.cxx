@@ -74,7 +74,7 @@ InternalName::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: InternalName::unref
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: This method overrides ReferenceCount::unref() to
 //               clear the pointer from its parent's table when
 //               its reference count goes to zero.

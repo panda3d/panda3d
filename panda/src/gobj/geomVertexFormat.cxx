@@ -88,7 +88,7 @@ GeomVertexFormat::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GeomVertexFormat::unref
-//       Access: Published
+//       Access: Published, Virtual
 //  Description: This method overrides ReferenceCount::unref() to
 //               unregister the object when its reference count goes
 //               to zero.

@@ -12,7 +12,6 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "config_display.h"
 #include "displayRegion.h"
 #include "displayRegionCullCallbackData.h"

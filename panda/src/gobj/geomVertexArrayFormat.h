@@ -77,7 +77,7 @@ PUBLISHED:
   void operator = (const GeomVertexArrayFormat &copy);
   ~GeomVertexArrayFormat();
 
-  bool unref() const;
+  virtual bool unref() const;
 
   INLINE bool is_registered() const;
   INLINE static CPT(GeomVertexArrayFormat) register_format(const GeomVertexArrayFormat *format);

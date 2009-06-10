@@ -85,7 +85,7 @@ PUBLISHED:
 
   const RenderEffect *get_effect(TypeHandle type) const;
 
-  bool unref() const;
+  virtual bool unref() const;
 
   void output(ostream &out) const;
   void write(ostream &out, int indent_level) const;

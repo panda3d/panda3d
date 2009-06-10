@@ -33,6 +33,8 @@
 NotifyCategoryDecl(drawmask, EXPCL_PANDA_PGRAPH, EXPTP_PANDA_PGRAPH);
 NotifyCategoryDef(drawmask, "");
 
+TypeHandle PandaNode::BamReaderAuxDataDown::_type_handle;
+
 PandaNode::SceneRootFunc *PandaNode::_scene_root_func;
 
 PandaNodeChain PandaNode::_dirty_prev_transforms;
@@ -109,12 +111,18 @@ PandaNode::
 
   // We shouldn't have any parents left by the time we destruct, or
   // there's a refcount fault somewhere.
+
+  // Actually, that's not necessarily true anymore, since we might be
+  // updating a node dynamically via the bam reader, which doesn't
+  // necessarily keep related pairs of nodes in sync with each other.
+  /*
 #ifndef NDEBUG
   {
     CDReader cdata(_cycler);
     nassertv(cdata->get_up()->empty());
   }
 #endif  // NDEBUG
+  */
 
   remove_all_children();
 }
@@ -190,6 +198,17 @@ PandaNode(const PandaNode &copy) :
 void PandaNode::
 operator = (const PandaNode &copy) {
   nassertv(false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::as_reference_count
+//       Access: Public, Virtual
+//  Description: Returns the pointer cast to a ReferenceCount pointer,
+//               if it is in fact of that type.
+////////////////////////////////////////////////////////////////////
+ReferenceCount *PandaNode::
+as_reference_count() {
+  return this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -361,6 +380,7 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
     }
     CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   }
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -668,6 +688,8 @@ add_child(PandaNode *child_node, int sort, Thread *current_thread) {
 
   children_changed();
   child_node->parents_changed();
+  mark_bam_modified();
+  child_node->mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -698,6 +720,8 @@ remove_child(int child_index, Thread *current_thread) {
 
   children_changed();
   child_node->parents_changed();
+  mark_bam_modified();
+  child_node->mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -829,6 +853,8 @@ stash_child(int child_index, Thread *current_thread) {
 
   children_changed();
   child_node->parents_changed();
+  mark_bam_modified();
+  child_node->mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -875,6 +901,8 @@ unstash_child(int stashed_index, Thread *current_thread) {
   force_bounds_stale();
   children_changed();
   child_node->parents_changed();
+  mark_bam_modified();
+  child_node->mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -919,6 +947,8 @@ add_stashed(PandaNode *child_node, int sort, Thread *current_thread) {
   // Call callback hooks.
   children_changed();
   child_node->parents_changed();
+  mark_bam_modified();
+  child_node->mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -947,6 +977,8 @@ remove_stashed(int child_index, Thread *current_thread) {
 
   children_changed();
   child_node->parents_changed();
+  mark_bam_modified();
+  child_node->mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -973,6 +1005,7 @@ remove_all_children(Thread *current_thread) {
       
       sever_connection(this, child_node, pipeline_stage, current_thread);
       child_node->parents_changed();
+      child_node->mark_bam_modified();
     }
     down->clear();
     
@@ -985,6 +1018,7 @@ remove_all_children(Thread *current_thread) {
       
       sever_connection(this, child_node, pipeline_stage, current_thread);
       child_node->parents_changed();
+      child_node->mark_bam_modified();
     }
     stashed.clear();
   }
@@ -992,6 +1026,7 @@ remove_all_children(Thread *current_thread) {
 
   force_bounds_stale();
   children_changed();
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1091,6 +1126,7 @@ set_attrib(const RenderAttrib *attrib, int override) {
   if (any_changed) {
     mark_bounds_stale(current_thread);
     state_changed();
+    mark_bam_modified();
   }
 }
 
@@ -1124,6 +1160,7 @@ clear_attrib(int slot) {
   if (any_changed) {
     mark_bounds_stale(current_thread);
     state_changed();
+    mark_bam_modified();
   }
 }
 
@@ -1145,6 +1182,7 @@ set_effect(const RenderEffect *effect) {
     cdata->set_fancy_bit(FB_effects, true);
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1162,6 +1200,7 @@ clear_effect(TypeHandle type) {
     cdata->set_fancy_bit(FB_effects, !cdata->_effects->is_empty());
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1193,6 +1232,7 @@ set_state(const RenderState *state, Thread *current_thread) {
   if (any_changed) {
     mark_bounds_stale(current_thread);
     state_changed();
+    mark_bam_modified();
   }
 }
 
@@ -1214,6 +1254,7 @@ set_effects(const RenderEffects *effects, Thread *current_thread) {
     cdata->set_fancy_bit(FB_effects, !effects->is_empty());
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1247,6 +1288,7 @@ set_transform(const TransformState *transform, Thread *current_thread) {
   if (any_changed) {
     mark_bounds_stale(current_thread);
     transform_changed();
+    mark_bam_modified();
   }
 }
 
@@ -1274,6 +1316,7 @@ set_prev_transform(const TransformState *transform, Thread *current_thread) {
     }
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1295,6 +1338,7 @@ reset_prev_transform(Thread *current_thread) {
     cdata->_prev_transform = cdata->_transform;
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1327,6 +1371,7 @@ reset_all_prev_transform(Thread *current_thread) {
     panda_node->_prev = NULL;
     panda_node->_next = NULL;
 #endif  // NDEBUG
+    panda_node->mark_bam_modified();
   }
 
   _dirty_prev_transforms._prev = &_dirty_prev_transforms;
@@ -1356,6 +1401,7 @@ set_tag(const string &key, const string &value, Thread *current_thread) {
     cdata->set_fancy_bit(FB_tag, true);
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1373,6 +1419,7 @@ clear_tag(const string &key, Thread *current_thread) {
     cdata->set_fancy_bit(FB_tag, !cdata->_tag_data.empty());
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+  mark_bam_modified();
 }
 
 #ifdef HAVE_PYTHON
@@ -1412,6 +1459,9 @@ set_python_tag(const string &key, PyObject *value) {
     Py_XDECREF(old_value);
     (*ti).second = value;
   }
+
+  // Even though the python tag isn't recorded in the bam stream?
+  mark_bam_modified();
 }
 #endif  // HAVE_PYTHON
 
@@ -1478,6 +1528,9 @@ clear_python_tag(const string &key) {
     Py_XDECREF(value);
     cdata->_python_tag_data.erase(ti);
   }
+
+  // Even though the python tag isn't recorded in the bam stream?
+  mark_bam_modified();
 }
 #endif  // HAVE_PYTHON
 
@@ -1537,6 +1590,7 @@ copy_tags(PandaNode *other) {
 #endif // HAVE_PYTHON
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1765,6 +1819,7 @@ copy_all_properties(PandaNode *other) {
     if (any_draw_mask_changed) {
       draw_mask_changed();
     }
+    mark_bam_modified();
   }
 }
 
@@ -1968,6 +2023,7 @@ adjust_draw_mask(DrawMask show_mask, DrawMask hide_mask, DrawMask clear_mask) {
   if (any_changed) {
     mark_bounds_stale(current_thread);
     draw_mask_changed();
+    mark_bam_modified();
   }
 }
 
@@ -2063,6 +2119,7 @@ set_into_collide_mask(CollideMask mask) {
 
   if (any_changed) {
     mark_bounds_stale(current_thread);
+    mark_bam_modified();
   }
 }
 
@@ -2281,6 +2338,7 @@ set_bounds_type(BoundingVolume::BoundsType bounds_type) {
     // bounds that may need to be updated when the bounds_type
     // changes.
     mark_internal_bounds_stale(pipeline_stage, current_thread);
+    mark_bam_modified();
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
@@ -2322,6 +2380,7 @@ set_bounds(const BoundingVolume *volume) {
       cdata->_user_bounds = volume->make_copy();
     }
     mark_bounds_stale(pipeline_stage, current_thread);
+    mark_bam_modified();
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
 }
@@ -2573,6 +2632,7 @@ get_internal_bounds(int pipeline_stage, Thread *current_thread) const {
       cdataw->_internal_bounds_computed = mark;
       cdataw->_internal_bounds = internal_bounds;
       cdataw->_internal_vertices = internal_vertices;
+      ((PandaNode *)this)->mark_bam_modified();
       return cdataw->_internal_bounds;
     }
 
@@ -2619,6 +2679,7 @@ get_internal_vertices(int pipeline_stage, Thread *current_thread) const {
       cdataw->_internal_bounds_computed = mark;
       cdataw->_internal_bounds = internal_bounds;
       cdataw->_internal_vertices = internal_vertices;
+      ((PandaNode *)this)->mark_bam_modified();
       return cdataw->_internal_vertices;
     }
 
@@ -2647,6 +2708,7 @@ set_internal_bounds(const BoundingVolume *volume) {
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
   mark_bounds_stale(current_thread);
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2680,6 +2742,7 @@ force_bounds_stale(int pipeline_stage, Thread *current_thread) {
   {
     CDStageWriter cdata(_cycler, pipeline_stage, current_thread);
     ++cdata->_next_update;
+    mark_bam_modified();
 
     // It is important that we allow this lock to be dropped before we
     // continue up the graph; otherwise, we risk deadlock from another
@@ -2924,6 +2987,7 @@ set_cull_callback() {
     cdata->set_fancy_bit(FB_cull_callback, true);
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2939,6 +3003,7 @@ disable_cull_callback() {
     cdata->set_fancy_bit(FB_cull_callback, false);
   }
   CLOSE_ITERATE_CURRENT_AND_UPSTREAM(_cycler);
+  mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3062,6 +3127,9 @@ stage_replace_child(PandaNode *orig_child, PandaNode *new_child,
   force_bounds_stale(pipeline_stage, current_thread);
   orig_child->parents_changed();
   new_child->parents_changed();
+  mark_bam_modified();
+  orig_child->mark_bam_modified();
+  new_child->mark_bam_modified();
 
   return true;
 }
@@ -3251,6 +3319,7 @@ detach_one_stage(NodePathComponent *child, int pipeline_stage,
 
   parent_node->force_bounds_stale(pipeline_stage, current_thread);
   parent_node->children_changed();
+  parent_node->mark_bam_modified();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3288,8 +3357,10 @@ reparent(NodePathComponent *new_parent, NodePathComponent *child, int sort,
 
   if (new_parent != (NodePathComponent *)NULL) {
     new_parent->get_node()->children_changed();
+    new_parent->get_node()->mark_bam_modified();
   }
   child->get_node()->parents_changed();
+  child->get_node()->mark_bam_modified();
 
   return any_ok;
 }
@@ -4029,7 +4100,11 @@ update_bounds(int pipeline_stage, PandaNode::CDLockedStageReader &cdata) {
             << "} " << *this << "::update_bounds();\n";
         }
 
-        nassertr(cdataw->_last_update == cdataw->_next_update, cdataw)
+        nassertr(cdataw->_last_update == cdataw->_next_update, cdataw);
+    
+        // Even though implicit bounding volume is not (yet?) part of
+        // the bam stream.
+        mark_bam_modified();
         return cdataw;
       }
       
@@ -4090,6 +4165,19 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_string(get_name());
 
   manager->write_cdata(dg, _cycler);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::update_bam_nested
+//       Access: Public, Virtual
+//  Description: Called by the BamWriter when this object has not
+//               itself been modified recently, but it should check
+//               its nested objects for updates.
+////////////////////////////////////////////////////////////////////
+void PandaNode::
+update_bam_nested(BamWriter *manager) {
+  CDReader cdata(_cycler);
+  cdata->update_bam_nested(manager);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4296,7 +4384,26 @@ write_datagram(BamWriter *manager, Datagram &dg) const {
   write_up_list(*get_up(), manager, dg);
   write_down_list(*get_down(), manager, dg);
   write_down_list(*get_stashed(), manager, dg);
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::update_bam_nested
+//       Access: Public
+//  Description: Called by the BamWriter when this object has not
+//               itself been modified recently, but it should check
+//               its nested objects for updates.
+////////////////////////////////////////////////////////////////////
+void PandaNode::CData::
+update_bam_nested(BamWriter *manager) const {
+  // No need to check the state pointers for updates, since they're
+  // all immutable objects.
+  //manager->consider_update(_state);
+  //manager->consider_update(_transform);
+  //manager->consider_update(_effects);
+
+  update_up_list(*get_up(), manager);
+  update_down_list(*get_down(), manager);
+  update_down_list(*get_stashed(), manager);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4344,9 +4451,9 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
   //
 
   // Get the parent and child pointers.
-  pi += complete_up_list(*modify_up(), p_list + pi, manager);
-  pi += complete_down_list(*modify_down(), p_list + pi, manager);
-  pi += complete_down_list(*modify_stashed(), p_list + pi, manager);
+  pi += complete_up_list(*modify_up(), "up", p_list + pi, manager);
+  pi += complete_down_list(*modify_down(), "down", p_list + pi, manager);
+  pi += complete_down_list(*modify_stashed(), "stashed", p_list + pi, manager);
 
   // Since the _effects and _states members have been finalized by
   // now, this should be safe.
@@ -4417,10 +4524,9 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   }
 
   //
-  fillin_up_list(*modify_up(), scan, manager);
-  fillin_down_list(*modify_down(), scan, manager);
-  fillin_down_list(*modify_stashed(), scan, manager);
-
+  fillin_up_list(*modify_up(), "up", scan, manager);
+  fillin_down_list(*modify_down(), "down", scan, manager);
+  fillin_down_list(*modify_stashed(), "stashed", scan, manager);
 }
 
 #ifdef HAVE_PYTHON
@@ -4522,33 +4628,65 @@ write_down_list(const PandaNode::Down &down_list,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::update_up_list
+//       Access: Public
+//  Description: Calls consider_update on each node of the indicated
+//               up list.
+////////////////////////////////////////////////////////////////////
+void PandaNode::CData::
+update_up_list(const PandaNode::Up &up_list, BamWriter *manager) const {
+  Up::const_iterator ui;
+  for (ui = up_list.begin(); ui != up_list.end(); ++ui) {
+    PandaNode *parent_node = (*ui).get_parent();
+    if (manager->has_object(parent_node)) {
+      manager->consider_update(parent_node);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaNode::CData::update_down_list
+//       Access: Public
+//  Description: Calls consider_update on each node of the indicated
+//               up list.
+////////////////////////////////////////////////////////////////////
+void PandaNode::CData::
+update_down_list(const PandaNode::Down &down_list, BamWriter *manager) const {
+  Down::const_iterator di;
+  for (di = down_list.begin(); di != down_list.end(); ++di) {
+    PandaNode *child_node = (*di).get_child();
+    manager->consider_update(child_node);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaNode::CData::complete_up_list
 //       Access: Public
 //  Description: Calls complete_pointers() on the list of parent node
 //               pointers.
 ////////////////////////////////////////////////////////////////////
 int PandaNode::CData::
-complete_up_list(PandaNode::Up &up_list,
+complete_up_list(PandaNode::Up &up_list, const string &tag,
                  TypedWritable **p_list, BamReader *manager) {
   int pi = 0;
 
-  // Get the parent pointers.
-  Up::iterator ui;
-  for (ui = up_list.begin(); ui != up_list.end(); ++ui) {
+  int num_parents = manager->get_int_tag(tag);
+  Up new_up_list(PandaNode::get_class_type());
+  new_up_list.reserve(num_parents);
+  for (int i = 0; i < num_parents; i++) {
     PandaNode *parent_node = DCAST(PandaNode, p_list[pi++]);
-
-    // For some reason, VC++ won't accept UpConnection as an inline
-    // temporary constructor here ("C2226: unexpected type
-    // PandaNode::UpConnection"), so we must make this assignment
-    // using an explicit temporary variable.
     UpConnection connection(parent_node);
-    (*ui) = connection;
+    new_up_list.push_back(connection);
   }
 
   // Now we should sort the list, since the sorting is based on
   // pointer order, which might be different from one session to the
   // next.
-  up_list.sort();
+  new_up_list.sort();
+
+  // Make it permanent.
+  up_list.swap(new_up_list);
+  new_up_list.clear();
 
   return pi;
 }
@@ -4560,20 +4698,28 @@ complete_up_list(PandaNode::Up &up_list,
 //               pointers.
 ////////////////////////////////////////////////////////////////////
 int PandaNode::CData::
-complete_down_list(PandaNode::Down &down_list,
+complete_down_list(PandaNode::Down &down_list, const string &tag,
                    TypedWritable **p_list, BamReader *manager) {
   int pi = 0;
 
-  Down::iterator di;
-  for (di = down_list.begin(); di != down_list.end(); ++di) {
-    int sort = (*di).get_sort();
-    PT(PandaNode) child_node = DCAST(PandaNode, p_list[pi++]);
-    (*di) = DownConnection(child_node, sort);
+  BamReaderAuxDataDown *aux;
+  DCAST_INTO_R(aux, manager->get_aux_tag(tag), pi);
+
+  Down &new_down_list = aux->_down_list;
+  for (Down::iterator di = new_down_list.begin();
+       di != new_down_list.end(); 
+       ++di) {
+    PandaNode *child_node = DCAST(PandaNode, p_list[pi++]);
+    (*di).set_child(child_node);
   }
 
   // Unlike the up list, we should *not* sort the down list.  The down
   // list is stored in a specific order, not related to pointer order;
   // and this order should be preserved from one session to the next.
+
+  // Make it permanent.
+  down_list.swap(new_down_list);
+  new_down_list.clear();
 
   return pi;
 }
@@ -4586,15 +4732,11 @@ complete_down_list(PandaNode::Down &down_list,
 //               each one).
 ////////////////////////////////////////////////////////////////////
 void PandaNode::CData::
-fillin_up_list(PandaNode::Up &up_list,
+fillin_up_list(PandaNode::Up &up_list, const string &tag,
                DatagramIterator &scan, BamReader *manager) {
   int num_parents = scan.get_uint16();
-  // Read the list of parent nodes.  Push back a NULL for each one.
-  up_list.reserve(num_parents);
-  for (int i = 0; i < num_parents; i++) {
-    manager->read_pointer(scan);
-    up_list.push_back(UpConnection(NULL));
-  }
+  manager->set_int_tag(tag, num_parents);
+  manager->read_pointers(scan, num_parents);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4605,16 +4747,28 @@ fillin_up_list(PandaNode::Up &up_list,
 //               each one).
 ////////////////////////////////////////////////////////////////////
 void PandaNode::CData::
-fillin_down_list(PandaNode::Down &down_list,
+fillin_down_list(PandaNode::Down &down_list, const string &tag,
                  DatagramIterator &scan, BamReader *manager) {
   int num_children = scan.get_uint16();
-  // Read the list of child nodes.  Push back a NULL for each one.
-  down_list.reserve(num_children);
+
+  // Create a temporary down_list, with the right number of elements,
+  // but a NULL value for each pointer (we'll fill in the pointers
+  // later).  We need to do this to associate the sort values with
+  // their pointers.
+  Down new_down_list(PandaNode::get_class_type());
+  new_down_list.reserve(num_children);
   for (int i = 0; i < num_children; i++) {
     manager->read_pointer(scan);
     int sort = scan.get_int32();
-    down_list.push_back(DownConnection(NULL, sort));
+    DownConnection connection(NULL, sort);
+    new_down_list.push_back(connection);
   }
+
+  // Now store the temporary down_list in the BamReader, so we can get
+  // it during the call to complete_down_list().
+  PT(BamReaderAuxDataDown) aux = new BamReaderAuxDataDown;
+  aux->_down_list.swap(new_down_list);
+  manager->set_aux_tag(tag, aux);
 }
 
 ////////////////////////////////////////////////////////////////////

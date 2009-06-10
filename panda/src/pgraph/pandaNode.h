@@ -83,6 +83,7 @@ private:
   void operator = (const PandaNode &copy);
 
 public:
+  virtual ReferenceCount *as_reference_count();
   virtual PandaNode *make_copy() const;
   virtual PandaNode *dupe_for_flatten() const;
 
@@ -428,7 +429,33 @@ public:
   };
 
 private:
-  typedef CopyOnWriteObj1< ov_multiset<DownConnection>, TypeHandle > Down;
+  typedef ov_multiset<DownConnection> DownList;
+  typedef CopyOnWriteObj1< DownList, TypeHandle > Down;
+
+  // Store a pointer to the down_list during the bam read pass.
+  class BamReaderAuxDataDown : public BamReaderAuxData {
+  public:
+    INLINE BamReaderAuxDataDown();
+    Down _down_list;
+  public:
+    virtual TypeHandle get_type() const {
+      return get_class_type();
+    }
+    virtual TypeHandle force_init_type() {init_type(); return get_class_type();}
+    static TypeHandle get_class_type() {
+      return _type_handle;
+    }
+    
+  public:
+    static void init_type() {
+      BamReaderAuxData::init_type();
+      register_type(_type_handle, "BamReaderAuxDataDown",
+                    BamReaderAuxData::get_class_type());
+    }
+    
+  private:
+    static TypeHandle _type_handle;
+  };
 
   class EXPCL_PANDA_PGRAPH UpConnection {
   public:
@@ -441,7 +468,8 @@ private:
     // children do not circularly reference each other.
     PandaNode *_parent;
   };
-  typedef CopyOnWriteObj1< ov_set<UpConnection>, TypeHandle > Up;
+  typedef ov_set<UpConnection> UpList;
+  typedef CopyOnWriteObj1< UpList, TypeHandle > Up;
 
   // We also maintain a set of NodePathComponents in the node.  This
   // represents the set of instances of this node that we have
@@ -480,7 +508,8 @@ private:
     ALLOC_DELETED_CHAIN(CData);
 
     virtual CycleData *make_copy() const;
-    virtual void write_datagram(BamWriter *manager, Datagram &dg) const;
+    virtual void write_datagram(BamWriter *manager, Datagram &dg) const; 
+    void update_bam_nested(BamWriter *manager) const;
     virtual int complete_pointers(TypedWritable **plist, BamReader *manager);
     virtual void fillin(DatagramIterator &scan, BamReader *manager);
     virtual TypeHandle get_parent_type() const {
@@ -579,13 +608,15 @@ private:
                        BamWriter *manager, Datagram &dg) const;
     void write_down_list(const Down &down_list,
                          BamWriter *manager, Datagram &dg) const;
-    int complete_up_list(Up &up_list,
+    void update_up_list(const Up &up_list, BamWriter *manager) const;
+    void update_down_list(const Down &down_list, BamWriter *manager) const;
+    int complete_up_list(Up &up_list, const string &tag,
                          TypedWritable **p_list, BamReader *manager);
-    int complete_down_list(Down &down_list,
+    int complete_down_list(Down &down_list, const string &tag,
                            TypedWritable **p_list, BamReader *manager);
-    void fillin_up_list(Up &up_list,
+    void fillin_up_list(Up &up_list, const string &tag,
                         DatagramIterator &scan, BamReader *manager);
-    void fillin_down_list(Down &down_list,
+    void fillin_down_list(Down &down_list, const string &tag,
                           DatagramIterator &scan, BamReader *manager);
 
     INLINE CPT(Down) get_down() const;
@@ -696,6 +727,7 @@ private:
 public:
   static void register_with_read_factory();
   virtual void write_datagram(BamWriter *manager, Datagram &dg);
+  virtual void update_bam_nested(BamWriter *manager);
   void write_recorder(BamWriter *manager, Datagram &dg);
 
 protected:
@@ -716,6 +748,7 @@ public:
     CData::init_type();
     Down::init_type();
     Up::init_type();
+    BamReaderAuxDataDown::init_type();
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

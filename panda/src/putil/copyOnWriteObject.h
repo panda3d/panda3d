@@ -49,7 +49,7 @@ public:
 
 PUBLISHED:
 #ifdef COW_THREADED
-  bool unref() const;
+  virtual bool unref() const;
   INLINE void cache_ref() const;
 #endif  // COW_THREADED
 

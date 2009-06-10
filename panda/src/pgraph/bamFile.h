@@ -16,11 +16,11 @@
 #define BAMFILE_H
 
 #include "pandabase.h"
-#include "bamEndian.h"
 #include "datagramInputFile.h"
 #include "datagramOutputFile.h"
 #include "pandaNode.h"
 #include "pointerTo.h"
+#include "bamEnums.h"
 
 class BamReader;
 class BamWriter;
@@ -42,7 +42,7 @@ class Filename;
 //               ending in ".boo" to differentiate them from the more
 //               common scene graph files.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH BamFile {
+class EXPCL_PANDA_PGRAPH BamFile : public BamEnums {
 PUBLISHED:
   BamFile();
   ~BamFile();
