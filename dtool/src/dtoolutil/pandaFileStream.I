@@ -93,7 +93,7 @@ attach(const char *filename, HANDLE handle, ios::openmode mode) {
 void IFileStream::
 attach(const char *filename, int fd, ios::openmode mode) {
   clear((ios_iostate)0);
-  _buf.attach(filename, handle, mode);
+  _buf.attach(filename, fd, mode);
   if (!_buf.is_open()) {
     clear(ios::failbit);
   }
@@ -190,7 +190,7 @@ attach(const char *filename, HANDLE handle, ios::openmode mode) {
 void OFileStream::
 attach(const char *filename, int fd, ios::openmode mode) {
   clear((ios_iostate)0);
-  _buf.attach(filename, handle, mode);
+  _buf.attach(filename, fd, mode);
   if (!_buf.is_open()) {
     clear(ios::failbit);
   }
@@ -287,7 +287,7 @@ attach(const char *filename, HANDLE handle, ios::openmode mode) {
 void FileStream::
 attach(const char *filename, int fd, ios::openmode mode) {
   clear((ios_iostate)0);
-  _buf.attach(filename, handle, mode);
+  _buf.attach(filename, fd, mode);
   if (!_buf.is_open()) {
     clear(ios::failbit);
   }
