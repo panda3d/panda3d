@@ -334,11 +334,11 @@ EggGroupNode * BamToEgg::convert_animGroup_node(AnimGroup *animGroup, double fps
     for (int i = 0; i < num_matrix_components; i++) {
       string componentName(1, matrix_component_letters[i]);
       char table_id = matrix_component_letters[i];
-      CPTA_float table = xmfTable ->get_table(table_id);
+      CPTA_float table = xmfTable->get_table(table_id);
 
       if (xmfTable->has_table(table_id)) {
         for (unsigned int j = 0; j < table.size(); j++) {
-          egg_anim->add_component_data(componentName, table[j]);
+          egg_anim->add_component_data(componentName, table[(int)j]);
         }
       }
     }
