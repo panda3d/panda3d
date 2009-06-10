@@ -355,7 +355,7 @@ class ShowBase(DirectObject.DirectObject):
         # adds a sleep right after the main render in igloop
         # tends to even out the frame rate and keeps it from going
         # to zero in the out of focus windows
-        if base.config.GetBool('multi-sleep', 1):
+        if base.config.GetBool('multi-sleep', 0):
             self.multiClientSleep = 1
         else:
             self.multiClientSleep = 0
