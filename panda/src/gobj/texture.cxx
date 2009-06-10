@@ -721,34 +721,6 @@ read_dds(istream &in, const string &filename, bool header_only) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Texture::reload
-//       Access: Published
-//  Description: Re-reads the Texture from its disk file.  Useful when
-//               you know the image on disk has recently changed, and
-//               you want to update the Texture image.
-//
-//               Returns true on success, false on failure (in which
-//               case, the Texture may or may not still be valid).
-////////////////////////////////////////////////////////////////////
-bool Texture::
-reload() {
-  MutexHolder holder(_lock);
-  if (_loaded_from_image && !_fullpath.empty()) {
-    do_clear_ram_image();
-    do_unlock_and_reload_ram_image(true);
-    if (do_has_ram_image()) {
-      // An explicit call to reload() should increment image_modified.
-      ++_image_modified;
-      return true;
-    }
-    return false;
-  }
-
-  // We don't have a filename to load from.
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Texture::load_related
 //       Access: Published
 //  Description: Loads a texture whose filename is derived by
@@ -4034,6 +4006,9 @@ do_set_compression(Texture::CompressionMode compression) {
   if (_compression != compression) {
     ++_properties_modified;
     _compression = compression;
+    if (do_has_ram_image()) {
+      do_reload();
+    }
   }
 }
 
@@ -4548,6 +4523,28 @@ do_set_pad_size(int x, int y, int z) {
   _pad_x_size = x;
   _pad_y_size = y;
   _pad_z_size = z;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::do_reload
+//       Access: Protected
+//  Description: 
+////////////////////////////////////////////////////////////////////
+bool Texture::
+do_reload() {
+  if (_loaded_from_image && !_fullpath.empty()) {
+    do_clear_ram_image();
+    do_unlock_and_reload_ram_image(true);
+    if (do_has_ram_image()) {
+      // An explicit call to reload() should increment image_modified.
+      ++_image_modified;
+      return true;
+    }
+    return false;
+  }
+
+  // We don't have a filename to load from.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

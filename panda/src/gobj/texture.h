@@ -247,7 +247,7 @@ PUBLISHED:
   INLINE bool store(PNMImage &pnmimage) const;
   INLINE bool store(PNMImage &pnmimage, int z, int n) const;
 
-  bool reload();
+  INLINE bool reload();
   Texture *load_related(const InternalName *suffix) const;
 
   INLINE bool has_filename() const;
@@ -551,6 +551,7 @@ protected:
   void do_clear_ram_mipmap_images();
   void do_generate_ram_mipmap_images();
   void do_set_pad_size(int x, int y, int z);
+  bool do_reload();
 
   // This nested class declaration is used below.
   class RamImage {

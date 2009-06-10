@@ -307,6 +307,22 @@ store(PNMImage &pnmimage, int z, int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Texture::reload
+//       Access: Published
+//  Description: Re-reads the Texture from its disk file.  Useful when
+//               you know the image on disk has recently changed, and
+//               you want to update the Texture image.
+//
+//               Returns true on success, false on failure (in which
+//               case, the Texture may or may not still be valid).
+////////////////////////////////////////////////////////////////////
+bool Texture::
+reload() {
+  MutexHolder holder(_lock);
+  return do_reload();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Texture::has_filename
 //       Access: Published
 //  Description: Returns true if the filename has been set and
