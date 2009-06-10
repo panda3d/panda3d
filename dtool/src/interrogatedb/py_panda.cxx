@@ -88,6 +88,7 @@ attempt_coercion(PyObject *self, Dtool_PyTypedObject *classdef,
           (*coerced) = PyList_New(0);
         }
         PyList_Append(*coerced, obj);
+        Py_DECREF(obj);
         return result;
       }
       // Some problem getting the C++ pointer from our created
