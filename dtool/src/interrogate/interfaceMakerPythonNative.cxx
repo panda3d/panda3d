@@ -2680,10 +2680,6 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
     }
 
     string return_expr = remap->call_function(out, extra_indent_level, true, container, pexprs);
-    if (coercion_possible) {
-      indent(out, extra_indent_level)
-        << "Py_XDECREF(coerced);\n";
-    }
     if (return_expr.empty()) {
       if (track_interpreter) {
         indent(out,extra_indent_level) << "in_interpreter = 1;\n";
@@ -2696,6 +2692,10 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
       }
       if (!extra_cleanup.empty()) {
         indent(out,extra_indent_level) << extra_cleanup << "\n";
+      }
+      if (coercion_possible) {
+        indent(out, extra_indent_level)
+          << "Py_XDECREF(coerced);\n";
       }
       do_assert_init(out, extra_indent_level,is_constructor);
       indent(out,extra_indent_level) << "return Py_BuildValue(\"\");\n";
@@ -2722,6 +2722,10 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
 
       if (!is_inplace) {
         return_expr = manage_return_value(out, extra_indent_level, remap, "return_value");
+      }
+      if (coercion_possible) {
+        indent(out, extra_indent_level)
+          << "Py_XDECREF(coerced);\n";
       }
       do_assert_init(out, extra_indent_level,is_constructor);
       pack_return_value(out, extra_indent_level, remap, remap->_return_type->temporary_to_return(return_expr),ForwardDeclrs,is_inplace);
