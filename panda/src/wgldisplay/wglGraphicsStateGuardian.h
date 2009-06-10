@@ -37,6 +37,8 @@ public:
   INLINE int get_pfnum() const;
   INLINE bool pfnum_supports_pbuffer() const;
   INLINE const FrameBufferProperties &get_fb_properties() const;
+  bool fail_pfnum();
+
   INLINE bool made_context() const;
   INLINE HGLRC get_context(HDC hdc);
   void get_properties(FrameBufferProperties &properties, HDC hdc, int pfnum);
@@ -76,6 +78,12 @@ private:
   FrameBufferProperties _pfnum_properties;
   bool _pfnum_supports_pbuffer;
   int _pfnum;
+
+  // This pfnum is the pfnum chosen via DescribePixelFormat.  It is
+  // used in case the one returned by wglChoosePixelFormatARB() fails.
+  FrameBufferProperties _pre_pfnum_properties;
+  int _pre_pfnum;
+
   
   bool _made_context;
   HGLRC _context;

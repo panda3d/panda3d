@@ -65,6 +65,36 @@ wglGraphicsStateGuardian::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: wglGraphicsStateGuardian::fail_pfnum
+//       Access: Public
+//  Description: This is called by wglGraphicsWindow when it finds it
+//               cannot use the pfnum determined by the GSG.  Assuming
+//               this pfnum corresponds to an "advanced" frame buffer
+//               determined by wglChoosePixelFormatARB, this asks the
+//               GSG to swap out that pfnum for the earlier,
+//               "preliminary" pfnum determined via
+//               DescribePixelFormat().
+//
+//               This is a one-way operation.  Once called, you can
+//               never go back to the advanced pfnum.
+//
+//               This method returns true if a change was successfully
+//               made, or false if there was no second tier to fall
+//               back to.
+////////////////////////////////////////////////////////////////////
+bool wglGraphicsStateGuardian::
+fail_pfnum() {
+  if (_pfnum == _pre_pfnum) {
+    return false;
+  }
+
+  _pfnum = _pre_pfnum;
+  _pfnum_supports_pbuffer = false;
+  _pfnum_properties = _pre_pfnum_properties;
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: wglGraphicsStateGuardian::get_properties
 //       Access: Private
 //  Description: Gets the FrameBufferProperties to match the
@@ -267,6 +297,8 @@ choose_pixel_format(const FrameBufferProperties &properties,
   _pfnum = best_pfnum;
   _pfnum_supports_pbuffer = false;
   _pfnum_properties = best_prop;
+  _pre_pfnum = _pfnum;
+  _pre_pfnum_properties = _pfnum_properties;
   
   if (best_quality == 0) {
     wgldisplay_cat.error()
@@ -400,6 +432,12 @@ choose_pixel_format(const FrameBufferProperties &properties,
     _pfnum = best_pfnum;
     _pfnum_supports_pbuffer = need_pbuffer;
     _pfnum_properties = best_prop;
+
+    if (wgldisplay_cat.is_debug()) {
+      wgldisplay_cat.debug()
+        << "Selected advanced pixfmt #" << _pfnum << " = " 
+        << _pfnum_properties << "\n";
+    }
   }
   
   wglDeleteContext(twindow_ctx);

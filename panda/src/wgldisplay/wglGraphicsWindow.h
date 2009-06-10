@@ -46,7 +46,7 @@ protected:
 private:
   void setup_colormap(const PIXELFORMATDESCRIPTOR &pixelformat);
 
-#ifdef _DEBUG
+#ifdef NOTIFY_DEBUG
   static void print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg);
 #endif
 

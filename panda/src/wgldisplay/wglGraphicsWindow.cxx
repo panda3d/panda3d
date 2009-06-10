@@ -202,13 +202,36 @@ open_window() {
   DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), 
                       &pixelformat);
 
-#ifdef _DEBUG
+#ifdef NOTIFY_DEBUG
   char msg[200];
   sprintf(msg, "Selected GL PixelFormat is #%d", pfnum);
   print_pfd(&pixelformat, msg);
 #endif
 
-  if (!SetPixelFormat(_hdc, pfnum, &pixelformat)) {
+  BOOL set_pfnum = SetPixelFormat(_hdc, pfnum, &pixelformat);
+
+  if (!set_pfnum) {
+    if (wglgsg->fail_pfnum()) {
+      wgldisplay_cat.error()
+        << "SetPixelFormat(" << pfnum << ") failed; trying " 
+        << wglgsg->get_pfnum() << " instead\n";
+
+      pfnum = wglgsg->get_pfnum();
+      DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), 
+                          &pixelformat);
+
+#ifdef NOTIFY_DEBUG
+      sprintf(msg, "Selected GL PixelFormat is #%d", pfnum);
+      print_pfd(&pixelformat, msg);
+#endif
+      
+      DescribePixelFormat(_hdc, pfnum, sizeof(PIXELFORMATDESCRIPTOR), 
+                          &pixelformat);
+      set_pfnum = SetPixelFormat(_hdc, pfnum, &pixelformat);
+    }
+  }
+
+  if (!set_pfnum) {
     wgldisplay_cat.error()
       << "SetPixelFormat(" << pfnum << ") failed after window create\n";
     close_window();
@@ -297,7 +320,7 @@ setup_colormap(const PIXELFORMATDESCRIPTOR &pixelformat) {
   RealizePalette(_hdc);
 }
 
-#ifdef _DEBUG
+#ifdef NOTIFY_DEBUG
 
 //typedef enum {Software, MCD, ICD} OGLDriverType;
 static char *OGLDrvStrings[3] = {"Software","MCD","ICD"};
@@ -310,6 +333,10 @@ static char *OGLDrvStrings[3] = {"Software","MCD","ICD"};
 ////////////////////////////////////////////////////////////////////
 void wglGraphicsWindow::
 print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg) {
+  if (!wgldisplay_cat.is_debug()) {
+    return;
+  }
+
   OGLDriverType drvtype;
   if ((pfd->dwFlags & PFD_GENERIC_ACCELERATED) && 
       (pfd->dwFlags & PFD_GENERIC_FORMAT)) {
@@ -321,10 +348,10 @@ print_pfd(PIXELFORMATDESCRIPTOR *pfd, char *msg) {
   }
 
 #define PRINT_FLAG(FLG) ((pfd->dwFlags &  PFD_##FLG) ? (" PFD_" #FLG "|") : "")
-  wgldisplay_cat.spam()
+  wgldisplay_cat.debug()
     << "================================\n";
 
-  wgldisplay_cat.spam()
+  wgldisplay_cat.debug()
     << msg << ", " << OGLDrvStrings[drvtype] << " driver\n"
     << "PFD flags: 0x" << (void*)pfd->dwFlags << " (" 
     << PRINT_FLAG(GENERIC_ACCELERATED) 
