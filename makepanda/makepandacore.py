@@ -762,24 +762,30 @@ def SdkLocateDirectX():
     if (sys.platform != "win32"): return
     if (os.path.isdir("sdks/directx8")): SDK["DX8"]="sdks/directx8"
     if (os.path.isdir("sdks/directx9")): SDK["DX9"]="sdks/directx9"
-    uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
-    for subdir in ListRegistryKeys(uninstaller):
-        if (subdir[0]=="{"):
-            dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
-            if (dir != 0):
-                if ((SDK.has_key("DX8")==0) and
-                    (os.path.isfile(dir+"\\Include\\d3d8.h")) and
-                    (os.path.isfile(dir+"\\Include\\d3dx8.h")) and
-                    (os.path.isfile(dir+"\\Lib\\d3d8.lib")) and
-                    (os.path.isfile(dir+"\\Lib\\d3dx8.lib"))):
-                   SDK["DX8"] = dir.replace("\\", "/").rstrip("/")
-                if ((SDK.has_key("DX9")==0) and
-                    (os.path.isfile(dir+"\\Include\\d3d9.h")) and
-                    (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
-                    (os.path.isfile(dir+"\\Include\\dxsdkver.h")) and
-                    (os.path.isfile(dir+"\\Lib\\x86\\d3d9.lib")) and
-                    (os.path.isfile(dir+"\\Lib\\x86\\d3dx9.lib"))):
-                   SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
+    if (SDK.has_key("DX9")==0):
+        ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
+        dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
+        if (dir != 0):
+            SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
+    if (SDK.has_key("DX9")==0 or SDK.has_key("DX8")==0):
+        uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+        for subdir in ListRegistryKeys(uninstaller):
+            if (subdir[0]=="{"):
+                dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
+                if (dir != 0):
+                    if ((SDK.has_key("DX8")==0) and
+                        (os.path.isfile(dir+"\\Include\\d3d8.h")) and
+                        (os.path.isfile(dir+"\\Include\\d3dx8.h")) and
+                        (os.path.isfile(dir+"\\Lib\\d3d8.lib")) and
+                        (os.path.isfile(dir+"\\Lib\\d3dx8.lib"))):
+                        SDK["DX8"] = dir.replace("\\", "/").rstrip("/")
+                    if ((SDK.has_key("DX9")==0) and
+                        (os.path.isfile(dir+"\\Include\\d3d9.h")) and
+                        (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
+                        (os.path.isfile(dir+"\\Include\\dxsdkver.h")) and
+                        (os.path.isfile(dir+"\\Lib\\x86\\d3d9.lib")) and
+                        (os.path.isfile(dir+"\\Lib\\x86\\d3dx9.lib"))):
+                        SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
     if (SDK.has_key("DX9")):
         SDK["DIRECTCAM"] = SDK["DX9"]
 
