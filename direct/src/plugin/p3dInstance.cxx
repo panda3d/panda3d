@@ -153,6 +153,7 @@ get_request() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_request(P3D_request *request) {
+  cerr << "adding a request\n";
   assert(request->_instance == this);
 
   ACQUIRE_LOCK(_request_lock);

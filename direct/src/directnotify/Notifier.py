@@ -6,6 +6,7 @@ from LoggerGlobal import defaultLogger
 from direct.showbase import PythonUtil
 import time
 import types
+import sys
 
 class Notifier:
     serverDelta = 0
@@ -237,7 +238,7 @@ class Notifier:
         if self.streamWriter:
             self.streamWriter.appendData(string + '\n')
         else:
-            print string
+            print >> sys.stderr, string
 
     def debugStateCall(self, obj=None, fsmMemberName='fsm',
             secondaryFsm='secondaryFSM'):

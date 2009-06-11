@@ -34,6 +34,10 @@ P3DSession(P3DInstance *inst) {
   _python_version = inst->get_python_version();
   _python_root_dir = "C:/p3drun";
 
+  INIT_LOCK(_instances_lock);
+
+  _read_thread_continue = false;
+
   string p3dpython = "c:/cygwin/home/drose/player/direct/built/bin/p3dpython.exe";
   //  string p3dpython = _python_root_dir + "/p3dpython.exe";
 
@@ -122,12 +126,15 @@ P3DSession(P3DInstance *inst) {
   _pipe_read.open_read(r_from);
   _pipe_write.open_write(w_to);
 #endif  // _WIN32
+
   if (!_pipe_read) {
     cerr << "unable to open read pipe\n";
   }
   if (!_pipe_write) {
     cerr << "unable to open write pipe\n";
   }
+
+  spawn_read_thread();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -139,13 +146,34 @@ P3DSession(P3DInstance *inst) {
 P3DSession::
 ~P3DSession() {
   if (_started_p3dpython) {
-    cerr << "Terminating process.\n";
-    // Messy.  Shouldn't use TerminateProcess unless necessary.
-    TerminateProcess(_p3dpython.hProcess, 2);
+    // Tell the process we're going away.
+    TiXmlDocument doc;
+    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+    TiXmlElement *xcommand = new TiXmlElement("command");
+    xcommand->SetAttribute("cmd", "exit");
+    doc.LinkEndChild(decl);
+    doc.LinkEndChild(xcommand);
+    _pipe_write << doc << flush;
+
+    // Also close the pipe, to help underscore the point.
+    _pipe_write.close();
+    _pipe_read.close();
+
+#ifdef _WIN32
+    // Now give the process a chance to terminate itself cleanly.
+    if (WaitForSingleObject(_p3dpython.hProcess, 2000) == WAIT_TIMEOUT) {
+      // It didn't shut down cleanly, so kill it the hard way.
+      cerr << "Terminating process.\n";
+      TerminateProcess(_p3dpython.hProcess, 2);
+    }
 
     CloseHandle(_p3dpython.hProcess);
     CloseHandle(_p3dpython.hThread);
+#endif
   }
+
+  join_read_thread();
+  DESTROY_LOCK(_instances_lock);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,8 +192,10 @@ start_instance(P3DInstance *inst) {
   assert(inst->get_session_key() == _session_key);
   assert(inst->get_python_version() == _python_version);
 
+  ACQUIRE_LOCK(_instances_lock);
   inst->_session = this;
-  bool inserted = _instances.insert(inst).second;
+  bool inserted = _instances.insert(Instances::value_type(inst->get_instance_id(), inst)).second;
+  RELEASE_LOCK(_instances_lock);
   assert(inserted);
 
   TiXmlDocument doc;
@@ -201,8 +231,118 @@ terminate_instance(P3DInstance *inst) {
 
   _pipe_write << doc << flush;
 
+  ACQUIRE_LOCK(_instances_lock);
   if (inst->_session == this) {
     inst->_session = NULL;
-    _instances.erase(inst);
+    _instances.erase(inst->get_instance_id());
+  }
+  RELEASE_LOCK(_instances_lock);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::spawn_read_thread
+//       Access: Private
+//  Description: Starts the read thread.  This thread is responsible
+//               for reading the standard input socket for XML
+//               requests and storing them in the _requests queue.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+spawn_read_thread() {
+  assert(!_read_thread_continue);
+
+  // We have to use direct OS calls to create the thread instead of
+  // Panda constructs, because it has to be an actual thread, not
+  // necessarily a Panda thread (we can't use Panda's simple threads
+  // implementation, because we can't get overlapped I/O on an
+  // anonymous pipe in Windows).
+
+  _read_thread_continue = true;
+#ifdef _WIN32
+  _read_thread = CreateThread(NULL, 0, &win_rt_thread_run, this, 0, NULL);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::join_read_thread
+//       Access: Private
+//  Description: Waits for the read thread to stop.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+join_read_thread() {
+  cerr << "session waiting for thread\n";
+  _read_thread_continue = false;
+  _pipe_read.close();
+  
+#ifdef _WIN32
+  assert(_read_thread != NULL);
+  WaitForSingleObject(_read_thread, INFINITE);
+  CloseHandle(_read_thread);
+  _read_thread = NULL;
+#endif
+  cerr << "session done waiting for thread\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::rt_thread_run
+//       Access: Private
+//  Description: The main function for the read thread.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+rt_thread_run() {
+  cerr << "session thread reading.\n";
+  while (_read_thread_continue) {
+    TiXmlDocument *doc = new TiXmlDocument;
+
+    _pipe_read >> *doc;
+    if (!_pipe_read || _pipe_read.eof()) {
+      // Some error on reading.  Abort.
+      cerr << "Error on session reading.\n";
+      rt_terminate();
+      return;
+    }
+
+    // Successfully read an XML document.
+    cerr << "Session got request: " << *doc << "\n";
+
+    // TODO: feed the request up to the parent.
+    delete doc;
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::rt_terminate
+//       Access: Private
+//  Description: Got a closed pipe from the sub-process.  Send a
+//               terminate request for all instances.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+rt_terminate() {
+  Instances icopy;
+  ACQUIRE_LOCK(_instances_lock);
+  icopy = _instances;
+  RELEASE_LOCK(_instances_lock);
+
+  // TODO: got a race condition here.  What happens if someone deletes
+  // an instance while we're processing this loop?
+
+  for (Instances::iterator ii = icopy.begin(); ii != icopy.end(); ++ii) {
+    P3DInstance *inst = (*ii).second;
+    P3D_request *request = new P3D_request;
+    request->_instance = inst;
+    request->_request_type = P3D_RT_stop;
+    inst->add_request(request);
+  }
+}
+
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPython::win_rt_thread_run
+//       Access: Private, Static
+//  Description: The Windows flavor of the thread callback function.
+////////////////////////////////////////////////////////////////////
+DWORD P3DSession::
+win_rt_thread_run(LPVOID data) {
+  ((P3DSession *)data)->rt_thread_run();
+  return 0;
+}
+#endif

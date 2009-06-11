@@ -230,7 +230,7 @@ class AppPacker:
         bamFile = BamFile()
         stream = StringStream()
         bamFile.openWrite(stream)
-        bamFile.getWriter().setFileTextureMode(BTMUnchanged)
+        bamFile.getWriter().setFileTextureMode(bamFile.BTMUnchanged)
         bamFile.writeObject(node)
         bamFile.close()
 

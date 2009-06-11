@@ -74,22 +74,14 @@ extern "C" {
    to being specific to a particular instance. */
 
 /* This function should be called immediately after the plugin is
-   loaded.  The config_xml parameter is the plugin configuration data,
-   formatted as an XML stream (it contains the XML data itself; it is
-   not a filename).  The exact contents of this XML stream are
-   documented elsewhere.  This config_xml parameter may be the empty
-   string or NULL; if so, the plugin will use its own internal default
-   configuration.
-
-   The dll_filename parameter is the filename of the plugin's dll
-   itself, which is needed for self-patching.
+   loaded.
 
    This function returns true if the plugin is valid, false otherwise.
    If it returns false, the host should not call any more functions in
    this API, and should immediately unload the DLL and (if possible)
    download a new one. */
 typedef bool 
-P3D_initialize_func(const char *config_xml, const char *dll_filename);
+P3D_initialize_func();
 
 /* This function frees a pointer returned by
    P3D_instance_get_property(), or another similar function that
@@ -266,7 +258,6 @@ P3D_instance_set_property_func(P3D_instance *instance,
 typedef enum {
   P3D_RT_stop,
   P3D_RT_new_config_xml,
-  P3D_RT_patch,
   P3D_RT_get_url,
   P3D_RT_post_url,
 } P3D_request_type;
@@ -290,16 +281,6 @@ typedef struct {
 typedef struct {
   const char *_config_xml;
 } P3D_request_new_config_xml;
-
-/* A patch request.  The plugin has determined that it is out of date
-   and needs to be patched.  It has already applied the patch to
-   itself, and the resulting patched dll is referenced in the request
-   data.  The host should respond by finishing all active instances,
-   unloading the DLL, moving the patched dll onto the original DLL,
-   and reloading the DLL and (optionally) restarting the instances. */
-typedef struct {
-  const char *_patched_filename;
-} P3D_request_patch;
 
 /* A get_url request.  The plugin would like to retrieve data for a
    particular URL.  The plugin is responsible for supplying a valid
@@ -334,7 +315,6 @@ typedef struct {
   union {
     P3D_request_stop _stop;
     P3D_request_new_config_xml _new_config_xml;
-    P3D_request_patch _patch;
     P3D_request_get_url _get_url;
     P3D_request_post_url _post_url;
   } _request;

@@ -33,7 +33,7 @@
   #define USE_PACKAGES tinyxml python
   #define TARGET p3dpython
 
-#define OTHER_LIBS \
+  #define OTHER_LIBS \
     dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     express:c pandaexpress:m \
@@ -51,11 +51,19 @@
 #end bin_target
 
 #begin bin_target
+  #define USE_PACKAGES openssl
   #define TARGET panda3d
 
+  #define OTHER_LIBS \
+    prc:c dtoolutil:c dtoolbase:c dtool:m \
+    interrogatedb:c dconfig:c dtoolconfig:m \
+    express:c pandaexpress:m \
+    pstatclient:c pandabase:c linmath:c putil:c \
+    pipeline:c panda:m \
+    pystub
+
   #define SOURCES \
-    panda3d.cxx \
-    $[if $[WINDOWS_PLATFORM],wingetopt.h wingetopt.c]
+    panda3d.cxx
 
   #define WIN_SYS_LIBS user32.lib gdi32.lib
 

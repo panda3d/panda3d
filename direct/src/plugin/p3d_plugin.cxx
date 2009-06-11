@@ -23,24 +23,14 @@ bool initialized_lock = false;
 LOCK _lock;
 
 bool 
-P3D_initialize(const char *config_xml, const char *dll_filename) {
-  string config_xml_str;
-  if (config_xml != NULL) {
-    config_xml_str = config_xml;
-  }
-
-  string dll_filename_str;
-  if (dll_filename != NULL) {
-    dll_filename_str = dll_filename;
-  }
-
+P3D_initialize() {
   if (!initialized_lock) {
     INIT_LOCK(_lock);
     initialized_lock = true;
   }
   ACQUIRE_LOCK(_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  bool result = inst_mgr->initialize(config_xml_str, dll_filename_str);
+  bool result = inst_mgr->initialize();
   RELEASE_LOCK(_lock);
   return result;
 }

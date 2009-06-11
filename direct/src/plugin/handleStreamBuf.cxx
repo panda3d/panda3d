@@ -311,7 +311,7 @@ write_chars(const char *start, size_t length) {
   BOOL success = WriteFile(_handle, start, length, &bytes_written, NULL);
   if (!success) {
     DWORD error = GetLastError();
-    if (error != ERROR_BROKEN_PIPE) {
+    if (error != ERROR_NO_DATA && error != ERROR_BROKEN_PIPE) {
       cerr
         << "Error writing " << length
         << " bytes, windows error code 0x" << hex

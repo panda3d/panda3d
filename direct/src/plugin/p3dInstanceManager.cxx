@@ -46,15 +46,13 @@ P3DInstanceManager::
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::initialize
 //       Access: Public
-//  Description: Called by the host at application startup, this
-//               receives the name of the DLL that contains this code
-//               (for patching purposes).  It returns true if the DLL
-//               is successfully initialized, false if it should be
-//               immediately shut down and redownloaded.
+//  Description: Called by the host at application startup.  It
+//               returns true if the DLL is successfully initialized,
+//               false if it should be immediately shut down and
+//               redownloaded.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
-initialize(const string &config_xml, const string &dll_filename) {
-  _dll_filename = dll_filename;
+initialize() {
   return true;
 }
 

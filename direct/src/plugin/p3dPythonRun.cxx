@@ -103,16 +103,17 @@ run_python() {
     PyErr_Print();
     return false;
   }
-  _exit = PyObject_GetAttrString(appmf, "exit");
-  if (_exit == NULL) {
-    PyErr_Print();
-    return false;
-  }
   _setupWindow = PyObject_GetAttrString(appmf, "setupWindow");
   if (_setupWindow == NULL) {
     PyErr_Print();
     return false;
   }
+  _taskMgr = PyObject_GetAttrString(appmf, "taskMgr");
+  if (_taskMgr == NULL) {
+    PyErr_Print();
+    return false;
+  }
+
   Py_DECREF(appmf);
 
   // Now add check_comm() as a task.
@@ -121,22 +122,14 @@ run_python() {
   task_mgr->add(_check_comm_task);
 
   // Finally, get lost in taskMgr.run().
-
-  PyObject *taskMgr = PyObject_GetAttrString(appmf, "taskMgr");
-  if (taskMgr == NULL) {
-    PyErr_Print();
-    return false;
-  }
   cerr << "calling run()\n";
-  PyObject *done = PyObject_CallMethod(taskMgr, "run", "");
+  PyObject *done = PyObject_CallMethod(_taskMgr, "run", "");
   if (done == NULL) {
     PyErr_Print();
     return false;
   }
   Py_DECREF(done);
   cerr << "done calling run()\n";
-
-  Py_DECREF(taskMgr);
 
   return true;
 }
@@ -165,6 +158,8 @@ handle_command(TiXmlDocument *doc) {
         if (xcommand->Attribute("id", &id)) {
           terminate_instance(id);
         }
+      } else if (strcmp(cmd, "exit") == 0) {
+        terminate_session();
         
       } else {
         cerr << "Unhandled command " << cmd << "\n";
@@ -251,6 +246,7 @@ void P3DPythonRun::
 join_read_thread() {
   cerr << "waiting for thread\n";
   _read_thread_continue = false;
+  _pipe_read.close();
   
 #ifdef _WIN32
   assert(_read_thread != NULL);
@@ -346,11 +342,14 @@ terminate_session() {
   }
   _instances.clear();
 
-  PyObject *result = PyObject_CallFunction(_exit, "");
+  cerr << "calling stop()\n";
+  PyObject *result = PyObject_CallMethod(_taskMgr, "stop", "");
   if (result == NULL) {
     PyErr_Print();
+    return;
   }
-  Py_XDECREF(result);
+  Py_DECREF(result);
+  cerr << "done calling stop()\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -372,7 +371,21 @@ rt_thread_run() {
       return;
     }
 
-    // Successfully read an XML document.  Feed it to the parent.
+    // Successfully read an XML document.
+    
+    // Check for one special case: the "exit" command means we shut
+    // down the read thread along with everything else.
+    TiXmlElement *xcommand = doc->FirstChildElement("command");
+    if (xcommand != NULL) {
+      const char *cmd = xcommand->Attribute("cmd");
+      if (cmd != NULL) {
+        if (strcmp(cmd, "exit") == 0) {
+          _read_thread_continue = false;
+        }
+      }
+    }
+
+    // Feed the command up to the parent.
     ACQUIRE_LOCK(_commands_lock);
     _commands.push_back(doc);
     RELEASE_LOCK(_commands_lock);

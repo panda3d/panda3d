@@ -44,6 +44,11 @@ def initPackedAppEnvironment():
 
     __packedAppEnvironmentInitialized = True
 
+    # We need to make sure sys.stdout maps to sys.stderr instead, so
+    # if someone makes an unadorned print command within Python code,
+    # it won't muck up the data stream between parent and child.
+    sys.stdout = sys.stderr
+
     vfs = VirtualFileSystem.getGlobalPtr()
 
     # Clear *all* the mount points, including "/", so that we no
@@ -144,17 +149,6 @@ def setupWindow(windowType, x, y, width, height, parent):
         data += 'win-size %s %s\n' % (width, height)
 
     loadPrcFileData("setupWindow", data)
-
-def add_check_comm(func, this):
-    """ This function is provided just a convenience for
-    p3dPythonRun.cxx.  It adds the indicated function to the task
-    manager with the appropriate parameters for the check_comm
-    task. """
-    return taskMgr.add(func, "check_comm", sort = -50, extraArgs = [this],
-                       appendTask = True)
-
-def exit():
-    taskMgr.stop()
 
 if __name__ == '__main__':
     try:

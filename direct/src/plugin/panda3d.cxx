@@ -12,20 +12,34 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3d_plugin.h"
+// This program must link with Panda for HTTPClient support.  This
+// means it probably should be built with LINK_ALL_STATIC defined, so
+// we won't have to deal with confusing .dll or .so files that might
+// compete on the disk with the dynamically-loaded versions.  There's
+// no competition in memory address space, though, because
+// p3d_plugin--the only file we dynamically link in--doesn't itself
+// link with Panda.
 
-#include <iostream>
-#include <string>
-#include <math.h>
+#include "pandabase.h"
 
 #ifdef _WIN32
-#include "wingetopt.h"
 #include <windows.h>
-#else
-#include <getopt.h>
 #endif
 
-using namespace std;
+#include "httpClient.h"
+#include "httpChannel.h"
+#include "Ramfile.h"
+#include "thread.h"
+#include "p3d_plugin.h"
+#include "pset.h"
+
+#ifndef HAVE_GETOPT
+  #include "gnu_getopt.h"
+#else
+  #ifdef HAVE_GETOPT_H
+    #include <getopt.h>
+  #endif
+#endif
 
 static const string default_plugin_filename = "libp3d_plugin";
 
@@ -41,9 +55,88 @@ P3D_check_request_func *P3D_check_request;
 P3D_request_finish_func *P3D_request_finish;
 P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;
 
+typedef pset<P3D_instance *> Instances;
+Instances _instances;
+
+class URLGetterThread : public Thread {
+public:
+  URLGetterThread(P3D_instance *instance,
+                  int unique_id,
+                  const URLSpec &url,
+                  const string &post_data);
+protected:
+  virtual void thread_main();
+
+private:
+  P3D_instance *_instance;
+  int _unique_id;
+  URLSpec _url;
+  string _post_data;
+};
+
+URLGetterThread::
+URLGetterThread(P3D_instance *instance,
+                int unique_id,
+                const URLSpec &url,
+                const string &post_data) :
+  Thread(url, "URLGetter"),
+  _instance(instance),
+  _unique_id(unique_id),
+  _url(url),
+  _post_data(post_data)
+{
+}
+
+void URLGetterThread::
+thread_main() {
+  HTTPClient *http = HTTPClient::get_global_ptr();
+
+  cerr << "Getting URL " << _url << "\n";
+
+  PT(HTTPChannel) channel = http->make_channel(false);
+  if (_post_data.empty()) {
+    channel->begin_get_document(_url);
+  } else {
+    channel->begin_post_form(_url, _post_data);
+  }
+
+  Ramfile rf;
+  channel->download_to_ram(&rf);
+
+  size_t bytes_sent = 0;
+  while (channel->run()) {
+    if (rf.get_data_size() != 0) {
+      // Got some new data.
+      P3D_instance_feed_url_stream
+        (_instance, _unique_id, P3D_RC_in_progress,
+         channel->get_status_code(),
+         channel->get_file_size(),
+         (const unsigned char *)rf.get_data().data(), rf.get_data_size());
+      bytes_sent += rf.get_data_size();
+      rf.clear();
+    }
+  }
+
+  // All done.
+  P3D_result_code status = P3D_RC_done;
+  if (!channel->is_valid()) {
+    if (channel->get_status_code() != 0) {
+      status = P3D_RC_http_error;
+    } else {
+      status = P3D_RC_generic_error;
+    }
+  }
+
+  P3D_instance_feed_url_stream
+    (_instance, _unique_id, status,
+     channel->get_status_code(),
+     bytes_sent, NULL, 0);
+
+  cerr << "Done getting URL " << _url << ", got " << bytes_sent << " bytes\n";
+}
+
 bool
-load_plugin(const string &config_xml_filename,
-            const string &p3d_plugin_filename) {
+load_plugin(const string &p3d_plugin_filename) {
   string filename = p3d_plugin_filename;
   if (filename.empty()) {
     // Look for the plugin along the path.
@@ -102,7 +195,7 @@ load_plugin(const string &config_xml_filename,
   }
 
   // Successfully loaded.
-  if (!P3D_initialize(NULL, filename.c_str())) {
+  if (!P3D_initialize()) {
     // Oops, failure to initialize.
     return false;
   }
@@ -116,12 +209,40 @@ handle_request(P3D_request *request) {
 
   switch (request->_request_type) {
   case P3D_RT_stop:
+    cerr << "Got P3D_RT_stop\n";
     P3D_instance_finish(request->_instance);
+    _instances.erase(request->_instance);
+#ifdef _WIN32
+    // Post a silly message to spin the event loop.
+    PostMessage(NULL, WM_USER, 0, 0);
+#endif
     handled = true;
+    break;
+
+  case P3D_RT_get_url:
+    cerr << "Got P3D_RT_get_url\n";
+    {
+      PT(URLGetterThread) thread = new URLGetterThread
+        (request->_instance, request->_request._get_url._unique_id,
+         URLSpec(request->_request._get_url._url), "");
+      thread->start(TP_normal, false);
+    }
+    break;
+
+  case P3D_RT_post_url:
+    cerr << "Got P3D_RT_post_url\n";
+    {
+      PT(URLGetterThread) thread = new URLGetterThread
+        (request->_instance, request->_request._post_url._unique_id,
+         URLSpec(request->_request._post_url._url), 
+         string(request->_request._post_url._post_data, request->_request._post_url._post_data_size));
+      thread->start(TP_normal, false);
+    }
     break;
 
   default:
     // Some request types are not handled.
+    cerr << "Unhandled request: " << request->_request_type << "\n";
     break;
   };
 
@@ -189,12 +310,6 @@ usage() {
 
     << "Options:\n\n"
 
-    << "  -c config.xml\n"
-    << "    Specify the name of the config.xml file that informs the Panda\n"
-    << "    plugin where to download patches and such.  This is normally\n"
-    << "    not necessary to specify, since it is already stored within\n"
-    << "    the Panda plugin itself.\n\n"
-
     << "  -p p3d_plugin.dll\n"
     << "    Specify the full path to the particular Panda plugin DLL to\n"
     << "    run.  Normally, this will be found by searching in the usual\n"
@@ -231,9 +346,8 @@ int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "c:p:t:s:o:h";
+  const char *optstr = "p:t:s:o:h";
 
-  string config_xml_filename;
   string p3d_plugin_filename;
   P3D_window_type window_type = P3D_WT_toplevel;
   int win_x = 0, win_y = 0;
@@ -243,10 +357,6 @@ main(int argc, char *argv[]) {
 
   while (flag != EOF) {
     switch (flag) {
-    case 'c':
-      config_xml_filename = optarg;
-      break;
-
     case 'p':
       p3d_plugin_filename = optarg;
       break;
@@ -297,7 +407,7 @@ main(int argc, char *argv[]) {
     return 1;
   }
 
-  if (!load_plugin(config_xml_filename, p3d_plugin_filename)) {
+  if (!load_plugin(p3d_plugin_filename)) {
     cerr << "Unable to load Panda3D plugin.\n";
     return 1;
   }
@@ -342,50 +452,75 @@ main(int argc, char *argv[]) {
         int inst_x = win_x + xi * inst_width;
         int inst_y = win_y + yi * inst_height;
 
-        P3D_create_instance
+        P3D_instance *inst = P3D_create_instance
           (NULL, argv[i + 1], 
            P3D_WT_embedded, inst_x, inst_y, inst_width, inst_height, parent_window,
            NULL, 0);
+        _instances.insert(inst);
       }
     }
 
   } else {
     // Not an embedded window.  Create each window with the same parameters.
     for (int i = 0; i < num_instances; ++i) {
-      P3D_create_instance
+      P3D_instance *inst = P3D_create_instance
         (NULL, argv[i + 1], 
          window_type, win_x, win_y, win_width, win_height, parent_window,
          NULL, 0);
+      _instances.insert(inst);
     }
   }
 
 #ifdef _WIN32
-  // Wait for new messages from Windows, and new requests from the
-  // plugin.
-  MSG msg;
-  int retval;
-  retval = GetMessage(&msg, NULL, 0, 0);
-  while (retval != 0) {
-    if (retval == -1) {
-      cerr << "Error processing message queue.\n";
-      exit(1);
+  if (window_type == P3D_WT_embedded) {
+    // Wait for new messages from Windows, and new requests from the
+    // plugin.
+    MSG msg;
+    int retval;
+    retval = GetMessage(&msg, NULL, 0, 0);
+    while (retval != 0 && !_instances.empty()) {
+      if (retval == -1) {
+        cerr << "Error processing message queue.\n";
+        exit(1);
+      }
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
+      
+      // Check for new requests from the Panda3D plugin.
+      P3D_instance *inst = P3D_check_request(false);
+      while (inst != (P3D_instance *)NULL) {
+        P3D_request *request = P3D_instance_get_request(inst);
+        if (request != (P3D_request *)NULL) {
+          handle_request(request);
+        }
+        inst = P3D_check_request(false);
+      }
+      retval = GetMessage(&msg, NULL, 0, 0);
     }
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
+    
+    cerr << "WM_QUIT\n";
+    // WM_QUIT has been received.  Terminate all instances, and fall
+    // through.
+    Instances::iterator ii;
+    for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+      P3D_instance_finish(*ii);
+    }
+    _instances.clear();
 
-    // Check for new requests from the Panda3D plugin.
-    P3D_instance *inst = P3D_check_request(false);
+  } else {
+    // Not an embedded window, so we don't have our own window to
+    // generate Windows events.  Instead, just wait for requests.
+    P3D_instance *inst = P3D_check_request(true);
     while (inst != (P3D_instance *)NULL) {
       P3D_request *request = P3D_instance_get_request(inst);
       if (request != (P3D_request *)NULL) {
         handle_request(request);
       }
-      inst = P3D_check_request(false);
+      inst = P3D_check_request(true);
     }
-    retval = GetMessage(&msg, NULL, 0, 0);
   }
-
-#else
+    
+#endif
 
   // Now wait while we process pending requests.
   P3D_instance *inst = P3D_check_request(true);
@@ -396,7 +531,6 @@ main(int argc, char *argv[]) {
     }
     inst = P3D_check_request(true);
   }
-#endif
 
   // All instances have finished; we can exit.
 

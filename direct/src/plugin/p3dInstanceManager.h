@@ -34,7 +34,7 @@ private:
   ~P3DInstanceManager();
 
 public:
-  bool initialize(const string &config_xml, const string &dll_filename);
+  bool initialize();
 
   P3DInstance *
   create_instance(P3D_request_ready_func *func,
@@ -53,15 +53,12 @@ public:
 
   INLINE int get_num_instances() const;
 
-  INLINE const string &get_dll_filename() const;
-
   int get_unique_session_index();
   void signal_request_ready();
 
   static P3DInstanceManager *get_global_ptr();
 
 private:
-  string _dll_filename;
   string _p3d_root_directory;
 
   typedef set<P3DInstance *> Instances;

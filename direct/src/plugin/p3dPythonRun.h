@@ -90,8 +90,8 @@ private:
   char **_py_argv;
 
   PyObject *_runPackedApp;
-  PyObject *_exit;
   PyObject *_setupWindow;
+  PyObject *_taskMgr;
 
   PT(GenericAsyncTask) _check_comm_task;
 

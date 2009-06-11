@@ -23,14 +23,3 @@ INLINE int P3DInstanceManager::
 get_num_instances() const {
   return _instances.size();
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_dll_filename
-//       Access: Public
-//  Description: Returns the DLL filename that was passed to
-//               initialize().
-////////////////////////////////////////////////////////////////////
-INLINE const string &P3DInstanceManager::
-get_dll_filename() const {
-  return _dll_filename;
-}
