@@ -1124,6 +1124,10 @@ if (sys.platform != "win32"):
     confautoprc = confautoprc.replace("aux-display pandadx8","")
     confautoprc = confautoprc.replace("aux-display pandadx7","")
 
+# OpenAL is not yet working well on OSX for us, so let's do this for now.
+if (sys.platform == "darwin"):
+    confautoprc = confautoprc.replace("p3openal_audio","p3fmod_audio")
+
 ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
 ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
 
