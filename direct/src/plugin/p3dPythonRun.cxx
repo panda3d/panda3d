@@ -234,6 +234,12 @@ spawn_read_thread() {
   _read_thread_continue = true;
 #ifdef _WIN32
   _read_thread = CreateThread(NULL, 0, &win_rt_thread_run, this, 0, NULL);
+#else
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
+  pthread_create(&_read_thread, &attr, &posix_rt_thread_run, (void *)this);
+  pthread_attr_destroy(&attr);
 #endif
 }
 
@@ -253,6 +259,9 @@ join_read_thread() {
   WaitForSingleObject(_read_thread, INFINITE);
   CloseHandle(_read_thread);
   _read_thread = NULL;
+#else
+  void *return_val;
+  pthread_join(_read_thread, &return_val);
 #endif
   cerr << "done waiting for thread\n";
 }
@@ -289,7 +298,10 @@ start_instance(P3DCInstance *inst) {
      inst->_win_x, inst->_win_y,
      inst->_win_width, inst->_win_height,
 #ifdef _WIN32
-     (int)(inst->_parent_window._hwnd)
+     (long)(inst->_parent_window._hwnd)
+#endif
+#ifdef __APPLE__
+     (long)(inst->_parent_window._nswindow)
 #endif
      );
   if (result == NULL) {
@@ -402,6 +414,19 @@ DWORD P3DPythonRun::
 win_rt_thread_run(LPVOID data) {
   ((P3DPythonRun *)data)->rt_thread_run();
   return 0;
+}
+#endif
+
+#ifndef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPython::win_rt_thread_run
+//       Access: Private, Static
+//  Description: The Posix flavor of the thread callback function.
+////////////////////////////////////////////////////////////////////
+void *P3DPythonRun::
+posix_rt_thread_run(void *data) {
+  ((P3DPythonRun *)data)->rt_thread_run();
+  return NULL;
 }
 #endif
 

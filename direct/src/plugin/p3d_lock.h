@@ -19,12 +19,32 @@
 // mutex locks.
 
 #ifdef _WIN32
+
+// Windows case
 #define LOCK CRITICAL_SECTION
 #define INIT_LOCK(lock) InitializeCriticalSection(&(lock))
 #define ACQUIRE_LOCK(lock) EnterCriticalSection(&(lock))
 #define RELEASE_LOCK(lock) LeaveCriticalSection(&(lock))
 #define DESTROY_LOCK(lock) DeleteCriticalSection(&(lock))
-#endif
+
+#else  // _WIN32
+
+// Posix case
+#include <pthread.h>
+
+#define LOCK pthread_mutex_t
+#define INIT_LOCK(lock) { \
+    pthread_mutexattr_t attr; \
+    pthread_mutexattr_init(&attr); \
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL); \
+    int result = pthread_mutex_init(&(lock), &attr);        \
+    pthread_mutexattr_destroy(&attr); \
+  }
+#define ACQUIRE_LOCK(lock) pthread_mutex_lock(&(lock))
+#define RELEASE_LOCK(lock) pthread_mutex_unlock(&(lock))
+#define DESTROY_LOCK(lock) pthread_mutex_destroy(&(lock))
+
+#endif  // _WIN32
 
 #endif
 

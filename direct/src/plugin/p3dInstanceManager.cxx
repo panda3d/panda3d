@@ -31,6 +31,9 @@ P3DInstanceManager() {
   _request_seq = 0;
 #ifdef _WIN32
   _request_ready = CreateEvent(NULL, false, false, NULL);
+#else
+  INIT_LOCK(_request_ready_lock);
+  pthread_cond_init(&_request_ready_cvar, NULL);
 #endif
 }
 
@@ -41,6 +44,13 @@ P3DInstanceManager() {
 ////////////////////////////////////////////////////////////////////
 P3DInstanceManager::
 ~P3DInstanceManager() {
+  // Actually, the destructor is never called.
+#ifdef _WIN32
+  CloseHandle(_request_ready);
+#else
+  DESTROY_LOCK(_request_ready_lock);
+  pthread_cond_destroy(&_request_ready_cvar);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,7 +173,11 @@ wait_request() {
     
     // No pending requests; go to sleep.
     if (seq == _request_seq) {
+#ifdef _WIN32
       WaitForSingleObject(_request_ready, INFINITE);
+#else
+      pthread_cond_wait(&_request_ready_cvar, &_request_ready_lock);
+#endif
     }
     seq = _request_seq;
   }
@@ -194,6 +208,10 @@ signal_request_ready() {
   ++_request_seq;
 #ifdef _WIN32
   SetEvent(_request_ready);
+#else
+  ACQUIRE_LOCK(_request_ready_lock);
+  pthread_cond_signal(&_request_ready_cvar);
+  RELEASE_LOCK(_request_ready_lock);
 #endif
 }
 

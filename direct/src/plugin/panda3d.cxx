@@ -298,6 +298,17 @@ make_parent_window(P3D_window_handle &parent_window,
 }
 #endif // _WIN32
 
+#ifdef __APPLE__
+
+void
+make_parent_window(P3D_window_handle &parent_window, 
+                   int win_width, int win_height) {
+  // TODO.
+  assert(false);
+}
+
+#endif  // __APPLE__
+
 void
 usage() {
   cerr
@@ -426,6 +437,7 @@ main(int argc, char *argv[]) {
     make_parent_window(parent_window, win_width, win_height);
     
     // Center the child window(s) within the parent window.
+#ifdef _WIN32
     RECT rect;
     GetClientRect(parent_window._hwnd, &rect);
 
@@ -433,6 +445,7 @@ main(int argc, char *argv[]) {
     win_y = (int)(rect.bottom * 0.1);
     win_width = (int)(rect.right * 0.8);
     win_height = (int)(rect.bottom * 0.8);
+#endif
 
     // Subdivide the window into num_x_spans * num_y_spans sub-windows.
     int num_y_spans = int(sqrt((double)num_instances));

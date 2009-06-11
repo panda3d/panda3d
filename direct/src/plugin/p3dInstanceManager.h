@@ -73,8 +73,10 @@ private:
   volatile int _request_seq;
 #ifdef _WIN32
   HANDLE _request_ready;
+#else
+  LOCK _request_ready_lock;
+  pthread_cond_t _request_ready_cvar;
 #endif
-
   static P3DInstanceManager *_global_ptr;
 };
 

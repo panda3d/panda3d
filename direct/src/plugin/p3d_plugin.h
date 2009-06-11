@@ -111,6 +111,9 @@ typedef struct {
 #ifdef _WIN32
   HWND _hwnd;
 #endif
+#ifdef __APPLE__
+  void *_nswindow;
+#endif
 } P3D_window_handle;
 
 /* This enum lists the different kinds of window types that may be

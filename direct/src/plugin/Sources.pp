@@ -38,7 +38,7 @@
     interrogatedb:c dconfig:c dtoolconfig:m \
     express:c pandaexpress:m \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
-    pipeline:c panda:m
+    pipeline:c event:c nativenet:c panda:m
 
   #define SOURCES \
     handleStream.cxx handleStream.h handleStream.I \
@@ -57,7 +57,7 @@
   #define OTHER_LIBS \
     prc:c dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    express:c pandaexpress:m \
+    express:c downloader:c pandaexpress:m \
     pstatclient:c pandabase:c linmath:c putil:c \
     pipeline:c panda:m \
     pystub

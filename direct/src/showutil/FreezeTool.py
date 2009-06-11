@@ -57,7 +57,7 @@ elif sys.platform == 'darwin':
 
     compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 -arch i386 -arch ppc -I %(pythonIPath)s %(filename)s"
     linkExe = "gcc -o %(basename)s %(basename)s.o -framework Python"
-    linkDll = "gcc -shared -o %(basename)s.so %(basename)s.o -framework Python"
+    linkDll = "gcc -dynamiclib -o %(basename)s.so %(basename)s.o -framework Python"
 
 else:
     # Linux

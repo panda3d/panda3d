@@ -17,8 +17,6 @@
 #include "p3dInstanceManager.h"
 #include <tinyxml.h>
 
-#include <malloc.h>
-
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::Constructor
 //       Access: Public

@@ -79,6 +79,8 @@ private:
   void rt_thread_run();
 #ifdef _WIN32
   static DWORD WINAPI win_rt_thread_run(LPVOID data);
+#else
+  static void *posix_rt_thread_run(void *data);
 #endif
 
 private:
@@ -111,6 +113,8 @@ private:
   bool _program_continue;
 #ifdef _WIN32
   HANDLE _read_thread;
+#else
+  pthread_t _thread;
 #endif
 };
 
