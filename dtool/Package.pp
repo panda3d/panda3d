@@ -257,6 +257,12 @@
 #set FMODEX_LIBS $[FMODEX_LIBS]
 #set HAVE_FMODEX $[HAVE_FMODEX]
 
+#set OPENAL_IPATH $[unixfilename $[OPENAL_IPATH]]
+#set OPENAL_LPATH $[unixfilename $[OPENAL_LPATH]]
+#set OPENAL_LIBS $[OPENAL_LIBS]
+#set OPENAL_FRAMEWORK $[unixfilename $[OPENAL_FRAMEWORK]]
+#set HAVE_OPENAL $[HAVE_OPENAL]
+
 #set PHYSX_IPATH $[unixfilename $[PHYSX_IPATH]]
 #set PHYSX_LPATH $[unixfilename $[PHYSX_LPATH]]
 #set PHYSX_LIBS $[PHYSX_LIBS]

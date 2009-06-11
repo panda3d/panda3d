@@ -829,6 +829,18 @@
 #define FMODEX_LIBS $[if $[libtest $[FMODEX_LPATH],fmodex64],fmodex64,fmodex]
 #defer HAVE_FMODEX $[libtest $[FMODEX_LPATH],$[FMODEX_LIBS]]
 
+// Info for the OpenAL audio engine
+#define OPENAL_IPATH
+#define OPENAL_LPATH
+#if $[OSX_PLATFORM]
+  #define OPENAL_LIBS
+  #define OPENAL_FRAMEWORK OpenAL
+#else
+  #define OPENAL_LIBS openal
+  #define OPENAL_FRAMEWORK
+#endif
+#defer HAVE_OPENAL $[or $[OPENAL_FRAMEWORK],$[libtest $[OPENAL_LPATH],$[OPENAL_LIBS]]]
+
 // Info for the Ageia PhysX SDK
 #define PHYSX_IPATH
 #define PHYSX_LPATH

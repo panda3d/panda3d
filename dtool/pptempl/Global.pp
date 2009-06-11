@@ -366,6 +366,13 @@
   #define fmodex_libs $[FMODEX_LIBS]
 #endif
 
+#if $[HAVE_OPENAL]
+  #define openal_ipath $[wildcard $[OPENAL_IPATH]]
+  #define openal_lpath $[wildcard $[OPENAL_LPATH]]
+  #define openal_libs $[OPENAL_LIBS]
+  #define openal_framework $[OPENAL_FRAMEWORK]
+#endif
+
 #if $[HAVE_PHYSX]
   #define physx_ipath $[wildcard $[PHYSX_IPATH]]
   #define physx_lpath $[wildcard $[PHYSX_LPATH]]

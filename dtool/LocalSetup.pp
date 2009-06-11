@@ -91,6 +91,11 @@
 #else
 #print - Did not find FMOD Ex sound library
 #endif
+#if $[HAVE_OPENAL]
+#print + OpenAL sound library
+#else
+#print - Did not find OpenAL sound library
+#endif
 #if $[HAVE_PHYSX]
 #print + Ageia PhysX
 #else
@@ -229,6 +234,9 @@ $[cdefine HAVE_RAD_MSS]
 
 /* Define if we have FMODex installed. */
 $[cdefine HAVE_FMODEX]
+
+/* Define if we have OpenAL installed. */
+$[cdefine HAVE_OPENAL]
 
 /* Define if we have Ageia PhysX SDK installed. */
 $[cdefine HAVE_PHYSX]
