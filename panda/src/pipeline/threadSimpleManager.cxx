@@ -474,7 +474,10 @@ system_yield() {
   }
 
 #ifdef WIN32
-  Sleep(0);
+  // 1 ms is the smallest effective time we can request on Windows;
+  // Sleep(0) doesn't seem to actually yield?  Or at least it doesn't
+  // yield enough.
+  Sleep(1);
 
 #else
   // We use select() as the only way that seems to actually yield the
