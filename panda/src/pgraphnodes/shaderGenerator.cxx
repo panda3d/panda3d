@@ -248,6 +248,12 @@ analyze_renderstate(const RenderState *rs) {
     if ((mode == TextureStage::M_gloss)||(mode == TextureStage::M_modulate_gloss)) {
       _map_index_gloss = i;
     }
+    if (mode == TextureStage::M_height) {
+      _map_height_in_alpha = false;
+    }
+    if (mode == TextureStage::M_normal_height) {
+      _map_height_in_alpha = true;
+    }
   }
 
   // Determine whether lighting is needed.
@@ -385,9 +391,10 @@ clear_analysis() {
   _have_specular = false;
   _separate_ambient_diffuse = false;
   _map_index_normal = -1;
-  _map_index_height = -1;
   _map_index_glow = -1;
   _map_index_gloss = -1;
+  _map_index_height = -1;
+  _map_height_in_alpha = false;
   _calc_primary_alpha = false;
   _have_alpha_test = false;
   _have_alpha_blend = false;
@@ -535,10 +542,12 @@ synthesize_shader(const RenderState *rs) {
   char *pos_freg = 0;
   char *normal_vreg = 0;
   char *normal_freg = 0;
-  char *tangent_vreg = 0;
-  char *tangent_freg = 0;
-  char *binormal_vreg = 0;
-  char *binormal_freg = 0;
+  char *ntangent_vreg = 0;
+  char *ntangent_freg = 0;
+  char *nbinormal_vreg = 0;
+  char *nbinormal_freg = 0;
+  char *htangent_vreg = 0;
+  char *hbinormal_vreg = 0;
   pvector<char *> texcoord_vreg;
   pvector<char *> texcoord_freg;
   pvector<char *> tslightvec_freg;
@@ -569,24 +578,41 @@ synthesize_shader(const RenderState *rs) {
     text << "\t out float4 l_worldpos,\n";
     text << "\t uniform float4x4 trans_model_to_world,\n";
   }
+  if (_map_index_height >= 0) {
+    htangent_vreg = alloc_vreg();
+    hbinormal_vreg = alloc_vreg();
+    if (_map_index_normal == _map_index_height) {
+      ntangent_vreg = htangent_vreg;
+      nbinormal_vreg = hbinormal_vreg;
+    }
+    text << "\t in float4 vtx_tangent" << _map_index_height << " : " << htangent_vreg << ",\n";
+    text << "\t in float4 vtx_binormal" << _map_index_height << " : " << hbinormal_vreg << ",\n";
+    text << "\t uniform float4 mspos_view,\n";
+    text << "\t out float3 l_eyevec,\n";
+  }
+  if (_map_index_height >= 0 || _lighting) {
+    normal_vreg = alloc_vreg();
+    text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
+  }
   if (_lighting) {
     pos_freg = alloc_freg();
-    normal_vreg = alloc_vreg();
     normal_freg = alloc_freg();
     text << "\t uniform float4x4 trans_model_to_view,\n";
     text << "\t uniform float4x4 tpose_view_to_model,\n";
-    text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
     text << "\t out float4 l_normal : " << normal_freg << ",\n";
     text << "\t out float4 l_pos : " << pos_freg << ",\n";
     if (_map_index_normal >= 0) {
-      tangent_vreg = alloc_vreg();
-      tangent_freg = alloc_freg();
-      binormal_vreg = alloc_vreg();
-      binormal_freg = alloc_freg();
-      text << "\t in float4 vtx_tangent" << _map_index_normal << " : " << tangent_vreg << ",\n";
-      text << "\t in float4 vtx_binormal" << _map_index_normal << " : " << binormal_vreg << ",\n";
-      text << "\t out float4 l_tangent : " << tangent_freg << ",\n";
-      text << "\t out float4 l_binormal : " << binormal_freg << ",\n";
+      // If we had a height map and it used the same stage, that means we already have those inputs.
+      if (_map_index_normal != _map_index_height) {
+        ntangent_vreg = alloc_vreg();
+        nbinormal_vreg = alloc_vreg();
+        text << "\t in float4 vtx_tangent" << _map_index_normal << " : " << ntangent_vreg << ",\n";
+        text << "\t in float4 vtx_binormal" << _map_index_normal << " : " << nbinormal_vreg << ",\n";
+      }
+      ntangent_freg = alloc_freg();
+      nbinormal_freg = alloc_freg();
+      text << "\t out float4 l_tangent : " << ntangent_freg << ",\n";
+      text << "\t out float4 l_binormal : " << nbinormal_freg << ",\n";
     }
     if (_shadows) {
       for (int i=0; i<(int)_dlights.size(); i++) {
@@ -653,6 +679,13 @@ synthesize_shader(const RenderState *rs) {
       }
     }
   }
+  if (_map_index_height >= 0) {
+    text << "\t float3 eyedir = mspos_view.xyz - vtx_position.xyz;\n";
+    text << "\t l_eyevec.x = dot(vtx_tangent" << _map_index_height << ".xyz, eyedir);\n";
+    text << "\t l_eyevec.y = dot(vtx_binormal" << _map_index_height << ".xyz, eyedir);\n";
+    text << "\t l_eyevec.z = dot(vtx_normal.xyz, eyedir);\n";
+    text << "\t l_eyevec = normalize(l_eyevec);\n";
+  }
   text << "}\n\n";
 
   text << "void fshader(\n";
@@ -667,8 +700,8 @@ synthesize_shader(const RenderState *rs) {
     text << "\t in float3 l_normal : " << normal_freg << ",\n";
   }
   if (_lighting && (_map_index_normal >= 0)) {
-    text << "\t in float3 l_tangent : " << tangent_freg << ",\n";
-    text << "\t in float3 l_binormal : " << binormal_freg << ",\n";
+    text << "\t in float3 l_tangent : " << ntangent_freg << ",\n";
+    text << "\t in float3 l_binormal : " << nbinormal_freg << ",\n";
   }
   if (_lighting) {
     text << "\t in float4 l_pos : " << pos_freg << ",\n";
@@ -715,6 +748,9 @@ synthesize_shader(const RenderState *rs) {
       }
     }
   }
+  if (_map_index_height >= 0) {
+    text << "\t float3 l_eyevec,\n";
+  }
   if (_out_aux_any) {
     text << "\t out float4 o_aux : COLOR1,\n";
   }
@@ -741,8 +777,26 @@ synthesize_shader(const RenderState *rs) {
     text << "\t o_aux = float4(0,0,0,0);\n";
   }
   text << "\t // Fetch all textures.\n";
+  if (_map_index_height >= 0) {
+    text << "\t float4 tex" << _map_index_height << " = tex2D(tex_" << _map_index_height << ", float2(l_texcoord" << _map_index_height << "));\n";
+    text << "\t float2 parallax_offset = l_eyevec.xy * (tex" << _map_index_height;
+    if (_map_height_in_alpha) {
+      text << ".aa";
+    } else {
+      text << ".rg";
+    }
+    text << " * 0.2 - 0.1);\n";
+  }
   for (int i=0; i<_num_textures; i++) {
-    text << "\t float4 tex" << i << " = tex2D(tex_" << i << ", float2(l_texcoord" << i << "));\n";
+    if (i != _map_index_height) {
+      // Parallax mapping pushes the texture coordinates of the other textures away from the camera.
+      // The normal map coordinates aren't pushed (since that would give inconsistent behaviour when
+      // the height map is packed with the normal map together).
+      if (_map_index_height >= 0 && i != _map_index_normal) {
+        text << "\t l_texcoord" << i << ".xy += parallax_offset;\n";
+      }
+      text << "\t float4 tex" << i << " = tex2D(tex_" << i << ", float2(l_texcoord" << i << "));\n";
+    }
   }
   if (_lighting) {
     if (_map_index_normal >= 0) {

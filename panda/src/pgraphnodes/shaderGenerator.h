@@ -119,6 +119,7 @@ protected:
   int _map_index_height;
   int _map_index_glow;
   int _map_index_gloss;
+  bool _map_height_in_alpha;
 
   bool _out_primary_glow;
   bool _out_aux_normal;
