@@ -79,11 +79,11 @@ create_instance(P3D_request_ready_func *func,
                 int win_x, int win_y,
                 int win_width, int win_height,
                 P3D_window_handle parent_window,
-                const P3D_token *tokens[], size_t tokens_size) {
+                const P3D_token tokens[], size_t num_tokens) {
   P3DInstance *inst = new P3DInstance(func, p3d_filename, 
                                       window_type, win_x, win_y,
                                       win_width, win_height, parent_window,
-                                      tokens, tokens_size);
+                                      tokens, num_tokens);
   _instances.insert(inst);
 
   P3DSession *session;

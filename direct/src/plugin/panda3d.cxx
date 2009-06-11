@@ -326,6 +326,11 @@ usage() {
     << "    run.  Normally, this will be found by searching in the usual\n"
     << "    places.\n\n"
 
+    << "  -l output.log\n"
+    << "    Specify the name of the file to receive the log output of the\n"
+    << "    plugin process(es).  The default is to send this output to the\n"
+    << "    console.\n\n"
+
     << "  -t [toplevel|embedded|fullscreen|hidden]\n"
     << "    Specify the type of graphic window to create.  If you specify "
     << "    \"embedded\", a new window is created to be the parent.\n\n"
@@ -355,11 +360,24 @@ parse_int_pair(char *arg, int &x, int &y) {
 
 int
 main(int argc, char *argv[]) {
+/*
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+  char *targv[] = {
+    "panda3d",
+    "-tembedded",
+    "c:/cygwin/home/drose/ralph.p3d",
+    NULL,
+  };
+  char **argv = targv;
+  int argc = 3;
+*/
+
   extern char *optarg;
   extern int optind;
-  const char *optstr = "p:t:s:o:h";
+  const char *optstr = "p:l:t:s:o:h";
 
   string p3d_plugin_filename;
+  string output_filename;
   P3D_window_type window_type = P3D_WT_toplevel;
   int win_x = 0, win_y = 0;
   int win_width = 0, win_height = 0;
@@ -370,6 +388,10 @@ main(int argc, char *argv[]) {
     switch (flag) {
     case 'p':
       p3d_plugin_filename = optarg;
+      break;
+
+    case 'l':
+      output_filename = optarg;
       break;
 
     case 't':
@@ -425,6 +447,11 @@ main(int argc, char *argv[]) {
 
   int num_instances = argc - 1;
 
+  P3D_token tokens[] = {
+    { "output_filename", output_filename.c_str() },
+  };
+  int num_tokens = sizeof(tokens) / sizeof(P3D_token);
+
   P3D_window_handle parent_window;
   if (window_type == P3D_WT_embedded) {
     // The user asked for an embedded window.  Create a toplevel
@@ -468,7 +495,7 @@ main(int argc, char *argv[]) {
         P3D_instance *inst = P3D_create_instance
           (NULL, argv[i + 1], 
            P3D_WT_embedded, inst_x, inst_y, inst_width, inst_height, parent_window,
-           NULL, 0);
+           tokens, num_tokens);
         _instances.insert(inst);
       }
     }
@@ -479,7 +506,7 @@ main(int argc, char *argv[]) {
       P3D_instance *inst = P3D_create_instance
         (NULL, argv[i + 1], 
          window_type, win_x, win_y, win_width, win_height, parent_window,
-         NULL, 0);
+         tokens, num_tokens);
       _instances.insert(inst);
     }
   }

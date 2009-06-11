@@ -31,7 +31,7 @@ P3DInstance(P3D_request_ready_func *func,
             int win_x, int win_y,
             int win_width, int win_height,
             P3D_window_handle parent_window,
-            const P3D_token *tokens[], size_t tokens_size) :
+            const P3D_token tokens[], size_t num_tokens) :
   _func(func),
   _p3d_filename(p3d_filename),
   _window_type(window_type),
@@ -39,6 +39,8 @@ P3DInstance(P3D_request_ready_func *func,
   _win_width(win_width), _win_height(win_height),
   _parent_window(parent_window)
 {
+  fill_tokens(tokens, num_tokens);
+
   _instance_id = _next_instance_id;
   ++_next_instance_id;
 
@@ -197,6 +199,25 @@ feed_url_stream(int unique_id,
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::lookup_token
+//       Access: Public
+//  Description: Returns the value associated with the first
+//               appearance of the named token, or empty string if the
+//               token does not appear.
+////////////////////////////////////////////////////////////////////
+string P3DInstance::
+lookup_token(const string &keyword) const {
+  Tokens::const_iterator ti;
+  for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {
+    if ((*ti)._keyword == keyword) {
+      return (*ti)._value;
+    }
+  }
+
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::make_xml
 //       Access: Public
 //  Description: Returns a newly-allocated XML structure that
@@ -249,14 +270,14 @@ make_xml() {
 //               C++-style _tokens vector.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-fill_tokens(const P3D_token *tokens[], size_t tokens_size) {
-  for (size_t i = 0; i < tokens_size; ++i) {
+fill_tokens(const P3D_token tokens[], size_t num_tokens) {
+  for (size_t i = 0; i < num_tokens; ++i) {
     Token token;
-    if (tokens[i]->_keyword != NULL) {
-      token._keyword = tokens[i]->_keyword;
+    if (tokens[i]._keyword != NULL) {
+      token._keyword = tokens[i]._keyword;
     }
-    if (tokens[i]->_value != NULL) {
-      token._value = tokens[i]->_value;
+    if (tokens[i]._value != NULL) {
+      token._value = tokens[i]._value;
     }
     _tokens.push_back(token);
   }

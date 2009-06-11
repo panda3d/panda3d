@@ -43,7 +43,7 @@ public:
                   int win_x, int win_y,
                   int win_width, int win_height,
                   P3D_window_handle parent_window,
-                  const P3D_token *tokens[], size_t tokens_size);
+                  const P3D_token tokens[], size_t num_tokens);
 
   void
   finish_instance(P3DInstance *inst);

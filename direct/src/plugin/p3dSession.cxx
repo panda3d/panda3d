@@ -92,6 +92,24 @@ P3DSession(P3DInstance *inst) {
     SetHandleInformation(r_from, HANDLE_FLAG_INHERIT, 0);
   }
 
+  HANDLE error_handle = GetStdHandle(STD_ERROR_HANDLE);
+  string output_filename = inst->lookup_token("output_filename");
+  bool got_output_filename = !output_filename.empty();
+  if (got_output_filename) {
+    // Open the named file for output and redirect the child's stderr
+    // into it.
+    HANDLE handle = CreateFile
+      (output_filename.c_str(), GENERIC_WRITE, 
+       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+       NULL, CREATE_ALWAYS, 0, NULL);
+    if (handle != INVALID_HANDLE_VALUE) {
+      error_handle = handle;
+      SetHandleInformation(error_hanlesdle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+    } else {
+      cerr << "Unable to open " << output_filename << "\n";
+    }
+  }
+
   // Make sure we see an error dialog if there is a missing DLL.
   SetErrorMode(0);
 
@@ -100,10 +118,14 @@ P3DSession(P3DInstance *inst) {
   STARTUPINFO startup_info;
   ZeroMemory(&startup_info, sizeof(STARTUPINFO));
   startup_info.cb = sizeof(startup_info); 
-  startup_info.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+  startup_info.hStdError = error_handle;
   startup_info.hStdOutput = w_from;
   startup_info.hStdInput = r_to;
   startup_info.dwFlags |= STARTF_USESTDHANDLES;
+
+  // Make sure the "python" console window is hidden.
+  startup_info.wShowWindow = SW_HIDE;
+  startup_info.dwFlags |= STARTF_USESHOWWINDOW;
  
   BOOL result = CreateProcess
     (p3dpython.c_str(), NULL, NULL, NULL, TRUE, 0,
@@ -120,6 +142,9 @@ P3DSession(P3DInstance *inst) {
   // Close the pipe handles that are now owned by the child.
   CloseHandle(w_from);
   CloseHandle(r_to);
+  if (got_output_filename) {
+    CloseHandle(error_handle);
+  }
 
   _pipe_read.open_read(r_from);
   _pipe_write.open_write(w_to);

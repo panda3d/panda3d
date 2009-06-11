@@ -29,6 +29,7 @@ P3D_initialize() {
     initialized_lock = true;
   }
   ACQUIRE_LOCK(_lock);
+
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   bool result = inst_mgr->initialize();
   RELEASE_LOCK(_lock);
@@ -49,13 +50,13 @@ P3D_create_instance(P3D_request_ready_func *func,
                     int win_x, int win_y,
                     int win_width, int win_height,
                     P3D_window_handle parent_window,
-                    const P3D_token *tokens[], size_t tokens_size) {
+                    const P3D_token tokens[], size_t num_tokens) {
   ACQUIRE_LOCK(_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3DInstance *result = 
     inst_mgr->create_instance(func, p3d_filename, window_type, 
                               win_x, win_y, win_width, win_height,
-                              parent_window, tokens, tokens_size);
+                              parent_window, tokens, num_tokens);
   RELEASE_LOCK(_lock);
   return result;
 }

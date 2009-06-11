@@ -174,8 +174,8 @@ P3D_request_ready_func(P3D_instance *instance);
    additional keywords that may appear within this syntax; it is up to
    the plugin to interpret these additional keywords correctly. */
 typedef struct {
-  char *_keyword;
-  char *_value;
+  const char *_keyword;
+  const char *_value;
 } P3D_token;
 
 /* This function creates a new Panda3D instance.  For p3d_filename
@@ -185,7 +185,19 @@ typedef struct {
    the user-supplied keyword/value pairs that may appear in the embed
    token within the HTML syntax; the host is responsible for
    allocating this array, and for deallocating it after this call (the
-   plugin will make its own copy of the array). */
+   plugin will make its own copy of the array).
+
+   Most tokens are implemented by the application and are undefined at
+   the system level.  However, one token in particular is
+   system-defined:
+
+     "output_filename" : names a file to create on disk which contains
+       the console output from the application.  This may be useful in
+       debugging.  If this is omitted, or an empty string, the console
+       output is written to the standard error output, which may be
+       NULL on a gui application.
+
+ */
 
 typedef P3D_instance *
 P3D_create_instance_func(P3D_request_ready_func *func,
@@ -194,7 +206,7 @@ P3D_create_instance_func(P3D_request_ready_func *func,
                          int win_x, int win_y,
                          int win_width, int win_height,
                          P3D_window_handle parent_window,
-                         const P3D_token *tokens[], size_t tokens_size);
+                         const P3D_token tokens[], size_t num_tokens);
 
 
 /* Call this function to interrupt a particular instance and stop it

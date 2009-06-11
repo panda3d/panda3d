@@ -36,7 +36,7 @@ public:
               int win_x, int win_y,
               int win_width, int win_height,
               P3D_window_handle parent_window,
-              const P3D_token *tokens[], size_t tokens_size);
+              const P3D_token tokens[], size_t num_tokens);
   ~P3DInstance();
 
   bool has_property(const string &property_name) const;
@@ -59,11 +59,12 @@ public:
   inline int get_instance_id() const;
   inline const string &get_session_key() const;
   inline const string &get_python_version() const;
+  string lookup_token(const string &keyword) const;
 
   TiXmlElement *make_xml();
 
 private:
-  void fill_tokens(const P3D_token *tokens[], size_t tokens_size);
+  void fill_tokens(const P3D_token tokens[], size_t num_tokens);
 
   class Token {
   public:
