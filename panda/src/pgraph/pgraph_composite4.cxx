@@ -5,7 +5,6 @@
 #include "renderModeAttrib.cxx"
 #include "renderState.cxx"
 #include "rescaleNormalAttrib.cxx"
-#include "sceneGraphAnalyzer.cxx"
 #include "sceneGraphReducer.cxx"
 #include "scissorAttrib.cxx"
 #include "scissorEffect.cxx"

@@ -27,6 +27,7 @@
 #include "mouseRecorder.h"
 #include "throw_event.h"
 #include "executionEnvironment.h"
+#include "sceneGraphAnalyzer.h"
 
 LoaderOptions PandaFramework::_loader_options;
 
@@ -1199,7 +1200,9 @@ event_A(const Event *, void *data) {
     node = self->get_models();
   }
 
-  node.analyze();
+  SceneGraphAnalyzer sga;
+  sga.add_node(node.node());
+  sga.write(nout);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -23,7 +23,7 @@
 //       Class : FadeLODNode
 // Description : A Level-of-Detail node with alpha based switching.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH FadeLODNode : public LODNode {
+class EXPCL_PANDA_PGRAPHNODES FadeLODNode : public LODNode {
 PUBLISHED:
   FadeLODNode(const string &name);
 

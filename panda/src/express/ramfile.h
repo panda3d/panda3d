@@ -34,6 +34,8 @@ PUBLISHED:
   string readline();
 
   INLINE const string &get_data() const;
+  INLINE size_t get_data_size() const;
+  INLINE void clear();
 
 public:
   size_t _pos;

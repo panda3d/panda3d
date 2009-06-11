@@ -329,7 +329,7 @@ get_connect_timeout() const {
 //               false, a socket connect will not block for
 //               nonblocking I/O calls, but will block for blocking
 //               I/O calls (get_document(), connect_to(), etc.).
-
+//
 //               Setting this true is useful when you want to use
 //               non-blocking I/O once you have established the
 //               connection, but you don't want to bother with polling

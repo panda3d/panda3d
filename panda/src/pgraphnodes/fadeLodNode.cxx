@@ -21,6 +21,7 @@
 #include "depthWriteAttrib.h"
 #include "transparencyAttrib.h"
 #include "cullBinAttrib.h"
+#include "depthOffsetAttrib.h"
 
 TypeHandle FadeLODNode::_type_handle;
 

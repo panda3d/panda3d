@@ -222,6 +222,12 @@ write_status(ostream &out) {
 //               joinable should be set true if you intend to call
 //               join() to wait for the thread to terminate, or false
 //               if you don't care and you will never call join().
+//               Note that the reference count on the Thread object is
+//               incremented while the thread itself is running, so if
+//               you just want to fire and forget a thread, you may
+//               pass joinable = false, and never store the Thread
+//               object.  It will automatically destruct itself when
+//               it finishes.
 //
 //               The return value is true if the thread is
 //               successfully started, false otherwise.

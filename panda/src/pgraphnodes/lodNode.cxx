@@ -16,7 +16,7 @@
 #include "fadeLodNode.h"
 #include "cullTraverserData.h"
 #include "cullTraverser.h"
-#include "config_pgraph.h"
+#include "config_pgraphnodes.h"
 #include "geomVertexData.h"
 #include "geomVertexWriter.h"
 #include "geomVertexFormat.h"

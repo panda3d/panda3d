@@ -16,11 +16,15 @@
 #define CONFIG_PGRAPHNODES_H
 
 #include "pandabase.h"
+#include "lodNodeType.h"
+#include "configVariableEnum.h"
 
 class DSearchPath;
 
 ConfigureDecl(config_pgraphnodes, EXPCL_PANDA_PGRAPHNODES, EXPTP_PANDA_PGRAPHNODES);
 NotifyCategoryDecl(pgraphnodes, EXPCL_PANDA_PGRAPHNODES, EXPTP_PANDA_PGRAPHNODES);
+
+extern ConfigVariableEnum<LODNodeType> default_lod_type;
 
 extern EXPCL_PANDA_PGRAPHNODES void init_libpgraphnodes();
 

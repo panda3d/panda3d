@@ -821,7 +821,7 @@ PUBLISHED:
   bool calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
                          Thread *current_thread = Thread::get_current_thread()) const;
 
-  void analyze() const;
+  //  void analyze() const;
 
   int flatten_light();
   int flatten_medium();

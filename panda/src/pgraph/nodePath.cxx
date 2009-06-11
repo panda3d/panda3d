@@ -52,7 +52,6 @@
 #include "plist.h"
 #include "boundingSphere.h"
 #include "geomNode.h"
-#include "sceneGraphAnalyzer.h"
 #include "sceneGraphReducer.h"
 #include "textureCollection.h"
 #include "textureStageCollection.h"
@@ -6056,6 +6055,13 @@ calc_tight_bounds(LPoint3f &min_point, LPoint3f &max_point,
   return found_any;
 }
 
+/*
+
+NB: Had to remove this function to avoid circular dependency when
+moving SceneGraphAnalyzer into pgraphnodes, attempting to reduce size
+of pgraph.  This function is now defined as a Python extension
+function instead.
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::analyze
 //       Access: Published
@@ -6089,6 +6095,7 @@ analyze() const {
     sga.write(nout);
   }
 }
+*/
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NodePath::flatten_light

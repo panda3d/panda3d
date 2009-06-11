@@ -1,5 +1,8 @@
+#include "lodNode.cxx"
+#include "lodNodeType.cxx"
 #include "nodeCullCallbackData.cxx"
 #include "pointLight.cxx"
+#include "sceneGraphAnalyzer.cxx"
 #include "selectiveChildNode.cxx"
 #include "sequenceNode.cxx"
 #include "shaderGenerator.cxx"

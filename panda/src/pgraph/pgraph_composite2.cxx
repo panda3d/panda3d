@@ -14,8 +14,6 @@
 #include "depthWriteAttrib.cxx"
 #include "alphaTestAttrib.cxx"
 #include "eventStorePandaNode.cxx"
-#include "fadeLodNode.cxx"
-#include "fadeLodNodeData.cxx"
 #include "findApproxPath.cxx"
 #include "findApproxLevelEntry.cxx"
 #include "fog.cxx"

@@ -55,3 +55,23 @@ INLINE const string &Ramfile::
 get_data() const {
   return _data;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Ramfile::get_data_size
+//       Access: Published
+//  Description: Returns the size of the entire buffer contents.
+////////////////////////////////////////////////////////////////////
+INLINE size_t Ramfile::
+get_data_size() const {
+  return _data.size();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Ramfile::clear
+//       Access: Published
+//  Description: Empties the current buffer contents.
+////////////////////////////////////////////////////////////////////
+INLINE void Ramfile::
+clear() {
+  _data.clear();
+}

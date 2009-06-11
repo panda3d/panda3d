@@ -16,10 +16,13 @@
     callbackNode.h callbackNode.I \
     config_pgraphnodes.h \
     directionalLight.h directionalLight.I \
+    fadeLodNode.I fadeLodNode.h fadeLodNodeData.h \
     lightLensNode.h lightLensNode.I \
     lightNode.h lightNode.I \
+    lodNode.I lodNode.h lodNodeType.h \
     nodeCullCallbackData.h nodeCullCallbackData.I \
     pointLight.h pointLight.I \
+    sceneGraphAnalyzer.h sceneGraphAnalyzer.I \
     selectiveChildNode.h selectiveChildNode.I \
     sequenceNode.h sequenceNode.I \
     shaderGenerator.h shaderGenerator.I \
@@ -31,10 +34,13 @@
     callbackNode.cxx \
     config_pgraphnodes.cxx \
     directionalLight.cxx \
+    fadeLodNode.cxx fadeLodNodeData.cxx \
     lightLensNode.cxx \
     lightNode.cxx \
+    lodNode.cxx lodNodeType.cxx \
     nodeCullCallbackData.cxx \
     pointLight.cxx \
+    sceneGraphAnalyzer.cxx \
     selectiveChildNode.cxx \
     sequenceNode.cxx \
     shaderGenerator.cxx \
@@ -46,10 +52,13 @@
     callbackNode.h callbackNode.I \
     config_pgraphnodes.h \
     directionalLight.h directionalLight.I \
+    fadeLodNode.I fadeLodNode.h fadeLodNodeData.h \
     lightLensNode.h lightLensNode.I \
     lightNode.h lightNode.I \
+    lodNode.I lodNode.h lodNodeType.h \
     nodeCullCallbackData.h nodeCullCallbackData.I \
     pointLight.h pointLight.I \
+    sceneGraphAnalyzer.h sceneGraphAnalyzer.I \
     selectiveChildNode.h selectiveChildNode.I \
     sequenceNode.h sequenceNode.I \
     shaderGenerator.h shaderGenerator.I \

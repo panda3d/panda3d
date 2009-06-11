@@ -19,8 +19,11 @@
 #include "callbackNode.h"
 #include "callbackObject.h"
 #include "directionalLight.h"
+#include "fadeLodNode.h"
+#include "fadeLodNodeData.h"
 #include "lightLensNode.h"
 #include "lightNode.h"
+#include "lodNode.h"
 #include "nodeCullCallbackData.h"
 #include "pointLight.h"
 #include "selectiveChildNode.h"
@@ -37,6 +40,11 @@ NotifyCategoryDef(pgraphnodes, "");
 ConfigureFn(config_pgraphnodes) {
   init_libpgraphnodes();
 }
+
+ConfigVariableEnum<LODNodeType> default_lod_type
+("default-lod-type", LNT_pop,
+ PRC_DESC("Set this to either 'pop' or 'fade' to determine the type of "
+          "LODNode that is created by LODNode::make_default_lod()."));
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libpgraphnodes
@@ -59,8 +67,11 @@ init_libpgraphnodes() {
   CallbackNode::init_type();
   CallbackObject::init_type();
   DirectionalLight::init_type();
+  FadeLODNode::init_type();
+  FadeLODNodeData::init_type();
   LightLensNode::init_type();
   LightNode::init_type();
+  LODNode::init_type();
   NodeCullCallbackData::init_type();
   PointLight::init_type();
   SelectiveChildNode::init_type();
@@ -72,8 +83,10 @@ init_libpgraphnodes() {
   AmbientLight::register_with_read_factory();
   CallbackNode::register_with_read_factory();
   DirectionalLight::register_with_read_factory();
+  FadeLODNode::register_with_read_factory();
   LightLensNode::register_with_read_factory();
   LightNode::register_with_read_factory();
+  LODNode::register_with_read_factory();
   PointLight::register_with_read_factory();
   SelectiveChildNode::register_with_read_factory();
   SequenceNode::register_with_read_factory();

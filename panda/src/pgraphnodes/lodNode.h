@@ -28,7 +28,7 @@
 //               from the camera and the table indicated in the
 //               associated LOD object.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH LODNode : public PandaNode {
+class EXPCL_PANDA_PGRAPHNODES LODNode : public PandaNode {
 PUBLISHED:
   INLINE LODNode(const string &name);
 

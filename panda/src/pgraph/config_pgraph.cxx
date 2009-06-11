@@ -38,8 +38,6 @@
 #include "depthWriteAttrib.h"
 #include "eventStorePandaNode.h"
 #include "findApproxLevelEntry.h"
-#include "fadeLodNode.h"
-#include "fadeLodNodeData.h"
 #include "fog.h"
 #include "fogAttrib.h"
 #include "geomDrawCallbackData.h"
@@ -53,7 +51,6 @@
 #include "loaderFileType.h"
 #include "loaderFileTypeBam.h"
 #include "loaderFileTypeRegistry.h"
-#include "lodNode.h"
 #include "materialAttrib.h"
 #include "modelFlattenRequest.h"
 #include "modelLoadRequest.h"
@@ -382,11 +379,6 @@ ConfigVariableString default_model_extension
           "Panda's loader; new code should probably give the correct name "
           "for each model file they intend to load."));
 
-ConfigVariableEnum<LODNodeType> default_lod_type
-("default-lod-type", LNT_pop,
- PRC_DESC("Set this to either 'pop' or 'fade' to determine the type of "
-          "LODNode that is created by LODNode::make_default_lod()."));
-
 ConfigVariableBool allow_live_flatten
 ("allow-live-flatten", true,
  PRC_DESC("Set this true to allow the use of flatten_strong() or any "
@@ -435,8 +427,6 @@ init_libpgraph() {
   DepthTestAttrib::init_type();
   DepthWriteAttrib::init_type();
   EventStorePandaNode::init_type();
-  FadeLODNode::init_type();
-  FadeLODNodeData::init_type();
   FindApproxLevelEntry::init_type();
   Fog::init_type();
   FogAttrib::init_type();
@@ -448,7 +438,6 @@ init_libpgraph() {
   LightAttrib::init_type();
   LightRampAttrib::init_type();
   Loader::init_type();
-  LODNode::init_type();
   LoaderFileType::init_type();
   LoaderFileTypeBam::init_type();
   MaterialAttrib::init_type();
@@ -512,14 +501,12 @@ init_libpgraph() {
   DepthOffsetAttrib::register_with_read_factory();
   DepthTestAttrib::register_with_read_factory();
   DepthWriteAttrib::register_with_read_factory();
-  FadeLODNode::register_with_read_factory();
   Fog::register_with_read_factory();
   FogAttrib::register_with_read_factory();
   GeomNode::register_with_read_factory();
   LensNode::register_with_read_factory();
   LightAttrib::register_with_read_factory();
   LightRampAttrib::register_with_read_factory();
-  LODNode::register_with_read_factory();
   MaterialAttrib::register_with_read_factory();
   ModelNode::register_with_read_factory();
   ModelRoot::register_with_read_factory();

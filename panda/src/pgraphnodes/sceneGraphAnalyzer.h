@@ -36,7 +36,7 @@ class Texture;
 // Description : A handy class that can scrub over a scene graph and
 //               collect interesting statistics on it.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH SceneGraphAnalyzer {
+class EXPCL_PANDA_PGRAPHNODES SceneGraphAnalyzer {
 PUBLISHED:
   SceneGraphAnalyzer();
   ~SceneGraphAnalyzer();

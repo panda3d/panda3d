@@ -22,7 +22,6 @@
 #include "configVariableInt.h"
 #include "configVariableDouble.h"
 #include "configVariableList.h"
-#include "lodNodeType.h"
 
 class DSearchPath;
 
@@ -77,7 +76,6 @@ extern ConfigVariableBool m_dual_flash;
 extern ConfigVariableList load_file_type;
 extern ConfigVariableString default_model_extension;
 
-extern ConfigVariableEnum<LODNodeType> default_lod_type;
 extern ConfigVariableBool allow_live_flatten;
 
 extern EXPCL_PANDA_PGRAPH void init_libpgraph();

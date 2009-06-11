@@ -24,7 +24,7 @@
 // Description : This is the data that is associated with a particular
 //               instance of the FadeLODNode for the scene graph.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH FadeLODNodeData : public AuxSceneData {
+class EXPCL_PANDA_PGRAPHNODES FadeLODNodeData : public AuxSceneData {
 public:
   enum FadeMode {
     FM_solid,
