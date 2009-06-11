@@ -216,6 +216,10 @@ sleep_this(double seconds) {
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleImpl::
 yield_this(bool volunteer) {
+  if (thread_cat->is_debug() && volunteer) {
+    thread_cat.debug() 
+      << "Force-yielding " << _parent_obj->get_name() << "\n";
+  }
   _manager->enqueue_ready(this, true);
   _manager->next_context();
 }

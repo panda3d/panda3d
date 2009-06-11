@@ -468,14 +468,22 @@ write_status(ostream &out) const {
 ////////////////////////////////////////////////////////////////////
 void ThreadSimpleManager::
 system_yield() {
+  if (thread_cat->is_debug()) {
+    thread_cat.debug()
+      << "system_yield\n";
+  }
+
 #ifdef WIN32
   Sleep(0);
 
 #else
-  struct timespec rqtp;
-  rqtp.tv_sec = 0;
-  rqtp.tv_nsec = 0;
-  nanosleep(&rqtp, NULL);
+  // We use select() as the only way that seems to actually yield the
+  // timeslice.  sleep() and nanosleep() don't appear to do the trick.
+  struct timeval tv;
+  tv.tv_sec = 0;
+  tv.tv_usec = 1;
+  select(0, NULL, NULL, NULL, &tv);
+
 #endif  // WIN32
 }
 
