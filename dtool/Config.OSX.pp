@@ -269,7 +269,7 @@
 #define HAVE_SYS_SOUNDCARD_H 1
 
 // Do we have <ucontext.h> (and therefore makecontext() / swapcontext())?
-#define HAVE_UCONTEXT_H
+#define HAVE_UCONTEXT_H 1
 
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
