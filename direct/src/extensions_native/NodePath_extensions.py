@@ -1474,3 +1474,30 @@ Dtool_funcToMethod(r_constructCollisionTree, NodePath)
 del subdivideCollisions
 del r_subdivideCollisions
 del r_constructCollisionTree
+
+#####################################################################
+def analyze(self):
+        from pandac.PandaModules import SceneGraphAnalyzer
+        sga = SceneGraphAnalyzer()
+        sga.addNode(self.node())
+        if sga.getNumLodNodes() == 0:
+                print sga
+        else:
+                print "At highest LOD:"
+                sga2 = SceneGraphAnalyzer()
+                sga2.setLodMode(sga2.LMHighest)
+                sga2.addNode(self.node())
+                print sga2
+
+                print "\nAt lowest LOD:"
+                sga2.clear()
+                sga2.setLodMode(sga2.LMLowest)
+                sga2.addNode(self.node())
+                print sga2
+
+                print "\nAll nodes:"
+                print sga
+
+Dtool_funcToMethod(analyze, NodePath)
+del analyze
+#####################################################################
