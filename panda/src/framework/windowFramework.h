@@ -24,6 +24,7 @@
 #include "trackball.h"
 #include "filename.h"
 #include "frameRateMeter.h"
+#include "sceneGraphAnalyzerMeter.h"
 #include "pointerTo.h"
 #include "partGroup.h"
 #include "pvector.h"
@@ -197,6 +198,7 @@ private:
   bool _perpixel_enabled;
 
   PT(FrameRateMeter) _frame_rate_meter;
+  PT(SceneGraphAnalyzerMeter) _scene_graph_analyzer_meter;
 
   BackgroundType _background_type;
   

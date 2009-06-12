@@ -184,6 +184,10 @@ open_window(const WindowProperties &props, int flags, GraphicsEngine *engine,
       _frame_rate_meter = new FrameRateMeter("frame_rate_meter");
       _frame_rate_meter->setup_window(_window);
     }
+    if (show_scene_graph_analyzer_meter) {
+      _scene_graph_analyzer_meter = new SceneGraphAnalyzerMeter("scene_graph_analyzer_meter", get_render().node());
+      _scene_graph_analyzer_meter->setup_window(_window);
+    }
   }
 
   return _window;
@@ -219,6 +223,10 @@ close_window() {
   if (_frame_rate_meter != (FrameRateMeter *)NULL) {
     _frame_rate_meter->clear_window();
     _frame_rate_meter = (FrameRateMeter *)NULL;
+  }
+  if (_scene_graph_analyzer_meter != (SceneGraphAnalyzerMeter *)NULL) {
+    _scene_graph_analyzer_meter->clear_window();
+    _scene_graph_analyzer_meter = (SceneGraphAnalyzerMeter *)NULL;
   }
 }
 

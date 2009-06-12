@@ -27,6 +27,7 @@ NotifyCategoryDecl(framework, EXPCL_FRAMEWORK, EXPTP_FRAMEWORK);
 // Configure variables for framework package.
 extern ConfigVariableDouble aspect_ratio;
 extern ConfigVariableBool show_frame_rate_meter;
+extern ConfigVariableBool show_scene_graph_analyzer_meter;
 
 extern ConfigVariableString record_session;
 extern ConfigVariableString playback_session;

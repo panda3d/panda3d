@@ -30,6 +30,8 @@ ConfigVariableDouble aspect_ratio
 ("aspect-ratio", 0.0);
 ConfigVariableBool show_frame_rate_meter
 ("show-frame-rate-meter", false);
+ConfigVariableBool show_scene_graph_analyzer_meter
+("show-scene-graph-analyzer-meter", false);
 ConfigVariableString window_type
 ("window-type", "onscreen");
 
