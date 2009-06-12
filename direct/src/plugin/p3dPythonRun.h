@@ -114,7 +114,7 @@ private:
 #ifdef _WIN32
   HANDLE _read_thread;
 #else
-  pthread_t _thread;
+  pthread_t _read_thread;
 #endif
 };
 

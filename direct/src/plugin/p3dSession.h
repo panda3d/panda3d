@@ -59,6 +59,20 @@ private:
 
 #ifdef _WIN32
   static DWORD WINAPI win_rt_thread_run(LPVOID data);
+#else
+  static void *posix_rt_thread_run(void *data);
+#endif
+
+#ifdef _WIN32
+  static bool 
+  create_process(const string &program, const string &start_dir,
+                 const string &env, const string &output_filename,
+                 HandleStream &pipe_read, HandleStream &pipe_write);
+#else
+  static bool 
+  create_process(const string &program, const string &start_dir,
+                 const string &env, const string &output_filename,
+                 HandleStream &pipe_read, HandleStream &pipe_write);
 #endif
 
 private:
@@ -99,6 +113,8 @@ private:
   bool _read_thread_continue;
 #ifdef _WIN32
   HANDLE _read_thread;
+#else
+  pthread_t _read_thread;
 #endif
 };
 

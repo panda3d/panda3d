@@ -24,6 +24,8 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <dlfcn.h>
 #endif
 
 #include "httpClient.h"
@@ -39,6 +41,14 @@
   #ifdef HAVE_GETOPT_H
     #include <getopt.h>
   #endif
+#endif
+
+#ifdef _WIN32
+static const string dll_ext = ".dll";
+#elif defined(__APPLE__)
+static const string dll_ext = ".dylib";
+#else
+static const string dll_ext = ".so";
 #endif
 
 static const string default_plugin_filename = "libp3d_plugin";
@@ -148,12 +158,7 @@ load_plugin(const string &p3d_plugin_filename) {
   string filename = p3d_plugin_filename;
   if (filename.empty()) {
     // Look for the plugin along the path.
-    filename = default_plugin_filename;
-#ifdef _WIN32
-    filename += ".dll";
-#else
-    filename += ".so";
-#endif
+    filename = default_plugin_filename + dll_ext;
   }
 
 #ifdef _WIN32
@@ -162,16 +167,6 @@ load_plugin(const string &p3d_plugin_filename) {
     // Couldn't load the DLL.
     return false;
   }
-
-  // Get the full path to the DLL in case it was found along the path.
-  static const buffer_size = 4096;
-  static char buffer[buffer_size];
-  if (GetModuleFileName(module, buffer, buffer_size) != 0) {
-    if (GetLastError() != 0) {
-      filename = buffer;
-    }
-  }
-  cerr << filename << "\n";
 
   // Now get all of the function pointers.
   P3D_initialize = (P3D_initialize_func *)GetProcAddress(module, "P3D_initialize");  
@@ -185,6 +180,28 @@ load_plugin(const string &p3d_plugin_filename) {
   P3D_check_request = (P3D_check_request_func *)GetProcAddress(module, "P3D_check_request");  
   P3D_request_finish = (P3D_request_finish_func *)GetProcAddress(module, "P3D_request_finish");  
   P3D_instance_feed_url_stream = (P3D_instance_feed_url_stream_func *)GetProcAddress(module, "P3D_instance_feed_url_stream");  
+
+#else  // _WIN32
+  // Posix case.
+  void *module = dlopen(filename.c_str(), RTLD_NOW | RTLD_LOCAL);
+  if (module == NULL) {
+    // Couldn't load the .so.
+    return false;
+  }
+  
+  // Now get all of the function pointers.
+  P3D_initialize = (P3D_initialize_func *)dlsym(module, "P3D_initialize");  
+  P3D_free_string = (P3D_free_string_func *)dlsym(module, "P3D_free_string");  
+  P3D_create_instance = (P3D_create_instance_func *)dlsym(module, "P3D_create_instance");  
+  P3D_instance_finish = (P3D_instance_finish_func *)dlsym(module, "P3D_instance_finish");  
+  P3D_instance_has_property = (P3D_instance_has_property_func *)dlsym(module, "P3D_instance_has_property");  
+  P3D_instance_get_property = (P3D_instance_get_property_func *)dlsym(module, "P3D_instance_get_property");  
+  P3D_instance_set_property = (P3D_instance_set_property_func *)dlsym(module, "P3D_instance_set_property");  
+  P3D_instance_get_request = (P3D_instance_get_request_func *)dlsym(module, "P3D_instance_get_request");  
+  P3D_check_request = (P3D_check_request_func *)dlsym(module, "P3D_check_request");  
+  P3D_request_finish = (P3D_request_finish_func *)dlsym(module, "P3D_request_finish");  
+  P3D_instance_feed_url_stream = (P3D_instance_feed_url_stream_func *)dlsym(module, "P3D_instance_feed_url_stream");  
+
 #endif  // _WIN32
 
   // Ensure that all of the function pointers have been found.
@@ -329,7 +346,7 @@ usage() {
 
     << "Options:\n\n"
 
-    << "  -p p3d_plugin.dll\n"
+    << "  -p p3d_plugin" << dll_ext << "\n"
     << "    Specify the full path to the particular Panda plugin DLL to\n"
     << "    run.  Normally, this will be found by searching in the usual\n"
     << "    places.\n\n"

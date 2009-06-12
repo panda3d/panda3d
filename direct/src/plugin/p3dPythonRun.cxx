@@ -52,7 +52,11 @@ P3DPythonRun(int argc, char *argv[]) {
 
   _pipe_read.open_read(read);
   _pipe_write.open_write(write);
+#else
+  _pipe_read.open_read(STDIN_FILENO);
+  _pipe_write.open_write(STDOUT_FILENO);
 #endif  // _WIN32
+
   if (!_pipe_read) {
     cerr << "unable to open read pipe\n";
   }
@@ -233,7 +237,7 @@ spawn_read_thread() {
 
   _read_thread_continue = true;
 #ifdef _WIN32
-  _read_thread = CreateThread(NULL, 0, &win_rt_thread_run, this, 0, NULL);
+  _read_thread = CreateThread(NULL, 0, &rt_thread_run, this, 0, NULL);
 #else
   pthread_attr_t attr;
   pthread_attr_init(&attr);
@@ -406,7 +410,7 @@ rt_thread_run() {
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPython::win_rt_thread_run
+//     Function: P3DPythonRun::win_rt_thread_run
 //       Access: Private, Static
 //  Description: The Windows flavor of the thread callback function.
 ////////////////////////////////////////////////////////////////////
@@ -419,7 +423,7 @@ win_rt_thread_run(LPVOID data) {
 
 #ifndef _WIN32
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPython::win_rt_thread_run
+//     Function: P3DPythonRun::posix_rt_thread_run
 //       Access: Private, Static
 //  Description: The Posix flavor of the thread callback function.
 ////////////////////////////////////////////////////////////////////

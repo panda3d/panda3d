@@ -16,6 +16,10 @@
 #include "p3dInstance.h"
 #include "p3dInstanceManager.h"
 
+#ifndef _WIN32
+#include <fcntl.h>
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::Constructor
 //       Access: Public
@@ -29,7 +33,12 @@ P3DSession::
 P3DSession(P3DInstance *inst) {
   _session_key = inst->get_session_key();
   _python_version = inst->get_python_version();
+
+#ifdef _WIN32
   _python_root_dir = "C:/p3drun";
+#else
+  _python_root_dir = "/Users/drose/p3drun";
+#endif
 
   _python_state = PS_init;
   _started_read_thread = false;
@@ -188,6 +197,7 @@ send_command(TiXmlDocument *command) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 download_p3dpython(P3DInstance *inst) {
+  /*
   P3DFileDownload *download = new P3DFileDownload();
   download->set_url("http://fewmet/~drose/p3drun.tgz");
 
@@ -198,8 +208,9 @@ download_p3dpython(P3DInstance *inst) {
   }
 
   inst->start_download(download);
+  */
 
-  //  start_p3dpython();
+  start_p3dpython();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -209,8 +220,12 @@ download_p3dpython(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 start_p3dpython() {
+#ifdef _WIN32
   string p3dpython = "c:/cygwin/home/drose/player/direct/built/bin/p3dpython.exe";
   //  string p3dpython = _python_root_dir + "/p3dpython.exe";
+#else
+  string p3dpython = "/Users/drose/player/direct/built/bin/p3dpython";
+#endif
 
   // Populate the new process' environment.
   string env;
@@ -243,78 +258,9 @@ start_p3dpython() {
   env += _python_root_dir;
   env += '\0';
 
-  // Create a bi-directional pipe to communicate with the sub-process.
-#ifdef _WIN32
-  HANDLE r_to, w_to, r_from, w_from;
-
-  // Create the pipe to the process.
-  if (!CreatePipe(&r_to, &w_to, NULL, 0)) {
-    cerr << "failed to create pipe\n";
-  } else {
-    // Make sure the right end of the pipe is inheritable.
-    SetHandleInformation(r_to, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-    SetHandleInformation(w_to, HANDLE_FLAG_INHERIT, 0);
-  }
-
-  // Create the pipe from the process.
-  if (!CreatePipe(&r_from, &w_from, NULL, 0)) {
-    cerr << "failed to create pipe\n";
-  } else { 
-    // Make sure the right end of the pipe is inheritable.
-    SetHandleInformation(w_from, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-    SetHandleInformation(r_from, HANDLE_FLAG_INHERIT, 0);
-  }
-
-  HANDLE error_handle = GetStdHandle(STD_ERROR_HANDLE);
-  bool got_output_filename = !_output_filename.empty();
-  if (got_output_filename) {
-    // Open the named file for output and redirect the child's stderr
-    // into it.
-    HANDLE handle = CreateFile
-      (_output_filename.c_str(), GENERIC_WRITE, 
-       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-       NULL, CREATE_ALWAYS, 0, NULL);
-    if (handle != INVALID_HANDLE_VALUE) {
-      error_handle = handle;
-      SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-    } else {
-      cerr << "Unable to open " << _output_filename << "\n";
-    }
-  }
-
-  // Make sure we see an error dialog if there is a missing DLL.
-  SetErrorMode(0);
-
-  // Pass the appropriate ends of the bi-directional pipe as the
-  // standard input and standard output of the child process.
-  STARTUPINFO startup_info;
-  ZeroMemory(&startup_info, sizeof(STARTUPINFO));
-  startup_info.cb = sizeof(startup_info); 
-  startup_info.hStdError = error_handle;
-  startup_info.hStdOutput = w_from;
-  startup_info.hStdInput = r_to;
-  startup_info.dwFlags |= STARTF_USESTDHANDLES;
-
-  // Make sure the "python" console window is hidden.
-  startup_info.wShowWindow = SW_HIDE;
-  startup_info.dwFlags |= STARTF_USESHOWWINDOW;
- 
-  BOOL result = CreateProcess
-    (p3dpython.c_str(), NULL, NULL, NULL, TRUE, 0,
-     (void *)env.c_str(), _python_root_dir.c_str(),
-     &startup_info, &_p3dpython);
-  bool started_p3dpython = (result != 0);
-
-  // Close the pipe handles that are now owned by the child.
-  CloseHandle(w_from);
-  CloseHandle(r_to);
-  if (got_output_filename) {
-    CloseHandle(error_handle);
-  }
-
-  _pipe_read.open_read(r_from);
-  _pipe_write.open_write(w_to);
-#endif  // _WIN32
+  bool started_p3dpython = create_process
+    (p3dpython, _python_root_dir, env, _output_filename,
+     _pipe_read, _pipe_write);
 
   if (!started_p3dpython) {
     cerr << "Failed to create process.\n";
@@ -322,7 +268,7 @@ start_p3dpython() {
   }
   _python_state = PS_running;
 
-  cerr << "Created process: " << _p3dpython.dwProcessId << "\n";
+  cerr << "Created child process\n";
 
   if (!_pipe_read) {
     cerr << "unable to open read pipe\n";
@@ -364,6 +310,12 @@ spawn_read_thread() {
   _read_thread_continue = true;
 #ifdef _WIN32
   _read_thread = CreateThread(NULL, 0, &win_rt_thread_run, this, 0, NULL);
+#else
+  pthread_attr_t attr;
+  pthread_attr_init(&attr);
+  pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
+  pthread_create(&_read_thread, &attr, &posix_rt_thread_run, (void *)this);
+  pthread_attr_destroy(&attr);
 #endif
   _started_read_thread = true;
 }
@@ -388,6 +340,9 @@ join_read_thread() {
   WaitForSingleObject(_read_thread, INFINITE);
   CloseHandle(_read_thread);
   _read_thread = NULL;
+#else
+  void *return_val;
+  pthread_join(_read_thread, &return_val);
 #endif
   cerr << "session done waiting for thread\n";
 
@@ -448,7 +403,7 @@ rt_terminate() {
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPython::win_rt_thread_run
+//     Function: P3DSession::win_rt_thread_run
 //       Access: Private, Static
 //  Description: The Windows flavor of the thread callback function.
 ////////////////////////////////////////////////////////////////////
@@ -458,3 +413,201 @@ win_rt_thread_run(LPVOID data) {
   return 0;
 }
 #endif
+
+#ifndef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::posix_rt_thread_run
+//       Access: Private, Static
+//  Description: The Posix flavor of the thread callback function.
+////////////////////////////////////////////////////////////////////
+void *P3DSession::
+posix_rt_thread_run(void *data) {
+  ((P3DSession *)data)->rt_thread_run();
+  return NULL;
+}
+#endif
+
+
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::create_process
+//       Access: Private, Static
+//  Description: Creates a sub-process to run the named program
+//               executable, with the indicated environment string.
+//               Standard error is logged to output_filename, if that
+//               string is nonempty.
+//
+//               Opens the two HandleStreams as the read and write
+//               pipes to the child process's standard output and
+//               standard input, respectively.  Returns true on
+//               success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool P3DSession::
+create_process(const string &program, const string &start_dir,
+               const string &env, const string &output_filename,
+               HandleStream &pipe_read, HandleStream &pipe_write) {
+  // This is the Windows variant.
+
+  // Create a bi-directional pipe to communicate with the sub-process.
+  HANDLE r_to, w_to, r_from, w_from;
+
+  // Create the pipe to the process.
+  if (!CreatePipe(&r_to, &w_to, NULL, 0)) {
+    cerr << "failed to create pipe\n";
+  } else {
+    // Make sure the right end of the pipe is inheritable.
+    SetHandleInformation(r_to, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+    SetHandleInformation(w_to, HANDLE_FLAG_INHERIT, 0);
+  }
+
+  // Create the pipe from the process.
+  if (!CreatePipe(&r_from, &w_from, NULL, 0)) {
+    cerr << "failed to create pipe\n";
+  } else { 
+    // Make sure the right end of the pipe is inheritable.
+    SetHandleInformation(w_from, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+    SetHandleInformation(r_from, HANDLE_FLAG_INHERIT, 0);
+  }
+
+  HANDLE error_handle = GetStdHandle(STD_ERROR_HANDLE);
+  bool got_output_filename = !output_filename.empty();
+  if (got_output_filename) {
+    // Open the named file for output and redirect the child's stderr
+    // into it.
+    HANDLE handle = CreateFile
+      (output_filename.c_str(), GENERIC_WRITE, 
+       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+       NULL, CREATE_ALWAYS, 0, NULL);
+    if (handle != INVALID_HANDLE_VALUE) {
+      error_handle = handle;
+      SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+    } else {
+      cerr << "Unable to open " << output_filename << "\n";
+    }
+  }
+
+  // Make sure we see an error dialog if there is a missing DLL.
+  SetErrorMode(0);
+
+  // Pass the appropriate ends of the bi-directional pipe as the
+  // standard input and standard output of the child process.
+  STARTUPINFO startup_info;
+  ZeroMemory(&startup_info, sizeof(STARTUPINFO));
+  startup_info.cb = sizeof(startup_info); 
+  startup_info.hStdError = error_handle;
+  startup_info.hStdOutput = w_from;
+  startup_info.hStdInput = r_to;
+  startup_info.dwFlags |= STARTF_USESTDHANDLES;
+
+  // Make sure the "python" console window is hidden.
+  startup_info.wShowWindow = SW_HIDE;
+  startup_info.dwFlags |= STARTF_USESHOWWINDOW;
+ 
+  BOOL result = CreateProcess
+    (program.c_str(), NULL, NULL, NULL, TRUE, 0,
+     (void *)env.c_str(), start_dir.c_str(),
+     &startup_info, &_program);
+  bool started_program = (result != 0);
+
+  // Close the pipe handles that are now owned by the child.
+  CloseHandle(w_from);
+  CloseHandle(r_to);
+  if (got_output_filename) {
+    CloseHandle(error_handle);
+  }
+
+  pipe_read.open_read(r_from);
+  pipe_write.open_write(w_to);
+
+  return started_program;
+}
+#endif // _WIN32
+
+
+#ifndef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::create_process
+//       Access: Private, Static
+//  Description: Creates a sub-process to run the named program
+//               executable, with the indicated environment string.
+//
+//               Opens the two HandleStreams as the read and write
+//               pipes to the child process's standard output and
+//               standard input, respectively.  Returns true on
+//               success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool P3DSession::
+create_process(const string &program, const string &start_dir,
+               const string &env, const string &output_filename,
+               HandleStream &pipe_read, HandleStream &pipe_write) {
+  // This is the Posix variant.
+
+  // Create a bi-directional pipe to communicate with the sub-process.
+  int to_fd[2];
+  if (pipe(to_fd) < 0) {
+    perror("failed to create pipe");
+  }
+  int from_fd[2];
+  if (pipe(from_fd) < 0) {
+    perror("failed to create pipe");
+  }
+
+  // Fork and exec.
+  pid_t child = fork();
+  if (child < 0) {
+    perror("fork");
+    return false;
+  }
+
+  if (child == 0) {
+    // Here we are in the child process.
+    bool got_output_filename = !output_filename.empty();
+    if (got_output_filename) {
+      // Open the named file for output and redirect the child's stderr
+      // into it.
+      int logfile_fd = open(output_filename.c_str(), 
+                            O_WRONLY | O_CREAT | O_TRUNC, 0666);
+      if (logfile_fd < 0) {
+        cerr << "Unable to open " << output_filename << "\n";
+      } else {
+        dup2(logfile_fd, STDERR_FILENO);
+        close(logfile_fd);
+      }
+    }
+
+    // Set the appropriate ends of the bi-directional pipe as the
+    // standard input and standard output of the child process.
+    dup2(to_fd[0], STDIN_FILENO);
+    dup2(from_fd[1], STDOUT_FILENO);
+    close(to_fd[1]);
+    close(from_fd[0]);
+
+    if (chdir(start_dir.c_str()) < 0) {
+      cerr << "Could not chdir to " << start_dir << "\n";
+      _exit(1);
+    }
+
+    // build up an array of char strings for the environment.
+    vector<const char *> ptrs;
+    size_t p = 0;
+    size_t zero = env.find('\0', p);
+    while (zero != string::npos) {
+      ptrs.push_back(env.data() + p);
+      p = zero + 1;
+      zero = env.find('\0', p);
+    }
+    ptrs.push_back((char *)NULL);
+    
+    execle(program.c_str(), program.c_str(), (char *)0, &ptrs[0]);
+    cerr << "Failed to exec " << program << "\n";
+    _exit(1);
+  }
+
+  pipe_read.open_read(from_fd[0]);
+  pipe_write.open_write(to_fd[1]);
+  close(to_fd[0]);
+  close(from_fd[1]);
+
+  return true;
+}
+#endif  // _WIN32
