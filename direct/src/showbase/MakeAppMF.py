@@ -181,7 +181,7 @@ class AppPacker:
     def addEggFile(self, filename, outFilename):
         # Precompile egg files to bam's.
         np = self.loader.loadModel(filename, okMissing = True)
-        if np.isEmpty():
+        if not np:
             raise StandardError, 'Could not read egg file %s' % (filename)
 
         self.addNode(np.node(), outFilename)

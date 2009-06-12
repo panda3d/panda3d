@@ -18,7 +18,9 @@
 #include "p3d_plugin_common.h"
 #include "handleStream.h"
 
-#include <set>
+#include <map>
+#include <vector>
+#include <tinyxml.h>
 
 class P3DInstance;
 
@@ -43,6 +45,10 @@ public:
   INLINE int get_num_instances() const;
 
 private:
+  void send_command(TiXmlDocument *command);
+  void download_p3dpython(P3DInstance *inst);
+  void start_p3dpython();
+
   void spawn_read_thread();
   void join_read_thread();
 
@@ -56,8 +62,17 @@ private:
 #endif
 
 private:
+  enum PythonState {
+    PS_init,
+    PS_downloading,
+    PS_running,
+    PS_done,
+  };
+  PythonState _python_state;
+
   string _session_key;
   string _python_version;
+  string _output_filename;
 
   string _python_root_dir;
 
@@ -65,13 +80,19 @@ private:
   Instances _instances;
   LOCK _instances_lock;
 
+  // Commands that are queued up to send down the pipe.  Normally
+  // these only accumulate before the python process has been started;
+  // after that, commands are written to the pipe directly.
+  typedef vector<TiXmlDocument *> Commands;
+  Commands _commands;
+
   // Members for communicating with the p3dpython child process.
-  bool _started_p3dpython;
 #ifdef _WIN32
   PROCESS_INFORMATION _p3dpython;
 #endif
 
-  // The remaining members are manipulated by the read thread.
+  // The remaining members are manipulated by or for the read thread.
+  bool _started_read_thread;
   HandleStream _pipe_read;
   HandleStream _pipe_write;
 

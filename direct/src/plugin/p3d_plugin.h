@@ -68,20 +68,29 @@ extern "C" {
    functions themselves, allowing the plugin library to be loaded via
    an explicit LoadLibrary() or equivalent call. */
 
+
+/* This symbol serves to validate that runtime and compile-time
+libraries match.  It should be passed to P3D_initialize() (below).
+This number will be incremented whenever there are changes to any of
+the interface specifications defined in this header file. */
+#define P3D_API_VERSION 1
+
 /************************ GLOBAL FUNCTIONS **************************/
 
 /* The following interfaces are global to the plugin space, as opposed
    to being specific to a particular instance. */
 
 /* This function should be called immediately after the plugin is
-   loaded.
+   loaded.  You should pass P3D_API_VERSION as the first parameter, so
+   the dll can verify that it has been built with the same version of
+   the API as the host.
 
-   This function returns true if the plugin is valid, false otherwise.
-   If it returns false, the host should not call any more functions in
-   this API, and should immediately unload the DLL and (if possible)
-   download a new one. */
+   This function returns true if the plugin is valid and uses a
+   compatible API, false otherwise.  If it returns false, the host
+   should not call any more functions in this API, and should
+   immediately unload the DLL and (if possible) download a new one. */
 typedef bool 
-P3D_initialize_func();
+P3D_initialize_func(int api_version);
 
 /* This function frees a pointer returned by
    P3D_instance_get_property(), or another similar function that
@@ -418,8 +427,14 @@ typedef enum {
    is appended together by the plugin to define the total set of data
    retrieved from the URL.  For a particular call to feed_url_stream,
    this may contain no data at all (e.g. this_data_size may be 0).
+
+   The return value of this function is true if there are no problems
+   and the download should continue, false if there was an error
+   accepting the data and the host should abort.  If this function
+   returns false on a P3D_RC_in_progress, there is no need to call
+   the function again with any future updates.
  */
-typedef void
+typedef bool
 P3D_instance_feed_url_stream_func(P3D_instance *instance, int unique_id,
                                   P3D_result_code result_code,
                                   int http_status_code, 

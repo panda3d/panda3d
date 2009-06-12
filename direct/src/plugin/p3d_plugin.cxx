@@ -23,7 +23,12 @@ bool initialized_lock = false;
 LOCK _lock;
 
 bool 
-P3D_initialize() {
+P3D_initialize(int api_version) {
+  if (api_version != P3D_API_VERSION) {
+    // Can't accept an incompatible version.
+    return false;
+  }
+
   if (!initialized_lock) {
     INIT_LOCK(_lock);
     initialized_lock = true;
@@ -141,7 +146,7 @@ P3D_request_finish(P3D_request *request, bool handled) {
   RELEASE_LOCK(_lock);
 }
 
-void
+bool
 P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
                              P3D_result_code result_code,
                              int http_status_code, 
@@ -149,9 +154,10 @@ P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
                              const unsigned char *this_data, 
                              size_t this_data_size) {
   ACQUIRE_LOCK(_lock);
-  ((P3DInstance *)instance)->
+  bool result = ((P3DInstance *)instance)->
     feed_url_stream(unique_id, result_code, http_status_code,
                     total_expected_data, this_data, this_data_size);
   RELEASE_LOCK(_lock);
+  return result;
 }
 

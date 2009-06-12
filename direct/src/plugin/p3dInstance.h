@@ -19,9 +19,11 @@
 
 #include <vector>
 #include <deque>
+#include <map>
 #include <tinyxml.h>
 
 class P3DSession;
+class P3DDownload;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DInstance
@@ -48,7 +50,7 @@ public:
   void add_request(P3D_request *request);
   void finish_request(P3D_request *request, bool handled);
 
-  void feed_url_stream(int unique_id,
+  bool feed_url_stream(int unique_id,
                        P3D_result_code result_code,
                        int http_status_code, 
                        size_t total_expected_data,
@@ -60,6 +62,8 @@ public:
   inline const string &get_session_key() const;
   inline const string &get_python_version() const;
   string lookup_token(const string &keyword) const;
+
+  void start_download(P3DDownload *download);
 
   TiXmlElement *make_xml();
 
@@ -85,6 +89,9 @@ private:
   string _session_key;
   string _python_version;
   P3DSession *_session;
+
+  typedef map<int, P3DDownload *> Downloads;
+  Downloads _downloads;
 
   LOCK _request_lock;
   typedef deque<P3D_request *> Requests;

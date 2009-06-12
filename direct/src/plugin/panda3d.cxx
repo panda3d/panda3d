@@ -104,16 +104,24 @@ thread_main() {
   channel->download_to_ram(&rf);
 
   size_t bytes_sent = 0;
-  while (channel->run()) {
+  while (channel->run() || rf.get_data_size() != 0) {
     if (rf.get_data_size() != 0) {
       // Got some new data.
-      P3D_instance_feed_url_stream
+      bool download_ok = P3D_instance_feed_url_stream
         (_instance, _unique_id, P3D_RC_in_progress,
          channel->get_status_code(),
          channel->get_file_size(),
          (const unsigned char *)rf.get_data().data(), rf.get_data_size());
       bytes_sent += rf.get_data_size();
       rf.clear();
+
+      if (!download_ok) {
+        // The plugin doesn't care any more.  Interrupt the download.
+        cerr << "Download interrupted: " << _url 
+             << ", after " << bytes_sent << " of " << channel->get_file_size()
+             << " bytes.\n";
+        return;
+      }
     }
   }
 
@@ -195,7 +203,7 @@ load_plugin(const string &p3d_plugin_filename) {
   }
 
   // Successfully loaded.
-  if (!P3D_initialize()) {
+  if (!P3D_initialize(P3D_API_VERSION)) {
     // Oops, failure to initialize.
     return false;
   }
@@ -525,7 +533,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
       }
       TranslateMessage(&msg);
       DispatchMessage(&msg);
-      
+
       // Check for new requests from the Panda3D plugin.
       P3D_instance *inst = P3D_check_request(false);
       while (inst != (P3D_instance *)NULL) {
@@ -535,6 +543,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         }
         inst = P3D_check_request(false);
       }
+
+      Thread::force_yield();
       retval = GetMessage(&msg, NULL, 0, 0);
     }
     
@@ -550,26 +560,30 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   } else {
     // Not an embedded window, so we don't have our own window to
     // generate Windows events.  Instead, just wait for requests.
-    P3D_instance *inst = P3D_check_request(true);
-    while (inst != (P3D_instance *)NULL) {
-      P3D_request *request = P3D_instance_get_request(inst);
-      if (request != (P3D_request *)NULL) {
-        handle_request(request);
+    while (!_instances.empty()) {
+      P3D_instance *inst = P3D_check_request(false);
+      if (inst != (P3D_instance *)NULL) {
+        P3D_request *request = P3D_instance_get_request(inst);
+        if (request != (P3D_request *)NULL) {
+          handle_request(request);
+        }
       }
-      inst = P3D_check_request(true);
+      Thread::force_yield();
     }
   }
     
 #endif
 
   // Now wait while we process pending requests.
-  P3D_instance *inst = P3D_check_request(true);
-  while (inst != (P3D_instance *)NULL) {
-    P3D_request *request = P3D_instance_get_request(inst);
-    if (request != (P3D_request *)NULL) {
-      handle_request(request);
+  while (!_instances.empty()) {
+    P3D_instance *inst = P3D_check_request(false);
+    if (inst != (P3D_instance *)NULL) {
+      P3D_request *request = P3D_instance_get_request(inst);
+      if (request != (P3D_request *)NULL) {
+        handle_request(request);
+      }
     }
-    inst = P3D_check_request(true);
+    Thread::force_yield();
   }
 
   // All instances have finished; we can exit.

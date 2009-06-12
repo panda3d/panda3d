@@ -14,12 +14,16 @@
     handleStreamBuf.cxx handleStreamBuf.h \
     p3d_lock.h p3d_plugin.h \
     p3d_plugin_common.h \
+    p3dDownload.h p3dDownload.I \
+    p3dFileDownload.h p3dFileDownload.I \
     p3dInstance.h p3dInstance.I \
     p3dInstanceManager.h p3dInstanceManager.I \
     p3dSession.h p3dSession.I
 
   #define INCLUDED_SOURCES \
     p3d_plugin.cxx \
+    p3dDownload.cxx \
+    p3dFileDownload.cxx \
     p3dInstance.cxx \
     p3dInstanceManager.cxx \
     p3dSession.cxx

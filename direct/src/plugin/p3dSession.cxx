@@ -15,7 +15,6 @@
 #include "p3dSession.h"
 #include "p3dInstance.h"
 #include "p3dInstanceManager.h"
-#include <tinyxml.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::Constructor
@@ -32,10 +31,184 @@ P3DSession(P3DInstance *inst) {
   _python_version = inst->get_python_version();
   _python_root_dir = "C:/p3drun";
 
-  INIT_LOCK(_instances_lock);
-
+  _python_state = PS_init;
+  _started_read_thread = false;
   _read_thread_continue = false;
 
+  _output_filename = inst->lookup_token("output_filename");
+
+  INIT_LOCK(_instances_lock);
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::Destructor
+//       Access: Public
+//  Description: Terminates the session by shutting down Python and
+//               stopping the subprocess.
+////////////////////////////////////////////////////////////////////
+P3DSession::
+~P3DSession() {
+  if (_python_state == PS_running) {
+    // Tell the process we're going away.
+    TiXmlDocument doc;
+    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+    TiXmlElement *xcommand = new TiXmlElement("command");
+    xcommand->SetAttribute("cmd", "exit");
+    doc.LinkEndChild(decl);
+    doc.LinkEndChild(xcommand);
+    _pipe_write << doc << flush;
+
+    // Also close the pipe, to help underscore the point.
+    _pipe_write.close();
+    _pipe_read.close();
+
+#ifdef _WIN32
+    // Now give the process a chance to terminate itself cleanly.
+    if (WaitForSingleObject(_p3dpython.hProcess, 2000) == WAIT_TIMEOUT) {
+      // It didn't shut down cleanly, so kill it the hard way.
+      cerr << "Terminating process.\n";
+      TerminateProcess(_p3dpython.hProcess, 2);
+    }
+
+    CloseHandle(_p3dpython.hProcess);
+    CloseHandle(_p3dpython.hThread);
+#endif
+  }
+
+  // If there are any leftover commands in the queue (presumably
+  // implying we have never started the python process), then delete
+  // them now, unsent.
+  Commands::iterator ci;
+  for (ci = _commands.begin(); ci != _commands.end(); ++ci) {
+    delete (*ci);
+  }
+  _commands.clear();
+
+  join_read_thread();
+  DESTROY_LOCK(_instances_lock);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::start_instance
+//       Access: Public
+//  Description: Adds the indicated instance to the session, and
+//               starts it running.  It is an error if the instance
+//               has been started anywhere else.
+//
+//               The instance must have the same session_key as the
+//               one that was passed to the P3DSession constructor.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+start_instance(P3DInstance *inst) {
+  assert(inst->_session == NULL);
+  assert(inst->get_session_key() == _session_key);
+  assert(inst->get_python_version() == _python_version);
+
+  ACQUIRE_LOCK(_instances_lock);
+  inst->_session = this;
+  bool inserted = _instances.insert(Instances::value_type(inst->get_instance_id(), inst)).second;
+  RELEASE_LOCK(_instances_lock);
+  assert(inserted);
+
+  TiXmlDocument *doc = new TiXmlDocument;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "start_instance");
+  TiXmlElement *xinstance = inst->make_xml();
+  
+  doc->LinkEndChild(decl);
+  doc->LinkEndChild(xcommand);
+  xcommand->LinkEndChild(xinstance);
+
+  send_command(doc);
+
+  if (_python_state == PS_init) {
+    download_p3dpython(inst);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::terminate_instance
+//       Access: Public
+//  Description: Removes the indicated instance from the session, and
+//               stops it.  It is an error if the instance is not
+//               already running on this session.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+terminate_instance(P3DInstance *inst) {
+  TiXmlDocument *doc = new TiXmlDocument;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "terminate_instance");
+  xcommand->SetAttribute("id", inst->get_instance_id());
+  
+  doc->LinkEndChild(decl);
+  doc->LinkEndChild(xcommand);
+
+  send_command(doc);
+
+  ACQUIRE_LOCK(_instances_lock);
+  if (inst->_session == this) {
+    inst->_session = NULL;
+    _instances.erase(inst->get_instance_id());
+  }
+  RELEASE_LOCK(_instances_lock);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::send_command
+//       Access: Private
+//  Description: Sends the indicated command to the running Python
+//               process.  If the process has not yet been started,
+//               queues it up until it is ready.
+//
+//               The command must be a newly-allocated TiXmlDocument;
+//               it will be deleted after it has been delivered to the
+//               process.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+send_command(TiXmlDocument *command) {
+  if (_python_state == PS_running) {
+    // Python is running.  Send the command.
+    _pipe_write << *command << flush;
+    delete command;
+  } else {
+    // Python not yet running.  Queue up the command instead.
+    _commands.push_back(command);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::download_p3dpython
+//       Access: Private
+//  Description: Starts the Python package downloading.  Once it is
+//               fully downloaded and unpacked, automatically calls
+//               start_p3dpython.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+download_p3dpython(P3DInstance *inst) {
+  P3DFileDownload *download = new P3DFileDownload();
+  download->set_url("http://fewmet/~drose/p3drun.tgz");
+
+  string local_filename = "temp.tgz";
+  if (!download->set_filename(local_filename)) {
+    cerr << "Could not open " << local_filename << "\n";
+    return;
+  }
+
+  inst->start_download(download);
+
+  //  start_p3dpython();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::start_p3dpython
+//       Access: Private
+//  Description: Starts Python running in a child process.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+start_p3dpython() {
   string p3dpython = "c:/cygwin/home/drose/player/direct/built/bin/p3dpython.exe";
   //  string p3dpython = _python_root_dir + "/p3dpython.exe";
 
@@ -93,20 +266,19 @@ P3DSession(P3DInstance *inst) {
   }
 
   HANDLE error_handle = GetStdHandle(STD_ERROR_HANDLE);
-  string output_filename = inst->lookup_token("output_filename");
-  bool got_output_filename = !output_filename.empty();
+  bool got_output_filename = !_output_filename.empty();
   if (got_output_filename) {
     // Open the named file for output and redirect the child's stderr
     // into it.
     HANDLE handle = CreateFile
-      (output_filename.c_str(), GENERIC_WRITE, 
+      (_output_filename.c_str(), GENERIC_WRITE, 
        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
        NULL, CREATE_ALWAYS, 0, NULL);
     if (handle != INVALID_HANDLE_VALUE) {
       error_handle = handle;
-      SetHandleInformation(error_hanlesdle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+      SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
     } else {
-      cerr << "Unable to open " << output_filename << "\n";
+      cerr << "Unable to open " << _output_filename << "\n";
     }
   }
 
@@ -131,13 +303,7 @@ P3DSession(P3DInstance *inst) {
     (p3dpython.c_str(), NULL, NULL, NULL, TRUE, 0,
      (void *)env.c_str(), _python_root_dir.c_str(),
      &startup_info, &_p3dpython);
-  _started_p3dpython = (result != 0);
-
-  if (!_started_p3dpython) {
-    cerr << "Failed to create process.\n";
-  } else {
-    cerr << "Created process: " << _p3dpython.dwProcessId << "\n";
-  }
+  bool started_p3dpython = (result != 0);
 
   // Close the pipe handles that are now owned by the child.
   CloseHandle(w_from);
@@ -150,116 +316,32 @@ P3DSession(P3DInstance *inst) {
   _pipe_write.open_write(w_to);
 #endif  // _WIN32
 
+  if (!started_p3dpython) {
+    cerr << "Failed to create process.\n";
+    return;
+  }
+  _python_state = PS_running;
+
+  cerr << "Created process: " << _p3dpython.dwProcessId << "\n";
+
   if (!_pipe_read) {
     cerr << "unable to open read pipe\n";
   }
   if (!_pipe_write) {
     cerr << "unable to open write pipe\n";
   }
-
+  
   spawn_read_thread();
-}
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::Destructor
-//       Access: Public
-//  Description: Terminates the session by shutting down Python and
-//               stopping the subprocess.
-////////////////////////////////////////////////////////////////////
-P3DSession::
-~P3DSession() {
-  if (_started_p3dpython) {
-    // Tell the process we're going away.
-    TiXmlDocument doc;
-    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
-    TiXmlElement *xcommand = new TiXmlElement("command");
-    xcommand->SetAttribute("cmd", "exit");
-    doc.LinkEndChild(decl);
-    doc.LinkEndChild(xcommand);
-    _pipe_write << doc << flush;
-
-    // Also close the pipe, to help underscore the point.
-    _pipe_write.close();
-    _pipe_read.close();
-
-#ifdef _WIN32
-    // Now give the process a chance to terminate itself cleanly.
-    if (WaitForSingleObject(_p3dpython.hProcess, 2000) == WAIT_TIMEOUT) {
-      // It didn't shut down cleanly, so kill it the hard way.
-      cerr << "Terminating process.\n";
-      TerminateProcess(_p3dpython.hProcess, 2);
-    }
-
-    CloseHandle(_p3dpython.hProcess);
-    CloseHandle(_p3dpython.hThread);
-#endif
+  // Now that the process has been started, feed it any commands we
+  // may have queued up.
+  Commands::iterator ci;
+  for (ci = _commands.begin(); ci != _commands.end(); ++ci) {
+    _pipe_write << *(*ci);
+    delete (*ci);
   }
-
-  join_read_thread();
-  DESTROY_LOCK(_instances_lock);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::start_instance
-//       Access: Public
-//  Description: Adds the indicated instance to the session, and
-//               starts it running.  It is an error if the instance
-//               has been started anywhere else.
-//
-//               The instance must have the same session_key as the
-//               one that was passed to the P3DSession constructor.
-////////////////////////////////////////////////////////////////////
-void P3DSession::
-start_instance(P3DInstance *inst) {
-  assert(inst->_session == NULL);
-  assert(inst->get_session_key() == _session_key);
-  assert(inst->get_python_version() == _python_version);
-
-  ACQUIRE_LOCK(_instances_lock);
-  inst->_session = this;
-  bool inserted = _instances.insert(Instances::value_type(inst->get_instance_id(), inst)).second;
-  RELEASE_LOCK(_instances_lock);
-  assert(inserted);
-
-  TiXmlDocument doc;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
-  TiXmlElement *xcommand = new TiXmlElement("command");
-  xcommand->SetAttribute("cmd", "start_instance");
-  TiXmlElement *xinstance = inst->make_xml();
-  
-  doc.LinkEndChild(decl);
-  doc.LinkEndChild(xcommand);
-  xcommand->LinkEndChild(xinstance);
-
-  _pipe_write << doc << flush;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::terminate_instance
-//       Access: Public
-//  Description: Removes the indicated instance from the session, and
-//               stops it.  It is an error if the instance is not
-//               already running on this session.
-////////////////////////////////////////////////////////////////////
-void P3DSession::
-terminate_instance(P3DInstance *inst) {
-  TiXmlDocument doc;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
-  TiXmlElement *xcommand = new TiXmlElement("command");
-  xcommand->SetAttribute("cmd", "terminate_instance");
-  xcommand->SetAttribute("id", inst->get_instance_id());
-  
-  doc.LinkEndChild(decl);
-  doc.LinkEndChild(xcommand);
-
-  _pipe_write << doc << flush;
-
-  ACQUIRE_LOCK(_instances_lock);
-  if (inst->_session == this) {
-    inst->_session = NULL;
-    _instances.erase(inst->get_instance_id());
-  }
-  RELEASE_LOCK(_instances_lock);
+  _pipe_write << flush;
+  _commands.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,6 +365,7 @@ spawn_read_thread() {
 #ifdef _WIN32
   _read_thread = CreateThread(NULL, 0, &win_rt_thread_run, this, 0, NULL);
 #endif
+  _started_read_thread = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -292,6 +375,10 @@ spawn_read_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 join_read_thread() {
+  if (!_started_read_thread) {
+    return;
+  }
+
   cerr << "session waiting for thread\n";
   _read_thread_continue = false;
   _pipe_read.close();
@@ -303,6 +390,8 @@ join_read_thread() {
   _read_thread = NULL;
 #endif
   cerr << "session done waiting for thread\n";
+
+  _started_read_thread = false;
 }
 
 ////////////////////////////////////////////////////////////////////

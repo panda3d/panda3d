@@ -172,13 +172,17 @@ wait_request() {
     }
     
     // No pending requests; go to sleep.
-    if (seq == _request_seq) {
 #ifdef _WIN32
+    if (seq == _request_seq) {
       WaitForSingleObject(_request_ready, INFINITE);
-#else
-      pthread_cond_wait(&_request_ready_cvar, &_request_ready_lock);
-#endif
     }
+#else
+    ACQUIRE_LOCK(_request_ready_lock);
+    if (seq == _request_seq) {
+      pthread_cond_wait(&_request_ready_cvar, &_request_ready_lock);
+    }
+    RELEASE_LOCK(_request_ready_lock);
+#endif
     seq = _request_seq;
   }
 }
@@ -205,11 +209,12 @@ get_unique_session_index() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 signal_request_ready() {
-  ++_request_seq;
 #ifdef _WIN32
+  ++_request_seq;
   SetEvent(_request_ready);
 #else
   ACQUIRE_LOCK(_request_ready_lock);
+  ++_request_seq;
   pthread_cond_signal(&_request_ready_cvar);
   RELEASE_LOCK(_request_ready_lock);
 #endif

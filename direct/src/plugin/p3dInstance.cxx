@@ -14,6 +14,7 @@
 
 #include "p3dInstance.h"
 #include "p3dInstanceManager.h"
+#include "p3dDownload.h"
 
 #include <sstream>
 
@@ -68,7 +69,7 @@ P3DInstance::
 
   DESTROY_LOCK(_request_lock);
 
-  // TODO: empty _pending_requests queue.
+  // TODO: empty _pending_requests queue and _downloads map.
 }
 
 
@@ -189,13 +190,33 @@ finish_request(P3D_request *request, bool handled) {
 //               post_url request, this sends the data retrieved from
 //               the requested URL, a piece at a time.
 ////////////////////////////////////////////////////////////////////
-void P3DInstance::
+bool P3DInstance::
 feed_url_stream(int unique_id,
                 P3D_result_code result_code,
                 int http_status_code, 
                 size_t total_expected_data,
                 const unsigned char *this_data, 
                 size_t this_data_size) {
+  Downloads::iterator di = _downloads.find(unique_id);
+  if (di == _downloads.end()) {
+    cerr << "Unexpected feed_url_stream for " << unique_id << "\n";
+    // Don't know this request.
+    return false;
+  }
+
+  P3DDownload *download = (*di).second;
+  bool download_ok = download->feed_url_stream
+    (result_code, http_status_code, total_expected_data,
+     this_data, this_data_size);
+
+  if (!download_ok || download->get_download_finished()) {
+    // All done.
+    cerr << "completed download " << unique_id << "\n";
+    _downloads.erase(di);
+    delete download;
+  }
+
+  return download_ok;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -215,6 +236,39 @@ lookup_token(const string &keyword) const {
   }
 
   return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::start_download
+//       Access: Public
+//  Description: Adds a newly-allocated P3DDownload object to the
+//               download queue, and issues the request to start it
+//               downloading.  As the download data comes in, it will
+//               be fed to the download object.  After
+//               download_finished() has been called, the P3DDownload
+//               object will be deleted.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+start_download(P3DDownload *download) {
+  assert(download->get_download_id() == 0);
+
+  int download_id = _next_instance_id;
+  ++_next_instance_id;
+  download->set_download_id(download_id);
+
+  bool inserted = _downloads.insert(Downloads::value_type(download_id, download)).second;
+  assert(inserted);
+
+  cerr << "beginning download " << download_id << ": " << download->get_url()
+       << "\n";
+
+  P3D_request *request = new P3D_request;
+  request->_instance = this;
+  request->_request_type = P3D_RT_get_url;
+  request->_request._get_url._url = strdup(download->get_url().c_str());
+  request->_request._get_url._unique_id = download_id;
+
+  add_request(request);
 }
 
 ////////////////////////////////////////////////////////////////////
