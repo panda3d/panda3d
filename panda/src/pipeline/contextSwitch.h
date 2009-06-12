@@ -38,7 +38,7 @@
 
 struct ThreadContext {
   ucontext_t _ucontext;
-#if defined(__APPLE__)
+#if defined(__APPLE__) && defined(_STRUCT_MCONTEXT)
   // Due to a bug in OSX 10.5, the system ucontext_t declaration
   // doesn't reserve enough space, and we need to reserve some
   // additional space to make room.
@@ -53,7 +53,7 @@ struct ThreadContext {
 
 #if defined(_M_IX86) || defined(__i386__)
 /* Maybe we can implement our own setjmp/longjmp in assembly code.
-   This will be safe than the system version, since who knows what
+   This will be safer than the system version, since who knows what
    that one's really doing? */
 
 typedef int cs_jmp_buf[33];
