@@ -182,6 +182,10 @@ analyze_renderstate(const RenderState *rs) {
   _out_aux_normal = (outputs & AuxBitplaneAttrib::ABO_aux_normal) ? true:false;
   _out_aux_glow = (outputs & AuxBitplaneAttrib::ABO_aux_glow) ? true:false;
   _out_aux_any = (_out_aux_normal || _out_aux_glow);
+  
+  if (_out_aux_normal) {
+    _need_eye_normal = true;
+  }
 
   // Count number of textures.
 
@@ -257,8 +261,19 @@ analyze_renderstate(const RenderState *rs) {
       _map_height_in_alpha = true;
     }
     if (tex_gen->has_stage(stage)) {
-      if (tex_gen->get_mode(stage) == TexGenAttrib::M_world_position) {
-        _need_worldspace_pos = true;
+      switch (tex_gen->get_mode(stage)) {
+        case TexGenAttrib::M_world_position:
+          _need_world_position = true;
+          break;
+        case TexGenAttrib::M_world_normal:
+          _need_world_normal = true;
+          break;
+        case TexGenAttrib::M_eye_position:
+          _need_eye_position = true;
+          break;
+        case TexGenAttrib::M_eye_normal:
+          _need_eye_normal = true;
+          break;
       }
     }
   }
@@ -267,6 +282,8 @@ analyze_renderstate(const RenderState *rs) {
 
   if (la->get_num_on_lights() > 0) {
     _lighting = true;
+    _need_eye_position = true;
+    _need_eye_normal = true;
   }
 
   // Find the material.
@@ -363,7 +380,7 @@ analyze_renderstate(const RenderState *rs) {
   const ClipPlaneAttrib *clip_plane = DCAST(ClipPlaneAttrib, rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
   _num_clip_planes = clip_plane->get_num_on_planes();
   if (_num_clip_planes > 0) {
-    _need_worldspace_pos = true;
+    _need_world_position = true;
   }
 
   // Check for unimplemented features and issue warnings.
@@ -408,8 +425,11 @@ clear_analysis() {
   _out_aux_glow     = false;
   _out_aux_any      = false;
   _material = (Material*)NULL;
-  _need_worldspace_pos = false;
   _need_material_props = false;
+  _need_world_position = false;
+  _need_world_normal = false;
+  _need_eye_position = false;
+  _need_eye_normal = false;
   _alights.clear();
   _dlights.clear();
   _plights.clear();
@@ -541,9 +561,7 @@ synthesize_shader(const RenderState *rs) {
 
   // These variables will hold the results of register allocation.
 
-  char *pos_freg = 0;
   char *normal_vreg = 0;
-  char *normal_freg = 0;
   char *ntangent_vreg = 0;
   char *ntangent_freg = 0;
   char *nbinormal_vreg = 0;
@@ -553,6 +571,10 @@ synthesize_shader(const RenderState *rs) {
   pvector<char *> texcoord_vreg;
   pvector<char *> texcoord_freg;
   pvector<char *> tslightvec_freg;
+  char *world_position_freg = 0;
+  char *world_normal_freg = 0;
+  char *eye_position_freg = 0;
+  char *eye_normal_freg = 0;
 
   if (_vertex_colors) {
     _vcregs_used = 1;
@@ -580,9 +602,30 @@ synthesize_shader(const RenderState *rs) {
     text << "\t in float4 vtx_color : COLOR,\n";
     text << "\t out float4 l_color : COLOR,\n";
   }
-  if (_need_worldspace_pos > 0) {
-    text << "\t out float4 l_worldpos,\n";
+  if (_need_world_position || _need_world_normal) {
     text << "\t uniform float4x4 trans_model_to_world,\n";
+  }
+  if (_need_world_position) {
+    world_position_freg = alloc_freg();
+    text << "\t out float4 l_world_position : " << world_position_freg << ",\n";
+  }
+  if (_need_world_normal) {
+    world_normal_freg = alloc_freg();
+    text << "\t out float4 l_world_normal : " << world_normal_freg << ",\n";
+  }
+  if (_need_eye_position) {
+    text << "\t uniform float4x4 trans_model_to_view,\n";
+    eye_position_freg = alloc_freg();
+    text << "\t out float4 l_eye_position : " << eye_position_freg << ",\n";
+  }
+  if (_need_eye_normal) {
+    eye_normal_freg = alloc_freg();
+    text << "\t uniform float4x4 tpose_view_to_model,\n";
+    text << "\t out float4 l_eye_normal : " << eye_normal_freg << ",\n";
+  }
+  if (_map_index_height >= 0 || _need_world_normal || _need_eye_normal) {
+    normal_vreg = alloc_vreg();
+    text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
   }
   if (_map_index_height >= 0) {
     htangent_vreg = alloc_vreg();
@@ -596,17 +639,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t uniform float4 mspos_view,\n";
     text << "\t out float3 l_eyevec,\n";
   }
-  if (_map_index_height >= 0 || _lighting) {
-    normal_vreg = alloc_vreg();
-    text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
-  }
   if (_lighting) {
-    pos_freg = alloc_freg();
-    normal_freg = alloc_freg();
-    text << "\t uniform float4x4 trans_model_to_view,\n";
-    text << "\t uniform float4x4 tpose_view_to_model,\n";
-    text << "\t out float4 l_normal : " << normal_freg << ",\n";
-    text << "\t out float4 l_pos : " << pos_freg << ",\n";
     if (_map_index_normal >= 0) {
       // If we had a height map and it used the same stage, that means we already have those inputs.
       if (_map_index_normal != _map_index_height) {
@@ -634,12 +667,6 @@ synthesize_shader(const RenderState *rs) {
         }
       }
     }
-  } else if (_out_aux_normal) {
-    normal_vreg = alloc_vreg();
-    normal_freg = alloc_freg();
-    text << "\t uniform float4x4 tpose_view_to_model,\n";
-    text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
-    text << "\t out float4 l_normal : " << normal_freg << ",\n";
   }
   text << "\t float4 vtx_position : POSITION,\n";
   text << "\t out float4 l_position : POSITION,\n";
@@ -647,8 +674,18 @@ synthesize_shader(const RenderState *rs) {
   text << ") {\n";
 
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
-  if (_need_worldspace_pos) {
-    text << "\t l_worldpos = mul(trans_model_to_world, vtx_position);\n";
+  if (_need_world_position) {
+    text << "\t l_world_position = mul(trans_model_to_world, vtx_position);\n";
+  }
+  if (_need_world_normal) {
+    text << "\t l_world_normal = mul(trans_model_to_world, vtx_normal);\n";
+  }
+  if (_need_eye_position) {
+    text << "\t l_eye_position = mul(trans_model_to_view, vtx_position);\n";
+  }
+  if (_need_eye_normal) {
+    text << "\t l_eye_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal.xyz);\n";
+    text << "\t l_eye_normal.w = 0;\n";
   }
   for (int i=0; i<_num_textures; i++) {
     if (!tex_gen->has_stage(texture->get_on_stage(i))) {
@@ -657,13 +694,6 @@ synthesize_shader(const RenderState *rs) {
   }
   if (_vertex_colors) {
     text << "\t l_color = vtx_color;\n";
-  }
-  if (_lighting) {
-    text << "\t l_pos = mul(trans_model_to_view, vtx_position);\n";
-  }
-  if (_lighting || _out_aux_normal) {
-    text << "\t l_normal.xyz = mul((float3x3)tpose_view_to_model, vtx_normal.xyz);\n";
-    text << "\t l_normal.w = 0;\n";
   }
   if (_lighting && (_map_index_normal >= 0)) {
     text << "\t l_tangent.xyz = mul((float3x3)tpose_view_to_model, vtx_tangent" << _map_index_normal << ".xyz);\n";
@@ -696,8 +726,17 @@ synthesize_shader(const RenderState *rs) {
   text << "}\n\n";
 
   text << "void fshader(\n";
-  if (_need_worldspace_pos) {
-    text << "\t in float4 l_worldpos,\n";
+  if (_need_world_position) {
+    text << "\t in float4 l_world_position : " << world_position_freg << ",\n";
+  }
+  if (_need_world_normal) {
+    text << "\t in float4 l_world_normal : " << world_normal_freg << ",\n";
+  }
+  if (_need_eye_position) { 
+    text << "\t in float4 l_eye_position : " << eye_position_freg << ",\n";
+  }
+  if (_need_eye_normal) {
+    text << "\t in float4 l_eye_normal : " << eye_normal_freg << ",\n";
   }
   const TexMatrixAttrib *tex_matrix = DCAST(TexMatrixAttrib, rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
   for (int i=0; i<_num_textures; i++) {
@@ -710,18 +749,11 @@ synthesize_shader(const RenderState *rs) {
       text << "\t uniform float4x4 texmat_" << i << ",\n";
     }
   }
-  if (_lighting || _out_aux_normal) {
-    text << "\t in float3 l_normal : " << normal_freg << ",\n";
-  }
   if (_lighting && (_map_index_normal >= 0)) {
     text << "\t in float3 l_tangent : " << ntangent_freg << ",\n";
     text << "\t in float3 l_binormal : " << nbinormal_freg << ",\n";
   }
   if (_lighting) {
-    text << "\t in float4 l_pos : " << pos_freg << ",\n";
-    if (_shadows) {
-      text << "\t in float4 l_position : " << alloc_freg() << ",\n";
-    }
     for (int i=0; i<(int)_alights.size(); i++) {
       text << "\t uniform float4 alight_alight" << i << ",\n";
     }
@@ -781,8 +813,8 @@ synthesize_shader(const RenderState *rs) {
   text << ") {\n";
   // Clipping first!
   for (int i=0; i<_num_clip_planes; ++i) {
-    text << "\t if (l_worldpos.x * clipplane_" << i << ".x + l_worldpos.y ";
-    text << "* clipplane_" << i << ".y + l_worldpos.z * clipplane_" << i << ".z + clipplane_" << i << ".w <= 0) {\n";
+    text << "\t if (l_world_position.x * clipplane_" << i << ".x + l_world_position.y ";
+    text << "* clipplane_" << i << ".y + l_world_position.z * clipplane_" << i << ".z + clipplane_" << i << ".w <= 0) {\n";
     text << "\t discard;\n";
     text << "\t }\n";
   }
@@ -796,10 +828,21 @@ synthesize_shader(const RenderState *rs) {
     if (tex_gen != NULL && tex_gen->has_stage(stage)) {
       switch (tex_gen->get_mode(stage)) {
         case TexGenAttrib::M_world_position:
-          text << "\t float4 l_texcoord" << i << " = l_worldpos;\n";
+          text << "\t float4 l_texcoord" << i << " = l_world_position;\n";
+          break;
+        case TexGenAttrib::M_world_normal:
+          text << "\t float4 l_texcoord" << i << " = l_world_normal;\n";
+          break;
+        case TexGenAttrib::M_eye_position:
+          text << "\t float4 l_texcoord" << i << " = l_eye_position;\n";
+          break;
+        case TexGenAttrib::M_eye_normal:
+          text << "\t float4 l_texcoord" << i << " = l_eye_normal;\n";
+          text << "\t l_texcoord" << i << ".w = 1.0f;\n";
           break;
         default:
           pgraph_cat.error() << "Unsupported TexGenAttrib mode\n";
+          text << "\t float4 l_texcoord" << i << " = float4(0, 0, 0, 0);\n";
       }
     }
     if (tex_matrix != NULL && tex_matrix->has_stage(stage)) {
@@ -833,18 +876,18 @@ synthesize_shader(const RenderState *rs) {
     if (_map_index_normal >= 0) {
       text << "\t // Translate tangent-space normal in map to view-space.\n";
       text << "\t float3 tsnormal = ((float3)tex" << _map_index_normal << " * 2) - 1;\n";
-      text << "\t l_normal = l_normal * tsnormal.z;\n";
-      text << "\t l_normal+= l_tangent * tsnormal.x;\n";
-      text << "\t l_normal+= l_binormal * tsnormal.y;\n";
-      text << "\t l_normal = normalize(l_normal);\n";
+      text << "\t l_eye_normal = l_eye_normal * tsnormal.z;\n";
+      text << "\t l_eye_normal+= l_tangent * tsnormal.x;\n";
+      text << "\t l_eye_normal+= l_binormal * tsnormal.y;\n";
+      text << "\t l_eye_normal = normalize(l_eye_normal);\n";
     } else {
       text << "\t // Correct the surface normal for interpolation effects\n";
-      text << "\t l_normal = normalize(l_normal);\n";
+      text << "\t l_eye_normal.xyz = normalize(l_eye_normal.xyz);\n";
     }
   }
   if (_out_aux_normal) {
     text << "\t // Output the camera-space surface normal\n";
-    text << "\t o_aux.rgb = (l_normal.rgb*0.5) + float3(0.5,0.5,0.5);\n";
+    text << "\t o_aux.rgb = (l_eye_normal.xyz*0.5) + float3(0.5,0.5,0.5);\n";
   }
   if (_lighting) {
     text << "\t // Begin view-space light calculations\n";
@@ -887,7 +930,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lcolor = dlight_dlight" << i << "_rel_view[0];\n";
       text << "\t lspec  = dlight_dlight" << i << "_rel_view[1];\n";
       text << "\t lvec   = dlight_dlight" << i << "_rel_view[2];\n";
-      text << "\t lcolor *= saturate(dot(l_normal, lvec.xyz));\n";
+      text << "\t lcolor *= saturate(dot(l_eye_normal, lvec.xyz));\n";
       if (_shadows && _dlights[i]->_shadow_caster) {
         if (_use_shadow_filter) {
           text << "\t lshad = shadow2DProj(k_dlighttex" << i << ", l_dlightcoord" << i << ").r;\n";
@@ -902,11 +945,11 @@ synthesize_shader(const RenderState *rs) {
       }
       if (_have_specular) {
         if (_material->get_local()) {
-          text << "\t lhalf  = normalize(lvec - normalize(l_pos));\n";
+          text << "\t lhalf  = normalize(lvec - normalize(l_eye_position));\n";
         } else {
           text << "\t lhalf = dlight_dlight" << i << "_rel_view[3];\n";
         }
-        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), shininess);\n";
+        text << "\t lspec *= pow(saturate(dot(l_eye_normal, lhalf.xyz)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
     }
@@ -916,22 +959,22 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lspec  = plight_plight" << i << "_rel_view[1];\n";
       text << "\t lpoint = plight_plight" << i << "_rel_view[2];\n";
       text << "\t latten = plight_plight" << i << "_rel_view[3];\n";
-      text << "\t lvec   = lpoint - l_pos;\n";
+      text << "\t lvec   = lpoint - l_eye_position;\n";
       text << "\t ldist = length(float3(lvec));\n";
       text << "\t lvec /= ldist;\n";
       text << "\t lattenv = 1/(latten.x + latten.y*ldist + latten.z*ldist*ldist);\n";
-      text << "\t lcolor *= lattenv * saturate(dot(l_normal, lvec.xyz));\n";
+      text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal, lvec.xyz));\n";
       if (_have_diffuse) {
         text << "\t tot_diffuse += lcolor;\n";
       }
       if (_have_specular) {
         if (_material->get_local()) {
-          text << "\t lhalf  = normalize(lvec - normalize(l_pos));\n";
+          text << "\t lhalf  = normalize(lvec - normalize(l_eye_position));\n";
         } else {
           text << "\t lhalf = normalize(lvec - float4(0,1,0,0));\n";
         }
         text << "\t lspec *= lattenv;\n";
-        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), shininess);\n";
+        text << "\t lspec *= pow(saturate(dot(l_eye_normal, lhalf.xyz)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
     }
@@ -942,14 +985,14 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lpoint = slight_slight" << i << "_rel_view[2];\n";
       text << "\t ldir   = slight_slight" << i << "_rel_view[3];\n";
       text << "\t latten = satten_slight" << i << ";\n";
-      text << "\t lvec   = lpoint - l_pos;\n";
+      text << "\t lvec   = lpoint - l_eye_position;\n";
       text << "\t ldist  = length(float3(lvec));\n";
       text << "\t lvec /= ldist;\n";
       text << "\t langle = saturate(dot(ldir.xyz, lvec.xyz));\n";
       text << "\t lattenv = 1/(latten.x + latten.y*ldist + latten.z*ldist*ldist);\n";
       text << "\t lattenv *= pow(langle, latten.w);\n";
       text << "\t if (langle < ldir.w) lattenv = 0;\n";
-      text << "\t lcolor *= lattenv * saturate(dot(l_normal, lvec.xyz));\n";
+      text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal, lvec.xyz));\n";
       if (_shadows && _slights[i]->_shadow_caster) {
         if (_use_shadow_filter) {
           text << "\t lshad = shadow2DProj(k_slighttex" << i << ", l_slightcoord" << i << ").r;\n";
@@ -965,12 +1008,12 @@ synthesize_shader(const RenderState *rs) {
       }
       if (_have_specular) {
         if (_material->get_local()) {
-          text << "\t lhalf  = normalize(lvec - normalize(l_pos));\n";
+          text << "\t lhalf  = normalize(lvec - normalize(l_eye_position));\n";
         } else {
           text << "\t lhalf = normalize(lvec - float4(0,1,0,0));\n";
         }
         text << "\t lspec *= lattenv;\n";
-        text << "\t lspec *= pow(saturate(dot(l_normal, lhalf.xyz)), shininess);\n";
+        text << "\t lspec *= pow(saturate(dot(l_eye_normal, lhalf.xyz)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
     }
