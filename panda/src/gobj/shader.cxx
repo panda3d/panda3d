@@ -774,6 +774,27 @@ compile_parameter(const ShaderArgId  &arg_id,
     return true;
   }
 
+  if (pieces[0] == "texmat") {
+    if ((!cp_errchk_parameter_words(p,2))||
+        (!cp_errchk_parameter_in(p)) ||
+        (!cp_errchk_parameter_uniform(p))||
+        (!cp_errchk_parameter_float(p,16,16))) {
+      return false;
+    }
+    ShaderMatSpec bind;
+    bind._id = arg_id;
+    bind._piece = SMP_whole;
+    bind._func = SMF_first;
+    bind._part[0] = SMO_texmat_x;
+    bind._arg[0] = InternalName::make(pieces[1]);
+    bind._part[1] = SMO_identity;
+    bind._arg[1] = NULL;
+
+    cp_optimize_mat_spec(bind);
+    _mat_spec.push_back(bind);
+    return true;
+  }
+
   if (pieces[0] == "plane") {
     if ((!cp_errchk_parameter_words(p,2))||
         (!cp_errchk_parameter_in(p)) ||

@@ -1088,6 +1088,14 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     t = LMatrix4f(c[0],c[1],c[2],c[3],s[0],s[1],s[2],s[3],p[0],p[1],p[2],0,d[0],d[1],d[2],cutoff);
     return &t;
   }
+  case Shader::SMO_texmat_x: {
+    const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
+    int stagenr = atoi(name->get_name().c_str());
+    if (stagenr >= tma->get_num_stages()) {
+      return &LMatrix4f::ident_mat();
+    }
+    return &tma->get_mat(tma->get_stage(stagenr));
+  }
   case Shader::SMO_plane_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
     nassertr(!np.is_empty(), &LMatrix4f::zeros_mat());
@@ -1100,8 +1108,6 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
     const ClipPlaneAttrib *cpa = DCAST(ClipPlaneAttrib, _target_rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
     int planenr = atoi(name->get_name().c_str());
     if (planenr >= cpa->get_num_on_planes()) {
-      // The identity matrix happens to have 0,0,0,1 in the last row,
-      // which is exactly what we need, because that won't clip anything.
       return &LMatrix4f::zeros_mat();
     }
     const NodePath &np = cpa->get_on_plane(planenr);

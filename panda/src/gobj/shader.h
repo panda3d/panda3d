@@ -78,6 +78,7 @@ public:
     SMO_plight_x,
     SMO_slight_x,
     SMO_satten_x,
+    SMO_texmat_x,
     SMO_plane_x,
     SMO_clipplane_x,
     
