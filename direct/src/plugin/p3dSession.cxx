@@ -74,14 +74,13 @@ P3DSession::
 
 #ifdef _WIN32
     // Now give the process a chance to terminate itself cleanly.
-    if (WaitForSingleObject(_p3dpython.hProcess, 2000) == WAIT_TIMEOUT) {
+    if (WaitForSingleObject(_p3dpython_handle, 2000) == WAIT_TIMEOUT) {
       // It didn't shut down cleanly, so kill it the hard way.
       cerr << "Terminating process.\n";
-      TerminateProcess(_p3dpython.hProcess, 2);
+      TerminateProcess(_p3dpython_handle, 2);
     }
 
-    CloseHandle(_p3dpython.hProcess);
-    CloseHandle(_p3dpython.hThread);
+    CloseHandle(_p3dpython_handle);
 #endif
   }
 
@@ -258,9 +257,17 @@ start_p3dpython() {
   env += _python_root_dir;
   env += '\0';
 
-  bool started_p3dpython = create_process
+#ifdef _WIN32
+  _p3dpython_handle = win_create_process
     (p3dpython, _python_root_dir, env, _output_filename,
      _pipe_read, _pipe_write);
+  bool started_p3dpython = (_p3dpython_handle != INVALID_HANDLE_VALUE);
+#else
+  _p3dpython_pid = posix_create_process
+    (p3dpython, _python_root_dir, env, _output_filename,
+     _pipe_read, _pipe_write);
+  bool started_p3dpython = (_p3dpython_pid > 0);
+#endif
 
   if (!started_p3dpython) {
     cerr << "Failed to create process.\n";
@@ -430,7 +437,7 @@ posix_rt_thread_run(void *data) {
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::create_process
+//     Function: P3DSession::win_create_process
 //       Access: Private, Static
 //  Description: Creates a sub-process to run the named program
 //               executable, with the indicated environment string.
@@ -439,14 +446,15 @@ posix_rt_thread_run(void *data) {
 //
 //               Opens the two HandleStreams as the read and write
 //               pipes to the child process's standard output and
-//               standard input, respectively.  Returns true on
-//               success, false on failure.
+//               standard input, respectively.
+//
+//               Returns the handle to the created process on success,
+//               or INVALID_HANDLE_VALUE on falure.
 ////////////////////////////////////////////////////////////////////
-bool P3DSession::
-create_process(const string &program, const string &start_dir,
-               const string &env, const string &output_filename,
-               HandleStream &pipe_read, HandleStream &pipe_write) {
-  // This is the Windows variant.
+HANDLE P3DSession::
+win_create_process(const string &program, const string &start_dir,
+                   const string &env, const string &output_filename,
+                   HandleStream &pipe_read, HandleStream &pipe_write) {
 
   // Create a bi-directional pipe to communicate with the sub-process.
   HANDLE r_to, w_to, r_from, w_from;
@@ -502,11 +510,12 @@ create_process(const string &program, const string &start_dir,
   // Make sure the "python" console window is hidden.
   startup_info.wShowWindow = SW_HIDE;
   startup_info.dwFlags |= STARTF_USESHOWWINDOW;
- 
+
+  PROCESS_INFORMATION process_info; 
   BOOL result = CreateProcess
     (program.c_str(), NULL, NULL, NULL, TRUE, 0,
      (void *)env.c_str(), start_dir.c_str(),
-     &startup_info, &_program);
+     &startup_info, &process_info);
   bool started_program = (result != 0);
 
   // Close the pipe handles that are now owned by the child.
@@ -516,17 +525,24 @@ create_process(const string &program, const string &start_dir,
     CloseHandle(error_handle);
   }
 
+  if (!started_program) {
+    CloseHandle(r_from);
+    CloseHandle(w_to);
+    return INVALID_HANDLE_VALUE;
+  }
+
   pipe_read.open_read(r_from);
   pipe_write.open_write(w_to);
 
-  return started_program;
+  CloseHandle(process_info.hThread);
+  return process_info.hProcess;
 }
 #endif // _WIN32
 
 
 #ifndef _WIN32
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::create_process
+//     Function: P3DSession::posix_create_process
 //       Access: Private, Static
 //  Description: Creates a sub-process to run the named program
 //               executable, with the indicated environment string.
@@ -535,13 +551,14 @@ create_process(const string &program, const string &start_dir,
 //               pipes to the child process's standard output and
 //               standard input, respectively.  Returns true on
 //               success, false on failure.
+//
+//               Returns the pid of the created process on success, or
+//               -1 on falure.
 ////////////////////////////////////////////////////////////////////
-bool P3DSession::
-create_process(const string &program, const string &start_dir,
-               const string &env, const string &output_filename,
-               HandleStream &pipe_read, HandleStream &pipe_write) {
-  // This is the Posix variant.
-
+int P3DSession::
+posix_create_process(const string &program, const string &start_dir,
+                     const string &env, const string &output_filename,
+                     HandleStream &pipe_read, HandleStream &pipe_write) {
   // Create a bi-directional pipe to communicate with the sub-process.
   int to_fd[2];
   if (pipe(to_fd) < 0) {
@@ -555,8 +572,12 @@ create_process(const string &program, const string &start_dir,
   // Fork and exec.
   pid_t child = fork();
   if (child < 0) {
+    close(to_fd[0]);
+    close(to_fd[1]);
+    close(from_fd[0]);
+    close(from_fd[1]);
     perror("fork");
-    return false;
+    return -1;
   }
 
   if (child == 0) {
@@ -608,6 +629,6 @@ create_process(const string &program, const string &start_dir,
   close(to_fd[0]);
   close(from_fd[1]);
 
-  return true;
+  return child;
 }
 #endif  // _WIN32

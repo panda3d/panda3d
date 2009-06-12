@@ -237,7 +237,7 @@ spawn_read_thread() {
 
   _read_thread_continue = true;
 #ifdef _WIN32
-  _read_thread = CreateThread(NULL, 0, &rt_thread_run, this, 0, NULL);
+  _read_thread = CreateThread(NULL, 0, &win_rt_thread_run, this, 0, NULL);
 #else
   pthread_attr_t attr;
   pthread_attr_init(&attr);

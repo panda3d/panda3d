@@ -64,15 +64,15 @@ private:
 #endif
 
 #ifdef _WIN32
-  static bool 
-  create_process(const string &program, const string &start_dir,
-                 const string &env, const string &output_filename,
-                 HandleStream &pipe_read, HandleStream &pipe_write);
+  static HANDLE 
+  win_create_process(const string &program, const string &start_dir,
+                     const string &env, const string &output_filename,
+                     HandleStream &pipe_read, HandleStream &pipe_write);
 #else
-  static bool 
-  create_process(const string &program, const string &start_dir,
-                 const string &env, const string &output_filename,
-                 HandleStream &pipe_read, HandleStream &pipe_write);
+  static int 
+  posix_create_process(const string &program, const string &start_dir,
+                       const string &env, const string &output_filename,
+                       HandleStream &pipe_read, HandleStream &pipe_write);
 #endif
 
 private:
@@ -102,7 +102,9 @@ private:
 
   // Members for communicating with the p3dpython child process.
 #ifdef _WIN32
-  PROCESS_INFORMATION _p3dpython;
+  HANDLE _p3dpython_handle;
+#else
+  int _p3dpython_pid;
 #endif
 
   // The remaining members are manipulated by or for the read thread.
