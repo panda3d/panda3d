@@ -1090,11 +1090,12 @@ fetch_specified_part(Shader::ShaderMatInput part, InternalName *name, LMatrix4f 
   }
   case Shader::SMO_texmat_x: {
     const TexMatrixAttrib *tma = DCAST(TexMatrixAttrib, _target_rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
+    const TextureAttrib *ta = DCAST(TextureAttrib, _target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
     int stagenr = atoi(name->get_name().c_str());
-    if (stagenr >= tma->get_num_stages()) {
+    if (stagenr >= ta->get_num_on_stages()) {
       return &LMatrix4f::ident_mat();
     }
-    return &tma->get_mat(tma->get_stage(stagenr));
+    return &tma->get_mat(ta->get_on_stage(stagenr));
   }
   case Shader::SMO_plane_x: {
     const NodePath &np = _target_shader->get_shader_input_nodepath(name);
