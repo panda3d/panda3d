@@ -76,6 +76,7 @@ protected:
                TextureStage::CombineMode c_mode, bool single_value, short texindex);
   static const string combine_source_as_string(CPT(TextureStage) stage,
                                       short num, bool single_value, short texindex);
+  static const string texture_type_as_string(Texture::TextureType ttype);
 
   // Shader register allocation:
 

@@ -540,11 +540,11 @@ update_shadow_buffer(NodePath light_np) {
 //               - color scale attrib
 //               - light ramps (for cartoon shading)
 //               - shadow mapping
-//               - texgen
+//               - most texgen modes
 //               - texmatrix
+//               - 1D/2D/3D textures, cube textures
 //
 //               Not yet supported:
-//               - 3D textures, cube textures
 //               - dot3_rgb and dot3_rgba combine modes
 //               - fog
 //
@@ -741,7 +741,9 @@ synthesize_shader(const RenderState *rs) {
   const TexMatrixAttrib *tex_matrix = DCAST(TexMatrixAttrib, rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = texture->get_on_stage(i);
-    text << "\t uniform sampler2D tex_" << i << ",\n";
+    Texture *tex = texture->get_on_texture(stage);
+    nassertr(tex != NULL, NULL);
+    text << "\t uniform sampler" << texture_type_as_string(tex->get_texture_type()) << " tex_" << i << ",\n";
     if (!tex_gen->has_stage(stage)) {
       text << "\t in float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
     }
@@ -852,24 +854,43 @@ synthesize_shader(const RenderState *rs) {
   }
   text << "\t // Fetch all textures.\n";
   if (_map_index_height >= 0) {
-    text << "\t float4 tex" << _map_index_height << " = tex2D(tex_" << _map_index_height << ", l_texcoord" << _map_index_height << ".xy);\n";
-    text << "\t float2 parallax_offset = l_eyevec.xy * (tex" << _map_index_height;
+    Texture *tex = texture->get_on_texture(texture->get_on_stage(_map_index_height));
+    nassertr(tex != NULL, NULL);
+    text << "\t float4 tex" << _map_index_height << " = tex" << texture_type_as_string(tex->get_texture_type());
+    text << "(tex_" << _map_index_height << ", l_texcoord" << _map_index_height << ".";
+    switch(tex->get_texture_type()) {
+      case Texture::TT_cube_map:
+      case Texture::TT_3d_texture: text << "xyz"; break;
+      case Texture::TT_2d_texture: text << "xy";  break;
+      case Texture::TT_1d_texture: text << "x";   break;
+    }
+    text << ");\n\t float2 parallax_offset = l_eyevec.xyz * (tex" << _map_index_height;
     if (_map_height_in_alpha) {
-      text << ".aa";
+      text << ".aaa";
     } else {
-      text << ".rg";
+      text << ".rgb";
     }
     text << " * 0.2 - 0.1);\n";
   }
   for (int i=0; i<_num_textures; i++) {
     if (i != _map_index_height) {
+      Texture *tex = texture->get_on_texture(texture->get_on_stage(i));
+      nassertr(tex != NULL, NULL);
       // Parallax mapping pushes the texture coordinates of the other textures away from the camera.
       // The normal map coordinates aren't pushed (since that would give inconsistent behaviour when
       // the height map is packed with the normal map together).
       if (_map_index_height >= 0 && i != _map_index_normal) {
         text << "\t l_texcoord" << i << ".xy += parallax_offset;\n";
       }
-      text << "\t float4 tex" << i << " = tex2D(tex_" << i << ", l_texcoord" << i << ".xy);\n";
+      text << "\t float4 tex" << i << " = tex" << texture_type_as_string(tex->get_texture_type());
+      text << "(tex_" << i << ", l_texcoord" << i << ".";
+      switch(tex->get_texture_type()) {
+        case Texture::TT_cube_map:
+        case Texture::TT_3d_texture: text << "xyz"; break;
+        case Texture::TT_2d_texture: text << "xy";  break;
+        case Texture::TT_1d_texture: text << "x";   break;
+      }
+      text << ");\n";
     }
   }
   if (_lighting) {
@@ -1354,5 +1375,32 @@ combine_source_as_string(CPT(TextureStage) stage, short num, bool single_value, 
     }
   }
   return csource.str();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ShaderGenerator::texture_type_as_string
+//       Access: Protected, Static
+//  Description: Returns 1D, 2D, 3D or CUBE, depending on the given
+//               texture type.
+////////////////////////////////////////////////////////////////////
+const string ShaderGenerator::
+texture_type_as_string(Texture::TextureType ttype) {
+  switch (ttype) {
+    case Texture::TT_1d_texture:
+      return "1D";
+      break;
+    case Texture::TT_2d_texture:
+      return "2D";
+      break;
+    case Texture::TT_3d_texture:
+      return "3D";
+      break;
+    case Texture::TT_cube_map:
+      return "CUBE";
+      break;
+    default:
+      pgraph_cat.error() << "Unsupported texture type!\n";
+      return "2D";
+  }
 }
 
