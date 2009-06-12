@@ -232,7 +232,9 @@ analyze_renderstate(const RenderState *rs) {
   }
 
   // See if there is a normal map, height map, gloss map, or glow map.
-
+  // Also check if anything has TexGen.
+  
+  const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, rs->get_attrib_def(TexGenAttrib::get_class_slot()));
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = texture->get_on_stage(i);
     TextureStage::Mode mode = stage->get_mode();
@@ -253,6 +255,11 @@ analyze_renderstate(const RenderState *rs) {
     }
     if (mode == TextureStage::M_normal_height) {
       _map_height_in_alpha = true;
+    }
+    if (tex_gen->has_stage(stage)) {
+      if (tex_gen->get_mode(stage) == TexGenAttrib::M_world_position) {
+        _need_worldspace_pos = true;
+      }
     }
   }
 
@@ -355,17 +362,11 @@ analyze_renderstate(const RenderState *rs) {
 
   const ClipPlaneAttrib *clip_plane = DCAST(ClipPlaneAttrib, rs->get_attrib_def(ClipPlaneAttrib::get_class_slot()));
   _num_clip_planes = clip_plane->get_num_on_planes();
+  if (_num_clip_planes > 0) {
+    _need_worldspace_pos = true;
+  }
 
   // Check for unimplemented features and issue warnings.
-
-  const TexMatrixAttrib *tex_matrix = DCAST(TexMatrixAttrib, rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
-  if (!tex_matrix->is_empty()) {
-    pgraph_cat.error() << "Shader Generator does not support TexMatrix yet.\n";
-  }
-  const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, rs->get_attrib_def(TexGenAttrib::get_class_slot()));
-  if (!tex_gen->is_empty()) {
-    pgraph_cat.error() << "Shader Generator does not support TexGen yet.\n";
-  }
   const FogAttrib *fog = DCAST(FogAttrib, rs->get_attrib_def(FogAttrib::get_class_slot()));
   if (!fog->is_off()) {
     pgraph_cat.error() << "Shader Generator does not support Fog yet.\n";
@@ -407,6 +408,7 @@ clear_analysis() {
   _out_aux_glow     = false;
   _out_aux_any      = false;
   _material = (Material*)NULL;
+  _need_worldspace_pos = false;
   _need_material_props = false;
   _alights.clear();
   _dlights.clear();
@@ -518,12 +520,12 @@ update_shadow_buffer(NodePath light_np) {
 //               - color scale attrib
 //               - light ramps (for cartoon shading)
 //               - shadow mapping
+//               - texgen
+//               - texmatrix
 //
 //               Not yet supported:
 //               - 3D textures, cube textures
 //               - dot3_rgb and dot3_rgba combine modes
-//               - texgen
-//               - texmatrix
 //               - fog
 //
 //               Potential optimizations
@@ -574,7 +576,7 @@ synthesize_shader(const RenderState *rs) {
     text << "\t in float4 vtx_color : COLOR,\n";
     text << "\t out float4 l_color : COLOR,\n";
   }
-  if (_num_clip_planes > 0) {
+  if (_need_worldspace_pos > 0) {
     text << "\t out float4 l_worldpos,\n";
     text << "\t uniform float4x4 trans_model_to_world,\n";
   }
@@ -635,18 +637,43 @@ synthesize_shader(const RenderState *rs) {
     text << "\t in float4 vtx_normal : " << normal_vreg << ",\n";
     text << "\t out float4 l_normal : " << normal_freg << ",\n";
   }
-
+  const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
+  const TexMatrixAttrib *tex_matrix = DCAST(TexMatrixAttrib, rs->get_attrib_def(TexMatrixAttrib::get_class_slot()));
+  if (texture != NULL && tex_matrix != NULL && !tex_matrix->is_empty()) {
+    for (int i=0; i<_num_textures; i++) {
+      if (tex_matrix->has_stage(texture->get_on_stage(i))) {
+        text << "\t uniform float4x4 texmat_" << i << ",\n";
+      }
+    }
+  }
   text << "\t float4 vtx_position : POSITION,\n";
   text << "\t out float4 l_position : POSITION,\n";
   text << "\t uniform float4x4 mat_modelproj\n";
   text << ") {\n";
 
   text << "\t l_position = mul(mat_modelproj, vtx_position);\n";
-  if (_num_clip_planes > 0) {
+  if (_need_worldspace_pos) {
     text << "\t l_worldpos = mul(trans_model_to_world, vtx_position);\n";
   }
+  // Now load in / generate the texture coordinates for each stage. If it has a TexMatrixAttrib, also transform it.
   for (int i=0; i<_num_textures; i++) {
-    text << "\t l_texcoord" << i << " = vtx_texcoord" << i << ";\n";
+    TextureStage *stage = texture->get_on_stage(i);
+    const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, rs->get_attrib_def(TexGenAttrib::get_class_slot()));
+    if (tex_gen != NULL && tex_gen->has_stage(stage)) {
+      switch (tex_gen->get_mode(stage)) {
+        case TexGenAttrib::M_world_position:
+          text << "\t l_texcoord" << i << " = l_worldpos;\n";
+          break;
+        default:
+          pgraph_cat.error() << "Unsupported TexGenAttrib mode\n";
+      }
+    } else {
+      text << "\t l_texcoord" << i << " = vtx_texcoord" << i << ";\n";
+    }
+    if (tex_matrix != NULL && tex_matrix->has_stage(stage)) {
+      text << "\t l_texcoord" << i << " = mul(texmat_" << i << ", l_texcoord" << i << ");\n";
+      text << "\t l_texcoord" << i << ".xyz /= l_texcoord" << i << ".w;\n";
+    }
   }
   if (_vertex_colors) {
     text << "\t l_color = vtx_color;\n";
@@ -1035,7 +1062,6 @@ synthesize_shader(const RenderState *rs) {
   }
 
   text << "\t float4 primary_color = result;\n";
-  const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
   bool have_saved_result = false;
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = texture->get_on_stage(i);

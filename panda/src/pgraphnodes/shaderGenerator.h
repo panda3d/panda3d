@@ -135,6 +135,7 @@ protected:
   int _num_clip_planes;
   bool _use_shadow_filter;
 
+  bool _need_worldspace_pos;
   bool _need_material_props;
 
   void analyze_renderstate(const RenderState *rs);
