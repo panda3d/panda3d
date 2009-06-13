@@ -143,14 +143,15 @@ thread_main() {
     } else {
       status = P3D_RC_generic_error;
     }
+    cerr << "Error getting URL " << _url << "\n";
+  } else {
+    cerr << "Done getting URL " << _url << ", got " << bytes_sent << " bytes\n";
   }
 
   P3D_instance_feed_url_stream
     (_instance, _unique_id, status,
      channel->get_status_code(),
      bytes_sent, NULL, 0);
-
-  cerr << "Done getting URL " << _url << ", got " << bytes_sent << " bytes\n";
 }
 
 bool

@@ -14,12 +14,50 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_root_dir
+//       Access: Public
+//  Description: Returns the root directory into which all the P3D
+//               runtime files are downloaded and installed.  This
+//               must be a writable directory or nothing will work.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_root_dir() const {
+  return _root_dir;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_download_url
+//       Access: Public
+//  Description: Returns the URL of the download server.  All
+//               downloadable files will be retrieved from various
+//               subdirectories of this URL root.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_download_url() const {
+  return _download_url;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_command_instance
+//       Access: Public
+//  Description: Returns a global P3DInstance object that exists for
+//               the lifetime of the instance manager.  This instance
+//               object has no reality onscreen, but can be used as a
+//               download host for downloading files that aren't
+//               specifically needed by any user-created instance.
+////////////////////////////////////////////////////////////////////
+inline P3DInstance *P3DInstanceManager::
+get_command_instance() const {
+  return _command_instance;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_num_instances
 //       Access: Public
 //  Description: Returns the number of instances currently running
 //               within the world.
 ////////////////////////////////////////////////////////////////////
-INLINE int P3DInstanceManager::
+inline int P3DInstanceManager::
 get_num_instances() const {
   return _instances.size();
 }

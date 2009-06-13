@@ -25,7 +25,8 @@ P3DDownload() {
   _http_status_code = 0;
   _total_data = 0;
   _total_expected_data = 0;
-
+  
+  _canceled = false;
   _download_id = 0;
 }
 
@@ -49,6 +50,21 @@ set_url(const string &url) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DDownload::cancel
+//       Access: Public
+//  Description: Cancels a running download.  download_finished() will
+//               not be called, but the P3DDownload object itself will
+//               eventually be deleted by its owning P3DInstance.
+////////////////////////////////////////////////////////////////////
+void P3DDownload::
+cancel() {
+  _canceled = true;
+  if (_status == P3D_RC_in_progress) {
+    _status = P3D_RC_generic_error;
+  }    
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DDownload::feed_url_stream
 //       Access: Public
 //  Description: Called by P3DInstance as more data arrives from the
@@ -60,12 +76,16 @@ feed_url_stream(P3D_result_code result_code,
                 size_t total_expected_data,
                 const unsigned char *this_data, 
                 size_t this_data_size) {
+  if (_canceled) {
+    return false;
+  }
+
   _status = result_code;
   _http_status_code = http_status_code;
 
   if (this_data_size != 0) {
     if (!receive_data(this_data, this_data_size)) {
-      // Failure writing to disk.
+      // Failure writing to disk or some such.
       _status = P3D_RC_generic_error;
       download_finished(false);
       return false;

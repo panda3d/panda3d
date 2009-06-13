@@ -3,4 +3,5 @@
 #include "p3dFileDownload.cxx"
 #include "p3dInstance.cxx"
 #include "p3dInstanceManager.cxx"
+#include "p3dPackage.cxx"
 #include "p3dSession.cxx"

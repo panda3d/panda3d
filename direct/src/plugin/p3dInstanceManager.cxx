@@ -15,6 +15,7 @@
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
 #include "p3dSession.h"
+#include "p3dPackage.h"
 
 P3DInstanceManager *P3DInstanceManager::_global_ptr;
 
@@ -35,6 +36,8 @@ P3DInstanceManager() {
   INIT_LOCK(_request_ready_lock);
   pthread_cond_init(&_request_ready_cvar, NULL);
 #endif
+
+  _command_instance = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -44,7 +47,14 @@ P3DInstanceManager() {
 ////////////////////////////////////////////////////////////////////
 P3DInstanceManager::
 ~P3DInstanceManager() {
-  // Actually, the destructor is never called.
+  // Actually, this destructor is never called, since this is a global
+  // object that never gets deleted.
+
+  assert(_instances.empty());
+  assert(_sessions.empty());
+
+  delete _command_instance;
+
 #ifdef _WIN32
   CloseHandle(_request_ready);
 #else
@@ -63,6 +73,8 @@ P3DInstanceManager::
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
 initialize() {
+  _root_dir = "c:/cygwin/home/drose/p3ddir";
+  _download_url = "http://10.196.143.118/~drose/";
   return true;
 }
 
@@ -109,6 +121,8 @@ create_instance(P3D_request_ready_func *func,
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 finish_instance(P3DInstance *inst) {
+  assert(inst != _command_instance);
+
   Instances::iterator ii;
   ii = _instances.find(inst);
   assert(ii != _instances.end());
@@ -145,6 +159,10 @@ check_request() {
     }
   }
 
+  if (_command_instance->has_request()) {
+    return _command_instance;
+  }
+
   return NULL;
 }
 
@@ -164,10 +182,10 @@ wait_request() {
   int seq = _request_seq;
 
   while (true) {
-    if (_instances.empty()) {
+    if (check_request() != (P3DInstance *)NULL) {
       return;
     }
-    if (check_request() != (P3DInstance *)NULL) {
+    if (_instances.empty()) {
       return;
     }
     
@@ -185,6 +203,27 @@ wait_request() {
 #endif
     seq = _request_seq;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_package
+//       Access: Public
+//  Description: Returns a (possibly shared) pointer to the indicated
+//               package.
+////////////////////////////////////////////////////////////////////
+P3DPackage *P3DInstanceManager::
+get_package(const string &package_name, const string &package_version) {
+  string key = package_name + "_" + package_version;
+  Packages::iterator pi = _packages.find(key);
+  if (pi != _packages.end()) {
+    return (*pi).second;
+  }
+
+  P3DPackage *package = new P3DPackage(package_name, package_version);
+  bool inserted = _packages.insert(Packages::value_type(key, package)).second;
+  assert(inserted);
+
+  return package;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -229,6 +268,22 @@ P3DInstanceManager *P3DInstanceManager::
 get_global_ptr() {
   if (_global_ptr == NULL) {
     _global_ptr = new P3DInstanceManager;
+    _global_ptr->create_command_instance();
   }
   return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::create_command_instance;
+//       Access: Private
+//  Description: Create a command instance.  This is used to handle
+//               requests that have nothing to do with any particular
+//               host-created instance.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+create_command_instance() {
+  P3D_window_handle dummy_handle;
+  _command_instance = 
+    new P3DInstance(NULL, "", P3D_WT_hidden, 0, 0, 0, 0, 
+                    dummy_handle, NULL, 0);
 }

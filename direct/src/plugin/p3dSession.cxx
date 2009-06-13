@@ -131,9 +131,9 @@ start_instance(P3DInstance *inst) {
 
   send_command(doc);
 
-  if (_python_state == PS_init) {
-    download_p3dpython(inst);
-  }
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3DPackage *panda = inst_mgr->get_package("panda3d", "dev");
+  //  start_p3dpython();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -209,7 +209,7 @@ download_p3dpython(P3DInstance *inst) {
   inst->start_download(download);
   */
 
-  start_p3dpython();
+  //  start_p3dpython();
 }
 
 ////////////////////////////////////////////////////////////////////

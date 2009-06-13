@@ -22,6 +22,7 @@
 
 class P3DInstance;
 class P3DSession;
+class P3DPackage;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DInstanceManager
@@ -35,6 +36,9 @@ private:
 
 public:
   bool initialize();
+
+  inline const string &get_root_dir() const;
+  inline const string &get_download_url() const;
 
   P3DInstance *
   create_instance(P3D_request_ready_func *func,
@@ -51,7 +55,11 @@ public:
   P3DInstance *check_request();
   void wait_request();
 
-  INLINE int get_num_instances() const;
+  P3DPackage *get_package(const string &package_name, 
+                          const string &package_version);
+
+  inline P3DInstance *get_command_instance() const;
+  inline int get_num_instances() const;
 
   int get_unique_session_index();
   void signal_request_ready();
@@ -59,13 +67,22 @@ public:
   static P3DInstanceManager *get_global_ptr();
 
 private:
-  string _p3d_root_directory;
+  void create_command_instance();
+
+private:
+  string _root_dir;
+  string _download_url;
+
+  P3DInstance *_command_instance;
 
   typedef set<P3DInstance *> Instances;
   Instances _instances;
 
   typedef map<string, P3DSession *> Sessions;
   Sessions _sessions;
+
+  typedef map<string, P3DPackage *> Packages;
+  Packages _packages;
 
   int _unique_session_index;
 

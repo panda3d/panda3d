@@ -1,9 +1,9 @@
 // This directory is still experimental.  Define HAVE_P3D_PLUGIN in
 // your Config.pp to build it.
-#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_PYTHON],$[HAVE_TINYXML]]
+#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_PYTHON],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB]]
 
 #begin lib_target
-  #define USE_PACKAGES tinyxml
+  #define USE_PACKAGES tinyxml openssl zlib
   #define TARGET p3d_plugin
 
   #define COMBINED_SOURCES \
@@ -18,6 +18,7 @@
     p3dFileDownload.h p3dFileDownload.I \
     p3dInstance.h p3dInstance.I \
     p3dInstanceManager.h p3dInstanceManager.I \
+    p3dPackage.h p3dPackage.I \
     p3dSession.h p3dSession.I
 
   #define INCLUDED_SOURCES \
@@ -26,6 +27,7 @@
     p3dFileDownload.cxx \
     p3dInstance.cxx \
     p3dInstanceManager.cxx \
+    p3dPackage.cxx \
     p3dSession.cxx
 
   #define INSTALL_HEADERS \

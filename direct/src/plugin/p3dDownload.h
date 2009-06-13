@@ -37,6 +37,8 @@ public:
   inline bool get_download_finished() const;
   inline bool get_download_success() const;
 
+  void cancel();
+
 public:
   // These are intended to be called only by P3DInstance.
   inline void set_download_id(int download_id);
@@ -62,6 +64,7 @@ protected:
   size_t _total_expected_data;
 
 private:
+  bool _canceled;
   int _download_id;
   string _url;
 };
