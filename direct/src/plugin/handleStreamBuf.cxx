@@ -327,8 +327,10 @@ write_chars(const char *start, size_t length) {
   while (remaining > 0) {
     ssize_t result = ::write(_handle, start, remaining);
     if (result < 0) {
-      cerr
-        << "Error writing " << remaining << " bytes\n";
+      if (errno != EPIPE) {
+        cerr
+          << "Error writing " << remaining << " bytes\n";
+      }
       return length - remaining;
     }
     

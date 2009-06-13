@@ -23,7 +23,7 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/utime.h>
+#include <utime.h>
 
 #ifdef _WIN32
 #include <direct.h>

@@ -132,8 +132,8 @@ start_instance(P3DInstance *inst) {
   send_command(doc);
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  P3DPackage *panda = inst_mgr->get_package("panda3d", "dev");
-  //  start_p3dpython();
+  //  P3DPackage *panda = inst_mgr->get_package("panda3d", "dev");
+  start_p3dpython();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -254,6 +254,14 @@ start_p3dpython() {
   env += '\0';
 
   env += "PYTHONPATH=";
+  env += _python_root_dir;
+  env += '\0';
+
+  env += "PRC_DIR=";
+  env += _python_root_dir;
+  env += '\0';
+
+  env += "PANDA_PRC_DIR=";
   env += _python_root_dir;
   env += '\0';
 

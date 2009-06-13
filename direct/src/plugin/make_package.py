@@ -1,4 +1,4 @@
-#! /bin/env python
+#! /usr/bin/env python
 
 """
 This command is used to build a downloadable package for the p3d
@@ -145,7 +145,9 @@ class PackageMaker:
         sub-directories. """
 
         startDir = self.startDir
-        if startDir.endswith(os.altsep) or startDir.endswith(os.sep):
+        if startDir.endswith(os.sep):
+            startDir = startDir[:-1]
+        elif os.altsep and startDir.endswith(os.altsep):
             startDir = startDir[:-1]
         prefix = startDir + os.sep
         for dirpath, dirnames, filenames in os.walk(startDir):
