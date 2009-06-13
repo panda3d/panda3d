@@ -43,7 +43,10 @@ FrameRateMeter(const string &name) : TextNode(name) {
   _text_pattern = frame_rate_meter_text_pattern;
   _clock_object = ClockObject::get_global_clock();
 
-  float height = get_font()->get_line_height();
+  // The top of the visible frame is 80% of the line height, based on
+  // the calculation within TextAssembler.
+  float height = get_font()->get_line_height() * 0.8;
+
   set_align(A_right);
   set_transform(LMatrix4f::scale_mat(frame_rate_meter_scale) * 
                 LMatrix4f::translate_mat(LVector3f::rfu(1.0f - frame_rate_meter_side_margins * frame_rate_meter_scale, 0.0f, 1.0f - frame_rate_meter_scale * height)));
