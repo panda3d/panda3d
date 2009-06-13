@@ -864,7 +864,7 @@ synthesize_shader(const RenderState *rs) {
       case Texture::TT_2d_texture: text << "xy";  break;
       case Texture::TT_1d_texture: text << "x";   break;
     }
-    text << ");\n\t float2 parallax_offset = l_eyevec.xyz * (tex" << _map_index_height;
+    text << ");\n\t float3 parallax_offset = l_eyevec.xyz * (tex" << _map_index_height;
     if (_map_height_in_alpha) {
       text << ".aaa";
     } else {
@@ -880,7 +880,7 @@ synthesize_shader(const RenderState *rs) {
       // The normal map coordinates aren't pushed (since that would give inconsistent behaviour when
       // the height map is packed with the normal map together).
       if (_map_index_height >= 0 && i != _map_index_normal) {
-        text << "\t l_texcoord" << i << ".xy += parallax_offset;\n";
+        text << "\t l_texcoord" << i << ".xyz += parallax_offset;\n";
       }
       text << "\t float4 tex" << i << " = tex" << texture_type_as_string(tex->get_texture_type());
       text << "(tex_" << i << ", l_texcoord" << i << ".";
@@ -897,10 +897,10 @@ synthesize_shader(const RenderState *rs) {
     if (_map_index_normal >= 0) {
       text << "\t // Translate tangent-space normal in map to view-space.\n";
       text << "\t float3 tsnormal = ((float3)tex" << _map_index_normal << " * 2) - 1;\n";
-      text << "\t l_eye_normal = l_eye_normal * tsnormal.z;\n";
-      text << "\t l_eye_normal+= l_tangent * tsnormal.x;\n";
-      text << "\t l_eye_normal+= l_binormal * tsnormal.y;\n";
-      text << "\t l_eye_normal = normalize(l_eye_normal);\n";
+      text << "\t l_eye_normal.xyz *= tsnormal.z;\n";
+      text << "\t l_eye_normal.xyz += l_tangent * tsnormal.x;\n";
+      text << "\t l_eye_normal.xyz += l_binormal * tsnormal.y;\n";
+      text << "\t l_eye_normal.xyz  = normalize(l_eye_normal.xyz);\n";
     } else {
       text << "\t // Correct the surface normal for interpolation effects\n";
       text << "\t l_eye_normal.xyz = normalize(l_eye_normal.xyz);\n";
@@ -951,7 +951,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lcolor = dlight_dlight" << i << "_rel_view[0];\n";
       text << "\t lspec  = dlight_dlight" << i << "_rel_view[1];\n";
       text << "\t lvec   = dlight_dlight" << i << "_rel_view[2];\n";
-      text << "\t lcolor *= saturate(dot(l_eye_normal, lvec.xyz));\n";
+      text << "\t lcolor *= saturate(dot(l_eye_normal.xyz, lvec.xyz));\n";
       if (_shadows && _dlights[i]->_shadow_caster) {
         if (_use_shadow_filter) {
           text << "\t lshad = shadow2DProj(k_dlighttex" << i << ", l_dlightcoord" << i << ").r;\n";
@@ -970,7 +970,7 @@ synthesize_shader(const RenderState *rs) {
         } else {
           text << "\t lhalf = dlight_dlight" << i << "_rel_view[3];\n";
         }
-        text << "\t lspec *= pow(saturate(dot(l_eye_normal, lhalf.xyz)), shininess);\n";
+        text << "\t lspec *= pow(saturate(dot(l_eye_normal.xyz, lhalf.xyz)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
     }
@@ -984,7 +984,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t ldist = length(float3(lvec));\n";
       text << "\t lvec /= ldist;\n";
       text << "\t lattenv = 1/(latten.x + latten.y*ldist + latten.z*ldist*ldist);\n";
-      text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal, lvec.xyz));\n";
+      text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal.xyz, lvec.xyz));\n";
       if (_have_diffuse) {
         text << "\t tot_diffuse += lcolor;\n";
       }
@@ -995,7 +995,7 @@ synthesize_shader(const RenderState *rs) {
           text << "\t lhalf = normalize(lvec - float4(0,1,0,0));\n";
         }
         text << "\t lspec *= lattenv;\n";
-        text << "\t lspec *= pow(saturate(dot(l_eye_normal, lhalf.xyz)), shininess);\n";
+        text << "\t lspec *= pow(saturate(dot(l_eye_normal.xyz, lhalf.xyz)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
     }
@@ -1013,7 +1013,7 @@ synthesize_shader(const RenderState *rs) {
       text << "\t lattenv = 1/(latten.x + latten.y*ldist + latten.z*ldist*ldist);\n";
       text << "\t lattenv *= pow(langle, latten.w);\n";
       text << "\t if (langle < ldir.w) lattenv = 0;\n";
-      text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal, lvec.xyz));\n";
+      text << "\t lcolor *= lattenv * saturate(dot(l_eye_normal.xyz, lvec.xyz));\n";
       if (_shadows && _slights[i]->_shadow_caster) {
         if (_use_shadow_filter) {
           text << "\t lshad = shadow2DProj(k_slighttex" << i << ", l_slightcoord" << i << ").r;\n";
@@ -1034,7 +1034,7 @@ synthesize_shader(const RenderState *rs) {
           text << "\t lhalf = normalize(lvec - float4(0,1,0,0));\n";
         }
         text << "\t lspec *= lattenv;\n";
-        text << "\t lspec *= pow(saturate(dot(l_eye_normal, lhalf.xyz)), shininess);\n";
+        text << "\t lspec *= pow(saturate(dot(l_eye_normal.xyz, lhalf.xyz)), shininess);\n";
         text << "\t tot_specular += lspec;\n";
       }
     }
