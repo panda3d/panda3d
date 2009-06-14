@@ -141,7 +141,7 @@ start_instance(P3DInstance *inst) {
     start_p3dpython();
   } else {
     // Otherwise, set a callback, so we'll know when it is ready.
-    if (_panda3d_callback != NULL) {
+    if (_panda3d_callback == NULL) {
       _panda3d_callback = new PackageCallback(this);
       _panda3d->set_callback(_panda3d_callback);
     }
@@ -635,7 +635,8 @@ posix_create_process(const string &program, const string &start_dir,
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DSession::PackageCallback::
-PackageCallback(P3DSession *session) {
+PackageCallback(P3DSession *session) : _session(session)
+{
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -645,5 +646,15 @@ PackageCallback(P3DSession *session) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::PackageCallback::
 package_ready(P3DPackage *package, bool success) {
+  if (this == _session->_panda3d_callback) {
+    _session->_panda3d_callback = NULL;
+    if (package == _session->_panda3d) {
+      _session->start_p3dpython();
+    } else {
+      cerr << "Unexpected panda3d package: " << package << "\n";
+    }
+  } else {
+    cerr << "Unexpected callback for P3DSession\n";
+  }
 }
 

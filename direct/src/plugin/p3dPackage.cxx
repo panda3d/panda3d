@@ -396,7 +396,8 @@ extract_archive() {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 report_done(bool success) {
-  cerr << "report_done(" << success << ")\n";
+  cerr << "report_done(" << success << "), "
+       << _callbacks.size() << " callbacks\n";
   if (success) {
     _ready = true;
     _failed = false;
@@ -501,6 +502,15 @@ stream_hex(ostream &out, const unsigned char *source, size_t size) {
     out.put(encode_hexdigit(high));
     out.put(encode_hexdigit(low));
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::Callback::package_ready
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void P3DPackage::Callback::
+package_ready(P3DPackage *package, bool success) {
 }
 
 ////////////////////////////////////////////////////////////////////
