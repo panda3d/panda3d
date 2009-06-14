@@ -14,6 +14,7 @@
 
 #include "datagram_ui.h"
 #include "datagramIterator.h"
+#include "pstrtod.h"
 
 #include <string>
 #include <stdlib.h>
@@ -57,7 +58,7 @@ operator >> (istream &in, NetDatagram &datagram) {
           while (p < line.length() && isdigit(line[p])) {
             p++;
           }
-          double num = atof(line.substr(start, p - start).c_str());
+          double num = patof(line.substr(start, p - start).c_str());
           datagram.add_int8(DE_float64);
           datagram.add_float64(num);
         } else {

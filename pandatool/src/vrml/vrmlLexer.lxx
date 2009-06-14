@@ -28,6 +28,7 @@
 #include "vrmlNode.h"
 #include "vrmlParser.h"
 #include "pnotify.h"
+#include "pstrtod.h"
 
 static int yyinput(void);        // declared by flex.
 extern "C" int vrmlyywrap();
@@ -160,13 +161,13 @@ int extract_int() {
 }
 
 double extract_float() {
-  return atof(yytext);
+  return patof(yytext);
 }
 
 void extract_vec(double vec[], int num_elements) {
   char *p = yytext;
   for (int i = 0; i < num_elements; i++) {
-    vec[i] = strtod(p, &p);
+    vec[i] = pstrtod(p, &p);
   }
 }
 

@@ -15,6 +15,7 @@
 #include "luse.h"
 #include "lmatrix.h"
 #include "compose_matrix.h"
+#include "pstrtod.h"
 
 #include "pnotify.h"
 #include <stdlib.h>
@@ -115,10 +116,10 @@ int main(int argc, char *argv[]) {
     LVecBase3f scale(1.0f, 1.0f, 1.0f);
 
     if (argc > 3) {
-      hpr.set(atof(argv[1]), atof(argv[2]), atof(argv[3]));
+      hpr.set(patof(argv[1]), patof(argv[2]), patof(argv[3]));
     }
     if (argc > 6) {
-      scale.set(atof(argv[4]), atof(argv[5]), atof(argv[6]));
+      scale.set(patof(argv[4]), patof(argv[5]), patof(argv[6]));
     }
 
     cerr << "< hpr = " << hpr << " scale = " << scale << "\n";

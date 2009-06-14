@@ -23,6 +23,7 @@
 #include "pointerTo.h"
 #include "referenceCount.h"
 #include "trueClock.h"
+#include "pstrtod.h"
 
 #ifdef WIN32_VC
 // Under Windows, the rand() function seems to return a sequence
@@ -133,7 +134,7 @@ main(int argc, char *argv[]) {
   double has_run_time = false;
   double run_time = 0.0;
   if (argc > 1) {
-    run_time = atof(argv[1]);
+    run_time = patof(argv[1]);
     cerr << "Running for " << run_time << " seconds\n";
     has_run_time = true;
   } else {

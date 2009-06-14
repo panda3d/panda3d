@@ -14,6 +14,7 @@
 
 #include "string_utils.h"
 #include "textEncoder.h"
+#include "pstrtod.h"
 
 #include <ctype.h>
 
@@ -370,7 +371,7 @@ double
 string_to_double(const string &str, string &tail) {
   const char *nptr = str.c_str();
   char *endptr;
-  double result = strtod(nptr, &endptr);
+  double result = pstrtod(nptr, &endptr);
   tail = endptr;
   return result;
 }
