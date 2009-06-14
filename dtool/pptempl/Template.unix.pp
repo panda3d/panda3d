@@ -122,7 +122,7 @@
 
 // And $[frameworks] is the set of OSX-style frameworks we will link with.
 #defer frameworks $[unique $[get_frameworks]]
-#defer bin_frameworks $[unique $[all_libs $[get_frameworks],$[complete_local_libs]]]
+#defer bin_frameworks $[unique $[get_frameworks] $[all_libs $[get_frameworks],$[complete_local_libs]]]
 //#defer bin_frameworks $[unique $[get_frameworks]]
 
 // This is the set of files we might copy into *.prebuilt, if we have

@@ -29,6 +29,7 @@
     nearly_zero.h \
     neverFreeMemory.h neverFreeMemory.I \
     numeric_types.h \
+    pstrtod.h \
     register_type.I register_type.h \
     selectThreadImpl.h \
     stl_compares.I stl_compares.h \
@@ -56,6 +57,7 @@
     mutexWin32Impl.cxx \
     mutexSpinlockImpl.cxx \
     neverFreeMemory.cxx \
+    pstrtod.cxx \
     register_type.cxx \
     typeHandle.cxx \
     typeRegistry.cxx typeRegistryNode.cxx \
@@ -83,6 +85,7 @@
     nearly_zero.h \
     neverFreeMemory.h neverFreeMemory.I \
     numeric_types.h \
+    pstrtod.h \
     register_type.I register_type.h \
     selectThreadImpl.h \
     stl_compares.I stl_compares.h \
@@ -95,3 +98,9 @@
     lookup3.h
 
 #end lib_target
+
+#begin test_bin_target
+  #define TARGET test_strtod
+  #define SOURCES test_strtod.cxx pstrtod.cxx pstrtod.h
+
+#end test_bin_target

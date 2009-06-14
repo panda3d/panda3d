@@ -25,6 +25,7 @@
 #include "cppCommentBlock.h"
 #include "cppBison.h"
 #include "indent.h"
+#include "pstrtod.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -1915,7 +1916,7 @@ get_number(int c, int c2) {
 
     _last_c = c;
     YYSTYPE result;
-    result.u.real = strtod(num.c_str(), (char **)NULL);
+    result.u.real = pstrtod(num.c_str(), (char **)NULL);
     return CPPToken(REAL, first_line, first_col, first_file, num, result);
   }
 
