@@ -13,6 +13,7 @@
 
 #begin bin_target
   #define TARGET dcparse
+  #define USE_PACKAGES zlib
 
   #define SOURCES \
     dcparse.cxx
