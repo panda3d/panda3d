@@ -34,17 +34,17 @@ P3DSession(P3DInstance *inst) {
   _session_key = inst->get_session_key();
   _python_version = inst->get_python_version();
 
-#ifdef _WIN32
-  _python_root_dir = "C:/p3drun";
-#else
-  _python_root_dir = "/Users/drose/p3drun";
-#endif
-
-  _python_state = PS_init;
+  _p3dpython_running = false;
   _started_read_thread = false;
   _read_thread_continue = false;
 
   _output_filename = inst->lookup_token("output_filename");
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  _panda3d = inst_mgr->get_package("panda3d", "dev");
+  _panda3d_callback = NULL;
+  _python_root_dir = _panda3d->get_package_dir();
 
   INIT_LOCK(_instances_lock);
 }
@@ -58,7 +58,12 @@ P3DSession(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 P3DSession::
 ~P3DSession() {
-  if (_python_state == PS_running) {
+  if (_panda3d_callback != NULL) {
+    _panda3d->cancel_callback(_panda3d_callback);
+    delete _panda3d_callback;
+  }
+
+  if (_p3dpython_running) {
     // Tell the process we're going away.
     TiXmlDocument doc;
     TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
@@ -131,9 +136,16 @@ start_instance(P3DInstance *inst) {
 
   send_command(doc);
 
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  //  P3DPackage *panda = inst_mgr->get_package("panda3d", "dev");
-  start_p3dpython();
+  if (_panda3d->get_ready()) {
+    // If it's ready immediately, go ahead and start.
+    start_p3dpython();
+  } else {
+    // Otherwise, set a callback, so we'll know when it is ready.
+    if (_panda3d_callback != NULL) {
+      _panda3d_callback = new PackageCallback(this);
+      _panda3d->set_callback(_panda3d_callback);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -177,7 +189,7 @@ terminate_instance(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 send_command(TiXmlDocument *command) {
-  if (_python_state == PS_running) {
+  if (_p3dpython_running) {
     // Python is running.  Send the command.
     _pipe_write << *command << flush;
     delete command;
@@ -185,31 +197,6 @@ send_command(TiXmlDocument *command) {
     // Python not yet running.  Queue up the command instead.
     _commands.push_back(command);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::download_p3dpython
-//       Access: Private
-//  Description: Starts the Python package downloading.  Once it is
-//               fully downloaded and unpacked, automatically calls
-//               start_p3dpython.
-////////////////////////////////////////////////////////////////////
-void P3DSession::
-download_p3dpython(P3DInstance *inst) {
-  /*
-  P3DFileDownload *download = new P3DFileDownload();
-  download->set_url("http://fewmet/~drose/p3drun.tgz");
-
-  string local_filename = "temp.tgz";
-  if (!download->set_filename(local_filename)) {
-    cerr << "Could not open " << local_filename << "\n";
-    return;
-  }
-
-  inst->start_download(download);
-  */
-
-  //  start_p3dpython();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -281,7 +268,7 @@ start_p3dpython() {
     cerr << "Failed to create process.\n";
     return;
   }
-  _python_state = PS_running;
+  _p3dpython_running = true;
 
   cerr << "Created child process\n";
 
@@ -640,3 +627,23 @@ posix_create_process(const string &program, const string &start_dir,
   return child;
 }
 #endif  // _WIN32
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::PackageCallback::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DSession::PackageCallback::
+PackageCallback(P3DSession *session) {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::PackageCallback::package_ready
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void P3DSession::PackageCallback::
+package_ready(P3DPackage *package, bool success) {
+}
+

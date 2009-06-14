@@ -17,6 +17,7 @@
 
 #include "p3d_plugin_common.h"
 #include "handleStream.h"
+#include "p3dPackage.h"
 
 #include <map>
 #include <vector>
@@ -46,7 +47,6 @@ public:
 
 private:
   void send_command(TiXmlDocument *command);
-  void download_p3dpython(P3DInstance *inst);
   void start_p3dpython();
 
   void spawn_read_thread();
@@ -76,14 +76,6 @@ private:
 #endif
 
 private:
-  enum PythonState {
-    PS_init,
-    PS_downloading,
-    PS_running,
-    PS_done,
-  };
-  PythonState _python_state;
-
   string _session_key;
   string _python_version;
   string _output_filename;
@@ -100,12 +92,25 @@ private:
   typedef vector<TiXmlDocument *> Commands;
   Commands _commands;
 
+  class PackageCallback : public P3DPackage::Callback {
+  public:
+    PackageCallback(P3DSession *session);
+    virtual void package_ready(P3DPackage *package, bool success);
+    
+  private:
+    P3DSession *_session;
+  };
+
+  P3DPackage *_panda3d;
+  PackageCallback *_panda3d_callback;
+
   // Members for communicating with the p3dpython child process.
 #ifdef _WIN32
   HANDLE _p3dpython_handle;
 #else
   int _p3dpython_pid;
 #endif
+  bool _p3dpython_running;
 
   // The remaining members are manipulated by or for the read thread.
   bool _started_read_thread;
@@ -118,6 +123,8 @@ private:
 #else
   pthread_t _read_thread;
 #endif
+
+  friend class PackageCallback;
 };
 
 #include "p3dSession.I"

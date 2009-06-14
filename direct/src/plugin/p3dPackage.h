@@ -42,6 +42,7 @@ public:
 
   inline bool get_ready() const;
   inline bool get_failed() const;
+  inline const string &get_package_dir() const;
 
   void set_callback(Callback *callback);
   void cancel_callback(Callback *callback);

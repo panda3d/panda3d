@@ -17,9 +17,11 @@
 
 #include "openssl/md5.h"
 #include "zlib.h"
+#include "libtar.h"
 
 #include <algorithm>
 #include <fstream>
+#include <fcntl.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -110,6 +112,7 @@ set_callback(Callback *callback) {
   if (_ready || _failed) {
     // Actually, we're already done.  Signal the callback immediately.
     callback->package_ready(this, _ready);
+    delete callback;
   } else {
     // Bootstrap still in progress.  Save the callback.
     _callbacks.push_back(callback);
@@ -360,6 +363,28 @@ void P3DPackage::
 extract_archive() {
   cerr << "extracting " << _uncompressed_archive._filename << "\n";
 
+  string source_pathname = _package_dir + "/" + _uncompressed_archive._filename;
+
+  TAR *tar = NULL;
+  int result = tar_open
+    (&tar, (char *)source_pathname.c_str(), NULL, O_RDONLY, 0666, TAR_VERBOSE);
+  if (result != 0) {
+    cerr << "Unable to open " << source_pathname << "\n";
+    report_done(false);
+    return;
+  }
+
+  while (th_read(tar) == 0) {
+    string basename = th_get_pathname(tar);
+    cerr << basename << "\n";
+    string pathname = _package_dir + "/" + basename;
+    tar_extract_file(tar, (char *)pathname.c_str());
+  }
+
+  tar_close(tar);
+
+  cerr << "done extracting\n";
+  report_done(true);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -371,6 +396,7 @@ extract_archive() {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 report_done(bool success) {
+  cerr << "report_done(" << success << ")\n";
   if (success) {
     _ready = true;
     _failed = false;
@@ -384,6 +410,7 @@ report_done(bool success) {
   Callbacks::iterator ci;
   for (ci = orig_callbacks.begin(); ci != orig_callbacks.end(); ++ci) {
     (*ci)->package_ready(this, _ready);
+    delete (*ci);
   }
 
   // We shouldn't have added any more callbacks during the above loop.
@@ -400,6 +427,10 @@ start_download(P3DPackage::DownloadType dtype, const string &url,
                const string &pathname, bool allow_partial) {
   // Only one download should be active at a time
   assert(_active_download == NULL);
+  
+  if (!allow_partial) {
+    unlink(pathname.c_str());
+  }
 
   Download *download = new Download(this, dtype);
   download->set_url(url);
@@ -407,10 +438,6 @@ start_download(P3DPackage::DownloadType dtype, const string &url,
 
   // TODO: implement partial file re-download.
   allow_partial = false;
-  
-  if (!allow_partial) {
-    unlink(pathname.c_str());
-  }
 
   _active_download = download;
   _partial_download = false;

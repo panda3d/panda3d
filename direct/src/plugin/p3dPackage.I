@@ -37,6 +37,17 @@ get_failed() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_package_dir
+//       Access: Public
+//  Description: Returns the directory into which this package is
+//               installed.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DPackage::
+get_package_dir() const {
+  return _package_dir;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::decode_hexdigit
 //       Access: Private
 //  Description: Returns the integer value corresponding to the

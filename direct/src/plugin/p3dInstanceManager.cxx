@@ -73,8 +73,13 @@ P3DInstanceManager::
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
 initialize() {
+#ifdef _WIN32
   _root_dir = "c:/cygwin/home/drose/p3ddir";
   _download_url = "http://10.196.143.118/~drose/";
+#else
+  _root_dir = "/Users/drose/p3ddir";
+  _download_url = "http://orpheus.ddrose.com/~drose/";
+#endif
   return true;
 }
 

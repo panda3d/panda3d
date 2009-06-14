@@ -44,8 +44,7 @@ set_filename(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 bool P3DFileDownload::
 open_file() {
-  unlink(_filename.c_str());
-  _file.open(_filename.c_str(), ios::out | ios::trunc | ios::binary);
+  _file.open(_filename.c_str(), ios::out | ios::ate | ios::binary);
   if (!_file) {
     return false;
   }
