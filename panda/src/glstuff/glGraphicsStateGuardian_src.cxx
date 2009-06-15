@@ -407,7 +407,7 @@ reset() {
     }
   }
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   if (_supports_vertex_blend) {
     GLP(Enable)(GL_WEIGHT_SUM_UNITY_ARB);
 
@@ -477,13 +477,12 @@ reset() {
 
   if (_supports_matrix_palette) {
     GLint max_palette_matrices = 0;
-#ifndef OPENGLES_2
 #ifdef OPENGLES_1
     GLP(GetIntegerv)(GL_MAX_PALETTE_MATRICES_OES, &max_palette_matrices);
-#else
+#endif
+#ifndef OPENGLES
     GLP(GetIntegerv)(GL_MAX_PALETTE_MATRICES_ARB, &max_palette_matrices);
-#endif  // OPENGLES_1
-#endif  // OPENGLES_2
+#endif
     _max_vertex_transform_indices = max_palette_matrices;
     if (GLCAT.is_debug()) {
       GLCAT.debug()
@@ -562,13 +561,17 @@ reset() {
     }
   }
 
+#ifdef OPENGLES_2
+  _supports_cube_map = true;
+#else
   _supports_cube_map =
     has_extension("GL_ARB_texture_cube_map") || is_at_least_gl_version(1, 3) ||
     has_extension("GL_OES_texture_cube_map");
+#endif
 
   _supports_compressed_texture = false;
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   if (is_at_least_gl_version(1, 3)) {
     _supports_compressed_texture = true;
 
@@ -961,7 +964,7 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "BlitFramebufferEXT");
   }
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   _glDrawBuffers = NULL;
   if (is_at_least_gl_version(2, 0)) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
@@ -977,7 +980,7 @@ reset() {
     _max_draw_buffers = max_draw_buffers;
     _maximum_simultaneous_render_targets = max_draw_buffers;
   }
-#endif  // OPENGLES_2
+#endif  // OPENGLES
 
   _max_fb_samples = 0;
 #ifndef OPENGLES
@@ -1023,7 +1026,7 @@ reset() {
     }
   }
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   if (_supports_occlusion_query) {
     if (_glGenQueries == NULL || _glBeginQuery == NULL ||
         _glEndQuery == NULL || _glDeleteQueries == NULL ||
@@ -1087,7 +1090,7 @@ reset() {
     _glBlendColor = null_glBlendColor;
   }
 
-#ifdef OPENGLES_2
+#ifdef OPENGLES
   _edge_clamp = GL_CLAMP_TO_EDGE;
 #else
   _edge_clamp = GL_CLAMP;
@@ -1098,7 +1101,7 @@ reset() {
 #endif
 
   _border_clamp = _edge_clamp;
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   if (CLP(support_clamp_to_border) &&
       (has_extension("GL_ARB_texture_border_clamp") ||
        is_at_least_gl_version(1, 3))) {
@@ -1116,7 +1119,7 @@ reset() {
   _mirror_clamp = _edge_clamp;
   _mirror_edge_clamp = _edge_clamp;
   _mirror_border_clamp = _border_clamp;
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   if (has_extension("GL_EXT_texture_mirror_clamp")) {
     _mirror_clamp = GL_MIRROR_CLAMP_EXT;
     _mirror_edge_clamp = GL_MIRROR_CLAMP_TO_EDGE_EXT;
@@ -1146,9 +1149,7 @@ reset() {
   _max_texture_dimension = max_texture_size;
 
   if (_supports_3d_texture) {
-#ifdef OPENGLES_2
-    GLP(GetIntegerv)(GL_MAX_3D_TEXTURE_SIZE_OES, &max_3d_texture_size);
-#else
+#ifndef OPENGLES_1
     GLP(GetIntegerv)(GL_MAX_3D_TEXTURE_SIZE, &max_3d_texture_size);
 #endif
     _max_3d_texture_dimension = max_3d_texture_size;
@@ -1220,7 +1221,7 @@ reset() {
         GLP(GetIntegerv)(GL_COMPRESSED_TEXTURE_FORMATS, formats);
         for (int i = 0; i < num_compressed_formats; ++i) {
           switch (formats[i]) {
-#ifndef OPENGLES_2
+#ifndef OPENGLES
           case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
             GLCAT.debug(false) << "  GL_COMPRESSED_RGB_S3TC_DXT1_EXT\n";
             break;
@@ -1615,7 +1616,7 @@ clear(DrawableRegion *clearable) {
     if (mask & GL_STENCIL_BUFFER_BIT) {
       GLCAT.spam(false) << "GL_STENCIL_BUFFER_BIT|";
     }
-#ifndef OPENGLES_2
+#ifndef OPENGLES
     if (mask & GL_ACCUM_BUFFER_BIT) {
       GLCAT.spam(false) << "GL_ACCUM_BUFFER_BIT|";
     }
@@ -1999,7 +2000,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   const GeomVertexAnimationSpec &animation =
     _data_reader->get_format()->get_animation();
   bool hardware_animation = (animation.get_animation_type() == Geom::AT_hardware);
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   if (hardware_animation) {
     // Set up the transform matrices for vertex blending.
     nassertr(_supports_vertex_blend, false);
@@ -2388,6 +2389,7 @@ update_standard_vertex_arrays(bool force) {
     }
     _last_max_stage_index = max_stage_index;
 
+#ifndef OPENGLES
     if (_supports_vertex_blend) {
       if (hardware_animation) {
         // Issue the weights and/or transform indices for vertex blending.
@@ -2427,6 +2429,7 @@ update_standard_vertex_arrays(bool force) {
         }
       }
     }
+#endif
 
     // There's no requirement that we add vertices last, but we do
     // anyway.
@@ -2503,12 +2506,14 @@ disable_standard_vertex_arrays()
   _last_max_stage_index = 0;
   report_my_gl_errors();
 
+#ifndef OPENGLES
   if (_supports_vertex_blend) {
     GLP(DisableClientState)(GL_WEIGHT_ARRAY_ARB);
     if (_supports_matrix_palette) {
       GLP(DisableClientState)(GL_MATRIX_INDEX_ARRAY_ARB);
     }
   }
+#endif
 
   GLP(DisableClientState)(GL_VERTEX_ARRAY);
   report_my_gl_errors();
@@ -2839,9 +2844,7 @@ end_draw_primitives() {
     _primitive_batches_display_list_pcollector.add_level(1);
   }
   _geom_display_list = 0;
-#endif  // OPENGLES
 
-#ifndef OPENGLES_2
   // Clean up the vertex blending state.
   if (_vertex_blending_enabled) {
     GLP(Disable)(GL_VERTEX_BLEND_ARB);
@@ -2850,7 +2853,9 @@ end_draw_primitives() {
     }
     _vertex_blending_enabled = false;
   }
+#endif
 
+#ifndef OPENGLES_2
   if (_transform_stale) {
     GLP(MatrixMode)(GL_MODELVIEW);
     GLP(LoadMatrixf)(_internal_transform->get_mat().get_data());
@@ -3677,9 +3682,6 @@ framebuffer_copy_to_texture(Texture *tex, int z, const DisplayRegion *dr,
   }
 
   if (new_image) {
-    if (internal_format == GL_RGBA) {
-      internal_format = GL_RGB;
-    }
     // We have to create a new image.
     // It seems that OpenGL accepts a size higher than the framebuffer,
     // but if we run into trouble we'll have to replace this with
@@ -3806,10 +3808,12 @@ framebuffer_copy_to_ram(Texture *tex, int z, const DisplayRegion *dr,
     case GL_RGBA:
       GLCAT.spam(false) << "GL_RGBA, ";
       break;
-#ifndef OPENGLES_2
+#ifndef OPENGLES
     case GL_BGR:
       GLCAT.spam(false) << "GL_BGR, ";
       break;
+#endif
+#ifndef OPENGLES_2
     case GL_BGRA:
       GLCAT.spam(false) << "GL_BGRA, ";
       break;
@@ -5262,8 +5266,10 @@ get_numeric_type(Geom::NumericType numeric_type) {
   case Geom::NT_uint16:
     return GL_UNSIGNED_SHORT;
 
+#ifndef OPENGLES_1
   case Geom::NT_uint32:
     return GL_UNSIGNED_INT;
+#endif
 
   case Geom::NT_uint8:
   case Geom::NT_packed_dcba:
@@ -5288,7 +5294,7 @@ get_numeric_type(Geom::NumericType numeric_type) {
 GLenum CLP(GraphicsStateGuardian)::
 get_texture_target(Texture::TextureType texture_type) const {
   switch (texture_type) {
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case Texture::TT_1d_texture:
     return GL_TEXTURE_1D;
 #endif
@@ -5298,10 +5304,7 @@ get_texture_target(Texture::TextureType texture_type) const {
 
   case Texture::TT_3d_texture:
     if (_supports_3d_texture) {
-#ifdef OPENGLES_2
-      return GL_TEXTURE_3D_OES;
-#endif
-#ifndef OPENGLES
+#ifndef OPENGLES_1
       return GL_TEXTURE_3D;
 #endif
     } else {
@@ -5363,13 +5366,13 @@ get_texture_wrap_mode(Texture::WrapMode wm) const {
 Texture::WrapMode CLP(GraphicsStateGuardian)::
 get_panda_wrap_mode(GLenum wm) {
   switch (wm) {
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case GL_CLAMP:
 #endif
   case GL_CLAMP_TO_EDGE:
     return Texture::WM_clamp;
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case GL_CLAMP_TO_BORDER:
     return Texture::WM_border_color;
 #endif
@@ -5377,7 +5380,7 @@ get_panda_wrap_mode(GLenum wm) {
   case GL_REPEAT:
     return Texture::WM_repeat;
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case GL_MIRROR_CLAMP_EXT:
   case GL_MIRROR_CLAMP_TO_EDGE_EXT:
     return Texture::WM_mirror;
@@ -5489,11 +5492,7 @@ get_component_type(Texture::ComponentType component_type) {
     return GL_UNSIGNED_BYTE;
 #else
     if (_supports_depth_stencil) {
-#ifdef OPENGLES_1
-      return GL_UNSIGNED_INT_24_8_OES;
-#else
       return GL_UNSIGNED_INT_24_8_EXT;
-#endif  // OPENGLES_1
     } else {
       return GL_UNSIGNED_BYTE;
     }
@@ -5513,7 +5512,7 @@ get_component_type(Texture::ComponentType component_type) {
 GLint CLP(GraphicsStateGuardian)::
 get_external_image_format(Texture *tex) const {
   Texture::CompressionMode compression = tex->get_ram_image_compression();
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   if (compression != Texture::CM_off &&
       get_supports_compressed_texture_format(compression)) {
     switch (compression) {
@@ -5588,7 +5587,7 @@ get_external_image_format(Texture *tex) const {
 #endif
 
   switch (tex->get_format()) {
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case Texture::F_color_index:
     return GL_COLOR_INDEX;
 #endif
@@ -5603,6 +5602,8 @@ get_external_image_format(Texture *tex) const {
       return GL_DEPTH_COMPONENT;
 #ifndef OPENGLES_2
     }
+#endif
+#ifndef OPENGLES
   case Texture::F_red:
     return GL_RED;
   case Texture::F_green:
@@ -5617,7 +5618,7 @@ get_external_image_format(Texture *tex) const {
   case Texture::F_rgb8:
   case Texture::F_rgb12:
   case Texture::F_rgb332:
-#ifdef OPENGLES_2
+#ifdef OPENGLES
     return GL_RGB;
 #else
     return _supports_bgr ? GL_BGR : GL_RGB;
@@ -5665,7 +5666,7 @@ get_internal_image_format(Texture *tex) const {
   }
   bool is_3d = (tex->get_texture_type() == Texture::TT_3d_texture);
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   if (get_supports_compressed_texture_format(compression)) {
     switch (compression) {
     case Texture::CM_on:
@@ -5789,7 +5790,7 @@ get_internal_image_format(Texture *tex) const {
 #endif
 
   switch (tex->get_format()) {
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case Texture::F_color_index:
     return GL_COLOR_INDEX;
 #endif
@@ -5847,7 +5848,7 @@ get_internal_image_format(Texture *tex) const {
 
   case Texture::F_rgb:
     return GL_RGB;
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case Texture::F_rgb5:
     return GL_RGB5;
 #endif
@@ -5865,7 +5866,7 @@ get_internal_image_format(Texture *tex) const {
     return GL_RGB12;
 #endif  // OPENGLES
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case Texture::F_rgb332:
     return GL_R3_G3_B2;
 #endif
@@ -5919,7 +5920,7 @@ is_mipmap_filter(GLenum min_filter) {
 ////////////////////////////////////////////////////////////////////
 bool CLP(GraphicsStateGuardian)::
 is_compressed_format(GLenum format) {
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   switch (format) {
   case GL_COMPRESSED_RGB:
   case GL_COMPRESSED_RGBA:
@@ -6115,7 +6116,7 @@ get_blend_equation_type(ColorBlendAttrib::Mode mode) {
   case ColorBlendAttrib::M_inv_subtract:
     return GL_FUNC_REVERSE_SUBTRACT;
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case ColorBlendAttrib::M_min:
     return GL_MIN;
 
@@ -6168,6 +6169,7 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
   case ColorBlendAttrib::O_one_minus_fbuffer_alpha:
     return GL_ONE_MINUS_DST_ALPHA;
 
+#ifndef OPENGLES_1
   case ColorBlendAttrib::O_constant_color:
   case ColorBlendAttrib::O_color_scale:
     return GL_CONSTANT_COLOR;
@@ -6183,6 +6185,7 @@ get_blend_func(ColorBlendAttrib::Operand operand) {
   case ColorBlendAttrib::O_one_minus_constant_alpha:
   case ColorBlendAttrib::O_one_minus_alpha_scale:
     return GL_ONE_MINUS_CONSTANT_ALPHA;
+#endif
 
   case ColorBlendAttrib::O_incoming_color_saturate:
     return GL_SRC_ALPHA_SATURATE;
@@ -6242,7 +6245,7 @@ print_gfx_visual() {
   GLP(GetIntegerv)( GL_BLUE_BITS, &i ); cout << i << " ";
   GLP(GetIntegerv)( GL_ALPHA_BITS, &i ); cout << i << endl;
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   cout << "Accum RGBA: ";
   GLP(GetIntegerv)( GL_ACCUM_RED_BITS, &i ); cout << i << " ";
   GLP(GetIntegerv)( GL_ACCUM_GREEN_BITS, &i ); cout << i << " ";
@@ -6256,7 +6259,7 @@ print_gfx_visual() {
   GLP(GetIntegerv)( GL_ALPHA_BITS, &i ); cout << "Alpha: " << i << endl;
   GLP(GetIntegerv)( GL_STENCIL_BITS, &i ); cout << "Stencil: " << i << endl;
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   GLP(GetBooleanv)( GL_DOUBLEBUFFER, &j ); cout << "DoubleBuffer? "
                                                 << (int)j << endl;
 
@@ -6276,7 +6279,9 @@ print_gfx_visual() {
                                                 << (int)j << endl;
   GLP(GetBooleanv)( GL_LINE_SMOOTH, &j ); cout << "Line Smooth? "
                                                << (int)j << endl;
+#endif
 
+#ifndef OPENGLES
   GLP(GetIntegerv)( GL_AUX_BUFFERS, &i ); cout << "Aux Buffers: " << i << endl;
 #endif
 }
@@ -6980,13 +6985,10 @@ update_standard_texture_bindings() {
     // First, turn off the previous texture mode.
 #ifndef OPENGLES
     GLP(Disable)(GL_TEXTURE_1D);
-#endif  // OPENGLES
+#endif
     GLP(Disable)(GL_TEXTURE_2D);
     if (_supports_3d_texture) {
-#ifdef OPENGLES_2
-      GLP(Disable)(GL_TEXTURE_3D_OES);
-#endif
-#ifndef OPENGLES
+#ifndef OPENGLES_1
       GLP(Disable)(GL_TEXTURE_3D);
 #endif
     }
@@ -7136,7 +7138,7 @@ update_standard_texture_bindings() {
       last_stage = i;
     }
   }
-
+  
   // Disable the texture stages that are no longer used.
   for (i = num_stages; i < _num_active_texture_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
@@ -7145,10 +7147,7 @@ update_standard_texture_bindings() {
 #endif  // OPENGLES
     GLP(Disable)(GL_TEXTURE_2D);
     if (_supports_3d_texture) {
-#ifdef OPENGLES_2
-      GLP(Disable)(GL_TEXTURE_3D_OES);
-#endif
-#ifndef OPENGLES
+#ifndef OPENGLES_1
       GLP(Disable)(GL_TEXTURE_3D);
 #endif
     }
@@ -7207,14 +7206,12 @@ update_show_usage_texture_bindings(int show_stage_index) {
   // Disable all texture stages.
   for (i = 0; i < _num_active_texture_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
-#ifndef OPENGLES_2
+#ifndef OPENGLES
     GLP(Disable)(GL_TEXTURE_1D);
 #endif
     GLP(Disable)(GL_TEXTURE_2D);
     if (_supports_3d_texture) {
-#ifdef OPENGLES_2
-      GLP(Disable)(GL_TEXTURE_3D_OES);
-#else
+#ifndef OPENGLES_1
       GLP(Disable)(GL_TEXTURE_3D);
 #endif
     }
@@ -7345,14 +7342,12 @@ disable_standard_texture_bindings() {
   // Disable the texture stages that are no longer used.
   for (int i = 0; i < _num_active_texture_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
-#ifndef OPENGLES_2
+#ifndef OPENGLES
     GLP(Disable)(GL_TEXTURE_1D);
 #endif
     GLP(Disable)(GL_TEXTURE_2D);
     if (_supports_3d_texture) {
-#ifdef OPENGLES_2
-      GLP(Disable)(GL_TEXTURE_3D_OES);
-#else
+#ifndef OPENGLES_1
       GLP(Disable)(GL_TEXTURE_3D);
 #endif
     }
@@ -7706,7 +7701,7 @@ specify_texture(CLP(TextureContext) *gtc) {
 
   GLP(TexParameteri)(target, GL_TEXTURE_WRAP_S,
                      get_texture_wrap_mode(tex->get_wrap_u()));
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   if (target != GL_TEXTURE_1D) {
     GLP(TexParameteri)(target, GL_TEXTURE_WRAP_T,
                        get_texture_wrap_mode(tex->get_wrap_v()));
@@ -7717,14 +7712,13 @@ specify_texture(CLP(TextureContext) *gtc) {
     GLP(TexParameteri)(target, GL_TEXTURE_WRAP_R_OES,
                        get_texture_wrap_mode(tex->get_wrap_w()));
   }
-#else
+#endif
+#ifndef OPENGLES
   if (target == GL_TEXTURE_3D) {
     GLP(TexParameteri)(target, GL_TEXTURE_WRAP_R,
                        get_texture_wrap_mode(tex->get_wrap_w()));
   }
-#endif
 
-#ifndef OPENGLES
   Colorf border_color = tex->get_border_color();
   GLP(TexParameterfv)(target, GL_TEXTURE_BORDER_COLOR,
                       border_color.get_data());
@@ -7770,7 +7764,7 @@ specify_texture(CLP(TextureContext) *gtc) {
     GLP(TexParameterf)(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
   } 
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   if (tex->get_format() == Texture::F_depth_stencil ||
       tex->get_format() == Texture::F_depth_component) {
     GLP(TexParameteri)(target, GL_DEPTH_TEXTURE_MODE_ARB, GL_INTENSITY);
@@ -7956,7 +7950,7 @@ upload_texture(CLP(TextureContext) *gtc, bool force) {
   if (image_compression != Texture::CM_off) {
     Texture::QualityLevel quality_level = tex->get_effective_quality_level();
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
     switch (quality_level) {
     case Texture::QL_fastest:
       GLP(Hint)(GL_TEXTURE_COMPRESSION_HINT, GL_FASTEST);
@@ -8274,9 +8268,11 @@ upload_texture_image(CLP(TextureContext) *gtc,
 
 #ifdef OPENGLES_2
       case GL_TEXTURE_3D_OES:
-#else
+#endif
+#ifndef OPENGLES
       case GL_TEXTURE_3D:
 #endif
+#ifndef OPENGLES_1
         if (_supports_3d_texture) {
           if (image_compression == Texture::CM_off) {
             _glTexSubImage3D(page_target, n - mipmap_bias, 0, 0, 0, width, height, depth,
@@ -8290,7 +8286,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
           return false;
         }
         break;
-
+#endif
       default:
         if (image_compression == Texture::CM_off) {
           if (n==0) {
@@ -8405,9 +8401,11 @@ upload_texture_image(CLP(TextureContext) *gtc,
 #ifndef OPENGLES_1  // 3-d textures not supported by OpenGL ES 1.  Fall through.
 #ifdef OPENGLES_2
       case GL_TEXTURE_3D_OES:
-#else
+#endif
+#ifndef OPENGLES
       case GL_TEXTURE_3D:
 #endif
+#ifndef OPENGLES_1
         if (_supports_3d_texture) {
           if (image_compression == Texture::CM_off) {
             _glTexImage3D(page_target, n - mipmap_bias, internal_format,
@@ -8423,6 +8421,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
           return false;
         }
         break;
+#endif
 #endif  // OPENGLES  // OpenGL ES will fall through.
 
       default:
@@ -8452,7 +8451,7 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
   }
 
-#ifndef OPENGLES_2 // OpenGL ES 2.0 doesn't have GL_TEXTURE_MAX_LEVEL.
+#ifndef OPENGLES // OpenGL ES doesn't have GL_TEXTURE_MAX_LEVEL.
   if (is_at_least_gl_version(1, 2)) {
     if (load_ram_mipmaps) {
       // By the time we get here, we have successfully loaded a certain
@@ -8524,7 +8523,7 @@ upload_simple_texture(CLP(TextureContext) *gtc) {
       << "loading simple image for " << tex->get_name() << "\n";
   }
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   // Turn off mipmaps for the simple texture.
   if (tex->uses_mipmaps()) {
     if (is_at_least_gl_version(1, 2)) {
@@ -8715,7 +8714,8 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   if (_supports_3d_texture) {
 #ifdef OPENGLES_2
     GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_R_OES, &wrap_w);
-#else
+#endif
+#ifndef OPENGLES
     GLP(GetTexParameteriv)(target, GL_TEXTURE_WRAP_R, &wrap_w);
 #endif
   }
@@ -8725,7 +8725,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   magfilter = GL_LINEAR;
   //  GLP(GetTexParameteriv)(target, GL_TEXTURE_MAG_FILTER, &magfilter);
 
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   GLP(GetTexParameterfv)(target, GL_TEXTURE_BORDER_COLOR, border_color);
 #endif
 
@@ -8776,7 +8776,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   Texture::CompressionMode compression = Texture::CM_off;
 
   switch (internal_format) {
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case GL_COLOR_INDEX:
     format = Texture::F_color_index;
     break;
@@ -8792,12 +8792,6 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     format = Texture::F_depth_stencil;
     break;
 #endif
-#ifdef OPENGLES_1
-  case GL_DEPTH24_STENCIL8_OES:
-    type = Texture::T_float;
-    format = Texture::F_depth_stencil;
-    break;
-#endif
   case GL_RGBA:
   case 4:
     format = Texture::F_rgba;
@@ -8809,6 +8803,8 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_RGBA8:
     format = Texture::F_rgba8;
     break;
+#endif
+#ifndef OPENGLES
   case GL_RGBA12:
     type = Texture::T_unsigned_short;
     format = Texture::F_rgba12;
@@ -8819,7 +8815,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case 3:
     format = Texture::F_rgb;
     break;
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case GL_RGB5:
     format = Texture::F_rgb5;
     break;
@@ -8827,7 +8823,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_RGB5_A1:
     format = Texture::F_rgba5;
     break;
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case GL_RGB8:
     format = Texture::F_rgb8;
     break;
@@ -8942,7 +8938,7 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
     // Also get the mipmap levels.
     GLint num_expected_levels = tex->get_expected_num_mipmap_levels();
     GLint highest_level = num_expected_levels;
-#ifndef OPENGLES_2
+#ifndef OPENGLES
     if (is_at_least_gl_version(1, 2)) {
       GLP(GetTexParameteriv)(target, GL_TEXTURE_MAX_LEVEL, &highest_level);
       highest_level = min(highest_level, num_expected_levels);
@@ -9143,7 +9139,11 @@ bind_fbo(GLuint fbo) {
   nassertv(_glBindFramebuffer != 0);
 #ifdef OPENGLES_2
   _glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-#else
+#endif
+#ifdef OPENGLES_1
+  _glBindFramebuffer(GL_FRAMEBUFFER_OES, fbo);
+#endif
+#ifndef OPENGLES
   _glBindFramebuffer(GL_FRAMEBUFFER_EXT, fbo);
 #endif
   _current_fbo = fbo;
@@ -9169,8 +9169,13 @@ static int gl_stencil_operations_array [ ] = {
   GL_KEEP,
   GL_ZERO,
   GL_REPLACE,
+#ifdef OPENGLES_1
+  GL_INCR_WRAP_OES,
+  GL_DECR_WRAP_OES,
+#else
   GL_INCR_WRAP,
   GL_DECR_WRAP,
+#endif
   GL_INVERT,
   
   GL_INCR,
@@ -9268,7 +9273,7 @@ void gl_stencil_function (StencilRenderStates::StencilRenderState stencil_render
       glDisable (GL_STENCIL_TEST);
     }
     break;
-#ifndef OPENGLES_2
+#ifndef OPENGLES
   case StencilRenderStates::SRS_back_enable:
     if (supports_two_sided_stencil) {
       if (render_state_value) {
