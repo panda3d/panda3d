@@ -832,13 +832,18 @@ reset() {
     _glBindProgram = (PFNGLBINDPROGRAMARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "BindProgramARB");
     // Bug workaround for radeons.
+    // For some reason, OSX reports to have this extension too,
+    // even when there's no ATI card, resulting in cgc not being
+    // able to find the hint. So, I've disabled the hack there.
+#ifndef IS_OSX
     if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
       if (has_extension("GL_ATI_draw_buffers")) {
         _shader_caps._bug_list.insert(Shader::SBUG_ati_draw_buffers);
       }
-    }    
+    }
+#endif // IS_OSX
   }
-#endif
+#endif // HAVE_CG
 
 #ifdef OPENGLES_2
   // In OpenGL ES 2.x, FBO's are supported in the core.
