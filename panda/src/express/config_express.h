@@ -22,6 +22,9 @@
 #include "configVariableBool.h"
 #include "configVariableInt.h"
 
+// Include this so interrogate can find it.
+#include "executionEnvironment.h"
+
 ConfigureDecl(config_express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(express, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
 NotifyCategoryDecl(clock, EXPCL_PANDAEXPRESS, EXPTP_PANDAEXPRESS);
