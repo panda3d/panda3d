@@ -2286,7 +2286,7 @@ update_standard_vertex_arrays(bool force) {
         if (animation.get_indexed_transforms()) {
           // Issue the matrix palette indices.
           _sender.add_vector_uint_column(_data_reader, InternalName::get_transform_index(),
-                                         _glMatrixIndexuivARB);
+                                         _glMatrixIndexuiv);
         }
       }
     }
