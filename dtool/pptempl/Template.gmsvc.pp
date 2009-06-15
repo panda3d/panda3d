@@ -56,7 +56,7 @@
     #if $[eq $[module $[TARGET],$[TARGET]],]
       // This library is not on a metalib, so we can build it.
       #set real_lib_targets $[real_lib_targets] $[TARGET]
-      #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
+      #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
     #else
       // This library is on a metalib, so we can't build it, but we
       // should build all the obj's that go into it.
@@ -66,38 +66,37 @@
   #end lib_target
 
   // We need to know the various targets we'll be building.
-  // $[lib_targets] will be the list of dynamic libraries,
-  // $[static_lib_targets] the list of static libraries, and
-  // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
-  // list of binaries that are to be built only when specifically asked for.
+  // $[lib_targets] will be the list of dynamic and static libraries,
+  // and $[bin_targets] the list of binaries.  $[test_bin_targets] is
+  // the list of binaries that are to be built only when specifically
+  // asked for.
 
-  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target,$[if $[build_target],$[ODIR]/$[get_dllname $[TARGET]].$[dlllib]]] $[real_lib_target_libs]
-  #define static_lib_targets $[forscopes static_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[get_dllname $[TARGET]].lib]]
+  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]]] $[real_lib_target_libs]
 
   #define bin_targets \
       $[active_target(bin_target noinst_bin_target):%=$[ODIR]/%.exe] \
       $[active_target(sed_bin_target):%=$[ODIR]/%]
   #define test_bin_targets $[active_target(test_bin_target):%=$[ODIR]/%.exe]
 
-  #defer test_lib_targets $[active_target(test_lib_target):%=$[if $[TEST_ODIR],$[TEST_ODIR],$[ODIR]]/%.$[dlllib]]
+  #defer test_lib_targets $[active_target(test_lib_target):%=$[if $[TEST_ODIR],$[TEST_ODIR],$[ODIR]]/%$[lib_ext]]
 
   // And these variables will define the various things we need to
   // install.
-  #define install_lib $[active_target(metalib_target static_lib_target ss_lib_target)] $[real_lib_targets]
+  #define install_lib $[active_target(metalib_target static_lib_target dynamic_lib_target ss_lib_target)] $[real_lib_targets]
   #define install_bin $[active_target(bin_target)]
-  #define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_SCRIPTS]]
-  #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_HEADERS]]
+  #define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_SCRIPTS]]
+  #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_HEADERS]]
   #define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
-  #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_DATA]]
-  #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target ss_lib_target bin_target)] $[INSTALL_CONFIG]]
+  #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_DATA]]
+  #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target)] $[INSTALL_CONFIG]]
   #define install_igatedb $[sort $[get_igatedb(metalib_target lib_target)]]
 
   // These are the various sources collected from all targets within the
   // directory.
-  #define st_sources $[sort $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
-  #define yxx_st_sources $[sort $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
-  #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
-  #define dep_sources_1  $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define st_sources $[sort $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define yxx_st_sources $[sort $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
+  #define dep_sources_1  $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target)]]
 
   // If there is an __init__.py in the directory, then all Python
   // files in the directory just get installed without having to be
@@ -120,7 +119,7 @@
 // with that happen to be static libs.  We will introduce dependency
 // rules for these.  (We don't need dependency rules for dynamic libs,
 // since these don't get burned in at build time.)
-#defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/lib$[TARGET]$[dllext].lib]],$[complete_local_libs]]
+#defer static_lib_dependencies $[all_libs $[if $[and $[lib_is_static],$[build_lib]],$[RELDIR:%=%/$[ODIR]/lib$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
@@ -133,7 +132,7 @@
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
-#defer complete_lpath $[static_libs $[RELDIR:%=%/$[ODIR]],$[actual_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[ODIR]],$[actual_local_libs]] $[EXTRA_LPATH]
+#defer complete_lpath $[libs $[RELDIR:%=%/$[ODIR]],$[actual_local_libs]] $[EXTRA_LPATH]
 
 // $[lpath] is like $[target_ipath]: it's the list of directories we
 // should add to our -L list, from the context of a particular target.
@@ -213,7 +212,7 @@
 #define all_targets \
     Makefile \
     $[if $[dep_sources],$[DEPENDENCY_CACHE_FILENAME]] \
-    $[sort $[lib_targets] $[static_lib_targets] $[bin_targets]] \
+    $[sort $[lib_targets] $[bin_targets]] \
     $[deferred_objs]
 all : $[all_targets]
 
@@ -221,16 +220,16 @@ all : $[all_targets]
 test : $[test_bin_targets] $[test_lib_targets]
 
 clean : clean-igate
-#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#forscopes metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
 #if $[compile_sources]
 $[TAB] rm -f $[patsubst %,$[%_obj],$[compile_sources]]
 #endif
-#end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#end metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
 #if $[deferred_objs]
 $[TAB] rm -f $[deferred_objs]
 #endif
-#if $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
-$[TAB] rm -f $[lib_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
+#if $[lib_targets] $[bin_targets] $[test_bin_targets]
+$[TAB] rm -f $[lib_targets] $[bin_targets] $[test_bin_targets]
 #endif
 #if $[yxx_st_sources] $[lxx_st_sources]
 $[TAB] rm -f $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
@@ -287,7 +286,7 @@ $[TAB] rm -f $[igatemout] $[$[igatemout]_obj]
      $[get_igatedb(metalib_target lib_target ss_lib_target):$[ODIR]/%=$[install_igatedb_dir]/%]
 
 #define install_targets \
-     $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=install-lib%] \
+     $[active_target(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target):%=install-lib%] \
      $[active_target(bin_target sed_bin_target):%=install-%] \
      $[installed_files]
 
@@ -295,7 +294,7 @@ install : all $[install_targets]
 
 install-igate : $[sort $[installed_igate_files]]
 
-uninstall : $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
+uninstall : $[active_target(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
 #if $[installed_files]
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
@@ -320,16 +319,10 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 
 
 /////////////////////////////////////////////////////////////////////
-// First, the dynamic libraries.  Each lib_target and metalib_target
-// is a dynamic library.
+// First, the dynamic and static libraries.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes metalib_target lib_target
-
-// In Windows, we don't actually build all the libraries.  In
-// particular, we don't build any libraries that are listed on a
-// metalib.  Is this one such a library?
-#define build_it $[eq $[module $[TARGET],$[TARGET]],]
+#forscopes metalib_target lib_target static_lib_target dynamic_lib_target
 
 // We might need to define a BUILDING_ symbol for win32.  We use the
 // BUILDING_DLL variable name, defined typically in the metalib, for
@@ -361,17 +354,21 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 #define igatemscan $[get_igatemscan]
 #define igatemout $[get_igatemout]
 
-#if $[build_it]
+#if $[build_lib]
   // Now output the rule to actually link the library from all of its
   // various .obj files.
 
   #define sources \
-   $[patsubst %,$[%_obj],$[compile_sources]] \
-   $[components $[patsubst %,$[RELDIR]/$[%_obj],$[compile_sources]],$[active_component_libs]]
+   $[patsubst %,$[%_obj],$[compile_sources]]
+  #if $[not $[BUILD_COMPONENTS]]
+    // Also link in all of the component files directly into the metalib.
+    #define sources $[sources] \
+      $[components $[patsubst %,$[RELDIR]/$[%_obj],$[compile_sources]],$[active_component_libs]]
+  #endif
 
-  #define varname $[subst -,_,lib$[TARGET]_so]
+  #define varname $[subst -,_,.,_,lib$[TARGET]$[lib_ext]]
 $[varname] = $[sources]
-  #define target $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
+  #define target $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
   #define mybasename $[basename $[notdir $[target]]]
@@ -387,25 +384,27 @@ $[TAB]  mkdir -p $[tmpdirname_cyg]  // this dir-creation-stuff is leftover from 
 $[TAB]  cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[tmpdirname_win]\verdate.h"
 $[TAB]  rc /n /I"$[tmpdirname_win]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[VER_RESOURCE] $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[shared_lib_c++]
+$[TAB] $[link_lib_c++]
   #else
-$[TAB] $[shared_lib_c]
+$[TAB] $[link_lib_c]
   #endif
 #else
   #define VER_RESOURCE
 .NOTPARALLEL $[target] : $[sources] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[shared_lib_c++]
+$[TAB] $[link_lib_c++]
   #else
-$[TAB] $[shared_lib_c]
+$[TAB] $[link_lib_c]
   #endif
 #endif
 
-#if $[build_dlls]
-$[ODIR]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
+// Additional dependency rules for the implicit files that get built
+// along with a .dll.
+#if $[not $[lib_is_static]]
+$[ODIR]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
 #endif
-#if $[build_pdbs]
-$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
+#if $[has_pdb]
+$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
 #endif
 
 #endif
@@ -413,10 +412,10 @@ $[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib
 // Here are the rules to install and uninstall the library and
 // everything that goes along with it.
 #define installed_files \
-    $[if $[build_it], \
-      $[if $[build_dlls],$[install_lib_dir]/$[get_dllname $[TARGET]].$[dlllib]] \
-      $[install_lib_dir]/$[get_dllname $[TARGET]].lib \
-      $[if $[and $[build_dlls],$[build_pdbs]],$[install_lib_dir]/$[get_dllname $[TARGET]].pdb] \
+    $[if $[build_lib], \
+      $[install_lib_dir]/$[get_dllname $[TARGET]]$[lib_ext] \
+      $[if $[not $[lib_is_static]],$[install_lib_dir]/$[get_dllname $[TARGET]].lib] \
+      $[if $[has_pdb],$[install_lib_dir]/$[get_dllname $[TARGET]].pdb] \
     ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
@@ -431,9 +430,8 @@ uninstall-lib$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-#if $[build_dlls]
-$[install_lib_dir]/$[get_dllname $[TARGET]].$[dlllib] : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
-#define local $[get_dllname $[TARGET]].$[dlllib]
+$[install_lib_dir]/$[get_dllname $[TARGET]]$[lib_ext] : $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+#define local $[get_dllname $[TARGET]]$[lib_ext]
 #define dest $[install_lib_dir]
 #if $[eq $[USE_COMPILER], MSVC8]
 $[TAB] mt -manifest $[ODIR]/$[local].manifest -outputresource:$[ODIR]/$[local]\;2
@@ -441,16 +439,16 @@ $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local].manifest $[dest]
 #endif
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
 
-#endif
-
-
+// Install the .lib associated with a .dll.
+#if $[not $[lib_is_static]]
 $[install_lib_dir]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].lib
 #define local $[get_dllname $[TARGET]].lib
 #define dest $[install_lib_dir]
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
+#endif
 
 
-#if $[and $[build_dlls],$[build_pdbs]]
+#if $[has_pdb]
 $[install_lib_dir]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].pdb
 #define local $[get_dllname $[TARGET]].pdb
 #define dest $[install_lib_dir]
@@ -503,7 +501,7 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 
 #endif  // igatemout
 
-#end metalib_target lib_target
+#end metalib_target lib_target static_lib_target dynamic_lib_target
 
 
 /////////////////////////////////////////////////////////////////////
@@ -515,23 +513,21 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_lib_target test_lib_target
-#define varname $[subst -,_,lib$[TARGET]_so]
+#define varname $[subst -,_,.,_,lib$[TARGET]$[lib_ext]]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
+#define target $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
 #define sources $($[varname])
 #define $[VER_RESOURCE] $[COMPILED_RESOURCES]
 $[target] : $[sources] $[static_lib_dependencies] $[GENERATED_SOURCES]
 #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[shared_lib_c++]
+$[TAB] $[link_lib_c++]
 #else
-$[TAB] $[shared_lib_c]
+$[TAB] $[link_lib_c]
 #endif
 
-#if $[build_dlls]
-$[ODIR]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
-#endif
-#if $[build_pdbs]
-$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].$[dlllib]
+$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext] : $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+#if $[has_pdb]
+$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
 #endif
 
 // this section is all very clunky and not generalized enough
@@ -589,47 +585,6 @@ $[TAB] $[MIDL_COMMAND]
 #endif
 
 #end noinst_lib_target test_lib_target
-
-
-/////////////////////////////////////////////////////////////////////
-// Now the static libraries.  Again, we assume there's no interrogate
-// interfaces going on in here, and there's no question of this being
-// a metalib, making the rules relatively simple.
-/////////////////////////////////////////////////////////////////////
-
-#forscopes static_lib_target ss_lib_target
-#define varname $[subst -,_,lib$[TARGET]_a]
-$[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[ODIR]/$[get_dllname $[TARGET]].lib
-#define sources $($[varname])
-$[target] : $[sources]
-#if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
-$[TAB] $[STATIC_LIB_C++]
-#else
-$[TAB] $[STATIC_LIB_C]
-#endif
-
-#define installed_files \
-    $[install_lib_dir]/$[get_dllname $[TARGET]].lib \
-    $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
-    $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
-    $[INSTALL_DATA:%=$[install_data_dir]/%] \
-    $[INSTALL_CONFIG:%=$[install_config_dir]/%]
-
-install-lib$[TARGET] : $[installed_files]
-
-uninstall-lib$[TARGET] :
-#if $[installed_files]
-$[TAB] rm -f $[sort $[installed_files]]
-#endif
-
-$[install_lib_dir]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].lib
-#define local $[get_dllname $[TARGET]].lib
-#define dest $[install_lib_dir]
-$[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
-
-#end static_lib_target ss_lib_target
-
 
 
 /////////////////////////////////////////////////////////////////////
@@ -820,7 +775,7 @@ $[TAB] cp $[target_prebuilt] $[target]
 // file.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#forscopes metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
 // need to use #print to avoid printing to Makefile
 // printvar prints the unevaluated defn of the var
 // #print TARGET=$[TARGET]
@@ -906,7 +861,7 @@ $[TAB] $[COMPILE_C++]
 
 #end file
 
-#end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#end metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
 
 // And now the rules to install the auxiliary files, like headers and
 // data files.

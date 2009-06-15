@@ -44,22 +44,21 @@
   // $[compile_sources] from the different directories.
   #define composite_list
   // Tag all the static libraries by defining the "lib_is_static" variable.
+  #forscopes static_lib_target
+    #define lib_is_static 1
+  #end static_lib_target
   #if $[WINDOWS_PLATFORM]
-    #forscopes static_lib_target ss_lib_target
+    #forscopes ss_lib_target
       #define lib_is_static 1
-    #end static_lib_target ss_lib_target
-  #else
-    #forscopes static_lib_target
-      #define lib_is_static 1
-    #end static_lib_target
+    #end ss_lib_target
   #endif
   #if $[LINK_ALL_STATIC]
-    #forscopes ss_lib_target lib_target
+    #forscopes metalib_target ss_lib_target lib_target
       #define lib_is_static 1
-    #end ss_lib_target lib_target
+    #end metalib_target ss_lib_target lib_target
   #endif
 
-  #forscopes metalib_target lib_target noinst_lib_target test_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
+  #forscopes metalib_target lib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
     // We can optimize quite a bit by evaluating now several of the key
     // deferred variables defined in Globals.pp.  This way they won't need
     // to get repeatedly reevaluated as each directory examines each
@@ -163,7 +162,7 @@
 
     #define compile_sources $[c_sources] $[cxx_sources] $[cxx_interrogate_sources]
 
-  #end metalib_target lib_target noinst_lib_target test_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
+  #end metalib_target lib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target
 
   // Allow the user to define additional EXTRA_DEPENDS targets in each
   // Sources.pp.

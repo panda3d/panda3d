@@ -923,6 +923,28 @@
 // dynamic libraries.
 //#define LINK_ALL_STATIC yes
 
+// The panda source tree is made up of a bunch of component libraries
+// (e.g. express, downloader, pgraph, egg) which are ultimately
+// combined into a smaller group of meta libraries or metalibs
+// (e.g. libpandaexpress, libpanda, libpandaegg).  Depending on your
+// build configuration, these component libraries might have their own
+// existence, or they might disappear completely and be contained
+// entirely within their metalibs.  The former is more convenient for
+// rapid development, while the latter might be more convenient for
+// distribution.
+
+// Define this variable to compile and link each component as a
+// separate library so that the resulting metalibs are small and there
+// are many separate component libraries; leave it undefined to link
+// component object files directly into their containing metalibs so
+// that the resutling metalib files are large and component libraries
+// don't actually exist.  The Windows has traditionally been built
+// with this cleared (because of the original Win32 STL requirements),
+// while the Unix build has traditionally been built with it set.
+// Changing this from the traditional platform-specific setting is not
+// 100% supported yet.
+#define BUILD_COMPONENTS $[not $[WINDOWS_PLATFORM]]
+
 // Define this to export the templates from the DLL.  This is only
 // meaningful if LINK_ALL_STATIC is not defined, and we are building
 // on Windows.  Some Windows compilers may not support this syntax.

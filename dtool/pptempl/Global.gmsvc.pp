@@ -55,17 +55,6 @@
 
 #define CFLAGS_SHARED
 
-// Define LINK_ALL_STATIC to generate static libs instead of DLL's.
-#if $[ne $[LINK_ALL_STATIC],]
-  #define build_dlls
-  #define build_libs yes
-  #define dlllib lib
-#else
-  #define build_dlls yes
-  #define build_libs
-  #define dlllib dll
-#endif
-
 #include $[THISDIRPREFIX]compilerSettings.pp
 
 #if $[TEST_INLINING]
@@ -164,9 +153,3 @@
 
 #defer LINK_BIN_C $[LINKER] /nologo $[LDFLAGS_OPT$[OPTIMIZE]] $[sources] $[decygwin %,/LIBPATH:"%",$[lpath] $[EXTRA_LIBPATH] $[tau_lpath]] $[patsubst %.lib,%.lib,%,lib%.lib,$[libs]] $[tau_libs] /OUT:"$[osfilename $[target]]"$[if $[eq $[USE_COMPILER], MSVC9],; $[MT_BIN] -nologo -manifest $[target].manifest -outputresource:$[target]\;1,]
 #defer LINK_BIN_C++ $[LINK_BIN_C]
-
-#if $[ne $[LINK_ALL_STATIC],]
-  #defer SHARED_LIB_C $[STATIC_LIB_C]
-  #defer SHARED_LIB_C++ $[STATIC_LIB_C++]
-  #defer ODIR_SHARED $[ODIR_STATIC]
-#endif

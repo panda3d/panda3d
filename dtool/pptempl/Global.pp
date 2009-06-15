@@ -34,27 +34,13 @@
 // variable as set for the dconfig library (that is, the expression
 // $[SOURCES] is evaluated within the named scope whose key is
 // "dconfig"--whose variable $[TARGET] was defined to be "dconfig").
-#map all_libs TARGET(*/static_lib_target */ss_lib_target */lib_target */noinst_lib_target */test_lib_target */metalib_target)
+#map all_libs TARGET(*/static_lib_target */dynamic_lib_target */ss_lib_target */lib_target */noinst_lib_target */test_lib_target */metalib_target)
 
 // This map variable allows us to look up global variables that might
 // be defined in a particular Sources.pp, e.g. in the "toplevel" file.
 #map dir_type DIR_TYPE(*/)
 
-// These allow us to determine whether a particular local library is a
-// static or a dynamic library.  If the library name appears in the
-// static_libs map, it is a static library (i.e. libname.a);
-// otherwise, it is a dynamic library (libname.so).  The target
-// ss_lib_target is a special case: these libraries are dynamic where
-// it's easy to make them so (e.g. on Unix platforms), and static on
-// platforms where dynamic libraries aren't quite so robust (e.g. on
-// Windows).
-#if $[WINDOWS_PLATFORM]
-  #map static_libs TARGET(*/static_lib_target */ss_lib_target)
-  #map dynamic_libs TARGET(*/lib_target */noinst_lib_target */test_lib_target */metalib_target)
-#else
-  #map static_libs TARGET(*/static_lib_target)
-  #map dynamic_libs TARGET(*/lib_target */ss_lib_target */noinst_lib_target */test_lib_target */metalib_target)
-#endif
+#map libs TARGET(*/lib_target */static_lib_target */dynamic_lib_target */ss_lib_target */noinst_lib_target */test_lib_target */metalib_target)
 
 // This lets us identify which metalib, if any, is including each
 // named library.  That is, $[module $[TARGET],name] will return
@@ -441,6 +427,8 @@
 #defer link_bin_c++ $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[LINK_BIN_C++] $[TAU_CFLAGS] $[TAU_C++FLAGS]
 #defer shared_lib_c $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[SHARED_LIB_C] $[TAU_CFLAGS]
 #defer shared_lib_c++ $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[SHARED_LIB_C++] $[TAU_CFLAGS] $[TAU_C++FLAGS]
+#defer static_lib_c $[STATIC_LIB_C]
+#defer static_lib_c++ $[STATIC_LIB_C++]
 
 #else
 #defer compile_c $[COMPILE_C]
@@ -449,17 +437,29 @@
 #defer link_bin_c++ $[LINK_BIN_C++]
 #defer shared_lib_c $[SHARED_LIB_C]
 #defer shared_lib_c++ $[SHARED_LIB_C++]
+#defer static_lib_c $[STATIC_LIB_C]
+#defer static_lib_c++ $[STATIC_LIB_C++]
 #endif  // USE_TAU
 
+#defer link_lib_c $[if $[lib_is_static],$[static_lib_c],$[shared_lib_c]]
+#defer link_lib_c++ $[if $[lib_is_static],$[static_lib_c++],$[shared_lib_c++]]
+
 #defer dynamic_lib_ext $[DYNAMIC_LIB_EXT]
+#defer static_lib_ext $[STATIC_LIB_EXT]
+#defer lib_ext $[if $[lib_is_static],$[static_lib_ext],$[dynamic_lib_ext]]
 #defer bundle_ext $[BUNDLE_EXT]
 
-#if $[LINK_ALL_STATIC]
-#defer shared_lib_c $[STATIC_LIB_C]
-#defer shared_lib_c++ $[STATIC_LIB_C++]
-#defer dynamic_lib_ext $[STATIC_LIB_EXT]
-#defer bundle_ext
-#endif  // LINK_ALL_STATIC
+// If BUILD_COMPONENTS is not true, we don't actually build all the
+// libraries.  In particular, we don't build any libraries that are
+// listed on a metalib.  This variable can be evaluated within a
+// library's scope to determine whether it should be built according
+// to this rule.
+#defer build_lib $[or $[BUILD_COMPONENTS],$[eq $[module $[TARGET],$[TARGET]],]]
+
+// This variable is true if the lib has an associated pdb (Windows
+// only).  It appears that pdb's are generated only for dll's, not for
+// static libs.
+#defer has_pdb $[and $[build_pdbs],$[not $[lib_is_static]]]
 
 
 // This takes advantage of the above two variables to get the actual
@@ -493,6 +493,7 @@
 // string if the target is not to be built, or the target name if it
 // is.
 #defer active_target $[if $[build_target],$[TARGET]]
+#defer active_target_libext $[if $[build_target],$[TARGET]$[lib_ext]]
 #defer get_combined_sources $[COMBINED_SOURCES]
 
 // This subroutine will set up the sources variable to reflect the
@@ -725,7 +726,7 @@
   #end lib_target noinst_lib_target test_lib_target
 
   // These will never be part of a metalib.
-  #forscopes static_lib_target ss_lib_target bin_target noinst_bin_target metalib_target
+  #forscopes static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target metalib_target
     #foreach depend $[LOCAL_LIBS]
       #define depend_metalib $[module $[TARGET],$[depend]]
       #if $[ne $[depend_metalib],]
@@ -740,7 +741,7 @@
         #set depend_libs $[depend_libs] $[depend]
       #endif
     #end depend
-  #end static_lib_target ss_lib_target bin_target noinst_bin_target metalib_target
+  #end static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target metalib_target
 
   // In case we're defining any metalibs, these depend directly on
   // their components as well.

@@ -35,18 +35,16 @@
 
 #if $[build_directory]
   // We need to know the various targets we'll be building.
-  // $[lib_targets] will be the list of dynamic libraries,
-  // $[static_lib_targets] the list of static libraries, and
-  // $[bin_targets] the list of binaries.  $[test_bin_targets] is the
-  // list of binaries that are to be built only when specifically asked
-  // for.
-  #define lib_targets $[active_target(metalib_target lib_target ss_lib_target noinst_lib_target):%=$[ODIR]/lib%$[dynamic_lib_ext]]
+  // $[lib_targets] will be the list of dynamic and static libraries,
+  // and $[bin_targets] the list of binaries.  $[test_bin_targets] is
+  // the list of binaries that are to be built only when specifically
+  // asked for.
+  #define lib_targets $[active_target_libext(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target noinst_lib_target):%=$[ODIR]/lib%]
   #define bundle_targets
   #if $[bundle_ext]
     #define bundle_targets $[active_target(metalib_target):%=$[ODIR]/lib%$[bundle_ext]]
   #endif
-
-  #define static_lib_targets $[active_target(static_lib_target):%=$[ODIR]/lib%.a]
+ 
   #define bin_targets $[active_target(bin_target noinst_bin_target sed_bin_target):%=$[ODIR]/%]
   #define test_bin_targets $[active_target(test_bin_target):%=$[ODIR]/%]
 
@@ -57,16 +55,16 @@
   #define install_scripts $[sort $[INSTALL_SCRIPTS(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_SCRIPTS]]
   #define install_headers $[sort $[INSTALL_HEADERS(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_HEADERS]]
   #define install_parser_inc $[sort $[INSTALL_PARSER_INC]]
-  #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_DATA]]
-  #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target ss_lib_target static_lib_target bin_target)] $[INSTALL_CONFIG]]
+  #define install_data $[sort $[INSTALL_DATA(metalib_target lib_target ss_lib_target static_lib_target dynamic_lib_target bin_target)] $[INSTALL_DATA]]
+  #define install_config $[sort $[INSTALL_CONFIG(metalib_target lib_target ss_lib_target static_lib_target dynamic_lib_target bin_target)] $[INSTALL_CONFIG]]
   #define install_igatedb $[sort $[get_igatedb(metalib_target lib_target ss_lib_target)]]
 
   // These are the various sources collected from all targets within the
   // directory.
-  #define st_sources $[sort $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
-  #define yxx_st_sources $[sort $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
-  #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
-  #define dep_sources_1 $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
+  #define st_sources $[sort $[compile_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
+  #define yxx_st_sources $[sort $[yxx_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
+  #define lxx_st_sources $[sort $[lxx_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
+  #define dep_sources_1 $[sort $[get_sources(metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target)]]
   
   // These are the source files that our dependency cache file will
   // depend on.  If it's an empty list, we won't bother writing rules to
@@ -89,7 +87,7 @@
 // with that happen to be static libs.  We will introduce dependency
 // rules for these.  (We don't need dependency rules for dynamic libs,
 // since these don't get burned in at build time.)
-#defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/lib$[TARGET]$[dllext].a]],$[complete_local_libs]]
+#defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/lib$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
@@ -103,7 +101,7 @@
 
 // $[complete_lpath] is rather like $[complete_ipath]: the list of
 // directories (from within this tree) we should add to our -L list.
-#defer complete_lpath $[static_libs $[RELDIR:%=%/$[ODIR]],$[actual_local_libs]] $[dynamic_libs $[RELDIR:%=%/$[ODIR]],$[actual_local_libs]] $[EXTRA_LPATH]
+#defer complete_lpath $[libs $[RELDIR:%=%/$[ODIR]],$[actual_local_libs]] $[EXTRA_LPATH]
 
 // $[lpath] is like $[target_ipath]: it's the list of directories we
 // should add to our -L list, from the context of a particular target.
@@ -200,20 +198,20 @@ include $[TAU_MAKEFILE]
 #define all_targets \
     Makefile \
     $[if $[dep_sources],$[DEPENDENCY_CACHE_FILENAME]] \
-    $[sort $[lib_targets] $[bundle_targets] $[static_lib_targets] $[bin_targets]]
+    $[sort $[lib_targets] $[bundle_targets] $[bin_targets]]
 all : $[all_targets]
 
 // The 'test' rule makes all the test_bin_targets.
 test : $[test_bin_targets]
 
 clean : clean-igate
-#forscopes metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#forscopes metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
 #if $[compile_sources]
 $[TAB] rm -f $[patsubst %,$[%_obj],$[compile_sources]]
 #endif
-#end metalib_target lib_target noinst_lib_target static_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
-#if $[lib_targets] $[bundle_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
-$[TAB] rm -f $[lib_targets] $[bundle_targets] $[static_lib_targets] $[bin_targets] $[test_bin_targets]
+#end metalib_target lib_target noinst_lib_target static_lib_target dynamic_lib_target ss_lib_target bin_target noinst_bin_target test_bin_target test_lib_target
+#if $[lib_targets] $[bundle_targets] $[bin_targets] $[test_bin_targets]
+$[TAB] rm -f $[lib_targets] $[bundle_targets] $[bin_targets] $[test_bin_targets]
 #endif
 #if $[yxx_st_sources] $[lxx_st_sources]
 $[TAB] rm -f $[patsubst %.yxx,%.cxx %.h,$[yxx_st_sources]] $[patsubst %.lxx,%.cxx,$[lxx_st_sources]]
@@ -239,7 +237,7 @@ $[TAB] rm -f $[composite_list]
 #endif
 
 clean-igate :
-#forscopes metalib_target lib_target ss_lib_target
+#forscopes metalib_target lib_target ss_lib_target dynamic_lib_target
   #define igatedb $[get_igatedb]
   #define igateoutput $[get_igateoutput]
   #define igatemscan $[get_igatemscan]
@@ -253,7 +251,7 @@ $[TAB] rm -f $[igateoutput] $[$[igateoutput]_obj]
   #if $[igatemout]
 $[TAB] rm -f $[igatemout] $[$[igatemout]_obj]
   #endif
-#end metalib_target lib_target ss_lib_target
+#end metalib_target lib_target ss_lib_target dynamic_lib_target
 
 // Now, 'install' and 'uninstall'.  These simply copy files into the
 // install directory (or remove them).  The 'install' rule also makes
@@ -270,7 +268,7 @@ $[TAB] rm -f $[igatemout] $[$[igatemout]_obj]
      $[get_igatedb(metalib_target lib_target ss_lib_target):$[ODIR]/%=$[install_igatedb_dir]/%]
 
 #define install_targets \
-     $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=install-lib%] \
+     $[active_target(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target):%=install-lib%] \
      $[active_target(bin_target sed_bin_target):%=install-%] \
      $[installed_files]
 
@@ -278,7 +276,7 @@ install : all $[install_targets]
 
 install-igate : $[sort $[installed_igate_files]]
 
-uninstall : $[active_target(metalib_target lib_target static_lib_target ss_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
+uninstall : $[active_target(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target):%=uninstall-lib%] $[active_target(bin_target):%=uninstall-%]
 #if $[installed_files]
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
@@ -303,11 +301,10 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 
 
 /////////////////////////////////////////////////////////////////////
-// First, the dynamic libraries.  Each lib_target and metalib_target
-// is a dynamic library.
+// First, the normally installed dynamic and static libraries.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes metalib_target lib_target ss_lib_target
+#forscopes metalib_target lib_target ss_lib_target static_lib_target dynamic_lib_target
 
 // In Unix, we always build all the libraries, unlike Windows.
 #define build_it 1
@@ -350,22 +347,22 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
   #define cc_ld $[or $[get_ld],$[CC]]
   #define cxx_ld $[or $[get_ld],$[CXX]]
 
-  #define varname $[subst -,_,lib$[TARGET]_so]
+  #define varname $[subst -,_,.,_,lib$[TARGET]$[lib_ext]]
 $[varname] = $[sources] $[if $[not $[bundle_ext]],$[interrogate_sources]]
-  #define target $[ODIR]/lib$[TARGET]$[dynamic_lib_ext]
+  #define target $[ODIR]/lib$[TARGET]$[lib_ext]
   #define sources $($[varname])
 
 $[target] : $[sources] $[static_lib_dependencies]
   #if $[filter %.mm %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[shared_lib_c++]
+$[TAB] $[link_lib_c++]
   #else  
-$[TAB] $[shared_lib_c]
+$[TAB] $[link_lib_c]
   #endif
 
   #if $[bundle_ext]
     // Also generate the bundles (on OSX only).
     #define target $[ODIR]/lib$[TARGET]$[bundle_ext]
-    #define sources $[interrogate_sources] $[ODIR]/lib$[TARGET]$[dynamic_lib_ext]
+    #define sources $[interrogate_sources] $[ODIR]/lib$[TARGET]$[lib_ext]
 $[target] : $[sources] $[static_lib_dependencies] 
 $[TAB] $[BUNDLE_LIB_C++]
   #endif  // BUNDLE_EXT
@@ -374,7 +371,7 @@ $[TAB] $[BUNDLE_LIB_C++]
 // Here are the rules to install and uninstall the library and
 // everything that goes along with it.
 #define installed_files \
-    $[install_lib_dir]/lib$[TARGET]$[dynamic_lib_ext] \
+    $[install_lib_dir]/lib$[TARGET]$[lib_ext] \
     $[if $[bundle_ext],$[install_lib_dir]/lib$[TARGET]$[bundle_ext]] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
@@ -389,8 +386,8 @@ uninstall-lib$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[dynamic_lib_ext] : $[ODIR]/lib$[TARGET]$[dynamic_lib_ext]
-#define local $[ODIR]/lib$[TARGET]$[dynamic_lib_ext]
+$[install_lib_dir]/lib$[TARGET]$[lib_ext] : $[ODIR]/lib$[TARGET]$[lib_ext]
+#define local $[ODIR]/lib$[TARGET]$[lib_ext]
 #define dest $[install_lib_dir]
 $[TAB] $[INSTALL]
 
@@ -447,7 +444,7 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 
 #endif  // igatemout
 
-#end metalib_target lib_target ss_lib_target
+#end metalib_target lib_target ss_lib_target static_lib_target dynamic_lib_target
 
 
 
@@ -463,58 +460,16 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 #forscopes noinst_lib_target
 #define varname $[subst -,_,lib$[TARGET]_so]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[ODIR]/lib$[TARGET]$[dynamic_lib_ext]
+#define target $[ODIR]/lib$[TARGET]$[lib_ext]
 #define sources $($[varname])
 $[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.mm %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[shared_lib_c++]
+$[TAB] $[link_lib_c++]
 #else
-$[TAB] $[shared_lib_c]
+$[TAB] $[link_lib_c]
 #endif
 
 #end noinst_lib_target
-
-
-
-/////////////////////////////////////////////////////////////////////
-// Now the static libraries.  Again, we assume there's no interrogate
-// interfaces going on in here, and there's no question of this being
-// a metalib, making the rules relatively simple.
-/////////////////////////////////////////////////////////////////////
-
-#forscopes static_lib_target
-#define varname $[subst -,_,lib$[TARGET]_a]
-$[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[ODIR]/lib$[TARGET]$[dllext].a
-#define sources $($[varname])
-$[target] : $[sources]
-#if $[filter %.mm %.cxx %.yxx %.lxx,$[get_sources]]
-$[TAB] $[STATIC_LIB_C++]
-#else
-$[TAB] $[STATIC_LIB_C]
-#endif
-
-#define installed_files \
-    $[install_lib_dir]/lib$[TARGET]$[dllext].a \
-    $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
-    $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
-    $[INSTALL_DATA:%=$[install_data_dir]/%] \
-    $[INSTALL_CONFIG:%=$[install_config_dir]/%]
-
-install-lib$[TARGET] : $[installed_files]
-
-uninstall-lib$[TARGET] :
-#if $[installed_files]
-$[TAB] rm -f $[sort $[installed_files]]
-#endif
-
-$[install_lib_dir]/lib$[TARGET]$[dllext].a : $[ODIR]/lib$[TARGET]$[dllext].a
-#define local $[ODIR]/lib$[TARGET]$[dllext].a
-#define dest $[install_lib_dir]
-$[TAB] $[INSTALL]
-
-#end static_lib_target
-
 
 
 /////////////////////////////////////////////////////////////////////
