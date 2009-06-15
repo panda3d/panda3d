@@ -28,7 +28,6 @@
 #include "nodePath.h"
 
 ConfigureDecl(config_showbase, EXPCL_DIRECT, EXPTP_DIRECT);
-typedef Config::Config<ConfigureGetConfig_config_showbase> ConfigShowbase;
 
 class CollisionTraverser;
 class Camera;
@@ -40,7 +39,7 @@ EXPCL_DIRECT ConfigVariableSearchPath &get_particle_path();
 
 EXPCL_DIRECT void throw_new_frame();
 
-EXPCL_DIRECT ConfigShowbase &get_config_showbase();
+EXPCL_DIRECT DConfig &get_config_showbase();
 
 
 // klunky interface since we cant pass array from python->C++

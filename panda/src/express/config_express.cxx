@@ -180,7 +180,8 @@ get_verify_dcast() {
 
 // Returns the configure object for accessing config variables from a
 // scripting language.
-ConfigExpress &
+DConfig &
 get_config_express() {
+  static DConfig config_express;
   return config_express;
 }

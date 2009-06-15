@@ -21,6 +21,8 @@
 #include "dcast.h"
 #include "pnmImage.h"
 
+#include <time.h>
+
 TypeHandle DisplayRegion::_type_handle;
 TypeHandle DisplayRegionPipelineReader::_type_handle;
 

@@ -19,9 +19,7 @@ forcetype FileStream
 forcetype IDecryptStream
 forcetype OEncryptStream
 
-forcetype ConfigExpress
-renametype ConfigExpress ConfigExpress
-
+forcetype DConfig
 forcetype ConfigFlags
 forcetype ConfigPage
 forcetype ConfigPageManager

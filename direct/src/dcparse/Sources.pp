@@ -7,6 +7,7 @@
   prc:c pstatclient:c pandabase:c linmath:c putil:c \
   pipeline:c \
   $[if $[HAVE_NET],net:c] $[if $[WANT_NATIVE_NET],nativenet:c] \
+  panda:m \
   pystub
 
 #define C++FLAGS -DWITHIN_PANDA
@@ -17,5 +18,6 @@
 
   #define SOURCES \
     dcparse.cxx
+  #define WIN_SYS_LIBS shell32.lib
 #end bin_target
 

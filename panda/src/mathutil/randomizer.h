@@ -18,6 +18,8 @@
 #include "pandabase.h"
 #include "mersenne.h"
 
+#include <time.h>
+
 ////////////////////////////////////////////////////////////////////
 //       Class : Randomizer
 // Description : A handy class to return random numbers.

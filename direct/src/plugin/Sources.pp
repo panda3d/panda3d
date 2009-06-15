@@ -1,9 +1,9 @@
 // This directory is still experimental.  Define HAVE_P3D_PLUGIN in
 // your Config.pp to build it.
-#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_TAR]]
+#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB]]
 
 #begin lib_target
-  #define USE_PACKAGES tinyxml openssl zlib tar
+  #define USE_PACKAGES tinyxml openssl zlib
   #define TARGET p3d_plugin
 
   #define COMBINED_SOURCES \
@@ -58,7 +58,7 @@
 #end bin_target
 
 #begin bin_target
-  #define USE_PACKAGES openssl zlib tar
+  #define USE_PACKAGES openssl zlib
   #define TARGET panda3d
 
   #define OTHER_LIBS \

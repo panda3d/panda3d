@@ -13,14 +13,32 @@
 ////////////////////////////////////////////////////////////////////
 
 
-INLINE double get_total_time_config_init() {
-  return (double)total_time_config_init / (double)CLOCKS_PER_SEC;
+bool DConfig::
+GetBool(const string &sym, bool def) {
+  ConfigVariableBool var(sym, def, "DConfig", ConfigFlags::F_dconfig);
+  return var.get_value();
 }
 
-INLINE double get_total_time_external_init() {
-  return (double)total_time_external_init / (double)CLOCKS_PER_SEC;
+int DConfig::
+GetInt(const string &sym, int def) {
+  ConfigVariableInt var(sym, def, "DConfig", ConfigFlags::F_dconfig);
+  return var.get_value();
 }
 
-INLINE double get_total_num_get() {
-  return total_num_get;
+float DConfig::
+GetFloat(const string &sym, float def) {
+  ConfigVariableDouble var(sym, def, "DConfig", ConfigFlags::F_dconfig);
+  return var.get_value();
+}
+
+double DConfig::
+GetDouble(const string &sym, double def) {
+  ConfigVariableDouble var(sym, def, "DConfig", ConfigFlags::F_dconfig);
+  return var.get_value();
+}
+
+string DConfig::
+GetString(const string &sym, const string &def) {
+  ConfigVariableString var(sym, def, "DConfig", ConfigFlags::F_dconfig);
+  return var.get_value();
 }

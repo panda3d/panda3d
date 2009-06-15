@@ -49,8 +49,9 @@ throw_new_frame() {
 
 // Returns the configure object for accessing config variables from a
 // scripting language.
-ConfigShowbase &
+DConfig &
 get_config_showbase() {
+  static DConfig config_showbase;
   return config_showbase;
 }
 

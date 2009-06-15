@@ -23,6 +23,7 @@
 #include "filename.h"
 #include "pset.h"
 #include <stdio.h>
+#include <time.h>
 
 
 bool create = false;           // -c

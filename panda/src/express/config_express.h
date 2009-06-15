@@ -52,8 +52,7 @@ extern EXPCL_PANDAEXPRESS ConfigVariableDouble collect_tcp_interval;
 
 // Expose the Config variable for Python access.
 BEGIN_PUBLISH
-typedef Config::Config<ConfigureGetConfig_config_express> ConfigExpress;
-EXPCL_PANDAEXPRESS ConfigExpress &get_config_express();
+EXPCL_PANDAEXPRESS DConfig &get_config_express();
 END_PUBLISH
 
 extern EXPCL_PANDAEXPRESS void init_libexpress();

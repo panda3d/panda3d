@@ -24,6 +24,8 @@
 #include "reMutex.h"
 #include "reMutexHolder.h"
 
+#include <time.h>
+
 class BamCacheIndex;
 
 ////////////////////////////////////////////////////////////////////
