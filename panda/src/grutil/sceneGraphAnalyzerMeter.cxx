@@ -185,20 +185,20 @@ do_update(Thread *current_thread) {
   static const size_t buffer_size = 1024;
   char buffer[buffer_size];
 
-  char *pattern = "Nodes: %d\n"
-                  "Instances: %d\n"
-                  "Transforms: %d\n"
-                  "Nodes with Attribs: %d\n"
-                  "GeomNodes: %d\n"
-                  "Geoms: %d\n"
-                  "GeomVertexDatas: %d\n"
-                  "Vertices: %d\n"
-                  "Normals: %d\n"
-                  "TexCoords: %d\n"
-                  "Tris: %d\n"
-                  "Lines: %d\n"
-                  "Points: %d\n"
-                  "Texture memory: %.1f KB\n";
+  const char *pattern = "Nodes: %d\n"
+                        "Instances: %d\n"
+                        "Transforms: %d\n"
+                        "Nodes with Attribs: %d\n"
+                        "GeomNodes: %d\n"
+                        "Geoms: %d\n"
+                        "GeomVertexDatas: %d\n"
+                        "Vertices: %d\n"
+                        "Normals: %d\n"
+                        "TexCoords: %d\n"
+                        "Tris: %d\n"
+                        "Lines: %d\n"
+                        "Points: %d\n"
+                        "Texture memory: %.1f KB\n";
 
 #ifdef WIN32_VC
   _snprintf(buffer, buffer_size, pattern,
