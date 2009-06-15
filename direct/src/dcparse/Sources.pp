@@ -13,7 +13,7 @@
 
 #begin bin_target
   #define TARGET dcparse
-  #define USE_PACKAGES zlib
+  #define USE_PACKAGES zlib openssl tar
 
   #define SOURCES \
     dcparse.cxx
