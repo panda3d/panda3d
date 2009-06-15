@@ -23,7 +23,10 @@
 #endif
 
 dReal OdeUtil::OC_infinity = dInfinity;
+
+#ifdef HAVE_PYTHON
 PyObject* OdeUtil::_python_callback = NULL;
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OdeUtil::get_connecting_joint

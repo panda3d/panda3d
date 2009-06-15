@@ -48,8 +48,10 @@ PUBLISHED:
                                      const int joint_type);
   static PT(OdeCollisionEntry) collide(const OdeGeom &geom1, const OdeGeom &geom2,
                                       const short int max_contacts = 150);
+#ifdef HAVE_PYTHON
   static int collide2(const OdeGeom &geom1, const OdeGeom &geom2,
-                                       PyObject* arg, PyObject* callback);
+                      PyObject* arg, PyObject* callback);
+#endif
   static OdeGeom space_to_geom(const OdeSpace &space);
 
   static dReal OC_infinity;
