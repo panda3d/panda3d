@@ -94,7 +94,11 @@ typedef void (APIENTRYP PFNGLGENFRAMEBUFFERSEXTPROC) (GLsizei n, GLuint *framebu
 typedef GLenum (APIENTRYP PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC) (GLenum target); 
 typedef void (APIENTRYP PFNGLFRAMEBUFFERTEXTURE1DEXTPROC) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level); 
 typedef void (APIENTRYP PFNGLFRAMEBUFFERTEXTURE2DEXTPROC) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level); 
+#ifdef OPENGLES_2
+typedef void (APIENTRYP PFNGLFRAMEBUFFERTEXTURE3DOES) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset);
+#else
 typedef void (APIENTRYP PFNGLFRAMEBUFFERTEXTURE3DEXTPROC) (GLenum target, GLenum attachment, GLenum textarget, GLuint texture, GLint level, GLint zoffset); 
+#endif
 typedef void (APIENTRYP PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC) (GLenum target, GLenum attachment, GLenum renderbuffertarget, GLuint renderbuffer); 
 typedef void (APIENTRYP PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC) (GLenum target, GLenum attachment, GLenum pname, GLint *params); 
 typedef void (APIENTRYP PFNGLGENERATEMIPMAPEXTPROC) (GLenum target);
@@ -104,6 +108,10 @@ typedef void (APIENTRYP PFNGLMATRIXINDEXPOINTERARBPROC) (GLint size, GLenum type
 typedef void (APIENTRYP PFNGLBLITFRAMEBUFFEREXTPROC) (GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter);
 typedef void (APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLEEXTPROC) (GLenum target, GLsizei samples, GLenum internalformat, GLsizei width, GLsizei height);
 typedef void (APIENTRYP PFNGLRENDERBUFFERSTORAGEMULTISAMPLECOVERAGENVPROC) (GLenum target, GLsizei coverageSamples, GLsizei colorSamples, GLenum internalformat, GLsizei width, GLsizei height);
+typedef void (APIENTRYP PFNGLCURRENTPALETTEMATRIXOESPROC) (GLuint matrixpaletteindex);
+typedef void (APIENTRYP PFNGLLOADPALETTEFROMMODELVIEWMATRIXOESPROC) (void);
+typedef void (APIENTRYP PFNGLMATRIXINDEXPOINTEROESPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+typedef void (APIENTRYP PFNGLWEIGHTPOINTEROESPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 #endif  // __EDG__
 
 ////////////////////////////////////////////////////////////////////
@@ -448,9 +456,14 @@ public:
   PFNGLWEIGHTFVARBPROC _glWeightfvARB;
 
   bool _supports_matrix_palette;
-  PFNGLCURRENTPALETTEMATRIXARBPROC _glCurrentPaletteMatrixARB;
-  PFNGLMATRIXINDEXPOINTERARBPROC _glMatrixIndexPointerARB;
-  PFNGLMATRIXINDEXUIVARBPROC _glMatrixIndexuivARB;
+#ifdef OPENGLES
+  PFNGLCURRENTPALETTEMATRIXOESPROC _glCurrentPaletteMatrix;
+  PFNGLMATRIXINDEXPOINTEROESPROC _glMatrixIndexPointer;
+#else
+  PFNGLCURRENTPALETTEMATRIXARBPROC _glCurrentPaletteMatrix;
+  PFNGLMATRIXINDEXPOINTERARBPROC _glMatrixIndexPointer;
+  PFNGLMATRIXINDEXUIVARBPROC _glMatrixIndexuiv;
+#endif
 
   bool _supports_draw_range_elements;
   PFNGLDRAWRANGEELEMENTSPROC _glDrawRangeElements;
@@ -502,7 +515,11 @@ public:
   PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC _glCheckFramebufferStatus;
   PFNGLFRAMEBUFFERTEXTURE1DEXTPROC _glFramebufferTexture1D;
   PFNGLFRAMEBUFFERTEXTURE2DEXTPROC _glFramebufferTexture2D;
+#ifdef OPENGLES_2
+  PFNGLFRAMEBUFFERTEXTURE3DOES _glFramebufferTexture3D;
+#else
   PFNGLFRAMEBUFFERTEXTURE3DEXTPROC _glFramebufferTexture3D;
+#endif
   PFNGLFRAMEBUFFERRENDERBUFFEREXTPROC _glFramebufferRenderbuffer;
   PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC _glGetFramebufferAttachmentParameteriv;
   PFNGLGENERATEMIPMAPEXTPROC _glGenerateMipmap;

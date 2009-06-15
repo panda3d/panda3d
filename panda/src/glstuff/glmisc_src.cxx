@@ -168,7 +168,7 @@ void CLP(init_classes)() {
   CLP(VertexBufferContext)::init_type();
   CLP(GraphicsBuffer)::init_type();
 
-#ifndef OPENGLES_1
+#ifndef OPENGLES
   CLP(OcclusionQueryContext)::init_type();
 #endif
 

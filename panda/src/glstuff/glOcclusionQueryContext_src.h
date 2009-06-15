@@ -18,7 +18,7 @@
 
 class GraphicsStateGuardian;
 
-#ifndef OPENGLES_1  // Occlusion queries not supported by OpenGL ES.
+#ifndef OPENGLES  // Occlusion queries not supported by OpenGL ES.
 
 ////////////////////////////////////////////////////////////////////
 //       Class : GLOcclusionQueryContext
@@ -57,5 +57,5 @@ private:
 
 #include "glOcclusionQueryContext_src.I"
 
-#endif  // OPENGLES_1
+#endif  // OPENGLES
 

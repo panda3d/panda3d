@@ -37,7 +37,7 @@ CLP(GeomContext)::
 bool CLP(GeomContext)::
 get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
                  UpdateSeq modified) {
-#ifdef OPENGLES_1
+#ifdef OPENGLES
   // Display lists not supported by OpenGL ES.
   nassertr(false, false);
   return false;
@@ -56,7 +56,7 @@ get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
   index = dl._index;
   dl._modified = modified;
   return list_current;
-#endif  // OPENGLES_1
+#endif  // OPENGLES
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ get_display_list(GLuint &index, const CLP(GeomMunger) *munger,
 ////////////////////////////////////////////////////////////////////
 void CLP(GeomContext)::
 release_display_lists() {
-#ifdef OPENGLES_1
+#ifdef OPENGLES
   // Display lists not supported by OpenGL ES.
   nassertv(_display_lists.empty());
 
@@ -91,7 +91,7 @@ release_display_lists() {
   }
 
   _display_lists.clear();
-#endif  // OPENGLES_1
+#endif  // OPENGLES
 }
 
 ////////////////////////////////////////////////////////////////////

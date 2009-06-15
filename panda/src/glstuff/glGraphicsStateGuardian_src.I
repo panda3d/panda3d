@@ -181,6 +181,7 @@ is_at_least_gles_version(int major_version, int minor_version) const {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_multisample_antialias(bool val) {
+#ifndef OPENGLES_2
   if (_supports_multisample) {
     if ((_multisample_mode & MM_antialias) != 0 && !val) {
       // Turn off antialias multisample.
@@ -196,6 +197,7 @@ enable_multisample_antialias(bool val) {
       _multisample_mode |= MM_antialias;
     }
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,6 +209,7 @@ enable_multisample_antialias(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_multisample_alpha_one(bool val) {
+#ifndef OPENGLES_2
   if (_supports_multisample) {
     if ((_multisample_mode & MM_alpha_one) != 0 && !val) {
       // Turn off sample_alpha_to_one multisample.
@@ -224,6 +227,7 @@ enable_multisample_alpha_one(bool val) {
       _multisample_mode |= MM_alpha_one;
     }
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -235,6 +239,7 @@ enable_multisample_alpha_one(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_multisample_alpha_mask(bool val) {
+#ifndef OPENGLES_2
   if (_supports_multisample) {
     if ((_multisample_mode & MM_alpha_mask) != 0 && !val) {
       // Turn off sample_alpha_to_mask multisample.
@@ -252,6 +257,7 @@ enable_multisample_alpha_mask(bool val) {
       _multisample_mode |= MM_alpha_mask;
     }
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -261,6 +267,7 @@ enable_multisample_alpha_mask(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_line_smooth(bool val) {
+#ifndef OPENGLES_2
   if (_line_smooth_enabled != val) {
     _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _line_smooth_enabled = val;
@@ -270,6 +277,7 @@ enable_line_smooth(bool val) {
       GLP(Disable)(GL_LINE_SMOOTH);
     }
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -279,6 +287,7 @@ enable_line_smooth(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_point_smooth(bool val) {
+#ifndef OPENGLES_2
   if (_point_smooth_enabled != val) {
     _state_mask.clear_bit(TransparencyAttrib::get_class_slot());
     _point_smooth_enabled = val;
@@ -288,6 +297,7 @@ enable_point_smooth(bool val) {
       GLP(Disable)(GL_POINT_SMOOTH);
     }
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -297,7 +307,7 @@ enable_point_smooth(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_polygon_smooth(bool val) {
-#ifndef OPENGLES_1  // GL_POLYGON_SMOOTH not supported in OpenGL ES.
+#ifndef OPENGLES  // GL_POLYGON_SMOOTH not supported in OpenGL ES.
   if (_polygon_smooth_enabled != val) {
     _polygon_smooth_enabled = val;
     if (val) {
@@ -306,7 +316,7 @@ enable_polygon_smooth(bool val) {
       GLP(Disable)(GL_POLYGON_SMOOTH);
     }
   }
-#endif  // OPENGLES_1
+#endif  // OPENGLES
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -462,6 +472,7 @@ enable_depth_test(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_fog(bool val) {
+#ifndef OPENGLES_2
   if (_fog_enabled != val) {
     _fog_enabled = val;
     if (val) {
@@ -478,6 +489,7 @@ enable_fog(bool val) {
       GLP(Disable)(GL_FOG);
     }
   }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -487,6 +499,7 @@ enable_fog(bool val) {
 ////////////////////////////////////////////////////////////////////
 INLINE void CLP(GraphicsStateGuardian)::
 enable_alpha_test(bool val) {
+#ifndef OPENGLES_2
   if (_alpha_test_enabled != val) {
     _alpha_test_enabled = val;
     if (val) {
@@ -503,6 +516,7 @@ enable_alpha_test(bool val) {
       GLP(Disable)(GL_ALPHA_TEST);
     }
   }
+#endif // OPENGLES_2
 }
 
 
@@ -541,7 +555,9 @@ enable_polygon_offset(bool val) {
 //  Description: Convert index to gl light id
 ////////////////////////////////////////////////////////////////////
 INLINE GLenum CLP(GraphicsStateGuardian)::get_light_id(int index) const {
+#ifndef OPENGLES_2
   return GL_LIGHT0 + index;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -551,7 +567,9 @@ INLINE GLenum CLP(GraphicsStateGuardian)::get_light_id(int index) const {
 ////////////////////////////////////////////////////////////////////
 INLINE GLenum CLP(GraphicsStateGuardian)::
 get_clip_plane_id(int index) const {
+#ifndef OPENGLES_2
   return GL_CLIP_PLANE0 + index;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
