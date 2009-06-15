@@ -1,6 +1,6 @@
 // This directory is still experimental.  Define HAVE_P3D_PLUGIN in
 // your Config.pp to build it.
-#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_PYTHON],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_TAR]]
+#define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB],$[HAVE_TAR]]
 
 #begin lib_target
   #define USE_PACKAGES tinyxml openssl zlib tar
@@ -36,6 +36,7 @@
 #end lib_target
 
 #begin bin_target
+  #define BUILD_TARGET $[HAVE_PYTHON]
   #define USE_PACKAGES tinyxml python
   #define TARGET p3dpython
 
@@ -57,7 +58,7 @@
 #end bin_target
 
 #begin bin_target
-  #define USE_PACKAGES openssl
+  #define USE_PACKAGES openssl zlib tar
   #define TARGET panda3d
 
   #define OTHER_LIBS \
@@ -67,6 +68,8 @@
     pstatclient:c pandabase:c linmath:c putil:c \
     pipeline:c panda:m \
     pystub
+
+  #define OSX_SYS_FRAMEWORKS Foundation AppKit
 
   #define SOURCES \
     panda3d.cxx
