@@ -900,7 +900,9 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "GetFramebufferAttachmentParameterivEXT");
     _glGenerateMipmap = (PFNGLGENERATEMIPMAPEXTPROC)
       get_extension_func(GLPREFIX_QUOTED, "GenerateMipmapEXT");
-  } else if (has_extension("GL_OES_framebuffer_object")) {
+  }
+#ifdef OPENGLES
+  else if (has_extension("GL_OES_framebuffer_object")) {
     _supports_framebuffer_object = true;
     _glIsRenderbuffer = (PFNGLISRENDERBUFFEROESPROC)
       get_extension_func(GLPREFIX_QUOTED, "IsRenderbufferOES");
@@ -935,6 +937,7 @@ reset() {
     _glGenerateMipmap = (PFNGLGENERATEMIPMAPOESPROC)
       get_extension_func(GLPREFIX_QUOTED, "GenerateMipmapOES");
   }
+#endif  // OPENGLES
 #endif
 
   _supports_framebuffer_multisample = false;
