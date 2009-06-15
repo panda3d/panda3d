@@ -853,7 +853,12 @@ reset() {
   _glCheckFramebufferStatus = glCheckFramebufferStatus;
   _glFramebufferTexture1D = NULL;
   _glFramebufferTexture2D = glFramebufferTexture2D;
-  _glFramebufferTexture3D = NULL;
+  if (has_extension("GL_OES_texture3D")) {
+    _glFramebufferTexture3D = (PFNGLFRAMEBUFFERTEXTURE3DOES)
+      get_extension_func(GLPREFIX_QUOTED, "FramebufferTexture3DOES");
+  } else {
+    _glFramebufferTexture3D = NULL;
+  }
   _glFramebufferRenderbuffer = glFramebufferRenderbuffer;
   _glGetFramebufferAttachmentParameteriv = glGetFramebufferAttachmentParameteriv;
   _glGenerateMipmap = glGenerateMipmap;
@@ -5292,7 +5297,8 @@ get_texture_target(Texture::TextureType texture_type) const {
     if (_supports_3d_texture) {
 #ifdef OPENGLES_2
       return GL_TEXTURE_3D_OES;
-#else
+#endif
+#ifndef OPENGLES
       return GL_TEXTURE_3D;
 #endif
     } else {
@@ -6976,7 +6982,8 @@ update_standard_texture_bindings() {
     if (_supports_3d_texture) {
 #ifdef OPENGLES_2
       GLP(Disable)(GL_TEXTURE_3D_OES);
-#else
+#endif
+#ifndef OPENGLES
       GLP(Disable)(GL_TEXTURE_3D);
 #endif
     }
@@ -7137,7 +7144,8 @@ update_standard_texture_bindings() {
     if (_supports_3d_texture) {
 #ifdef OPENGLES_2
       GLP(Disable)(GL_TEXTURE_3D_OES);
-#else
+#endif
+#ifndef OPENGLES
       GLP(Disable)(GL_TEXTURE_3D);
 #endif
     }

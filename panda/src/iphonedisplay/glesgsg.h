@@ -31,6 +31,7 @@
 #define GLCAT iphonedisplay_cat
 #define EXPCL_GL EXPCL_MISC
 #define EXPTP_GL EXPTP_MISC
+#define OPENGLES
 #define OPENGLES_1
 #undef HAVE_GLU
 
