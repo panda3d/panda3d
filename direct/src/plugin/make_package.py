@@ -11,6 +11,12 @@ make_package.py [opts]
 
 Options:
 
+  -s source_dir
+
+     Specify the source directory.  This is the root directory that
+     contains the package contents.  The default is the current
+     directory.
+
   -d stage_dir
 
      Specify the staging directory.  This is a temporary directory on
@@ -91,7 +97,7 @@ class PackageMaker:
         print "\ncompressing"
 
         source = open(uncompressedArchivePathname.toOsSpecific(), 'rb')
-        target = open(compressedArchivePathname.toOsSpecific(), 'w')
+        target = open(compressedArchivePathname.toOsSpecific(), 'wb')
         z = zlib.compressobj(9)
         data = source.read(4096)
         while data:
@@ -152,12 +158,14 @@ class PackageMaker:
                 self.archive.addSubfile(file.filename, file.pathname, 0)
                 
 def makePackage(args):
-    opts, args = getopt.getopt(args, 'd:p:v:h')
+    opts, args = getopt.getopt(args, 's:d:p:v:h')
 
     pm = PackageMaker()
     pm.startDir = Filename('.')
     for option, value in opts:
-        if option == '-d':
+        if option == '-s':
+            pm.startDir = Filename.fromOsSpecific(value)            
+        elif option == '-d':
             pm.stageDir = Filename.fromOsSpecific(value)
         elif option == '-p':
             pm.packageName = value

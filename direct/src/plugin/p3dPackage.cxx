@@ -25,13 +25,17 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <utime.h>
 
 #ifdef _WIN32
+#include <sys/utime.h>
 #include <direct.h>
 #define stat _stat
 #define utime _utime
 #define utimbuf _utimbuf
+
+#else
+#include <utime.h>
+
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -314,14 +318,31 @@ uncompress_archive() {
     report_done(false);
     return;
   }
+  
+  static const int decompress_buffer_size = 1024;
+  char decompress_buffer[decompress_buffer_size];
+  static const int write_buffer_size = 1024;
+  char write_buffer[write_buffer_size];
 
   z_stream z;
   z.next_in = Z_NULL;
   z.avail_in = 0;
+  z.next_out = Z_NULL;
+  z.avail_out = 0;
   z.zalloc = Z_NULL;
   z.zfree = Z_NULL;
   z.opaque = Z_NULL;
   z.msg = (char *)"no error message";
+
+  bool eof = false;
+  int flush = 0;
+
+  source.read(decompress_buffer, decompress_buffer_size);
+  size_t read_count = source.gcount();
+  eof = (read_count == 0 || source.eof() || source.fail());
+  
+  z.next_in = (Bytef *)decompress_buffer;
+  z.avail_in = read_count;
 
   int result = inflateInit(&z);
   if (result < 0) {
@@ -329,14 +350,6 @@ uncompress_archive() {
     report_done(false);
     return;
   }
-  
-  static const int decompress_buffer_size = 1024;
-  char decompress_buffer[decompress_buffer_size];
-  static const int write_buffer_size = 1024;
-  char write_buffer[write_buffer_size];
-
-  bool eof = false;
-  int flush = 0;
 
   while (true) {
     if (z.avail_in == 0 && !eof) {
@@ -656,6 +669,7 @@ quick_verify(const string &package_dir) const {
 
   if (st.st_mtime == _timestamp) {
     // If the size is right and the timestamp is right, the file passes.
+    cerr << "file ok: " << _filename << "\n";
     return true;
   }
 
