@@ -37,6 +37,8 @@ public:
   INLINE bool try_acquire();
   INLINE void release();
 
+  INLINE pthread_mutex_t *get_posix_lock();
+
 private:
   pthread_mutex_t _lock;
   friend class ConditionVarPosixImpl;
@@ -54,6 +56,8 @@ public:
   INLINE void acquire();
   INLINE bool try_acquire();
   INLINE void release();
+
+  INLINE pthread_mutex_t *get_posix_lock();
 
 private:
   pthread_mutex_t _lock;

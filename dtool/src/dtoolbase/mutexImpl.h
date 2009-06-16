@@ -47,6 +47,21 @@ typedef ReMutexPosixImpl ReMutexImpl;
 
 #endif
 
+// Also define what a true OS-provided lock will be, even if we don't
+// have threading enabled in the build.  Sometimes we need to
+// interface with an external program or something that wants real
+// locks.
+#if defined(WIN32_VC)
+typedef MutexWin32Impl TrueMutexImpl;
+
+#elif defined(HAVE_POSIX_THREADS)
+typedef MutexPosixImpl TrueMutexImpl;
+
+#else
+// No true threads, sorry.  Better not try to use 'em.
+
+#endif
+
 #endif
 
 

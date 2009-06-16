@@ -79,6 +79,16 @@ release() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MutexPosixImpl::get_posix_lock
+//       Access: Public
+//  Description: Returns the underlying Posix lock handle.
+////////////////////////////////////////////////////////////////////
+INLINE pthread_mutex_t *MutexPosixImpl::
+get_posix_lock() {
+  return _lock;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ReMutexPosixImpl::Constructor
 //       Access: Public
 //  Description:
@@ -141,4 +151,14 @@ release() {
   TAU_PROFILE("void ReMutexPosixImpl::release", " ", TAU_USER);
   int result = pthread_mutex_unlock(&_lock);
   assert(result == 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: ReMutexPosixImpl::get_posix_lock
+//       Access: Public
+//  Description: Returns the underlying Posix lock handle.
+////////////////////////////////////////////////////////////////////
+INLINE pthread_mutex_t *ReMutexPosixImpl::
+get_posix_lock() {
+  return _lock;
 }
