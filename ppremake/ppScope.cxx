@@ -1666,8 +1666,8 @@ expand_shell(const string &params) {
     close(pd[0]);
     dup2(pd[1], STDOUT_FILENO);
     char *argv[4];
-    argv[0] = "sh";
-    argv[1] = "-c";
+    argv[0] = (char *)"sh";
+    argv[1] = (char *)"-c";
     argv[2] = (char *)command.c_str();
     argv[3] = (char *)NULL;
     execv("/bin/sh", argv);
@@ -1772,7 +1772,7 @@ expand_length(const string &params) {
   string word = trim_blanks(expand_string(params));
 
   char buffer[32];
-  sprintf(buffer, "%d", word.length());
+  sprintf(buffer, "%d", (int) word.length());
   string result = buffer;
   return result;
 }  
@@ -2104,7 +2104,7 @@ expand_words(const string &params) {
   tokenize_whitespace(expand_string(params), words);
 
   char buffer[32];
-  sprintf(buffer, "%d", words.size());
+  sprintf(buffer, "%d", (int) words.size());
   string result = buffer;
   return result;
 }
