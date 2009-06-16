@@ -10,7 +10,6 @@
     
   #define SOURCES \
     config_gles2gsg.h config_gles2gsg.cxx \
-    gles2ext_shadow.h \
     gles2gsg.h gles2gsg.cxx
 
   #define INSTALL_HEADERS \

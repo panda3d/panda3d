@@ -10,7 +10,6 @@
     
   #define SOURCES \
     config_glesgsg.h config_glesgsg.cxx \
-    glesext_shadow.h \
     glesgsg.h glesgsg.cxx
 
   #define INSTALL_HEADERS \

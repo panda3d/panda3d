@@ -969,8 +969,8 @@ reset() {
       get_extension_func(GLPREFIX_QUOTED, "BlitFramebufferEXT");
   }
 
-#ifndef OPENGLES
   _glDrawBuffers = NULL;
+#ifndef OPENGLES
   if (is_at_least_gl_version(2, 0)) {
     _glDrawBuffers = (PFNGLDRAWBUFFERSPROC)
       get_extension_func(GLPREFIX_QUOTED, "DrawBuffers");

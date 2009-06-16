@@ -457,8 +457,10 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_V(glgsg, _gsg);
 
+#ifdef OPENGLES
+  GLuint glFormat = GL_RGBA4;
+#else
   GLuint glFormat = GL_RGBA;
-#ifndef OPENGLES
   switch (slot) {
     case RTP_aux_rgba_0:
     case RTP_aux_rgba_1:
@@ -520,7 +522,7 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
       }
     } else {
 #ifdef OPENGLES
-      tex->set_format(Texture::F_rgba);
+      tex->set_format(Texture::F_rgba4);
 #else
       if (glFormat == GL_RGBA16F_ARB) {
         tex->set_format(Texture::F_rgba16);
@@ -588,8 +590,13 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
                                           GL_RENDERBUFFER_EXT, rb);
       } else {
 #endif
+#ifdef OPENGLES
+        glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT16,
+                                      _rb_size_x, _rb_size_y);
+#else
         glgsg->_glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT,
                                       _rb_size_x, _rb_size_y);
+#endif
         glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
 
         GLuint rb;
@@ -627,108 +634,108 @@ bind_slot(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum atta
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsBuffer)::
 bind_slot_multisample(bool rb_resize, Texture **attach, RenderTexturePlane slot, GLenum attachpoint) {
-    CLP(GraphicsStateGuardian) *glgsg;
-    DCAST_INTO_V(glgsg, _gsg);
+  CLP(GraphicsStateGuardian) *glgsg;
+  DCAST_INTO_V(glgsg, _gsg);
 
-    if ((_rbm[slot] != 0)&&(!rb_resize)) {
-      return;
-    }
-    if (_rbm[slot] != 0) {
-      glgsg->_glDeleteRenderbuffers(1, &(_rbm[slot]));
-      _rbm[slot] = 0;
-    }
-    glgsg->_glBindFramebuffer(GL_FRAMEBUFFER_EXT, _fbo_multisample);
-    glgsg->_glGenRenderbuffers(1, &(_rbm[slot]));
-    // Allocate and bind the renderbuffer.
-    Texture *tex = attach[slot];// if there is a texture map, use it's format as needed.
+  if ((_rbm[slot] != 0)&&(!rb_resize)) {
+    return;
+  }
+  if (_rbm[slot] != 0) {
+    glgsg->_glDeleteRenderbuffers(1, &(_rbm[slot]));
+    _rbm[slot] = 0;
+  }
+  glgsg->_glBindFramebuffer(GL_FRAMEBUFFER_EXT, _fbo_multisample);
+  glgsg->_glGenRenderbuffers(1, &(_rbm[slot]));
+  // Allocate and bind the renderbuffer.
+  Texture *tex = attach[slot]; // If there is a texture map, use it's format as needed.
 
-    if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
+  if (attachpoint == GL_DEPTH_ATTACHMENT_EXT) {
 #ifndef OPENGLES_2
-      if (_gsg->get_supports_depth_stencil() && _use_depth_stencil) {
-        glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rbm[slot]);
-        if (_requested_coverage_samples) {
-          glgsg->_glRenderbufferStorageMultisampleCoverage(GL_RENDERBUFFER_EXT, _requested_coverage_samples,
-                                                             _requested_multisamples, GL_DEPTH_STENCIL_EXT,
-                                                             _rb_size_x, _rb_size_y);
-        } else {
-          glgsg->_glRenderbufferStorageMultisample(GL_RENDERBUFFER_EXT, _requested_multisamples, GL_DEPTH_STENCIL_EXT,
-                                      _rb_size_x, _rb_size_y);
-        }
-#ifndef OPENGLES
-        GLint givenSamples = -1;
-        glgsg->_glGetRenderbufferParameteriv( GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_SAMPLES_EXT, &givenSamples);
-#endif
-        glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
-        glgsg->_glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                          GL_RENDERBUFFER_EXT, _rbm[slot]);
-        glgsg->_glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
-                                          GL_RENDERBUFFER_EXT, _rbm[slot]);
-      } else {
-#endif
-        glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rbm[slot]);
-        GLuint format = GL_DEPTH_COMPONENT;
-        if (tex) {
-          if (tex->get_format() == Texture::F_depth_component16)
-              format = GL_DEPTH_COMPONENT16;
-          if (tex->get_format() == Texture::F_depth_component24)
-              format = GL_DEPTH_COMPONENT24;
-          if (tex->get_format() == Texture::F_depth_component32)
-              format = GL_DEPTH_COMPONENT32;
-        }
-        if (_requested_coverage_samples) {
-          glgsg->_glRenderbufferStorageMultisampleCoverage(GL_RENDERBUFFER_EXT, _requested_coverage_samples,
-                                                             _requested_multisamples, format,
-                                                             _rb_size_x, _rb_size_y);
-        } else {
-          glgsg->_glRenderbufferStorageMultisample(GL_RENDERBUFFER_EXT, _requested_multisamples, format,
-                                        _rb_size_x, _rb_size_y);
-#ifndef OPENGLES_2
-        }
-#endif
-#ifndef OPENGLES
-        GLint givenSamples = -1;
-        glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_SAMPLES_EXT, &givenSamples);
-#endif
-        glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
-        glgsg->_glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
-                                          GL_RENDERBUFFER_EXT, _rbm[slot]);
-      }
-    } else {
-      Texture *Tex = attach[slot];
-      GLuint glFormat = GL_RGBA;
-#ifndef OPENGLES
-      switch (slot) {
-        case RTP_aux_rgba_0:
-        case RTP_aux_rgba_1:
-        case RTP_aux_rgba_2:
-        case RTP_aux_rgba_3:
-          glFormat = GL_RGBA;
-          break;
-        case RTP_aux_hrgba_0:
-        case RTP_aux_hrgba_1:
-        case RTP_aux_hrgba_2:
-        case RTP_aux_hrgba_3:
-          glFormat = GL_RGBA16F_ARB;
-          break;
-      };
-#endif
+    if (_gsg->get_supports_depth_stencil() && _use_depth_stencil) {
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rbm[slot]);
       if (_requested_coverage_samples) {
         glgsg->_glRenderbufferStorageMultisampleCoverage(GL_RENDERBUFFER_EXT, _requested_coverage_samples,
-                                      _requested_multisamples, glFormat, _rb_size_x, _rb_size_y);
+                                                         _requested_multisamples, GL_DEPTH_STENCIL_EXT,
+                                                         _rb_size_x, _rb_size_y);
       } else {
-        glgsg->_glRenderbufferStorageMultisample(GL_RENDERBUFFER_EXT, _requested_multisamples, glFormat,
-                                      _rb_size_x, _rb_size_y);
+        glgsg->_glRenderbufferStorageMultisample(GL_RENDERBUFFER_EXT, _requested_multisamples, GL_DEPTH_STENCIL_EXT,
+                                                 _rb_size_x, _rb_size_y);
       }
 #ifndef OPENGLES
       GLint givenSamples = -1;
-      glgsg->_glGetRenderbufferParameteriv( GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_SAMPLES_EXT, &givenSamples);
+      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_SAMPLES_EXT, &givenSamples);
 #endif
       glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
-      glgsg->_glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT, attachpoint,
-                                      GL_RENDERBUFFER_EXT, _rbm[slot]);
+      glgsg->_glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                        GL_RENDERBUFFER_EXT, _rbm[slot]);
+      glgsg->_glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT, GL_STENCIL_ATTACHMENT_EXT,
+                                        GL_RENDERBUFFER_EXT, _rbm[slot]);
+    } else {
+#endif
+      glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rbm[slot]);
+      GLuint format = GL_DEPTH_COMPONENT;
+      if (tex) {
+        if (tex->get_format() == Texture::F_depth_component16)
+            format = GL_DEPTH_COMPONENT16;
+        if (tex->get_format() == Texture::F_depth_component24)
+            format = GL_DEPTH_COMPONENT24;
+        if (tex->get_format() == Texture::F_depth_component32)
+            format = GL_DEPTH_COMPONENT32;
+      }
+      if (_requested_coverage_samples) {
+        glgsg->_glRenderbufferStorageMultisampleCoverage(GL_RENDERBUFFER_EXT, _requested_coverage_samples,
+                                                         _requested_multisamples, format,
+                                                         _rb_size_x, _rb_size_y);
+      } else {
+        glgsg->_glRenderbufferStorageMultisample(GL_RENDERBUFFER_EXT, _requested_multisamples, format,
+                                                 _rb_size_x, _rb_size_y);
+#ifndef OPENGLES_2
+      }
+#endif
+#ifndef OPENGLES
+      GLint givenSamples = -1;
+      glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_SAMPLES_EXT, &givenSamples);
+#endif
+      glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+      glgsg->_glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT,
+                                        GL_RENDERBUFFER_EXT, _rbm[slot]);
     }
-    glgsg->report_my_gl_errors();
+  } else {
+    Texture *Tex = attach[slot];
+    GLuint glFormat = GL_RGBA;
+#ifndef OPENGLES
+    switch (slot) {
+      case RTP_aux_rgba_0:
+      case RTP_aux_rgba_1:
+      case RTP_aux_rgba_2:
+      case RTP_aux_rgba_3:
+        glFormat = GL_RGBA;
+        break;
+      case RTP_aux_hrgba_0:
+      case RTP_aux_hrgba_1:
+      case RTP_aux_hrgba_2:
+      case RTP_aux_hrgba_3:
+        glFormat = GL_RGBA16F_ARB;
+        break;
+    };
+#endif
+    glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, _rbm[slot]);
+    if (_requested_coverage_samples) {
+      glgsg->_glRenderbufferStorageMultisampleCoverage(GL_RENDERBUFFER_EXT, _requested_coverage_samples,
+                                    _requested_multisamples, glFormat, _rb_size_x, _rb_size_y);
+    } else {
+      glgsg->_glRenderbufferStorageMultisample(GL_RENDERBUFFER_EXT, _requested_multisamples, glFormat,
+                                               _rb_size_x, _rb_size_y);
+    }
+#ifndef OPENGLES
+    GLint givenSamples = -1;
+    glgsg->_glGetRenderbufferParameteriv(GL_RENDERBUFFER_EXT, GL_RENDERBUFFER_SAMPLES_EXT, &givenSamples);
+#endif
+    glgsg->_glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
+    glgsg->_glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER_EXT, attachpoint,
+                                      GL_RENDERBUFFER_EXT, _rbm[slot]);
+  }
+  glgsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -917,9 +924,7 @@ open_buffer() {
   // Check for support of relevant extensions.
   CLP(GraphicsStateGuardian) *glgsg;
   DCAST_INTO_R(glgsg, _gsg, false);
-  if ((!glgsg->_supports_framebuffer_object)||
-      (glgsg->_glDrawBuffers == 0)||
-      (glgsg->_max_draw_buffers < totalcolor)) {
+  if (!glgsg->_supports_framebuffer_object) {
     return false;
   }
   
@@ -934,7 +939,7 @@ open_buffer() {
 
   _fb_properties.set_depth_bits(1);
   _fb_properties.set_color_bits(1);
-  _fb_properties.set_alpha_bits(1);
+  _fb_properties.set_alpha_bits(_host->get_fb_properties().get_alpha_bits());
   if (_gsg->get_supports_depth_stencil()) {
     _fb_properties.set_stencil_bits(1);
   } else {

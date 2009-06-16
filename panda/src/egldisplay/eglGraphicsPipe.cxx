@@ -306,7 +306,7 @@ make_output(const string &name,
                                  flags, gsg, host);
   }
 
-  // Third thing to try: an eglGraphicsPixmap.
+  // Fourth thing to try: an eglGraphicsPixmap.
   if (retry == 3) {
     if (((flags&BF_require_parasite)!=0)||
         ((flags&BF_require_window)!=0)||
