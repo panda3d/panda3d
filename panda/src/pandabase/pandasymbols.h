@@ -120,6 +120,22 @@
   #define EXPTP_PANDAGL extern
 #endif
 
+#ifdef BUILDING_PANDAGLES
+  #define EXPCL_PANDAGLES __declspec(dllexport)
+  #define EXPTP_PANDAGLES
+#else
+  #define EXPCL_PANDAGLES __declspec(dllimport)
+  #define EXPTP_PANDAGLES extern
+#endif
+
+#ifdef BUILDING_PANDAGLES2
+  #define EXPCL_PANDAGLES2 __declspec(dllexport)
+  #define EXPTP_PANDAGLES2
+#else
+  #define EXPCL_PANDAGLES2 __declspec(dllimport)
+  #define EXPTP_PANDAGLES2 extern
+#endif
+
 #ifdef BUILDING_PANDAGLUT
   #define EXPCL_PANDAGLUT __declspec(dllexport)
   #define EXPTP_PANDAGLUT
@@ -245,6 +261,12 @@
 
 #define EXPCL_PANDAGL
 #define EXPTP_PANDAGL
+
+#define EXPCL_PANDAGLES
+#define EXPTP_PANDAGLES
+
+#define EXPCL_PANDAGLES2
+#define EXPTP_PANDAGLES2
 
 #define EXPCL_PANDAGLUT
 #define EXPTP_PANDAGLUT

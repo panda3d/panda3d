@@ -12,14 +12,12 @@
     framework putil collide pgraph chan text \
     pnmimage pnmimagetypes event effects gobj display \
     mathutil putil express dgraph device tform \
-    linmath pstatclient panda glstuff
+    linmath pstatclient panda glstuff glesgsg
 
   #define SOURCES \
     config_iphonedisplay.h config_iphonedisplay.mm \
     viewController.h viewController.mm \
     eaglView.h eaglView.mm \
-    glesext_shadow.h \
-    glesgsg.h glesgsg.mm \
     iPhoneGraphicsPipe.h iPhoneGraphicsPipe.mm \
     iPhoneGraphicsStateGuardian.h iPhoneGraphicsStateGuardian.mm \
     iPhoneGraphicsWindow.h iPhoneGraphicsWindow.I iPhoneGraphicsWindow.mm

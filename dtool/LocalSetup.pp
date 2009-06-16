@@ -118,6 +118,10 @@
 #endif
 #if $[HAVE_GL]
 #print + OpenGL
+#elif $[HAVE_GLES2]
+#print + OpenGL ES 2
+#elif $[HAVE_GLES]
+#print + OpenGL ES
 #else
 #print - Did not find OpenGL
 #endif
@@ -326,6 +330,12 @@ $[cdefine HAVE_GLU]
 # define MIN_GL_VERSION_MINOR $[word 2,$[MIN_GL_VERSION]]
 #endif
 
+/* Define if we have OpenGL ES installed and want to build for GLES. */
+$[cdefine HAVE_GLES]
+
+/* Define if we have OpenGL ES installed and want to build for GLES2. */
+$[cdefine HAVE_GLES2]
+
 /* Define if we have OpenCV installed and want to build for OpenCV.  */
 $[cdefine HAVE_OPENCV]
 
@@ -345,6 +355,9 @@ $[cdefine MESA_MGL]
 
 /* Define if we have GLX installed and want to build for GLX.  */
 $[cdefine HAVE_GLX]
+
+/* Define if we have EGL installed and want to build for EGL.  */
+$[cdefine HAVE_EGL]
 
 /* Define if we have Windows-GL installed and want to build for Wgl.  */
 $[cdefine HAVE_WGL]
@@ -413,7 +426,7 @@ $[cdefine SUPPORT_IMMEDIATE_MODE]
 /* Define if we want to compile in support for pipelining.  */
 $[cdefine DO_PIPELINING]
 
-/* Define if we want to keep Notify debug messages around, or undefine 
+/* Define if we want to keep Notify debug messages around, or undefine
    to compile them out.  */
 $[cdefine NOTIFY_DEBUG]
 

@@ -113,6 +113,20 @@
   #define gl_framework $[GL_FRAMEWORK]
 #endif
 
+#if $[HAVE_GLES]
+  #define gles_ipath $[wildcard $[GLES_IPATH]]
+  #define gles_lpath $[wildcard $[GLES_LPATH]]
+  #define gles_cflags $[GLES_CFLAGS]
+  #define gles_libs $[GLES_LIBS]
+#endif
+
+#if $[HAVE_GLES2]
+  #define gles2_ipath $[wildcard $[GLES2_IPATH]]
+  #define gles2_lpath $[wildcard $[GLES2_LPATH]]
+  #define gles2_cflags $[GLES2_CFLAGS]
+  #define gles2_libs $[GLES2_LIBS]
+#endif
+
 #if $[HAVE_SDL]
   #define sdl_ipath $[wildcard $[SDL_IPATH]]
   #define sdl_lpath $[wildcard $[SDL_LPATH]]
@@ -148,6 +162,13 @@
   #define glx_lpath $[wildcard $[GLX_LPATH]]
   #define glx_cflags $[GLX_CFLAGS]
   #define glx_libs $[GLX_LIBS]
+#endif
+
+#if $[HAVE_EGL]
+  #define egl_ipath $[wildcard $[EGL_IPATH]]
+  #define egl_lpath $[wildcard $[EGL_LPATH]]
+  #define egl_cflags $[EGL_CFLAGS]
+  #define egl_libs $[EGL_LIBS]
 #endif
 
 #if $[HAVE_GLUT]

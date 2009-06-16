@@ -204,6 +204,16 @@
 #set HAVE_GL $[HAVE_GL]
 #set HAVE_GLU $[HAVE_GLU]
 
+#set GLES_IPATH $[unixfilename $[GLES_IPATH]]
+#set GLES_LPATH $[unixfilename $[GLES_LPATH]]
+#set GLES_LIBS $[GLES_LIBS]
+#set HAVE_GLES $[HAVE_GLES]
+
+#set GLES2_IPATH $[unixfilename $[GLES2_IPATH]]
+#set GLES2_LPATH $[unixfilename $[GLES2_LPATH]]
+#set GLES2_LIBS $[GLES2_LIBS]
+#set HAVE_GLES2 $[HAVE_GLES2]
+
 #set MESA_IPATH $[unixfilename $[MESA_IPATH]]
 #set MESA_LPATH $[unixfilename $[MESA_LPATH]]
 #set MESA_LIBS $[MESA_LIBS]
@@ -213,6 +223,10 @@
 #set GLX_IPATH $[unixfilename $[GLX_IPATH]]
 #set GLX_LPATH $[unixfilename $[GLX_LPATH]]
 #set HAVE_GLX $[HAVE_GLX]
+
+#set EGL_IPATH $[unixfilename $[EGL_IPATH]]
+#set EGL_LPATH $[unixfilename $[EGL_LPATH]]
+#set HAVE_EGL $[HAVE_EGL]
 
 #set HAVE_WGL $[HAVE_WGL]
 
