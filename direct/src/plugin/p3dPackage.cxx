@@ -58,18 +58,10 @@ P3DPackage(const string &package_name, const string &package_version) :
 
   // Ensure the package directory exists; create it if it does not.
   _package_dir = inst_mgr->get_root_dir() + string("/") + _package_name;
-#ifdef _WIN32
-  _mkdir(_package_dir.c_str());
-#else
-  mkdir(_package_dir.c_str(), 0777);
-#endif
+  inst_mgr->mkdir_public(_package_dir);
 
   _package_dir += string("/") + _package_version;
-#ifdef _WIN32
-  _mkdir(_package_dir.c_str());
-#else
-  mkdir(_package_dir.c_str(), 0777);
-#endif
+  inst_mgr->mkdir_public(_package_dir);
 
   _desc_file_basename = _package_fullname + ".xml";
   _desc_file_pathname = _package_dir + "/" + _desc_file_basename;
@@ -77,6 +69,9 @@ P3DPackage(const string &package_name, const string &package_version) :
   // TODO: we should check the desc file for updates with the server.
   // Perhaps this should be done in a parent class.
 
+  // TODO: if the desc file exists, and is consistent with the server
+  // contents file, don't re-download it.
+  /*
   // Load the desc file, if it exists.
   TiXmlDocument doc(_desc_file_pathname.c_str());
   if (!doc.LoadFile()) {
@@ -84,6 +79,9 @@ P3DPackage(const string &package_name, const string &package_version) :
   } else {
     got_desc_file(&doc, false);
   }
+  */
+
+  download_desc_file();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -308,6 +306,13 @@ uncompress_archive() {
   ifstream source(source_pathname.c_str(), ios::in | ios::binary);
   if (!source) {
     cerr << "Couldn't open " << source_pathname << "\n";
+    report_done(false);
+    return;
+  }
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (!inst_mgr->mkfile_public(target_pathname)) {
+    cerr << "Unable to create " << target_pathname << "\n";
     report_done(false);
     return;
   }

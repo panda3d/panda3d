@@ -35,6 +35,8 @@
   #define INSTALL_HEADERS \
     p3d_plugin.h
 
+  #define WIN_SYS_LIBS shell32.lib
+
 #end lib_target
 
 #begin bin_target

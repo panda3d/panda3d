@@ -25,6 +25,7 @@ P3DDownload() {
   _http_status_code = 0;
   _total_data = 0;
   _total_expected_data = 0;
+  _last_reported_time = 0;
   
   _canceled = false;
   _download_id = 0;
@@ -126,8 +127,12 @@ receive_data(const unsigned char *this_data, size_t this_data_size) {
 ////////////////////////////////////////////////////////////////////
 void P3DDownload::
 download_progress() {
-  cerr << "Downloading " << get_url() << ": " 
-       << int(get_download_progress() * 1000.0) / 10.0 << "\n";
+  time_t now = time(NULL);
+  if (now != _last_reported_time) {
+    cerr << "Downloading " << get_url() << ": " 
+         << int(get_download_progress() * 1000.0) / 10.0 << "\n";
+    _last_reported_time = now;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,4 +145,6 @@ download_progress() {
 ////////////////////////////////////////////////////////////////////
 void P3DDownload::
 download_finished(bool success) {
+  cerr << "Downloading " << get_url() << ": " 
+       << int(get_download_progress() * 1000.0) / 10.0 << "\n";
 }

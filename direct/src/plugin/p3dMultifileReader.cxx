@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3dMultifileReader.h"
+#include "p3dInstanceManager.h"
 
 // This sequence of bytes begins each Multifile to identify it as a
 // Multifile.
@@ -77,6 +78,8 @@ extract(const string &pathname, const string &to_dir) {
     return false;
   }
 
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
   // Now walk through all of the files.
   Subfiles::iterator si;
   for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
@@ -84,9 +87,14 @@ extract(const string &pathname, const string &to_dir) {
     cerr << s._filename << "\n";
 
     string output_pathname = to_dir + "/" + s._filename;
-    ofstream out(output_pathname.c_str(), ios::out | ios::trunc | ios::binary);
-    if (!out) {
+    if (!inst_mgr->mkfile_public(output_pathname)) {
       cerr << "Unable to create " << output_pathname << "\n";
+      return false;
+    }
+
+    ofstream out(output_pathname.c_str(), ios::out | ios::binary);
+    if (!out) {
+      cerr << "Unable to write to " << output_pathname << "\n";
       return false;
     }
 

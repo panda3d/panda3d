@@ -17,6 +17,10 @@
 #include "p3dSession.h"
 #include "p3dPackage.h"
 
+#ifdef _WIN32
+#include <shlobj.h>
+#endif
+
 P3DInstanceManager *P3DInstanceManager::_global_ptr;
 
 ////////////////////////////////////////////////////////////////////
@@ -73,13 +77,21 @@ P3DInstanceManager::
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
 initialize() {
+  _root_dir = find_root_dir();
+  cerr << "_root_dir = " << _root_dir << "\n";
+
 #ifdef _WIN32
-  _root_dir = "c:/cygwin/home/drose/p3ddir";
-  _download_url = "http://10.196.143.118/~drose/";
+  _download_url = "http://10.196.143.118/~drose/p3d/";
+
 #else
-  _root_dir = "/Users/drose/p3ddir";
   _download_url = "http://orpheus.ddrose.com/~drose/";
 #endif
+
+  if (_root_dir.empty()) {
+    cerr << "Could not find root directory.\n";
+    return false;
+  }
+
   return true;
 }
 
@@ -265,6 +277,67 @@ signal_request_ready() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::mkdir_public
+//       Access: Public, Static
+//  Description: Creates a new directory with wide-open access
+//               priviledges.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+mkdir_public(const string &dirname) {
+#ifdef _WIN32
+  SECURITY_DESCRIPTOR sd;
+  InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+  SetSecurityDescriptorDacl(&sd, true, NULL, false);
+  
+  SECURITY_ATTRIBUTES sa;
+  sa.nLength = sizeof(sa);
+  sa.lpSecurityDescriptor = &sd;
+  CreateDirectory(dirname.c_str(), &sa);
+
+#else  //_WIN32
+  mkdir(dirname.c_str(), 0777);
+
+#endif  // _WIN32
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::mkfile_public
+//       Access: Public, Static
+//  Description: Creates a new file with wide-open access
+//               priviledges.
+////////////////////////////////////////////////////////////////////
+bool P3DInstanceManager::
+mkfile_public(const string &filename) {
+#ifdef _WIN32
+  SECURITY_DESCRIPTOR sd;
+  InitializeSecurityDescriptor(&sd, SECURITY_DESCRIPTOR_REVISION);
+  SetSecurityDescriptorDacl(&sd, true, NULL, false);
+  
+  SECURITY_ATTRIBUTES sa;
+  sa.nLength = sizeof(sa);
+  sa.lpSecurityDescriptor = &sd;
+
+  HANDLE file = CreateFile(filename.c_str(), GENERIC_READ | GENERIC_WRITE,
+                           FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+                           &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (file == INVALID_HANDLE_VALUE) {
+    return false;
+  }
+  CloseHandle(file);
+  return true;
+
+#else  // _WIN32
+  int fd = creat(filename.c_str(), 0777);
+  if (fd == -1) {
+    return false;
+  }
+  close(fd);
+  return true;
+
+#endif  // _WIN32
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_global_ptr
 //       Access: Public, Static
 //  Description: 
@@ -292,3 +365,120 @@ create_command_instance() {
     new P3DInstance(NULL, "", P3D_WT_hidden, 0, 0, 0, 0, 
                     dummy_handle, NULL, 0);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::find_root_dir
+//       Access: Private
+//  Description: Returns the path to the installable Panda3D directory
+//               on the user's machine.
+////////////////////////////////////////////////////////////////////
+string P3DInstanceManager::
+find_root_dir() const {
+#ifdef _WIN32
+  // Try to locate a writable directory to install Panda files into.
+  char buffer[MAX_PATH];
+
+  // First, check for a user-appdata Panda3D folder.  If it already
+  // exists, use it (but don't create it yet).
+  if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_APPDATA, true)) {
+    bool isdir = false;
+    DWORD results = GetFileAttributes(buffer);
+    if (results != -1) {
+      isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
+    }
+
+    if (isdir) {
+      // The user prefix exists; do we have a Panda3D child?
+      string root = buffer;
+      root += string("/Panda3D");
+
+      // Don't attempt to create the Panda3D folder yet.  Just see if
+      // it exists.
+      isdir = false;
+      results = GetFileAttributes(root.c_str());
+      if (results != -1) {
+        isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
+      }
+
+      if (isdir) {
+        // The directory exists!
+        return root;
+      }
+    }
+  }
+
+  // If there's no user-appdata Panda3D folder, look for a common one.
+  // This time we'll create it if it doesn't exist, if we can.  (We'd
+  // prefer to create the folder in a common space if we can, since
+  // that way it can be shared by multiple users.)
+  if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_COMMON_APPDATA, true)) {
+    bool isdir = false;
+    DWORD results = GetFileAttributes(buffer);
+    if (results != -1) {
+      isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
+    }
+
+    if (isdir) {
+      // The common prefix exists; do we have a Panda3D child?
+      string root = buffer;
+      root += string("/Panda3D");
+
+      // Attempt to make it first, if possible.  Make sure the
+      // security attributes are wide open; this is a shared resource.
+      mkdir_public(root);
+
+      isdir = false;
+      results = GetFileAttributes(root.c_str());
+      if (results != -1) {
+        isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
+      }
+
+      if (isdir) {
+        // The directory exists!
+        return root;
+      }
+    }
+  }
+
+  // Now try again to create a Panda3D folder in user-specific
+  // directory.  Presumably we'll have write permission to this one.
+  if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_APPDATA, true)) {
+    bool isdir = false;
+    DWORD results = GetFileAttributes(buffer);
+    if (results != -1) {
+      isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
+    }
+
+    if (isdir) {
+      // The user prefix exists; do we have a Panda3D child?
+      string root = buffer;
+      root += string("/Panda3D");
+
+      // Attempt to make it first, if possible.  This time we don't
+      // attempt to make it public, since this is a private space.
+      CreateDirectory(root.c_str(), NULL);
+
+      isdir = false;
+      results = GetFileAttributes(root.c_str());
+      if (results != -1) {
+        isdir = (results & FILE_ATTRIBUTE_DIRECTORY) != 0;
+      }
+
+      if (isdir) {
+        // The directory exists!
+        return root;
+      }
+    }
+  }
+
+  // Couldn't find a directory.  Bail.
+  cerr << "Couldn't find a root directory.\n";
+  return string();
+
+#else  // _WIN32
+  return "/Users/drose/p3ddir";
+
+#endif
+}
+
+

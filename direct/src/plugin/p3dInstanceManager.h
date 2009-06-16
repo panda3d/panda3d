@@ -64,10 +64,14 @@ public:
   int get_unique_session_index();
   void signal_request_ready();
 
+  static void mkdir_public(const string &dirname);
+  static bool mkfile_public(const string &dirname);
+
   static P3DInstanceManager *get_global_ptr();
 
 private:
   void create_command_instance();
+  string find_root_dir() const;
 
 private:
   string _root_dir;

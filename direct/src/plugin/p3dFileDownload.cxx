@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3dFileDownload.h"
+#include "p3dInstanceManager.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DFileDownload::Constructor
@@ -44,6 +45,12 @@ set_filename(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 bool P3DFileDownload::
 open_file() {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (!inst_mgr->mkfile_public(_filename)) {
+    cerr << "Unable to create " << _filename << "\n";
+    return false;
+  }
+  
   _file.open(_filename.c_str(), ios::out | ios::ate | ios::binary);
   if (!_file) {
     return false;

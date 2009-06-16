@@ -17,6 +17,8 @@
 
 #include "p3d_plugin_common.h"
 
+#include <time.h>
+
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DDownload
 // Description : This represents a request to download a single file
@@ -62,6 +64,7 @@ protected:
 
   size_t _total_data;
   size_t _total_expected_data;
+  time_t _last_reported_time;
 
 private:
   bool _canceled;

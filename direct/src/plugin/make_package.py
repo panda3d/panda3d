@@ -38,24 +38,10 @@ import zlib
 import direct
 from pandac.PandaModules import *
 
+from FileSpec import FileSpec
+
 class ArgumentError(AttributeError):
     pass
-
-class FileSpec:
-    def __init__(self, filename, pathname):
-        self.filename = filename
-        self.pathname = pathname
-
-        self.size = pathname.getFileSize()
-        self.timestamp = pathname.getTimestamp()
-
-        hv = HashVal()
-        hv.hashFile(pathname)
-        self.hash = hv.asHex()
-
-    def getParams(self):
-        return 'filename="%s" size=%s timestamp=%s hash="%s"' % (
-            self.filename, self.size, self.timestamp, self.hash)
 
 class PackageMaker:
     def __init__(self):
@@ -76,10 +62,12 @@ class PackageMaker:
         self.packageFullname = '%s_%s' % (
             self.packageName, self.packageVersion)
 
-        self.cleanDir(self.stageDir)
+        self.packageStageDir = Filename(self.stageDir, '%s/%s' % (self.packageName, self.packageVersion))
+
+        self.cleanDir(self.packageStageDir)
 
         uncompressedArchiveBasename = '%s.mf' % (self.packageFullname)
-        uncompressedArchivePathname = Filename(self.stageDir, uncompressedArchiveBasename)
+        uncompressedArchivePathname = Filename(self.packageStageDir, uncompressedArchiveBasename)
         self.archive = Multifile()
         if not self.archive.openWrite(uncompressedArchivePathname):
             raise IOError, "Couldn't open %s for writing" % (uncompressedArchivePathname)
@@ -92,7 +80,7 @@ class PackageMaker:
         uncompressedArchive = FileSpec(uncompressedArchiveBasename, uncompressedArchivePathname)
 
         compressedArchiveBasename = '%s.mf.pz' % (self.packageFullname)
-        compressedArchivePathname = Filename(self.stageDir, compressedArchiveBasename)
+        compressedArchivePathname = Filename(self.packageStageDir, compressedArchiveBasename)
 
         print "\ncompressing"
 
@@ -112,7 +100,7 @@ class PackageMaker:
         uncompressedArchivePathname.unlink()
 
         descFileBasename = '%s.xml' % (self.packageFullname)
-        descFilePathname = Filename(self.stageDir, descFileBasename)
+        descFilePathname = Filename(self.packageStageDir, descFileBasename)
 
         f = open(descFilePathname.toOsSpecific(), 'w')
         print >> f, '<?xml version="1.0" ?>'
@@ -148,11 +136,11 @@ class PackageMaker:
                 localpath = ''
             else:
                 assert dirpath.startswith(prefix)
-                localpath = dirpath[len(prefix):] + '/'
+                localpath = dirpath[len(prefix):].replace(os.sep, '/') + '/'
 
             for basename in filenames:
                 file = FileSpec(localpath + basename,
-                                Filename(self.startDir, basename))
+                                Filename(self.startDir, localpath + basename))
                 print file.filename
                 self.components.append(file)
                 self.archive.addSubfile(file.filename, file.pathname, 0)
