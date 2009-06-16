@@ -52,9 +52,11 @@ typedef ReMutexPosixImpl ReMutexImpl;
 // interface with an external program or something that wants real
 // locks.
 #if defined(WIN32_VC)
+#include "mutexWin32Impl.h"
 typedef MutexWin32Impl TrueMutexImpl;
 
 #elif defined(HAVE_POSIX_THREADS)
+#include "mutexPosixImpl.h"
 typedef MutexPosixImpl TrueMutexImpl;
 
 #else
