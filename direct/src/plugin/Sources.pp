@@ -78,6 +78,6 @@
   #define SOURCES \
     panda3d.cxx
 
-  #define WIN_SYS_LIBS user32.lib gdi32.lib
+  #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib
 
 #end bin_target
