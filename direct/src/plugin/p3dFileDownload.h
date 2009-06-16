@@ -16,7 +16,7 @@
 #define P3DFILEDOWNLOAD_H
 
 #include "p3d_plugin_common.h"
-#include "p3DDownload.h"
+#include "p3dDownload.h"
 
 #include <fstream>
 

@@ -15,6 +15,7 @@
 #include "handleStreamBuf.h"
 
 #include <assert.h>
+#include <string.h>
 
 #ifndef _WIN32
 #include <sys/types.h>

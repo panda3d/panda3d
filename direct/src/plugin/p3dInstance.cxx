@@ -281,7 +281,7 @@ TiXmlElement *P3DInstance::
 make_xml() {
   TiXmlElement *xinstance = new TiXmlElement("instance");
   xinstance->SetAttribute("id", _instance_id);
-  xinstance->SetAttribute("p3d_filename", _p3d_filename);
+  xinstance->SetAttribute("p3d_filename", _p3d_filename.c_str());
 
   switch (_window_type) {
   case P3D_WT_embedded:
