@@ -11,7 +11,7 @@ from pandac.PandaModules import *
 
 # This needs to be available early for DirectGUI imports
 import __builtin__
-__builtin__.config = ConfigConfigureGetConfigConfigShowbase
+__builtin__.config = getConfigShowbase()
 
 from direct.directnotify.DirectNotifyGlobal import *
 from MessengerGlobal import *
@@ -68,7 +68,6 @@ class ShowBase(DirectObject.DirectObject):
         self.debugRunningMultiplier = 4
         
         # Get the dconfig object
-        #self.config = ConfigConfigureGetConfigConfigShowbase
         self.config = config
         # Setup wantVerifyPdb as soon as reasonable:
         Verify.wantVerifyPdb = self.config.GetBool('want-verify-pdb', 0)

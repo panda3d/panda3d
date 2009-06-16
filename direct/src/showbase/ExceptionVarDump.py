@@ -1,4 +1,4 @@
-from pandac.PandaModules import ConfigConfigureGetConfigConfigShowbase as config
+from pandac.PandaModules import getConfigShowbase
 from direct.directnotify.DirectNotifyGlobal import directNotify
 from direct.showbase.PythonUtil import fastRepr
 from exceptions import Exception
@@ -7,6 +7,7 @@ import types
 import traceback
 
 notify = directNotify.newCategory("ExceptionVarDump")
+config = getConfigShowbase()
 
 reentry = 0
 

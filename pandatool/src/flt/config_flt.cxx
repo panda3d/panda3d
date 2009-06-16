@@ -50,12 +50,16 @@
 Configure(config_flt);
 NotifyCategoryDef(flt, "");
 
-// Set this true to trigger an assertion failure (and core dump)
-// immediately when an error is detected on reading or writing a flt
-// file.  This is primarily useful for debugging the flt reader
-// itself, to generate a stack trace to determine precisely at what
-// point a flt file failed.
-const bool flt_error_abort = config_flt.GetBool("flt-error-abort", false);
+
+ConfigVariableBool flt_error_abort
+("flt-error-abort", false,
+ PRC_DESC("Set this true to trigger an assertion failure (and core dump) "
+          "immediately when an error is detected on reading or writing a flt "
+          "file.  This is primarily useful for debugging the flt reader itself, "
+          "to generate a stack trace to determine precisely at what point a flt "
+
+          "file failed."));
+
 
 ConfigureFn(config_flt) {
   init_libflt();

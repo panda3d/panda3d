@@ -18,10 +18,11 @@
 #include "pandatoolbase.h"
 
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDeclNoExport(flt);
 
-extern const bool flt_error_abort;
+extern ConfigVariableBool flt_error_abort;
 
 extern void init_libflt();
 
