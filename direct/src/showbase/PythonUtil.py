@@ -3312,7 +3312,6 @@ def report(types = [], prefix = '', xform = None, notifyFunc = None, dConfigPara
             rVal = None
             try:
                 __report_indent += 1
-                global rVal
                 rVal = f(*args,**kwargs)
             finally:
                 __report_indent -= 1
