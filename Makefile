@@ -1,11 +1,7 @@
 all:
-	python makepanda/makepanda.py --everything --target all
-panda3d:
-	python makepanda/makepanda.py --everything --target panda3d
-plugins:
-	python makepanda/makepanda.py --everything --target plugins
+	python makepanda/makepanda.py --everything
 installer:
-	python makepanda/makepanda.py --everything --target installer
+	python makepanda/makepanda.py --everything --installer
 install:
 	python makepanda/installpanda.py
 clean:
