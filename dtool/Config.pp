@@ -655,6 +655,26 @@
 // better).
 #define HAVE_TINYDISPLAY 1
 
+// Is OpenGL ES 1.x installed, and where? This is a minimal subset of
+// OpenGL for mobile devices.
+#define GLES_IPATH
+#define GLES_LPATH
+#define GLES_LIBS GLES_cm
+#defer HAVE_GLES $[libtest $[GLES_LPATH],$[GLES_LIBS]]
+
+// OpenGL ES 2.x is a version of OpenGL ES but without fixed-function
+// pipeline - everything is programmable there.
+#define GLES2_IPATH
+#define GLES2_LPATH
+#define GLES2_LIBS GLESv2
+#defer HAVE_GLES2 $[libtest $[GLES2_LPATH],$[GLES2_LIBS]]
+
+// EGL is like GLX, but for OpenGL ES.
+#defer EGL_IPATH
+#defer EGL_LPATH
+#defer EGL_LIBS EGL
+#defer HAVE_EGL $[libtest $[EGL_LPATH],$[EGL_LIBS]]
+
 // The SDL library is useful only for tinydisplay, and is not even
 // required for that, as tinydisplay is also supported natively on
 // each supported platform.

@@ -226,6 +226,7 @@
 
 #set EGL_IPATH $[unixfilename $[EGL_IPATH]]
 #set EGL_LPATH $[unixfilename $[EGL_LPATH]]
+#set EGL_LIBS $[unixfilename $[EGL_LIBS]]
 #set HAVE_EGL $[HAVE_EGL]
 
 #set HAVE_WGL $[HAVE_WGL]
