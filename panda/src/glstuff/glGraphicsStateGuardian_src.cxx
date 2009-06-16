@@ -5615,9 +5615,9 @@ get_external_image_format(Texture *tex) const {
     return GL_GREEN;
   case Texture::F_blue:
     return GL_BLUE;
+#endif
   case Texture::F_alpha:
     return GL_ALPHA;
-#endif
   case Texture::F_rgb:
   case Texture::F_rgb5:
   case Texture::F_rgb8:
@@ -8847,9 +8847,11 @@ do_extract_texture_data(CLP(TextureContext) *gtc) {
   case GL_BLUE:
     format = Texture::F_blue;
     break;
+#endif  // OPENGLES
   case GL_ALPHA:
     format = Texture::F_alpha;
     break;
+#ifndef OPENGLES
   case GL_LUMINANCE:
   case 1:
     format = Texture::F_luminance;
