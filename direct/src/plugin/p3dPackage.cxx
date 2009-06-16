@@ -14,10 +14,10 @@
 
 #include "p3dPackage.h"
 #include "p3dInstanceManager.h"
+#include "p3dMultifileReader.h"
 
 #include "openssl/md5.h"
 #include "zlib.h"
-#include "libtar.h"
 
 #include <algorithm>
 #include <fstream>
@@ -301,8 +301,8 @@ uncompress_archive() {
   string source_pathname = _package_dir + "/" + _compressed_archive._filename;
   string target_pathname = _package_dir + "/" + _uncompressed_archive._filename;
 
-  gzFile source = gzopen(source_pathname.c_str(), "rb");
-  if (source == NULL) {
+  ifstream source(source_pathname.c_str(), ios::in | ios::binary);
+  if (!source) {
     cerr << "Couldn't open " << source_pathname << "\n";
     report_done(false);
     return;
@@ -312,38 +312,85 @@ uncompress_archive() {
   if (!target) {
     cerr << "Couldn't write to " << target_pathname << "\n";
     report_done(false);
+    return;
   }
 
-  static const int buffer_size = 1024;
-  char buffer[buffer_size];
+  z_stream z;
+  z.next_in = Z_NULL;
+  z.avail_in = 0;
+  z.zalloc = Z_NULL;
+  z.zfree = Z_NULL;
+  z.opaque = Z_NULL;
+  z.msg = (char *)"no error message";
 
-  int count = gzread(source, buffer, buffer_size);
-  while (count > 0) {
-    target.write(buffer, count);
-    count = gzread(source, buffer, buffer_size);
+  int result = inflateInit(&z);
+  if (result < 0) {
+    cerr << z.msg << "\n";
+    report_done(false);
+    return;
+  }
+  
+  static const int decompress_buffer_size = 1024;
+  char decompress_buffer[decompress_buffer_size];
+  static const int write_buffer_size = 1024;
+  char write_buffer[write_buffer_size];
+
+  bool eof = false;
+  int flush = 0;
+
+  while (true) {
+    if (z.avail_in == 0 && !eof) {
+      source.read(decompress_buffer, decompress_buffer_size);
+      size_t read_count = source.gcount();
+      eof = (read_count == 0 || source.eof() || source.fail());
+        
+      z.next_in = (Bytef *)decompress_buffer;
+      z.avail_in = read_count;
+    }
+
+    z.next_out = (Bytef *)write_buffer;
+    z.avail_out = write_buffer_size;
+    int result = inflate(&z, flush);
+    if (z.avail_out < write_buffer_size) {
+      target.write(write_buffer, write_buffer_size - z.avail_out);
+      if (!target) {
+        cerr << "Couldn't write entire file to " << target_pathname << "\n";
+        report_done(false);
+        return;
+      }
+    }
+
+    if (result == Z_STREAM_END) {
+      // Here's the end of the file.
+      break;
+
+    } else if (result == Z_BUF_ERROR && flush == 0) {
+      // We might get this if no progress is possible, for instance if
+      // the input stream is truncated.  In this case, tell zlib to
+      // dump everything it's got.
+      flush = Z_FINISH;
+
+    } else if (result < 0) {
+      cerr << z.msg << "\n";
+      inflateEnd(&z);
+      report_done(false);
+      return;
+    }
   }
 
-  if (count < 0) {
-    cerr << "gzip error decompressing " << source_pathname << "\n";
-    int errnum;
-    cerr << gzerror(source, &errnum) << "\n";
-    gzclose(source);
+  result = inflateEnd(&z);
+  if (result < 0) {
+    cerr << z.msg << "\n";
     report_done(false);
     return;
   }
 
-  gzclose(source);
-    
-  if (!target) {
-    cerr << "Couldn't write entire file to " << target_pathname << "\n";
-    report_done(false);
-    return;
-  }
-
+  source.close();
   target.close();
 
   if (!_uncompressed_archive.full_verify(_package_dir)) {
-    cerr << "after uncompressing " << target_pathname << ", failed hash check\n";
+    cerr << "after uncompressing " << target_pathname
+         << ", failed hash check\n";
     report_done(false);
     return;
   }
@@ -364,24 +411,13 @@ extract_archive() {
   cerr << "extracting " << _uncompressed_archive._filename << "\n";
 
   string source_pathname = _package_dir + "/" + _uncompressed_archive._filename;
-
-  TAR *tar = NULL;
-  int result = tar_open
-    (&tar, (char *)source_pathname.c_str(), NULL, O_RDONLY, 0666, TAR_VERBOSE);
-  if (result != 0) {
-    cerr << "Unable to open " << source_pathname << "\n";
+  P3DMultifileReader reader;
+  if (!reader.extract(source_pathname, _package_dir)) {
+    cerr << "Failure extracting " << _uncompressed_archive._filename
+         << "\n";
     report_done(false);
     return;
   }
-
-  while (th_read(tar) == 0) {
-    string basename = th_get_pathname(tar);
-    cerr << basename << "\n";
-    string pathname = _package_dir + "/" + basename;
-    tar_extract_file(tar, (char *)pathname.c_str());
-  }
-
-  tar_close(tar);
 
   cerr << "done extracting\n";
   report_done(true);

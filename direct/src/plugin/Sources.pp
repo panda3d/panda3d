@@ -18,6 +18,7 @@
     p3dFileDownload.h p3dFileDownload.I \
     p3dInstance.h p3dInstance.I \
     p3dInstanceManager.h p3dInstanceManager.I \
+    p3dMultifileReader.h p3dMultifileReader.I \
     p3dPackage.h p3dPackage.I \
     p3dSession.h p3dSession.I
 
@@ -27,6 +28,7 @@
     p3dFileDownload.cxx \
     p3dInstance.cxx \
     p3dInstanceManager.cxx \
+    p3dMultifileReader.cxx \
     p3dPackage.cxx \
     p3dSession.cxx
 

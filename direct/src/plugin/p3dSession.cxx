@@ -649,7 +649,12 @@ package_ready(P3DPackage *package, bool success) {
   if (this == _session->_panda3d_callback) {
     _session->_panda3d_callback = NULL;
     if (package == _session->_panda3d) {
-      _session->start_p3dpython();
+      if (success) {
+        _session->start_p3dpython();
+      } else {
+        cerr << "Failed to install " << package->get_package_name()
+             << "_" << package->get_package_version() << "\n";
+      }
     } else {
       cerr << "Unexpected panda3d package: " << package << "\n";
     }

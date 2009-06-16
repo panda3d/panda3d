@@ -48,6 +48,26 @@ get_package_dir() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_package_name
+//       Access: Public
+//  Description: Returns the name of this package.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DPackage::
+get_package_name() const {
+  return _package_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_package_version
+//       Access: Public
+//  Description: Returns the version string of this package.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DPackage::
+get_package_version() const {
+  return _package_version;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::decode_hexdigit
 //       Access: Private
 //  Description: Returns the integer value corresponding to the

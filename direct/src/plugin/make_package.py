@@ -27,10 +27,7 @@ Options:
 import sys
 import getopt
 import os
-import tarfile
-import gzip
-import stat
-import md5
+import zlib
 
 import direct
 from pandac.PandaModules import *
@@ -42,25 +39,15 @@ class FileSpec:
     def __init__(self, filename, pathname):
         self.filename = filename
         self.pathname = pathname
-        self.size = 0
-        self.timestamp = 0
-        self.hash = None
 
-        s = os.stat(self.pathname)
-        self.size = s[stat.ST_SIZE]
-        self.timestamp = s[stat.ST_MTIME]
+        self.size = pathname.getFileSize()
+        self.timestamp = pathname.getTimestamp()
 
-        m = md5.new()
-        f = open(self.pathname, 'rb')
-        data = f.read(4096)
-        while data:
-            m.update(data)
-            data = f.read(4096)
-        f.close()
+        hv = HashVal()
+        hv.hashFile(pathname)
+        self.hash = hv.asHex()
 
-        self.hash = m.hexdigest()
-
-    def get_params(self):
+    def getParams(self):
         return 'filename="%s" size=%s timestamp=%s hash="%s"' % (
             self.filename, self.size, self.timestamp, self.hash)
 
@@ -85,9 +72,11 @@ class PackageMaker:
 
         self.cleanDir(self.stageDir)
 
-        uncompressedArchiveBasename = '%s.tar' % (self.packageFullname)
-        uncompressedArchivePathname = os.path.join(self.stageDir, uncompressedArchiveBasename)
-        self.archive = tarfile.open(uncompressedArchivePathname, 'w')
+        uncompressedArchiveBasename = '%s.mf' % (self.packageFullname)
+        uncompressedArchivePathname = Filename(self.stageDir, uncompressedArchiveBasename)
+        self.archive = Multifile()
+        if not self.archive.openWrite(uncompressedArchivePathname):
+            raise IOError, "Couldn't open %s for writing" % (uncompressedArchivePathname)
 
         self.components = []
 
@@ -96,34 +85,37 @@ class PackageMaker:
 
         uncompressedArchive = FileSpec(uncompressedArchiveBasename, uncompressedArchivePathname)
 
-        compressedArchiveBasename = '%s.tgz' % (self.packageFullname)
-        compressedArchivePathname = os.path.join(self.stageDir, compressedArchiveBasename)
+        compressedArchiveBasename = '%s.mf.pz' % (self.packageFullname)
+        compressedArchivePathname = Filename(self.stageDir, compressedArchiveBasename)
 
         print "\ncompressing"
-        f = open(uncompressedArchivePathname, 'rb')
-        gz = gzip.open(compressedArchivePathname, 'w', 9)
-        data = f.read(4096)
+
+        source = open(uncompressedArchivePathname.toOsSpecific(), 'rb')
+        target = open(compressedArchivePathname.toOsSpecific(), 'w')
+        z = zlib.compressobj(9)
+        data = source.read(4096)
         while data:
-            gz.write(data)
-            data = f.read(4096)
-        gz.close()
-        f.close()
+            target.write(z.compress(data))
+            data = source.read(4096)
+        target.write(z.flush())
+        target.close()
+        source.close()
 
         compressedArchive = FileSpec(compressedArchiveBasename, compressedArchivePathname)
 
-        os.unlink(uncompressedArchivePathname)
+        uncompressedArchivePathname.unlink()
 
         descFileBasename = '%s.xml' % (self.packageFullname)
-        descFilePathname = os.path.join(self.stageDir, descFileBasename)
+        descFilePathname = Filename(self.stageDir, descFileBasename)
 
-        f = open(descFilePathname, 'w')
+        f = open(descFilePathname.toOsSpecific(), 'w')
         print >> f, '<?xml version="1.0" ?>'
         print >> f, ''
         print >> f, '<package name="%s" version="%s">' % (self.packageName, self.packageVersion)
-        print >> f, '  <uncompressed_archive %s />' % (uncompressedArchive.get_params())
-        print >> f, '  <compressed_archive %s />' % (compressedArchive.get_params())
+        print >> f, '  <uncompressed_archive %s />' % (uncompressedArchive.getParams())
+        print >> f, '  <compressed_archive %s />' % (compressedArchive.getParams())
         for file in self.components:
-            print >> f, '  <component %s />' % (file.get_params())
+            print >> f, '  <component %s />' % (file.getParams())
         print >> f, '</package>'
         f.close()
         
@@ -132,22 +124,17 @@ class PackageMaker:
         """ Remove all the files in the named directory.  Does not
         operate recursively. """
 
-        for filename in os.listdir(dirname):
-            pathname = os.path.join(dirname, filename)
-            try:
-                os.unlink(pathname)
-            except OSError:
-                pass
+        for filename in os.listdir(dirname.toOsSpecific()):
+            pathname = Filename(dirname, filename)
+            pathname.unlink()
 
     def addComponents(self):
         """ Walks through all the files in the start directory and
         adds them to the archive.  Recursively visits
         sub-directories. """
 
-        startDir = self.startDir
+        startDir = self.startDir.toOsSpecific()
         if startDir.endswith(os.sep):
-            startDir = startDir[:-1]
-        elif os.altsep and startDir.endswith(os.altsep):
             startDir = startDir[:-1]
         prefix = startDir + os.sep
         for dirpath, dirnames, filenames in os.walk(startDir):
@@ -155,23 +142,23 @@ class PackageMaker:
                 localpath = ''
             else:
                 assert dirpath.startswith(prefix)
-                localpath = dirpath[len(prefix):]
+                localpath = dirpath[len(prefix):] + '/'
 
             for basename in filenames:
-                file = FileSpec(os.path.join(localpath, basename),
-                                os.path.join(startDir, basename))
+                file = FileSpec(localpath + basename,
+                                Filename(self.startDir, basename))
                 print file.filename
                 self.components.append(file)
-                self.archive.add(file.pathname, file.filename, recursive = False)
+                self.archive.addSubfile(file.filename, file.pathname, 0)
                 
 def makePackage(args):
     opts, args = getopt.getopt(args, 'd:p:v:h')
 
     pm = PackageMaker()
-    pm.startDir = '.'
+    pm.startDir = Filename('.')
     for option, value in opts:
         if option == '-d':
-            pm.stageDir = Filename.fromOsSpecific(value).toOsSpecific()
+            pm.stageDir = Filename.fromOsSpecific(value)
         elif option == '-p':
             pm.packageName = value
         elif option == '-v':
