@@ -322,7 +322,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
 // First, the dynamic and static libraries.
 /////////////////////////////////////////////////////////////////////
 
-#forscopes metalib_target lib_target static_lib_target dynamic_lib_target
+#forscopes metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target
 
 // We might need to define a BUILDING_ symbol for win32.  We use the
 // BUILDING_DLL variable name, defined typically in the metalib, for
@@ -501,7 +501,7 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 
 #endif  // igatemout
 
-#end metalib_target lib_target static_lib_target dynamic_lib_target
+#end metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target
 
 
 /////////////////////////////////////////////////////////////////////
