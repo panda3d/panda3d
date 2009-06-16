@@ -16,6 +16,7 @@
 #include "mayaEggGroupUserData.h"
 #include "mayaNodeDesc.h"
 #include "mayaBlendDesc.h"
+#include "configVariableBool.h"
 
 #include "dconfig.h"
 
@@ -62,8 +63,8 @@ init_libmayaegg() {
   // For some reason, static init is not reliably running when this is
   // loaded as a plug-in of a plug-in.  Initialize these explicitly
   // here.
-  maya_default_double_sided = config_mayaegg.GetBool("maya-default-double-sided", false);
-  maya_default_vertex_color = config_mayaegg.GetBool("maya-default-vertex-color", true);
+  maya_default_double_sided = ConfigVariableBool("maya-default-double-sided", false).get_value();
+  maya_default_vertex_color = ConfigVariableBool("maya-default-vertex-color", true).get_value();
 
 }
 
