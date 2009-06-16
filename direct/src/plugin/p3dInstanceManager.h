@@ -37,6 +37,8 @@ private:
 public:
   bool initialize();
 
+  inline bool is_initialized() const;
+
   inline const string &get_root_dir() const;
   inline const string &get_download_url() const;
 
@@ -74,6 +76,7 @@ private:
   string find_root_dir() const;
 
 private:
+  bool _is_initialized;
   string _root_dir;
   string _download_url;
 

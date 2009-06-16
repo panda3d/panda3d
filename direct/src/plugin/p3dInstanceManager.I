@@ -14,6 +14,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::is_initialized
+//       Access: Public
+//  Description: Returns true if the instance manager is successfully
+//               initialized, false otherwise.
+////////////////////////////////////////////////////////////////////
+inline bool P3DInstanceManager::
+is_initialized() const {
+  return _is_initialized;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_root_dir
 //       Access: Public
 //  Description: Returns the root directory into which all the P3D

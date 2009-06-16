@@ -207,8 +207,8 @@ send_command(TiXmlDocument *command) {
 void P3DSession::
 start_p3dpython() {
 #ifdef _WIN32
-  string p3dpython = "c:/cygwin/home/drose/player/direct/built/bin/p3dpython.exe";
-  //  string p3dpython = _python_root_dir + "/p3dpython.exe";
+  //string p3dpython = "c:/cygwin/home/drose/player/direct/built/bin/p3dpython.exe";
+  string p3dpython = _python_root_dir + "/p3dpython.exe";
 #else
   string p3dpython = "/Users/drose/player/direct/built/bin/p3dpython";
 #endif

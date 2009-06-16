@@ -16,6 +16,8 @@
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
 
+#include <assert.h>
+
 // Use a simple lock to protect the C-style API functions in this
 // module from parallel access by multiple threads in the host.
 
@@ -56,6 +58,7 @@ P3D_create_instance(P3D_request_ready_func *func,
                     int win_width, int win_height,
                     P3D_window_handle parent_window,
                     const P3D_token tokens[], size_t num_tokens) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3DInstance *result = 
@@ -68,6 +71,7 @@ P3D_create_instance(P3D_request_ready_func *func,
 
 void
 P3D_instance_finish(P3D_instance *instance) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   inst_mgr->finish_instance((P3DInstance *)instance);
@@ -77,6 +81,7 @@ P3D_instance_finish(P3D_instance *instance) {
 bool
 P3D_instance_has_property(P3D_instance *instance,
                           const char *property_name) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   bool result = ((P3DInstance *)instance)->has_property(property_name);
   RELEASE_LOCK(_lock);
@@ -86,6 +91,7 @@ P3D_instance_has_property(P3D_instance *instance,
 char *
 P3D_instance_get_property(P3D_instance *instance,
                           const char *property_name) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   string value = ((P3DInstance *)instance)->get_property(property_name);
 
@@ -101,6 +107,7 @@ void
 P3D_instance_set_property(P3D_instance *instance,
                           const char *property_name,
                           const char *value) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   ((P3DInstance *)instance)->set_property(property_name, value);
   RELEASE_LOCK(_lock);
@@ -108,6 +115,7 @@ P3D_instance_set_property(P3D_instance *instance,
 
 P3D_request *
 P3D_instance_get_request(P3D_instance *instance) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   P3D_request *result = ((P3DInstance *)instance)->get_request();
   RELEASE_LOCK(_lock);
@@ -116,6 +124,7 @@ P3D_instance_get_request(P3D_instance *instance) {
 
 P3D_instance *
 P3D_check_request(bool wait) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3D_instance *inst = inst_mgr->check_request();
@@ -139,6 +148,7 @@ P3D_check_request(bool wait) {
 
 void
 P3D_request_finish(P3D_request *request, bool handled) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   if (request != (P3D_request *)NULL) {
     ((P3DInstance *)request->_instance)->finish_request(request, handled);
@@ -153,6 +163,7 @@ P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
                              size_t total_expected_data,
                              const unsigned char *this_data, 
                              size_t this_data_size) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   bool result = ((P3DInstance *)instance)->
     feed_url_stream(unique_id, result_code, http_status_code,

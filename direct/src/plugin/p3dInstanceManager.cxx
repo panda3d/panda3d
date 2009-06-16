@@ -31,6 +31,7 @@ P3DInstanceManager *P3DInstanceManager::_global_ptr;
 P3DInstanceManager::
 P3DInstanceManager() {
   cerr << "creating instance manager\n";
+  _is_initialized = false;
   _unique_session_index = 0;
 
   _request_seq = 0;
@@ -91,6 +92,8 @@ initialize() {
     cerr << "Could not find root directory.\n";
     return false;
   }
+
+  _is_initialized = true;
 
   return true;
 }
