@@ -82,6 +82,8 @@ open_read(istream *source, bool owns_source) {
 
   _z_source.next_in = Z_NULL;
   _z_source.avail_in = 0;
+  _z_source.next_out = Z_NULL;
+  _z_source.avail_out = 0;
 #ifdef USE_MEMORY_NOWRAPPERS
   _z_source.zalloc = Z_NULL;
   _z_source.zfree = Z_NULL;
@@ -133,6 +135,10 @@ open_write(ostream *dest, bool owns_dest, int compression_level) {
   _dest = dest;
   _owns_dest = owns_dest;
 
+  _z_dest.next_in = Z_NULL;
+  _z_dest.avail_in = 0;
+  _z_dest.next_out = Z_NULL;
+  _z_dest.avail_out = 0;
 #ifdef USE_MEMORY_NOWRAPPERS
   _z_dest.zalloc = Z_NULL;
   _z_dest.zfree = Z_NULL;
