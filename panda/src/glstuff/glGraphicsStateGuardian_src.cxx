@@ -1266,12 +1266,13 @@ reset() {
   _num_active_texture_stages = 0;
 
   // Check availability of anisotropic texture filtering.
+  _supports_anisotropy = false;
+  _max_anisotropy = 1.0;
   if (has_extension("GL_EXT_texture_filter_anisotropic")) {
     GLfloat max_anisotropy;
     GLP(GetFloatv)(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_anisotropy);
     _max_anisotropy = (float)max_anisotropy;
-  } else {
-    _max_anisotropy = 1.0;
+    _supports_anisotropy = true;
   } 
 
   report_my_gl_errors();
@@ -7761,13 +7762,12 @@ specify_texture(CLP(TextureContext) *gtc) {
                      get_texture_filter_type(magfilter, true));
 
   // Set anisotropic filtering.
-  float anisotropy = tex->get_effective_anisotropic_degree();
-  if (anisotropy > _max_anisotropy) {
-    anisotropy = _max_anisotropy;
-  }
-  if (anisotropy > 1.0) {
+  if (_supports_anisotropy) {
+    float anisotropy = tex->get_effective_anisotropic_degree();
+    anisotropy = min(anisotropy, _max_anisotropy);
+    anisotropy = max(anisotropy, 1.0f);
     GLP(TexParameterf)(target, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotropy);
-  } 
+  }
 
 #ifndef OPENGLES
   if (tex->get_format() == Texture::F_depth_stencil ||

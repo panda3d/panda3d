@@ -435,6 +435,7 @@ protected:
   GLuint _current_fbo;
   int _num_active_texture_stages;
   float _max_anisotropy;
+  bool _supports_anisotropy;
   
   int _error_count;
 
