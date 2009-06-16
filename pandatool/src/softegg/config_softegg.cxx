@@ -31,12 +31,12 @@ ConfigureFn(config_softegg) {
 
 // Should we respect the Soft? double-sided flag (true) or ignore it
 // and assume everything is single-sided (false)?
-const bool soft_default_double_sided = config_softegg.GetBool("soft-default-double-sided", false);
+ConfigVariableBool soft_default_double_sided("soft-default-double-sided", false);
 
 // Should we apply vertex color even when a texture is applied (true)
 // or only when no texture is applied or the vertex-color egg flag is
 // set (false)?
-const bool soft_default_vertex_color = config_softegg.GetBool("soft-default-vertex-color", true);
+ConfigVariableBool soft_default_vertex_color("soft-default-vertex-color", true);
 
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libsoftegg

@@ -17,11 +17,12 @@
 
 #include "pandatoolbase.h"
 #include "notifyCategoryProxy.h"
+#include "configVariableBool.h"
 
 NotifyCategoryDeclNoExport(softegg);
 
-extern const bool soft_default_double_sided;
-extern const bool soft_default_vertex_color;
+extern ConfigVariableBool soft_default_double_sided;
+extern ConfigVariableBool soft_default_vertex_color;
 
 extern void init_libsoftegg();
 
