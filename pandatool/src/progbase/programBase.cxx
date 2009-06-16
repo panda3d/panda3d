@@ -112,18 +112,6 @@ ProgramBase() {
              "Display this help page.",
              &ProgramBase::handle_help_option, NULL, (void *)this);
 
-  // Should we report DConfig's debugging information?
-  if (dconfig_cat.is_debug()) {
-    dconfig_cat.debug()
-      << "DConfig took " << Config::get_total_time_config_init()
-      << " CPU seconds initializing, and "
-      << Config::get_total_time_external_init()
-      << " CPU seconds calling external initialization routines.\n";
-    dconfig_cat.debug()
-      << "ConfigTable::GetSym() was called "
-      << Config::get_total_num_get() << " times.\n";
-  }
-
   // It's nice to start with a blank line.
   nout << "\r";
 }
