@@ -101,7 +101,11 @@ extern "C" void cygwin_conv_to_posix_path(const char *path, char *posix);
 // Panda filenames more closely resemble their Windows counterparts.
 // That might actually work, but it will cause problems with
 // Filename::standardize().
-static const string hosts_prefix = "/hosts/";
+
+// We use const char * instead of string to avoid static-init ordering
+// issues.
+static const char *hosts_prefix = "/hosts/";
+static size_t hosts_prefix_length = 7;
 
 static string
 front_to_back_slash(const string &str) {
@@ -131,27 +135,25 @@ back_to_front_slash(const string &str) {
 
 static const string &
 get_panda_root() {
-  static string panda_root;
-  static bool got_panda_root = false;
+  static string *panda_root = NULL;
 
-  if (!got_panda_root) {
+  if (panda_root == NULL) {
+    panda_root = new string;
     const char *envvar = getenv("PANDA_ROOT");
     if (envvar != (const char *)NULL) {
-      panda_root = front_to_back_slash(envvar);
+      (*panda_root) = front_to_back_slash(envvar);
     }
 
     // Ensure the string ends in a backslash.  If PANDA_ROOT is empty
     // or undefined, this function must return a single backslash--not
     // an empty string--since this prefix is used to replace a leading
     // slash in Filename::to_os_specific().
-    if (panda_root.empty() || panda_root[panda_root.length() - 1] != '\\') {
-      panda_root += '\\';
+    if ((*panda_root).empty() || (*panda_root)[(*panda_root).length() - 1] != '\\') {
+      (*panda_root) += '\\';
     }
-
-    got_panda_root = true;
   }
 
-  return panda_root;
+  return (*panda_root);
 }
 
 static string
@@ -200,10 +202,10 @@ convert_pathname(const string &unix_style_pathname) {
     windows_pathname =
       string(1, (char)toupper(unix_style_pathname[1])) + ":" + remainder;
 
-  } else if (unix_style_pathname.length() > hosts_prefix.length() &&
-             unix_style_pathname.substr(0, hosts_prefix.length()) == hosts_prefix) {
+  } else if (unix_style_pathname.length() > hosts_prefix_length &&
+             unix_style_pathname.substr(0, hosts_prefix_length) == hosts_prefix) {
     // A filename like /hosts/fooby gets turned into \\fooby.
-    windows_pathname = "\\\\" + front_to_back_slash(unix_style_pathname.substr(hosts_prefix.length()));
+    windows_pathname = "\\\\" + front_to_back_slash(unix_style_pathname.substr(hosts_prefix_length));
     
   } else {
     // It starts with a slash, but the first part is not a single
@@ -2964,7 +2966,7 @@ r_make_canonical(const Filename &cwd) {
     // And restore the current working directory.
     string osdir = cwd.to_os_specific();
     if (::chdir(osdir.c_str()) < 0) {
-      cerr << "Error!  Cannot change back to " << cwd << "\n";
+      cerr << "Error!  Cannot change back to " << osdir << "\n";
     }
     return true;
   }
