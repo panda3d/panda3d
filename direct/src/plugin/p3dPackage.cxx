@@ -38,15 +38,23 @@
 
 #endif
 
+// The relative breakdown of the full install process.  Each phase is
+// worth this fraction of the total movement of the progress bar.
+static const double download_portion = 0.9;
+static const double uncompress_portion = 0.05;
+static const double extract_portion = 0.05;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DPackage::
-P3DPackage(const string &package_name, const string &package_version) :
+P3DPackage(const string &package_name, const string &package_version,
+           const string &package_output_name) :
   _package_name(package_name),
-  _package_version(package_version)
+  _package_version(package_version),
+  _package_output_name(package_output_name)
 {
   _package_fullname = _package_name + "_" + _package_version;
   _ready = false;
@@ -263,6 +271,16 @@ download_compressed_archive(bool allow_partial) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::compressed_archive_download_progress
+//       Access: Private
+//  Description: Called as the file is downloaded.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+compressed_archive_download_progress(double progress) {
+  report_progress(download_portion * progress);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::compressed_archive_download_finished
 //       Access: Private
 //  Description: Called when the desc file has been fully downloaded.
@@ -356,6 +374,7 @@ uncompress_archive() {
     return;
   }
 
+  size_t total_out = 0;
   while (true) {
     if (z.avail_in == 0 && !eof) {
       source.read(decompress_buffer, decompress_buffer_size);
@@ -375,6 +394,12 @@ uncompress_archive() {
         cerr << "Couldn't write entire file to " << target_pathname << "\n";
         report_done(false);
         return;
+      }
+      total_out += (write_buffer_size - z.avail_out);
+      if (_uncompressed_archive._size != 0) {
+        double progress = (double)total_out / (double)_uncompressed_archive._size;
+        progress = min(progress, 1.0);
+        report_progress(download_portion + uncompress_portion * progress);
       }
     }
 
@@ -430,7 +455,8 @@ extract_archive() {
 
   string source_pathname = _package_dir + "/" + _uncompressed_archive._filename;
   P3DMultifileReader reader;
-  if (!reader.extract(source_pathname, _package_dir)) {
+  if (!reader.extract(source_pathname, _package_dir,
+                      this, download_portion + uncompress_portion, extract_portion)) {
     cerr << "Failure extracting " << _uncompressed_archive._filename
          << "\n";
     report_done(false);
@@ -439,6 +465,20 @@ extract_archive() {
 
   cerr << "done extracting\n";
   report_done(true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::report_progress
+//       Access: Private
+//  Description: Reports the indicated install progress to all
+//               listening callbacks.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+report_progress(double progress) {
+  Callbacks::iterator ci;
+  for (ci = _callbacks.begin(); ci != _callbacks.end(); ++ci) {
+    (*ci)->install_progress(this, progress);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -559,8 +599,26 @@ stream_hex(ostream &out, const unsigned char *source, size_t size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::Callback::Destructor
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DPackage::Callback::
+~Callback() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::Callback::install_progress
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void P3DPackage::Callback::
+install_progress(P3DPackage *package, double progress) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::Callback::package_ready
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::Callback::
@@ -577,6 +635,26 @@ Download(P3DPackage *package, DownloadType dtype) :
   _package(package),
   _dtype(dtype)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::Download::download_progress
+//       Access: Protected, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void P3DPackage::Download::
+download_progress() {
+  P3DFileDownload::download_progress();
+  assert(_package->_active_download == this);
+
+  switch (_dtype) {
+  case DT_desc_file:
+    break;
+
+  case DT_compressed_archive:
+    _package->compressed_archive_download_progress(get_download_progress());
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -41,6 +41,7 @@ P3DInstance(P3D_request_ready_func *func,
   _parent_window(parent_window)
 {
   fill_tokens(tokens, num_tokens);
+  cerr << "instance, size = " << _win_width << " " << _win_height << "\n";
 
   _instance_id = _next_instance_id;
   ++_next_instance_id;
@@ -56,6 +57,7 @@ P3DInstance(P3D_request_ready_func *func,
   _python_version = "python24";
 
   _session = NULL;
+  _requested_stop = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -269,6 +271,24 @@ start_download(P3DDownload *download) {
   request->_request._get_url._unique_id = download_id;
 
   add_request(request);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::request_stop
+//       Access: Public
+//  Description: Asks the host to shut down this particular instance,
+//               presumably because the user has indicated it should
+//               exit.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+request_stop() {
+  if (!_requested_stop) {
+    _requested_stop = true;
+    P3D_request *request = new P3D_request;
+    request->_instance = this;
+    request->_request_type = P3D_RT_stop;
+    add_request(request);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

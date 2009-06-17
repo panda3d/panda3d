@@ -58,12 +58,20 @@ public:
                        size_t this_data_size);
 
   inline const string &get_p3d_filename() const;
+  inline P3D_window_type get_window_type() const;
+  inline int get_win_x() const;
+  inline int get_win_y() const;
+  inline int get_win_width() const;
+  inline int get_win_height() const;
+  inline P3D_window_handle get_parent_window() const;
+
   inline int get_instance_id() const;
   inline const string &get_session_key() const;
   inline const string &get_python_version() const;
   string lookup_token(const string &keyword) const;
 
   void start_download(P3DDownload *download);
+  void request_stop();
 
   TiXmlElement *make_xml();
 
@@ -96,6 +104,7 @@ private:
   LOCK _request_lock;
   typedef deque<P3D_request *> Requests;
   Requests _pending_requests;
+  bool _requested_stop;
 
   static int _next_instance_id;
 

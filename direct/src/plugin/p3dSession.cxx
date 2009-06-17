@@ -15,9 +15,17 @@
 #include "p3dSession.h"
 #include "p3dInstance.h"
 #include "p3dInstanceManager.h"
+#include "p3dProgressWindow.h"
+#include "p3dWinProgressWindow.h"
 
 #ifndef _WIN32
 #include <fcntl.h>
+#endif
+
+#ifdef _WIN32
+typedef P3DWinProgressWindow ProgressWinType;
+#else
+typedef P3DProgressWindow ProgressWinType;
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -42,7 +50,7 @@ P3DSession(P3DInstance *inst) {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-  _panda3d = inst_mgr->get_package("panda3d", "dev");
+  _panda3d = inst_mgr->get_package("panda3d", "dev", "Panda3D");
   _panda3d_callback = NULL;
   _python_root_dir = _panda3d->get_package_dir();
 
@@ -147,7 +155,19 @@ start_instance(P3DInstance *inst) {
   } else {
     // Otherwise, set a callback, so we'll know when it is ready.
     if (_panda3d_callback == NULL) {
-      _panda3d_callback = new PackageCallback(this);
+
+      // The callback object will be a ProgressWindow, to show
+      // visual progress to the user while we're downloading.
+      if (inst->get_window_type() == P3D_WT_hidden) {
+        // For a hidden window, just create an instance of the base
+        // class, which manifests no actual window.
+        _panda3d_callback = new P3DProgressWindow(_panda3d, this, inst);
+      } else {
+        // For a non-hidden window, create an instance of
+        // ProgressWinType, which is typedeffed above to be the kind
+        // of class that actually does manifest a window.
+        _panda3d_callback = new ProgressWinType(_panda3d, this, inst);
+      }
       _panda3d->set_callback(_panda3d_callback);
     }
   }
@@ -401,10 +421,7 @@ rt_terminate() {
 
   for (Instances::iterator ii = icopy.begin(); ii != icopy.end(); ++ii) {
     P3DInstance *inst = (*ii).second;
-    P3D_request *request = new P3D_request;
-    request->_instance = inst;
-    request->_request_type = P3D_RT_stop;
-    inst->add_request(request);
+    inst->request_stop();
   }
 }
 
@@ -632,39 +649,4 @@ posix_create_process(const string &program, const string &start_dir,
   return child;
 }
 #endif  // _WIN32
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::PackageCallback::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-P3DSession::PackageCallback::
-PackageCallback(P3DSession *session) : _session(session)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::PackageCallback::package_ready
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void P3DSession::PackageCallback::
-package_ready(P3DPackage *package, bool success) {
-  if (this == _session->_panda3d_callback) {
-    _session->_panda3d_callback = NULL;
-    if (package == _session->_panda3d) {
-      if (success) {
-        _session->start_p3dpython();
-      } else {
-        cerr << "Failed to install " << package->get_package_name()
-             << "_" << package->get_package_version() << "\n";
-      }
-    } else {
-      cerr << "Unexpected panda3d package: " << package << "\n";
-    }
-  } else {
-    cerr << "Unexpected callback for P3DSession\n";
-  }
-}
 

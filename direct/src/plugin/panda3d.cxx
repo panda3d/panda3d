@@ -562,7 +562,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         inst = P3D_check_request(false);
       }
 
-      Thread::force_yield();
+      while (!PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
+        // spin, so we don't starve the download threads.
+        // TODO: use a better mechanism here.
+        Thread::force_yield();
+      }
       retval = GetMessage(&msg, NULL, 0, 0);
     }
     

@@ -17,6 +17,8 @@
 
 #include "p3d_plugin_common.h"
 
+class P3DPackage;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DMultifileReader
 // Description : A way-simple implementation of Panda's multifile
@@ -29,7 +31,9 @@ class P3DMultifileReader {
 public:
   P3DMultifileReader();
 
-  bool extract(const string &pathname, const string &to_dir);
+  bool extract(const string &pathname, const string &to_dir,
+               P3DPackage *package, double start_progress, 
+               double progress_size);
 
 private:
   bool read_index();
@@ -43,6 +47,7 @@ private:
     string _filename;
     size_t _start;
     size_t _length;
+    size_t _timestamp;
   };
 
   typedef vector<Subfile> Subfiles;

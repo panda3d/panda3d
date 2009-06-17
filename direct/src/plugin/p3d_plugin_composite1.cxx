@@ -5,4 +5,6 @@
 #include "p3dInstanceManager.cxx"
 #include "p3dMultifileReader.cxx"
 #include "p3dPackage.cxx"
+#include "p3dProgressWindow.cxx"
 #include "p3dSession.cxx"
+#include "p3dWinProgressWindow.cxx"

@@ -58,7 +58,8 @@ public:
   void wait_request();
 
   P3DPackage *get_package(const string &package_name, 
-                          const string &package_version);
+                          const string &package_version,
+                          const string &package_output_name);
 
   inline P3DInstance *get_command_instance() const;
   inline int get_num_instances() const;

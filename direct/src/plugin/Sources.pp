@@ -20,7 +20,9 @@
     p3dInstanceManager.h p3dInstanceManager.I \
     p3dMultifileReader.h p3dMultifileReader.I \
     p3dPackage.h p3dPackage.I \
-    p3dSession.h p3dSession.I
+    p3dProgressWindow.h p3dProgressWindow.I \
+    p3dSession.h p3dSession.I \
+    p3dWinProgressWindow.h p3dWinProgressWindow.I
 
   #define INCLUDED_SOURCES \
     p3d_plugin.cxx \
@@ -30,12 +32,14 @@
     p3dInstanceManager.cxx \
     p3dMultifileReader.cxx \
     p3dPackage.cxx \
-    p3dSession.cxx
+    p3dProgressWindow.cxx \
+    p3dSession.cxx \
+    p3dWinProgressWindow.cxx
 
   #define INSTALL_HEADERS \
     p3d_plugin.h
 
-  #define WIN_SYS_LIBS shell32.lib
+  #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib comctl32.lib
 
 #end lib_target
 

@@ -14,6 +14,21 @@
 
 #include "p3dMultifileReader.h"
 #include "p3dInstanceManager.h"
+#include "p3dPackage.h"
+
+#include <time.h>
+
+#ifdef _WIN32
+#include <sys/utime.h>
+#include <direct.h>
+#define stat _stat
+#define utime _utime
+#define utimbuf _utimbuf
+
+#else
+#include <utime.h>
+
+#endif
 
 // This sequence of bytes begins each Multifile to identify it as a
 // Multifile.
@@ -38,9 +53,15 @@ P3DMultifileReader() {
 //  Description: Reads the named multifile, and extracts all files
 //               within it to the indicated directory.  Returns true
 //               on success, false on failure.
+//
+//               The parameters package, start_progress, and
+//               progress_size are provided to make the appropriate
+//               status updates on the package's progress callbacks
+//               during this operation.
 ////////////////////////////////////////////////////////////////////
 bool P3DMultifileReader::
-extract(const string &pathname, const string &to_dir) {
+extract(const string &pathname, const string &to_dir,
+        P3DPackage *package, double start_progress, double progress_size) {
   _subfiles.clear();
 
   _in.open(pathname.c_str(), ios::in | ios::binary);
@@ -70,7 +91,7 @@ extract(const string &pathname, const string &to_dir) {
     return false;
   }
 
-  // We don't care about the timestamp.
+  // We don't care about the overall timestamp.
   read_uint32();
 
   if (!read_index()) {
@@ -81,6 +102,7 @@ extract(const string &pathname, const string &to_dir) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   // Now walk through all of the files.
+  size_t num_processed = 0;
   Subfiles::iterator si;
   for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
     const Subfile &s = (*si);
@@ -117,6 +139,20 @@ extract(const string &pathname, const string &to_dir) {
       cerr << "Unable to extract " << s._filename << "\n";
       return false;
     }
+
+    // Set the timestamp according to the multifile.
+    out.close();
+    utimbuf utb;
+    utb.actime = time(NULL);
+    utb.modtime = s._timestamp;
+    utime(output_pathname.c_str(), &utb);
+
+
+    ++num_processed;
+    if (package != NULL) {
+      double progress = (double)num_processed / (double)_subfiles.size();
+      package->report_progress(start_progress + progress * progress_size);
+    }
   }
 
   return true;
@@ -144,7 +180,7 @@ read_index() {
       cerr << "Unsupported per-subfile options in multifile\n";
       return false;
     }
-    read_uint32();
+    s._timestamp = read_uint32();
     size_t name_length = read_uint16();
     char *buffer = new char[name_length];
     _in.read(buffer, name_length);

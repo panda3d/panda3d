@@ -24,6 +24,7 @@
 #include <tinyxml.h>
 
 class P3DInstance;
+class P3DProgressWindow;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DSession
@@ -92,17 +93,8 @@ private:
   typedef vector<TiXmlDocument *> Commands;
   Commands _commands;
 
-  class PackageCallback : public P3DPackage::Callback {
-  public:
-    PackageCallback(P3DSession *session);
-    virtual void package_ready(P3DPackage *package, bool success);
-    
-  private:
-    P3DSession *_session;
-  };
-
   P3DPackage *_panda3d;
-  PackageCallback *_panda3d_callback;
+  P3DProgressWindow *_panda3d_callback;
 
   // Members for communicating with the p3dpython child process.
 #ifdef _WIN32
@@ -124,7 +116,7 @@ private:
   pthread_t _read_thread;
 #endif
 
-  friend class PackageCallback;
+  friend class P3DProgressWindow;
 };
 
 #include "p3dSession.I"

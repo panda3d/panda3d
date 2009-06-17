@@ -45,6 +45,15 @@ P3DInstanceManager() {
   pthread_cond_init(&_request_ready_cvar, NULL);
 #endif
 
+#ifdef _WIN32
+  // Ensure the appropriate Windows common controls are available to
+  // this application.
+  INITCOMMONCONTROLSEX icc;
+  icc.dwSize = sizeof(icc);
+  icc.dwICC = ICC_PROGRESS_CLASS;
+  InitCommonControlsEx(&icc);
+#endif
+
   _command_instance = NULL;
 }
 
@@ -235,14 +244,14 @@ wait_request() {
 //               package.
 ////////////////////////////////////////////////////////////////////
 P3DPackage *P3DInstanceManager::
-get_package(const string &package_name, const string &package_version) {
+get_package(const string &package_name, const string &package_version, const string &package_output_name) {
   string key = package_name + "_" + package_version;
   Packages::iterator pi = _packages.find(key);
   if (pi != _packages.end()) {
     return (*pi).second;
   }
 
-  P3DPackage *package = new P3DPackage(package_name, package_version);
+  P3DPackage *package = new P3DPackage(package_name, package_version, package_output_name);
   bool inserted = _packages.insert(Packages::value_type(key, package)).second;
   assert(inserted);
 

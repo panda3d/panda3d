@@ -32,11 +32,14 @@
 ////////////////////////////////////////////////////////////////////
 class P3DPackage {
 public:
-  P3DPackage(const string &package_name, const string &package_version);
+  P3DPackage(const string &package_name, const string &package_version,
+             const string &package_output_name);
   ~P3DPackage();
 
   class Callback {
   public:
+    virtual ~Callback();
+    virtual void install_progress(P3DPackage *package, double progress);
     virtual void package_ready(P3DPackage *package, bool success);
   };
 
@@ -45,6 +48,7 @@ public:
   inline const string &get_package_dir() const;
   inline const string &get_package_name() const;
   inline const string &get_package_version() const;
+  inline const string &get_package_output_name() const;
 
   void set_callback(Callback *callback);
   void cancel_callback(Callback *callback);
@@ -60,6 +64,7 @@ private:
     Download(P3DPackage *package, DownloadType dtype);
 
   protected:
+    virtual void download_progress();
     virtual void download_finished(bool success);
 
   private:
@@ -72,11 +77,13 @@ private:
   void got_desc_file(TiXmlDocument *doc, bool freshly_downloaded);
 
   void download_compressed_archive(bool allow_partial);
+  void compressed_archive_download_progress(double progress);
   void compressed_archive_download_finished(bool success);
 
   void uncompress_archive();
   void extract_archive();
 
+  void report_progress(double progress);
   void report_done(bool success);
   void start_download(DownloadType dtype, const string &url, 
                       const string &pathname, bool allow_partial);
@@ -91,6 +98,7 @@ private:
 private:
   string _package_name;
   string _package_version;
+  string _package_output_name;
   string _package_fullname;
   string _package_dir;
 
@@ -131,6 +139,7 @@ private:
   Components _components;
 
   friend class Download;
+  friend class P3DMultifileReader;
 };
 
 #include "p3dPackage.I"
