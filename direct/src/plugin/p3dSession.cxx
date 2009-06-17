@@ -86,7 +86,12 @@ P3DSession::
     }
 
     CloseHandle(_p3dpython_handle);
-#endif
+
+#else  // _WIN32
+
+    // TODO: posix kill().
+
+#endif  // _WIN32
   }
 
   // If there are any leftover commands in the queue (presumably

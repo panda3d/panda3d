@@ -281,7 +281,7 @@ P3D_instance_set_property_func(P3D_instance *instance,
    P3D_instance_get_request.  More types may be added later. */
 typedef enum {
   P3D_RT_stop,
-  P3D_RT_new_config_xml,
+  P3D_RT_unused, //  P3D_RT_new_config_xml,
   P3D_RT_get_url,
   P3D_RT_post_url,
 } P3D_request_type;
@@ -293,18 +293,6 @@ typedef enum {
    P3D_instance_finish(). */
 typedef struct {
 } P3D_request_stop;
-
-/* A new config_xml request.  The plugin has determined that its
-   operating environment has changed, and that a new config.xml file
-   should be stored for future sessions.  The plugin passes a new
-   config_xml data stream to the host, which should save it
-   permanently within its own cache.  The original config_xml should
-   be replaced with this new stream; for all future sessions, when the
-   host loads and starts the plugin DLL, it should pass this new
-   config_xml stream to the P3D_initialize() function. */
-typedef struct {
-  const char *_config_xml;
-} P3D_request_new_config_xml;
 
 /* A get_url request.  The plugin would like to retrieve data for a
    particular URL.  The plugin is responsible for supplying a valid
@@ -338,7 +326,6 @@ typedef struct {
   P3D_request_type _request_type;
   union {
     P3D_request_stop _stop;
-    P3D_request_new_config_xml _new_config_xml;
     P3D_request_get_url _get_url;
     P3D_request_post_url _post_url;
   } _request;
@@ -356,14 +343,14 @@ typedef struct {
 typedef P3D_request *
 P3D_instance_get_request_func(P3D_instance *instance);
 
-/* This method may also be used to test whether a request to be ready.
+/* This method may also be used to test whether a request is ready.
    If any open instance has a pending request, this function will
    return a pointer to one of them (which you may then pass to
    P3D_instance_get_request_func).  If no instances have a pending
    request, this function will return NULL.  If wait is true, this
    function will never return NULL unless there are no instances open;
    instead, it will wait indefinitely until there is a request
-   available. 
+   available.
 
    Note that, due to race conditions, it is possible for this function
    to return a P3D_instance that does not in fact have any requests
