@@ -427,7 +427,7 @@ class ServerRepository:
             if not dcfield.hasKeyword('clsend') and not dcfield.hasKeyword('p2p'):
                 self.notify.warning(
                     "Ignoring update for %s.%s on object %s from client %s: not owner" % (
-                    dclass.getName(), dcfield.getName(), doId, client.doIdBase))
+                    object.dclass.getName(), dcfield.getName(), doId, client.doIdBase))
                 return
 
         # We reformat the message slightly to insert the sender's
