@@ -7,7 +7,7 @@
   #define TARGET egldisplay
   #define BUILD_TARGET $[HAVE_GLES]
   #define USE_PACKAGES gles egl x11
-  #define C++FLAGS -DOPENGLES_1
+  #define EXTRA_CDEFS OPENGLES_1
   #define LOCAL_LIBS \
     glesgsg
 
@@ -30,7 +30,7 @@
   #define TARGET egl2display
   #define BUILD_TARGET $[HAVE_GLES2]
   #define USE_PACKAGES gles2 egl x11
-  #define C++FLAGS -DOPENGLES_2
+  #define EXTRA_CDEFS OPENGLES_2
   #define LOCAL_LIBS \
     gles2gsg
 
