@@ -64,6 +64,7 @@ class PackageMaker:
 
         self.packageStageDir = Filename(self.stageDir, '%s/%s' % (self.packageName, self.packageVersion))
 
+        Filename(self.packageStageDir, '.').makeDir()
         self.cleanDir(self.packageStageDir)
 
         uncompressedArchiveBasename = '%s.mf' % (self.packageFullname)
