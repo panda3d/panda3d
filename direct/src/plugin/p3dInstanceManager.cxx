@@ -19,6 +19,9 @@
 
 #ifdef _WIN32
 #include <shlobj.h>
+#else
+#include <fcntl.h>
+#include <sys/stat.h>
 #endif
 
 P3DInstanceManager *P3DInstanceManager::_global_ptr;
