@@ -374,12 +374,16 @@ $[TAB]maya2egg $[MAYA2EGG_OPTS] -o $[target] $[source]
     #define source $[MAYA_PREFIX]$[or $[MODEL],$[POLY_MODEL]]$[MAYA_EXTENSION]
 $[target] : $[source]
 $[TAB]maya2egg $[MAYA2EGG_OPTS] -p -a model -cn "$[CHAR_NAME]" -o $[target] $[source]
-  #endif
-  #if $[NURBS_MODEL]
+  #elif $[NURBS_MODEL]
     #define target $[EGG_PREFIX]$[NURBS_MODEL].egg
     #define source $[MAYA_PREFIX]$[or $[MODEL],$[NURBS_MODEL]]$[MAYA_EXTENSION]
 $[target] : $[source]
 $[TAB]maya2egg $[MAYA2EGG_OPTS] -a model -cn "$[CHAR_NAME]" -o $[target] $[source]
+  #elif $[not $[or $[MODEL], $[POLY_MODEL], $[ANIMS]]]
+    #define target $[EGG_PREFIX].egg
+    #define source $[MAYA_PREFIX]$[MAYA_EXTENSION]    
+$[target] : $[source]
+$[TAB]maya2egg $[MAYA2EGG_OPTS] -p -a model -cn "$[CHAR_NAME]" -o $[target] $[source]    
   #endif
 
 #end maya_char_egg
