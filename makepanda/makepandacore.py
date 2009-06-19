@@ -533,6 +533,7 @@ def ConditionalWriteFile(dest,desiredcontents):
         WriteFile(dest,desiredcontents)
 
 def DeleteCVS(dir):
+    if dir == ".": dir = "."
     for entry in os.listdir(dir):
         if (entry != ".") and (entry != ".."):
             subdir = dir + "/" + entry
