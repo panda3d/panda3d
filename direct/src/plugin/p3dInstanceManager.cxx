@@ -97,7 +97,7 @@ initialize() {
   _download_url = "http://10.196.143.118/~drose/p3d/";
 
 #else
-  _download_url = "http://orpheus.ddrose.com/~drose/";
+  _download_url = "http://orpheus.ddrose.com/~drose/p3d/";
 #endif
 
   if (_root_dir.empty()) {
