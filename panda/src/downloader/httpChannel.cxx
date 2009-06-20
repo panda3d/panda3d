@@ -646,7 +646,7 @@ download_to_file(const Filename &filename, bool subdocument_resumes) {
 
   while (run()) {
   }
-  return is_download_complete();
+  return is_download_complete() && is_valid();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -703,7 +703,7 @@ download_to_ram(Ramfile *ramfile, bool subdocument_resumes) {
 
   while (run()) {
   }
-  return is_download_complete();
+  return is_download_complete() && is_valid();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -763,7 +763,7 @@ download_to_stream(ostream *strm, bool subdocument_resumes) {
 
   while (run()) {
   }
-  return is_download_complete();
+  return is_download_complete() && is_valid();
 }
 
 ////////////////////////////////////////////////////////////////////
