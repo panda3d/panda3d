@@ -102,6 +102,11 @@ class ShowBase(DirectObject.DirectObject):
         # the program by closing the main window.
         self.exitFunc = None
 
+        # Add final-exit callbacks to this list.  These will be called
+        # when sys.exit() is called, after Panda has unloaded, and
+        # just before Python is about to shut down.
+        self.finalExitCallbacks = []
+
         Task.TaskManager.taskTimerVerbose = self.config.GetBool('task-timer-verbose', 0)
         Task.TaskManager.extendedExceptions = self.config.GetBool('extended-exceptions', 0)
         Task.TaskManager.pStatsTasks = self.config.GetBool('pstats-tasks', 0)
@@ -443,6 +448,13 @@ class ShowBase(DirectObject.DirectObject):
             del self.win
             del self.winList
             del self.pipe
+
+        vfs = VirtualFileSystem.getGlobalPtr()
+        vfs.unmountAll()
+
+        for cb in self.finalExitCallbacks:
+            cb()
+        
 
     def exitfunc(self):
         """

@@ -260,10 +260,9 @@ read_chars(char *start, size_t length) {
   if (!success) {
     DWORD error = GetLastError();
     if (error != ERROR_HANDLE_EOF && error != ERROR_BROKEN_PIPE) {
-      cerr
-        << "Error reading " << length
-        << " bytes, windows error code 0x" << hex
-        << error << dec << ".\n";
+      cerr << "Error reading " << length
+           << " bytes, windows error code 0x" << hex
+           << error << dec << ".\n";
       return 0;
     }
   }
@@ -274,8 +273,7 @@ read_chars(char *start, size_t length) {
   // Posix case.
   ssize_t result = ::read(_handle, start, length);
   if (result < 0) {
-    cerr
-      << "Error reading " << length << " bytes\n";
+    cerr << "Error reading " << length << " bytes\n";
     return 0;
   }
 
@@ -313,10 +311,9 @@ write_chars(const char *start, size_t length) {
   if (!success) {
     DWORD error = GetLastError();
     if (error != ERROR_NO_DATA && error != ERROR_BROKEN_PIPE) {
-      cerr
-        << "Error writing " << length
-        << " bytes, windows error code 0x" << hex
-        << error << dec << ".\n";
+      cerr << "Error writing " << length
+           << " bytes, windows error code 0x" << hex
+           << error << dec << ".\n";
     }
     return bytes_written;
   }
@@ -329,8 +326,7 @@ write_chars(const char *start, size_t length) {
     ssize_t result = ::write(_handle, start, remaining);
     if (result < 0) {
       if (errno != EPIPE) {
-        cerr
-          << "Error writing " << remaining << " bytes\n";
+        cerr << "Error writing " << remaining << " bytes\n";
       }
       return length - remaining;
     }

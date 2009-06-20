@@ -44,10 +44,10 @@ P3DPythonRun(int argc, char *argv[]) {
   HANDLE read = GetStdHandle(STD_INPUT_HANDLE);
   HANDLE write = GetStdHandle(STD_OUTPUT_HANDLE);
   if (!SetStdHandle(STD_INPUT_HANDLE, INVALID_HANDLE_VALUE)) {
-    cerr << "unable to reset input handle\n";
+    nout << "unable to reset input handle\n";
   }
   if (!SetStdHandle(STD_OUTPUT_HANDLE, INVALID_HANDLE_VALUE)) {
-    cerr << "unable to reset input handle\n";
+    nout << "unable to reset input handle\n";
   }
 
   _pipe_read.open_read(read);
@@ -58,10 +58,10 @@ P3DPythonRun(int argc, char *argv[]) {
 #endif  // _WIN32
 
   if (!_pipe_read) {
-    cerr << "unable to open read pipe\n";
+    nout << "unable to open read pipe\n";
   }
   if (!_pipe_write) {
-    cerr << "unable to open write pipe\n";
+    nout << "unable to open write pipe\n";
   }
 
   spawn_read_thread();
@@ -126,14 +126,14 @@ run_python() {
   task_mgr->add(_check_comm_task);
 
   // Finally, get lost in taskMgr.run().
-  cerr << "calling run()\n";
+  nout << "calling run()\n";
   PyObject *done = PyObject_CallMethod(_taskMgr, "run", "");
   if (done == NULL) {
     PyErr_Print();
     return false;
   }
   Py_DECREF(done);
-  cerr << "done calling run()\n";
+  nout << "done calling run()\n";
 
   return true;
 }
@@ -146,7 +146,7 @@ run_python() {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 handle_command(TiXmlDocument *doc) {
-  cerr << "got command: " << *doc << "\n";
+  nout << "got command: " << *doc << "\n";
   TiXmlElement *xcommand = doc->FirstChildElement("command");
   if (xcommand != NULL) {
     const char *cmd = xcommand->Attribute("cmd");
@@ -166,7 +166,7 @@ handle_command(TiXmlDocument *doc) {
         terminate_session();
         
       } else {
-        cerr << "Unhandled command " << cmd << "\n";
+        nout << "Unhandled command " << cmd << "\n";
       }
     }
   }
@@ -254,7 +254,7 @@ spawn_read_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 join_read_thread() {
-  cerr << "waiting for thread\n";
+  nout << "waiting for thread\n";
   _read_thread_continue = false;
   _pipe_read.close();
   
@@ -267,7 +267,7 @@ join_read_thread() {
   void *return_val;
   pthread_join(_read_thread, &return_val);
 #endif
-  cerr << "done waiting for thread\n";
+  nout << "done waiting for thread\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -278,7 +278,7 @@ join_read_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 start_instance(P3DCInstance *inst) {
-  cerr << "starting instance " << inst->get_p3d_filename() << "\n";
+  nout << "starting instance " << inst->get_p3d_filename() << "\n";
   _instances[inst->get_instance_id()] = inst;
 
   string window_type;
@@ -312,8 +312,13 @@ start_instance(P3DCInstance *inst) {
     PyErr_Print();
   }
   Py_XDECREF(result);
+
+  PyObject *tokens = inst->get_py_tokens();
   
-  result = PyObject_CallFunction(_runPackedApp, "[s]", inst->get_p3d_filename().c_str());
+  result = PyObject_CallFunction
+    (_runPackedApp, "sO", inst->get_p3d_filename().c_str(), tokens);
+  Py_DECREF(tokens);
+
   if (result == NULL) {
     PyErr_Print();
   }
@@ -329,7 +334,7 @@ void P3DPythonRun::
 terminate_instance(int id) {
   Instances::iterator ii = _instances.find(id);
   if (ii == _instances.end()) {
-    cerr << "Can't stop instance " << id << ": not started.\n";
+    nout << "Can't stop instance " << id << ": not started.\n";
     return;
   }
 
@@ -358,14 +363,14 @@ terminate_session() {
   }
   _instances.clear();
 
-  cerr << "calling stop()\n";
+  nout << "calling stop()\n";
   PyObject *result = PyObject_CallMethod(_taskMgr, "stop", "");
   if (result == NULL) {
     PyErr_Print();
     return;
   }
   Py_DECREF(result);
-  cerr << "done calling stop()\n";
+  nout << "done calling stop()\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -375,14 +380,14 @@ terminate_session() {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 rt_thread_run() {
-  cerr << "thread reading.\n";
+  nout << "thread reading.\n";
   while (_read_thread_continue) {
     TiXmlDocument *doc = new TiXmlDocument;
 
     _pipe_read >> *doc;
     if (!_pipe_read || _pipe_read.eof()) {
       // Some error on reading.  Abort.
-      cerr << "Error on reading.\n";
+      nout << "Error on reading.\n";
       _program_continue = false;
       return;
     }
@@ -444,7 +449,7 @@ main(int argc, char *argv[]) {
   P3DPythonRun run(argc, argv);
   
   if (!run.run_python()) {
-    cerr << "Couldn't initialize Python.\n";
+    nout << "Couldn't initialize Python.\n";
     return 1;
   }
   return 0;

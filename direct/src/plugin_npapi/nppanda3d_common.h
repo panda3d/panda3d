@@ -1,5 +1,5 @@
-// Filename: p3d_plugin_common.h
-// Created by:  drose (29May09)
+// Filename: nppanda3d_common.h
+// Created by:  drose (19Jun09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,18 +12,14 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3D_PLUGIN_COMMON
-#define P3D_PLUGIN_COMMON
+#ifndef NPPANDA3D_COMMON
+#define NPPANDA3D_COMMON
 
 // This header file is included by all C++ files in this directory
-// that contribute to p3d_plugin; provides some common symbol
-// declarations.
 
-#define P3D_FUNCTION_PROTOTYPES
-#define BUILDING_P3D_PLUGIN
-
-#include "p3d_plugin.h"
-#include "p3d_lock.h"
+// We include this header file directly out of its source directory,
+// so we don't have to link with the library that builds it.
+#include "../plugin/p3d_plugin.h"
 
 #include <iostream>
 #include <fstream>
@@ -32,11 +28,25 @@
 
 using namespace std;
 
-// Appears in p3d_plugin.cxx.
+// Appears in nppanda3d_startup.cxx.
 extern ofstream log;
-extern string plugin_output_filename;
-extern ostream *nout_stream;
-#define nout (*nout_stream)
+
+#ifdef _WIN32
+
+// Gecko requires all these symbols to be defined.
+#define MOZILLA_STRICT_API
+#define XP_WIN
+#define _X86_
+#define _WINDOWS
+#define _USRDLL
+#define NPBASIC_EXPORTS
+
+// Panda already defines this one.
+//#define WIN32
+
+#include <windows.h>
+
+#endif  // _WIN32
 
 #endif
 

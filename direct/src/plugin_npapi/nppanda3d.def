@@ -1,0 +1,9 @@
+; This file is required on Windows to export the appropriate symbols
+; from the DLL.
+
+LIBRARY   nppanda3d
+
+EXPORTS
+	NP_GetEntryPoints   @1
+	NP_Initialize       @2
+	NP_Shutdown         @3

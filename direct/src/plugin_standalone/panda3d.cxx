@@ -30,10 +30,13 @@
 
 #include "httpClient.h"
 #include "httpChannel.h"
-#include "Ramfile.h"
+#include "ramfile.h"
 #include "thread.h"
-#include "p3d_plugin.h"
 #include "pset.h"
+
+#include "../plugin/p3d_plugin.h"
+#include "../plugin/load_plugin_src.h"
+#include "../plugin/load_plugin_src.cxx"
 
 #ifndef HAVE_GETOPT
   #include "gnu_getopt.h"
@@ -42,28 +45,6 @@
     #include <getopt.h>
   #endif
 #endif
-
-#ifdef _WIN32
-static const string dll_ext = ".dll";
-#elif defined(__APPLE__)
-static const string dll_ext = ".dylib";
-#else
-static const string dll_ext = ".so";
-#endif
-
-static const string default_plugin_filename = "libp3d_plugin";
-
-P3D_initialize_func *P3D_initialize;
-P3D_free_string_func *P3D_free_string;
-P3D_create_instance_func *P3D_create_instance;
-P3D_instance_finish_func *P3D_instance_finish;
-P3D_instance_has_property_func *P3D_instance_has_property;
-P3D_instance_get_property_func *P3D_instance_get_property;
-P3D_instance_set_property_func *P3D_instance_set_property;
-P3D_instance_get_request_func *P3D_instance_get_request;
-P3D_check_request_func *P3D_check_request;
-P3D_request_finish_func *P3D_request_finish;
-P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;
 
 typedef pset<P3D_instance *> Instances;
 Instances _instances;
@@ -152,81 +133,6 @@ thread_main() {
     (_instance, _unique_id, status,
      channel->get_status_code(),
      bytes_sent, NULL, 0);
-}
-
-bool
-load_plugin(const string &p3d_plugin_filename) {
-  string filename = p3d_plugin_filename;
-  if (filename.empty()) {
-    // Look for the plugin along the path.
-    filename = default_plugin_filename + dll_ext;
-  }
-
-#ifdef _WIN32
-  HMODULE module = LoadLibrary(filename.c_str());
-  if (module == NULL) {
-    // Couldn't load the DLL.
-    return false;
-  }
-
-  // Now get all of the function pointers.
-  P3D_initialize = (P3D_initialize_func *)GetProcAddress(module, "P3D_initialize");  
-  P3D_free_string = (P3D_free_string_func *)GetProcAddress(module, "P3D_free_string");  
-  P3D_create_instance = (P3D_create_instance_func *)GetProcAddress(module, "P3D_create_instance");  
-  P3D_instance_finish = (P3D_instance_finish_func *)GetProcAddress(module, "P3D_instance_finish");  
-  P3D_instance_has_property = (P3D_instance_has_property_func *)GetProcAddress(module, "P3D_instance_has_property");  
-  P3D_instance_get_property = (P3D_instance_get_property_func *)GetProcAddress(module, "P3D_instance_get_property");  
-  P3D_instance_set_property = (P3D_instance_set_property_func *)GetProcAddress(module, "P3D_instance_set_property");  
-  P3D_instance_get_request = (P3D_instance_get_request_func *)GetProcAddress(module, "P3D_instance_get_request");  
-  P3D_check_request = (P3D_check_request_func *)GetProcAddress(module, "P3D_check_request");  
-  P3D_request_finish = (P3D_request_finish_func *)GetProcAddress(module, "P3D_request_finish");  
-  P3D_instance_feed_url_stream = (P3D_instance_feed_url_stream_func *)GetProcAddress(module, "P3D_instance_feed_url_stream");  
-
-#else  // _WIN32
-  // Posix case.
-  void *module = dlopen(filename.c_str(), RTLD_NOW | RTLD_LOCAL);
-  if (module == NULL) {
-    // Couldn't load the .so.
-    return false;
-  }
-  
-  // Now get all of the function pointers.
-  P3D_initialize = (P3D_initialize_func *)dlsym(module, "P3D_initialize");  
-  P3D_free_string = (P3D_free_string_func *)dlsym(module, "P3D_free_string");  
-  P3D_create_instance = (P3D_create_instance_func *)dlsym(module, "P3D_create_instance");  
-  P3D_instance_finish = (P3D_instance_finish_func *)dlsym(module, "P3D_instance_finish");  
-  P3D_instance_has_property = (P3D_instance_has_property_func *)dlsym(module, "P3D_instance_has_property");  
-  P3D_instance_get_property = (P3D_instance_get_property_func *)dlsym(module, "P3D_instance_get_property");  
-  P3D_instance_set_property = (P3D_instance_set_property_func *)dlsym(module, "P3D_instance_set_property");  
-  P3D_instance_get_request = (P3D_instance_get_request_func *)dlsym(module, "P3D_instance_get_request");  
-  P3D_check_request = (P3D_check_request_func *)dlsym(module, "P3D_check_request");  
-  P3D_request_finish = (P3D_request_finish_func *)dlsym(module, "P3D_request_finish");  
-  P3D_instance_feed_url_stream = (P3D_instance_feed_url_stream_func *)dlsym(module, "P3D_instance_feed_url_stream");  
-
-#endif  // _WIN32
-
-  // Ensure that all of the function pointers have been found.
-  if (P3D_initialize == NULL ||
-      P3D_free_string == NULL ||
-      P3D_create_instance == NULL ||
-      P3D_instance_finish == NULL ||
-      P3D_instance_has_property == NULL ||
-      P3D_instance_get_property == NULL ||
-      P3D_instance_set_property == NULL ||
-      P3D_instance_get_request == NULL ||
-      P3D_check_request == NULL ||
-      P3D_request_finish == NULL ||
-      P3D_instance_feed_url_stream == NULL) {
-    return false;
-  }
-
-  // Successfully loaded.
-  if (!P3D_initialize(P3D_API_VERSION)) {
-    // Oops, failure to initialize.
-    return false;
-  }
-
-  return true;
 }
 
 void
@@ -334,6 +240,35 @@ make_parent_window(P3D_window_handle &parent_window,
 }
 
 #endif  // __APPLE__
+
+P3D_instance *
+create_instance(const string &arg, P3D_window_type window_type,
+                int win_x, int win_y, int win_width, int win_height,
+                P3D_window_handle parent_window,
+                const string &output_filename) {
+
+  P3D_token tokens[] = {
+    { "output_filename", output_filename.c_str() },
+    { "src", arg.c_str() },
+  };
+  int num_tokens = sizeof(tokens) / sizeof(P3D_token);
+
+  // If the supplied parameter name is a real file, pass it in on the
+  // parameter list.  Otherwise, assume it's a URL and let the plugin
+  // download it.
+  Filename p3d_filename = Filename::from_os_specific(arg);
+  string os_p3d_filename;
+  if (p3d_filename.exists()) {
+    os_p3d_filename = p3d_filename.to_os_specific();
+  } 
+
+  P3D_instance *inst = P3D_create_instance
+    (NULL, os_p3d_filename.c_str(), 
+     window_type, win_x, win_y, win_width, win_height, parent_window,
+     tokens, num_tokens);
+
+  return inst;
+}
 
 void
 usage() {
@@ -473,11 +408,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
   int num_instances = argc - 1;
 
-  P3D_token tokens[] = {
-    { "output_filename", output_filename.c_str() },
-  };
-  int num_tokens = sizeof(tokens) / sizeof(P3D_token);
-
   P3D_window_handle parent_window;
   if (window_type == P3D_WT_embedded) {
     // The user asked for an embedded window.  Create a toplevel
@@ -518,10 +448,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
         int inst_x = win_x + xi * inst_width;
         int inst_y = win_y + yi * inst_height;
 
-        P3D_instance *inst = P3D_create_instance
-          (NULL, argv[i + 1], 
-           P3D_WT_embedded, inst_x, inst_y, inst_width, inst_height, parent_window,
-           tokens, num_tokens);
+        P3D_instance *inst = create_instance
+          (argv[i + 1], P3D_WT_embedded, 
+           inst_x, inst_y, inst_width, inst_height, parent_window,
+           output_filename);
         _instances.insert(inst);
       }
     }
@@ -529,10 +459,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   } else {
     // Not an embedded window.  Create each window with the same parameters.
     for (int i = 0; i < num_instances; ++i) {
-      P3D_instance *inst = P3D_create_instance
-        (NULL, argv[i + 1], 
-         window_type, win_x, win_y, win_width, win_height, parent_window,
-         tokens, num_tokens);
+      P3D_instance *inst = create_instance
+        (argv[i + 1], window_type, 
+         win_x, win_y, win_width, win_height, parent_window,
+         output_filename);
       _instances.insert(inst);
     }
   }

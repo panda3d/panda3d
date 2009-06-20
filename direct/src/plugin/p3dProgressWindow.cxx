@@ -47,14 +47,14 @@ package_ready(P3DPackage *package, bool success) {
       if (success) {
         _session->start_p3dpython();
       } else {
-        cerr << "Failed to install " << package->get_package_name()
+        nout << "Failed to install " << package->get_package_name()
              << "_" << package->get_package_version() << "\n";
       }
     } else {
-      cerr << "Unexpected panda3d package: " << package << "\n";
+      nout << "Unexpected panda3d package: " << package << "\n";
     }
   } else {
-    cerr << "Unexpected callback for P3DSession\n";
+    nout << "Unexpected callback for P3DSession\n";
   }
 }
 

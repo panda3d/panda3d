@@ -73,7 +73,7 @@ extern "C" {
 libraries match.  It should be passed to P3D_initialize() (below).
 This number will be incremented whenever there are changes to any of
 the interface specifications defined in this header file. */
-#define P3D_API_VERSION 1
+#define P3D_API_VERSION 2
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -85,12 +85,17 @@ the interface specifications defined in this header file. */
    the dll can verify that it has been built with the same version of
    the API as the host.
 
+   The output_filename is usually NULL, but if you put a filename
+   here, it will be used as the log file for the output from the
+   plugin.  This is useful for debugging, particularly when running
+   within a browser that squelches stderr.
+
    This function returns true if the plugin is valid and uses a
    compatible API, false otherwise.  If it returns false, the host
    should not call any more functions in this API, and should
    immediately unload the DLL and (if possible) download a new one. */
 typedef bool 
-P3D_initialize_func(int api_version);
+P3D_initialize_func(int api_version, const char *output_filename);
 
 /* This function frees a pointer returned by
    P3D_instance_get_property(), or another similar function that
@@ -187,18 +192,25 @@ typedef struct {
   const char *_value;
 } P3D_token;
 
-/* This function creates a new Panda3D instance.  For p3d_filename
-   pass the name of a file on disk that contains the contents of the
-   p3d file that should be launched within the instance.  For tokens,
-   pass an array of P3D_token elements (above), which correspond to
-   the user-supplied keyword/value pairs that may appear in the embed
-   token within the HTML syntax; the host is responsible for
-   allocating this array, and for deallocating it after this call (the
-   plugin will make its own copy of the array).
+/* This function creates a new Panda3D instance.  
+
+   For p3d_filename pass the name of a file on disk that contains the
+   contents of the p3d file that should be launched within the
+   instance.  If this is empty or NULL, the "src" token (below) will
+   be downloaded instead.
+
+   For tokens, pass an array of P3D_token elements (above), which
+   correspond to the user-supplied keyword/value pairs that may appear
+   in the embed token within the HTML syntax; the host is responsible
+   for allocating this array, and for deallocating it after this call
+   (the plugin will make its own copy of the array).
 
    Most tokens are implemented by the application and are undefined at
-   the system level.  However, one token in particular is
+   the system level.  However, two tokens in particular are
    system-defined:
+
+     "src" : names a URL that will be loaded for the contents of the
+       p3d file, if p3d_filename is empty or NULL.
 
      "output_filename" : names a file to create on disk which contains
        the console output from the application.  This may be useful in

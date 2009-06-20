@@ -47,7 +47,7 @@ bool P3DFileDownload::
 open_file() {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   if (!inst_mgr->mkfile_public(_filename)) {
-    cerr << "Unable to create " << _filename << "\n";
+    nout << "Unable to create " << _filename << "\n";
     return false;
   }
   

@@ -33,7 +33,7 @@ P3DInstanceManager *P3DInstanceManager::_global_ptr;
 ////////////////////////////////////////////////////////////////////
 P3DInstanceManager::
 P3DInstanceManager() {
-  cerr << "creating instance manager\n";
+  nout << "creating instance manager\n";
   _is_initialized = false;
   _unique_session_index = 0;
 
@@ -91,7 +91,7 @@ P3DInstanceManager::
 bool P3DInstanceManager::
 initialize() {
   _root_dir = find_root_dir();
-  cerr << "_root_dir = " << _root_dir << "\n";
+  nout << "_root_dir = " << _root_dir << "\n";
 
 #ifdef _WIN32
   _download_url = "http://10.196.143.118/~drose/p3d/";
@@ -101,7 +101,7 @@ initialize() {
 #endif
 
   if (_root_dir.empty()) {
-    cerr << "Could not find root directory.\n";
+    nout << "Could not find root directory.\n";
     return false;
   }
 
@@ -487,7 +487,7 @@ find_root_dir() const {
   }
 
   // Couldn't find a directory.  Bail.
-  cerr << "Couldn't find a root directory.\n";
+  nout << "Couldn't find a root directory.\n";
   return string();
 
 #else  // _WIN32

@@ -89,7 +89,7 @@ P3DSession::
     // Now give the process a chance to terminate itself cleanly.
     if (WaitForSingleObject(_p3dpython_handle, 2000) == WAIT_TIMEOUT) {
       // It didn't shut down cleanly, so kill it the hard way.
-      cerr << "Terminating process.\n";
+      nout << "Terminating process.\n";
       TerminateProcess(_p3dpython_handle, 2);
     }
 
@@ -232,8 +232,8 @@ send_command(TiXmlDocument *command) {
 void P3DSession::
 start_p3dpython() {
 #ifdef _WIN32
-  //string p3dpython = "c:/cygwin/home/drose/player/direct/built/bin/p3dpython.exe";
-  string p3dpython = _python_root_dir + "/p3dpython.exe";
+  string p3dpython = "c:/cygwin/home/drose/player/direct/built/bin/p3dpython.exe";
+  //string p3dpython = _python_root_dir + "/p3dpython.exe";
 #else
   string p3dpython = "/Users/drose/player/direct/built/bin/p3dpython";
 #endif
@@ -244,9 +244,9 @@ start_p3dpython() {
   // These are the enviroment variables we forward from the current
   // environment, if they are set.
   const char *keep[] = {
-    "TEMP", "HOME", "USER", 
+    "TMP", "TEMP", "HOME", "USER", 
 #ifdef _WIN32
-    "SYSTEMROOT",
+    "SYSTEMROOT", "USERPROFILE",
 #endif
     NULL
   };
@@ -290,18 +290,18 @@ start_p3dpython() {
 #endif
 
   if (!started_p3dpython) {
-    cerr << "Failed to create process.\n";
+    nout << "Failed to create process.\n";
     return;
   }
   _p3dpython_running = true;
 
-  cerr << "Created child process\n";
+  nout << "Created child process\n";
 
   if (!_pipe_read) {
-    cerr << "unable to open read pipe\n";
+    nout << "unable to open read pipe\n";
   }
   if (!_pipe_write) {
-    cerr << "unable to open write pipe\n";
+    nout << "unable to open write pipe\n";
   }
   
   spawn_read_thread();
@@ -358,7 +358,7 @@ join_read_thread() {
     return;
   }
 
-  cerr << "session waiting for thread\n";
+  nout << "session waiting for thread\n";
   _read_thread_continue = false;
   _pipe_read.close();
   
@@ -371,7 +371,7 @@ join_read_thread() {
   void *return_val;
   pthread_join(_read_thread, &return_val);
 #endif
-  cerr << "session done waiting for thread\n";
+  nout << "session done waiting for thread\n";
 
   _started_read_thread = false;
 }
@@ -383,20 +383,20 @@ join_read_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 rt_thread_run() {
-  cerr << "session thread reading.\n";
+  nout << "session thread reading.\n";
   while (_read_thread_continue) {
     TiXmlDocument *doc = new TiXmlDocument;
 
     _pipe_read >> *doc;
     if (!_pipe_read || _pipe_read.eof()) {
       // Some error on reading.  Abort.
-      cerr << "Error on session reading.\n";
+      nout << "Error on session reading.\n";
       rt_terminate();
       return;
     }
 
     // Successfully read an XML document.
-    cerr << "Session got request: " << *doc << "\n";
+    nout << "Session got request: " << *doc << "\n";
 
     // TODO: feed the request up to the parent.
     delete doc;
@@ -478,7 +478,7 @@ win_create_process(const string &program, const string &start_dir,
 
   // Create the pipe to the process.
   if (!CreatePipe(&r_to, &w_to, NULL, 0)) {
-    cerr << "failed to create pipe\n";
+    nout << "failed to create pipe\n";
   } else {
     // Make sure the right end of the pipe is inheritable.
     SetHandleInformation(r_to, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
@@ -487,7 +487,7 @@ win_create_process(const string &program, const string &start_dir,
 
   // Create the pipe from the process.
   if (!CreatePipe(&r_from, &w_from, NULL, 0)) {
-    cerr << "failed to create pipe\n";
+    nout << "failed to create pipe\n";
   } else { 
     // Make sure the right end of the pipe is inheritable.
     SetHandleInformation(w_from, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
@@ -507,7 +507,7 @@ win_create_process(const string &program, const string &start_dir,
       error_handle = handle;
       SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
     } else {
-      cerr << "Unable to open " << output_filename << "\n";
+      nout << "Unable to open " << output_filename << "\n";
     }
   }
 
@@ -606,7 +606,7 @@ posix_create_process(const string &program, const string &start_dir,
       int logfile_fd = open(output_filename.c_str(), 
                             O_WRONLY | O_CREAT | O_TRUNC, 0666);
       if (logfile_fd < 0) {
-        cerr << "Unable to open " << output_filename << "\n";
+        nout << "Unable to open " << output_filename << "\n";
       } else {
         dup2(logfile_fd, STDERR_FILENO);
         close(logfile_fd);
@@ -621,7 +621,7 @@ posix_create_process(const string &program, const string &start_dir,
     close(from_fd[0]);
 
     if (chdir(start_dir.c_str()) < 0) {
-      cerr << "Could not chdir to " << start_dir << "\n";
+      nout << "Could not chdir to " << start_dir << "\n";
       _exit(1);
     }
 
@@ -637,7 +637,7 @@ posix_create_process(const string &program, const string &start_dir,
     ptrs.push_back((char *)NULL);
     
     execle(program.c_str(), program.c_str(), (char *)0, &ptrs[0]);
-    cerr << "Failed to exec " << program << "\n";
+    nout << "Failed to exec " << program << "\n";
     _exit(1);
   }
 

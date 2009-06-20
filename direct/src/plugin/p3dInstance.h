@@ -16,6 +16,7 @@
 #define P3DINSTANCE_H
 
 #include "p3d_plugin_common.h"
+#include "p3dFileDownload.h"
 
 #include <vector>
 #include <deque>

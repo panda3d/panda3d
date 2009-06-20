@@ -66,14 +66,14 @@ extract(const string &pathname, const string &to_dir,
 
   _in.open(pathname.c_str(), ios::in | ios::binary);
   if (!_in) {
-    cerr << "Couldn't open " << pathname << "\n";
+    nout << "Couldn't open " << pathname << "\n";
     return false;
   }
 
   for (size_t i = 0; i < _header_size; ++i) {
     int ch = _in.get();
     if (ch != _header[i]) {
-      cerr << "Failed header check: " << pathname << "\n";
+      nout << "Failed header check: " << pathname << "\n";
       return false;
     }
   }
@@ -81,13 +81,13 @@ extract(const string &pathname, const string &to_dir,
   unsigned int major = read_uint16();
   unsigned int minor = read_uint16();
   if (major != _current_major_ver || minor != _current_minor_ver) {
-    cerr << "Incompatible multifile version: " << pathname << "\n";
+    nout << "Incompatible multifile version: " << pathname << "\n";
     return false;
   }
 
   unsigned int scale = read_uint32();
   if (scale != 1) {
-    cerr << "Unsupported scale factor in " << pathname << "\n";
+    nout << "Unsupported scale factor in " << pathname << "\n";
     return false;
   }
 
@@ -95,7 +95,7 @@ extract(const string &pathname, const string &to_dir,
   read_uint32();
 
   if (!read_index()) {
-    cerr << "Error reading multifile index\n";
+    nout << "Error reading multifile index\n";
     return false;
   }
 
@@ -106,17 +106,17 @@ extract(const string &pathname, const string &to_dir,
   Subfiles::iterator si;
   for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
     const Subfile &s = (*si);
-    cerr << s._filename << "\n";
+    nout << s._filename << "\n";
 
     string output_pathname = to_dir + "/" + s._filename;
     if (!inst_mgr->mkfile_public(output_pathname)) {
-      cerr << "Unable to create " << output_pathname << "\n";
+      nout << "Unable to create " << output_pathname << "\n";
       return false;
     }
 
     ofstream out(output_pathname.c_str(), ios::out | ios::binary);
     if (!out) {
-      cerr << "Unable to write to " << output_pathname << "\n";
+      nout << "Unable to write to " << output_pathname << "\n";
       return false;
     }
 
@@ -136,7 +136,7 @@ extract(const string &pathname, const string &to_dir,
     }
 
     if (remaining_data != 0) {
-      cerr << "Unable to extract " << s._filename << "\n";
+      nout << "Unable to extract " << s._filename << "\n";
       return false;
     }
 
@@ -177,7 +177,7 @@ read_index() {
     s._length = read_uint32();
     unsigned int flags = read_uint16();
     if (flags != 0) {
-      cerr << "Unsupported per-subfile options in multifile\n";
+      nout << "Unsupported per-subfile options in multifile\n";
       return false;
     }
     s._timestamp = read_uint32();

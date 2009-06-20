@@ -38,13 +38,13 @@ public:
   P3DSession(P3DInstance *inst);
   ~P3DSession();
 
-  INLINE const string &get_session_key() const;
-  INLINE const string &get_python_version() const;
+  inline const string &get_session_key() const;
+  inline const string &get_python_version() const;
 
   void start_instance(P3DInstance *inst);
   void terminate_instance(P3DInstance *inst);
 
-  INLINE int get_num_instances() const;
+  inline int get_num_instances() const;
 
 private:
   void send_command(TiXmlDocument *command);

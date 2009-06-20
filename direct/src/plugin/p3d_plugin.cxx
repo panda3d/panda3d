@@ -24,8 +24,13 @@
 bool initialized_lock = false;
 LOCK _lock;
 
+ofstream log;
+string plugin_output_filename;
+ostream *nout_stream;
+
+
 bool 
-P3D_initialize(int api_version) {
+P3D_initialize(int api_version, const char *output_filename) {
   if (api_version != P3D_API_VERSION) {
     // Can't accept an incompatible version.
     return false;
@@ -36,6 +41,18 @@ P3D_initialize(int api_version) {
     initialized_lock = true;
   }
   ACQUIRE_LOCK(_lock);
+
+  plugin_output_filename = string();
+  if (output_filename != NULL) {
+    plugin_output_filename = output_filename;
+  }
+  nout_stream = &cerr;
+  if (!plugin_output_filename.empty()) {
+    log.open(plugin_output_filename.c_str(), ios::out | ios::trunc);
+    if (log) {
+      nout_stream = &log;
+    }
+  }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   bool result = inst_mgr->initialize();
@@ -61,6 +78,10 @@ P3D_create_instance(P3D_request_ready_func *func,
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (p3d_filename == NULL) {
+    p3d_filename = "";
+  }
+
   P3DInstance *result = 
     inst_mgr->create_instance(func, p3d_filename, window_type, 
                               win_x, win_y, win_width, win_height,

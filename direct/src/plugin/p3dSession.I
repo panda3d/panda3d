@@ -19,7 +19,7 @@
 //  Description: Returns a string that uniquely identifies this
 //               session.  See P3dInstance::get_session_key().
 ////////////////////////////////////////////////////////////////////
-INLINE const string &P3DSession::
+inline const string &P3DSession::
 get_session_key() const {
   return _session_key;
 }
@@ -30,7 +30,7 @@ get_session_key() const {
 //  Description: Returns a string that uniquely identifies this
 //               session's required Python version.
 ////////////////////////////////////////////////////////////////////
-INLINE const string &P3DSession::
+inline const string &P3DSession::
 get_python_version() const {
   return _python_version;
 }
@@ -42,7 +42,7 @@ get_python_version() const {
 //               within the session.  When this is zero, the session
 //               may be safely deleted.
 ////////////////////////////////////////////////////////////////////
-INLINE int P3DSession::
+inline int P3DSession::
 get_num_instances() const {
   return _instances.size();
 }

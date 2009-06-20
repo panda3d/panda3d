@@ -41,7 +41,7 @@ P3DInstance(P3D_request_ready_func *func,
   _parent_window(parent_window)
 {
   fill_tokens(tokens, num_tokens);
-  cerr << "instance, size = " << _win_width << " " << _win_height << "\n";
+  nout << "instance, size = " << _win_width << " " << _win_height << "\n";
 
   _instance_id = _next_instance_id;
   ++_next_instance_id;
@@ -72,6 +72,9 @@ P3DInstance::
   DESTROY_LOCK(_request_lock);
 
   // TODO: empty _pending_requests queue and _downloads map.
+
+  // TODO: Is it possible for someone to delete an instance while a
+  // download is still running?  Who will crash when this happens?
 }
 
 
@@ -158,7 +161,7 @@ get_request() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_request(P3D_request *request) {
-  cerr << "adding a request\n";
+  nout << "adding a request\n";
   assert(request->_instance == this);
 
   ACQUIRE_LOCK(_request_lock);
@@ -201,7 +204,7 @@ feed_url_stream(int unique_id,
                 size_t this_data_size) {
   Downloads::iterator di = _downloads.find(unique_id);
   if (di == _downloads.end()) {
-    cerr << "Unexpected feed_url_stream for " << unique_id << "\n";
+    nout << "Unexpected feed_url_stream for " << unique_id << "\n";
     // Don't know this request.
     return false;
   }
@@ -213,7 +216,7 @@ feed_url_stream(int unique_id,
 
   if (!download_ok || download->get_download_finished()) {
     // All done.
-    cerr << "completed download " << unique_id << "\n";
+    nout << "completed download " << unique_id << "\n";
     _downloads.erase(di);
     delete download;
   }
@@ -261,7 +264,7 @@ start_download(P3DDownload *download) {
   bool inserted = _downloads.insert(Downloads::value_type(download_id, download)).second;
   assert(inserted);
 
-  cerr << "beginning download " << download_id << ": " << download->get_url()
+  nout << "beginning download " << download_id << ": " << download->get_url()
        << "\n";
 
   P3D_request *request = new P3D_request;
@@ -334,6 +337,15 @@ make_xml() {
     break;
   }
 
+  Tokens::const_iterator ti;
+  for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {
+    const Token &token = (*ti);
+    TiXmlElement *xtoken = new TiXmlElement("token");
+    xtoken->SetAttribute("keyword", token._keyword.c_str());
+    xtoken->SetAttribute("value", token._value.c_str());
+    xinstance->LinkEndChild(xtoken);
+  }
+
   return xinstance;
 }
 
@@ -356,4 +368,3 @@ fill_tokens(const P3D_token tokens[], size_t num_tokens) {
     _tokens.push_back(token);
   }
 }
-

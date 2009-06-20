@@ -13,7 +13,7 @@ Also see MakeAppMF.py.
 
 import sys
 from direct.showbase import VFSImporter
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, getModelPath
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, getModelPath, HTTPClient
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
 import os
@@ -91,22 +91,45 @@ def initPackedAppEnvironment():
     # we plan to mount there.
     vfs.chdir(MultifileRoot)
 
-def runPackedApp(args):
-    if not args:
-        raise ArgumentError, "No Panda app specified.  Use:\npython RunAppMF.py app.mf"
+def runPackedApp(p3dFilename, tokens = []):
+    tokenDict = dict(tokens)
+    fname = Filename.fromOsSpecific(p3dFilename)
+    if not p3dFilename:
+        # If we didn't get a literal filename, we have to download it
+        # from the URL.  TODO: make this a smarter temporary filename?
+        fname = Filename.temporary('', 'p3d_')
+        fname.setExtension('p3d')
+        p3dFilename = fname.toOsSpecific()
+        src = tokenDict.get('src', None)
+        if not src:
+            raise ArgumentError, "No Panda app specified."
+            
+        http = HTTPClient.getGlobalPtr()
+        hc = http.getDocument(src)
+        if not hc.downloadToFile(fname):
+            fname.unlink()
+            raise ArgumentError, "Couldn't download %s" % (src)
+
+        # Set a hook on sys.exit to delete the temporary file.
+        oldexitfunc = getattr(sys, 'exitfunc', None)
+        def deleteTempFile(fname = fname, oldexitfunc = oldexitfunc):
+            fname.unlink()
+            if oldexitfunc:
+                oldexitfunc()
+
+        sys.exitfunc = deleteTempFile
 
     vfs = VirtualFileSystem.getGlobalPtr()
 
-    fname = Filename.fromOsSpecific(args[0])
     if not vfs.exists(fname):
-        raise ArgumentError, "No such file: %s" % (args[0])
+        raise ArgumentError, "No such file: %s" % (p3dFilename)
 
     fname.makeAbsolute()
     initPackedAppEnvironment()
 
     mf = Multifile()
     if not mf.openRead(fname):
-        raise ArgumentError, "Not a Panda Multifile: %s" % (args[0])
+        raise ArgumentError, "Not a Panda Multifile: %s" % (p3dFilename)
 
     # Mount the Multifile under /mf, by convention.
     vfs.mount(mf, MultifileRoot, vfs.MFReadOnly)
@@ -150,9 +173,35 @@ def setupWindow(windowType, x, y, width, height, parent):
 
     loadPrcFileData("setupWindow", data)
 
+def parseSysArgs():
+    """ Converts sys.argv into (p3dFilename, tokens). """
+    if len(sys.argv) < 2 or not sys.argv[1]:
+        raise ArgumentError, "No Panda app specified.  Use:\npython RunAppMF.py app.mf"
+
+    tokens = []
+    for token in sys.argv[2:]:
+        if '=' in token:
+            keyword, value = token.split('=', 1)
+        else:
+            keyword = token
+            value = ''
+        tokens.append((keyword.lower(), value))
+
+    p3dFilename = Filename.fromOsSpecific(sys.argv[1])
+    osFilename = p3dFilename.toOsSpecific()
+    if not p3dFilename.exists():
+        # If the filename doesn't exist, it must be a URL.
+        osFilename = ''
+        if 'src' not in dict(tokens):
+            tokens.append(('src', sys.argv[1]))
+
+    return (osFilename, tokens)
+        
+        
+
 if __name__ == '__main__':
     try:
-        runPackedApp(sys.argv[1:])
+        runPackedApp(*parseSysArgs())
     except ArgumentError, e:
         print e.args[0]
         sys.exit(1)

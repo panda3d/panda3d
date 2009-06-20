@@ -143,7 +143,7 @@ cancel_callback(Callback *callback) {
   if (ci != _callbacks.end()) {
     _callbacks.erase(ci);
   } else {
-    cerr << "Canceling unknown callback on " << _package_fullname << "\n";
+    nout << "Canceling unknown callback on " << _package_fullname << "\n";
   }
 }
 
@@ -175,7 +175,7 @@ desc_file_download_finished(bool success) {
 
   TiXmlDocument doc(_desc_file_pathname.c_str());
   if (!doc.LoadFile()) {
-    cerr << "Couldn't read " << _desc_file_pathname << "\n";
+    nout << "Couldn't read " << _desc_file_pathname << "\n";
     report_done(false);
     return;
   }
@@ -190,7 +190,7 @@ desc_file_download_finished(bool success) {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
-  cerr << "got desc file\n";
+  nout << "got desc file\n";
 
   TiXmlElement *xpackage = doc->FirstChildElement("package");
   TiXmlElement *uncompressed_archive = NULL;
@@ -224,7 +224,7 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
     component = component->NextSiblingElement("component");
   }
 
-  cerr << "got " << _components.size() << " components\n";
+  nout << "got " << _components.size() << " components\n";
 
   // Verify all of the components.
   bool all_components_ok = true;
@@ -304,7 +304,7 @@ compressed_archive_download_finished(bool success) {
     download_compressed_archive(false);
   }
 
-  cerr << _compressed_archive._filename
+  nout << _compressed_archive._filename
        << " failed hash check after download\n";
   report_done(false);
 }
@@ -316,28 +316,28 @@ compressed_archive_download_finished(bool success) {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 uncompress_archive() {
-  cerr << "uncompressing " << _compressed_archive._filename << "\n";
+  nout << "uncompressing " << _compressed_archive._filename << "\n";
 
   string source_pathname = _package_dir + "/" + _compressed_archive._filename;
   string target_pathname = _package_dir + "/" + _uncompressed_archive._filename;
 
   ifstream source(source_pathname.c_str(), ios::in | ios::binary);
   if (!source) {
-    cerr << "Couldn't open " << source_pathname << "\n";
+    nout << "Couldn't open " << source_pathname << "\n";
     report_done(false);
     return;
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   if (!inst_mgr->mkfile_public(target_pathname)) {
-    cerr << "Unable to create " << target_pathname << "\n";
+    nout << "Unable to create " << target_pathname << "\n";
     report_done(false);
     return;
   }
 
   ofstream target(target_pathname.c_str(), ios::out | ios::binary);
   if (!target) {
-    cerr << "Couldn't write to " << target_pathname << "\n";
+    nout << "Couldn't write to " << target_pathname << "\n";
     report_done(false);
     return;
   }
@@ -369,7 +369,7 @@ uncompress_archive() {
 
   int result = inflateInit(&z);
   if (result < 0) {
-    cerr << z.msg << "\n";
+    nout << z.msg << "\n";
     report_done(false);
     return;
   }
@@ -391,7 +391,7 @@ uncompress_archive() {
     if (z.avail_out < write_buffer_size) {
       target.write(write_buffer, write_buffer_size - z.avail_out);
       if (!target) {
-        cerr << "Couldn't write entire file to " << target_pathname << "\n";
+        nout << "Couldn't write entire file to " << target_pathname << "\n";
         report_done(false);
         return;
       }
@@ -414,7 +414,7 @@ uncompress_archive() {
       flush = Z_FINISH;
 
     } else if (result < 0) {
-      cerr << z.msg << "\n";
+      nout << z.msg << "\n";
       inflateEnd(&z);
       report_done(false);
       return;
@@ -423,7 +423,7 @@ uncompress_archive() {
 
   result = inflateEnd(&z);
   if (result < 0) {
-    cerr << z.msg << "\n";
+    nout << z.msg << "\n";
     report_done(false);
     return;
   }
@@ -432,7 +432,7 @@ uncompress_archive() {
   target.close();
 
   if (!_uncompressed_archive.full_verify(_package_dir)) {
-    cerr << "after uncompressing " << target_pathname
+    nout << "after uncompressing " << target_pathname
          << ", failed hash check\n";
     report_done(false);
     return;
@@ -451,19 +451,19 @@ uncompress_archive() {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 extract_archive() {
-  cerr << "extracting " << _uncompressed_archive._filename << "\n";
+  nout << "extracting " << _uncompressed_archive._filename << "\n";
 
   string source_pathname = _package_dir + "/" + _uncompressed_archive._filename;
   P3DMultifileReader reader;
   if (!reader.extract(source_pathname, _package_dir,
                       this, download_portion + uncompress_portion, extract_portion)) {
-    cerr << "Failure extracting " << _uncompressed_archive._filename
+    nout << "Failure extracting " << _uncompressed_archive._filename
          << "\n";
     report_done(false);
     return;
   }
 
-  cerr << "done extracting\n";
+  nout << "done extracting\n";
   report_done(true);
 }
 
@@ -490,7 +490,7 @@ report_progress(double progress) {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 report_done(bool success) {
-  cerr << "report_done(" << success << "), "
+  nout << "report_done(" << success << "), "
        << _callbacks.size() << " callbacks\n";
   if (success) {
     _ready = true;
@@ -740,33 +740,33 @@ quick_verify(const string &package_dir) const {
   string pathname = package_dir + "/" + _filename;
   struct stat st;
   if (stat(pathname.c_str(), &st) != 0) {
-    cerr << "file not found: " << _filename << "\n";
+    nout << "file not found: " << _filename << "\n";
     return false;
   }
 
   if (st.st_size != _size) {
     // If the size is wrong, the file fails.
-    cerr << "size wrong: " << _filename << "\n";
+    nout << "size wrong: " << _filename << "\n";
     return false;
   }
 
   if (st.st_mtime == _timestamp) {
     // If the size is right and the timestamp is right, the file passes.
-    cerr << "file ok: " << _filename << "\n";
+    nout << "file ok: " << _filename << "\n";
     return true;
   }
 
-  cerr << "modification time wrong: " << _filename << "\n";
+  nout << "modification time wrong: " << _filename << "\n";
 
   // If the size is right but the timestamp is wrong, the file
   // soft-fails.  We follow this up with a hash check.
   if (!check_hash(pathname)) {
     // Hard fail, the hash is wrong.
-    cerr << "hash check wrong: " << _filename << "\n";
+    nout << "hash check wrong: " << _filename << "\n";
     return false;
   }
 
-  cerr << "hash check ok: " << _filename << "\n";
+  nout << "hash check ok: " << _filename << "\n";
 
   // The hash is OK after all.  Change the file's timestamp back to
   // what we expect it to be, so we can quick-verify it successfully
@@ -795,13 +795,13 @@ full_verify(const string &package_dir) const {
   string pathname = package_dir + "/" + _filename;
   struct stat st;
   if (stat(pathname.c_str(), &st) != 0) {
-    cerr << "file not found: " << _filename << "\n";
+    nout << "file not found: " << _filename << "\n";
     return false;
   }
 
   if (st.st_size != _size) {
     // If the size is wrong, the file fails.
-    cerr << "size wrong: " << _filename << "\n";
+    nout << "size wrong: " << _filename << "\n";
     return false;
   }
 
@@ -809,11 +809,11 @@ full_verify(const string &package_dir) const {
   // soft-fails.  We follow this up with a hash check.
   if (!check_hash(pathname)) {
     // Hard fail, the hash is wrong.
-    cerr << "hash check wrong: " << _filename << "\n";
+    nout << "hash check wrong: " << _filename << "\n";
     return false;
   }
 
-  cerr << "hash check ok: " << _filename << "\n";
+  nout << "hash check ok: " << _filename << "\n";
 
   // The hash is OK.  If the timestamp is wrong, change it back to
   // what we expect it to be, so we can quick-verify it successfully
@@ -839,7 +839,7 @@ bool P3DPackage::FileSpec::
 check_hash(const string &pathname) const {
   ifstream stream(pathname.c_str(), ios::in | ios::binary);
   if (!stream) {
-    cerr << "unable to read " << pathname << "\n";
+    nout << "unable to read " << pathname << "\n";
     return false;
   }
 

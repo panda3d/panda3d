@@ -20,6 +20,7 @@
 #include "p3d_plugin.h"
 #include "pvector.h"
 
+#include <Python.h>
 #include <tinyxml.h>
 
 class P3DSession;
@@ -36,6 +37,8 @@ public:
 
   inline const string &get_p3d_filename() const;
   inline int get_instance_id() const;
+
+  PyObject *get_py_tokens() const;
 
 private:
   class Token {

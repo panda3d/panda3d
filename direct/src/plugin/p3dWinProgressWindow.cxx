@@ -118,7 +118,7 @@ thread_run() {
   retval = GetMessage(&msg, NULL, 0, 0);
   while (retval != 0 && _thread_continue) {
     if (retval == -1) {
-      cerr << "Error processing message queue.\n";
+      nout << "Error processing message queue.\n";
       break;
     }
     TranslateMessage(&msg);
@@ -186,7 +186,7 @@ make_window() {
     wc.lpszClassName = "panda3d_progress";
     
     if (!RegisterClass(&wc)) {
-      cerr << "Could not register window class!\n";
+      nout << "Could not register window class!\n";
     }
     registered_class = true;
   }
@@ -218,7 +218,7 @@ make_window() {
                    parent_hwnd, NULL, application, 0);
     
     if (!_hwnd) {
-      cerr << "Could not create embedded window!\n";
+      nout << "Could not create embedded window!\n";
       return;
     }
 
@@ -234,7 +234,7 @@ make_window() {
                    x, y, width, height,
                    NULL, NULL, application, 0);
     if (!_hwnd) {
-      cerr << "Could not create toplevel window!\n";
+      nout << "Could not create toplevel window!\n";
       return;
     }
 
