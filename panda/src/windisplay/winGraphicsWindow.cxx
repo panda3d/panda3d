@@ -892,8 +892,6 @@ open_regular_window() {
       y_origin = _properties.get_y_origin();
     }
 
-    DWORD process_id;
-    DWORD thread_id = GetWindowThreadProcessId(_hparent, &process_id);
     _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), 
                          WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS ,
                          x_origin,y_origin,
