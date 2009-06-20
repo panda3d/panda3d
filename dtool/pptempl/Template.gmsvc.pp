@@ -56,7 +56,7 @@
     #if $[eq $[module $[TARGET],$[TARGET]],]
       // This library is not on a metalib, so we can build it.
       #set real_lib_targets $[real_lib_targets] $[TARGET]
-      #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+      #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
     #else
       // This library is on a metalib, so we can't build it, but we
       // should build all the obj's that go into it.
@@ -71,7 +71,7 @@
   // the list of binaries that are to be built only when specifically
   // asked for.
 
-  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]]] $[real_lib_target_libs]
+  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]] $[real_lib_target_libs]
 
   #define bin_targets \
       $[active_target(bin_target noinst_bin_target):%=$[ODIR]/%.exe] \
@@ -119,7 +119,7 @@
 // with that happen to be static libs.  We will introduce dependency
 // rules for these.  (We don't need dependency rules for dynamic libs,
 // since these don't get burned in at build time.)
-#defer static_lib_dependencies $[all_libs $[if $[and $[lib_is_static],$[build_lib]],$[RELDIR:%=%/$[ODIR]/lib$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
+#defer static_lib_dependencies $[all_libs $[if $[and $[lib_is_static],$[build_lib]],$[RELDIR:%=%/$[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
@@ -366,30 +366,29 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
       $[components $[patsubst %,$[RELDIR]/$[%_obj],$[compile_sources]],$[active_component_libs]]
   #endif
 
-  #define varname $[subst -,_,.,_,lib$[TARGET]$[lib_ext]]
+  #define varname $[subst -,_,.,_,$[lib_prefix]$[TARGET]$[lib_ext]]
 $[varname] = $[sources]
-  #define target $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+  #define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
-  #define mybasename $[basename $[notdir $[target]]]
-  #define tmpdirname_cyg $[install_lib_dir]/$[mybasename]
-  #define tmpdirname_win $[osfilename $[tmpdirname_cyg]]
 
 // not parallel (requires gmake 3.79) because of link.exe conflicts in TMP dir (see audiotraits dir)
-#if $[GENERATE_BUILDDATE]
-.NOTPARALLEL $[target] : $[sources] $[static_lib_dependencies] $[dtool_ver_dir_cyg]/version.rc $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
-// first generate builddate for rc compiler using compiler preprocessor
-$[TAB]  mkdir -p $[tmpdirname_cyg]  // this dir-creation-stuff is leftover from trying to resolve parallel link difficulties
- #define VER_RESOURCE "$[tmpdirname_win]\$[mybasename].res"
-$[TAB]  cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[tmpdirname_win]\verdate.h"
-$[TAB]  rc /n /I"$[tmpdirname_win]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[VER_RESOURCE] $[filter /D%, $[flags]]  "$[dtool_ver_dir]\version.rc"
+#if $[or $[GENERATE_BUILDDATE],$[WIN_RESOURCE_FILE]]
+  #define resource_file $[or $[WIN_RESOURCE_FILE],$[dtool_ver_dir_cyg]/version.rc]
+.NOTPARALLEL $[target] : $[sources] $[static_lib_dependencies] $[resource_file] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
+
+ // first generate builddate for rc compiler using compiler preprocessor
+ #define ver_resource "$[ODIR]\$[lib_prefix]$[TARGET].res"
+$[TAB]  cl /nologo /EP "$[dtool_ver_dir]\verdate.cpp"  > "$[ODIR]\verdate.h"
+$[TAB]  rc /n /I"$[ODIR]" $[DECYGWINED_INC_PATHLIST_ARGS] /fo$[ver_resource] $[filter /D%, $[flags]]  "$[osfilename $[resource_file]]"
+  #define sources $[sources] $[ver_resource]
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[link_lib_c++]
   #else
 $[TAB] $[link_lib_c]
   #endif
 #else
-  #define VER_RESOURCE
+
 .NOTPARALLEL $[target] : $[sources] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[link_lib_c++]
@@ -401,10 +400,10 @@ $[TAB] $[link_lib_c]
 // Additional dependency rules for the implicit files that get built
 // along with a .dll.
 #if $[not $[lib_is_static]]
-$[ODIR]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+$[ODIR]/$[lib_prefix]$[TARGET].lib : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 #endif
 #if $[has_pdb]
-$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+$[ODIR]/$[lib_prefix]$[TARGET].pdb : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 #endif
 
 #endif
@@ -413,9 +412,9 @@ $[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext
 // everything that goes along with it.
 #define installed_files \
     $[if $[build_lib], \
-      $[install_lib_dir]/$[get_dllname $[TARGET]]$[lib_ext] \
-      $[if $[not $[lib_is_static]],$[install_lib_dir]/$[get_dllname $[TARGET]].lib] \
-      $[if $[has_pdb],$[install_lib_dir]/$[get_dllname $[TARGET]].pdb] \
+      $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] \
+      $[if $[not $[lib_is_static]],$[install_lib_dir]/$[lib_prefix]$[TARGET].lib] \
+      $[if $[has_pdb],$[install_lib_dir]/$[lib_prefix]$[TARGET].pdb] \
     ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
@@ -430,8 +429,8 @@ uninstall-lib$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/$[get_dllname $[TARGET]]$[lib_ext] : $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
-#define local $[get_dllname $[TARGET]]$[lib_ext]
+$[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+#define local $[lib_prefix]$[TARGET]$[lib_ext]
 #define dest $[install_lib_dir]
 #if $[eq $[USE_COMPILER], MSVC8]
 $[TAB] mt -manifest $[ODIR]/$[local].manifest -outputresource:$[ODIR]/$[local]\;2
@@ -441,16 +440,16 @@ $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
 
 // Install the .lib associated with a .dll.
 #if $[not $[lib_is_static]]
-$[install_lib_dir]/$[get_dllname $[TARGET]].lib : $[ODIR]/$[get_dllname $[TARGET]].lib
-#define local $[get_dllname $[TARGET]].lib
+$[install_lib_dir]/$[lib_prefix]$[TARGET].lib : $[ODIR]/$[lib_prefix]$[TARGET].lib
+#define local $[lib_prefix]$[TARGET].lib
 #define dest $[install_lib_dir]
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
 #endif
 
 
 #if $[has_pdb]
-$[install_lib_dir]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]].pdb
-#define local $[get_dllname $[TARGET]].pdb
+$[install_lib_dir]/$[lib_prefix]$[TARGET].pdb : $[ODIR]/$[lib_prefix]$[TARGET].pdb
+#define local $[lib_prefix]$[TARGET].pdb
 #define dest $[install_lib_dir]
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
 #endif
@@ -460,7 +459,7 @@ $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
 // data, if needed.
 
 // The library name is based on this library.
-#define igatelib lib$[TARGET]
+#define igatelib $[lib_prefix]$[TARGET]
 // The module name comes from the metalib that includes this library.
 #define igatemod $[module $[TARGET],$[TARGET]]
 #if $[eq $[igatemod],]
@@ -477,9 +476,9 @@ $[TAB] cp $[install_dash_p] -f $[local] $[dest]/
 // parallel make.
 $[igatedb] : $[igateoutput]
 
-lib$[TARGET]_igatescan = $[igatescan]
+$[lib_prefix]$[TARGET]_igatescan = $[igatescan]
 $[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%.T,%.T,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]
-$[TAB] $[INTERROGATE] -od $[igatedb] -oc $[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
+$[TAB] $[INTERROGATE] -od $[igatedb] -oc $[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $($[lib_prefix]$[TARGET]_igatescan)
 
 #endif  // igatescan
 
@@ -489,12 +488,12 @@ $[TAB] $[INTERROGATE] -od $[igatedb] -oc $[igateoutput] $[interrogate_options] -
 // file into the library, if this is a metalib that includes
 // interrogated components.
 
-#define igatelib lib$[TARGET]
+#define igatelib $[lib_prefix]$[TARGET]
 #define igatemod $[TARGET]
 
-lib$[TARGET]_igatemscan = $[igatemscan]
+$[lib_prefix]$[TARGET]_igatemscan = $[igatemscan]
 #define target $[igatemout]
-#define sources $(lib$[TARGET]_igatemscan)
+#define sources $($[lib_prefix]$[TARGET]_igatemscan)
 
 $[target] : $[sources]
 $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[igatelib]" $[interrogate_module_options] $[sources]
@@ -513,9 +512,9 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_lib_target test_lib_target
-#define varname $[subst -,_,.,_,lib$[TARGET]$[lib_ext]]
+#define varname $[subst -,_,.,_,$[lib_prefix]$[TARGET]$[lib_ext]]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+#define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 #define sources $($[varname])
 #define $[VER_RESOURCE] $[COMPILED_RESOURCES]
 $[target] : $[sources] $[static_lib_dependencies] $[GENERATED_SOURCES]
@@ -525,9 +524,9 @@ $[TAB] $[link_lib_c++]
 $[TAB] $[link_lib_c]
 #endif
 
-$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext] : $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 #if $[has_pdb]
-$[ODIR]/$[get_dllname $[TARGET]].pdb : $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+$[ODIR]/$[lib_prefix]$[TARGET].pdb : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 #endif
 
 // this section is all very clunky and not generalized enough

@@ -87,7 +87,7 @@
 // with that happen to be static libs.  We will introduce dependency
 // rules for these.  (We don't need dependency rules for dynamic libs,
 // since these don't get burned in at build time.)
-#defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/lib$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
+#defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
 
 // $[target_ipath] is the proper ipath to put on the command line,
 // from the context of a particular target.
@@ -347,9 +347,9 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
   #define cc_ld $[or $[get_ld],$[CC]]
   #define cxx_ld $[or $[get_ld],$[CXX]]
 
-  #define varname $[subst -,_,.,_,lib$[TARGET]$[lib_ext]]
+  #define varname $[subst -,_,.,_,$[lib_prefix]$[TARGET]$[lib_ext]]
 $[varname] = $[sources] $[if $[not $[bundle_ext]],$[interrogate_sources]]
-  #define target $[ODIR]/lib$[TARGET]$[lib_ext]
+  #define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
   #define sources $($[varname])
 
 $[target] : $[sources] $[static_lib_dependencies]
@@ -361,8 +361,8 @@ $[TAB] $[link_lib_c]
 
   #if $[bundle_ext]
     // Also generate the bundles (on OSX only).
-    #define target $[ODIR]/lib$[TARGET]$[bundle_ext]
-    #define sources $[interrogate_sources] $[ODIR]/lib$[TARGET]$[lib_ext]
+    #define target $[ODIR]/$[lib_prefix]$[TARGET]$[bundle_ext]
+    #define sources $[interrogate_sources] $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 $[target] : $[sources] $[static_lib_dependencies] 
 $[TAB] $[BUNDLE_LIB_C++]
   #endif  // BUNDLE_EXT
@@ -371,8 +371,8 @@ $[TAB] $[BUNDLE_LIB_C++]
 // Here are the rules to install and uninstall the library and
 // everything that goes along with it.
 #define installed_files \
-    $[install_lib_dir]/lib$[TARGET]$[lib_ext] \
-    $[if $[bundle_ext],$[install_lib_dir]/lib$[TARGET]$[bundle_ext]] \
+    $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] \
+    $[if $[bundle_ext],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[bundle_ext]] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -386,14 +386,14 @@ uninstall-lib$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/lib$[TARGET]$[lib_ext] : $[ODIR]/lib$[TARGET]$[lib_ext]
-#define local $[ODIR]/lib$[TARGET]$[lib_ext]
+$[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+#define local $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 #define dest $[install_lib_dir]
 $[TAB] $[INSTALL]
 
 #if $[bundle_ext]
-$[install_lib_dir]/lib$[TARGET]$[bundle_ext] : $[ODIR]/lib$[TARGET]$[bundle_ext]
-#define local $[ODIR]/lib$[TARGET]$[bundle_ext]
+$[install_lib_dir]/$[lib_prefix]$[TARGET]$[bundle_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[bundle_ext]
+#define local $[ODIR]/$[lib_prefix]$[TARGET]$[bundle_ext]
 #define dest $[install_lib_dir]
 $[TAB] $[INSTALL]
 #endif  // BUNDLE_EXT
@@ -403,7 +403,7 @@ $[TAB] $[INSTALL]
 // data, if needed.
 
 // The library name is based on this library.
-#define igatelib lib$[TARGET]
+#define igatelib $[lib_prefix]$[TARGET]
 // The module name comes from the metalib that includes this library.
 #define igatemod $[module $[TARGET],$[TARGET]]
 #if $[eq $[igatemod],]
@@ -420,9 +420,9 @@ $[TAB] $[INSTALL]
 // parallel make.
 $[igatedb] : $[igateoutput]
 
-lib$[TARGET]_igatescan = $[igatescan]
+$[lib_prefix]$[TARGET]_igatescan = $[igatescan]
 $[igateoutput] : $[sort $[patsubst %.h,%.h,%.I,%.I,%.T,%.T,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]
-$[TAB] $[INTERROGATE] -od $[igatedb] -oc $[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
+$[TAB] $[INTERROGATE] -od $[igatedb] -oc $[igateoutput] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $($[lib_prefix]$[TARGET]_igatescan)
 
 #endif  // igatescan
 
@@ -432,12 +432,12 @@ $[TAB] $[INTERROGATE] -od $[igatedb] -oc $[igateoutput] $[interrogate_options] -
 // file into the library, if this is a metalib that includes
 // interrogated components.
 
-#define igatelib lib$[TARGET]
+#define igatelib $[lib_prefix]$[TARGET]
 #define igatemod $[TARGET]
 
-lib$[TARGET]_igatemscan = $[igatemscan]
+$[lib_prefix]$[TARGET]_igatemscan = $[igatemscan]
 #define target $[igatemout]
-#define sources $(lib$[TARGET]_igatemscan)
+#define sources $($[lib_prefix]$[TARGET]_igatemscan)
 
 $[target] : $[sources]
 $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[igatelib]" $[interrogate_module_options] $[sources]
@@ -458,9 +458,9 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_lib_target
-#define varname $[subst -,_,lib$[TARGET]_so]
+#define varname $[subst -,_,$[lib_prefix]$[TARGET]_so]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[ODIR]/lib$[TARGET]$[lib_ext]
+#define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 #define sources $($[varname])
 $[target] : $[sources] $[static_lib_dependencies]
 #if $[filter %.mm %.cxx %.yxx %.lxx,$[get_sources]]

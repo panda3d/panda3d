@@ -260,7 +260,7 @@
 #define igatemout $[get_igatemout]
 
 #if $[build_it]
-  #define target $[ODIR]\$[get_dllname $[TARGET]].$[dlllib]
+  #define target $[ODIR]\$[lib_prefix]$[TARGET].$[dlllib]
 
   // Installation paths
   #define mybasename $[basename $[notdir $[target]]]
@@ -276,7 +276,7 @@
 
 // Additional rules to generate and compile the interrogate data, if needed.
 #if $[igatescan]
-  #define igatelib lib$[TARGET]
+  #define igatelib $[lib_prefix]$[TARGET]
 
   // The module name comes from the metalib that includes this library.
   #define igatemod $[module $[TARGET],$[TARGET]]
@@ -298,7 +298,7 @@
 // file into the library, if this is a metalib that includes
 // interrogated components.
 #if $[igatemout]
-  #define igatelib lib$[TARGET]
+  #define igatelib $[lib_prefix]$[TARGET]
   #define igatemod $[TARGET]
 
   #define igatemod_commandline \
@@ -421,7 +421,7 @@
 /////////////////////////////////////////////////////////////////////
 
 #forscopes static_lib_target ss_lib_target
-#define target $[ODIR]\$[get_dllname $[TARGET]].lib
+#define target $[ODIR]\$[lib_prefix]$[TARGET].lib
 #define defines $[join ;,$[extra_defines]]
 
 #output $[TARGET].vcproj

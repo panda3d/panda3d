@@ -213,6 +213,13 @@
   #define ode_libs $[ODE_LIBS]
 #endif
 
+#if $[HAVE_NPAPI]
+  #define npapi_ipath $[wildcard $[NPAPI_IPATH]]
+  #define npapi_lpath $[wildcard $[NPAPI_LPATH]]
+  #define npapi_cflags $[NPAPI_CFLAGS]
+  #define npapi_libs $[NPAPI_LIBS]
+#endif
+
 #if $[HAVE_JPEG]
   #define jpeg_ipath $[wildcard $[JPEG_IPATH]]
   #define jpeg_lpath $[wildcard $[JPEG_LPATH]]
@@ -465,9 +472,18 @@
 #defer link_lib_c $[if $[lib_is_static],$[static_lib_c],$[shared_lib_c]]
 #defer link_lib_c++ $[if $[lib_is_static],$[static_lib_c++],$[shared_lib_c++]]
 
+// "lib" is the default prefix applied to every generated library.
+// This comes from Unix convention.  This can be redefined on a
+// per-target basis.
+#define LIB_PREFIX lib
+#defer lib_prefix $[LIB_PREFIX]
+
+// The default library extension various based on the OS.
 #defer dynamic_lib_ext $[DYNAMIC_LIB_EXT]
 #defer static_lib_ext $[STATIC_LIB_EXT]
 #defer lib_ext $[if $[lib_is_static],$[static_lib_ext],$[dynamic_lib_ext]]
+
+// OSX also has a "bundle" concept.
 #defer bundle_ext $[BUNDLE_EXT]
 
 // If BUILD_COMPONENTS is not true, we don't actually build all the

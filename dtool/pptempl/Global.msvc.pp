@@ -112,11 +112,6 @@
 // distinction is so important in Windows).
 #define dllext $[if $[<= $[OPTIMIZE],2],_d]
 
-// note: does NOT include .dll or .lib at end
-#defun get_dllname dll_basename
- $[if $[ne $[DONT_USE_PANDA_DLL_NAMING],], $[dll_basename], lib$[dll_basename]$[dllext]]
-#end get_dllname
-
 // Because Visual Studio .NET prefers to generate object files using the same
 // base name as the source file, we don't want an object file prefix.
 #define obj_prefix
@@ -144,7 +139,7 @@
 // if we're attached, use dllbase.txt.  otherwise let OS loader resolve dll addrspace collisions
 #if $[ne $[CTPROJS],]
 // use predefined bases to speed dll loading and simplify debugging
-#defer DLLNAMEBASE $[get_dllname $[TARGET]]
+#defer DLLNAMEBASE $[lib_prefix]$[TARGET]
 #defer DLLBASEADDRFILENAME dllbase.txt
 #defer DLLBASEARG "/BASE:@$[dtool_ver_dir]\$[DLLBASEADDRFILENAME],$[DLLNAMEBASE]"
 #else

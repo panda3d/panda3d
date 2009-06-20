@@ -739,6 +739,14 @@
 #define ODE_LIBS $[if $[WINDOWS_PLATFORM],ode.lib,ode]
 #defer HAVE_ODE $[libtest $[ODE_LPATH],$[ODE_LIBS]]
 
+// Mozilla's so-called Gecko SDK, a.k.a. Xulrunner SDK, implements
+// NPAPI, Mozilla's semi-standard API to build a web plugin for
+// Firefox and other Mozilla-based browsers.
+#define NPAPI_IPATH
+#define NPAPI_LPATH
+#define NPAPI_LIBS
+#define HAVE_NPAPI
+
 // Do you want to build the DirectD tools for starting Panda clients
 // remotely?  This only affects the direct tree.  Enabling this may
 // cause libdirect.dll to fail to load on Win98 clients.

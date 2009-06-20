@@ -63,7 +63,7 @@
     #if $[eq $[module $[TARGET],$[TARGET]],]
       // This library is not on a metalib, so we can build it.
       #set real_lib_targets $[real_lib_targets] $[TARGET]
-      #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+      #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
     #else
       // This library is on a metalib, so we can't build it, but we
       // should build all the obj's that go into it.
@@ -78,7 +78,7 @@
   // list of binaries that are to be built only when specifically
   // asked for.
 
-  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]]] $[real_lib_target_libs]
+  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]] $[real_lib_target_libs]
 
   #define bin_targets \
       $[active_target(bin_target noinst_bin_target):%=$[ODIR]/%.exe] \
@@ -132,7 +132,7 @@
 // with that happen to be static libs.  We will introduce dependency
 // rules for these.  (We don't need dependency rules for dynamic libs,
 // since these don't get burned in at build time.)
-#defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/lib$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
+#defer static_lib_dependencies $[all_libs $[if $[lib_is_static],$[RELDIR:%=%/$[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]],$[complete_local_libs]]
 
 // And $[complete_ipath] is the list of directories (from within this
 // tree) we should add to our -I list.  It's basically just one for
@@ -388,9 +388,9 @@ igate : $[patsubst %,$[osfilename %],$[get_igatedb(metalib_target lib_target ss_
    $[patsubst %,$[%_obj],$[compile_sources]] \
    $[components $[patsubst %,$[RELDIR]/$[%_obj],$[compile_sources]],$[active_component_libs]]
 
-  #define varname $[subst -,_,lib$[TARGET]_so]
+  #define varname $[subst -,_,$[lib_prefix]$[TARGET]_so]
 $[varname] = $[patsubst %,$[osfilename %],$[sources]]
-  #define target $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+  #define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
   #define mybasename $[basename $[notdir $[target]]]
@@ -423,10 +423,10 @@ $[TAB] mt -nologo -manifest $[target].manifest -outputresource:$[target];2
 #endif
 
 #if $[build_dlls]
-$[osfilename $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]]
+$[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
 #endif
 #if $[build_pdbs]
-$[osfilename $[ODIR]/$[get_dllname $[TARGET]].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]]
+$[osfilename $[ODIR]/$[lib_prefix]$[TARGET].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
 #endif
 
 #endif
@@ -435,9 +435,9 @@ $[osfilename $[ODIR]/$[get_dllname $[TARGET]].pdb] : $[patsubst %,$[osfilename %
 // everything that goes along with it.
 #define installed_files \
     $[if $[build_it], \
-      $[if $[build_dlls],$[install_lib_dir]/$[get_dllname $[TARGET]]$[lib_ext]] \
-      $[install_lib_dir]/$[get_dllname $[TARGET]]$[lib_ext] \
-      $[if $[and $[build_dlls],$[build_pdbs]],$[install_lib_dir]/$[get_dllname $[TARGET]].pdb] \
+      $[if $[build_dlls],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext]] \
+      $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] \
+      $[if $[and $[build_dlls],$[build_pdbs]],$[install_lib_dir]/$[lib_prefix]$[TARGET].pdb] \
     ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
@@ -455,8 +455,8 @@ $[TAB] if exist $[file] del /f $[file]
 #endif
 
 #if $[build_dlls]
-$[osfilename $[install_lib_dir]/$[get_dllname $[TARGET]]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]]
-#define local $[get_dllname $[TARGET]]$[lib_ext]
+$[osfilename $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
+#define local $[lib_prefix]$[TARGET]$[lib_ext]
 #define dest $[install_lib_dir]
 #if $[eq $[USE_COMPILER], MSVC8]
 $[TAB] mt -nologo -manifest $[ODIR]/$[local].manifest -outputresource:$[ODIR]/$[local];2
@@ -465,14 +465,14 @@ $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
 $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local].manifest] $[osfilename $[dest]]
 #endif
 
-$[osfilename $[install_lib_dir]/$[get_dllname $[TARGET]]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]]
-#define local $[get_dllname $[TARGET]]$[lib_ext]
+$[osfilename $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
+#define local $[lib_prefix]$[TARGET]$[lib_ext]
 #define dest $[install_lib_dir]
 $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
 
 #if $[and $[build_dlls],$[build_pdbs]]
-$[osfilename $[install_lib_dir]/$[get_dllname $[TARGET]].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[get_dllname $[TARGET]].pdb]
-#define local $[get_dllname $[TARGET]].pdb
+$[osfilename $[install_lib_dir]/$[lib_prefix]$[TARGET].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET].pdb]
+#define local $[lib_prefix]$[TARGET].pdb
 #define dest $[install_lib_dir]
 $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
 #endif
@@ -482,7 +482,7 @@ $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
 // data, if needed.
 
 // The library name is based on this library.
-#define igatelib lib$[TARGET]
+#define igatelib $[lib_prefix]$[TARGET]
 // The module name comes from the metalib that includes this library.
 #define igatemod $[module $[TARGET],$[TARGET]]
 #if $[eq $[igatemod],]
@@ -499,7 +499,7 @@ $[TAB] xcopy /I/Y $[osfilename $[local]] $[osfilename $[dest]]
 // parallel make.
 $[osfilename $[igatedb]] : $[patsubst %,$[osfilename %],$[igateoutput]]
 
-lib$[TARGET]_igatescan = $[patsubst %,$[osfilename %],$[igatescan]]
+$[lib_prefix]$[TARGET]_igatescan = $[patsubst %,$[osfilename %],$[igatescan]]
 $[osfilename $[igateoutput]] : $[patsubst %,$[osfilename %],$[sort $[patsubst %.h,%.h,%.I,%.I,%.T,%.T,%,,$[dependencies $[igatescan]] $[igatescan:%=./%]]]]
 //// Sauce
 //// There's a bug here.  The -od is being passed into a string in the file.  This
@@ -507,9 +507,9 @@ $[osfilename $[igateoutput]] : $[patsubst %,$[osfilename %],$[sort $[patsubst %.
 //// The hacky fix is to use \\ instead of \.  Windows seems to still let you open files if you
 //// include multiple slashes in them.  Then, when quoted, the string will properly
 //// be created.
-//$[TAB] $[INTERROGATE] -od $[subst \,\\,$[osfilename $[igatedb]]] -oc $[osfilename $[igateoutput]] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
+//$[TAB] $[INTERROGATE] -od $[subst \,\\,$[osfilename $[igatedb]]] -oc $[osfilename $[igateoutput]] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $($[lib_prefix]$[TARGET]_igatescan)
 // Actually, drose kindly fixed that
-$[TAB] $[INTERROGATE] -od $[osfilename $[igatedb]] -oc $[osfilename $[igateoutput]] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $(lib$[TARGET]_igatescan)
+$[TAB] $[INTERROGATE] -od $[osfilename $[igatedb]] -oc $[osfilename $[igateoutput]] $[interrogate_options] -module "$[igatemod]" -library "$[igatelib]" $($[lib_prefix]$[TARGET]_igatescan)
 
 #endif  // igatescan
 
@@ -519,12 +519,12 @@ $[TAB] $[INTERROGATE] -od $[osfilename $[igatedb]] -oc $[osfilename $[igateoutpu
 // file into the library, if this is a metalib that includes
 // interrogated components.
 
-#define igatelib lib$[TARGET]
+#define igatelib $[lib_prefix]$[TARGET]
 #define igatemod $[TARGET]
 
-lib$[TARGET]_igatemscan = $[patsubst %,$[osfilename %],$[igatemscan]]
+$[lib_prefix]$[TARGET]_igatemscan = $[patsubst %,$[osfilename %],$[igatemscan]]
 #define target $[igatemout]
-#define sources $(lib$[TARGET]_igatemscan)
+#define sources $($[lib_prefix]$[TARGET]_igatemscan)
 
 $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources]]
 $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[igatelib]" $[interrogate_module_options] $[sources]
@@ -543,9 +543,9 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_lib_target test_lib_target
-#define varname $[subst -,_,lib$[TARGET]_so]
+#define varname $[subst -,_,$[lib_prefix]$[TARGET]_so]
 $[varname] = $[patsubst %,$[osfilename $[%_obj]],$[compile_sources]]
-#define target $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+#define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 #define sources $($[varname])
 $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources] $[static_lib_dependencies] $[GENERATED_SOURCES]]
 #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
@@ -558,10 +558,10 @@ $[TAB] mt -nologo -manifest $[target].manifest -outputresource:$[target];2
 #endif
 
 #if $[build_dlls]
-$[osfilename $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]]
+$[osfilename $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
 #endif
 #if $[build_pdbs]
-$[osfilename $[ODIR]/$[get_dllname $[TARGET]].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]]
+$[osfilename $[ODIR]/$[lib_prefix]$[TARGET].pdb] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
 #endif
 
 // this section is all very clunky and not generalized enough
@@ -628,9 +628,9 @@ $[TAB] $[MIDL_COMMAND]
 // /////////////////////////////////////////////////////////////////////
 
 // #forscopes static_lib_target ss_lib_target
-// #define varname $[subst -,_,lib$[TARGET]_a]
+// #define varname $[subst -,_,$[lib_prefix]$[TARGET]_a]
 // $[varname] = $[patsubst %,$[osfilename $[%_obj]],$[compile_sources]]
-// #define target $[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]
+// #define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 // #define sources $($[varname])
 // $[osfilename $[target]] : $[patsubst %,$[osfilename %],$[sources]]
 // #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
@@ -640,23 +640,23 @@ $[TAB] $[MIDL_COMMAND]
 // #endif
 
 // #define installed_files \
-//     $[install_lib_dir]/$[get_dllname $[TARGET]]$[lib_ext] \
+//     $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] \
 //     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
 //     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
 //     $[INSTALL_DATA:%=$[install_data_dir]/%] \
 //     $[INSTALL_CONFIG:%=$[install_config_dir]/%]
 
-// install-lib$[TARGET] : $[patsubst %,$[osfilename %],$[installed_files]]
+// install-$[lib_prefix]$[TARGET] : $[patsubst %,$[osfilename %],$[installed_files]]
 
-// uninstall-lib$[TARGET] :
+// uninstall-$[lib_prefix]$[TARGET] :
 // #if $[installed_files]
 // #foreach file $[patsubst %,$[osfilename %],$[sort $[installed_files]]]
 // $[TAB] if exist $[file] del /f $[file]
 // #end file
 // #endif
 
-// $[osfilename $[install_lib_dir]/$[get_dllname $[TARGET]]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[get_dllname $[TARGET]]$[lib_ext]]
-// #define local $[get_dllname $[TARGET]]$[lib_ext]
+// $[osfilename $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext]] : $[patsubst %,$[osfilename %],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]
+// #define local $[lib_prefix]$[TARGET]$[lib_ext]
 // #define dest $[install_lib_dir]
 // $[TAB] xcopy /I/Y $[osfilename $[ODIR]/$[local]] $[osfilename $[dest]]
 
