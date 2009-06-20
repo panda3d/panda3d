@@ -413,11 +413,20 @@ expand_from(const string &os_specific, Filename::Type type) {
 Filename Filename::
 temporary(const string &dirname, const string &prefix, const string &suffix,
           Type type) {
-  if (dirname.empty()) {
+  Filename fdirname = dirname;
+#ifdef WIN32
+  // The Windows tempnam() function doesn't do a good job of choosing
+  // a temporary directory.  Choose one ourselves.
+  if (fdirname.empty()) {
+    fdirname = Filename::get_temp_directory();
+  }
+#endif
+
+  if (fdirname.empty()) {
     // If we are not given a dirname, use the system tempnam()
     // function to create a system-defined temporary filename.
     char *name = tempnam(NULL, prefix.c_str());
-    Filename result(name);
+    Filename result = Filename::from_os_specific(name);
     free(name);
     result.set_type(type);
     return result;
@@ -435,7 +444,7 @@ temporary(const string &dirname, const string &prefix, const string &suffix,
     int hash = (clock() * time(NULL)) & 0xffffff;
     char hex_code[10];
     sprintf(hex_code, "%06x", hash);
-    result = Filename(dirname, Filename(prefix + hex_code + suffix));
+    result = Filename(fdirname, Filename(prefix + hex_code + suffix));
     result.set_type(type);
   } while (result.exists());
 
