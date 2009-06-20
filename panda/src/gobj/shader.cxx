@@ -931,7 +931,7 @@ compile_parameter(const ShaderArgId  &arg_id,
       bind._id = arg_id;
       bind._piece = SMP_whole;
       bind._func = SMF_first;
-      bind._part[0] = SMO_vec_constant_x;
+      bind._part[0] = SMO_mat_constant_x;
       bind._arg[0] = kinputname;
       bind._part[1] = SMO_identity;
       bind._arg[1] = NULL;
