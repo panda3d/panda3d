@@ -1219,6 +1219,13 @@ do_poll() {
     return;
   }
 
+#ifndef NDEBUG
+  if (_num_busy_threads != 0) {
+    nassert_raise("You may not recursively invoke the TaskManager from within a task");
+    return;
+  }
+#endif
+
   nassertv(!_pickup_mode);
 
   do {
