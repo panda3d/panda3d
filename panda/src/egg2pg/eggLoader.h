@@ -252,6 +252,10 @@ public:
   PT(BamCacheRecord) _record;
   bool _error;
 
+  CharacterMaker * _dynamic_override_char_maker;
+  bool _dynamic_override;
+
+
   friend class EggRenderState;
   friend class PandaNode;
 };

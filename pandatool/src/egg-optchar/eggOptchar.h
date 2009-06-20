@@ -78,6 +78,7 @@ private:
   void do_flag_groups(EggGroupNode *egg_group);
   void rename_joints();
   void rename_primitives(EggGroupNode *egg_group, const string &name);
+  void change_dart_type(EggGroupNode *egg_group, const string &new_dart_type);
   void do_preload();
   void do_defpose();
 
@@ -102,6 +103,8 @@ private:
   vector_string _drop_components;
   vector_string _expose_components;
   vector_string _suppress_components;
+
+  string _dart_type;
 
   class DoubleString {
   public:

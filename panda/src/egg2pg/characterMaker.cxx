@@ -35,13 +35,17 @@
 #include "eggAnimPreload.h"
 #include "animPreloadTable.h"
 
+
+
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: CharacterMaker::Construtor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 CharacterMaker::
-CharacterMaker(EggGroup *root, EggLoader &loader)
+CharacterMaker(EggGroup *root, EggLoader &loader, bool structured)
   : _loader(loader), _egg_root(root) {
 
   _character_node = new Character(_egg_root->get_name());
@@ -49,6 +53,7 @@ CharacterMaker(EggGroup *root, EggLoader &loader)
 
   _morph_root = (PartGroup *)NULL;
   _skeleton_root = new PartGroup(_bundle, "<skeleton>");
+  _structured = structured;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -224,8 +229,11 @@ egg_to_slider(const string &name) {
 CharacterJointBundle *CharacterMaker::
 make_bundle() {
   build_joint_hierarchy(_egg_root, _skeleton_root, -1);
-  make_geometry(_egg_root);
 
+  //if we are structured, the egg loader is going to take care of making the geometry
+  if(!_structured) {
+    make_geometry(_egg_root);
+  }
   _bundle->sort_descendants();
   parent_joint_nodes(_skeleton_root);
 

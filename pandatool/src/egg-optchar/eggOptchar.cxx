@@ -198,6 +198,12 @@ EggOptchar() {
      "to quantize different channels by a different amount.",
      &EggOptchar::dispatch_double_components, NULL, &_quantize_anims);
 
+  add_option
+    ("dart", "[default, sync, nosync, or structured]", 0,
+     "change the dart value in the given eggs",
+     &EggOptchar::dispatch_string, NULL, &_dart_type);
+
+
   _optimal_hierarchy = false;
   _vref_quantum = 0.01;
 }
@@ -290,11 +296,19 @@ run() {
       do_preload();
     }
 
+
     // Finally, set the default poses.  It's important not to do this
     // until after we have adjusted all of the transforms for the
     // various joints.
     if (!_defpose.empty()) {
       do_defpose();
+    }
+
+    if (!_dart_type.empty()) {
+      Eggs::iterator ei;
+      for (ei = _eggs.begin(); ei != _eggs.end(); ++ei) {
+        change_dart_type(*ei, _dart_type);
+      }
     }
 
     write_eggs();
@@ -1399,6 +1413,33 @@ rename_joints() {
     }
   }
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggOptchar::change_dart_type
+//       Access: Private
+//  Description: Recursively walks the indicated egg hierarchy,
+//               renaming geometry to the indicated name.
+////////////////////////////////////////////////////////////////////
+void EggOptchar::
+change_dart_type(EggGroupNode *egg_group, const string &new_dart_type) {
+  EggGroupNode::iterator gi;
+  for (gi = egg_group->begin(); gi != egg_group->end(); ++gi) {
+    EggNode *child = (*gi);
+    if (child->is_of_type(EggGroupNode::get_class_type())) {
+      EggGroupNode *group = DCAST(EggGroupNode, child);
+      if (child->is_of_type(EggGroup::get_class_type())) {
+        EggGroup *gr = DCAST(EggGroup, child);
+        EggGroup::DartType dt = gr->get_dart_type();
+        if(dt != EggGroup::DT_none) {
+          EggGroup::DartType newDt = gr->string_dart_type(new_dart_type);
+          gr->set_dart_type(newDt);          
+        }
+      }
+      change_dart_type(group, new_dart_type);
+    }
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggOptchar::rename_primitives

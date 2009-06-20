@@ -24,6 +24,7 @@
 #include "typedef.h"
 #include "pmap.h"
 
+
 class EggNode;
 class EggGroup;
 class EggGroupNode;
@@ -46,7 +47,7 @@ class PandaNode;
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDAEGG CharacterMaker {
 public:
-  CharacterMaker(EggGroup *root, EggLoader &loader);
+  CharacterMaker(EggGroup *root, EggLoader &loader, bool structured = false);
 
   Character *make_node();
 
@@ -89,6 +90,9 @@ private:
   CharacterJointBundle *_bundle;
   PartGroup *_morph_root;
   PartGroup *_skeleton_root;
+  
+  bool _structured;
+
 };
 
 #endif
