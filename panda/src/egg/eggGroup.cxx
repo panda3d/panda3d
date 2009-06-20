@@ -883,6 +883,8 @@ string_dart_type(const string &strval) {
     return DT_nosync;
   } else if (cmp_nocase_uh(strval, "default") == 0) {
     return DT_default;
+  } else if (cmp_nocase_uh(strval, "structured") == 0) {
+    return DT_structured;
   } else {
     return DT_none;
   }
@@ -1359,6 +1361,8 @@ ostream &operator << (ostream &out, EggGroup::DartType t) {
     return out << "sync";
   case EggGroup::DT_nosync:
     return out << "nosync";
+  case EggGroup::DT_structured:
+    return out << "structured";
   case EggGroup::DT_default:
     return out << "1";
   }

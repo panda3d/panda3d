@@ -46,13 +46,6 @@ PUBLISHED:
     GT_instance              = 0x00000001,
     GT_joint                 = 0x00000002,
   };
-  enum DartType {
-    // The bits here must correspond to those in Flags, below.
-    DT_none                  = 0x00000000,
-    DT_sync                  = 0x00000004,
-    DT_nosync                = 0x00000008,
-    DT_default               = 0x0000000c,
-  };
   enum DCSType {
     // The bits here must correspond to those in Flags2, below.
     DC_unspecified           = 0x00000000,
@@ -94,6 +87,16 @@ PUBLISHED:
     CF_level                 = 0x04000000,
     CF_intangible            = 0x08000000,
   };
+
+  enum DartType {
+    // The bits here must correspond to those in Flags, below.
+    DT_none                  = 0x00000000,
+    DT_structured            = 0x10000000,
+    DT_sync                  = 0x20000000,
+    DT_nosync                = 0x30000000,
+    DT_default               = 0x40000000,
+  };
+
 
   // These correspond to ColorBlendAttrib::Mode (but not numerically).
   enum BlendMode {
@@ -325,7 +328,6 @@ private:
 
   enum Flags {
     F_group_type             = 0x00000003,
-    F_dart_type              = 0x0000000c,
 
     F_billboard_type         = 0x000000e0,
     F_switch_flag            = 0x00000100,
@@ -336,6 +338,7 @@ private:
     F_direct_flag            = 0x00004000,
     F_cs_type                = 0x000f0000,
     F_collide_flags          = 0x0ff00000,
+    F_dart_type              = 0xf0000000,
   };
   enum Flags2 {
     F2_collide_mask          = 0x00000001,
