@@ -150,7 +150,7 @@ EggLoader(const EggData *data) :
   _data(new EggData(*data))
 {
   _error = false;
-  _dynamic_override = true;
+  _dynamic_override = false;
   _dynamic_override_char_maker = NULL;
 }
 
