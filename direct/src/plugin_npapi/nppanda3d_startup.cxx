@@ -147,8 +147,18 @@ NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
 }
 
 // Symbol called once by the browser to initialize the plugin
+#ifdef _WIN32
+NPError OSCALL 
+NP_Initialize(NPNetscapeFuncs *browserFuncs)
+#else
+// On Mac, the API specifies this second parameter is included, but it
+// lies.  We actually don't get a second parameter on Mac, but we have
+// to put it here to make the compiler happy.
 NPError OSCALL
-NP_Initialize(NPNetscapeFuncs *browserFuncs) {
+NP_Initialize(NPNetscapeFuncs *browserFuncs,
+              NPPluginFuncs *pluginFuncs)
+#endif
+{
   // save away browser functions
   browser = browserFuncs;
 

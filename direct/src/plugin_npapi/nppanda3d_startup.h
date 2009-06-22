@@ -20,7 +20,13 @@
 #include "../plugin/load_plugin_src.h"
 
 extern "C" {
+#ifdef _WIN32
   NPError OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs);
+#else
+  NPError OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs,
+                               NPPluginFuncs *pluginFuncs);
+#endif
+
   NPError OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs);
   NPError OSCALL NP_Shutdown(void);
 }
