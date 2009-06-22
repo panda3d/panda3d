@@ -482,7 +482,10 @@
 // into a dylib *and* a bundle.
 #defer bundle_ext $[BUNDLE_EXT]
 #defer link_as_bundle $[and $[OSX_PLATFORM],$[LINK_AS_BUNDLE]]
-#defer link_extra_bundle $[and $[OSX_PLATFORM],$[LINK_EXTRA_BUNDLE],$[not $[LINK_AS_BUNDLE]]]
+//#defer link_extra_bundle $[and $[OSX_PLATFORM],$[LINK_EXTRA_BUNDLE],$[not $[LINK_AS_BUNDLE]]]
+
+// temp hack for people with old OSXTOOLS.
+#defer link_extra_bundle $[and $[OSX_PLATFORM],$[or $[LINK_EXTRA_BUNDLE],$[BUNDLE_EXT]],$[not $[LINK_AS_BUNDLE]]]
 
 // The default library extension various based on the OS.
 #defer dynamic_lib_ext $[DYNAMIC_LIB_EXT]
