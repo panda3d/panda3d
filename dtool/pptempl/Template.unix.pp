@@ -345,7 +345,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
   #define cxx_ld $[or $[get_ld],$[CXX]]
 
   #define varname $[subst -,_,.,_,$[lib_prefix]$[TARGET]$[lib_ext]]
-$[varname] = $[sources] $[interrogate_sources]
+$[varname] = $[sources] $[if $[not $[link_extra_bundle]],$[interrogate_sources]]
   #define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
   #define sources $($[varname])
 
