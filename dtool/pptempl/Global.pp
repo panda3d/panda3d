@@ -538,7 +538,7 @@
 // is.
 #defer active_target $[if $[build_target],$[TARGET]]
 #defer active_target_libprefext $[if $[build_target],$[lib_prefix]$[TARGET]$[lib_ext]]
-#defer active_target_bundleext $[if $[and $[build_target],$[link_bundle]],$[lib_prefix]$[TARGET]$[bundle_ext]]
+#defer active_target_bundleext $[if $[and $[build_target],$[link_extra_bundle]],$[lib_prefix]$[TARGET]$[bundle_ext]]
 #defer get_combined_sources $[COMBINED_SOURCES]
 
 // This subroutine will set up the sources variable to reflect the
