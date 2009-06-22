@@ -16,6 +16,10 @@
 
 #include "../plugin/load_plugin_src.cxx"
 
+#ifdef _WIN32
+#include <malloc.h>
+#endif
+
 ofstream logfile;
 bool logfile_is_open = false;
 static void
@@ -34,65 +38,10 @@ open_logfile() {
 // structure containing pointers to functions implemented by the browser
 static NPNetscapeFuncs *browser;
 
-// Symbol called once by the browser to initialize the plugin
-NPError
-NP_Initialize(NPNetscapeFuncs *browserFuncs) {
-  // save away browser functions
-  browser = browserFuncs;
-
-  open_logfile();
-  logfile << "initializing\n" << flush;
-
-  logfile << "browserFuncs = " << browserFuncs << "\n" << flush;
-
-  string plugin_location = "/Users/drose/player/direct/built/lib/libp3d_plugin.dylib";
-
-  if (!load_plugin(plugin_location.c_str())) {
-    logfile << "couldn't load plugin\n" << flush;
-    return NPERR_INVALID_PLUGIN_ERROR;
-  }
-
-  return NPERR_NO_ERROR;
-}
-
-// Symbol called by the browser to get the plugin's function list
-NPError
-NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
-  open_logfile();
-  logfile << "NP_GetEntryPoints, pluginFuncs = " << pluginFuncs << "\n"
-          << flush;
-  pluginFuncs->version = 11;
-  pluginFuncs->size = sizeof(pluginFuncs);
-  pluginFuncs->newp = NPP_New;
-  pluginFuncs->destroy = NPP_Destroy;
-  pluginFuncs->setwindow = NPP_SetWindow;
-  pluginFuncs->newstream = NPP_NewStream;
-  pluginFuncs->destroystream = NPP_DestroyStream;
-  pluginFuncs->asfile = NPP_StreamAsFile;
-  pluginFuncs->writeready = NPP_WriteReady;
-  pluginFuncs->write = NPP_Write;
-  pluginFuncs->print = NPP_Print;
-  pluginFuncs->event = NPP_HandleEvent;
-  pluginFuncs->urlnotify = NPP_URLNotify;
-  pluginFuncs->getvalue = NPP_GetValue;
-  pluginFuncs->setvalue = NPP_SetValue;
-
-  return NPERR_NO_ERROR;
-}
-
-// Symbol called once by the browser to shut down the plugin
-NPError 
-NP_Shutdown(void) {
-  logfile << "shutdown\n" << flush;
-  unload_plugin();
-
-  return NPERR_NO_ERROR;
-}
-
 // Called to create a new instance of the plugin
 NPError 
-NPP_New(NPMIMEType pluginType, NPP instance, uint16_t mode, 
-        int16_t argc, char *argn[], char *argv[], NPSavedData *saved) {
+NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, 
+        int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
   logfile << "new instance\n" << flush;
 
   // Copy the tokens into a temporary array of P3D_token objects.
@@ -148,7 +97,7 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
 
 NPError
 NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream, 
-              NPBool seekable, uint16_t *stype) {
+              NPBool seekable, uint16 *stype) {
   *stype = NP_ASFILEONLY;
   return NPERR_NO_ERROR;
 }
@@ -158,14 +107,14 @@ NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
   return NPERR_NO_ERROR;
 }
 
-int32_t
+int32
 NPP_WriteReady(NPP instance, NPStream *stream) {
   return 0;
 }
 
-int32_t
-NPP_Write(NPP instance, NPStream *stream, int32_t offset, 
-          int32_t len, void *buffer) {
+int32
+NPP_Write(NPP instance, NPStream *stream, int32 offset, 
+          int32 len, void *buffer) {
   return 0;
 }
 
@@ -177,7 +126,7 @@ void
 NPP_Print(NPP instance, NPPrint *platformPrint) {
 }
 
-int16_t
+int16
 NPP_HandleEvent(NPP instance, void *event) {
   return 0;
 }
@@ -195,4 +144,63 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
 NPError 
 NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
   return NPERR_GENERIC_ERROR;
+}
+
+// Symbol called once by the browser to initialize the plugin
+NPError OSCALL
+NP_Initialize(NPNetscapeFuncs *browserFuncs) {
+  // save away browser functions
+  browser = browserFuncs;
+
+  open_logfile();
+  logfile << "initializing\n" << flush;
+
+  logfile << "browserFuncs = " << browserFuncs << "\n" << flush;
+
+#ifdef _WIN32
+  string plugin_location = "c:/cygwin/home/drose/player/direct/built/lib/libp3d_plugin.dll";
+#else
+  string plugin_location = "/Users/drose/player/direct/built/lib/libp3d_plugin.dylib";
+#endif
+
+  if (!load_plugin(plugin_location.c_str())) {
+    logfile << "couldn't load plugin\n" << flush;
+    return NPERR_INVALID_PLUGIN_ERROR;
+  }
+
+  return NPERR_NO_ERROR;
+}
+
+// Symbol called by the browser to get the plugin's function list
+NPError OSCALL
+NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
+  open_logfile();
+  logfile << "NP_GetEntryPoints, pluginFuncs = " << pluginFuncs << "\n"
+          << flush;
+  pluginFuncs->version = 11;
+  pluginFuncs->size = sizeof(pluginFuncs);
+  pluginFuncs->newp = NPP_New;
+  pluginFuncs->destroy = NPP_Destroy;
+  pluginFuncs->setwindow = NPP_SetWindow;
+  pluginFuncs->newstream = NPP_NewStream;
+  pluginFuncs->destroystream = NPP_DestroyStream;
+  pluginFuncs->asfile = NPP_StreamAsFile;
+  pluginFuncs->writeready = NPP_WriteReady;
+  pluginFuncs->write = NPP_Write;
+  pluginFuncs->print = NPP_Print;
+  pluginFuncs->event = NPP_HandleEvent;
+  pluginFuncs->urlnotify = NPP_URLNotify;
+  pluginFuncs->getvalue = NPP_GetValue;
+  pluginFuncs->setvalue = NPP_SetValue;
+
+  return NPERR_NO_ERROR;
+}
+
+// Symbol called once by the browser to shut down the plugin
+NPError OSCALL
+NP_Shutdown(void) {
+  logfile << "shutdown\n" << flush;
+  unload_plugin();
+
+  return NPERR_NO_ERROR;
 }

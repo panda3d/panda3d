@@ -54,8 +54,8 @@ extern ofstream logfile;
 #endif  // _WIN32, __APPLE__
 
 #include "npapi.h"
-#include "npfunctions.h"
-//#include "npupp.h"
+//#include "npfunctions.h"
+#include "npupp.h"
 
 #endif
 

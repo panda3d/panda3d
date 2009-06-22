@@ -33,7 +33,7 @@ P3DWinProgressWindow(P3DPackage *package, P3DSession *session,
 
   INIT_LOCK(_progress_lock);
 
-  assert(_window_type != P3D_WT_hidden);
+  assert(_wparams.get_window_type() != P3D_WT_hidden);
   start_thread();
 }
 
@@ -193,24 +193,24 @@ make_window() {
   
   int x = CW_USEDEFAULT;
   int y = CW_USEDEFAULT;
-  if (_win_x != 0 && _win_y != 0) {
-    x = _win_x;
-    y = _win_y;
+  if (_wparams.get_win_x() != 0 && _wparams.get_win_y() != 0) {
+    x = _wparams.get_win_x();
+    y = _wparams.get_win_y();
   }
   
   int width = 320;
   int height = 240;
-  if (_win_width != 0 && _win_height != 0) {
-    width = _win_width;
-    height = _win_height;
+  if (_wparams.get_win_width() != 0 && _wparams.get_win_height() != 0) {
+    width = _wparams.get_win_width();
+    height = _wparams.get_win_height();
   }
 
-  if (_window_type == P3D_WT_embedded) {
+  if (_wparams.get_window_type() == P3D_WT_embedded) {
     // Create an embedded window.
     DWORD window_style = 
       WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-    HWND parent_hwnd = _parent_window._hwnd;
+    HWND parent_hwnd = _wparams.get_parent_window()._hwnd;
 
     _hwnd = 
       CreateWindow("panda3d_progress", "Panda3D", window_style,

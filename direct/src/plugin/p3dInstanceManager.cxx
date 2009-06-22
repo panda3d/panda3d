@@ -94,7 +94,8 @@ initialize() {
   nout << "_root_dir = " << _root_dir << "\n";
 
 #ifdef _WIN32
-  _download_url = "http://10.196.143.118/~drose/p3d/";
+  //  _download_url = "http://10.196.143.118/~drose/p3d/";
+  _download_url = "http://www.ddrose.com/~drose/p3dwin/";
 
 #else
   _download_url = "http://www.ddrose.com/~drose/p3d/";

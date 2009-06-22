@@ -20,9 +20,9 @@
 #include "../plugin/load_plugin_src.h"
 
 extern "C" {
-  NPError NP_Initialize(NPNetscapeFuncs *browserFuncs);
-  NPError NP_GetEntryPoints(NPPluginFuncs *pluginFuncs);
-  NPError NP_Shutdown(void);
+  NPError OSCALL NP_Initialize(NPNetscapeFuncs *browserFuncs);
+  NPError OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs);
+  NPError OSCALL NP_Shutdown(void);
 }
 
 #endif
