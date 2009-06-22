@@ -97,7 +97,7 @@ initialize() {
   _download_url = "http://10.196.143.118/~drose/p3d/";
 
 #else
-  _download_url = "http://orpheus.ddrose.com/~drose/p3d/";
+  _download_url = "http://www.ddrose.com/~drose/p3d/";
 #endif
 
   if (_root_dir.empty()) {
@@ -119,14 +119,8 @@ initialize() {
 P3DInstance *P3DInstanceManager::
 create_instance(P3D_request_ready_func *func,
                 const string &p3d_filename, 
-                P3D_window_type window_type,
-                int win_x, int win_y,
-                int win_width, int win_height,
-                P3D_window_handle parent_window,
                 const P3D_token tokens[], size_t num_tokens) {
   P3DInstance *inst = new P3DInstance(func, p3d_filename, 
-                                      window_type, win_x, win_y,
-                                      win_width, win_height, parent_window,
                                       tokens, num_tokens);
   _instances.insert(inst);
 
@@ -375,10 +369,7 @@ get_global_ptr() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 create_command_instance() {
-  P3D_window_handle dummy_handle;
-  _command_instance = 
-    new P3DInstance(NULL, "", P3D_WT_hidden, 0, 0, 0, 0, 
-                    dummy_handle, NULL, 0);
+  _command_instance = new P3DInstance(NULL, "", NULL, 0);
 }
 
 ////////////////////////////////////////////////////////////////////

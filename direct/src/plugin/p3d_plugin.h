@@ -223,10 +223,6 @@ typedef struct {
 typedef P3D_instance *
 P3D_create_instance_func(P3D_request_ready_func *func,
                          const char *p3d_filename, 
-                         P3D_window_type window_type,
-                         int win_x, int win_y,
-                         int win_width, int win_height,
-                         P3D_window_handle parent_window,
                          const P3D_token tokens[], size_t num_tokens);
 
 
@@ -236,6 +232,18 @@ P3D_create_instance_func(P3D_request_ready_func *func,
    reference the P3D_instance pointer again. */
 typedef void 
 P3D_instance_finish_func(P3D_instance *instance);
+
+/* Call this function after creating an instance in order to set its
+   window size and placement.  You must call this at least once in
+   order to actually manifest the instance onscreen.  This may also be
+   called to reposition a window after its initial placement (e.g. if
+   the browser window has changed width and needs reformatting). */
+typedef void
+P3D_instance_setup_window_func(P3D_instance *instance,
+                               P3D_window_type window_type,
+                               int win_x, int win_y,
+                               int win_width, int win_height,
+                               P3D_window_handle parent_window);
 
 
 /********************** SCRIPTING SUPPORT **************************/
@@ -449,6 +457,7 @@ EXPCL_P3D_PLUGIN P3D_initialize_func P3D_initialize;
 EXPCL_P3D_PLUGIN P3D_free_string_func P3D_free_string;
 EXPCL_P3D_PLUGIN P3D_create_instance_func P3D_create_instance;
 EXPCL_P3D_PLUGIN P3D_instance_finish_func P3D_instance_finish;
+EXPCL_P3D_PLUGIN P3D_instance_setup_window_func P3D_instance_setup_window;
 EXPCL_P3D_PLUGIN P3D_instance_has_property_func P3D_instance_has_property;
 EXPCL_P3D_PLUGIN P3D_instance_get_property_func P3D_instance_get_property;
 EXPCL_P3D_PLUGIN P3D_instance_set_property_func P3D_instance_set_property;

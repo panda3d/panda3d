@@ -15,6 +15,7 @@
 #include "p3dInstance.h"
 #include "p3dInstanceManager.h"
 #include "p3dDownload.h"
+#include "p3dSession.h"
 
 #include <sstream>
 
@@ -28,20 +29,11 @@ int P3DInstance::_next_instance_id = 0;
 P3DInstance::
 P3DInstance(P3D_request_ready_func *func,
             const string &p3d_filename, 
-            P3D_window_type window_type,
-            int win_x, int win_y,
-            int win_width, int win_height,
-            P3D_window_handle parent_window,
             const P3D_token tokens[], size_t num_tokens) :
   _func(func),
-  _p3d_filename(p3d_filename),
-  _window_type(window_type),
-  _win_x(win_x), _win_y(win_y),
-  _win_width(win_width), _win_height(win_height),
-  _parent_window(parent_window)
+  _p3d_filename(p3d_filename)
 {
   fill_tokens(tokens, num_tokens);
-  nout << "instance, size = " << _win_width << " " << _win_height << "\n";
 
   _instance_id = _next_instance_id;
   ++_next_instance_id;
@@ -77,6 +69,31 @@ P3DInstance::
   // download is still running?  Who will crash when this happens?
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::set_wparams
+//       Access: Public
+//  Description: Changes the window parameters, e.g. to resize or
+//               reposition the window; or sets the parameters for the
+//               first time, creating the initial window.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+set_wparams(const P3DWindowParams &wparams) {
+  assert(_session != NULL);
+  _wparams = wparams;
+
+  TiXmlDocument *doc = new TiXmlDocument;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "setup_window");
+  xcommand->SetAttribute("id", get_instance_id());
+  TiXmlElement *xwparams = _wparams.make_xml();
+
+  doc->LinkEndChild(decl);
+  doc->LinkEndChild(xcommand);
+  xcommand->LinkEndChild(xwparams);
+
+  _session->send_command(doc);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::has_property
@@ -305,37 +322,6 @@ make_xml() {
   TiXmlElement *xinstance = new TiXmlElement("instance");
   xinstance->SetAttribute("id", _instance_id);
   xinstance->SetAttribute("p3d_filename", _p3d_filename.c_str());
-
-  switch (_window_type) {
-  case P3D_WT_embedded:
-    xinstance->SetAttribute("window_type", "embedded");
-    xinstance->SetAttribute("win_x", _win_x);
-    xinstance->SetAttribute("win_y", _win_y);
-    xinstance->SetAttribute("win_width", _win_width);
-    xinstance->SetAttribute("win_height", _win_height);
-#ifdef _WIN32
-    xinstance->SetAttribute("parent_hwnd", (int)_parent_window._hwnd);
-#endif
-    break;
-
-  case P3D_WT_toplevel:
-    xinstance->SetAttribute("window_type", "toplevel");
-    xinstance->SetAttribute("win_x", _win_x);
-    xinstance->SetAttribute("win_y", _win_y);
-    xinstance->SetAttribute("win_width", _win_width);
-    xinstance->SetAttribute("win_height", _win_height);
-    break;
-
-  case P3D_WT_fullscreen:
-    xinstance->SetAttribute("window_type", "fullscreen");
-    xinstance->SetAttribute("win_width", _win_width);
-    xinstance->SetAttribute("win_height", _win_height);
-    break;
-
-  case P3D_WT_hidden:
-    xinstance->SetAttribute("window_type", "hidden");
-    break;
-  }
 
   Tokens::const_iterator ti;
   for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {

@@ -44,7 +44,7 @@ BEGIN
             VALUE "MIMEType", "application/x-panda3d\0"
             VALUE "OriginalFilename", "nppanda3d.dll\0"
             VALUE "PrivateBuild", "\0"
-            VALUE "ProductName", "Panda3D Example Plugin for Mozilla\0"
+            VALUE "ProductName", "Panda3D Game Engine Plug-in\0"
             VALUE "ProductVersion", "1, 0, 0, 1\0"
             VALUE "SpecialBuild", "\0"
         END

@@ -263,9 +263,10 @@ create_instance(const string &arg, P3D_window_type window_type,
   } 
 
   P3D_instance *inst = P3D_create_instance
-    (NULL, os_p3d_filename.c_str(), 
-     window_type, win_x, win_y, win_width, win_height, parent_window,
-     tokens, num_tokens);
+    (NULL, os_p3d_filename.c_str(), tokens, num_tokens);
+
+  P3D_instance_setup_window
+    (inst, window_type, win_x, win_y, win_width, win_height, parent_window);
 
   return inst;
 }

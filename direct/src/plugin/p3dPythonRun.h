@@ -71,6 +71,8 @@ private:
 
   void start_instance(P3DCInstance *inst);
   void terminate_instance(int id);
+  void setup_window(int id, TiXmlElement *xwparams);
+
   void terminate_session();
 
 private:

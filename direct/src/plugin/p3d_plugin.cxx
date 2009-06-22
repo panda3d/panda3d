@@ -15,6 +15,7 @@
 #include "p3d_plugin_common.h"
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
+#include "p3dWindowParams.h"
 
 #include <assert.h>
 
@@ -70,10 +71,6 @@ P3D_free_string(char *string) {
 P3D_instance *
 P3D_create_instance(P3D_request_ready_func *func,
                     const char *p3d_filename, 
-                    P3D_window_type window_type,
-                    int win_x, int win_y,
-                    int win_width, int win_height,
-                    P3D_window_handle parent_window,
                     const P3D_token tokens[], size_t num_tokens) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
@@ -83,9 +80,7 @@ P3D_create_instance(P3D_request_ready_func *func,
   }
 
   P3DInstance *result = 
-    inst_mgr->create_instance(func, p3d_filename, window_type, 
-                              win_x, win_y, win_width, win_height,
-                              parent_window, tokens, num_tokens);
+    inst_mgr->create_instance(func, p3d_filename, tokens, num_tokens);
   RELEASE_LOCK(_lock);
   return result;
 }
@@ -96,6 +91,21 @@ P3D_instance_finish(P3D_instance *instance) {
   ACQUIRE_LOCK(_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   inst_mgr->finish_instance((P3DInstance *)instance);
+  RELEASE_LOCK(_lock);
+}
+
+void
+P3D_instance_setup_window(P3D_instance *instance,
+                          P3D_window_type window_type,
+                          int win_x, int win_y,
+                          int win_width, int win_height,
+                          P3D_window_handle parent_window) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
+  P3DWindowParams wparams(window_type, win_x, win_y,
+                          win_width, win_height, parent_window);
+
+  ACQUIRE_LOCK(_lock);
+  ((P3DInstance *)instance)->set_wparams(wparams);
   RELEASE_LOCK(_lock);
 }
 

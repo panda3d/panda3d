@@ -50,10 +50,6 @@ private:
 
   P3D_request_ready_func *_func;
   string _p3d_filename;
-  P3D_window_type _window_type;
-  int _win_x, _win_y;
-  int _win_width, _win_height;
-  P3D_window_handle _parent_window;
 
   Tokens _tokens;
 

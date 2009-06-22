@@ -91,6 +91,16 @@ def initPackedAppEnvironment():
     # we plan to mount there.
     vfs.chdir(MultifileRoot)
 
+readyToStart = False
+started = False
+def startIfReady():
+    global readyToStart, started
+    if readyToStart:
+        started = True
+        import main
+        if hasattr(main, 'main') and callable(main.main):
+            main.main()
+
 def runPackedApp(p3dFilename, tokens = []):
     tokenDict = dict(tokens)
     fname = Filename.fromOsSpecific(p3dFilename)
@@ -146,10 +156,9 @@ def runPackedApp(p3dFilename, tokens = []):
             data = open(pathname, 'r').read()
             loadPrcFileData(pathname, data)
 
-    import main
-    if hasattr(main, 'main') and callable(main.main):
-        main.main()
+    startIfReady()
 
+windowPrc = None
 def setupWindow(windowType, x, y, width, height, parent):
     if windowType == 'hidden':
         data = 'window-type none\n'
@@ -171,7 +180,14 @@ def setupWindow(windowType, x, y, width, height, parent):
     if width or height:
         data += 'win-size %s %s\n' % (width, height)
 
-    loadPrcFileData("setupWindow", data)
+    global windowPrc
+    if windowPrc:
+        unloadPrcFile(windowPrc)
+    windowPrc = loadPrcFileData("setupWindow", data)
+
+    global readyToStart
+    readyToStart = True
+    startIfReady()
 
 def parseSysArgs():
     """ Converts sys.argv into (p3dFilename, tokens). """
@@ -200,6 +216,7 @@ def parseSysArgs():
         
 
 if __name__ == '__main__':
+    readyToStart = True
     try:
         runPackedApp(*parseSysArgs())
     except ArgumentError, e:

@@ -22,6 +22,7 @@ extern P3D_initialize_func *P3D_initialize;
 extern P3D_free_string_func *P3D_free_string;
 extern P3D_create_instance_func *P3D_create_instance;
 extern P3D_instance_finish_func *P3D_instance_finish;
+extern P3D_instance_setup_window_func *P3D_instance_setup_window;
 extern P3D_instance_has_property_func *P3D_instance_has_property;
 extern P3D_instance_get_property_func *P3D_instance_get_property;
 extern P3D_instance_set_property_func *P3D_instance_set_property;

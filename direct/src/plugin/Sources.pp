@@ -22,6 +22,7 @@
     p3dPackage.h p3dPackage.I \
     p3dProgressWindow.h p3dProgressWindow.I \
     p3dSession.h p3dSession.I \
+    p3dWindowParams.h p3dWindowParams.I \
     p3dWinProgressWindow.h p3dWinProgressWindow.I
 
   #define INCLUDED_SOURCES \
@@ -34,6 +35,7 @@
     p3dPackage.cxx \
     p3dProgressWindow.cxx \
     p3dSession.cxx \
+    p3dWindowParams.cxx \
     p3dWinProgressWindow.cxx
 
   #define INSTALL_HEADERS \

@@ -18,6 +18,10 @@
 // minimal structural overhead, it is designed to be simply #included
 // into the different source files.
 
+#ifndef _WIN32
+#include <dlfcn.h>
+#endif
+
 #ifdef _WIN32
 static const string dll_ext = ".dll";
 #elif defined(__APPLE__)
@@ -32,6 +36,7 @@ P3D_initialize_func *P3D_initialize;
 P3D_free_string_func *P3D_free_string;
 P3D_create_instance_func *P3D_create_instance;
 P3D_instance_finish_func *P3D_instance_finish;
+P3D_instance_setup_window_func *P3D_instance_setup_window;
 P3D_instance_has_property_func *P3D_instance_has_property;
 P3D_instance_get_property_func *P3D_instance_get_property;
 P3D_instance_set_property_func *P3D_instance_set_property;
@@ -88,6 +93,7 @@ load_plugin(const string &p3d_plugin_filename) {
   P3D_free_string = (P3D_free_string_func *)GetProcAddress(module, "P3D_free_string");  
   P3D_create_instance = (P3D_create_instance_func *)GetProcAddress(module, "P3D_create_instance");  
   P3D_instance_finish = (P3D_instance_finish_func *)GetProcAddress(module, "P3D_instance_finish");  
+  P3D_instance_setup_window = (P3D_instance_setup_window_func *)GetProcAddress(module, "P3D_instance_setup_window");  
   P3D_instance_has_property = (P3D_instance_has_property_func *)GetProcAddress(module, "P3D_instance_has_property");  
   P3D_instance_get_property = (P3D_instance_get_property_func *)GetProcAddress(module, "P3D_instance_get_property");  
   P3D_instance_set_property = (P3D_instance_set_property_func *)GetProcAddress(module, "P3D_instance_set_property");  
@@ -109,6 +115,7 @@ load_plugin(const string &p3d_plugin_filename) {
   P3D_free_string = (P3D_free_string_func *)dlsym(module, "P3D_free_string");  
   P3D_create_instance = (P3D_create_instance_func *)dlsym(module, "P3D_create_instance");  
   P3D_instance_finish = (P3D_instance_finish_func *)dlsym(module, "P3D_instance_finish");  
+  P3D_instance_setup_window = (P3D_instance_setup_window_func *)dlsym(module, "P3D_instance_setup_window");  
   P3D_instance_has_property = (P3D_instance_has_property_func *)dlsym(module, "P3D_instance_has_property");  
   P3D_instance_get_property = (P3D_instance_get_property_func *)dlsym(module, "P3D_instance_get_property");  
   P3D_instance_set_property = (P3D_instance_set_property_func *)dlsym(module, "P3D_instance_set_property");  
@@ -124,6 +131,7 @@ load_plugin(const string &p3d_plugin_filename) {
       P3D_free_string == NULL ||
       P3D_create_instance == NULL ||
       P3D_instance_finish == NULL ||
+      P3D_instance_setup_window == NULL ||
       P3D_instance_has_property == NULL ||
       P3D_instance_get_property == NULL ||
       P3D_instance_set_property == NULL ||
@@ -135,7 +143,13 @@ load_plugin(const string &p3d_plugin_filename) {
   }
 
   // Successfully loaded.
-  if (!P3D_initialize(P3D_API_VERSION, "c:/cygwin/home/drose/t0.log")) {
+#ifdef _WIN32
+  string logfilename = "c:/cygwin/home/drose/t0.log";
+#else
+  string logfilename = "/Users/drose/t0.log";
+#endif
+
+  if (!P3D_initialize(P3D_API_VERSION, logfilename.c_str())) {
     // Oops, failure to initialize.
     unload_plugin();
     return false;

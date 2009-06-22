@@ -46,8 +46,9 @@ public:
 
   inline int get_num_instances() const;
 
-private:
   void send_command(TiXmlDocument *command);
+
+private:
   void start_p3dpython();
 
   void spawn_read_thread();

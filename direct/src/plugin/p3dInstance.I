@@ -14,6 +14,16 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_wparams
+//       Access: Public
+//  Description: Returns the current window parameters.
+////////////////////////////////////////////////////////////////////
+inline const P3DWindowParams &P3DInstance::
+get_wparams() const {
+  return _wparams;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::get_p3d_filename
 //       Access: Public
 //  Description: Returns the p3d filename that was passed to the
@@ -22,72 +32,6 @@
 inline const string &P3DInstance::
 get_p3d_filename() const {
   return _p3d_filename;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_window_type
-//       Access: Public
-//  Description: Returns the window_type that was passed to the
-//               constructor.
-////////////////////////////////////////////////////////////////////
-inline P3D_window_type P3DInstance::
-get_window_type() const {
-  return _window_type;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_window_x
-//       Access: Public
-//  Description: Returns the window origin X coordinate that was
-//               passed to the constructor.
-////////////////////////////////////////////////////////////////////
-inline int P3DInstance::
-get_win_x() const {
-  return _win_x;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_win_y
-//       Access: Public
-//  Description: Returns the window origin Y coordinate that was
-//               passed to the constructor.
-////////////////////////////////////////////////////////////////////
-inline int P3DInstance::
-get_win_y() const {
-  return _win_y;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_win_width
-//       Access: Public
-//  Description: Returns the window width that was passed to the
-//               constructor.
-////////////////////////////////////////////////////////////////////
-inline int P3DInstance::
-get_win_width() const {
-  return _win_width;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_win_height
-//       Access: Public
-//  Description: Returns the window height that was passed to the
-//               constructor.
-////////////////////////////////////////////////////////////////////
-inline int P3DInstance::
-get_win_height() const {
-  return _win_height;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_parent_window
-//       Access: Public
-//  Description: Returns the parent window handle that was passed to
-//               the constructor.
-////////////////////////////////////////////////////////////////////
-inline P3D_window_handle P3DInstance::
-get_parent_window() const {
-  return _parent_window;
 }
 
 ////////////////////////////////////////////////////////////////////

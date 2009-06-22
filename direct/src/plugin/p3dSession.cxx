@@ -156,6 +156,9 @@ start_instance(P3DInstance *inst) {
     // Otherwise, set a callback, so we'll know when it is ready.
     if (_panda3d_callback == NULL) {
 
+      _panda3d_callback = new P3DProgressWindow(_panda3d, this, inst);
+
+      /*
       // The callback object will be a ProgressWindow, to show
       // visual progress to the user while we're downloading.
       if (inst->get_window_type() == P3D_WT_hidden) {
@@ -168,6 +171,7 @@ start_instance(P3DInstance *inst) {
         // of class that actually does manifest a window.
         _panda3d_callback = new ProgressWinType(_panda3d, this, inst);
       }
+      */
       _panda3d->set_callback(_panda3d_callback);
     }
   }
@@ -203,7 +207,7 @@ terminate_instance(P3DInstance *inst) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::send_command
-//       Access: Private
+//       Access: Public
 //  Description: Sends the indicated command to the running Python
 //               process.  If the process has not yet been started,
 //               queues it up until it is ready.

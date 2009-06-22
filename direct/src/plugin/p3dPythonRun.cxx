@@ -162,6 +162,13 @@ handle_command(TiXmlDocument *doc) {
         if (xcommand->Attribute("id", &id)) {
           terminate_instance(id);
         }
+      } else if (strcmp(cmd, "setup_window") == 0) {
+        int id;
+        TiXmlElement *xwparams = xcommand->FirstChildElement("wparams");
+        if (xwparams != (TiXmlElement *)NULL && 
+            xcommand->Attribute("id", &id)) {
+          setup_window(id, xwparams);
+        }
       } else if (strcmp(cmd, "exit") == 0) {
         terminate_session();
         
@@ -281,41 +288,9 @@ start_instance(P3DCInstance *inst) {
   nout << "starting instance " << inst->get_p3d_filename() << "\n";
   _instances[inst->get_instance_id()] = inst;
 
-  string window_type;
-  switch (inst->_window_type) {
-  case P3D_WT_embedded:
-    window_type = "embedded";
-    break;
-  case P3D_WT_toplevel:
-    window_type = "toplevel";
-    break;
-  case P3D_WT_fullscreen:
-    window_type = "fullscreen";
-    break;
-  case P3D_WT_hidden:
-    window_type = "hidden";
-    break;
-  }
-
-  PyObject *result = PyObject_CallFunction
-    (_setupWindow, "siiiii", window_type.c_str(),
-     inst->_win_x, inst->_win_y,
-     inst->_win_width, inst->_win_height,
-#ifdef _WIN32
-     (long)(inst->_parent_window._hwnd)
-#endif
-#ifdef __APPLE__
-     (long)(inst->_parent_window._nswindow)
-#endif
-     );
-  if (result == NULL) {
-    PyErr_Print();
-  }
-  Py_XDECREF(result);
-
   PyObject *tokens = inst->get_py_tokens();
   
-  result = PyObject_CallFunction
+  PyObject *result = PyObject_CallFunction
     (_runPackedApp, "sO", inst->get_p3d_filename().c_str(), tokens);
   Py_DECREF(tokens);
 
@@ -346,6 +321,55 @@ terminate_instance(int id) {
   // of a multi-instance session.  This will require a different
   // Python interface than ShowBase.
   terminate_session();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::setup_window
+//       Access: Private
+//  Description: Sets the window parameters for the indicated instance.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+setup_window(int id, TiXmlElement *xwparams) {
+  Instances::iterator ii = _instances.find(id);
+  if (ii == _instances.end()) {
+    nout << "Can't setup window for " << id << ": not started.\n";
+    return;
+  }
+
+  //  P3DCInstance *inst = (*ii).second;
+
+  string window_type;
+  const char *window_type_c = xwparams->Attribute("window_type");
+  if (window_type_c != NULL) {
+    window_type = window_type_c;
+  }
+
+  int win_x, win_y, win_width, win_height;
+  
+  xwparams->Attribute("win_x", &win_x);
+  xwparams->Attribute("win_y", &win_y);
+  xwparams->Attribute("win_width", &win_width);
+  xwparams->Attribute("win_height", &win_height);
+
+  long parent_window_handle = 0;
+
+#ifdef _WIN32
+  int hwnd;
+  if (xwparams->Attribute("parent_hwnd", &hwnd)) {
+    parent_window_handle = (long)hwnd;
+  }
+#endif
+
+  // TODO: direct this into the particular instance.  Requires
+  // specialized ShowBase replacement.
+  PyObject *result = PyObject_CallFunction
+    (_setupWindow, "siiiii", window_type.c_str(),
+     win_x, win_y, win_width, win_height,
+     parent_window_handle);
+  if (result == NULL) {
+    PyErr_Print();
+  }
+  Py_XDECREF(result);
 }
 
 

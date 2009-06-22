@@ -18,6 +18,7 @@
 
 #include "p3d_plugin_common.h"
 #include "p3dPackage.h"
+#include "p3dWindowParams.h"
 
 class P3DInstance;
 
@@ -33,7 +34,8 @@ class P3DInstance;
 ////////////////////////////////////////////////////////////////////
 class P3DProgressWindow : public P3DPackage::Callback {
 public:
-  P3DProgressWindow(P3DPackage *package, P3DSession *session, P3DInstance *inst);
+  P3DProgressWindow(P3DPackage *package, P3DSession *session, 
+                    P3DInstance *inst);
 
   virtual void package_ready(P3DPackage *package, bool success);
   
@@ -42,10 +44,7 @@ protected:
   P3DSession *_session;
   P3DInstance *_inst;
 
-  P3D_window_type _window_type;
-  int _win_x, _win_y;
-  int _win_width, _win_height;
-  P3D_window_handle _parent_window;
+  P3DWindowParams _wparams;
 };
 
 #include "p3dProgressWindow.I"

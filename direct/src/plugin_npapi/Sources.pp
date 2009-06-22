@@ -15,15 +15,21 @@
 
   #define SOURCES \
     nppanda3d_common.h \
-    nppanda3d_startup.h \
-    ppInstance.h ppInstance.I
+    nppanda3d_startup.h
 
   #define INCLUDED_SOURCES \
-    nppanda3d_startup.cxx \
-    ppInstance.cxx
+    nppanda3d_startup.cxx
  
-  #define WIN_RESOURCE_FILE nppanda3d.rc
-  #define LINKER_DEF_FILE nppanda3d.def
+  // Windows-specific options.
+  #if $[WINDOWS_PLATFORM]
+    #define WIN_RESOURCE_FILE nppanda3d.rc
+    #define LINKER_DEF_FILE nppanda3d.def
+  #endif
+
+  // Mac-specific options.
+  #if $[OSX_PLATFORM]
+    #define LINK_AS_BUNDLE 1
+  #endif
 
   #define INSTALL_HEADERS
 

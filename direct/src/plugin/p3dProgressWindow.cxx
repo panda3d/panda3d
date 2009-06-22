@@ -26,12 +26,6 @@ P3DProgressWindow(P3DPackage *package, P3DSession *session,
   _session(session),
   _inst(inst)
 {
-  _window_type = inst->get_window_type();
-  _win_x = inst->get_win_x();
-  _win_y = inst->get_win_y();
-  _win_width = inst->get_win_width();
-  _win_height = inst->get_win_height();
-  _parent_window = inst->get_parent_window();
 }
 
 ////////////////////////////////////////////////////////////////////

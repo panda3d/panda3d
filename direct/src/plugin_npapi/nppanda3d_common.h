@@ -29,11 +29,11 @@
 using namespace std;
 
 // Appears in nppanda3d_startup.cxx.
-extern ofstream log;
+extern ofstream logfile;
 
 #ifdef _WIN32
 
-// Gecko requires all these symbols to be defined.
+// Gecko requires all these symbols to be defined for Windows.
 #define MOZILLA_STRICT_API
 #define XP_WIN
 #define _X86_
@@ -46,7 +46,16 @@ extern ofstream log;
 
 #include <windows.h>
 
-#endif  // _WIN32
+#else defined(__APPLE__)
+
+// On Mac, Gecko requires this symbol to be defined.
+#define XP_MACOSX
+
+#endif  // _WIN32, __APPLE__
+
+#include "npapi.h"
+#include "npfunctions.h"
+//#include "npupp.h"
 
 #endif
 

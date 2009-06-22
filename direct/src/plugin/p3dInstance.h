@@ -17,6 +17,7 @@
 
 #include "p3d_plugin_common.h"
 #include "p3dFileDownload.h"
+#include "p3dWindowParams.h"
 
 #include <vector>
 #include <deque>
@@ -35,12 +36,11 @@ class P3DInstance : public P3D_instance {
 public:
   P3DInstance(P3D_request_ready_func *func,
               const string &p3d_filename, 
-              P3D_window_type window_type,
-              int win_x, int win_y,
-              int win_width, int win_height,
-              P3D_window_handle parent_window,
               const P3D_token tokens[], size_t num_tokens);
   ~P3DInstance();
+
+  void set_wparams(const P3DWindowParams &wparams);
+  inline const P3DWindowParams &get_wparams() const;
 
   bool has_property(const string &property_name) const;
   string get_property(const string &property_name) const;
@@ -59,12 +59,6 @@ public:
                        size_t this_data_size);
 
   inline const string &get_p3d_filename() const;
-  inline P3D_window_type get_window_type() const;
-  inline int get_win_x() const;
-  inline int get_win_y() const;
-  inline int get_win_width() const;
-  inline int get_win_height() const;
-  inline P3D_window_handle get_parent_window() const;
 
   inline int get_instance_id() const;
   inline const string &get_session_key() const;
@@ -88,11 +82,9 @@ private:
 
   P3D_request_ready_func *_func;
   string _p3d_filename;
-  P3D_window_type _window_type;
-  int _win_x, _win_y;
-  int _win_width, _win_height;
-  P3D_window_handle _parent_window;
   Tokens _tokens;
+
+  P3DWindowParams _wparams;
 
   int _instance_id;
   string _session_key;
