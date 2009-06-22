@@ -39,11 +39,8 @@
   // and $[bin_targets] the list of binaries.  $[test_bin_targets] is
   // the list of binaries that are to be built only when specifically
   // asked for.
-  #define lib_targets $[active_target_libext(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target noinst_lib_target):%=$[ODIR]/lib%]
-  #define bundle_targets
-  #if $[bundle_ext]
-    #define bundle_targets $[active_target(metalib_target):%=$[ODIR]/lib%$[bundle_ext]]
-  #endif
+  #define lib_targets $[active_target_libprefext(metalib_target lib_target static_lib_target dynamic_lib_target ss_lib_target noinst_lib_target):%=$[ODIR]/%]
+  #define bundle_targets $[active_target_bundleext(metalib_target):%=$[ODIR]/%]
  
   #define bin_targets $[active_target(bin_target noinst_bin_target sed_bin_target):%=$[ODIR]/%]
   #define test_bin_targets $[active_target(test_bin_target):%=$[ODIR]/%]
@@ -348,7 +345,7 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
   #define cxx_ld $[or $[get_ld],$[CXX]]
 
   #define varname $[subst -,_,.,_,$[lib_prefix]$[TARGET]$[lib_ext]]
-$[varname] = $[sources] $[if $[not $[bundle_ext]],$[interrogate_sources]]
+$[varname] = $[sources] $[interrogate_sources]
   #define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
   #define sources $($[varname])
 
@@ -359,7 +356,7 @@ $[TAB] $[link_lib_c++]
 $[TAB] $[link_lib_c]
   #endif
 
-  #if $[bundle_ext]
+  #if $[link_extra_bundle]
     // Also generate the bundles (on OSX only).
     #define target $[ODIR]/$[lib_prefix]$[TARGET]$[bundle_ext]
     #define sources $[interrogate_sources] $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
@@ -372,7 +369,7 @@ $[TAB] $[BUNDLE_LIB_C++]
 // everything that goes along with it.
 #define installed_files \
     $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] \
-    $[if $[bundle_ext],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[bundle_ext]] \
+    $[if $[link_extra_bundle],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[bundle_ext]] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
     $[INSTALL_DATA:%=$[install_data_dir]/%] \
@@ -391,12 +388,12 @@ $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] : $[ODIR]/$[lib_prefix]$[TAR
 #define dest $[install_lib_dir]
 $[TAB] $[INSTALL]
 
-#if $[bundle_ext]
+#if $[link_extra_bundle]
 $[install_lib_dir]/$[lib_prefix]$[TARGET]$[bundle_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[bundle_ext]
 #define local $[ODIR]/$[lib_prefix]$[TARGET]$[bundle_ext]
 #define dest $[install_lib_dir]
 $[TAB] $[INSTALL]
-#endif  // BUNDLE_EXT
+#endif  // link_extra_bundle
 
 #if $[igatescan]
 // Now, some additional rules to generate and compile the interrogate

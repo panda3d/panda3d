@@ -455,8 +455,6 @@
 #defer link_bin_c++ $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[LINK_BIN_C++] $[TAU_CFLAGS] $[TAU_C++FLAGS]
 #defer shared_lib_c $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[SHARED_LIB_C] $[TAU_CFLAGS]
 #defer shared_lib_c++ $(TAU_COMPILER) $[TAU_OPTS] $[if $[SELECT_TAU],-optTauSelectFile=$[SELECT_TAU]] $[SHARED_LIB_C++] $[TAU_CFLAGS] $[TAU_C++FLAGS]
-#defer static_lib_c $[STATIC_LIB_C]
-#defer static_lib_c++ $[STATIC_LIB_C++]
 
 #else
 #defer compile_c $[COMPILE_C]
@@ -465,12 +463,12 @@
 #defer link_bin_c++ $[LINK_BIN_C++]
 #defer shared_lib_c $[SHARED_LIB_C]
 #defer shared_lib_c++ $[SHARED_LIB_C++]
-#defer static_lib_c $[STATIC_LIB_C]
-#defer static_lib_c++ $[STATIC_LIB_C++]
 #endif  // USE_TAU
 
-#defer link_lib_c $[if $[lib_is_static],$[static_lib_c],$[shared_lib_c]]
-#defer link_lib_c++ $[if $[lib_is_static],$[static_lib_c++],$[shared_lib_c++]]
+#defer static_lib_c $[STATIC_LIB_C]
+#defer static_lib_c++ $[STATIC_LIB_C++]
+#defer bundle_lib_c $[BUNDLE_LIB_C++]
+#defer bundle_lib_c++ $[BUNDLE_LIB_C++]
 
 // "lib" is the default prefix applied to every generated library.
 // This comes from Unix convention.  This can be redefined on a
@@ -478,13 +476,22 @@
 #define LIB_PREFIX lib
 #defer lib_prefix $[LIB_PREFIX]
 
+// OSX has a "bundle" concept.  This is kind of like a dylib, but not
+// quite.  Sometimes you might want to link a library *as* a bundle
+// instead of as a dylib; sometimes you might want to link a library
+// into a dylib *and* a bundle.
+#defer bundle_ext $[BUNDLE_EXT]
+#defer link_as_bundle $[and $[OSX_PLATFORM],$[LINK_AS_BUNDLE]]
+#defer link_extra_bundle $[and $[OSX_PLATFORM],$[LINK_EXTRA_BUNDLE],$[not $[LINK_AS_BUNDLE]]]
+
 // The default library extension various based on the OS.
 #defer dynamic_lib_ext $[DYNAMIC_LIB_EXT]
 #defer static_lib_ext $[STATIC_LIB_EXT]
-#defer lib_ext $[if $[lib_is_static],$[static_lib_ext],$[dynamic_lib_ext]]
+#defer lib_ext $[if $[link_as_bundle],$[bundle_ext],$[if $[lib_is_static],$[static_lib_ext],$[dynamic_lib_ext]]]
 
-// OSX also has a "bundle" concept.
-#defer bundle_ext $[BUNDLE_EXT]
+#defer link_lib_c $[if $[link_as_bundle],$[bundle_lib_c],$[if $[lib_is_static],$[static_lib_c],$[shared_lib_c]]]
+#defer link_lib_c++ $[if $[link_as_bundle],$[bundle_lib_c++],$[if $[lib_is_static],$[static_lib_c++],$[shared_lib_c++]]]
+
 
 // If BUILD_COMPONENTS is not true, we don't actually build all the
 // libraries.  In particular, we don't build any libraries that are
@@ -530,7 +537,8 @@
 // string if the target is not to be built, or the target name if it
 // is.
 #defer active_target $[if $[build_target],$[TARGET]]
-#defer active_target_libext $[if $[build_target],$[TARGET]$[lib_ext]]
+#defer active_target_libprefext $[if $[build_target],$[lib_prefix]$[TARGET]$[lib_ext]]
+#defer active_target_bundleext $[if $[and $[build_target],$[link_bundle]],$[lib_prefix]$[TARGET]$[bundle_ext]]
 #defer get_combined_sources $[COMBINED_SOURCES]
 
 // This subroutine will set up the sources variable to reflect the
