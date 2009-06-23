@@ -177,6 +177,10 @@ class PackageMaker:
                 # This platform is consistent with our declared
                 # platform.
                 return
+        elif self.packagePlatform:
+            # This platform is consistent with any particular
+            # platform.
+            return
 
         if ext in self.bogusExtensions:
             # Already reported this one.

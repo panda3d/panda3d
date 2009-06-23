@@ -53,7 +53,7 @@ P3DSession(P3DInstance *inst) {
 #ifdef _WIN32
   string platform = "win32";
 #else
-  string platform = "osx_i386";
+  string platform = "osx.i386";
 #endif
 
   _panda3d = inst_mgr->get_package("panda3d", "dev", platform, "Panda3D");
