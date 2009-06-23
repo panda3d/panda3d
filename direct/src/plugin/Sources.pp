@@ -5,6 +5,7 @@
 #begin lib_target
   #define USE_PACKAGES tinyxml openssl zlib
   #define TARGET p3d_plugin
+  #define LIB_PREFIX
 
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx

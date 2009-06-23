@@ -33,7 +33,8 @@
 class P3DPackage {
 public:
   P3DPackage(const string &package_name, const string &package_version,
-             const string &package_output_name);
+             const string &package_platform,
+             const string &package_display_name);
   ~P3DPackage();
 
   class Callback {
@@ -48,7 +49,7 @@ public:
   inline const string &get_package_dir() const;
   inline const string &get_package_name() const;
   inline const string &get_package_version() const;
-  inline const string &get_package_output_name() const;
+  inline const string &get_package_display_name() const;
 
   void set_callback(Callback *callback);
   void cancel_callback(Callback *callback);
@@ -98,7 +99,8 @@ private:
 private:
   string _package_name;
   string _package_version;
-  string _package_output_name;
+  string _package_platform;
+  string _package_display_name;
   string _package_fullname;
   string _package_dir;
 

@@ -95,7 +95,7 @@ initialize() {
 
 #ifdef _WIN32
   //  _download_url = "http://10.196.143.118/~drose/p3d/";
-  _download_url = "http://www.ddrose.com/~drose/p3dwin/";
+  _download_url = "http://www.ddrose.com/~drose/p3d/";
 
 #else
   _download_url = "http://www.ddrose.com/~drose/p3d/";
@@ -239,14 +239,16 @@ wait_request() {
 //               package.
 ////////////////////////////////////////////////////////////////////
 P3DPackage *P3DInstanceManager::
-get_package(const string &package_name, const string &package_version, const string &package_output_name) {
-  string key = package_name + "_" + package_version;
+get_package(const string &package_name, const string &package_version, 
+            const string &package_platform, const string &package_display_name) {
+  string key = package_name + "_" + package_version + "_" + package_platform;
   Packages::iterator pi = _packages.find(key);
   if (pi != _packages.end()) {
     return (*pi).second;
   }
 
-  P3DPackage *package = new P3DPackage(package_name, package_version, package_output_name);
+  P3DPackage *package = new P3DPackage(package_name, package_version, 
+                                       package_platform, package_display_name);
   bool inserted = _packages.insert(Packages::value_type(key, package)).second;
   assert(inserted);
 

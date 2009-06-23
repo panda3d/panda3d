@@ -30,7 +30,7 @@ static const string dll_ext = ".dylib";
 static const string dll_ext = ".so";
 #endif
 
-static const string default_plugin_filename = "libp3d_plugin";
+static const string default_plugin_filename = "p3d_plugin";
 
 P3D_initialize_func *P3D_initialize;
 P3D_free_string_func *P3D_free_string;

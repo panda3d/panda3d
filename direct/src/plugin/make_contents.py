@@ -53,9 +53,9 @@ class ContentsMaker:
         f = open(contentsFilePathname.toOsSpecific(), 'w')
         print >> f, '<?xml version="1.0" ?>'
         print >> f, ''
-        for packageName, packageVersion, file in self.packages:
-            print >> f, '<package name="%s" version="%s" %s />' % (
-                packageName, packageVersion, file.getParams())
+        for packageName, packageVersion, packagePlatform, file in self.packages:
+            print >> f, '<package name="%s" version="%s" platform="%s" %s />' % (
+                packageName, packageVersion, packagePlatform or '', file.getParams())
         f.close()
 
     def scanDirectory(self):
@@ -75,13 +75,25 @@ class ContentsMaker:
                 localpath = dirpath[len(prefix):].replace(os.sep, '/') + '/'
                 xml = dirpath[len(prefix):].replace(os.sep, '_') + '.xml'
 
-            if xml.count('_') == 1 and xml in filenames:
+            if xml not in filenames:
+                continue
+            
+            if xml.count('_') == 1:
                 basename = xml.split('.')[0]
                 packageName, packageVersion = basename.split('_')
+                packagePlatform = None
                 file = FileSpec(localpath + xml,
                                 Filename(self.stageDir, localpath + xml))
                 print file.filename
-                self.packages.append((packageName, packageVersion, file))
+                self.packages.append((packageName, packageVersion, packagePlatform, file))
+
+            if xml.count('_') == 2:
+                basename = xml.split('.')[0]
+                packageName, packageVersion, packagePlatform = basename.split('_')
+                file = FileSpec(localpath + xml,
+                                Filename(self.stageDir, localpath + xml))
+                print file.filename
+                self.packages.append((packageName, packageVersion, packagePlatform, file))
         
                 
 def makeContents(args):

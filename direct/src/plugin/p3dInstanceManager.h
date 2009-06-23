@@ -55,7 +55,8 @@ public:
 
   P3DPackage *get_package(const string &package_name, 
                           const string &package_version,
-                          const string &package_output_name);
+                          const string &package_platform,
+                          const string &package_display_name);
 
   inline P3DInstance *get_command_instance() const;
   inline int get_num_instances() const;

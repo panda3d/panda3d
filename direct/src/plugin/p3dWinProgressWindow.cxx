@@ -280,7 +280,7 @@ make_progress_bar() {
                      _hwnd, NULL, application, 0);
 
   // Create a static text label.  What a major pain *this* is.
-  string text_string = "Installing " + _package->get_package_output_name();
+  string text_string = "Installing " + _package->get_package_display_name();
   const char *text = text_string.c_str();
   HFONT font = (HFONT)GetStockObject(ANSI_VAR_FONT); 
 

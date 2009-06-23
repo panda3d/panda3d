@@ -32,21 +32,15 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "Comments", "\0"
-            VALUE "CompanyName", " \0"
-            VALUE "FileDescription", "nppanda3d\0"
-            VALUE "FileExtents", "bic\0"
-            VALUE "FileOpenName", "nppanda3d\0"
+            VALUE "FileDescription", "Runs 3-D games and interactive applets\0"
             VALUE "FileVersion", "1, 0, 0, 1\0"
-            VALUE "InternalName", "nppanda3d\0"
-            VALUE "LegalCopyright", "Copyright © 2001\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "MIMEType", "application/x-panda3d\0"
+            VALUE "FileExtents", "p3d\0"
+            VALUE "FileOpenName", "Panda3D applet\0"
             VALUE "OriginalFilename", "nppanda3d.dll\0"
-            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Panda3D Game Engine Plug-in\0"
             VALUE "ProductVersion", "1, 0, 0, 1\0"
-            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"

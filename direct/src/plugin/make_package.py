@@ -23,10 +23,10 @@ Options:
      the local machine that will be filled with the contents of the
      package directory for the web server.
 
-  -p package_name
-  -v package_version
+  -p name_version[_platform]
 
-     Specify the name and version of the package to build.
+     Specify the package name, version, and optional platfom, of the
+     package to build.
 
 """
 
@@ -49,7 +49,9 @@ class PackageMaker:
         self.stageDir = None
         self.packageName = None
         self.packageVersion = None
+        self.packagePlatform = None
 
+        self.bogusExtensions = []
 
     def build(self):
         if not self.startDir:
@@ -59,10 +61,24 @@ class PackageMaker:
         if not self.packageName or not self.packageVersion:
             raise ArgumentError, "Package name and version not specified."
 
+        # First, scan the components.  If we find any
+        # platform-dependent files, we automatically assume we're
+        # building a platform-specific package.
+        self.components = []
+        self.findComponents()
+
+        for ext in self.bogusExtensions:
+            print "Warning: Found files of type %s, inconsistent with declared platform %s" % (
+                ext, self.packagePlatform)
+
         self.packageFullname = '%s_%s' % (
             self.packageName, self.packageVersion)
 
         self.packageStageDir = Filename(self.stageDir, '%s/%s' % (self.packageName, self.packageVersion))
+
+        if self.packagePlatform:
+            self.packageFullname += '_%s' % (self.packagePlatform)
+            self.packageStageDir = Filename(self.packageStageDir, self.packagePlatform)
 
         Filename(self.packageStageDir, '.').makeDir()
         self.cleanDir(self.packageStageDir)
@@ -72,8 +88,6 @@ class PackageMaker:
         self.archive = Multifile()
         if not self.archive.openWrite(uncompressedArchivePathname):
             raise IOError, "Couldn't open %s for writing" % (uncompressedArchivePathname)
-
-        self.components = []
 
         self.addComponents()
         self.archive.close()
@@ -106,7 +120,7 @@ class PackageMaker:
         f = open(descFilePathname.toOsSpecific(), 'w')
         print >> f, '<?xml version="1.0" ?>'
         print >> f, ''
-        print >> f, '<package name="%s" version="%s">' % (self.packageName, self.packageVersion)
+        print >> f, '<package name="%s" version="%s" platform="%s">' % (self.packageName, self.packageVersion, self.packagePlatform or '')
         print >> f, '  <uncompressed_archive %s />' % (uncompressedArchive.getParams())
         print >> f, '  <compressed_archive %s />' % (compressedArchive.getParams())
         for file in self.components:
@@ -123,9 +137,9 @@ class PackageMaker:
             pathname = Filename(dirname, filename)
             pathname.unlink()
 
-    def addComponents(self):
+    def findComponents(self):
         """ Walks through all the files in the start directory and
-        adds them to the archive.  Recursively visits
+        adds them to self.components.  Recursively visits
         sub-directories. """
 
         startDir = self.startDir.toOsSpecific()
@@ -142,12 +156,41 @@ class PackageMaker:
             for basename in filenames:
                 file = FileSpec(localpath + basename,
                                 Filename(self.startDir, localpath + basename))
-                print file.filename
                 self.components.append(file)
-                self.archive.addSubfile(file.filename, file.pathname, 0)
+                print file.filename
+
+                ext = os.path.splitext(basename)[1]
+                if ext in ['.exe', '.dll', '.pyd']:
+                    self.ensurePlatform('win32', ext, file)
+                elif ext in ['.dylib']:
+                    self.ensurePlatform('osx', ext, file)
+                elif ext in ['.so']:
+                    self.ensurePlatform(None, ext, file)
+
+    def ensurePlatform(self, platform, ext, file):
+        """ We have just encountered a file that is specific to a
+        particular platform.  Checks that the declared platform is
+        consistent with this.  """
+
+        if platform and self.packagePlatform:
+            if self.packagePlatform.startswith(platform):
+                # This platform is consistent with our declared
+                # platform.
+                return
+
+        if ext in self.bogusExtensions:
+            # Already reported this one.
+            return
+        
+        self.bogusExtensions.append(ext)
+            
+
+    def addComponents(self):
+        for file in self.components:
+            self.archive.addSubfile(file.filename, file.pathname, 0)
                 
 def makePackage(args):
-    opts, args = getopt.getopt(args, 's:d:p:v:h')
+    opts, args = getopt.getopt(args, 's:d:p:h')
 
     pm = PackageMaker()
     pm.startDir = Filename('.')
@@ -157,9 +200,15 @@ def makePackage(args):
         elif option == '-d':
             pm.stageDir = Filename.fromOsSpecific(value)
         elif option == '-p':
-            pm.packageName = value
-        elif option == '-v':
-            pm.packageVersion = value
+            tokens = value.split('_')
+            if len(tokens) >= 1:
+                pm.packageName = tokens[0]
+            if len(tokens) >= 2:
+                pm.packageVersion = tokens[1]
+            if len(tokens) >= 3:
+                pm.packagePlatform = tokens[2]
+            if len(tokens) >= 4:
+                raise ArgumentError, 'Too many tokens in string: %s' % (value)
             
         elif option == '-h':
             print __doc__

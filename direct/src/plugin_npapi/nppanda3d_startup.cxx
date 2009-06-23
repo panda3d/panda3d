@@ -21,7 +21,10 @@
 #endif
 
 ofstream logfile;
-bool logfile_is_open = false;
+
+NPNetscapeFuncs *browser;
+
+static bool logfile_is_open = false;
 static void
 open_logfile() {
   if (!logfile_is_open) {
@@ -34,119 +37,13 @@ open_logfile() {
   }
 }
   
-
-// structure containing pointers to functions implemented by the browser
-static NPNetscapeFuncs *browser;
-
-// Called to create a new instance of the plugin
-NPError 
-NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, 
-        int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
-  logfile << "new instance\n" << flush;
-
-  // Copy the tokens into a temporary array of P3D_token objects.
-  P3D_token *tokens = (P3D_token *)alloca(sizeof(P3D_token) * argc);
-  for (int i = 0; i < argc; ++i) {
-    P3D_token &token = tokens[i];
-    token._keyword = argn[i];
-    token._value = argv[i];
-    logfile << " " << i << ": " << token._keyword << " = " << token._value << "\n";
-  }
-
-  instance->pdata = P3D_create_instance(NULL, NULL, tokens, argc);
-
-  return NPERR_NO_ERROR;
-}
-
-// Called to destroy an instance of the plugin
-NPError
-NPP_Destroy(NPP instance, NPSavedData **save) {
-  logfile << "destroy instance\n" << flush;
-  (*save) = NULL;
-  P3D_instance_finish((P3D_instance *)(instance->pdata));
-  instance->pdata = NULL;
-
-  return NPERR_NO_ERROR;
-}
-
-// Called to update a plugin instances's NPWindow
-NPError
-NPP_SetWindow(NPP instance, NPWindow *window) {
-  logfile << "SetWindow " << window->x << ", " << window->y
-          << ", " << window->width << ", " << window->height
-          << "\n" << flush;
-
-  P3D_instance *inst = (P3D_instance *)(instance->pdata);
-  assert(inst != NULL);
-  
-  P3D_window_handle parent_window;
-#ifdef _WIN32
-  parent_window._hwnd = (HWND)(window->window);
-#endif
-
-  P3D_window_type window_type = P3D_WT_embedded;
-
-  P3D_instance_setup_window
-    (inst, window_type,
-     window->x, window->y, window->width, window->height,
-     parent_window);
-
-  return NPERR_NO_ERROR;
-}
-
-
-NPError
-NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream, 
-              NPBool seekable, uint16 *stype) {
-  *stype = NP_ASFILEONLY;
-  return NPERR_NO_ERROR;
-}
-
-NPError 
-NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
-  return NPERR_NO_ERROR;
-}
-
-int32
-NPP_WriteReady(NPP instance, NPStream *stream) {
-  return 0;
-}
-
-int32
-NPP_Write(NPP instance, NPStream *stream, int32 offset, 
-          int32 len, void *buffer) {
-  return 0;
-}
-
-void
-NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
-}
-
-void 
-NPP_Print(NPP instance, NPPrint *platformPrint) {
-}
-
-int16
-NPP_HandleEvent(NPP instance, void *event) {
-  return 0;
-}
-
-void
-NPP_URLNotify(NPP instance, const char *url,
-              NPReason reason, void *notifyData) {
-}
-
-NPError
-NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
-  return NPERR_GENERIC_ERROR;
-}
-
-NPError 
-NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
-  return NPERR_GENERIC_ERROR;
-}
-
-// Symbol called once by the browser to initialize the plugin
+////////////////////////////////////////////////////////////////////
+//     Function: NP_Initialize
+//  Description: This function is called (almost) before any other
+//               function, to ask the plugin to initialize itself and
+//               to send the pointers to the browser control
+//               functions.  Also see NP_GetEntryPoints.
+////////////////////////////////////////////////////////////////////
 #ifdef _WIN32
 NPError OSCALL 
 NP_Initialize(NPNetscapeFuncs *browserFuncs)
@@ -168,9 +65,9 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   logfile << "browserFuncs = " << browserFuncs << "\n" << flush;
 
 #ifdef _WIN32
-  string plugin_location = "c:/cygwin/home/drose/player/direct/built/lib/libp3d_plugin.dll";
+  string plugin_location = "c:/cygwin/home/drose/player/direct/built/lib/p3d_plugin.dll";
 #else
-  string plugin_location = "/Users/drose/player/direct/built/lib/libp3d_plugin.dylib";
+  string plugin_location = "/Users/drose/player/direct/built/lib/p3d_plugin.dylib";
 #endif
 
   if (!load_plugin(plugin_location.c_str())) {
@@ -181,7 +78,14 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   return NPERR_NO_ERROR;
 }
 
-// Symbol called by the browser to get the plugin's function list
+////////////////////////////////////////////////////////////////////
+//     Function: NP_GetEntryPoints
+//  Description: This method is extracted directly from the DLL and
+//               called at initialization time by the browser, either
+//               before or after NP_Initialize, to retrieve the
+//               pointers to the rest of the plugin functions that are
+//               not exported from the DLL.
+////////////////////////////////////////////////////////////////////
 NPError OSCALL
 NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   open_logfile();
@@ -206,11 +110,204 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   return NPERR_NO_ERROR;
 }
 
-// Symbol called once by the browser to shut down the plugin
+////////////////////////////////////////////////////////////////////
+//     Function: NP_Shutdown
+//  Description: This function is called when the browser is done with
+//               the plugin; it asks the plugin to unload itself and
+//               free all used resources.
+////////////////////////////////////////////////////////////////////
 NPError OSCALL
 NP_Shutdown(void) {
   logfile << "shutdown\n" << flush;
   unload_plugin();
 
+  // Not clear whether there's a return value or not.  Some versions
+  // of the API have different opinions on this.
   return NPERR_NO_ERROR;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_New
+//  Description: Called by the browser to create a new instance of the
+//               plugin.
+////////////////////////////////////////////////////////////////////
+NPError 
+NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, 
+        int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
+  logfile << "new instance\n" << flush;
+
+  // Copy the tokens into a temporary array of P3D_token objects.
+  P3D_token *tokens = (P3D_token *)alloca(sizeof(P3D_token) * argc);
+  for (int i = 0; i < argc; ++i) {
+    P3D_token &token = tokens[i];
+    token._keyword = argn[i];
+    token._value = argv[i];
+    logfile << " " << i << ": " << token._keyword << " = " << token._value << "\n";
+  }
+
+  instance->pdata = P3D_create_instance(NULL, NULL, tokens, argc);
+
+  return NPERR_NO_ERROR;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_Destroy
+//  Description: Called by the browser to destroy an instance of the
+//               plugin previously created with NPP_New.
+////////////////////////////////////////////////////////////////////
+NPError
+NPP_Destroy(NPP instance, NPSavedData **save) {
+  logfile << "destroy instance\n" << flush;
+  (*save) = NULL;
+  P3D_instance_finish((P3D_instance *)(instance->pdata));
+  instance->pdata = NULL;
+
+  return NPERR_NO_ERROR;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_SetWindow
+//  Description: Called by the browser to inform the instance of its
+//               window size and placement.  This is called initially
+//               to create the window, and may be called subsequently
+//               when the window needs to be moved.  It may be called
+//               redundantly.
+////////////////////////////////////////////////////////////////////
+NPError
+NPP_SetWindow(NPP instance, NPWindow *window) {
+  logfile << "SetWindow " << window->x << ", " << window->y
+          << ", " << window->width << ", " << window->height
+          << "\n" << flush;
+
+  P3D_instance *inst = (P3D_instance *)(instance->pdata);
+  assert(inst != NULL);
+  
+  P3D_window_handle parent_window;
+#ifdef _WIN32
+  parent_window._hwnd = (HWND)(window->window);
+#endif
+
+  P3D_instance_setup_window
+    (inst, P3D_WT_embedded,
+     window->x, window->y, window->width, window->height,
+     parent_window);
+
+  return NPERR_NO_ERROR;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_NewStream
+//  Description: Called by the browser when a new data stream is
+//               created, usually in response to a geturl request; but
+//               it is also called initially to supply the data in the
+//               data or src element.  The plugin must specify how it
+//               can receive the stream.
+////////////////////////////////////////////////////////////////////
+NPError
+NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream, 
+              NPBool seekable, uint16 *stype) {
+  logfile << "NewStream " << type << ", " << stream->url 
+          << ", " << stream->end << "\n" << flush;
+  *stype = NP_ASFILEONLY;
+  return NPERR_NO_ERROR;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_DestroyStream
+//  Description: Called by the browser to mark the end of a stream
+//               created with NewStream.
+////////////////////////////////////////////////////////////////////
+NPError 
+NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
+  logfile << "DestroyStream\n" << flush;
+  return NPERR_NO_ERROR;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_WriteReady
+//  Description: Called by the browser to ask how many bytes it can
+//               deliver for a stream.
+////////////////////////////////////////////////////////////////////
+int32
+NPP_WriteReady(NPP instance, NPStream *stream) {
+  logfile << "WriteReady\n";
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_Write
+//  Description: Called by the browser to deliver bytes for the
+//               stream; the plugin should return the number of bytes
+//               consumed.
+////////////////////////////////////////////////////////////////////
+int32
+NPP_Write(NPP instance, NPStream *stream, int32 offset, 
+          int32 len, void *buffer) {
+  logfile << "Write\n";
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_StreamAsFile
+//  Description: Called by the browser to report the filename that
+//               contains the fully-downloaded stream, if
+//               NP_ASFILEONLY was specified by the plugin in
+//               NPP_NewStream.
+////////////////////////////////////////////////////////////////////
+void
+NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
+  logfile << "StreamAsFile: " << fname << "\n" << flush;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_Print
+//  Description: Called by the browser when the user attempts to print
+//               the page containing the plugin instance.
+////////////////////////////////////////////////////////////////////
+void 
+NPP_Print(NPP instance, NPPrint *platformPrint) {
+  logfile << "Print\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_HandleEvent
+//  Description: Called by the browser to inform the plugin of OS
+//               window events.
+////////////////////////////////////////////////////////////////////
+int16
+NPP_HandleEvent(NPP instance, void *event) {
+  logfile << "HandleEvent\n";
+  return 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_URLNotify
+//  Description: Called by the browser to inform the plugin of a
+//               completed URL request.
+////////////////////////////////////////////////////////////////////
+void
+NPP_URLNotify(NPP instance, const char *url,
+              NPReason reason, void *notifyData) {
+  logfile << "URLNotify: " << url << "\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_GetValue
+//  Description: Called by the browser to query specific information
+//               from the plugin.
+////////////////////////////////////////////////////////////////////
+NPError
+NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
+  logfile << "GetValue " << variable << "\n";
+  return NPERR_GENERIC_ERROR;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NPP_URLNotify
+//  Description: Called by the browser to update a scriptable value.
+////////////////////////////////////////////////////////////////////
+NPError 
+NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
+  logfile << "SetValue " << variable << "\n";
+  return NPERR_GENERIC_ERROR;
 }

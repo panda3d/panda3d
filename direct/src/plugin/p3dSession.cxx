@@ -50,7 +50,13 @@ P3DSession(P3DInstance *inst) {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-  _panda3d = inst_mgr->get_package("panda3d", "dev", "Panda3D");
+#ifdef _WIN32
+  string platform = "win32";
+#else
+  string platform = "osx_i386";
+#endif
+
+  _panda3d = inst_mgr->get_package("panda3d", "dev", platform, "Panda3D");
   _panda3d_callback = NULL;
   _python_root_dir = _panda3d->get_package_dir();
 

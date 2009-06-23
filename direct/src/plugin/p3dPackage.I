@@ -53,7 +53,7 @@ get_package_dir() const {
 //  Description: Returns the name of this package.  This is an
 //               internal name, used to generate filenames and the
 //               like; it will generally be all-lowercase and will not
-//               contain spaces.  See also get_package_output_name()
+//               contain spaces.  See also get_package_display_name()
 //               for a name suitable for displaying to the user.
 ////////////////////////////////////////////////////////////////////
 inline const string &P3DPackage::
@@ -72,7 +72,7 @@ get_package_version() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::get_package_output_name
+//     Function: P3DPackage::get_package_display_name
 //       Access: Public
 //  Description: Returns the name of this package, for output to the
 //               user.  This will be the "public" name of the package,
@@ -80,8 +80,8 @@ get_package_version() const {
 //               capital letters and spaces where appropriate.
 ////////////////////////////////////////////////////////////////////
 inline const string &P3DPackage::
-get_package_output_name() const {
-  return _package_output_name;
+get_package_display_name() const {
+  return _package_display_name;
 }
 
 ////////////////////////////////////////////////////////////////////

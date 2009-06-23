@@ -51,21 +51,29 @@ static const double extract_portion = 0.05;
 ////////////////////////////////////////////////////////////////////
 P3DPackage::
 P3DPackage(const string &package_name, const string &package_version,
-           const string &package_output_name) :
+           const string &package_platform,
+           const string &package_display_name) :
   _package_name(package_name),
   _package_version(package_version),
-  _package_output_name(package_output_name)
+  _package_platform(package_platform),
+  _package_display_name(package_display_name)
 {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
   _package_fullname = _package_name + "_" + _package_version;
+  _package_dir = inst_mgr->get_root_dir() + string("/") + _package_name;
+
+  if (!_package_platform.empty()) {
+    _package_fullname += "_" + _package_platform;
+    _package_dir += "/" + _package_platform;
+  }
+
   _ready = false;
   _failed = false;
   _active_download = NULL;
   _partial_download = false;
 
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-
   // Ensure the package directory exists; create it if it does not.
-  _package_dir = inst_mgr->get_root_dir() + string("/") + _package_name;
   inst_mgr->mkdir_public(_package_dir);
 
   _package_dir += string("/") + _package_version;
@@ -156,7 +164,12 @@ void P3DPackage::
 download_desc_file() {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   string url = inst_mgr->get_download_url();
-  url += _package_name + "/" + _package_version + "/" + _desc_file_basename;
+  url += _package_name + "/" + _package_version;
+  if (!_package_platform.empty()) {
+    url += "/" + _package_platform;
+  }
+
+  url += "/" + _desc_file_basename;
 
   start_download(DT_desc_file, url, _desc_file_pathname, false);
 }
@@ -263,7 +276,12 @@ void P3DPackage::
 download_compressed_archive(bool allow_partial) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   string url = inst_mgr->get_download_url();
-  url += _package_name + "/" + _package_version + "/" + _compressed_archive._filename;
+  url += _package_name + "/" + _package_version;
+  if (!_package_platform.empty()) {
+    url += "/" + _package_platform;
+  }
+
+  url += "/" + _compressed_archive._filename;
 
   string target_pathname = _package_dir + "/" + _compressed_archive._filename;
 

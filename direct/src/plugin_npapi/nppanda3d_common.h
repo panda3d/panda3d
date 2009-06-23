@@ -57,5 +57,8 @@ extern ofstream logfile;
 //#include "npfunctions.h"
 #include "npupp.h"
 
+// Appears in nppanda3d_startup.cxx.
+extern NPNetscapeFuncs *browser;
+
 #endif
 
