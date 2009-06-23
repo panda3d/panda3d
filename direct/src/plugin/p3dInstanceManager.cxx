@@ -16,6 +16,7 @@
 #include "p3dInstance.h"
 #include "p3dSession.h"
 #include "p3dPackage.h"
+#include "p3d_plugin_config.h"
 
 #ifdef _WIN32
 #include <shlobj.h>
@@ -91,15 +92,11 @@ P3DInstanceManager::
 bool P3DInstanceManager::
 initialize() {
   _root_dir = find_root_dir();
-  nout << "_root_dir = " << _root_dir << "\n";
+  _download_url = P3D_PLUGIN_DOWNLOAD;
+  _platform = P3D_PLUGIN_PLATFORM;
 
-#ifdef _WIN32
-  //  _download_url = "http://10.196.143.118/~drose/p3d/";
-  _download_url = "http://www.ddrose.com/~drose/p3d/";
-
-#else
-  _download_url = "http://www.ddrose.com/~drose/p3d/";
-#endif
+  nout << "_root_dir = " << _root_dir << ", download = " 
+       << _download_url << "\n";
 
   if (_root_dir.empty()) {
     nout << "Could not find root directory.\n";
@@ -240,7 +237,8 @@ wait_request() {
 ////////////////////////////////////////////////////////////////////
 P3DPackage *P3DInstanceManager::
 get_package(const string &package_name, const string &package_version, 
-            const string &package_platform, const string &package_display_name) {
+            const string &package_display_name) {
+  string package_platform = get_platform();
   string key = package_name + "_" + package_version + "_" + package_platform;
   Packages::iterator pi = _packages.find(key);
   if (pi != _packages.end()) {

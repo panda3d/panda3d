@@ -49,6 +49,18 @@ get_download_url() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_platform
+//       Access: Public
+//  Description: Returns the string that corresponds to the platform
+//               on which we are running.  This string will be used to
+//               determine the appropriate packages to download.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_platform() const {
+  return _platform;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_command_instance
 //       Access: Public
 //  Description: Returns a global P3DInstance object that exists for

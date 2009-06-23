@@ -77,3 +77,5 @@
      load_plugin.cxx load_plugin.h
 
 #end static_lib_target
+
+#include $[THISDIRPREFIX]p3d_plugin_config.h.pp

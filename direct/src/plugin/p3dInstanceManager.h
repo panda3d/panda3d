@@ -41,6 +41,7 @@ public:
 
   inline const string &get_root_dir() const;
   inline const string &get_download_url() const;
+  inline const string &get_platform() const;
 
   P3DInstance *
   create_instance(P3D_request_ready_func *func,
@@ -55,7 +56,6 @@ public:
 
   P3DPackage *get_package(const string &package_name, 
                           const string &package_version,
-                          const string &package_platform,
                           const string &package_display_name);
 
   inline P3DInstance *get_command_instance() const;
@@ -77,6 +77,7 @@ private:
   bool _is_initialized;
   string _root_dir;
   string _download_url;
+  string _platform;
 
   P3DInstance *_command_instance;
 

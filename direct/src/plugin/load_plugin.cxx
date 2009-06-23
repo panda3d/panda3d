@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "load_plugin.h"
+#include "p3d_plugin_config.h"
 
 #ifndef _WIN32
 #include <dlfcn.h>
@@ -146,11 +147,7 @@ load_plugin(const string &p3d_plugin_filename) {
   // Successfully loaded.
   plugin_loaded = true;
 
-#ifdef _WIN32
-  string logfilename = "c:/cygwin/home/drose/t0.log";
-#else
-  string logfilename = "/Users/drose/t0.log";
-#endif
+  string logfilename = P3D_PLUGIN_LOGFILE2;
 
   if (!P3D_initialize(P3D_API_VERSION, logfilename.c_str())) {
     // Oops, failure to initialize.

@@ -17,10 +17,12 @@
 
   #define SOURCES \
     nppanda3d_common.h \
+    ppDownloadRequest.h ppDownloadRequest.I \
     ppInstance.h ppInstance.I \
     startup.h
 
   #define INCLUDED_SOURCES \
+    ppDownloadRequest.cxx \
     ppInstance.cxx \
     startup.cxx
  

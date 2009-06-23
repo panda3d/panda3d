@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "startup.h"
+#include "p3d_plugin_config.h"
 
 #ifdef _WIN32
 #include <malloc.h>
@@ -26,11 +27,7 @@ static bool logfile_is_open = false;
 static void
 open_logfile() {
   if (!logfile_is_open) {
-#ifdef _WIN32
-    logfile.open("c:/cygwin/home/drose/t.log");
-#else
-    logfile.open("/Users/drose/t.log");
-#endif
+    logfile.open(P3D_PLUGIN_LOGFILE1);
     logfile_is_open = true;
   }
 }
@@ -62,6 +59,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 
   logfile << "browserFuncs = " << browserFuncs << "\n" << flush;
 
+  /*
 #ifdef _WIN32
   string plugin_location = "c:/cygwin/home/drose/player/direct/built/lib/p3d_plugin.dll";
 #else
@@ -72,6 +70,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
     logfile << "couldn't load plugin\n" << flush;
     return NPERR_INVALID_PLUGIN_ERROR;
   }
+  */
 
   return NPERR_NO_ERROR;
 }
@@ -147,8 +146,9 @@ NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
 ////////////////////////////////////////////////////////////////////
 NPError
 NPP_Destroy(NPP instance, NPSavedData **save) {
-  logfile << "destroy instance\n" << flush;
-  (*save) = NULL;
+  logfile << "destroy instance " << instance << "\n";
+  logfile << "save = " << (void *)save << "\n" << flush;
+  //  (*save) = NULL;
   delete (PPInstance *)(instance->pdata);
   instance->pdata = NULL;
 
@@ -172,6 +172,8 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
   inst->set_window(window);
+
+  return NPERR_NO_ERROR;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,18 +188,13 @@ NPError
 NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream, 
               NPBool seekable, uint16 *stype) {
   logfile << "NewStream " << type << ", " << stream->url 
-          << ", " << stream->end << "\n" << flush;
+          << ", " << stream->end 
+          << ", notifyData = " << stream->notifyData
+          << "\n" << flush;
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
 
-  //inst->new_stream(type, stream, seekable, stype);
-
-  *stype = NP_ASFILEONLY;
-
-  if (strcmp(type, "application/x-panda3d") == 0) {
-    return NPERR_NO_ERROR;
-  }
-  return NPERR_GENERIC_ERROR;
+  return inst->new_stream(type, stream, seekable, stype);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -207,8 +204,16 @@ NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream,
 ////////////////////////////////////////////////////////////////////
 NPError 
 NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
-  logfile << "DestroyStream\n" << flush;
-  return NPERR_NO_ERROR;
+  logfile << "DestroyStream " << stream->url 
+          << ", " << stream->end 
+          << ", notifyData = " << stream->notifyData
+          << ", reason = " << reason
+          << "\n" << flush;
+
+  PPInstance *inst = (PPInstance *)(instance->pdata);
+  assert(inst != NULL);
+
+  return inst->destroy_stream(stream, reason);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -244,7 +249,16 @@ NPP_Write(NPP instance, NPStream *stream, int32 offset,
 ////////////////////////////////////////////////////////////////////
 void
 NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
-  logfile << "StreamAsFile: " << fname << "\n" << flush;
+  logfile << "StreamAsFile " << stream->url 
+          << ", " << stream->end 
+          << ", notifyData = " << stream->notifyData
+          << "\n" << flush;
+  logfile << "filename: " << fname << "\n" << flush;
+
+  PPInstance *inst = (PPInstance *)(instance->pdata);
+  assert(inst != NULL);
+
+  inst->stream_as_file(stream, fname);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -276,7 +290,15 @@ NPP_HandleEvent(NPP instance, void *event) {
 void
 NPP_URLNotify(NPP instance, const char *url,
               NPReason reason, void *notifyData) {
-  logfile << "URLNotify: " << url << "\n";
+  logfile << "URLNotify: " << url 
+          << ", notifyData = " << notifyData
+          << ", reason = " << reason
+          << "\n" << flush;
+
+  PPInstance *inst = (PPInstance *)(instance->pdata);
+  assert(inst != NULL);
+
+  inst->url_notify(url, reason, notifyData);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -17,6 +17,7 @@
 #include "p3dInstanceManager.h"
 #include "p3dProgressWindow.h"
 #include "p3dWinProgressWindow.h"
+#include "p3d_plugin_config.h"
 
 #ifndef _WIN32
 #include <fcntl.h>
@@ -50,13 +51,7 @@ P3DSession(P3DInstance *inst) {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-#ifdef _WIN32
-  string platform = "win32";
-#else
-  string platform = "osx.i386";
-#endif
-
-  _panda3d = inst_mgr->get_package("panda3d", "dev", platform, "Panda3D");
+  _panda3d = inst_mgr->get_package("panda3d", "dev", "Panda3D");
   _panda3d_callback = NULL;
   _python_root_dir = _panda3d->get_package_dir();
 
@@ -241,12 +236,13 @@ send_command(TiXmlDocument *command) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 start_p3dpython() {
+  string p3dpython = P3D_PLUGIN_P3DPYTHON;
+  if (p3dpython.empty()) {
+    p3dpython = _python_root_dir + "/p3dpython";
 #ifdef _WIN32
-  string p3dpython = "c:/cygwin/home/drose/player/direct/built/bin/p3dpython.exe";
-  //string p3dpython = _python_root_dir + "/p3dpython.exe";
-#else
-  string p3dpython = "/Users/drose/player/direct/built/bin/p3dpython";
+    p3dpython += ".exe"
 #endif
+  }
 
   // Populate the new process' environment.
   string env;

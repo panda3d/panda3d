@@ -33,15 +33,25 @@ public:
   ~PPInstance();
 
   void set_window(NPWindow *window);
+  NPError new_stream(NPMIMEType type, NPStream *stream, 
+                     bool seekable, uint16 *stype);
+  NPError destroy_stream(NPStream *stream, NPReason reason);
+  void url_notify(const char *url, NPReason reason, void *notifyData);
+  void stream_as_file(NPStream *stream, const char *fname);
 
 private:
   void create_instance();
   void send_window();
 
 private:
+  NPP _npp_instance;
+  unsigned int _npp_mode;
   typedef vector<P3D_token> Tokens;
   Tokens _tokens;
-  unsigned int _npp_mode;
+
+  bool _started_instance_data;
+  bool _got_instance_data;
+  string _p3d_filename;
 
   bool _got_window;
   NPWindow _window;
