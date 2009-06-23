@@ -14,6 +14,16 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_fparams
+//       Access: Public
+//  Description: Returns the current file parameters.
+////////////////////////////////////////////////////////////////////
+inline const P3DFileParams &P3DInstance::
+get_fparams() const {
+  return _fparams;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::get_wparams
 //       Access: Public
 //  Description: Returns the current window parameters.
@@ -21,17 +31,6 @@
 inline const P3DWindowParams &P3DInstance::
 get_wparams() const {
   return _wparams;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_p3d_filename
-//       Access: Public
-//  Description: Returns the p3d filename that was passed to the
-//               constructor.
-////////////////////////////////////////////////////////////////////
-inline const string &P3DInstance::
-get_p3d_filename() const {
-  return _p3d_filename;
 }
 
 ////////////////////////////////////////////////////////////////////

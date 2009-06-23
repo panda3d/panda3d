@@ -10,15 +10,19 @@
   #define TARGET nppanda3d
   #define LIB_PREFIX
 
+  #define LOCAL_LIBS plugin_common
+
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx
 
   #define SOURCES \
     nppanda3d_common.h \
-    nppanda3d_startup.h
+    ppInstance.h ppInstance.I \
+    startup.h
 
   #define INCLUDED_SOURCES \
-    nppanda3d_startup.cxx
+    ppInstance.cxx \
+    startup.cxx
  
   // Windows-specific options.
   #if $[WINDOWS_PLATFORM]

@@ -102,8 +102,8 @@ run_python() {
     PyErr_Print();
     return false;
   }
-  _runPackedApp = PyObject_GetAttrString(appmf, "runPackedApp");
-  if (_runPackedApp == NULL) {
+  _setP3DFilename = PyObject_GetAttrString(appmf, "setP3DFilename");
+  if (_setP3DFilename == NULL) {
     PyErr_Print();
     return false;
   }
@@ -155,7 +155,7 @@ handle_command(TiXmlDocument *doc) {
         TiXmlElement *xinstance = xcommand->FirstChildElement("instance");
         if (xinstance != (TiXmlElement *)NULL) {
           P3DCInstance *inst = new P3DCInstance(xinstance);
-          start_instance(inst);
+          start_instance(inst, xinstance);
         }
       } else if (strcmp(cmd, "terminate_instance") == 0) {
         int id;
@@ -284,20 +284,14 @@ join_read_thread() {
 //               Python process.
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
-start_instance(P3DCInstance *inst) {
-  nout << "starting instance " << inst->get_p3d_filename() << "\n";
+start_instance(P3DCInstance *inst, TiXmlElement *xinstance) {
+  nout << "starting instance " << inst << "\n";
   _instances[inst->get_instance_id()] = inst;
 
-  PyObject *tokens = inst->get_py_tokens();
-  
-  PyObject *result = PyObject_CallFunction
-    (_runPackedApp, "sO", inst->get_p3d_filename().c_str(), tokens);
-  Py_DECREF(tokens);
-
-  if (result == NULL) {
-    PyErr_Print();
+  TiXmlElement *xfparams = xinstance->FirstChildElement("fparams");
+  if (xfparams != (TiXmlElement *)NULL) {
+    set_p3d_filename(inst, xfparams);
   }
-  Py_XDECREF(result);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -321,6 +315,53 @@ terminate_instance(int id) {
   // of a multi-instance session.  This will require a different
   // Python interface than ShowBase.
   terminate_session();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::set_p3d_filename
+//       Access: Private
+//  Description: Sets the startup filename and tokens for the
+//               indicated instance.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
+  string p3d_filename;
+  const char *p3d_filename_c = xfparams->Attribute("p3d_filename");
+  if (p3d_filename_c != NULL) {
+    p3d_filename = p3d_filename_c;
+  }
+
+  PyObject *token_list = PyList_New(0);
+
+  TiXmlElement *xtoken = xfparams->FirstChildElement("token");
+  while (xtoken != NULL) {
+    string keyword, value;
+    const char *keyword_c = xtoken->Attribute("keyword");
+    if (keyword_c != NULL) {
+      keyword = keyword_c;
+    }
+
+    const char *value_c = xtoken->Attribute("value");
+    if (value_c != NULL) {
+      value = value_c;
+    }
+
+    PyObject *tuple = Py_BuildValue("(ss)", keyword.c_str(), 
+                                    value.c_str());
+    PyList_Append(token_list, tuple);
+    Py_DECREF(tuple);
+
+    xtoken = xtoken->NextSiblingElement("token");
+  }
+  
+  PyObject *result = PyObject_CallFunction
+    (_setP3DFilename, "sO", p3d_filename.c_str(), token_list);
+  Py_DECREF(token_list);
+
+  if (result == NULL) {
+    PyErr_Print();
+  }
+  Py_XDECREF(result);
 }
 
 ////////////////////////////////////////////////////////////////////

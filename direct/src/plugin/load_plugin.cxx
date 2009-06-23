@@ -1,4 +1,4 @@
-// Filename: load_plugin_src.cxx
+// Filename: load_plugin.cxx
 // Created by:  drose (19Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,11 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
-// This code is used in the plugin_standalone directory, and also in
-// the plugin_npapi directory.  To facilitate that code re-use with
-// minimal structural overhead, it is designed to be simply #included
-// into the different source files.
+#include "load_plugin.h"
 
 #ifndef _WIN32
 #include <dlfcn.h>
@@ -46,42 +42,46 @@ P3D_request_finish_func *P3D_request_finish;
 P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;
 
 #ifdef _WIN32
-static HMODULE module;
+static HMODULE module = NULL;
+#else
+static void *module = NULL;
 #endif
 
+static bool plugin_loaded = false;
 
 
-static void
-unload_plugin() {
-#ifdef _WIN32
-  FreeLibrary(module);
-  module = NULL;
-#else 
-  // TODO: unload_dso
-#endif
-  
-  P3D_initialize = NULL;
-  P3D_free_string = NULL;
-  P3D_create_instance = NULL;
-  P3D_instance_finish = NULL;
-  P3D_instance_has_property = NULL;
-  P3D_instance_get_property = NULL;
-  P3D_instance_set_property = NULL;
-  P3D_instance_get_request = NULL;
-  P3D_check_request = NULL;
-  P3D_request_finish = NULL;
-  P3D_instance_feed_url_stream = NULL;
+////////////////////////////////////////////////////////////////////
+//     Function: get_plugin_basename
+//  Description: Returns the default plugin filename, without any
+//               directory path (but including the extension
+//               appropriate to this platform).
+////////////////////////////////////////////////////////////////////
+string
+get_plugin_basename() {
+  return default_plugin_filename + dll_ext;
 }
 
-static bool
+////////////////////////////////////////////////////////////////////
+//     Function: load_plugin
+//  Description: Loads the plugin and assigns all of the function
+//               pointers.  Returns true on success, false on failure.
+//               If the filename is empty, it is searched along the
+//               path.
+////////////////////////////////////////////////////////////////////
+bool
 load_plugin(const string &p3d_plugin_filename) {
   string filename = p3d_plugin_filename;
   if (filename.empty()) {
     // Look for the plugin along the path.
-    filename = default_plugin_filename + dll_ext;
+    filename = get_plugin_basename();
+  }
+
+  if (plugin_loaded) {
+    return true;
   }
 
 #ifdef _WIN32
+  assert(module == NULL);
   module = LoadLibrary(filename.c_str());
   if (module == NULL) {
     // Couldn't load the DLL.
@@ -104,7 +104,8 @@ load_plugin(const string &p3d_plugin_filename) {
 
 #else  // _WIN32
   // Posix case.
-  void *module = dlopen(filename.c_str(), RTLD_NOW | RTLD_LOCAL);
+  assert(module == NULL);
+  module = dlopen(filename.c_str(), RTLD_NOW | RTLD_LOCAL);
   if (module == NULL) {
     // Couldn't load the .so.
     return false;
@@ -143,6 +144,8 @@ load_plugin(const string &p3d_plugin_filename) {
   }
 
   // Successfully loaded.
+  plugin_loaded = true;
+
 #ifdef _WIN32
   string logfilename = "c:/cygwin/home/drose/t0.log";
 #else
@@ -156,4 +159,51 @@ load_plugin(const string &p3d_plugin_filename) {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: unload_plugin
+//  Description: Removes the plugin from memory space and clears all
+//               of the pointers.
+////////////////////////////////////////////////////////////////////
+void
+unload_plugin() {
+  if (!plugin_loaded) {
+    return;
+  }
+
+#ifdef _WIN32
+  assert(module != NULL);
+  FreeLibrary(module);
+  module = NULL;
+#else 
+  assert(module != NULL);
+  dlclose(module);
+  module = NULL;
+#endif
+  
+  P3D_initialize = NULL;
+  P3D_free_string = NULL;
+  P3D_create_instance = NULL;
+  P3D_instance_finish = NULL;
+  P3D_instance_has_property = NULL;
+  P3D_instance_get_property = NULL;
+  P3D_instance_set_property = NULL;
+  P3D_instance_get_request = NULL;
+  P3D_check_request = NULL;
+  P3D_request_finish = NULL;
+  P3D_instance_feed_url_stream = NULL;
+
+  plugin_loaded = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: is_plugin_loaded
+//  Description: Returns true if the plugin has been loaded
+//               successfully by a previous call to load_plugin(),
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool
+is_plugin_loaded() {
+  return plugin_loaded;
 }

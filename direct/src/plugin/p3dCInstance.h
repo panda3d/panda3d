@@ -35,23 +35,10 @@ public:
   P3DCInstance(TiXmlElement *xinstance);
   ~P3DCInstance();
 
-  inline const string &get_p3d_filename() const;
   inline int get_instance_id() const;
 
-  PyObject *get_py_tokens() const;
-
 private:
-  class Token {
-  public:
-    string _keyword;
-    string _value;
-  };
-  typedef pvector<Token> Tokens;
-
   P3D_request_ready_func *_func;
-  string _p3d_filename;
-
-  Tokens _tokens;
 
   int _instance_id;
 

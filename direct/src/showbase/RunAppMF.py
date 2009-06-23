@@ -91,17 +91,21 @@ def initPackedAppEnvironment():
     # we plan to mount there.
     vfs.chdir(MultifileRoot)
 
-readyToStart = False
+gotWindow = False
+gotP3DFilename = False
 started = False
 def startIfReady():
-    global readyToStart, started
-    if readyToStart:
+    global gotWindow, gotP3DFilename, started
+    if started:
+        return
+    
+    if gotWindow and gotP3DFilename:
         started = True
         import main
         if hasattr(main, 'main') and callable(main.main):
             main.main()
 
-def runPackedApp(p3dFilename, tokens = []):
+def setP3DFilename(p3dFilename, tokens = []):
     tokenDict = dict(tokens)
     fname = Filename.fromOsSpecific(p3dFilename)
     if not p3dFilename:
@@ -156,6 +160,8 @@ def runPackedApp(p3dFilename, tokens = []):
             data = open(pathname, 'r').read()
             loadPrcFileData(pathname, data)
 
+    global gotP3DFilename
+    gotP3DFilename = True
     startIfReady()
 
 windowPrc = None
@@ -185,8 +191,8 @@ def setupWindow(windowType, x, y, width, height, parent):
         unloadPrcFile(windowPrc)
     windowPrc = loadPrcFileData("setupWindow", data)
 
-    global readyToStart
-    readyToStart = True
+    global gotWindow
+    gotWindow = True
     startIfReady()
 
 def parseSysArgs():
@@ -216,9 +222,9 @@ def parseSysArgs():
         
 
 if __name__ == '__main__':
-    readyToStart = True
+    gotWindow = True
     try:
-        runPackedApp(*parseSysArgs())
+        setP3DFilename(*parseSysArgs())
     except ArgumentError, e:
         print e.args[0]
         sys.exit(1)

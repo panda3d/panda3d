@@ -17,6 +17,7 @@
     p3d_plugin_common.h \
     p3dDownload.h p3dDownload.I \
     p3dFileDownload.h p3dFileDownload.I \
+    p3dFileParams.h p3dFileParams.I \
     p3dInstance.h p3dInstance.I \
     p3dInstanceManager.h p3dInstanceManager.I \
     p3dMultifileReader.h p3dMultifileReader.I \
@@ -30,6 +31,7 @@
     p3d_plugin.cxx \
     p3dDownload.cxx \
     p3dFileDownload.cxx \
+    p3dFileParams.cxx \
     p3dInstance.cxx \
     p3dInstanceManager.cxx \
     p3dMultifileReader.cxx \
@@ -67,3 +69,11 @@
     p3dPythonRun.cxx p3dPythonRun.h p3dPythonRun.I
 
 #end bin_target
+
+#begin static_lib_target
+  #define TARGET plugin_common
+
+  #define SOURCES \
+     load_plugin.cxx load_plugin.h
+
+#end static_lib_target

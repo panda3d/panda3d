@@ -1,5 +1,5 @@
-// Filename: p3dCInstance.I
-// Created by:  drose (08Jun09)
+// Filename: p3dFileParams.I
+// Created by:  drose (23Jun09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -14,12 +14,12 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DCInstance::get_instance_id
+//     Function: P3DFileParams::get_p3d_filename
 //       Access: Public
-//  Description: Returns a unique integer for each instance in the
-//               system.
+//  Description: Returns the p3d filename that was passed to the
+//               constructor.
 ////////////////////////////////////////////////////////////////////
-inline int P3DCInstance::
-get_instance_id() const {
-  return _instance_id;
+inline const string &P3DFileParams::
+get_p3d_filename() const {
+  return _p3d_filename;
 }

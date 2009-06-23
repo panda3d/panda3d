@@ -1,4 +1,4 @@
-// Filename: nppanda3d_startup.h
+// Filename: startup.h
 // Created by:  drose (19Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,12 +12,10 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef NPPANDA3D_STARTUP_H
-#define NPPANDA3D_STARTUP_H
+#ifndef STARTUP_H
+#define STARTUP_H
 
 #include "nppanda3d_common.h"
-
-#include "../plugin/load_plugin_src.h"
 
 extern "C" {
 #ifdef _WIN32

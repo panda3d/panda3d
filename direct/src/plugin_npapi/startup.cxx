@@ -1,4 +1,4 @@
-// Filename: nppanda3d_startup.cxx
+// Filename: startup.cxx
 // Created by:  drose (17Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,9 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "nppanda3d_startup.h"
-
-#include "../plugin/load_plugin_src.cxx"
+#include "startup.h"
 
 #ifdef _WIN32
 #include <malloc.h>
@@ -70,7 +68,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   string plugin_location = "/Users/drose/player/direct/built/lib/p3d_plugin.dylib";
 #endif
 
-  if (!load_plugin(plugin_location.c_str())) {
+  if (!load_plugin(plugin_location)) {
     logfile << "couldn't load plugin\n" << flush;
     return NPERR_INVALID_PLUGIN_ERROR;
   }
@@ -136,16 +134,8 @@ NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
         int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
   logfile << "new instance\n" << flush;
 
-  // Copy the tokens into a temporary array of P3D_token objects.
-  P3D_token *tokens = (P3D_token *)alloca(sizeof(P3D_token) * argc);
-  for (int i = 0; i < argc; ++i) {
-    P3D_token &token = tokens[i];
-    token._keyword = argn[i];
-    token._value = argv[i];
-    logfile << " " << i << ": " << token._keyword << " = " << token._value << "\n";
-  }
-
-  instance->pdata = P3D_create_instance(NULL, NULL, tokens, argc);
+  instance->pdata = new PPInstance(pluginType, instance, mode,
+                                   argc, argn, argv, saved);
 
   return NPERR_NO_ERROR;
 }
@@ -159,7 +149,7 @@ NPError
 NPP_Destroy(NPP instance, NPSavedData **save) {
   logfile << "destroy instance\n" << flush;
   (*save) = NULL;
-  P3D_instance_finish((P3D_instance *)(instance->pdata));
+  delete (PPInstance *)(instance->pdata);
   instance->pdata = NULL;
 
   return NPERR_NO_ERROR;
@@ -179,20 +169,9 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
           << ", " << window->width << ", " << window->height
           << "\n" << flush;
 
-  P3D_instance *inst = (P3D_instance *)(instance->pdata);
+  PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
-  
-  P3D_window_handle parent_window;
-#ifdef _WIN32
-  parent_window._hwnd = (HWND)(window->window);
-#endif
-
-  P3D_instance_setup_window
-    (inst, P3D_WT_embedded,
-     window->x, window->y, window->width, window->height,
-     parent_window);
-
-  return NPERR_NO_ERROR;
+  inst->set_window(window);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -208,8 +187,17 @@ NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream,
               NPBool seekable, uint16 *stype) {
   logfile << "NewStream " << type << ", " << stream->url 
           << ", " << stream->end << "\n" << flush;
+  PPInstance *inst = (PPInstance *)(instance->pdata);
+  assert(inst != NULL);
+
+  //inst->new_stream(type, stream, seekable, stype);
+
   *stype = NP_ASFILEONLY;
-  return NPERR_NO_ERROR;
+
+  if (strcmp(type, "application/x-panda3d") == 0) {
+    return NPERR_NO_ERROR;
+  }
+  return NPERR_GENERIC_ERROR;
 }
 
 ////////////////////////////////////////////////////////////////////

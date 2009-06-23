@@ -6,6 +6,8 @@
   #define USE_PACKAGES openssl zlib
   #define TARGET panda3d
 
+  #define LOCAL_LIBS plugin_common
+
   #define OTHER_LIBS \
     prc:c dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \

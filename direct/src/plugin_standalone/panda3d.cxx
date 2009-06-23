@@ -34,9 +34,8 @@
 #include "thread.h"
 #include "pset.h"
 
-#include "../plugin/p3d_plugin.h"
-#include "../plugin/load_plugin_src.h"
-#include "../plugin/load_plugin_src.cxx"
+#include "p3d_plugin.h"
+#include "load_plugin.h"
 
 #ifndef HAVE_GETOPT
   #include "gnu_getopt.h"
@@ -283,7 +282,7 @@ usage() {
 
     << "Options:\n\n"
 
-    << "  -p p3d_plugin" << dll_ext << "\n"
+    << "  -p " << get_plugin_basename() << "\n"
     << "    Specify the full path to the particular Panda plugin DLL to\n"
     << "    run.  Normally, this will be found by searching in the usual\n"
     << "    places.\n\n"

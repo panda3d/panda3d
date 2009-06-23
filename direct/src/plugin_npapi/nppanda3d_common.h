@@ -54,10 +54,11 @@ extern ofstream logfile;
 #endif  // _WIN32, __APPLE__
 
 #include "npapi.h"
-//#include "npfunctions.h"
 #include "npupp.h"
 
-// Appears in nppanda3d_startup.cxx.
+#include "load_plugin.h"
+
+// Appears in startup.cxx.
 extern NPNetscapeFuncs *browser;
 
 #endif

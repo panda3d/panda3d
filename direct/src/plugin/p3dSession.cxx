@@ -46,7 +46,7 @@ P3DSession(P3DInstance *inst) {
   _started_read_thread = false;
   _read_thread_continue = false;
 
-  _output_filename = inst->lookup_token("output_filename");
+  _output_filename = inst->get_fparams().lookup_token("output_filename");
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 

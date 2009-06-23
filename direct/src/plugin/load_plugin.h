@@ -1,4 +1,4 @@
-// Filename: load_plugin_src.h
+// Filename: load_plugin.h
 // Created by:  drose (19Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,11 +12,13 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef LOAD_PLUGIN_H
+#define LOAD_PLUGIN_H
 
-// This code is used in the plugin_standalone directory, and also in
-// the plugin_npapi directory.  To facilitate that code re-use with
-// minimal structural overhead, it is designed to be simply #included
-// into the different source files.
+#include "p3d_plugin.h"
+
+#include <string>
+using namespace std;
 
 extern P3D_initialize_func *P3D_initialize;
 extern P3D_free_string_func *P3D_free_string;
@@ -30,3 +32,10 @@ extern P3D_instance_get_request_func *P3D_instance_get_request;
 extern P3D_check_request_func *P3D_check_request;
 extern P3D_request_finish_func *P3D_request_finish;
 extern P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;
+
+string get_plugin_basename();
+bool load_plugin(const string &p3d_plugin_filename);
+void unload_plugin();
+bool is_plugin_loaded();
+
+#endif

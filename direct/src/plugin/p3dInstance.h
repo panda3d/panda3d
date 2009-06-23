@@ -17,9 +17,9 @@
 
 #include "p3d_plugin_common.h"
 #include "p3dFileDownload.h"
+#include "p3dFileParams.h"
 #include "p3dWindowParams.h"
 
-#include <vector>
 #include <deque>
 #include <map>
 #include <tinyxml.h>
@@ -38,6 +38,8 @@ public:
               const string &p3d_filename, 
               const P3D_token tokens[], size_t num_tokens);
   ~P3DInstance();
+
+  inline const P3DFileParams &get_fparams() const;
 
   void set_wparams(const P3DWindowParams &wparams);
   inline const P3DWindowParams &get_wparams() const;
@@ -58,12 +60,9 @@ public:
                        const unsigned char *this_data, 
                        size_t this_data_size);
 
-  inline const string &get_p3d_filename() const;
-
   inline int get_instance_id() const;
   inline const string &get_session_key() const;
   inline const string &get_python_version() const;
-  string lookup_token(const string &keyword) const;
 
   void start_download(P3DDownload *download);
   void request_stop();
@@ -71,19 +70,9 @@ public:
   TiXmlElement *make_xml();
 
 private:
-  void fill_tokens(const P3D_token tokens[], size_t num_tokens);
-
-  class Token {
-  public:
-    string _keyword;
-    string _value;
-  };
-  typedef vector<Token> Tokens;
-
   P3D_request_ready_func *_func;
-  string _p3d_filename;
-  Tokens _tokens;
 
+  P3DFileParams _fparams;
   P3DWindowParams _wparams;
 
   int _instance_id;

@@ -69,10 +69,11 @@ private:
   void spawn_read_thread();
   void join_read_thread();
 
-  void start_instance(P3DCInstance *inst);
+  void start_instance(P3DCInstance *inst, TiXmlElement *xinstance);
   void terminate_instance(int id);
+  void set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams);
   void setup_window(int id, TiXmlElement *xwparams);
-
+  
   void terminate_session();
 
 private:
@@ -93,7 +94,7 @@ private:
   int _py_argc;
   char **_py_argv;
 
-  PyObject *_runPackedApp;
+  PyObject *_setP3DFilename;
   PyObject *_setupWindow;
   PyObject *_taskMgr;
 
