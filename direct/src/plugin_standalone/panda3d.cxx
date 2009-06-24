@@ -300,7 +300,7 @@ usage() {
     << "    console.\n\n"
 
     << "  -t [toplevel|embedded|fullscreen|hidden]\n"
-    << "    Specify the type of graphic window to create.  If you specify "
+    << "    Specify the type of graphic window to create.  If you specify\n"
     << "    \"embedded\", a new window is created to be the parent.\n\n"
 
     << "  -s width,height\n"
