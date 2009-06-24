@@ -88,37 +88,46 @@ P3DPythonRun::
 ////////////////////////////////////////////////////////////////////
 bool P3DPythonRun::
 run_python() {
-  // Now load runappmf.pyd.
-  PyObject *runappmf = PyImport_ImportModule("runappmf");
-  if (runappmf == NULL) {
+  // First, load runp3d_frozen.pyd.  Since this is a magic frozen pyd,
+  // importing it automatically makes all of its frozen contents
+  // available to import as well.
+  PyObject *runp3d_frozen = PyImport_ImportModule("runp3d_frozen");
+  if (runp3d_frozen == NULL) {
     PyErr_Print();
     return false;
   }
-  Py_DECREF(runappmf);
+  Py_DECREF(runp3d_frozen);
 
-  // And get the pointers to the functions needed within the module.
-  PyObject *appmf = PyImport_ImportModule("direct.showbase.RunAppMF");
-  if (appmf == NULL) {
+  // So now we can import the module itself.
+  PyObject *runp3d = PyImport_ImportModule("direct.showutil.runp3d");
+  if (runp3d == NULL) {
     PyErr_Print();
     return false;
   }
-  _setP3DFilename = PyObject_GetAttrString(appmf, "setP3DFilename");
-  if (_setP3DFilename == NULL) {
+
+  // Get the pointers to the objects needed within the module.
+  PyObject *AppRunner = PyObject_GetAttrString(runp3d, "AppRunner");
+  if (AppRunner == NULL) {
     PyErr_Print();
     return false;
   }
-  _setupWindow = PyObject_GetAttrString(appmf, "setupWindow");
-  if (_setupWindow == NULL) {
+
+  // Construct an instance of AppRunner.
+  _runner = PyObject_CallFunction(AppRunner, "");
+  if (_runner == NULL) {
     PyErr_Print();
     return false;
   }
-  _taskMgr = PyObject_GetAttrString(appmf, "taskMgr");
+  Py_DECREF(AppRunner);
+
+  // Get the global TaskManager.
+  _taskMgr = PyObject_GetAttrString(runp3d, "taskMgr");
   if (_taskMgr == NULL) {
     PyErr_Print();
     return false;
   }
 
-  Py_DECREF(appmf);
+  Py_DECREF(runp3d);
 
   // Now add check_comm() as a task.
   _check_comm_task = new GenericAsyncTask("check_comm", st_check_comm, this);
@@ -359,8 +368,8 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
     xtoken = xtoken->NextSiblingElement("token");
   }
   
-  PyObject *result = PyObject_CallFunction
-    (_setP3DFilename, "sO", p3d_filename.c_str(), token_list);
+  PyObject *result = PyObject_CallMethod
+    (_runner, "setP3DFilename", "sO", p3d_filename.c_str(), token_list);
   Py_DECREF(token_list);
 
   if (result == NULL) {
@@ -415,10 +424,10 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   }
 #endif
 
-  // TODO: direct this into the particular instance.  Requires
-  // specialized ShowBase replacement.
-  PyObject *result = PyObject_CallFunction
-    (_setupWindow, "siiiii", window_type.c_str(),
+  // TODO: direct this into the particular instance.  This will
+  // require a specialized ShowBase replacement.
+  PyObject *result = PyObject_CallMethod
+    (_runner, "setupWindow", "siiiii", window_type.c_str(),
      win_x, win_y, win_width, win_height,
      parent_window_handle);
   if (result == NULL) {

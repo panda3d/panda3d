@@ -25,8 +25,10 @@
     p3dPackage.h p3dPackage.I \
     p3dProgressWindow.h p3dProgressWindow.I \
     p3dSession.h p3dSession.I \
+    p3dSplashWindow.h p3dSplashWindow.I \
     p3dWindowParams.h p3dWindowParams.I \
-    p3dWinProgressWindow.h p3dWinProgressWindow.I
+    p3dWinProgressWindow.h p3dWinProgressWindow.I \
+    p3dWinSplashWindow.h p3dWinSplashWindow.I
 
   #define INCLUDED_SOURCES \
     p3d_plugin.cxx \
@@ -38,9 +40,11 @@
     p3dMultifileReader.cxx \
     p3dPackage.cxx \
     p3dProgressWindow.cxx \
+    p3dSplashWindow.cxx \
     p3dSession.cxx \
     p3dWindowParams.cxx \
-    p3dWinProgressWindow.cxx
+    p3dWinProgressWindow.cxx \
+    p3dWinSplashWindow.cxx
 
   #define INSTALL_HEADERS \
     p3d_plugin.h

@@ -25,6 +25,7 @@
 #include <tinyxml.h>
 
 class P3DSession;
+class P3DSplashWindow;
 class P3DDownload;
 class P3DPackage;
 
@@ -85,6 +86,8 @@ private:
   string _session_key;
   string _python_version;
   P3DSession *_session;
+  P3DSplashWindow *_splash_window;
+  bool _instance_window_opened;
 
   typedef vector<P3DPackage *> Packages;
   Packages _packages;

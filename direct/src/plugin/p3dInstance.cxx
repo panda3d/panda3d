@@ -17,9 +17,17 @@
 #include "p3dDownload.h"
 #include "p3dSession.h"
 #include "p3dPackage.h"
+#include "p3dSplashWindow.h"
+#include "p3dWinSplashWindow.h"
 
 #include <sstream>
 #include <algorithm>
+
+#ifdef _WIN32
+typedef P3DWinSplashWindow SplashWindowType;
+#else
+typedef P3DSplashWindow SplashWindowType;
+#endif
 
 int P3DInstance::_next_instance_id = 0;
 
@@ -43,6 +51,8 @@ P3DInstance(P3D_request_ready_func *func, void *user_data) :
   INIT_LOCK(_request_lock);
 
   _session = NULL;
+  _splash_window = NULL;
+  _instance_window_opened = false;
   _requested_stop = false;
 }
 
@@ -65,6 +75,11 @@ P3DInstance::
   }
   _packages.clear();
 
+  if (_splash_window != NULL) {
+    delete _splash_window;
+    _splash_window = NULL;
+  }
+
   // TODO: empty _pending_requests queue and _downloads map.
 
   // TODO: Is it possible for someone to delete an instance while a
@@ -81,6 +96,11 @@ void P3DInstance::
 set_fparams(const P3DFileParams &fparams) {
   _got_fparams = true;
   _fparams = fparams;
+
+  // Update the splash window.
+  if (_splash_window != NULL) {
+    _splash_window->set_fparams(_fparams);
+  }
 
   // This also sets up some internal data based on the contents of the
   // above file and the associated tokens.
@@ -106,6 +126,17 @@ set_wparams(const P3DWindowParams &wparams) {
   _got_wparams = true;
   _wparams = wparams;
 
+  // Update or create the splash window.
+  if (!_instance_window_opened) {
+    if (_splash_window == NULL) {
+      _splash_window = new SplashWindowType(this);
+      _splash_window->open_window();
+    } else {
+      _splash_window->set_wparams(_wparams);
+    }
+  }
+
+  // Update the instance in the sub-process.
   if (_session != NULL) {
     TiXmlDocument *doc = new TiXmlDocument;
     TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");

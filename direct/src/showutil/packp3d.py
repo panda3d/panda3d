@@ -1,9 +1,15 @@
-"""
-This module will pack a Panda application, consisting of a
-directory tree of .py files and models, into a multifile for
-distribution and running with RunAppMF.py.  To run it, use:
+#! /usr/bin/env python
 
-python MakeAppMF.py [opts] app.mf
+"""
+
+This module will pack a Panda application, consisting of a directory
+tree of .py files and models, into a p3d file for convenient
+distribution.  The resulting p3d file can be run by the Panda3D
+runtime executable, or by the Panda3D web browser plugin.
+
+Usage:
+
+  packp3d.py [opts] app.p3d
 
 Options:
 
@@ -22,6 +28,10 @@ Options:
      called main(), that function will be called after importing it
      (this is preferable to having the module start itself immediately
      upon importing).
+
+     Note that your main.py must *not* call run().  This call should
+     not be part of the p3d file--the Panda3D runtime must be free to
+     call it, not your code!
 
   -c [py,pyc,pyo]
 
@@ -335,7 +345,7 @@ def makePackedApp(args):
             sys.exit(1)
     
     if not args:
-        raise ArgumentError, "No destination app specified.  Use:\npython MakeAppMF.py app.mf"
+        raise ArgumentError, "No destination app specified.  Use:\npackp3d.py app.p3d"
 
     multifile_name = args[0]
     if len(args) > 1:

@@ -24,9 +24,9 @@
 #endif
 
 #ifdef _WIN32
-typedef P3DWinProgressWindow ProgressWinType;
+typedef P3DWinProgressWindow ProgressWindowType;
 #else
-typedef P3DProgressWindow ProgressWinType;
+typedef P3DProgressWindow ProgressWindowType;
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -173,9 +173,9 @@ start_instance(P3DInstance *inst) {
         _panda3d_callback = new P3DProgressWindow(_panda3d, this, inst);
       } else {
         // For a non-hidden window, create an instance of
-        // ProgressWinType, which is typedeffed above to be the kind
+        // ProgressWindowType, which is typedeffed above to be the kind
         // of class that actually does manifest a window.
-        _panda3d_callback = new ProgressWinType(_panda3d, this, inst);
+        _panda3d_callback = new ProgressWindowType(_panda3d, this, inst);
       }
       */
       _panda3d->set_callback(_panda3d_callback);

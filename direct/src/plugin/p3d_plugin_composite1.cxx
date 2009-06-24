@@ -7,6 +7,8 @@
 #include "p3dMultifileReader.cxx"
 #include "p3dPackage.cxx"
 #include "p3dProgressWindow.cxx"
+#include "p3dSplashWindow.cxx"
 #include "p3dSession.cxx"
 #include "p3dWindowParams.cxx"
 #include "p3dWinProgressWindow.cxx"
+#include "p3dWinSplashWindow.cxx"

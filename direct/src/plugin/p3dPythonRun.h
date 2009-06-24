@@ -95,8 +95,7 @@ private:
   int _py_argc;
   char **_py_argv;
 
-  PyObject *_setP3DFilename;
-  PyObject *_setupWindow;
+  PyObject *_runner;
   PyObject *_taskMgr;
 
   PT(GenericAsyncTask) _check_comm_task;

@@ -324,7 +324,6 @@ NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
 ////////////////////////////////////////////////////////////////////
 int32
 NPP_WriteReady(NPP instance, NPStream *stream) {
-  logfile << "WriteReady\n";
   // We're supposed to return the maximum amount of data the plugin is
   // prepared to handle.  Gee, I don't know.  As much as you can give
   // me, I guess.
@@ -340,9 +339,6 @@ NPP_WriteReady(NPP instance, NPStream *stream) {
 int32
 NPP_Write(NPP instance, NPStream *stream, int32 offset, 
           int32 len, void *buffer) {
-  logfile << "Write " << stream->url 
-          << ", " << len << "\n" << flush;
-
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
 
