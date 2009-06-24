@@ -47,6 +47,7 @@ static void
 handle_request_loop() {
   assert(is_plugin_loaded());
 
+  logfile << "about to call P3D_check_request()\n" << flush;
   P3D_instance *p3d_inst = P3D_check_request(false);
   logfile << "P3D_check_request() returns " << p3d_inst << "\n" << flush;
   while (p3d_inst != (P3D_instance *)NULL) {
@@ -100,14 +101,17 @@ request_ready(P3D_instance *instance) {
   // Since we might be in a sub-thread at this point, use a timer to
   // forward this event to the main thread.
 
-  ACQUIRE_LOCK(_timer_lock);
 #ifdef _WIN32
+  ACQUIRE_LOCK(_timer_lock);
   if (_timer == 0) {
     _timer = SetTimer(NULL, 0, 0, win_timer_func);
     logfile << "_timer = " << _timer << "\n" << flush;
   }
-#endif
   RELEASE_LOCK(_timer_lock);
+#else
+  // TODO: send the message to the main thread properly.
+  handle_request_loop();
+#endif
 }
 
 

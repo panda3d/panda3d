@@ -212,13 +212,6 @@ destroy_stream(NPStream *stream, NPReason reason) {
     }
     break;
 
-  case PPDownloadRequest::RT_core_dll:
-    // This is the one case we don't start with GetUrlNotify, so we'll
-    // never get a url_notify call on this one.  So, we have to delete
-    // the PPDownloadRequest object here.
-    delete req;
-    break;
-
   default:
     break;
   }
@@ -255,17 +248,12 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
       req->_notified_done = true;
     }
     break;
-
-  case PPDownloadRequest::RT_core_dll:
-    // Shouldn't be possible to get here.
-    assert(false);
-    break;
     
   default:
     break;
   }
   
-  delete req;
+  //  delete req;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -306,14 +294,21 @@ stream_as_file(NPStream *stream, const char *fname) {
   PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
   switch (req->_rtype) {
   case PPDownloadRequest::RT_core_dll:
-    // This is the core API DLL (or dylib or whatever).  Now that
-    // we've downloaded it, we can load it.
-    logfile << "got plugin\n";
-    if (!load_plugin(filename)) {
-      logfile << "Unable to launch core API.\n";
-      break;
+    {
+      // This is the core API DLL (or dylib or whatever).  Now that
+      // we've downloaded it, we can load it.
+      logfile << "got plugin " << filename << "\n" << flush;
+      string override_filename = P3D_PLUGIN_P3D_PLUGIN;
+      if (!override_filename.empty()) {
+        filename = override_filename;
+      }
+      if (!load_plugin(filename)) {
+        logfile << "Unable to launch core API.\n";
+        break;
+      }
+      logfile << "loaded core API " << filename << "\n" << flush;
+      create_instance();
     }
-    create_instance();
     break;
 
   case PPDownloadRequest::RT_instance_data:

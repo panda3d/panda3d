@@ -20,6 +20,10 @@
    string for the default. */
 #$[]define P3D_PLUGIN_P3DPYTHON "$[subst \,\\,$[osfilename $[P3D_PLUGIN_P3DPYTHON]]]"
 
+/* Temporary: the location at which p3d_plugin.dll can be found.  Empty
+   string for the default. */
+#$[]define P3D_PLUGIN_P3D_PLUGIN "$[osfilename $[P3D_PLUGIN_P3D_PLUGIN]]"
+
 /* The string that corresponds to this particular platform. */
 #if $[not $[P3D_PLUGIN_PLATFORM]]
   #if $[WINDOWS_PLATFORM]

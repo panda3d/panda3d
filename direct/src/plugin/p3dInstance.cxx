@@ -153,7 +153,9 @@ set_property(const string &property_name, const string &value) {
 ////////////////////////////////////////////////////////////////////
 bool P3DInstance::
 has_request() {
+  nout << "has_request called, getting lock\n" << flush;
   ACQUIRE_LOCK(_request_lock);
+  nout << "got lock\n" << flush;
   bool any_requests = !_pending_requests.empty();
   RELEASE_LOCK(_request_lock);
   return any_requests;
@@ -202,10 +204,11 @@ add_request(P3D_request *request) {
   RELEASE_LOCK(_request_lock);
 
   // Asynchronous notification for anyone who cares.
-  nout << "request_ready, calling " << _func << "\n" << flush;
+  nout << "request_ready, calling " << (void *)_func << "\n" << flush;
   if (_func != NULL) {
     _func(this);
   }
+  nout << "done calling " << (void *)_func << "\n" << flush;
 
   // Synchronous notification for pollers.
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();

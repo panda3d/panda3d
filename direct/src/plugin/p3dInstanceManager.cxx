@@ -23,6 +23,7 @@
 #else
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <errno.h>
 #endif
 
 P3DInstanceManager *P3DInstanceManager::_global_ptr;
@@ -170,12 +171,16 @@ finish_instance(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 P3DInstance *P3DInstanceManager::
 check_request() {
+  nout << "check_request\n" << flush;
   Instances::iterator ii;
   for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
     P3DInstance *inst = (*ii);
+    cerr << "  checking request for " << inst << "\n" << flush;
     if (inst->has_request()) {
+      cerr << "    true\n" << flush;
       return inst;
     }
+    cerr << "    false\n" << flush;
   }
 
   return NULL;
