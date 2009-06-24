@@ -375,7 +375,7 @@ $[varname] = $[sources]
 // not parallel (requires gmake 3.79) because of link.exe conflicts in TMP dir (see audiotraits dir)
 #if $[or $[GENERATE_BUILDDATE],$[WIN_RESOURCE_FILE]]
   #define resource_file $[or $[WIN_RESOURCE_FILE],$[dtool_ver_dir_cyg]/version.rc]
-.NOTPARALLEL $[target] : $[sources] $[static_lib_dependencies] $[resource_file] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
+$[target] : $[sources] $[static_lib_dependencies] $[resource_file] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
 
  // first generate builddate for rc compiler using compiler preprocessor
  #define ver_resource "$[ODIR]\$[lib_prefix]$[TARGET].res"
@@ -389,7 +389,7 @@ $[TAB] $[link_lib_c]
   #endif
 #else
 
-.NOTPARALLEL $[target] : $[sources] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
+$[target] : $[sources] $[DLLBASEADDRFILENAME:%=$[dtool_ver_dir_cyg]/%]
   #if $[filter %.cxx %.cpp %.yxx %.lxx,$[get_sources]]
 $[TAB] $[link_lib_c++]
   #else
@@ -568,7 +568,7 @@ $[VERHEADER_DEPENDENTS] : $[verhdr_to_gen]
 $[idl_to_gen] : $[GENERATED_IDL_DEPENDENCIES]
 $[TAB] $[IDL_GENERATOR_RULE]
 
-.NOTPARALLEL $[ODIR]/$[IDL_BASENAME].h : $[idl_to_gen]
+$[ODIR]/$[IDL_BASENAME].h : $[idl_to_gen]
 $[TAB] $[MIDL_COMMAND]
 
 // this is a complete hack.  I dont know how add a generated .h to the dependency list of $[IDL_BASENAME].cpp.
