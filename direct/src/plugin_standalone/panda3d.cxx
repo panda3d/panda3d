@@ -248,10 +248,11 @@ P3D_instance *
 create_instance(const string &arg, P3D_window_type window_type,
                 int win_x, int win_y, int win_width, int win_height,
                 P3D_window_handle parent_window,
-                const string &output_filename) {
+                const Filename &output_filename) {
 
+  string os_output_filename = output_filename.to_os_specific();
   P3D_token tokens[] = {
-    { "output_filename", output_filename.c_str() },
+    { "output_filename", os_output_filename.c_str() },
     { "src", arg.c_str() },
   };
   int num_tokens = sizeof(tokens) / sizeof(P3D_token);
@@ -343,8 +344,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   extern int optind;
   const char *optstr = "p:l:t:s:o:h";
 
-  string p3d_plugin_filename;
-  string output_filename;
+  Filename p3d_plugin_filename;
+  Filename output_filename;
   P3D_window_type window_type = P3D_WT_toplevel;
   int win_x = 0, win_y = 0;
   int win_width = 0, win_height = 0;
@@ -354,11 +355,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
   while (flag != EOF) {
     switch (flag) {
     case 'p':
-      p3d_plugin_filename = optarg;
+      p3d_plugin_filename = Filename::from_os_specific(optarg);
       break;
 
     case 'l':
-      output_filename = optarg;
+      output_filename = Filename::from_os_specific(optarg);
       break;
 
     case 't':
@@ -407,7 +408,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
     return 1;
   }
 
-  if (!load_plugin(p3d_plugin_filename)) {
+  if (!load_plugin(p3d_plugin_filename.to_os_specific())) {
     cerr << "Unable to load Panda3D plugin.\n";
     return 1;
   }

@@ -76,7 +76,7 @@ P3DInstance::
   _packages.clear();
 
   if (_splash_window != NULL) {
-    _splash_window->close_window();
+    nout << "Deleting splash window in destructor\n" << flush;
     delete _splash_window;
     _splash_window = NULL;
   }
@@ -98,9 +98,11 @@ set_fparams(const P3DFileParams &fparams) {
   _got_fparams = true;
   _fparams = fparams;
 
-  // Update the splash window.
-  if (_splash_window != NULL) {
-    _splash_window->set_fparams(_fparams);
+  // Maybe create the splash window.
+  if (!_instance_window_opened && _got_wparams) {
+    if (_splash_window == NULL) {
+      _splash_window = new SplashWindowType(this);
+    }
   }
 
   // This also sets up some internal data based on the contents of the
@@ -128,10 +130,9 @@ set_wparams(const P3DWindowParams &wparams) {
   _wparams = wparams;
 
   // Update or create the splash window.
-  if (!_instance_window_opened) {
+  if (!_instance_window_opened && _got_fparams) {
     if (_splash_window == NULL) {
       _splash_window = new SplashWindowType(this);
-      _splash_window->open_window();
     } else {
       _splash_window->set_wparams(_wparams);
     }
@@ -238,7 +239,7 @@ get_request() {
         nout << "Instance " << this << " got window_opened\n" << flush;
         _instance_window_opened = true;
         if (_splash_window != NULL) {
-          _splash_window->close_window();
+          nout << "Deleting splash window\n" << flush;
           delete _splash_window;
           _splash_window = NULL;
         }
@@ -257,6 +258,8 @@ get_request() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_request(P3D_request *request) {
+  nout << "Instance " << this << " add_request(" << request->_request_type
+       << ")\n" << flush;
   request->_instance = this;
 
   ACQUIRE_LOCK(_request_lock);
@@ -413,4 +416,17 @@ make_xml() {
   }
 
   return xinstance;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::install_progress
+//       Access: Private
+//  Description: Notified as the _panda3d package is downloaded.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+install_progress(P3DPackage *package, double progress) {
+  if (_splash_window != NULL) {
+    _splash_window->set_install_label("Installing Panda3D");
+    _splash_window->set_install_progress(progress);
+  }
 }

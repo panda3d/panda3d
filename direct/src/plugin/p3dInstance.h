@@ -71,11 +71,11 @@ public:
   inline bool is_started() const;
   void request_stop();
 
-  void async_notify(const string &message);
-
   TiXmlElement *make_xml();
 
 private:
+  void install_progress(P3DPackage *package, double progress);
+
   P3D_request_ready_func *_func;
 
   bool _got_fparams;

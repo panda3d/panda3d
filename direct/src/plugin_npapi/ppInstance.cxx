@@ -334,8 +334,9 @@ stream_as_file(NPStream *stream, const char *fname) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 handle_request(P3D_request *request) {
-  logfile << "handle_request: " << request << ", " << request->_instance
-          << " within " << this << ", " << _p3d_inst << "\n" << flush;
+  logfile
+    << "handle_request: " << request << ", " << request->_request_type
+    << " within " << this << "\n" << flush;
   assert(request->_instance == _p3d_inst);
 
   bool handled = false;
@@ -428,7 +429,13 @@ send_window() {
 
   P3D_window_handle parent_window;
 #ifdef _WIN32
-  parent_window._hwnd = (HWND)(_window.window);
+  if (_window.type == NPWindowTypeWindow) {
+    parent_window._hwnd = (HWND)(_window.window);
+  } else {
+    // Hmm, it's just a drawable; but we didn't ask for a windowless
+    // plugin.
+    parent_window._hwnd = 0;
+  }
 #endif
 
   // Actually, we set up the window starting at (0, 0), instead of

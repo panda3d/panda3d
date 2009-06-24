@@ -299,6 +299,7 @@ py_request_func(PyObject *args) {
     xrequest->SetAttribute("message", message);
     doc.LinkEndChild(decl);
     doc.LinkEndChild(xrequest);
+    nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
   } else {

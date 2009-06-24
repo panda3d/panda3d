@@ -49,6 +49,7 @@ public:
   void send_command(TiXmlDocument *command);
 
 private:
+  void install_progress(P3DPackage *package, double progress);
   void start_p3dpython();
 
   void spawn_read_thread();
@@ -79,6 +80,17 @@ private:
                        HandleStream &pipe_read, HandleStream &pipe_write);
 #endif
 
+  class PackageCallback : public P3DPackage::Callback {
+  public:
+    PackageCallback(P3DSession *session);
+    
+    virtual void install_progress(P3DPackage *package, double progress);
+    virtual void package_ready(P3DPackage *package, bool success);
+    
+  protected:
+    P3DSession *_session;
+  };
+
 private:
   string _session_key;
   string _python_version;
@@ -97,7 +109,7 @@ private:
   Commands _commands;
 
   P3DPackage *_panda3d;
-  P3DProgressWindow *_panda3d_callback;
+  PackageCallback *_panda3d_callback;
 
   // Members for communicating with the p3dpython child process.
 #ifdef _WIN32
@@ -119,7 +131,7 @@ private:
   pthread_t _read_thread;
 #endif
 
-  friend class P3DProgressWindow;
+  friend class PackageCallback;
 };
 
 #include "p3dSession.I"

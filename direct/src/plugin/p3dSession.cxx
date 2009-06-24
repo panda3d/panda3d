@@ -15,18 +15,10 @@
 #include "p3dSession.h"
 #include "p3dInstance.h"
 #include "p3dInstanceManager.h"
-#include "p3dProgressWindow.h"
-#include "p3dWinProgressWindow.h"
 #include "p3d_plugin_config.h"
 
 #ifndef _WIN32
 #include <fcntl.h>
-#endif
-
-#ifdef _WIN32
-typedef P3DWinProgressWindow ProgressWindowType;
-#else
-typedef P3DProgressWindow ProgressWindowType;
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -161,23 +153,7 @@ start_instance(P3DInstance *inst) {
   } else {
     // Otherwise, set a callback, so we'll know when it is ready.
     if (_panda3d_callback == NULL) {
-
-      _panda3d_callback = new P3DProgressWindow(_panda3d, this, inst);
-
-      /*
-      // The callback object will be a ProgressWindow, to show
-      // visual progress to the user while we're downloading.
-      if (inst->get_window_type() == P3D_WT_hidden) {
-        // For a hidden window, just create an instance of the base
-        // class, which manifests no actual window.
-        _panda3d_callback = new P3DProgressWindow(_panda3d, this, inst);
-      } else {
-        // For a non-hidden window, create an instance of
-        // ProgressWindowType, which is typedeffed above to be the kind
-        // of class that actually does manifest a window.
-        _panda3d_callback = new ProgressWindowType(_panda3d, this, inst);
-      }
-      */
+      _panda3d_callback = new PackageCallback(this);
       _panda3d->set_callback(_panda3d_callback);
     }
   }
@@ -231,6 +207,20 @@ send_command(TiXmlDocument *command) {
   } else {
     // Python not yet running.  Queue up the command instead.
     _commands.push_back(command);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::install_progress
+//       Access: Private
+//  Description: Notified as the _panda3d package is downloaded.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+install_progress(P3DPackage *package, double progress) {
+  Instances::iterator ii;
+  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+    P3DInstance *inst = (*ii).second;
+    inst->install_progress(package, progress);
   }
 }
 
@@ -712,3 +702,51 @@ posix_create_process(const string &program, const string &start_dir,
 }
 #endif  // _WIN32
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::PackageCallback::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DSession::PackageCallback::
+PackageCallback(P3DSession *session) :
+  _session(session)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::PackageCallback::package_ready
+//       Access: Public, Virtual
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void P3DSession::PackageCallback::
+package_ready(P3DPackage *package, bool success) {
+  if (this == _session->_panda3d_callback) {
+    _session->_panda3d_callback = NULL;
+    if (package == _session->_panda3d) {
+      if (success) {
+        _session->start_p3dpython();
+      } else {
+        nout << "Failed to install " << package->get_package_name()
+             << "_" << package->get_package_version() << "\n";
+      }
+    } else {
+      nout << "Unexpected panda3d package: " << package << "\n";
+    }
+  } else {
+    nout << "Unexpected callback for P3DSession\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::PackageCallback::install_progress
+//       Access: Public, Virtual
+//  Description: This callback is received during the download process
+//               to inform us how much has been installed so far.
+////////////////////////////////////////////////////////////////////
+void P3DSession::PackageCallback::
+install_progress(P3DPackage *package, double progress) {
+  if (this == _session->_panda3d_callback) {
+    _session->install_progress(package, progress);
+  }
+}

@@ -34,14 +34,41 @@ public:
   P3DWinSplashWindow(P3DInstance *inst);
   virtual ~P3DWinSplashWindow();
 
-  virtual void open_window();
-  virtual void close_window();
+  virtual void set_install_label(const string &install_label);
+  virtual void set_install_progress(double install_progress);
 
 private:
+  void start_thread();
+  void stop_thread();
+
+private:
+  // These methods run only within the window thread.
+  void thread_run();
+  static DWORD WINAPI win_thread_run(LPVOID data);
+
+  void make_window();
+  void make_progress_bar();
+  void update_install_label(const string &install_label);
+  void close_window();
+
   static LONG WINAPI window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 private:
+  bool _got_install;
+  bool _install_label_changed;
+  string _install_label;
+  double _install_progress;
+  LOCK _install_lock;
+
+  int _loop_started;
+
+  bool _thread_continue;
+  bool _thread_running;
+  HANDLE _thread;
+  DWORD _thread_id;
   HWND _hwnd;
+  HWND _progress_bar;
+  HWND _text_label;
 };
 
 #include "p3dWinSplashWindow.I"

@@ -34,9 +34,9 @@ open_logfile() {
 }
 
 #ifdef _WIN32
-UINT _timer = 0;
+DWORD main_thread_id = 0;
 #endif
-LOCK _timer_lock;
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: handle_request_loop
@@ -45,44 +45,45 @@ LOCK _timer_lock;
 ////////////////////////////////////////////////////////////////////
 static void
 handle_request_loop() {
-  assert(is_plugin_loaded());
+  if (!is_plugin_loaded()) {
+    return;
+  }
 
-  logfile << "about to call P3D_check_request()\n" << flush;
   P3D_instance *p3d_inst = P3D_check_request(false);
-  logfile << "P3D_check_request() returns " << p3d_inst << "\n" << flush;
   while (p3d_inst != (P3D_instance *)NULL) {
     P3D_request *request = P3D_instance_get_request(p3d_inst);
-    logfile << "got request " << request << "\n";
     if (request != (P3D_request *)NULL) {
       PPInstance *inst = (PPInstance *)(p3d_inst->_user_data);
       assert(inst != NULL);
       inst->handle_request(request);
     }
     p3d_inst = P3D_check_request(false);
-    logfile << "P3D_check_request() returns " << p3d_inst << "\n" << flush;
   }
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: win_timer_func
-//  Description: The Windows flavor of the timer callback function.
-////////////////////////////////////////////////////////////////////
 #ifdef _WIN32
-static VOID CALLBACK
-win_timer_func(HWND hwnd, UINT msg, UINT_PTR event, DWORD time) {
-  ACQUIRE_LOCK(_timer_lock);
-  logfile
-    << "win_timer_func " << hwnd << ", " << msg << ", " << event
-    << ", " << time << "\n"
-    << "timer thread = " << GetCurrentThreadId() << "\n"
-    << flush;
-  KillTimer(NULL, _timer);
-  _timer = 0;
-  RELEASE_LOCK(_timer_lock);
+////////////////////////////////////////////////////////////////////
+//     Function: window_proc
+//  Description: We bind this function to the parent windows we are
+//               given in NPP_New(), so we can spin the request_loop
+//               when needed.
+////////////////////////////////////////////////////////////////////
+static LONG 
+window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  // If this is a toplevel window event, but not something caused as a
+  // result of something done by handle_request_loop(), then call
+  // handle_request_loop() to see if there are any new requests to be
+  // forwarded to the main thread.
+  static int recursion_protect = 0;
+  ++recursion_protect;
+  if (recursion_protect == 1) {
+    handle_request_loop();
+  }
+  --recursion_protect;
 
-  handle_request_loop();
+  return DefWindowProc(hwnd, msg, wparam, lparam);
 }
-#endif // _WIN32
+#endif  // _WIN32
 
 ////////////////////////////////////////////////////////////////////
 //     Function: request_ready
@@ -94,20 +95,15 @@ win_timer_func(HWND hwnd, UINT msg, UINT_PTR event, DWORD time) {
 void
 request_ready(P3D_instance *instance) {
   logfile
-    << "request_ready"
-    //    << " thread = " << GetCurrentThreadId()
+    << "request_ready in " << instance
+    << " thread = " << GetCurrentThreadId()
     << "\n" << flush;
 
-  // Since we might be in a sub-thread at this point, use a timer to
-  // forward this event to the main thread.
+  // Since we might be in a sub-thread at this point, use a Windows
+  // message to forward this event to the main thread.
 
 #ifdef _WIN32
-  ACQUIRE_LOCK(_timer_lock);
-  if (_timer == 0) {
-    _timer = SetTimer(NULL, 0, 0, win_timer_func);
-    logfile << "_timer = " << _timer << "\n" << flush;
-  }
-  RELEASE_LOCK(_timer_lock);
+  PostThreadMessage(main_thread_id, WM_USER, 0, 0);
 #else
   // TODO: send the message to the main thread properly.
   handle_request_loop();
@@ -139,11 +135,15 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 
   open_logfile();
   logfile << "initializing\n" << flush;
-  //  logfile << "main thread = " << GetCurrentThreadId() << "\n";
+
+#ifdef _WIN32
+  // Save the calling thread ID (i.e. the main thread) so we can post
+  // messages back to this thread when needed.
+  main_thread_id = GetCurrentThreadId();
+  logfile << "main thread = " << main_thread_id << "\n";
+#endif
 
   logfile << "browserFuncs = " << browserFuncs << "\n" << flush;
-
-  INIT_LOCK(_timer_lock);
 
   /*
 #ifdef _WIN32
@@ -202,22 +202,7 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
 NPError OSCALL
 NP_Shutdown(void) {
   logfile << "shutdown\n" << flush;
-
-  ACQUIRE_LOCK(_timer_lock);
-#ifdef _WIN32
-  if (_timer != 0) {
-    KillTimer(NULL, _timer);
-    _timer = 0;
-  }
-#endif
-  RELEASE_LOCK(_timer_lock);
-  DESTROY_LOCK(_timer_lock);
-
-  logfile << "unloading plugin\n" << flush;
-
   unload_plugin();
-
-  logfile << "done shutdown\n" << flush;
 
   // Not clear whether there's a return value or not.  Some versions
   // of the API have different opinions on this.
@@ -269,6 +254,14 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
   logfile << "SetWindow " << window->x << ", " << window->y
           << ", " << window->width << ", " << window->height
           << "\n" << flush;
+
+  if (window->type == NPWindowTypeWindow) {
+    // Subclass the window to make it call our own window_proc instead
+    // of whatever window_proc it has already.  This is just a dopey
+    // trick to allow us to poll events in the main thread.
+    HWND hwnd = (HWND)window->window;
+    LONG_PTR orig = SetWindowLongPtr(hwnd, GWL_WNDPROC, (LONG_PTR)window_proc);
+  }
 
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
@@ -426,3 +419,4 @@ NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
   logfile << "SetValue " << variable << "\n";
   return NPERR_GENERIC_ERROR;
 }
+

@@ -37,14 +37,13 @@ public:
   P3DSplashWindow(P3DInstance *inst);
   virtual ~P3DSplashWindow();
 
-  virtual void set_fparams(const P3DFileParams &fparams);
   inline const P3DFileParams &get_fparams() const;
 
   virtual void set_wparams(const P3DWindowParams &wparams);
   inline const P3DWindowParams &get_wparams() const;
 
-  virtual void open_window();
-  virtual void close_window();
+  virtual void set_install_label(const string &install_label);
+  virtual void set_install_progress(double install_progress);
 
 protected:
   P3DInstance *_inst;

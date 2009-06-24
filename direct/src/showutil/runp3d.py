@@ -133,7 +133,6 @@ class AppRunner(DirectObject):
         # One day we will have support for multiple instances within a
         # Python session.  Against that day, we save the instance ID
         # for this instance.
-        print "setP3DFilename(%s, %s, %s)" % (p3dFilename, tokens, instanceId)
         self.instanceId = instanceId
         
         tokenDict = dict(tokens)

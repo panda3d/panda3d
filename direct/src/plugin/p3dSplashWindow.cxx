@@ -17,7 +17,9 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::Constructor
 //       Access: Public
-//  Description: 
+//  Description: By the time the SplashWindow is created, the instance
+//               has received both its fparams and its wparams.  Copy
+//               them both into this class for reference.
 ////////////////////////////////////////////////////////////////////
 P3DSplashWindow::
 P3DSplashWindow(P3DInstance *inst) : 
@@ -37,16 +39,6 @@ P3DSplashWindow::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::set_fparams
-//       Access: Public, Virtual
-//  Description: Sets up the file parameters for the window.
-////////////////////////////////////////////////////////////////////
-void P3DSplashWindow::
-set_fparams(const P3DFileParams &fparams) {
-  _fparams = fparams;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::set_wparams
 //       Access: Public, Virtual
 //  Description: Changes the window parameters, e.g. to resize or
@@ -59,21 +51,21 @@ set_wparams(const P3DWindowParams &wparams) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::open_window
+//     Function: P3DSplashWindow::set_install_label
 //       Access: Public, Virtual
-//  Description: Creates the splash window.
+//  Description: Specifies the text that is displayed above the
+//               install progress bar.
 ////////////////////////////////////////////////////////////////////
 void P3DSplashWindow::
-open_window() {
-  nout << "P3DSplashWindow::open_window()\n" << flush;
+set_install_label(const string &install_label) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DSplashWindow::close_window
+//     Function: P3DSplashWindow::set_install_progress
 //       Access: Public, Virtual
-//  Description: Closes the window created above.
+//  Description: Moves the install progress bar from 0.0 to 1.0.
 ////////////////////////////////////////////////////////////////////
 void P3DSplashWindow::
-close_window() {
-  nout << "P3DSplashWindow::close_window()\n" << flush;
+set_install_progress(double install_progress) {
 }
+
