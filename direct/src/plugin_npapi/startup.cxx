@@ -96,7 +96,7 @@ void
 request_ready(P3D_instance *instance) {
   logfile
     << "request_ready in " << instance
-    << " thread = " << GetCurrentThreadId()
+    //    << " thread = " << GetCurrentThreadId()
     << "\n" << flush;
 
   // Since we might be in a sub-thread at this point, use a Windows
@@ -255,6 +255,7 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
           << ", " << window->width << ", " << window->height
           << "\n" << flush;
 
+#ifdef _WIN32
   if (window->type == NPWindowTypeWindow) {
     // Subclass the window to make it call our own window_proc instead
     // of whatever window_proc it has already.  This is just a dopey
@@ -262,6 +263,7 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
     HWND hwnd = (HWND)window->window;
     LONG_PTR orig = SetWindowLongPtr(hwnd, GWL_WNDPROC, (LONG_PTR)window_proc);
   }
+#endif  // _WIN32
 
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
