@@ -297,16 +297,16 @@ stream_as_file(NPStream *stream, const char *fname) {
     {
       // This is the core API DLL (or dylib or whatever).  Now that
       // we've downloaded it, we can load it.
-      logfile << "got plugin " << filename << "\n" << flush;
       string override_filename = P3D_PLUGIN_P3D_PLUGIN;
       if (!override_filename.empty()) {
         filename = override_filename;
       }
+      logfile << "got plugin " << filename << "\n" << flush;
       if (!load_plugin(filename)) {
         logfile << "Unable to launch core API.\n";
         break;
       }
-      logfile << "loaded core API " << filename << "\n" << flush;
+      logfile << "loaded core API\n";
       create_instance();
     }
     break;
