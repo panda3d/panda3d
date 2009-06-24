@@ -14,6 +14,7 @@
 
 #include "p3dPackage.h"
 #include "p3dInstanceManager.h"
+#include "p3dInstance.h"
 #include "p3dMultifileReader.h"
 
 #include "openssl/md5.h"
@@ -81,23 +82,6 @@ P3DPackage(const string &package_name, const string &package_version,
 
   _desc_file_basename = _package_fullname + ".xml";
   _desc_file_pathname = _package_dir + "/" + _desc_file_basename;
-  
-  // TODO: we should check the desc file for updates with the server.
-  // Perhaps this should be done in a parent class.
-
-  // TODO: if the desc file exists, and is consistent with the server
-  // contents file, don't re-download it.
-  /*
-  // Load the desc file, if it exists.
-  TiXmlDocument doc(_desc_file_pathname.c_str());
-  if (!doc.LoadFile()) {
-    download_desc_file();
-  } else {
-    got_desc_file(&doc, false);
-  }
-  */
-
-  download_desc_file();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,6 +100,8 @@ P3DPackage::
     delete _active_download;
     _active_download = NULL;
   }
+
+  assert(_instances.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,6 +139,87 @@ cancel_callback(Callback *callback) {
   } else {
     nout << "Canceling unknown callback on " << _package_fullname << "\n";
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::set_instance
+//       Access: Public
+//  Description: Specifies an instance that may be responsible for
+//               downloading this package.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+set_instance(P3DInstance *inst) {
+  _instances.push_back(inst);
+
+  begin_download();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::cancel_instance
+//       Access: Public
+//  Description: Indicates that the given instance will no longer be
+//               responsible for downloading this package.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+cancel_instance(P3DInstance *inst) {
+  assert(!_instances.empty());
+
+  if (inst == _instances[0]) {
+    // This was the primary instance.  Cancel any pending download and
+    // move to the next instance.
+    if (_active_download != NULL) {
+      _active_download->cancel();
+      delete _active_download;
+      _active_download = NULL;
+    }
+  }
+
+  Instances::iterator ii = find(_instances.begin(), _instances.end(), inst);
+  assert(ii != _instances.end());
+  _instances.erase(ii);
+
+  begin_download();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::begin_download
+//       Access: Public
+//  Description: Begins downloading and installing the package, if
+//               needed.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+begin_download() {  
+  if (_instances.empty()) {
+    // Can't download without any instances.
+    return;
+  }
+
+  if (_ready) {
+    // Already downloaded.
+    return;
+  }
+
+  if (_active_download != NULL) {
+    // In the middle of downloading.
+    return;
+  }
+
+  // TODO: we should check the desc file for updates with the server.
+  // Perhaps this should be done in a parent class.
+
+  // TODO: if the desc file exists, and is consistent with the server
+  // contents file, don't re-download it.
+  /*
+  // Load the desc file, if it exists.
+  TiXmlDocument doc(_desc_file_pathname.c_str());
+  if (!doc.LoadFile()) {
+    download_desc_file();
+  } else {
+    got_desc_file(&doc, false);
+  }
+  */
+
+  download_desc_file();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -554,8 +621,10 @@ start_download(P3DPackage::DownloadType dtype, const string &url,
 
   _active_download = download;
   _partial_download = false;
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  inst_mgr->get_command_instance()->start_download(download);
+
+  assert(!_instances.empty());
+
+  _instances[0]->start_download(download);
 }
 
 ////////////////////////////////////////////////////////////////////

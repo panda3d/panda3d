@@ -54,8 +54,6 @@ P3DInstanceManager() {
   icc.dwICC = ICC_PROGRESS_CLASS;
   InitCommonControlsEx(&icc);
 #endif
-
-  _command_instance = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -70,8 +68,6 @@ P3DInstanceManager::
 
   assert(_instances.empty());
   assert(_sessions.empty());
-
-  delete _command_instance;
 
 #ifdef _WIN32
   CloseHandle(_request_ready);
@@ -145,8 +141,6 @@ create_instance(P3D_request_ready_func *func,
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 finish_instance(P3DInstance *inst) {
-  assert(inst != _command_instance);
-
   Instances::iterator ii;
   ii = _instances.find(inst);
   assert(ii != _instances.end());
@@ -181,10 +175,6 @@ check_request() {
     if (inst->has_request()) {
       return inst;
     }
-  }
-
-  if (_command_instance->has_request()) {
-    return _command_instance;
   }
 
   return NULL;
@@ -290,9 +280,11 @@ signal_request_ready() {
 //     Function: P3DInstanceManager::mkdir_public
 //       Access: Public, Static
 //  Description: Creates a new directory with wide-open access
-//               priviledges.
+//               priviledges.  Returns true on success, false on
+//               failure.  Will create intervening directories if
+//               necessary.
 ////////////////////////////////////////////////////////////////////
-void P3DInstanceManager::
+bool P3DInstanceManager::
 mkdir_public(const string &dirname) {
 #ifdef _WIN32
   SECURITY_DESCRIPTOR sd;
@@ -302,10 +294,55 @@ mkdir_public(const string &dirname) {
   SECURITY_ATTRIBUTES sa;
   sa.nLength = sizeof(sa);
   sa.lpSecurityDescriptor = &sd;
-  CreateDirectory(dirname.c_str(), &sa);
+  if (CreateDirectory(dirname.c_str(), &sa) != 0) {
+    // Success!
+    return true;
+  }
+
+  // Failed.
+  DWORD last_error = GetLastError();
+  if (last_error == ERROR_ALREADY_EXISTS) {
+    // Not really an error: the directory is already there.
+    return true;
+  }
+
+  if (last_error == ERROR_PATH_NOT_FOUND) {
+    // We need to make the parent directory first.
+    string parent = get_dirname(dirname);
+    if (!parent.empty() && mkdir_public(parent)) {
+      // Parent successfully created.  Try again to make the child.
+      if (CreateDirectory(dirname.c_str(), &sa) != 0) {
+        // Got it!
+        return true;
+      }
+    }
+  }
+  return false;
 
 #else  //_WIN32
-  mkdir(dirname.c_str(), 0777);
+  if (mkdir(dirname.c_str(), 0777) == 0) {
+    // Success!
+    return true;
+  }
+
+  // Failed.
+  if (errno == EEXIST) {
+    // Not really an error: the directory is already there.
+    return true;
+  }
+
+  if (errno == ENOENT) {
+    // We need to make the parent directory first.
+    string parent = get_dirname(dirname);
+    if (!parent.empty() && mkdir_public(parent)) {
+      // Parent successfully created.  Try again to make the child.
+      if (mkdir(dirname.c_str(), 0777) == 0) {
+        // Got it!
+        return true;
+      }
+    }
+  }
+  return false;
 
 #endif  // _WIN32
 }
@@ -314,7 +351,9 @@ mkdir_public(const string &dirname) {
 //     Function: P3DInstanceManager::mkfile_public
 //       Access: Public, Static
 //  Description: Creates a new file with wide-open access
-//               priviledges.
+//               priviledges.  Returns true on success, false on
+//               failure.  This will create intervening directories if
+//               needed.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
 mkfile_public(const string &filename) {
@@ -331,7 +370,17 @@ mkfile_public(const string &filename) {
                            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
                            &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
   if (file == INVALID_HANDLE_VALUE) {
-    return false;
+    // Try to make the parent directory first.
+    string parent = get_dirname(filename);
+    if (!parent.empty() && mkdir_public(parent)) {
+      // Parent successfully created.  Try again to make the file.
+      file = CreateFile(filename.c_str(), GENERIC_READ | GENERIC_WRITE,
+                        FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
+                        &sa, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    }
+    if (file == INVALID_HANDLE_VALUE) {
+      return false;
+    }
   }
   CloseHandle(file);
   return true;
@@ -339,7 +388,15 @@ mkfile_public(const string &filename) {
 #else  // _WIN32
   int fd = creat(filename.c_str(), 0777);
   if (fd == -1) {
-    return false;
+    // Try to make the parent directory first.
+    string parent = get_dirname(filename);
+    if (!parent.empty() && mkdir_public(parent)) {
+      // Parent successfully created.  Try again to make the file.
+      fd = creat(filename.c_str(), 0777);
+    }
+    if (fd == -1) {
+      return false;
+    }
   }
   close(fd);
   return true;
@@ -356,21 +413,8 @@ P3DInstanceManager *P3DInstanceManager::
 get_global_ptr() {
   if (_global_ptr == NULL) {
     _global_ptr = new P3DInstanceManager;
-    _global_ptr->create_command_instance();
   }
   return _global_ptr;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::create_command_instance;
-//       Access: Private
-//  Description: Create a command instance.  This is used to handle
-//               requests that have nothing to do with any particular
-//               host-created instance.
-////////////////////////////////////////////////////////////////////
-void P3DInstanceManager::
-create_command_instance() {
-  _command_instance = new P3DInstance(NULL, "", NULL, 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -488,4 +532,23 @@ find_root_dir() const {
 #endif
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_dirname
+//       Access: Private, Static
+//  Description: Returns the directory component of the indicated
+//               pathname, or the empty string if there is no
+//               directory prefix.
+////////////////////////////////////////////////////////////////////
+string P3DInstanceManager::
+get_dirname(const string &filename) {
+  size_t p = filename.length();
+  while (p > 0) {
+    --p;
+    if (is_pathsep(filename[p])) {
+      return filename.substr(0, p);
+    }
+  }
+
+  return string();
+}
 

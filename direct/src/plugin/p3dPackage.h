@@ -18,6 +18,8 @@
 #include "p3d_plugin_common.h"
 #include "p3dFileDownload.h"
 
+class P3DInstance;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DPackage
 // Description : This corresponds to a downloadable, patchable
@@ -54,6 +56,9 @@ public:
   void set_callback(Callback *callback);
   void cancel_callback(Callback *callback);
 
+  void set_instance(P3DInstance *inst);
+  void cancel_instance(P3DInstance *inst);
+
 private:
   enum DownloadType {
     DT_desc_file,
@@ -73,6 +78,7 @@ private:
     DownloadType _dtype;
   };
 
+  void begin_download();
   void download_desc_file();
   void desc_file_download_finished(bool success);
   void got_desc_file(TiXmlDocument *doc, bool freshly_downloaded);
@@ -114,6 +120,9 @@ private:
 
   typedef vector<Callback *> Callbacks;
   Callbacks _callbacks;
+
+  typedef vector<P3DInstance *> Instances;
+  Instances _instances;
 
   enum { hash_size = 16 };
 

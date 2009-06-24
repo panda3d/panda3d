@@ -61,20 +61,6 @@ get_platform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_command_instance
-//       Access: Public
-//  Description: Returns a global P3DInstance object that exists for
-//               the lifetime of the instance manager.  This instance
-//               object has no reality onscreen, but can be used as a
-//               download host for downloading files that aren't
-//               specifically needed by any user-created instance.
-////////////////////////////////////////////////////////////////////
-inline P3DInstance *P3DInstanceManager::
-get_command_instance() const {
-  return _command_instance;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_num_instances
 //       Access: Public
 //  Description: Returns the number of instances currently running
@@ -83,4 +69,25 @@ get_command_instance() const {
 inline int P3DInstanceManager::
 get_num_instances() const {
   return _instances.size();
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::is_pathsep
+//       Access: Private, Static
+//  Description: Returns true if the indicated character is a path
+//               separator character (e.g. slash or backslash), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+inline bool P3DInstanceManager::
+is_pathsep(char ch) {
+  if (ch == '/') {
+    return true;
+  }
+#ifdef _WIN32
+  if (ch == '\\') {
+    return true;
+  }
+#endif
+  return false;
 }

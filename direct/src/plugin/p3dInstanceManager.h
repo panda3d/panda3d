@@ -58,28 +58,26 @@ public:
                           const string &package_version,
                           const string &package_display_name);
 
-  inline P3DInstance *get_command_instance() const;
   inline int get_num_instances() const;
 
   int get_unique_session_index();
   void signal_request_ready();
 
-  static void mkdir_public(const string &dirname);
+  static bool mkdir_public(const string &dirname);
   static bool mkfile_public(const string &dirname);
 
   static P3DInstanceManager *get_global_ptr();
 
 private:
-  void create_command_instance();
   string find_root_dir() const;
+  static inline bool is_pathsep(char ch);
+  static string get_dirname(const string &filename);
 
 private:
   bool _is_initialized;
   string _root_dir;
   string _download_url;
   string _platform;
-
-  P3DInstance *_command_instance;
 
   typedef set<P3DInstance *> Instances;
   Instances _instances;

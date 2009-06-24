@@ -16,8 +16,10 @@
 #include "p3dInstanceManager.h"
 #include "p3dDownload.h"
 #include "p3dSession.h"
+#include "p3dPackage.h"
 
 #include <sstream>
+#include <algorithm>
 
 int P3DInstance::_next_instance_id = 0;
 
@@ -60,6 +62,14 @@ P3DInstance::
   assert(_session == NULL);
 
   DESTROY_LOCK(_request_lock);
+
+  // Tell all of the packages that we're no longer in business for
+  // them.
+  Packages::iterator pi;
+  for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
+    (*pi)->cancel_instance(this);
+  }
+  _packages.clear();
 
   // TODO: empty _pending_requests queue and _downloads map.
 
@@ -237,6 +247,22 @@ feed_url_stream(int unique_id,
   }
 
   return download_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::add_package
+//       Access: Public
+//  Description: Adds the package to the list of packages used by this
+//               instance.  The instance will share responsibility for
+//               downloading the package will any of the other
+//               instances that use the same package.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+add_package(P3DPackage *package) {
+  assert(find(_packages.begin(), _packages.end(), package) == _packages.end());
+
+  _packages.push_back(package);
+  package->set_instance(this);
 }
 
 ////////////////////////////////////////////////////////////////////

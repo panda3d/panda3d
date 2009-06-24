@@ -26,6 +26,7 @@
 
 class P3DSession;
 class P3DDownload;
+class P3DPackage;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DInstance
@@ -64,6 +65,8 @@ public:
   inline const string &get_session_key() const;
   inline const string &get_python_version() const;
 
+  void add_package(P3DPackage *package);
+  
   void start_download(P3DDownload *download);
   void request_stop();
 
@@ -79,6 +82,9 @@ private:
   string _session_key;
   string _python_version;
   P3DSession *_session;
+
+  typedef vector<P3DPackage *> Packages;
+  Packages _packages;
 
   typedef map<int, P3DDownload *> Downloads;
   Downloads _downloads;

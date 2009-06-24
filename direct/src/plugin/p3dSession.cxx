@@ -52,6 +52,8 @@ P3DSession(P3DInstance *inst) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   _panda3d = inst_mgr->get_package("panda3d", "dev", "Panda3D");
+  inst->add_package(_panda3d);
+
   _panda3d_callback = NULL;
   _python_root_dir = _panda3d->get_package_dir();
 
