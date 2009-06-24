@@ -44,13 +44,11 @@ public:
   inline const string &get_platform() const;
 
   P3DInstance *
-  create_instance(P3D_request_ready_func *func,
-                  void *user_data,
-                  const string &p3d_filename, 
-                  const P3D_token tokens[], size_t num_tokens);
+  create_instance(P3D_request_ready_func *func, void *user_data);
 
-  void
-  finish_instance(P3DInstance *inst);
+  bool start_instance(P3DInstance *inst, const string &p3d_filename,
+                      const P3D_token tokens[], size_t num_tokens);
+  void finish_instance(P3DInstance *inst);
 
   P3DInstance *check_request();
   void wait_request();

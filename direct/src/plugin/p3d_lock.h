@@ -32,11 +32,14 @@
 // Posix case
 #include <pthread.h>
 
+// We declare this to be a recursive lock, since we might make a
+// request_ready call from within the API, which in turn is allowed to
+// call back into the API.
 #define LOCK pthread_mutex_t
 #define INIT_LOCK(lock) { \
     pthread_mutexattr_t attr; \
     pthread_mutexattr_init(&attr); \
-    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL); \
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE); \
     int result = pthread_mutex_init(&(lock), &attr);        \
     pthread_mutexattr_destroy(&attr); \
   }

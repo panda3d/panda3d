@@ -29,27 +29,18 @@ int P3DInstance::_next_instance_id = 0;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DInstance::
-P3DInstance(P3D_request_ready_func *func, void *user_data,
-            const string &p3d_filename, 
-            const P3D_token tokens[], size_t num_tokens) :
-  _func(func),
-  _fparams(p3d_filename, tokens, num_tokens)
+P3DInstance(P3D_request_ready_func *func, void *user_data) :
+  _func(func)
 {
   _user_data = user_data;
   _request_pending = false;
+  _got_fparams = false;
+  _got_wparams = false;
 
   _instance_id = _next_instance_id;
   ++_next_instance_id;
 
   INIT_LOCK(_request_lock);
-
-  // For the moment, all sessions will be unique.
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  ostringstream strm;
-  strm << inst_mgr->get_unique_session_index();
-  _session_key = strm.str();
-
-  _python_version = "python24";
 
   _session = NULL;
   _requested_stop = false;
@@ -81,6 +72,29 @@ P3DInstance::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::set_fparams
+//       Access: Public
+//  Description: Sets up the initial file parameters for the instance.
+//               Normally this is only called once.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+set_fparams(const P3DFileParams &fparams) {
+  _got_fparams = true;
+  _fparams = fparams;
+
+  // This also sets up some internal data based on the contents of the
+  // above file and the associated tokens.
+
+  // For the moment, all sessions will be unique.
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  ostringstream strm;
+  strm << inst_mgr->get_unique_session_index();
+  _session_key = strm.str();
+
+  _python_version = "python24";
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::set_wparams
 //       Access: Public
 //  Description: Changes the window parameters, e.g. to resize or
@@ -89,21 +103,23 @@ P3DInstance::
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_wparams(const P3DWindowParams &wparams) {
-  assert(_session != NULL);
+  _got_wparams = true;
   _wparams = wparams;
 
-  TiXmlDocument *doc = new TiXmlDocument;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
-  TiXmlElement *xcommand = new TiXmlElement("command");
-  xcommand->SetAttribute("cmd", "setup_window");
-  xcommand->SetAttribute("id", get_instance_id());
-  TiXmlElement *xwparams = _wparams.make_xml();
+  if (_session != NULL) {
+    TiXmlDocument *doc = new TiXmlDocument;
+    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+    TiXmlElement *xcommand = new TiXmlElement("command");
+    xcommand->SetAttribute("cmd", "setup_window");
+    xcommand->SetAttribute("id", get_instance_id());
+    TiXmlElement *xwparams = _wparams.make_xml();
+    
+    doc->LinkEndChild(decl);
+    doc->LinkEndChild(xcommand);
+    xcommand->LinkEndChild(xwparams);
 
-  doc->LinkEndChild(decl);
-  doc->LinkEndChild(xcommand);
-  xcommand->LinkEndChild(xwparams);
-
-  _session->send_command(doc);
+    _session->send_command(doc);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -153,9 +169,7 @@ set_property(const string &property_name, const string &value) {
 ////////////////////////////////////////////////////////////////////
 bool P3DInstance::
 has_request() {
-  nout << "has_request called, getting lock\n" << flush;
   ACQUIRE_LOCK(_request_lock);
-  nout << "got lock\n" << flush;
   bool any_requests = !_pending_requests.empty();
   RELEASE_LOCK(_request_lock);
   return any_requests;
@@ -174,11 +188,8 @@ P3D_request *P3DInstance::
 get_request() {
   P3D_request *result = NULL;
   ACQUIRE_LOCK(_request_lock);
-  nout << "P3DInstance::get_request() called on " << this
-       << ", " << _pending_requests.size() << " requests in queue\n";
   if (!_pending_requests.empty()) {
     result = _pending_requests.front();
-    nout << "popped request " << result << "\n";
     _pending_requests.pop_front();
     _request_pending = !_pending_requests.empty();
   }
@@ -195,7 +206,6 @@ get_request() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_request(P3D_request *request) {
-  nout << "adding request " << request << " in " << this << "\n";
   assert(request->_instance == this);
 
   ACQUIRE_LOCK(_request_lock);
@@ -204,11 +214,9 @@ add_request(P3D_request *request) {
   RELEASE_LOCK(_request_lock);
 
   // Asynchronous notification for anyone who cares.
-  nout << "request_ready, calling " << (void *)_func << "\n" << flush;
   if (_func != NULL) {
     _func(this);
   }
-  nout << "done calling " << (void *)_func << "\n" << flush;
 
   // Synchronous notification for pollers.
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -342,11 +350,18 @@ request_stop() {
 ////////////////////////////////////////////////////////////////////
 TiXmlElement *P3DInstance::
 make_xml() {
+  assert(_got_fparams);
+
   TiXmlElement *xinstance = new TiXmlElement("instance");
   xinstance->SetAttribute("id", _instance_id);
 
   TiXmlElement *xfparams = _fparams.make_xml();
   xinstance->LinkEndChild(xfparams);
+
+  if (_got_wparams) {
+    TiXmlElement *xwparams = _wparams.make_xml();
+    xinstance->LinkEndChild(xwparams);
+  }
 
   return xinstance;
 }

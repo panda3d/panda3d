@@ -112,13 +112,29 @@ initialize() {
 //               indicated startup information.
 ////////////////////////////////////////////////////////////////////
 P3DInstance *P3DInstanceManager::
-create_instance(P3D_request_ready_func *func,
-                void *user_data,
-                const string &p3d_filename, 
-                const P3D_token tokens[], size_t num_tokens) {
-  P3DInstance *inst = new P3DInstance(func, user_data, p3d_filename, 
-                                      tokens, num_tokens);
+create_instance(P3D_request_ready_func *func, void *user_data) {
+  P3DInstance *inst = new P3DInstance(func, user_data);
   _instances.insert(inst);
+
+  return inst;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::start_instance
+//       Access: Public
+//  Description: Actually starts the instance running.  Before this
+//               call, the instance is in an indeterminate state.  It
+//               is an error to call this more than once for a
+//               particular instance.
+////////////////////////////////////////////////////////////////////
+bool P3DInstanceManager::
+start_instance(P3DInstance *inst, const string &p3d_filename,
+               const P3D_token tokens[], size_t num_tokens) {
+  if (inst->is_started()) {
+    nout << "Instance started twice: " << inst << "\n";
+    return false;
+  }
+  inst->set_fparams(P3DFileParams(p3d_filename, tokens, num_tokens));
 
   P3DSession *session;
   Sessions::iterator si = _sessions.find(inst->get_session_key());
@@ -132,7 +148,7 @@ create_instance(P3D_request_ready_func *func,
 
   session->start_instance(inst);
 
-  return inst;
+  return inst->is_started();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -171,16 +187,12 @@ finish_instance(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 P3DInstance *P3DInstanceManager::
 check_request() {
-  nout << "check_request\n" << flush;
   Instances::iterator ii;
   for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
     P3DInstance *inst = (*ii);
-    cerr << "  checking request for " << inst << "\n" << flush;
     if (inst->has_request()) {
-      cerr << "    true\n" << flush;
       return inst;
     }
-    cerr << "    false\n" << flush;
   }
 
   return NULL;

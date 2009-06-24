@@ -70,3 +70,14 @@ inline const string &P3DInstance::
 get_python_version() const {
   return _python_version;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::is_started
+//       Access: Public
+//  Description: Returns true if this instance has already been
+//               started within some session, false otherwise.
+////////////////////////////////////////////////////////////////////
+inline bool P3DInstance::
+is_started() const {
+  return (_session != NULL);
+}

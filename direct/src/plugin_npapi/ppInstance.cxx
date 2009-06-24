@@ -253,7 +253,7 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
     break;
   }
   
-  //  delete req;
+  delete req;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -333,7 +333,8 @@ stream_as_file(NPStream *stream, const char *fname) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 handle_request(P3D_request *request) {
-  logfile << "handle_request: " << request << "\n";
+  logfile << "handle_request: " << request << ", " << request->_instance
+          << " within " << this << ", " << _p3d_inst << "\n" << flush;
   assert(request->_instance == _p3d_inst);
 
   bool handled = false;
@@ -401,15 +402,17 @@ create_instance() {
     return;
   }
 
-  const P3D_token *tokens = NULL;
-  if (!_tokens.empty()) {
-    tokens = &_tokens[0];
-  }
-
-  _p3d_inst = P3D_create_instance
-    (request_ready, this, _p3d_filename.c_str(), tokens, _tokens.size());
+  logfile << "within " << this << ", creating new instance\n" << flush;
+  _p3d_inst = P3D_new_instance(request_ready, this);
+  logfile << "within " << this << ", created new instance " << _p3d_inst 
+          << "\n" << flush;
 
   if (_p3d_inst != NULL) {
+    const P3D_token *tokens = NULL;
+    if (!_tokens.empty()) {
+      tokens = &_tokens[0];
+    }
+    P3D_instance_start(_p3d_inst, _p3d_filename.c_str(), tokens, _tokens.size());
     send_window();
   }
 }

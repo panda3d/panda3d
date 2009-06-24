@@ -118,7 +118,7 @@ typedef struct {
 
   /* an opaque pointer the host may use to store private data that the
      plugin does not interpret.  This pointer can be directly set, or
-     it can be initialized in the P3D_create_instance() call. */
+     it can be initialized in the P3D_new_instance() call. */
   void *_user_data;
 
   /* Additional opaque data may be stored here. */
@@ -168,10 +168,10 @@ typedef enum {
 } P3D_window_type;
 
 
-/* This function pointer must be passed to P3D_create_instance(),
-   below.  The host must pass in a pointer to a valid function in the
-   host's address space, or NULL.  If not NULL, this function will be
-   called asynchronously by the plugin when the plugin needs to make a
+/* This function pointer must be passed to P3D_new_instance(), below.
+   The host must pass in a pointer to a valid function in the host's
+   address space, or NULL.  If not NULL, this function will be called
+   asynchronously by the plugin when the plugin needs to make a
    request from the host.  After this notification has been received,
    the host should call P3D_instance_get_request() (at its
    convenience) to retrieve the actual plugin request.  If the host
@@ -199,16 +199,25 @@ typedef struct {
 
 /* This function creates a new Panda3D instance.  
 
-   For p3d_filename pass the name of a file on disk that contains the
-   contents of the p3d file that should be launched within the
-   instance.  If this is empty or NULL, the "src" token (below) will
-   be downloaded instead.
-
    The user_data pointer is any arbitrary pointer value; it will be
    copied into the _user_data member of the new P3D_instance object.
    This pointer is intended for the host to use to store private data
    associated with each instance; the plugin will not do anything with
    this data.
+
+ */
+
+typedef P3D_instance *
+P3D_new_instance_func(P3D_request_ready_func *func, void *user_data);
+
+/* This function should be called at some point after
+   P3D_new_instance(); it actually starts the instance running.
+   Before this call, the instance will be in an indeterminate state.
+
+   For p3d_filename pass the name of a file on disk that contains the
+   contents of the p3d file that should be launched within the
+   instance.  If this is empty or NULL, the "src" token (below) will
+   be downloaded instead.
 
    For tokens, pass an array of P3D_token elements (above), which
    correspond to the user-supplied keyword/value pairs that may appear
@@ -229,13 +238,10 @@ typedef struct {
        output is written to the standard error output, which may be
        NULL on a gui application.
 
- */
-
-typedef P3D_instance *
-P3D_create_instance_func(P3D_request_ready_func *func,
-                         void *user_data,
-                         const char *p3d_filename, 
-                         const P3D_token tokens[], size_t num_tokens);
+   The return value is true on success, false on failure. */
+typedef bool
+P3D_instance_start_func(P3D_instance *instance, const char *p3d_filename, 
+                        const P3D_token tokens[], size_t num_tokens);
 
 
 /* Call this function to interrupt a particular instance and stop it
@@ -467,7 +473,8 @@ P3D_instance_feed_url_stream_func(P3D_instance *instance, int unique_id,
 /* Define all of the actual prototypes for the above functions. */
 EXPCL_P3D_PLUGIN P3D_initialize_func P3D_initialize;
 EXPCL_P3D_PLUGIN P3D_free_string_func P3D_free_string;
-EXPCL_P3D_PLUGIN P3D_create_instance_func P3D_create_instance;
+EXPCL_P3D_PLUGIN P3D_new_instance_func P3D_new_instance;
+EXPCL_P3D_PLUGIN P3D_instance_start_func P3D_instance_start;
 EXPCL_P3D_PLUGIN P3D_instance_finish_func P3D_instance_finish;
 EXPCL_P3D_PLUGIN P3D_instance_setup_window_func P3D_instance_setup_window;
 EXPCL_P3D_PLUGIN P3D_instance_has_property_func P3D_instance_has_property;

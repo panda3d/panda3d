@@ -69,19 +69,26 @@ P3D_free_string(char *string) {
 }
 
 P3D_instance *
-P3D_create_instance(P3D_request_ready_func *func,
-                    void *user_data,
-                    const char *p3d_filename, 
-                    const P3D_token tokens[], size_t num_tokens) {
+P3D_new_instance(P3D_request_ready_func *func, void *user_data) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3DInstance *result = inst_mgr->create_instance(func, user_data);
+  RELEASE_LOCK(_lock);
+  return result;
+}
+
+bool
+P3D_instance_start(P3D_instance *instance, const char *p3d_filename, 
+                   const P3D_token tokens[], size_t num_tokens) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   if (p3d_filename == NULL) {
     p3d_filename = "";
   }
-
-  P3DInstance *result = 
-    inst_mgr->create_instance(func, user_data, p3d_filename, tokens, num_tokens);
+  ACQUIRE_LOCK(_lock);
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  bool result = inst_mgr->start_instance
+    ((P3DInstance *)instance, p3d_filename, tokens, num_tokens);
   RELEASE_LOCK(_lock);
   return result;
 }
@@ -149,9 +156,7 @@ P3D_request *
 P3D_instance_get_request(P3D_instance *instance) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  nout << "P3D_instance_get_request(" << instance << ")\n";
   P3D_request *result = ((P3DInstance *)instance)->get_request();
-  nout << "  result = " << result << "\n" << flush;
   RELEASE_LOCK(_lock);
   return result;
 }
@@ -162,8 +167,6 @@ P3D_check_request(bool wait) {
   ACQUIRE_LOCK(_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3D_instance *inst = inst_mgr->check_request();
-
-  nout << "P3D_instance_check_request, inst = " << inst << "\n";
 
   if (inst != NULL || !wait) {
     RELEASE_LOCK(_lock);

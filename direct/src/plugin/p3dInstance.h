@@ -35,11 +35,10 @@ class P3DPackage;
 ////////////////////////////////////////////////////////////////////
 class P3DInstance : public P3D_instance {
 public:
-  P3DInstance(P3D_request_ready_func *func, void *user_data,
-              const string &p3d_filename, 
-              const P3D_token tokens[], size_t num_tokens);
+  P3DInstance(P3D_request_ready_func *func, void *user_data);
   ~P3DInstance();
 
+  void set_fparams(const P3DFileParams &fparams);
   inline const P3DFileParams &get_fparams() const;
 
   void set_wparams(const P3DWindowParams &wparams);
@@ -68,6 +67,7 @@ public:
   void add_package(P3DPackage *package);
   
   void start_download(P3DDownload *download);
+  inline bool is_started() const;
   void request_stop();
 
   TiXmlElement *make_xml();
@@ -75,7 +75,10 @@ public:
 private:
   P3D_request_ready_func *_func;
 
+  bool _got_fparams;
   P3DFileParams _fparams;
+
+  bool _got_wparams;
   P3DWindowParams _wparams;
 
   int _instance_id;

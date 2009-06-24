@@ -49,15 +49,15 @@ P3DSession(P3DInstance *inst) {
 
   _output_filename = inst->get_fparams().lookup_token("output_filename");
 
+  _panda3d_callback = NULL;
+
+  INIT_LOCK(_instances_lock);
+
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   _panda3d = inst_mgr->get_package("panda3d", "dev", "Panda3D");
-  inst->add_package(_panda3d);
-
-  _panda3d_callback = NULL;
   _python_root_dir = _panda3d->get_package_dir();
-
-  INIT_LOCK(_instances_lock);
+  inst->add_package(_panda3d);
 }
 
 

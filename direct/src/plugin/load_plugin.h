@@ -22,7 +22,8 @@ using namespace std;
 
 extern P3D_initialize_func *P3D_initialize;
 extern P3D_free_string_func *P3D_free_string;
-extern P3D_create_instance_func *P3D_create_instance;
+extern P3D_new_instance_func *P3D_new_instance;
+extern P3D_instance_start_func *P3D_instance_start;
 extern P3D_instance_finish_func *P3D_instance_finish;
 extern P3D_instance_setup_window_func *P3D_instance_setup_window;
 extern P3D_instance_has_property_func *P3D_instance_has_property;

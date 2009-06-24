@@ -33,7 +33,8 @@ static const string default_plugin_filename = "p3d_plugin";
 
 P3D_initialize_func *P3D_initialize;
 P3D_free_string_func *P3D_free_string;
-P3D_create_instance_func *P3D_create_instance;
+P3D_new_instance_func *P3D_new_instance;
+P3D_instance_start_func *P3D_instance_start;
 P3D_instance_finish_func *P3D_instance_finish;
 P3D_instance_setup_window_func *P3D_instance_setup_window;
 P3D_instance_has_property_func *P3D_instance_has_property;
@@ -147,7 +148,8 @@ load_plugin(const string &p3d_plugin_filename) {
   // Now get all of the function pointers.
   P3D_initialize = (P3D_initialize_func *)GetProcAddress(module, "P3D_initialize");  
   P3D_free_string = (P3D_free_string_func *)GetProcAddress(module, "P3D_free_string");  
-  P3D_create_instance = (P3D_create_instance_func *)GetProcAddress(module, "P3D_create_instance");  
+  P3D_new_instance = (P3D_new_instance_func *)GetProcAddress(module, "P3D_new_instance");  
+  P3D_instance_start = (P3D_instance_start_func *)GetProcAddress(module, "P3D_instance_start");  
   P3D_instance_finish = (P3D_instance_finish_func *)GetProcAddress(module, "P3D_instance_finish");  
   P3D_instance_setup_window = (P3D_instance_setup_window_func *)GetProcAddress(module, "P3D_instance_setup_window");  
   P3D_instance_has_property = (P3D_instance_has_property_func *)GetProcAddress(module, "P3D_instance_has_property");  
@@ -170,7 +172,8 @@ load_plugin(const string &p3d_plugin_filename) {
   // Now get all of the function pointers.
   P3D_initialize = (P3D_initialize_func *)dlsym(module, "P3D_initialize");  
   P3D_free_string = (P3D_free_string_func *)dlsym(module, "P3D_free_string");  
-  P3D_create_instance = (P3D_create_instance_func *)dlsym(module, "P3D_create_instance");  
+  P3D_new_instance = (P3D_new_instance_func *)dlsym(module, "P3D_new_instance");  
+  P3D_instance_start = (P3D_instance_start_func *)dlsym(module, "P3D_instance_start");  
   P3D_instance_finish = (P3D_instance_finish_func *)dlsym(module, "P3D_instance_finish");  
   P3D_instance_setup_window = (P3D_instance_setup_window_func *)dlsym(module, "P3D_instance_setup_window");  
   P3D_instance_has_property = (P3D_instance_has_property_func *)dlsym(module, "P3D_instance_has_property");  
@@ -186,7 +189,8 @@ load_plugin(const string &p3d_plugin_filename) {
   // Ensure that all of the function pointers have been found.
   if (P3D_initialize == NULL ||
       P3D_free_string == NULL ||
-      P3D_create_instance == NULL ||
+      P3D_new_instance == NULL ||
+      P3D_instance_start == NULL ||
       P3D_instance_finish == NULL ||
       P3D_instance_setup_window == NULL ||
       P3D_instance_has_property == NULL ||
@@ -236,7 +240,8 @@ unload_plugin() {
   
   P3D_initialize = NULL;
   P3D_free_string = NULL;
-  P3D_create_instance = NULL;
+  P3D_new_instance = NULL;
+  P3D_instance_start = NULL;
   P3D_instance_finish = NULL;
   P3D_instance_has_property = NULL;
   P3D_instance_get_property = NULL;

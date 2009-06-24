@@ -292,6 +292,11 @@ start_instance(P3DCInstance *inst, TiXmlElement *xinstance) {
   if (xfparams != (TiXmlElement *)NULL) {
     set_p3d_filename(inst, xfparams);
   }
+
+  TiXmlElement *xwparams = xinstance->FirstChildElement("wparams");
+  if (xwparams != (TiXmlElement *)NULL) {
+    setup_window(inst, xwparams);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -377,8 +382,17 @@ setup_window(int id, TiXmlElement *xwparams) {
     return;
   }
 
-  //  P3DCInstance *inst = (*ii).second;
+  P3DCInstance *inst = (*ii).second;
+  setup_window(inst, xwparams);
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::setup_window
+//       Access: Private
+//  Description: Sets the window parameters for the indicated instance.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   string window_type;
   const char *window_type_c = xwparams->Attribute("window_type");
   if (window_type_c != NULL) {

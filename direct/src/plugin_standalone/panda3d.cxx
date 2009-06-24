@@ -261,11 +261,13 @@ create_instance(const string &arg, P3D_window_type window_type,
     os_p3d_filename = p3d_filename.to_os_specific();
   } 
 
-  P3D_instance *inst = P3D_create_instance
-    (NULL, NULL, os_p3d_filename.c_str(), tokens, num_tokens);
+  P3D_instance *inst = P3D_new_instance(NULL, NULL);
 
-  P3D_instance_setup_window
-    (inst, window_type, win_x, win_y, win_width, win_height, parent_window);
+  if (inst != NULL) {
+    P3D_instance_setup_window
+      (inst, window_type, win_x, win_y, win_width, win_height, parent_window);
+    P3D_instance_start(inst, os_p3d_filename.c_str(), tokens, num_tokens);
+  }
 
   return inst;
 }
