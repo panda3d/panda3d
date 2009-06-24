@@ -403,10 +403,7 @@ create_instance() {
     return;
   }
 
-  logfile << "within " << this << ", creating new instance\n" << flush;
   _p3d_inst = P3D_new_instance(request_ready, this);
-  logfile << "within " << this << ", created new instance " << _p3d_inst 
-          << "\n" << flush;
 
   if (_p3d_inst != NULL) {
     const P3D_token *tokens = NULL;
