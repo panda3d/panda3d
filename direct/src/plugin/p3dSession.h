@@ -58,6 +58,8 @@ private:
   // These methods run only within the read thread.
   void rt_thread_run();
   void rt_terminate();
+  void rt_handle_request(TiXmlDocument *doc);
+  P3D_request *rt_make_p3d_request(TiXmlElement *xrequest);
 
 #ifdef _WIN32
   static DWORD WINAPI win_rt_thread_run(LPVOID data);

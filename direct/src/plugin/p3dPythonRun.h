@@ -66,6 +66,9 @@ private:
   AsyncTask::DoneStatus check_comm(GenericAsyncTask *task);
   static AsyncTask::DoneStatus st_check_comm(GenericAsyncTask *task, void *user_data);
 
+  PyObject *py_request_func(PyObject *args);
+  static PyObject *st_request_func(PyObject *, PyObject *args);
+
   void spawn_read_thread();
   void join_read_thread();
 
@@ -119,6 +122,9 @@ private:
 #else
   pthread_t _read_thread;
 #endif
+
+public:
+  static P3DPythonRun *_global_ptr;
 };
 
 #include "p3dPythonRun.I"

@@ -15,6 +15,11 @@
 #include "p3dPythonRun.h"
 #include "asyncTaskManager.h"
 
+// There is only one P3DPythonRun object in any given process space.
+// Makes the statics easier to deal with, and we don't need multiple
+// instances of this think.
+P3DPythonRun *P3DPythonRun::_global_ptr = NULL;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonRun::Constructor
 //       Access: Public
@@ -129,6 +134,35 @@ run_python() {
 
   Py_DECREF(runp3d);
 
+
+  // Construct a Python wrapper around our request_func() method.
+  static PyMethodDef p3dpython_methods[] = {
+    {"request_func", P3DPythonRun::st_request_func, METH_VARARGS,
+     "Check for communications to and from the plugin host."},
+    {NULL, NULL, 0, NULL}        /* Sentinel */
+  };
+  PyObject *p3dpython = Py_InitModule("p3dpython", p3dpython_methods);
+  if (p3dpython == NULL) {
+    PyErr_Print();
+    return false;
+  }
+  PyObject *request_func = PyObject_GetAttrString(p3dpython, "request_func");
+  if (request_func == NULL) {
+    PyErr_Print();
+    return false;
+  }
+
+  // Now pass that func pointer back to our AppRunner instance, so it
+  // can call up to us.
+  PyObject *result = PyObject_CallMethod(_runner, "setRequestFunc", "O", request_func);
+  if (result == NULL) {
+    PyErr_Print();
+    return false;
+  }
+  Py_DECREF(result);
+  Py_DECREF(request_func);
+ 
+
   // Now add check_comm() as a task.
   _check_comm_task = new GenericAsyncTask("check_comm", st_check_comm, this);
   AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
@@ -194,8 +228,7 @@ handle_command(TiXmlDocument *doc) {
 //  Description: This method is added to the Python task manager (via
 //               py_check_comm, below) so that it gets a call every
 //               frame.  Its job is to check for commands received
-//               from, and requests to be delivered to, the plugin
-//               host in the parent process.
+//               from the plugin host in the parent process.
 ////////////////////////////////////////////////////////////////////
 AsyncTask::DoneStatus P3DPythonRun::
 check_comm(GenericAsyncTask *task) {
@@ -232,6 +265,59 @@ AsyncTask::DoneStatus P3DPythonRun::
 st_check_comm(GenericAsyncTask *task, void *user_data) {
   P3DPythonRun *self = (P3DPythonRun *)user_data;
   return self->check_comm(task);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::py_request_func
+//       Access: Private
+//  Description: This method is a special Python function that is
+//               added as a callback to the AppRunner class, to allow
+//               Python to upcall into this object.
+////////////////////////////////////////////////////////////////////
+PyObject *P3DPythonRun::
+py_request_func(PyObject *args) {
+  int instance_id;
+  const char *request_type;
+  PyObject *extra_args;
+  if (!PyArg_ParseTuple(args, "isO", &instance_id, &request_type, &extra_args)) {
+    return NULL;
+  }
+
+  TiXmlDocument doc;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+  TiXmlElement *xrequest = new TiXmlElement("request");
+  xrequest->SetAttribute("id", instance_id);
+  xrequest->SetAttribute("rtype", request_type);
+
+  if (strcmp(request_type, "notify") == 0) {
+    // A general notification to be sent directly to the instance.
+    const char *message;
+    if (!PyArg_ParseTuple(extra_args, "s", &message)) {
+      return NULL;
+    }
+
+    xrequest->SetAttribute("message", message);
+    doc.LinkEndChild(decl);
+    doc.LinkEndChild(xrequest);
+    _pipe_write << doc << flush;
+
+  } else {
+    string message = string("Unsupported request type: ") + string(request_type);
+    PyErr_SetString(PyExc_ValueError, message.c_str());
+    return NULL;
+  }
+
+  return Py_BuildValue("");
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::st_request_func
+//       Access: Private, Static
+//  Description: This is the static wrapper around py_request_func.
+////////////////////////////////////////////////////////////////////
+PyObject *P3DPythonRun::
+st_request_func(PyObject *, PyObject *args) {
+  return P3DPythonRun::_global_ptr->py_request_func(args);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -369,7 +455,8 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   }
   
   PyObject *result = PyObject_CallMethod
-    (_runner, "setP3DFilename", "sO", p3d_filename.c_str(), token_list);
+    (_runner, "setP3DFilename", "sOi", p3d_filename.c_str(), token_list,
+     inst->get_instance_id());
   Py_DECREF(token_list);
 
   if (result == NULL) {
@@ -534,9 +621,9 @@ posix_rt_thread_run(void *data) {
 ////////////////////////////////////////////////////////////////////
 int
 main(int argc, char *argv[]) {
-  P3DPythonRun run(argc, argv);
+  P3DPythonRun::_global_ptr = new P3DPythonRun(argc, argv);
   
-  if (!run.run_python()) {
+  if (!P3DPythonRun::_global_ptr->run_python()) {
     nout << "Couldn't initialize Python.\n";
     return 1;
   }

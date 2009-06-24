@@ -49,6 +49,13 @@ class AppRunner(DirectObject):
         self.gotP3DFilename = False
         self.started = False
         self.windowPrc = None
+        self.instanceId = None
+
+        # This is the default requestFunc that is installed if we
+        # never call setRequestFunc().
+        def defaultRequestFunc(*args):
+            print "Ignoring request func: %s" % (args,)
+        self.requestFunc = defaultRequestFunc
 
     def initPackedAppEnvironment(self):
         """ This function sets up the Python environment suitably for
@@ -121,7 +128,14 @@ class AppRunner(DirectObject):
             if hasattr(main, 'main') and callable(main.main):
                 main.main()
 
-    def setP3DFilename(self, p3dFilename, tokens = []):
+    def setP3DFilename(self, p3dFilename, tokens = [],
+                       instanceId = None):
+        # One day we will have support for multiple instances within a
+        # Python session.  Against that day, we save the instance ID
+        # for this instance.
+        print "setP3DFilename(%s, %s, %s)" % (p3dFilename, tokens, instanceId)
+        self.instanceId = instanceId
+        
         tokenDict = dict(tokens)
         fname = Filename.fromOsSpecific(p3dFilename)
         if not p3dFilename:
@@ -207,10 +221,19 @@ class AppRunner(DirectObject):
         self.gotWindow = True
         self.startIfReady()
 
+    def setRequestFunc(self, func):
+        """ This method is called by the plugin at startup to supply a
+        function that can be used to deliver requests upstream, to the
+        plugin, and thereby to the browser. """
+        self.requestFunc = func
+
+    def sendRequest(self, request, *args):
+        self.requestFunc(self.instanceId, request, args)
+
     def windowEvent(self, win):
         print "Got window event in runp3d"
 
-        # TODO: feed this information back to the plugin host.
+        self.sendRequest('notify', 'window_opened')
 
     def parseSysArgs(self):
         """ Converts sys.argv into (p3dFilename, tokens). """

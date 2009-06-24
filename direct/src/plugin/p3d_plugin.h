@@ -322,6 +322,7 @@ typedef enum {
   P3D_RT_unused, //  P3D_RT_new_config_xml,
   P3D_RT_get_url,
   P3D_RT_post_url,
+  P3D_RT_notify,
 } P3D_request_type;
 
 /* Structures corresponding to the request types in the above enum. */
@@ -357,6 +358,14 @@ typedef struct {
   int _unique_id;
 } P3D_request_post_url;
 
+/* A general notification.  This is just a message of some event
+   having occurred within the Panda3D instance.  It may be safely
+   ignored.
+*/
+typedef struct {
+  const char *_message;
+} P3D_request_notify;
+
 /* This is the overall structure that represents a single request.  It
    is returned by P3D_instance_get_request(). */
 typedef struct {
@@ -366,6 +375,7 @@ typedef struct {
     P3D_request_stop _stop;
     P3D_request_get_url _get_url;
     P3D_request_post_url _post_url;
+    P3D_request_notify _notify;
   } _request;
 } P3D_request;
 

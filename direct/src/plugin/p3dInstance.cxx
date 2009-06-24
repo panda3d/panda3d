@@ -76,6 +76,7 @@ P3DInstance::
   _packages.clear();
 
   if (_splash_window != NULL) {
+    _splash_window->close_window();
     delete _splash_window;
     _splash_window = NULL;
   }
@@ -226,6 +227,25 @@ get_request() {
   }
   RELEASE_LOCK(_request_lock);
 
+  if (result != NULL) {
+    if (result->_request_type == P3D_RT_notify) {
+      // If we received a notify request, process the notification
+      // immediately--it might be interesting to this instance.
+      const char *message = result->_request._notify._message;
+      if (strcmp(message, "window_opened") == 0) {
+        // The process told us that it just succesfully opened its
+        // window.
+        nout << "Instance " << this << " got window_opened\n" << flush;
+        _instance_window_opened = true;
+        if (_splash_window != NULL) {
+          _splash_window->close_window();
+          delete _splash_window;
+          _splash_window = NULL;
+        }
+      }
+    }
+  }
+
   return result;
 }
 
@@ -237,7 +257,7 @@ get_request() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_request(P3D_request *request) {
-  assert(request->_instance == this);
+  request->_instance = this;
 
   ACQUIRE_LOCK(_request_lock);
   _pending_requests.push_back(request);
@@ -266,7 +286,6 @@ void P3DInstance::
 finish_request(P3D_request *request, bool handled) {
   assert(request != NULL);
 
-  // TODO.  Delete sub-pieces more aggressively.  Deal with handled flag.
   delete request;
 }
 
@@ -348,7 +367,6 @@ start_download(P3DDownload *download) {
        << "\n" << flush;
 
   P3D_request *request = new P3D_request;
-  request->_instance = this;
   request->_request_type = P3D_RT_get_url;
   request->_request._get_url._url = strdup(download->get_url().c_str());
   request->_request._get_url._unique_id = download_id;
@@ -368,7 +386,6 @@ request_stop() {
   if (!_requested_stop) {
     _requested_stop = true;
     P3D_request *request = new P3D_request;
-    request->_instance = this;
     request->_request_type = P3D_RT_stop;
     add_request(request);
   }

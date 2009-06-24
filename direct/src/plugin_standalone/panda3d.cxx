@@ -171,6 +171,10 @@ handle_request(P3D_request *request) {
     }
     break;
 
+  case P3D_RT_notify:
+    // Ignore notifications.
+    break;
+
   default:
     // Some request types are not handled.
     cerr << "Unhandled request: " << request->_request_type << "\n";

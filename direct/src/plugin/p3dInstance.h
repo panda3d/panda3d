@@ -71,6 +71,8 @@ public:
   inline bool is_started() const;
   void request_stop();
 
+  void async_notify(const string &message);
+
   TiXmlElement *make_xml();
 
 private:

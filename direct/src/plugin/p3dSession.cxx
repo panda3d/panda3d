@@ -405,11 +405,64 @@ rt_thread_run() {
     }
 
     // Successfully read an XML document.
-    nout << "Session got request: " << *doc << "\n" << flush;
-
-    // TODO: feed the request up to the parent.
-    delete doc;
+    rt_handle_request(doc);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::rt_handle_request
+//       Access: Private
+//  Description: Processes a single request or notification received
+//               from an instance.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+rt_handle_request(TiXmlDocument *doc) {
+  nout << "Session got request: " << *doc << "\n" << flush;
+
+  TiXmlElement *xrequest = doc->FirstChildElement("request");
+  if (xrequest != (TiXmlElement *)NULL) {
+    int instance_id ;
+    if (xrequest->Attribute("id", &instance_id)) {
+      // Look up the particular instance this is related to.
+      ACQUIRE_LOCK(_instances_lock);
+      Instances::const_iterator ii;
+      ii = _instances.find(instance_id);
+      if (ii != _instances.end()) {
+        P3DInstance *inst = (*ii).second;
+        P3D_request *request = rt_make_p3d_request(xrequest);
+        if (request != NULL) {
+          inst->add_request(request);
+        }
+      }
+      RELEASE_LOCK(_instances_lock);
+    }
+  }
+
+  delete doc;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::rt_make_p3d_request
+//       Access: Private
+//  Description: Creates a new P3D_request structure from the XML.
+////////////////////////////////////////////////////////////////////
+P3D_request *P3DSession::
+rt_make_p3d_request(TiXmlElement *xrequest) {
+  P3D_request *request = NULL;
+
+  const char *rtype = xrequest->Attribute("rtype");
+  if (rtype != NULL) {
+    if (strcmp(rtype, "notify") == 0) {
+      const char *message = xrequest->Attribute("message");
+      if (message != NULL) {
+        request = new P3D_request;
+        request->_request_type = P3D_RT_notify;
+        request->_request._notify._message = strdup(message);
+      }
+    }
+  }
+
+  return request;
 }
 
 ////////////////////////////////////////////////////////////////////
