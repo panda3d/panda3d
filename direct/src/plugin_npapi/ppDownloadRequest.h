@@ -36,6 +36,10 @@ public:
 public:
   RequestType _rtype;
   int _user_id;
+
+  // This is sent true when we have notified the plugin that the
+  // stream is done.
+  bool _notified_done;
 };
 
 #include "ppDownloadRequest.I"

@@ -45,6 +45,7 @@ public:
 
   P3DInstance *
   create_instance(P3D_request_ready_func *func,
+                  void *user_data,
                   const string &p3d_filename, 
                   const P3D_token tokens[], size_t num_tokens);
 

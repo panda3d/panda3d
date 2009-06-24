@@ -112,9 +112,10 @@ initialize() {
 ////////////////////////////////////////////////////////////////////
 P3DInstance *P3DInstanceManager::
 create_instance(P3D_request_ready_func *func,
+                void *user_data,
                 const string &p3d_filename, 
                 const P3D_token tokens[], size_t num_tokens) {
-  P3DInstance *inst = new P3DInstance(func, p3d_filename, 
+  P3DInstance *inst = new P3DInstance(func, user_data, p3d_filename, 
                                       tokens, num_tokens);
   _instances.insert(inst);
 

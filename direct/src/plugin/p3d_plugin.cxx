@@ -70,6 +70,7 @@ P3D_free_string(char *string) {
 
 P3D_instance *
 P3D_create_instance(P3D_request_ready_func *func,
+                    void *user_data,
                     const char *p3d_filename, 
                     const P3D_token tokens[], size_t num_tokens) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
@@ -80,7 +81,7 @@ P3D_create_instance(P3D_request_ready_func *func,
   }
 
   P3DInstance *result = 
-    inst_mgr->create_instance(func, p3d_filename, tokens, num_tokens);
+    inst_mgr->create_instance(func, user_data, p3d_filename, tokens, num_tokens);
   RELEASE_LOCK(_lock);
   return result;
 }
@@ -148,7 +149,9 @@ P3D_request *
 P3D_instance_get_request(P3D_instance *instance) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
+  nout << "P3D_instance_get_request(" << instance << ")\n";
   P3D_request *result = ((P3DInstance *)instance)->get_request();
+  nout << "  result = " << result << "\n" << flush;
   RELEASE_LOCK(_lock);
   return result;
 }
@@ -159,6 +162,8 @@ P3D_check_request(bool wait) {
   ACQUIRE_LOCK(_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3D_instance *inst = inst_mgr->check_request();
+
+  nout << "P3D_instance_check_request, inst = " << inst << "\n";
 
   if (inst != NULL || !wait) {
     RELEASE_LOCK(_lock);
@@ -192,13 +197,14 @@ P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
                              P3D_result_code result_code,
                              int http_status_code, 
                              size_t total_expected_data,
-                             const unsigned char *this_data, 
+                             const void *this_data, 
                              size_t this_data_size) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
   bool result = ((P3DInstance *)instance)->
     feed_url_stream(unique_id, result_code, http_status_code,
-                    total_expected_data, this_data, this_data_size);
+                    total_expected_data, 
+                    (const unsigned char *)this_data, this_data_size);
   RELEASE_LOCK(_lock);
   return result;
 }

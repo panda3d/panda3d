@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "ppInstance.h"
+#include "startup.h"
 #include "p3d_plugin_config.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -27,7 +28,7 @@ PPInstance::
 PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode, 
            int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
   logfile << "constructing " << this << "\n" << flush;
-  _inst = NULL;
+  _p3d_inst = NULL;
 
   _npp_instance = instance;
   _npp_mode = mode;
@@ -69,9 +70,9 @@ PPInstance::
   logfile
     << "destructing " << this << "\n" << flush;
 
-  if (_inst != NULL) {
-    P3D_instance_finish(_inst);
-    _inst = NULL;
+  if (_p3d_inst != NULL) {
+    P3D_instance_finish(_p3d_inst);
+    _p3d_inst = NULL;
   }
 
   // Free the tokens we allocated.
@@ -101,7 +102,7 @@ set_window(NPWindow *window) {
   _window = *window;
   _got_window = true;
   
-  if (_inst == NULL) {
+  if (_p3d_inst == NULL) {
     create_instance();
   } else {
     send_window();
@@ -139,12 +140,47 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
     *stype = NP_ASFILEONLY;
     return NPERR_NO_ERROR;
 
+  case PPDownloadRequest::RT_user:
+    // This is a request from the plugin.  We'll receive this as a
+    // stream.
+    *stype = NP_NORMAL;
+    return NPERR_NO_ERROR;
+
   default:
     // Don't know what this is.
     logfile << "Unexpected request " << (int)req->_rtype << "\n";
   }
 
   return NPERR_GENERIC_ERROR;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::write_stream
+//       Access: Public
+//  Description: Called by the browser to feed data read from a URL or
+//               whatever.
+////////////////////////////////////////////////////////////////////
+int PPInstance::
+write_stream(NPStream *stream, int offset, int len, void *buffer) {
+  if (stream->notifyData == NULL) {
+    logfile << "Unexpected write_stream on " << stream->url << "\n";
+    return 0;
+  }
+
+  PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
+  switch (req->_rtype) {
+  case PPDownloadRequest::RT_user:
+    P3D_instance_feed_url_stream(_p3d_inst, req->_user_id,
+                                 P3D_RC_in_progress, 0,
+                                 stream->end, buffer, len);
+    return len;
+    
+  default:
+    logfile << "Unexpected write_stream on " << stream->url << "\n";
+    break;
+  }
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -156,6 +192,37 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
 ////////////////////////////////////////////////////////////////////
 NPError PPInstance::
 destroy_stream(NPStream *stream, NPReason reason) {
+  if (stream->notifyData == NULL) {
+    logfile << "Unexpected destroy_stream on " << stream->url << "\n";
+    return NPERR_GENERIC_ERROR;
+  }
+
+  PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
+  switch (req->_rtype) {
+  case PPDownloadRequest::RT_user:
+    {
+      P3D_result_code result_code = P3D_RC_done;
+      if (reason != NPRES_DONE) {
+        result_code = P3D_RC_generic_error;
+      }
+      assert(!req->_notified_done);
+      P3D_instance_feed_url_stream(_p3d_inst, req->_user_id,
+                                   result_code, 0, stream->end, NULL, 0);
+      req->_notified_done = true;
+    }
+    break;
+
+  case PPDownloadRequest::RT_core_dll:
+    // This is the one case we don't start with GetUrlNotify, so we'll
+    // never get a url_notify call on this one.  So, we have to delete
+    // the PPDownloadRequest object here.
+    delete req;
+    break;
+
+  default:
+    break;
+  }
+  
   return NPERR_NO_ERROR;
 }
 
@@ -169,6 +236,36 @@ destroy_stream(NPStream *stream, NPReason reason) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 url_notify(const char *url, NPReason reason, void *notifyData) {
+  if (notifyData == NULL) {
+    return;
+  }
+  
+  PPDownloadRequest *req = (PPDownloadRequest *)notifyData;
+  switch (req->_rtype) {
+  case PPDownloadRequest::RT_user:
+    if (!req->_notified_done) {
+      // We shouldn't have gotten here without notifying the stream
+      // unless the stream never got started (and hence we never
+      // called destroy_stream().
+      logfile << "Failure starting stream\n" << flush;
+      assert(reason != NPRES_DONE);
+
+      P3D_instance_feed_url_stream(_p3d_inst, req->_user_id,
+                                   P3D_RC_generic_error, 0, 0, NULL, 0);
+      req->_notified_done = true;
+    }
+    break;
+
+  case PPDownloadRequest::RT_core_dll:
+    // Shouldn't be possible to get here.
+    assert(false);
+    break;
+    
+  default:
+    break;
+  }
+  
+  delete req;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -189,6 +286,8 @@ stream_as_file(NPStream *stream, const char *fname) {
   // Safari seems to want to report the filename in the old-style form
   // "Macintosh HD:blah:blah:blah" instead of the new-style form
   // "/blah/blah/blah".  How annoying.
+
+  // TODO: Is "Macintosh HD:" the only possible prefix?
   if (filename.substr(0, 13) == "Macintosh HD:") {
     string fname2;
     for (size_t p = 12; p < filename.size(); ++p) {
@@ -212,6 +311,7 @@ stream_as_file(NPStream *stream, const char *fname) {
     logfile << "got plugin\n";
     if (!load_plugin(filename)) {
       logfile << "Unable to launch core API.\n";
+      break;
     }
     create_instance();
     break;
@@ -231,6 +331,54 @@ stream_as_file(NPStream *stream, const char *fname) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::handle_request
+//       Access: Public
+//  Description: Handles a request from the plugin, forwarding
+//               it to the browser as appropriate.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+handle_request(P3D_request *request) {
+  logfile << "handle_request: " << request << "\n";
+  assert(request->_instance == _p3d_inst);
+
+  bool handled = false;
+
+  switch (request->_request_type) {
+  case P3D_RT_stop:
+    logfile << "Got P3D_RT_stop\n";
+    if (_p3d_inst != NULL) {
+      P3D_instance_finish(_p3d_inst);
+      _p3d_inst = NULL;
+    }
+    // Guess the browser doesn't really care.
+    handled = true;
+    break;
+
+  case P3D_RT_get_url:
+    {
+      logfile << "Got P3D_RT_get_url: " << request->_request._get_url._url
+              << "\n";
+      
+      PPDownloadRequest *req = 
+        new PPDownloadRequest(PPDownloadRequest::RT_user, 
+                              request->_request._get_url._unique_id);
+      browser->geturlnotify(_npp_instance, request->_request._get_url._url,
+                            NULL, req);
+    }
+    
+    break;
+
+  default:
+    // Some request types are not handled.
+    logfile << "Unhandled request: " << request->_request_type << "\n";
+    break;
+  };
+
+  P3D_request_finish(request, handled);
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::create_instance
 //       Access: Private
 //  Description: Actually creates the internal P3D_instance object, if
@@ -238,7 +386,7 @@ stream_as_file(NPStream *stream, const char *fname) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 create_instance() {
-  if (_inst != NULL) {
+  if (_p3d_inst != NULL) {
     // Already created.
     return;
   }
@@ -263,10 +411,10 @@ create_instance() {
     tokens = &_tokens[0];
   }
 
-  _inst = P3D_create_instance
-    (NULL, _p3d_filename.c_str(), tokens, _tokens.size());
+  _p3d_inst = P3D_create_instance
+    (request_ready, this, _p3d_filename.c_str(), tokens, _tokens.size());
 
-  if (_inst != NULL) {
+  if (_p3d_inst != NULL) {
     send_window();
   }
 }
@@ -280,7 +428,7 @@ create_instance() {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 send_window() {
-  assert(_inst != NULL);
+  assert(_p3d_inst != NULL);
 
   P3D_window_handle parent_window;
 #ifdef _WIN32
@@ -288,7 +436,7 @@ send_window() {
 #endif
 
   P3D_instance_setup_window
-    (_inst, P3D_WT_embedded,
+    (_p3d_inst, P3D_WT_toplevel,
      _window.x, _window.y, _window.width, _window.height,
      parent_window);
 }

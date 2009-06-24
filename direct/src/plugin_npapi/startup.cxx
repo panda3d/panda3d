@@ -14,6 +14,7 @@
 
 #include "startup.h"
 #include "p3d_plugin_config.h"
+#include "p3d_lock.h"
 
 #ifdef _WIN32
 #include <malloc.h>
@@ -31,7 +32,85 @@ open_logfile() {
     logfile_is_open = true;
   }
 }
-  
+
+#ifdef _WIN32
+UINT _timer = 0;
+#endif
+LOCK _timer_lock;
+
+////////////////////////////////////////////////////////////////////
+//     Function: handle_request_loop
+//  Description: Checks for any new requests from the plugin.  This
+//               function is called only in the main thread.
+////////////////////////////////////////////////////////////////////
+static void
+handle_request_loop() {
+  assert(is_plugin_loaded());
+
+  P3D_instance *p3d_inst = P3D_check_request(false);
+  logfile << "P3D_check_request() returns " << p3d_inst << "\n" << flush;
+  while (p3d_inst != (P3D_instance *)NULL) {
+    P3D_request *request = P3D_instance_get_request(p3d_inst);
+    logfile << "got request " << request << "\n";
+    if (request != (P3D_request *)NULL) {
+      PPInstance *inst = (PPInstance *)(p3d_inst->_user_data);
+      assert(inst != NULL);
+      inst->handle_request(request);
+    }
+    p3d_inst = P3D_check_request(false);
+    logfile << "P3D_check_request() returns " << p3d_inst << "\n" << flush;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: win_timer_func
+//  Description: The Windows flavor of the timer callback function.
+////////////////////////////////////////////////////////////////////
+#ifdef _WIN32
+static VOID CALLBACK
+win_timer_func(HWND hwnd, UINT msg, UINT_PTR event, DWORD time) {
+  ACQUIRE_LOCK(_timer_lock);
+  logfile
+    << "win_timer_func " << hwnd << ", " << msg << ", " << event
+    << ", " << time << "\n"
+    << "timer thread = " << GetCurrentThreadId() << "\n"
+    << flush;
+  KillTimer(NULL, _timer);
+  _timer = 0;
+  RELEASE_LOCK(_timer_lock);
+
+  handle_request_loop();
+}
+#endif // _WIN32
+
+////////////////////////////////////////////////////////////////////
+//     Function: request_ready
+//  Description: This function is attached as an asyncronous callback
+//               to each instance; it will be notified when the
+//               instance has a request ready.  This function may be
+//               called in a sub-thread.
+////////////////////////////////////////////////////////////////////
+void
+request_ready(P3D_instance *instance) {
+  logfile
+    << "request_ready"
+    //    << " thread = " << GetCurrentThreadId()
+    << "\n" << flush;
+
+  // Since we might be in a sub-thread at this point, use a timer to
+  // forward this event to the main thread.
+
+  ACQUIRE_LOCK(_timer_lock);
+#ifdef _WIN32
+  if (_timer == 0) {
+    _timer = SetTimer(NULL, 0, 0, win_timer_func);
+    logfile << "_timer = " << _timer << "\n" << flush;
+  }
+#endif
+  RELEASE_LOCK(_timer_lock);
+}
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: NP_Initialize
 //  Description: This function is called (almost) before any other
@@ -56,8 +135,11 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 
   open_logfile();
   logfile << "initializing\n" << flush;
+  //  logfile << "main thread = " << GetCurrentThreadId() << "\n";
 
   logfile << "browserFuncs = " << browserFuncs << "\n" << flush;
+
+  INIT_LOCK(_timer_lock);
 
   /*
 #ifdef _WIN32
@@ -116,6 +198,17 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
 NPError OSCALL
 NP_Shutdown(void) {
   logfile << "shutdown\n" << flush;
+
+  ACQUIRE_LOCK(_timer_lock);
+#ifdef _WIN32
+  if (_timer != 0) {
+    KillTimer(NULL, _timer);
+    _timer = 0;
+  }
+#endif
+  RELEASE_LOCK(_timer_lock);
+  DESTROY_LOCK(_timer_lock);
+
   unload_plugin();
 
   // Not clear whether there's a return value or not.  Some versions
@@ -224,7 +317,10 @@ NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
 int32
 NPP_WriteReady(NPP instance, NPStream *stream) {
   logfile << "WriteReady\n";
-  return 0;
+  // We're supposed to return the maximum amount of data the plugin is
+  // prepared to handle.  Gee, I don't know.  As much as you can give
+  // me, I guess.
+  return 0x7fffffff;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -236,8 +332,13 @@ NPP_WriteReady(NPP instance, NPStream *stream) {
 int32
 NPP_Write(NPP instance, NPStream *stream, int32 offset, 
           int32 len, void *buffer) {
-  logfile << "Write\n";
-  return 0;
+  logfile << "Write " << stream->url 
+          << ", " << len << "\n" << flush;
+
+  PPInstance *inst = (PPInstance *)(instance->pdata);
+  assert(inst != NULL);
+
+  return inst->write_stream(stream, offset, len, buffer);
 }
 
 ////////////////////////////////////////////////////////////////////

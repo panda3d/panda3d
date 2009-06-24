@@ -29,4 +29,6 @@ extern "C" {
   NPError OSCALL NP_Shutdown(void);
 }
 
+void request_ready(P3D_instance *instance);
+
 #endif

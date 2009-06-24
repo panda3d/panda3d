@@ -21,7 +21,8 @@
 inline PPDownloadRequest::
 PPDownloadRequest(RequestType rtype, int user_id) :
   _rtype(rtype),
-  _user_id(user_id)
+  _user_id(user_id),
+  _notified_done(false)
 {
 }
 

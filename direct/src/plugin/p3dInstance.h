@@ -35,7 +35,7 @@ class P3DPackage;
 ////////////////////////////////////////////////////////////////////
 class P3DInstance : public P3D_instance {
 public:
-  P3DInstance(P3D_request_ready_func *func,
+  P3DInstance(P3D_request_ready_func *func, void *user_data,
               const string &p3d_filename, 
               const P3D_token tokens[], size_t num_tokens);
   ~P3DInstance();

@@ -35,9 +35,12 @@ public:
   void set_window(NPWindow *window);
   NPError new_stream(NPMIMEType type, NPStream *stream, 
                      bool seekable, uint16 *stype);
+  int write_stream(NPStream *stream, int offset, int len, void *buffer);
   NPError destroy_stream(NPStream *stream, NPReason reason);
   void url_notify(const char *url, NPReason reason, void *notifyData);
   void stream_as_file(NPStream *stream, const char *fname);
+
+  void handle_request(P3D_request *request);
 
 private:
   void create_instance();
@@ -56,7 +59,7 @@ private:
   bool _got_window;
   NPWindow _window;
 
-  P3D_instance *_inst;
+  P3D_instance *_p3d_inst;
 };
 
 #include "ppInstance.I"

@@ -111,10 +111,15 @@ P3D_free_string_func(char *string);
    instances operate generally independently of each other. */
 
 /* This structure defines the handle to a single instance.  The host
-   may access the _request_pending member, which will be true if the
-   host should call P3D_instance_get_request(). */
+   may access any members appearing here. */
 typedef struct {
+  /* true if the host should call P3D_instance_get_request().*/
   bool _request_pending;
+
+  /* an opaque pointer the host may use to store private data that the
+     plugin does not interpret.  This pointer can be directly set, or
+     it can be initialized in the P3D_create_instance() call. */
+  void *_user_data;
 
   /* Additional opaque data may be stored here. */
 } P3D_instance;
@@ -199,6 +204,12 @@ typedef struct {
    instance.  If this is empty or NULL, the "src" token (below) will
    be downloaded instead.
 
+   The user_data pointer is any arbitrary pointer value; it will be
+   copied into the _user_data member of the new P3D_instance object.
+   This pointer is intended for the host to use to store private data
+   associated with each instance; the plugin will not do anything with
+   this data.
+
    For tokens, pass an array of P3D_token elements (above), which
    correspond to the user-supplied keyword/value pairs that may appear
    in the embed token within the HTML syntax; the host is responsible
@@ -222,6 +233,7 @@ typedef struct {
 
 typedef P3D_instance *
 P3D_create_instance_func(P3D_request_ready_func *func,
+                         void *user_data,
                          const char *p3d_filename, 
                          const P3D_token tokens[], size_t num_tokens);
 
@@ -446,7 +458,7 @@ P3D_instance_feed_url_stream_func(P3D_instance *instance, int unique_id,
                                   P3D_result_code result_code,
                                   int http_status_code, 
                                   size_t total_expected_data,
-                                  const unsigned char *this_data, 
+                                  const void *this_data, 
                                   size_t this_data_size);
 
 

@@ -29,12 +29,15 @@ int P3DInstance::_next_instance_id = 0;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DInstance::
-P3DInstance(P3D_request_ready_func *func,
+P3DInstance(P3D_request_ready_func *func, void *user_data,
             const string &p3d_filename, 
             const P3D_token tokens[], size_t num_tokens) :
   _func(func),
   _fparams(p3d_filename, tokens, num_tokens)
 {
+  _user_data = user_data;
+  _request_pending = false;
+
   _instance_id = _next_instance_id;
   ++_next_instance_id;
 
@@ -169,9 +172,13 @@ P3D_request *P3DInstance::
 get_request() {
   P3D_request *result = NULL;
   ACQUIRE_LOCK(_request_lock);
+  nout << "P3DInstance::get_request() called on " << this
+       << ", " << _pending_requests.size() << " requests in queue\n";
   if (!_pending_requests.empty()) {
     result = _pending_requests.front();
+    nout << "popped request " << result << "\n";
     _pending_requests.pop_front();
+    _request_pending = !_pending_requests.empty();
   }
   RELEASE_LOCK(_request_lock);
 
@@ -186,13 +193,21 @@ get_request() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_request(P3D_request *request) {
-  nout << "adding a request\n";
+  nout << "adding request " << request << " in " << this << "\n";
   assert(request->_instance == this);
 
   ACQUIRE_LOCK(_request_lock);
   _pending_requests.push_back(request);
+  _request_pending = true;
   RELEASE_LOCK(_request_lock);
 
+  // Asynchronous notification for anyone who cares.
+  nout << "request_ready, calling " << _func << "\n" << flush;
+  if (_func != NULL) {
+    _func(this);
+  }
+
+  // Synchronous notification for pollers.
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   inst_mgr->signal_request_ready();
 }
