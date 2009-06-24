@@ -314,18 +314,14 @@ set_properties_now(WindowProperties &properties) {
     properties.clear_z_order();
   }
 
-  if (properties.has_foreground() && properties.get_foreground()) 
-  {
-    if (!SetActiveWindow(_hWnd)) 
-    {
-      windisplay_cat.warning()  << "SetForegroundWindow() failed!\n";
-
-    } 
-    else 
-    {
+  if (properties.has_foreground() && properties.get_foreground()) {
+    if (!SetActiveWindow(_hWnd)) {
+      windisplay_cat.warning()  
+        << "SetForegroundWindow() failed!\n";
+    } else {
       _properties.set_foreground(true);
     }
-
+    
     properties.clear_foreground();
   }
 }
@@ -904,7 +900,10 @@ open_regular_window() {
       AttachThreadInput(GetWindowThreadProcessId(_hparent,NULL), GetCurrentThreadId(),TRUE);
       // set us as the focus window for keyboard input
       SetFocus(_hWnd);
-      _properties.set_foreground(true);
+      
+      WindowProperties properties;
+      properties.set_foreground(true);
+      system_changed_properties(properties);
     }
   }
   
@@ -1034,73 +1033,107 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   int button = -1;
 
   switch (msg) {
-      case WM_MOUSEMOVE: 
-        if (!_tracking_mouse_leaving) {
-          // need to re-call TrackMouseEvent every time mouse re-enters window
-          track_mouse_leaving(hwnd);
-        }
-        set_cursor_in_window();
-        if(handle_mouse_motion(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam))))
-            return 0;
-        break;
+  case WM_MOUSEMOVE: 
+    if (!_tracking_mouse_leaving) {
+      // need to re-call TrackMouseEvent every time mouse re-enters window
+      track_mouse_leaving(hwnd);
+    }
+    set_cursor_in_window();
+    if(handle_mouse_motion(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam))))
+      return 0;
+    break;
     
-      case WM_INPUT:
-        handle_raw_input((HRAWINPUT)lparam);
-        break;
+  case WM_INPUT:
+    handle_raw_input((HRAWINPUT)lparam);
+    break;
       
-      case WM_MOUSELEAVE:
-        _tracking_mouse_leaving = false;
-        handle_mouse_exit();
-        set_cursor_out_of_window();
-        break;
+  case WM_MOUSELEAVE:
+    _tracking_mouse_leaving = false;
+    handle_mouse_exit();
+    set_cursor_out_of_window();
+    break;
     
-      case WM_CREATE: 
-        {
-          track_mouse_leaving(hwnd);
-          ClearToBlack(hwnd, _properties);
+  case WM_CREATE: 
+    {
+      track_mouse_leaving(hwnd);
+      ClearToBlack(hwnd, _properties);
           
-          POINT cpos;
-          GetCursorPos(&cpos);
-          ScreenToClient(hwnd, &cpos);
-          RECT clientRect;
-          GetClientRect(hwnd, &clientRect);
-          if (PtInRect(&clientRect,cpos)) {
-            set_cursor_in_window();  // should window focus be true as well?
-          } else {
-            set_cursor_out_of_window();
-          }
-        }
-        break;
+      POINT cpos;
+      GetCursorPos(&cpos);
+      ScreenToClient(hwnd, &cpos);
+      RECT clientRect;
+      GetClientRect(hwnd, &clientRect);
+      if (PtInRect(&clientRect,cpos)) {
+        set_cursor_in_window();  // should window focus be true as well?
+      } else {
+        set_cursor_out_of_window();
+      }
+    }
+    break;
+
+    /*
+  case WM_SHOWWINDOW:
+    // You'd think WM_SHOWWINDOW would be just the thing for embedded
+    // windows, but it turns out it's not sent to the child windows
+    // when the parent is minimized.  I guess it's only sent for an
+    // explicit call to ShowWindow, phooey.
+    {
+      if (windisplay_cat.is_debug()) {
+        windisplay_cat.debug()
+          << "WM_SHOWWINDOW: " << hwnd << ", " << wparam << "\n";
+      }
+      if (wparam) {
+        // Window is being shown.
+        properties.set_minimized(false);
+      } else {
+        // Window is being hidden.
+        properties.set_minimized(true);
+      }
+      system_changed_properties(properties);
+    }
+    break;
+    */
         
-      case WM_CLOSE:
-        // This is a message from the system indicating that the user
-        // has requested to close the window (e.g. alt-f4).
-        {
-          string close_request_event = get_close_request_event();
-          if (!close_request_event.empty()) {
-            // In this case, the app has indicated a desire to intercept
-            // the request and process it directly.
-            throw_event(close_request_event);
-            return 0;
+  case WM_CLOSE:
+    // This is a message from the system indicating that the user
+    // has requested to close the window (e.g. alt-f4).
+    {
+      string close_request_event = get_close_request_event();
+      if (!close_request_event.empty()) {
+        // In this case, the app has indicated a desire to intercept
+        // the request and process it directly.
+        throw_event(close_request_event);
+        return 0;
             
-          } else {
-            // In this case, the default case, the app does not intend
-            // to service the request, so we do by closing the window.
-            close_window();
-            properties.set_open(false);
-            system_changed_properties(properties);
+      } else {
+        // In this case, the default case, the app does not intend
+        // to service the request, so we do by closing the window.
+        close_window();
+        properties.set_open(false);
+        system_changed_properties(properties);
             
-            // TODO: make sure we release the GSG properly.
-          }
-        }
-        break;
+        // TODO: make sure we release the GSG properly.
+      }
+    }
+    break;
+
+  case WM_CHILDACTIVATE:
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "WM_CHILDACTIVATE: " << hwnd << "\n";
+    }
+    break;
     
-      case WM_ACTIVATE:
-        properties.set_minimized((wparam & 0xffff0000) != 0);
-        if ((wparam & 0xffff) != WA_INACTIVE) 
-        {
-          properties.set_foreground(true);
-          if (is_fullscreen()) 
+  case WM_ACTIVATE:
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "WM_ACTIVATE: " << hwnd << ", " << wparam << ", " << lparam << "\n";
+    }
+    properties.set_minimized((wparam & 0xffff0000) != 0);
+    if ((wparam & 0xffff) != WA_INACTIVE) 
+      {
+        properties.set_foreground(true);
+        if (is_fullscreen()) 
           {
             // When a fullscreen window goes active, it automatically gets
             // un-minimized.
@@ -1109,11 +1142,11 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             SetWindowPos(_hWnd, HWND_TOP, 0,0,0,0, SWP_NOMOVE | SWP_NOSENDCHANGING | SWP_NOSIZE | SWP_NOOWNERZORDER);
             fullscreen_restored(properties);
           }
-        }
-        else 
-        {
-          properties.set_foreground(false);
-          if (is_fullscreen()) 
+      }
+    else 
+      {
+        properties.set_foreground(false);
+        if (is_fullscreen()) 
           {
             // When a fullscreen window goes inactive, it automatically
             // gets minimized.
@@ -1127,666 +1160,675 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
             ChangeDisplaySettings(NULL, 0x0);
             fullscreen_minimized(properties);
           }
-        }
+      }
 
-        adjust_z_order();
-        system_changed_properties(properties);
-        break;
+    adjust_z_order();
+    system_changed_properties(properties);
+    break;
     
-      case WM_SIZE:
-        // for maximized, unmaximize, need to call resize code
-        // artificially since no WM_EXITSIZEMOVE is generated.
-        if (wparam == SIZE_MAXIMIZED) {
-          _maximized = true;
-          handle_reshape();
+  case WM_SIZE:
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "WM_SIZE: " << hwnd << ", " << wparam << "\n";
+    }
+    // for maximized, unmaximize, need to call resize code
+    // artificially since no WM_EXITSIZEMOVE is generated.
+    if (wparam == SIZE_MAXIMIZED) {
+      _maximized = true;
+      handle_reshape();
     
-        } else if (wparam == SIZE_RESTORED && _maximized) {
-          // SIZE_RESTORED might mean we restored to its original size
-          // before the maximize, but it might also be called while the
-          // user is resizing the window by hand.  Checking the _maximized
-          // flag that we set above allows us to differentiate the two
-          // cases.
-          _maximized = false;
-          handle_reshape();
-        }
-        break;
+    } else if (wparam == SIZE_RESTORED && _maximized) {
+      // SIZE_RESTORED might mean we restored to its original size
+      // before the maximize, but it might also be called while the
+      // user is resizing the window by hand.  Checking the _maximized
+      // flag that we set above allows us to differentiate the two
+      // cases.
+      _maximized = false;
+      handle_reshape();
+    }
+    break;
     
-      case WM_EXITSIZEMOVE:
-        handle_reshape();
-        break;
+  case WM_EXITSIZEMOVE:
+    handle_reshape();
+    break;
 
-      case WM_WINDOWPOSCHANGED:
-        adjust_z_order();
-        break;
+  case WM_WINDOWPOSCHANGED:
+    adjust_z_order();
+    break;
     
-      case WM_LBUTTONDOWN:
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
-        }
-        SetCapture(hwnd);
-        _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-        _input_devices[0].button_down(MouseButton::button(0), get_message_time());
-        SetFocus(hwnd); // [gjeon] to get the keyboard event
-        break;
+  case WM_LBUTTONDOWN:
+    if (_lost_keypresses) {
+      resend_lost_keypresses();
+    }
+    SetCapture(hwnd);
+    _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    _input_devices[0].button_down(MouseButton::button(0), get_message_time());
+    SetFocus(hwnd); // [gjeon] to get the keyboard event
+    break;
         
-      case WM_MBUTTONDOWN:
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
-        }
-        SetCapture(hwnd);
-        _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-        _input_devices[0].button_down(MouseButton::button(1), get_message_time());
-        SetFocus(hwnd); // [gjeon] to get the keyboard event
-        break;
+  case WM_MBUTTONDOWN:
+    if (_lost_keypresses) {
+      resend_lost_keypresses();
+    }
+    SetCapture(hwnd);
+    _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    _input_devices[0].button_down(MouseButton::button(1), get_message_time());
+    SetFocus(hwnd); // [gjeon] to get the keyboard event
+    break;
 
-      case WM_RBUTTONDOWN:
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
-        }
-        SetCapture(hwnd);
-        _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-        _input_devices[0].button_down(MouseButton::button(2), get_message_time());
-        SetFocus(hwnd); // [gjeon] to get the keyboard event
-        break;
+  case WM_RBUTTONDOWN:
+    if (_lost_keypresses) {
+      resend_lost_keypresses();
+    }
+    SetCapture(hwnd);
+    _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+    _input_devices[0].button_down(MouseButton::button(2), get_message_time());
+    SetFocus(hwnd); // [gjeon] to get the keyboard event
+    break;
 
-      case WM_XBUTTONDOWN:
-        {
-          if (_lost_keypresses) {
-            resend_lost_keypresses();
-          }
-          SetCapture(hwnd);
-          int whichButton = GET_XBUTTON_WPARAM(wparam);
-          _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
-          if (whichButton == XBUTTON1) {
-            _input_devices[0].button_down(MouseButton::button(3), get_message_time());
-          } else if (whichButton == XBUTTON2) {
-            _input_devices[0].button_down(MouseButton::button(4), get_message_time());
-          }
-        }
-        break;
+  case WM_XBUTTONDOWN:
+    {
+      if (_lost_keypresses) {
+        resend_lost_keypresses();
+      }
+      SetCapture(hwnd);
+      int whichButton = GET_XBUTTON_WPARAM(wparam);
+      _input_devices[0].set_pointer_in_window(translate_mouse(LOWORD(lparam)), translate_mouse(HIWORD(lparam)));
+      if (whichButton == XBUTTON1) {
+        _input_devices[0].button_down(MouseButton::button(3), get_message_time());
+      } else if (whichButton == XBUTTON2) {
+        _input_devices[0].button_down(MouseButton::button(4), get_message_time());
+      }
+    }
+    break;
     
-      case WM_LBUTTONUP:
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
+  case WM_LBUTTONUP:
+    if (_lost_keypresses) {
+      resend_lost_keypresses();
+    }
+    ReleaseCapture();
+    _input_devices[0].button_up(MouseButton::button(0), get_message_time());
+    break;
+
+  case WM_MBUTTONUP:
+    if (_lost_keypresses) {
+      resend_lost_keypresses();
+    }
+    ReleaseCapture();
+    _input_devices[0].button_up(MouseButton::button(1), get_message_time());
+    break;
+
+  case WM_RBUTTONUP:
+    if (_lost_keypresses) {
+      resend_lost_keypresses();
+    }
+    ReleaseCapture();
+    _input_devices[0].button_up(MouseButton::button(2), get_message_time());
+    break;
+
+  case WM_XBUTTONUP:
+    {
+      if (_lost_keypresses) {
+        resend_lost_keypresses();
+      }
+      ReleaseCapture();
+      int whichButton = GET_XBUTTON_WPARAM(wparam);
+      if (whichButton == XBUTTON1) {
+        _input_devices[0].button_up(MouseButton::button(3), get_message_time());
+      } else if (whichButton == XBUTTON2) {
+        _input_devices[0].button_up(MouseButton::button(4), get_message_time());
+      }
+    }
+    break;
+
+  case WM_MOUSEWHEEL:
+    {
+      int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+
+      POINT point;
+      GetCursorPos(&point);
+      ScreenToClient(hwnd, &point);
+      double time = get_message_time();
+
+      if (delta >= 0) {
+        while (delta > 0) {
+          handle_keypress(MouseButton::wheel_up(), point.x, point.y, time);
+          handle_keyrelease(MouseButton::wheel_up(), time);
+          delta -= WHEEL_DELTA;
         }
-        ReleaseCapture();
-        _input_devices[0].button_up(MouseButton::button(0), get_message_time());
-        break;
-
-      case WM_MBUTTONUP:
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
+      } else {
+        while (delta < 0) {
+          handle_keypress(MouseButton::wheel_down(), point.x, point.y, time);
+          handle_keyrelease(MouseButton::wheel_down(), time);
+          delta += WHEEL_DELTA;
         }
-        ReleaseCapture();
-        _input_devices[0].button_up(MouseButton::button(1), get_message_time());
-        break;
-
-      case WM_RBUTTONUP:
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
-        }
-        ReleaseCapture();
-        _input_devices[0].button_up(MouseButton::button(2), get_message_time());
-        break;
-
-      case WM_XBUTTONUP:
-        {
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
-        }
-        ReleaseCapture();
-        int whichButton = GET_XBUTTON_WPARAM(wparam);
-        if (whichButton == XBUTTON1) {
-            _input_devices[0].button_up(MouseButton::button(3), get_message_time());
-        } else if (whichButton == XBUTTON2) {
-            _input_devices[0].button_up(MouseButton::button(4), get_message_time());
-        }
-        }
-        break;
-
-      case WM_MOUSEWHEEL:
-        {
-          int delta = GET_WHEEL_DELTA_WPARAM(wparam);
-
-          POINT point;
-          GetCursorPos(&point);
-          ScreenToClient(hwnd, &point);
-          double time = get_message_time();
-
-          if (delta >= 0) {
-            while (delta > 0) {
-              handle_keypress(MouseButton::wheel_up(), point.x, point.y, time);
-              handle_keyrelease(MouseButton::wheel_up(), time);
-              delta -= WHEEL_DELTA;
-            }
-          } else {
-            while (delta < 0) {
-              handle_keypress(MouseButton::wheel_down(), point.x, point.y, time);
-              handle_keyrelease(MouseButton::wheel_down(), time);
-              delta += WHEEL_DELTA;
-            }
-          }
-          return 0;
-        }
-        break;
-
-        
-      case WM_IME_SETCONTEXT:
-        if (!ime_hide)
-          break;
-
-        windisplay_cat.debug() << "hwnd = " << hwnd << " and GetFocus = " << GetFocus() << endl;
-        _ime_hWnd = ImmGetDefaultIMEWnd(hwnd);
-        if (::SendMessage(_ime_hWnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
-        //if (::SendMessage(hwnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
-          windisplay_cat.debug() << "SendMessage failed for " << _ime_hWnd << endl;
-        else
-          windisplay_cat.debug() << "SendMessage Succeeded for " << _ime_hWnd << endl;
-        
-        windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
-        lparam &= ~ISC_SHOWUIALL;
-        if (ImmIsUIMessage(_ime_hWnd, msg, wparam, lparam))
-          windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
-        
-        break;
+      }
+      return 0;
+    }
+    break;
 
         
-      case WM_IME_NOTIFY:
-        if (wparam == IMN_SETOPENSTATUS) {
-          HIMC hIMC = ImmGetContext(hwnd);
-          nassertr(hIMC != 0, 0);
-          _ime_open = (ImmGetOpenStatus(hIMC) != 0);
-          if (!_ime_open) {
-            _ime_active = false;  // Sanity enforcement.
-          }
-          if (ime_hide) {
-            //if (0) {
-            COMPOSITIONFORM comf;
-            CANDIDATEFORM canf;
-            ImmGetCompositionWindow(hIMC, &comf);
-            ImmGetCandidateWindow(hIMC, 0, &canf);
-            windisplay_cat.debug() << 
-              "comf style " << comf.dwStyle << 
-              " comf point: x" << comf.ptCurrentPos.x << ",y " << comf.ptCurrentPos.y <<
-              " comf rect: l " << comf.rcArea.left << ",t " << comf.rcArea.top << ",r " <<
-              comf.rcArea.right << ",b " << comf.rcArea.bottom << endl;
-            windisplay_cat.debug() << 
-              "canf style " << canf.dwStyle << 
-              " canf point: x" << canf.ptCurrentPos.x << ",y " << canf.ptCurrentPos.y <<
-              " canf rect: l " << canf.rcArea.left << ",t " << canf.rcArea.top << ",r " <<
-              canf.rcArea.right << ",b " << canf.rcArea.bottom << endl;
-            comf.dwStyle = CFS_POINT;
-            comf.ptCurrentPos.x = 2000;
-            comf.ptCurrentPos.y = 2000;
+  case WM_IME_SETCONTEXT:
+    if (!ime_hide)
+      break;
+
+    windisplay_cat.debug() << "hwnd = " << hwnd << " and GetFocus = " << GetFocus() << endl;
+    _ime_hWnd = ImmGetDefaultIMEWnd(hwnd);
+    if (::SendMessage(_ime_hWnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
+      //if (::SendMessage(hwnd, WM_IME_CONTROL, IMC_CLOSESTATUSWINDOW, 0))
+      windisplay_cat.debug() << "SendMessage failed for " << _ime_hWnd << endl;
+    else
+      windisplay_cat.debug() << "SendMessage Succeeded for " << _ime_hWnd << endl;
+        
+    windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
+    lparam &= ~ISC_SHOWUIALL;
+    if (ImmIsUIMessage(_ime_hWnd, msg, wparam, lparam))
+      windisplay_cat.debug() << "wparam is " << wparam << ", lparam is " << lparam << endl;
+        
+    break;
+
+        
+  case WM_IME_NOTIFY:
+    if (wparam == IMN_SETOPENSTATUS) {
+      HIMC hIMC = ImmGetContext(hwnd);
+      nassertr(hIMC != 0, 0);
+      _ime_open = (ImmGetOpenStatus(hIMC) != 0);
+      if (!_ime_open) {
+        _ime_active = false;  // Sanity enforcement.
+      }
+      if (ime_hide) {
+        //if (0) {
+        COMPOSITIONFORM comf;
+        CANDIDATEFORM canf;
+        ImmGetCompositionWindow(hIMC, &comf);
+        ImmGetCandidateWindow(hIMC, 0, &canf);
+        windisplay_cat.debug() << 
+          "comf style " << comf.dwStyle << 
+          " comf point: x" << comf.ptCurrentPos.x << ",y " << comf.ptCurrentPos.y <<
+          " comf rect: l " << comf.rcArea.left << ",t " << comf.rcArea.top << ",r " <<
+          comf.rcArea.right << ",b " << comf.rcArea.bottom << endl;
+        windisplay_cat.debug() << 
+          "canf style " << canf.dwStyle << 
+          " canf point: x" << canf.ptCurrentPos.x << ",y " << canf.ptCurrentPos.y <<
+          " canf rect: l " << canf.rcArea.left << ",t " << canf.rcArea.top << ",r " <<
+          canf.rcArea.right << ",b " << canf.rcArea.bottom << endl;
+        comf.dwStyle = CFS_POINT;
+        comf.ptCurrentPos.x = 2000;
+        comf.ptCurrentPos.y = 2000;
             
-            canf.dwStyle = CFS_EXCLUDE;
-            canf.dwIndex = 0;
-            canf.ptCurrentPos.x = 0;
-            canf.ptCurrentPos.y = 0;
-            canf.rcArea.left = 0;
-            canf.rcArea.top = 0;
-            canf.rcArea.right = 640;
-            canf.rcArea.bottom = 480;
+        canf.dwStyle = CFS_EXCLUDE;
+        canf.dwIndex = 0;
+        canf.ptCurrentPos.x = 0;
+        canf.ptCurrentPos.y = 0;
+        canf.rcArea.left = 0;
+        canf.rcArea.top = 0;
+        canf.rcArea.right = 640;
+        canf.rcArea.bottom = 480;
             
 #if 0
-            comf.rcArea.left = 200;
-            comf.rcArea.top = 200;
-            comf.rcArea.right = 0;
-            comf.rcArea.bottom = 0;
+        comf.rcArea.left = 200;
+        comf.rcArea.top = 200;
+        comf.rcArea.right = 0;
+        comf.rcArea.bottom = 0;
 #endif
             
-            if (ImmSetCompositionWindow(hIMC, &comf))
-              windisplay_cat.debug() << "set composition form: success\n";
-            for (int i=0; i<3; ++i) {
-              if (ImmSetCandidateWindow(hIMC, &canf))
-                windisplay_cat.debug() << "set candidate form: success\n";
-              canf.dwIndex++;
-            }
-          }
-
-          ImmReleaseContext(hwnd, hIMC);
+        if (ImmSetCompositionWindow(hIMC, &comf))
+          windisplay_cat.debug() << "set composition form: success\n";
+        for (int i=0; i<3; ++i) {
+          if (ImmSetCandidateWindow(hIMC, &canf))
+            windisplay_cat.debug() << "set candidate form: success\n";
+          canf.dwIndex++;
         }
-        break;
-        
-      case WM_IME_STARTCOMPOSITION:
-        support_overlay_window(true);
-        _ime_active = true;
-        break;
-        
-      case WM_IME_ENDCOMPOSITION:
-        support_overlay_window(false);
-        _ime_active = false;
+      }
 
-        if (ime_aware) {
-          wstring ws;
-          _input_devices[0].candidate(ws, 0, 0, 0);
+      ImmReleaseContext(hwnd, hIMC);
+    }
+    break;
+        
+  case WM_IME_STARTCOMPOSITION:
+    support_overlay_window(true);
+    _ime_active = true;
+    break;
+        
+  case WM_IME_ENDCOMPOSITION:
+    support_overlay_window(false);
+    _ime_active = false;
+
+    if (ime_aware) {
+      wstring ws;
+      _input_devices[0].candidate(ws, 0, 0, 0);
+    }
+          
+    break;
+        
+  case WM_IME_COMPOSITION:
+    if (ime_aware) {
+
+      // If the ime window is not marked as active at this point, we
+      // must be in the process of closing it down (in close_ime), and
+      // we don't want to send the current composition string in that
+      // case.  But we do need to return 0 to tell windows not to try
+      // to send the composition string through WM_CHAR messages.
+      if (!_ime_active) {
+        return 0;
+      }
+
+      HIMC hIMC = ImmGetContext(hwnd);
+      nassertr(hIMC != 0, 0);
+          
+      DWORD result_size = 0;
+      static const int ime_buffer_size = 256;
+      static const int ime_buffer_size_bytes = ime_buffer_size / sizeof(wchar_t);
+      wchar_t ime_buffer[ime_buffer_size];
+      size_t cursor_pos, delta_start;
+          
+      if (lparam & GCS_RESULTSTR) {
+        result_size = ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
+                                               ime_buffer, ime_buffer_size_bytes);
+        size_t num_chars = result_size / sizeof(wchar_t);
+        for (size_t i = 0; i < num_chars; ++i) {
+          _input_devices[0].keystroke(ime_buffer[i]);
         }
-          
-        break;
-        
-      case WM_IME_COMPOSITION:
-        if (ime_aware) {
+      }
 
-          // If the ime window is not marked as active at this point, we
-          // must be in the process of closing it down (in close_ime), and
-          // we don't want to send the current composition string in that
-          // case.  But we do need to return 0 to tell windows not to try
-          // to send the composition string through WM_CHAR messages.
-          if (!_ime_active) {
-            return 0;
-          }
-
-          HIMC hIMC = ImmGetContext(hwnd);
-          nassertr(hIMC != 0, 0);
-          
-          DWORD result_size = 0;
-          static const int ime_buffer_size = 256;
-          static const int ime_buffer_size_bytes = ime_buffer_size / sizeof(wchar_t);
-          wchar_t ime_buffer[ime_buffer_size];
-          size_t cursor_pos, delta_start;
-          
-          if (lparam & GCS_RESULTSTR) {
-            result_size = ImmGetCompositionStringW(hIMC, GCS_RESULTSTR,
-                                                   ime_buffer, ime_buffer_size_bytes);
-            size_t num_chars = result_size / sizeof(wchar_t);
-            for (size_t i = 0; i < num_chars; ++i) {
-              _input_devices[0].keystroke(ime_buffer[i]);
-            }
-          }
-
-          if (lparam & GCS_COMPSTR) {
-            result_size = ImmGetCompositionStringW(hIMC, GCS_CURSORPOS, NULL, 0);
-            cursor_pos = result_size & 0xffff;
+      if (lparam & GCS_COMPSTR) {
+        result_size = ImmGetCompositionStringW(hIMC, GCS_CURSORPOS, NULL, 0);
+        cursor_pos = result_size & 0xffff;
               
-            result_size = ImmGetCompositionStringW(hIMC, GCS_DELTASTART, NULL, 0);
-            delta_start = result_size & 0xffff;
-            result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, ime_buffer, ime_buffer_size);
-            size_t num_chars = result_size / sizeof(wchar_t);
+        result_size = ImmGetCompositionStringW(hIMC, GCS_DELTASTART, NULL, 0);
+        delta_start = result_size & 0xffff;
+        result_size = ImmGetCompositionStringW(hIMC, GCS_COMPSTR, ime_buffer, ime_buffer_size);
+        size_t num_chars = result_size / sizeof(wchar_t);
               
-            _input_devices[0].candidate(wstring(ime_buffer, num_chars), 
-                                        min(cursor_pos, delta_start), 
-                                        max(cursor_pos, delta_start), 
-                                        cursor_pos);
-          }
-          ImmReleaseContext(hwnd, hIMC);
-        }
-        break;
+        _input_devices[0].candidate(wstring(ime_buffer, num_chars), 
+                                    min(cursor_pos, delta_start), 
+                                    max(cursor_pos, delta_start), 
+                                    cursor_pos);
+      }
+      ImmReleaseContext(hwnd, hIMC);
+    }
+    break;
         
-      case WM_CHAR:
-        // Ignore WM_CHAR messages if we have the IME open, since
-        // everything will come in through WM_IME_COMPOSITION.  (It's
-        // supposed to come in through WM_CHAR, too, but there seems to
-        // be a bug in Win2000 in that it only sends question mark
-        // characters through here.)
-        if (!_ime_open) {
-          _input_devices[0].keystroke(wparam);
-        }
-        break;
+  case WM_CHAR:
+    // Ignore WM_CHAR messages if we have the IME open, since
+    // everything will come in through WM_IME_COMPOSITION.  (It's
+    // supposed to come in through WM_CHAR, too, but there seems to
+    // be a bug in Win2000 in that it only sends question mark
+    // characters through here.)
+    if (!_ime_open) {
+      _input_devices[0].keystroke(wparam);
+    }
+    break;
     
-      case WM_SYSKEYDOWN: 
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
-        }
-        if (windisplay_cat.is_debug()) {
-          windisplay_cat.debug()
-            << "keydown: " << wparam << " (" << lookup_key(wparam) << ")\n";
-        }
-        {
-          // Alt and F10 are sent as WM_SYSKEYDOWN instead of WM_KEYDOWN
-          // want to use defwindproc on Alt syskey so std windows cmd
-          // Alt-F4 works, etc
-          POINT point;
-          GetCursorPos(&point);
-          ScreenToClient(hwnd, &point);
-          handle_keypress(lookup_key(wparam), point.x, point.y, 
+  case WM_SYSKEYDOWN: 
+    if (_lost_keypresses) {
+      resend_lost_keypresses();
+    }
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "keydown: " << wparam << " (" << lookup_key(wparam) << ")\n";
+    }
+    {
+      // Alt and F10 are sent as WM_SYSKEYDOWN instead of WM_KEYDOWN
+      // want to use defwindproc on Alt syskey so std windows cmd
+      // Alt-F4 works, etc
+      POINT point;
+      GetCursorPos(&point);
+      ScreenToClient(hwnd, &point);
+      handle_keypress(lookup_key(wparam), point.x, point.y, 
+                      get_message_time());
+
+      // wparam does not contain left/right information for SHIFT,
+      // CONTROL, or ALT, so we have to track their status and do
+      // the right thing.  We'll send the left/right specific key
+      // event along with the general key event.
+      //
+      // Key repeating is not being handled consistently for LALT
+      // and RALT, but from comments below, it's only being handled
+      // the way it is for backspace, so we'll leave it as is.
+      if (wparam == VK_MENU) {
+        if ((GetKeyState(VK_LMENU) & 0x8000) != 0 && ! _lalt_down) {
+          handle_keypress(KeyboardButton::lalt(), point.x, point.y,
                           get_message_time());
-
-          // wparam does not contain left/right information for SHIFT,
-          // CONTROL, or ALT, so we have to track their status and do
-          // the right thing.  We'll send the left/right specific key
-          // event along with the general key event.
-          //
-          // Key repeating is not being handled consistently for LALT
-          // and RALT, but from comments below, it's only being handled
-          // the way it is for backspace, so we'll leave it as is.
-          if (wparam == VK_MENU) {
-            if ((GetKeyState(VK_LMENU) & 0x8000) != 0 && ! _lalt_down) {
-              handle_keypress(KeyboardButton::lalt(), point.x, point.y,
-                              get_message_time());
-              _lalt_down = true;
-            }
-            if ((GetKeyState(VK_RMENU) & 0x8000) != 0 && ! _ralt_down) {
-              handle_keypress(KeyboardButton::ralt(), point.x, point.y,
-                              get_message_time());
-              _ralt_down = true;
-            }
-          }
-          if (wparam == VK_F10) {
-            // bypass default windproc F10 behavior (it activates the main
-            // menu, but we have none)
-            return 0;
-          }
+          _lalt_down = true;
         }
-        break;
+        if ((GetKeyState(VK_RMENU) & 0x8000) != 0 && ! _ralt_down) {
+          handle_keypress(KeyboardButton::ralt(), point.x, point.y,
+                          get_message_time());
+          _ralt_down = true;
+        }
+      }
+      if (wparam == VK_F10) {
+        // bypass default windproc F10 behavior (it activates the main
+        // menu, but we have none)
+        return 0;
+      }
+    }
+    break;
     
-      case WM_SYSCOMMAND:
-        if (wparam == SC_KEYMENU) {
-          // if Alt is released (alone w/o other keys), defwindproc will
-          // send this command, which will 'activate' the title bar menu
-          // (we have none) and give focus to it.  we dont want this to
-          // happen, so kill this msg.
+  case WM_SYSCOMMAND:
+    if (wparam == SC_KEYMENU) {
+      // if Alt is released (alone w/o other keys), defwindproc will
+      // send this command, which will 'activate' the title bar menu
+      // (we have none) and give focus to it.  we dont want this to
+      // happen, so kill this msg.
 
-          // Note that the WM_SYSKEYUP message for Alt has already
-          // been sent (if it is going to be), so ignoring this
-          // special message does no harm.
-          return 0;
-        }
-        break;
+      // Note that the WM_SYSKEYUP message for Alt has already
+      // been sent (if it is going to be), so ignoring this
+      // special message does no harm.
+      return 0;
+    }
+    break;
         
-      case WM_KEYDOWN: 
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
-        }
-        if (windisplay_cat.is_debug()) {
-          windisplay_cat.debug()
-            << "keydown: " << wparam << " (" << lookup_key(wparam) << ")\n";
-        }
+  case WM_KEYDOWN: 
+    if (_lost_keypresses) {
+      resend_lost_keypresses();
+    }
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "keydown: " << wparam << " (" << lookup_key(wparam) << ")\n";
+    }
 
-        // If this bit is not zero, this is just a keyrepeat echo; we
-        // ignore these for handle_keypress (we respect keyrepeat only
-        // for handle_keystroke).
-        if ((lparam & 0x40000000) == 0) {
-          POINT point;
-          GetCursorPos(&point);
-          ScreenToClient(hwnd, &point);
-          handle_keypress(lookup_key(wparam), point.x, point.y,
+    // If this bit is not zero, this is just a keyrepeat echo; we
+    // ignore these for handle_keypress (we respect keyrepeat only
+    // for handle_keystroke).
+    if ((lparam & 0x40000000) == 0) {
+      POINT point;
+      GetCursorPos(&point);
+      ScreenToClient(hwnd, &point);
+      handle_keypress(lookup_key(wparam), point.x, point.y,
+                      get_message_time());
+
+      // wparam does not contain left/right information for SHIFT,
+      // CONTROL, or ALT, so we have to track their status and do
+      // the right thing.  We'll send the left/right specific key
+      // event along with the general key event.
+      if (wparam == VK_SHIFT) {
+        if ((GetKeyState(VK_LSHIFT) & 0x8000) != 0 && ! _lshift_down) {
+          handle_keypress(KeyboardButton::lshift(), point.x, point.y,
                           get_message_time());
+          _lshift_down = true;
+        }
+        if ((GetKeyState(VK_RSHIFT) & 0x8000) != 0 && ! _rshift_down) {
+          handle_keypress(KeyboardButton::rshift(), point.x, point.y,
+                          get_message_time());
+          _rshift_down = true;
+        }
+      } else if(wparam == VK_CONTROL) {
+        if ((GetKeyState(VK_LCONTROL) & 0x8000) != 0 && ! _lcontrol_down) {
+          handle_keypress(KeyboardButton::lcontrol(), point.x, point.y,
+                          get_message_time());
+          _lcontrol_down = true;
+        }
+        if ((GetKeyState(VK_RCONTROL) & 0x8000) != 0 && ! _rcontrol_down) {
+          handle_keypress(KeyboardButton::rcontrol(), point.x, point.y,
+                          get_message_time());
+          _rcontrol_down = true;
+        }
+      }
 
-          // wparam does not contain left/right information for SHIFT,
-          // CONTROL, or ALT, so we have to track their status and do
-          // the right thing.  We'll send the left/right specific key
-          // event along with the general key event.
-          if (wparam == VK_SHIFT) {
-            if ((GetKeyState(VK_LSHIFT) & 0x8000) != 0 && ! _lshift_down) {
-              handle_keypress(KeyboardButton::lshift(), point.x, point.y,
-                              get_message_time());
-              _lshift_down = true;
-            }
-            if ((GetKeyState(VK_RSHIFT) & 0x8000) != 0 && ! _rshift_down) {
-              handle_keypress(KeyboardButton::rshift(), point.x, point.y,
-                              get_message_time());
-              _rshift_down = true;
-            }
-          } else if(wparam == VK_CONTROL) {
-            if ((GetKeyState(VK_LCONTROL) & 0x8000) != 0 && ! _lcontrol_down) {
-              handle_keypress(KeyboardButton::lcontrol(), point.x, point.y,
-                              get_message_time());
-              _lcontrol_down = true;
-            }
-            if ((GetKeyState(VK_RCONTROL) & 0x8000) != 0 && ! _rcontrol_down) {
-              handle_keypress(KeyboardButton::rcontrol(), point.x, point.y,
-                              get_message_time());
-              _rcontrol_down = true;
-            }
-          }
-
-          // Handle Cntrl-V paste from clipboard.  Is there a better way
-          // to detect this hotkey?
-          if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) &&
-              !_input_devices.empty()) {
-            HGLOBAL hglb;
-            char *lptstr;
+      // Handle Cntrl-V paste from clipboard.  Is there a better way
+      // to detect this hotkey?
+      if ((wparam=='V') && (GetKeyState(VK_CONTROL) < 0) &&
+          !_input_devices.empty()) {
+        HGLOBAL hglb;
+        char *lptstr;
     
-            if (IsClipboardFormatAvailable(CF_TEXT) && OpenClipboard(NULL)) {
-              // Maybe we should support CF_UNICODETEXT if it is available
-              // too?
-              hglb = GetClipboardData(CF_TEXT);
-              if (hglb!=NULL) {
-                lptstr = (char *) GlobalLock(hglb);
-                if (lptstr != NULL)  {
-                  char *pChar;
-                  for (pChar=lptstr; *pChar!=NULL; pChar++) {
-                    _input_devices[0].keystroke((uchar)*pChar);
-                  }
-                  GlobalUnlock(hglb);
-                }
+        if (IsClipboardFormatAvailable(CF_TEXT) && OpenClipboard(NULL)) {
+          // Maybe we should support CF_UNICODETEXT if it is available
+          // too?
+          hglb = GetClipboardData(CF_TEXT);
+          if (hglb!=NULL) {
+            lptstr = (char *) GlobalLock(hglb);
+            if (lptstr != NULL)  {
+              char *pChar;
+              for (pChar=lptstr; *pChar!=NULL; pChar++) {
+                _input_devices[0].keystroke((uchar)*pChar);
               }
-              CloseClipboard();
+              GlobalUnlock(hglb);
             }
           }
+          CloseClipboard();
+        }
+      }
+    } else {
+      // Actually, for now we'll respect the repeat anyway, just
+      // so we support backspace properly.  Rethink later.
+      POINT point;
+      GetCursorPos(&point);
+      ScreenToClient(hwnd, &point);
+      handle_keypress(lookup_key(wparam), point.x, point.y,
+                      get_message_time());
+
+      // wparam does not contain left/right information for SHIFT,
+      // CONTROL, or ALT, so we have to track their status and do
+      // the right thing.  We'll send the left/right specific key
+      // event along with the general key event.
+      //
+      // If the user presses LSHIFT and then RSHIFT, the RSHIFT event
+      // will come in with the keyrepeat flag on (i.e. it will end up
+      // in this block).  The logic below should detect this correctly
+      // and only send the RSHIFT event.  Note that the CONTROL event
+      // will be sent twice, once for each keypress.  Since keyrepeats
+      // are currently being sent simply as additional keypress events,
+      // that should be okay for now.
+      if (wparam == VK_SHIFT) {
+        if (((GetKeyState(VK_LSHIFT) & 0x8000) != 0) && ! _lshift_down ) {
+          handle_keypress(KeyboardButton::lshift(), point.x, point.y,
+                          get_message_time());
+          _lshift_down = true;
+        } else if (((GetKeyState(VK_RSHIFT) & 0x8000) != 0) && ! _rshift_down ) {
+          handle_keypress(KeyboardButton::rshift(), point.x, point.y,
+                          get_message_time());
+          _rshift_down = true;
         } else {
-          // Actually, for now we'll respect the repeat anyway, just
-          // so we support backspace properly.  Rethink later.
-          POINT point;
-          GetCursorPos(&point);
-          ScreenToClient(hwnd, &point);
-          handle_keypress(lookup_key(wparam), point.x, point.y,
+          if ((GetKeyState(VK_LSHIFT) & 0x8000) != 0) {
+            handle_keypress(KeyboardButton::lshift(), point.x, point.y,
+                            get_message_time());
+          }
+          if ((GetKeyState(VK_RSHIFT) & 0x8000) != 0) {
+            handle_keypress(KeyboardButton::rshift(), point.x, point.y,
+                            get_message_time());
+          }
+        }
+      } else if(wparam == VK_CONTROL) {
+        if (((GetKeyState(VK_LCONTROL) & 0x8000) != 0) && ! _lcontrol_down ) {
+          handle_keypress(KeyboardButton::lcontrol(), point.x, point.y,
                           get_message_time());
-
-          // wparam does not contain left/right information for SHIFT,
-          // CONTROL, or ALT, so we have to track their status and do
-          // the right thing.  We'll send the left/right specific key
-          // event along with the general key event.
-          //
-          // If the user presses LSHIFT and then RSHIFT, the RSHIFT event
-          // will come in with the keyrepeat flag on (i.e. it will end up
-          // in this block).  The logic below should detect this correctly
-          // and only send the RSHIFT event.  Note that the CONTROL event
-          // will be sent twice, once for each keypress.  Since keyrepeats
-          // are currently being sent simply as additional keypress events,
-          // that should be okay for now.
-          if (wparam == VK_SHIFT) {
-            if (((GetKeyState(VK_LSHIFT) & 0x8000) != 0) && ! _lshift_down ) {
-              handle_keypress(KeyboardButton::lshift(), point.x, point.y,
-                              get_message_time());
-              _lshift_down = true;
-            } else if (((GetKeyState(VK_RSHIFT) & 0x8000) != 0) && ! _rshift_down ) {
-              handle_keypress(KeyboardButton::rshift(), point.x, point.y,
-                              get_message_time());
-              _rshift_down = true;
-            } else {
-              if ((GetKeyState(VK_LSHIFT) & 0x8000) != 0) {
-                handle_keypress(KeyboardButton::lshift(), point.x, point.y,
-                                get_message_time());
-              }
-              if ((GetKeyState(VK_RSHIFT) & 0x8000) != 0) {
-                handle_keypress(KeyboardButton::rshift(), point.x, point.y,
-                                get_message_time());
-              }
-            }
-          } else if(wparam == VK_CONTROL) {
-            if (((GetKeyState(VK_LCONTROL) & 0x8000) != 0) && ! _lcontrol_down ) {
-              handle_keypress(KeyboardButton::lcontrol(), point.x, point.y,
-                              get_message_time());
-              _lcontrol_down = true;
-            } else if (((GetKeyState(VK_RCONTROL) & 0x8000) != 0) && ! _rcontrol_down ) {
-              handle_keypress(KeyboardButton::rcontrol(), point.x, point.y,
-                              get_message_time());
-              _rcontrol_down = true;
-            } else {
-              if ((GetKeyState(VK_LCONTROL) & 0x8000) != 0) {
-                handle_keypress(KeyboardButton::lcontrol(), point.x, point.y,
-                                get_message_time());
-              }
-              if ((GetKeyState(VK_RCONTROL) & 0x8000) != 0) {
-                handle_keypress(KeyboardButton::rcontrol(), point.x, point.y,
-                                get_message_time());
-              }
-            }
+          _lcontrol_down = true;
+        } else if (((GetKeyState(VK_RCONTROL) & 0x8000) != 0) && ! _rcontrol_down ) {
+          handle_keypress(KeyboardButton::rcontrol(), point.x, point.y,
+                          get_message_time());
+          _rcontrol_down = true;
+        } else {
+          if ((GetKeyState(VK_LCONTROL) & 0x8000) != 0) {
+            handle_keypress(KeyboardButton::lcontrol(), point.x, point.y,
+                            get_message_time());
+          }
+          if ((GetKeyState(VK_RCONTROL) & 0x8000) != 0) {
+            handle_keypress(KeyboardButton::rcontrol(), point.x, point.y,
+                            get_message_time());
           }
         }
-        break;
+      }
+    }
+    break;
     
-      case WM_SYSKEYUP:
-      case WM_KEYUP:
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
-        }
-        if (windisplay_cat.is_debug()) {
-          windisplay_cat.debug()
-            << "keyup: " << wparam << " (" << lookup_key(wparam) << ")\n";
-        }
-        handle_keyrelease(lookup_key(wparam), get_message_time());
+  case WM_SYSKEYUP:
+  case WM_KEYUP:
+    if (_lost_keypresses) {
+      resend_lost_keypresses();
+    }
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "keyup: " << wparam << " (" << lookup_key(wparam) << ")\n";
+    }
+    handle_keyrelease(lookup_key(wparam), get_message_time());
 
-        // wparam does not contain left/right information for SHIFT,
-        // CONTROL, or ALT, so we have to track their status and do
-        // the right thing.  We'll send the left/right specific key
-        // event along with the general key event.
-        if (wparam == VK_SHIFT) {
-          if ((GetKeyState(VK_LSHIFT) & 0x8000) == 0 && _lshift_down) {
-            handle_keyrelease(KeyboardButton::lshift(), get_message_time());
-            _lshift_down = false;
-          }
-          if ((GetKeyState(VK_RSHIFT) & 0x8000) == 0 && _rshift_down) {
-            handle_keyrelease(KeyboardButton::rshift(), get_message_time());
-            _rshift_down = false;
-          }
-        } else if(wparam == VK_CONTROL) {
-          if ((GetKeyState(VK_LCONTROL) & 0x8000) == 0 && _lcontrol_down) {
-            handle_keyrelease(KeyboardButton::lcontrol(), get_message_time());
-            _lcontrol_down = false;
-          }
-          if ((GetKeyState(VK_RCONTROL) & 0x8000) == 0 && _rcontrol_down) {
-            handle_keyrelease(KeyboardButton::rcontrol(), get_message_time());
-            _rcontrol_down = false;
-          }
-        } else if(wparam == VK_MENU) {
-          if ((GetKeyState(VK_LMENU) & 0x8000) == 0 && _lalt_down) {
-            handle_keyrelease(KeyboardButton::lalt(), get_message_time());
-            _lalt_down = false;
-          }
-          if ((GetKeyState(VK_RMENU) & 0x8000) == 0 && _ralt_down) {
-            handle_keyrelease(KeyboardButton::ralt(), get_message_time());
-            _ralt_down = false;
-          }
-        }
-        break;
+    // wparam does not contain left/right information for SHIFT,
+    // CONTROL, or ALT, so we have to track their status and do
+    // the right thing.  We'll send the left/right specific key
+    // event along with the general key event.
+    if (wparam == VK_SHIFT) {
+      if ((GetKeyState(VK_LSHIFT) & 0x8000) == 0 && _lshift_down) {
+        handle_keyrelease(KeyboardButton::lshift(), get_message_time());
+        _lshift_down = false;
+      }
+      if ((GetKeyState(VK_RSHIFT) & 0x8000) == 0 && _rshift_down) {
+        handle_keyrelease(KeyboardButton::rshift(), get_message_time());
+        _rshift_down = false;
+      }
+    } else if(wparam == VK_CONTROL) {
+      if ((GetKeyState(VK_LCONTROL) & 0x8000) == 0 && _lcontrol_down) {
+        handle_keyrelease(KeyboardButton::lcontrol(), get_message_time());
+        _lcontrol_down = false;
+      }
+      if ((GetKeyState(VK_RCONTROL) & 0x8000) == 0 && _rcontrol_down) {
+        handle_keyrelease(KeyboardButton::rcontrol(), get_message_time());
+        _rcontrol_down = false;
+      }
+    } else if(wparam == VK_MENU) {
+      if ((GetKeyState(VK_LMENU) & 0x8000) == 0 && _lalt_down) {
+        handle_keyrelease(KeyboardButton::lalt(), get_message_time());
+        _lalt_down = false;
+      }
+      if ((GetKeyState(VK_RMENU) & 0x8000) == 0 && _ralt_down) {
+        handle_keyrelease(KeyboardButton::ralt(), get_message_time());
+        _ralt_down = false;
+      }
+    }
+    break;
     
-      case WM_KILLFOCUS: 
-        if (windisplay_cat.is_debug()) 
-        {
-          windisplay_cat.debug()
-            << "killfocus\n";
-        }
+  case WM_KILLFOCUS: 
+    if (windisplay_cat.is_debug()) 
+      {
+        windisplay_cat.debug()
+          << "killfocus\n";
+      }
 
 #ifndef WANT_NEW_FOCUS_MANAGMENT
-        if (!_lost_keypresses) 
-        {
-          // Record the current state of the keyboard when the focus is
-          // lost, so we can check it for changes when we regain focus.
-          GetKeyboardState(_keyboard_state);
-          if (windisplay_cat.is_debug()) {
-            // Report the set of keys that are held down at the time of
-            // the killfocus event.
-            for (int i = 0; i < num_virtual_keys; i++) 
+    if (!_lost_keypresses) 
+      {
+        // Record the current state of the keyboard when the focus is
+        // lost, so we can check it for changes when we regain focus.
+        GetKeyboardState(_keyboard_state);
+        if (windisplay_cat.is_debug()) {
+          // Report the set of keys that are held down at the time of
+          // the killfocus event.
+          for (int i = 0; i < num_virtual_keys; i++) 
             {
               if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) 
-              {
-                if ((_keyboard_state[i] & 0x80) != 0) 
                 {
-                  windisplay_cat.debug()
-                    << "on killfocus, key is down: " << i
-                    << " (" << lookup_key(i) << ")\n";
+                  if ((_keyboard_state[i] & 0x80) != 0) 
+                    {
+                      windisplay_cat.debug()
+                        << "on killfocus, key is down: " << i
+                        << " (" << lookup_key(i) << ")\n";
+                    }
                 }
-              }
             }
-          }
+        }
 
-          if (!hold_keys_across_windows) 
+        if (!hold_keys_across_windows) 
           {
             // If we don't want to remember the keystate while the
             // window focus is lost, then generate a keyup event
             // right now for each key currently held.
             double message_time = get_message_time();
             for (int i = 0; i < num_virtual_keys; i++) 
-            {
-              if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) 
               {
-                if ((_keyboard_state[i] & 0x80) != 0) 
-                {
-                  handle_keyrelease(lookup_key(i), message_time);
-                  _keyboard_state[i] &= ~0x80;
-                }
+                if (i != VK_SHIFT && i != VK_CONTROL && i != VK_MENU) 
+                  {
+                    if ((_keyboard_state[i] & 0x80) != 0) 
+                      {
+                        handle_keyrelease(lookup_key(i), message_time);
+                        _keyboard_state[i] &= ~0x80;
+                      }
+                  }
               }
-            }
           }
           
-          // Now set the flag indicating that some keypresses from now
-          // on may be lost.
-          _lost_keypresses = true;
-        }
+        // Now set the flag indicating that some keypresses from now
+        // on may be lost.
+        _lost_keypresses = true;
+      }
 #else // WANT_NEW_FOCUS_MANAGMENT
-        {
-            double message_time = get_message_time();
-            int i;
-            for (i = 0; i < num_virtual_keys; i++) {
-              ButtonHandle bh = lookup_key(i);
-              if(bh != ButtonHandle::none()) {
-                handle_keyrelease(bh,message_time);
-              }
-            }
-            memset(_keyboard_state, 0, sizeof(BYTE) * num_virtual_keys);
-
-            // Also up the mouse buttons.
-            for (i = 0; i < MouseButton::num_mouse_buttons; ++i) {
-              handle_keyrelease(MouseButton::button(i), message_time);
-            }
-            handle_keyrelease(MouseButton::wheel_up(), message_time);
-            handle_keyrelease(MouseButton::wheel_down(), message_time);
-
-            _lost_keypresses = true;
+    {
+      double message_time = get_message_time();
+      int i;
+      for (i = 0; i < num_virtual_keys; i++) {
+        ButtonHandle bh = lookup_key(i);
+        if(bh != ButtonHandle::none()) {
+          handle_keyrelease(bh,message_time);
         }
+      }
+      memset(_keyboard_state, 0, sizeof(BYTE) * num_virtual_keys);
+
+      // Also up the mouse buttons.
+      for (i = 0; i < MouseButton::num_mouse_buttons; ++i) {
+        handle_keyrelease(MouseButton::button(i), message_time);
+      }
+      handle_keyrelease(MouseButton::wheel_up(), message_time);
+      handle_keyrelease(MouseButton::wheel_down(), message_time);
+
+      _lost_keypresses = true;
+    }
 #endif // WANT_NEW_FOCUS_MANAGMENT
-        break;
+    properties.set_foreground(false);
+    system_changed_properties(properties);
+    break;
     
-      case WM_SETFOCUS: 
-        // You would think that this would be a good time to call
-        // resend_lost_keypresses(), but it turns out that we get
-        // WM_SETFOCUS slightly before Windows starts resending key
-        // up/down events to us.
+  case WM_SETFOCUS: 
+    // You would think that this would be a good time to call
+    // resend_lost_keypresses(), but it turns out that we get
+    // WM_SETFOCUS slightly before Windows starts resending key
+    // up/down events to us.
 
-        // In particular, if the user restored focus using alt-tab,
-        // then at this point the keyboard state will indicate that
-        // both the alt and tab keys are held down.  However, there is
-        // a small window of opportunity for the user to release these
-        // keys before Windows starts telling us about keyup events.
-        // Thus, if we record the fact that alt and tab are being held
-        // down now, we may miss the keyup events for them, and they
-        // can get "stuck" down.
+    // In particular, if the user restored focus using alt-tab,
+    // then at this point the keyboard state will indicate that
+    // both the alt and tab keys are held down.  However, there is
+    // a small window of opportunity for the user to release these
+    // keys before Windows starts telling us about keyup events.
+    // Thus, if we record the fact that alt and tab are being held
+    // down now, we may miss the keyup events for them, and they
+    // can get "stuck" down.
 
-        // So we have to defer calling resend_lost_keypresses() until
-        // we know Windows is ready to send us key up/down events.  I
-        // don't know when we can guarantee that, except when we
-        // actually do start to receive key up/down events, so that
-        // call is made there.
+    // So we have to defer calling resend_lost_keypresses() until
+    // we know Windows is ready to send us key up/down events.  I
+    // don't know when we can guarantee that, except when we
+    // actually do start to receive key up/down events, so that
+    // call is made there.
 
-        if (windisplay_cat.is_debug()) {
-          windisplay_cat.debug()
-            << "setfocus\n";
-        }
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "setfocus\n";
+    }
 
-        if (_lost_keypresses) {
-          resend_lost_keypresses();
-        }
-        break;
+    if (_lost_keypresses) {
+      resend_lost_keypresses();
+    }
 
-     case PM_ACTIVE:
-        if (windisplay_cat.is_debug()) {
-          windisplay_cat.debug()
-            << "PM_ACTIVE\n";
-        }
-        properties.set_foreground(true);
-        system_changed_properties(properties);
-        break;
+    properties.set_foreground(true);
+    system_changed_properties(properties);
+    break;
 
-      case PM_INACTIVE:
-        if (windisplay_cat.is_debug()) {
-          windisplay_cat.debug()
-            << "PM_INACTIVE\n";
-        }
-        properties.set_foreground(false);
-        system_changed_properties(properties);
-        break;
+  case PM_ACTIVE:
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "PM_ACTIVE\n";
+    }
+    properties.set_foreground(true);
+    system_changed_properties(properties);
+    break;
+
+  case PM_INACTIVE:
+    if (windisplay_cat.is_debug()) {
+      windisplay_cat.debug()
+        << "PM_INACTIVE\n";
+    }
+    properties.set_foreground(false);
+    system_changed_properties(properties);
+    break;
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);
