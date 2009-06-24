@@ -15,6 +15,8 @@
 #include "load_plugin.h"
 #include "p3d_plugin_config.h"
 
+#include "assert.h"
+
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
@@ -63,6 +65,47 @@ get_plugin_basename() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: is_pathsep
+//  Description: Returns true if the indicated character is a path
+//               separator character (e.g. slash or backslash), false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+static inline bool
+is_pathsep(char ch) {
+  if (ch == '/') {
+    return true;
+  }
+#ifdef _WIN32
+  if (ch == '\\') {
+    return true;
+  }
+#endif
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: find_extension_dot
+//  Description: Returns the position in the string of the dot before
+//               the filename extension; that is, the position of the
+//               rightmost dot that is right of the rightmost slash
+//               (or backslash, on Windows).  Returns string::npos if
+//               there is no extension.
+////////////////////////////////////////////////////////////////////
+static size_t
+find_extension_dot(const string &filename) {
+  size_t p = filename.length();
+  while (p > 0 && !is_pathsep(filename[p - 1])) {
+    --p;
+    if (filename[p] == '.') {
+      return p;
+    }
+  }
+
+  return string::npos;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: load_plugin
 //  Description: Loads the plugin and assigns all of the function
 //               pointers.  Returns true on success, false on failure.
@@ -83,6 +126,18 @@ load_plugin(const string &p3d_plugin_filename) {
 
 #ifdef _WIN32
   assert(module == NULL);
+  
+  // On Windows, the filename passed to LoadLibrary() must have an
+  // extension, or a default ".DLL" will be implicitly added.  If the
+  // file actually has no extension, we must add "." to avoid this.
+
+  // Check whether the filename has an extension.
+  size_t extension_dot = find_extension_dot(filename);
+  if (extension_dot == string::npos) {
+    // No extension.
+    filename += ".";
+  }
+
   module = LoadLibrary(filename.c_str());
   if (module == NULL) {
     // Couldn't load the DLL.

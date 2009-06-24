@@ -240,7 +240,7 @@ start_p3dpython() {
   if (p3dpython.empty()) {
     p3dpython = _python_root_dir + "/p3dpython";
 #ifdef _WIN32
-    p3dpython += ".exe"
+    p3dpython += ".exe";
 #endif
   }
 

@@ -194,7 +194,7 @@ NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream,
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
 
-  return inst->new_stream(type, stream, seekable, stype);
+  return inst->new_stream(type, stream, seekable != 0, stype);
 }
 
 ////////////////////////////////////////////////////////////////////

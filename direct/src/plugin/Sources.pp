@@ -14,6 +14,7 @@
     handleStream.cxx handleStream.h handleStream.I \
     handleStreamBuf.cxx handleStreamBuf.h \
     p3d_lock.h p3d_plugin.h \
+    p3d_plugin_config.h \
     p3d_plugin_common.h \
     p3dDownload.h p3dDownload.I \
     p3dFileDownload.h p3dFileDownload.I \
@@ -64,6 +65,7 @@
     handleStream.cxx handleStream.h handleStream.I \
     handleStreamBuf.cxx handleStreamBuf.h \
     p3d_lock.h p3d_plugin.h \
+    p3d_plugin_config.h \
     p3dCInstance.cxx \
     p3dCInstance.h p3dCInstance.I \
     p3dPythonRun.cxx p3dPythonRun.h p3dPythonRun.I

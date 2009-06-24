@@ -47,14 +47,16 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
   _got_instance_data = false;
   _got_window = false;
 
-  // Start the plugin DLL downloading.
-  string url = P3D_PLUGIN_DOWNLOAD;
-  url += P3D_PLUGIN_PLATFORM;
-  url += "/";
-  url += get_plugin_basename();
-
-  PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
-  browser->geturlnotify(_npp_instance, url.c_str(), NULL, req);
+  if (!is_plugin_loaded()) {
+    // Start the plugin DLL downloading.
+    string url = P3D_PLUGIN_DOWNLOAD;
+    url += P3D_PLUGIN_PLATFORM;
+    url += "/";
+    url += get_plugin_basename();
+    
+    PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
+    browser->geturlnotify(_npp_instance, url.c_str(), NULL, req);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -211,6 +213,7 @@ stream_as_file(NPStream *stream, const char *fname) {
     if (!load_plugin(filename)) {
       logfile << "Unable to launch core API.\n";
     }
+    create_instance();
     break;
 
   case PPDownloadRequest::RT_instance_data:

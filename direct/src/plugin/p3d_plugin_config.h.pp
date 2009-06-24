@@ -13,12 +13,12 @@
 
 /* The filename(s) to generate output to when the plugin is running.
    For debugging purposes only. */
-#$[]define P3D_PLUGIN_LOGFILE1 "$[osfilename $[P3D_PLUGIN_LOGFILE1]]"
-#$[]define P3D_PLUGIN_LOGFILE2 "$[osfilename $[P3D_PLUGIN_LOGFILE2]]"
+#$[]define P3D_PLUGIN_LOGFILE1 "$[subst \,\\,$[osfilename $[P3D_PLUGIN_LOGFILE1]]]"
+#$[]define P3D_PLUGIN_LOGFILE2 "$[subst \,\\,$[osfilename $[P3D_PLUGIN_LOGFILE2]]]"
 
 /* Temporary: the location at which p3dpython.exe can be found.  Empty
    string for the default. */
-#$[]define P3D_PLUGIN_P3DPYTHON "$[osfilename $[P3D_PLUGIN_P3DPYTHON]]"
+#$[]define P3D_PLUGIN_P3DPYTHON "$[subst \,\\,$[osfilename $[P3D_PLUGIN_P3DPYTHON]]]"
 
 /* The string that corresponds to this particular platform. */
 #if $[not $[P3D_PLUGIN_PLATFORM]]
