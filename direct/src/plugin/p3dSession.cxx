@@ -86,13 +86,16 @@ P3DSession::
 
     // Also close the pipe, to help underscore the point.
     _pipe_write.close();
-    _pipe_read.close();
+
+    // Closing _pipe_read before the thread has stopped can result in
+    // a hang.  Don't need to close it yet.
+    //  _pipe_read.close();
 
 #ifdef _WIN32
     // Now give the process a chance to terminate itself cleanly.
     if (WaitForSingleObject(_p3dpython_handle, 2000) == WAIT_TIMEOUT) {
       // It didn't shut down cleanly, so kill it the hard way.
-      nout << "Terminating process.\n";
+      nout << "Terminating process.\n" << flush;
       TerminateProcess(_p3dpython_handle, 2);
     }
 
@@ -298,18 +301,18 @@ start_p3dpython() {
 #endif
 
   if (!started_p3dpython) {
-    nout << "Failed to create process.\n";
+    nout << "Failed to create process.\n" << flush;
     return;
   }
   _p3dpython_running = true;
 
-  nout << "Created child process\n";
+  nout << "Created child process\n" << flush;
 
   if (!_pipe_read) {
-    nout << "unable to open read pipe\n";
+    nout << "unable to open read pipe\n" << flush;
   }
   if (!_pipe_write) {
-    nout << "unable to open write pipe\n";
+    nout << "unable to open write pipe\n" << flush;
   }
   
   spawn_read_thread();
@@ -366,7 +369,6 @@ join_read_thread() {
     return;
   }
 
-  nout << "session waiting for thread\n";
   _read_thread_continue = false;
   _pipe_read.close();
   
@@ -379,7 +381,6 @@ join_read_thread() {
   void *return_val;
   pthread_join(_read_thread, &return_val);
 #endif
-  nout << "session done waiting for thread\n";
 
   _started_read_thread = false;
 }
@@ -391,20 +392,20 @@ join_read_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 rt_thread_run() {
-  nout << "session thread reading.\n";
+  nout << "session thread reading.\n" << flush;
   while (_read_thread_continue) {
     TiXmlDocument *doc = new TiXmlDocument;
 
     _pipe_read >> *doc;
     if (!_pipe_read || _pipe_read.eof()) {
       // Some error on reading.  Abort.
-      nout << "Error on session reading.\n";
+      nout << "Error on session reading.\n" << flush;
       rt_terminate();
       return;
     }
 
     // Successfully read an XML document.
-    nout << "Session got request: " << *doc << "\n";
+    nout << "Session got request: " << *doc << "\n" << flush;
 
     // TODO: feed the request up to the parent.
     delete doc;
@@ -486,7 +487,7 @@ win_create_process(const string &program, const string &start_dir,
 
   // Create the pipe to the process.
   if (!CreatePipe(&r_to, &w_to, NULL, 0)) {
-    nout << "failed to create pipe\n";
+    nout << "failed to create pipe\n" << flush;
   } else {
     // Make sure the right end of the pipe is inheritable.
     SetHandleInformation(r_to, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
@@ -495,7 +496,7 @@ win_create_process(const string &program, const string &start_dir,
 
   // Create the pipe from the process.
   if (!CreatePipe(&r_from, &w_from, NULL, 0)) {
-    nout << "failed to create pipe\n";
+    nout << "failed to create pipe\n" << flush;
   } else { 
     // Make sure the right end of the pipe is inheritable.
     SetHandleInformation(w_from, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
@@ -515,7 +516,7 @@ win_create_process(const string &program, const string &start_dir,
       error_handle = handle;
       SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
     } else {
-      nout << "Unable to open " << output_filename << "\n";
+      nout << "Unable to open " << output_filename << "\n" << flush;
     }
   }
 
@@ -614,7 +615,7 @@ posix_create_process(const string &program, const string &start_dir,
       int logfile_fd = open(output_filename.c_str(), 
                             O_WRONLY | O_CREAT | O_TRUNC, 0666);
       if (logfile_fd < 0) {
-        nout << "Unable to open " << output_filename << "\n";
+        nout << "Unable to open " << output_filename << "\n" << flush;
       } else {
         dup2(logfile_fd, STDERR_FILENO);
         close(logfile_fd);
@@ -629,7 +630,7 @@ posix_create_process(const string &program, const string &start_dir,
     close(from_fd[0]);
 
     if (chdir(start_dir.c_str()) < 0) {
-      nout << "Could not chdir to " << start_dir << "\n";
+      nout << "Could not chdir to " << start_dir << "\n" << flush;
       _exit(1);
     }
 
@@ -645,7 +646,7 @@ posix_create_process(const string &program, const string &start_dir,
     ptrs.push_back((char *)NULL);
     
     execle(program.c_str(), program.c_str(), (char *)0, &ptrs[0]);
-    nout << "Failed to exec " << program << "\n";
+    nout << "Failed to exec " << program << "\n" << flush;
     _exit(1);
   }
 

@@ -68,7 +68,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
 PPInstance::
 ~PPInstance() {
   logfile
-    << "destructing " << this << "\n" << flush;
+    << "destructing " << this << ", " << _p3d_inst << "\n" << flush;
 
   if (_p3d_inst != NULL) {
     P3D_instance_finish(_p3d_inst);
@@ -124,6 +124,7 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
     if (!_started_instance_data) {
       stream->notifyData = new PPDownloadRequest(PPDownloadRequest::RT_instance_data);
       *stype = NP_ASFILEONLY;
+      _started_instance_data = true;
       return NPERR_NO_ERROR;
     }
 
@@ -433,8 +434,12 @@ send_window() {
   parent_window._hwnd = (HWND)(_window.window);
 #endif
 
+  // Actually, we set up the window starting at (0, 0), instead of
+  // whatever Mozilla tells us, because the window handle we get is a
+  // specially created window that is already aligned to where we want
+  // our window to be.
   P3D_instance_setup_window
-    (_p3d_inst, P3D_WT_toplevel,
-     _window.x, _window.y, _window.width, _window.height,
+    (_p3d_inst, P3D_WT_embedded,
+     0, 0, _window.width, _window.height,
      parent_window);
 }

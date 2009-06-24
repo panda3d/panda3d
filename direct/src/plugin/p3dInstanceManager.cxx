@@ -35,7 +35,6 @@ P3DInstanceManager *P3DInstanceManager::_global_ptr;
 ////////////////////////////////////////////////////////////////////
 P3DInstanceManager::
 P3DInstanceManager() {
-  nout << "creating instance manager\n";
   _is_initialized = false;
   _unique_session_index = 0;
 
@@ -93,10 +92,10 @@ initialize() {
   _platform = P3D_PLUGIN_PLATFORM;
 
   nout << "_root_dir = " << _root_dir << ", download = " 
-       << _download_url << "\n";
+       << _download_url << "\n" << flush;
 
   if (_root_dir.empty()) {
-    nout << "Could not find root directory.\n";
+    nout << "Could not find root directory.\n" << flush;
     return false;
   }
 
@@ -131,7 +130,7 @@ bool P3DInstanceManager::
 start_instance(P3DInstance *inst, const string &p3d_filename,
                const P3D_token tokens[], size_t num_tokens) {
   if (inst->is_started()) {
-    nout << "Instance started twice: " << inst << "\n";
+    nout << "Instance started twice: " << inst << "\n" << flush;
     return false;
   }
   inst->set_fparams(P3DFileParams(p3d_filename, tokens, num_tokens));
@@ -159,6 +158,7 @@ start_instance(P3DInstance *inst, const string &p3d_filename,
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 finish_instance(P3DInstance *inst) {
+  nout << "finish_instance(" << inst << ")\n" << flush;
   Instances::iterator ii;
   ii = _instances.find(inst);
   assert(ii != _instances.end());
@@ -541,7 +541,7 @@ find_root_dir() const {
   }
 
   // Couldn't find a directory.  Bail.
-  nout << "Couldn't find a root directory.\n";
+  nout << "Couldn't find a root directory.\n" << flush;
   return string();
 
 #else  // _WIN32

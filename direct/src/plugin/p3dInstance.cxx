@@ -255,7 +255,8 @@ feed_url_stream(int unique_id,
                 size_t this_data_size) {
   Downloads::iterator di = _downloads.find(unique_id);
   if (di == _downloads.end()) {
-    nout << "Unexpected feed_url_stream for " << unique_id << "\n";
+    nout << "Unexpected feed_url_stream for " << unique_id << "\n"
+         << flush;
     // Don't know this request.
     return false;
   }
@@ -267,7 +268,7 @@ feed_url_stream(int unique_id,
 
   if (!download_ok || download->get_download_finished()) {
     // All done.
-    nout << "completed download " << unique_id << "\n";
+    nout << "completed download " << unique_id << "\n" << flush;
     _downloads.erase(di);
     delete download;
   }
@@ -313,7 +314,7 @@ start_download(P3DDownload *download) {
   assert(inserted);
 
   nout << "beginning download " << download_id << ": " << download->get_url()
-       << "\n";
+       << "\n" << flush;
 
   P3D_request *request = new P3D_request;
   request->_instance = this;

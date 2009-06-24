@@ -213,7 +213,11 @@ NP_Shutdown(void) {
   RELEASE_LOCK(_timer_lock);
   DESTROY_LOCK(_timer_lock);
 
+  logfile << "unloading plugin\n" << flush;
+
   unload_plugin();
+
+  logfile << "done shutdown\n" << flush;
 
   // Not clear whether there's a return value or not.  Some versions
   // of the API have different opinions on this.
