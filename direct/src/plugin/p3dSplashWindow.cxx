@@ -51,6 +51,16 @@ set_wparams(const P3DWindowParams &wparams) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::set_image_filename
+//       Access: Public, Virtual
+//  Description: Specifies the name of a JPEG image file that is
+//               displayed in the center of the splash window.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+set_image_filename(const string &image_filename) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::set_install_label
 //       Access: Public, Virtual
 //  Description: Specifies the text that is displayed above the

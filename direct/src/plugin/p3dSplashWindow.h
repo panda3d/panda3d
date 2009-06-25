@@ -42,6 +42,7 @@ public:
   virtual void set_wparams(const P3DWindowParams &wparams);
   inline const P3DWindowParams &get_wparams() const;
 
+  virtual void set_image_filename(const string &image_filename);
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress);
 

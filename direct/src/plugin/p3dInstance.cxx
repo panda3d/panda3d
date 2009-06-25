@@ -98,13 +98,6 @@ set_fparams(const P3DFileParams &fparams) {
   _got_fparams = true;
   _fparams = fparams;
 
-  // Maybe create the splash window.
-  if (!_instance_window_opened && _got_wparams) {
-    if (_splash_window == NULL) {
-      _splash_window = new SplashWindowType(this);
-    }
-  }
-
   // This also sets up some internal data based on the contents of the
   // above file and the associated tokens.
 
@@ -115,6 +108,21 @@ set_fparams(const P3DFileParams &fparams) {
   _session_key = strm.str();
 
   _python_version = "python24";
+
+
+  // Maybe create the splash window.
+  if (!_instance_window_opened && _got_wparams) {
+    if (_splash_window == NULL) {
+      _splash_window = new SplashWindowType(this);
+      //      _splash_window->set_image_filename("c:/Documents and Settings/drose/Desktop/pandalogo.jpg");
+    }
+  }
+
+  /*
+  string splash_image_url = _fparams.lookup_token("splash_img");
+  if (!splash_image_url.is_empty()) {
+  }
+  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -133,6 +141,7 @@ set_wparams(const P3DWindowParams &wparams) {
   if (!_instance_window_opened && _got_fparams) {
     if (_splash_window == NULL) {
       _splash_window = new SplashWindowType(this);
+      //      _splash_window->set_image_filename("c:/Documents and Settings/drose/Desktop/pandalogo.jpg");
     } else {
       _splash_window->set_wparams(_wparams);
     }
