@@ -46,10 +46,14 @@ extern ofstream logfile;
 
 #include <windows.h>
 
-#else defined(__APPLE__)
+#elif defined(__APPLE__)
 
 // On Mac, Gecko requires this symbol to be defined.
 #define XP_MACOSX
+
+#else
+
+#define XP_UNIX
 
 #endif  // _WIN32, __APPLE__
 

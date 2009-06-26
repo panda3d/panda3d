@@ -16,6 +16,8 @@
 #include "startup.h"
 #include "p3d_plugin_config.h"
 
+#include <string.h>
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::Constructor
 //       Access: Public
