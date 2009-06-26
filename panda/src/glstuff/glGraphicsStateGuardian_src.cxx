@@ -845,6 +845,65 @@ reset() {
   }
 #endif // HAVE_CG
 
+
+#ifdef OPENGLES_2
+  _supports_glsl = true;
+#else
+  _supports_glsl = is_at_least_gl_version(2, 0);
+#endif
+  _shader_caps._supports_glsl = _supports_glsl;
+
+  if (_supports_glsl) {
+    _glAttachShader = (PFNGLATTACHSHADERPROC)
+       get_extension_func(GLPREFIX_QUOTED, "AttachShader");
+    _glCompileShader = (PFNGLCOMPILESHADERPROC)
+       get_extension_func(GLPREFIX_QUOTED, "CompileShader");
+    _glCreateProgram = (PFNGLCREATEPROGRAMPROC)
+       get_extension_func(GLPREFIX_QUOTED, "CreateProgram");
+    _glCreateShader = (PFNGLCREATESHADERPROC)
+       get_extension_func(GLPREFIX_QUOTED, "CreateShader");
+    _glDeleteProgram = (PFNGLDELETEPROGRAMPROC)
+       get_extension_func(GLPREFIX_QUOTED, "DeleteProgram");
+    _glDeleteShader = (PFNGLDELETESHADERPROC)
+       get_extension_func(GLPREFIX_QUOTED, "DeleteShader");
+    _glDetachShader = (PFNGLDETACHSHADERPROC)
+       get_extension_func(GLPREFIX_QUOTED, "DetachShader");
+    _glGetActiveUniform = (PFNGLGETACTIVEUNIFORMPROC)
+       get_extension_func(GLPREFIX_QUOTED, "GetActiveUniform");
+    _glGetProgramiv = (PFNGLGETPROGRAMIVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "GetProgramiv");
+    _glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)
+       get_extension_func(GLPREFIX_QUOTED, "GetProgramInfoLog");
+    _glGetShaderiv = (PFNGLGETSHADERIVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "GetShaderiv");
+    _glGetShaderInfoLog = (PFNGLGETSHADERINFOLOGPROC)
+       get_extension_func(GLPREFIX_QUOTED, "GetShaderInfoLog");
+    _glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)
+       get_extension_func(GLPREFIX_QUOTED, "GetUniformLocation");
+    _glLinkProgram = (PFNGLLINKPROGRAMPROC)
+       get_extension_func(GLPREFIX_QUOTED, "LinkProgram");
+    _glShaderSource = (PFNGLSHADERSOURCEPROC)
+       get_extension_func(GLPREFIX_QUOTED, "ShaderSource");
+    _glUseProgram = (PFNGLUSEPROGRAMPROC)
+       get_extension_func(GLPREFIX_QUOTED, "UseProgram");
+    _glUniform4f = (PFNGLUNIFORM4FPROC)
+       get_extension_func(GLPREFIX_QUOTED, "Uniform4f");
+    _glUniform1i = (PFNGLUNIFORM1IPROC)
+       get_extension_func(GLPREFIX_QUOTED, "Uniform1i");
+    _glUniform1fv = (PFNGLUNIFORM1FVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "Uniform1fv");
+    _glUniform2fv = (PFNGLUNIFORM2FVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "Uniform2fv");
+    _glUniform3fv = (PFNGLUNIFORM3FVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "Uniform3fv");
+    _glUniform4fv = (PFNGLUNIFORM4FVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "Uniform4fv");
+    _glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)
+       get_extension_func(GLPREFIX_QUOTED, "UniformMatrix4fv");
+    _glValidateProgram = (PFNGLVALIDATEPROGRAMPROC)
+       get_extension_func(GLPREFIX_QUOTED, "ValidateProgram");
+  }
+
 #ifdef OPENGLES_2
   // In OpenGL ES 2.x, FBO's are supported in the core.
   _supports_framebuffer_object = true;
@@ -1857,7 +1916,7 @@ end_scene() {
     _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
   }
   if (_current_shader_context != 0) {
-    _current_shader_context->unbind();
+    _current_shader_context->unbind(this);
     _current_shader = (Shader *)NULL;
     _current_shader_context = (CLP(ShaderContext) *)NULL;
   }
@@ -2178,21 +2237,20 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
     _use_sender = true;
   }
 #endif
-  if (_vertex_array_shader_context==0) {
-    if (_current_shader_context==0) {
-      if (!update_standard_vertex_arrays(force)) {
-        return false;
-      }
-    } else {
-      disable_standard_vertex_arrays();
-      if (!_current_shader_context->update_shader_vertex_arrays(NULL, this, force)) {
-        return false;
-      }
+  
+  if (_current_shader_context == 0 || !_current_shader_context->uses_custom_vertex_arrays()) {
+    // No shader, or a non-Cg shader.
+    if (_vertex_array_shader_context != 0) {
+      _vertex_array_shader_context->disable_shader_vertex_arrays(this);
+    }
+    if (!update_standard_vertex_arrays(force)) {
+      return false;
     }
   } else {
-    if (_current_shader_context==0) {
-      _vertex_array_shader_context->disable_shader_vertex_arrays(this);
-      if (!update_standard_vertex_arrays(force)) {
+    // Cg shader.
+    if (_vertex_array_shader_context == 0) {
+      disable_standard_vertex_arrays();
+      if (!_current_shader_context->update_shader_vertex_arrays(NULL, this, force)) {
         return false;
       }
     } else {
@@ -2202,6 +2260,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
       }
     }
   }
+
   _vertex_array_shader = _current_shader;
   _vertex_array_shader_context = _current_shader_context;
 
@@ -3974,7 +4033,7 @@ do_issue_shader() {
   
   if (context == 0 || (context -> valid ( ) == false)) {
     if (_current_shader_context != 0) {
-      _current_shader_context->unbind();
+      _current_shader_context->unbind(this);
       _current_shader = 0;
       _current_shader_context = 0;
     }
@@ -3983,7 +4042,7 @@ do_issue_shader() {
       // Use a completely different shader than before.
       // Unbind old shader, bind the new one.
       if (_current_shader_context != 0) {
-        _current_shader_context->unbind();
+        _current_shader_context->unbind(this);
       }
       context->bind(this);
       _current_shader = shader;
@@ -6908,22 +6967,22 @@ void CLP(GraphicsStateGuardian)::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
-  if (_texture_binding_shader_context==0) {
-    if (_current_shader_context==0) {
-      update_standard_texture_bindings();
-    } else {
+  if (_current_shader_context == 0 || !_current_shader_context->uses_custom_texture_bindings()) {
+    // No shader, or a non-Cg shader.
+    if (_texture_binding_shader_context != 0) {
+      _texture_binding_shader_context->disable_shader_texture_bindings(this);
+    }
+    update_standard_texture_bindings();
+  } else {
+    if (_texture_binding_shader_context == 0) {
       disable_standard_texture_bindings();
       _current_shader_context->update_shader_texture_bindings(NULL,this);
-    }
-  } else {
-    if (_current_shader_context==0) {
-      _texture_binding_shader_context->disable_shader_texture_bindings(this);
-      update_standard_texture_bindings();
     } else {
       _current_shader_context->
         update_shader_texture_bindings(_texture_binding_shader_context,this);
     }
   }
+
   _texture_binding_shader = _current_shader;
   _texture_binding_shader_context = _current_shader_context;
 }

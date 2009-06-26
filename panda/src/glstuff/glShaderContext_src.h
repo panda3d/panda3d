@@ -36,13 +36,16 @@ public:
 
   INLINE bool valid(void);
   void bind(GSG *gsg);
-  void unbind();
+  void unbind(GSG *gsg);
   void issue_parameters(GSG *gsg, int altered);
   void disable_shader_vertex_arrays(GSG *gsg);
   bool update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
                                    bool force);
   void disable_shader_texture_bindings(GSG *gsg);
   void update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg);
+
+  INLINE bool uses_custom_vertex_arrays(void);
+  INLINE bool uses_custom_texture_bindings(void);
 
 private:
 
@@ -58,9 +61,19 @@ private:
   pvector <CGparameter> _cg_parameter_map;
   void cg_report_errors();
 #endif
-
-  void release_resources(void);
   
+  int _stage_offset;
+  // Avoid using this! It merely exists so the
+  // destructor has access to the extension functions.
+  WCPT(GSG) _last_gsg;
+
+  void glsl_report_shader_errors(GSG *gsg, unsigned int shader);
+  void glsl_report_program_errors(GSG *gsg, unsigned int program);
+  unsigned int glsl_compile_entry_point(GSG *gsg, const char *entry, Shader::ShaderType type);
+  bool glsl_compile_shader(GSG *gsg);
+
+  void release_resources(const GSG *gsg);
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

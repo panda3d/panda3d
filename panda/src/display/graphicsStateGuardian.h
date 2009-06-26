@@ -140,6 +140,7 @@ PUBLISHED:
   INLINE bool get_supports_depth_stencil() const;
   INLINE bool get_supports_shadow_filter() const;
   INLINE bool get_supports_basic_shaders() const;
+  INLINE bool get_supports_glsl() const;
   INLINE bool get_supports_stencil() const;
   INLINE bool get_supports_two_sided_stencil() const;
 
@@ -459,6 +460,7 @@ protected:
   bool _supports_depth_stencil;
   bool _supports_shadow_filter;
   bool _supports_basic_shaders;
+  bool _supports_glsl;
   bool _supports_framebuffer_multisample;
   bool _supports_framebuffer_blit;
   

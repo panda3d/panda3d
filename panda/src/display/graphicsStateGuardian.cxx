@@ -203,6 +203,7 @@ GraphicsStateGuardian(CoordinateSystem internal_coordinate_system,
   _supports_depth_stencil = false;
   _supports_shadow_filter = false;
   _supports_basic_shaders = false;
+  _supports_glsl = false;
 
   _supports_stencil = false;
   _supports_stencil_wrap = false;

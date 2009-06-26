@@ -38,13 +38,12 @@ class EXPCL_PANDA_GOBJ Shader: public TypedReferenceCount {
 
 PUBLISHED:
   
-  static PT(Shader) load(const Filename &file, const string &vprofile = "", const string &fprofile = "");
-  static PT(Shader) load(const string &file, const string &vprofile = "", const string &fprofile = "");
-  static PT(Shader) make(const string &body, const string &vprofile = "", const string &fprofile = "");
+  static PT(Shader) load(const Filename &file);
+  static PT(Shader) load(const string &file);
+  static PT(Shader) make(const string &body);
 
   INLINE const Filename &get_filename() const;
   INLINE const string   &get_text() const;
-  INLINE const string   &get_header() const;
   INLINE bool get_error_flag() const;
 
   INLINE static ShaderUtilization get_shader_utilization();
@@ -59,6 +58,14 @@ PUBLISHED:
   ShaderContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
                              GraphicsStateGuardianBase *gsg);
   
+  enum ShaderLanguage {
+    SL_none,
+    SL_Cg,
+    SL_GLSL
+  };
+  
+  INLINE const ShaderLanguage get_language() const;
+
 public:
 
   enum ShaderMatInput {
@@ -146,6 +153,9 @@ public:
     SMP_col1,
     SMP_col2,
     SMP_col3,
+    SMP_row3x1,
+    SMP_row3x2,
+    SMP_row3x3,
   };
   
   enum ShaderStateDep {
@@ -170,17 +180,15 @@ public:
     SMF_first,
   };
 
-  // BEGIN CG2 CHANGE
   enum ShaderType {
     ST_VERTEX,
     ST_FRAGMENT,
     ST_GEOMETRY,
   };
-  // END CG2 CHANGE
 
   struct ShaderArgId {
     string     _name;
-    ShaderType _type;       // CG2 CHANGE
+    ShaderType _type;
     int        _seqno;
   };
   
@@ -218,14 +226,16 @@ public:
   };
 
   struct ShaderCaps {
+    bool _supports_glsl;
+
 #ifdef HAVE_CG
     int _active_vprofile;
     int _active_fprofile;
-    int _active_gprofile;   // CG CHANGE   Geometry shader
+    int _active_gprofile;
 
     int _ultimate_vprofile;
     int _ultimate_fprofile;
-    int _ultimate_gprofile; // CG CHANGE   Geometry shader
+    int _ultimate_gprofile;
 
     pset <ShaderBug> _bug_list;
 #endif
@@ -270,37 +280,42 @@ public:
 
   void clear_parameters();
 
+ public:
+  unsigned int _glsl_program;
+  unsigned int _glsl_vshader;
+  unsigned int _glsl_fshader;
+  unsigned int _glsl_gshader;
+  pvector<int> _glsl_parameter_map;
+
 #ifdef HAVE_CG
  private:
   ShaderArgType cg_parameter_type(CGparameter p);
   ShaderArgDir  cg_parameter_dir(CGparameter p);
 
-  CGprogram     cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type = ST_VERTEX); // CG2 CHANGE
+  CGprogram     cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type = ST_VERTEX);
 
-  bool          cg_analyze_entry_point(CGprogram prog, ShaderType type);    // CG2 CHANGE
+  bool          cg_analyze_entry_point(CGprogram prog, ShaderType type);
 
   bool          cg_analyze_shader(const ShaderCaps &caps);
   bool          cg_compile_shader(const ShaderCaps &caps);
   void          cg_release_resources();
   void          cg_report_errors();
   
-  // BEGIN CG2 CHANGE
   // Determines the appropriate cg profile settings and stores them in the active shader caps
   // based on any profile settings stored in the shader's header
   void          cg_get_profile_from_header(ShaderCaps& caps);
-  // END CG2 CHANGE
 
   ShaderCaps _cg_last_caps;
   CGcontext  _cg_context;
   CGprogram  _cg_vprogram;
   CGprogram  _cg_fprogram;
-  CGprogram  _cg_gprogram;  // CG2 CHANGE
+  CGprogram  _cg_gprogram;
 
   int        _cg_vprofile;
   int        _cg_fprofile;
   int        _cg_gprofile;
 
-  CGprogram     cg_program_from_shadertype(ShaderType type);    // CG2 CHANGE
+  CGprogram     cg_program_from_shadertype(ShaderType type);
 
  public:
 
@@ -308,7 +323,7 @@ public:
                                CGcontext &ctx,
                                CGprogram &vprogram,
                                CGprogram &fprogram,
-                   CGprogram &gprogram,     // CG2 CHANGE
+                               CGprogram &gprogram,
                                pvector<CGparameter> &map);
   
 #endif
@@ -318,13 +333,14 @@ public:
   pvector <ShaderTexSpec> _tex_spec;
   pvector <ShaderVarSpec> _var_spec;
   
+  bool           _error_flag;
+  string         _text;
+
  protected:
   Filename       _filename;
-  string         _text;
-  string         _header;
-  bool           _error_flag;
   int            _parse;
   bool           _loaded;
+  ShaderLanguage _language;
   
   static ShaderCaps _default_caps;
   static ShaderUtilization _shader_utilization;
@@ -343,7 +359,7 @@ public:
   Contexts _contexts;
 
  private:  
-  Shader(const Filename &name, const string &text, const string &vprofile = "", const string &fprofile = "");
+  Shader(const Filename &name, const string &text, const ShaderLanguage &lang = SL_none);
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
  public:

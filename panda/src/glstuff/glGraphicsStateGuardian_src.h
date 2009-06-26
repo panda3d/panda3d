@@ -112,6 +112,32 @@ typedef void (APIENTRYP PFNGLCURRENTPALETTEMATRIXOESPROC) (GLuint matrixpalettei
 typedef void (APIENTRYP PFNGLLOADPALETTEFROMMODELVIEWMATRIXOESPROC) (void);
 typedef void (APIENTRYP PFNGLMATRIXINDEXPOINTEROESPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLWEIGHTPOINTEROESPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
+
+// GLSL shader functions
+typedef void (APIENTRYP PFNGLATTACHSHADERPROC) (GLuint program, GLuint shader);
+typedef void (APIENTRYP PFNGLCOMPILESHADERPROC) (GLuint shader);
+typedef GLuint (APIENTRYP PFNGLCREATEPROGRAMPROC) (void);
+typedef GLuint (APIENTRYP PFNGLCREATESHADERPROC) (GLenum type);
+typedef void (APIENTRYP PFNGLDELETEPROGRAMPROC) (GLuint program);
+typedef void (APIENTRYP PFNGLDELETESHADERPROC) (GLuint shader);
+typedef void (APIENTRYP PFNGLDETACHSHADERPROC) (GLuint program, GLuint shader);
+typedef void (APIENTRYP PFNGLGETACTIVEUNIFORMPROC) (GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name);
+typedef void (APIENTRYP PFNGLGETPROGRAMIVPROC) (GLuint program, GLenum pname, GLint *params);
+typedef void (APIENTRYP PFNGLGETPROGRAMINFOLOGPROC) (GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+typedef void (APIENTRYP PFNGLGETSHADERIVPROC) (GLuint shader, GLenum pname, GLint *params);
+typedef void (APIENTRYP PFNGLGETSHADERINFOLOGPROC) (GLuint shader, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
+typedef GLint (APIENTRYP PFNGLGETUNIFORMLOCATIONPROC) (GLuint program, const GLchar *name);
+typedef void (APIENTRYP PFNGLLINKPROGRAMPROC) (GLuint program);
+typedef void (APIENTRYP PFNGLSHADERSOURCEPROC) (GLuint shader, GLsizei count, const GLchar* *string, const GLint *length);
+typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
+typedef void (APIENTRYP PFNGLUNIFORM4FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+typedef void (APIENTRYP PFNGLUNIFORM1IPROC) (GLint location, GLint v0);
+typedef void (APIENTRYP PFNGLUNIFORM1FVPROC) (GLint location, GLsizei count, const GLfloat *value);
+typedef void (APIENTRYP PFNGLUNIFORM2FVPROC) (GLint location, GLsizei count, const GLfloat *value);
+typedef void (APIENTRYP PFNGLUNIFORM3FVPROC) (GLint location, GLsizei count, const GLfloat *value);
+typedef void (APIENTRYP PFNGLUNIFORM4FVPROC) (GLint location, GLsizei count, const GLfloat *value);
+typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
 #endif  // __EDG__
 
 ////////////////////////////////////////////////////////////////////
@@ -547,6 +573,32 @@ public:
   PFNGLGETQUERYOBJECTUIVPROC _glGetQueryObjectuiv;
 
   PFNGLACTIVESTENCILFACEEXTPROC _glActiveStencilFaceEXT;
+
+  // GLSL functions
+  PFNGLATTACHSHADERPROC _glAttachShader;
+  PFNGLCOMPILESHADERPROC _glCompileShader;
+  PFNGLCREATEPROGRAMPROC _glCreateProgram;
+  PFNGLCREATESHADERPROC _glCreateShader;
+  PFNGLDELETEPROGRAMPROC _glDeleteProgram;
+  PFNGLDELETESHADERPROC _glDeleteShader;
+  PFNGLDETACHSHADERPROC _glDetachShader;
+  PFNGLGETACTIVEUNIFORMPROC _glGetActiveUniform;
+  PFNGLGETPROGRAMIVPROC _glGetProgramiv;
+  PFNGLGETPROGRAMINFOLOGPROC _glGetProgramInfoLog;
+  PFNGLGETSHADERIVPROC _glGetShaderiv;
+  PFNGLGETSHADERINFOLOGPROC _glGetShaderInfoLog;
+  PFNGLGETUNIFORMLOCATIONPROC _glGetUniformLocation;
+  PFNGLLINKPROGRAMPROC _glLinkProgram;
+  PFNGLSHADERSOURCEPROC _glShaderSource;
+  PFNGLUSEPROGRAMPROC  _glUseProgram;
+  PFNGLUNIFORM4FPROC _glUniform4f;
+  PFNGLUNIFORM1IPROC _glUniform1i;
+  PFNGLUNIFORM1FVPROC _glUniform1fv;
+  PFNGLUNIFORM2FVPROC _glUniform2fv;
+  PFNGLUNIFORM3FVPROC _glUniform3fv;
+  PFNGLUNIFORM4FVPROC _glUniform4fv;
+  PFNGLUNIFORMMATRIX4FVPROC _glUniformMatrix4fv;
+  PFNGLVALIDATEPROGRAMPROC _glValidateProgram;
 
   GLenum _edge_clamp;
   GLenum _border_clamp;

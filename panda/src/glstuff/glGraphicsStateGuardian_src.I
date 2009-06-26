@@ -133,7 +133,7 @@ maybe_gl_finish() const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(GraphicsStateGuardian)::
 is_at_least_gl_version(int major_version, int minor_version) const {
-#ifdef OPENGLES_1
+#ifdef OPENGLES
   return false;
 #else
   if (_gl_version_major < major_version) {
@@ -145,7 +145,7 @@ is_at_least_gl_version(int major_version, int minor_version) const {
   }
 
   return true;
-#endif  // OPENGLES_1
+#endif  // OPENGLES
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ is_at_least_gl_version(int major_version, int minor_version) const {
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(GraphicsStateGuardian)::
 is_at_least_gles_version(int major_version, int minor_version) const {
-#ifndef OPENGLES_1
+#ifndef OPENGLES
   return false;
 #else
   if (_gl_version_major < major_version) {
@@ -170,7 +170,7 @@ is_at_least_gles_version(int major_version, int minor_version) const {
   }
 
   return true;
-#endif  // OPENGLES_1
+#endif  // OPENGLES
 }
 
 ////////////////////////////////////////////////////////////////////

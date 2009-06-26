@@ -21,6 +21,9 @@
 
 TypeHandle CLP(ShaderContext)::_type_handle;
 
+#ifndef GL_GEOMETRY_SHADER
+#define GL_GEOMETRY_SHADER 0x8DD9
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::Constructor
@@ -29,8 +32,10 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 ////////////////////////////////////////////////////////////////////
 CLP(ShaderContext)::
 CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
+  _last_gsg = gsg;
+  _cg_context = 0;
 #ifdef HAVE_CG
-  if (s->get_header() == "//Cg") {
+  if (s->get_language() == Shader::SL_Cg) {
     
     // Ask the shader to compile itself for us and 
     // to give us the resulting Cg program objects.
@@ -39,7 +44,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
                            _cg_context,
                            _cg_vprogram,
                            _cg_fprogram, 
-                           _cg_gprogram,    // CG2 CHANGE
+                           _cg_gprogram,
                            _cg_parameter_map)) {
       return;
     }
@@ -52,7 +57,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
       GLCAT.error() << "Could not load Cg vertex program:" << s->get_filename() << " (" << 
         cgGetProfileString(cgGetProgramProfile(_cg_vprogram)) << " " << str << ")\n";
-      release_resources();
+      release_resources(gsg);
     }
     cgGLLoadProgram(_cg_fprogram);
     CGerror ferror = cgGetError();
@@ -60,34 +65,163 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
       GLCAT.error() << "Could not load Cg fragment program:" << s->get_filename() << " (" << 
         cgGetProfileString(cgGetProgramProfile(_cg_fprogram)) << " " << str << ")\n";
-      release_resources();
+      release_resources(gsg);
     }
     if (glGetError() != GL_NO_ERROR) {
       GLCAT.error() << "GL error in ShaderContext constructor\n";
     }
-    // BEGIN CG2 CHANGE
-    if (_cg_gprogram != 0)
-    {
-        cgGLLoadProgram(_cg_gprogram);
-        if (GLCAT.is_debug()) {
-          GLCAT.debug()
-            << "Loaded geom prog: " << _cg_gprogram << "\n";
-        }
+    if (_cg_gprogram != 0) {
+      cgGLLoadProgram(_cg_gprogram);
+      if (GLCAT.is_debug()) {
+        GLCAT.debug()
+          << "Loaded geom prog: " << _cg_gprogram << "\n";
+      }
 
-        CGerror gerror = cgGetError();
-        if (gerror != CG_NO_ERROR) {
-          const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-          GLCAT.error() << "Could not load Cg geometry program:" << s->get_filename() << " (" << 
-            cgGetProfileString(cgGetProgramProfile(_cg_gprogram)) << " " << str << ")\n";
-          release_resources();
-        }
-        if (glGetError() != GL_NO_ERROR) {
-          GLCAT.error() << "GL error in ShaderContext constructor\n";
-        }
+      CGerror gerror = cgGetError();
+      if (gerror != CG_NO_ERROR) {
+        const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
+        GLCAT.error() << "Could not load Cg geometry program:" << s->get_filename() << " (" << 
+          cgGetProfileString(cgGetProgramProfile(_cg_gprogram)) << " " << str << ")\n";
+        release_resources(gsg);
+      }
+      if (glGetError() != GL_NO_ERROR) {
+        GLCAT.error() << "GL error in ShaderContext constructor\n";
+      }
     }
-    // END CG2 CHANGE
   }
 #endif
+
+  if (s->get_language() == Shader::SL_GLSL) {
+    // We compile and analyze the shader here, instead of in shader.cxx, to avoid gobj getting a dependency on GL stuff.
+    if (s->_glsl_program == 0) {
+      if (!glsl_compile_shader(gsg)) {
+        release_resources(gsg);
+        s->_error_flag = true;
+        return;
+      }
+      
+      s->_glsl_parameter_map.clear();
+      int seqno = 0, texunitno = 0;
+      int num_uniforms, uniform_maxlength;
+      gsg->_glGetProgramiv(s->_glsl_program, GL_ACTIVE_UNIFORMS, &num_uniforms);
+      gsg->_glGetProgramiv(s->_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &uniform_maxlength);
+      for (int i = 0; i < num_uniforms; ++i) {
+        int param_size;
+        GLenum param_type;
+        char param_name[uniform_maxlength];
+        gsg->_glGetActiveUniform(_shader->_glsl_program, i, uniform_maxlength, NULL, &param_size, &param_type, param_name);
+        GLint p = gsg->_glGetUniformLocation(_shader->_glsl_program, param_name);
+        if (p > -1) {
+          Shader::ShaderArgId arg_id;
+          arg_id._name  = param_name;
+          arg_id._seqno = seqno++;
+          s->_glsl_parameter_map.push_back(p);
+          PT(InternalName) inputname = InternalName::make(param_name);
+          if (inputname->get_name().substr(0, 11) == "p3d_Texture") {
+            Shader::ShaderTexSpec bind;
+            bind._id = arg_id;
+            bind._name = 0;
+            bind._desired_type = Texture::TT_2d_texture;
+            bind._stage = atoi(inputname->get_name().substr(12).c_str());
+            s->_tex_spec.push_back(bind);
+            continue;
+          }
+          switch (param_type) {
+            case GL_SAMPLER_1D_SHADOW:
+            case GL_SAMPLER_1D: {
+              Shader::ShaderTexSpec bind;
+              bind._id = arg_id;
+              bind._name = inputname;
+              bind._desired_type = Texture::TT_1d_texture;
+              bind._stage = texunitno++;
+              s->_tex_spec.push_back(bind);
+              continue; }
+            case GL_SAMPLER_2D_SHADOW:
+            case GL_SAMPLER_2D: {
+              Shader::ShaderTexSpec bind;
+              bind._id = arg_id;
+              bind._name = inputname;
+              bind._desired_type = Texture::TT_2d_texture;
+              bind._stage = texunitno++;
+              s->_tex_spec.push_back(bind);
+              continue; }
+            case GL_SAMPLER_3D: {
+              Shader::ShaderTexSpec bind;
+              bind._id = arg_id;
+              bind._name = inputname;
+              bind._desired_type = Texture::TT_3d_texture;
+              bind._stage = texunitno++;
+              s->_tex_spec.push_back(bind);
+              continue; }
+            case GL_SAMPLER_CUBE: {
+              Shader::ShaderTexSpec bind;
+              bind._id = arg_id;
+              bind._name = inputname;
+              bind._desired_type = Texture::TT_cube_map;
+              bind._stage = texunitno++;
+              s->_tex_spec.push_back(bind);
+              continue; }
+            case GL_FLOAT_MAT2:
+            case GL_FLOAT_MAT3:
+            case GL_FLOAT_MAT2x3:
+            case GL_FLOAT_MAT2x4:
+            case GL_FLOAT_MAT3x2:
+            case GL_FLOAT_MAT3x4:
+            case GL_FLOAT_MAT4x2:
+            case GL_FLOAT_MAT4x3:
+              GLCAT.warning() << "GLSL shader requested an unrecognized matrix type\n";
+              continue;
+            case GL_FLOAT_MAT4: {
+              Shader::ShaderMatSpec bind;
+              bind._id = arg_id;
+              bind._piece = Shader::SMP_whole;
+              bind._func = Shader::SMF_first;
+              bind._part[0] = Shader::SMO_mat_constant_x;
+              bind._arg[0] = inputname;
+              bind._part[1] = Shader::SMO_identity;
+              bind._arg[1] = NULL;
+              s->_mat_spec.push_back(bind);
+              continue; }
+            case GL_BOOL:
+            case GL_BOOL_VEC2:
+            case GL_BOOL_VEC3:
+            case GL_BOOL_VEC4:
+            case GL_FLOAT:
+            case GL_FLOAT_VEC2:
+            case GL_FLOAT_VEC3:
+            case GL_FLOAT_VEC4: {
+              Shader::ShaderMatSpec bind;
+              bind._id = arg_id;
+              switch (param_type) {
+              case GL_BOOL:
+              case GL_FLOAT:      bind._piece = Shader::SMP_row3x1; break;
+              case GL_BOOL_VEC2:
+              case GL_FLOAT_VEC2: bind._piece = Shader::SMP_row3x2; break;
+              case GL_BOOL_VEC3:
+              case GL_FLOAT_VEC3: bind._piece = Shader::SMP_row3x3; break;
+              case GL_BOOL_VEC4:
+              case GL_FLOAT_VEC4: bind._piece = Shader::SMP_row3  ; break;
+              }
+              bind._func = Shader::SMF_first;
+              bind._part[0] = Shader::SMO_vec_constant_x;
+              bind._arg[0] = inputname;
+              bind._part[1] = Shader::SMO_identity;
+              bind._arg[1] = NULL;
+              s->_mat_spec.push_back(bind);
+              continue; }
+            case GL_INT:
+            case GL_INT_VEC2:
+            case GL_INT_VEC3:
+            case GL_INT_VEC4:
+              GLCAT.warning() << "Panda does not support passing integers to shaders (yet)!\n";
+              continue;
+            default:
+              GLCAT.warning() << "Ignoring unrecognized GLSL parameter type!\n";
+          }
+        }
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,7 +231,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 ////////////////////////////////////////////////////////////////////
 CLP(ShaderContext)::
 ~CLP(ShaderContext)() {
-  release_resources();
+  release_resources(_last_gsg);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -107,20 +241,43 @@ CLP(ShaderContext)::
 //               vertex program handles or Cg contexts).
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-release_resources() {
+release_resources(const GSG *gsg) {
 #ifdef HAVE_CG
   if (_cg_context) {
     cgDestroyContext(_cg_context);
     _cg_context  = 0;
     _cg_vprogram = 0;
     _cg_fprogram = 0;
-    _cg_gprogram = 0;   // CG2 CHANGE
+    _cg_gprogram = 0;
     _cg_parameter_map.clear();
   }
   if (glGetError() != GL_NO_ERROR) {
     GLCAT.error() << "GL error in ShaderContext destructor\n";
   }
 #endif
+
+  if (!gsg) {
+    return;
+  }
+  if (_shader->_glsl_program != 0) {
+    if (!_shader->_glsl_vshader != 0) {
+      gsg->_glDetachShader(_shader->_glsl_program, _shader->_glsl_vshader);
+      gsg->_glDeleteShader(_shader->_glsl_vshader);
+      _shader->_glsl_vshader = 0;
+    }
+    if (!_shader->_glsl_fshader != 0) {
+      gsg->_glDetachShader(_shader->_glsl_program, _shader->_glsl_fshader);
+      gsg->_glDeleteShader(_shader->_glsl_fshader);
+      _shader->_glsl_fshader = 0;
+    }
+    if (!_shader->_glsl_gshader != 0) {
+      gsg->_glDetachShader(_shader->_glsl_program, _shader->_glsl_gshader);
+      gsg->_glDeleteShader(_shader->_glsl_gshader);
+      _shader->_glsl_gshader = 0;
+    }
+    gsg->_glDeleteProgram(_shader->_glsl_program);
+    _shader->_glsl_program = 0;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -132,32 +289,32 @@ release_resources() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 bind(GSG *gsg) {
+  _last_gsg = gsg;
+  // Pass in k-parameters and transform-parameters
+  issue_parameters(gsg, Shader::SSD_general);
+
 #ifdef HAVE_CG
   if (_cg_context != 0) {
-
-    // Pass in k-parameters and transform-parameters
-    issue_parameters(gsg, Shader::SSD_general);
-
     // Bind the shaders.
     cgGLEnableProfile(cgGetProgramProfile(_cg_vprogram));
     cgGLBindProgram(_cg_vprogram);
     cgGLEnableProfile(cgGetProgramProfile(_cg_fprogram));
     cgGLBindProgram(_cg_fprogram);
-
-    // BEGIN CG2 CHANGE
-    if (_cg_gprogram != 0)
-    {
-        cgGLEnableProfile(cgGetProgramProfile(_cg_gprogram));
-        cgGLBindProgram(_cg_gprogram);
+    if (_cg_gprogram != 0) {
+      cgGLEnableProfile(cgGetProgramProfile(_cg_gprogram));
+      cgGLBindProgram(_cg_gprogram);
     }
-    // END CG2 CHANGE
 
     cg_report_errors();
-    if (glGetError() != GL_NO_ERROR) {
-      GLCAT.error() << "GL error in ShaderContext::bind\n";
-    }
   }
 #endif
+  
+  if (_shader->get_language() == Shader::SL_GLSL && !_shader->get_error_flag()) {
+    gsg->_glUseProgram(_shader->_glsl_program);
+  }
+  if (glGetError() != GL_NO_ERROR) {
+    GLCAT.error() << "GL error in ShaderContext::bind\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -166,25 +323,27 @@ bind(GSG *gsg) {
 //  Description: This function disables a currently-bound shader.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-unbind() {
+unbind(GSG *gsg) {
+  _last_gsg = gsg;
+
 #ifdef HAVE_CG
   if (_cg_context != 0) {
     cgGLDisableProfile(cgGetProgramProfile(_cg_vprogram));
     cgGLDisableProfile(cgGetProgramProfile(_cg_fprogram));
-
-    // BEGIN CG2 CHANGE
-    if (_cg_gprogram != 0)
-    {
-        cgGLDisableProfile(cgGetProgramProfile(_cg_gprogram));
+    if (_cg_gprogram != 0) {
+      cgGLDisableProfile(cgGetProgramProfile(_cg_gprogram));
     }
-    // END CG2 CHANGE
 
     cg_report_errors();
-    if (glGetError() != GL_NO_ERROR) {
-      GLCAT.error() << "GL error in ShaderContext::unbind\n";
-    }
   }
 #endif
+  
+  if (_shader->get_language() == Shader::SL_GLSL) {
+    gsg->_glUseProgram(0);
+  }
+  if (glGetError() != GL_NO_ERROR) {
+    GLCAT.error() << "GL error in ShaderContext::unbind\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -204,38 +363,66 @@ unbind() {
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 issue_parameters(GSG *gsg, int altered) {
-#ifdef HAVE_CG
+  _last_gsg = gsg;
+
   PStatTimer timer(gsg->_draw_set_state_shader_parameters_pcollector);
-  if (_cg_context == 0) {
+
+  if (!valid()) {
     return;
   }
 
   for (int i=0; i<(int)_shader->_mat_spec.size(); i++) {
     if (altered & (_shader->_mat_spec[i]._dep[0] | _shader->_mat_spec[i]._dep[1])) {
-      CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
       const LMatrix4f *val = gsg->fetch_specified_value(_shader->_mat_spec[i], altered);
-      if (val) {
-        const float *data = val->get_data();
+      if (!val) continue;
+      const float *data = val->get_data();
+      if (_shader->get_language() == Shader::SL_GLSL) {
+        GLint p = _shader->_glsl_parameter_map[_shader->_mat_spec[i]._id._seqno];
         switch (_shader->_mat_spec[i]._piece) {
-        case Shader::SMP_whole: cgGLSetMatrixParameterfc(p, data); break;
-        case Shader::SMP_transpose: cgGLSetMatrixParameterfr(p, data); break;
-        case Shader::SMP_row0: cgGLSetParameter4fv(p, data+ 0); break;
-        case Shader::SMP_row1: cgGLSetParameter4fv(p, data+ 4); break;
-        case Shader::SMP_row2: cgGLSetParameter4fv(p, data+ 8); break;
-        case Shader::SMP_row3: cgGLSetParameter4fv(p, data+12); break;
-        case Shader::SMP_col0: cgGLSetParameter4f(p, data[0], data[4], data[ 8], data[12]); break;
-        case Shader::SMP_col1: cgGLSetParameter4f(p, data[1], data[5], data[ 9], data[13]); break;
-        case Shader::SMP_col2: cgGLSetParameter4f(p, data[2], data[6], data[10], data[14]); break;
-        case Shader::SMP_col3: cgGLSetParameter4f(p, data[3], data[7], data[11], data[15]); break;
+          case Shader::SMP_whole: gsg->_glUniformMatrix4fv(p, 1, false, data); continue;
+          case Shader::SMP_transpose: gsg->_glUniformMatrix4fv(p, 1, true, data); continue;
+          case Shader::SMP_col0: gsg->_glUniform4f(p, data[0], data[4], data[ 8], data[12]); continue;
+          case Shader::SMP_col1: gsg->_glUniform4f(p, data[1], data[5], data[ 9], data[13]); continue;
+          case Shader::SMP_col2: gsg->_glUniform4f(p, data[2], data[6], data[10], data[14]); continue;
+          case Shader::SMP_col3: gsg->_glUniform4f(p, data[3], data[7], data[11], data[15]); continue;
+          case Shader::SMP_row0: gsg->_glUniform4fv(p, 1, data+ 0); continue;
+          case Shader::SMP_row1: gsg->_glUniform4fv(p, 1, data+ 4); continue;
+          case Shader::SMP_row2: gsg->_glUniform4fv(p, 1, data+ 8); continue;
+          case Shader::SMP_row3: gsg->_glUniform4fv(p, 1, data+12); continue;
+          case Shader::SMP_row3x1: gsg->_glUniform1fv(p, 1, data+12); continue;
+          case Shader::SMP_row3x2: gsg->_glUniform2fv(p, 1, data+12); continue;
+          case Shader::SMP_row3x3: gsg->_glUniform3fv(p, 1, data+12); continue;
         }
       }
+#ifdef HAVE_CG
+      else if (_shader->get_language() == Shader::SL_Cg) {
+        CGparameter p = _cg_parameter_map[_shader->_mat_spec[i]._id._seqno];
+        switch (_shader->_mat_spec[i]._piece) {
+          case Shader::SMP_whole: cgGLSetMatrixParameterfc(p, data); continue;
+          case Shader::SMP_transpose: cgGLSetMatrixParameterfr(p, data); continue;
+          case Shader::SMP_col0: cgGLSetParameter4f(p, data[0], data[4], data[ 8], data[12]); continue;
+          case Shader::SMP_col1: cgGLSetParameter4f(p, data[1], data[5], data[ 9], data[13]); continue;
+          case Shader::SMP_col2: cgGLSetParameter4f(p, data[2], data[6], data[10], data[14]); continue;
+          case Shader::SMP_col3: cgGLSetParameter4f(p, data[3], data[7], data[11], data[15]); continue;
+          case Shader::SMP_row0: cgGLSetParameter4fv(p, data+ 0); continue;
+          case Shader::SMP_row1: cgGLSetParameter4fv(p, data+ 4); continue;
+          case Shader::SMP_row2: cgGLSetParameter4fv(p, data+ 8); continue;
+          case Shader::SMP_row3: cgGLSetParameter4fv(p, data+12); continue;
+          case Shader::SMP_row3x1: cgGLSetParameter1fv(p, data+12); continue;
+          case Shader::SMP_row3x2: cgGLSetParameter2fv(p, data+12); continue;
+          case Shader::SMP_row3x3: cgGLSetParameter3fv(p, data+12); continue;
+        }
+      }
+#endif
     }
   }
+#ifdef HAVE_CG
   cg_report_errors();
+#endif
+
   if (glGetError() != GL_NO_ERROR) {
     GLCAT.error() << "GL error in ShaderContext::issue_parameters\n";
   }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -245,6 +432,8 @@ issue_parameters(GSG *gsg, int altered) {
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 disable_shader_vertex_arrays(GSG *gsg) {
+  _last_gsg = gsg;
+
 #ifdef HAVE_CG
   if (_cg_context == 0) {
     return;
@@ -276,9 +465,10 @@ disable_shader_vertex_arrays(GSG *gsg) {
 bool CLP(ShaderContext)::
 update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
                             bool force) {
+  _last_gsg = gsg;
   if (prev) prev->disable_shader_vertex_arrays(gsg);
 #ifdef HAVE_CG
-  if (_cg_context == 0) {
+  if (!valid()) {
     return true;
   }
   cg_report_errors();
@@ -323,6 +513,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
       }
     }
   }
+
   cg_report_errors();
   if (glGetError() != GL_NO_ERROR) {
     GLCAT.error() << "GL error in ShaderContext::update_shader_vertex_arrays\n";
@@ -338,32 +529,52 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 disable_shader_texture_bindings(GSG *gsg) {
-#ifdef HAVE_CG
-  if (_cg_context == 0) {
+  _last_gsg = gsg;
+  if (!valid()) {
     return;
   }
 
   for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
-    CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
-    if (p == 0) continue;
-    int texunit = cgGetParameterResourceIndex(p);
-    gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
+    if (_shader->get_language() == Shader::SL_GLSL) {
+      if (_shader->_tex_spec[i]._name == 0) {
+        gsg->_glActiveTexture(GL_TEXTURE0 + _shader->_tex_spec[i]._stage);
+      } else {
+        gsg->_glActiveTexture(GL_TEXTURE0 + _shader->_tex_spec[i]._stage + _stage_offset);
+      }
+#ifdef HAVE_CG
+    } else if (_shader->get_language() == Shader::SL_Cg) {
+      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+      if (p == 0) continue;
+      int texunit = cgGetParameterResourceIndex(p);
+      gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
+#endif
+    } else {
+      return;
+    }
+#ifndef OPENGLES
     GLP(Disable)(GL_TEXTURE_1D);
+#endif
     GLP(Disable)(GL_TEXTURE_2D);
+#ifndef OPENGLES_1
     if (gsg->_supports_3d_texture) {
       GLP(Disable)(GL_TEXTURE_3D);
     }
+#endif
     if (gsg->_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
     // This is probably faster - but maybe not as safe?
     // cgGLDisableTextureParameter(p);
   }
+  _stage_offset = 0;
+
+#ifdef HAVE_CG
   cg_report_errors();
+#endif
+
   if (glGetError() != GL_NO_ERROR) {
     GLCAT.error() << "GL error in ShaderContext::disable_shader_texture_bindings\n";
   }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -379,12 +590,12 @@ disable_shader_texture_bindings(GSG *gsg) {
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
 update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
+  _last_gsg = gsg;
   if (prev) {
     prev->disable_shader_texture_bindings(gsg);
   }
 
-#ifdef HAVE_CG
-  if (_cg_context == 0) {
+  if (!valid()) {
     return;
   }
 
@@ -392,15 +603,29 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
   // filtered TextureAttrib in _target_texture.
   const TextureAttrib *texattrib = DCAST(TextureAttrib, gsg->_target_rs->get_attrib_def(TextureAttrib::get_class_slot()));
   nassertv(texattrib != (TextureAttrib *)NULL);
+  _stage_offset = texattrib->get_num_on_stages();
 
   for (int i = 0; i < (int)_shader->_tex_spec.size(); ++i) {
-    CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
-    if (p == 0) {
-      continue;
+    InternalName *id = _shader->_tex_spec[i]._name;
+    int texunit;
+
+    if (_shader->get_language() == Shader::SL_GLSL) {
+      texunit = _shader->_tex_spec[i]._stage;
+      if (id != 0) {
+        texunit += _stage_offset;
+      }
     }
+#ifdef HAVE_CG
+    if (_shader->get_language() == Shader::SL_Cg) {
+      CGparameter p = _cg_parameter_map[_shader->_tex_spec[i]._id._seqno];
+      if (p == 0) {
+        continue;
+      }
+      texunit = cgGetParameterResourceIndex(p);
+    }
+#endif
 
     Texture *tex = 0;
-    InternalName *id = _shader->_tex_spec[i]._name;
     if (id != 0) {
       const ShaderInput *input = gsg->_target_shader->get_shader_input(id);
       tex = input->get_texture();
@@ -426,7 +651,6 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
       continue;
     }
 
-    int texunit = cgGetParameterResourceIndex(p);
     gsg->_glActiveTexture(GL_TEXTURE0 + texunit);
 
     GLenum target = gsg->get_texture_target(tex->get_texture_type());
@@ -435,18 +659,26 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
       continue;
     }
     GLP(Enable)(target);
-
     gsg->apply_texture(tc);
+
+    if (_shader->get_language() == Shader::SL_GLSL) {
+      GLint p = _shader->_glsl_parameter_map[_shader->_tex_spec[i]._id._seqno];
+      gsg->_glUniform1i(p, texunit);
+    }
+
     if (!gsg->update_texture(tc, false)) {
       GLP(Disable)(target);
       continue;
     }
   }
+
+#ifdef HAVE_CG
   cg_report_errors();
+#endif
+
   if (glGetError() != GL_NO_ERROR) {
     GLCAT.error() << "GL error in ShaderContext::update_shader_texture_bindings\n";
   }
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -463,3 +695,149 @@ cg_report_errors() {
   }
 }
 #endif
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::glsl_report_shader_errors
+//       Access: Private
+//  Description: This subroutine prints the infolog for a shader.
+////////////////////////////////////////////////////////////////////
+void CLP(ShaderContext)::
+glsl_report_shader_errors(GSG *gsg, unsigned int shader) {
+  char *info_log;
+  int length = 0;
+  int num_chars  = 0;
+
+	gsg->_glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+
+  if (length > 0) {
+    info_log = (char *) malloc(length);
+    gsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
+    GLCAT.error(false) << info_log;
+    free(info_log);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::glsl_report_program_errors
+//       Access: Private
+//  Description: This subroutine prints the infolog for a program.
+////////////////////////////////////////////////////////////////////
+void CLP(ShaderContext)::
+glsl_report_program_errors(GSG *gsg, unsigned int program) {
+  char *info_log;
+  int length = 0;
+  int num_chars  = 0;
+
+	gsg->_glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+
+  if (length > 0) {
+    info_log = (char *) malloc(length);
+    gsg->_glGetProgramInfoLog(program, length, &num_chars, info_log);
+    GLCAT.error(false) << info_log;
+    free(info_log);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::glsl_compile_entry_point
+//       Access: Private
+//  Description: 
+////////////////////////////////////////////////////////////////////
+unsigned int CLP(ShaderContext)::
+glsl_compile_entry_point(GSG *gsg, const char *entry, Shader::ShaderType type) {
+  unsigned int handle;
+  switch (type) {
+    case Shader::ST_VERTEX:
+      handle = gsg->_glCreateShader(GL_VERTEX_SHADER);
+      break;
+    case Shader::ST_FRAGMENT:
+      handle = gsg->_glCreateShader(GL_FRAGMENT_SHADER);
+      break;
+    case Shader::ST_GEOMETRY:
+      handle = gsg->_glCreateShader(GL_GEOMETRY_SHADER);
+      break;
+    default:
+      return 0;
+  }
+  if (!handle) {
+    return 0;
+  }
+  // We define our own main() in which we call the right function.
+  ostringstream str;
+  str << "void main() { " << entry << "(); };";
+  const char* sources[2] = {_shader->_text.c_str(), str.str().c_str()};
+  gsg->_glShaderSource(handle, 2, sources, NULL);
+  gsg->_glCompileShader(handle);
+  int status;
+  gsg->_glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
+  if (status != GL_TRUE) {
+    GLCAT.error() << "An error occurred while compiling " << entry << "!\n";
+    glsl_report_shader_errors(gsg, handle);
+    gsg->_glDeleteShader(handle);
+    return 0;
+  }
+  return handle;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::glsl_compile_shader
+//       Access: Private
+//  Description: This subroutine compiles a GLSL shader.
+////////////////////////////////////////////////////////////////////
+bool CLP(ShaderContext)::
+glsl_compile_shader(GSG *gsg) {
+  // Terribly hacky. I hope this will go away when we
+  // add support for separated shader programs later.
+
+  _shader->_glsl_program = gsg->_glCreateProgram();
+  if (!_shader->_glsl_program) return false;
+
+  if (_shader->_text.find("vshader") != -1) {
+    _shader->_glsl_vshader = glsl_compile_entry_point(gsg, "vshader", Shader::ST_VERTEX);
+    if (!_shader->_glsl_vshader) return false;
+    gsg->_glAttachShader(_shader->_glsl_program, _shader->_glsl_vshader);
+  } else {
+    GLCAT.warning() << "Could not locate function 'vshader' in shader text!\n";
+  }
+
+  if (_shader->_text.find("fshader") != -1) {
+    _shader->_glsl_fshader = glsl_compile_entry_point(gsg, "fshader", Shader::ST_FRAGMENT);
+    if (!_shader->_glsl_fshader) return false;
+    gsg->_glAttachShader(_shader->_glsl_program, _shader->_glsl_fshader);
+  } else {
+    GLCAT.warning() << "Could not locate function 'fshader' in shader text!\n";
+  }
+
+  if (_shader->_text.find("gshader") != -1) {
+    _shader->_glsl_gshader = glsl_compile_entry_point(gsg, "gshader", Shader::ST_GEOMETRY);
+    if (!_shader->_glsl_gshader) return false;
+    gsg->_glAttachShader(_shader->_glsl_program, _shader->_glsl_gshader);
+  }
+  
+  gsg->_glLinkProgram(_shader->_glsl_program);
+
+  int status;
+  gsg->_glGetProgramiv(_shader->_glsl_program, GL_LINK_STATUS, &status);
+  if (status != GL_TRUE) {
+    GLCAT.error() << "An error occurred while linking shader program!\n";
+    glsl_report_program_errors(gsg, _shader->_glsl_program);
+    return false;
+  }
+  
+  // There might be warnings. Only report them for one shader program.
+  if (_shader->_glsl_vshader != 0) {
+    glsl_report_shader_errors(gsg, _shader->_glsl_vshader);
+  } else if (_shader->_glsl_fshader != 0) {
+    glsl_report_shader_errors(gsg, _shader->_glsl_fshader);
+  } else if (_shader->_glsl_gshader != 0) {
+    glsl_report_shader_errors(gsg, _shader->_glsl_gshader);
+  }
+
+  if (glGetError() != GL_NO_ERROR) {
+    GLCAT.error() << "Failed to compile shader\n";
+    return false;
+  }
+  return true;
+}
+
+

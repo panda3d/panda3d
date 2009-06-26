@@ -378,6 +378,9 @@ issue_parameters(GSG *gsg, int altered)
           case Shader::SMP_row2:
             hr = cgD3D9SetUniform (p, data + 8);
             break;
+          case Shader::SMP_row3x1:
+          case Shader::SMP_row3x2:
+          case Shader::SMP_row3x3:
           case Shader::SMP_row3:
             hr = cgD3D9SetUniform (p, data + 12);
             break;

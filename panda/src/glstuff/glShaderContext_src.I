@@ -23,9 +23,39 @@
 ////////////////////////////////////////////////////////////////////
 INLINE bool CLP(ShaderContext)::
 valid() {
+  if (_shader->get_error_flag()) return false;
+  if (_shader->get_language() == Shader::SL_none) return false;
 #ifdef HAVE_CG
   if (_cg_context) return true;
 #endif
+  if (_shader->get_language() == Shader::SL_GLSL &&
+      _shader->_glsl_program != 0) {
+    return true;
+  }
   return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::uses_custom_vertex_arrays
+//       Access: Public
+//  Description: Returns false in case of GLSL, true in case of Cg.
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(ShaderContext)::
+uses_custom_vertex_arrays() {
+#ifdef OPENGLES_2
+  return true;
+#else
+  return (_shader->get_language() == Shader::SL_Cg);
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GLShaderContext::uses_custom_texture_bindings
+//       Access: Public
+//  Description: Always true, for now.
+////////////////////////////////////////////////////////////////////
+INLINE bool CLP(ShaderContext)::
+uses_custom_texture_bindings() {
+  return true;
 }
 

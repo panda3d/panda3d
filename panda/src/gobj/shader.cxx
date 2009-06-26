@@ -913,10 +913,18 @@ compile_parameter(const ShaderArgId  &arg_id,
     // In the case of k-parameters, we allow underscores in the name.
     PT(InternalName) kinputname = InternalName::make(p._id._name.substr(2));
     switch (p._type) {
+    case SAT_float1:
+    case SAT_float2:
+    case SAT_float3:
     case SAT_float4: {
       ShaderMatSpec bind;
       bind._id = arg_id;
-      bind._piece = SMP_row3;
+      switch (p._type) {
+      case SAT_float1: bind._piece = SMP_row3x1; break;
+      case SAT_float2: bind._piece = SMP_row3x2; break;
+      case SAT_float3: bind._piece = SMP_row3x3; break;
+      case SAT_float4: bind._piece = SMP_row3; break;
+      }
       bind._func = SMF_first;
       bind._part[0] = SMO_vec_constant_x;
       bind._arg[0] = kinputname;
@@ -1117,8 +1125,7 @@ cg_release_resources() {
 //  Description: xyz
 ////////////////////////////////////////////////////////////////////
 CGprogram Shader::
-cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type)  // CG2 CHANGE
-{
+cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type) {
   CGprogram prog;
   CGerror err;
   const char *compiler_args[100];
@@ -1202,6 +1209,8 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
 bool Shader::
 cg_compile_shader(const ShaderCaps &caps) {
 
+
+
   // If we already tried compiling for this set of caps, there's no point
   // trying again.  Just return the results of the previous compile.
   if (caps == _cg_last_caps) {
@@ -1226,15 +1235,9 @@ cg_compile_shader(const ShaderCaps &caps) {
   _cg_vprogram = cg_compile_entry_point("vshader", caps, ST_VERTEX);    // CG2 CHANGE
   _cg_fprogram = cg_compile_entry_point("fshader", caps, ST_FRAGMENT);  // CG2 CHANGE
 
-  // BEGIN CG2 CHANGE
-  if (_text.find("gshader") != -1)
-  {
-      _cg_gprogram = cg_compile_entry_point("gshader", caps, ST_GEOMETRY);
+  if (_text.find("gshader") != -1) {
+    _cg_gprogram = cg_compile_entry_point("gshader", caps, ST_GEOMETRY);
   }
-  else
-  {
-  }
-  // END CG2 CHANGE
 
   if ((_cg_vprogram == 0)||(_cg_fprogram == 0)) {
     cg_release_resources();
@@ -1314,7 +1317,7 @@ cg_analyze_shader(const ShaderCaps &caps) {
     return false;
   }
 
-  if (!cg_analyze_entry_point(_cg_fprogram, ST_FRAGMENT)) { // CG2 CHANGE
+  if (!cg_analyze_entry_point(_cg_fprogram, ST_FRAGMENT)) {
     cg_release_resources();
     clear_parameters();
     return false;
@@ -1327,22 +1330,19 @@ cg_analyze_shader(const ShaderCaps &caps) {
     return false;
   }
 
-  if (!cg_analyze_entry_point(_cg_vprogram, ST_VERTEX)) {   // CG2 CHANGE
+  if (!cg_analyze_entry_point(_cg_vprogram, ST_VERTEX)) {
     cg_release_resources();
     clear_parameters();
     return false;
   }
 
-  // BEGIN CG2 CHANGE
-  if (_cg_gprogram != 0)
-  {
-      if (!cg_analyze_entry_point(_cg_gprogram, ST_GEOMETRY)) {
-          cg_release_resources();
-          clear_parameters();
-          return false;
-      }
+  if (_cg_gprogram != 0) {
+    if (!cg_analyze_entry_point(_cg_gprogram, ST_GEOMETRY)) {
+      cg_release_resources();
+      clear_parameters();
+      return false;
+    }
   }
-  // END CG2 CHANGE
 
   // Assign sequence numbers to all parameters.
   int seqno = 0;
@@ -1360,23 +1360,20 @@ cg_analyze_shader(const ShaderCaps &caps) {
   if (gobj_cat.is_debug()) {
     const char *vertex_program;
     const char *pixel_program;
-    const char *geometry_program;   // CG2 CHANGE
+    const char *geometry_program;
 
     vertex_program   = cgGetProgramString (_cg_vprogram, CG_COMPILED_PROGRAM);
     pixel_program    = cgGetProgramString (_cg_fprogram, CG_COMPILED_PROGRAM);
-
-    // BEGIN CG2 CHANGE
-    if (_cg_gprogram != 0)
-        geometry_program = cgGetProgramString (_cg_gprogram, CG_COMPILED_PROGRAM);
-    // END CG2 CHANGE
+    if (_cg_gprogram != 0) {
+      geometry_program = cgGetProgramString (_cg_gprogram, CG_COMPILED_PROGRAM);
+    }
 
     gobj_cat.debug() << vertex_program << "\n";
     gobj_cat.debug() << pixel_program << "\n";
 
-    // BEGIN CG2 CHANGE
-    if (_cg_gprogram != 0)
-        gobj_cat.debug() << geometry_program << "\n";
-    // END CG2 CHANGE
+    if (_cg_gprogram != 0) {
+      gobj_cat.debug() << geometry_program << "\n";
+    }
   }
 
   //  // The following code is present to work around a bug in the Cg compiler.
@@ -1455,34 +1452,36 @@ cg_analyze_shader(const ShaderCaps &caps) {
   return true;
 }
 
-// BEGIN CG2 CHANGE
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::cg_program_from_shadertype
+//       Access: Private
+//  Description: Returns the CGprogram of the given shadertype
+//               that belongs to this shader.
+////////////////////////////////////////////////////////////////////
 CGprogram Shader::
-cg_program_from_shadertype(ShaderType type)
-{
-    CGprogram prog = 0;
+cg_program_from_shadertype(ShaderType type) {
+  CGprogram prog = 0;
 
-    switch(type)
-    {
+  switch(type) {
     case ST_VERTEX:
-        prog = _cg_vprogram;
-        break;
+      prog = _cg_vprogram;
+      break;
 
     case ST_FRAGMENT:
-        prog = _cg_fprogram;
-        break;
+      prog = _cg_fprogram;
+      break;
 
     case ST_GEOMETRY:
-        prog = _cg_gprogram;
-        break;
-    };
+      prog = _cg_gprogram;
+      break;
+  };
 
-    return prog;
+  return prog;
 }
-// END CG2 CHANGE
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::cg_compile_for
-//  Access: Public
+//     Function: Shader::cg_compile_for
+//       Access: Public
 //  Description: This routine is used by the ShaderContext constructor
 //               to compile the shader.  The CGprogram
 //               objects are turned over to the ShaderContext, we no
@@ -1576,25 +1575,26 @@ cg_compile_for(const ShaderCaps &caps,
 #endif  // HAVE_CG
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::Constructor
-//  Access: Private
+//     Function: Shader::Constructor
+//       Access: Private
 //  Description: Construct a Shader.
 ////////////////////////////////////////////////////////////////////
 Shader::
-Shader(const Filename &filename, const string &text, const string &vprofile, const string &fprofile) :
+Shader(const Filename &filename, const string &text, const ShaderLanguage &lang) :
   _filename(filename),
   _text(text),
-  _header(""),
   _error_flag(true),
   _parse(0),
-  _loaded(false)
+  _loaded(false),
+  _language(lang)
 {
-  string header;
-  parse_init();
-  parse_line(_header, true, true);
-
-#ifdef HAVE_CG
   _error_flag = false;
+  _glsl_program = 0;
+  _glsl_vshader = 0;
+  _glsl_fshader = 0;
+  _glsl_gshader = 0;
+  
+#ifdef HAVE_CG
   _cg_context = 0;
   _cg_vprogram = 0;
   _cg_fprogram = 0;
@@ -1602,22 +1602,6 @@ Shader(const Filename &filename, const string &text, const string &vprofile, con
   _cg_vprofile = CG_PROFILE_UNKNOWN;
   _cg_fprofile = CG_PROFILE_UNKNOWN;
   _cg_gprofile = CG_PROFILE_UNKNOWN;
-  if (vprofile != "") {
-    CGprofile p = cgGetProfile(vprofile.c_str());
-    if (p == CG_PROFILE_UNKNOWN) {
-      gobj_cat.error() << "Invalid vertex profile: " << vprofile << "\n";
-      _error_flag = true;
-    }
-    _cg_vprofile = (int)p;
-  }
-  if (fprofile != "") {
-    CGprofile p = cgGetProfile(fprofile.c_str());
-    if (p == CG_PROFILE_UNKNOWN) {
-      gobj_cat.error() << "Invalid fragment profile: " << fprofile << "\n";
-      _error_flag = true;
-    }
-    _cg_fprofile = (int)p;
-  }
   if (_default_caps._ultimate_vprofile == 0) {
     _default_caps._active_vprofile = CG_PROFILE_UNKNOWN;
     _default_caps._active_fprofile = CG_PROFILE_UNKNOWN;
@@ -1625,20 +1609,44 @@ Shader(const Filename &filename, const string &text, const string &vprofile, con
     _default_caps._ultimate_fprofile = cgGetProfile("glslf");
     _default_caps._ultimate_gprofile = cgGetProfile("gp4gp");
   }
-  if (_header == "//Cg") {
-
-    cg_get_profile_from_header(_default_caps);  // CG2 CHANGE
+#endif
+  
+  // Determine which language the shader is written in.
+  if (_language == SL_none) {
+    string header;
+    parse_init();
+    parse_line(header, true, true);
+    if (header == "//Cg") {
+      _language = SL_Cg;
+    }
+    if (header == "//GLSL") {
+      _language = SL_GLSL;
+    }
+  }
+  
+  if (_language == SL_Cg) {
+#ifdef HAVE_CG
+    cg_get_profile_from_header(_default_caps);
 
     if (!cg_analyze_shader(_default_caps)) {
       _error_flag = true;
     }
+#else
+    gobj_cat.error()
+      << "Tried to load Cg shader, but no Cg support is enabled.\n";
+#endif
+  } else if (_language == SL_GLSL) {
+    // All of the important stuff is done in glShaderContext.
+    _language = SL_GLSL;
   } else {
     gobj_cat.error()
       << "Shader is not in a supported shader-language.\n";
     _error_flag = true;
   }
-#endif
-
+  if (_error_flag) {
+    gobj_cat.error()
+      << "Shader encountered an error.\n";
+  }
 }
 
 #ifdef HAVE_CG
@@ -1771,8 +1779,8 @@ Shader::
 //               to use the given profile.
 ////////////////////////////////////////////////////////////////////
 PT(Shader) Shader::
-load(const string &file, const string &vprofile, const string &fprofile) {
- return load(Filename(file), vprofile, fprofile);
+load(const string &file) {
+ return load(Filename(file));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1786,7 +1794,7 @@ load(const string &file, const string &vprofile, const string &fprofile) {
 //               to use the given profile.
 ////////////////////////////////////////////////////////////////////
 PT(Shader) Shader::
-load(const Filename &file, const string &vprofile, const string &fprofile) {
+load(const Filename &file) {
   LoadTable::const_iterator i = _load_table.find(file);
   if (i != _load_table.end()) {
     return i->second;
@@ -1797,7 +1805,7 @@ load(const Filename &file, const string &vprofile, const string &fprofile) {
     gobj_cat.error() << "Could not read shader file: " << file << "\n";
     return NULL;
   }
-  PT(Shader) result = new Shader(file, body, vprofile, fprofile);
+  PT(Shader) result = new Shader(file, body);
   result->_loaded = true;
   _load_table[file] = result;
   return result;
@@ -1814,12 +1822,12 @@ load(const Filename &file, const string &vprofile, const string &fprofile) {
 //               to use the given profile.
 ////////////////////////////////////////////////////////////////////
 PT(Shader) Shader::
-make(const string &body, const string &vprofile, const string &fprofile) {
+make(const string &body) {
   MakeTable::const_iterator i = _make_table.find(body);
   if (i != _make_table.end()) {
     return i->second;
   }
-  PT(Shader) result = new Shader("created-shader", body, vprofile, fprofile);
+  PT(Shader) result = new Shader("created-shader", body);
   _make_table[body] = result;
   if (dump_generated_shaders) {
     ostringstream fns;
@@ -2086,6 +2094,8 @@ release_all() {
 ////////////////////////////////////////////////////////////////////
 void Shader::ShaderCaps::
 clear() {
+  _supports_glsl = false;
+ 
 #ifdef HAVE_CG
   _active_vprofile = 0;
   _active_fprofile = 0;

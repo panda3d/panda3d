@@ -33,16 +33,6 @@ get_text() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::get_header
-//  Access: Public
-//  Description: Return the Shader's header line.
-////////////////////////////////////////////////////////////////////
-INLINE const string &Shader::
-get_header() const {
-  return _header;
-}
-
-////////////////////////////////////////////////////////////////////
 //  Function: Shader::get_error_flag
 //  Access: Public
 //  Description: Returns true if the shader contains a compile-time
@@ -95,6 +85,17 @@ get_shader_utilization() {
 INLINE bool Shader::
 have_shader_utilization() {
   return (_shader_utilization != SUT_UNSPECIFIED);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Shader::get_language
+//       Access: Published
+//  Description: Returns the shader language in which this shader
+//               was written.
+////////////////////////////////////////////////////////////////////
+INLINE const Shader::ShaderLanguage Shader::
+get_language() const {
+  return _language;
 }
 
 ////////////////////////////////////////////////////////////////////

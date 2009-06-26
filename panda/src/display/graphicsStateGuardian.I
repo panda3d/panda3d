@@ -618,6 +618,17 @@ get_supports_basic_shaders() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: GraphicsStateGuardian::get_supports_glsl
+//       Access: Published
+//  Description: Returns true if this particular GSG supports
+//               GLSL shaders.
+////////////////////////////////////////////////////////////////////
+INLINE bool GraphicsStateGuardian::
+get_supports_glsl() const {
+  return _supports_glsl;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: GraphicsStateGuardian::get_supports_stencil
 //       Access: Published
 //  Description: Returns true if this particular GSG supports
