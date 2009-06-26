@@ -39,6 +39,9 @@ class ParticlePanel(AppShell):
         if particleEffect != None:
             self.particleEffect = particleEffect
         else:
+            # Make sure particles are enabled
+            base.enableParticles()
+        
             # Or create a new one if none given
             particles = Particles.Particles()
             particles.setBirthRate(0.02)
@@ -75,8 +78,7 @@ class ParticlePanel(AppShell):
         self.effectsDict[self.particleEffect.getName()] = (
             self.particleEffect)
         self.forcePagesDict = {}
-        # Make sure particles are enabled
-        base.enableParticles()
+
 
     def createInterface(self):
         # Handle to the toplevels hull
