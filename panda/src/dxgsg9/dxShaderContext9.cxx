@@ -42,7 +42,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   _name = s->get_filename ( );
 
 #ifdef HAVE_CG
-  if (s->get_header() == "//Cg") {
+  if (s->get_language() == Shader::SL_Cg) {
     
     // Ask the shader to compile itself for us and 
     // to give us the resulting Cg program objects.
