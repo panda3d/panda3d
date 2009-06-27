@@ -33,8 +33,8 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 CLP(ShaderContext)::
 CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   _last_gsg = gsg;
-  _cg_context = 0;
 #ifdef HAVE_CG
+  _cg_context = 0;
   if (s->get_language() == Shader::SL_Cg) {
     
     // Ask the shader to compile itself for us and 
