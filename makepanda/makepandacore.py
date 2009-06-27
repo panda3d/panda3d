@@ -1044,8 +1044,8 @@ def CheckLinkerLibraryPath():
     if (os.environ.has_key("LD_LIBRARY_PATH")):
         ldpath = ldpath + os.environ["LD_LIBRARY_PATH"].split(":")
     if (ldpath.count(builtlib)==0):
-        WARNINGS.append("Caution: the "+os.path.join(OUTPUTDIR,"lib")+" directory is not in LD_LIBRARY_PATH")
-        WARNINGS.append("or /etc/ld.so.conf.  You must add it before using panda.")
+        #WARNINGS.append("Caution: the "+os.path.join(OUTPUTDIR,"lib")+" directory is not in LD_LIBRARY_PATH")
+        #WARNINGS.append("or /etc/ld.so.conf.  You must add it before using panda.")
         if (os.environ.has_key("LD_LIBRARY_PATH")):
             os.environ["LD_LIBRARY_PATH"] = builtlib + ":" + os.environ["LD_LIBRARY_PATH"]
         else:
