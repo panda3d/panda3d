@@ -117,6 +117,14 @@ class ClientRepository(ClientRepositoryBase):
 
         return self.doIdAllocator.allocate()
 
+    def reserveDoId(self, doId):
+        """ Removes the indicate doId from the available pool, as if
+        it had been explicitly allocated.  You may pass it to
+        freeDoId() later if you wish. """
+
+        self.doIdAllocator.initialReserveId(doId)
+        return doId
+
     def freeDoId(self, doId):
         """ Returns a doId back into the free pool for re-use. """
 
@@ -124,7 +132,8 @@ class ClientRepository(ClientRepositoryBase):
         self.doIdAllocator.free(doId)
 
     def createDistributedObject(self, className = None, distObj = None,
-                                zoneId = 0, optionalFields = None):
+                                zoneId = 0, optionalFields = None,
+                                doId = None):
 
         """ To create a DistributedObject, you must pass in either the
         name of the object's class, or an already-created instance of
@@ -148,14 +157,24 @@ class ClientRepository(ClientRepositoryBase):
         broadcast to all of the other clients; if you wish to
         broadcast additional field values at this time as well, pass a
         list of field names in the optionalFields parameters.
-        """
+
+        Normally, doId is None, to mean allocate a new doId for the
+        object.  If you wish to use a particular doId, pass it in
+        here.  It will be reserved from the allocation pool using
+        self.reserveDoId().  You are responsible for ensuring this
+        doId falls within the client's allowable doId range and has
+        not already been assigned to another object.  """
 
         if not className:
             if not distObj:
                 self.notify.error("Must specify either a className or a distObj.")
             className = distObj.__class__.__name__
 
-        doId = self.allocateDoId()
+        if doId is None:
+            doId = self.allocateDoId()
+        else:
+            self.reserveDoId(doId)
+            
         dclass = self.dclassesByName.get(className)
         if not dclass:
             self.notify.error("Unknown distributed class: %s" % (distObj.__class__))
