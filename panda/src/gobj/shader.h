@@ -281,10 +281,6 @@ public:
   void clear_parameters();
 
  public:
-  unsigned int _glsl_program;
-  unsigned int _glsl_vshader;
-  unsigned int _glsl_fshader;
-  unsigned int _glsl_gshader;
   pvector<int> _glsl_parameter_map;
 
 #ifdef HAVE_CG

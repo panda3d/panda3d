@@ -1589,10 +1589,6 @@ Shader(const Filename &filename, const string &text, const ShaderLanguage &lang)
   _language(lang)
 {
   _error_flag = false;
-  _glsl_program = 0;
-  _glsl_vshader = 0;
-  _glsl_fshader = 0;
-  _glsl_gshader = 0;
   
 #ifdef HAVE_CG
   _cg_context = 0;

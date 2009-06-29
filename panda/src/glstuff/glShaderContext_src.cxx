@@ -33,6 +33,10 @@ TypeHandle CLP(ShaderContext)::_type_handle;
 CLP(ShaderContext)::
 CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
   _last_gsg = gsg;
+  _glsl_program = 0;
+  _glsl_vshader = 0;
+  _glsl_fshader = 0;
+  _glsl_gshader = 0;
 #ifdef HAVE_CG
   _cg_context = 0;
   if (s->get_language() == Shader::SL_Cg) {
@@ -93,24 +97,25 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
 
   if (s->get_language() == Shader::SL_GLSL) {
     // We compile and analyze the shader here, instead of in shader.cxx, to avoid gobj getting a dependency on GL stuff.
-    if (s->_glsl_program == 0) {
+    if (_glsl_program == 0) {
       if (!glsl_compile_shader(gsg)) {
         release_resources(gsg);
         s->_error_flag = true;
         return;
       }
-      
-      s->_glsl_parameter_map.clear();
+    }
+    // Analyze the uniforms and put them in _glsl_parameter_map
+    if (s->_glsl_parameter_map.size() == 0) {
       int seqno = 0, texunitno = 0;
       int num_uniforms, uniform_maxlength;
-      gsg->_glGetProgramiv(s->_glsl_program, GL_ACTIVE_UNIFORMS, &num_uniforms);
-      gsg->_glGetProgramiv(s->_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &uniform_maxlength);
+      gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &num_uniforms);
+      gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &uniform_maxlength);
       for (int i = 0; i < num_uniforms; ++i) {
         int param_size;
         GLenum param_type;
         char param_name[uniform_maxlength];
-        gsg->_glGetActiveUniform(_shader->_glsl_program, i, uniform_maxlength, NULL, &param_size, &param_type, param_name);
-        GLint p = gsg->_glGetUniformLocation(_shader->_glsl_program, param_name);
+        gsg->_glGetActiveUniform(_glsl_program, i, uniform_maxlength, NULL, &param_size, &param_type, param_name);
+        GLint p = gsg->_glGetUniformLocation(_glsl_program, param_name);
         if (p > -1) {
           Shader::ShaderArgId arg_id;
           arg_id._name  = param_name;
@@ -259,24 +264,24 @@ release_resources(const GSG *gsg) {
   if (!gsg) {
     return;
   }
-  if (_shader->_glsl_program != 0) {
-    if (!_shader->_glsl_vshader != 0) {
-      gsg->_glDetachShader(_shader->_glsl_program, _shader->_glsl_vshader);
-      gsg->_glDeleteShader(_shader->_glsl_vshader);
-      _shader->_glsl_vshader = 0;
+  if (_glsl_program != 0) {
+    if (!_glsl_vshader != 0) {
+      gsg->_glDetachShader(_glsl_program, _glsl_vshader);
+      gsg->_glDeleteShader(_glsl_vshader);
+      _glsl_vshader = 0;
     }
-    if (!_shader->_glsl_fshader != 0) {
-      gsg->_glDetachShader(_shader->_glsl_program, _shader->_glsl_fshader);
-      gsg->_glDeleteShader(_shader->_glsl_fshader);
-      _shader->_glsl_fshader = 0;
+    if (!_glsl_fshader != 0) {
+      gsg->_glDetachShader(_glsl_program, _glsl_fshader);
+      gsg->_glDeleteShader(_glsl_fshader);
+      _glsl_fshader = 0;
     }
-    if (!_shader->_glsl_gshader != 0) {
-      gsg->_glDetachShader(_shader->_glsl_program, _shader->_glsl_gshader);
-      gsg->_glDeleteShader(_shader->_glsl_gshader);
-      _shader->_glsl_gshader = 0;
+    if (!_glsl_gshader != 0) {
+      gsg->_glDetachShader(_glsl_program, _glsl_gshader);
+      gsg->_glDeleteShader(_glsl_gshader);
+      _glsl_gshader = 0;
     }
-    gsg->_glDeleteProgram(_shader->_glsl_program);
-    _shader->_glsl_program = 0;
+    gsg->_glDeleteProgram(_glsl_program);
+    _glsl_program = 0;
   }
 }
 
@@ -310,7 +315,7 @@ bind(GSG *gsg) {
 #endif
   
   if (_shader->get_language() == Shader::SL_GLSL && !_shader->get_error_flag()) {
-    gsg->_glUseProgram(_shader->_glsl_program);
+    gsg->_glUseProgram(_glsl_program);
   }
   if (glGetError() != GL_NO_ERROR) {
     GLCAT.error() << "GL error in ShaderContext::bind\n";
@@ -789,48 +794,48 @@ glsl_compile_shader(GSG *gsg) {
   // Terribly hacky. I hope this will go away when we
   // add support for separated shader programs later.
 
-  _shader->_glsl_program = gsg->_glCreateProgram();
-  if (!_shader->_glsl_program) return false;
+  _glsl_program = gsg->_glCreateProgram();
+  if (!_glsl_program) return false;
 
   if (_shader->_text.find("vshader") != -1) {
-    _shader->_glsl_vshader = glsl_compile_entry_point(gsg, "vshader", Shader::ST_VERTEX);
-    if (!_shader->_glsl_vshader) return false;
-    gsg->_glAttachShader(_shader->_glsl_program, _shader->_glsl_vshader);
+    _glsl_vshader = glsl_compile_entry_point(gsg, "vshader", Shader::ST_VERTEX);
+    if (!_glsl_vshader) return false;
+    gsg->_glAttachShader(_glsl_program, _glsl_vshader);
   } else {
     GLCAT.warning() << "Could not locate function 'vshader' in shader text!\n";
   }
 
   if (_shader->_text.find("fshader") != -1) {
-    _shader->_glsl_fshader = glsl_compile_entry_point(gsg, "fshader", Shader::ST_FRAGMENT);
-    if (!_shader->_glsl_fshader) return false;
-    gsg->_glAttachShader(_shader->_glsl_program, _shader->_glsl_fshader);
+    _glsl_fshader = glsl_compile_entry_point(gsg, "fshader", Shader::ST_FRAGMENT);
+    if (!_glsl_fshader) return false;
+    gsg->_glAttachShader(_glsl_program, _glsl_fshader);
   } else {
     GLCAT.warning() << "Could not locate function 'fshader' in shader text!\n";
   }
 
   if (_shader->_text.find("gshader") != -1) {
-    _shader->_glsl_gshader = glsl_compile_entry_point(gsg, "gshader", Shader::ST_GEOMETRY);
-    if (!_shader->_glsl_gshader) return false;
-    gsg->_glAttachShader(_shader->_glsl_program, _shader->_glsl_gshader);
+    _glsl_gshader = glsl_compile_entry_point(gsg, "gshader", Shader::ST_GEOMETRY);
+    if (!_glsl_gshader) return false;
+    gsg->_glAttachShader(_glsl_program, _glsl_gshader);
   }
   
-  gsg->_glLinkProgram(_shader->_glsl_program);
+  gsg->_glLinkProgram(_glsl_program);
 
   int status;
-  gsg->_glGetProgramiv(_shader->_glsl_program, GL_LINK_STATUS, &status);
+  gsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) {
     GLCAT.error() << "An error occurred while linking shader program!\n";
-    glsl_report_program_errors(gsg, _shader->_glsl_program);
+    glsl_report_program_errors(gsg, _glsl_program);
     return false;
   }
   
   // There might be warnings. Only report them for one shader program.
-  if (_shader->_glsl_vshader != 0) {
-    glsl_report_shader_errors(gsg, _shader->_glsl_vshader);
-  } else if (_shader->_glsl_fshader != 0) {
-    glsl_report_shader_errors(gsg, _shader->_glsl_fshader);
-  } else if (_shader->_glsl_gshader != 0) {
-    glsl_report_shader_errors(gsg, _shader->_glsl_gshader);
+  if (_glsl_vshader != 0) {
+    glsl_report_shader_errors(gsg, _glsl_vshader);
+  } else if (_glsl_fshader != 0) {
+    glsl_report_shader_errors(gsg, _glsl_fshader);
+  } else if (_glsl_gshader != 0) {
+    glsl_report_shader_errors(gsg, _glsl_gshader);
   }
 
   if (glGetError() != GL_NO_ERROR) {

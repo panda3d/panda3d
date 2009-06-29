@@ -28,8 +28,7 @@ valid() {
 #ifdef HAVE_CG
   if (_cg_context) return true;
 #endif
-  if (_shader->get_language() == Shader::SL_GLSL &&
-      _shader->_glsl_program != 0) {
+  if (_shader->get_language() == Shader::SL_GLSL && _glsl_program != 0) {
     return true;
   }
   return false;

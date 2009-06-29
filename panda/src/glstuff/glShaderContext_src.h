@@ -62,6 +62,11 @@ private:
   void cg_report_errors();
 #endif
   
+  GLuint _glsl_program;
+  GLuint _glsl_vshader;
+  GLuint _glsl_fshader;
+  GLuint _glsl_gshader;
+
   int _stage_offset;
   // Avoid using this! It merely exists so the
   // destructor has access to the extension functions.
