@@ -113,7 +113,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       for (int i = 0; i < num_uniforms; ++i) {
         int param_size;
         GLenum param_type;
-        char param_name[uniform_maxlength];
+        char* param_name = new char[uniform_maxlength];
         gsg->_glGetActiveUniform(_glsl_program, i, uniform_maxlength, NULL, &param_size, &param_type, param_name);
         GLint p = gsg->_glGetUniformLocation(_glsl_program, param_name);
         if (p > -1) {
@@ -224,6 +224,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               GLCAT.warning() << "Ignoring unrecognized GLSL parameter type!\n";
           }
         }
+        delete param_name;
       }
     }
   }
