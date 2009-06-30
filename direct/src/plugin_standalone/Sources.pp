@@ -19,7 +19,7 @@
   #define OSX_SYS_FRAMEWORKS Foundation AppKit
 
   #define SOURCES \
-    panda3d.cxx
+    panda3d.cxx panda3d.h panda3d.I
 
   #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib
 
