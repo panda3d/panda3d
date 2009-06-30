@@ -263,6 +263,7 @@ create_instance(const string &arg, P3D_window_type window_type,
   Filename p3d_filename = Filename::from_os_specific(arg);
   string os_p3d_filename;
   if (p3d_filename.exists()) {
+    p3d_filename.make_absolute();
     os_p3d_filename = p3d_filename.to_os_specific();
   } 
 

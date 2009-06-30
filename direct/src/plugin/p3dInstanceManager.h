@@ -62,15 +62,7 @@ public:
   int get_unique_session_index();
   void signal_request_ready();
 
-  static bool mkdir_public(const string &dirname);
-  static bool mkfile_public(const string &dirname);
-
   static P3DInstanceManager *get_global_ptr();
-
-private:
-  string find_root_dir() const;
-  static inline bool is_pathsep(char ch);
-  static string get_dirname(const string &filename);
 
 private:
   bool _is_initialized;

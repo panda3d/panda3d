@@ -70,24 +70,3 @@ inline int P3DInstanceManager::
 get_num_instances() const {
   return _instances.size();
 }
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::is_pathsep
-//       Access: Private, Static
-//  Description: Returns true if the indicated character is a path
-//               separator character (e.g. slash or backslash), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
-inline bool P3DInstanceManager::
-is_pathsep(char ch) {
-  if (ch == '/') {
-    return true;
-  }
-#ifdef _WIN32
-  if (ch == '\\') {
-    return true;
-  }
-#endif
-  return false;
-}

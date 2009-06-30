@@ -83,37 +83,3 @@ inline const string &P3DPackage::
 get_package_display_name() const {
   return _package_display_name;
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::decode_hexdigit
-//       Access: Private
-//  Description: Returns the integer value corresponding to the
-//               indicated hex digit.  Returns -1 if it is not a hex
-//               digit.
-////////////////////////////////////////////////////////////////////
-inline int P3DPackage::
-decode_hexdigit(char c) {
-  if (isdigit(c)) {
-    return c - '0';
-  }
-  c = tolower(c);
-  if (c >= 'a' && c <= 'f') {
-    return c - 'a' + 10;
-  }
-
-  return -1;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::encode_hexdigit
-//       Access: Private
-//  Description: Returns the hex digit corresponding to the
-//               indicated integer value.
-////////////////////////////////////////////////////////////////////
-inline char P3DPackage::
-encode_hexdigit(int c) {
-  if (c >= 10) {
-    return c - 10 + 'a';
-  }
-  return c + '0';
-}

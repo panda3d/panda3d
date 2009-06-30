@@ -13,8 +13,8 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3dMultifileReader.h"
-#include "p3dInstanceManager.h"
 #include "p3dPackage.h"
+#include "mkdir_complete.h"
 
 #include <time.h>
 
@@ -99,8 +99,6 @@ extract(const string &pathname, const string &to_dir,
     return false;
   }
 
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-
   // Now walk through all of the files.
   size_t num_processed = 0;
   Subfiles::iterator si;
@@ -109,7 +107,7 @@ extract(const string &pathname, const string &to_dir,
     nout << s._filename << "\n";
 
     string output_pathname = to_dir + "/" + s._filename;
-    if (!inst_mgr->mkfile_public(output_pathname)) {
+    if (!mkfile_complete(output_pathname)) {
       nout << "Unable to create " << output_pathname << "\n";
       return false;
     }

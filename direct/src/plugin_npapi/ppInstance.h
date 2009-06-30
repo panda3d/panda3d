@@ -16,8 +16,10 @@
 #define PPINSTANCE_H
 
 #include "nppanda3d_common.h"
+#include "fileSpec.h"
 
 #include <vector>
+#include <tinyxml.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PPInstance
@@ -43,6 +45,11 @@ public:
   void handle_request(P3D_request *request);
 
 private:
+  bool read_contents_file(const string &filename);
+  void get_core_api(TiXmlElement *xpackage);
+  void downloaded_plugin(const string &filename);
+  void do_load_plugin();
+
   void create_instance();
   void send_window();
 
@@ -51,6 +58,9 @@ private:
   unsigned int _npp_mode;
   typedef vector<P3D_token> Tokens;
   Tokens _tokens;
+
+  string _root_dir;
+  FileSpec _core_api_dll;
 
   bool _started_instance_data;
   bool _got_instance_data;

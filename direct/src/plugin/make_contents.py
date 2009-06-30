@@ -75,21 +75,26 @@ class ContentsMaker:
                 localpath = dirpath[len(prefix):].replace(os.sep, '/') + '/'
                 xml = dirpath[len(prefix):].replace(os.sep, '_') + '.xml'
 
+            # A special case: the "plugin" and "coreapi" directories
+            # don't have xml files, just dll's.
+            if xml.startswith('plugin_') or xml.startswith('coreapi_'):
+                if filenames:
+                    assert len(filenames) == 1
+                    xml = filenames[0]
+
             if xml not in filenames:
                 continue
             
-            if xml.count('_') == 1:
-                basename = xml.split('.')[0]
-                packageName, packageVersion = basename.split('_')
+            if localpath.count('/') == 2:
+                packageName, packageVersion, junk = localpath.split('/')
                 packagePlatform = None
                 file = FileSpec(localpath + xml,
                                 Filename(self.stageDir, localpath + xml))
                 print file.filename
                 self.packages.append((packageName, packageVersion, packagePlatform, file))
 
-            if xml.count('_') == 2:
-                basename = xml.split('.')[0]
-                packageName, packageVersion, packagePlatform = basename.split('_')
+            if localpath.count('/') == 3:
+                packageName, packageVersion, packagePlatform, junk = localpath.split('/')
                 file = FileSpec(localpath + xml,
                                 Filename(self.stageDir, localpath + xml))
                 print file.filename

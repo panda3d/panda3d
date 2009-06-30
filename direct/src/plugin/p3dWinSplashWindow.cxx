@@ -568,7 +568,6 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_PAINT:
-    nout << "WM_PAINT, _bitmap = " << _bitmap << "\n";
     {
       PAINTSTRUCT ps;
       HDC dc = BeginPaint(hwnd, &ps);

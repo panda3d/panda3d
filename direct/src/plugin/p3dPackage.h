@@ -17,6 +17,8 @@
 
 #include "p3d_plugin_common.h"
 #include "p3dFileDownload.h"
+#include "fileSpec.h"
+#include <tinyxml.h>
 
 class P3DInstance;
 
@@ -95,13 +97,6 @@ private:
   void start_download(DownloadType dtype, const string &url, 
                       const string &pathname, bool allow_partial);
 
-  static inline int decode_hexdigit(char c);
-  static inline char encode_hexdigit(int c);
-
-  static bool decode_hex(unsigned char *dest, const char *source, size_t size);
-  static void encode_hex(char *dest, const unsigned char *source, size_t size);
-  static void stream_hex(ostream &out, const unsigned char *source, size_t size);
-
 private:
   string _package_name;
   string _package_version;
@@ -123,25 +118,6 @@ private:
 
   typedef vector<P3DInstance *> Instances;
   Instances _instances;
-
-  enum { hash_size = 16 };
-
-  class FileSpec {
-  public:
-    FileSpec();
-    void load_xml(TiXmlElement *element);
-
-    bool quick_verify(const string &package_dir) const;
-    bool full_verify(const string &package_dir) const;
-
-    bool check_hash(const string &pathname) const;
-
-    string _filename;
-    size_t _size;
-    time_t _timestamp;
-    unsigned char _hash[hash_size];
-    bool _got_hash;
-  };
 
   FileSpec _compressed_archive;
   FileSpec _uncompressed_archive;

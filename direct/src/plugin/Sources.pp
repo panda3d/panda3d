@@ -11,8 +11,11 @@
     $[TARGET]_composite1.cxx
 
   #define SOURCES \
+    fileSpec.cxx fileSpec.h fileSpec.I \
+    find_root_dir.cxx find_root_dir.h \
     handleStream.cxx handleStream.h handleStream.I \
     handleStreamBuf.cxx handleStreamBuf.h \
+    mkdir_complete.cxx mkdir_complete.h \
     p3d_lock.h p3d_plugin.h \
     p3d_plugin_config.h \
     p3d_plugin_common.h \
@@ -74,9 +77,13 @@
 
 #begin static_lib_target
   #define TARGET plugin_common
+  #define USE_PACKAGES tinyxml openssl
 
   #define SOURCES \
-     load_plugin.cxx load_plugin.h
+    load_plugin.cxx load_plugin.h \
+    fileSpec.cxx fileSpec.h fileSpec.I \
+    find_root_dir.cxx find_root_dir.h \
+    mkdir_complete.cxx mkdir_complete.h
 
 #end static_lib_target
 

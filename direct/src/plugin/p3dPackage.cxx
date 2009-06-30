@@ -16,28 +16,13 @@
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
 #include "p3dMultifileReader.h"
+#include "mkdir_complete.h"
 
-#include "openssl/md5.h"
 #include "zlib.h"
 
 #include <algorithm>
 #include <fstream>
-#include <fcntl.h>
-
-#include <sys/types.h>
-#include <sys/stat.h>
-
-#ifdef _WIN32
-#include <sys/utime.h>
-#include <direct.h>
-#define stat _stat
-#define utime _utime
-#define utimbuf _utimbuf
-
-#else
-#include <utime.h>
-
-#endif
+//#include <fcntl.h>
 
 // The relative breakdown of the full install process.  Each phase is
 // worth this fraction of the total movement of the progress bar.
@@ -75,10 +60,8 @@ P3DPackage(const string &package_name, const string &package_version,
   _partial_download = false;
 
   // Ensure the package directory exists; create it if it does not.
-  inst_mgr->mkdir_public(_package_dir);
-
   _package_dir += string("/") + _package_version;
-  inst_mgr->mkdir_public(_package_dir);
+  mkdir_complete(_package_dir);
 
   _desc_file_basename = _package_fullname + ".xml";
   _desc_file_pathname = _package_dir + "/" + _desc_file_basename;
@@ -348,9 +331,9 @@ download_compressed_archive(bool allow_partial) {
     url += "/" + _package_platform;
   }
 
-  url += "/" + _compressed_archive._filename;
+  url += "/" + _compressed_archive.get_filename();
 
-  string target_pathname = _package_dir + "/" + _compressed_archive._filename;
+  string target_pathname = _package_dir + "/" + _compressed_archive.get_filename();
 
   start_download(DT_compressed_archive, url, target_pathname, allow_partial);
 }
@@ -389,7 +372,7 @@ compressed_archive_download_finished(bool success) {
     download_compressed_archive(false);
   }
 
-  nout << _compressed_archive._filename
+  nout << _compressed_archive.get_filename()
        << " failed hash check after download\n";
   report_done(false);
 }
@@ -401,10 +384,10 @@ compressed_archive_download_finished(bool success) {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 uncompress_archive() {
-  nout << "uncompressing " << _compressed_archive._filename << "\n";
+  nout << "uncompressing " << _compressed_archive.get_filename() << "\n";
 
-  string source_pathname = _package_dir + "/" + _compressed_archive._filename;
-  string target_pathname = _package_dir + "/" + _uncompressed_archive._filename;
+  string source_pathname = _package_dir + "/" + _compressed_archive.get_filename();
+  string target_pathname = _package_dir + "/" + _uncompressed_archive.get_filename();
 
   ifstream source(source_pathname.c_str(), ios::in | ios::binary);
   if (!source) {
@@ -413,8 +396,7 @@ uncompress_archive() {
     return;
   }
 
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  if (!inst_mgr->mkfile_public(target_pathname)) {
+  if (!mkfile_complete(target_pathname)) {
     nout << "Unable to create " << target_pathname << "\n";
     report_done(false);
     return;
@@ -481,8 +463,8 @@ uncompress_archive() {
         return;
       }
       total_out += (write_buffer_size - z.avail_out);
-      if (_uncompressed_archive._size != 0) {
-        double progress = (double)total_out / (double)_uncompressed_archive._size;
+      if (_uncompressed_archive.get_size() != 0) {
+        double progress = (double)total_out / (double)_uncompressed_archive.get_size();
         progress = min(progress, 1.0);
         report_progress(download_portion + uncompress_portion * progress);
       }
@@ -536,13 +518,13 @@ uncompress_archive() {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 extract_archive() {
-  nout << "extracting " << _uncompressed_archive._filename << "\n";
+  nout << "extracting " << _uncompressed_archive.get_filename() << "\n";
 
-  string source_pathname = _package_dir + "/" + _uncompressed_archive._filename;
+  string source_pathname = _package_dir + "/" + _uncompressed_archive.get_filename();
   P3DMultifileReader reader;
   if (!reader.extract(source_pathname, _package_dir,
                       this, download_portion + uncompress_portion, extract_portion)) {
-    nout << "Failure extracting " << _uncompressed_archive._filename
+    nout << "Failure extracting " << _uncompressed_archive.get_filename()
          << "\n";
     report_done(false);
     return;
@@ -628,64 +610,6 @@ start_download(P3DPackage::DownloadType dtype, const string &url,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::decode_hex
-//       Access: Private, Static
-//  Description: Decodes the hex string in source into the character
-//               array in dest.  dest must have has least size bytes;
-//               source must have size * 2 bytes.
-//
-//               Returns true on success, false if there was a non-hex
-//               digit in the string.
-////////////////////////////////////////////////////////////////////
-bool P3DPackage::
-decode_hex(unsigned char *dest, const char *source, size_t size) {
-  for (size_t i = 0; i < size; ++i) {
-    int high = decode_hexdigit(source[i * 2]);
-    int low = decode_hexdigit(source[i * 2 + 1]);
-    if (high < 0 || low < 0) {
-      return false;
-    }
-    dest[i] = (high << 4) | low;
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::encode_hex
-//       Access: Private, Static
-//  Description: Encodes a character array into a hex string for
-//               output.  dest must have at least size * 2 bytes;
-//               source must have size bytes.  The result is not
-//               null-terminated.
-////////////////////////////////////////////////////////////////////
-void P3DPackage::
-encode_hex(char *dest, const unsigned char *source, size_t size) {
-  for (size_t i = 0; i < size; ++i) {
-    int high = (source[i] >> 4) & 0xf;
-    int low = source[i] & 0xf;
-    dest[2 * i] = encode_hexdigit(high);
-    dest[2 * i + 1] = encode_hexdigit(low);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::stream_hex
-//       Access: Private, Static
-//  Description: Writes the indicated buffer as a string of hex
-//               characters to the given ostream.
-////////////////////////////////////////////////////////////////////
-void P3DPackage::
-stream_hex(ostream &out, const unsigned char *source, size_t size) {
-  for (size_t i = 0; i < size; ++i) {
-    int high = (source[i] >> 4) & 0xf;
-    int low = source[i] & 0xf;
-    out.put(encode_hexdigit(high));
-    out.put(encode_hexdigit(low));
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::Callback::Destructor
 //       Access: Public, Virtual
 //  Description: 
@@ -764,189 +688,4 @@ download_finished(bool success) {
     _package->compressed_archive_download_finished(success);
     break;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::FileSpec::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-P3DPackage::FileSpec::
-FileSpec() {
-  _size = 0;
-  _timestamp = 0;
-  memset(_hash, 0, sizeof(_hash));
-  _got_hash = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::FileSpec::load_xml
-//       Access: Public
-//  Description: Reads the data from the indicated XML file.
-////////////////////////////////////////////////////////////////////
-void P3DPackage::FileSpec::
-load_xml(TiXmlElement *element) {
-  const char *filename = element->Attribute("filename");
-  if (filename != NULL) {
-    _filename = filename;
-  }
-
-  const char *size = element->Attribute("size");
-  if (size != NULL) {
-    char *endptr;
-    _size = strtoul(size, &endptr, 10);
-  }
-
-  const char *timestamp = element->Attribute("timestamp");
-  if (timestamp != NULL) {
-    char *endptr;
-    _timestamp = strtoul(timestamp, &endptr, 10);
-  }
-
-  _got_hash = false;
-  const char *hash = element->Attribute("hash");
-  if (hash != NULL && strlen(hash) == (hash_size * 2)) {
-    // Decode the hex hash string.
-    _got_hash = decode_hex(_hash, hash, hash_size);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::FileSpec::quick_verify
-//       Access: Public
-//  Description: Performs a quick test to ensure the file has not been
-//               modified.  This test is vulnerable to people
-//               maliciously attempting to fool the program (by
-//               setting datestamps etc.).
-//
-//               Returns true if it is intact, false if it needs to be
-//               redownloaded.
-////////////////////////////////////////////////////////////////////
-bool P3DPackage::FileSpec::
-quick_verify(const string &package_dir) const {
-  string pathname = package_dir + "/" + _filename;
-  struct stat st;
-  if (stat(pathname.c_str(), &st) != 0) {
-    nout << "file not found: " << _filename << "\n";
-    return false;
-  }
-
-  if (st.st_size != _size) {
-    // If the size is wrong, the file fails.
-    nout << "size wrong: " << _filename << "\n";
-    return false;
-  }
-
-  if (st.st_mtime == _timestamp) {
-    // If the size is right and the timestamp is right, the file passes.
-    nout << "file ok: " << _filename << "\n";
-    return true;
-  }
-
-  nout << "modification time wrong: " << _filename << "\n";
-
-  // If the size is right but the timestamp is wrong, the file
-  // soft-fails.  We follow this up with a hash check.
-  if (!check_hash(pathname)) {
-    // Hard fail, the hash is wrong.
-    nout << "hash check wrong: " << _filename << "\n";
-    return false;
-  }
-
-  nout << "hash check ok: " << _filename << "\n";
-
-  // The hash is OK after all.  Change the file's timestamp back to
-  // what we expect it to be, so we can quick-verify it successfully
-  // next time.
-  utimbuf utb;
-  utb.actime = st.st_atime;
-  utb.modtime = _timestamp;
-  utime(pathname.c_str(), &utb);
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::FileSpec::quick_verify
-//       Access: Public
-//  Description: Performs a more thorough test to ensure the file has
-//               not been modified.  This test is less vulnerable to
-//               malicious attacks, since it reads and verifies the
-//               entire file.
-//
-//               Returns true if it is intact, false if it needs to be
-//               redownloaded.
-////////////////////////////////////////////////////////////////////
-bool P3DPackage::FileSpec::
-full_verify(const string &package_dir) const {
-  string pathname = package_dir + "/" + _filename;
-  struct stat st;
-  if (stat(pathname.c_str(), &st) != 0) {
-    nout << "file not found: " << _filename << "\n";
-    return false;
-  }
-
-  if (st.st_size != _size) {
-    // If the size is wrong, the file fails.
-    nout << "size wrong: " << _filename << "\n";
-    return false;
-  }
-
-  // If the size is right but the timestamp is wrong, the file
-  // soft-fails.  We follow this up with a hash check.
-  if (!check_hash(pathname)) {
-    // Hard fail, the hash is wrong.
-    nout << "hash check wrong: " << _filename << "\n";
-    return false;
-  }
-
-  nout << "hash check ok: " << _filename << "\n";
-
-  // The hash is OK.  If the timestamp is wrong, change it back to
-  // what we expect it to be, so we can quick-verify it successfully
-  // next time.
-
-  if (st.st_mtime != _timestamp) {
-    utimbuf utb;
-    utb.actime = st.st_atime;
-    utb.modtime = _timestamp;
-    utime(pathname.c_str(), &utb);
-  }
-    
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::FileSpec::check_hash
-//       Access: Public
-//  Description: Returns true if the file has the expected md5 hash,
-//               false otherwise.
-////////////////////////////////////////////////////////////////////
-bool P3DPackage::FileSpec::
-check_hash(const string &pathname) const {
-  ifstream stream(pathname.c_str(), ios::in | ios::binary);
-  if (!stream) {
-    nout << "unable to read " << pathname << "\n";
-    return false;
-  }
-
-  unsigned char md[hash_size];
-
-  MD5_CTX ctx;
-  MD5_Init(&ctx);
-
-  static const int buffer_size = 1024;
-  char buffer[buffer_size];
-
-  stream.read(buffer, buffer_size);
-  size_t count = stream.gcount();
-  while (count != 0) {
-    MD5_Update(&ctx, buffer, count);
-    stream.read(buffer, buffer_size);
-    count = stream.gcount();
-  }
-
-  MD5_Final(md, &ctx);
-
-  return (memcmp(md, _hash, hash_size) == 0);
 }

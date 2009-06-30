@@ -145,19 +145,6 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 
   logfile << "browserFuncs = " << browserFuncs << "\n" << flush;
 
-  /*
-#ifdef _WIN32
-  string plugin_location = "c:/cygwin/home/drose/player/direct/built/lib/p3d_plugin.dll";
-#else
-  string plugin_location = "/Users/drose/player/direct/built/lib/p3d_plugin.dylib";
-#endif
-
-  if (!load_plugin(plugin_location)) {
-    logfile << "couldn't load plugin\n" << flush;
-    return NPERR_INVALID_PLUGIN_ERROR;
-  }
-  */
-
   return NPERR_NO_ERROR;
 }
 

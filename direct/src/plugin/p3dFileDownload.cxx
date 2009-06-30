@@ -14,6 +14,7 @@
 
 #include "p3dFileDownload.h"
 #include "p3dInstanceManager.h"
+#include "mkdir_complete.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DFileDownload::Constructor
@@ -45,8 +46,7 @@ set_filename(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 bool P3DFileDownload::
 open_file() {
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  if (!inst_mgr->mkfile_public(_filename)) {
+  if (!mkfile_complete(_filename)) {
     nout << "Unable to create " << _filename << "\n";
     return false;
   }

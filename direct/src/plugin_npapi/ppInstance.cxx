@@ -15,8 +15,11 @@
 #include "ppInstance.h"
 #include "startup.h"
 #include "p3d_plugin_config.h"
+#include "find_root_dir.h"
+#include "mkdir_complete.h"
 
-#include <string.h>
+#include <fstream>
+#include <string.h>  // strcmp()
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::Constructor
@@ -51,13 +54,10 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
   _got_window = false;
 
   if (!is_plugin_loaded()) {
-    // Start the plugin DLL downloading.
+    // Go download the contents file, so we can download the core DLL.
     string url = P3D_PLUGIN_DOWNLOAD;
-    url += P3D_PLUGIN_PLATFORM;
-    url += "/";
-    url += get_plugin_basename();
-    
-    PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
+    url += "contents.xml";
+    PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_contents_file);
     browser->geturlnotify(_npp_instance, url.c_str(), NULL, req);
   }
 }
@@ -137,9 +137,15 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
 
   PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
   switch (req->_rtype) {
+  case PPDownloadRequest::RT_contents_file:
+    // This is the initial contents.xml file.  We'll just download
+    // this directoy to a file, since it is small and this is easy.
+    *stype = NP_ASFILEONLY;
+    return NPERR_NO_ERROR;
+
   case PPDownloadRequest::RT_core_dll:
     // This is the core API DLL (or dylib or whatever).  We want to
-    // download this to file so we can run it directly.
+    // download this to file for convenience.
     *stype = NP_ASFILEONLY;
     return NPERR_NO_ERROR;
 
@@ -296,22 +302,20 @@ stream_as_file(NPStream *stream, const char *fname) {
 
   PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
   switch (req->_rtype) {
-  case PPDownloadRequest::RT_core_dll:
-    {
-      // This is the core API DLL (or dylib or whatever).  Now that
-      // we've downloaded it, we can load it.
-      string override_filename = P3D_PLUGIN_P3D_PLUGIN;
-      if (!override_filename.empty()) {
-        filename = override_filename;
-      }
-      logfile << "got plugin " << filename << "\n" << flush;
-      if (!load_plugin(filename)) {
-        logfile << "Unable to launch core API.\n";
-        break;
-      }
-      logfile << "loaded core API\n";
-      create_instance();
+  case PPDownloadRequest::RT_contents_file:
+    // Now we have the contents.xml file.  Read this to get the
+    // filename and md5 hash of our core API DLL.
+    logfile << "got contents file " << filename << "\n" << flush;
+    if (!read_contents_file(filename)) {
+      logfile << "Unable to read contents file\n";
+      // TODO: fail
     }
+    break;
+
+  case PPDownloadRequest::RT_core_dll:
+    // This is the core API DLL (or dylib or whatever).  Now that
+    // we've downloaded it, we can load it.
+    downloaded_plugin(filename);
     break;
 
   case PPDownloadRequest::RT_instance_data:
@@ -377,6 +381,150 @@ handle_request(P3D_request *request) {
   P3D_request_finish(request, handled);
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::read_contents_file
+//       Access: Private
+//  Description: Reads the contents.xml file and starts the core API
+//               DLL downloading, if necessary.
+////////////////////////////////////////////////////////////////////
+bool PPInstance::
+read_contents_file(const string &filename) {
+  TiXmlDocument doc(filename.c_str());
+  if (!doc.LoadFile()) {
+    return false;
+  }
+
+  TiXmlElement *xpackage = doc.FirstChildElement("package");
+  while (xpackage != NULL) {
+    const char *name = xpackage->Attribute("name");
+    if (name != NULL && strcmp(name, "coreapi") == 0) {
+      get_core_api(xpackage);
+      return true;
+    }
+    
+    xpackage = xpackage->NextSiblingElement("package");
+  }
+
+  // Couldn't find the core package description.
+  logfile << "No core package defined in contents file.\n" << flush;
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::get_core_api
+//       Access: Private
+//  Description: Checks the core API DLL file against the
+//               specification in the contents file, and downloads it
+//               if necessary.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+get_core_api(TiXmlElement *xpackage) {
+  _core_api_dll.load_xml(xpackage);
+
+  _root_dir = find_root_dir();
+
+  if (_core_api_dll.quick_verify(_root_dir)) {
+    // The DLL file is good.  Just load it.
+    do_load_plugin();
+
+  } else {
+    // The DLL file needs to be downloaded.  Go get it.
+    string url = P3D_PLUGIN_DOWNLOAD;
+    url += _core_api_dll.get_filename();
+    
+    PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
+    browser->geturlnotify(_npp_instance, url.c_str(), NULL, req);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::downloaded_plugin
+//       Access: Private
+//  Description: The core API DLL has been successfully downloaded;
+//               copy it into place.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+downloaded_plugin(const string &filename) {
+  // We could have been downloading this file as a stream, but that
+  // would cause problems with multiple instances downloading the
+  // plugin at the same time.  Instead, we let them all download the
+  // file asfile, and then only one of them is allowed to copy it into
+  // place.
+
+  if (is_plugin_loaded()) {
+    // Some other instance got there first.  Just get started.
+    create_instance();
+    return;
+  }
+
+  // Copy the file onto the target.
+  string pathname = _core_api_dll.get_pathname(_root_dir);
+  mkfile_complete(pathname);
+
+  ifstream in(filename.c_str(), ios::in | ios::binary);
+  ofstream out(pathname.c_str(), ios::out | ios::binary);
+
+  static const size_t buffer_size = 4096;
+  static char buffer[buffer_size];
+
+  in.read(buffer, buffer_size);
+  size_t count = in.gcount();
+  while (count != 0) {
+    out.write(buffer, count);
+    in.read(buffer, buffer_size);
+    count = in.gcount();
+  }
+
+  if (!out) {
+    logfile << "Could not write " << pathname << "\n";
+    // TODO: fail
+    return;
+  }
+  in.close();
+  out.close();
+
+  if (_core_api_dll.quick_verify(_root_dir)) {
+    // We downloaded and installed it successfully.  Now load it.
+    logfile << "Successfully downloaded " << pathname << "\n";
+    do_load_plugin();
+    return;
+  }
+
+  logfile << "After download, " << pathname << " is no good.\n";
+  // TODO: fail
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::do_load_plugin
+//       Access: Private
+//  Description: Once the core API DLL has been downloaded, loads it
+//               into memory and starts the instance.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+do_load_plugin() {
+  string pathname = _core_api_dll.get_pathname(_root_dir);
+
+#ifdef P3D_PLUGIN_P3D_PLUGIN
+  // This is a convenience macro for development.  If defined and
+  // nonempty, it indicates the name of the plugin DLL that we will
+  // actually run, even after downloading a possibly different
+  // (presumably older) version.  Its purpose is to simplify iteration
+  // on the plugin DLL.
+  string override_filename = P3D_PLUGIN_P3D_PLUGIN;
+  if (!override_filename.empty()) {
+    pathname = override_filename;
+  }
+#endif  // P3D_PLUGIN_P3D_PLUGIN
+
+  if (!load_plugin(pathname)) {
+    logfile << "Unable to launch core API in " << pathname << "\n" << flush;
+    return;
+  }
+  logfile << "loaded core API from " << pathname << "\n" << flush;
+  create_instance();
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::create_instance
