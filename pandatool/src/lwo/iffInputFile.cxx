@@ -66,7 +66,7 @@ open_read(Filename filename) {
   set_input(in, true);
   set_filename(filename);
 
-  return false;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
