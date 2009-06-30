@@ -655,6 +655,13 @@ make_polyset(INode *max_node, Mesh *mesh,
             n3d = n3d * vertex_frame;
             vert.set_normal(n3d);
 
+            // Get the vertex color
+            if(mesh->vcFace) { // if has vcFace, has used vertex color
+              VertColor vertexColor = get_max_vertex_color(mesh, iFace, iVertex);
+              Colorf pVC(vertexColor.x, vertexColor.y, vertexColor.z, 1);
+              vert.set_color(pVC);
+            }
+
             // Get the UVs for this vertex
             for (int iChan=0; iChan<pmat._map_channels.size(); iChan++) {
                 int channel = pmat._map_channels[iChan];
@@ -718,7 +725,18 @@ UVVert MaxToEggConverter::get_max_vertex_texcoord(Mesh *mesh, int faceNo, int ve
     }
     return uvVert;
 }
-    
+
+VertColor MaxToEggConverter::get_max_vertex_color(Mesh *mesh, int FaceNo, int VertexNo) {
+  VertColor vc(0,0,0);
+  // We get the color from vcFace
+  TVFace& _vcface = mesh->vcFace[FaceNo];
+  // Get its index into the vertCol array
+  int VertexColorIndex = _vcface.t[VertexNo];
+  // Get its color
+  vc = mesh->vertCol[VertexColorIndex];
+  return vc;
+}
+
 Point3 MaxToEggConverter::get_max_vertex_normal(Mesh *mesh, int faceNo, int vertNo)
 {
     Face f = mesh->faces[faceNo];

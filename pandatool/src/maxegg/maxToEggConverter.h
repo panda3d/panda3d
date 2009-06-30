@@ -86,6 +86,7 @@ class MaxToEggConverter {
                       Shader *default_shader = NULL);
 
     Point3 get_max_vertex_normal(Mesh *mesh, int faceNo, int vertNo);
+    VertColor get_max_vertex_color(Mesh *mesh, int FaceNo, int VertexNo);
     UVVert get_max_vertex_texcoord(Mesh *mesh, int faceNo, int vertNo, int channel);
     
     void get_vertex_weights(INode *max_node, EggVertexPool *vpool);
