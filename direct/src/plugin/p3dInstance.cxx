@@ -113,16 +113,9 @@ set_fparams(const P3DFileParams &fparams) {
   // Maybe create the splash window.
   if (!_instance_window_opened && _got_wparams) {
     if (_splash_window == NULL) {
-      _splash_window = new SplashWindowType(this);
-      //      _splash_window->set_image_filename("c:/Documents and Settings/drose/Desktop/pandalogo.jpg");
+      make_splash_window();
     }
   }
-
-  /*
-  string splash_image_url = _fparams.lookup_token("splash_img");
-  if (!splash_image_url.is_empty()) {
-  }
-  */
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -140,8 +133,7 @@ set_wparams(const P3DWindowParams &wparams) {
   // Update or create the splash window.
   if (!_instance_window_opened && _got_fparams) {
     if (_splash_window == NULL) {
-      _splash_window = new SplashWindowType(this);
-      //      _splash_window->set_image_filename("c:/Documents and Settings/drose/Desktop/pandalogo.jpg");
+      make_splash_window();
     } else {
       _splash_window->set_wparams(_wparams);
     }
@@ -428,6 +420,48 @@ make_xml() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::make_splash_window
+//       Access: Private
+//  Description: Creates the splash window to be displayed at startup.
+//               This method is called as soon as we have received
+//               both _fparams and _wparams.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+make_splash_window() {
+  assert(_splash_window == NULL);
+
+  _splash_window = new SplashWindowType(this);
+
+  string splash_image_url = _fparams.lookup_token("splash_img");
+  if (!_fparams.has_token("splash_img")) {
+    // No specific splash image is specified; get the default splash
+    // image.
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    splash_image_url = inst_mgr->get_download_url();
+    splash_image_url += "coreapi/splash.jpg";
+  }
+
+  if (splash_image_url.empty()) {
+    // No splash image.  Never mind.
+    return;
+  }
+
+  // Make a temporary file to receive the splash image.
+  char *name = tempnam(NULL, "p3d_");
+  string filename = name;
+  free(name);
+
+  nout << "Downloading splash image into " << filename << "\n";
+
+  // Start downloading the requested splash image.
+  SplashDownload *download = new SplashDownload(this);
+  download->set_url(splash_image_url);
+  download->set_filename(filename);
+
+  start_download(download);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::install_progress
 //       Access: Private
 //  Description: Notified as the _panda3d package is downloaded.
@@ -437,5 +471,36 @@ install_progress(P3DPackage *package, double progress) {
   if (_splash_window != NULL) {
     _splash_window->set_install_label("Installing Panda3D");
     _splash_window->set_install_progress(progress);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::SplashDownload::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DInstance::SplashDownload::
+SplashDownload(P3DInstance *inst) :
+  _inst(inst)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::SplashDownload::download_finished
+//       Access: Protected, Virtual
+//  Description: Intended to be overloaded to generate a callback
+//               when the download finishes, either successfully or
+//               otherwise.  The bool parameter is true if the
+//               download was successful.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::SplashDownload::
+download_finished(bool success) {
+  P3DFileDownload::download_finished(success);
+  if (success) {
+    // We've successfully downloaded the splash image.  Put it
+    // onscreen if our splash window still exists.
+    if (_inst->_splash_window != NULL) {
+      _inst->_splash_window->set_image_filename(get_filename(), true);
+    }
   }
 }

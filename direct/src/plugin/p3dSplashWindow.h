@@ -42,9 +42,17 @@ public:
   virtual void set_wparams(const P3DWindowParams &wparams);
   inline const P3DWindowParams &get_wparams() const;
 
-  virtual void set_image_filename(const string &image_filename);
+  virtual void set_image_filename(const string &image_filename,
+                                  bool image_filename_temp);
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress);
+
+  void setup_splash_image();
+
+protected:
+  bool read_image(const string &image_filename, bool image_filename_temp,
+                  int &height, int &width, int &num_channels, int &row_stride,
+                  string &data);
 
 protected:
   P3DInstance *_inst;

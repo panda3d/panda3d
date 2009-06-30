@@ -74,6 +74,18 @@ public:
   TiXmlElement *make_xml();
 
 private:
+  class SplashDownload : public P3DFileDownload {
+  public:
+    SplashDownload(P3DInstance *inst);
+
+  protected:
+    virtual void download_finished(bool success);
+
+  private:
+    P3DInstance *_inst;
+  };
+
+  void make_splash_window();
   void install_progress(P3DPackage *package, double progress);
 
   P3D_request_ready_func *_func;
@@ -105,6 +117,7 @@ private:
   static int _next_instance_id;
 
   friend class P3DSession;
+  friend class SplashDownload;
 };
 
 #include "p3dInstance.I"

@@ -14,6 +14,31 @@
 
 #include "p3dSplashWindow.h"
 
+
+// Stuff to use libjpeg.
+extern "C" {
+#include <jpeglib.h>
+#include <jerror.h>
+}
+
+#include <setjmp.h>
+
+struct my_error_mgr {
+  struct jpeg_error_mgr pub;
+  jmp_buf setjmp_buffer;
+};
+
+typedef struct my_error_mgr *my_error_ptr;
+
+METHODDEF(void) my_error_exit (j_common_ptr cinfo) {
+  // cinfo->err really points to a my_error_mgr struct, so coerce pointer
+  my_error_ptr myerr = (my_error_ptr) cinfo->err;
+  // Return control to the setjmp point
+  longjmp(myerr->setjmp_buffer, 1);
+}
+
+
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::Constructor
 //       Access: Public
@@ -54,10 +79,16 @@ set_wparams(const P3DWindowParams &wparams) {
 //     Function: P3DSplashWindow::set_image_filename
 //       Access: Public, Virtual
 //  Description: Specifies the name of a JPEG image file that is
-//               displayed in the center of the splash window.
+//               displayed in the center of the splash window.  If
+//               image_filename_temp is true, the file is immediately
+//               deleted after it has been read.
 ////////////////////////////////////////////////////////////////////
 void P3DSplashWindow::
-set_image_filename(const string &image_filename) {
+set_image_filename(const string &image_filename,
+                   bool image_filename_temp) {
+  if (image_filename_temp) {
+    unlink(image_filename.c_str());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,3 +110,107 @@ void P3DSplashWindow::
 set_install_progress(double install_progress) {
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::read_image
+//       Access: Protected
+//  Description: Reads the image filename and sets image parameters
+//               height, width, num_channels, row_stride, and data.
+//               Returns true on success, false on failure.  If
+//               image_filename_temp is true, the file will be deleted
+//               after reading.
+////////////////////////////////////////////////////////////////////
+bool P3DSplashWindow::
+read_image(const string &image_filename, bool image_filename_temp,
+           int &height, int &width, int &num_channels, int &row_stride,
+           string &data) {
+  height = 0;
+  width = 0;
+  num_channels = 0;
+  row_stride = 0;
+  data.clear();
+
+  // We currently only support JPEG images.  Maybe that's all we'll
+  // ever support.
+  FILE *fp = fopen(image_filename.c_str(), "rb");
+  if (fp == NULL) {
+    nout << "Couldn't open splash file image: " << image_filename << "\n"
+         << flush;
+    if (image_filename_temp) {
+      unlink(image_filename.c_str());
+    }
+    return false;
+  }
+
+  // We set up the normal JPEG error routines, then override error_exit.
+  struct jpeg_decompress_struct cinfo;
+
+  struct my_error_mgr jerr;
+  cinfo.err = jpeg_std_error(&jerr.pub);
+  jerr.pub.error_exit = my_error_exit;
+
+  JSAMPLE *buffer = NULL;
+  
+  // Establish the setjmp return context for my_error_exit to use
+  if (setjmp(jerr.setjmp_buffer)) {
+    // If we get here, the JPEG code has signaled an error.
+    nout << "JPEG error decoding " << image_filename << "\n"
+         << flush;
+
+    // We need to clean up the JPEG object, close the input file, and return.
+    jpeg_destroy_decompress(&cinfo);
+    fclose(fp);
+
+    if (buffer != NULL) {
+      delete[] buffer;
+    }
+
+    if (image_filename_temp) {
+      unlink(image_filename.c_str());
+    }
+    return false;
+  }
+
+  /* Now we can initialize the JPEG decompression object. */
+  jpeg_create_decompress(&cinfo);
+  jpeg_stdio_src(&cinfo, fp);
+
+  jpeg_read_header(&cinfo, true);
+
+  cinfo.scale_num = 1;
+  cinfo.scale_denom = 1;
+
+  jpeg_start_decompress(&cinfo);
+
+  width = cinfo.output_width;
+  height = cinfo.output_height;
+  num_channels = cinfo.output_components;
+
+  row_stride = width * num_channels;
+
+  // We'll pad row_stride out to word alignment.  Windows requires this.
+  row_stride = 4 * ((row_stride + 3) / 4);
+
+  size_t buffer_size = height * row_stride;
+  buffer = new JSAMPLE[buffer_size];
+  JSAMPLE *buffer_end = buffer + buffer_size;
+
+  JSAMPLE *rowptr = buffer;
+  while (cinfo.output_scanline < cinfo.output_height) {
+    assert(rowptr + row_stride <= buffer_end);
+    jpeg_read_scanlines(&cinfo, &rowptr, 1);
+    rowptr += row_stride;
+  }
+
+  jpeg_finish_decompress(&cinfo);
+
+  fclose(fp);
+  if (image_filename_temp) {
+    unlink(image_filename.c_str());
+  }
+
+  data.append((const char *)buffer, buffer_size);
+  delete[] buffer;
+
+  return true;
+}

@@ -77,7 +77,7 @@ receive_data(const unsigned char *this_data, size_t this_data_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DDownload::download_finished
+//     Function: P3DFileDownload::download_finished
 //       Access: Protected, Virtual
 //  Description: Intended to be overloaded to generate a callback
 //               when the download finishes, either successfully or

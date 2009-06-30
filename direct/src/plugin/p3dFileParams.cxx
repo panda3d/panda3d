@@ -77,6 +77,24 @@ lookup_token(const string &keyword) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::has_token
+//       Access: Public
+//  Description: Returns true if the named token appears in the list,
+//               false otherwise.
+////////////////////////////////////////////////////////////////////
+bool P3DFileParams::
+has_token(const string &keyword) const {
+  Tokens::const_iterator ti;
+  for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {
+    if ((*ti)._keyword == keyword) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DFileParams::make_xml
 //       Access: Public
 //  Description: Returns a newly-allocated XML structure that

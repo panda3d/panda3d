@@ -16,31 +16,6 @@
 
 #ifdef _WIN32
 
-
-// Stuff to use libjpeg.
-extern "C" {
-#include <jpeglib.h>
-#include <jerror.h>
-}
-
-#include <setjmp.h>
-
-struct my_error_mgr {
-  struct jpeg_error_mgr pub;
-  jmp_buf setjmp_buffer;
-};
-
-typedef struct my_error_mgr *my_error_ptr;
-
-METHODDEF(void) my_error_exit (j_common_ptr cinfo) {
-  // cinfo->err really points to a my_error_mgr struct, so coerce pointer
-  my_error_ptr myerr = (my_error_ptr) cinfo->err;
-  // Return control to the setjmp point
-  longjmp(myerr->setjmp_buffer, 1);
-}
-
-
-
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DWinSplashWindow::Constructor
 //       Access: Public
@@ -59,6 +34,7 @@ P3DWinSplashWindow(P3DInstance *inst) :
   _thread_running = false;
   _got_install = false;
   _image_filename_changed = false;
+  _image_filename_temp = false;
   _install_label_changed = false;
   _install_progress = 0.0;
 
@@ -82,14 +58,17 @@ P3DWinSplashWindow::
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DWinSplashWindow::set_image_filename
 //       Access: Public, Virtual
-//  Description: Specifies the name of a JPEG image file that is
-//               displayed in the center of the splash window.
+//               displayed in the center of the splash window.  If
+//               image_filename_temp is true, the file is immediately
+//               deleted after it has been read.
 ////////////////////////////////////////////////////////////////////
 void P3DWinSplashWindow::
-set_image_filename(const string &image_filename) {
+set_image_filename(const string &image_filename,
+                   bool image_filename_temp) {
   ACQUIRE_LOCK(_install_lock);
   if (_image_filename != image_filename) {
     _image_filename = image_filename;
+    _image_filename_temp = image_filename_temp;
     _image_filename_changed = true;
   }
   RELEASE_LOCK(_install_lock);
@@ -209,7 +188,7 @@ thread_run() {
       ACQUIRE_LOCK(_install_lock);
       double install_progress = _install_progress;
       if (_image_filename_changed) {
-        update_image_filename(_image_filename);
+        update_image_filename(_image_filename, _image_filename_temp);
       }
       _image_filename_changed = false;
       if (_install_label_changed && _progress_bar != NULL) {
@@ -439,7 +418,7 @@ update_install_label(const string &install_label) {
 //               sub-thread.
 ////////////////////////////////////////////////////////////////////
 void P3DWinSplashWindow::
-update_image_filename(const string &image_filename) {
+update_image_filename(const string &image_filename, bool image_filename_temp) {
   // Clear the old image.
   if (_bitmap != NULL) {
     DeleteObject(_bitmap);
@@ -450,62 +429,14 @@ update_image_filename(const string &image_filename) {
   // window.
   InvalidateRect(_hwnd, NULL, TRUE);
 
-  FILE *fp = fopen(image_filename.c_str(), "rb");
-  if (fp == NULL) {
-    nout << "Couldn't open splash file image: " << image_filename << "\n"
-         << flush;
+  // Go read the image.
+  string data;
+  int num_channels, row_stride;
+  if (!read_image(image_filename, image_filename_temp, 
+                  _bitmap_height, _bitmap_width, num_channels, row_stride,
+                  data)) {
     return;
   }
-
-  // We set up the normal JPEG error routines, then override error_exit.
-  struct jpeg_decompress_struct cinfo;
-
-  struct my_error_mgr jerr;
-  cinfo.err = jpeg_std_error(&jerr.pub);
-  jerr.pub.error_exit = my_error_exit;
-  
-  // Establish the setjmp return context for my_error_exit to use
-  if (setjmp(jerr.setjmp_buffer)) {
-    // If we get here, the JPEG code has signaled an error.
-    nout << "JPEG error decoding " << image_filename << "\n"
-         << flush;
-
-    // We need to clean up the JPEG object, close the input file, and return.
-    jpeg_destroy_decompress(&cinfo);
-    fclose(fp);
-    return;
-  }
-
-  /* Now we can initialize the JPEG decompression object. */
-  jpeg_create_decompress(&cinfo);
-  jpeg_stdio_src(&cinfo, fp);
-
-  jpeg_read_header(&cinfo, true);
-
-  cinfo.scale_num = 1;
-  cinfo.scale_denom = 1;
-
-  jpeg_start_decompress(&cinfo);
-
-  _bitmap_width = cinfo.output_width;
-  _bitmap_height = cinfo.output_height;
-
-  int row_stride = _bitmap_width * cinfo.output_components;
-  // We have to pad row_stride out to DWORD alignment.
-  row_stride = 4 * ((row_stride + 3) / 4);
-
-  size_t buffer_size = _bitmap_height * row_stride;
-  JSAMPLE *buffer = new JSAMPLE[buffer_size];
-  JSAMPLE *buffer_end = buffer + buffer_size;
-
-  JSAMPLE *rowptr = buffer;
-  while (cinfo.output_scanline < cinfo.output_height) {
-    assert(rowptr + row_stride <= buffer_end);
-    jpeg_read_scanlines(&cinfo, &rowptr, 1);
-    rowptr += row_stride;
-  }
-
-  jpeg_finish_decompress(&cinfo);
 
   // Now load the image.
   BITMAPINFOHEADER bmih;
@@ -513,7 +444,7 @@ update_image_filename(const string &image_filename) {
   bmih.biWidth = _bitmap_width;
   bmih.biHeight = -_bitmap_height;
   bmih.biPlanes = 1;
-  bmih.biBitCount = 8 * cinfo.output_components;
+  bmih.biBitCount = 8 * num_channels;
   bmih.biCompression = BI_RGB;
   bmih.biSizeImage = 0;
   bmih.biXPelsPerMeter = 0;
@@ -525,7 +456,7 @@ update_image_filename(const string &image_filename) {
   memcpy(&bmi, &bmih, sizeof(bmih));
 
   HDC dc = GetDC(_hwnd);
-  _bitmap = CreateDIBitmap(dc, &bmih, CBM_INIT, buffer, &bmi, 0);
+  _bitmap = CreateDIBitmap(dc, &bmih, CBM_INIT, data.data(), &bmi, 0);
   ReleaseDC(_hwnd, dc);
 
   nout << "Loaded splash file image: " << image_filename << "\n"

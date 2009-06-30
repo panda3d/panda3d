@@ -22,7 +22,6 @@
 
 #include <algorithm>
 #include <fstream>
-//#include <fcntl.h>
 
 // The relative breakdown of the full install process.  Each phase is
 // worth this fraction of the total movement of the progress bar.
