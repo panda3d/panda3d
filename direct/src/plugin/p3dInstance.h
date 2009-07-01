@@ -19,10 +19,10 @@
 #include "p3dFileDownload.h"
 #include "p3dFileParams.h"
 #include "p3dWindowParams.h"
+#include "get_tinyxml.h"
 
 #include <deque>
 #include <map>
-#include <tinyxml.h>
 
 class P3DSession;
 class P3DSplashWindow;

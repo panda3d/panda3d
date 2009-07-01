@@ -28,9 +28,9 @@
 #include "genericAsyncTask.h"
 #include "pmap.h"
 #include "pdeque.h"
+#include "get_tinyxml.h"
 
 #include <Python.h>
-#include <tinyxml.h>
 
 // Python 2.5 adds Py_ssize_t; earlier versions don't have it.
 #if PY_VERSION_HEX < 0x02050000 && !defined(PY_SSIZE_T_MIN)
@@ -88,7 +88,8 @@ private:
   void terminate_session();
 
 private:
-  void append_xml_value(TiXmlElement *xelement, PyObject *value);
+  TiXmlElement *make_xml_value(PyObject *value);
+  PyObject *from_xml_value(TiXmlElement *xvalue);
 
 private:
   // This method runs only within the read thread.

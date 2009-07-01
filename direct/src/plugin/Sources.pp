@@ -13,6 +13,7 @@
   #define SOURCES \
     fileSpec.cxx fileSpec.h fileSpec.I \
     find_root_dir.cxx find_root_dir.h \
+    get_tinyxml.h \
     handleStream.cxx handleStream.h handleStream.I \
     handleStreamBuf.cxx handleStreamBuf.h \
     mkdir_complete.cxx mkdir_complete.h \

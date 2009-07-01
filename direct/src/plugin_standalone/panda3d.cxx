@@ -255,6 +255,68 @@ run(int argc, char *argv[]) {
   return 0;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::feed_file
+//       Access: Private
+//  Description: Opens the named file (extracted from a file:// URL)
+//               and feeds its contents to the plugin.
+////////////////////////////////////////////////////////////////////
+void Panda3D::
+feed_file(P3D_instance *inst, int unique_id, string filename) {
+#ifdef _WIN32 
+  // On Windows, we have to munge the filename specially, because it's
+  // been URL-munged.  It might begin with a leading slash as well as
+  // a drive letter.  Clean up that nonsense.
+  if (!filename.empty()) {
+    if (filename[0] == '/' || filename[0] == '\\') {
+      Filename fname = Filename::from_os_specific(filename.substr(1));
+      if (fname.is_local()) {
+        // Put the slash back on.
+        fname = string("/") + fname.get_fullpath();
+      }
+      filename = fname.to_os_specific();
+    }
+  }
+#endif  // _WIN32
+
+  ifstream file(filename.c_str(), ios::in || ios::binary);
+
+  // First, seek to the end to get the file size.
+  file.seekg(0, ios::end);
+  size_t file_size = file.tellg();
+
+  // Then return to the beginning to read the data.
+  file.seekg(0, ios::beg);
+
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+
+  file.read(buffer, buffer_size);
+  size_t count = file.gcount();
+  size_t total_count = 0;
+  while (count != 0) {
+    bool download_ok = P3D_instance_feed_url_stream
+      (inst, unique_id, P3D_RC_in_progress,
+       0, file_size, (const unsigned char *)buffer, count);
+
+    if (!download_ok) {
+      // Never mind.
+      return;
+    }
+    file.read(buffer, buffer_size);
+    count = file.gcount();
+    total_count += count;
+  }
+  
+  P3D_result_code result = P3D_RC_done;
+  if (file.fail() && !file.eof()) {
+    // Got an error while reading.
+    result = P3D_RC_generic_error;
+  }
+
+  P3D_instance_feed_url_stream
+    (inst, unique_id, result, 0, total_count, NULL, 0);
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::run_getters
@@ -305,10 +367,20 @@ handle_request(P3D_request *request) {
     cerr << "Got P3D_RT_get_url: " << request->_request._get_url._url
          << "\n";
     {
-      URLGetter *getter = new URLGetter
-        (request->_instance, request->_request._get_url._unique_id,
-         URLSpec(request->_request._get_url._url), "");
-      _url_getters.insert(getter);
+      int unique_id = request->_request._get_url._unique_id;
+      const string &url = request->_request._get_url._url;
+      if (url.substr(0, 7) == "file://") {
+        // A special case: if the url begins with "file://", just open
+        // the named file and feed it directly to the plugin.
+        feed_file(request->_instance, unique_id, url.substr(7));
+
+      } else {
+        // Otherwise, assume it's a legitimate URL and pass it down to
+        // Panda's HTTPClient to read it.
+        URLGetter *getter = new URLGetter
+          (request->_instance, unique_id, URLSpec(url), "");
+        _url_getters.insert(getter);
+      }
       handled = true;
     }
     break;
@@ -317,10 +389,12 @@ handle_request(P3D_request *request) {
     cerr << "Got P3D_RT_post_url: " << request->_request._post_url._url 
          << "\n";
     {
+      int unique_id = request->_request._post_url._unique_id;
+      const string &url = request->_request._post_url._url;
+      string post_data(request->_request._post_url._post_data, 
+                       request->_request._post_url._post_data_size);
       URLGetter *getter = new URLGetter
-        (request->_instance, request->_request._post_url._unique_id,
-         URLSpec(request->_request._post_url._url), 
-         string(request->_request._post_url._post_data, request->_request._post_url._post_data_size));
+        (request->_instance, unique_id, URLSpec(url), post_data);
       _url_getters.insert(getter);
       handled = true;
     }

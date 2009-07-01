@@ -16,8 +16,7 @@
 #define P3DWINDOWPARAMS_H
 
 #include "p3d_plugin_common.h"
-
-#include <tinyxml.h>
+#include "get_tinyxml.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DWindowParams

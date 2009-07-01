@@ -19,10 +19,9 @@
 
 #include "p3d_plugin.h"
 #include "pvector.h"
+#include "get_tinyxml.h"
 
 #include <Python.h>
-#define TIXML_USE_STL
-#include <tinyxml.h>
 
 class P3DSession;
 

@@ -18,7 +18,7 @@
 #include "p3d_plugin_common.h"
 #include "p3dFileDownload.h"
 #include "fileSpec.h"
-#include <tinyxml.h>
+#include "get_tinyxml.h"
 
 class P3DInstance;
 

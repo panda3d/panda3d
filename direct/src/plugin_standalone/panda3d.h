@@ -41,6 +41,7 @@ public:
   int run(int argc, char *argv[]);
 
 private:
+  void feed_file(P3D_instance *inst, int unique_id, string filename);
   void run_getters();
   void handle_request(P3D_request *request);
   void make_parent_window(P3D_window_handle &parent_window, 

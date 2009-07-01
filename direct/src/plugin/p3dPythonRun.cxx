@@ -202,24 +202,35 @@ handle_command(TiXmlDocument *doc) {
         }
 
       } else if (strcmp(cmd, "terminate_instance") == 0) {
-        int id;
-        if (xcommand->Attribute("instance_id", &id)) {
-          terminate_instance(id);
+        int instance_id;
+        if (xcommand->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
+          terminate_instance(instance_id);
         }
 
       } else if (strcmp(cmd, "setup_window") == 0) {
-        int id;
+        int instance_id;
         TiXmlElement *xwparams = xcommand->FirstChildElement("wparams");
         if (xwparams != (TiXmlElement *)NULL && 
-            xcommand->Attribute("instance_id", &id)) {
-          setup_window(id, xwparams);
+            xcommand->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
+          setup_window(instance_id, xwparams);
         }
 
       } else if (strcmp(cmd, "exit") == 0) {
         terminate_session();
 
       } else if (strcmp(cmd, "feed_value") == 0) {
-        
+        int instance_id, unique_id;
+        TiXmlElement *xvalue = xcommand->FirstChildElement("value");
+        if (xvalue != (TiXmlElement *)NULL &&
+            xcommand->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS &&
+            xcommand->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
+          // TODO: deal with instance_id.
+          PyObject *value = from_xml_value(xvalue);
+          PyObject *result = PyObject_CallMethod
+            (_runner, (char*)"feedValue", (char*)"iO", unique_id, value);
+          Py_DECREF(value);
+          Py_XDECREF(result);
+        }
         
       } else {
         nout << "Unhandled command " << cmd << "\n";
@@ -330,7 +341,7 @@ py_request_func(PyObject *args) {
     }
 
     xrequest->SetAttribute("property_name", property_name);
-    append_xml_value(xrequest, value);
+    xrequest->LinkEndChild(make_xml_value(value));
     nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
@@ -345,7 +356,7 @@ py_request_func(PyObject *args) {
 
     xrequest->SetAttribute("property_name", property_name);
     xrequest->SetAttribute("unique_id", unique_id);
-    append_xml_value(xrequest, params);
+    xrequest->LinkEndChild(make_xml_value(params));
     nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
@@ -597,14 +608,14 @@ terminate_session() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::append_xml_value
+//     Function: P3DPythonRun::make_xml_value
 //       Access: Private
 //  Description: Converts the indicated PyObject to the appropriate
-//               XML representation of a P3D_value type, and appends
-//               it to the child list of the indicated element.
+//               XML representation of a P3D_value type, and returns a
+//               freshly-allocated TiXmlElement.
 ////////////////////////////////////////////////////////////////////
-void P3DPythonRun::
-append_xml_value(TiXmlElement *xelement, PyObject *value) {
+TiXmlElement *P3DPythonRun::
+make_xml_value(PyObject *value) {
   TiXmlElement *xvalue = new TiXmlElement("value");
   if (value == Py_None) {
     // None.
@@ -671,7 +682,7 @@ append_xml_value(TiXmlElement *xelement, PyObject *value) {
     Py_ssize_t length = PySequence_Length(value);
     for (Py_ssize_t i = 0; i < length; ++i) {
       PyObject *obj = PySequence_GetItem(value, i);
-      append_xml_value(xvalue, obj);
+      xvalue->LinkEndChild(make_xml_value(obj));
     }
 
   } else {
@@ -690,7 +701,62 @@ append_xml_value(TiXmlElement *xelement, PyObject *value) {
     }
   }
 
-  xelement->LinkEndChild(xvalue);
+  return xvalue;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::from_xml_value
+//       Access: Private
+//  Description: Converts the XML representation of a P3D_value type
+//               into the equivalent Python object and returns it.
+////////////////////////////////////////////////////////////////////
+PyObject *P3DPythonRun::
+from_xml_value(TiXmlElement *xvalue) {
+  const char *type = xvalue->Attribute("type");
+  if (strcmp(type, "none") == 0) {
+    return Py_BuildValue("");
+
+  } else if (strcmp(type, "bool") == 0) {
+    int value;
+    if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
+      return PyBool_FromLong(value);
+    }
+
+  } else if (strcmp(type, "int") == 0) {
+    int value;
+    if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
+      return PyInt_FromLong(value);
+    }
+
+  } else if (strcmp(type, "float") == 0) {
+    double value;
+    if (xvalue->QueryDoubleAttribute("value", &value) == TIXML_SUCCESS) {
+      return PyFloat_FromDouble(value);
+    }
+
+  } else if (strcmp(type, "string") == 0) {
+    // Using the string form here instead of the char * form, so we
+    // don't get tripped up on embedded null characters.
+    const string *value = xvalue->Attribute(string("value"));
+    if (value != NULL) {
+      return PyString_FromStringAndSize(value->data(), value->length());
+    }
+
+  } else if (strcmp(type, "list") == 0) {
+    PyObject *list = PyList_New(0);
+
+    TiXmlElement *xchild = xvalue->FirstChildElement("value");
+    while (xchild != NULL) {
+      PyObject *child = from_xml_value(xchild);
+      PyList_Append(list, child);
+      Py_DECREF(child);
+      xchild = xchild->NextSiblingElement("value");
+    }
+    return list;
+  }
+
+  // Something went wrong in decoding.
+  return Py_BuildValue("");
 }
 
 ////////////////////////////////////////////////////////////////////

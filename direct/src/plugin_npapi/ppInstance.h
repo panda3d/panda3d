@@ -17,9 +17,9 @@
 
 #include "nppanda3d_common.h"
 #include "fileSpec.h"
+#include "get_tinyxml.h"
 
 #include <vector>
-#include <tinyxml.h>
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PPInstance

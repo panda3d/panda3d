@@ -18,10 +18,10 @@
 #include "p3d_plugin_common.h"
 #include "handleStream.h"
 #include "p3dPackage.h"
+#include "get_tinyxml.h"
 
 #include <map>
 #include <vector>
-#include <tinyxml.h>
 
 class P3DInstance;
 class P3DProgressWindow;

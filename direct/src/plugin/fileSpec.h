@@ -15,7 +15,7 @@
 #ifndef FILESPEC_H
 #define FILESPEC_H
 
-#include <tinyxml.h>
+#include "get_tinyxml.h"
 #include <string>
 using namespace std;
 
