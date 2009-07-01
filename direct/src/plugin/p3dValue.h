@@ -1,4 +1,4 @@
-// Filename: p3dVariant.h
+// Filename: p3dValue.h
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,28 +12,28 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DVARIANT_H
-#define P3DVARIANT_H
+#ifndef P3DVALUE_H
+#define P3DVALUE_H
 
 #include "p3d_plugin_common.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DVariant
-// Description : The C++ implementation of P3D_variant, corresponding
+//       Class : P3DValue
+// Description : The C++ implementation of P3D_value, corresponding
 //               to a single atomic value that is passed around
 //               between scripting languages.  This is an abstract
 //               base class; the actual implementations are provided
 //               by the various specialized classes, below.
 ////////////////////////////////////////////////////////////////////
-class P3DVariant : public P3D_variant {
+class P3DValue : public P3D_value {
 protected:
-  inline P3DVariant(P3D_variant_type type);
-  inline P3DVariant(const P3DVariant &copy);
+  inline P3DValue(P3D_value_type type);
+  inline P3DValue(const P3DValue &copy);
 
 public:
-  virtual ~P3DVariant();
+  virtual ~P3DValue();
 
-  virtual P3DVariant *make_copy()=0; 
+  virtual P3DValue *make_copy()=0; 
   virtual bool get_bool() const=0;
   virtual int get_int() const;
   virtual double get_float() const;
@@ -43,17 +43,17 @@ public:
   virtual void make_string(string &value) const=0;
 
   virtual int get_list_length() const;
-  virtual P3DVariant *get_list_item(int n) const;
+  virtual P3DValue *get_list_item(int n) const;
 
   virtual TiXmlElement *make_xml() const=0;
 
   virtual void output(ostream &out) const;
 };
 
-#include "p3dVariant.I"
+#include "p3dValue.I"
 
-inline ostream &operator << (ostream &out, const P3DVariant &variant) {
-  variant.output(out);
+inline ostream &operator << (ostream &out, const P3DValue &value) {
+  value.output(out);
   return out;
 }
 

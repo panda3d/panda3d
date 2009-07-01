@@ -1,4 +1,4 @@
-// Filename: p3dListVariant.cxx
+// Filename: p3dListValue.cxx
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,28 +12,28 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dListVariant.h"
+#include "p3dListValue.h"
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListVariant::Default Constructor
+//     Function: P3DListValue::Default Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DListVariant::
-P3DListVariant() : P3DVariant(P3D_VT_list) { 
+P3DListValue::
+P3DListValue() : P3DValue(P3D_VT_list) { 
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListVariant::Constructor
+//     Function: P3DListValue::Constructor
 //       Access: Public
 //  Description: Note that the ownership of the elements in the array
 //               (but not the array itself) is transferred to the
 //               list.
 ////////////////////////////////////////////////////////////////////
-P3DListVariant::
-P3DListVariant(P3DVariant * const elements[], int num_elements) :
-  P3DVariant(P3D_VT_list)
+P3DListValue::
+P3DListValue(P3DValue * const elements[], int num_elements) :
+  P3DValue(P3D_VT_list)
 {
   _elements.reserve(num_elements);
   for (int i = 0; i < num_elements; ++i) {
@@ -42,13 +42,13 @@ P3DListVariant(P3DVariant * const elements[], int num_elements) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListVariant::Copy Constructor
+//     Function: P3DListValue::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DListVariant::
-P3DListVariant(const P3DListVariant &copy) :
-  P3DVariant(copy)
+P3DListValue::
+P3DListValue(const P3DListValue &copy) :
+  P3DValue(copy)
 {
   _elements.reserve(copy._elements.size());
   Elements::const_iterator ei;
@@ -58,12 +58,12 @@ P3DListVariant(const P3DListVariant &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListVariant::Destructor
+//     Function: P3DListValue::Destructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DListVariant::
-~P3DListVariant() {
+P3DListValue::
+~P3DListValue() {
   Elements::iterator ei;
   for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
     delete (*ei);
@@ -71,33 +71,33 @@ P3DListVariant::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListVariant::make_copy
+//     Function: P3DListValue::make_copy
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DVariant *P3DListVariant::
+P3DValue *P3DListValue::
 make_copy() {
-  return new P3DListVariant(*this);
+  return new P3DListValue(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListVariant::get_bool
+//     Function: P3DListValue::get_bool
 //       Access: Public, Virtual
-//  Description: Returns the variant value coerced to a boolean, if
+//  Description: Returns the value value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DListVariant::
+bool P3DListValue::
 get_bool() const {
   return !_elements.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListVariant::make_string
+//     Function: P3DListValue::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DListVariant::
+void P3DListValue::
 make_string(string &value) const {
   ostringstream strm;
   strm << "[";
@@ -113,23 +113,23 @@ make_string(string &value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListVariant::get_list_length
+//     Function: P3DListValue::get_list_length
 //       Access: Public, Virtual
-//  Description: Returns the length of the variant value as a list.
+//  Description: Returns the length of the value value as a list.
 ////////////////////////////////////////////////////////////////////
-int P3DListVariant::
+int P3DListValue::
 get_list_length() const {
   return _elements.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListVariant::get_list_item
+//     Function: P3DListValue::get_list_item
 //       Access: Public, Virtual
-//  Description: Returns the nth item in the variant as a list.  The
-//               return value is a freshly-allocated P3DVariant object
+//  Description: Returns the nth item in the value as a list.  The
+//               return value is a freshly-allocated P3DValue object
 //               that must be deleted by the caller, or NULL on error.
 ////////////////////////////////////////////////////////////////////
-P3DVariant *P3DListVariant::
+P3DValue *P3DListValue::
 get_list_item(int n) const {
   if (n >= 0 && n < (int)_elements.size()) {
     return _elements[n]->make_copy();
@@ -139,31 +139,31 @@ get_list_item(int n) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListVariant::append_item
+//     Function: P3DListValue::append_item
 //       Access: Public, Virtual
 //  Description: Appends a new item to the end of the list.  Ownership
 //               of the item is transferred to the list.
 ////////////////////////////////////////////////////////////////////
-void P3DListVariant::
-append_item(P3DVariant *item) {
+void P3DListValue::
+append_item(P3DValue *item) {
   _elements.push_back(item);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListVariant::make_xml
+//     Function: P3DListValue::make_xml
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new XML structure
-//               corresponding to this variant.
+//               corresponding to this value.
 ////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DListVariant::
+TiXmlElement *P3DListValue::
 make_xml() const {
-  TiXmlElement *xvariant = new TiXmlElement("variant");
-  xvariant->SetAttribute("type", "list");
+  TiXmlElement *xvalue = new TiXmlElement("value");
+  xvalue->SetAttribute("type", "list");
   Elements::const_iterator ei;
   for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
     TiXmlElement *xchild = (*ei)->make_xml();
-    xvariant->LinkEndChild(xchild);
+    xvalue->LinkEndChild(xchild);
   }
 
-  return xvariant;
+  return xvalue;
 }

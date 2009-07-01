@@ -1,4 +1,4 @@
-// Filename: p3dVariant.cxx
+// Filename: p3dValue.cxx
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,49 +12,49 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dVariant.h"
+#include "p3dValue.h"
 #include <string.h>  // memcpy
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DVariant::Destructor
+//     Function: P3DValue::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DVariant::
-~P3DVariant() {
+P3DValue::
+~P3DValue() {
   _type = P3D_VT_none;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DVariant::get_int
+//     Function: P3DValue::get_int
 //       Access: Public, Virtual
-//  Description: Returns the variant value coerced to an integer, if
+//  Description: Returns the value value coerced to an integer, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-int P3DVariant::
+int P3DValue::
 get_int() const {
   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DVariant::get_float
+//     Function: P3DValue::get_float
 //       Access: Public, Virtual
-//  Description: Returns the variant value coerced to a floating-point
+//  Description: Returns the value value coerced to a floating-point
 //               value, if possible.
 ////////////////////////////////////////////////////////////////////
-double P3DVariant::
+double P3DValue::
 get_float() const {
   return get_int();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DVariant::get_string_length
+//     Function: P3DValue::get_string_length
 //       Access: Public, Virtual
 //  Description: Returns the length of the string that represents the
-//               variant value, not counting any null termination
+//               value value, not counting any null termination
 //               characters.
 ////////////////////////////////////////////////////////////////////
-int P3DVariant::
+int P3DValue::
 get_string_length() const {
   string result;
   make_string(result);
@@ -62,16 +62,16 @@ get_string_length() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DVariant::extract_string
+//     Function: P3DValue::extract_string
 //       Access: Public, Virtual
-//  Description: Stores a string that represents the variant value in
+//  Description: Stores a string that represents the value value in
 //               the indicated buffer; a null character is included if
 //               there is space.  Returns the number of characters
 //               needed in the output (which might be more than the
 //               actual number of characters stored if buffer_length
 //               was too small).
 ////////////////////////////////////////////////////////////////////
-int P3DVariant::
+int P3DValue::
 extract_string(char *buffer, int buffer_length) const {
   string result;
   make_string(result);
@@ -80,35 +80,35 @@ extract_string(char *buffer, int buffer_length) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DVariant::get_list_length
+//     Function: P3DValue::get_list_length
 //       Access: Public, Virtual
-//  Description: Returns the length of the variant value as a list.
+//  Description: Returns the length of the value value as a list.
 ////////////////////////////////////////////////////////////////////
-int P3DVariant::
+int P3DValue::
 get_list_length() const {
   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DVariant::get_list_item
+//     Function: P3DValue::get_list_item
 //       Access: Public, Virtual
-//  Description: Returns the nth item in the variant as a list.  The
-//               return value is a freshly-allocated P3DVariant object
+//  Description: Returns the nth item in the value as a list.  The
+//               return value is a freshly-allocated P3DValue object
 //               that must be deleted by the caller, or NULL on error.
 ////////////////////////////////////////////////////////////////////
-P3DVariant *P3DVariant::
+P3DValue *P3DValue::
 get_list_item(int n) const {
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DVariant::output
+//     Function: P3DValue::output
 //       Access: Public, Virtual
 //  Description: Writes a formatted representation of the value to the
 //               indicated string.  This is intended for developer
 //               assistance.
 ////////////////////////////////////////////////////////////////////
-void P3DVariant::
+void P3DValue::
 output(ostream &out) const {
   string value;
   make_string(value);

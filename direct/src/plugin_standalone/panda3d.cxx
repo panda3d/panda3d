@@ -340,7 +340,7 @@ handle_request(P3D_request *request) {
         _properties.find(request->_request._get_property._property_name);
       if (pi != _properties.end()) {
         // The named property has been set.
-        P3D_variant *dup_value = P3D_variant_copy((*pi).second);
+        P3D_value *dup_value = P3D_value_copy((*pi).second);
         P3D_instance_feed_value(request->_instance, 
                                 request->_request._get_property._unique_id,
                                 dup_value);
@@ -360,9 +360,9 @@ handle_request(P3D_request *request) {
     {
       // Also output the new value.
       int buffer_size = 
-        P3D_variant_get_string_length(request->_request._set_property._value);
+        P3D_value_get_string_length(request->_request._set_property._value);
       char *buffer = (char *)alloca(buffer_size);
-      P3D_variant_extract_string(request->_request._set_property._value, buffer, buffer_size);
+      P3D_value_extract_string(request->_request._set_property._value, buffer, buffer_size);
       cerr.write(buffer, buffer_size);
       cerr << "\n";
 
@@ -370,10 +370,10 @@ handle_request(P3D_request *request) {
         _properties.insert(Properties::value_type(request->_request._set_property._property_name, NULL)).first;
       if ((*pi).second != NULL) {
         // Delete the original property.
-        P3D_variant_finish((*pi).second);
+        P3D_value_finish((*pi).second);
       }
       (*pi).second =
-        P3D_variant_copy(request->_request._set_property._value);
+        P3D_value_copy(request->_request._set_property._value);
       handled = true;
     }
     break;
@@ -384,9 +384,9 @@ handle_request(P3D_request *request) {
     {
       // Also output the parameter list.
       int buffer_size = 
-        P3D_variant_get_string_length(request->_request._call._params);
+        P3D_value_get_string_length(request->_request._call._params);
       char *buffer = (char *)alloca(buffer_size);
-      P3D_variant_extract_string(request->_request._call._params, buffer, buffer_size);
+      P3D_value_extract_string(request->_request._call._params, buffer, buffer_size);
       cerr.write(buffer, buffer_size);
       cerr << "\n";
 

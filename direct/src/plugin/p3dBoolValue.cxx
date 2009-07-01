@@ -1,4 +1,4 @@
-// Filename: p3dIntVariant.cxx
+// Filename: p3dBoolValue.cxx
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,88 +12,89 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dIntVariant.h"
+#include "p3dBoolValue.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntVariant::Constructor
+//     Function: P3DBoolValue::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DIntVariant::
-P3DIntVariant(int value) : 
-  P3DVariant(P3D_VT_int),
+P3DBoolValue::
+P3DBoolValue(bool value) : 
+  P3DValue(P3D_VT_bool),
   _value(value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntVariant::Copy Constructor
+//     Function: P3DBoolValue::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DIntVariant::
-P3DIntVariant(const P3DIntVariant &copy) :
-  P3DVariant(copy),
+P3DBoolValue::
+P3DBoolValue(const P3DBoolValue &copy) :
+  P3DValue(copy),
   _value(copy._value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntVariant::make_copy
+//     Function: P3DBoolValue::make_copy
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DVariant *P3DIntVariant::
+P3DValue *P3DBoolValue::
 make_copy() {
-  return new P3DIntVariant(*this);
+  return new P3DBoolValue(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntVariant::get_bool
+//     Function: P3DBoolValue::get_bool
 //       Access: Public, Virtual
-//  Description: Returns the variant value coerced to a boolean, if
+//  Description: Returns the value value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DIntVariant::
+bool P3DBoolValue::
 get_bool() const {
-  return (_value != 0);
+  return _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntVariant::get_int
+//     Function: P3DBoolValue::get_int
 //       Access: Public, Virtual
-//  Description: Returns the variant value coerced to an integer, if
+//  Description: Returns the value value coerced to an integer, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-int P3DIntVariant::
+int P3DBoolValue::
 get_int() const {
   return _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntVariant::make_string
+//     Function: P3DBoolValue::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DIntVariant::
+void P3DBoolValue::
 make_string(string &value) const {
-  ostringstream strm;
-  strm << _value;
-  value = strm.str();
+  if (_value) {
+    value = "True";
+  } else {
+    value = "False";
+  }
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntVariant::make_xml
+//     Function: P3DBoolValue::make_xml
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new XML structure
-//               corresponding to this variant.
+//               corresponding to this value.
 ////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DIntVariant::
+TiXmlElement *P3DBoolValue::
 make_xml() const {
-  TiXmlElement *xvariant = new TiXmlElement("variant");
-  xvariant->SetAttribute("type", "int");
-  xvariant->SetAttribute("value", _value);
-  return xvariant;
+  TiXmlElement *xvalue = new TiXmlElement("value");
+  xvalue->SetAttribute("type", "bool");
+  xvalue->SetAttribute("value", (int)_value);
+  return xvalue;
 }

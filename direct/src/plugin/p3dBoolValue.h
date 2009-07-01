@@ -1,4 +1,4 @@
-// Filename: p3dVariant.I
+// Filename: p3dBoolValue.h
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,23 +12,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef P3DBOOLVALUE_H
+#define P3DBOOLVALUE_H
+
+#include "p3d_plugin_common.h"
+#include "p3dValue.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DVariant::Constructor
-//       Access: Public
-//  Description: 
+//       Class : P3DBoolValue
+// Description : A value type that contains a boolean value.
 ////////////////////////////////////////////////////////////////////
-inline P3DVariant::
-P3DVariant(P3D_variant_type type) {
-  _type = type;
-}
+class P3DBoolValue : public P3DValue {
+public:
+  P3DBoolValue(bool value);
+  P3DBoolValue(const P3DBoolValue &copy);
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DVariant::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-inline P3DVariant::
-P3DVariant(const P3DVariant &copy) {
-  _type = copy._type;
-}
+public:
+  virtual P3DValue *make_copy(); 
+  virtual bool get_bool() const;
+  virtual int get_int() const;
+  virtual void make_string(string &value) const;
+
+  virtual TiXmlElement *make_xml() const;
+
+private:
+  bool _value;
+};
+
+#endif
+

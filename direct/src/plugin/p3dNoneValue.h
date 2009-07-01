@@ -1,4 +1,4 @@
-// Filename: p3dNoneVariant.h
+// Filename: p3dNoneValue.h
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,23 +12,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DNONEVARIANT_H
-#define P3DNONEVARIANT_H
+#ifndef P3DNONEVALUE_H
+#define P3DNONEVALUE_H
 
 #include "p3d_plugin_common.h"
-#include "p3dVariant.h"
+#include "p3dValue.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DNoneVariant
-// Description : A variant type that contains no value, similar to
+//       Class : P3DNoneValue
+// Description : A value type that contains no value, similar to
 //               Python's None type.
 ////////////////////////////////////////////////////////////////////
-class P3DNoneVariant : public P3DVariant {
+class P3DNoneValue : public P3DValue {
 public:
-  P3DNoneVariant();
+  P3DNoneValue();
 
 public:
-  virtual P3DVariant *make_copy();
+  virtual P3DValue *make_copy();
   virtual bool get_bool() const;
   virtual void make_string(string &value) const;
 

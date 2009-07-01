@@ -37,21 +37,21 @@ P3D_instance_start_func *P3D_instance_start;
 P3D_instance_finish_func *P3D_instance_finish;
 P3D_instance_setup_window_func *P3D_instance_setup_window;
 
-P3D_variant_finish_func *P3D_variant_finish;
-P3D_variant_copy_func *P3D_variant_copy;
-P3D_new_none_variant_func *P3D_new_none_variant;
-P3D_new_bool_variant_func *P3D_new_bool_variant;
-P3D_variant_get_bool_func *P3D_variant_get_bool;
-P3D_new_int_variant_func *P3D_new_int_variant;
-P3D_variant_get_int_func *P3D_variant_get_int;
-P3D_new_float_variant_func *P3D_new_float_variant;
-P3D_variant_get_float_func *P3D_variant_get_float;
-P3D_new_string_variant_func *P3D_new_string_variant;
-P3D_variant_get_string_length_func *P3D_variant_get_string_length;
-P3D_variant_extract_string_func *P3D_variant_extract_string;
-P3D_new_list_variant_func *P3D_new_list_variant;
-P3D_variant_get_list_length_func *P3D_variant_get_list_length;
-P3D_variant_get_list_item_func *P3D_variant_get_list_item;
+P3D_value_finish_func *P3D_value_finish;
+P3D_value_copy_func *P3D_value_copy;
+P3D_new_none_value_func *P3D_new_none_value;
+P3D_new_bool_value_func *P3D_new_bool_value;
+P3D_value_get_bool_func *P3D_value_get_bool;
+P3D_new_int_value_func *P3D_new_int_value;
+P3D_value_get_int_func *P3D_value_get_int;
+P3D_new_float_value_func *P3D_new_float_value;
+P3D_value_get_float_func *P3D_value_get_float;
+P3D_new_string_value_func *P3D_new_string_value;
+P3D_value_get_string_length_func *P3D_value_get_string_length;
+P3D_value_extract_string_func *P3D_value_extract_string;
+P3D_new_list_value_func *P3D_new_list_value;
+P3D_value_get_list_length_func *P3D_value_get_list_length;
+P3D_value_get_list_item_func *P3D_value_get_list_item;
 P3D_instance_get_property_func *P3D_instance_get_property;
 P3D_instance_get_property_list_func *P3D_instance_get_property_list;
 P3D_instance_set_property_func *P3D_instance_set_property;
@@ -185,21 +185,21 @@ load_plugin(const string &p3d_plugin_filename) {
   P3D_instance_finish = (P3D_instance_finish_func *)get_func(module, "P3D_instance_finish");  
   P3D_instance_setup_window = (P3D_instance_setup_window_func *)get_func(module, "P3D_instance_setup_window");  
 
-  P3D_variant_finish = (P3D_variant_finish_func *)get_func(module, "P3D_variant_finish");
-  P3D_variant_copy = (P3D_variant_copy_func *)get_func(module, "P3D_variant_copy");
-  P3D_new_none_variant = (P3D_new_none_variant_func *)get_func(module, "P3D_new_none_variant");
-  P3D_new_bool_variant = (P3D_new_bool_variant_func *)get_func(module, "P3D_new_bool_variant");
-  P3D_variant_get_bool = (P3D_variant_get_bool_func *)get_func(module, "P3D_variant_get_bool");
-  P3D_new_int_variant = (P3D_new_int_variant_func *)get_func(module, "P3D_new_int_variant");
-  P3D_variant_get_int = (P3D_variant_get_int_func *)get_func(module, "P3D_variant_get_int");
-  P3D_new_float_variant = (P3D_new_float_variant_func *)get_func(module, "P3D_new_float_variant");
-  P3D_variant_get_float = (P3D_variant_get_float_func *)get_func(module, "P3D_variant_get_float");
-  P3D_new_string_variant = (P3D_new_string_variant_func *)get_func(module, "P3D_new_string_variant");
-  P3D_variant_get_string_length = (P3D_variant_get_string_length_func *)get_func(module, "P3D_variant_get_string_length");
-  P3D_variant_extract_string = (P3D_variant_extract_string_func *)get_func(module, "P3D_variant_extract_string");
-  P3D_new_list_variant = (P3D_new_list_variant_func *)get_func(module, "P3D_new_list_variant");
-  P3D_variant_get_list_length = (P3D_variant_get_list_length_func *)get_func(module, "P3D_variant_get_list_length");
-  P3D_variant_get_list_item = (P3D_variant_get_list_item_func *)get_func(module, "P3D_variant_get_list_item");
+  P3D_value_finish = (P3D_value_finish_func *)get_func(module, "P3D_value_finish");
+  P3D_value_copy = (P3D_value_copy_func *)get_func(module, "P3D_value_copy");
+  P3D_new_none_value = (P3D_new_none_value_func *)get_func(module, "P3D_new_none_value");
+  P3D_new_bool_value = (P3D_new_bool_value_func *)get_func(module, "P3D_new_bool_value");
+  P3D_value_get_bool = (P3D_value_get_bool_func *)get_func(module, "P3D_value_get_bool");
+  P3D_new_int_value = (P3D_new_int_value_func *)get_func(module, "P3D_new_int_value");
+  P3D_value_get_int = (P3D_value_get_int_func *)get_func(module, "P3D_value_get_int");
+  P3D_new_float_value = (P3D_new_float_value_func *)get_func(module, "P3D_new_float_value");
+  P3D_value_get_float = (P3D_value_get_float_func *)get_func(module, "P3D_value_get_float");
+  P3D_new_string_value = (P3D_new_string_value_func *)get_func(module, "P3D_new_string_value");
+  P3D_value_get_string_length = (P3D_value_get_string_length_func *)get_func(module, "P3D_value_get_string_length");
+  P3D_value_extract_string = (P3D_value_extract_string_func *)get_func(module, "P3D_value_extract_string");
+  P3D_new_list_value = (P3D_new_list_value_func *)get_func(module, "P3D_new_list_value");
+  P3D_value_get_list_length = (P3D_value_get_list_length_func *)get_func(module, "P3D_value_get_list_length");
+  P3D_value_get_list_item = (P3D_value_get_list_item_func *)get_func(module, "P3D_value_get_list_item");
   P3D_instance_get_property = (P3D_instance_get_property_func *)get_func(module, "P3D_instance_get_property");
   P3D_instance_get_property_list = (P3D_instance_get_property_list_func *)get_func(module, "P3D_instance_get_property_list");
   P3D_instance_set_property = (P3D_instance_set_property_func *)get_func(module, "P3D_instance_set_property");
@@ -220,21 +220,21 @@ load_plugin(const string &p3d_plugin_filename) {
       P3D_instance_finish == NULL ||
       P3D_instance_setup_window == NULL ||
 
-      P3D_variant_finish == NULL ||
-      P3D_variant_copy == NULL ||
-      P3D_new_none_variant == NULL ||
-      P3D_new_bool_variant == NULL ||
-      P3D_variant_get_bool == NULL ||
-      P3D_new_int_variant == NULL ||
-      P3D_variant_get_int == NULL ||
-      P3D_new_float_variant == NULL ||
-      P3D_variant_get_float == NULL ||
-      P3D_new_string_variant == NULL ||
-      P3D_variant_get_string_length == NULL ||
-      P3D_variant_extract_string == NULL ||
-      P3D_new_list_variant == NULL ||
-      P3D_variant_get_list_length == NULL ||
-      P3D_variant_get_list_item == NULL ||
+      P3D_value_finish == NULL ||
+      P3D_value_copy == NULL ||
+      P3D_new_none_value == NULL ||
+      P3D_new_bool_value == NULL ||
+      P3D_value_get_bool == NULL ||
+      P3D_new_int_value == NULL ||
+      P3D_value_get_int == NULL ||
+      P3D_new_float_value == NULL ||
+      P3D_value_get_float == NULL ||
+      P3D_new_string_value == NULL ||
+      P3D_value_get_string_length == NULL ||
+      P3D_value_extract_string == NULL ||
+      P3D_new_list_value == NULL ||
+      P3D_value_get_list_length == NULL ||
+      P3D_value_get_list_item == NULL ||
       P3D_instance_get_property == NULL ||
       P3D_instance_get_property_list == NULL ||
       P3D_instance_set_property == NULL ||
@@ -289,21 +289,21 @@ unload_plugin() {
   P3D_instance_finish = NULL;
   P3D_instance_setup_window = NULL;
 
-  P3D_variant_finish = NULL;
-  P3D_variant_copy = NULL;
-  P3D_new_none_variant = NULL;
-  P3D_new_bool_variant = NULL;
-  P3D_variant_get_bool = NULL;
-  P3D_new_int_variant = NULL;
-  P3D_variant_get_int = NULL;
-  P3D_new_float_variant = NULL;
-  P3D_variant_get_float = NULL;
-  P3D_new_string_variant = NULL;
-  P3D_variant_get_string_length = NULL;
-  P3D_variant_extract_string = NULL;
-  P3D_new_list_variant = NULL;
-  P3D_variant_get_list_length = NULL;
-  P3D_variant_get_list_item = NULL;
+  P3D_value_finish = NULL;
+  P3D_value_copy = NULL;
+  P3D_new_none_value = NULL;
+  P3D_new_bool_value = NULL;
+  P3D_value_get_bool = NULL;
+  P3D_new_int_value = NULL;
+  P3D_value_get_int = NULL;
+  P3D_new_float_value = NULL;
+  P3D_value_get_float = NULL;
+  P3D_new_string_value = NULL;
+  P3D_value_get_string_length = NULL;
+  P3D_value_extract_string = NULL;
+  P3D_new_list_value = NULL;
+  P3D_value_get_list_length = NULL;
+  P3D_value_get_list_item = NULL;
   P3D_instance_get_property = NULL;
   P3D_instance_get_property_list = NULL;
   P3D_instance_set_property = NULL;

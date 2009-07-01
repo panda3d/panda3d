@@ -28,7 +28,7 @@ class P3DSession;
 class P3DSplashWindow;
 class P3DDownload;
 class P3DPackage;
-class P3DVariant;
+class P3DValue;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DInstance
@@ -46,11 +46,11 @@ public:
   void set_wparams(const P3DWindowParams &wparams);
   inline const P3DWindowParams &get_wparams() const;
 
-  P3DVariant *get_property(const string &property_name) const;
-  P3DVariant *get_property_list(const string &property_name) const;
+  P3DValue *get_property(const string &property_name) const;
+  P3DValue *get_property_list(const string &property_name) const;
   bool set_property(const string &property_name, 
-                    const P3DVariant *value);
-  P3DVariant *call(const string &property_name, const P3DVariant *params);
+                    const P3DValue *value);
+  P3DValue *call(const string &property_name, const P3DValue *params);
 
   bool has_request();
   P3D_request *get_request();
@@ -63,7 +63,7 @@ public:
                        size_t total_expected_data,
                        const unsigned char *this_data, 
                        size_t this_data_size);
-  void feed_value(int unique_id, P3DVariant *value);
+  void feed_value(int unique_id, P3DValue *value);
 
   inline int get_instance_id() const;
   inline const string &get_session_key() const;

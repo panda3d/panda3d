@@ -264,7 +264,7 @@ P3D_instance_setup_window_func(P3D_instance *instance,
    plugin via JavaScript or related interfaces on the browser. */
 
 /* This enumeration indicates which fundamental type is represented by
-   a particular P3D_variant object, below. */
+   a particular P3D_value object, below. */
 typedef enum {
   P3D_VT_none,
   P3D_VT_bool,
@@ -272,76 +272,76 @@ typedef enum {
   P3D_VT_float,
   P3D_VT_string,
   P3D_VT_list
-} P3D_variant_type;
+} P3D_value_type;
 
 /* This structure represents a concrete value of some arbitrary type.
    Instances of this structure may be assigned to property names, or
    passed into or returned from function calls. */
 typedef struct {
-  P3D_variant_type _type;
+  P3D_value_type _type;
 
   /* Additional opaque data may be stored here. */
-} P3D_variant;
+} P3D_value;
 
-/* Deallocates a P3D_variant previously allocated with one of the
+/* Deallocates a P3D_value previously allocated with one of the
    below calls, or returned from a function such as
-   P3D_variant_get_property().  After this has been called, the
-   variant's pointer must no longer be used. */
+   P3D_value_get_property().  After this has been called, the
+   value's pointer must no longer be used. */
 typedef void
-P3D_variant_finish_func(P3D_variant *variant);
+P3D_value_finish_func(P3D_value *value);
 
-/* Returns a duplicate copy of the indicated variant.  The return
-   value should be eventually passed to P3D_variant_finish(),
+/* Returns a duplicate copy of the indicated value.  The return
+   value should be eventually passed to P3D_value_finish(),
    above. */
-typedef P3D_variant *
-P3D_variant_copy_func(const P3D_variant *variant);
+typedef P3D_value *
+P3D_value_copy_func(const P3D_value *value);
 
-/* Allocates a new P3D_variant of type none.  This variant has no
+/* Allocates a new P3D_value of type none.  This value has no
    particular value and corresponds to Python's None type or C's void
    type. */
-typedef P3D_variant *
-P3D_new_none_variant_func();
+typedef P3D_value *
+P3D_new_none_value_func();
 
-/* Allocates a new P3D_variant of type bool. */
-typedef P3D_variant *
-P3D_new_bool_variant_func(bool value);
+/* Allocates a new P3D_value of type bool. */
+typedef P3D_value *
+P3D_new_bool_value_func(bool value);
 
 /* Retrieves the boolean value associated with this type.  If the
-   variant's type is not P3D_VT_bool, this implicitly coerces the
+   value's type is not P3D_VT_bool, this implicitly coerces the
    value to a boolean value. */
 typedef bool
-P3D_variant_get_bool_func(const P3D_variant *variant);
+P3D_value_get_bool_func(const P3D_value *value);
 
-/* Allocates a new P3D_variant of type int. */
-typedef P3D_variant *
-P3D_new_int_variant_func(int value);
+/* Allocates a new P3D_value of type int. */
+typedef P3D_value *
+P3D_new_int_value_func(int value);
 
 /* Retrieves the integer value associated with this type.  If the
-   variant's type is not P3D_VT_int, this implicitly coerces the value
+   value's type is not P3D_VT_int, this implicitly coerces the value
    to an integer value. */
 typedef int
-P3D_variant_get_int_func(const P3D_variant *variant);
+P3D_value_get_int_func(const P3D_value *value);
 
-/* Allocates a new P3D_variant of type float. */
-typedef P3D_variant *
-P3D_new_float_variant_func(double value);
+/* Allocates a new P3D_value of type float. */
+typedef P3D_value *
+P3D_new_float_value_func(double value);
 
 /* Retrieves the floating-point value associated with this type.  If
-   the variant's type is not P3D_VT_float, this implicitly coerces the
+   the value's type is not P3D_VT_float, this implicitly coerces the
    value to a floating-point value. */
 typedef double
-P3D_variant_get_float_func(const P3D_variant *variant);
+P3D_value_get_float_func(const P3D_value *value);
 
-/* Allocates a new P3D_variant of type string. */
-typedef P3D_variant *
-P3D_new_string_variant_func(const char *value, int length);
+/* Allocates a new P3D_value of type string. */
+typedef P3D_value *
+P3D_new_string_value_func(const char *value, int length);
 
 /* Retrieves the length of the string value associated with this type.
    This is the number of bytes that must be allocated to hold the
-   results of P3D_variant_extract_string(), not including any
+   results of P3D_value_extract_string(), not including any
    terminating null byte. */
 typedef int
-P3D_variant_get_string_length_func(const P3D_variant *variant);
+P3D_value_get_string_length_func(const P3D_value *value);
 
 /* Stores the string value associated with this type in the indicated
    buffer, which has the specified length.  The return value is the
@@ -352,46 +352,46 @@ P3D_variant_get_string_length_func(const P3D_variant *variant);
    P3D_VT_string, this implicitly coerces the value to a string
    value. */
 typedef int
-P3D_variant_extract_string_func(const P3D_variant *variant, char *buffer, 
+P3D_value_extract_string_func(const P3D_value *value, char *buffer, 
                                 int buffer_length);
 
-/* Allocates a new P3D_variant of type list.  This is a list of an
-   arbitrary number of P3D_variant objects.  The indicated P3D_variant
+/* Allocates a new P3D_value of type list.  This is a list of an
+   arbitrary number of P3D_value objects.  The indicated P3D_value
    objects are stored directly within the list; ownership of the
    objects in this array (but not the array pointer itself) is passed
-   to the list.  The caller must no longer call P3D_variant_finish()
+   to the list.  The caller must no longer call P3D_value_finish()
    on any objects added to the list (but should still call
-   P3D_variant_finish() on the list itself). */
-typedef P3D_variant *
-P3D_new_list_variant_func(P3D_variant * const elements[], int num_elements);
+   P3D_value_finish() on the list itself). */
+typedef P3D_value *
+P3D_new_list_value_func(P3D_value * const elements[], int num_elements);
 
-/* Returns the number of items in the list, if the variant's type is
+/* Returns the number of items in the list, if the value's type is
    of P3D_VT_list. */
 typedef int
-P3D_variant_get_list_length_func(const P3D_variant *variant);
+P3D_value_get_list_length_func(const P3D_value *value);
 
 /* Returns the nth item in the list.  The caller inherits ownership of
-   this object, and should call P3D_variant_finish() on it. */
-typedef P3D_variant *
-P3D_variant_get_list_item_func(const P3D_variant *variant, int n);
+   this object, and should call P3D_value_finish() on it. */
+typedef P3D_value *
+P3D_value_get_list_item_func(const P3D_value *value, int n);
 
 /* Retrieves the named property from the instance, if any.  The
    property name may be a dot-delimited sequence to reference nested
    properties.  Returns NULL if the instance does not have the named
    property.  If not NULL, you should pass the return value to
-   P3D_variant_finish(). */
-typedef P3D_variant *
+   P3D_value_finish(). */
+typedef P3D_value *
 P3D_instance_get_property_func(const P3D_instance *instance, 
                                const char *property_name);
 
 /* Returns a list of properties on the instance below the named
    property.  The property name may be a dot-delimited sequence to
    reference nested properties.  Returns NULL if the instance does not
-   have the named property; otherwise, returns a list variant that
-   contains a list of string variants, one for each property stored on
+   have the named property; otherwise, returns a list value that
+   contains a list of string values, one for each property stored on
    the named property.  If not NULL, you should pass the return value
-   to P3D_variant_finish(). */
-typedef P3D_variant *
+   to P3D_value_finish(). */
+typedef P3D_value *
 P3D_instance_get_property_list_func(const P3D_instance *instance, 
                                     const char *property_name);
 
@@ -401,21 +401,21 @@ P3D_instance_get_property_list_func(const P3D_instance *instance,
    false on failure (for instance, because a parent property does not
    exist).  Pass NULL for the value to delete the last property.  The
    caller retains ownership of the value object, and should eventually
-   delete with P3D_variant_finish(). */
+   delete with P3D_value_finish(). */
 typedef bool
 P3D_instance_set_property_func(P3D_instance *instance, const char *property_name,
-                               const P3D_variant *value);
+                               const P3D_value *value);
 
 /* Calls the named property as a function.  The property name may be a
-   dot-delimited sequence.  The params variant is an object of type
+   dot-delimited sequence.  The params value is an object of type
    P3D_VT_list, which contains the list of parameters to the function.
    The caller retains ownership of the params object.  The return
-   value is NULL on error, or a newly-allocated variant on success; if
+   value is NULL on error, or a newly-allocated value on success; if
    not NULL, you should pass the return value to
-   P3D_variant_finish(). */
-typedef P3D_variant *
+   P3D_value_finish(). */
+typedef P3D_value *
 P3D_instance_call_func(P3D_instance *instance, const char *property_name,
-                       const P3D_variant *params);
+                       const P3D_value *params);
 
 /* Some scriptable properties on the host may be queried or modified
    via requests, below. */
@@ -518,12 +518,12 @@ typedef struct {
    P3D_request_finish()). */
 typedef struct {
   const char *_property_name;
-  const P3D_variant *_value;
+  const P3D_value *_value;
 } P3D_request_set_property;
 
 /* A request to call a function on a host object.  The property_name
    will be a dot-delimited string corresponding to a nested object, as
-   above.  The _params pointer will be a list variant, which contains
+   above.  The _params pointer will be a list value, which contains
    the parameter values to pass to the function.  The host does not
    receive ownership of the _params pointer and should not store it or
    delete it.  The host should respond to this request by calling
@@ -532,7 +532,7 @@ typedef struct {
    not a callable object. */
 typedef struct {
   const char *_property_name;
-  const P3D_variant *_params;
+  const P3D_value *_params;
   int _unique_id;
 } P3D_request_call;
 
@@ -652,14 +652,14 @@ P3D_instance_feed_url_stream_func(P3D_instance *instance, int unique_id,
 
 /* This function is called by the host in response to a get_property
    or call request.  The instance and unique_id parameters are from
-   the original request; the variant should be a freshly-allocated
-   P3D_variant that represents the requested property value or the
+   the original request; the value should be a freshly-allocated
+   P3D_value that represents the requested property value or the
    return value from the function call, or NULL on error.  Ownership
-   of the variant value is passed into the plugin; the host should
-   *not* call P3D_variant_finish() on this pointer. */
+   of the value value is passed into the plugin; the host should
+   *not* call P3D_value_finish() on this pointer. */
 typedef void
 P3D_instance_feed_value_func(P3D_instance *instance, int unique_id,
-                             P3D_variant *variant);
+                             P3D_value *value);
 
 
 #ifdef P3D_FUNCTION_PROTOTYPES
@@ -672,21 +672,21 @@ EXPCL_P3D_PLUGIN P3D_instance_start_func P3D_instance_start;
 EXPCL_P3D_PLUGIN P3D_instance_finish_func P3D_instance_finish;
 EXPCL_P3D_PLUGIN P3D_instance_setup_window_func P3D_instance_setup_window;
 
-EXPCL_P3D_PLUGIN P3D_variant_finish_func P3D_variant_finish;
-EXPCL_P3D_PLUGIN P3D_variant_copy_func P3D_variant_copy;
-EXPCL_P3D_PLUGIN P3D_new_none_variant_func P3D_new_none_variant;
-EXPCL_P3D_PLUGIN P3D_new_bool_variant_func P3D_new_bool_variant;
-EXPCL_P3D_PLUGIN P3D_variant_get_bool_func P3D_variant_get_bool;
-EXPCL_P3D_PLUGIN P3D_new_int_variant_func P3D_new_int_variant;
-EXPCL_P3D_PLUGIN P3D_variant_get_int_func P3D_variant_get_int;
-EXPCL_P3D_PLUGIN P3D_new_float_variant_func P3D_new_float_variant;
-EXPCL_P3D_PLUGIN P3D_variant_get_float_func P3D_variant_get_float;
-EXPCL_P3D_PLUGIN P3D_new_string_variant_func P3D_new_string_variant;
-EXPCL_P3D_PLUGIN P3D_variant_get_string_length_func P3D_variant_get_string_length;
-EXPCL_P3D_PLUGIN P3D_variant_extract_string_func P3D_variant_extract_string;
-EXPCL_P3D_PLUGIN P3D_new_list_variant_func P3D_new_list_variant;
-EXPCL_P3D_PLUGIN P3D_variant_get_list_length_func P3D_variant_get_list_length;
-EXPCL_P3D_PLUGIN P3D_variant_get_list_item_func P3D_variant_get_list_item;
+EXPCL_P3D_PLUGIN P3D_value_finish_func P3D_value_finish;
+EXPCL_P3D_PLUGIN P3D_value_copy_func P3D_value_copy;
+EXPCL_P3D_PLUGIN P3D_new_none_value_func P3D_new_none_value;
+EXPCL_P3D_PLUGIN P3D_new_bool_value_func P3D_new_bool_value;
+EXPCL_P3D_PLUGIN P3D_value_get_bool_func P3D_value_get_bool;
+EXPCL_P3D_PLUGIN P3D_new_int_value_func P3D_new_int_value;
+EXPCL_P3D_PLUGIN P3D_value_get_int_func P3D_value_get_int;
+EXPCL_P3D_PLUGIN P3D_new_float_value_func P3D_new_float_value;
+EXPCL_P3D_PLUGIN P3D_value_get_float_func P3D_value_get_float;
+EXPCL_P3D_PLUGIN P3D_new_string_value_func P3D_new_string_value;
+EXPCL_P3D_PLUGIN P3D_value_get_string_length_func P3D_value_get_string_length;
+EXPCL_P3D_PLUGIN P3D_value_extract_string_func P3D_value_extract_string;
+EXPCL_P3D_PLUGIN P3D_new_list_value_func P3D_new_list_value;
+EXPCL_P3D_PLUGIN P3D_value_get_list_length_func P3D_value_get_list_length;
+EXPCL_P3D_PLUGIN P3D_value_get_list_item_func P3D_value_get_list_item;
 EXPCL_P3D_PLUGIN P3D_instance_get_property_func P3D_instance_get_property;
 EXPCL_P3D_PLUGIN P3D_instance_get_property_list_func P3D_instance_get_property_list;
 EXPCL_P3D_PLUGIN P3D_instance_set_property_func P3D_instance_set_property;

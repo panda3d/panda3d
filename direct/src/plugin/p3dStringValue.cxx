@@ -1,4 +1,4 @@
-// Filename: p3dStringVariant.cxx
+// Filename: p3dStringValue.cxx
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,95 +12,95 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dStringVariant.h"
+#include "p3dStringValue.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringVariant::Constructor
+//     Function: P3DStringValue::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DStringVariant::
-P3DStringVariant(const string &value) : 
-  P3DVariant(P3D_VT_string),
+P3DStringValue::
+P3DStringValue(const string &value) : 
+  P3DValue(P3D_VT_string),
   _value(value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringVariant::Copy Constructor
+//     Function: P3DStringValue::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DStringVariant::
-P3DStringVariant(const P3DStringVariant &copy) :
-  P3DVariant(copy),
+P3DStringValue::
+P3DStringValue(const P3DStringValue &copy) :
+  P3DValue(copy),
   _value(copy._value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringVariant::Destructor
+//     Function: P3DStringValue::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DStringVariant::
-~P3DStringVariant() {
+P3DStringValue::
+~P3DStringValue() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringVariant::make_copy
+//     Function: P3DStringValue::make_copy
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DVariant *P3DStringVariant::
+P3DValue *P3DStringValue::
 make_copy() {
-  return new P3DStringVariant(*this);
+  return new P3DStringValue(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringVariant::get_bool
+//     Function: P3DStringValue::get_bool
 //       Access: Public, Virtual
-//  Description: Returns the variant value coerced to a boolean, if
+//  Description: Returns the value value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DStringVariant::
+bool P3DStringValue::
 get_bool() const {
   return !_value.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringVariant::make_string
+//     Function: P3DStringValue::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DStringVariant::
+void P3DStringValue::
 make_string(string &value) const {
   value = _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringVariant::make_xml
+//     Function: P3DStringValue::make_xml
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new XML structure
-//               corresponding to this variant.
+//               corresponding to this value.
 ////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DStringVariant::
+TiXmlElement *P3DStringValue::
 make_xml() const {
-  TiXmlElement *xvariant = new TiXmlElement("variant");
-  xvariant->SetAttribute("type", "string");
-  xvariant->SetAttribute("value", _value);
-  return xvariant;
+  TiXmlElement *xvalue = new TiXmlElement("value");
+  xvalue->SetAttribute("type", "string");
+  xvalue->SetAttribute("value", _value);
+  return xvalue;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringVariant::output
+//     Function: P3DStringValue::output
 //       Access: Public, Virtual
 //  Description: Writes a formatted representation of the value to the
 //               indicated string.  This is intended for developer
 //               assistance.
 ////////////////////////////////////////////////////////////////////
-void P3DStringVariant::
+void P3DStringValue::
 output(ostream &out) const {
   out << '"';
   for (string::const_iterator si = _value.begin(); si != _value.end(); ++si) {

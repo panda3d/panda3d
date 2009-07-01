@@ -1,4 +1,4 @@
-// Filename: p3dBoolVariant.cxx
+// Filename: p3dNoneValue.cxx
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,89 +12,58 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dBoolVariant.h"
+#include "p3dNoneValue.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DBoolVariant::Constructor
+//     Function: P3DNoneValue::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DBoolVariant::
-P3DBoolVariant(bool value) : 
-  P3DVariant(P3D_VT_bool),
-  _value(value)
-{
+P3DNoneValue::
+P3DNoneValue() : P3DValue(P3D_VT_none) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DBoolVariant::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-P3DBoolVariant::
-P3DBoolVariant(const P3DBoolVariant &copy) :
-  P3DVariant(copy),
-  _value(copy._value)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DBoolVariant::make_copy
+//     Function: P3DNoneValue::make_copy
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DVariant *P3DBoolVariant::
+P3DValue *P3DNoneValue::
 make_copy() {
-  return new P3DBoolVariant(*this);
+  return new P3DNoneValue(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DBoolVariant::get_bool
+//     Function: P3DNoneValue::get_bool
 //       Access: Public, Virtual
-//  Description: Returns the variant value coerced to a boolean, if
+//  Description: Returns the value value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DBoolVariant::
+bool P3DNoneValue::
 get_bool() const {
-  return _value;
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DBoolVariant::get_int
-//       Access: Public, Virtual
-//  Description: Returns the variant value coerced to an integer, if
-//               possible.
-////////////////////////////////////////////////////////////////////
-int P3DBoolVariant::
-get_int() const {
-  return _value;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DBoolVariant::make_string
+//     Function: P3DNoneValue::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DBoolVariant::
+void P3DNoneValue::
 make_string(string &value) const {
-  if (_value) {
-    value = "True";
-  } else {
-    value = "False";
-  }
+  value = "None";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DBoolVariant::make_xml
+//     Function: P3DNoneValue::make_xml
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new XML structure
-//               corresponding to this variant.
+//               corresponding to this value.
 ////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DBoolVariant::
+TiXmlElement *P3DNoneValue::
 make_xml() const {
-  TiXmlElement *xvariant = new TiXmlElement("variant");
-  xvariant->SetAttribute("type", "bool");
-  xvariant->SetAttribute("value", (int)_value);
-  return xvariant;
+  TiXmlElement *xvalue = new TiXmlElement("value");
+  xvalue->SetAttribute("type", "none");
+  return xvalue;
 }

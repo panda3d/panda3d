@@ -61,7 +61,7 @@ private:
   void rt_terminate();
   void rt_handle_request(TiXmlDocument *doc);
   P3D_request *rt_make_p3d_request(TiXmlElement *xrequest);
-  P3DVariant *rt_from_xml_variant(TiXmlElement *xvariant);
+  P3DValue *rt_from_xml_value(TiXmlElement *xvalue);
 
 #ifdef _WIN32
   static DWORD WINAPI win_rt_thread_run(LPVOID data);

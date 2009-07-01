@@ -462,24 +462,24 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
 
     } else if (strcmp(rtype, "set_property") == 0) {
       const char *property_name = xrequest->Attribute("property_name");
-      TiXmlElement *xvariant = xrequest->FirstChildElement("variant");
-      if (property_name != NULL && xvariant != NULL) {
+      TiXmlElement *xvalue = xrequest->FirstChildElement("value");
+      if (property_name != NULL && xvalue != NULL) {
         request = new P3D_request;
         request->_request_type = P3D_RT_set_property;
         request->_request._set_property._property_name = strdup(property_name);
-        request->_request._set_property._value = rt_from_xml_variant(xvariant);
+        request->_request._set_property._value = rt_from_xml_value(xvalue);
       }
 
     } else if (strcmp(rtype, "call") == 0) {
       const char *property_name = xrequest->Attribute("property_name");
-      TiXmlElement *xvariant = xrequest->FirstChildElement("variant");
+      TiXmlElement *xvalue = xrequest->FirstChildElement("value");
       int unique_id;
-      if (property_name != NULL && xvariant != NULL && 
+      if (property_name != NULL && xvalue != NULL && 
           xrequest->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
         request = new P3D_request;
         request->_request_type = P3D_RT_call;
         request->_request._call._property_name = strdup(property_name);
-        request->_request._call._params = rt_from_xml_variant(xvariant);
+        request->_request._call._params = rt_from_xml_value(xvalue);
         request->_request._call._unique_id = unique_id;
       }
 
@@ -492,57 +492,57 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::rt_from_xml_variant
+//     Function: P3DSession::rt_from_xml_value
 //       Access: Private
 //  Description: Converts the XML representation of the particular
-//               variant value into a corresponding P3DVariant object.
+//               value value into a corresponding P3DValue object.
 //               Returns the newly-allocated object.
 ////////////////////////////////////////////////////////////////////
-P3DVariant *P3DSession::
-rt_from_xml_variant(TiXmlElement *xvariant) {
-  const char *type = xvariant->Attribute("type");
+P3DValue *P3DSession::
+rt_from_xml_value(TiXmlElement *xvalue) {
+  const char *type = xvalue->Attribute("type");
   if (strcmp(type, "none") == 0) {
-    return new P3DNoneVariant;
+    return new P3DNoneValue;
 
   } else if (strcmp(type, "bool") == 0) {
     int value;
-    if (xvariant->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
-      return new P3DBoolVariant(value != 0);
+    if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
+      return new P3DBoolValue(value != 0);
     }
 
   } else if (strcmp(type, "int") == 0) {
     int value;
-    if (xvariant->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
-      return new P3DIntVariant(value);
+    if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
+      return new P3DIntValue(value);
     }
 
   } else if (strcmp(type, "float") == 0) {
     double value;
-    if (xvariant->QueryDoubleAttribute("value", &value) == TIXML_SUCCESS) {
-      return new P3DFloatVariant(value);
+    if (xvalue->QueryDoubleAttribute("value", &value) == TIXML_SUCCESS) {
+      return new P3DFloatValue(value);
     }
 
   } else if (strcmp(type, "string") == 0) {
     // Using the string form here instead of the char * form, so we
     // don't get tripped up on embedded null characters.
-    const string *value = xvariant->Attribute(string("value"));
+    const string *value = xvalue->Attribute(string("value"));
     if (value != NULL) {
-      return new P3DStringVariant(*value);
+      return new P3DStringValue(*value);
     }
 
   } else if (strcmp(type, "list") == 0) {
-    P3DListVariant *list = new P3DListVariant;
+    P3DListValue *list = new P3DListValue;
 
-    TiXmlElement *xchild = xvariant->FirstChildElement("variant");
+    TiXmlElement *xchild = xvalue->FirstChildElement("value");
     while (xchild != NULL) {
-      list->append_item(rt_from_xml_variant(xchild));
-      xchild = xchild->NextSiblingElement("variant");
+      list->append_item(rt_from_xml_value(xchild));
+      xchild = xchild->NextSiblingElement("value");
     }
     return list;
   }
 
   // Something went wrong in decoding.
-  return new P3DNoneVariant;
+  return new P3DNoneValue;
 }
 
 ////////////////////////////////////////////////////////////////////

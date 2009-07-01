@@ -1,4 +1,4 @@
-// Filename: p3dFloatVariant.h
+// Filename: p3dFloatValue.h
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,23 +12,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DFLOATVARIANT_H
-#define P3DFLOATVARIANT_H
+#ifndef P3DFLOATVALUE_H
+#define P3DFLOATVALUE_H
 
 #include "p3d_plugin_common.h"
-#include "p3dVariant.h"
+#include "p3dValue.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DFloatVariant
-// Description : A variant type that contains a floating-point value.
+//       Class : P3DFloatValue
+// Description : A value type that contains a floating-point value.
 ////////////////////////////////////////////////////////////////////
-class P3DFloatVariant : public P3DVariant {
+class P3DFloatValue : public P3DValue {
 public:
-  P3DFloatVariant(double value);
-  P3DFloatVariant(const P3DFloatVariant &copy);
+  P3DFloatValue(double value);
+  P3DFloatValue(const P3DFloatValue &copy);
 
 public:
-  virtual P3DVariant *make_copy(); 
+  virtual P3DValue *make_copy(); 
   virtual bool get_bool() const;
   virtual int get_int() const;
   virtual double get_float() const;

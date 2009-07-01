@@ -1,4 +1,4 @@
-// Filename: p3dIntVariant.h
+// Filename: p3dValue.I
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,32 +12,23 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DINTVARIANT_H
-#define P3DINTVARIANT_H
-
-#include "p3d_plugin_common.h"
-#include "p3dVariant.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DIntVariant
-// Description : A variant type that contains an integer value.
+//     Function: P3DValue::Constructor
+//       Access: Public
+//  Description: 
 ////////////////////////////////////////////////////////////////////
-class P3DIntVariant : public P3DVariant {
-public:
-  P3DIntVariant(int value);
-  P3DIntVariant(const P3DIntVariant &copy);
+inline P3DValue::
+P3DValue(P3D_value_type type) {
+  _type = type;
+}
 
-public:
-  virtual P3DVariant *make_copy(); 
-  virtual bool get_bool() const;
-  virtual int get_int() const;
-  virtual void make_string(string &value) const;
-
-  virtual TiXmlElement *make_xml() const;
-
-private:
-  int _value;
-};
-
-#endif
-
+////////////////////////////////////////////////////////////////////
+//     Function: P3DValue::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+inline P3DValue::
+P3DValue(const P3DValue &copy) {
+  _type = copy._type;
+}

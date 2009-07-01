@@ -330,7 +330,7 @@ py_request_func(PyObject *args) {
     }
 
     xrequest->SetAttribute("property_name", property_name);
-    append_xml_variant(xrequest, value);
+    append_xml_value(xrequest, value);
     nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
@@ -345,7 +345,7 @@ py_request_func(PyObject *args) {
 
     xrequest->SetAttribute("property_name", property_name);
     xrequest->SetAttribute("unique_id", unique_id);
-    append_xml_variant(xrequest, params);
+    append_xml_value(xrequest, params);
     nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
@@ -597,28 +597,28 @@ terminate_session() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::append_xml_variant
+//     Function: P3DPythonRun::append_xml_value
 //       Access: Private
 //  Description: Converts the indicated PyObject to the appropriate
-//               XML representation of a P3D_variant type, and appends
+//               XML representation of a P3D_value type, and appends
 //               it to the child list of the indicated element.
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
-append_xml_variant(TiXmlElement *xelement, PyObject *value) {
-  TiXmlElement *xvariant = new TiXmlElement("variant");
+append_xml_value(TiXmlElement *xelement, PyObject *value) {
+  TiXmlElement *xvalue = new TiXmlElement("value");
   if (value == Py_None) {
     // None.
-    xvariant->SetAttribute("type", "none");
+    xvalue->SetAttribute("type", "none");
 
   } else if (PyBool_Check(value)) {
     // A bool value.
-    xvariant->SetAttribute("type", "bool");
-    xvariant->SetAttribute("value", PyObject_IsTrue(value));
+    xvalue->SetAttribute("type", "bool");
+    xvalue->SetAttribute("value", PyObject_IsTrue(value));
 
   } else if (PyInt_Check(value)) {
     // A plain integer value.
-    xvariant->SetAttribute("type", "int");
-    xvariant->SetAttribute("value", PyInt_AsLong(value));
+    xvalue->SetAttribute("type", "int");
+    xvalue->SetAttribute("value", PyInt_AsLong(value));
 
   } else if (PyLong_Check(value)) {
     // A long integer value.  This gets converted either as an integer
@@ -627,70 +627,70 @@ append_xml_variant(TiXmlElement *xelement, PyObject *value) {
     if (PyErr_Occurred()) {
       // It won't fit as an integer; make it a double.
       PyErr_Clear();
-      xvariant->SetAttribute("type", "float");
-      xvariant->SetDoubleAttribute("value", PyLong_AsDouble(value));
+      xvalue->SetAttribute("type", "float");
+      xvalue->SetDoubleAttribute("value", PyLong_AsDouble(value));
     } else {
       // It fits as an integer.
-      xvariant->SetAttribute("type", "int");
-      xvariant->SetAttribute("value", lvalue);
+      xvalue->SetAttribute("type", "int");
+      xvalue->SetAttribute("value", lvalue);
     }
 
   } else if (PyFloat_Check(value)) {
     // A floating-point value.
-    xvariant->SetAttribute("type", "float");
-    xvariant->SetDoubleAttribute("value", PyFloat_AsDouble(value));
+    xvalue->SetAttribute("type", "float");
+    xvalue->SetDoubleAttribute("value", PyFloat_AsDouble(value));
 
   } else if (PyUnicode_Check(value)) {
     // A unicode value.  Convert to utf-8 for the XML encoding.
-    xvariant->SetAttribute("type", "string");
+    xvalue->SetAttribute("type", "string");
     PyObject *as_str = PyUnicode_AsUTF8String(value);
     if (as_str != NULL) {
       char *buffer;
       Py_ssize_t length;
       if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
         string str(buffer, length);
-        xvariant->SetAttribute("value", str);
+        xvalue->SetAttribute("value", str);
       }
       Py_DECREF(as_str);
     }
 
   } else if (PyString_Check(value)) {
     // A string value.
-    xvariant->SetAttribute("type", "string");
+    xvalue->SetAttribute("type", "string");
 
     char *buffer;
     Py_ssize_t length;
     if (PyString_AsStringAndSize(value, &buffer, &length) != -1) {
       string str(buffer, length);
-      xvariant->SetAttribute("value", str);
+      xvalue->SetAttribute("value", str);
     }
 
   } else if (PySequence_Check(value)) {
     // A sequence or list value.
-    xvariant->SetAttribute("type", "list");
+    xvalue->SetAttribute("type", "list");
     Py_ssize_t length = PySequence_Length(value);
     for (Py_ssize_t i = 0; i < length; ++i) {
       PyObject *obj = PySequence_GetItem(value, i);
-      append_xml_variant(xvariant, obj);
+      append_xml_value(xvalue, obj);
     }
 
   } else {
     // Some other kind of object.  Don't know what else to do with it;
     // we'll make it a string.
-    xvariant->SetAttribute("type", "string");
+    xvalue->SetAttribute("type", "string");
     PyObject *as_str = PyObject_Str(value);
     if (as_str != NULL) {
       char *buffer;
       Py_ssize_t length;
       if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
         string str(buffer, length);
-        xvariant->SetAttribute("value", str);
+        xvalue->SetAttribute("value", str);
       }
       Py_DECREF(as_str);
     }
   }
 
-  xelement->LinkEndChild(xvariant);
+  xelement->LinkEndChild(xvalue);
 }
 
 ////////////////////////////////////////////////////////////////////

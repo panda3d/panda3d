@@ -1,4 +1,4 @@
-// Filename: p3dFloatVariant.cxx
+// Filename: p3dFloatValue.cxx
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,82 +12,82 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dFloatVariant.h"
+#include "p3dFloatValue.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatVariant::Constructor
+//     Function: P3DFloatValue::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DFloatVariant::
-P3DFloatVariant(double value) : 
-  P3DVariant(P3D_VT_float),
+P3DFloatValue::
+P3DFloatValue(double value) : 
+  P3DValue(P3D_VT_float),
   _value(value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatVariant::Copy Constructor
+//     Function: P3DFloatValue::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DFloatVariant::
-P3DFloatVariant(const P3DFloatVariant &copy) :
-  P3DVariant(copy),
+P3DFloatValue::
+P3DFloatValue(const P3DFloatValue &copy) :
+  P3DValue(copy),
   _value(copy._value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatVariant::make_copy
+//     Function: P3DFloatValue::make_copy
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DVariant *P3DFloatVariant::
+P3DValue *P3DFloatValue::
 make_copy() {
-  return new P3DFloatVariant(*this);
+  return new P3DFloatValue(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatVariant::get_bool
+//     Function: P3DFloatValue::get_bool
 //       Access: Public, Virtual
-//  Description: Returns the variant value coerced to a boolean, if
+//  Description: Returns the value value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DFloatVariant::
+bool P3DFloatValue::
 get_bool() const {
   return (_value != 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatVariant::get_int
+//     Function: P3DFloatValue::get_int
 //       Access: Public, Virtual
-//  Description: Returns the variant value coerced to an integer, if
+//  Description: Returns the value value coerced to an integer, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-int P3DFloatVariant::
+int P3DFloatValue::
 get_int() const {
   return (int)_value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatVariant::get_float
+//     Function: P3DFloatValue::get_float
 //       Access: Public, Virtual
-//  Description: Returns the variant value coerced to a floating-point
+//  Description: Returns the value value coerced to a floating-point
 //               value, if possible.
 ////////////////////////////////////////////////////////////////////
-double P3DFloatVariant::
+double P3DFloatValue::
 get_float() const {
   return _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatVariant::make_string
+//     Function: P3DFloatValue::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DFloatVariant::
+void P3DFloatValue::
 make_string(string &value) const {
   ostringstream strm;
   strm << _value;
@@ -96,15 +96,15 @@ make_string(string &value) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatVariant::make_xml
+//     Function: P3DFloatValue::make_xml
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new XML structure
-//               corresponding to this variant.
+//               corresponding to this value.
 ////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DFloatVariant::
+TiXmlElement *P3DFloatValue::
 make_xml() const {
-  TiXmlElement *xvariant = new TiXmlElement("variant");
-  xvariant->SetAttribute("type", "float");
-  xvariant->SetDoubleAttribute("value", _value);
-  return xvariant;
+  TiXmlElement *xvalue = new TiXmlElement("value");
+  xvalue->SetAttribute("type", "float");
+  xvalue->SetDoubleAttribute("value", _value);
+  return xvalue;
 }

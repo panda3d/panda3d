@@ -1,4 +1,4 @@
-// Filename: p3dStringVariant.h
+// Filename: p3dStringValue.h
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,25 +12,25 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DSTRINGVARIANT_H
-#define P3DSTRINGVARIANT_H
+#ifndef P3DSTRINGVALUE_H
+#define P3DSTRINGVALUE_H
 
 #include "p3d_plugin_common.h"
-#include "p3dVariant.h"
+#include "p3dValue.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DStringVariant
-// Description : A variant type that contains a string value.
+//       Class : P3DStringValue
+// Description : A value type that contains a string value.
 ////////////////////////////////////////////////////////////////////
-class P3DStringVariant : public P3DVariant {
+class P3DStringValue : public P3DValue {
 public:
-  P3DStringVariant(const string &value);
-  P3DStringVariant(const P3DStringVariant &copy);
+  P3DStringValue(const string &value);
+  P3DStringValue(const P3DStringValue &copy);
 
 public:
-  virtual ~P3DStringVariant();
+  virtual ~P3DStringValue();
 
-  virtual P3DVariant *make_copy(); 
+  virtual P3DValue *make_copy(); 
   virtual bool get_bool() const;
   virtual void make_string(string &value) const;
 

@@ -19,8 +19,8 @@
 #include "p3dPackage.h"
 #include "p3dSplashWindow.h"
 #include "p3dWinSplashWindow.h"
-#include "p3dVariant.h"
-#include "p3dNoneVariant.h"
+#include "p3dValue.h"
+#include "p3dNoneValue.h"
 
 #include <sstream>
 #include <algorithm>
@@ -169,7 +169,7 @@ set_wparams(const P3DWindowParams &wparams) {
 //               Panda application, and the Javascript on the
 //               containing web page).
 ////////////////////////////////////////////////////////////////////
-P3DVariant *P3DInstance::
+P3DValue *P3DInstance::
 get_property(const string &property_name) const {
   return NULL;
 }
@@ -180,7 +180,7 @@ get_property(const string &property_name) const {
 //  Description: Returns a list of subordinate properties below the
 //               named property.
 ////////////////////////////////////////////////////////////////////
-P3DVariant *P3DInstance::
+P3DValue *P3DInstance::
 get_property_list(const string &property_name) const {
   return NULL;
 }
@@ -194,7 +194,7 @@ get_property_list(const string &property_name) const {
 //               false on failure.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstance::
-set_property(const string &property_name, const P3DVariant *value) {
+set_property(const string &property_name, const P3DValue *value) {
   return false;
 }
 
@@ -204,9 +204,9 @@ set_property(const string &property_name, const P3DVariant *value) {
 //  Description: Calls the named property as a method, supplying the
 //               indicated parameters.
 ////////////////////////////////////////////////////////////////////
-P3DVariant *P3DInstance::
-call(const string &property_name, const P3DVariant *params) {
-  return new P3DNoneVariant;
+P3DValue *P3DInstance::
+call(const string &property_name, const P3DValue *params) {
+  return new P3DNoneValue;
 }
 
 
@@ -353,7 +353,7 @@ feed_url_stream(int unique_id,
 //               freshly allocated; it will be deleted by this method.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-feed_value(int unique_id, P3DVariant *variant) {
+feed_value(int unique_id, P3DValue *value) {
   if (_session != NULL) {
     TiXmlDocument *doc = new TiXmlDocument;
     TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
@@ -361,9 +361,9 @@ feed_value(int unique_id, P3DVariant *variant) {
     xcommand->SetAttribute("cmd", "feed_value");
     xcommand->SetAttribute("instance_id", get_instance_id());
     xcommand->SetAttribute("unique_id", unique_id);
-    if (variant != NULL) {
-      TiXmlElement *xvariant = variant->make_xml();
-      xcommand->LinkEndChild(xvariant);
+    if (value != NULL) {
+      TiXmlElement *xvalue = value->make_xml();
+      xcommand->LinkEndChild(xvalue);
     }
     
     doc->LinkEndChild(decl);
@@ -372,8 +372,8 @@ feed_value(int unique_id, P3DVariant *variant) {
     _session->send_command(doc);
   }
 
-  if (variant != NULL) {
-    delete variant;
+  if (value != NULL) {
+    delete value;
   }
 }
 
