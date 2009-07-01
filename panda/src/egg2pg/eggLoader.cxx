@@ -90,6 +90,7 @@
 #include "sparseArray.h"
 #include "bitArray.h"
 #include "thread.h"
+#include "uvScrollNode.h"
 
 #include <ctype.h>
 #include <algorithm>
@@ -1878,7 +1879,14 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
       make_node(*ci, node);
     }
-
+  } else if (egg_group->has_scrolling_uvs()) {
+    node = new UvScrollNode(egg_group->get_name(), egg_group->get_scroll_u(), egg_group->get_scroll_v());
+    
+    EggGroup::const_iterator ci;
+    for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
+      make_node(*ci, node);
+    }
+    
   } else if (egg_group->get_model_flag() || egg_group->has_dcs_type()) {
     // A model or DCS flag; create a model node.
     node = new ModelNode(egg_group->get_name());

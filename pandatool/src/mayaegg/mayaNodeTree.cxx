@@ -381,6 +381,7 @@ get_egg_group(MayaNodeDesc *node_desc) {
       // Check for an object type setting, from Oliver's plug-in.
       MObject dag_object = node_desc->get_dag_path().node();
       string object_type;
+      LVector3d value(3,0,0);
       if (get_enum_attribute(dag_object, "eggObjectTypes1", object_type)) {
         egg_group->add_object_type(object_type);
       }
@@ -390,6 +391,12 @@ get_egg_group(MayaNodeDesc *node_desc) {
       if (get_enum_attribute(dag_object, "eggObjectTypes3", object_type)) {
         egg_group->add_object_type(object_type);
       }
+
+      if(get_vec3d_attribute(dag_object, "scrollUV", value)) {
+        egg_group->set_scroll_u(value[0]);
+        egg_group->set_scroll_v(value[1]);
+      }
+      
       pvector<string> tag_attribute_names;
       get_tag_attribute_names(dag_object, tag_attribute_names);
       for (uint ti=0; ti < tag_attribute_names.size(); ti++) {
