@@ -118,7 +118,7 @@ run_python() {
   }
 
   // Construct an instance of AppRunner.
-  _runner = PyObject_CallFunction(AppRunner, "");
+  _runner = PyObject_CallFunction(AppRunner, (char*) "");
   if (_runner == NULL) {
     PyErr_Print();
     return false;
@@ -154,7 +154,7 @@ run_python() {
 
   // Now pass that func pointer back to our AppRunner instance, so it
   // can call up to us.
-  PyObject *result = PyObject_CallMethod(_runner, "setRequestFunc", "O", request_func);
+  PyObject *result = PyObject_CallMethod(_runner, (char*) "setRequestFunc", (char*) "O", request_func);
   if (result == NULL) {
     PyErr_Print();
     return false;
@@ -170,7 +170,7 @@ run_python() {
 
   // Finally, get lost in taskMgr.run().
   nout << "calling run()\n";
-  PyObject *done = PyObject_CallMethod(_taskMgr, "run", "");
+  PyObject *done = PyObject_CallMethod(_taskMgr, (char*) "run", (char*) "");
   if (done == NULL) {
     PyErr_Print();
     return false;
@@ -456,8 +456,8 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   }
   
   PyObject *result = PyObject_CallMethod
-    (_runner, "setP3DFilename", "sOi", p3d_filename.c_str(), token_list,
-     inst->get_instance_id());
+    (_runner, (char*) "setP3DFilename", (char*) "sOi", p3d_filename.c_str(),
+     token_list, inst->get_instance_id());
   Py_DECREF(token_list);
 
   if (result == NULL) {
@@ -515,7 +515,7 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   // TODO: direct this into the particular instance.  This will
   // require a specialized ShowBase replacement.
   PyObject *result = PyObject_CallMethod
-    (_runner, "setupWindow", "siiiii", window_type.c_str(),
+    (_runner, (char*)"setupWindow", (char*)"siiiii", window_type.c_str(),
      win_x, win_y, win_width, win_height,
      parent_window_handle);
   if (result == NULL) {
@@ -540,7 +540,7 @@ terminate_session() {
   _instances.clear();
 
   nout << "calling stop()\n";
-  PyObject *result = PyObject_CallMethod(_taskMgr, "stop", "");
+  PyObject *result = PyObject_CallMethod(_taskMgr, (char*) "stop", (char*) "");
   if (result == NULL) {
     PyErr_Print();
     return;

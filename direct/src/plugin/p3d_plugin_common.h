@@ -21,6 +21,7 @@
 
 #define P3D_FUNCTION_PROTOTYPES
 #define BUILDING_P3D_PLUGIN
+#define TIXML_USE_STL
 
 #include "p3d_plugin.h"
 #include "p3d_lock.h"
