@@ -333,7 +333,7 @@ rebuild_bitplanes() {
         glgsg->_glGenFramebuffers(1, &_fbo_multisample);
       }
       glgsg->bind_fbo(_fbo_multisample);
-      bind_slot(rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
+      bind_slot_multisample(rb_resize, attach, RTP_depth, GL_DEPTH_ATTACHMENT_EXT);
       bind_slot_multisample(rb_resize, attach, RTP_color, GL_COLOR_ATTACHMENT0_EXT);
       int next = GL_COLOR_ATTACHMENT1_EXT;
       for (int i=0; i<_fb_properties.get_aux_rgba(); i++) {
