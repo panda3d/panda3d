@@ -32,6 +32,13 @@
 #include <Python.h>
 #include <tinyxml.h>
 
+// Python 2.5 adds Py_ssize_t; earlier versions don't have it.
+#if PY_VERSION_HEX < 0x02050000 && !defined(PY_SSIZE_T_MIN)
+typedef int Py_ssize_t;
+#define PY_SSIZE_T_MAX INT_MAX
+#define PY_SSIZE_T_MIN INT_MIN
+#endif
+
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////
