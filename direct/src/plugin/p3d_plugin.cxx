@@ -120,7 +120,9 @@ void
 P3D_variant_finish(P3D_variant *variant) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  delete (P3DVariant *)variant;
+  if (variant != NULL) {
+    delete (P3DVariant *)variant;
+  }
   RELEASE_LOCK(_lock);
 }
 
@@ -200,7 +202,7 @@ P3D_variant *
 P3D_new_string_variant(const char *value, int length) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  P3D_variant *result = new P3DStringVariant(value, length);
+  P3D_variant *result = new P3DStringVariant(string(value, length));
   RELEASE_LOCK(_lock);
   return result;
 }

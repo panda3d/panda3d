@@ -44,9 +44,18 @@ public:
 
   virtual int get_list_length() const;
   virtual P3DVariant *get_list_item(int n) const;
+
+  virtual TiXmlElement *make_xml() const=0;
+
+  virtual void output(ostream &out) const;
 };
 
 #include "p3dVariant.I"
+
+inline ostream &operator << (ostream &out, const P3DVariant &variant) {
+  variant.output(out);
+  return out;
+}
 
 #endif
 

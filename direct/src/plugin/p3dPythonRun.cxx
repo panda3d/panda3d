@@ -200,20 +200,26 @@ handle_command(TiXmlDocument *doc) {
           P3DCInstance *inst = new P3DCInstance(xinstance);
           start_instance(inst, xinstance);
         }
+
       } else if (strcmp(cmd, "terminate_instance") == 0) {
         int id;
-        if (xcommand->Attribute("id", &id)) {
+        if (xcommand->Attribute("instance_id", &id)) {
           terminate_instance(id);
         }
+
       } else if (strcmp(cmd, "setup_window") == 0) {
         int id;
         TiXmlElement *xwparams = xcommand->FirstChildElement("wparams");
         if (xwparams != (TiXmlElement *)NULL && 
-            xcommand->Attribute("id", &id)) {
+            xcommand->Attribute("instance_id", &id)) {
           setup_window(id, xwparams);
         }
+
       } else if (strcmp(cmd, "exit") == 0) {
         terminate_session();
+
+      } else if (strcmp(cmd, "feed_value") == 0) {
+        
         
       } else {
         nout << "Unhandled command " << cmd << "\n";
@@ -284,10 +290,12 @@ py_request_func(PyObject *args) {
   }
 
   TiXmlDocument doc;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xrequest = new TiXmlElement("request");
-  xrequest->SetAttribute("id", instance_id);
+  xrequest->SetAttribute("instance_id", instance_id);
   xrequest->SetAttribute("rtype", request_type);
+  doc.LinkEndChild(decl);
+  doc.LinkEndChild(xrequest);
 
   if (strcmp(request_type, "notify") == 0) {
     // A general notification to be sent directly to the instance.
@@ -297,8 +305,47 @@ py_request_func(PyObject *args) {
     }
 
     xrequest->SetAttribute("message", message);
-    doc.LinkEndChild(decl);
-    doc.LinkEndChild(xrequest);
+    nout << "sending " << doc << "\n" << flush;
+    _pipe_write << doc << flush;
+
+  } else if (strcmp(request_type, "get_property") == 0) {
+    // A get-property request.
+    const char *property_name;
+    int unique_id;
+    if (!PyArg_ParseTuple(extra_args, "si", &property_name, &unique_id)) {
+      return NULL;
+    }
+
+    xrequest->SetAttribute("property_name", property_name);
+    xrequest->SetAttribute("unique_id", unique_id);
+    nout << "sending " << doc << "\n" << flush;
+    _pipe_write << doc << flush;
+
+  } else if (strcmp(request_type, "set_property") == 0) {
+    // A set-property request.
+    const char *property_name;
+    PyObject *value;
+    if (!PyArg_ParseTuple(extra_args, "sO", &property_name, &value)) {
+      return NULL;
+    }
+
+    xrequest->SetAttribute("property_name", property_name);
+    append_xml_variant(xrequest, value);
+    nout << "sending " << doc << "\n" << flush;
+    _pipe_write << doc << flush;
+
+  } else if (strcmp(request_type, "call") == 0) {
+    // A call-method request.
+    const char *property_name;
+    PyObject *params;
+    int unique_id;
+    if (!PyArg_ParseTuple(extra_args, "sOi", &property_name, &params, &unique_id)) {
+      return NULL;
+    }
+
+    xrequest->SetAttribute("property_name", property_name);
+    xrequest->SetAttribute("unique_id", unique_id);
+    append_xml_variant(xrequest, params);
     nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
@@ -547,6 +594,103 @@ terminate_session() {
   }
   Py_DECREF(result);
   nout << "done calling stop()\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::append_xml_variant
+//       Access: Private
+//  Description: Converts the indicated PyObject to the appropriate
+//               XML representation of a P3D_variant type, and appends
+//               it to the child list of the indicated element.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+append_xml_variant(TiXmlElement *xelement, PyObject *value) {
+  TiXmlElement *xvariant = new TiXmlElement("variant");
+  if (value == Py_None) {
+    // None.
+    xvariant->SetAttribute("type", "none");
+
+  } else if (PyBool_Check(value)) {
+    // A bool value.
+    xvariant->SetAttribute("type", "bool");
+    xvariant->SetAttribute("value", PyObject_IsTrue(value));
+
+  } else if (PyInt_Check(value)) {
+    // A plain integer value.
+    xvariant->SetAttribute("type", "int");
+    xvariant->SetAttribute("value", PyInt_AsLong(value));
+
+  } else if (PyLong_Check(value)) {
+    // A long integer value.  This gets converted either as an integer
+    // or as a floating-point type, whichever fits.
+    long lvalue = PyLong_AsLong(value);
+    if (PyErr_Occurred()) {
+      // It won't fit as an integer; make it a double.
+      PyErr_Clear();
+      xvariant->SetAttribute("type", "float");
+      xvariant->SetDoubleAttribute("value", PyLong_AsDouble(value));
+    } else {
+      // It fits as an integer.
+      xvariant->SetAttribute("type", "int");
+      xvariant->SetAttribute("value", lvalue);
+    }
+
+  } else if (PyFloat_Check(value)) {
+    // A floating-point value.
+    xvariant->SetAttribute("type", "float");
+    xvariant->SetDoubleAttribute("value", PyFloat_AsDouble(value));
+
+  } else if (PyUnicode_Check(value)) {
+    // A unicode value.  Convert to utf-8 for the XML encoding.
+    xvariant->SetAttribute("type", "string");
+    PyObject *as_str = PyUnicode_AsUTF8String(value);
+    if (as_str != NULL) {
+      char *buffer;
+      Py_ssize_t length;
+      if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
+        string str(buffer, length);
+        xvariant->SetAttribute("value", str);
+      }
+      Py_DECREF(as_str);
+    }
+
+  } else if (PyString_Check(value)) {
+    // A string value.
+    xvariant->SetAttribute("type", "string");
+
+    char *buffer;
+    Py_ssize_t length;
+    if (PyString_AsStringAndSize(value, &buffer, &length) != -1) {
+      string str(buffer, length);
+      xvariant->SetAttribute("value", str);
+    }
+
+  } else if (PySequence_Check(value)) {
+    // A sequence or list value.
+    xvariant->SetAttribute("type", "list");
+    Py_ssize_t length = PySequence_Length(value);
+    for (Py_ssize_t i = 0; i < length; ++i) {
+      PyObject *obj = PySequence_GetItem(value, i);
+      append_xml_variant(xvariant, obj);
+    }
+
+  } else {
+    // Some other kind of object.  Don't know what else to do with it;
+    // we'll make it a string.
+    xvariant->SetAttribute("type", "string");
+    PyObject *as_str = PyObject_Str(value);
+    if (as_str != NULL) {
+      char *buffer;
+      Py_ssize_t length;
+      if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
+        string str(buffer, length);
+        xvariant->SetAttribute("value", str);
+      }
+      Py_DECREF(as_str);
+    }
+  }
+
+  xelement->LinkEndChild(xvariant);
 }
 
 ////////////////////////////////////////////////////////////////////

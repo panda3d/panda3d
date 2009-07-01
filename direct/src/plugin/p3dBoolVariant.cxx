@@ -79,9 +79,22 @@ get_int() const {
 void P3DBoolVariant::
 make_string(string &value) const {
   if (_value) {
-    value = "1";
+    value = "True";
   } else {
-    value = "0";
+    value = "False";
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DBoolVariant::make_xml
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new XML structure
+//               corresponding to this variant.
+////////////////////////////////////////////////////////////////////
+TiXmlElement *P3DBoolVariant::
+make_xml() const {
+  TiXmlElement *xvariant = new TiXmlElement("variant");
+  xvariant->SetAttribute("type", "bool");
+  xvariant->SetAttribute("value", (int)_value);
+  return xvariant;
+}

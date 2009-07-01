@@ -41,6 +41,7 @@ import SfxPlayer
 if __debug__:
     from direct.directutil import DeltaProfiler
 import OnScreenDebug
+import AppRunnerGlobal
 
 __builtin__.FADE_SORT_INDEX = 1000
 __builtin__.NO_FADE_SORT_INDEX = 2000
@@ -63,6 +64,9 @@ class ShowBase(DirectObject.DirectObject):
         self.mainDir = Filename.fromOsSpecific(maindir).getFullpath()
         ExecutionEnvironment.setEnvironmentVariable("MAIN_DIR", self.mainDir)
 
+        # The appRunner should have been created by the time ShowBase
+        # has been.
+        self.appRunner = AppRunnerGlobal.appRunner
 
         #debug running multiplier
         self.debugRunningMultiplier = 4

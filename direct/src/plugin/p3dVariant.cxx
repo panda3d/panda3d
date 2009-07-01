@@ -100,3 +100,17 @@ P3DVariant *P3DVariant::
 get_list_item(int n) const {
   return NULL;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DVariant::output
+//       Access: Public, Virtual
+//  Description: Writes a formatted representation of the value to the
+//               indicated string.  This is intended for developer
+//               assistance.
+////////////////////////////////////////////////////////////////////
+void P3DVariant::
+output(ostream &out) const {
+  string value;
+  make_string(value);
+  out << value;
+}

@@ -81,6 +81,9 @@ private:
   void terminate_session();
 
 private:
+  void append_xml_variant(TiXmlElement *xelement, PyObject *value);
+
+private:
   // This method runs only within the read thread.
 
   void rt_thread_run();

@@ -31,6 +31,8 @@ public:
   virtual P3DVariant *make_copy();
   virtual bool get_bool() const;
   virtual void make_string(string &value) const;
+
+  virtual TiXmlElement *make_xml() const;
 };
 
 #endif

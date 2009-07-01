@@ -69,7 +69,7 @@ P3DSession::
   if (_p3dpython_running) {
     // Tell the process we're going away.
     TiXmlDocument doc;
-    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
     TiXmlElement *xcommand = new TiXmlElement("command");
     xcommand->SetAttribute("cmd", "exit");
     doc.LinkEndChild(decl);
@@ -136,7 +136,7 @@ start_instance(P3DInstance *inst) {
   assert(inserted);
 
   TiXmlDocument *doc = new TiXmlDocument;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "start_instance");
   TiXmlElement *xinstance = inst->make_xml();
@@ -169,10 +169,10 @@ start_instance(P3DInstance *inst) {
 void P3DSession::
 terminate_instance(P3DInstance *inst) {
   TiXmlDocument *doc = new TiXmlDocument;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "terminate_instance");
-  xcommand->SetAttribute("id", inst->get_instance_id());
+  xcommand->SetAttribute("instance_id", inst->get_instance_id());
   
   doc->LinkEndChild(decl);
   doc->LinkEndChild(xcommand);
@@ -412,7 +412,7 @@ rt_handle_request(TiXmlDocument *doc) {
   TiXmlElement *xrequest = doc->FirstChildElement("request");
   if (xrequest != (TiXmlElement *)NULL) {
     int instance_id ;
-    if (xrequest->Attribute("id", &instance_id)) {
+    if (xrequest->Attribute("instance_id", &instance_id)) {
       // Look up the particular instance this is related to.
       ACQUIRE_LOCK(_instances_lock);
       Instances::const_iterator ii;
@@ -449,10 +449,100 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
         request->_request_type = P3D_RT_notify;
         request->_request._notify._message = strdup(message);
       }
+
+    } else if (strcmp(rtype, "get_property") == 0) {
+      const char *property_name = xrequest->Attribute("property_name");
+      int unique_id;
+      if (property_name != NULL && xrequest->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
+        request = new P3D_request;
+        request->_request_type = P3D_RT_get_property;
+        request->_request._get_property._property_name = strdup(property_name);
+        request->_request._get_property._unique_id = unique_id;
+      }
+
+    } else if (strcmp(rtype, "set_property") == 0) {
+      const char *property_name = xrequest->Attribute("property_name");
+      TiXmlElement *xvariant = xrequest->FirstChildElement("variant");
+      if (property_name != NULL && xvariant != NULL) {
+        request = new P3D_request;
+        request->_request_type = P3D_RT_set_property;
+        request->_request._set_property._property_name = strdup(property_name);
+        request->_request._set_property._value = rt_from_xml_variant(xvariant);
+      }
+
+    } else if (strcmp(rtype, "call") == 0) {
+      const char *property_name = xrequest->Attribute("property_name");
+      TiXmlElement *xvariant = xrequest->FirstChildElement("variant");
+      int unique_id;
+      if (property_name != NULL && xvariant != NULL && 
+          xrequest->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
+        request = new P3D_request;
+        request->_request_type = P3D_RT_call;
+        request->_request._call._property_name = strdup(property_name);
+        request->_request._call._params = rt_from_xml_variant(xvariant);
+        request->_request._call._unique_id = unique_id;
+      }
+
+    } else {
+      nout << "ignoring request of type " << rtype << "\n";
     }
   }
 
   return request;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::rt_from_xml_variant
+//       Access: Private
+//  Description: Converts the XML representation of the particular
+//               variant value into a corresponding P3DVariant object.
+//               Returns the newly-allocated object.
+////////////////////////////////////////////////////////////////////
+P3DVariant *P3DSession::
+rt_from_xml_variant(TiXmlElement *xvariant) {
+  const char *type = xvariant->Attribute("type");
+  if (strcmp(type, "none") == 0) {
+    return new P3DNoneVariant;
+
+  } else if (strcmp(type, "bool") == 0) {
+    int value;
+    if (xvariant->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
+      return new P3DBoolVariant(value != 0);
+    }
+
+  } else if (strcmp(type, "int") == 0) {
+    int value;
+    if (xvariant->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
+      return new P3DIntVariant(value);
+    }
+
+  } else if (strcmp(type, "float") == 0) {
+    double value;
+    if (xvariant->QueryDoubleAttribute("value", &value) == TIXML_SUCCESS) {
+      return new P3DFloatVariant(value);
+    }
+
+  } else if (strcmp(type, "string") == 0) {
+    // Using the string form here instead of the char * form, so we
+    // don't get tripped up on embedded null characters.
+    const string *value = xvariant->Attribute(string("value"));
+    if (value != NULL) {
+      return new P3DStringVariant(*value);
+    }
+
+  } else if (strcmp(type, "list") == 0) {
+    P3DListVariant *list = new P3DListVariant;
+
+    TiXmlElement *xchild = xvariant->FirstChildElement("variant");
+    while (xchild != NULL) {
+      list->append_item(rt_from_xml_variant(xchild));
+      xchild = xchild->NextSiblingElement("variant");
+    }
+    return list;
+  }
+
+  // Something went wrong in decoding.
+  return new P3DNoneVariant;
 }
 
 ////////////////////////////////////////////////////////////////////

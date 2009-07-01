@@ -302,28 +302,100 @@ handle_request(P3D_request *request) {
     break;
 
   case P3D_RT_get_url:
-    cerr << "Got P3D_RT_get_url\n";
+    cerr << "Got P3D_RT_get_url: " << request->_request._get_url._url
+         << "\n";
     {
       URLGetter *getter = new URLGetter
         (request->_instance, request->_request._get_url._unique_id,
          URLSpec(request->_request._get_url._url), "");
       _url_getters.insert(getter);
+      handled = true;
     }
     break;
 
   case P3D_RT_post_url:
-    cerr << "Got P3D_RT_post_url\n";
+    cerr << "Got P3D_RT_post_url: " << request->_request._post_url._url 
+         << "\n";
     {
       URLGetter *getter = new URLGetter
         (request->_instance, request->_request._post_url._unique_id,
          URLSpec(request->_request._post_url._url), 
          string(request->_request._post_url._post_data, request->_request._post_url._post_data_size));
       _url_getters.insert(getter);
+      handled = true;
     }
     break;
 
   case P3D_RT_notify:
+    cerr << "Got P3D_RT_notify: " << request->_request._notify._message
+         << "\n";
     // Ignore notifications.
+    break;
+
+  case P3D_RT_get_property:
+    cerr << "Got P3D_RT_get_property: "
+         << request->_request._get_property._property_name << "\n";
+    {
+      Properties::iterator pi = 
+        _properties.find(request->_request._get_property._property_name);
+      if (pi != _properties.end()) {
+        // The named property has been set.
+        P3D_variant *dup_value = P3D_variant_copy((*pi).second);
+        P3D_instance_feed_value(request->_instance, 
+                                request->_request._get_property._unique_id,
+                                dup_value);
+      } else {
+        // No such property set.
+        P3D_instance_feed_value(request->_instance, 
+                                request->_request._get_property._unique_id,
+                                NULL);
+      }
+      handled = true;
+    }
+    break;
+
+  case P3D_RT_set_property:
+    cerr << "Got P3D_RT_set_property: "
+         << request->_request._set_property._property_name << "\n";
+    {
+      // Also output the new value.
+      int buffer_size = 
+        P3D_variant_get_string_length(request->_request._set_property._value);
+      char *buffer = (char *)alloca(buffer_size);
+      P3D_variant_extract_string(request->_request._set_property._value, buffer, buffer_size);
+      cerr.write(buffer, buffer_size);
+      cerr << "\n";
+
+      Properties::iterator pi = 
+        _properties.insert(Properties::value_type(request->_request._set_property._property_name, NULL)).first;
+      if ((*pi).second != NULL) {
+        // Delete the original property.
+        P3D_variant_finish((*pi).second);
+      }
+      (*pi).second =
+        P3D_variant_copy(request->_request._set_property._value);
+      handled = true;
+    }
+    break;
+
+  case P3D_RT_call:
+    cerr << "Got P3D_RT_call: "
+         << request->_request._call._property_name << "\n";
+    {
+      // Also output the parameter list.
+      int buffer_size = 
+        P3D_variant_get_string_length(request->_request._call._params);
+      char *buffer = (char *)alloca(buffer_size);
+      P3D_variant_extract_string(request->_request._call._params, buffer, buffer_size);
+      cerr.write(buffer, buffer_size);
+      cerr << "\n";
+
+      // We don't have a mechanism for actually calling anything, though.
+      P3D_instance_feed_value(request->_instance, 
+                              request->_request._call._unique_id,
+                              NULL);
+      handled = true;
+    }
     break;
 
   default:

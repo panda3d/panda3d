@@ -54,3 +54,16 @@ void P3DNoneVariant::
 make_string(string &value) const {
   value = "None";
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DNoneVariant::make_xml
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new XML structure
+//               corresponding to this variant.
+////////////////////////////////////////////////////////////////////
+TiXmlElement *P3DNoneVariant::
+make_xml() const {
+  TiXmlElement *xvariant = new TiXmlElement("variant");
+  xvariant->SetAttribute("type", "none");
+  return xvariant;
+}

@@ -144,10 +144,10 @@ set_wparams(const P3DWindowParams &wparams) {
   // Update the instance in the sub-process.
   if (_session != NULL) {
     TiXmlDocument *doc = new TiXmlDocument;
-    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "", "");
+    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
     TiXmlElement *xcommand = new TiXmlElement("command");
     xcommand->SetAttribute("cmd", "setup_window");
-    xcommand->SetAttribute("id", get_instance_id());
+    xcommand->SetAttribute("instance_id", get_instance_id());
     TiXmlElement *xwparams = _wparams.make_xml();
     
     doc->LinkEndChild(decl);
@@ -354,6 +354,24 @@ feed_url_stream(int unique_id,
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 feed_value(int unique_id, P3DVariant *variant) {
+  if (_session != NULL) {
+    TiXmlDocument *doc = new TiXmlDocument;
+    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+    TiXmlElement *xcommand = new TiXmlElement("command");
+    xcommand->SetAttribute("cmd", "feed_value");
+    xcommand->SetAttribute("instance_id", get_instance_id());
+    xcommand->SetAttribute("unique_id", unique_id);
+    if (variant != NULL) {
+      TiXmlElement *xvariant = variant->make_xml();
+      xcommand->LinkEndChild(xvariant);
+    }
+    
+    doc->LinkEndChild(decl);
+    doc->LinkEndChild(xcommand);
+
+    _session->send_command(doc);
+  }
+
   if (variant != NULL) {
     delete variant;
   }
@@ -435,7 +453,7 @@ make_xml() {
   assert(_got_fparams);
 
   TiXmlElement *xinstance = new TiXmlElement("instance");
-  xinstance->SetAttribute("id", _instance_id);
+  xinstance->SetAttribute("instance_id", _instance_id);
 
   TiXmlElement *xfparams = _fparams.make_xml();
   xinstance->LinkEndChild(xfparams);

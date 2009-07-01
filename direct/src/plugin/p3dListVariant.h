@@ -24,6 +24,7 @@
 ////////////////////////////////////////////////////////////////////
 class P3DListVariant : public P3DVariant {
 public:
+  P3DListVariant();
   P3DListVariant(P3DVariant * const elements[], int num_elements);
   P3DListVariant(const P3DListVariant &copy);
 
@@ -35,6 +36,10 @@ public:
   virtual void make_string(string &value) const;
   virtual int get_list_length() const;
   virtual P3DVariant *get_list_item(int n) const;
+
+  void append_item(P3DVariant *item);
+
+  virtual TiXmlElement *make_xml() const;
 
 private:
   typedef vector<P3DVariant *> Elements;

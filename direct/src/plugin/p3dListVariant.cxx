@@ -14,10 +14,22 @@
 
 #include "p3dListVariant.h"
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DListVariant::Default Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DListVariant::
+P3DListVariant() : P3DVariant(P3D_VT_list) { 
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DListVariant::Constructor
 //       Access: Public
-//  Description: 
+//  Description: Note that the ownership of the elements in the array
+//               (but not the array itself) is transferred to the
+//               list.
 ////////////////////////////////////////////////////////////////////
 P3DListVariant::
 P3DListVariant(P3DVariant * const elements[], int num_elements) :
@@ -90,12 +102,9 @@ make_string(string &value) const {
   ostringstream strm;
   strm << "[";
   if (!_elements.empty()) {
-    string es;
-    _elements[0]->make_string(es);
-    strm << es;
+    strm << *_elements[0];
     for (size_t i = 1; i < _elements.size(); ++i) {
-      _elements[0]->make_string(es);
-      strm << ", " << es;
+      strm << ", " << *_elements[i];
     }
   }
   strm << "]";
@@ -127,4 +136,34 @@ get_list_item(int n) const {
   }
 
   return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DListVariant::append_item
+//       Access: Public, Virtual
+//  Description: Appends a new item to the end of the list.  Ownership
+//               of the item is transferred to the list.
+////////////////////////////////////////////////////////////////////
+void P3DListVariant::
+append_item(P3DVariant *item) {
+  _elements.push_back(item);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DListVariant::make_xml
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new XML structure
+//               corresponding to this variant.
+////////////////////////////////////////////////////////////////////
+TiXmlElement *P3DListVariant::
+make_xml() const {
+  TiXmlElement *xvariant = new TiXmlElement("variant");
+  xvariant->SetAttribute("type", "list");
+  Elements::const_iterator ei;
+  for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
+    TiXmlElement *xchild = (*ei)->make_xml();
+    xvariant->LinkEndChild(xchild);
+  }
+
+  return xvariant;
 }

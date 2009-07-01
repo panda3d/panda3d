@@ -94,3 +94,17 @@ make_string(string &value) const {
   value = strm.str();
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DFloatVariant::make_xml
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new XML structure
+//               corresponding to this variant.
+////////////////////////////////////////////////////////////////////
+TiXmlElement *P3DFloatVariant::
+make_xml() const {
+  TiXmlElement *xvariant = new TiXmlElement("variant");
+  xvariant->SetAttribute("type", "float");
+  xvariant->SetDoubleAttribute("value", _value);
+  return xvariant;
+}

@@ -83,3 +83,17 @@ make_string(string &value) const {
   value = strm.str();
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DIntVariant::make_xml
+//       Access: Public, Virtual
+//  Description: Allocates and returns a new XML structure
+//               corresponding to this variant.
+////////////////////////////////////////////////////////////////////
+TiXmlElement *P3DIntVariant::
+make_xml() const {
+  TiXmlElement *xvariant = new TiXmlElement("variant");
+  xvariant->SetAttribute("type", "int");
+  xvariant->SetAttribute("value", _value);
+  return xvariant;
+}

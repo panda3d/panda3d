@@ -25,6 +25,7 @@ from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, getModelPath, HTTPClient
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
+from direct.showbase import AppRunnerGlobal
 import os
 import __builtin__
 
@@ -54,8 +55,12 @@ class AppRunner(DirectObject):
         # This is the default requestFunc that is installed if we
         # never call setRequestFunc().
         def defaultRequestFunc(*args):
-            print "Ignoring request func: %s" % (args,)
+            print "Ignoring request: %s" % (args,)
         self.requestFunc = defaultRequestFunc
+
+        # Store our pointer so DirectStart-based apps can find us.
+        if AppRunnerGlobal.appRunner is None:
+            AppRunnerGlobal.appRunner = self
 
     def initPackedAppEnvironment(self):
         """ This function sets up the Python environment suitably for

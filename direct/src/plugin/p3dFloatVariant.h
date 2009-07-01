@@ -34,6 +34,8 @@ public:
   virtual double get_float() const;
   virtual void make_string(string &value) const;
 
+  virtual TiXmlElement *make_xml() const;
+
 private:
   double _value;
 };
