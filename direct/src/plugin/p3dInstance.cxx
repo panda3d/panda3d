@@ -19,6 +19,8 @@
 #include "p3dPackage.h"
 #include "p3dSplashWindow.h"
 #include "p3dWinSplashWindow.h"
+#include "p3dVariant.h"
+#include "p3dNoneVariant.h"
 
 #include <sstream>
 #include <algorithm>
@@ -157,41 +159,54 @@ set_wparams(const P3DWindowParams &wparams) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::has_property
+//     Function: P3DInstance::get_property
 //       Access: Public
-//  Description: Returns true if the instance has the named property,
-//               false otherwise.
+//  Description: Returns the value of the named property, or NULL
+//               if there is no such property.  Properties are created
+//               by the script run within the instance; they are used
+//               for communicating between scripting languages (for
+//               instance, communication between the Python-based
+//               Panda application, and the Javascript on the
+//               containing web page).
 ////////////////////////////////////////////////////////////////////
-bool P3DInstance::
-has_property(const string &property_name) const {
-  return false;
+P3DVariant *P3DInstance::
+get_property(const string &property_name) const {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_property
+//     Function: P3DInstance::get_property_list
 //       Access: Public
-//  Description: Returns the value of the named property, or empty
-//               string if there is no such property.  Properties are
-//               created by the script run within the instance; they
-//               are used for communicating between scripting
-//               languages (for instance, communication between the
-//               Python-based Panda application, and the Javascript on
-//               the containing web page).
+//  Description: Returns a list of subordinate properties below the
+//               named property.
 ////////////////////////////////////////////////////////////////////
-string P3DInstance::
-get_property(const string &property_name) const {
-  return string();
+P3DVariant *P3DInstance::
+get_property_list(const string &property_name) const {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::set_property
 //       Access: Public
-//  Description: Changes the value of the named property.  It is an
-//               error to call this on a property that does not
-//               already exist.
+//  Description: Changes the value of the named property, or deletes
+//               it if value is NULL.  If the named property does not
+//               already exist, creates it.  Returns true on success,
+//               false on failure.
 ////////////////////////////////////////////////////////////////////
-void P3DInstance::
-set_property(const string &property_name, const string &value) {
+bool P3DInstance::
+set_property(const string &property_name, const P3DVariant *value) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::call
+//       Access: Public
+//  Description: Calls the named property as a method, supplying the
+//               indicated parameters.
+////////////////////////////////////////////////////////////////////
+P3DVariant *P3DInstance::
+call(const string &property_name, const P3DVariant *params) {
+  return new P3DNoneVariant;
 }
 
 
@@ -328,6 +343,20 @@ feed_url_stream(int unique_id,
   }
 
   return download_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::feed_value
+//       Access: Public
+//  Description: Called by the host in response to a get_property or
+//               call request.  The value object must have been
+//               freshly allocated; it will be deleted by this method.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+feed_value(int unique_id, P3DVariant *variant) {
+  if (variant != NULL) {
+    delete variant;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -21,18 +21,36 @@
 using namespace std;
 
 extern P3D_initialize_func *P3D_initialize;
-extern P3D_free_string_func *P3D_free_string;
 extern P3D_new_instance_func *P3D_new_instance;
 extern P3D_instance_start_func *P3D_instance_start;
 extern P3D_instance_finish_func *P3D_instance_finish;
 extern P3D_instance_setup_window_func *P3D_instance_setup_window;
-extern P3D_instance_has_property_func *P3D_instance_has_property;
+
+extern P3D_variant_finish_func *P3D_variant_finish;
+extern P3D_variant_copy_func *P3D_variant_copy;
+extern P3D_new_none_variant_func *P3D_new_none_variant;
+extern P3D_new_bool_variant_func *P3D_new_bool_variant;
+extern P3D_variant_get_bool_func *P3D_variant_get_bool;
+extern P3D_new_int_variant_func *P3D_new_int_variant;
+extern P3D_variant_get_int_func *P3D_variant_get_int;
+extern P3D_new_float_variant_func *P3D_new_float_variant;
+extern P3D_variant_get_float_func *P3D_variant_get_float;
+extern P3D_new_string_variant_func *P3D_new_string_variant;
+extern P3D_variant_get_string_length_func *P3D_variant_get_string_length;
+extern P3D_variant_extract_string_func *P3D_variant_extract_string;
+extern P3D_new_list_variant_func *P3D_new_list_variant;
+extern P3D_variant_get_list_length_func *P3D_variant_get_list_length;
+extern P3D_variant_get_list_item_func *P3D_variant_get_list_item;
 extern P3D_instance_get_property_func *P3D_instance_get_property;
+extern P3D_instance_get_property_list_func *P3D_instance_get_property_list;
 extern P3D_instance_set_property_func *P3D_instance_set_property;
-extern P3D_instance_get_request_func *P3D_instance_get_request;
+extern P3D_instance_call_func *P3D_instance_call;
+
+extern P3D_instance_get_request_func *P3D_get_request;
 extern P3D_check_request_func *P3D_check_request;
 extern P3D_request_finish_func *P3D_request_finish;
 extern P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;
+extern P3D_instance_feed_value_func *P3D_instance_feed_value;
 
 string get_plugin_basename();
 bool load_plugin(const string &p3d_plugin_filename);

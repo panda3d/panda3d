@@ -19,31 +19,43 @@
     p3d_lock.h p3d_plugin.h \
     p3d_plugin_config.h \
     p3d_plugin_common.h \
+    p3dBoolVariant.h \
     p3dDownload.h p3dDownload.I \
     p3dFileDownload.h p3dFileDownload.I \
     p3dFileParams.h p3dFileParams.I \
+    p3dFloatVariant.h \
     p3dInstance.h p3dInstance.I \
     p3dInstanceManager.h p3dInstanceManager.I \
+    p3dIntVariant.h \
+    p3dListVariant.h \
     p3dMultifileReader.h p3dMultifileReader.I \
     p3dPackage.h p3dPackage.I \
     p3dSession.h p3dSession.I \
     p3dSplashWindow.h p3dSplashWindow.I \
-    p3dWindowParams.h p3dWindowParams.I \
-    p3dWinSplashWindow.h p3dWinSplashWindow.I
+    p3dStringVariant.h \
+    p3dVariant.h p3dVariant.I \
+    p3dWinSplashWindow.h p3dWinSplashWindow.I \
+    p3dWindowParams.h p3dWindowParams.I
 
   #define INCLUDED_SOURCES \
     p3d_plugin.cxx \
+    p3dBoolVariant.cxx \
     p3dDownload.cxx \
     p3dFileDownload.cxx \
     p3dFileParams.cxx \
+    p3dFloatVariant.cxx \
     p3dInstance.cxx \
     p3dInstanceManager.cxx \
+    p3dIntVariant.cxx \
+    p3dListVariant.cxx \
     p3dMultifileReader.cxx \
     p3dPackage.cxx \
-    p3dSplashWindow.cxx \
     p3dSession.cxx \
-    p3dWindowParams.cxx \
-    p3dWinSplashWindow.cxx
+    p3dSplashWindow.cxx \
+    p3dStringVariant.cxx \
+    p3dVariant.cxx \
+    p3dWinSplashWindow.cxx \
+    p3dWindowParams.cxx
 
   #define INSTALL_HEADERS \
     p3d_plugin.h

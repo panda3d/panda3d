@@ -73,7 +73,7 @@ extern "C" {
 libraries match.  It should be passed to P3D_initialize() (below).
 This number will be incremented whenever there are changes to any of
 the interface specifications defined in this header file. */
-#define P3D_API_VERSION 2
+#define P3D_API_VERSION 3
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -96,12 +96,6 @@ the interface specifications defined in this header file. */
    immediately unload the DLL and (if possible) download a new one. */
 typedef bool 
 P3D_initialize_func(int api_version, const char *output_filename);
-
-/* This function frees a pointer returned by
-   P3D_instance_get_property(), or another similar function that
-   returns a dynamically-allocated string. */
-typedef void 
-P3D_free_string_func(char *string);
 
 /********************** INSTANCE MANAGEMENT **************************/
 
@@ -269,27 +263,162 @@ P3D_instance_setup_window_func(P3D_instance *instance,
 /* The following interfaces are provided to support controlling the
    plugin via JavaScript or related interfaces on the browser. */
 
-/* Call this function to query whether the instance has a property of
-   the indicated name.  If this returns true, you may then query
-   P3D_instance_get_property() or P3D_instance_set_property(). */
+/* This enumeration indicates which fundamental type is represented by
+   a particular P3D_variant object, below. */
+typedef enum {
+  P3D_VT_none,
+  P3D_VT_bool,
+  P3D_VT_int,
+  P3D_VT_float,
+  P3D_VT_string,
+  P3D_VT_list
+} P3D_variant_type;
+
+/* This structure represents a concrete value of some arbitrary type.
+   Instances of this structure may be assigned to property names, or
+   passed into or returned from function calls. */
+typedef struct {
+  P3D_variant_type _type;
+
+  /* Additional opaque data may be stored here. */
+} P3D_variant;
+
+/* Deallocates a P3D_variant previously allocated with one of the
+   below calls, or returned from a function such as
+   P3D_variant_get_property().  After this has been called, the
+   variant's pointer must no longer be used. */
+typedef void
+P3D_variant_finish_func(P3D_variant *variant);
+
+/* Returns a duplicate copy of the indicated variant.  The return
+   value should be eventually passed to P3D_variant_finish(),
+   above. */
+typedef P3D_variant *
+P3D_variant_copy_func(const P3D_variant *variant);
+
+/* Allocates a new P3D_variant of type none.  This variant has no
+   particular value and corresponds to Python's None type or C's void
+   type. */
+typedef P3D_variant *
+P3D_new_none_variant_func();
+
+/* Allocates a new P3D_variant of type bool. */
+typedef P3D_variant *
+P3D_new_bool_variant_func(bool value);
+
+/* Retrieves the boolean value associated with this type.  If the
+   variant's type is not P3D_VT_bool, this implicitly coerces the
+   value to a boolean value. */
 typedef bool
-P3D_instance_has_property_func(P3D_instance *instance,
+P3D_variant_get_bool_func(const P3D_variant *variant);
+
+/* Allocates a new P3D_variant of type int. */
+typedef P3D_variant *
+P3D_new_int_variant_func(int value);
+
+/* Retrieves the integer value associated with this type.  If the
+   variant's type is not P3D_VT_int, this implicitly coerces the value
+   to an integer value. */
+typedef int
+P3D_variant_get_int_func(const P3D_variant *variant);
+
+/* Allocates a new P3D_variant of type float. */
+typedef P3D_variant *
+P3D_new_float_variant_func(double value);
+
+/* Retrieves the floating-point value associated with this type.  If
+   the variant's type is not P3D_VT_float, this implicitly coerces the
+   value to a floating-point value. */
+typedef double
+P3D_variant_get_float_func(const P3D_variant *variant);
+
+/* Allocates a new P3D_variant of type string. */
+typedef P3D_variant *
+P3D_new_string_variant_func(const char *value, int length);
+
+/* Retrieves the length of the string value associated with this type.
+   This is the number of bytes that must be allocated to hold the
+   results of P3D_variant_extract_string(), not including any
+   terminating null byte. */
+typedef int
+P3D_variant_get_string_length_func(const P3D_variant *variant);
+
+/* Stores the string value associated with this type in the indicated
+   buffer, which has the specified length.  The return value is the
+   number of characters required for complete representation of the
+   string (which may or may not represent the number of characters
+   actually written).  A terminating null byte is written to the
+   buffer if there is space.  If the variable's type is not
+   P3D_VT_string, this implicitly coerces the value to a string
+   value. */
+typedef int
+P3D_variant_extract_string_func(const P3D_variant *variant, char *buffer, 
+                                int buffer_length);
+
+/* Allocates a new P3D_variant of type list.  This is a list of an
+   arbitrary number of P3D_variant objects.  The indicated P3D_variant
+   objects are stored directly within the list; ownership of the
+   objects in this array (but not the array pointer itself) is passed
+   to the list.  The caller must no longer call P3D_variant_finish()
+   on any objects added to the list (but should still call
+   P3D_variant_finish() on the list itself). */
+typedef P3D_variant *
+P3D_new_list_variant_func(P3D_variant * const elements[], int num_elements);
+
+/* Returns the number of items in the list, if the variant's type is
+   of P3D_VT_list. */
+typedef int
+P3D_variant_get_list_length_func(const P3D_variant *variant);
+
+/* Returns the nth item in the list.  The caller inherits ownership of
+   this object, and should call P3D_variant_finish() on it. */
+typedef P3D_variant *
+P3D_variant_get_list_item_func(const P3D_variant *variant, int n);
+
+/* Retrieves the named property from the instance, if any.  The
+   property name may be a dot-delimited sequence to reference nested
+   properties.  Returns NULL if the instance does not have the named
+   property.  If not NULL, you should pass the return value to
+   P3D_variant_finish(). */
+typedef P3D_variant *
+P3D_instance_get_property_func(const P3D_instance *instance, 
                                const char *property_name);
 
-/* Call this function to query the value of the indicated property.
-   It is an error to call this if the property does not exist; call
-   P3D_instance_has_property() first to ensure this is so.  The return
-   value has been dynamically allocated and should be passed to
-   P3D_free_string() when it is no longer needed. */
-typedef char *
-P3D_instance_get_property_func(P3D_instance *instance,
-                               const char *property_name);
+/* Returns a list of properties on the instance below the named
+   property.  The property name may be a dot-delimited sequence to
+   reference nested properties.  Returns NULL if the instance does not
+   have the named property; otherwise, returns a list variant that
+   contains a list of string variants, one for each property stored on
+   the named property.  If not NULL, you should pass the return value
+   to P3D_variant_finish(). */
+typedef P3D_variant *
+P3D_instance_get_property_list_func(const P3D_instance *instance, 
+                                    const char *property_name);
 
-/* Call this function to set the value of the indicated property. */
-typedef void 
-P3D_instance_set_property_func(P3D_instance *instance,
-                               const char *property_name,
-                               const char *value);
+/* Changes or sets the named property on the instance.  The property
+   name may be a dot-delimited sequence; if so, all of the properties
+   except the last one must already exist.  Returns true on success,
+   false on failure (for instance, because a parent property does not
+   exist).  Pass NULL for the value to delete the last property.  The
+   caller retains ownership of the value object, and should eventually
+   delete with P3D_variant_finish(). */
+typedef bool
+P3D_instance_set_property_func(P3D_instance *instance, const char *property_name,
+                               const P3D_variant *value);
+
+/* Calls the named property as a function.  The property name may be a
+   dot-delimited sequence.  The params variant is an object of type
+   P3D_VT_list, which contains the list of parameters to the function.
+   The caller retains ownership of the params object.  The return
+   value is NULL on error, or a newly-allocated variant on success; if
+   not NULL, you should pass the return value to
+   P3D_variant_finish(). */
+typedef P3D_variant *
+P3D_instance_call_func(P3D_instance *instance, const char *property_name,
+                       const P3D_variant *params);
+
+/* Some scriptable properties on the host may be queried or modified
+   via requests, below. */
 
 /********************** REQUEST HANDLING **************************/
 
@@ -319,10 +448,12 @@ P3D_instance_set_property_func(P3D_instance *instance,
    P3D_instance_get_request.  More types may be added later. */
 typedef enum {
   P3D_RT_stop,
-  P3D_RT_unused, //  P3D_RT_new_config_xml,
   P3D_RT_get_url,
   P3D_RT_post_url,
   P3D_RT_notify,
+  P3D_RT_get_property,
+  P3D_RT_set_property,
+  P3D_RT_call,
 } P3D_request_type;
 
 /* Structures corresponding to the request types in the above enum. */
@@ -366,6 +497,45 @@ typedef struct {
   const char *_message;
 } P3D_request_notify;
 
+/* A request to query a property on a host object.  The property_name
+   will be a dot-delimited string corresponding to a nested object.
+   It should begin with "window." for the window object and
+   "document."  for the DOM object that loaded the plugin.  The host
+   should respond to this request by calling P3D_instance_feed_value()
+   with the given unique_id and the requested value, or NULL if the
+   named property does not exist. */
+typedef struct {
+  const char *_property_name;
+  int _unique_id;
+} P3D_request_get_property;
+
+/* A request to change or set a property on a host object.  The
+   property_name will be a dot-delimited string corresponding to a
+   nested object, as above.  _value may be NULL to indicate a request
+   to delete the named property.  The host does *not* receive
+   ownership of the _value pointer and should not store it or delete
+   it.  The host need not respond to this event (other than by calling
+   P3D_request_finish()). */
+typedef struct {
+  const char *_property_name;
+  const P3D_variant *_value;
+} P3D_request_set_property;
+
+/* A request to call a function on a host object.  The property_name
+   will be a dot-delimited string corresponding to a nested object, as
+   above.  The _params pointer will be a list variant, which contains
+   the parameter values to pass to the function.  The host does not
+   receive ownership of the _params pointer and should not store it or
+   delete it.  The host should respond to this request by calling
+   P3D_instance_feed_value() with the given unique_id and the return
+   value of the function, or NULL if the function does not exist or is
+   not a callable object. */
+typedef struct {
+  const char *_property_name;
+  const P3D_variant *_params;
+  int _unique_id;
+} P3D_request_call;
+
 /* This is the overall structure that represents a single request.  It
    is returned by P3D_instance_get_request(). */
 typedef struct {
@@ -376,6 +546,9 @@ typedef struct {
     P3D_request_get_url _get_url;
     P3D_request_post_url _post_url;
     P3D_request_notify _notify;
+    P3D_request_get_property _get_property;
+    P3D_request_set_property _set_property;
+    P3D_request_call _call;
   } _request;
 } P3D_request;
 
@@ -477,23 +650,54 @@ P3D_instance_feed_url_stream_func(P3D_instance *instance, int unique_id,
                                   const void *this_data, 
                                   size_t this_data_size);
 
+/* This function is called by the host in response to a get_property
+   or call request.  The instance and unique_id parameters are from
+   the original request; the variant should be a freshly-allocated
+   P3D_variant that represents the requested property value or the
+   return value from the function call, or NULL on error.  Ownership
+   of the variant value is passed into the plugin; the host should
+   *not* call P3D_variant_finish() on this pointer. */
+typedef void
+P3D_instance_feed_value_func(P3D_instance *instance, int unique_id,
+                             P3D_variant *variant);
+
 
 #ifdef P3D_FUNCTION_PROTOTYPES
 
 /* Define all of the actual prototypes for the above functions. */
 EXPCL_P3D_PLUGIN P3D_initialize_func P3D_initialize;
-EXPCL_P3D_PLUGIN P3D_free_string_func P3D_free_string;
+
 EXPCL_P3D_PLUGIN P3D_new_instance_func P3D_new_instance;
 EXPCL_P3D_PLUGIN P3D_instance_start_func P3D_instance_start;
 EXPCL_P3D_PLUGIN P3D_instance_finish_func P3D_instance_finish;
 EXPCL_P3D_PLUGIN P3D_instance_setup_window_func P3D_instance_setup_window;
-EXPCL_P3D_PLUGIN P3D_instance_has_property_func P3D_instance_has_property;
+
+EXPCL_P3D_PLUGIN P3D_variant_finish_func P3D_variant_finish;
+EXPCL_P3D_PLUGIN P3D_variant_copy_func P3D_variant_copy;
+EXPCL_P3D_PLUGIN P3D_new_none_variant_func P3D_new_none_variant;
+EXPCL_P3D_PLUGIN P3D_new_bool_variant_func P3D_new_bool_variant;
+EXPCL_P3D_PLUGIN P3D_variant_get_bool_func P3D_variant_get_bool;
+EXPCL_P3D_PLUGIN P3D_new_int_variant_func P3D_new_int_variant;
+EXPCL_P3D_PLUGIN P3D_variant_get_int_func P3D_variant_get_int;
+EXPCL_P3D_PLUGIN P3D_new_float_variant_func P3D_new_float_variant;
+EXPCL_P3D_PLUGIN P3D_variant_get_float_func P3D_variant_get_float;
+EXPCL_P3D_PLUGIN P3D_new_string_variant_func P3D_new_string_variant;
+EXPCL_P3D_PLUGIN P3D_variant_get_string_length_func P3D_variant_get_string_length;
+EXPCL_P3D_PLUGIN P3D_variant_extract_string_func P3D_variant_extract_string;
+EXPCL_P3D_PLUGIN P3D_new_list_variant_func P3D_new_list_variant;
+EXPCL_P3D_PLUGIN P3D_variant_get_list_length_func P3D_variant_get_list_length;
+EXPCL_P3D_PLUGIN P3D_variant_get_list_item_func P3D_variant_get_list_item;
 EXPCL_P3D_PLUGIN P3D_instance_get_property_func P3D_instance_get_property;
+EXPCL_P3D_PLUGIN P3D_instance_get_property_list_func P3D_instance_get_property_list;
 EXPCL_P3D_PLUGIN P3D_instance_set_property_func P3D_instance_set_property;
+EXPCL_P3D_PLUGIN P3D_instance_call_func P3D_instance_call;
+
 EXPCL_P3D_PLUGIN P3D_instance_get_request_func P3D_instance_get_request;
 EXPCL_P3D_PLUGIN P3D_check_request_func P3D_check_request;
 EXPCL_P3D_PLUGIN P3D_request_finish_func P3D_request_finish;
 EXPCL_P3D_PLUGIN P3D_instance_feed_url_stream_func P3D_instance_feed_url_stream;
+EXPCL_P3D_PLUGIN P3D_instance_feed_value_func P3D_instance_feed_value;
+
 #endif  /* P3D_FUNCTION_PROTOTYPES */
 
 #ifdef __cplusplus
