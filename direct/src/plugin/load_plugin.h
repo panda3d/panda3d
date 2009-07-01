@@ -46,7 +46,7 @@ extern P3D_instance_get_property_list_func *P3D_instance_get_property_list;
 extern P3D_instance_set_property_func *P3D_instance_set_property;
 extern P3D_instance_call_func *P3D_instance_call;
 
-extern P3D_instance_get_request_func *P3D_get_request;
+extern P3D_instance_get_request_func *P3D_instance_get_request;
 extern P3D_check_request_func *P3D_check_request;
 extern P3D_request_finish_func *P3D_request_finish;
 extern P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;

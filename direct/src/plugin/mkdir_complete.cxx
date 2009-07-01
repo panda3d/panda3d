@@ -18,6 +18,7 @@
 #include <windows.h>
 #else
 #include <fcntl.h>
+#include <sys/stat.h>  // for mkdir()
 #include <errno.h>
 #endif
 
