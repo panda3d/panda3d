@@ -6681,6 +6681,7 @@ set_state_and_transform(const RenderState *target,
   _target_rs = target;
 
   _target_shader = DCAST(ShaderAttrib, _target_rs->get_attrib_def(ShaderAttrib::get_class_slot()));
+#ifndef OPENGLES_1
   if (_target_shader->auto_shader()) {
     // If we don't have a generated shader, make sure we have a ShaderGenerator, then generate the shader.
     if (_target_rs->_generated_shader == NULL) {
@@ -6691,6 +6692,7 @@ set_state_and_transform(const RenderState *target,
     }
     _target_shader = DCAST(ShaderAttrib, _target_rs->_generated_shader);
   }
+#endif
 
   int alpha_test_slot = AlphaTestAttrib::get_class_slot();
   if (_target_rs->get_attrib(alpha_test_slot) != _state_rs->get_attrib(alpha_test_slot) ||
@@ -6811,14 +6813,14 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(color_blend_slot);
   }
 
-#ifndef OPENGLES_1
   if (_target_shader != _state_shader) {
     //PStatTimer timer(_draw_set_state_shader_pcollector);
+#ifndef OPENGLES_1
     do_issue_shader();
+#endif
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
-#endif
 
   int texture_slot = TextureAttrib::get_class_slot();
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
