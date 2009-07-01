@@ -7094,18 +7094,20 @@ update_standard_texture_bindings() {
     _glActiveTexture(GL_TEXTURE0 + i);
 
     // First, turn off the previous texture mode.
+#ifndef OPENGLES_2
 #ifndef OPENGLES
     GLP(Disable)(GL_TEXTURE_1D);
-#endif
+#endif  // OPENGLES
     GLP(Disable)(GL_TEXTURE_2D);
     if (_supports_3d_texture) {
 #ifndef OPENGLES_1
       GLP(Disable)(GL_TEXTURE_3D);
-#endif
+#endif  // OPENGLES_1
     }
     if (_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
+#endif // OPENGLES_2
     
     TextureContext *tc = texture->prepare_now(_prepared_objects, this);
     if (tc == (TextureContext *)NULL) {
@@ -7113,6 +7115,7 @@ update_standard_texture_bindings() {
       break;
     }
     
+#ifndef OPENGLES_2
     // Then, turn on the current texture mode.
     GLenum target = get_texture_target(texture->get_texture_type());
     if (target == GL_NONE) {
@@ -7120,9 +7123,12 @@ update_standard_texture_bindings() {
       break;
     }
     GLP(Enable)(target);
+#endif
     
     if (!update_texture(tc, false)) {
+#ifndef OPENGLES_2
       GLP(Disable)(target);
+#endif
       break;
     }
     
@@ -7248,6 +7254,7 @@ update_standard_texture_bindings() {
     }
   }
   
+#ifndef OPENGLES_2
   // Disable the texture stages that are no longer used.
   for (i = num_stages; i < _num_active_texture_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
@@ -7258,14 +7265,13 @@ update_standard_texture_bindings() {
     if (_supports_3d_texture) {
 #ifndef OPENGLES_1
       GLP(Disable)(GL_TEXTURE_3D);
-#endif
+#endif  // OPENGLES_1
     }
-#ifndef OPENGLES_2
     if (_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
-#endif
   }
+#endif  // OPENGLES_2
   
   // Save the count of texture stages for next time.
   _num_active_texture_stages = num_stages;
@@ -7315,24 +7321,24 @@ update_show_usage_texture_bindings(int show_stage_index) {
     tc->enqueue_lru(&_prepared_objects->_graphics_memory_lru);
   }
 
+#ifndef OPENGLES_2
   // Disable all texture stages.
   for (i = 0; i < _num_active_texture_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
 #ifndef OPENGLES
     GLP(Disable)(GL_TEXTURE_1D);
-#endif
+#endif  // OPENGLES
     GLP(Disable)(GL_TEXTURE_2D);
     if (_supports_3d_texture) {
 #ifndef OPENGLES_1
       GLP(Disable)(GL_TEXTURE_3D);
-#endif
+#endif  // OPENGLES_1
     }
-#ifndef OPENGLES_2
     if (_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
-#endif
   }
+#endif
   
   // Save the count of texture stages for next time.
   _num_active_texture_stages = num_stages;
@@ -7351,7 +7357,9 @@ update_show_usage_texture_bindings(int show_stage_index) {
 
     // Choose the corresponding usage texture and apply it.
     _glActiveTexture(GL_TEXTURE0 + i);
+#ifndef OPENGLES_2
     GLP(Enable)(GL_TEXTURE_2D);
+#endif
 
     UsageTextureKey key(texture->get_x_size(), texture->get_y_size());
     UsageTextures::iterator ui = _usage_textures.find(key);
@@ -7453,28 +7461,28 @@ upload_usage_texture(int width, int height) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 disable_standard_texture_bindings() {
+#ifndef OPENGLES_2
   // Disable the texture stages that are no longer used.
   for (int i = 0; i < _num_active_texture_stages; i++) {
     _glActiveTexture(GL_TEXTURE0 + i);
 #ifndef OPENGLES
     GLP(Disable)(GL_TEXTURE_1D);
-#endif
+#endif  // OPENGLES
     GLP(Disable)(GL_TEXTURE_2D);
     if (_supports_3d_texture) {
 #ifndef OPENGLES_1
       GLP(Disable)(GL_TEXTURE_3D);
-#endif
+#endif  // OPENGLES_1
     }
-#ifndef OPENGLES_2
     if (_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
-#endif
   }
   
   _num_active_texture_stages = 0;
   
   report_my_gl_errors();
+#endif  // OPENGLES_2
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -546,6 +546,7 @@ disable_shader_texture_bindings(GSG *gsg) {
     return;
   }
 
+#ifndef OPENGLES_2
   for (int i=0; i<(int)_shader->_tex_spec.size(); i++) {
     if (_shader->get_language() == Shader::SL_GLSL) {
       if (_shader->_tex_spec[i]._name == 0) {
@@ -565,19 +566,20 @@ disable_shader_texture_bindings(GSG *gsg) {
     }
 #ifndef OPENGLES
     GLP(Disable)(GL_TEXTURE_1D);
-#endif
+#endif  // OPENGLES
     GLP(Disable)(GL_TEXTURE_2D);
 #ifndef OPENGLES_1
     if (gsg->_supports_3d_texture) {
       GLP(Disable)(GL_TEXTURE_3D);
     }
-#endif
+#endif  // OPENGLES_1
     if (gsg->_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
     // This is probably faster - but maybe not as safe?
     // cgGLDisableTextureParameter(p);
   }
+#endif  // OPENGLES_2
   _stage_offset = 0;
 
 #ifdef HAVE_CG
@@ -670,7 +672,9 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
       // Unsupported texture mode.
       continue;
     }
+#ifndef OPENGLES_2
     GLP(Enable)(target);
+#endif
     gsg->apply_texture(tc);
 
     if (_shader->get_language() == Shader::SL_GLSL) {
@@ -679,7 +683,9 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
     }
 
     if (!gsg->update_texture(tc, false)) {
+#ifndef OPENGLES_2
       GLP(Disable)(target);
+#endif
       continue;
     }
   }
