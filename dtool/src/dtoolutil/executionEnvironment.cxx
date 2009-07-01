@@ -537,6 +537,11 @@ read_args() {
   }
 #endif
 
-  if (_dtool_name.empty())
+  if (!_binary_name.empty()) {
+    set_environment_variable("MAIN_DIR", Filename(_binary_name).get_dirname());
+  }
+
+  if (_dtool_name.empty()) {
     _dtool_name = _binary_name;
+  }
 }
