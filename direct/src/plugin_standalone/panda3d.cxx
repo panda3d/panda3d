@@ -279,7 +279,7 @@ feed_file(P3D_instance *inst, int unique_id, string filename) {
   }
 #endif  // _WIN32
 
-  ifstream file(filename.c_str(), ios::in || ios::binary);
+  ifstream file(filename.c_str(), ios::in | ios::binary);
 
   // First, seek to the end to get the file size.
   file.seekg(0, ios::end);
