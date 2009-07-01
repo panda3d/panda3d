@@ -538,7 +538,7 @@ read_args() {
 #endif
 
   if (!_binary_name.empty()) {
-    set_environment_variable("MAIN_DIR", Filename(_binary_name).get_dirname());
+    ns_set_environment_variable("MAIN_DIR", Filename(_binary_name).get_dirname());
   }
 
   if (_dtool_name.empty()) {
