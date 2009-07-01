@@ -693,6 +693,9 @@ reset() {
   _supports_tex_non_pow2 =
     has_extension("GL_ARB_texture_non_power_of_two");
 
+#ifdef OPENGLES_2 // OpenGL ES 2.0 doesn't support multitexturing.
+  _supports_multitexture = false;
+#else
   if (is_at_least_gl_version(1, 3) || is_at_least_gles_version(1, 1)) {
     _supports_multitexture = true;
 
@@ -738,6 +741,8 @@ reset() {
       _supports_multitexture = false;
     }
   }
+#endif
+
   if (!_supports_multitexture) {
     _glActiveTexture = null_glActiveTexture;
     _glClientActiveTexture = null_glActiveTexture;
@@ -7036,6 +7041,7 @@ do_issue_texture() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 update_standard_texture_bindings() {
+#ifndef OPENGLES_2
 #ifndef NDEBUG
   if (_show_texture_usage) {
     update_show_usage_texture_bindings(-1);
@@ -7120,7 +7126,6 @@ update_standard_texture_bindings() {
       break;
     }
     
-#ifndef OPENGLES_2
     if (stage->involves_color_scale() && _color_scale_enabled) {
       Colorf color = stage->get_color();
       color.set(color[0] * _current_color_scale[0],
@@ -7231,7 +7236,6 @@ update_standard_texture_bindings() {
       GLint glmode = get_texture_apply_mode_type(stage->get_mode());
       GLP(TexEnvi)(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, glmode);
     }
-#endif
 
     if (stage->get_saved_result()) {
       // This texture's result will be "saved" for a future stage's
@@ -7256,15 +7260,18 @@ update_standard_texture_bindings() {
       GLP(Disable)(GL_TEXTURE_3D);
 #endif
     }
+#ifndef OPENGLES_2
     if (_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
+#endif
   }
   
   // Save the count of texture stages for next time.
   _num_active_texture_stages = num_stages;
   
   report_my_gl_errors();
+#endif
 }
 
 
@@ -7320,9 +7327,11 @@ update_show_usage_texture_bindings(int show_stage_index) {
       GLP(Disable)(GL_TEXTURE_3D);
 #endif
     }
+#ifndef OPENGLES_2
     if (_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
+#endif
   }
   
   // Save the count of texture stages for next time.
@@ -7456,9 +7465,11 @@ disable_standard_texture_bindings() {
       GLP(Disable)(GL_TEXTURE_3D);
 #endif
     }
+#ifndef OPENGLES_2
     if (_supports_cube_map) {
       GLP(Disable)(GL_TEXTURE_CUBE_MAP);
     }
+#endif
   }
   
   _num_active_texture_stages = 0;

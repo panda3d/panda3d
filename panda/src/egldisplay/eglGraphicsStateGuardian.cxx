@@ -156,7 +156,12 @@ choose_pixel_format(const FrameBufferProperties &properties,
   _fbprops.clear();
 
   int attrib_list[] = {
-    EGL_RENDERABLE_TYPE, EGL_DONT_CARE,
+#ifdef OPENGLES_1
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES_BIT,
+#endif
+#ifdef OPENGLES_2
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+#endif
     EGL_SURFACE_TYPE, EGL_DONT_CARE,
     EGL_NONE
   };
@@ -211,7 +216,12 @@ choose_pixel_format(const FrameBufferProperties &properties,
     egldisplay_cat.debug()
       << "Chosen config " << best_result << ": " << best_props << "\n";
     _fbconfig = configs[best_result];
+#ifdef OPENGLES_2
+    EGLint context_attribs[] = {EGL_CONTEXT_CLIENT_VERSION, 2, EGL_NONE};
+    _context = eglCreateContext(_egl_display, _fbconfig, _share_context, context_attribs);
+#else
     _context = eglCreateContext(_egl_display, _fbconfig, _share_context, NULL);
+#endif
     int err = eglGetError();
     if (_context && err == EGL_SUCCESS) {
       if (_visual) {

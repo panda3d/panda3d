@@ -92,6 +92,12 @@ eglGraphicsPipe(const string &display) {
       << get_egl_error_string(eglGetError()) << "\n";
   }
 
+  if (!eglBindAPI(EGL_OPENGL_ES_API)) {
+    egldisplay_cat.error()
+      << "Couldn't bind EGL to the OpenGL ES API: "
+      << get_egl_error_string(eglGetError()) << "\n";
+  }
+
   // Connect to an input method for supporting international text
   // entry.
   _im = XOpenIM(_display, NULL, NULL, NULL);
