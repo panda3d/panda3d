@@ -1120,10 +1120,11 @@ if (os.path.isfile("makepanda/myconfig.in")):
 else:
   configprc=ReadFile("makepanda/config.in")
 
-if (sys.platform != "win32"):
+if (sys.platform == "win32"):
+    confautoprc = confautoprc.replace(".panda3d","Panda3D-%s" % VERSION)
+else:
     confautoprc = confautoprc.replace("aux-display pandadx9","")
     confautoprc = confautoprc.replace("aux-display pandadx8","")
-    confautoprc = confautoprc.replace("aux-display pandadx7","")
 
 # OpenAL is not yet working well on OSX for us, so let's do this for now.
 if (sys.platform == "darwin"):
@@ -3817,7 +3818,6 @@ def MakeInstallerOSX():
       oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
       oscmd("ln -s /usr/bin/python Panda3D-tpl-rw/Panda3D/%s/bin/ppython" % VERSION)
       oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
-      oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@/Applications/Panda3D/%s@' < %s/etc/Config.prc > Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % (VERSION, GetOutputDir(), VERSION))
       # Append the plugin-path to the Config.prc.
       f = open("Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % VERSION, "a")
       f.write("\nplugin-path /Applications/Panda3D/%s/lib\n" % VERSION)

@@ -5,11 +5,17 @@
 ###########################################################
 
 # Uncomment one of the following lines to choose whether you should
-# run using OpenGL or DirectX rendering.
+# run using OpenGL, DirectX or TinyPanda (software) rendering.
+# There can only be one load-display line, but you can use
+# multiple aux-display lines to specify fallback modules.
+# When the module indicated by load-display fails, it will fall
+# back to the next display module indicated by aux-display,
+# when that fails, the next aux-display line, and so on.
 
 load-display pandagl
 #load-display pandadx9
 #load-display pandadx8
+#load-display tinydisplay
 
 # These control the placement and size of the default rendering window.
 
@@ -81,7 +87,7 @@ hardware-animated-vertices #f
 
 # Enable the model-cache, but only for models, not textures.
 
-model-cache-dir $THIS_PRC_DIR/../modelcache
+model-cache-dir $USER_APPDATA/.panda3d/cache
 model-cache-textures #f
 
 # This option specifies the default profiles for Cg shaders.
