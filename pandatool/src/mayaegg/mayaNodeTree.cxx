@@ -381,7 +381,7 @@ get_egg_group(MayaNodeDesc *node_desc) {
       // Check for an object type setting, from Oliver's plug-in.
       MObject dag_object = node_desc->get_dag_path().node();
       string object_type;
-      LVector3d value(3,0,0);
+      LVector3d value;
       if (get_enum_attribute(dag_object, "eggObjectTypes1", object_type)) {
         egg_group->add_object_type(object_type);
       }
