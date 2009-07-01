@@ -21,6 +21,7 @@
 #include "pvector.h"
 
 #include <Python.h>
+#define TIXML_USE_STL
 #include <tinyxml.h>
 
 class P3DSession;
