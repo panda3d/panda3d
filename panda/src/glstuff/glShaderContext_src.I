@@ -12,6 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef OPENGLES_1
+
 ////////////////////////////////////////////////////////////////////
 //     Function: GLShaderContext::valid
 //       Access: Public
@@ -57,4 +59,6 @@ INLINE bool CLP(ShaderContext)::
 uses_custom_texture_bindings() {
   return true;
 }
+
+#endif  // OPENGLES_1
 

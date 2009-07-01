@@ -12,6 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef OPENGLES_1
+
 #include "pandabase.h"
 #include "string_utils.h"
 #include "internalName.h"
@@ -98,4 +100,6 @@ private:
 };
 
 #include "glShaderContext_src.I"
+
+#endif  // OPENGLES_1
 

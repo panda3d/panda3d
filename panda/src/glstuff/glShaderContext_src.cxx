@@ -12,6 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef OPENGLES_1
+
 #ifdef HAVE_CG
 #include "Cg/cgGL.h"
 #endif
@@ -132,6 +134,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
             continue;
           }
           switch (param_type) {
+#ifndef OPENGLES
             case GL_SAMPLER_1D_SHADOW:
             case GL_SAMPLER_1D: {
               Shader::ShaderTexSpec bind;
@@ -142,6 +145,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               s->_tex_spec.push_back(bind);
               continue; }
             case GL_SAMPLER_2D_SHADOW:
+#endif
             case GL_SAMPLER_2D: {
               Shader::ShaderTexSpec bind;
               bind._id = arg_id;
@@ -168,12 +172,14 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               continue; }
             case GL_FLOAT_MAT2:
             case GL_FLOAT_MAT3:
+#ifndef OPENGLES
             case GL_FLOAT_MAT2x3:
             case GL_FLOAT_MAT2x4:
             case GL_FLOAT_MAT3x2:
             case GL_FLOAT_MAT3x4:
             case GL_FLOAT_MAT4x2:
             case GL_FLOAT_MAT4x3:
+#endif
               GLCAT.warning() << "GLSL shader requested an unrecognized matrix type\n";
               continue;
             case GL_FLOAT_MAT4: {
@@ -846,4 +852,5 @@ glsl_compile_shader(GSG *gsg) {
   return true;
 }
 
+#endif  // OPENGLES_1
 

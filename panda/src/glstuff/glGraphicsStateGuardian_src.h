@@ -113,6 +113,7 @@ typedef void (APIENTRYP PFNGLLOADPALETTEFROMMODELVIEWMATRIXOESPROC) (void);
 typedef void (APIENTRYP PFNGLMATRIXINDEXPOINTEROESPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 typedef void (APIENTRYP PFNGLWEIGHTPOINTEROESPROC) (GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 
+#ifndef OPENGLES_1
 // GLSL shader functions
 typedef void (APIENTRYP PFNGLATTACHSHADERPROC) (GLuint program, GLuint shader);
 typedef void (APIENTRYP PFNGLCOMPILESHADERPROC) (GLuint shader);
@@ -138,6 +139,7 @@ typedef void (APIENTRYP PFNGLUNIFORM3FVPROC) (GLint location, GLsizei count, con
 typedef void (APIENTRYP PFNGLUNIFORM4FVPROC) (GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
+#endif
 #endif  // __EDG__
 
 ////////////////////////////////////////////////////////////////////
@@ -431,12 +433,14 @@ protected:
   bool _point_perspective;
   bool _vertex_blending_enabled;
 
+#ifndef OPENGLES_1
   PT(Shader)  _current_shader;
   CLP(ShaderContext)  *_current_shader_context;
   PT(Shader)  _vertex_array_shader;
   CLP(ShaderContext)  *_vertex_array_shader_context;
   PT(Shader)  _texture_binding_shader;
   CLP(ShaderContext)  *_texture_binding_shader_context;
+#endif
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   CLP(ImmediateModeSender) _sender;
@@ -574,6 +578,7 @@ public:
 
   PFNGLACTIVESTENCILFACEEXTPROC _glActiveStencilFaceEXT;
 
+#ifndef OPENGLES_1
   // GLSL functions
   PFNGLATTACHSHADERPROC _glAttachShader;
   PFNGLCOMPILESHADERPROC _glCompileShader;
@@ -599,6 +604,7 @@ public:
   PFNGLUNIFORM4FVPROC _glUniform4fv;
   PFNGLUNIFORMMATRIX4FVPROC _glUniformMatrix4fv;
   PFNGLVALIDATEPROGRAMPROC _glValidateProgram;
+#endif
 
   GLenum _edge_clamp;
   GLenum _border_clamp;

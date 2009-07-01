@@ -849,10 +849,15 @@ reset() {
 #ifdef OPENGLES_2
   _supports_glsl = true;
 #else
-  _supports_glsl = is_at_least_gl_version(2, 0);
+  #ifdef OPENGLES_1
+    _supports_glsl = false;
+  #else
+    _supports_glsl = is_at_least_gl_version(2, 0);
+  #endif
 #endif
   _shader_caps._supports_glsl = _supports_glsl;
 
+#ifndef OPENGLES_1
   if (_supports_glsl) {
     _glAttachShader = (PFNGLATTACHSHADERPROC)
        get_extension_func(GLPREFIX_QUOTED, "AttachShader");
@@ -903,6 +908,7 @@ reset() {
     _glValidateProgram = (PFNGLVALIDATEPROGRAMPROC)
        get_extension_func(GLPREFIX_QUOTED, "ValidateProgram");
   }
+#endif
 
 #ifdef OPENGLES_2
   // In OpenGL ES 2.x, FBO's are supported in the core.
@@ -1394,12 +1400,14 @@ reset() {
 #endif  // OPENGLES
   _dithering_enabled = false;
 
+#ifndef OPENGLES_1
   _current_shader = (Shader *)NULL;
   _current_shader_context = (CLP(ShaderContext) *)NULL;
   _vertex_array_shader = (Shader *)NULL;
   _vertex_array_shader_context = (CLP(ShaderContext) *)NULL;
   _texture_binding_shader = (Shader *)NULL;
   _texture_binding_shader_context = (CLP(ShaderContext) *)NULL;
+#endif
 
 #ifdef OPENGLES_2
   _max_lights = 0;
@@ -1905,6 +1913,7 @@ void CLP(GraphicsStateGuardian)::
 end_scene() {
   GraphicsStateGuardian::end_scene();
 
+#ifndef OPENGLES_1
   if (_vertex_array_shader_context != 0) {
     _vertex_array_shader_context->disable_shader_vertex_arrays(this);
     _vertex_array_shader = (Shader *)NULL;
@@ -1920,6 +1929,7 @@ end_scene() {
     _current_shader = (Shader *)NULL;
     _current_shader_context = (CLP(ShaderContext) *)NULL;
   }
+#endif
 
   _dlights.clear();
   report_my_gl_errors();
@@ -2238,6 +2248,11 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
   }
 #endif
   
+#ifdef OPENGLES_1
+  if (!update_standard_vertex_arrays(force)) {
+    return false;
+  }
+#else
   if (_current_shader_context == 0 || !_current_shader_context->uses_custom_vertex_arrays()) {
     // No shader, or a non-Cg shader.
     if (_vertex_array_shader_context != 0) {
@@ -2263,6 +2278,7 @@ begin_draw_primitives(const GeomPipelineReader *geom_reader,
 
   _vertex_array_shader = _current_shader;
   _vertex_array_shader_context = _current_shader_context;
+#endif  // OPENGLES_1
 
   report_my_gl_errors();
   return true;
@@ -3132,9 +3148,11 @@ release_geom(GeomContext *gc) {
 ////////////////////////////////////////////////////////////////////
 ShaderContext *CLP(GraphicsStateGuardian)::
 prepare_shader(Shader *se) {
+#ifndef OPENGLES_1
   CLP(ShaderContext) *result = new CLP(ShaderContext)(se, this);
   if (result->valid()) return result;
   delete result;
+#endif
   return NULL;
 }
 
@@ -3145,8 +3163,10 @@ prepare_shader(Shader *se) {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 release_shader(ShaderContext *sc) {
+#ifndef OPENGLES_1
   CLP(ShaderContext) *gsc = DCAST(CLP(ShaderContext), sc);
   delete gsc;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3988,9 +4008,11 @@ do_issue_transform() {
     do_auto_rescale_normal();
   }
 
+#ifndef OPENGLES_1
   if (_current_shader_context) {
     _current_shader_context->issue_parameters(this, Shader::SSD_transform);
   }
+#endif
 
   report_my_gl_errors();
 }
@@ -4025,6 +4047,7 @@ do_issue_shade_model() {
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
 do_issue_shader() {
+#ifndef OPENGLES_1
   CLP(ShaderContext) *context = 0;
   Shader *shader = (Shader *)(_target_shader->get_shader());
   if (shader) {
@@ -4054,6 +4077,7 @@ do_issue_shader() {
   }
 
   report_my_gl_errors();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -6705,10 +6729,12 @@ set_state_and_transform(const RenderState *target,
     do_issue_color_scale();
     _state_mask.set_bit(color_slot);
     _state_mask.set_bit(color_scale_slot);
+#ifndef OPENGLES_1
     if (_current_shader_context) {
       _current_shader_context->issue_parameters(this, Shader::SSD_color);
       _current_shader_context->issue_parameters(this, Shader::SSD_colorscale);
     }
+#endif
   }
 
   int cull_face_slot = CullFaceAttrib::get_class_slot();
@@ -6785,12 +6811,14 @@ set_state_and_transform(const RenderState *target,
     _state_mask.set_bit(color_blend_slot);
   }
 
+#ifndef OPENGLES_1
   if (_target_shader != _state_shader) {
     //PStatTimer timer(_draw_set_state_shader_pcollector);
     do_issue_shader();
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
+#endif
 
   int texture_slot = TextureAttrib::get_class_slot();
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||
@@ -6848,9 +6876,11 @@ set_state_and_transform(const RenderState *target,
     //PStatTimer timer(_draw_set_state_material_pcollector);
     do_issue_material();
     _state_mask.set_bit(material_slot);
+#ifndef OPENGLES_1
     if (_current_shader_context) {
       _current_shader_context->issue_parameters(this, Shader::SSD_material);
     }
+#endif
   }
 
   int light_slot = LightAttrib::get_class_slot();
@@ -6868,8 +6898,10 @@ set_state_and_transform(const RenderState *target,
     do_issue_stencil();
     _state_mask.set_bit(stencil_slot);
   }
-     
+
+#ifndef OPENGLES_1
   if (_current_shader_context == 0) {
+#endif
     int fog_slot = FogAttrib::get_class_slot();
     if (_target_rs->get_attrib(fog_slot) != _state_rs->get_attrib(fog_slot) ||
         !_state_mask.get_bit(fog_slot)) {
@@ -6877,7 +6909,9 @@ set_state_and_transform(const RenderState *target,
       do_issue_fog();
       _state_mask.set_bit(fog_slot);
     }
+#ifndef OPENGLES_1
   }
+#endif
 
   int scissor_slot = ScissorAttrib::get_class_slot();
   if (_target_rs->get_attrib(scissor_slot) != _state_rs->get_attrib(scissor_slot) ||
@@ -6967,6 +7001,9 @@ void CLP(GraphicsStateGuardian)::
 do_issue_texture() {
   DO_PSTATS_STUFF(_texture_state_pcollector.add_level(1));
 
+#ifdef OPENGLES_1
+  update_standard_texture_bindings();
+#else
   if (_current_shader_context == 0 || !_current_shader_context->uses_custom_texture_bindings()) {
     // No shader, or a non-Cg shader.
     if (_texture_binding_shader_context != 0) {
@@ -6985,6 +7022,7 @@ do_issue_texture() {
 
   _texture_binding_shader = _current_shader;
   _texture_binding_shader_context = _current_shader_context;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

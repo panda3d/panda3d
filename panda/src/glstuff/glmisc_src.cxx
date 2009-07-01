@@ -163,7 +163,9 @@ void CLP(init_classes)() {
   CLP(GeomMunger)::init_type();
   CLP(GraphicsStateGuardian)::init_type();
   CLP(IndexBufferContext)::init_type();
+#ifndef OPENGLES_1
   CLP(ShaderContext)::init_type();
+#endif
   CLP(TextureContext)::init_type();
   CLP(VertexBufferContext)::init_type();
   CLP(GraphicsBuffer)::init_type();
