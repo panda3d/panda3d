@@ -40,6 +40,8 @@ EggGroup(const string &name) : EggGroupNode(name) {
   _blend_operand_a = BO_unspecified;
   _blend_operand_b = BO_unspecified;
   _blend_color = Colorf::zero();
+  _u_speed = 0;
+  _v_speed = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -75,6 +77,8 @@ operator = (const EggGroup &copy) {
   _blend_operand_b = copy._blend_operand_b;
   _blend_color = copy._blend_color;
   _tag_data = copy._tag_data;
+  _u_speed = copy._u_speed;
+  _v_speed = copy._v_speed;
   _default_pose = copy._default_pose;
 
   unref_all_vertices();
@@ -225,6 +229,19 @@ write(ostream &out, int indent_level) const {
   if (get_group_type() == GT_joint && _default_pose.has_transform()) {
     _default_pose.write(out, indent_level + 2, "<DefaultPose>");
   }
+
+  if(get_scroll_u() != 0) {
+    indent(out, indent_level) 
+      << "<Scalar> scroll_u { " << get_scroll_u() << " }\n";
+
+  }
+
+  if(get_scroll_v() != 0) {
+    indent(out, indent_level) 
+      << "<Scalar> scroll_v { " << get_scroll_v() << " }\n";
+
+  }
+
 
   write_object_types(out, indent_level + 2);
   write_decal_flags(out, indent_level + 2);

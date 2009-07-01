@@ -270,6 +270,13 @@ PUBLISHED:
   INLINE void set_default_pose(const EggTransform &transform);
   INLINE void clear_default_pose();
 
+  INLINE void set_scroll_u(const double u_speed);
+  INLINE void set_scroll_v(const double v_speed);
+  INLINE double get_scroll_u() const;
+  INLINE double get_scroll_v() const;
+
+  INLINE bool has_scrolling_uvs();
+
 public:
   INLINE TagData::const_iterator tag_begin() const;
   INLINE TagData::const_iterator tag_end() const;
@@ -368,6 +375,9 @@ private:
   double _fps;
   PT(EggSwitchCondition) _lod;
   TagData _tag_data;
+
+  double _u_speed;
+  double _v_speed;
 
   // This is the <DefaultPose> entry for a <Joint>.  It is not the
   // <Transform> entry (that is stored via inheritance, in the

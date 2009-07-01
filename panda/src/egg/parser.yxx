@@ -1292,6 +1292,12 @@ group_body:
   } else if (cmp_nocase_uh(name, "indexed") == 0) {
     group->set_indexed_flag(value != 0);
 
+  } else if (cmp_nocase_uh(name, "scroll_u") == 0) {
+    group->set_scroll_u(value);
+
+  } else if (cmp_nocase_uh(name, "scroll_v") == 0) {
+    group->set_scroll_v(value);
+
   } else if (cmp_nocase_uh(name, "blend") == 0) {
     EggGroup::BlendMode blend_mode =
       EggGroup::string_blend_mode(strval);
