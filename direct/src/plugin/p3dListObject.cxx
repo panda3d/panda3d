@@ -1,4 +1,4 @@
-// Filename: p3dListValue.cxx
+// Filename: p3dListObject.cxx
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,92 +12,75 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dListValue.h"
+#include "p3dListObject.h"
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListValue::Default Constructor
+//     Function: P3DListObject::Default Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DListValue::
-P3DListValue() : P3DValue(P3D_VT_list) { 
+P3DListObject::
+P3DListObject() : P3DObject(P3D_OT_list) { 
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListValue::Constructor
-//       Access: Public
-//  Description: Note that the ownership of the elements in the array
-//               (but not the array itself) is transferred to the
-//               list.
-////////////////////////////////////////////////////////////////////
-P3DListValue::
-P3DListValue(P3DValue * const elements[], int num_elements) :
-  P3DValue(P3D_VT_list)
-{
-  _elements.reserve(num_elements);
-  for (int i = 0; i < num_elements; ++i) {
-    _elements.push_back(elements[i]);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DListValue::Copy Constructor
+//     Function: P3DListObject::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DListValue::
-P3DListValue(const P3DListValue &copy) :
-  P3DValue(copy)
+P3DListObject::
+P3DListObject(const P3DListObject &copy) :
+  P3DObject(copy)
 {
   _elements.reserve(copy._elements.size());
   Elements::const_iterator ei;
   for (ei = copy._elements.begin(); ei != copy._elements.end(); ++ei) {
-    _elements.push_back((*ei)->make_copy());
+    _elements.push_back(P3D_OBJECT_COPY(*ei));
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListValue::Destructor
+//     Function: P3DListObject::Destructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DListValue::
-~P3DListValue() {
+P3DListObject::
+~P3DListObject() {
   Elements::iterator ei;
   for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
-    delete (*ei);
+    P3D_OBJECT_FINISH(*ei);
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListValue::make_copy
+//     Function: P3DListObject::make_copy
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DValue *P3DListValue::
-make_copy() {
-  return new P3DListValue(*this);
+P3DObject *P3DListObject::
+make_copy() const {
+  return new P3DListObject(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListValue::get_bool
+//     Function: P3DListObject::get_bool
 //       Access: Public, Virtual
-//  Description: Returns the value value coerced to a boolean, if
+//  Description: Returns the object value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DListValue::
+bool P3DListObject::
 get_bool() const {
   return !_elements.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListValue::make_string
+//     Function: P3DListObject::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DListValue::
+void P3DListObject::
 make_string(string &value) const {
   ostringstream strm;
   strm << "[";
@@ -113,55 +96,78 @@ make_string(string &value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListValue::get_list_length
+//     Function: P3DListObject::get_list_length
 //       Access: Public, Virtual
-//  Description: Returns the length of the value value as a list.
+//  Description: Returns the length of the object as a list.
 ////////////////////////////////////////////////////////////////////
-int P3DListValue::
+int P3DListObject::
 get_list_length() const {
   return _elements.size();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListValue::get_list_item
+//     Function: P3DListObject::get_element
 //       Access: Public, Virtual
 //  Description: Returns the nth item in the value as a list.  The
-//               return value is a freshly-allocated P3DValue object
+//               return value is a freshly-allocated P3DObject object
 //               that must be deleted by the caller, or NULL on error.
 ////////////////////////////////////////////////////////////////////
-P3DValue *P3DListValue::
-get_list_item(int n) const {
+P3D_object *P3DListObject::
+get_element(int n) const {
   if (n >= 0 && n < (int)_elements.size()) {
-    return _elements[n]->make_copy();
+    return P3D_OBJECT_COPY(_elements[n]);
   }
 
   return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListValue::append_item
+//     Function: P3DListObject::set_element
 //       Access: Public, Virtual
-//  Description: Appends a new item to the end of the list.  Ownership
-//               of the item is transferred to the list.
+//  Description: Modifies (or deletes, if value is NULL) the nth item
+//               in the value as a list.  Returns true on success,
+//               false on failure.
 ////////////////////////////////////////////////////////////////////
-void P3DListValue::
-append_item(P3DValue *item) {
-  _elements.push_back(item);
+bool P3DListObject::
+set_element(int n, P3D_object *value) {
+  if (n < 0 || n > (int)_elements.size()) {
+    // Invalid index.
+    return false;
+  }
+
+  if (n == _elements.size()) {
+    // Append one.
+    _elements.push_back(NULL);
+  }
+  if (_elements[n] != NULL) {
+    // Delete prior.
+    P3D_OBJECT_FINISH(_elements[n]);
+  }
+  _elements[n] = value;
+
+  // Delete NULL elements on the end.
+  while (!_elements.empty() && _elements.back() == NULL) {
+    _elements.pop_back();
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DListValue::make_xml
+//     Function: P3DListObject::make_xml
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new XML structure
 //               corresponding to this value.
 ////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DListValue::
+TiXmlElement *P3DListObject::
 make_xml() const {
   TiXmlElement *xvalue = new TiXmlElement("value");
   xvalue->SetAttribute("type", "list");
   Elements::const_iterator ei;
   for (ei = _elements.begin(); ei != _elements.end(); ++ei) {
-    TiXmlElement *xchild = (*ei)->make_xml();
+    P3D_object *child = (*ei);
+    assert(child->_class == &P3DObject::_object_class);
+    TiXmlElement *xchild = ((P3DObject *)child)->make_xml();
     xvalue->LinkEndChild(xchild);
   }
 

@@ -1,4 +1,4 @@
-// Filename: p3dFloatValue.h
+// Filename: p3dStringObject.h
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,32 +12,34 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DFLOATVALUE_H
-#define P3DFLOATVALUE_H
+#ifndef P3DSTRINGOBJECT_H
+#define P3DSTRINGOBJECT_H
 
 #include "p3d_plugin_common.h"
-#include "p3dValue.h"
+#include "p3dObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DFloatValue
-// Description : A value type that contains a floating-point value.
+//       Class : P3DStringObject
+// Description : An object type that contains a string value.
 ////////////////////////////////////////////////////////////////////
-class P3DFloatValue : public P3DValue {
+class P3DStringObject : public P3DObject {
 public:
-  P3DFloatValue(double value);
-  P3DFloatValue(const P3DFloatValue &copy);
+  P3DStringObject(const string &value);
+  P3DStringObject(const P3DStringObject &copy);
 
 public:
-  virtual P3DValue *make_copy(); 
+  virtual ~P3DStringObject();
+
+  virtual P3DObject *make_copy() const; 
   virtual bool get_bool() const;
-  virtual int get_int() const;
-  virtual double get_float() const;
   virtual void make_string(string &value) const;
 
   virtual TiXmlElement *make_xml() const;
 
+  virtual void output(ostream &out) const;
+
 private:
-  double _value;
+  string _value;
 };
 
 #endif

@@ -450,16 +450,6 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
         request->_request._notify._message = strdup(message);
       }
 
-    } else if (strcmp(rtype, "evaluate") == 0) {
-      const char *expression = xrequest->Attribute("expression");
-      int unique_id;
-      if (expression != NULL && xrequest->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
-        request = new P3D_request;
-        request->_request_type = P3D_RT_evaluate;
-        request->_request._evaluate._expression = strdup(expression);
-        request->_request._evaluate._unique_id = unique_id;
-      }
-
     } else {
       nout << "ignoring request of type " << rtype << "\n";
     }
@@ -472,31 +462,31 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
 //     Function: P3DSession::rt_from_xml_value
 //       Access: Private
 //  Description: Converts the XML representation of the particular
-//               value value into a corresponding P3DValue object.
+//               value value into a corresponding P3DObject object.
 //               Returns the newly-allocated object.
 ////////////////////////////////////////////////////////////////////
-P3DValue *P3DSession::
+P3DObject *P3DSession::
 rt_from_xml_value(TiXmlElement *xvalue) {
   const char *type = xvalue->Attribute("type");
   if (strcmp(type, "none") == 0) {
-    return new P3DNoneValue;
+    return new P3DNoneObject;
 
   } else if (strcmp(type, "bool") == 0) {
     int value;
     if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
-      return new P3DBoolValue(value != 0);
+      return new P3DBoolObject(value != 0);
     }
 
   } else if (strcmp(type, "int") == 0) {
     int value;
     if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
-      return new P3DIntValue(value);
+      return new P3DIntObject(value);
     }
 
   } else if (strcmp(type, "float") == 0) {
     double value;
     if (xvalue->QueryDoubleAttribute("value", &value) == TIXML_SUCCESS) {
-      return new P3DFloatValue(value);
+      return new P3DFloatObject(value);
     }
 
   } else if (strcmp(type, "string") == 0) {
@@ -504,22 +494,22 @@ rt_from_xml_value(TiXmlElement *xvalue) {
     // don't get tripped up on embedded null characters.
     const string *value = xvalue->Attribute(string("value"));
     if (value != NULL) {
-      return new P3DStringValue(*value);
+      return new P3DStringObject(*value);
     }
 
   } else if (strcmp(type, "list") == 0) {
-    P3DListValue *list = new P3DListValue;
+    P3DListObject *list = new P3DListObject;
 
     TiXmlElement *xchild = xvalue->FirstChildElement("value");
     while (xchild != NULL) {
-      list->append_item(rt_from_xml_value(xchild));
+      list->set_element(list->get_list_length(), rt_from_xml_value(xchild));
       xchild = xchild->NextSiblingElement("value");
     }
     return list;
   }
 
   // Something went wrong in decoding.
-  return new P3DNoneValue;
+  return new P3DNoneObject;
 }
 
 ////////////////////////////////////////////////////////////////////

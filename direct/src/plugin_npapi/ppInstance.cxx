@@ -384,17 +384,6 @@ handle_request(P3D_request *request) {
     }
     break;
 
-  case P3D_RT_evaluate:
-    {
-      logfile << "Got P3D_RT_evaluate: "
-              << request->_request._evaluate._expression << "\n"
-              << flush;
-      const string &expression = request->_request._evaluate._expression;
-      int unique_id = request->_request._evaluate._unique_id;
-      handle_evaluate(expression, unique_id);
-    }
-    break;
-
   default:
     // Some request types are not handled.
     logfile << "Unhandled request: " << request->_request_type << "\n";
@@ -622,44 +611,6 @@ send_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::handle_evaluate
-//       Access: Private
-//  Description: Evaluates the script within the window, as requested
-//               by the Panda code.
-////////////////////////////////////////////////////////////////////
-void PPInstance::
-handle_evaluate(const string &expression, int unique_id) {
-  NPObject *window = NULL;
-  if (browser->getvalue(_npp_instance, NPNVWindowNPObject, &window) == NPERR_NO_ERROR) {
-    logfile << "Got object for NPNVWindowNPObject: " << window << "\n";
-    
-    NPString script;
-    script.utf8characters = expression.c_str();
-    script.utf8length = expression.length();
-    NPVariant result;
-    if (browser->evaluate(_npp_instance, window, &script, &result)) {
-      logfile << "Evaluated, result = ";
-      show_np_variant(result);
-      logfile << "\n" << flush;
-
-      P3D_value *value = np_variant_to_value(result);
-      browser->releasevariantvalue(&result);
-
-      P3D_instance_feed_value(_p3d_inst, unique_id, value);
-
-    } else {
-      logfile << "Couldn't evaluate\n";
-      P3D_instance_feed_value(_p3d_inst, unique_id, NULL);
-    }
-    
-  } else {
-    logfile << "Couldn't get object for NPNVWindowNPObject: " << window
-            << "\n";
-    P3D_instance_feed_value(_p3d_inst, unique_id, NULL);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::show_np_variant
 //       Access: Private
 //  Description: Outputs the variant value.
@@ -686,29 +637,29 @@ show_np_variant(const NPVariant &result) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::np_variant_to_value
+//     Function: PPInstance::np_variant_to_object
 //       Access: Private
-//  Description: Returns a fresly-allocated P3D_value object
-//               corresponding to the indicated NPVariant.
+//  Description: Returns a freshly-allocated P3D_object corresponding
+//               to the indicated NPVariant.
 ////////////////////////////////////////////////////////////////////
-P3D_value *PPInstance::
-np_variant_to_value(const NPVariant &result) {
+P3D_object *PPInstance::
+np_variant_to_object(const NPVariant &result) {
   if (NPVARIANT_IS_NULL(result)) {
     return NULL;
   } else if (NPVARIANT_IS_VOID(result)) {
-    return P3D_new_none_value();
+    return P3D_new_none_object();
   } else if (NPVARIANT_IS_BOOLEAN(result)) {
-    return P3D_new_bool_value(NPVARIANT_TO_BOOLEAN(result));
+    return P3D_new_bool_object(NPVARIANT_TO_BOOLEAN(result));
   } else if (NPVARIANT_IS_INT32(result)) {
-    return P3D_new_int_value(NPVARIANT_TO_INT32(result));
+    return P3D_new_int_object(NPVARIANT_TO_INT32(result));
   } else if (NPVARIANT_IS_DOUBLE(result)) {
-    return P3D_new_float_value(NPVARIANT_TO_DOUBLE(result));
+    return P3D_new_float_object(NPVARIANT_TO_DOUBLE(result));
   } else if (NPVARIANT_IS_STRING(result)) {
     NPString str = NPVARIANT_TO_STRING(result);
-    return P3D_new_string_value(str.utf8characters, str.utf8length);
+    return P3D_new_string_object(str.utf8characters, str.utf8length);
   } else if (NPVARIANT_IS_OBJECT(result)) {
     // TODO?
-    return P3D_new_none_value();
+    return P3D_new_none_object();
     // NPVARIANT_TO_OBJECT(result);
   }
 

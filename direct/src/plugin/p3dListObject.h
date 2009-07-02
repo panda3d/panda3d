@@ -1,4 +1,4 @@
-// Filename: p3dNoneValue.h
+// Filename: p3dListObject.h
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,27 +12,36 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DNONEVALUE_H
-#define P3DNONEVALUE_H
+#ifndef P3DLISTOBJECT_H
+#define P3DLISTOBJECT_H
 
 #include "p3d_plugin_common.h"
-#include "p3dValue.h"
+#include "p3dObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DNoneValue
-// Description : A value type that contains no value, similar to
-//               Python's None type.
+//       Class : P3DListObject
+// Description : An object type that contains a list of objects.
 ////////////////////////////////////////////////////////////////////
-class P3DNoneValue : public P3DValue {
+class P3DListObject : public P3DObject {
 public:
-  P3DNoneValue();
+  P3DListObject();
+  P3DListObject(const P3DListObject &copy);
 
 public:
-  virtual P3DValue *make_copy();
+  virtual ~P3DListObject();
+
+  virtual P3DObject *make_copy() const; 
   virtual bool get_bool() const;
   virtual void make_string(string &value) const;
+  virtual int get_list_length() const;
+  virtual P3D_object *get_element(int n) const;
+  virtual bool set_element(int n, P3D_object *value);
 
   virtual TiXmlElement *make_xml() const;
+
+private:
+  typedef vector<P3D_object *> Elements;
+  Elements _elements;
 };
 
 #endif

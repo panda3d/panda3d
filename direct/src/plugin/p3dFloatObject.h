@@ -1,4 +1,4 @@
-// Filename: p3dListValue.h
+// Filename: p3dFloatObject.h
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,38 +12,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DLISTVALUE_H
-#define P3DLISTVALUE_H
+#ifndef P3DFLOATOBJECT_H
+#define P3DFLOATOBJECT_H
 
 #include "p3d_plugin_common.h"
-#include "p3dValue.h"
+#include "p3dObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DListValue
-// Description : A value type that contains a list of other values.
+//       Class : P3DFloatObject
+// Description : An object type that contains a floating-point value.
 ////////////////////////////////////////////////////////////////////
-class P3DListValue : public P3DValue {
+class P3DFloatObject : public P3DObject {
 public:
-  P3DListValue();
-  P3DListValue(P3DValue * const elements[], int num_elements);
-  P3DListValue(const P3DListValue &copy);
+  P3DFloatObject(double value);
+  P3DFloatObject(const P3DFloatObject &copy);
 
 public:
-  virtual ~P3DListValue();
-
-  virtual P3DValue *make_copy(); 
+  virtual P3DObject *make_copy() const; 
   virtual bool get_bool() const;
+  virtual int get_int() const;
+  virtual double get_float() const;
   virtual void make_string(string &value) const;
-  virtual int get_list_length() const;
-  virtual P3DValue *get_list_item(int n) const;
-
-  void append_item(P3DValue *item);
 
   virtual TiXmlElement *make_xml() const;
 
 private:
-  typedef vector<P3DValue *> Elements;
-  Elements _elements;
+  double _value;
 };
 
 #endif

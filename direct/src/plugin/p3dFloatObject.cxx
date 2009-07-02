@@ -1,4 +1,4 @@
-// Filename: p3dFloatValue.cxx
+// Filename: p3dFloatObject.cxx
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,82 +12,82 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dFloatValue.h"
+#include "p3dFloatObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatValue::Constructor
+//     Function: P3DFloatObject::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DFloatValue::
-P3DFloatValue(double value) : 
-  P3DValue(P3D_VT_float),
+P3DFloatObject::
+P3DFloatObject(double value) : 
+  P3DObject(P3D_OT_float),
   _value(value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatValue::Copy Constructor
+//     Function: P3DFloatObject::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DFloatValue::
-P3DFloatValue(const P3DFloatValue &copy) :
-  P3DValue(copy),
+P3DFloatObject::
+P3DFloatObject(const P3DFloatObject &copy) :
+  P3DObject(copy),
   _value(copy._value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatValue::make_copy
+//     Function: P3DFloatObject::make_copy
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DValue *P3DFloatValue::
-make_copy() {
-  return new P3DFloatValue(*this);
+P3DObject *P3DFloatObject::
+make_copy() const {
+  return new P3DFloatObject(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatValue::get_bool
+//     Function: P3DFloatObject::get_bool
 //       Access: Public, Virtual
-//  Description: Returns the value value coerced to a boolean, if
+//  Description: Returns the object value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DFloatValue::
+bool P3DFloatObject::
 get_bool() const {
   return (_value != 0.0);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatValue::get_int
+//     Function: P3DFloatObject::get_int
 //       Access: Public, Virtual
-//  Description: Returns the value value coerced to an integer, if
+//  Description: Returns the object value coerced to an integer, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-int P3DFloatValue::
+int P3DFloatObject::
 get_int() const {
   return (int)_value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatValue::get_float
+//     Function: P3DFloatObject::get_float
 //       Access: Public, Virtual
-//  Description: Returns the value value coerced to a floating-point
+//  Description: Returns the object value coerced to a floating-point
 //               value, if possible.
 ////////////////////////////////////////////////////////////////////
-double P3DFloatValue::
+double P3DFloatObject::
 get_float() const {
   return _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatValue::make_string
+//     Function: P3DFloatObject::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DFloatValue::
+void P3DFloatObject::
 make_string(string &value) const {
   ostringstream strm;
   strm << _value;
@@ -96,12 +96,12 @@ make_string(string &value) const {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatValue::make_xml
+//     Function: P3DFloatObject::make_xml
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new XML structure
 //               corresponding to this value.
 ////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DFloatValue::
+TiXmlElement *P3DFloatObject::
 make_xml() const {
   TiXmlElement *xvalue = new TiXmlElement("value");
   xvalue->SetAttribute("type", "float");

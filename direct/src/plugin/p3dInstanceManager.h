@@ -62,6 +62,8 @@ public:
   int get_unique_session_index();
   void signal_request_ready();
 
+  P3D_class_definition *make_class_definition() const;
+
   static P3DInstanceManager *get_global_ptr();
 
 private:

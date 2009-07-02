@@ -1,4 +1,4 @@
-// Filename: p3dValue.I
+// Filename: p3dIntObject.h
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,23 +12,32 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+#ifndef P3DINTOBJECT_H
+#define P3DINTOBJECT_H
+
+#include "p3d_plugin_common.h"
+#include "p3dObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DValue::Constructor
-//       Access: Public
-//  Description: 
+//       Class : P3DIntObject
+// Description : An object type that contains an integer value.
 ////////////////////////////////////////////////////////////////////
-inline P3DValue::
-P3DValue(P3D_value_type type) {
-  _type = type;
-}
+class P3DIntObject : public P3DObject {
+public:
+  P3DIntObject(int value);
+  P3DIntObject(const P3DIntObject &copy);
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DValue::Copy Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-inline P3DValue::
-P3DValue(const P3DValue &copy) {
-  _type = copy._type;
-}
+public:
+  virtual P3DObject *make_copy() const; 
+  virtual bool get_bool() const;
+  virtual int get_int() const;
+  virtual void make_string(string &value) const;
+
+  virtual TiXmlElement *make_xml() const;
+
+private:
+  int _value;
+};
+
+#endif
+

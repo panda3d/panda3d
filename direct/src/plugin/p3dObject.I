@@ -1,0 +1,45 @@
+// Filename: p3dObject.I
+// Created by:  drose (30Jun09)
+//
+////////////////////////////////////////////////////////////////////
+//
+// PANDA 3D SOFTWARE
+// Copyright (c) Carnegie Mellon University.  All rights reserved.
+//
+// All use of this software is subject to the terms of the revised BSD
+// license.  You should have received a copy of this license along
+// with this source code in a file named "LICENSE."
+//
+////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+inline P3DObject::
+P3DObject(P3D_object_type type) {
+  _class = &_object_class;
+  _type = type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+inline P3DObject::
+P3DObject(const P3DObject &copy) {
+  _type = copy._type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::get_type
+//       Access: Public
+//  Description: Returns the fundamental type of this kind of object.
+////////////////////////////////////////////////////////////////////
+inline P3D_object_type P3DObject::
+get_type() const {
+  return _type;
+}

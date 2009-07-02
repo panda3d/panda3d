@@ -1,4 +1,4 @@
-// Filename: p3dBoolValue.h
+// Filename: p3dNoneObject.h
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,31 +12,27 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DBOOLVALUE_H
-#define P3DBOOLVALUE_H
+#ifndef P3DNONEOBJECT_H
+#define P3DNONEOBJECT_H
 
 #include "p3d_plugin_common.h"
-#include "p3dValue.h"
+#include "p3dObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DBoolValue
-// Description : A value type that contains a boolean value.
+//       Class : P3DNoneObject
+// Description : An object type that contains no value, similar to
+//               Python's None type.
 ////////////////////////////////////////////////////////////////////
-class P3DBoolValue : public P3DValue {
+class P3DNoneObject : public P3DObject {
 public:
-  P3DBoolValue(bool value);
-  P3DBoolValue(const P3DBoolValue &copy);
+  P3DNoneObject();
 
 public:
-  virtual P3DValue *make_copy(); 
+  virtual P3DObject *make_copy() const;
   virtual bool get_bool() const;
-  virtual int get_int() const;
   virtual void make_string(string &value) const;
 
   virtual TiXmlElement *make_xml() const;
-
-private:
-  bool _value;
 };
 
 #endif

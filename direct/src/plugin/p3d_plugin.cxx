@@ -16,12 +16,12 @@
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
 #include "p3dWindowParams.h"
-#include "p3dNoneValue.h"
-#include "p3dBoolValue.h"
-#include "p3dIntValue.h"
-#include "p3dFloatValue.h"
-#include "p3dStringValue.h"
-#include "p3dListValue.h"
+#include "p3dNoneObject.h"
+#include "p3dBoolObject.h"
+#include "p3dIntObject.h"
+#include "p3dFloatObject.h"
+#include "p3dStringObject.h"
+#include "p3dListObject.h"
 
 #include <assert.h>
 
@@ -65,6 +65,10 @@ P3D_initialize(int api_version, const char *output_filename) {
   bool result = inst_mgr->initialize();
   RELEASE_LOCK(_lock);
   return result;
+}
+
+void 
+P3D_finalize() {
 }
 
 P3D_instance *
@@ -116,184 +120,105 @@ P3D_instance_setup_window(P3D_instance *instance,
   RELEASE_LOCK(_lock);
 }
 
-void 
-P3D_value_finish(P3D_value *value) {
+P3D_class_definition *
+P3D_make_class_definition() {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  if (value != NULL) {
-    delete (P3DValue *)value;
-  }
-  RELEASE_LOCK(_lock);
-}
 
-P3D_value *
-P3D_value_copy(const P3D_value *value) {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_lock);
-  P3D_value *result = ((P3DValue *)value)->make_copy();
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3D_class_definition *result = inst_mgr->make_class_definition();
+  
   RELEASE_LOCK(_lock);
   return result;
 }
 
-P3D_value *
-P3D_new_none_value() {
+P3D_object *
+P3D_new_none_object() {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  P3D_value *result = new P3DNoneValue();
+
+  P3D_object *result = new P3DNoneObject();
+  
   RELEASE_LOCK(_lock);
   return result;
 }
 
-P3D_value *
-P3D_new_bool_value(bool value) {
+P3D_object *
+P3D_new_bool_object(bool value) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  P3D_value *result = new P3DBoolValue(value);
+
+  P3D_object *result = new P3DBoolObject(value);
+  
   RELEASE_LOCK(_lock);
   return result;
 }
 
-bool
-P3D_value_get_bool(const P3D_value *value) {
+P3D_object *
+P3D_new_int_object(int value) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  bool result = ((const P3DValue *)value)->get_bool();
+
+  P3D_object *result = new P3DIntObject(value);
+  
   RELEASE_LOCK(_lock);
   return result;
 }
 
-P3D_value *
-P3D_new_int_value(int value) {
+P3D_object *
+P3D_new_float_object(double value) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  P3D_value *result = new P3DIntValue(value);
+
+  P3D_object *result = new P3DFloatObject(value);
+  
   RELEASE_LOCK(_lock);
   return result;
 }
 
-int
-P3D_value_get_int(const P3D_value *value) {
+P3D_object *
+P3D_new_string_object(const char *str, int length) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  int result = ((const P3DValue *)value)->get_int();
+
+  P3D_object *result = new P3DStringObject(string(str, length));
+  
   RELEASE_LOCK(_lock);
   return result;
 }
 
-P3D_value *
-P3D_new_float_value(double value) {
+P3D_object *
+P3D_new_list_object() {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  P3D_value *result = new P3DFloatValue(value);
+
+  P3D_object *result = new P3DListObject;
+  
   RELEASE_LOCK(_lock);
   return result;
 }
 
-double
-P3D_value_get_float(const P3D_value *value) {
+P3D_object *
+P3D_instance_get_script_object(P3D_instance *instance) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  double result = ((const P3DValue *)value)->get_float();
+
+  // TODO.
+  P3D_object *result = NULL;
+  
   RELEASE_LOCK(_lock);
   return result;
 }
 
-P3D_value *
-P3D_new_string_value(const char *value, int length) {
+void
+P3D_instance_set_script_object(P3D_instance *instance, 
+                               P3D_object *object) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
-  P3D_value *result = new P3DStringValue(string(value, length));
-  RELEASE_LOCK(_lock);
-  return result;
-}
 
-int
-P3D_value_get_string_length(const P3D_value *value) {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_lock);
-  int result = ((const P3DValue *)value)->get_string_length();
+  // TODO.
+  
   RELEASE_LOCK(_lock);
-  return result;
-}
-
-int
-P3D_value_extract_string(const P3D_value *value, char *buffer, 
-                           int buffer_length) {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_lock);
-  int result = 
-    ((const P3DValue *)value)->extract_string(buffer, buffer_length);
-  RELEASE_LOCK(_lock);
-  return result;
-}
-
-P3D_value *
-P3D_new_list_value(P3D_value * const elements[], int num_elements) {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_lock);
-  P3D_value *result = new P3DListValue((P3DValue * const *)elements, num_elements);
-  RELEASE_LOCK(_lock);
-  return result;
-}
-
-int
-P3D_value_get_list_length(const P3D_value *value) {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_lock);
-  int result = ((const P3DValue *)value)->get_list_length();
-  RELEASE_LOCK(_lock);
-  return result;
-}
-
-P3D_value *
-P3D_value_get_list_item(const P3D_value *value, int n) {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_lock);
-  P3D_value *result = ((const P3DValue *)value)->get_list_item(n);
-  RELEASE_LOCK(_lock);
-  return result;
-}
-
-P3D_value *
-P3D_instance_get_property(const P3D_instance *instance, 
-                          const char *property_name) {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_lock);
-  P3D_value *result = ((const P3DInstance *)instance)->get_property(property_name);
-  RELEASE_LOCK(_lock);
-  return result;
-}
-
-P3D_value *
-P3D_instance_get_property_list(const P3D_instance *instance, 
-                               const char *property_name) {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_lock);
-  P3D_value *result = ((const P3DInstance *)instance)->get_property_list(property_name);
-  RELEASE_LOCK(_lock);
-  return result;
-}
-
-bool
-P3D_instance_set_property(P3D_instance *instance, const char *property_name,
-                          const P3D_value *value) {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_lock);
-  bool result = 
-    ((P3DInstance *)instance)->set_property(property_name, (const P3DValue *)value);
-  RELEASE_LOCK(_lock);
-  return result;
-}
-
-P3D_value *
-P3D_instance_call(P3D_instance *instance, const char *property_name,
-                  const P3D_value *params) {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_lock);
-  P3D_value *result = 
-    ((P3DInstance *)instance)->call(property_name, (P3DValue *)params);
-  RELEASE_LOCK(_lock);
-  return result;
 }
 
 
@@ -355,13 +280,4 @@ P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
                     (const unsigned char *)this_data, this_data_size);
   RELEASE_LOCK(_lock);
   return result;
-}
-
-void
-P3D_instance_feed_value(P3D_instance *instance, int unique_id,
-                        P3D_value *value) {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_lock);
-  ((P3DInstance *)instance)->feed_value(unique_id, (P3DValue *)value);
-  RELEASE_LOCK(_lock);
 }

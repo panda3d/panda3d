@@ -1,4 +1,4 @@
-// Filename: p3dIntValue.cxx
+// Filename: p3dBoolObject.cxx
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,88 +12,89 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dIntValue.h"
+#include "p3dBoolObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntValue::Constructor
+//     Function: P3DBoolObject::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DIntValue::
-P3DIntValue(int value) : 
-  P3DValue(P3D_VT_int),
+P3DBoolObject::
+P3DBoolObject(bool value) : 
+  P3DObject(P3D_OT_bool),
   _value(value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntValue::Copy Constructor
+//     Function: P3DBoolObject::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DIntValue::
-P3DIntValue(const P3DIntValue &copy) :
-  P3DValue(copy),
+P3DBoolObject::
+P3DBoolObject(const P3DBoolObject &copy) :
+  P3DObject(copy),
   _value(copy._value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntValue::make_copy
+//     Function: P3DBoolObject::make_copy
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DValue *P3DIntValue::
-make_copy() {
-  return new P3DIntValue(*this);
+P3DObject *P3DBoolObject::
+make_copy() const {
+  return new P3DBoolObject(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntValue::get_bool
+//     Function: P3DBoolObject::get_bool
 //       Access: Public, Virtual
-//  Description: Returns the value value coerced to a boolean, if
+//  Description: Returns the object value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DIntValue::
+bool P3DBoolObject::
 get_bool() const {
-  return (_value != 0);
+  return _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntValue::get_int
+//     Function: P3DBoolObject::get_int
 //       Access: Public, Virtual
-//  Description: Returns the value value coerced to an integer, if
+//  Description: Returns the object value coerced to an integer, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-int P3DIntValue::
+int P3DBoolObject::
 get_int() const {
   return _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntValue::make_string
+//     Function: P3DBoolObject::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DIntValue::
+void P3DBoolObject::
 make_string(string &value) const {
-  ostringstream strm;
-  strm << _value;
-  value = strm.str();
+  if (_value) {
+    value = "True";
+  } else {
+    value = "False";
+  }
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntValue::make_xml
+//     Function: P3DBoolObject::make_xml
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new XML structure
 //               corresponding to this value.
 ////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DIntValue::
+TiXmlElement *P3DBoolObject::
 make_xml() const {
   TiXmlElement *xvalue = new TiXmlElement("value");
-  xvalue->SetAttribute("type", "int");
-  xvalue->SetAttribute("value", _value);
+  xvalue->SetAttribute("type", "bool");
+  xvalue->SetAttribute("value", (int)_value);
   return xvalue;
 }

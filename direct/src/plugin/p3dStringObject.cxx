@@ -1,4 +1,4 @@
-// Filename: p3dStringValue.cxx
+// Filename: p3dStringObject.cxx
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,80 +12,80 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dStringValue.h"
+#include "p3dStringObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringValue::Constructor
+//     Function: P3DStringObject::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DStringValue::
-P3DStringValue(const string &value) : 
-  P3DValue(P3D_VT_string),
+P3DStringObject::
+P3DStringObject(const string &value) : 
+  P3DObject(P3D_OT_string),
   _value(value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringValue::Copy Constructor
+//     Function: P3DStringObject::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DStringValue::
-P3DStringValue(const P3DStringValue &copy) :
-  P3DValue(copy),
+P3DStringObject::
+P3DStringObject(const P3DStringObject &copy) :
+  P3DObject(copy),
   _value(copy._value)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringValue::Destructor
+//     Function: P3DStringObject::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DStringValue::
-~P3DStringValue() {
+P3DStringObject::
+~P3DStringObject() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringValue::make_copy
+//     Function: P3DStringObject::make_copy
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DValue *P3DStringValue::
-make_copy() {
-  return new P3DStringValue(*this);
+P3DObject *P3DStringObject::
+make_copy() const {
+  return new P3DStringObject(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringValue::get_bool
+//     Function: P3DStringObject::get_bool
 //       Access: Public, Virtual
-//  Description: Returns the value value coerced to a boolean, if
+//  Description: Returns the object value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DStringValue::
+bool P3DStringObject::
 get_bool() const {
   return !_value.empty();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringValue::make_string
+//     Function: P3DStringObject::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DStringValue::
+void P3DStringObject::
 make_string(string &value) const {
   value = _value;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringValue::make_xml
+//     Function: P3DStringObject::make_xml
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new XML structure
 //               corresponding to this value.
 ////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DStringValue::
+TiXmlElement *P3DStringObject::
 make_xml() const {
   TiXmlElement *xvalue = new TiXmlElement("value");
   xvalue->SetAttribute("type", "string");
@@ -94,13 +94,13 @@ make_xml() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringValue::output
+//     Function: P3DStringObject::output
 //       Access: Public, Virtual
 //  Description: Writes a formatted representation of the value to the
 //               indicated string.  This is intended for developer
 //               assistance.
 ////////////////////////////////////////////////////////////////////
-void P3DStringValue::
+void P3DStringObject::
 output(ostream &out) const {
   out << '"';
   for (string::const_iterator si = _value.begin(); si != _value.end(); ++si) {

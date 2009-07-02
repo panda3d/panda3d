@@ -234,12 +234,6 @@ class AppRunner(DirectObject):
     def sendRequest(self, request, *args):
         self.requestFunc(self.instanceId, request, args)
 
-    def feedValue(self, uniqueId, value, success):
-        """ Called by the host in response to an 'evaluate'
-        request. """
-
-        print "feedValue(%s, %s, %s)" % (uniqueId, value, success)
-
     def windowEvent(self, win):
         print "Got window event in runp3d"
 

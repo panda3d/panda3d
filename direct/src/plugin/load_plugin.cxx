@@ -17,6 +17,8 @@
 
 #include "assert.h"
 
+#include <iostream>
+
 #ifndef _WIN32
 #include <dlfcn.h>
 #endif
@@ -32,36 +34,26 @@ static const string dll_ext = ".so";
 static const string default_plugin_filename = "p3d_plugin";
 
 P3D_initialize_func *P3D_initialize;
+P3D_finalize_func *P3D_finalize;
 P3D_new_instance_func *P3D_new_instance;
 P3D_instance_start_func *P3D_instance_start;
 P3D_instance_finish_func *P3D_instance_finish;
 P3D_instance_setup_window_func *P3D_instance_setup_window;
 
-P3D_value_finish_func *P3D_value_finish;
-P3D_value_copy_func *P3D_value_copy;
-P3D_new_none_value_func *P3D_new_none_value;
-P3D_new_bool_value_func *P3D_new_bool_value;
-P3D_value_get_bool_func *P3D_value_get_bool;
-P3D_new_int_value_func *P3D_new_int_value;
-P3D_value_get_int_func *P3D_value_get_int;
-P3D_new_float_value_func *P3D_new_float_value;
-P3D_value_get_float_func *P3D_value_get_float;
-P3D_new_string_value_func *P3D_new_string_value;
-P3D_value_get_string_length_func *P3D_value_get_string_length;
-P3D_value_extract_string_func *P3D_value_extract_string;
-P3D_new_list_value_func *P3D_new_list_value;
-P3D_value_get_list_length_func *P3D_value_get_list_length;
-P3D_value_get_list_item_func *P3D_value_get_list_item;
-P3D_instance_get_property_func *P3D_instance_get_property;
-P3D_instance_get_property_list_func *P3D_instance_get_property_list;
-P3D_instance_set_property_func *P3D_instance_set_property;
-P3D_instance_call_func *P3D_instance_call;
+P3D_make_class_definition_func *P3D_make_class_definition;
+P3D_new_none_object_func *P3D_new_none_object;
+P3D_new_bool_object_func *P3D_new_bool_object;
+P3D_new_int_object_func *P3D_new_int_object;
+P3D_new_float_object_func *P3D_new_float_object;
+P3D_new_string_object_func *P3D_new_string_object;
+P3D_new_list_object_func *P3D_new_list_object;
+P3D_instance_get_script_object_func *P3D_instance_get_script_object;
+P3D_instance_set_script_object_func *P3D_instance_set_script_object;
 
 P3D_instance_get_request_func *P3D_instance_get_request;
 P3D_check_request_func *P3D_check_request;
 P3D_request_finish_func *P3D_request_finish;
 P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;
-P3D_instance_feed_value_func *P3D_instance_feed_value;
 
 #ifdef _WIN32
 static HMODULE module = NULL;
@@ -157,6 +149,7 @@ load_plugin(const string &p3d_plugin_filename) {
     filename += ".";
   }
 
+  SetErrorMode(0);
   module = LoadLibrary(filename.c_str());
   if (module == NULL) {
     // Couldn't load the DLL.
@@ -178,73 +171,80 @@ load_plugin(const string &p3d_plugin_filename) {
 
 #endif  // _WIN32
 
+  cerr << "Got module = " << module << "\n";
+
   // Now get all of the function pointers.
   P3D_initialize = (P3D_initialize_func *)get_func(module, "P3D_initialize");  
+  P3D_finalize = (P3D_finalize_func *)get_func(module, "P3D_finalize");  
   P3D_new_instance = (P3D_new_instance_func *)get_func(module, "P3D_new_instance");  
   P3D_instance_start = (P3D_instance_start_func *)get_func(module, "P3D_instance_start");  
   P3D_instance_finish = (P3D_instance_finish_func *)get_func(module, "P3D_instance_finish");  
   P3D_instance_setup_window = (P3D_instance_setup_window_func *)get_func(module, "P3D_instance_setup_window");  
 
-  P3D_value_finish = (P3D_value_finish_func *)get_func(module, "P3D_value_finish");
-  P3D_value_copy = (P3D_value_copy_func *)get_func(module, "P3D_value_copy");
-  P3D_new_none_value = (P3D_new_none_value_func *)get_func(module, "P3D_new_none_value");
-  P3D_new_bool_value = (P3D_new_bool_value_func *)get_func(module, "P3D_new_bool_value");
-  P3D_value_get_bool = (P3D_value_get_bool_func *)get_func(module, "P3D_value_get_bool");
-  P3D_new_int_value = (P3D_new_int_value_func *)get_func(module, "P3D_new_int_value");
-  P3D_value_get_int = (P3D_value_get_int_func *)get_func(module, "P3D_value_get_int");
-  P3D_new_float_value = (P3D_new_float_value_func *)get_func(module, "P3D_new_float_value");
-  P3D_value_get_float = (P3D_value_get_float_func *)get_func(module, "P3D_value_get_float");
-  P3D_new_string_value = (P3D_new_string_value_func *)get_func(module, "P3D_new_string_value");
-  P3D_value_get_string_length = (P3D_value_get_string_length_func *)get_func(module, "P3D_value_get_string_length");
-  P3D_value_extract_string = (P3D_value_extract_string_func *)get_func(module, "P3D_value_extract_string");
-  P3D_new_list_value = (P3D_new_list_value_func *)get_func(module, "P3D_new_list_value");
-  P3D_value_get_list_length = (P3D_value_get_list_length_func *)get_func(module, "P3D_value_get_list_length");
-  P3D_value_get_list_item = (P3D_value_get_list_item_func *)get_func(module, "P3D_value_get_list_item");
-  P3D_instance_get_property = (P3D_instance_get_property_func *)get_func(module, "P3D_instance_get_property");
-  P3D_instance_get_property_list = (P3D_instance_get_property_list_func *)get_func(module, "P3D_instance_get_property_list");
-  P3D_instance_set_property = (P3D_instance_set_property_func *)get_func(module, "P3D_instance_set_property");
-  P3D_instance_call = (P3D_instance_call_func *)get_func(module, "P3D_instance_call");
+  P3D_make_class_definition = (P3D_make_class_definition_func *)get_func(module, "P3D_make_class_definition");
+  P3D_new_none_object = (P3D_new_none_object_func *)get_func(module, "P3D_new_none_object");
+  P3D_new_bool_object = (P3D_new_bool_object_func *)get_func(module, "P3D_new_bool_object");
+  P3D_new_int_object = (P3D_new_int_object_func *)get_func(module, "P3D_new_int_object");
+  P3D_new_float_object = (P3D_new_float_object_func *)get_func(module, "P3D_new_float_object");
+  P3D_new_string_object = (P3D_new_string_object_func *)get_func(module, "P3D_new_string_object");
+  P3D_new_list_object = (P3D_new_list_object_func *)get_func(module, "P3D_new_list_object");
+  P3D_instance_get_script_object = (P3D_instance_get_script_object_func *)get_func(module, "P3D_instance_get_script_object");
+  P3D_instance_set_script_object = (P3D_instance_set_script_object_func *)get_func(module, "P3D_instance_set_script_object");
 
   P3D_instance_get_request = (P3D_instance_get_request_func *)get_func(module, "P3D_instance_get_request");  
   P3D_check_request = (P3D_check_request_func *)get_func(module, "P3D_check_request");  
   P3D_request_finish = (P3D_request_finish_func *)get_func(module, "P3D_request_finish");  
   P3D_instance_feed_url_stream = (P3D_instance_feed_url_stream_func *)get_func(module, "P3D_instance_feed_url_stream");  
-  P3D_instance_feed_value = (P3D_instance_feed_value_func *)get_func(module, "P3D_instance_feed_value");  
 
   #undef get_func
 
   // Ensure that all of the function pointers have been found.
   if (P3D_initialize == NULL ||
+      P3D_finalize == NULL ||
       P3D_new_instance == NULL ||
       P3D_instance_start == NULL ||
       P3D_instance_finish == NULL ||
       P3D_instance_setup_window == NULL ||
 
-      P3D_value_finish == NULL ||
-      P3D_value_copy == NULL ||
-      P3D_new_none_value == NULL ||
-      P3D_new_bool_value == NULL ||
-      P3D_value_get_bool == NULL ||
-      P3D_new_int_value == NULL ||
-      P3D_value_get_int == NULL ||
-      P3D_new_float_value == NULL ||
-      P3D_value_get_float == NULL ||
-      P3D_new_string_value == NULL ||
-      P3D_value_get_string_length == NULL ||
-      P3D_value_extract_string == NULL ||
-      P3D_new_list_value == NULL ||
-      P3D_value_get_list_length == NULL ||
-      P3D_value_get_list_item == NULL ||
-      P3D_instance_get_property == NULL ||
-      P3D_instance_get_property_list == NULL ||
-      P3D_instance_set_property == NULL ||
-      P3D_instance_call == NULL ||
+      P3D_make_class_definition == NULL ||
+      P3D_new_none_object == NULL ||
+      P3D_new_bool_object == NULL ||
+      P3D_new_int_object == NULL ||
+      P3D_new_float_object == NULL ||
+      P3D_new_string_object == NULL ||
+      P3D_new_list_object == NULL ||
+      P3D_instance_get_script_object == NULL ||
+      P3D_instance_set_script_object == NULL ||
       
       P3D_instance_get_request == NULL ||
       P3D_check_request == NULL ||
       P3D_request_finish == NULL ||
-      P3D_instance_feed_url_stream == NULL ||
-      P3D_instance_feed_value == NULL) {
+      P3D_instance_feed_url_stream == NULL) {
+    
+    cerr
+      << "Some function pointers not found:"
+      << "\nP3D_initialize = " << P3D_initialize
+      << "\nP3D_finalize = " << P3D_finalize
+      << "\nP3D_new_instance = " << P3D_new_instance
+      << "\nP3D_instance_start = " << P3D_instance_start
+      << "\nP3D_instance_finish = " << P3D_instance_finish
+      << "\nP3D_instance_setup_window = " << P3D_instance_setup_window
+      
+      << "\nP3D_make_class_definition = " << P3D_make_class_definition
+      << "\nP3D_new_none_object = " << P3D_new_none_object
+      << "\nP3D_new_bool_object = " << P3D_new_bool_object
+      << "\nP3D_new_int_object = " << P3D_new_int_object
+      << "\nP3D_new_float_object = " << P3D_new_float_object
+      << "\nP3D_new_string_object = " << P3D_new_string_object
+      << "\nP3D_new_list_object = " << P3D_new_list_object
+      << "\nP3D_instance_get_script_object = " << P3D_instance_get_script_object
+      << "\nP3D_instance_set_script_object = " << P3D_instance_set_script_object
+      
+      << "\nP3D_instance_get_request = " << P3D_instance_get_request
+      << "\nP3D_check_request = " << P3D_check_request
+      << "\nP3D_request_finish = " << P3D_request_finish
+      << "\nP3D_instance_feed_url_stream = " << P3D_instance_feed_url_stream
+      << "\n";
     return false;
   }
 
@@ -255,6 +255,7 @@ load_plugin(const string &p3d_plugin_filename) {
 
   if (!P3D_initialize(P3D_API_VERSION, logfilename.c_str())) {
     // Oops, failure to initialize.
+    cerr << "Failed to initialize plugin (wrong API version?)\n";
     unload_plugin();
     return false;
   }
@@ -273,6 +274,8 @@ unload_plugin() {
     return;
   }
 
+  P3D_finalize();
+
 #ifdef _WIN32
   assert(module != NULL);
   FreeLibrary(module);
@@ -284,36 +287,26 @@ unload_plugin() {
 #endif
   
   P3D_initialize = NULL;
+  P3D_finalize = NULL;
   P3D_new_instance = NULL;
   P3D_instance_start = NULL;
   P3D_instance_finish = NULL;
   P3D_instance_setup_window = NULL;
 
-  P3D_value_finish = NULL;
-  P3D_value_copy = NULL;
-  P3D_new_none_value = NULL;
-  P3D_new_bool_value = NULL;
-  P3D_value_get_bool = NULL;
-  P3D_new_int_value = NULL;
-  P3D_value_get_int = NULL;
-  P3D_new_float_value = NULL;
-  P3D_value_get_float = NULL;
-  P3D_new_string_value = NULL;
-  P3D_value_get_string_length = NULL;
-  P3D_value_extract_string = NULL;
-  P3D_new_list_value = NULL;
-  P3D_value_get_list_length = NULL;
-  P3D_value_get_list_item = NULL;
-  P3D_instance_get_property = NULL;
-  P3D_instance_get_property_list = NULL;
-  P3D_instance_set_property = NULL;
-  P3D_instance_call = NULL;
+  P3D_make_class_definition = NULL;
+  P3D_new_none_object = NULL;
+  P3D_new_bool_object = NULL;
+  P3D_new_int_object = NULL;
+  P3D_new_float_object = NULL;
+  P3D_new_string_object = NULL;
+  P3D_new_list_object = NULL;
+  P3D_instance_get_script_object = NULL;
+  P3D_instance_set_script_object = NULL;
 
   P3D_instance_get_request = NULL;
   P3D_check_request = NULL;
   P3D_request_finish = NULL;
   P3D_instance_feed_url_stream = NULL;
-  P3D_instance_feed_value = NULL;
 
   plugin_loaded = false;
 }

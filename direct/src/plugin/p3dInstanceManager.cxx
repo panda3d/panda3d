@@ -295,6 +295,17 @@ signal_request_ready() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::make_class_definition
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3D_class_definition *P3DInstanceManager::
+make_class_definition() const {
+  // TODO.
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_global_ptr
 //       Access: Public, Static
 //  Description: 

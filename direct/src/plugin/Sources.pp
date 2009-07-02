@@ -20,41 +20,41 @@
     p3d_lock.h p3d_plugin.h \
     p3d_plugin_config.h \
     p3d_plugin_common.h \
-    p3dBoolValue.h \
+    p3dBoolObject.h \
     p3dDownload.h p3dDownload.I \
     p3dFileDownload.h p3dFileDownload.I \
     p3dFileParams.h p3dFileParams.I \
-    p3dFloatValue.h \
+    p3dFloatObject.h \
     p3dInstance.h p3dInstance.I \
     p3dInstanceManager.h p3dInstanceManager.I \
-    p3dIntValue.h \
-    p3dListValue.h \
+    p3dIntObject.h \
+    p3dListObject.h \
     p3dMultifileReader.h p3dMultifileReader.I \
     p3dPackage.h p3dPackage.I \
     p3dSession.h p3dSession.I \
     p3dSplashWindow.h p3dSplashWindow.I \
-    p3dStringValue.h \
-    p3dValue.h p3dValue.I \
+    p3dStringObject.h \
+    p3dObject.h p3dObject.I \
     p3dWinSplashWindow.h p3dWinSplashWindow.I \
     p3dWindowParams.h p3dWindowParams.I
 
   #define INCLUDED_SOURCES \
     p3d_plugin.cxx \
-    p3dBoolValue.cxx \
+    p3dBoolObject.cxx \
     p3dDownload.cxx \
     p3dFileDownload.cxx \
     p3dFileParams.cxx \
-    p3dFloatValue.cxx \
+    p3dFloatObject.cxx \
     p3dInstance.cxx \
     p3dInstanceManager.cxx \
-    p3dIntValue.cxx \
-    p3dListValue.cxx \
+    p3dIntObject.cxx \
+    p3dListObject.cxx \
     p3dMultifileReader.cxx \
     p3dPackage.cxx \
     p3dSession.cxx \
     p3dSplashWindow.cxx \
-    p3dStringValue.cxx \
-    p3dValue.cxx \
+    p3dStringObject.cxx \
+    p3dObject.cxx \
     p3dWinSplashWindow.cxx \
     p3dWindowParams.cxx
 

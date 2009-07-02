@@ -1,4 +1,4 @@
-// Filename: p3dStringValue.h
+// Filename: p3dBoolObject.h
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,34 +12,31 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DSTRINGVALUE_H
-#define P3DSTRINGVALUE_H
+#ifndef P3DBOOLOBJECT_H
+#define P3DBOOLOBJECT_H
 
 #include "p3d_plugin_common.h"
-#include "p3dValue.h"
+#include "p3dObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DStringValue
-// Description : A value type that contains a string value.
+//       Class : P3DBoolObject
+// Description : An object type that contains a boolean value.
 ////////////////////////////////////////////////////////////////////
-class P3DStringValue : public P3DValue {
+class P3DBoolObject : public P3DObject {
 public:
-  P3DStringValue(const string &value);
-  P3DStringValue(const P3DStringValue &copy);
+  P3DBoolObject(bool value);
+  P3DBoolObject(const P3DBoolObject &copy);
 
 public:
-  virtual ~P3DStringValue();
-
-  virtual P3DValue *make_copy(); 
+  virtual P3DObject *make_copy() const; 
   virtual bool get_bool() const;
+  virtual int get_int() const;
   virtual void make_string(string &value) const;
 
   virtual TiXmlElement *make_xml() const;
 
-  virtual void output(ostream &out) const;
-
 private:
-  string _value;
+  bool _value;
 };
 
 #endif

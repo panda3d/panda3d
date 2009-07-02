@@ -97,6 +97,12 @@ the interface specifications defined in this header file. */
 typedef bool 
 P3D_initialize_func(int api_version, const char *output_filename);
 
+/* This function should be called to unload the plugin.  It will
+   release all internally-allocated memory and return the plugin to
+   its initial state. */
+typedef void
+P3D_finalize_func();
+
 /********************** INSTANCE MANAGEMENT **************************/
 
 /* The following interfaces define the API to manage individual
@@ -263,162 +269,276 @@ P3D_instance_setup_window_func(P3D_instance *instance,
 /* The following interfaces are provided to support controlling the
    plugin via JavaScript or related interfaces on the browser. */
 
-/* This enumeration indicates which fundamental type is represented by
-   a particular P3D_value object, below. */
-typedef enum {
-  P3D_VT_none,
-  P3D_VT_bool,
-  P3D_VT_int,
-  P3D_VT_float,
-  P3D_VT_string,
-  P3D_VT_list
-} P3D_value_type;
+/* We require an "object" that contains some number of possible
+   different interfaces.  An "object" might be a simple primitive like
+   an int, float, or string; or it might be a class object with
+   methods and properties.  Instances of P3D_object are passed around
+   as parameters into and return values from functions.
+  
+   To implement a P3D_object, we need to first define a class
+   definition, which is a table of methods.  Most classes are defined
+   internally by the plugin, but the host must define at least one
+   class type as well, which provides callbacks into host-provided
+   objects.
 
-/* This structure represents a concrete value of some arbitrary type.
-   Instances of this structure may be assigned to property names, or
-   passed into or returned from function calls. */
-typedef struct {
-  P3D_value_type _type;
+   These function types define the methods available on a class.
+   These are function type declarations only; they do not correspond
+   to named functions within the plugin DLL.  Instead, the function
+   pointers themselves are stored within the P3D_class_definition
+   structure, below. */
+
+/* A forward declaration of P3D_object. */
+typedef struct _P3D_object P3D_object;
+
+/* A list of fundamental object types. */
+typedef enum {
+  P3D_OT_none,
+  P3D_OT_bool,
+  P3D_OT_int,
+  P3D_OT_float,
+  P3D_OT_string,
+  P3D_OT_list,
+  P3D_OT_object,
+} P3D_object_type;
+
+/* This method is called to deallocate the object and all of its
+   internal structures. */
+typedef void
+P3D_object_finish_method(P3D_object *object);
+
+/* Returns a new copy of the object.  The caller receives ownership of
+   the new object and must eventually pass its pointer to
+   P3D_OBJECT_FINISH() to delete it, or into some other call that
+   transfers ownership. */
+typedef P3D_object *
+P3D_object_copy_method(const P3D_object *object);
+
+/* Returns the fundamental type of the object.  This should be treated
+   as a hint to suggest how the object can most accurately be
+   represented; it does not limit the actual interfaces available to
+   an object.  For instance, you may call P3D_OBJECT_GET_PROPERTY()
+   even if the object's type is not "object". */
+typedef P3D_object_type
+P3D_object_get_type_method(const P3D_object *object);
+
+/* Each of the following methods returns the object's value expressed
+   as the corresponding type.  If the object is not precisely that
+   type, a coercion is performed. */
+
+/* Return the object as a bool. */
+typedef bool
+P3D_object_get_bool_method(const P3D_object *object);
+
+/* Return the object as an integer. */
+typedef int
+P3D_object_get_int_method(const P3D_object *object);
+
+/* Return the object as a floating-point number. */
+typedef double
+P3D_object_get_float_method(const P3D_object *object);
+
+/* Get the object as a string.  This method copies the string into the
+   provided buffer, and returns the actual length of the internal
+   string (not counting any terminating null character).  If the
+   return value is larger than buffer_length, the string has been
+   truncated.  If it is equal, there is no null character written to
+   the buffer (like strncpy). */
+typedef int
+P3D_object_get_string_method(const P3D_object *object, 
+                             char *buffer, int buffer_length);
+
+/* As above, but instead of the literal object data, returns a
+   user-friendly reprensentation of the object as a string.  For
+   instance, a string object returns the string itself to
+   P3D_OBJECT_GET_STRING(), but returns the string with quotation
+   marks and escape characters from P3D_OBJECT_GET_REPR().
+   Mechanically, this function works the same way as get_string(). */
+typedef int
+P3D_object_get_repr_method(const P3D_object *object, 
+                           char *buffer, int buffer_length);
+
+/* Looks up a property on the object by name, i.e. a data member or a
+   method.  The return value is a newly-allocated P3D_object if the
+   property exists, or NULL if it does not.  If it is not NULL,
+   ownership of the return value is transferred to the caller, who
+   will be responsible for deleting it later. */
+typedef P3D_object *
+P3D_object_get_property_method(const P3D_object *object, const char *property);
+
+/* Changes the value at the indicated property.  Any existing object
+   already at the corresponding property is deleted.  If the value
+   object pointer is NULL, the property is deleted.  Returns true on
+   success, false on failure.  The caller must have ownership of the
+   value object before the call; after the call, ownership of the
+   value object is transferred to this object. */
+typedef bool
+P3D_object_set_property_method(P3D_object *object, const char *property,
+                               P3D_object *value);
+
+/* These methods are similar to the above, but for integer properties,
+   e.g. for elements of an array. */
+typedef P3D_object *
+P3D_object_get_element_method(const P3D_object *object, int n);
+typedef bool
+P3D_object_set_element_method(P3D_object *object, int n, P3D_object *value);
+
+/* For objects that implement an array or list with a specific size
+   and all elements below that index filled in, this method will
+   return the size of the list. */
+typedef int
+P3D_object_get_list_length_method(const P3D_object *object);
+
+/* Invokes the object as a function.  The params object should be a
+   list object containing the individual parameters; ownership of this
+   list object is transferred in this call, and it will automatically
+   be deleted.  The return value is a newly-allocated P3D_object on
+   success, or NULL on failure.  Ownership of the return value is
+   transferred to the caller. */
+typedef P3D_object *
+P3D_object_call_method(const P3D_object *object, P3D_object *params);
+
+/* Evaluates an arbitrary script expression, if possible, within the
+   context of the object.  The return value is the return value of the
+   expression, or NULL on error.  As above, ownership of the return
+   value is transferred to the caller. */
+typedef P3D_object *
+P3D_object_evaluate_method(const P3D_object *object, const char *expression);
+
+/* This defines the class structure that implements all of the above
+   methods. */
+typedef struct _P3D_class_definition {
+  P3D_object_finish_method *_finish;
+  P3D_object_copy_method *_copy;
+
+  P3D_object_get_type_method *_get_type;
+  P3D_object_get_bool_method *_get_bool;
+  P3D_object_get_int_method *_get_int;
+  P3D_object_get_float_method *_get_float;
+  P3D_object_get_string_method *_get_string;
+  P3D_object_get_repr_method *_get_repr;
+
+  P3D_object_get_property_method *_get_property;
+  P3D_object_set_property_method *_set_property;
+  P3D_object_get_element_method *_get_element;
+  P3D_object_set_element_method *_set_element;
+  P3D_object_get_list_length_method *_get_list_length;
+
+  P3D_object_call_method *_call;
+  P3D_object_evaluate_method *_evaluate;
+
+} P3D_class_definition;
+
+/* And this structure defines the actual instances of P3D_object. */
+struct _P3D_object {
+  const P3D_class_definition *_class;
 
   /* Additional opaque data may be stored here. */
-} P3D_value;
+};
 
-/* Deallocates a P3D_value previously allocated with one of the
-   below calls, or returned from a function such as
-   P3D_value_get_property().  After this has been called, the
-   value's pointer must no longer be used. */
-typedef void
-P3D_value_finish_func(P3D_value *value);
+/* These macros are defined for the convenience of invoking any of the
+   above method functions on an object. */
 
-/* Returns a duplicate copy of the indicated value.  The return
-   value should be eventually passed to P3D_value_finish(),
-   above. */
-typedef P3D_value *
-P3D_value_copy_func(const P3D_value *value);
+#define P3D_OBJECT_FINISH(object) ((object)->_class->_finish((object)))
+#define P3D_OBJECT_COPY(object) ((object)->_class->_copy((object)))
 
-/* Allocates a new P3D_value of type none.  This value has no
+#define P3D_OBJECT_GET_TYPE(object) ((object)->_class->_get_type((object)))
+#define P3D_OBJECT_GET_BOOL(object) ((object)->_class->_get_bool((object)))
+#define P3D_OBJECT_GET_INT(object) ((object)->_class->_get_int((object)))
+#define P3D_OBJECT_GET_FLOAT(object) ((object)->_class->_get_float((object)))
+#define P3D_OBJECT_GET_STRING(object, buffer, buffer_size) ((object)->_class->_get_string((object), (buffer), (buffer_size)))
+#define P3D_OBJECT_GET_REPR(object, buffer, buffer_size) ((object)->_class->_get_repr((object), (buffer), (buffer_size)))
+
+#define P3D_OBJECT_GET_PROPERTY(object, property) ((object)->_class->_get_property((object), (property)))
+#define P3D_OBJECT_SET_PROPERTY(object, property, value) ((object)->_class->_set_property((object), (property), (value)))
+
+#define P3D_OBJECT_GET_ELEMENT(object, n) ((object)->_class->_get_element((object), (n)))
+#define P3D_OBJECT_SET_ELEMENT(object, n, value) ((object)->_class->_set_element((object), (n), (value)))
+#define P3D_OBJECT_GET_LIST_LENGTH(object, n, value) ((object)->_class->_get_list_length((object), (n), (value)))
+
+#define P3D_OBJECT_CALL(object, params) ((object)->_class->_call((object), (params)))
+#define P3D_OBJECT_EVALUATE(object, expression) ((object)->_class->_evaluate((object), (expression)))
+
+
+/* The following function types are once again meant to define
+   actual function pointers to be found within the plugin DLL. */
+
+/* Returns a newly-allocated P3D_class_definition object, filled with
+   generic function pointers that have reasonable default behavior for
+   all methods.  The host should use this function to get a clean
+   P3D_class_definition object before calling
+   P3D_instance_set_script_object() (see below).  Note that this
+   pointer will automatically be freed when P3D_finalize() is
+   called. */
+typedef P3D_class_definition *
+P3D_make_class_definition_func();
+
+/* Allocates a new P3D_object of type none.  This value has no
    particular value and corresponds to Python's None type or C's void
    type. */
-typedef P3D_value *
-P3D_new_none_value_func();
+typedef P3D_object *
+P3D_new_none_object_func();
 
-/* Allocates a new P3D_value of type bool. */
-typedef P3D_value *
-P3D_new_bool_value_func(bool value);
+/* Allocates a new P3D_object of type bool. */
+typedef P3D_object *
+P3D_new_bool_object_func(bool value);
 
-/* Retrieves the boolean value associated with this type.  If the
-   value's type is not P3D_VT_bool, this implicitly coerces the
-   value to a boolean value. */
-typedef bool
-P3D_value_get_bool_func(const P3D_value *value);
+/* Allocates a new P3D_object of type int. */
+typedef P3D_object *
+P3D_new_int_object_func(int value);
 
-/* Allocates a new P3D_value of type int. */
-typedef P3D_value *
-P3D_new_int_value_func(int value);
+/* Allocates a new P3D_object of type float. */
+typedef P3D_object *
+P3D_new_float_object_func(double value);
 
-/* Retrieves the integer value associated with this type.  If the
-   value's type is not P3D_VT_int, this implicitly coerces the value
-   to an integer value. */
-typedef int
-P3D_value_get_int_func(const P3D_value *value);
+/* Allocates a new P3D_object of type string.  The supplied string is
+   copied into the object and stored internally. */
+typedef P3D_object *
+P3D_new_string_object_func(const char *string, int length);
 
-/* Allocates a new P3D_value of type float. */
-typedef P3D_value *
-P3D_new_float_value_func(double value);
+/* Allocates a new P3D_object of type list.  The new list is empty;
+   use repeated calls to P3D_OBJECT_SET_ELEMENT() to populate it. */
+typedef P3D_object *
+P3D_new_list_object_func();
 
-/* Retrieves the floating-point value associated with this type.  If
-   the value's type is not P3D_VT_float, this implicitly coerces the
-   value to a floating-point value. */
-typedef double
-P3D_value_get_float_func(const P3D_value *value);
+/* Returns a pointer to the top-level scriptable object of the
+   instance.  Scripts running on the host may use this object to
+   communicate with the instance, by using the above methods to set or
+   query properties, and/or call methods, on the instance. 
 
-/* Allocates a new P3D_value of type string. */
-typedef P3D_value *
-P3D_new_string_value_func(const char *value, int length);
+   The return value from this function is a newly-allocated object;
+   ownership of the object is passed to the caller, who should be
+   responsible for deleting it eventually. */
+typedef P3D_object *
+P3D_instance_get_script_object_func(P3D_instance *instance);
 
-/* Retrieves the length of the string value associated with this type.
-   This is the number of bytes that must be allocated to hold the
-   results of P3D_value_extract_string(), not including any
-   terminating null byte. */
-typedef int
-P3D_value_get_string_length_func(const P3D_value *value);
+/* The inverse functionality: this supplies an object pointer to the
+   instance to allow the plugin to control the browser.  In order to
+   enable browser scriptability, the host must call this method
+   shortly after creating the instance, preferably before calling
+   P3D_instance_start().
 
-/* Stores the string value associated with this type in the indicated
-   buffer, which has the specified length.  The return value is the
-   number of characters required for complete representation of the
-   string (which may or may not represent the number of characters
-   actually written).  A terminating null byte is written to the
-   buffer if there is space.  If the variable's type is not
-   P3D_VT_string, this implicitly coerces the value to a string
-   value. */
-typedef int
-P3D_value_extract_string_func(const P3D_value *value, char *buffer, 
-                                int buffer_length);
+   The object parameter must have been created by the host.  It will
+   have a custom P3D_class_definition pointer, which also must have
+   been created by the host.  The best way to create an appropriate
+   class definition is call P3D_make_class_definition(), and then
+   replace the function pointers for at least _finish, _get_property,
+   _set_property, and _call.  Set these pointers to the host's own
+   functions that make the appropriate changes in the DOM, or invoke
+   the appropriate JavaScript functions.
 
-/* Allocates a new P3D_value of type list.  This is a list of an
-   arbitrary number of P3D_value objects.  The indicated P3D_value
-   objects are stored directly within the list; ownership of the
-   objects in this array (but not the array pointer itself) is passed
-   to the list.  The caller must no longer call P3D_value_finish()
-   on any objects added to the list (but should still call
-   P3D_value_finish() on the list itself). */
-typedef P3D_value *
-P3D_new_list_value_func(P3D_value * const elements[], int num_elements);
+   If this function is never called, the instance will not be able to
+   make outcalls to the DOM or to JavaScript, but scripts may still be
+   able to control the instance via P3D_instance_get_script_object(),
+   above. 
 
-/* Returns the number of items in the list, if the value's type is
-   of P3D_VT_list. */
-typedef int
-P3D_value_get_list_length_func(const P3D_value *value);
+   Ownership of the object is passed into the instance.  The caller
+   must have freshly allocated the object, and should no longer store
+   or delete it.  The instance will eventually delete it by calling
+   its _finish method. */
+typedef void
+P3D_instance_set_script_object_func(P3D_instance *instance, 
+                                    P3D_object *object);
 
-/* Returns the nth item in the list.  The caller inherits ownership of
-   this object, and should call P3D_value_finish() on it. */
-typedef P3D_value *
-P3D_value_get_list_item_func(const P3D_value *value, int n);
-
-/* Retrieves the named property from the instance, if any.  The
-   property name may be a dot-delimited sequence to reference nested
-   properties.  Returns NULL if the instance does not have the named
-   property.  If not NULL, you should pass the return value to
-   P3D_value_finish(). */
-typedef P3D_value *
-P3D_instance_get_property_func(const P3D_instance *instance, 
-                               const char *property_name);
-
-/* Returns a list of properties on the instance below the named
-   property.  The property name may be a dot-delimited sequence to
-   reference nested properties.  Returns NULL if the instance does not
-   have the named property; otherwise, returns a list value that
-   contains a list of string values, one for each property stored on
-   the named property.  If not NULL, you should pass the return value
-   to P3D_value_finish(). */
-typedef P3D_value *
-P3D_instance_get_property_list_func(const P3D_instance *instance, 
-                                    const char *property_name);
-
-/* Changes or sets the named property on the instance.  The property
-   name may be a dot-delimited sequence; if so, all of the properties
-   except the last one must already exist.  Returns true on success,
-   false on failure (for instance, because a parent property does not
-   exist).  Pass NULL for the value to delete the last property.  The
-   caller retains ownership of the value object, and should eventually
-   delete with P3D_value_finish(). */
-typedef bool
-P3D_instance_set_property_func(P3D_instance *instance, const char *property_name,
-                               const P3D_value *value);
-
-/* Calls the named property as a function.  The property name may be a
-   dot-delimited sequence.  The params value is an object of type
-   P3D_VT_list, which contains the list of parameters to the function.
-   The caller retains ownership of the params object.  The return
-   value is NULL on error, or a newly-allocated value on success; if
-   not NULL, you should pass the return value to
-   P3D_value_finish(). */
-typedef P3D_value *
-P3D_instance_call_func(P3D_instance *instance, const char *property_name,
-                       const P3D_value *params);
-
-/* Some scriptable properties on the host may be queried or modified
-   via requests, below. */
 
 /********************** REQUEST HANDLING **************************/
 
@@ -451,7 +571,6 @@ typedef enum {
   P3D_RT_get_url,
   P3D_RT_post_url,
   P3D_RT_notify,
-  P3D_RT_evaluate,
 } P3D_request_type;
 
 /* Structures corresponding to the request types in the above enum. */
@@ -495,19 +614,6 @@ typedef struct {
   const char *_message;
 } P3D_request_notify;
 
-/* A request to evaluate a Javascript expression or statement.  The
-   expression will be evaluated in the context of the parent window.
-   It is particularly useful for querying document state, such as
-   "document.form.username.value", or for changing this state, such as
-   "document.form.choose.red.select = 1".  After evaluating the
-   expression, the host should return the response to this request by
-   calling P3D_instance_feed_value() with the given unique_id and the
-   result value, or NULL if there was an error with the expression. */
-typedef struct {
-  const char *_expression;
-  int _unique_id;
-} P3D_request_evaluate;
-
 /* This is the overall structure that represents a single request.  It
    is returned by P3D_instance_get_request(). */
 typedef struct {
@@ -518,7 +624,6 @@ typedef struct {
     P3D_request_get_url _get_url;
     P3D_request_post_url _post_url;
     P3D_request_notify _notify;
-    P3D_request_evaluate _evaluate;
   } _request;
 } P3D_request;
 
@@ -620,52 +725,31 @@ P3D_instance_feed_url_stream_func(P3D_instance *instance, int unique_id,
                                   const void *this_data, 
                                   size_t this_data_size);
 
-/* This function is called by the host in response to an evaulate
-   request.  The instance and unique_id parameters are from the
-   original request; the value should be a freshly-allocated P3D_value
-   that represents the value of the evaluated expression, or NULL on
-   error.  Ownership of the value value is passed into the plugin; the
-   host should *not* call P3D_value_finish() on this pointer. */
-typedef void
-P3D_instance_feed_value_func(P3D_instance *instance, int unique_id,
-                             P3D_value *value);
-
-
 #ifdef P3D_FUNCTION_PROTOTYPES
 
 /* Define all of the actual prototypes for the above functions. */
 EXPCL_P3D_PLUGIN P3D_initialize_func P3D_initialize;
+EXPCL_P3D_PLUGIN P3D_finalize_func P3D_finalize;
 
 EXPCL_P3D_PLUGIN P3D_new_instance_func P3D_new_instance;
 EXPCL_P3D_PLUGIN P3D_instance_start_func P3D_instance_start;
 EXPCL_P3D_PLUGIN P3D_instance_finish_func P3D_instance_finish;
 EXPCL_P3D_PLUGIN P3D_instance_setup_window_func P3D_instance_setup_window;
 
-EXPCL_P3D_PLUGIN P3D_value_finish_func P3D_value_finish;
-EXPCL_P3D_PLUGIN P3D_value_copy_func P3D_value_copy;
-EXPCL_P3D_PLUGIN P3D_new_none_value_func P3D_new_none_value;
-EXPCL_P3D_PLUGIN P3D_new_bool_value_func P3D_new_bool_value;
-EXPCL_P3D_PLUGIN P3D_value_get_bool_func P3D_value_get_bool;
-EXPCL_P3D_PLUGIN P3D_new_int_value_func P3D_new_int_value;
-EXPCL_P3D_PLUGIN P3D_value_get_int_func P3D_value_get_int;
-EXPCL_P3D_PLUGIN P3D_new_float_value_func P3D_new_float_value;
-EXPCL_P3D_PLUGIN P3D_value_get_float_func P3D_value_get_float;
-EXPCL_P3D_PLUGIN P3D_new_string_value_func P3D_new_string_value;
-EXPCL_P3D_PLUGIN P3D_value_get_string_length_func P3D_value_get_string_length;
-EXPCL_P3D_PLUGIN P3D_value_extract_string_func P3D_value_extract_string;
-EXPCL_P3D_PLUGIN P3D_new_list_value_func P3D_new_list_value;
-EXPCL_P3D_PLUGIN P3D_value_get_list_length_func P3D_value_get_list_length;
-EXPCL_P3D_PLUGIN P3D_value_get_list_item_func P3D_value_get_list_item;
-EXPCL_P3D_PLUGIN P3D_instance_get_property_func P3D_instance_get_property;
-EXPCL_P3D_PLUGIN P3D_instance_get_property_list_func P3D_instance_get_property_list;
-EXPCL_P3D_PLUGIN P3D_instance_set_property_func P3D_instance_set_property;
-EXPCL_P3D_PLUGIN P3D_instance_call_func P3D_instance_call;
+EXPCL_P3D_PLUGIN P3D_make_class_definition_func P3D_make_class_definition;
+EXPCL_P3D_PLUGIN P3D_new_none_object_func P3D_new_none_object;
+EXPCL_P3D_PLUGIN P3D_new_bool_object_func P3D_new_bool_object;
+EXPCL_P3D_PLUGIN P3D_new_int_object_func P3D_new_int_object;
+EXPCL_P3D_PLUGIN P3D_new_float_object_func P3D_new_float_object;
+EXPCL_P3D_PLUGIN P3D_new_string_object_func P3D_new_string_object;
+EXPCL_P3D_PLUGIN P3D_new_list_object_func P3D_new_list_object;
+EXPCL_P3D_PLUGIN P3D_instance_get_script_object_func P3D_instance_get_script_object;
+EXPCL_P3D_PLUGIN P3D_instance_set_script_object_func P3D_instance_set_script_object;
 
 EXPCL_P3D_PLUGIN P3D_instance_get_request_func P3D_instance_get_request;
 EXPCL_P3D_PLUGIN P3D_check_request_func P3D_check_request;
 EXPCL_P3D_PLUGIN P3D_request_finish_func P3D_request_finish;
 EXPCL_P3D_PLUGIN P3D_instance_feed_url_stream_func P3D_instance_feed_url_stream;
-EXPCL_P3D_PLUGIN P3D_instance_feed_value_func P3D_instance_feed_value;
 
 #endif  /* P3D_FUNCTION_PROTOTYPES */
 

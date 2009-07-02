@@ -406,22 +406,6 @@ handle_request(P3D_request *request) {
     // Ignore notifications.
     break;
 
-  case P3D_RT_evaluate:
-    cerr << "Got P3D_RT_evaluate: "
-         << request->_request._evaluate._expression << "\n";
-    {
-      // In this standalone executable, every expression evaluates to
-      // itself as a string.  We do this just to help debug the
-      // expression passing to and from the low-level Python code.
-      const string &expression = request->_request._evaluate._expression;
-      P3D_value *value = P3D_new_string_value(expression.data(), expression.length());
-      P3D_instance_feed_value(request->_instance, 
-                              request->_request._evaluate._unique_id,
-                              value);
-      handled = true;
-    }
-    break;
-
   default:
     // Some request types are not handled.
     cerr << "Unhandled request: " << request->_request_type << "\n";

@@ -1,4 +1,4 @@
-// Filename: p3dNoneValue.cxx
+// Filename: p3dNoneObject.cxx
 // Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,56 +12,56 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dNoneValue.h"
+#include "p3dNoneObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DNoneValue::Constructor
+//     Function: P3DNoneObject::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DNoneValue::
-P3DNoneValue() : P3DValue(P3D_VT_none) {
+P3DNoneObject::
+P3DNoneObject() : P3DObject(P3D_OT_none) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DNoneValue::make_copy
+//     Function: P3DNoneObject::make_copy
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DValue *P3DNoneValue::
-make_copy() {
-  return new P3DNoneValue(*this);
+P3DObject *P3DNoneObject::
+make_copy() const {
+  return new P3DNoneObject(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DNoneValue::get_bool
+//     Function: P3DNoneObject::get_bool
 //       Access: Public, Virtual
-//  Description: Returns the value value coerced to a boolean, if
+//  Description: Returns the object value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DNoneValue::
+bool P3DNoneObject::
 get_bool() const {
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DNoneValue::make_string
+//     Function: P3DNoneObject::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DNoneValue::
+void P3DNoneObject::
 make_string(string &value) const {
   value = "None";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DNoneValue::make_xml
+//     Function: P3DNoneObject::make_xml
 //       Access: Public, Virtual
 //  Description: Allocates and returns a new XML structure
 //               corresponding to this value.
 ////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DNoneValue::
+TiXmlElement *P3DNoneObject::
 make_xml() const {
   TiXmlElement *xvalue = new TiXmlElement("value");
   xvalue->SetAttribute("type", "none");

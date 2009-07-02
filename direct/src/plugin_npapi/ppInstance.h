@@ -53,9 +53,8 @@ private:
   void create_instance();
   void send_window();
 
-  void handle_evaluate(const string &expression, int unique_id);
   void show_np_variant(const NPVariant &result);
-  P3D_value *np_variant_to_value(const NPVariant &result);
+  P3D_object *np_variant_to_object(const NPVariant &result);
 
 private:
   NPP _npp_instance;
