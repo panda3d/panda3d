@@ -105,6 +105,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
     // Analyze the uniforms and put them in _glsl_parameter_map
     if (s->_glsl_parameter_map.size() == 0) {
       int seqno = 0, texunitno = 0;
+      string noprefix;
       int param_count, param_maxlength, param_size;
       GLenum param_type;
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &param_count);
@@ -119,25 +120,52 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
           arg_id._seqno = seqno++;
           s->_glsl_parameter_map.push_back(p);
           PT(InternalName) inputname = InternalName::make(param_name);
-          if (inputname->get_name() == "p3d_ModelViewProjectionMatrix") {
-            Shader::ShaderMatSpec bind;
-            bind._id = arg_id;
-            bind._piece = Shader::SMP_whole;
-            bind._func = Shader::SMF_compose;
-            bind._part[0] = Shader::SMO_model_to_view;
-            bind._arg[0] = NULL;
-            bind._part[1] = Shader::SMO_view_to_apiclip;
-            bind._arg[1] = NULL;
-            s->_mat_spec.push_back(bind);
-            continue;
-          }
-          if (inputname->get_name().substr(0, 11) == "p3d_Texture") {
-            Shader::ShaderTexSpec bind;
-            bind._id = arg_id;
-            bind._name = 0;
-            bind._desired_type = Texture::TT_2d_texture;
-            bind._stage = atoi(inputname->get_name().substr(12).c_str());
-            s->_tex_spec.push_back(bind);
+          if (inputname->get_name().substr(0, 4) == "p3d_" || inputname->get_name().substr(0, 3) == "gl_") {
+            if (inputname->get_name().substr(0, 3) == "gl_") noprefix = inputname->get_name().substr(3);
+            else noprefix = inputname->get_name().substr(4);
+            
+            if (noprefix == "ModelViewProjectionMatrix") {
+              Shader::ShaderMatSpec bind;
+              bind._id = arg_id;
+              bind._piece = Shader::SMP_whole;
+              bind._func = Shader::SMF_compose;
+              bind._part[0] = Shader::SMO_model_to_view;
+              bind._arg[0] = NULL;
+              bind._part[1] = Shader::SMO_view_to_apiclip;
+              bind._arg[1] = NULL;
+              s->_mat_spec.push_back(bind);
+              continue;
+            }
+            if (noprefix == "ModelViewMatrix") {
+              Shader::ShaderMatSpec bind;
+              bind._id = arg_id;
+              bind._piece = Shader::SMP_whole;
+              bind._func = Shader::SMF_first;
+              bind._part[0] = Shader::SMO_model_to_view;
+              bind._arg[0] = NULL;
+              s->_mat_spec.push_back(bind);
+              continue;
+            }
+            if (noprefix == "ProjectionMatrix") {
+              Shader::ShaderMatSpec bind;
+              bind._id = arg_id;
+              bind._piece = Shader::SMP_whole;
+              bind._func = Shader::SMF_first;
+              bind._part[0] = Shader::SMO_view_to_apiclip;
+              bind._arg[0] = NULL;
+              s->_mat_spec.push_back(bind);
+              continue;
+            }
+            if (noprefix.substr(0, 7) == "Texture") {
+              Shader::ShaderTexSpec bind;
+              bind._id = arg_id;
+              bind._name = 0;
+              bind._desired_type = Texture::TT_2d_texture;
+              bind._stage = atoi(noprefix.substr(7).c_str());
+              s->_tex_spec.push_back(bind);
+              continue;
+            }
+            GLCAT.error() << "Unrecognized uniform name '" << param_name << "'!\n";
             continue;
           }
           switch (param_type) {
@@ -247,28 +275,41 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
       param_name = new char[param_maxlength];
       for (int i = 0; i < param_count; ++i) {
         gsg->_glGetActiveAttrib(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name);
-        Shader::ShaderVarSpec bind;
-        Shader::ShaderArgId arg_id;
-        arg_id._name  = param_name;
-        arg_id._seqno = -1;
         PT(InternalName) inputname = InternalName::make(param_name);
-        bind._append_uv = -1;
-        if (inputname->get_name() == "p3d_Vertex") {
-          bind._name = InternalName::get_vertex();
-          s->_var_spec.push_back(bind);
-          gsg->_glBindAttribLocation(_glsl_program, i, param_name);
-          continue;
-        }
-        if (inputname->get_name() == "p3d_Normal") {
-          bind._name = InternalName::get_normal();
-          s->_var_spec.push_back(bind);
-          gsg->_glBindAttribLocation(_glsl_program, i, param_name);
-          continue;
-        }
-        if (inputname->get_name() == "p3d_Color") {
-          bind._name = InternalName::get_color();
-          s->_var_spec.push_back(bind);
-          gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+        if (inputname->get_name().substr(0, 4) == "p3d_" || inputname->get_name().substr(0, 3) == "gl_") {
+          if (inputname->get_name().substr(0, 3) == "gl_") noprefix = inputname->get_name().substr(3);
+          else noprefix = inputname->get_name().substr(4);
+          Shader::ShaderVarSpec bind;
+          Shader::ShaderArgId arg_id;
+          arg_id._name  = param_name;
+          arg_id._seqno = -1;
+          bind._append_uv = -1;
+          if (noprefix == "Vertex") {
+            bind._name = InternalName::get_vertex();
+            s->_var_spec.push_back(bind);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            continue;
+          }
+          if (noprefix == "Normal") {
+            bind._name = InternalName::get_normal();
+            s->_var_spec.push_back(bind);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            continue;
+          }
+          if (noprefix == "Color") {
+            bind._name = InternalName::get_color();
+            s->_var_spec.push_back(bind);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            continue;
+          }
+          if (noprefix.substr(0, 13)  == "MultiTexCoord") {
+            bind._name = InternalName::get_texcoord();
+            bind._append_uv = atoi(inputname->get_name().substr(13).c_str());
+            s->_var_spec.push_back(bind);
+            gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+            continue;
+          }
+          GLCAT.error() << "Unrecognized vertex attrib '" << param_name << "'!\n";
           continue;
         }
       }
