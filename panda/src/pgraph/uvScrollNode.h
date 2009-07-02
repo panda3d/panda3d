@@ -29,14 +29,14 @@ PUBLISHED:
   INLINE UvScrollNode(const string &name, float u_speed, float v_speed);
 
 protected:
-  INLINE UvScrollNode(const ModelNode &copy);
+  INLINE UvScrollNode(const UvScrollNode &copy);
 
 public:
   virtual PandaNode *make_copy() const;
 
 PUBLISHED:
-  INLINE void set_scroll_u(float u_speed);
-  INLINE void set_scroll_v(float v_speed);
+  INLINE void set_u_speed(float u_speed);
+  INLINE void set_v_speed(float v_speed);
 
 private:
   float _u_speed;

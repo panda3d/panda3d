@@ -31,7 +31,7 @@ UvScrollNode(const string &name, float u_speed, float v_speed) :
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE UvScrollNode::
+INLINE void UvScrollNode::
 set_u_speed(float u_speed) {
   _u_speed = u_speed;
 }
@@ -41,7 +41,7 @@ set_u_speed(float u_speed) {
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
-INLINE UvScrollNode::
+INLINE void UvScrollNode::
 set_v_speed(float v_speed) {
   _v_speed = v_speed;
 }
