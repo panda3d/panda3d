@@ -101,7 +101,8 @@ class PackageMaker:
 
         source = open(uncompressedArchivePathname.toOsSpecific(), 'rb')
         target = open(compressedArchivePathname.toOsSpecific(), 'wb')
-        z = zlib.compressobj(9)
+        #z = zlib.compressobj(9)  # Temporary.
+        z = zlib.compressobj(1)
         data = source.read(4096)
         while data:
             target.write(z.compress(data))
