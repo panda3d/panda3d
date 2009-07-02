@@ -515,25 +515,40 @@ setSpeakerSetup(AudioManager::SpeakerModeCategory cat) {
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::set_volume(float volume)
 //       Access: Public
-//  Description: 
-//        There isn't a specific system volume function in FMOD-EX,
-//        so this function is moot now.
+//  Description: Sets the master volume.
 ////////////////////////////////////////////////////////////////////
 void FmodAudioManager::set_volume(float volume) {
-  audio_warning("FmodAudioManager::set_volume has no effect." );
+  FMOD::ChannelGroup *channelGroup;
+  FMOD_RESULT	result;
+  
+  result = _system->getMasterChannelGroup(&channelGroup);
+  if (result == FMOD_OK) {
+    channelGroup->setVolume(volume);
+  } else {
+    fmod_audio_errcheck("_system->getMasterChannelGroup()", result);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: FmodAudioManager::get_volume()
 //       Access: Public
-//  Description: 
-//        There isn't a specific system volume function in FMOD-EX,
-//        so this function is moot now.
+//  Description: Returns the master volume.
 ////////////////////////////////////////////////////////////////////
 float FmodAudioManager::
 get_volume() const {
-  audio_warning("FmodAudioManager::get_volume has no effect." );
-  return 1.0;
+  FMOD::ChannelGroup *channelGroup;
+  FMOD_RESULT result;
+  float volume;
+
+  result = _system->getMasterChannelGroup(&channelGroup);
+  if (result == FMOD_OK) {
+    channelGroup->getVolume(&volume);
+  } else {
+    fmod_audio_errcheck("_system->getMasterChannelGroup()", result);
+    volume = 1.0;
+  }
+
+  return volume;
 }
 
 ////////////////////////////////////////////////////////////////////
