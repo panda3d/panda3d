@@ -298,6 +298,19 @@ stream_as_file(NPStream *stream, const char *fname) {
     logfile << "converted filename to " << filename << "\n";
   }
 
+  // Here's another temporary hack.  In addition to the weird filename
+  // format, the file that Safari tells us about appears to be a
+  // temporary file that Safari's about to delete.  In order to
+  // protect ourselves from this, we need to either open the file
+  // immediately, or copy it somewhere else.  The instance_data
+  // filename can't be copied, so in the short term, we implement this
+  // quick hack: if we're just downloading from "file://", then remap
+  // the filename to point to the source file.
+  if (strncmp(stream->url, "file://", 7) == 0) {
+    filename = stream->url + 7;
+    logfile << "converted filename again to " << filename << "\n";
+  }
+
 #endif  // __APPLE__
 
   PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
@@ -636,10 +649,13 @@ handle_evaluate(const string &expression, int unique_id) {
 
     } else {
       logfile << "Couldn't evaluate\n";
+      P3D_instance_feed_value(_p3d_inst, unique_id, NULL);
     }
     
   } else {
-    logfile << "Couldn't get object for NPNVWindowNPObject\n";
+    logfile << "Couldn't get object for NPNVWindowNPObject: " << window
+            << "\n";
+    P3D_instance_feed_value(_p3d_inst, unique_id, NULL);
   }
 }
 
