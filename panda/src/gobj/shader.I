@@ -13,33 +13,68 @@
 ////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::get_filename
-//  Access: Public
-//  Description: Return the Shader's filename.
+//     Function: Shader::get_filename
+//       Access: Public
+//  Description: Return the Shader's filename for the given shader
+//               type.
 ////////////////////////////////////////////////////////////////////
-INLINE const Filename &Shader::
-get_filename() const {
-  return _filename;
+INLINE const Filename Shader::
+get_filename(const ShaderType &type) const {
+  if (_filename->_separate) {
+    nassertr(type != ST_none || !_filename->_shared.empty(), "");
+    switch (type) {
+      case ST_vertex:
+        return _filename->_vertex;
+        break;
+      case ST_fragment:
+        return _filename->_fragment;
+        break;
+      case ST_geometry:
+        return _filename->_geometry;
+        break;
+      default:
+        return _filename->_shared;
+    }
+  } else {
+    return _filename->_shared;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::get_text
-//  Access: Public
-//  Description: Return the Shader's text.
+//     Function: Shader::get_text
+//       Access: Public
+//  Description: Return the Shader's text for the given shader type.
 ////////////////////////////////////////////////////////////////////
-INLINE const string &Shader::
-get_text() const {
-  return _text;
+INLINE const string Shader::
+get_text(const ShaderType &type) const {
+  if (_text->_separate) {
+    nassertr(type != ST_none || !_text->_shared.empty(), "");
+    switch (type) {
+      case ST_vertex:
+        return _text->_vertex;
+        break;
+      case ST_fragment:
+        return _text->_fragment;
+        break;
+      case ST_geometry:
+        return _text->_geometry;
+        break;
+      default:
+        return _text->_shared;
+    }
+  } else {
+    return _text->_shared;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
-//  Function: Shader::get_error_flag
-//  Access: Public
+//     Function: Shader::get_error_flag
+//       Access: Public
 //  Description: Returns true if the shader contains a compile-time
 //               error.  This doesn't tell you whether or not the
 //               shader is supported on the current video card.
 ////////////////////////////////////////////////////////////////////
-INLINE bool Shader::
+INLINE const bool Shader::
 get_error_flag() const {
   return _error_flag;
 }

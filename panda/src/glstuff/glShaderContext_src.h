@@ -27,9 +27,9 @@ class CLP(GraphicsStateGuardian);
 //       Class : GLShaderContext
 // Description : xyz
 ////////////////////////////////////////////////////////////////////
-
 class EXPCL_GL CLP(ShaderContext): public ShaderContext {
 public:
+  friend class CLP(GraphicsStateGuardian);
   typedef CLP(GraphicsStateGuardian) GSG;
 
   CLP(ShaderContext)(Shader *s, GSG *gsg);
@@ -37,7 +37,7 @@ public:
   ALLOC_DELETED_CHAIN(CLP(ShaderContext));
 
   INLINE bool valid(void);
-  void bind(GSG *gsg);
+  void bind(GSG *gsg, bool reissue_parameters = true);
   void unbind(GSG *gsg);
   void issue_parameters(GSG *gsg, int altered);
   void disable_shader_vertex_arrays(GSG *gsg);
@@ -76,7 +76,7 @@ private:
 
   void glsl_report_shader_errors(GSG *gsg, unsigned int shader);
   void glsl_report_program_errors(GSG *gsg, unsigned int program);
-  unsigned int glsl_compile_entry_point(GSG *gsg, const char *entry, Shader::ShaderType type);
+  unsigned int glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type);
   bool glsl_compile_shader(GSG *gsg);
 
   void release_resources(const GSG *gsg);

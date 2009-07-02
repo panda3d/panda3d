@@ -38,13 +38,27 @@ class EXPCL_PANDA_GOBJ Shader: public TypedReferenceCount {
 
 PUBLISHED:
   
-  static PT(Shader) load(const Filename &file);
-  static PT(Shader) load(const string &file);
-  static PT(Shader) make(const string &body);
+  enum ShaderLanguage {
+    SL_none,
+    SL_Cg,
+    SL_GLSL
+  };
+  enum ShaderType {
+    ST_none = 0,
+    ST_vertex,
+    ST_fragment,
+    ST_geometry,
+  };
 
-  INLINE const Filename &get_filename() const;
-  INLINE const string   &get_text() const;
-  INLINE bool get_error_flag() const;
+  static PT(Shader) load(const Filename &file, const ShaderLanguage &lang = SL_none);
+  static PT(Shader) make(const string &body, const ShaderLanguage &lang = SL_none);
+  static PT(Shader) load(const ShaderLanguage &lang, const Filename &vertex, const Filename &fragment, const Filename &geometry = "");
+  static PT(Shader) make(const ShaderLanguage &lang, const string &vertex, const string &fragment, const string &geometry = "");
+
+  INLINE const Filename get_filename(const ShaderType &type = ST_none) const;
+  INLINE const string   get_text(const ShaderType &type = ST_none) const;
+  INLINE const bool get_error_flag() const;
+  INLINE const ShaderLanguage get_language() const;
 
   INLINE static ShaderUtilization get_shader_utilization();
   INLINE static void set_shader_utilization(ShaderUtilization utl);
@@ -57,14 +71,6 @@ PUBLISHED:
 
   ShaderContext *prepare_now(PreparedGraphicsObjects *prepared_objects, 
                              GraphicsStateGuardianBase *gsg);
-  
-  enum ShaderLanguage {
-    SL_none,
-    SL_Cg,
-    SL_GLSL
-  };
-  
-  INLINE const ShaderLanguage get_language() const;
 
 public:
 
@@ -180,12 +186,6 @@ public:
     SMF_first,
   };
 
-  enum ShaderType {
-    ST_VERTEX,
-    ST_FRAGMENT,
-    ST_GEOMETRY,
-  };
-
   struct ShaderArgId {
     string     _name;
     ShaderType _type;
@@ -244,14 +244,27 @@ public:
     INLINE ShaderCaps();
   };
 
+  struct ShaderFile : public ReferenceCount {
+    ShaderFile(string shared) { _separate = false; _shared = shared; }
+    ShaderFile(string vertex, string fragment, string geometry = "") {
+      _separate = true;     _vertex   = vertex;
+      _fragment = fragment; _geometry = geometry;
+    }
+    bool _separate;
+    string _shared;
+    string _vertex;
+    string _fragment;
+    string _geometry;
+  };
+
  private:
   // These routines help split the shader into sections,
   // for those shader implementations that need to do so.
+  // Don't use them when you use separate shader programs.
   void parse_init();
   void parse_line(string &result, bool rt, bool lt);
   void parse_upto(string &result, string pattern, bool include);
   void parse_rest(string &result);
-  int  parse_lineno();
   bool parse_eof();
   
   void cp_report_error(ShaderArgInfo &arg, const string &msg);
@@ -330,10 +343,10 @@ public:
   pvector <ShaderVarSpec> _var_spec;
   
   bool           _error_flag;
-  string         _text;
+  CPT(ShaderFile) _text;
 
  protected:
-  Filename       _filename;
+  CPT(ShaderFile)_filename;
   int            _parse;
   bool           _loaded;
   ShaderLanguage _language;
@@ -342,11 +355,10 @@ public:
   static ShaderUtilization _shader_utilization;
   static int _shaders_generated;
 
-  typedef pmap < Filename , Shader * > LoadTable;
-  typedef pmap < string   , Shader * > MakeTable;
+  typedef pmap < CPT(ShaderFile), Shader * > ShaderTable;
 
-  static LoadTable _load_table;
-  static MakeTable _make_table;
+  static ShaderTable _load_table;
+  static ShaderTable _make_table;
 
   friend class ShaderContext;
   friend class PreparedGraphicsObjects;
@@ -355,10 +367,10 @@ public:
   Contexts _contexts;
 
  private:  
-  Shader(const Filename &name, const string &text, const ShaderLanguage &lang = SL_none);
   void clear_prepared(PreparedGraphicsObjects *prepared_objects);
 
  public:
+  Shader(CPT(ShaderFile) name, CPT(ShaderFile) text, const ShaderLanguage &lang = SL_none);
   static void register_with_read_factory();
   
   ~Shader();

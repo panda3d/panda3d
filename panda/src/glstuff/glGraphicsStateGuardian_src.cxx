@@ -107,6 +107,23 @@ static void APIENTRY
 null_glBlendColor(GLclampf, GLclampf, GLclampf, GLclampf) {
 }
 
+#ifdef OPENGLES_2
+// We have a default shader that will be applied when there
+// isn't any shader applied (e.g. if it failed to compile).
+// We need this because OpenGL ES 2.x does not have
+// a fixed-function pipeline.
+// This default shader just outputs a red color, telling
+// the user that something went wrong.
+CPT(Shader::ShaderFile) default_shader_name = new Shader::ShaderFile("default-shader");
+CPT(Shader::ShaderFile) default_shader_body = new Shader::ShaderFile("\
+uniform mediump mat4 p3d_ModelViewProjectionMatrix;\
+attribute highp vec4 p3d_Vertex;\
+void main(void) {\
+  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\}\n",
+"void main(void) {\
+  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\
+}\n");
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: uchar_bgr_to_rgb
@@ -817,12 +834,12 @@ reset() {
     if (basic_shaders_only) {
       _shader_caps._active_vprofile = (int)CG_PROFILE_ARBVP1;
       _shader_caps._active_fprofile = (int)CG_PROFILE_ARBFP1;
-      _shader_caps._active_gprofile = (int)0;                     // CG2 CHANGE: No geometry shader if only using basic
+      _shader_caps._active_gprofile = (int)0; // No geometry shader if only using basic
     } else { 
       _shader_caps._active_vprofile = (int)cgGLGetLatestProfile(CG_GL_VERTEX);
       _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
 #ifdef CG_CL_GEOMETRY
-      _shader_caps._active_gprofile = (int)cgGLGetLatestProfile(CG_GL_GEOMETRY);  // CG2 CHANGE
+      _shader_caps._active_gprofile = (int)cgGLGetLatestProfile(CG_GL_GEOMETRY);
 #else
       _shader_caps._active_gprofile = (int)0;
 #endif
@@ -830,7 +847,7 @@ reset() {
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
 #ifdef CG_PROFILE_GPU_CP
-    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;   // CG2 CHANGE
+    _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;
 #else
     _shader_caps._ultimate_gprofile = (int)0;
 #endif
@@ -862,10 +879,12 @@ reset() {
 #endif
   _shader_caps._supports_glsl = _supports_glsl;
 
-#ifndef OPENGLES_1
+#ifndef OPENGLES
   if (_supports_glsl) {
     _glAttachShader = (PFNGLATTACHSHADERPROC)
        get_extension_func(GLPREFIX_QUOTED, "AttachShader");
+    _glBindAttribLocation = (PFNGLBINDATTRIBLOCATIONPROC)
+       get_extension_func(GLPREFIX_QUOTED, "BindAttribLocation");
     _glCompileShader = (PFNGLCOMPILESHADERPROC)
        get_extension_func(GLPREFIX_QUOTED, "CompileShader");
     _glCreateProgram = (PFNGLCREATEPROGRAMPROC)
@@ -878,8 +897,16 @@ reset() {
        get_extension_func(GLPREFIX_QUOTED, "DeleteShader");
     _glDetachShader = (PFNGLDETACHSHADERPROC)
        get_extension_func(GLPREFIX_QUOTED, "DetachShader");
+    _glDisableVertexAttribArray (PFNGLDISABLEVERTEXATTRIBARRAYPROC)
+      get_extension_func(GLPREFIX_QUOTED, "DisableVertexAttribArray");
+    _glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)
+      get_extension_func(GLPREFIX_QUOTED, "EnableVertexAttribArray");
+    _glGetActiveAttrib = (PFNGLGETACTIVEATTRIBPROC)
+       get_extension_func(GLPREFIX_QUOTED, "GetActiveAttrib");
     _glGetActiveUniform = (PFNGLGETACTIVEUNIFORMPROC)
        get_extension_func(GLPREFIX_QUOTED, "GetActiveUniform");
+    _glGetAttribLocation = (PFNGLGETATTRIBLOCATIONPROC)
+      get_extension_func(GLPREFIX_QUOTED, "GetAttribLocation");
     _glGetProgramiv = (PFNGLGETPROGRAMIVPROC)
        get_extension_func(GLPREFIX_QUOTED, "GetProgramiv");
     _glGetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)
@@ -912,7 +939,48 @@ reset() {
        get_extension_func(GLPREFIX_QUOTED, "UniformMatrix4fv");
     _glValidateProgram = (PFNGLVALIDATEPROGRAMPROC)
        get_extension_func(GLPREFIX_QUOTED, "ValidateProgram");
+    _glVertexAttribPointer = (PFNGLVERTEXATTRIBPOINTERPROC)
+       get_extension_func(GLPREFIX_QUOTED, "VertexAttribPointer");
   }
+#endif
+
+#ifdef OPENGLES_2
+  _glAttachShader = glAttachShader;
+  _glBindAttribLocation = glBindAttribLocation;
+  _glCompileShader = glCompileShader;
+  _glCreateProgram = glCreateProgram;
+  _glCreateShader = glCreateShader;
+  _glDeleteProgram = glDeleteProgram;
+  _glDeleteShader = glDeleteShader;
+  _glDetachShader = glDetachShader;
+  _glDisableVertexAttribArray = glDisableVertexAttribArray;
+  _glEnableVertexAttribArray = glEnableVertexAttribArray;
+  _glGetActiveAttrib = glGetActiveAttrib;
+  _glGetActiveUniform = glGetActiveUniform;
+  _glGetAttribLocation = glGetAttribLocation;
+  _glGetProgramiv = glGetProgramiv;
+  _glGetProgramInfoLog = glGetProgramInfoLog;
+  _glGetShaderiv = glGetShaderiv;
+  _glGetShaderInfoLog = glGetShaderInfoLog;
+  _glGetUniformLocation = glGetUniformLocation;
+  _glLinkProgram = glLinkProgram;
+  _glShaderSource = glShaderSource;
+  _glUseProgram = glUseProgram;
+  _glUniform4f = glUniform4f;
+  _glUniform1i = glUniform1i;
+  _glUniform1fv = glUniform1fv;
+  _glUniform2fv = glUniform2fv;
+  _glUniform3fv = glUniform3fv;
+  _glUniform4fv = glUniform4fv;
+  _glUniformMatrix4fv = glUniformMatrix4fv;
+  _glValidateProgram = glValidateProgram;
+  _glVertexAttribPointer = glVertexAttribPointer;
+
+  // We need to have a default shader to apply in case
+  // something didn't happen to have a shader applied, or
+  // if it failed to compile. This default shader just outputs
+  // a red color, indicating that something went wrong.
+  _default_shader = new Shader(default_shader_name, default_shader_body, Shader::SL_GLSL);
 #endif
 
 #ifdef OPENGLES_2
@@ -1123,6 +1191,10 @@ reset() {
   }
 #endif
 
+#ifdef OPENGLES_2
+  // In OpenGL ES 2.x, this is supported in the core.
+  _glBlendEquation = glBlendEquation;
+#else
   _glBlendEquation = NULL;
   bool supports_blend_equation = false;
   if (is_at_least_gl_version(1, 2)) {
@@ -1145,7 +1217,12 @@ reset() {
   if (_glBlendEquation == NULL) {
     _glBlendEquation = null_glBlendEquation;
   }
+#endif
 
+#ifdef OPENGLES_2
+  // In OpenGL ES 2.x, this is supported in the core.
+  _glBlendColor = glBlendColor;
+#else
   _glBlendColor = NULL;
   bool supports_blend_color = false;
   if (is_at_least_gl_version(1, 2)) {
@@ -1164,6 +1241,7 @@ reset() {
   if (_glBlendColor == NULL) {
     _glBlendColor = null_glBlendColor;
   }
+#endif
 
 #ifdef OPENGLES
   _edge_clamp = GL_CLAMP_TO_EDGE;
@@ -4051,15 +4129,29 @@ do_issue_shade_model() {
 //  Description:
 ////////////////////////////////////////////////////////////////////
 void CLP(GraphicsStateGuardian)::
-do_issue_shader() {
+do_issue_shader(bool state_has_changed) {
 #ifndef OPENGLES_1
   CLP(ShaderContext) *context = 0;
   Shader *shader = (Shader *)(_target_shader->get_shader());
+
+#ifdef OPENGLES_2
+  // If we don't have a shader, apply the default shader.
+  if (!shader) {
+    shader = _default_shader;
+  }
+#endif
   if (shader) {
     context = (CLP(ShaderContext) *)(shader->prepare_now(get_prepared_objects(), this));
   }
+#ifdef OPENGLES_2
+  // If it failed, try applying the default shader.
+  if (shader != _default_shader && (context == 0 || !context->valid())) {
+    shader = _default_shader;
+    context = (CLP(ShaderContext) *)(shader->prepare_now(get_prepared_objects(), this));
+  }
+#endif
   
-  if (context == 0 || (context -> valid ( ) == false)) {
+  if (context == 0 || (context->valid() == false)) {
     if (_current_shader_context != 0) {
       _current_shader_context->unbind(this);
       _current_shader = 0;
@@ -4076,8 +4168,13 @@ do_issue_shader() {
       _current_shader = shader;
       _current_shader_context = context;
     } else {
-      // Use the same shader as before, but with new input arguments.
-      context->issue_parameters(this, Shader::SSD_shaderinputs);
+#ifdef OPENGLES_2
+      context->bind(this, false);
+#endif
+      if (state_has_changed) {
+        // Use the same shader as before, but with new input arguments.
+        context->issue_parameters(this, Shader::SSD_shaderinputs);
+      }
     }
   }
 
@@ -6826,6 +6923,11 @@ set_state_and_transform(const RenderState *target,
     _state_shader = _target_shader;
     _state_mask.clear_bit(TextureAttrib::get_class_slot());
   }
+#ifdef OPENGLES_2
+  else { // In the case of OpenGL ES 2.x, we need to glUseShader before we draw anything.
+    do_issue_shader(false);
+  }
+#endif
 
   int texture_slot = TextureAttrib::get_class_slot();
   if (_target_rs->get_attrib(texture_slot) != _state_rs->get_attrib(texture_slot) ||

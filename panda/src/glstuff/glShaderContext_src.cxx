@@ -73,9 +73,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
         cgGetProfileString(cgGetProgramProfile(_cg_fprogram)) << " " << str << ")\n";
       release_resources(gsg);
     }
-    if (glGetError() != GL_NO_ERROR) {
-      GLCAT.error() << "GL error in ShaderContext constructor\n";
-    }
+    gsg->report_my_gl_errors();
     if (_cg_gprogram != 0) {
       cgGLLoadProgram(_cg_gprogram);
       if (GLCAT.is_debug()) {
@@ -90,9 +88,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
           cgGetProfileString(cgGetProgramProfile(_cg_gprogram)) << " " << str << ")\n";
         release_resources(gsg);
       }
-      if (glGetError() != GL_NO_ERROR) {
-        GLCAT.error() << "GL error in ShaderContext constructor\n";
-      }
+      gsg->report_my_gl_errors();
     }
   }
 #endif
@@ -109,14 +105,13 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
     // Analyze the uniforms and put them in _glsl_parameter_map
     if (s->_glsl_parameter_map.size() == 0) {
       int seqno = 0, texunitno = 0;
-      int num_uniforms, uniform_maxlength;
-      gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &num_uniforms);
-      gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &uniform_maxlength);
-      for (int i = 0; i < num_uniforms; ++i) {
-        int param_size;
-        GLenum param_type;
-        char* param_name = new char[uniform_maxlength];
-        gsg->_glGetActiveUniform(_glsl_program, i, uniform_maxlength, NULL, &param_size, &param_type, param_name);
+      int param_count, param_maxlength, param_size;
+      GLenum param_type;
+      gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &param_count);
+      gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &param_maxlength);
+      char* param_name = new char[param_maxlength];
+      for (int i = 0; i < param_count; ++i) {
+        gsg->_glGetActiveUniform(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name);
         GLint p = gsg->_glGetUniformLocation(_glsl_program, param_name);
         if (p > -1) {
           Shader::ShaderArgId arg_id;
@@ -124,6 +119,18 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
           arg_id._seqno = seqno++;
           s->_glsl_parameter_map.push_back(p);
           PT(InternalName) inputname = InternalName::make(param_name);
+          if (inputname->get_name() == "p3d_ModelViewProjectionMatrix") {
+            Shader::ShaderMatSpec bind;
+            bind._id = arg_id;
+            bind._piece = Shader::SMP_whole;
+            bind._func = Shader::SMF_compose;
+            bind._part[0] = Shader::SMO_model_to_view;
+            bind._arg[0] = NULL;
+            bind._part[1] = Shader::SMO_view_to_apiclip;
+            bind._arg[1] = NULL;
+            s->_mat_spec.push_back(bind);
+            continue;
+          }
           if (inputname->get_name().substr(0, 11) == "p3d_Texture") {
             Shader::ShaderTexSpec bind;
             bind._id = arg_id;
@@ -230,10 +237,58 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
               GLCAT.warning() << "Ignoring unrecognized GLSL parameter type!\n";
           }
         }
-        delete param_name;
       }
+      delete[] param_name;
+      
+      int attrib_idx = 0;
+      // Now we've processed the uniforms, we'll process the attribs.
+      gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTES, &param_count);
+      gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &param_maxlength);
+      param_name = new char[param_maxlength];
+      for (int i = 0; i < param_count; ++i) {
+        gsg->_glGetActiveAttrib(_glsl_program, i, param_maxlength, NULL, &param_size, &param_type, param_name);
+        Shader::ShaderVarSpec bind;
+        Shader::ShaderArgId arg_id;
+        arg_id._name  = param_name;
+        arg_id._seqno = -1;
+        PT(InternalName) inputname = InternalName::make(param_name);
+        bind._append_uv = -1;
+        if (inputname->get_name() == "p3d_Vertex") {
+          bind._name = InternalName::get_vertex();
+          s->_var_spec.push_back(bind);
+          gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+          continue;
+        }
+        if (inputname->get_name() == "p3d_Normal") {
+          bind._name = InternalName::get_normal();
+          s->_var_spec.push_back(bind);
+          gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+          continue;
+        }
+        if (inputname->get_name() == "p3d_Color") {
+          bind._name = InternalName::get_color();
+          s->_var_spec.push_back(bind);
+          gsg->_glBindAttribLocation(_glsl_program, i, param_name);
+          continue;
+        }
+      }
+      delete[] param_name;
+    }
+    
+    // Finally, re-link the program, or otherwise the glBindAttribLocation
+    // calls won't have any effect.
+    gsg->_glLinkProgram(_glsl_program);
+
+    int status;
+    gsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
+    if (status != GL_TRUE) {
+      GLCAT.error() << "An error occurred while relinking shader program!\n";
+      glsl_report_program_errors(gsg, _glsl_program);
+      s->_error_flag = true;
     }
   }
+  
+  gsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -263,7 +318,9 @@ release_resources(const GSG *gsg) {
     _cg_gprogram = 0;
     _cg_parameter_map.clear();
   }
-  if (glGetError() != GL_NO_ERROR) {
+  if (gsg) {
+    gsg->report_my_gl_errors();
+  } if (glGetError() != GL_NO_ERROR) {
     GLCAT.error() << "GL error in ShaderContext destructor\n";
   }
 #endif
@@ -300,10 +357,18 @@ release_resources(const GSG *gsg) {
 //               input parameters.
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-bind(GSG *gsg) {
+bind(GSG *gsg, bool reissue_parameters) {
   _last_gsg = gsg;
-  // Pass in k-parameters and transform-parameters
-  issue_parameters(gsg, Shader::SSD_general);
+
+  // GLSL shaders need to be bound before passing parameters.
+  if (_shader->get_language() == Shader::SL_GLSL && !_shader->get_error_flag()) {
+    gsg->_glUseProgram(_glsl_program);
+  }
+
+  if (reissue_parameters) {
+    // Pass in k-parameters and transform-parameters
+    issue_parameters(gsg, Shader::SSD_general);
+  }
 
 #ifdef HAVE_CG
   if (_cg_context != 0) {
@@ -320,13 +385,8 @@ bind(GSG *gsg) {
     cg_report_errors();
   }
 #endif
-  
-  if (_shader->get_language() == Shader::SL_GLSL && !_shader->get_error_flag()) {
-    gsg->_glUseProgram(_glsl_program);
-  }
-  if (glGetError() != GL_NO_ERROR) {
-    GLCAT.error() << "GL error in ShaderContext::bind\n";
-  }
+
+  gsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -353,9 +413,7 @@ unbind(GSG *gsg) {
   if (_shader->get_language() == Shader::SL_GLSL) {
     gsg->_glUseProgram(0);
   }
-  if (glGetError() != GL_NO_ERROR) {
-    GLCAT.error() << "GL error in ShaderContext::unbind\n";
-  }
+  gsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -432,9 +490,7 @@ issue_parameters(GSG *gsg, int altered) {
   cg_report_errors();
 #endif
 
-  if (glGetError() != GL_NO_ERROR) {
-    GLCAT.error() << "GL error in ShaderContext::issue_parameters\n";
-  }
+  gsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -445,22 +501,27 @@ issue_parameters(GSG *gsg, int altered) {
 void CLP(ShaderContext)::
 disable_shader_vertex_arrays(GSG *gsg) {
   _last_gsg = gsg;
-
-#ifdef HAVE_CG
-  if (_cg_context == 0) {
+  if (!valid()) {
     return;
   }
 
-  for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
-    CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
-    if (p == 0) continue;
-    cgGLDisableClientState(p);
+  if (_shader->get_language() == Shader::SL_GLSL) {
+    for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
+      glDisableVertexAttribArray(i);
+    }
   }
-  cg_report_errors();
-  if (glGetError() != GL_NO_ERROR) {
-    GLCAT.error() << "GL error in ShaderContext::disable_shader_vertex_arrays\n";
+#ifdef HAVE_CG
+  else if (_shader->get_language() == Shader::SL_Cg) {
+    for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
+      CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
+      if (p == 0) continue;
+      cgGLDisableClientState(p);
+    }
+    cg_report_errors();
   }
 #endif
+
+  gsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -479,11 +540,12 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
                             bool force) {
   _last_gsg = gsg;
   if (prev) prev->disable_shader_vertex_arrays(gsg);
-#ifdef HAVE_CG
   if (!valid()) {
     return true;
   }
+#ifdef HAVE_CG
   cg_report_errors();
+#endif
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   if (gsg->_use_sender) {
@@ -496,8 +558,14 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
     int start, stride, num_values;
     int nvarying = _shader->_var_spec.size();
     for (int i=0; i<nvarying; i++) {
-      CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
-      if (p == 0) continue;
+#ifdef HAVE_CG
+      if (_shader->get_language() == Shader::SL_Cg) {
+        if (_cg_parameter_map[_shader->_var_spec[i]._id._seqno] == 0) {
+          continue;
+        }
+      }
+#endif
+      
       InternalName *name = _shader->_var_spec[i]._name;
       int texslot = _shader->_var_spec[i]._append_uv;
       if (texslot >= 0 && texslot < gsg->_state_texture->get_num_on_stages()) {
@@ -516,21 +584,39 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
         if (!gsg->setup_array_data(client_pointer, array_reader, force)) {
           return false;
         }
-        cgGLSetParameterPointer(p,
-                                num_values, gsg->get_numeric_type(numeric_type),
-                                stride, client_pointer + start);
-        cgGLEnableClientState(p);
-      } else {
+        if (_shader->get_language() == Shader::SL_GLSL) {
+#ifndef OPENGLES_2
+          glEnableClientState(GL_VERTEX_ARRAY);
+#endif
+          glEnableVertexAttribArray(i);
+          glVertexAttribPointer(i, num_values, gsg->get_numeric_type(numeric_type),
+                                GL_FALSE, stride, client_pointer + start);
+#ifndef OPENGLES_2
+          glDisableClientState(GL_VERTEX_ARRAY);
+#endif
+#ifdef HAVE_CG
+        } else if (_shader->get_language() == Shader::SL_Cg) {
+          CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
+          cgGLSetParameterPointer(p,
+                                  num_values, gsg->get_numeric_type(numeric_type),
+                                  stride, client_pointer + start);
+          cgGLEnableClientState(p);
+#endif
+        }
+      }
+#ifdef HAVE_CG
+      else if (_shader->get_language() == Shader::SL_Cg) {
         cgGLDisableClientState(p);
       }
+#endif
     }
   }
 
+#ifdef HAVE_CG
   cg_report_errors();
-  if (glGetError() != GL_NO_ERROR) {
-    GLCAT.error() << "GL error in ShaderContext::update_shader_vertex_arrays\n";
-  }
-#endif // HAVE_CG
+#endif
+  gsg->report_my_gl_errors();
+  
   return true;
 }
 
@@ -586,9 +672,7 @@ disable_shader_texture_bindings(GSG *gsg) {
   cg_report_errors();
 #endif
 
-  if (glGetError() != GL_NO_ERROR) {
-    GLCAT.error() << "GL error in ShaderContext::disable_shader_texture_bindings\n";
-  }
+  gsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -694,9 +778,7 @@ update_shader_texture_bindings(CLP(ShaderContext) *prev, GSG *gsg) {
   cg_report_errors();
 #endif
 
-  if (glGetError() != GL_NO_ERROR) {
-    GLCAT.error() << "GL error in ShaderContext::update_shader_texture_bindings\n";
-  }
+  gsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -725,14 +807,16 @@ glsl_report_shader_errors(GSG *gsg, unsigned int shader) {
   int length = 0;
   int num_chars  = 0;
 
-	gsg->_glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+  gsg->_glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
   if (length > 0) {
     info_log = (char *) malloc(length);
     gsg->_glGetShaderInfoLog(shader, length, &num_chars, info_log);
-    GLCAT.error(false) << info_log;
-    free(info_log);
+    if (strcmp(info_log, "Success.\n") != 0) {
+      GLCAT.error(false) << info_log;
+    }
   }
+  delete[] info_log;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -746,14 +830,16 @@ glsl_report_program_errors(GSG *gsg, unsigned int program) {
   int length = 0;
   int num_chars  = 0;
 
-	gsg->_glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
+  gsg->_glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
 
   if (length > 0) {
     info_log = (char *) malloc(length);
     gsg->_glGetProgramInfoLog(program, length, &num_chars, info_log);
-    GLCAT.error(false) << info_log;
-    free(info_log);
+    if (strcmp(info_log, "Success.\n") != 0) {
+      GLCAT.error(false) << info_log;
+    }
   }
+  delete[] info_log;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -762,16 +848,16 @@ glsl_report_program_errors(GSG *gsg, unsigned int program) {
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 unsigned int CLP(ShaderContext)::
-glsl_compile_entry_point(GSG *gsg, const char *entry, Shader::ShaderType type) {
+glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type) {
   unsigned int handle;
   switch (type) {
-    case Shader::ST_VERTEX:
+    case Shader::ST_vertex:
       handle = gsg->_glCreateShader(GL_VERTEX_SHADER);
       break;
-    case Shader::ST_FRAGMENT:
+    case Shader::ST_fragment:
       handle = gsg->_glCreateShader(GL_FRAGMENT_SHADER);
       break;
-    case Shader::ST_GEOMETRY:
+    case Shader::ST_geometry:
       handle = gsg->_glCreateShader(GL_GEOMETRY_SHADER);
       break;
     default:
@@ -780,16 +866,13 @@ glsl_compile_entry_point(GSG *gsg, const char *entry, Shader::ShaderType type) {
   if (!handle) {
     return 0;
   }
-  // We define our own main() in which we call the right function.
-  ostringstream str;
-  str << "void main() { " << entry << "(); };";
-  const char* sources[2] = {_shader->_text.c_str(), str.str().c_str()};
-  gsg->_glShaderSource(handle, 2, sources, NULL);
+  const char* text = _shader->get_text(type).c_str();
+  gsg->_glShaderSource(handle, 1, &text, NULL);
   gsg->_glCompileShader(handle);
   int status;
   gsg->_glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
   if (status != GL_TRUE) {
-    GLCAT.error() << "An error occurred while compiling " << entry << "!\n";
+    GLCAT.error() << "An error occurred while compiling shader!\n";
     glsl_report_shader_errors(gsg, handle);
     gsg->_glDeleteShader(handle);
     return 0;
@@ -810,36 +893,22 @@ glsl_compile_shader(GSG *gsg) {
   _glsl_program = gsg->_glCreateProgram();
   if (!_glsl_program) return false;
 
-  if (_shader->_text.find("vshader") != -1) {
-    _glsl_vshader = glsl_compile_entry_point(gsg, "vshader", Shader::ST_VERTEX);
+  if (!_shader->get_text(Shader::ST_vertex).empty()) {
+    _glsl_vshader = glsl_compile_entry_point(gsg, Shader::ST_vertex);
     if (!_glsl_vshader) return false;
     gsg->_glAttachShader(_glsl_program, _glsl_vshader);
-  } else {
-    GLCAT.warning() << "Could not locate function 'vshader' in shader text!\n";
   }
 
-  if (_shader->_text.find("fshader") != -1) {
-    _glsl_fshader = glsl_compile_entry_point(gsg, "fshader", Shader::ST_FRAGMENT);
+  if (!_shader->get_text(Shader::ST_fragment).empty()) {
+    _glsl_fshader = glsl_compile_entry_point(gsg, Shader::ST_fragment);
     if (!_glsl_fshader) return false;
     gsg->_glAttachShader(_glsl_program, _glsl_fshader);
-  } else {
-    GLCAT.warning() << "Could not locate function 'fshader' in shader text!\n";
   }
 
-  if (_shader->_text.find("gshader") != -1) {
-    _glsl_gshader = glsl_compile_entry_point(gsg, "gshader", Shader::ST_GEOMETRY);
+  if (!_shader->get_text(Shader::ST_geometry).empty()) {
+    _glsl_gshader = glsl_compile_entry_point(gsg, Shader::ST_geometry);
     if (!_glsl_gshader) return false;
     gsg->_glAttachShader(_glsl_program, _glsl_gshader);
-  }
-  
-  gsg->_glLinkProgram(_glsl_program);
-
-  int status;
-  gsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
-  if (status != GL_TRUE) {
-    GLCAT.error() << "An error occurred while linking shader program!\n";
-    glsl_report_program_errors(gsg, _glsl_program);
-    return false;
   }
   
   // There might be warnings. Only report them for one shader program.
@@ -851,10 +920,17 @@ glsl_compile_shader(GSG *gsg) {
     glsl_report_shader_errors(gsg, _glsl_gshader);
   }
 
-  if (glGetError() != GL_NO_ERROR) {
-    GLCAT.error() << "Failed to compile shader\n";
+  gsg->_glLinkProgram(_glsl_program);
+
+  int status;
+  gsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
+  if (status != GL_TRUE) {
+    GLCAT.error() << "An error occurred while linking shader program!\n";
+    glsl_report_program_errors(gsg, _glsl_program);
     return false;
   }
+
+  gsg->report_my_gl_errors();
   return true;
 }
 

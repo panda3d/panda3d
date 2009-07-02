@@ -116,13 +116,18 @@ typedef void (APIENTRYP PFNGLWEIGHTPOINTEROESPROC) (GLint size, GLenum type, GLs
 #ifndef OPENGLES_1
 // GLSL shader functions
 typedef void (APIENTRYP PFNGLATTACHSHADERPROC) (GLuint program, GLuint shader);
+typedef void (APIENTRYP PFNGLBINDATTRIBLOCATIONPROC) (GLuint program, GLuint index, const GLchar *name);
 typedef void (APIENTRYP PFNGLCOMPILESHADERPROC) (GLuint shader);
 typedef GLuint (APIENTRYP PFNGLCREATEPROGRAMPROC) (void);
 typedef GLuint (APIENTRYP PFNGLCREATESHADERPROC) (GLenum type);
 typedef void (APIENTRYP PFNGLDELETEPROGRAMPROC) (GLuint program);
 typedef void (APIENTRYP PFNGLDELETESHADERPROC) (GLuint shader);
 typedef void (APIENTRYP PFNGLDETACHSHADERPROC) (GLuint program, GLuint shader);
+typedef void (APIENTRYP PFNGLDISABLEVERTEXATTRIBARRAYPROC) (GLuint index);
+typedef void (APIENTRYP PFNGLENABLEVERTEXATTRIBARRAYPROC) (GLuint index);
+typedef void (APIENTRYP PFNGLGETACTIVEATTRIBPROC) (GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name);
 typedef void (APIENTRYP PFNGLGETACTIVEUNIFORMPROC) (GLuint program, GLuint index, GLsizei bufSize, GLsizei *length, GLint *size, GLenum *type, GLchar *name);
+typedef GLint (APIENTRYP PFNGLGETATTRIBLOCATIONPROC) (GLuint program, const GLchar *name);
 typedef void (APIENTRYP PFNGLGETPROGRAMIVPROC) (GLuint program, GLenum pname, GLint *params);
 typedef void (APIENTRYP PFNGLGETPROGRAMINFOLOGPROC) (GLuint program, GLsizei bufSize, GLsizei *length, GLchar *infoLog);
 typedef void (APIENTRYP PFNGLGETSHADERIVPROC) (GLuint shader, GLenum pname, GLint *params);
@@ -139,6 +144,7 @@ typedef void (APIENTRYP PFNGLUNIFORM3FVPROC) (GLint location, GLsizei count, con
 typedef void (APIENTRYP PFNGLUNIFORM4FVPROC) (GLint location, GLsizei count, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRYP PFNGLVALIDATEPROGRAMPROC) (GLuint program);
+typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const GLvoid *pointer);
 #endif
 #endif  // __EDG__
 
@@ -274,7 +280,7 @@ protected:
   void do_issue_fog();
   void do_issue_depth_offset();
   void do_issue_shade_model();
-  void do_issue_shader();
+  void do_issue_shader(bool state_has_changed = false);
   void do_issue_material();
   void do_issue_texture();
   void do_issue_blending();
@@ -441,6 +447,9 @@ protected:
   PT(Shader)  _texture_binding_shader;
   CLP(ShaderContext)  *_texture_binding_shader_context;
 #endif
+#ifdef OPENGLES_2
+  PT(Shader)  _default_shader;
+#endif
 
 #ifdef SUPPORT_IMMEDIATE_MODE
   CLP(ImmediateModeSender) _sender;
@@ -581,13 +590,18 @@ public:
 #ifndef OPENGLES_1
   // GLSL functions
   PFNGLATTACHSHADERPROC _glAttachShader;
+  PFNGLBINDATTRIBLOCATIONPROC _glBindAttribLocation;
   PFNGLCOMPILESHADERPROC _glCompileShader;
   PFNGLCREATEPROGRAMPROC _glCreateProgram;
   PFNGLCREATESHADERPROC _glCreateShader;
   PFNGLDELETEPROGRAMPROC _glDeleteProgram;
   PFNGLDELETESHADERPROC _glDeleteShader;
   PFNGLDETACHSHADERPROC _glDetachShader;
+  PFNGLDISABLEVERTEXATTRIBARRAYPROC _glDisableVertexAttribArray;
+  PFNGLENABLEVERTEXATTRIBARRAYPROC _glEnableVertexAttribArray;
+  PFNGLGETACTIVEATTRIBPROC _glGetActiveAttrib;
   PFNGLGETACTIVEUNIFORMPROC _glGetActiveUniform;
+  PFNGLGETATTRIBLOCATIONPROC _glGetAttribLocation;
   PFNGLGETPROGRAMIVPROC _glGetProgramiv;
   PFNGLGETPROGRAMINFOLOGPROC _glGetProgramInfoLog;
   PFNGLGETSHADERIVPROC _glGetShaderiv;
@@ -604,6 +618,7 @@ public:
   PFNGLUNIFORM4FVPROC _glUniform4fv;
   PFNGLUNIFORMMATRIX4FVPROC _glUniformMatrix4fv;
   PFNGLVALIDATEPROGRAMPROC _glValidateProgram;
+  PFNGLVERTEXATTRIBPOINTERPROC _glVertexAttribPointer;
 #endif
 
   GLenum _edge_clamp;
