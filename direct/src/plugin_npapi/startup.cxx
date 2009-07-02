@@ -396,6 +396,23 @@ NPP_URLNotify(NPP instance, const char *url,
 NPError
 NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   logfile << "GetValue " << variable << "\n";
+
+  /*
+  if (variable == NPPVpluginScriptableNPObject) {
+    static NPObject *object = NULL;
+    if (object == NULL) {
+      static NPClass npclass;
+      memset(&npclass, 0, sizeof(npclass));
+      npclass.structVersion = NP_CLASS_STRUCT_VERSION;
+      object = browser->createobject(instance, &npclass);
+      assert(object != NULL);
+    }
+
+    *(NPObject **)value = object;
+    return NPERR_NO_ERROR;
+  }
+  */
+
   return NPERR_GENERIC_ERROR;
 }
 

@@ -451,9 +451,7 @@ typedef enum {
   P3D_RT_get_url,
   P3D_RT_post_url,
   P3D_RT_notify,
-  P3D_RT_get_property,
-  P3D_RT_set_property,
-  P3D_RT_call,
+  P3D_RT_evaluate,
 } P3D_request_type;
 
 /* Structures corresponding to the request types in the above enum. */
@@ -497,44 +495,18 @@ typedef struct {
   const char *_message;
 } P3D_request_notify;
 
-/* A request to query a property on a host object.  The property_name
-   will be a dot-delimited string corresponding to a nested object.
-   It should begin with "window." for the window object and
-   "document."  for the DOM object that loaded the plugin.  The host
-   should respond to this request by calling P3D_instance_feed_value()
-   with the given unique_id and the requested value, or NULL if the
-   named property does not exist. */
+/* A request to evaluate a Javascript expression or statement.  The
+   expression will be evaluated in the context of the parent window.
+   It is particularly useful for querying document state, such as
+   "document.form.username.value", or for changing this state, such as
+   "document.form.choose.red.select = 1".  After evaluating the
+   expression, the host should return the response to this request by
+   calling P3D_instance_feed_value() with the given unique_id and the
+   result value, or NULL if there was an error with the expression. */
 typedef struct {
-  const char *_property_name;
+  const char *_expression;
   int _unique_id;
-} P3D_request_get_property;
-
-/* A request to change or set a property on a host object.  The
-   property_name will be a dot-delimited string corresponding to a
-   nested object, as above.  _value may be NULL to indicate a request
-   to delete the named property.  The host does *not* receive
-   ownership of the _value pointer and should not store it or delete
-   it.  The host need not respond to this event (other than by calling
-   P3D_request_finish()). */
-typedef struct {
-  const char *_property_name;
-  const P3D_value *_value;
-} P3D_request_set_property;
-
-/* A request to call a function on a host object.  The property_name
-   will be a dot-delimited string corresponding to a nested object, as
-   above.  The _params pointer will be a list value, which contains
-   the parameter values to pass to the function.  The host does not
-   receive ownership of the _params pointer and should not store it or
-   delete it.  The host should respond to this request by calling
-   P3D_instance_feed_value() with the given unique_id and the return
-   value of the function, or NULL if the function does not exist or is
-   not a callable object. */
-typedef struct {
-  const char *_property_name;
-  const P3D_value *_params;
-  int _unique_id;
-} P3D_request_call;
+} P3D_request_evaluate;
 
 /* This is the overall structure that represents a single request.  It
    is returned by P3D_instance_get_request(). */
@@ -546,9 +518,7 @@ typedef struct {
     P3D_request_get_url _get_url;
     P3D_request_post_url _post_url;
     P3D_request_notify _notify;
-    P3D_request_get_property _get_property;
-    P3D_request_set_property _set_property;
-    P3D_request_call _call;
+    P3D_request_evaluate _evaluate;
   } _request;
 } P3D_request;
 
@@ -650,13 +620,12 @@ P3D_instance_feed_url_stream_func(P3D_instance *instance, int unique_id,
                                   const void *this_data, 
                                   size_t this_data_size);
 
-/* This function is called by the host in response to a get_property
-   or call request.  The instance and unique_id parameters are from
-   the original request; the value should be a freshly-allocated
-   P3D_value that represents the requested property value or the
-   return value from the function call, or NULL on error.  Ownership
-   of the value value is passed into the plugin; the host should
-   *not* call P3D_value_finish() on this pointer. */
+/* This function is called by the host in response to an evaulate
+   request.  The instance and unique_id parameters are from the
+   original request; the value should be a freshly-allocated P3D_value
+   that represents the value of the evaluated expression, or NULL on
+   error.  Ownership of the value value is passed into the plugin; the
+   host should *not* call P3D_value_finish() on this pointer. */
 typedef void
 P3D_instance_feed_value_func(P3D_instance *instance, int unique_id,
                              P3D_value *value);

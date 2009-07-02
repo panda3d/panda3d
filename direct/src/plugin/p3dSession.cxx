@@ -450,37 +450,14 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
         request->_request._notify._message = strdup(message);
       }
 
-    } else if (strcmp(rtype, "get_property") == 0) {
-      const char *property_name = xrequest->Attribute("property_name");
+    } else if (strcmp(rtype, "evaluate") == 0) {
+      const char *expression = xrequest->Attribute("expression");
       int unique_id;
-      if (property_name != NULL && xrequest->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
+      if (expression != NULL && xrequest->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
         request = new P3D_request;
-        request->_request_type = P3D_RT_get_property;
-        request->_request._get_property._property_name = strdup(property_name);
-        request->_request._get_property._unique_id = unique_id;
-      }
-
-    } else if (strcmp(rtype, "set_property") == 0) {
-      const char *property_name = xrequest->Attribute("property_name");
-      TiXmlElement *xvalue = xrequest->FirstChildElement("value");
-      if (property_name != NULL && xvalue != NULL) {
-        request = new P3D_request;
-        request->_request_type = P3D_RT_set_property;
-        request->_request._set_property._property_name = strdup(property_name);
-        request->_request._set_property._value = rt_from_xml_value(xvalue);
-      }
-
-    } else if (strcmp(rtype, "call") == 0) {
-      const char *property_name = xrequest->Attribute("property_name");
-      TiXmlElement *xvalue = xrequest->FirstChildElement("value");
-      int unique_id;
-      if (property_name != NULL && xvalue != NULL && 
-          xrequest->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
-        request = new P3D_request;
-        request->_request_type = P3D_RT_call;
-        request->_request._call._property_name = strdup(property_name);
-        request->_request._call._params = rt_from_xml_value(xvalue);
-        request->_request._call._unique_id = unique_id;
+        request->_request_type = P3D_RT_evaluate;
+        request->_request._evaluate._expression = strdup(expression);
+        request->_request._evaluate._unique_id = unique_id;
       }
 
     } else {

@@ -61,11 +61,6 @@ private:
   typedef pset<P3D_instance *> Instances;
   Instances _instances;
 
-  // We maintain a table of properties in the "browser", mainly so we
-  // can test this feature of the core plugin API.
-  typedef pmap<string, P3D_value *> Properties;
-  Properties _properties;
-
   // This nested class keeps track of active URL requests.
   class URLGetter {
   public:

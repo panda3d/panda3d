@@ -220,16 +220,21 @@ handle_command(TiXmlDocument *doc) {
 
       } else if (strcmp(cmd, "feed_value") == 0) {
         int instance_id, unique_id;
-        TiXmlElement *xvalue = xcommand->FirstChildElement("value");
-        if (xvalue != (TiXmlElement *)NULL &&
-            xcommand->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS &&
+        if (xcommand->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS &&
             xcommand->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
           // TODO: deal with instance_id.
-          PyObject *value = from_xml_value(xvalue);
-          PyObject *result = PyObject_CallMethod
-            (_runner, (char*)"feedValue", (char*)"iO", unique_id, value);
-          Py_DECREF(value);
-          Py_XDECREF(result);
+          TiXmlElement *xvalue = xcommand->FirstChildElement("value");
+          if (xvalue != NULL) {
+            PyObject *value = from_xml_value(xvalue);
+            PyObject *result = PyObject_CallMethod
+              (_runner, (char*)"feedValue", (char*)"iOi", unique_id, value, true);
+            Py_DECREF(value);
+            Py_XDECREF(result);
+          } else {
+            PyObject *result = PyObject_CallMethod
+              (_runner, (char*)"feedValue", (char*)"iOi", unique_id, Py_None, false);
+            Py_XDECREF(result);
+          }
         }
         
       } else {
@@ -319,44 +324,16 @@ py_request_func(PyObject *args) {
     nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
-  } else if (strcmp(request_type, "get_property") == 0) {
-    // A get-property request.
-    const char *property_name;
+  } else if (strcmp(request_type, "evaluate") == 0) {
+    // An evaluate request.
+    const char *expression;
     int unique_id;
-    if (!PyArg_ParseTuple(extra_args, "si", &property_name, &unique_id)) {
+    if (!PyArg_ParseTuple(extra_args, "si", &expression, &unique_id)) {
       return NULL;
     }
 
-    xrequest->SetAttribute("property_name", property_name);
+    xrequest->SetAttribute("expression", expression);
     xrequest->SetAttribute("unique_id", unique_id);
-    nout << "sending " << doc << "\n" << flush;
-    _pipe_write << doc << flush;
-
-  } else if (strcmp(request_type, "set_property") == 0) {
-    // A set-property request.
-    const char *property_name;
-    PyObject *value;
-    if (!PyArg_ParseTuple(extra_args, "sO", &property_name, &value)) {
-      return NULL;
-    }
-
-    xrequest->SetAttribute("property_name", property_name);
-    xrequest->LinkEndChild(make_xml_value(value));
-    nout << "sending " << doc << "\n" << flush;
-    _pipe_write << doc << flush;
-
-  } else if (strcmp(request_type, "call") == 0) {
-    // A call-method request.
-    const char *property_name;
-    PyObject *params;
-    int unique_id;
-    if (!PyArg_ParseTuple(extra_args, "sOi", &property_name, &params, &unique_id)) {
-      return NULL;
-    }
-
-    xrequest->SetAttribute("property_name", property_name);
-    xrequest->SetAttribute("unique_id", unique_id);
-    xrequest->LinkEndChild(make_xml_value(params));
     nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 

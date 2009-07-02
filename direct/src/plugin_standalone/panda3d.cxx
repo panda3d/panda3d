@@ -406,68 +406,18 @@ handle_request(P3D_request *request) {
     // Ignore notifications.
     break;
 
-  case P3D_RT_get_property:
-    cerr << "Got P3D_RT_get_property: "
-         << request->_request._get_property._property_name << "\n";
+  case P3D_RT_evaluate:
+    cerr << "Got P3D_RT_evaluate: "
+         << request->_request._evaluate._expression << "\n";
     {
-      Properties::iterator pi = 
-        _properties.find(request->_request._get_property._property_name);
-      if (pi != _properties.end()) {
-        // The named property has been set.
-        P3D_value *dup_value = P3D_value_copy((*pi).second);
-        P3D_instance_feed_value(request->_instance, 
-                                request->_request._get_property._unique_id,
-                                dup_value);
-      } else {
-        // No such property set.
-        P3D_instance_feed_value(request->_instance, 
-                                request->_request._get_property._unique_id,
-                                NULL);
-      }
-      handled = true;
-    }
-    break;
-
-  case P3D_RT_set_property:
-    cerr << "Got P3D_RT_set_property: "
-         << request->_request._set_property._property_name << "\n";
-    {
-      // Also output the new value.
-      int buffer_size = 
-        P3D_value_get_string_length(request->_request._set_property._value);
-      char *buffer = (char *)alloca(buffer_size);
-      P3D_value_extract_string(request->_request._set_property._value, buffer, buffer_size);
-      cerr.write(buffer, buffer_size);
-      cerr << "\n";
-
-      Properties::iterator pi = 
-        _properties.insert(Properties::value_type(request->_request._set_property._property_name, NULL)).first;
-      if ((*pi).second != NULL) {
-        // Delete the original property.
-        P3D_value_finish((*pi).second);
-      }
-      (*pi).second =
-        P3D_value_copy(request->_request._set_property._value);
-      handled = true;
-    }
-    break;
-
-  case P3D_RT_call:
-    cerr << "Got P3D_RT_call: "
-         << request->_request._call._property_name << "\n";
-    {
-      // Also output the parameter list.
-      int buffer_size = 
-        P3D_value_get_string_length(request->_request._call._params);
-      char *buffer = (char *)alloca(buffer_size);
-      P3D_value_extract_string(request->_request._call._params, buffer, buffer_size);
-      cerr.write(buffer, buffer_size);
-      cerr << "\n";
-
-      // We don't have a mechanism for actually calling anything, though.
+      // In this standalone executable, every expression evaluates to
+      // itself as a string.  We do this just to help debug the
+      // expression passing to and from the low-level Python code.
+      const string &expression = request->_request._evaluate._expression;
+      P3D_value *value = P3D_new_string_value(expression.data(), expression.length());
       P3D_instance_feed_value(request->_instance, 
-                              request->_request._call._unique_id,
-                              NULL);
+                              request->_request._evaluate._unique_id,
+                              value);
       handled = true;
     }
     break;

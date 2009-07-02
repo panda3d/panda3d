@@ -369,7 +369,17 @@ handle_request(P3D_request *request) {
       browser->geturlnotify(_npp_instance, request->_request._get_url._url,
                             NULL, req);
     }
-    
+    break;
+
+  case P3D_RT_evaluate:
+    {
+      logfile << "Got P3D_RT_evaluate: "
+              << request->_request._evaluate._expression << "\n"
+              << flush;
+      const string &expression = request->_request._evaluate._expression;
+      int unique_id = request->_request._evaluate._unique_id;
+      handle_evaluate(expression, unique_id);
+    }
     break;
 
   default:
@@ -596,4 +606,96 @@ send_window() {
     (_p3d_inst, P3D_WT_embedded,
      0, 0, _window.width, _window.height,
      parent_window);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::handle_evaluate
+//       Access: Private
+//  Description: Evaluates the script within the window, as requested
+//               by the Panda code.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+handle_evaluate(const string &expression, int unique_id) {
+  NPObject *window = NULL;
+  if (browser->getvalue(_npp_instance, NPNVWindowNPObject, &window) == NPERR_NO_ERROR) {
+    logfile << "Got object for NPNVWindowNPObject: " << window << "\n";
+    
+    NPString script;
+    script.utf8characters = expression.c_str();
+    script.utf8length = expression.length();
+    NPVariant result;
+    if (browser->evaluate(_npp_instance, window, &script, &result)) {
+      logfile << "Evaluated, result = ";
+      show_np_variant(result);
+      logfile << "\n" << flush;
+
+      P3D_value *value = np_variant_to_value(result);
+      browser->releasevariantvalue(&result);
+
+      P3D_instance_feed_value(_p3d_inst, unique_id, value);
+
+    } else {
+      logfile << "Couldn't evaluate\n";
+    }
+    
+  } else {
+    logfile << "Couldn't get object for NPNVWindowNPObject\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::show_np_variant
+//       Access: Private
+//  Description: Outputs the variant value.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+show_np_variant(const NPVariant &result) {
+  if (NPVARIANT_IS_NULL(result)) {
+    logfile << "null";
+  } else if (NPVARIANT_IS_VOID(result)) {
+    logfile << "void";
+  } else if (NPVARIANT_IS_BOOLEAN(result)) {
+    logfile << "bool " << NPVARIANT_TO_BOOLEAN(result);
+  } else if (NPVARIANT_IS_INT32(result)) {
+    logfile << "int " << NPVARIANT_TO_INT32(result);
+  } else if (NPVARIANT_IS_DOUBLE(result)) {
+    logfile << "double " << NPVARIANT_TO_DOUBLE(result);
+  } else if (NPVARIANT_IS_STRING(result)) {
+    NPString str = NPVARIANT_TO_STRING(result);
+    logfile << "string " << string(str.utf8characters, str.utf8length);
+  } else if (NPVARIANT_IS_OBJECT(result)) {
+    NPObject *child = NPVARIANT_TO_OBJECT(result);
+    logfile << "object " << child;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::np_variant_to_value
+//       Access: Private
+//  Description: Returns a fresly-allocated P3D_value object
+//               corresponding to the indicated NPVariant.
+////////////////////////////////////////////////////////////////////
+P3D_value *PPInstance::
+np_variant_to_value(const NPVariant &result) {
+  if (NPVARIANT_IS_NULL(result)) {
+    return NULL;
+  } else if (NPVARIANT_IS_VOID(result)) {
+    return P3D_new_none_value();
+  } else if (NPVARIANT_IS_BOOLEAN(result)) {
+    return P3D_new_bool_value(NPVARIANT_TO_BOOLEAN(result));
+  } else if (NPVARIANT_IS_INT32(result)) {
+    return P3D_new_int_value(NPVARIANT_TO_INT32(result));
+  } else if (NPVARIANT_IS_DOUBLE(result)) {
+    return P3D_new_float_value(NPVARIANT_TO_DOUBLE(result));
+  } else if (NPVARIANT_IS_STRING(result)) {
+    NPString str = NPVARIANT_TO_STRING(result);
+    return P3D_new_string_value(str.utf8characters, str.utf8length);
+  } else if (NPVARIANT_IS_OBJECT(result)) {
+    // TODO?
+    return P3D_new_none_value();
+    // NPVARIANT_TO_OBJECT(result);
+  }
+
+  // Huh, what is this?
+  return NULL;
 }
