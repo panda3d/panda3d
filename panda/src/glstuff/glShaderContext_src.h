@@ -72,14 +72,14 @@ private:
   int _stage_offset;
   // Avoid using this! It merely exists so the
   // destructor has access to the extension functions.
-  WCPT(GSG) _last_gsg;
+  WPT(GSG) _last_gsg;
 
   void glsl_report_shader_errors(GSG *gsg, unsigned int shader);
   void glsl_report_program_errors(GSG *gsg, unsigned int program);
   unsigned int glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type);
   bool glsl_compile_shader(GSG *gsg);
 
-  void release_resources(const GSG *gsg);
+  void release_resources(GSG *gsg);
 
 public:
   static TypeHandle get_class_type() {

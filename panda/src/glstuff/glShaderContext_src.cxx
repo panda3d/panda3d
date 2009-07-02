@@ -308,7 +308,7 @@ CLP(ShaderContext)::
 //               vertex program handles or Cg contexts).
 ////////////////////////////////////////////////////////////////////
 void CLP(ShaderContext)::
-release_resources(const GSG *gsg) {
+release_resources(GSG *gsg) {
 #ifdef HAVE_CG
   if (_cg_context) {
     cgDestroyContext(_cg_context);
@@ -320,7 +320,7 @@ release_resources(const GSG *gsg) {
   }
   if (gsg) {
     gsg->report_my_gl_errors();
-  } if (glGetError() != GL_NO_ERROR) {
+  } else if (glGetError() != GL_NO_ERROR) {
     GLCAT.error() << "GL error in ShaderContext destructor\n";
   }
 #endif
@@ -347,6 +347,8 @@ release_resources(const GSG *gsg) {
     gsg->_glDeleteProgram(_glsl_program);
     _glsl_program = 0;
   }
+  
+  gsg->report_my_gl_errors();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -507,7 +509,7 @@ disable_shader_vertex_arrays(GSG *gsg) {
 
   if (_shader->get_language() == Shader::SL_GLSL) {
     for (int i=0; i<(int)_shader->_var_spec.size(); i++) {
-      glDisableVertexAttribArray(i);
+      gsg->_glDisableVertexAttribArray(i);
     }
   }
 #ifdef HAVE_CG
@@ -588,8 +590,8 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
 #ifndef OPENGLES_2
           glEnableClientState(GL_VERTEX_ARRAY);
 #endif
-          glEnableVertexAttribArray(i);
-          glVertexAttribPointer(i, num_values, gsg->get_numeric_type(numeric_type),
+          gsg->_glEnableVertexAttribArray(i);
+          gsg->_glVertexAttribPointer(i, num_values, gsg->get_numeric_type(numeric_type),
                                 GL_FALSE, stride, client_pointer + start);
 #ifndef OPENGLES_2
           glDisableClientState(GL_VERTEX_ARRAY);
@@ -606,6 +608,7 @@ update_shader_vertex_arrays(CLP(ShaderContext) *prev, GSG *gsg,
       }
 #ifdef HAVE_CG
       else if (_shader->get_language() == Shader::SL_Cg) {
+        CGparameter p = _cg_parameter_map[_shader->_var_spec[i]._id._seqno];
         cgGLDisableClientState(p);
       }
 #endif

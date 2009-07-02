@@ -897,7 +897,7 @@ reset() {
        get_extension_func(GLPREFIX_QUOTED, "DeleteShader");
     _glDetachShader = (PFNGLDETACHSHADERPROC)
        get_extension_func(GLPREFIX_QUOTED, "DetachShader");
-    _glDisableVertexAttribArray (PFNGLDISABLEVERTEXATTRIBARRAYPROC)
+    _glDisableVertexAttribArray = (PFNGLDISABLEVERTEXATTRIBARRAYPROC)
       get_extension_func(GLPREFIX_QUOTED, "DisableVertexAttribArray");
     _glEnableVertexAttribArray = (PFNGLENABLEVERTEXATTRIBARRAYPROC)
       get_extension_func(GLPREFIX_QUOTED, "EnableVertexAttribArray");
