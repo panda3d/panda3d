@@ -54,8 +54,8 @@ register_with_read_factory() {
 void UvScrollNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
   ModelNode::write_datagram(manager, dg);
-  dg.add_float(_u_speed);
-  dg.add_float(_v_speed);
+  dg.add_float64(_u_speed);
+  dg.add_float64(_v_speed);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *UvScrollNode::
 make_from_bam(const FactoryParams &params) {
-  UvScrollNode *node = new ModelNode("");
+  UvScrollNode *node = new UvScrollNode("", 0.0, 0.0);
   DatagramIterator scan;
   BamReader *manager;
 
@@ -89,6 +89,6 @@ void UvScrollNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
 
-  _u_speed = scan.get_float();
-  _v_speed = scan.get_float();
+  _u_speed = scan.get_float64();
+  _v_speed = scan.get_float64();
 }
