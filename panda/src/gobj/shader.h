@@ -301,7 +301,7 @@ public:
   ShaderArgType cg_parameter_type(CGparameter p);
   ShaderArgDir  cg_parameter_dir(CGparameter p);
 
-  CGprogram     cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type = ST_VERTEX);
+  CGprogram     cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType type = ST_vertex);
 
   bool          cg_analyze_entry_point(CGprogram prog, ShaderType type);
 
