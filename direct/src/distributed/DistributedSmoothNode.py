@@ -359,7 +359,8 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             if howFarFuture - chug >= MaxFuture:
                 # Too far off; advise the other client of our clock information.
                 if globalClockDelta.getUncertainty() != None and \
-                   realTime - self.lastSuggestResync >= MinSuggestResync:
+                   realTime - self.lastSuggestResync >= MinSuggestResync and \
+                   hasattr(self.cr, 'localAvatarDoId'):
                     self.lastSuggestResync = realTime
                     timestampB = globalClockDelta.localToNetworkTime(realTime)
                     serverTime = realTime - globalClockDelta.getDelta()
@@ -459,7 +460,8 @@ class DistributedSmoothNode(DistributedNode.DistributedNode,
             if (not other):
                 assert self.notify.info(
                     "Warning: couldn't find the avatar %d" % (avId))
-            elif hasattr(other, "d_returnResync"):
+            elif hasattr(other, "d_returnResync") and \
+                 hasattr(self.cr, 'localAvatarDoId'):
                 realTime = globalClock.getRealTime()
                 serverTime = realTime - globalClockDelta.getDelta()
                 assert self.notify.info(
