@@ -17,14 +17,16 @@
 
 #include "pandabase.h"
 
-#include "modelNode.h"
+#include "animInterface.h"
+#include "pandaNode.h"
+
 
 ////////////////////////////////////////////////////////////////////
 //       Class : UvScrollNode
 // Description : This node is placed at key points within the scene
 //               graph to animate uvs. 
 ////////////////////////////////////////////////////////////////////
-class EXPCL_PANDA_PGRAPH UvScrollNode : public ModelNode {
+class EXPCL_PANDA_PGRAPH UvScrollNode : public PandaNode {
 PUBLISHED:
   INLINE UvScrollNode(const string &name, float u_speed, float v_speed);
 
@@ -33,14 +35,20 @@ protected:
 
 public:
   virtual PandaNode *make_copy() const;
+  virtual bool safe_to_flatten() const;
+  virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:
   INLINE void set_u_speed(float u_speed);
   INLINE void set_v_speed(float v_speed);
-
+  INLINE float get_u_speed() const;
+  INLINE float get_v_speed() const;
+  
 private:
   float _u_speed;
   float _v_speed;
+
+  double _start_time;
 
 public:
   static void register_with_read_factory();

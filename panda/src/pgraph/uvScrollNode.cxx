@@ -17,6 +17,11 @@
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "luse.h"
+#include "renderState.h"
+#include "texMatrixAttrib.h"
+#include "textureStage.h"
+#include "transformState.h"
 
 TypeHandle UvScrollNode::_type_handle;
 
@@ -35,10 +40,10 @@ make_copy() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ModelNode::register_with_read_factory
+//     Function: UvSctrollNode::register_with_read_factory
 //       Access: Public, Static
 //  Description: Tells the BamReader how to create objects of type
-//               ModelNode.
+//               UvScrollNode.
 ////////////////////////////////////////////////////////////////////
 void UvScrollNode::
 register_with_read_factory() {
@@ -46,16 +51,16 @@ register_with_read_factory() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ModelNode::write_datagram
+//     Function: UvSctrollNode::write_datagram
 //       Access: Public, Virtual
 //  Description: Writes the contents of this object to the datagram
 //               for shipping out to a Bam file.
 ////////////////////////////////////////////////////////////////////
 void UvScrollNode::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  ModelNode::write_datagram(manager, dg);
-  dg.add_float64(_u_speed);
-  dg.add_float64(_v_speed);
+  PandaNode::write_datagram(manager, dg);
+  dg.add_float32(_u_speed);
+  dg.add_float32(_v_speed);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,7 +73,7 @@ write_datagram(BamWriter *manager, Datagram &dg) {
 ////////////////////////////////////////////////////////////////////
 TypedWritable *UvScrollNode::
 make_from_bam(const FactoryParams &params) {
-  UvScrollNode *node = new UvScrollNode("", 0.0, 0.0);
+  UvScrollNode *node = new UvScrollNode("",0,0);
   DatagramIterator scan;
   BamReader *manager;
 
@@ -89,6 +94,57 @@ void UvScrollNode::
 fillin(DatagramIterator &scan, BamReader *manager) {
   PandaNode::fillin(scan, manager);
 
-  _u_speed = scan.get_float64();
-  _v_speed = scan.get_float64();
+  _u_speed = scan.get_float32();
+  _v_speed = scan.get_float32();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SequenceNode::cull_callback
+//       Access: Public, Virtual
+//  Description: This function will be called during the cull
+//               traversal to perform any additional operations that
+//               should be performed at cull time.  This may include
+//               additional manipulation of render state or additional
+//               visible/invisible decisions, or any other arbitrary
+//               operation.
+//
+//               Note that this function will *not* be called unless
+//               set_cull_callback() is called in the constructor of
+//               the derived class.  It is necessary to call
+//               set_cull_callback() to indicated that we require
+//               cull_callback() to be called.
+//
+//               By the time this function is called, the node has
+//               already passed the bounding-volume test for the
+//               viewing frustum, and the node's transform and state
+//               have already been applied to the indicated
+//               CullTraverserData object.
+//
+//               The return value is \true if this node should be
+//               visible, or false if it should be culled.
+////////////////////////////////////////////////////////////////////
+bool UvScrollNode::
+cull_callback(CullTraverser * trav, CullTraverserData &data) {
+  double elapsed = ClockObject::get_global_clock()->get_frame_time() - _start_time; 
+  CPT(TransformState) ts = TransformState::make_pos2d(LVecBase2f(cmod(elapsed*_u_speed,1.0)/1.0, cmod(elapsed*_v_speed,1.0)/1.0));
+  CPT(RenderAttrib) tm = TexMatrixAttrib::make(TextureStage::get_default(), ts);
+  CPT(RenderState) rs = RenderState::make_empty()->set_attrib(tm);
+  data._state = data._state->compose(rs);
+   
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UvScrollNode::safe_to_flatten
+//       Access: Public, Virtual
+//  Description: Returns true if it is generally safe to flatten out
+//               this particular kind of PandaNode by duplicating
+//               instances (by calling dupe_for_flatten()), false
+//               otherwise (for instance, a Camera cannot be safely
+//               flattened, because the Camera pointer itself is
+//               meaningful).
+////////////////////////////////////////////////////////////////////
+bool UvScrollNode::
+safe_to_flatten() const {
+  return false;
 }

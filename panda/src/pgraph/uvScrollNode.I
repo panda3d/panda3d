@@ -1,5 +1,5 @@
-// Filename: modelNode.I
-// Created by:  drose (16Mar02)
+// Filename: uvScrollNode.I
+// Created by:  zpavlov (30june09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -14,20 +14,22 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ModelNode::Constructor
+//     Function: UvScrollNode::Constructor
 //       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UvScrollNode::
 UvScrollNode(const string &name, float u_speed, float v_speed) :
-  ModelNode(name)
+  PandaNode(name),
+  _u_speed(u_speed),
+  _v_speed(v_speed)
 {
-  _u_speed = u_speed;
-  _v_speed = v_speed;
+  set_cull_callback();
+  _start_time = ClockObject::get_global_clock()->get_frame_time();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_u_speed
+//     Function: UvSctrollNode::set_u_speed
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -37,7 +39,7 @@ set_u_speed(float u_speed) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: set_v_speed
+//     Function: UvSctrollNode::set_v_speed
 //       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
@@ -48,13 +50,33 @@ set_v_speed(float v_speed) {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ModelNode::Copy Constructor
+//     Function: UvSctrollNode::get_u_speed
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE float UvScrollNode::
+get_u_speed() const {
+  return _u_speed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UvSctrollNode::get_v_speed
+//       Access: Published
+//  Description:
+////////////////////////////////////////////////////////////////////
+INLINE float UvScrollNode::
+get_v_speed() const {
+  return _v_speed;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: UvScrollNode::Copy Constructor
 //       Access: Protected
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE UvScrollNode::
 UvScrollNode(const UvScrollNode &copy) :
-  ModelNode(copy),
+  PandaNode(copy),
   _u_speed(copy._u_speed),
   _v_speed(copy._v_speed)
 {
