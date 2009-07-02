@@ -22,5 +22,6 @@
 #include "textureStageCollection.cxx"
 #include "transformState.cxx"
 #include "transparencyAttrib.cxx"
+#include "uvScrollNode.cxx"
 #include "weakNodePath.cxx"
 #include "workingNodePath.cxx"
