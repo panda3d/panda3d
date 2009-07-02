@@ -1126,10 +1126,7 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
   CGprogram prog;
   CGerror err;
   const char *compiler_args[100];
-  const string text;
-  if (!_text->_separate) {
-    text = _text->_shared;
-  }
+  const string text = get_text(type);
   int nargs = 0;
 
   int active, ultimate;
@@ -1138,25 +1135,16 @@ cg_compile_entry_point(const char *entry, const ShaderCaps &caps, ShaderType typ
     case ST_vertex:
       active   = caps._active_vprofile;
       ultimate = caps._ultimate_vprofile;
-      if (_text->_separate) {
-        text = _text._vertex;
-      }
       break;
 
     case ST_fragment:
       active   = caps._active_fprofile;
       ultimate = caps._ultimate_fprofile;
-      if (_text->_separate) {
-        text = _text._fragment;
-      }
       break;
 
     case ST_geometry:
       active   = caps._active_gprofile;
       ultimate = caps._ultimate_gprofile;
-      if (_text->_separate) {
-        text = _text._geometry;
-      }
       break;
   };
 
@@ -1239,15 +1227,15 @@ cg_compile_shader(const ShaderCaps &caps) {
     return false;
   }
 
-  if (!_text->_separate || !_text._vertex.empty()) {
+  if (!_text->_separate || !_text->_vertex.empty()) {
     _cg_vprogram = cg_compile_entry_point("vshader", caps, ST_vertex);
   }
 
-  if (!_text->_separate || !_text._fragment.empty()) {
+  if (!_text->_separate || !_text->_fragment.empty()) {
     _cg_fprogram = cg_compile_entry_point("fshader", caps, ST_fragment);
   }
 
-  if ((_text->_separate && !_text._geometry.empty()) || (!_text->_separate && _text.find("gshader") != -1)) {
+  if ((_text->_separate && !_text->_geometry.empty()) || (!_text->_separate && _text->_shared.find("gshader") != -1)) {
     _cg_gprogram = cg_compile_entry_point("gshader", caps, ST_geometry);
   }
 
