@@ -19,6 +19,9 @@
 extern "C" {
   #include "avcodec.h"
   #include "avformat.h"
+#ifdef HAVE_SWSCALE
+  #include "swscale.h"
+#endif
 }
 #include "pStatCollector.h"
 #include "pStatTimer.h"
@@ -154,6 +157,7 @@ cleanup() {
   }
   _video_ctx = 0;
   _video_index = -1;
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,13 +173,33 @@ export_frame(unsigned char *data, bool bgra, int bufx) {
   if (bgra) {
     _frame_out->data[0] = data + ((_size_y - 1) * bufx * 4);
     _frame_out->linesize[0] = bufx * -4;
+#ifdef HAVE_SWSCALE
+    struct SwsContext *convert_ctx = sws_getContext(_size_x, _size_y,
+                               _video_ctx->pix_fmt, _size_x, _size_y,
+                               PIX_FMT_BGRA, 2, NULL, NULL, NULL);
+    nassertv(convert_ctx != NULL);
+    sws_scale(convert_ctx, _frame->data, _frame->linesize,
+              0, _size_y, _frame_out->data, _frame_out->linesize);
+    sws_freeContext(convert_ctx);
+#else
     img_convert((AVPicture *)_frame_out, PIX_FMT_BGRA, 
                 (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
+#endif
   } else {
     _frame_out->data[0] = data + ((_size_y - 1) * bufx * 3);
     _frame_out->linesize[0] = bufx * -3;
+#ifdef HAVE_SWSCALE
+    struct SwsContext *convert_ctx = sws_getContext(_size_x, _size_y,
+                               _video_ctx->pix_fmt, _size_x, _size_y,
+                               PIX_FMT_BGR24, 2, NULL, NULL, NULL);
+    nassertv(convert_ctx != NULL);
+    sws_scale(convert_ctx, _frame->data, _frame->linesize,
+              0, _size_y, _frame_out->data, _frame_out->linesize);
+    sws_freeContext(convert_ctx);
+#else
     img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
                 (AVPicture *)_frame, _video_ctx->pix_fmt, _size_x, _size_y);
+#endif
   }
 }
 

@@ -105,9 +105,9 @@ pandavfs_seek(URLContext *h, PN_int64 pos, int whence) {
   case SEEK_END: s->seekg(pos, ios::end); break;
   case AVSEEK_SIZE: {
     s->seekg(0, ios::cur);
-    offset_t p = s->tellg();
+    int p = s->tellg();
     s->seekg(-1, ios::end);
-    offset_t size = s->tellg();
+    int size = s->tellg();
     if (size < 0) {
       movies_cat.error() << "Failed to determine filesize in ffmpegVirtualFile\n";
       s->clear();
@@ -164,7 +164,7 @@ register_protocol() {
   protocol.url_write = pandavfs_write;
   protocol.url_seek  = pandavfs_seek;
   protocol.url_close = pandavfs_close;
-  ::register_protocol(&protocol);
+  av_register_protocol(&protocol);
 }
 
 #endif // HAVE_FFMPEG

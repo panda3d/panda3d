@@ -728,10 +728,12 @@
 #defer HAVE_OPENCV $[libtest $[OPENCV_LPATH],$[OPENCV_LIBS]]
 
 // Is FFMPEG installed, and where?
-#define FFMPEG_IPATH /usr/include/ffmpeg
+#define FFMPEG_IPATH /usr/include/ffmpeg /usr/include/libavcodec /usr/include/libavformat /usr/include/libavutil /usr/include/libswscale
 #define FFMPEG_LPATH
-#define FFMPEG_LIBS $[if $[WINDOWS_PLATFORM],libavcodec.lib libavformat.lib libavutil.lib libgcc.lib,avcodec avformat avutil]
+#define FFMPEG_LIBS $[if $[WINDOWS_PLATFORM],libavcodec.lib libavformat.lib libavutil.lib libgcc.lib libswscale.lib,avcodec avformat avutil swscale]
 #defer HAVE_FFMPEG $[libtest $[FFMPEG_LPATH],$[FFMPEG_LIBS]]
+// Define this if you compiled ffmpeg with libswscale enabled.
+#define HAVE_SWSCALE 1
 
 // Is ODE installed, and where?
 #define ODE_IPATH

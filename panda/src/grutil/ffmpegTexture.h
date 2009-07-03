@@ -23,6 +23,9 @@
 extern "C" {
   #include "avcodec.h"
   #include "avformat.h"
+#ifdef HAVE_SWSCALE
+    #include "swscale.h"
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

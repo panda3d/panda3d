@@ -209,10 +209,10 @@ update_frame(int frame) {
   for (int z = 0; z < max_z; ++z) {
     VideoPage &page = _pages.at(z);
     if (page._color.is_valid() || page._alpha.is_valid()) {
-      modify_ram_image();
+      do_modify_ram_image();
     }
     if (page._color.is_valid()) {
-      nassertv(get_num_components() >= 3 && get_component_width() == 1);
+      nassertv(_num_components >= 3 && _component_width == 1);
 
       // A little different from the opencv implementation
       // The frame is kept on the stream itself. This is partially 
@@ -221,11 +221,11 @@ update_frame(int frame) {
       // that I don't convert, even if the IO formats are the same!)  
       if (page._color.get_frame_data(frame)) {
         nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
-        unsigned char *dest = _ram_images[0]._image.p() + get_expected_ram_page_size() * z;
+        unsigned char *dest = _ram_images[0]._image.p() + do_get_expected_ram_page_size() * z;
         int dest_row_width = (_x_size * _num_components * _component_width);
         
         // Simplest case, where we deal with an rgb texture
-        if (get_num_components() == 3) {
+        if (_num_components == 3) {
           int source_row_width=3*page._color._codec_context->width;
           unsigned char * source=(unsigned char *)page._color._frame_out->data[0]
             +source_row_width*(get_video_height()-1);         
@@ -256,7 +256,7 @@ update_frame(int frame) {
           
           // The harder case--interleave the color in with the alpha,
           // pixel by pixel.
-          nassertv(get_num_components() == 4);
+          nassertv(_num_components == 4);
           for (int y = 0; y < get_video_height(); ++y) {
             int dx = 0;
             int sx = 0;
@@ -277,14 +277,14 @@ update_frame(int frame) {
     }
     
     if (page._alpha.is_valid()) {
-      nassertv(get_num_components() == 4 && get_component_width() == 1);
+      nassertv(_num_components == 4 && _component_width == 1);
   
       if (page._alpha.get_frame_data(frame)) {
         nassertv(get_video_width() <= _x_size && get_video_height() <= _y_size);
         
         // Currently, we assume the alpha has been converted to an rgb format
         // There is no reason it can't be a 256 color grayscale though.
-        unsigned char *dest = _ram_images[0]._image.p() + get_expected_ram_page_size() * z;
+        unsigned char *dest = _ram_images[0]._image.p() + do_get_expected_ram_page_size() * z;
         int dest_row_width = (_x_size * _num_components * _component_width);
         
         int source_row_width= page._alpha._codec_context->width * 3;
@@ -348,7 +348,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     if (!has_name()) {
       set_name(fullpath.get_basename_wo_extension());
     }
-    if (!has_filename()) {
+    if (!_filename.empty()) {
       _filename = fullpath;
       _alpha_filename = alpha_fullpath;
     }
@@ -582,6 +582,25 @@ get_frame_data(int frame_number) {
     // Did we get a video frame?
     if (frame_finished) {
       // Convert the image from its native format to RGB
+#ifdef HAVE_SWSCALE
+      // Note from pro-rsoft: ffmpeg removed img_convert and told
+      // everyone to use sws_scale instead - that's why I wrote
+      // this code. I have no idea if it works well or not, but
+      // it seems to compile and run without crashing.
+      PixelFormat dst_format;
+      if (_codec_context->pix_fmt != PIX_FMT_RGBA32) {
+        dst_format = PIX_FMT_BGR24;
+      } else {
+        dst_format = PIX_FMT_RGBA32;
+      }
+      struct SwsContext *convert_ctx = sws_getContext(_codec_context->width, _codec_context->height,
+                              _codec_context->pix_fmt, _codec_context->width, _codec_context->height,
+                              dst_format, 2, NULL, NULL, NULL);
+      nassertr(convert_ctx != NULL, false);
+      sws_scale(convert_ctx, _frame->data, _frame->linesize,
+                0, _codec_context->height, _frame_out->data, _frame_out->linesize);
+      sws_freeContext(convert_ctx);
+#else
       if (_codec_context->pix_fmt != PIX_FMT_RGBA32) {
         img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
                     (AVPicture *)_frame, _codec_context->pix_fmt, 
@@ -592,6 +611,7 @@ get_frame_data(int frame_number) {
                     (AVPicture *)_frame, _codec_context->pix_fmt, 
                     _codec_context->width, _codec_context->height);
       }
+#endif
     }
   }
 
@@ -749,7 +769,7 @@ clear() {
     av_free(_frame_out);
     _frame_out = NULL;
   }
-  
+
   _next_frame_number = 0;
 }
 
