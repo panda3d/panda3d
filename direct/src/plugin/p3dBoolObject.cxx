@@ -20,10 +20,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DBoolObject::
-P3DBoolObject(bool value) : 
-  P3DObject(P3D_OT_bool),
-  _value(value)
-{
+P3DBoolObject(bool value) : _value(value) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,13 +36,13 @@ P3DBoolObject(const P3DBoolObject &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DBoolObject::make_copy
+//     Function: P3DBoolObject::get_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
-P3DObject *P3DBoolObject::
-make_copy() const {
-  return new P3DBoolObject(*this);
+P3D_object_type P3DBoolObject::
+get_type() const {
+  return P3D_OT_bool;
 }
 
 ////////////////////////////////////////////////////////////////////

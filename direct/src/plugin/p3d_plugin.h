@@ -388,21 +388,20 @@ P3D_object_set_element_method(P3D_object *object, int n, P3D_object *value);
 typedef int
 P3D_object_get_list_length_method(const P3D_object *object);
 
-/* Invokes the object as a function.  The params object should be a
-   list object containing the individual parameters; ownership of this
-   list object is transferred in this call, and it will automatically
-   be deleted.  The return value is a newly-allocated P3D_object on
-   success, or NULL on failure.  Ownership of the return value is
-   transferred to the caller. */
-typedef P3D_object *
-P3D_object_call_method(const P3D_object *object, P3D_object *params);
+/* Invokes a named method on the object.  If method_name is empty or
+   NULL, invokes the object itself as a function.  The params object
+   should be a list object containing the individual parameters;
+   ownership of this list object is transferred in this call, and it
+   will automatically be deleted.  It may also be NULL if no
+   parameters are required, or a single non-list parameter if only one
+   parameter is required.
 
-/* Evaluates an arbitrary script expression, if possible, within the
-   context of the object.  The return value is the return value of the
-   expression, or NULL on error.  As above, ownership of the return
-   value is transferred to the caller. */
+   The return value is a newly-allocated P3D_object on success, or
+   NULL on failure.  Ownership of the return value is transferred to
+   the caller. */
 typedef P3D_object *
-P3D_object_evaluate_method(const P3D_object *object, const char *expression);
+P3D_object_call_method(const P3D_object *object, const char *method_name,
+                       P3D_object *params);
 
 /* This defines the class structure that implements all of the above
    methods. */
@@ -424,7 +423,6 @@ typedef struct _P3D_class_definition {
   P3D_object_get_list_length_method *_get_list_length;
 
   P3D_object_call_method *_call;
-  P3D_object_evaluate_method *_evaluate;
 
 } P3D_class_definition;
 
@@ -455,8 +453,7 @@ struct _P3D_object {
 #define P3D_OBJECT_SET_ELEMENT(object, n, value) ((object)->_class->_set_element((object), (n), (value)))
 #define P3D_OBJECT_GET_LIST_LENGTH(object, n, value) ((object)->_class->_get_list_length((object), (n), (value)))
 
-#define P3D_OBJECT_CALL(object, params) ((object)->_class->_call((object), (params)))
-#define P3D_OBJECT_EVALUATE(object, expression) ((object)->_class->_evaluate((object), (expression)))
+#define P3D_OBJECT_CALL(object, method_name, params) ((object)->_class->_call((object), (method_name), (params)))
 
 
 /* The following function types are once again meant to define

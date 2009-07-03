@@ -20,10 +20,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DIntObject::
-P3DIntObject(int value) : 
-  P3DObject(P3D_OT_int),
-  _value(value)
-{
+P3DIntObject(int value) : _value(value) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,13 +36,13 @@ P3DIntObject(const P3DIntObject &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DIntObject::make_copy
+//     Function: P3DIntObject::get_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
-P3DObject *P3DIntObject::
-make_copy() const {
-  return new P3DIntObject(*this);
+P3D_object_type P3DIntObject::
+get_type() const {
+  return P3D_OT_int;
 }
 
 ////////////////////////////////////////////////////////////////////

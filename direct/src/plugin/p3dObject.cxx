@@ -21,7 +21,7 @@
 // P3D_object structure.
 static void
 object_finish(P3D_object *object) {
-  delete ((P3DObject *)object);
+  P3DObject::unref_delete(((P3DObject *)object));
 }
 
 static P3D_object *
@@ -85,13 +85,12 @@ static int object_get_list_length(const P3D_object *object) {
 }
 
 static P3D_object *
-object_call(const P3D_object *object, P3D_object *params) {
-  return ((const P3DObject *)object)->call(params);
-}
-
-static P3D_object *
-object_evaluate(const P3D_object *object, const char *expression) {
-  return ((const P3DObject *)object)->evaluate(expression);
+object_call(const P3D_object *object, const char *method_name,
+            P3D_object *params) {
+  if (method_name == NULL) {
+    method_name = "";
+  }
+  return ((const P3DObject *)object)->call(method_name, params);
 }
 
 P3D_class_definition P3DObject::_object_class = {
@@ -109,7 +108,6 @@ P3D_class_definition P3DObject::_object_class = {
   &object_set_element,
   &object_get_list_length,
   &object_call,
-  &object_evaluate,
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -119,7 +117,20 @@ P3D_class_definition P3DObject::_object_class = {
 ////////////////////////////////////////////////////////////////////
 P3DObject::
 ~P3DObject() {
-  _type = P3D_OT_none;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::make_copy
+//       Access: Public, Virtual
+//  Description: Returns a new copy of the object, if necessary.  If
+//               the object type is static and all instances are
+//               identical, this actually simply ups the reference
+//               count and returns the same object.
+////////////////////////////////////////////////////////////////////
+P3DObject *P3DObject::
+make_copy() const {
+  ref();
+  return (P3DObject *)this;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -244,27 +255,16 @@ set_element(int n, P3D_object *value) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DObject::call
 //       Access: Public, Virtual
-//  Description: Invokes the object as a method, passing the indicated
-//               parameters.  Returns the return value on success,
-//               NULL on error.
+//  Description: Invokes the named method on the object, passing the
+//               indicated parameters.  If the method name is empty,
+//               invokes the object itself.  Returns the return value
+//               on success, NULL on error.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DObject::
-call(P3D_object *params) const {
+call(const string &method_name, P3D_object *params) const {
   if (params != NULL) {
     P3D_OBJECT_FINISH(params);
   }
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::evaluate
-//       Access: Public, Virtual
-//  Description: Evaluates an arbitrary script expression within the
-//               context of this object.  Returns the return value on
-//               success, NULL on error.
-////////////////////////////////////////////////////////////////////
-P3D_object *P3DObject::
-evaluate(const string &expression) const {
   return NULL;
 }
 

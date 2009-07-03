@@ -20,17 +20,17 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DNoneObject::
-P3DNoneObject() : P3DObject(P3D_OT_none) {
+P3DNoneObject() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DNoneObject::make_copy
+//     Function: P3DNoneObject::get_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
-P3DObject *P3DNoneObject::
-make_copy() const {
-  return new P3DNoneObject(*this);
+P3D_object_type P3DNoneObject::
+get_type() const {
+  return P3D_OT_none;
 }
 
 ////////////////////////////////////////////////////////////////////

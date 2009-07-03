@@ -28,7 +28,7 @@ public:
   P3DFloatObject(const P3DFloatObject &copy);
 
 public:
-  virtual P3DObject *make_copy() const; 
+  virtual P3D_object_type get_type() const;
   virtual bool get_bool() const;
   virtual int get_int() const;
   virtual double get_float() const;

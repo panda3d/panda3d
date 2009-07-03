@@ -46,11 +46,7 @@ public:
   void set_wparams(const P3DWindowParams &wparams);
   inline const P3DWindowParams &get_wparams() const;
 
-  P3DObject *get_property(const string &property_name) const;
-  P3DObject *get_property_list(const string &property_name) const;
-  bool set_property(const string &property_name, 
-                    const P3DObject *value);
-  P3DObject *call(const string &property_name, const P3DObject *params);
+  P3DObject *get_script_object() const;
 
   bool has_request();
   P3D_request *get_request();

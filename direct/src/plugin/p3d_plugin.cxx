@@ -203,8 +203,7 @@ P3D_instance_get_script_object(P3D_instance *instance) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_lock);
 
-  // TODO.
-  P3D_object *result = NULL;
+  P3D_object *result = ((P3DInstance *)instance)->get_script_object();
   
   RELEASE_LOCK(_lock);
   return result;

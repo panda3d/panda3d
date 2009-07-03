@@ -28,7 +28,7 @@ public:
   P3DNoneObject();
 
 public:
-  virtual P3DObject *make_copy() const;
+  virtual P3D_object_type get_type() const;
   virtual bool get_bool() const;
   virtual void make_string(string &value) const;
 

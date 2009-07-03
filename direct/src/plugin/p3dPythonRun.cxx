@@ -273,7 +273,104 @@ handle_pyobj_command(TiXmlElement *xcommand, int want_response_id) {
   if (op != NULL) {
     if (strcmp(op, "get_script_object") == 0) {
       // Get the toplevel Python object.
-      xresponse->SetAttribute("object", "fooby");
+      PyObject *obj = PyObject_GetAttrString(_runner, "scriptRoot");
+      if (obj != NULL) {
+        xresponse->LinkEndChild(pyobj_to_xml(obj));
+        Py_DECREF(obj);
+      }
+    } else if (strcmp(op, "call") == 0) {
+      // Call the named method on the indicated object, or the object
+      // itself if method_name isn't given.
+      int object_id;
+      if (xcommand->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
+        PyObject *obj = (PyObject *)(void *)object_id;
+        const char *method_name = xcommand->Attribute("method_name");
+        PyObject *params = NULL;
+        TiXmlElement *xvalue = xcommand->FirstChildElement("value");
+        if (xvalue != NULL) {
+          params = xml_to_pyobj(xvalue);
+          if (!PySequence_Check(params)) {
+            // Wrap it in a tuple to pass it to the method.
+            PyObject *tuple = PyTuple_New(1);
+            PyTuple_SetItem(tuple, 0, params);
+            params = tuple;
+          }
+        }
+
+        if (params == NULL) {
+          params = PyTuple_New(0);
+        }
+
+        // Now call the method.
+        PyObject *result = NULL;
+        if (method_name == NULL) {
+          // No method name; call the object directly.
+          result = PyObject_CallObject(obj, params);
+          
+          // Several special-case "method" names.
+        } else if (strcmp(method_name, "__bool__") == 0) {
+          result = PyBool_FromLong(PyObject_IsTrue(obj));
+
+        } else if (strcmp(method_name, "__int__") == 0) {
+          result = PyNumber_Int(obj);
+
+        } else if (strcmp(method_name, "__float__") == 0) {
+          result = PyNumber_Float(obj);
+
+        } else if (strcmp(method_name, "__repr__") == 0) {
+          result = PyObject_Repr(obj);
+
+        } else if (strcmp(method_name, "__str__") == 0) {
+          result = PyObject_Str(obj);
+
+        } else if (strcmp(method_name, "__setattr__") == 0) {
+          const char *property_name;
+          PyObject *value;
+          if (PyArg_ParseTuple(params, "sO", &property_name, &value)) {
+            PyObject_SetAttrString(obj, property_name, value);
+            result = Py_True;
+            Py_INCREF(result);
+          }
+
+        } else if (strcmp(method_name, "__delattr__") == 0) {
+          const char *property_name;
+          if (PyArg_ParseTuple(params, "s", &property_name)) {
+            if (PyObject_HasAttrString(obj, property_name)) {
+              PyObject_DelAttrString(obj, property_name);
+              result = Py_True;
+            } else {
+              result = Py_False;
+            }
+            Py_INCREF(result);
+          }
+
+        } else if (strcmp(method_name, "__getattr__") == 0) {
+          const char *property_name;
+          if (PyArg_ParseTuple(params, "s", &property_name)) {
+            if (PyObject_HasAttrString(obj, property_name)) {
+              result = PyObject_GetAttrString(obj, property_name);
+            } else {
+              result = NULL;
+            }
+          }
+
+        } else {
+          // Not a special-case name.  Call the named method.
+          PyObject *method = PyObject_GetAttrString(obj, method_name);
+          if (method != NULL) {
+            result = PyObject_CallObject(method, params);
+            Py_DECREF(method);
+          }
+        }
+        Py_DECREF(params);
+
+        // Feed the return value back through the XML pipe to the
+        // caller.
+        if (result != NULL) {
+          xresponse->LinkEndChild(pyobj_to_xml(result));
+          Py_DECREF(result);
+        }
+      }
     }
   }
 
@@ -622,14 +719,14 @@ terminate_session() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::make_xml_value
+//     Function: P3DPythonRun::pyobj_to_xml
 //       Access: Private
 //  Description: Converts the indicated PyObject to the appropriate
 //               XML representation of a P3D_value type, and returns a
 //               freshly-allocated TiXmlElement.
 ////////////////////////////////////////////////////////////////////
 TiXmlElement *P3DPythonRun::
-make_xml_value(PyObject *value) {
+pyobj_to_xml(PyObject *value) {
   TiXmlElement *xvalue = new TiXmlElement("value");
   if (value == Py_None) {
     // None.
@@ -690,42 +787,43 @@ make_xml_value(PyObject *value) {
       xvalue->SetAttribute("value", str);
     }
 
-  } else if (PySequence_Check(value)) {
-    // A sequence or list value.
+  } else if (PyTuple_CheckExact(value)) {
+    // A tuple.  We check for this class type specifically; other
+    // objects that provide a sequence interface should be treated as
+    // generic Python objects, below, so we don't lose other useful
+    // functionality in these objects.  Even a Python list, since we
+    // want to allow the caller to modify the list object on the
+    // Python side.
     xvalue->SetAttribute("type", "list");
     Py_ssize_t length = PySequence_Length(value);
     for (Py_ssize_t i = 0; i < length; ++i) {
       PyObject *obj = PySequence_GetItem(value, i);
-      xvalue->LinkEndChild(make_xml_value(obj));
+      xvalue->LinkEndChild(pyobj_to_xml(obj));
     }
 
   } else {
-    // Some other kind of object.  Don't know what else to do with it;
-    // we'll make it a string.
-    xvalue->SetAttribute("type", "string");
-    PyObject *as_str = PyObject_Str(value);
-    if (as_str != NULL) {
-      char *buffer;
-      Py_ssize_t length;
-      if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
-        string str(buffer, length);
-        xvalue->SetAttribute("value", str);
-      }
-      Py_DECREF(as_str);
-    }
+    // Some other kind of object.  Make it a generic Python object.
+    // This is more expensive for the caller to deal with--it requires
+    // a back-and-forth across the XML pipe--but it's much more
+    // general.
+    xvalue->SetAttribute("type", "python");
+    xvalue->SetAttribute("object_id", (long)value);
+
+    // Temporary hack.
+    Py_INCREF(value);
   }
 
   return xvalue;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::from_xml_value
+//     Function: P3DPythonRun::xml_to_pyobj
 //       Access: Private
 //  Description: Converts the XML representation of a P3D_value type
 //               into the equivalent Python object and returns it.
 ////////////////////////////////////////////////////////////////////
 PyObject *P3DPythonRun::
-from_xml_value(TiXmlElement *xvalue) {
+xml_to_pyobj(TiXmlElement *xvalue) {
   const char *type = xvalue->Attribute("type");
   if (strcmp(type, "none") == 0) {
     return Py_BuildValue("");
@@ -761,12 +859,20 @@ from_xml_value(TiXmlElement *xvalue) {
 
     TiXmlElement *xchild = xvalue->FirstChildElement("value");
     while (xchild != NULL) {
-      PyObject *child = from_xml_value(xchild);
+      PyObject *child = xml_to_pyobj(xchild);
       PyList_Append(list, child);
       Py_DECREF(child);
       xchild = xchild->NextSiblingElement("value");
     }
-    return list;
+    PyObject *tuple = PyList_AsTuple(list);
+    Py_DECREF(list);
+    return tuple;
+
+  } else if (strcmp(type, "python") == 0) {
+    int object_id;
+    if (xvalue->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
+      return (PyObject *)(void *)object_id;
+    }
   }
 
   // Something went wrong in decoding.

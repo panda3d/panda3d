@@ -1,5 +1,5 @@
-// Filename: p3dListObject.h
-// Created by:  drose (30Jun09)
+// Filename: p3dPythonObject.h
+// Created by:  drose (02Jul09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,39 +12,51 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DLISTOBJECT_H
-#define P3DLISTOBJECT_H
+#ifndef P3DPYTHONOBJECT_H
+#define P3DPYTHONOBJECT_H
 
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
 
+class P3DSession;
+
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DListObject
-// Description : An object type that contains a list of objects.
+//       Class : P3DPythonObject
+// Description : An object type that references a PyObject in the
+//               subordinate process.  It allows querying and/or
+//               modifying the state of the referenced PyObject, via
+//               clever XML communication in
+//               P3DSession::command_and_response().
 ////////////////////////////////////////////////////////////////////
-class P3DListObject : public P3DObject {
+class P3DPythonObject : public P3DObject {
 public:
-  P3DListObject();
-  P3DListObject(const P3DListObject &copy);
+  P3DPythonObject(P3DSession *session, int object_id);
+  virtual ~P3DPythonObject();
 
 public:
-  virtual ~P3DListObject();
-
-  virtual P3DObject *make_copy() const; 
   virtual P3D_object_type get_type() const;
   virtual bool get_bool() const;
+  virtual int get_int() const;
+  virtual double get_float() const;
+
   virtual void make_string(string &value) const;
+
+  virtual P3D_object *get_property(const string &property) const;
+  virtual bool set_property(const string &property, P3D_object *value);
+
   virtual int get_list_length() const;
   virtual P3D_object *get_element(int n) const;
   virtual bool set_element(int n, P3D_object *value);
 
-  void append(P3D_object *value);
+  virtual P3D_object *call(const string &method_name, P3D_object *params) const;
 
   virtual TiXmlElement *make_xml() const;
 
+  virtual void output(ostream &out) const;
+
 private:
-  typedef vector<P3D_object *> Elements;
-  Elements _elements;
+  P3DSession *_session;
+  int _object_id;
 };
 
 #endif

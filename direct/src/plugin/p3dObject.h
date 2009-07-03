@@ -27,14 +27,14 @@
 ////////////////////////////////////////////////////////////////////
 class P3DObject : public P3D_object {
 protected:
-  inline P3DObject(P3D_object_type type);
+  inline P3DObject();
   inline P3DObject(const P3DObject &copy);
 
 public:
   virtual ~P3DObject();
 
-  virtual P3DObject *make_copy() const=0; 
-  inline P3D_object_type get_type() const;
+  virtual P3DObject *make_copy() const; 
+  virtual P3D_object_type get_type() const=0;
   virtual bool get_bool() const=0;
   virtual int get_int() const;
   virtual double get_float() const;
@@ -50,15 +50,18 @@ public:
   virtual P3D_object *get_element(int n) const;
   virtual bool set_element(int n, P3D_object *value);
 
-  virtual P3D_object *call(P3D_object *params) const;
-  virtual P3D_object *evaluate(const string &expression) const;
+  virtual P3D_object *call(const string &method_name, P3D_object *params) const;
 
   virtual TiXmlElement *make_xml() const=0;
 
   virtual void output(ostream &out) const;
 
-protected:
-  P3D_object_type _type;
+  inline void ref() const;
+  inline int unref() const;
+  static inline void unref_delete(P3DObject *obj);
+
+private:
+  int _ref_count;
 
 public:
   static P3D_class_definition _object_class;

@@ -21,7 +21,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DListObject::
-P3DListObject() : P3DObject(P3D_OT_list) { 
+P3DListObject() { 
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -56,11 +56,24 @@ P3DListObject::
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DListObject::make_copy
 //       Access: Public, Virtual
-//  Description: 
+//  Description: Returns a new copy of the object, if necessary.  If
+//               the object type is static and all instances are
+//               identical, this actually simply ups the reference
+//               count and returns the same object.
 ////////////////////////////////////////////////////////////////////
 P3DObject *P3DListObject::
 make_copy() const {
   return new P3DListObject(*this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DListObject::get_type
+//       Access: Public, Virtual
+//  Description: Returns the fundamental type of this kind of object.
+////////////////////////////////////////////////////////////////////
+P3D_object_type P3DListObject::
+get_type() const {
+  return P3D_OT_list;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,6 +164,17 @@ set_element(int n, P3D_object *value) {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DListObject::append
+//       Access: Public, Virtual
+//  Description: Adds a new element to the end of the list.  Ownership
+//               is transferred to the list.
+////////////////////////////////////////////////////////////////////
+void P3DListObject::
+append(P3D_object *value) {
+  _elements.push_back(value);
 }
 
 ////////////////////////////////////////////////////////////////////

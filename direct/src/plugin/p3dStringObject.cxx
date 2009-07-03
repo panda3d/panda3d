@@ -20,10 +20,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DStringObject::
-P3DStringObject(const string &value) : 
-  P3DObject(P3D_OT_string),
-  _value(value)
-{
+P3DStringObject(const string &value) : _value(value) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,13 +45,13 @@ P3DStringObject::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringObject::make_copy
+//     Function: P3DStringObject::get_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
-P3DObject *P3DStringObject::
-make_copy() const {
-  return new P3DStringObject(*this);
+P3D_object_type P3DStringObject::
+get_type() const {
+  return P3D_OT_string;
 }
 
 ////////////////////////////////////////////////////////////////////

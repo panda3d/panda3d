@@ -41,6 +41,12 @@ default-model-extension .bam
 class ArgumentError(AttributeError):
     pass
 
+class ScriptRoot:
+    """ This dummy class serves as the root object for the scripting
+    interface.  The Python code can store objects and functions here
+    for direct meddling by the browser's JavaScript code. """
+    pass
+
 class AppRunner(DirectObject):
     def __init__(self):
         DirectObject.__init__(self)
@@ -50,7 +56,10 @@ class AppRunner(DirectObject):
         self.gotP3DFilename = False
         self.started = False
         self.windowPrc = None
+
+        # TODO: we need one of these per instance, not per session.
         self.instanceId = None
+        self.scriptRoot = ScriptRoot()
 
         # This is the default requestFunc that is installed if we
         # never call setRequestFunc().

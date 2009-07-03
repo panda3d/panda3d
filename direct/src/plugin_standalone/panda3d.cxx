@@ -404,6 +404,28 @@ handle_request(P3D_request *request) {
     cerr << "Got P3D_RT_notify: " << request->_request._notify._message
          << "\n";
     // Ignore notifications.
+
+    // Temporary.
+    P3D_object *obj = P3D_instance_get_script_object(request->_instance);
+    cerr << "script_object is " << obj << "\n";
+    if (obj != NULL) {
+      if (P3D_OBJECT_SET_PROPERTY(obj, "foo", P3D_new_int_object(1))) {
+        cerr << "set_property succeeded\n";
+        P3D_object *prop = P3D_OBJECT_GET_PROPERTY(obj, "foo");
+        cerr << "get_property returned " << prop << "\n";
+        if (prop != NULL) {
+          int size = P3D_OBJECT_GET_STRING(prop, NULL, 0);
+          char *buffer = new char[size];
+          P3D_OBJECT_GET_STRING(prop, buffer, size);
+          cerr << "  property is " << buffer << "\n";
+          delete buffer;
+          P3D_OBJECT_FINISH(prop);
+        }
+      } else {
+        cerr << "set_property failed\n";
+      }
+      P3D_OBJECT_FINISH(obj);
+    }
     break;
 
   default:

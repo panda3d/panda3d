@@ -20,10 +20,7 @@
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DFloatObject::
-P3DFloatObject(double value) : 
-  P3DObject(P3D_OT_float),
-  _value(value)
-{
+P3DFloatObject(double value) : _value(value) {
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -39,13 +36,13 @@ P3DFloatObject(const P3DFloatObject &copy) :
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatObject::make_copy
+//     Function: P3DFloatObject::get_type
 //       Access: Public, Virtual
-//  Description: 
+//  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
-P3DObject *P3DFloatObject::
-make_copy() const {
-  return new P3DFloatObject(*this);
+P3D_object_type P3DFloatObject::
+get_type() const {
+  return P3D_OT_float;
 }
 
 ////////////////////////////////////////////////////////////////////

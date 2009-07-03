@@ -21,6 +21,7 @@
 #include "p3dWinSplashWindow.h"
 #include "p3dObject.h"
 #include "p3dNoneObject.h"
+#include "p3dPythonObject.h"
 
 #include <sstream>
 #include <algorithm>
@@ -159,54 +160,43 @@ set_wparams(const P3DWindowParams &wparams) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_property
+//     Function: P3DInstance::get_script_object
 //       Access: Public
-//  Description: Returns the value of the named property, or NULL
-//               if there is no such property.  Properties are created
-//               by the script run within the instance; they are used
-//               for communicating between scripting languages (for
-//               instance, communication between the Python-based
-//               Panda application, and the Javascript on the
-//               containing web page).
+//  Description: Returns a pointer to the top-level scriptable object
+//               of the instance, to be used by JavaScript code in the
+//               browser to control this program.
 ////////////////////////////////////////////////////////////////////
 P3DObject *P3DInstance::
-get_property(const string &property_name) const {
-  return NULL;
-}
+get_script_object() const {
+  assert(_session != NULL);
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_property_list
-//       Access: Public
-//  Description: Returns a list of subordinate properties below the
-//               named property.
-////////////////////////////////////////////////////////////////////
-P3DObject *P3DInstance::
-get_property_list(const string &property_name) const {
-  return NULL;
-}
+  TiXmlDocument *doc = new TiXmlDocument;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "pyobj");
+  xcommand->SetAttribute("op", "get_script_object");
+  doc->LinkEndChild(decl);
+  doc->LinkEndChild(xcommand);
+  TiXmlDocument *response = _session->command_and_response(doc);
+  nout << "response pointer: " << response << "\n" << flush;
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::set_property
-//       Access: Public
-//  Description: Changes the value of the named property, or deletes
-//               it if value is NULL.  If the named property does not
-//               already exist, creates it.  Returns true on success,
-//               false on failure.
-////////////////////////////////////////////////////////////////////
-bool P3DInstance::
-set_property(const string &property_name, const P3DObject *value) {
-  return false;
-}
+  P3DObject *result = NULL;
+  if (response != NULL) {
+    TiXmlElement *xresponse = response->FirstChildElement("response");
+    if (xresponse != NULL) {
+      TiXmlElement *xvalue = xresponse->FirstChildElement("value");
+      if (xvalue != NULL) {
+        result = _session->xml_to_object(xvalue);
+      }
+    }
+    delete response;
+  }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::call
-//       Access: Public
-//  Description: Calls the named property as a method, supplying the
-//               indicated parameters.
-////////////////////////////////////////////////////////////////////
-P3DObject *P3DInstance::
-call(const string &property_name, const P3DObject *params) {
-  return new P3DNoneObject;
+  nout << "Returning " << result << "\n" << flush;
+  if (result != NULL) {
+    nout << "result = " << *result << "\n" << flush;
+  }
+  return result;
 }
 
 

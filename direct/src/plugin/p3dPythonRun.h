@@ -90,8 +90,8 @@ private:
   void terminate_session();
 
 private:
-  TiXmlElement *make_xml_value(PyObject *value);
-  PyObject *from_xml_value(TiXmlElement *xvalue);
+  TiXmlElement *pyobj_to_xml(PyObject *value);
+  PyObject *xml_to_pyobj(TiXmlElement *xvalue);
 
 private:
   // This method runs only within the read thread.

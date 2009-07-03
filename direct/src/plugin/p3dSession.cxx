@@ -16,6 +16,12 @@
 #include "p3dInstance.h"
 #include "p3dInstanceManager.h"
 #include "p3d_plugin_config.h"
+#include "p3dNoneObject.h"
+#include "p3dBoolObject.h"
+#include "p3dIntObject.h"
+#include "p3dFloatObject.h"
+#include "p3dListObject.h"
+#include "p3dPythonObject.h"
 
 #ifndef _WIN32
 #include <fcntl.h>
@@ -287,6 +293,66 @@ command_and_response(TiXmlDocument *command) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::xml_to_object
+//       Access: Public
+//  Description: Converts the XML representation of the particular
+//               object value into a corresponding P3DObject object.
+//               Returns the newly-allocated object.
+////////////////////////////////////////////////////////////////////
+P3DObject *P3DSession::
+xml_to_object(TiXmlElement *xvalue) {
+  const char *type = xvalue->Attribute("type");
+  if (strcmp(type, "none") == 0) {
+    return new P3DNoneObject;
+
+  } else if (strcmp(type, "bool") == 0) {
+    int value;
+    if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
+      return new P3DBoolObject(value != 0);
+    }
+
+  } else if (strcmp(type, "int") == 0) {
+    int value;
+    if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
+      return new P3DIntObject(value);
+    }
+
+  } else if (strcmp(type, "float") == 0) {
+    double value;
+    if (xvalue->QueryDoubleAttribute("value", &value) == TIXML_SUCCESS) {
+      return new P3DFloatObject(value);
+    }
+
+  } else if (strcmp(type, "string") == 0) {
+    // Using the string form here instead of the char * form, so we
+    // don't get tripped up on embedded null characters.
+    const string *value = xvalue->Attribute(string("value"));
+    if (value != NULL) {
+      return new P3DStringObject(*value);
+    }
+
+  } else if (strcmp(type, "list") == 0) {
+    P3DListObject *list = new P3DListObject;
+
+    TiXmlElement *xchild = xvalue->FirstChildElement("value");
+    while (xchild != NULL) {
+      list->set_element(list->get_list_length(), xml_to_object(xchild));
+      xchild = xchild->NextSiblingElement("value");
+    }
+    return list;
+
+  } else if (strcmp(type, "python") == 0) {
+    int object_id;
+    if (xvalue->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
+      return new P3DPythonObject(this, object_id);
+    }
+  }
+
+  // Something went wrong in decoding.
+  return new P3DNoneObject;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::install_progress
 //       Access: Private
 //  Description: Notified as the _panda3d package is downloaded.
@@ -392,22 +458,6 @@ start_p3dpython() {
   }
   _pipe_write << flush;
   _commands.clear();
-
-  // Temp testing code.
-  {
-    TiXmlDocument *doc = new TiXmlDocument;
-    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
-    TiXmlElement *xcommand = new TiXmlElement("command");
-    xcommand->SetAttribute("cmd", "pyobj");
-    xcommand->SetAttribute("op", "get");
-    doc->LinkEndChild(decl);
-    doc->LinkEndChild(xcommand);
-    TiXmlDocument *response = command_and_response(doc);
-    nout << "response pointer: " << response << "\n";
-    if (response != NULL) {
-      delete response;
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -571,60 +621,6 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
   }
 
   return request;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::rt_from_xml_value
-//       Access: Private
-//  Description: Converts the XML representation of the particular
-//               value value into a corresponding P3DObject object.
-//               Returns the newly-allocated object.
-////////////////////////////////////////////////////////////////////
-P3DObject *P3DSession::
-rt_from_xml_value(TiXmlElement *xvalue) {
-  const char *type = xvalue->Attribute("type");
-  if (strcmp(type, "none") == 0) {
-    return new P3DNoneObject;
-
-  } else if (strcmp(type, "bool") == 0) {
-    int value;
-    if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
-      return new P3DBoolObject(value != 0);
-    }
-
-  } else if (strcmp(type, "int") == 0) {
-    int value;
-    if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
-      return new P3DIntObject(value);
-    }
-
-  } else if (strcmp(type, "float") == 0) {
-    double value;
-    if (xvalue->QueryDoubleAttribute("value", &value) == TIXML_SUCCESS) {
-      return new P3DFloatObject(value);
-    }
-
-  } else if (strcmp(type, "string") == 0) {
-    // Using the string form here instead of the char * form, so we
-    // don't get tripped up on embedded null characters.
-    const string *value = xvalue->Attribute(string("value"));
-    if (value != NULL) {
-      return new P3DStringObject(*value);
-    }
-
-  } else if (strcmp(type, "list") == 0) {
-    P3DListObject *list = new P3DListObject;
-
-    TiXmlElement *xchild = xvalue->FirstChildElement("value");
-    while (xchild != NULL) {
-      list->set_element(list->get_list_length(), rt_from_xml_value(xchild));
-      xchild = xchild->NextSiblingElement("value");
-    }
-    return list;
-  }
-
-  // Something went wrong in decoding.
-  return new P3DNoneObject;
 }
 
 ////////////////////////////////////////////////////////////////////

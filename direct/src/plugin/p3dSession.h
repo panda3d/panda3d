@@ -49,6 +49,7 @@ public:
 
   void send_command(TiXmlDocument *command);
   TiXmlDocument *command_and_response(TiXmlDocument *command);
+  P3DObject *xml_to_object(TiXmlElement *xvalue);
 
 private:
   void install_progress(P3DPackage *package, double progress);
@@ -63,7 +64,6 @@ private:
   void rt_terminate();
   void rt_handle_request(TiXmlDocument *doc);
   P3D_request *rt_make_p3d_request(TiXmlElement *xrequest);
-  P3DObject *rt_from_xml_value(TiXmlElement *xvalue);
 
 #ifdef _WIN32
   static DWORD WINAPI win_rt_thread_run(LPVOID data);

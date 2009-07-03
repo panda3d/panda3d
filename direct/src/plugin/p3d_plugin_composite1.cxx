@@ -10,6 +10,7 @@
 #include "p3dIntObject.cxx"
 #include "p3dListObject.cxx"
 #include "p3dMultifileReader.cxx"
+#include "p3dPythonObject.cxx"
 #include "p3dNoneObject.cxx"
 #include "p3dObject.cxx"
 #include "p3dPackage.cxx"

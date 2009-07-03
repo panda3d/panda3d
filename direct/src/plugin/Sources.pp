@@ -32,6 +32,7 @@
     p3dListObject.h \
     p3dMultifileReader.h p3dMultifileReader.I \
     p3dPackage.h p3dPackage.I \
+    p3dPythonObject.h \
     p3dSession.h p3dSession.I \
     p3dSplashWindow.h p3dSplashWindow.I \
     p3dStringObject.h \
@@ -53,6 +54,7 @@
     p3dListObject.cxx \
     p3dMultifileReader.cxx \
     p3dPackage.cxx \
+    p3dPythonObject.cxx \
     p3dSession.cxx \
     p3dSplashWindow.cxx \
     p3dStringObject.cxx \
