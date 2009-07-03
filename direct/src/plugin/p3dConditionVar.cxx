@@ -95,7 +95,7 @@ wait() {
   EnterCriticalSection(&_lock);
 
 #else  // _WIN32
-  int result = pthread_cond_wait(&_cvar, &_mutex._lock);
+  int result = pthread_cond_wait(&_cvar, &_lock);
   assert(result == 0);
 
 #endif  // _WIN32
