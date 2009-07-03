@@ -319,6 +319,9 @@
 // Do we have <ucontext.h> (and therefore makecontext() / swapcontext())?
 #define HAVE_UCONTEXT_H 1
 
+// Do we have <linux/input.h> ? This enables us to use raw mouse input.
+#define HAVE_LINUX_INPUT_H 1
+
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1
 
