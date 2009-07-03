@@ -63,7 +63,6 @@ public:
                        size_t total_expected_data,
                        const unsigned char *this_data, 
                        size_t this_data_size);
-  void feed_value(int unique_id, P3DObject *value);
 
   inline int get_instance_id() const;
   inline const string &get_session_key() const;

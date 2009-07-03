@@ -36,6 +36,10 @@ P3DSession(P3DInstance *inst) {
   _python_version = inst->get_python_version();
 
   _p3dpython_running = false;
+  _next_response_id = 0;
+  _response = NULL;
+  _got_response_id = -1;
+
   _started_read_thread = false;
   _read_thread_continue = false;
 
@@ -211,6 +215,78 @@ send_command(TiXmlDocument *command) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::command_and_response
+//       Access: Public
+//  Description: Sends the indicated command to the running Python
+//               process, and waits for a response.  Returns the
+//               newly-allocated response on success, or NULL on
+//               failure.
+//
+//               The command must be a newly-allocated TiXmlDocument;
+//               it will be deleted after it has been delivered to the
+//               process.
+//
+//               This will fail if the python process is not running
+//               or if it suddenly stops.
+////////////////////////////////////////////////////////////////////
+TiXmlDocument *P3DSession::
+command_and_response(TiXmlDocument *command) {
+  if (!_p3dpython_running) {
+    return NULL;
+  }
+
+  int response_id = _next_response_id;
+  ++_next_response_id;
+
+  // Add the "want_response_id" attribute to the toplevel command, so
+  // the sub-process knows we'll be waiting for its response.
+  TiXmlElement *xcommand = command->FirstChildElement("command");
+  assert(xcommand != NULL);
+  xcommand->SetAttribute("want_response_id", response_id);
+
+  _pipe_write << *command << flush;
+  delete command;
+
+  // Now block, waiting for a response to be delivered.  We assume
+  // only one thread will be waiting at a time.
+  nout << "Waiting for response " << response_id << "\n" << flush;
+  _response_ready.acquire();
+  while (_response == NULL || _got_response_id != response_id) {
+    if (_response != NULL) {
+      // This is a bogus response.  Since we're the only thread waiting,
+      // it follows that no one is waiting for this response, so we can
+      // throw it away.
+      nout << "Discarding bogus response: " << *_response << "\n";
+      delete _response;
+      _response = NULL;
+      _got_response_id = -1;
+    }
+
+    if (!_p3dpython_running) {
+      // Hmm, looks like Python has gone away.
+
+      // TODO: make sure _p3dpython_running gets set to false when the
+      // process dies unexpectedly.
+      _response_ready.release();
+      return NULL;
+    }
+
+    _response_ready.wait();
+  }
+  // When we exit the loop, we've found the desired response.
+
+  TiXmlDocument *response = _response;
+  _response = NULL;
+  _got_response_id = -1;
+
+  _response_ready.release();
+
+  nout << "Got response: " << *response << "\n" << flush;
+
+  return response;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::install_progress
 //       Access: Private
 //  Description: Notified as the _panda3d package is downloaded.
@@ -316,6 +392,22 @@ start_p3dpython() {
   }
   _pipe_write << flush;
   _commands.clear();
+
+  // Temp testing code.
+  {
+    TiXmlDocument *doc = new TiXmlDocument;
+    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+    TiXmlElement *xcommand = new TiXmlElement("command");
+    xcommand->SetAttribute("cmd", "pyobj");
+    xcommand->SetAttribute("op", "get");
+    doc->LinkEndChild(decl);
+    doc->LinkEndChild(xcommand);
+    TiXmlDocument *response = command_and_response(doc);
+    nout << "response pointer: " << response << "\n";
+    if (response != NULL) {
+      delete response;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -409,10 +501,33 @@ void P3DSession::
 rt_handle_request(TiXmlDocument *doc) {
   nout << "Session got request: " << *doc << "\n" << flush;
 
+  TiXmlElement *xresponse = doc->FirstChildElement("response");
+  if (xresponse != (TiXmlElement *)NULL) {
+    int response_id;
+    if (xresponse->QueryIntAttribute("response_id", &response_id) == TIXML_SUCCESS) {
+      // This is a response to a previous command-and-response.  Send
+      // it to the parent thread.
+      _response_ready.acquire();
+      if (_response != NULL) {
+        // Hey, there's already a response there.  Since there's only
+        // one thread waiting at a time on the command-response cycle,
+        // this must be a bogus response that never got picked up.
+        // Discard it.
+        nout << "Discarding bogus response: " << *_response << "\n";
+        delete _response;
+      }
+      _response = doc;
+      _got_response_id = response_id;
+      _response_ready.notify();
+      _response_ready.release();
+      return;
+    }
+  }
+
   TiXmlElement *xrequest = doc->FirstChildElement("request");
   if (xrequest != (TiXmlElement *)NULL) {
-    int instance_id ;
-    if (xrequest->Attribute("instance_id", &instance_id)) {
+    int instance_id;
+    if (xrequest->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
       // Look up the particular instance this is related to.
       ACQUIRE_LOCK(_instances_lock);
       Instances::const_iterator ii;

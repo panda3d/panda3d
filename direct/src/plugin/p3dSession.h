@@ -18,6 +18,7 @@
 #include "p3d_plugin_common.h"
 #include "handleStream.h"
 #include "p3dPackage.h"
+#include "p3dConditionVar.h"
 #include "get_tinyxml.h"
 
 #include <map>
@@ -47,6 +48,7 @@ public:
   inline int get_num_instances() const;
 
   void send_command(TiXmlDocument *command);
+  TiXmlDocument *command_and_response(TiXmlDocument *command);
 
 private:
   void install_progress(P3DPackage *package, double progress);
@@ -119,6 +121,13 @@ private:
   int _p3dpython_pid;
 #endif
   bool _p3dpython_running;
+
+  int _next_response_id;
+
+  // The _response_ready mutex protects this pointer.
+  TiXmlDocument *_response;
+  int _got_response_id;
+  P3DConditionVar _response_ready;
 
   // The remaining members are manipulated by or for the read thread.
   bool _started_read_thread;

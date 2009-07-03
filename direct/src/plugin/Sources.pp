@@ -21,6 +21,7 @@
     p3d_plugin_config.h \
     p3d_plugin_common.h \
     p3dBoolObject.h \
+    p3dConditionVar.h p3dConditionVar.I \
     p3dDownload.h p3dDownload.I \
     p3dFileDownload.h p3dFileDownload.I \
     p3dFileParams.h p3dFileParams.I \
@@ -41,6 +42,7 @@
   #define INCLUDED_SOURCES \
     p3d_plugin.cxx \
     p3dBoolObject.cxx \
+    p3dConditionVar.cxx \
     p3dDownload.cxx \
     p3dFileDownload.cxx \
     p3dFileParams.cxx \

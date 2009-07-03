@@ -192,9 +192,17 @@ handle_command(TiXmlDocument *doc) {
   nout << "got command: " << *doc << "\n";
   TiXmlElement *xcommand = doc->FirstChildElement("command");
   if (xcommand != NULL) {
+    bool needs_response = false;
+    int want_response_id;
+    if (xcommand->QueryIntAttribute("want_response_id", &want_response_id) == TIXML_SUCCESS) {
+      // This command will be waiting for a response.
+      needs_response = true;
+    }
+
     const char *cmd = xcommand->Attribute("cmd");
     if (cmd != NULL) {
       if (strcmp(cmd, "start_instance") == 0) {
+        assert(!needs_response);
         TiXmlElement *xinstance = xcommand->FirstChildElement("instance");
         if (xinstance != (TiXmlElement *)NULL) {
           P3DCInstance *inst = new P3DCInstance(xinstance);
@@ -202,12 +210,14 @@ handle_command(TiXmlDocument *doc) {
         }
 
       } else if (strcmp(cmd, "terminate_instance") == 0) {
+        assert(!needs_response);
         int instance_id;
         if (xcommand->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
           terminate_instance(instance_id);
         }
 
       } else if (strcmp(cmd, "setup_window") == 0) {
+        assert(!needs_response);
         int instance_id;
         TiXmlElement *xwparams = xcommand->FirstChildElement("wparams");
         if (xwparams != (TiXmlElement *)NULL && 
@@ -216,32 +226,59 @@ handle_command(TiXmlDocument *doc) {
         }
 
       } else if (strcmp(cmd, "exit") == 0) {
+        assert(!needs_response);
         terminate_session();
 
-      } else if (strcmp(cmd, "feed_value") == 0) {
-        int instance_id, unique_id;
-        if (xcommand->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS &&
-            xcommand->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
-          // TODO: deal with instance_id.
-          TiXmlElement *xvalue = xcommand->FirstChildElement("value");
-          if (xvalue != NULL) {
-            PyObject *value = from_xml_value(xvalue);
-            PyObject *result = PyObject_CallMethod
-              (_runner, (char*)"feedValue", (char*)"iOi", unique_id, value, true);
-            Py_DECREF(value);
-            Py_XDECREF(result);
-          } else {
-            PyObject *result = PyObject_CallMethod
-              (_runner, (char*)"feedValue", (char*)"iOi", unique_id, Py_None, false);
-            Py_XDECREF(result);
-          }
-        }
+      } else if (strcmp(cmd, "pyobj") == 0) {
+        // Manipulate or query a python object.  Presumably this
+        // command will want a response.
+        assert(needs_response);
+
+        handle_pyobj_command(xcommand, want_response_id);
         
       } else {
         nout << "Unhandled command " << cmd << "\n";
+        if (needs_response) {
+          // Better send a response.
+          TiXmlDocument doc;
+          TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+          TiXmlElement *xresponse = new TiXmlElement("response");
+          xresponse->SetAttribute("response_id", want_response_id);
+          doc.LinkEndChild(decl);
+          doc.LinkEndChild(xresponse);
+          nout << "sending " << doc << "\n" << flush;
+          _pipe_write << doc << flush;
+        }
       }
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::handle_pyobj_command
+//       Access: Private
+//  Description: Handles the pyobj command, which queries or modifies
+//               a Python object from the browser scripts.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+handle_pyobj_command(TiXmlElement *xcommand, int want_response_id) {
+  TiXmlDocument doc;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+  TiXmlElement *xresponse = new TiXmlElement("response");
+  xresponse->SetAttribute("response_id", want_response_id);
+  doc.LinkEndChild(decl);
+  doc.LinkEndChild(xresponse);
+
+  const char *op = xcommand->Attribute("op");
+  if (op != NULL) {
+    if (strcmp(op, "get_script_object") == 0) {
+      // Get the toplevel Python object.
+      xresponse->SetAttribute("object", "fooby");
+    }
+  }
+
+  nout << "sending " << doc << "\n" << flush;
+  _pipe_write << doc << flush;
 }
 
 ////////////////////////////////////////////////////////////////////

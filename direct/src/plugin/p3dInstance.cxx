@@ -346,38 +346,6 @@ feed_url_stream(int unique_id,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::feed_value
-//       Access: Public
-//  Description: Called by the host in response to a get_property or
-//               call request.  The value object must have been
-//               freshly allocated; it will be deleted by this method.
-////////////////////////////////////////////////////////////////////
-void P3DInstance::
-feed_value(int unique_id, P3DObject *value) {
-  if (_session != NULL) {
-    TiXmlDocument *doc = new TiXmlDocument;
-    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
-    TiXmlElement *xcommand = new TiXmlElement("command");
-    xcommand->SetAttribute("cmd", "feed_value");
-    xcommand->SetAttribute("instance_id", get_instance_id());
-    xcommand->SetAttribute("unique_id", unique_id);
-    if (value != NULL) {
-      TiXmlElement *xvalue = value->make_xml();
-      xcommand->LinkEndChild(xvalue);
-    }
-    
-    doc->LinkEndChild(decl);
-    doc->LinkEndChild(xcommand);
-
-    _session->send_command(doc);
-  }
-
-  if (value != NULL) {
-    delete value;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::add_package
 //       Access: Public
 //  Description: Adds the package to the list of packages used by this

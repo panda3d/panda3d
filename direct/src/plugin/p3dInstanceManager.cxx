@@ -38,14 +38,6 @@ P3DInstanceManager() {
   _is_initialized = false;
   _unique_session_index = 0;
 
-  _request_seq = 0;
-#ifdef _WIN32
-  _request_ready = CreateEvent(NULL, false, false, NULL);
-#else
-  INIT_LOCK(_request_ready_lock);
-  pthread_cond_init(&_request_ready_cvar, NULL);
-#endif
-
 #ifdef _WIN32
   // Ensure the appropriate Windows common controls are available to
   // this application.
@@ -68,13 +60,6 @@ P3DInstanceManager::
 
   assert(_instances.empty());
   assert(_sessions.empty());
-
-#ifdef _WIN32
-  CloseHandle(_request_ready);
-#else
-  DESTROY_LOCK(_request_ready_lock);
-  pthread_cond_destroy(&_request_ready_cvar);
-#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -211,30 +196,21 @@ check_request() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 wait_request() {
-  int seq = _request_seq;
-
+  _request_ready.acquire();
   while (true) {
     if (check_request() != (P3DInstance *)NULL) {
+      _request_ready.release();
       return;
     }
     if (_instances.empty()) {
+      _request_ready.release();
       return;
     }
     
     // No pending requests; go to sleep.
-#ifdef _WIN32
-    if (seq == _request_seq) {
-      WaitForSingleObject(_request_ready, INFINITE);
-    }
-#else
-    ACQUIRE_LOCK(_request_ready_lock);
-    if (seq == _request_seq) {
-      pthread_cond_wait(&_request_ready_cvar, &_request_ready_lock);
-    }
-    RELEASE_LOCK(_request_ready_lock);
-#endif
-    seq = _request_seq;
+    _request_ready.wait();
   }
+  _request_ready.release();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -283,15 +259,9 @@ get_unique_session_index() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 signal_request_ready() {
-#ifdef _WIN32
-  ++_request_seq;
-  SetEvent(_request_ready);
-#else
-  ACQUIRE_LOCK(_request_ready_lock);
-  ++_request_seq;
-  pthread_cond_signal(&_request_ready_cvar);
-  RELEASE_LOCK(_request_ready_lock);
-#endif
+  _request_ready.acquire();
+  _request_ready.notify();
+  _request_ready.release();
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -70,6 +70,8 @@ public:
 
 private:
   void handle_command(TiXmlDocument *doc);
+  void handle_pyobj_command(TiXmlElement *xcommand, int want_response_id);
+
   AsyncTask::DoneStatus check_comm(GenericAsyncTask *task);
   static AsyncTask::DoneStatus st_check_comm(GenericAsyncTask *task, void *user_data);
 

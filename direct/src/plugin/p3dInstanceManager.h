@@ -16,6 +16,7 @@
 #define P3DINSTANCEMANAGER_H
 
 #include "p3d_plugin_common.h"
+#include "p3dConditionVar.h"
 
 #include <set>
 #include <map>
@@ -83,14 +84,7 @@ private:
 
   int _unique_session_index;
 
-  // Implements a condition-var like behavior.
-  volatile int _request_seq;
-#ifdef _WIN32
-  HANDLE _request_ready;
-#else
-  LOCK _request_ready_lock;
-  pthread_cond_t _request_ready_cvar;
-#endif
+  P3DConditionVar _request_ready;
   static P3DInstanceManager *_global_ptr;
 };
 
