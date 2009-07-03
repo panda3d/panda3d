@@ -17,24 +17,14 @@
 #include "ffmpegVideoCursor.h"
 #include "config_movies.h"
 extern "C" {
-  #include "avcodec.h"
-  #include "avformat.h"
+  #include "libavcodec/avcodec.h"
+  #include "libavformat/avformat.h"
 #ifdef HAVE_SWSCALE
-  #include "swscale.h"
+  #include "libswscale/swscale.h"
 #endif
 }
 #include "pStatCollector.h"
 #include "pStatTimer.h"
-
-// Earlier versions of ffmpeg didn't define this symbol.
-#ifndef PIX_FMT_BGRA
-#ifdef WORDS_BIGENDIAN
-#define PIX_FMT_BGRA PIX_FMT_BGR32_1
-#else
-#define PIX_FMT_BGRA PIX_FMT_RGBA32
-#endif
-#endif  // PIX_FMT_BGRA
-
 
 TypeHandle FfmpegVideoCursor::_type_handle;
 
@@ -240,8 +230,7 @@ fetch_frame() {
   int finished = 0;
   _last_start = _packet_time;
   while (!finished && _packet->data) {
-    avcodec_decode_video(_video_ctx, _frame,
-                         &finished, _packet->data, _packet->size);
+    avcodec_decode_video2(_video_ctx, _frame, &finished, _packet);
     fetch_packet(_last_start + 1.0);
   }
   _next_start = _packet_time;

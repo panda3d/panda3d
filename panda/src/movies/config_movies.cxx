@@ -18,7 +18,7 @@
 
 #ifdef HAVE_FFMPEG
 extern "C" {
-  #include "avcodec.h"
+  #include "libavcodec/avcodec.h"
 }
 #endif
 

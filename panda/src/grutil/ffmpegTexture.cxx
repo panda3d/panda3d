@@ -237,7 +237,7 @@ update_frame(int frame) {
             source -= source_row_width;
           }
           // Next best option, we're a 4 component alpha video on one stream 
-        } else if (page._color._codec_context->pix_fmt==PIX_FMT_RGBA32) {
+        } else if (page._color._codec_context->pix_fmt==PIX_FMT_RGB32) {
           int source_row_width= page._color._codec_context->width * 4;
           unsigned char * source=(unsigned char *)page._color._frame_out->data[0]
             +source_row_width*(get_video_height()-1);
@@ -356,7 +356,7 @@ do_read_one(const Filename &fullpath, const Filename &alpha_fullpath,
     _fullpath = fullpath;
     _alpha_fullpath = alpha_fullpath;
   }
-  if (page._color._codec_context->pix_fmt==PIX_FMT_RGBA32) {
+  if (page._color._codec_context->pix_fmt==PIX_FMT_RGB32) {
     // There had better not be an alpha interleave here. 
     nassertr(alpha_fullpath.empty(), false);
     
@@ -519,8 +519,7 @@ get_frame_data(int frame_number) {
         if (err < 0) {
           return false;
         }
-        avcodec_decode_video(_codec_context, _frame, &got_frame, packet.data,
-                             packet.size);
+        avcodec_decode_video2(_codec_context, _frame, &got_frame, &packet);
         av_free_packet(&packet);
         ++coming_from;
       }
@@ -559,8 +558,7 @@ get_frame_data(int frame_number) {
         break;
       }
 
-      avcodec_decode_video(_codec_context, _frame, &got_frame, packet.data,
-                           packet.size);
+      avcodec_decode_video2(_codec_context, _frame, &got_frame, &packet);
 
       av_free_packet(&packet);
     } while (true);
@@ -576,8 +574,7 @@ get_frame_data(int frame_number) {
   // Is this a packet from the video stream?
   if (packet.stream_index == _stream_number) {
     // Decode video frame
-    avcodec_decode_video(_codec_context, _frame, &frame_finished, 
-                         packet.data, packet.size);
+    avcodec_decode_video2(_codec_context, _frame, &frame_finished, &packet);
 
     // Did we get a video frame?
     if (frame_finished) {
@@ -588,10 +585,10 @@ get_frame_data(int frame_number) {
       // this code. I have no idea if it works well or not, but
       // it seems to compile and run without crashing.
       PixelFormat dst_format;
-      if (_codec_context->pix_fmt != PIX_FMT_RGBA32) {
+      if (_codec_context->pix_fmt != PIX_FMT_RGB32) {
         dst_format = PIX_FMT_BGR24;
       } else {
-        dst_format = PIX_FMT_RGBA32;
+        dst_format = PIX_FMT_RGB32;
       }
       struct SwsContext *convert_ctx = sws_getContext(_codec_context->width, _codec_context->height,
                               _codec_context->pix_fmt, _codec_context->width, _codec_context->height,
@@ -601,13 +598,13 @@ get_frame_data(int frame_number) {
                 0, _codec_context->height, _frame_out->data, _frame_out->linesize);
       sws_freeContext(convert_ctx);
 #else
-      if (_codec_context->pix_fmt != PIX_FMT_RGBA32) {
+      if (_codec_context->pix_fmt != PIX_FMT_RGB32) {
         img_convert((AVPicture *)_frame_out, PIX_FMT_BGR24, 
                     (AVPicture *)_frame, _codec_context->pix_fmt, 
                     _codec_context->width, _codec_context->height);
 
-      } else { // _codec_context->pix_fmt == PIX_FMT_RGBA32
-        img_convert((AVPicture *)_frame_out, PIX_FMT_RGBA32, 
+      } else { // _codec_context->pix_fmt == PIX_FMT_RGB32
+        img_convert((AVPicture *)_frame_out, PIX_FMT_RGB32, 
                     (AVPicture *)_frame, _codec_context->pix_fmt, 
                     _codec_context->width, _codec_context->height);
       }
@@ -698,7 +695,7 @@ read(const Filename &filename) {
   
   _frame = avcodec_alloc_frame();
   
-  if (_codec_context->pix_fmt != PIX_FMT_RGBA32) {
+  if (_codec_context->pix_fmt != PIX_FMT_RGB32) {
     _frame_out = avcodec_alloc_frame();
     if (_frame_out == NULL) {
       grutil_cat.error()
@@ -727,12 +724,12 @@ read(const Filename &filename) {
     }
     
     // Determine required buffer size and allocate buffer
-    _image_size_bytes = avpicture_get_size(PIX_FMT_RGBA32, _codec_context->width,
+    _image_size_bytes = avpicture_get_size(PIX_FMT_RGB32, _codec_context->width,
                                            _codec_context->height);
             
     _raw_data = new uint8_t[_image_size_bytes];
     // Assign appropriate parts of buffer to image planes in _frameRGB
-    avpicture_fill((AVPicture *)_frame_out, _raw_data, PIX_FMT_RGBA32,
+    avpicture_fill((AVPicture *)_frame_out, _raw_data, PIX_FMT_RGB32,
                    _codec_context->width, _codec_context->height);
   } 
   // We could put an option here for single channel frames.

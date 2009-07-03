@@ -18,7 +18,9 @@
 #include "config_movies.h"
 #include "ffmpegVirtualFile.h"
 #include "virtualFileSystem.h"
-#include "avio.h"
+extern "C" {
+  #include "libavformat/avio.h"
+}
 
 #ifndef AVSEEK_SIZE
   #define AVSEEK_SIZE 0x10000

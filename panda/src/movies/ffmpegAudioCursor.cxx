@@ -16,8 +16,8 @@
 
 #include "ffmpegAudioCursor.h"
 extern "C" {
-  #include "avcodec.h"
-  #include "avformat.h"
+  #include "libavcodec/avcodec.h"
+  #include "libavformat/avformat.h"
 }
 
 TypeHandle FfmpegAudioCursor::_type_handle;
@@ -190,9 +190,13 @@ reload_buffer() {
       return;
     } else if (_packet_size > 0) {
       int bufsize = _buffer_size * 2;
-      int len = avcodec_decode_audio2(_audio_ctx, _buffer, &bufsize,
-                                      _packet_data, _packet_size);
-      movies_debug("avcodec_decode_audio2 returned " << len);
+	    AVPacket pkt; 
+ 	    av_init_packet(&pkt); 
+ 	    pkt.data = _packet_data;
+ 	    pkt.size = _packet_size;
+      int len = avcodec_decode_audio3(_audio_ctx, _buffer, &bufsize, &pkt);
+      movies_debug("avcodec_decode_audio3 returned " << len);
+      av_free_packet(&pkt); // Not sure about this
       if (len <= 0) {
         break;
       }

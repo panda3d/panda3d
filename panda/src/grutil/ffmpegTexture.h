@@ -21,10 +21,10 @@
 #include "videoTexture.h"
 
 extern "C" {
-  #include "avcodec.h"
-  #include "avformat.h"
+  #include "libavcodec/avcodec.h"
+  #include "libavformat/avformat.h"
 #ifdef HAVE_SWSCALE
-    #include "swscale.h"
+  #include "libswscale/swscale.h"
 #endif
 }
 
