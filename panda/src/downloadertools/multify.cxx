@@ -545,14 +545,14 @@ list_files(int argc, char *argv[]) {
           }
           if (ratio > 1.0) {
             printf("%12d worse %c %s %s\n",
-                   multifile->get_subfile_length(i),
+                   (int)multifile->get_subfile_length(i),
                    encrypted_symbol,
                    format_timestamp(multifile->get_record_timestamp(),
                                     multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           } else {
             printf("%12d  %3.0f%% %c %s %s\n",
-                   multifile->get_subfile_length(i),
+                   (int)multifile->get_subfile_length(i),
                    100.0 - ratio * 100.0, encrypted_symbol,
                    format_timestamp(multifile->get_record_timestamp(),
                                     multifile->get_subfile_timestamp(i)),
@@ -560,7 +560,7 @@ list_files(int argc, char *argv[]) {
           }
         } else {
           printf("%12d       %c %s %s\n", 
-                 multifile->get_subfile_length(i),
+                 (int)multifile->get_subfile_length(i),
                  encrypted_symbol,
                  format_timestamp(multifile->get_record_timestamp(),
                                   multifile->get_subfile_timestamp(i)),
