@@ -182,7 +182,7 @@ if (sys.platform == "win32"):
         THIRDPARTYLIBS="thirdparty/win32/win-libs-vc9/"
     else:
         THIRDPARTYLIBS="thirdparty/win64/win-libs-vc9/"
-    if not os.path.isdir(THIRDPARTYLIB):
+    if not os.path.isdir(THIRDPARTYLIBS):
         THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
     VC90CRTVERSION = GetVC90CRTVersion(THIRDPARTYLIBS+"extras/bin/Microsoft.VC90.CRT.manifest")
 else:
