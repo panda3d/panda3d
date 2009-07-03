@@ -69,7 +69,7 @@ operator = (const ConditionVar &copy) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ConditionVar::signal_all
+//     Function: ConditionVar::notify_all
 //       Access: Private
 //  Description: The notify_all() method is specifically *not*
 //               provided by ConditionVar.  Use ConditionVarFull if
