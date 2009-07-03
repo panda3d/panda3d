@@ -396,28 +396,22 @@ NPP_URLNotify(NPP instance, const char *url,
 NPError
 NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   logfile << "GetValue " << variable << "\n";
+  PPInstance *inst = (PPInstance *)(instance->pdata);
+  assert(inst != NULL);
 
-  /*
   if (variable == NPPVpluginScriptableNPObject) {
-    static NPObject *object = NULL;
-    if (object == NULL) {
-      static NPClass npclass;
-      memset(&npclass, 0, sizeof(npclass));
-      npclass.structVersion = NP_CLASS_STRUCT_VERSION;
-      object = browser->createobject(instance, &npclass);
-      assert(object != NULL);
+    NPObject *obj = inst->get_script_object();
+    if (obj != NULL) {
+      *(NPObject **)value = obj;
+      return NPERR_NO_ERROR;
     }
-
-    *(NPObject **)value = object;
-    return NPERR_NO_ERROR;
   }
-  */
 
   return NPERR_GENERIC_ERROR;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: NPP_URLNotify
+//     Function: NPP_SetValue
 //  Description: Called by the browser to update a scriptable value.
 ////////////////////////////////////////////////////////////////////
 NPError 

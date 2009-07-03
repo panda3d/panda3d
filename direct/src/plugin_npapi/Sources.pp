@@ -19,11 +19,13 @@
     nppanda3d_common.h \
     ppDownloadRequest.h ppDownloadRequest.I \
     ppInstance.h ppInstance.I \
+    ppObject.h \
     startup.h
 
   #define INCLUDED_SOURCES \
     ppDownloadRequest.cxx \
     ppInstance.cxx \
+    ppObject.cxx \
     startup.cxx
  
   // Windows-specific options.

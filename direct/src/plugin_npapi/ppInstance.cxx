@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "ppInstance.h"
+#include "ppObject.h"
 #include "startup.h"
 #include "p3d_plugin_config.h"
 #include "find_root_dir.h"
@@ -37,6 +38,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
 
   _npp_instance = instance;
   _npp_mode = mode;
+  _script_object = NULL;
 
   // Copy the tokens and save them within this object.
   _tokens.reserve(argc);
@@ -393,6 +395,30 @@ handle_request(P3D_request *request) {
   P3D_request_finish(request, handled);
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::get_script_object
+//       Access: Public
+//  Description: Returns a toplevel object that JavaScript or whatever
+//               can read and/or modify to control the instance.
+////////////////////////////////////////////////////////////////////
+NPObject *PPInstance::
+get_script_object() {
+  logfile << "get_script_object\n" << flush;
+  if (_script_object != NULL) {
+    return _script_object;
+  }
+
+  P3D_object *obj = NULL;
+
+  if (_p3d_inst != NULL) {
+    obj = P3D_instance_get_script_object(_p3d_inst);
+    logfile << "obj = " << obj << "\n" << flush;
+  }
+
+  _script_object = PPObject::make_new(this, obj);
+  logfile << "ppobj = " << _script_object << "\n" << flush;
+  return _script_object;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::read_contents_file
@@ -575,6 +601,14 @@ create_instance() {
     }
     P3D_instance_start(_p3d_inst, _p3d_filename.c_str(), tokens, _tokens.size());
     send_window();
+
+    if (_script_object != NULL) {
+      // Now that we have an instance, initialize our script_object
+      // with the proper P3D object pointer.
+      P3D_object *obj = P3D_instance_get_script_object(_p3d_inst);
+      logfile << "late obj = " << obj << "\n" << flush;
+      _script_object->set_p3d_object(obj);
+    }
   }
 }
 

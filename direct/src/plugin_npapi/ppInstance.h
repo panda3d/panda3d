@@ -21,6 +21,8 @@
 
 #include <vector>
 
+class PPObject;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : PPInstance
 // Description : This represents a single instance of the Panda3D
@@ -34,6 +36,8 @@ public:
              int16 argc, char *argn[], char *argv[], NPSavedData *saved);
   ~PPInstance();
 
+  inline NPP get_npp_instance() const;
+
   void set_window(NPWindow *window);
   NPError new_stream(NPMIMEType type, NPStream *stream, 
                      bool seekable, uint16 *stype);
@@ -43,6 +47,8 @@ public:
   void stream_as_file(NPStream *stream, const char *fname);
 
   void handle_request(P3D_request *request);
+
+  NPObject *get_script_object();
 
 private:
   bool read_contents_file(const string &filename);
@@ -71,6 +77,8 @@ private:
 
   bool _got_window;
   NPWindow _window;
+
+  PPObject *_script_object;
 
   P3D_instance *_p3d_inst;
 };
