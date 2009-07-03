@@ -324,7 +324,7 @@ handle_pyobj_command(TiXmlElement *xcommand, int want_response_id) {
           result = PyObject_Str(obj);
 
         } else if (strcmp(method_name, "__setattr__") == 0) {
-          const char *property_name;
+          char *property_name;
           PyObject *value;
           if (PyArg_ParseTuple(params, "sO", &property_name, &value)) {
             PyObject_SetAttrString(obj, property_name, value);
@@ -333,7 +333,7 @@ handle_pyobj_command(TiXmlElement *xcommand, int want_response_id) {
           }
 
         } else if (strcmp(method_name, "__delattr__") == 0) {
-          const char *property_name;
+          char *property_name;
           if (PyArg_ParseTuple(params, "s", &property_name)) {
             if (PyObject_HasAttrString(obj, property_name)) {
               PyObject_DelAttrString(obj, property_name);
@@ -345,7 +345,7 @@ handle_pyobj_command(TiXmlElement *xcommand, int want_response_id) {
           }
 
         } else if (strcmp(method_name, "__getattr__") == 0) {
-          const char *property_name;
+          char *property_name;
           if (PyArg_ParseTuple(params, "s", &property_name)) {
             if (PyObject_HasAttrString(obj, property_name)) {
               result = PyObject_GetAttrString(obj, property_name);
@@ -356,7 +356,7 @@ handle_pyobj_command(TiXmlElement *xcommand, int want_response_id) {
 
         } else {
           // Not a special-case name.  Call the named method.
-          PyObject *method = PyObject_GetAttrString(obj, method_name);
+          PyObject *method = PyObject_GetAttrString(obj, (char *)method_name);
           if (method != NULL) {
             result = PyObject_CallObject(method, params);
             Py_DECREF(method);
