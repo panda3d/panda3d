@@ -705,14 +705,12 @@ synthesize_shader(const RenderState *rs) {
     text << "\t float4x4 biasmat = {0.5f, 0.0f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f};\n";
     for (int i=0; i<(int)_dlights.size(); i++) {
       if (_dlights[i]->_shadow_caster) {
-        text << "\t l_dlightcoord" << i << " = mul(biasmat, mul(trans_model_to_clip_of_dlight"
-          << i << ", vtx_position + " << _dlights[i]->_push_bias << " * vtx_normal));\n";
+        text << "\t l_dlightcoord" << i << " = mul(biasmat, mul(trans_model_to_clip_of_dlight" << i << ", vtx_position));\n";
       }
     }
     for (int i=0; i<(int)_slights.size(); i++) {
       if (_slights[i]->_shadow_caster) {
-        text << "\t l_slightcoord" << i << " = mul(biasmat, mul(trans_model_to_clip_of_slight"
-          << i << ", vtx_position + " << _slights[i]->_push_bias << " * vtx_normal));\n";
+        text << "\t l_slightcoord" << i << " = mul(biasmat, mul(trans_model_to_clip_of_slight" << i << ", vtx_position));\n";
       }
     }
   }

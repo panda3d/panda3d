@@ -70,14 +70,3 @@ set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int buffer_so
   set_active(caster);
 }
 
-////////////////////////////////////////////////////////////////////
-//     Function: LightLensNode::set_push_bias
-//       Access: Published
-//  Description: Sets the push bias value, this is used to eliminate
-//               depth texture precision errors in shadows. Change
-//               this value if your shadows look strange.
-////////////////////////////////////////////////////////////////////
-INLINE void LightLensNode::
-set_push_bias(float push_bias) {
-  _push_bias = push_bias;
-}

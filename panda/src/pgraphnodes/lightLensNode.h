@@ -40,7 +40,6 @@ PUBLISHED:
   INLINE bool is_shadow_caster();
   INLINE void set_shadow_caster(bool caster);
   INLINE void set_shadow_caster(bool caster, int buffer_xsize, int buffer_ysize, int sort = -10);
-  INLINE void set_push_bias(float push_bias);
 
 protected:
   LightLensNode(const LightLensNode &copy);
@@ -48,7 +47,6 @@ protected:
 
   bool _shadow_caster;
   int _sb_xsize, _sb_ysize, _sb_sort;
-  double _push_bias;
 
   // This is really a map of GSG -> GraphicsOutput.
   typedef pmap<PT(GraphicsStateGuardianBase), PT(GraphicsOutputBase) > ShadowBuffers;

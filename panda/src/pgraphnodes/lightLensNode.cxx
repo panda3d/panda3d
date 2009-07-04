@@ -17,6 +17,9 @@
 #include "bamReader.h"
 #include "datagram.h"
 #include "datagramIterator.h"
+#include "renderState.h"
+#include "cullFaceAttrib.h"
+#include "colorWriteAttrib.h"
 
 TypeHandle LightLensNode::_type_handle;
 
@@ -34,7 +37,9 @@ LightLensNode(const string &name, Lens *lens) :
   _sb_xsize = 512;
   _sb_ysize = 512;
   _sb_sort = -10;
-  _push_bias = 0.5;
+  // Backface culling helps eliminating artifacts.
+  set_initial_state(RenderState::make(CullFaceAttrib::make_reverse(),
+                    ColorWriteAttrib::make(ColorWriteAttrib::C_off)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -62,7 +67,9 @@ LightLensNode(const LightLensNode &copy) :
   _sb_xsize = 512;
   _sb_ysize = 512;
   _sb_sort = -10;
-  _push_bias = 0.5;
+  // Backface culling helps eliminating artifacts.
+  set_initial_state(RenderState::make(CullFaceAttrib::make_reverse(),
+                    ColorWriteAttrib::make(ColorWriteAttrib::C_off)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -138,7 +145,6 @@ write_datagram(BamWriter *manager, Datagram &dg) {
   dg.add_int32(_sb_xsize);
   dg.add_int32(_sb_ysize);
   dg.add_int32(_sb_sort);
-  dg.add_float64(_push_bias);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -158,5 +164,5 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   int sb_ysize = scan.get_int32();
   int sb_sort = scan.get_int32();
   set_shadow_caster(shadow_caster, sb_xsize, sb_ysize, sb_sort);
-  set_push_bias(scan.get_float64());
 }
+
