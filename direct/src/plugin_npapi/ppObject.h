@@ -31,7 +31,7 @@ public:
   void set_p3d_object(P3D_object *p3d_object);
 
 private:
-  void construct(P3D_object *p3d_object);
+  void construct(PPInstance *inst, P3D_object *p3d_object);
   void invalidate();
 
   bool has_method(NPIdentifier name);
@@ -47,6 +47,12 @@ private:
                     const NPVariant *value);
   bool remove_property(NPIdentifier name);
   bool enumerate(NPIdentifier **value, uint32_t *count);
+
+private:
+  static string identifier_to_string(NPIdentifier ident);
+  void object_to_variant(NPVariant *result, const P3D_object *object);
+  P3D_object *variant_to_object(const NPVariant *variant);
+  
 
 private:
   static NPObject *NPAllocate(NPP npp, NPClass *aClass);
@@ -75,6 +81,7 @@ private:
                           NPVariant *result);
 
 private:
+  PPInstance *_instance;
   P3D_object *_p3d_object;
 
   static NPClass _object_class;

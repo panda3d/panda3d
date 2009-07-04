@@ -45,7 +45,7 @@ make_new(PPInstance *inst, P3D_object *p3d_object) {
   NPObject *npobj = 
     browser->createobject(inst->get_npp_instance(), &_object_class);
   PPObject *ppobj = (PPObject *)npobj;
-  ppobj->construct(p3d_object);
+  ppobj->construct(inst, p3d_object);
   return ppobj;
 }
 
@@ -53,7 +53,8 @@ make_new(PPInstance *inst, P3D_object *p3d_object) {
 //     Function: PPObject::set_p3d_object
 //       Access: Public
 //  Description: Changes the p3d_object this PPObject maps to.  The
-//               previous object, if any, is deleted.
+//               previous object, if any, is deleted.  Ownership of
+//               the new object is passed to the PPObject.
 ////////////////////////////////////////////////////////////////////
 void PPObject::
 set_p3d_object(P3D_object *p3d_object) {
@@ -74,8 +75,9 @@ set_p3d_object(P3D_object *p3d_object) {
 //               following NPN_CreateObject().
 ////////////////////////////////////////////////////////////////////
 void PPObject::
-construct(P3D_object *p3d_object) {
+construct(PPInstance *inst, P3D_object *p3d_object) {
   logfile << "construct: " << this << "\n" << flush;
+  _instance = inst;
   _p3d_object = p3d_object;
 }
 
@@ -87,6 +89,7 @@ construct(P3D_object *p3d_object) {
 void PPObject::
 invalidate() {
   logfile << "invalidate: " << this << "\n" << flush;
+  _instance = NULL;
   set_p3d_object(NULL);
 }
 
@@ -98,7 +101,8 @@ invalidate() {
 ////////////////////////////////////////////////////////////////////
 bool PPObject::
 has_method(NPIdentifier name) {
-  logfile << "has_method: " << this << "\n" << flush;
+  string property_name = identifier_to_string(name);
+  logfile << "has_method: " << this << ", " << property_name << "\n" << flush;
   return false;
 }
 
@@ -138,8 +142,14 @@ invoke_default(const NPVariant *args, uint32_t argCount,
 ////////////////////////////////////////////////////////////////////
 bool PPObject::
 has_property(NPIdentifier name) {
-  logfile << "has_property: " << this << "\n" << flush;
-  return false;
+  string property_name = identifier_to_string(name);
+  logfile << "has_property: " << this << ", " << property_name << "\n" << flush;
+
+  // If we say we don't have a given property, then set_property()
+  // will never be called.  So we always say we *do* have any
+  // particular property, whether we currently have it right now or
+  // not (since we *could* have it if you call set_property()).
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -151,8 +161,23 @@ has_property(NPIdentifier name) {
 ////////////////////////////////////////////////////////////////////
 bool PPObject::
 get_property(NPIdentifier name, NPVariant *result) {
-  logfile << "get_property: " << this << "\n" << flush;
-  return false;
+  string property_name = identifier_to_string(name);
+  logfile << "get_property: " << this << ", " << property_name << "\n" << flush;
+  if (_p3d_object == NULL) {
+    // Not powered up yet.
+    return false;
+  }
+
+  P3D_object *value = P3D_OBJECT_GET_PROPERTY(_p3d_object, property_name.c_str());
+  if (value == NULL) {
+    // No such property.
+    return false;
+  }
+
+  // We have the property, and its value is stored in value.
+  object_to_variant(result, value);
+  P3D_OBJECT_FINISH(value);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -163,8 +188,16 @@ get_property(NPIdentifier name, NPVariant *result) {
 ////////////////////////////////////////////////////////////////////
 bool PPObject::
 set_property(NPIdentifier name, const NPVariant *value) {
-  logfile << "set_property: " << this << "\n" << flush;
-  return false;
+  string property_name = identifier_to_string(name);
+  logfile << "set_property: " << this << ", " << property_name << "\n" << flush;
+  if (_p3d_object == NULL) {
+    // Not powered up yet.
+    return false;
+  }
+
+  P3D_object *object = variant_to_object(value);
+  bool result = P3D_OBJECT_SET_PROPERTY(_p3d_object, property_name.c_str(), object);
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,6 +230,101 @@ enumerate(NPIdentifier **value, uint32_t *count) {
   return false;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PPObject::identifier_to_string
+//       Access: Private, Static
+//  Description: Gets the string equivalent of the indicated
+//               identifier.
+////////////////////////////////////////////////////////////////////
+string PPObject::
+identifier_to_string(NPIdentifier ident) {
+  if (browser->identifierisstring(ident)) {
+    NPUTF8 *result = browser->utf8fromidentifier(ident);
+    if (result != NULL) {
+      string strval(result);
+      browser->memfree(result);
+      return strval;
+    }
+  }
+
+  return string();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPObject::object_to_variant
+//       Access: Private
+//  Description: Converts the indicated P3D_object to the equivalent
+//               NPVariant, and stores it in result.
+////////////////////////////////////////////////////////////////////
+void PPObject::
+object_to_variant(NPVariant *result, const P3D_object *object) {
+  switch (P3D_OBJECT_GET_TYPE(object)) {
+  case P3D_OT_none:
+    VOID_TO_NPVARIANT(*result);
+    break;
+
+  case P3D_OT_bool:
+    BOOLEAN_TO_NPVARIANT(P3D_OBJECT_GET_BOOL(object), *result);
+    break;
+
+  case P3D_OT_int:
+    INT32_TO_NPVARIANT(P3D_OBJECT_GET_INT(object), *result);
+    break;
+
+  case P3D_OT_float:
+    DOUBLE_TO_NPVARIANT(P3D_OBJECT_GET_FLOAT(object), *result);
+    break;
+
+  case P3D_OT_string:
+    {
+      int size = P3D_OBJECT_GET_STRING(object, NULL, 0);
+      char *buffer = (char *)browser->memalloc(size);
+      P3D_OBJECT_GET_STRING(object, buffer, size);
+      STRINGN_TO_NPVARIANT(buffer, size, *result);
+    }
+    break;
+
+  case P3D_OT_list:
+  case P3D_OT_object:
+    {
+      PPObject *ppobj = PPObject::make_new(_instance, P3D_OBJECT_COPY(object));
+      OBJECT_TO_NPVARIANT(ppobj, *result);
+    }
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPObject::variant_to_object
+//       Access: Private
+//  Description: Converts the indicated NPVariant to the equivalent
+//               P3D_object, and returns it (newly-allocated).  The
+//               caller is responsible for freeing the returned object
+//               later.
+////////////////////////////////////////////////////////////////////
+P3D_object *PPObject::
+variant_to_object(const NPVariant *variant) {
+  if (NPVARIANT_IS_VOID(*variant) ||
+      NPVARIANT_IS_NULL(*variant)) {
+    return P3D_new_none_object();
+  } else if (NPVARIANT_IS_BOOLEAN(*variant)) {
+    return P3D_new_bool_object(NPVARIANT_TO_BOOLEAN(*variant));
+  } else if (NPVARIANT_IS_INT32(*variant)) {
+    return P3D_new_int_object(NPVARIANT_TO_INT32(*variant));
+  } else if (NPVARIANT_IS_DOUBLE(*variant)) {
+    return P3D_new_float_object(NPVARIANT_TO_DOUBLE(*variant));
+  } else if (NPVARIANT_IS_STRING(*variant)) {
+    NPString str = NPVARIANT_TO_STRING(*variant);
+    return P3D_new_string_object(str.utf8characters, str.utf8length);
+  } else if (NPVARIANT_IS_OBJECT(*variant)) {
+    // TODO.
+    return P3D_new_none_object();
+  }
+
+  // Hmm, none of the above?
+  return P3D_new_none_object();
+}
+
 
 // The remaining function bodies are the C-style function wrappers
 // that are called directly by NPAPI, and which redirect into the
@@ -224,6 +352,7 @@ NPAllocate(NPP npp, NPClass *aClass) {
 void PPObject::
 NPDeallocate(NPObject *npobj) {
   logfile << "NPDeallocate: " << npobj << "\n" << flush;
+  ((PPObject *)npobj)->invalidate();
   free(npobj);
 }
 
@@ -235,7 +364,10 @@ NPDeallocate(NPObject *npobj) {
 void PPObject::
 NPInvalidate(NPObject *npobj) {
   logfile << "NPInvalidate: " << npobj << "\n" << flush;
-  ((PPObject *)npobj)->invalidate();
+
+  // It turns out that this method isn't actually called by Safari's
+  // implementation of NPAPI, so we'll move the actual destructor call
+  // into NPDeallocate, above.
 }
 
 ////////////////////////////////////////////////////////////////////
