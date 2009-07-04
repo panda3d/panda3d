@@ -79,6 +79,10 @@ PPInstance::
     _p3d_inst = NULL;
   }
 
+  if (_script_object != NULL) {
+    browser->releaseobject(_script_object);
+  }
+
   // Free the tokens we allocated.
   Tokens::iterator ti;
   for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {
@@ -386,6 +390,22 @@ handle_request(P3D_request *request) {
     }
     break;
 
+  case P3D_RT_notify:
+    {
+      logfile << "Got P3D_RT_notify: " << request->_request._notify._message
+              << "\n" << flush;
+
+      if (_script_object != NULL &&
+          strcmp(request->_request._notify._message, "onpythonload") == 0) {
+        // Now that Python is running, initialize our script_object
+        // with the proper P3D object pointer.
+        P3D_object *obj = P3D_instance_get_script_object(_p3d_inst);
+        logfile << "late obj = " << obj << "\n" << flush;
+        _script_object->set_p3d_object(obj);
+      }
+    }
+    break;
+
   default:
     // Some request types are not handled.
     logfile << "Unhandled request: " << request->_request_type << "\n";
@@ -405,6 +425,7 @@ NPObject *PPInstance::
 get_script_object() {
   logfile << "get_script_object\n" << flush;
   if (_script_object != NULL) {
+    logfile << "returning _script_object ref = " << _script_object->referenceCount << "\n";
     return _script_object;
   }
 
@@ -416,6 +437,9 @@ get_script_object() {
   }
 
   _script_object = PPObject::make_new(this, obj);
+  logfile << "_script_object ref = " << _script_object->referenceCount << "\n";
+  browser->retainobject(_script_object);
+  logfile << "after retain, _script_object ref = " << _script_object->referenceCount << "\n";
   logfile << "ppobj = " << _script_object << "\n" << flush;
   return _script_object;
 }
@@ -601,14 +625,6 @@ create_instance() {
     }
     P3D_instance_start(_p3d_inst, _p3d_filename.c_str(), tokens, _tokens.size());
     send_window();
-
-    if (_script_object != NULL) {
-      // Now that we have an instance, initialize our script_object
-      // with the proper P3D object pointer.
-      P3D_object *obj = P3D_instance_get_script_object(_p3d_inst);
-      logfile << "late obj = " << obj << "\n" << flush;
-      _script_object->set_p3d_object(obj);
-    }
   }
 }
 

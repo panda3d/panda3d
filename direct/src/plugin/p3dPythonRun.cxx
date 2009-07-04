@@ -30,6 +30,7 @@ P3DPythonRun(int argc, char *argv[]) {
   _read_thread_continue = false;
   _program_continue = true;
   INIT_LOCK(_commands_lock);
+  INIT_THREAD(_read_thread);
 
   _program_name = argv[0];
   _py_argc = 1;
@@ -508,15 +509,7 @@ spawn_read_thread() {
   // anonymous pipe in Windows).
 
   _read_thread_continue = true;
-#ifdef _WIN32
-  _read_thread = CreateThread(NULL, 0, &win_rt_thread_run, this, 0, NULL);
-#else
-  pthread_attr_t attr;
-  pthread_attr_init(&attr);
-  pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
-  pthread_create(&_read_thread, &attr, &posix_rt_thread_run, (void *)this);
-  pthread_attr_destroy(&attr);
-#endif
+  SPAWN_THREAD(_read_thread, rt_thread_run, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -529,16 +522,8 @@ join_read_thread() {
   nout << "waiting for thread\n";
   _read_thread_continue = false;
   _pipe_read.close();
-  
-#ifdef _WIN32
-  assert(_read_thread != NULL);
-  WaitForSingleObject(_read_thread, INFINITE);
-  CloseHandle(_read_thread);
-  _read_thread = NULL;
-#else
-  void *return_val;
-  pthread_join(_read_thread, &return_val);
-#endif
+
+  JOIN_THREAD(_read_thread);
   nout << "done waiting for thread\n";
 }
 
@@ -918,33 +903,6 @@ rt_thread_run() {
     RELEASE_LOCK(_commands_lock);
   }
 }
-
-#ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::win_rt_thread_run
-//       Access: Private, Static
-//  Description: The Windows flavor of the thread callback function.
-////////////////////////////////////////////////////////////////////
-DWORD P3DPythonRun::
-win_rt_thread_run(LPVOID data) {
-  ((P3DPythonRun *)data)->rt_thread_run();
-  return 0;
-}
-#endif
-
-#ifndef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::posix_rt_thread_run
-//       Access: Private, Static
-//  Description: The Posix flavor of the thread callback function.
-////////////////////////////////////////////////////////////////////
-void *P3DPythonRun::
-posix_rt_thread_run(void *data) {
-  ((P3DPythonRun *)data)->rt_thread_run();
-  return NULL;
-}
-#endif
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: main

@@ -88,6 +88,8 @@ P3DInstance::
 
   // TODO: Is it possible for someone to delete an instance while a
   // download is still running?  Who will crash when this happens?
+
+  nout << "deleting instance " << this << "\n" << flush;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -169,6 +171,7 @@ set_wparams(const P3DWindowParams &wparams) {
 P3DObject *P3DInstance::
 get_script_object() const {
   assert(_session != NULL);
+  nout << "Called P3DInstance::get_script_object()\n";
 
   TiXmlDocument *doc = new TiXmlDocument;
   TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
@@ -239,10 +242,10 @@ get_request() {
       // If we received a notify request, process the notification
       // immediately--it might be interesting to this instance.
       const char *message = result->_request._notify._message;
-      if (strcmp(message, "window_opened") == 0) {
+      if (strcmp(message, "onwindowopen") == 0) {
         // The process told us that it just succesfully opened its
         // window.
-        nout << "Instance " << this << " got window_opened\n" << flush;
+        nout << "Instance " << this << " got onwindowopen\n" << flush;
         _instance_window_opened = true;
         if (_splash_window != NULL) {
           nout << "Deleting splash window\n" << flush;
@@ -273,14 +276,9 @@ add_request(P3D_request *request) {
   _request_pending = true;
   RELEASE_LOCK(_request_lock);
 
-  // Asynchronous notification for anyone who cares.
-  if (_func != NULL) {
-    _func(this);
-  }
-
-  // Synchronous notification for pollers.
+  // Tell the world we've got a new request.
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  inst_mgr->signal_request_ready();
+  inst_mgr->signal_request_ready(this);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -95,13 +95,8 @@ private:
 
 private:
   // This method runs only within the read thread.
-
+  THREAD_CALLBACK_DECLARATION(P3DPythonRun, rt_thread_run);
   void rt_thread_run();
-#ifdef _WIN32
-  static DWORD WINAPI win_rt_thread_run(LPVOID data);
-#else
-  static void *posix_rt_thread_run(void *data);
-#endif
 
 private:
   typedef pmap<int, P3DCInstance *> Instances;
@@ -130,11 +125,7 @@ private:
 
   bool _read_thread_continue;
   bool _program_continue;
-#ifdef _WIN32
-  HANDLE _read_thread;
-#else
-  pthread_t _read_thread;
-#endif
+  THREAD _read_thread;
 
 public:
   static P3DPythonRun *_global_ptr;

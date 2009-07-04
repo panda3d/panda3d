@@ -115,6 +115,8 @@ find_extension_dot(const string &filename) {
   return string::npos;
 }
 
+// Forward reference for function defined below.
+static void unload_dso();
 
 ////////////////////////////////////////////////////////////////////
 //     Function: load_plugin
@@ -265,8 +267,8 @@ load_plugin(const string &p3d_plugin_filename) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: unload_plugin
-//  Description: Removes the plugin from memory space and clears all
-//               of the pointers.
+//  Description: Calls finalize, then removes the plugin from memory
+//               space and clears all of the pointers.
 ////////////////////////////////////////////////////////////////////
 void
 unload_plugin() {
@@ -274,8 +276,24 @@ unload_plugin() {
     return;
   }
 
-  P3D_finalize();
+  cerr << "unload_plugin called\n";
 
+  P3D_finalize();
+  unload_dso();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: unload_dso
+//  Description: Removes the plugin from memory space and clears all
+//               of the pointers.  This is only intended to be called
+//               by load_plugin(), above, in the specific case that
+//               the plugin loaded but could not successfully
+//               initialize itself.  All user code should call
+//               unload_plugin(), above, which first calls
+//               P3D_finalize().
+////////////////////////////////////////////////////////////////////
+static void
+unload_dso() {
 #ifdef _WIN32
   assert(module != NULL);
   FreeLibrary(module);

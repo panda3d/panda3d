@@ -38,6 +38,10 @@ P3DInstanceManager() {
   _is_initialized = false;
   _unique_session_index = 0;
 
+  _notify_thread_continue = false;
+  _started_notify_thread = false;
+  INIT_THREAD(_notify_thread);
+
 #ifdef _WIN32
   // Ensure the appropriate Windows common controls are available to
   // this application.
@@ -55,11 +59,19 @@ P3DInstanceManager() {
 ////////////////////////////////////////////////////////////////////
 P3DInstanceManager::
 ~P3DInstanceManager() {
-  // Actually, this destructor is never called, since this is a global
-  // object that never gets deleted.
+  nout << "~P3DInstanceManager\n" << flush;
+  if (_started_notify_thread) {
+    _notify_ready.acquire();
+    _notify_thread_continue = false;
+    _notify_ready.notify();
+    _notify_ready.release();
+    JOIN_THREAD(_notify_thread);
+    _started_notify_thread = false;
+  }
 
   assert(_instances.empty());
   assert(_sessions.empty());
+  nout << "done ~P3DInstanceManager\n" << flush;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -254,11 +266,29 @@ get_unique_session_index() {
 //     Function: P3DInstanceManager::signal_request_ready
 //       Access: Public
 //  Description: May be called in any thread to indicate that a new
-//               P3D_request is available in some instance.  This will
-//               wake up a sleeping wait_request() call, if any.
+//               P3D_request is available in the indicated instance.
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
-signal_request_ready() {
+signal_request_ready(P3DInstance *inst) {
+  if (inst->get_request_ready_func() != NULL) {
+    // This instance requires asynchronous notifications of requests.
+    // Thus, we should tell the notify thread to wake up and make the
+    // callback.
+    _notify_ready.acquire();
+    _notify_instances.push_back(inst);
+    _notify_ready.notify();
+    _notify_ready.release();
+
+    // Oh, and we should spawn the thread if we haven't already.
+    if (!_started_notify_thread) {
+      _notify_thread_continue = true;
+      SPAWN_THREAD(_notify_thread, nt_thread_run, this);
+      _started_notify_thread = true;
+    }
+  }
+
+  // Then, wake up the main thread, in case it's sleeping on
+  // wait_request().
   _request_ready.acquire();
   _request_ready.notify();
   _request_ready.release();
@@ -286,4 +316,64 @@ get_global_ptr() {
     _global_ptr = new P3DInstanceManager;
   }
   return _global_ptr;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::delete_global_ptr
+//       Access: Public, Static
+//  Description: This is called only at plugin shutdown time; it
+//               deletes the global instance manager pointer and
+//               clears it to NULL.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+delete_global_ptr() {
+  if (_global_ptr != NULL) {
+    delete _global_ptr;
+    _global_ptr = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::nt_thread_run
+//       Access: Private
+//  Description: The main function for the notify thread.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+nt_thread_run() {
+  // The notify thread exists because we need to be able to send
+  // asynchronous notifications of request events.  These request
+  // events were detected in the various read threads associated with
+  // each session, but we can't call back into the host space from the
+  // read thread, since if the host immediately response to a callback
+  // by calling back into the p3d_plugin space, now we have our read
+  // thread doing stuff in here that's not related to the read thread.
+  // Even worse, some of the things it might need to do might require
+  // a separate read thread to be running!
+
+  _notify_ready.acquire();
+  while (_notify_thread_continue) {
+    NotifyInstances instances;
+    while (!_notify_instances.empty()) {
+      instances.clear();
+      instances.swap(_notify_instances);
+
+      // Go ahead and drop the lock while we make the callback, to
+      // reduce the risk of deadlock.  We don't want to be holding any
+      // locks when we call into client code.
+      _notify_ready.release();
+      NotifyInstances::iterator ni;
+      for (ni = instances.begin(); ni != instances.end(); ++ni) {
+        // TODO: a race condition here when instances are deleted.
+        P3DInstance *inst = (*ni);
+        P3D_request_ready_func *func = inst->get_request_ready_func();
+        assert(inst != NULL);
+        (*func)(inst);
+      }
+      _notify_ready.acquire();
+    }
+
+    _notify_ready.wait();
+  }
+  _notify_ready.release();
+  nout << "exiting nt_thread_run\n" << flush;
 }

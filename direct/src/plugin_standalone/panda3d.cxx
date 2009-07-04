@@ -251,7 +251,8 @@ run(int argc, char *argv[]) {
   }
 
   // All instances have finished; we can exit.
-
+  cerr << "clean exit\n";
+  unload_plugin();
   return 0;
 }
 
@@ -404,7 +405,8 @@ handle_request(P3D_request *request) {
     cerr << "Got P3D_RT_notify: " << request->_request._notify._message
          << "\n";
     // Ignore notifications.
-
+    
+    /*
     {
       // Temporary.
       P3D_object *obj = P3D_instance_get_script_object(request->_instance);
@@ -428,6 +430,8 @@ handle_request(P3D_request *request) {
         P3D_OBJECT_FINISH(obj);
       }
     }
+    */
+
     break;
 
   default:

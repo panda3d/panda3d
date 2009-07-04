@@ -72,6 +72,19 @@ get_python_version() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_request_ready_func
+//       Access: Public
+//  Description: Returns a pointer to the asynchronous notification
+//               function that was passed to the constructor, if any,
+//               or NULL if asynchronous notifications are not
+//               required.
+////////////////////////////////////////////////////////////////////
+inline P3D_request_ready_func *P3DInstance::
+get_request_ready_func() const {
+  return _func;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::is_started
 //       Access: Public
 //  Description: Returns true if this instance has already been

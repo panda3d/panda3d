@@ -22,7 +22,7 @@ See pack3d.py for a script that generates these p3d files.
 import sys
 from direct.showbase import VFSImporter
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, getModelPath, HTTPClient
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase import AppRunnerGlobal
@@ -64,6 +64,9 @@ class AppRunner(DirectObject):
         # This is the default requestFunc that is installed if we
         # never call setRequestFunc().
         def defaultRequestFunc(*args):
+            if args[1] == 'notify':
+                # Quietly ignore notifies.
+                return
             print "Ignoring request: %s" % (args,)
         self.requestFunc = defaultRequestFunc
 
@@ -149,6 +152,10 @@ class AppRunner(DirectObject):
         # for this instance.
         self.instanceId = instanceId
         
+        # Now that we have an instanceId, we can response to queries
+        # and such.
+        self.sendRequest('notify', 'onpythonload')
+
         tokenDict = dict(tokens)
         fname = Filename.fromOsSpecific(p3dFilename)
         if not p3dFilename:
@@ -246,7 +253,7 @@ class AppRunner(DirectObject):
     def windowEvent(self, win):
         print "Got window event in runp3d"
 
-        self.sendRequest('notify', 'window_opened')
+        self.sendRequest('notify', 'onwindowopen')
 
     def parseSysArgs(self):
         """ Converts sys.argv into (p3dFilename, tokens). """

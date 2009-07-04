@@ -64,6 +64,8 @@ public:
   inline const string &get_session_key() const;
   inline const string &get_python_version() const;
 
+  inline P3D_request_ready_func *get_request_ready_func() const;
+
   void add_package(P3DPackage *package);
   
   void start_download(P3DDownload *download);

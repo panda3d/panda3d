@@ -20,6 +20,7 @@
 
 #include <set>
 #include <map>
+#include <vector>
 
 class P3DInstance;
 class P3DSession;
@@ -61,11 +62,19 @@ public:
   inline int get_num_instances() const;
 
   int get_unique_session_index();
-  void signal_request_ready();
+  void signal_request_ready(P3DInstance *inst);
 
   P3D_class_definition *make_class_definition() const;
 
   static P3DInstanceManager *get_global_ptr();
+  static void delete_global_ptr();
+
+private:
+  // The notify thread.  This thread runs only for the purpose of
+  // generating asynchronous notifications of requests, to callers who
+  // ask for it.
+  THREAD_CALLBACK_DECLARATION(P3DInstanceManager, nt_thread_run);
+  void nt_thread_run();
 
 private:
   bool _is_initialized;
@@ -84,7 +93,20 @@ private:
 
   int _unique_session_index;
 
+  // This condition var is waited on the main thread and signaled in a
+  // sub-thread when new request notices arrive.
   P3DConditionVar _request_ready;
+
+  // We may need a thread to send async request notices to callers.
+  bool _notify_thread_continue;
+  bool _started_notify_thread;
+  THREAD _notify_thread;
+  // This queue of instances that need to send notifications is
+  // protected by _notify_ready's mutex.
+  typedef vector<P3DInstance *> NotifyInstances;
+  NotifyInstances _notify_instances;
+  P3DConditionVar _notify_ready;
+
   static P3DInstanceManager *_global_ptr;
 };
 

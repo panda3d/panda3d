@@ -87,7 +87,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: request_ready
-//  Description: This function is attached as an asyncronous callback
+//  Description: This function is attached as an asynchronous callback
 //               to each instance; it will be notified when the
 //               instance has a request ready.  This function may be
 //               called in a sub-thread.
@@ -99,14 +99,17 @@ request_ready(P3D_instance *instance) {
     //    << " thread = " << GetCurrentThreadId()
     << "\n" << flush;
 
+#ifdef _WIN32
   // Since we might be in a sub-thread at this point, use a Windows
   // message to forward this event to the main thread.
 
-#ifdef _WIN32
   PostThreadMessage(main_thread_id, WM_USER, 0, 0);
+
 #else
-  // TODO: send the message to the main thread properly.
-  handle_request_loop();
+  // On Mac, we ignore this asynchronous event, and rely on detecting
+  // it within HandleEvent().  TODO: enable a timer to ensure we get
+  // HandleEvent callbacks in a timely manner?  Or maybe we should
+  // enable a one-shot timer in response to this asynchronous event?
 #endif
 }
 
@@ -366,6 +369,10 @@ NPP_Print(NPP instance, NPPrint *platformPrint) {
 int16
 NPP_HandleEvent(NPP instance, void *event) {
   //  logfile << "HandleEvent\n";
+
+  // Here's a fine opportunity to check for new requests.
+  handle_request_loop();
+
   return 0;
 }
 

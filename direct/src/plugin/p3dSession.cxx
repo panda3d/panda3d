@@ -54,6 +54,7 @@ P3DSession(P3DInstance *inst) {
   _panda3d_callback = NULL;
 
   INIT_LOCK(_instances_lock);
+  INIT_THREAD(_read_thread);
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
@@ -471,22 +472,8 @@ void P3DSession::
 spawn_read_thread() {
   assert(!_read_thread_continue);
 
-  // We have to use direct OS calls to create the thread instead of
-  // Panda constructs, because it has to be an actual thread, not
-  // necessarily a Panda thread (we can't use Panda's simple threads
-  // implementation, because we can't get overlapped I/O on an
-  // anonymous pipe in Windows).
-
   _read_thread_continue = true;
-#ifdef _WIN32
-  _read_thread = CreateThread(NULL, 0, &win_rt_thread_run, this, 0, NULL);
-#else
-  pthread_attr_t attr;
-  pthread_attr_init(&attr);
-  pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
-  pthread_create(&_read_thread, &attr, &posix_rt_thread_run, (void *)this);
-  pthread_attr_destroy(&attr);
-#endif
+  SPAWN_THREAD(_read_thread, rt_thread_run, this);
   _started_read_thread = true;
 }
 
@@ -503,17 +490,8 @@ join_read_thread() {
 
   _read_thread_continue = false;
   _pipe_read.close();
-  
-#ifdef _WIN32
-  assert(_read_thread != NULL);
-  WaitForSingleObject(_read_thread, INFINITE);
-  CloseHandle(_read_thread);
-  _read_thread = NULL;
-#else
-  void *return_val;
-  pthread_join(_read_thread, &return_val);
-#endif
 
+  JOIN_THREAD(_read_thread);
   _started_read_thread = false;
 }
 
@@ -576,6 +554,7 @@ rt_handle_request(TiXmlDocument *doc) {
 
   TiXmlElement *xrequest = doc->FirstChildElement("request");
   if (xrequest != (TiXmlElement *)NULL) {
+    nout << "Handling request\n" << flush;
     int instance_id;
     if (xrequest->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
       // Look up the particular instance this is related to.
@@ -591,6 +570,7 @@ rt_handle_request(TiXmlDocument *doc) {
       }
       RELEASE_LOCK(_instances_lock);
     }
+    nout << "done handling request\n" << flush;
   }
 
   delete doc;
@@ -644,33 +624,6 @@ rt_terminate() {
     inst->request_stop();
   }
 }
-
-#ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::win_rt_thread_run
-//       Access: Private, Static
-//  Description: The Windows flavor of the thread callback function.
-////////////////////////////////////////////////////////////////////
-DWORD P3DSession::
-win_rt_thread_run(LPVOID data) {
-  ((P3DSession *)data)->rt_thread_run();
-  return 0;
-}
-#endif
-
-#ifndef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::posix_rt_thread_run
-//       Access: Private, Static
-//  Description: The Posix flavor of the thread callback function.
-////////////////////////////////////////////////////////////////////
-void *P3DSession::
-posix_rt_thread_run(void *data) {
-  ((P3DSession *)data)->rt_thread_run();
-  return NULL;
-}
-#endif
-
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
