@@ -35,6 +35,7 @@
 #include "alphaTestAttrib.h"
 #include "depthTestAttrib.h"
 #include "depthWriteAttrib.h"
+#include "depthOffsetAttrib.h"
 #include "shaderAttrib.h"
 #include "billboardEffect.h"
 #include "compassEffect.h"
@@ -5249,6 +5250,74 @@ get_depth_write() const {
   }
 
   return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::set_depth_offset
+//       Access: Published
+//  Description: This instructs the graphics driver to apply an
+//               offset or bias to the generated depth values for
+//               rendered polygons, before they are written to the
+//               depth buffer. This can be used to shift polygons
+//               forward slightly, to resolve depth conflicts, or
+//               self-shadowing artifacts on thin objects.
+//               The bias is always an integer number, and each
+//               integer increment represents the smallest possible
+//               increment in Z that is sufficient to completely
+//               resolve two coplanar polygons. Positive numbers
+//               are closer towards the camera.
+////////////////////////////////////////////////////////////////////
+void NodePath::
+set_depth_offset(int bias, int priority) {
+  nassertv_always(!is_empty());
+
+  node()->set_attrib(DepthOffsetAttrib::make(bias), priority);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::clear_depth_offset
+//       Access: Published
+//  Description: Completely removes any depth-offset adjustment that
+//               may have been set on this node via set_depth_offset().
+////////////////////////////////////////////////////////////////////
+void NodePath::
+clear_depth_offset() {
+  nassertv_always(!is_empty());
+  node()->clear_attrib(DepthOffsetAttrib::get_class_slot());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::has_depth_offset
+//       Access: Published
+//  Description: Returns true if a depth-offset adjustment has been
+//               explicitly set on this particular node via
+//               set_depth_offset().  If this returns true, then
+//               get_depth_offset() may be called to determine which has
+//               been set.
+////////////////////////////////////////////////////////////////////
+bool NodePath::
+has_depth_offset() const {
+  nassertr_always(!is_empty(), false);
+  return node()->has_attrib(DepthOffsetAttrib::get_class_slot());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NodePath::get_depth_offset
+//       Access: Published
+//  Description: Returns the depth offset value if it has been
+//               specified using set_depth_offset, or 0 if not.
+////////////////////////////////////////////////////////////////////
+int NodePath::
+get_depth_offset() const {
+  nassertr_always(!is_empty(), 0);
+  const RenderAttrib *attrib =
+    node()->get_attrib(DepthOffsetAttrib::get_class_slot());
+  if (attrib != (const RenderAttrib *)NULL) {
+    const DepthOffsetAttrib *doa = DCAST(DepthOffsetAttrib, attrib);
+    return doa->get_offset();
+  }
+
+  return 0;
 }
 
 ////////////////////////////////////////////////////////////////////

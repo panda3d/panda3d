@@ -743,6 +743,11 @@ PUBLISHED:
   bool has_depth_write() const;
   bool get_depth_write() const;
 
+  void set_depth_offset(int bias, int priority = 0);
+  void clear_depth_offset();
+  bool has_depth_offset() const;
+  int get_depth_offset() const;
+
   void do_billboard_axis(const NodePath &camera, float offset);
   void do_billboard_point_eye(const NodePath &camera, float offset);
   void do_billboard_point_world(const NodePath &camera, float offset);
