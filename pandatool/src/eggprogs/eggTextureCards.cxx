@@ -213,8 +213,10 @@ handle_args(ProgramBase::Args &args) {
     return false;
   }
 
-  copy(args.begin(), args.end(),
-       back_inserter(_texture_names));
+  ProgramBase::Args::iterator ai;
+  for (ai = args.begin(); ai != args.end(); ++ai) {
+    _texture_names.push_back(Filename::from_os_specific(*ai));
+  }
 
   return true;
 }
