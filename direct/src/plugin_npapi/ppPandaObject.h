@@ -1,4 +1,4 @@
-// Filename: ppObject.h
+// Filename: ppPandaObject.h
 // Created by:  drose (03Jul09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,20 +12,21 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef PPOBJECT_H
-#define PPOBJECT_H
+#ifndef PPPANDAOBJECT_H
+#define PPPANDAOBJECT_H
 
 #include "nppanda3d_common.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : PPObject
+//       Class : PPPandaObject
 // Description : This is the interface layer between an NPObject and a
 //               P3D_object.  It maps calls from NPAPI into the
-//               P3D_object system.
+//               P3D_object system, thus allowing the browser to
+//               view and operate on a Panda object.
 ////////////////////////////////////////////////////////////////////
-class PPObject : public NPObject {
+class PPPandaObject : public NPObject {
 public:
-  static PPObject *make_new(PPInstance *inst, P3D_object *p3d_object);
+  static PPPandaObject *make_new(PPInstance *inst, P3D_object *p3d_object);
 
   inline P3D_object *get_p3d_object() const;
   void set_p3d_object(P3D_object *p3d_object);
@@ -87,7 +88,7 @@ private:
   static NPClass _object_class;
 };
 
-#include "ppObject.I"
+#include "ppPandaObject.I"
 
 #endif
 

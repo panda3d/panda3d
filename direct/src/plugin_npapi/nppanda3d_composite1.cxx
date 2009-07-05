@@ -1,6 +1,6 @@
 #include "ppDownloadRequest.cxx"
 #include "ppInstance.cxx"
-#include "ppObject.cxx"
+#include "ppPandaObject.cxx"
 #include "startup.cxx"
 
 

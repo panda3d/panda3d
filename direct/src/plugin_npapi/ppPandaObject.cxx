@@ -1,4 +1,4 @@
-// Filename: ppObject.cxx
+// Filename: ppPandaObject.cxx
 // Created by:  drose (03Jul09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,51 +12,51 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "ppObject.h"
+#include "ppPandaObject.h"
 
-NPClass PPObject::_object_class = {
+NPClass PPPandaObject::_object_class = {
   NP_CLASS_STRUCT_VERSION,
-  &PPObject::NPAllocate,
-  &PPObject::NPDeallocate,
-  &PPObject::NPInvalidate,
-  &PPObject::NPHasMethod,
-  &PPObject::NPInvoke,
-  &PPObject::NPInvokeDefault,
-  &PPObject::NPHasProperty,
-  &PPObject::NPGetProperty,
-  &PPObject::NPSetProperty,
-  &PPObject::NPRemoveProperty,
+  &PPPandaObject::NPAllocate,
+  &PPPandaObject::NPDeallocate,
+  &PPPandaObject::NPInvalidate,
+  &PPPandaObject::NPHasMethod,
+  &PPPandaObject::NPInvoke,
+  &PPPandaObject::NPInvokeDefault,
+  &PPPandaObject::NPHasProperty,
+  &PPPandaObject::NPGetProperty,
+  &PPPandaObject::NPSetProperty,
+  &PPPandaObject::NPRemoveProperty,
 #if NP_CLASS_STRUCT_VERSION >= NP_CLASS_STRUCT_VERSION_ENUM
-  &PPObject::NPEnumerate,
+  &PPPandaObject::NPEnumerate,
 #endif
 #if NP_CLASS_STRUCT_VERSION >= NP_CLASS_STRUCT_VERSION_CTOR
-  &PPObject::NPConstruct,
+  &PPPandaObject::NPConstruct,
 #endif
 };
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::make_new
+//     Function: PPPandaObject::make_new
 //       Access: Public, Static
-//  Description: Use this call to construct a new PPObject.
+//  Description: Use this call to construct a new PPPandaObject.
 ////////////////////////////////////////////////////////////////////
-PPObject *PPObject::
+PPPandaObject *PPPandaObject::
 make_new(PPInstance *inst, P3D_object *p3d_object) {
   NPObject *npobj = 
     browser->createobject(inst->get_npp_instance(), &_object_class);
-  PPObject *ppobj = (PPObject *)npobj;
+  PPPandaObject *ppobj = (PPPandaObject *)npobj;
   ppobj->construct(inst, p3d_object);
   return ppobj;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::set_p3d_object
+//     Function: PPPandaObject::set_p3d_object
 //       Access: Public
-//  Description: Changes the p3d_object this PPObject maps to.  The
+//  Description: Changes the p3d_object this PPPandaObject maps to.  The
 //               previous object, if any, is deleted.  Ownership of
-//               the new object is passed to the PPObject.
+//               the new object is passed to the PPPandaObject.
 ////////////////////////////////////////////////////////////////////
-void PPObject::
+void PPPandaObject::
 set_p3d_object(P3D_object *p3d_object) {
   if (_p3d_object != p3d_object) {
     if (_p3d_object != NULL) {
@@ -67,14 +67,14 @@ set_p3d_object(P3D_object *p3d_object) {
 }
  
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::construct
+//     Function: PPPandaObject::construct
 //       Access: Private
 //  Description: Stands in for the C++ constructor.  We can't have a
 //               true constructor because of the C-style interface in
 //               NPN_CreateObject().  This must be called explicitly
 //               following NPN_CreateObject().
 ////////////////////////////////////////////////////////////////////
-void PPObject::
+void PPPandaObject::
 construct(PPInstance *inst, P3D_object *p3d_object) {
   logfile << "construct: " << this << "\n" << flush;
   _instance = inst;
@@ -82,11 +82,11 @@ construct(PPInstance *inst, P3D_object *p3d_object) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::invalidate
+//     Function: PPPandaObject::invalidate
 //       Access: Private
 //  Description: This "destructor" is called by NPInvalidate().
 ////////////////////////////////////////////////////////////////////
-void PPObject::
+void PPPandaObject::
 invalidate() {
   logfile << "invalidate: " << this << "\n" << flush;
   _instance = NULL;
@@ -94,12 +94,12 @@ invalidate() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::has_method
+//     Function: PPPandaObject::has_method
 //       Access: Private
 //  Description: Returns true if the object has the named method,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 has_method(NPIdentifier name) {
   string property_name = identifier_to_string(name);
   logfile << "has_method: " << this << ", " << property_name << "\n" << flush;
@@ -107,13 +107,13 @@ has_method(NPIdentifier name) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::invoke
+//     Function: PPPandaObject::invoke
 //       Access: Private
 //  Description: Calls the named method on the object, storing the
 //               return value into result.  Returns true on success,
 //               false on failure.
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
        NPVariant *result) {
   logfile << "invoke: " << this << "\n" << flush;
@@ -121,13 +121,13 @@ invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::invoke_default
+//     Function: PPPandaObject::invoke_default
 //       Access: Private
 //  Description: Calls the default method on the object, storing the
 //               return value into result.  Returns true on success,
 //               false on failure.
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 invoke_default(const NPVariant *args, uint32_t argCount,
                NPVariant *result) {
   logfile << "invoke_default: " << this << "\n" << flush;
@@ -135,12 +135,12 @@ invoke_default(const NPVariant *args, uint32_t argCount,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::has_property
+//     Function: PPPandaObject::has_property
 //       Access: Private
 //  Description: Returns true if the object has the named property,
 //               false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 has_property(NPIdentifier name) {
   string property_name = identifier_to_string(name);
   logfile << "has_property: " << this << ", " << property_name << "\n" << flush;
@@ -153,13 +153,13 @@ has_property(NPIdentifier name) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::get_property
+//     Function: PPPandaObject::get_property
 //       Access: Private
 //  Description: Retrieves the named property value from the object
 //               and stores it in result.  Returns true on success,
 //               false on failure.
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 get_property(NPIdentifier name, NPVariant *result) {
   string property_name = identifier_to_string(name);
   logfile << "get_property: " << this << ", " << property_name << "\n" << flush;
@@ -181,12 +181,12 @@ get_property(NPIdentifier name, NPVariant *result) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::set_property
+//     Function: PPPandaObject::set_property
 //       Access: Private
 //  Description: Replaces the named property value on the object.
 //               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 set_property(NPIdentifier name, const NPVariant *value) {
   string property_name = identifier_to_string(name);
   logfile << "set_property: " << this << ", " << property_name << "\n" << flush;
@@ -201,12 +201,12 @@ set_property(NPIdentifier name, const NPVariant *value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::remove_property
+//     Function: PPPandaObject::remove_property
 //       Access: Private
 //  Description: Deletes the named property value from the object.
 //               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 remove_property(NPIdentifier name) {
   string property_name = identifier_to_string(name);
   logfile << "remove_property: " << this << ", " << property_name << "\n" << flush;
@@ -220,12 +220,12 @@ remove_property(NPIdentifier name) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::enumerate
+//     Function: PPPandaObject::enumerate
 //       Access: Private
 //  Description: Constructs a list of available properties on this
 //               object.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 enumerate(NPIdentifier **value, uint32_t *count) {
   logfile << "enumerate: " << this << "\n" << flush;
   // TODO: Not implemented yet.
@@ -238,13 +238,13 @@ enumerate(NPIdentifier **value, uint32_t *count) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::identifier_to_string
+//     Function: PPPandaObject::identifier_to_string
 //       Access: Private, Static
 //  Description: Gets the string equivalent of the indicated
 //               identifier, whether it is an integer identifier or a
 //               string identifier.
 ////////////////////////////////////////////////////////////////////
-string PPObject::
+string PPPandaObject::
 identifier_to_string(NPIdentifier ident) {
   if (browser->identifierisstring(ident)) {
     NPUTF8 *result = browser->utf8fromidentifier(ident);
@@ -268,12 +268,12 @@ identifier_to_string(NPIdentifier ident) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::object_to_variant
+//     Function: PPPandaObject::object_to_variant
 //       Access: Private
 //  Description: Converts the indicated P3D_object to the equivalent
 //               NPVariant, and stores it in result.
 ////////////////////////////////////////////////////////////////////
-void PPObject::
+void PPPandaObject::
 object_to_variant(NPVariant *result, const P3D_object *object) {
   switch (P3D_OBJECT_GET_TYPE(object)) {
   case P3D_OT_none:
@@ -304,7 +304,7 @@ object_to_variant(NPVariant *result, const P3D_object *object) {
   case P3D_OT_list:
   case P3D_OT_object:
     {
-      PPObject *ppobj = PPObject::make_new(_instance, P3D_OBJECT_COPY(object));
+      PPPandaObject *ppobj = PPPandaObject::make_new(_instance, P3D_OBJECT_COPY(object));
       OBJECT_TO_NPVARIANT(ppobj, *result);
     }
     break;
@@ -312,14 +312,14 @@ object_to_variant(NPVariant *result, const P3D_object *object) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::variant_to_object
+//     Function: PPPandaObject::variant_to_object
 //       Access: Private
 //  Description: Converts the indicated NPVariant to the equivalent
 //               P3D_object, and returns it (newly-allocated).  The
 //               caller is responsible for freeing the returned object
 //               later.
 ////////////////////////////////////////////////////////////////////
-P3D_object *PPObject::
+P3D_object *PPPandaObject::
 variant_to_object(const NPVariant *variant) {
   if (NPVARIANT_IS_VOID(*variant) ||
       NPVARIANT_IS_NULL(*variant)) {
@@ -348,37 +348,37 @@ variant_to_object(const NPVariant *variant) {
 // above C++-style methods.
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::NPAllocate
+//     Function: PPPandaObject::NPAllocate
 //       Access: Private, Static
 //  Description: Called by NPN_CreateObject() to allocate space for
 //               this object.
 ////////////////////////////////////////////////////////////////////
-NPObject *PPObject::
+NPObject *PPPandaObject::
 NPAllocate(NPP npp, NPClass *aClass) {
   logfile << "NPAllocate\n";
   assert(aClass == &_object_class);
-  return (PPObject *)malloc(sizeof(PPObject));
+  return (PPPandaObject *)malloc(sizeof(PPPandaObject));
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::Deallocate
+//     Function: PPPandaObject::Deallocate
 //       Access: Private, Static
 //  Description: Called to delete the space allocated by NPAllocate,
 //               above.
 ////////////////////////////////////////////////////////////////////
-void PPObject::
+void PPPandaObject::
 NPDeallocate(NPObject *npobj) {
   logfile << "NPDeallocate: " << npobj << "\n" << flush;
-  ((PPObject *)npobj)->invalidate();
+  ((PPPandaObject *)npobj)->invalidate();
   free(npobj);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::Deallocate
+//     Function: PPPandaObject::Deallocate
 //       Access: Private, Static
 //  Description: Called to destruct the object.
 ////////////////////////////////////////////////////////////////////
-void PPObject::
+void PPPandaObject::
 NPInvalidate(NPObject *npobj) {
   logfile << "NPInvalidate: " << npobj << "\n" << flush;
 
@@ -388,99 +388,99 @@ NPInvalidate(NPObject *npobj) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::NPHasMethod
+//     Function: PPPandaObject::NPHasMethod
 //       Access: Private, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 NPHasMethod(NPObject *npobj, NPIdentifier name) {
-  return ((PPObject *)npobj)->has_method(name);
+  return ((PPPandaObject *)npobj)->has_method(name);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::NPInvoke
+//     Function: PPPandaObject::NPInvoke
 //       Access: Private, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 NPInvoke(NPObject *npobj, NPIdentifier name,
          const NPVariant *args, uint32_t argCount,
          NPVariant *result) {
-  return ((PPObject *)npobj)->invoke(name, args, argCount, result);
+  return ((PPPandaObject *)npobj)->invoke(name, args, argCount, result);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::NPInvokeDefault
+//     Function: PPPandaObject::NPInvokeDefault
 //       Access: Private, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 NPInvokeDefault(NPObject *npobj, const NPVariant *args, uint32_t argCount,
                 NPVariant *result) {
-  return ((PPObject *)npobj)->invoke_default(args, argCount, result);
+  return ((PPPandaObject *)npobj)->invoke_default(args, argCount, result);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::NPHasProperty
+//     Function: PPPandaObject::NPHasProperty
 //       Access: Private, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 NPHasProperty(NPObject *npobj, NPIdentifier name) {
-  return ((PPObject *)npobj)->has_property(name);
+  return ((PPPandaObject *)npobj)->has_property(name);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::NPGetProperty
+//     Function: PPPandaObject::NPGetProperty
 //       Access: Private, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 NPGetProperty(NPObject *npobj, NPIdentifier name, NPVariant *result) {
-  return ((PPObject *)npobj)->get_property(name, result);
+  return ((PPPandaObject *)npobj)->get_property(name, result);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::NPSetProperty
+//     Function: PPPandaObject::NPSetProperty
 //       Access: Private, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 NPSetProperty(NPObject *npobj, NPIdentifier name, const NPVariant *value) {
-  return ((PPObject *)npobj)->set_property(name, value);
+  return ((PPPandaObject *)npobj)->set_property(name, value);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::NPRemoveProperty
+//     Function: PPPandaObject::NPRemoveProperty
 //       Access: Private, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 NPRemoveProperty(NPObject *npobj, NPIdentifier name) {
-  return ((PPObject *)npobj)->remove_property(name);
+  return ((PPPandaObject *)npobj)->remove_property(name);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::NPEnumerate
+//     Function: PPPandaObject::NPEnumerate
 //       Access: Private, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 NPEnumerate(NPObject *npobj, NPIdentifier **value, uint32_t *count) {
-  return ((PPObject *)npobj)->enumerate(value, count);
+  return ((PPPandaObject *)npobj)->enumerate(value, count);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::NPConstruct
+//     Function: PPPandaObject::NPConstruct
 //       Access: Private, Static
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-bool PPObject::
+bool PPPandaObject::
 NPConstruct(NPObject *npobj, const NPVariant *args,
             uint32_t argCount, NPVariant *result) {
   // Not implemented.  We don't use this constructor mechanism because
   // it wasn't supported on earlier versions of Gecko.  Instead, we
-  // use make_new() to construct PPObjects via an explicit call to
+  // use make_new() to construct PPPandaObjects via an explicit call to
   // construct().
   return true;
 }

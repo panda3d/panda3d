@@ -21,7 +21,7 @@
 
 #include <vector>
 
-class PPObject;
+class PPPandaObject;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PPInstance
@@ -78,7 +78,7 @@ private:
   bool _got_window;
   NPWindow _window;
 
-  PPObject *_script_object;
+  PPPandaObject *_script_object;
 
   P3D_instance *_p3d_inst;
 };

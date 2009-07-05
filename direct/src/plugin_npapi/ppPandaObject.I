@@ -1,4 +1,4 @@
-// Filename: ppObject.I
+// Filename: ppPandaObject.I
 // Created by:  drose (03Jul09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -14,12 +14,12 @@
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPObject::set_p3d_object
+//     Function: PPPandaObject::set_p3d_object
 //       Access: Public
-//  Description: Returns the p3d_object this PPObject maps to.  This
+//  Description: Returns the p3d_object this PPPandaObject maps to.  This
 //               may be NULL if the object is not fully initialized.
 ////////////////////////////////////////////////////////////////////
-inline P3D_object *PPObject::
+inline P3D_object *PPPandaObject::
 get_p3d_object() const {
   return _p3d_object;
 }

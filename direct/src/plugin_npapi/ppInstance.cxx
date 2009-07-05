@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "ppInstance.h"
-#include "ppObject.h"
+#include "ppPandaObject.h"
 #include "startup.h"
 #include "p3d_plugin_config.h"
 #include "find_root_dir.h"
@@ -436,7 +436,7 @@ get_script_object() {
     logfile << "obj = " << obj << "\n" << flush;
   }
 
-  _script_object = PPObject::make_new(this, obj);
+  _script_object = PPPandaObject::make_new(this, obj);
   logfile << "_script_object ref = " << _script_object->referenceCount << "\n";
   browser->retainobject(_script_object);
   logfile << "after retain, _script_object ref = " << _script_object->referenceCount << "\n";
