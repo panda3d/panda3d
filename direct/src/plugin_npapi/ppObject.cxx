@@ -208,8 +208,15 @@ set_property(NPIdentifier name, const NPVariant *value) {
 ////////////////////////////////////////////////////////////////////
 bool PPObject::
 remove_property(NPIdentifier name) {
-  logfile << "remove_property: " << this << "\n" << flush;
-  return false;
+  string property_name = identifier_to_string(name);
+  logfile << "remove_property: " << this << ", " << property_name << "\n" << flush;
+  if (_p3d_object == NULL) {
+    // Not powered up yet.
+    return false;
+  }
+
+  bool result = P3D_OBJECT_SET_PROPERTY(_p3d_object, property_name.c_str(), NULL);
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -234,7 +241,8 @@ enumerate(NPIdentifier **value, uint32_t *count) {
 //     Function: PPObject::identifier_to_string
 //       Access: Private, Static
 //  Description: Gets the string equivalent of the indicated
-//               identifier.
+//               identifier, whether it is an integer identifier or a
+//               string identifier.
 ////////////////////////////////////////////////////////////////////
 string PPObject::
 identifier_to_string(NPIdentifier ident) {
@@ -245,6 +253,15 @@ identifier_to_string(NPIdentifier ident) {
       browser->memfree(result);
       return strval;
     }
+  } else {
+    // An integer identifier.  We could treat this as a special case,
+    // like Firefox does, but Safari doesn't appear to use integer
+    // identifiers and just sends everything as a string identifier.
+    // So to make things consistent internally, we also send
+    // everything as a string.
+    ostringstream strm;
+    strm << browser->intfromidentifier(ident);
+    return strm.str();
   }
 
   return string();
