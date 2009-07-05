@@ -20,7 +20,6 @@
 #include "p3dBoolObject.h"
 #include "p3dIntObject.h"
 #include "p3dFloatObject.h"
-#include "p3dListObject.h"
 #include "p3dPythonObject.h"
 
 #ifndef _WIN32
@@ -331,16 +330,6 @@ xml_to_object(TiXmlElement *xvalue) {
     if (value != NULL) {
       return new P3DStringObject(*value);
     }
-
-  } else if (strcmp(type, "list") == 0) {
-    P3DListObject *list = new P3DListObject;
-
-    TiXmlElement *xchild = xvalue->FirstChildElement("value");
-    while (xchild != NULL) {
-      list->set_element(list->get_list_length(), xml_to_object(xchild));
-      xchild = xchild->NextSiblingElement("value");
-    }
-    return list;
 
   } else if (strcmp(type, "python") == 0) {
     int object_id;

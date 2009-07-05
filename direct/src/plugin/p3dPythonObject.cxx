@@ -56,7 +56,7 @@ bool P3DPythonObject::
 get_bool() const {
   bool bresult = 0;
 
-  P3D_object *result = call("__bool__", NULL);
+  P3D_object *result = call("__bool__", NULL, 0);
   if (result != NULL) {
     bresult = P3D_OBJECT_GET_BOOL(result);
     P3D_OBJECT_FINISH(result);
@@ -75,7 +75,7 @@ int P3DPythonObject::
 get_int() const {
   int iresult = 0;
 
-  P3D_object *result = call("__int__", NULL);
+  P3D_object *result = call("__int__", NULL, 0);
   if (result != NULL) {
     iresult = P3D_OBJECT_GET_INT(result);
     P3D_OBJECT_FINISH(result);
@@ -94,7 +94,7 @@ double P3DPythonObject::
 get_float() const {
   double fresult = 0.0;
 
-  P3D_object *result = call("__float__", NULL);
+  P3D_object *result = call("__float__", NULL, 0);
   if (result != NULL) {
     fresult = P3D_OBJECT_GET_FLOAT(result);
     P3D_OBJECT_FINISH(result);
@@ -111,7 +111,7 @@ get_float() const {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonObject::
 make_string(string &value) const {
-  P3D_object *result = call("__str__", NULL);
+  P3D_object *result = call("__str__", NULL, 0);
   if (result != NULL) {
     int size = P3D_OBJECT_GET_STRING(result, NULL, 0);
     char *buffer = new char[size];
@@ -132,10 +132,10 @@ make_string(string &value) const {
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DPythonObject::
 get_property(const string &property) const {
-  P3DListObject *params = new P3DListObject;
-  params->append(new P3DStringObject(property));
+  P3D_object *params[1];
+  params[0] = new P3DStringObject(property);
 
-  P3D_object *result = call("__getattr__", params);
+  P3D_object *result = call("__getattr__", params, 1);
   return result;
 }
 
@@ -150,20 +150,19 @@ bool P3DPythonObject::
 set_property(const string &property, P3D_object *value) {
   bool bresult = false;
 
-  P3DListObject *params = new P3DListObject;
-  params->append(new P3DStringObject(property));
+  P3D_object *params[2];
+  params[0] = new P3DStringObject(property);
 
   P3D_object *result = NULL;
 
   if (value == NULL) {
     // Delete an attribute.
-    result = call("__delattr__", params);
+    result = call("__delattr__", params, 1);
 
   } else {
     // Set a new attribute.
-    params->append(value);
-
-    result = call("__setattr__", params);
+    params[1] = value;
+    result = call("__setattr__", params, 2);
   }
 
   if (result != NULL) {
@@ -175,46 +174,6 @@ set_property(const string &property, P3D_object *value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::get_list_length
-//       Access: Public, Virtual
-//  Description: Returns the length of the object as a list.
-////////////////////////////////////////////////////////////////////
-int P3DPythonObject::
-get_list_length() const {
-  // TODO.
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::get_element
-//       Access: Public, Virtual
-//  Description: Returns the nth item in the value as a list.  The
-//               return value is a freshly-allocated P3DPythonObject object
-//               that must be deleted by the caller, or NULL on error.
-////////////////////////////////////////////////////////////////////
-P3D_object *P3DPythonObject::
-get_element(int n) const {
-  // TODO.
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::set_element
-//       Access: Public, Virtual
-//  Description: Modifies (or deletes, if value is NULL) the nth item
-//               in the value as a list.  Returns true on success,
-//               false on failure.
-////////////////////////////////////////////////////////////////////
-bool P3DPythonObject::
-set_element(int n, P3D_object *value) {
-  // TODO.
-  if (value != NULL) {
-    P3D_OBJECT_FINISH(value);
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonObject::call
 //       Access: Public, Virtual
 //  Description: Invokes the named method on the object, passing the
@@ -223,7 +182,7 @@ set_element(int n, P3D_object *value) {
 //               on success, NULL on error.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DPythonObject::
-call(const string &method_name, P3D_object *params) const {
+call(const string &method_name, P3D_object *params[], int num_params) const {
   TiXmlDocument *doc = new TiXmlDocument;
   TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
@@ -234,14 +193,14 @@ call(const string &method_name, P3D_object *params) const {
     xcommand->SetAttribute("method_name", method_name);
   }
 
-  if (params != NULL) {
-    assert(params->_class == &P3DObject::_object_class);
-    TiXmlElement *xparams = ((P3DObject *)params)->make_xml();
+  for (int i = 0; i < num_params; ++i) {
+    assert(params[i]->_class == &P3DObject::_object_class);
+    TiXmlElement *xparams = ((P3DObject *)params[i])->make_xml();
     xcommand->LinkEndChild(xparams);
 
     // Now we're done with the params object passed in, we can delete
     // it as promised.
-    P3D_OBJECT_FINISH(params);
+    P3D_OBJECT_FINISH(params[i]);
   }
 
   doc->LinkEndChild(decl);
@@ -277,7 +236,7 @@ call(const string &method_name, P3D_object *params) const {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonObject::
 output(ostream &out) const {
-  P3D_object *result = call("__repr__", NULL);
+  P3D_object *result = call("__repr__", NULL, 0);
   out << "Python " << _object_id;
   if (result != NULL) {
     out << ": " << *result;

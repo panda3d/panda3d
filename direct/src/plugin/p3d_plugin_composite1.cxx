@@ -8,7 +8,6 @@
 #include "p3dInstance.cxx"
 #include "p3dInstanceManager.cxx"
 #include "p3dIntObject.cxx"
-#include "p3dListObject.cxx"
 #include "p3dMultifileReader.cxx"
 #include "p3dPythonObject.cxx"
 #include "p3dNoneObject.cxx"

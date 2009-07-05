@@ -71,26 +71,12 @@ object_set_property(P3D_object *object, const char *property,
 }
 
 static P3D_object *
-object_get_element(const P3D_object *object, int n) {
-  return ((const P3DObject *)object)->get_element(n);
-}
-
-static bool
-object_set_element(P3D_object *object, int n, P3D_object *value) {
-  return ((P3DObject *)object)->set_element(n, value);
-}
-
-static int object_get_list_length(const P3D_object *object) {
-  return ((const P3DObject *)object)->get_list_length();
-}
-
-static P3D_object *
 object_call(const P3D_object *object, const char *method_name,
-            P3D_object *params) {
+            P3D_object *params[], int num_params) {
   if (method_name == NULL) {
     method_name = "";
   }
-  return ((const P3DObject *)object)->call(method_name, params);
+  return ((const P3DObject *)object)->call(method_name, params, num_params);
 }
 
 P3D_class_definition P3DObject::_object_class = {
@@ -104,9 +90,6 @@ P3D_class_definition P3DObject::_object_class = {
   &object_get_repr,
   &object_get_property,
   &object_set_property,
-  &object_get_element,
-  &object_set_element,
-  &object_get_list_length,
   &object_call,
 };
 
@@ -216,43 +199,6 @@ set_property(const string &property, P3D_object *value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_list_length
-//       Access: Public, Virtual
-//  Description: Returns the length of the object as a list.
-////////////////////////////////////////////////////////////////////
-int P3DObject::
-get_list_length() const {
-  return 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::get_element
-//       Access: Public, Virtual
-//  Description: Returns the nth item in the value as a list.  The
-//               return value is a freshly-allocated P3DObject object
-//               that must be deleted by the caller, or NULL on error.
-////////////////////////////////////////////////////////////////////
-P3D_object *P3DObject::
-get_element(int n) const {
-  return NULL;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::set_element
-//       Access: Public, Virtual
-//  Description: Modifies (or deletes, if value is NULL) the nth item
-//               in the value as a list.  Returns true on success,
-//               false on failure.
-////////////////////////////////////////////////////////////////////
-bool P3DObject::
-set_element(int n, P3D_object *value) {
-  if (value != NULL) {
-    P3D_OBJECT_FINISH(value);
-  }
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DObject::call
 //       Access: Public, Virtual
 //  Description: Invokes the named method on the object, passing the
@@ -261,9 +207,9 @@ set_element(int n, P3D_object *value) {
 //               on success, NULL on error.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DObject::
-call(const string &method_name, P3D_object *params) const {
-  if (params != NULL) {
-    P3D_OBJECT_FINISH(params);
+call(const string &method_name, P3D_object *params[], int num_params) const {
+  for (int i = 0; i < num_params; ++i) {
+    P3D_OBJECT_FINISH(params[i]);
   }
   return NULL;
 }

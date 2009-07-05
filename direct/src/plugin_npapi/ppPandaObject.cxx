@@ -301,7 +301,6 @@ object_to_variant(NPVariant *result, const P3D_object *object) {
     }
     break;
 
-  case P3D_OT_list:
   case P3D_OT_object:
     {
       PPPandaObject *ppobj = PPPandaObject::make_new(_instance, P3D_OBJECT_COPY(object));

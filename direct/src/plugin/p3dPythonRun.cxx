@@ -286,21 +286,21 @@ handle_pyobj_command(TiXmlElement *xcommand, int want_response_id) {
       if (xcommand->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
         PyObject *obj = (PyObject *)(void *)object_id;
         const char *method_name = xcommand->Attribute("method_name");
-        PyObject *params = NULL;
-        TiXmlElement *xvalue = xcommand->FirstChildElement("value");
-        if (xvalue != NULL) {
-          params = xml_to_pyobj(xvalue);
-          if (!PySequence_Check(params)) {
-            // Wrap it in a tuple to pass it to the method.
-            PyObject *tuple = PyTuple_New(1);
-            PyTuple_SetItem(tuple, 0, params);
-            params = tuple;
-          }
+
+        // Build up a list of params.
+        PyObject *list = PyList_New(0);
+
+        TiXmlElement *xchild = xcommand->FirstChildElement("value");
+        while (xchild != NULL) {
+          PyObject *child = xml_to_pyobj(xchild);
+          PyList_Append(list, child);
+          Py_DECREF(child);
+          xchild = xchild->NextSiblingElement("value");
         }
 
-        if (params == NULL) {
-          params = PyTuple_New(0);
-        }
+        // Convert the list to a tuple for the call.
+        PyObject *params = PyList_AsTuple(list);
+        Py_DECREF(list);
 
         // Now call the method.
         PyObject *result = NULL;
@@ -772,20 +772,6 @@ pyobj_to_xml(PyObject *value) {
       xvalue->SetAttribute("value", str);
     }
 
-  } else if (PyTuple_CheckExact(value)) {
-    // A tuple.  We check for this class type specifically; other
-    // objects that provide a sequence interface should be treated as
-    // generic Python objects, below, so we don't lose other useful
-    // functionality in these objects.  Even a Python list, since we
-    // want to allow the caller to modify the list object on the
-    // Python side.
-    xvalue->SetAttribute("type", "list");
-    Py_ssize_t length = PySequence_Length(value);
-    for (Py_ssize_t i = 0; i < length; ++i) {
-      PyObject *obj = PySequence_GetItem(value, i);
-      xvalue->LinkEndChild(pyobj_to_xml(obj));
-    }
-
   } else {
     // Some other kind of object.  Make it a generic Python object.
     // This is more expensive for the caller to deal with--it requires
@@ -838,20 +824,6 @@ xml_to_pyobj(TiXmlElement *xvalue) {
     if (value != NULL) {
       return PyString_FromStringAndSize(value->data(), value->length());
     }
-
-  } else if (strcmp(type, "list") == 0) {
-    PyObject *list = PyList_New(0);
-
-    TiXmlElement *xchild = xvalue->FirstChildElement("value");
-    while (xchild != NULL) {
-      PyObject *child = xml_to_pyobj(xchild);
-      PyList_Append(list, child);
-      Py_DECREF(child);
-      xchild = xchild->NextSiblingElement("value");
-    }
-    PyObject *tuple = PyList_AsTuple(list);
-    Py_DECREF(list);
-    return tuple;
 
   } else if (strcmp(type, "python") == 0) {
     int object_id;

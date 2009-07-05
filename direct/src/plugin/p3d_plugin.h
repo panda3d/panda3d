@@ -15,24 +15,25 @@
 #ifndef P3D_PLUGIN_H
 #define P3D_PLUGIN_H
 
-/* This file defines the C-level API to Panda's plugin system.  This
+/* This file defines the C-level API to Panda's core plugin API.  This
    API is intended to provide basic functionality for loading and
-   running Panda's .p3d files, particularly within a browser. 
+   running Panda's .p3d files, particularly within a browser.
 
-   This plugin code is intended to be loaded and run as a standalone
-   DLL.  It will in turn be responsible for fetching and installing
-   the appropriate version of Panda and Python, as well as any
-   required supporting libraries.
+   This core API is intended to be loaded and run within a browser, as
+   a standalone DLL.  It will in turn be responsible for fetching and
+   installing the appropriate version of Panda and Python, as well as
+   any required supporting libraries.
 
    Note that this code defines only the interface between the actual
-   browser plugin and the Panda code.  The actual plugin itself will
-   be a separate piece of code, written in ActiveX or NPIP or whatever
-   API is required for a given browser, which is designed to download
-   and link with this layer.
+   browser plugin and the Panda code.  It contains no code to directly
+   interface with any browser.  The actual plugin itself will be a
+   separate piece of code, written in ActiveX or NPAPI or whatever API
+   is required for a given browser; and this code will be designed to
+   download and link with this DLL.
 
    The browser or launching application will be referred to as the
-   "host" in this documentation.  The host should load this plugin dll
-   only once, but may then use it to create multiple simultaneous
+   "host" in this documentation.  The host should load this core API
+   DLL only once, but may then use it to create multiple simultaneous
    different instances of Panda windows.
 
    Filenames passed through this interface are in native OS-specific
@@ -65,8 +66,8 @@ extern "C" {
    are finally declared at the end of this file, but only if
    P3D_PLUGIN_PROTOTYPES is defined.  This is intended to allow
    including this file without building an implicit reference to the
-   functions themselves, allowing the plugin library to be loaded via
-   an explicit LoadLibrary() or equivalent call. */
+   functions themselves, allowing the core API library to be loaded
+   via an explicit LoadLibrary() or equivalent call. */
 
 
 /* This symbol serves to validate that runtime and compile-time
@@ -77,28 +78,28 @@ the interface specifications defined in this header file. */
 
 /************************ GLOBAL FUNCTIONS **************************/
 
-/* The following interfaces are global to the plugin space, as opposed
-   to being specific to a particular instance. */
+/* The following interfaces are global to the core API space, as
+   opposed to being specific to a particular instance. */
 
-/* This function should be called immediately after the plugin is
+/* This function should be called immediately after the core API is
    loaded.  You should pass P3D_API_VERSION as the first parameter, so
-   the dll can verify that it has been built with the same version of
+   the DLL can verify that it has been built with the same version of
    the API as the host.
 
    The output_filename is usually NULL, but if you put a filename
-   here, it will be used as the log file for the output from the
-   plugin.  This is useful for debugging, particularly when running
+   here, it will be used as the log file for the output from the core
+   API.  This is useful for debugging, particularly when running
    within a browser that squelches stderr.
 
-   This function returns true if the plugin is valid and uses a
+   This function returns true if the core API is valid and uses a
    compatible API, false otherwise.  If it returns false, the host
    should not call any more functions in this API, and should
    immediately unload the DLL and (if possible) download a new one. */
 typedef bool 
 P3D_initialize_func(int api_version, const char *output_filename);
 
-/* This function should be called to unload the plugin.  It will
-   release all internally-allocated memory and return the plugin to
+/* This function should be called to unload the core API.  It will
+   release all internally-allocated memory and return the core API to
    its initial state. */
 typedef void
 P3D_finalize_func();
@@ -117,7 +118,7 @@ typedef struct {
   bool _request_pending;
 
   /* an opaque pointer the host may use to store private data that the
-     plugin does not interpret.  This pointer can be directly set, or
+     core API does not interpret.  This pointer can be directly set, or
      it can be initialized in the P3D_new_instance() call. */
   void *_user_data;
 
@@ -141,28 +142,28 @@ typedef struct {
    as a request only; it is always free to create whatever kind of
    window it likes. */
 typedef enum {
-  /* Embedded: the plugin window is embedded within the host window.
+  /* Embedded: the Panda window is embedded within the host window.
      This is the normal kind of window for an object embedded within a
      browser page.  Pass a valid window handle in for parent_window,
      and valid coordinates on the parent window for win_x, win_y,
      win_width, win_height. */
   P3D_WT_embedded,
 
-  /* Toplevel: the plugin window is a toplevel window on the user's
+  /* Toplevel: the Panda window is a toplevel window on the user's
      desktop.  Pass valid desktop coordinates in for win_x, win_y,
-     win_width, and win_height.  If all of these are zero, the plugin
-     will create a window wherever it sees fit. */
+     win_width, and win_height.  If all of these are zero, the core
+     API will create a window wherever it sees fit. */
   P3D_WT_toplevel,
 
-  /* Fullscreen: the plugin window is a fullscreen window, completely
+  /* Fullscreen: the Panda window is a fullscreen window, completely
      overlaying the entire screen and changing the desktop resolution.
      Pass a valid desktop size in for win_width and win_height (win_x
      and win_y are ignored).  If win_width and win_height are zero,
-     the plugin will create a fullscreen window of its own preferred
+     the core API will create a fullscreen window of its own preferred
      size. */
   P3D_WT_fullscreen,
 
-  /* Hidden: there is no window at all for the plugin. */
+  /* Hidden: there is no window at all for the instance. */
   P3D_WT_hidden,
 
 } P3D_window_type;
@@ -171,16 +172,16 @@ typedef enum {
 /* This function pointer must be passed to P3D_new_instance(), below.
    The host must pass in a pointer to a valid function in the host's
    address space, or NULL.  If not NULL, this function will be called
-   asynchronously by the plugin when the plugin needs to make a
-   request from the host.  After this notification has been received,
-   the host should call P3D_instance_get_request() (at its
-   convenience) to retrieve the actual plugin request.  If the host
-   passes NULL for this function pointer, asynchronous notifications
-   will not be provided, and the host must be responsible for calling
+   asynchronously by the core API when it needs to make a request from
+   the host.  After this notification has been received, the host
+   should call P3D_instance_get_request() (at its convenience) to
+   retrieve the actual Panda request.  If the host passes NULL for
+   this function pointer, asynchronous notifications will not be
+   provided, and the host must be responsible for calling
    P3D_instance_get_request() from time to time. */
 
 /* Note that, unlike the other func typedefs in this header file, this
-   declaration is not naming a function within the plugin itself.
+   declaration is not naming a function within the core API itself.
    Instead, it is a typedef for a function pointer that must be
    supplied by the host. */
 
@@ -191,7 +192,8 @@ P3D_request_ready_func(P3D_instance *instance);
    that appears within the embed syntax on the HTML page.  An array of
    these values is passed to the P3D instance to represent all of the
    additional keywords that may appear within this syntax; it is up to
-   the plugin to interpret these additional keywords correctly. */
+   the Panda instance to interpret these additional keywords
+   correctly. */
 typedef struct {
   const char *_keyword;
   const char *_value;
@@ -202,7 +204,7 @@ typedef struct {
    The user_data pointer is any arbitrary pointer value; it will be
    copied into the _user_data member of the new P3D_instance object.
    This pointer is intended for the host to use to store private data
-   associated with each instance; the plugin will not do anything with
+   associated with each instance; the core API will not do anything with
    this data.
 
  */
@@ -223,7 +225,7 @@ P3D_new_instance_func(P3D_request_ready_func *func, void *user_data);
    correspond to the user-supplied keyword/value pairs that may appear
    in the embed token within the HTML syntax; the host is responsible
    for allocating this array, and for deallocating it after this call
-   (the plugin will make its own copy of the array).
+   (the core API will make its own copy of the array).
 
    Most tokens are implemented by the application and are undefined at
    the system level.  However, two tokens in particular are
@@ -267,7 +269,7 @@ P3D_instance_setup_window_func(P3D_instance *instance,
 /********************** SCRIPTING SUPPORT **************************/
 
 /* The following interfaces are provided to support controlling the
-   plugin via JavaScript or related interfaces on the browser. */
+   Panda instance via JavaScript or related interfaces on the browser. */
 
 /* We require an "object" that contains some number of possible
    different interfaces.  An "object" might be a simple primitive like
@@ -277,13 +279,13 @@ P3D_instance_setup_window_func(P3D_instance *instance,
   
    To implement a P3D_object, we need to first define a class
    definition, which is a table of methods.  Most classes are defined
-   internally by the plugin, but the host must define at least one
+   internally by the core API, but the host must define at least one
    class type as well, which provides callbacks into host-provided
    objects.
 
    These function types define the methods available on a class.
    These are function type declarations only; they do not correspond
-   to named functions within the plugin DLL.  Instead, the function
+   to named functions within the core API DLL.  Instead, the function
    pointers themselves are stored within the P3D_class_definition
    structure, below. */
 
@@ -297,7 +299,6 @@ typedef enum {
   P3D_OT_int,
   P3D_OT_float,
   P3D_OT_string,
-  P3D_OT_list,
   P3D_OT_object,
 } P3D_object_type;
 
@@ -375,33 +376,19 @@ typedef bool
 P3D_object_set_property_method(P3D_object *object, const char *property,
                                P3D_object *value);
 
-/* These methods are similar to the above, but for integer properties,
-   e.g. for elements of an array. */
-typedef P3D_object *
-P3D_object_get_element_method(const P3D_object *object, int n);
-typedef bool
-P3D_object_set_element_method(P3D_object *object, int n, P3D_object *value);
-
-/* For objects that implement an array or list with a specific size
-   and all elements below that index filled in, this method will
-   return the size of the list. */
-typedef int
-P3D_object_get_list_length_method(const P3D_object *object);
-
 /* Invokes a named method on the object.  If method_name is empty or
-   NULL, invokes the object itself as a function.  The params object
-   should be a list object containing the individual parameters;
-   ownership of this list object is transferred in this call, and it
-   will automatically be deleted.  It may also be NULL if no
-   parameters are required, or a single non-list parameter if only one
-   parameter is required.
+   NULL, invokes the object itself as a function.  You must pass an
+   array of P3D_objects as the list of parameters.  The ownership of
+   each of the parameters in this array (but not of the array pointer
+   itself) is passed into this call; the objects will be deleted when
+   the call is completed.
 
    The return value is a newly-allocated P3D_object on success, or
    NULL on failure.  Ownership of the return value is transferred to
    the caller. */
 typedef P3D_object *
 P3D_object_call_method(const P3D_object *object, const char *method_name,
-                       P3D_object *params);
+                       P3D_object *params[], int num_params);
 
 /* This defines the class structure that implements all of the above
    methods. */
@@ -418,9 +405,6 @@ typedef struct _P3D_class_definition {
 
   P3D_object_get_property_method *_get_property;
   P3D_object_set_property_method *_set_property;
-  P3D_object_get_element_method *_get_element;
-  P3D_object_set_element_method *_set_element;
-  P3D_object_get_list_length_method *_get_list_length;
 
   P3D_object_call_method *_call;
 
@@ -449,15 +433,11 @@ struct _P3D_object {
 #define P3D_OBJECT_GET_PROPERTY(object, property) ((object)->_class->_get_property((object), (property)))
 #define P3D_OBJECT_SET_PROPERTY(object, property, value) ((object)->_class->_set_property((object), (property), (value)))
 
-#define P3D_OBJECT_GET_ELEMENT(object, n) ((object)->_class->_get_element((object), (n)))
-#define P3D_OBJECT_SET_ELEMENT(object, n, value) ((object)->_class->_set_element((object), (n), (value)))
-#define P3D_OBJECT_GET_LIST_LENGTH(object, n, value) ((object)->_class->_get_list_length((object), (n), (value)))
-
-#define P3D_OBJECT_CALL(object, method_name, params) ((object)->_class->_call((object), (method_name), (params)))
+#define P3D_OBJECT_CALL(object, method_name, params, num_params) ((object)->_class->_call((object), (method_name), (params), (num_params)))
 
 
 /* The following function types are once again meant to define
-   actual function pointers to be found within the plugin DLL. */
+   actual function pointers to be found within the core API DLL. */
 
 /* Returns a newly-allocated P3D_class_definition object, filled with
    generic function pointers that have reasonable default behavior for
@@ -492,11 +472,6 @@ P3D_new_float_object_func(double value);
 typedef P3D_object *
 P3D_new_string_object_func(const char *string, int length);
 
-/* Allocates a new P3D_object of type list.  The new list is empty;
-   use repeated calls to P3D_OBJECT_SET_ELEMENT() to populate it. */
-typedef P3D_object *
-P3D_new_list_object_func();
-
 /* Returns a pointer to the top-level scriptable object of the
    instance.  Scripts running on the host may use this object to
    communicate with the instance, by using the above methods to set or
@@ -509,10 +484,10 @@ typedef P3D_object *
 P3D_instance_get_script_object_func(P3D_instance *instance);
 
 /* The inverse functionality: this supplies an object pointer to the
-   instance to allow the plugin to control the browser.  In order to
-   enable browser scriptability, the host must call this method
-   shortly after creating the instance, preferably before calling
-   P3D_instance_start().
+   instance to allow the Panda instance to control the browser.  In
+   order to enable browser scriptability, the host must call this
+   method shortly after creating the instance, preferably before
+   calling P3D_instance_start().
 
    The object parameter must have been created by the host.  It will
    have a custom P3D_class_definition pointer, which also must have
@@ -539,15 +514,15 @@ P3D_instance_set_script_object_func(P3D_instance *instance,
 
 /********************** REQUEST HANDLING **************************/
 
-/* The plugin may occasionally have an asynchronous request to pass up
-   to the host.  The following structures implement this interface.
+/* The core API may occasionally have an asynchronous request to pass
+   up to the host.  The following structures implement this interface.
    The design is intended to support single-threaded as well as
    multi-threaded implementations in the host; there is only the one
    callback function, P3D_request_ready (above), which may be called
-   asynchronously by the plugin.  The host should be careful that this
-   callback function is protected from mutual access.  The callback
-   function implementation may be as simple as setting a flag that the
-   host will later check within its main processing loop.
+   asynchronously by the core API.  The host should be careful that
+   this callback function is protected from mutual access.  The
+   callback function implementation may be as simple as setting a flag
+   that the host will later check within its main processing loop.
 
    Once P3D_request_ready() has been received, the host should call
    P3D_instance_get_request() to query the nature of the request.
@@ -578,14 +553,14 @@ typedef enum {
 typedef struct {
 } P3D_request_stop;
 
-/* A get_url request.  The plugin would like to retrieve data for a
-   particular URL.  The plugin is responsible for supplying a valid
+/* A get_url request.  The core API would like to retrieve data for a
+   particular URL.  The core API is responsible for supplying a valid
    URL string, and a unique integer ID.  The unique ID is needed to
-   feed the results of the URL back to the plugin.  If possible, the
+   feed the results of the URL back to the core API.  If possible, the
    host should be prepared to handle multiple get_url requests in
    parallel, but it is allowed to handle them all one at a time if
    necessary.  As data comes in from the url, the host should call
-   P3D_instance_feed_url_stream(). 
+   P3D_instance_feed_url_stream().
 */
 typedef struct {
   const char *_url;
@@ -626,7 +601,7 @@ typedef struct {
 
 /* After a call to P3D_request_ready(), or from time to time in
    general, the host should call this function to see if there are any
-   pending requests from the plugin.  The function will return a
+   pending requests from the core API.  The function will return a
    freshly-allocated request if there is a request ready, or NULL if
    there are no requests.  After a receipt of P3D_request_ready(),
    the host should call this function repeatedly until it returns NULL
@@ -688,7 +663,7 @@ typedef enum {
 
 /* This function is used by the host to handle a get_url request,
    above.  As it retrieves data from the URL, it should call this
-   function from time to time to feed that data to the plugin.
+   function from time to time to feed that data to the core API.
 
    instance and unique_id are from the original get_url() request.
 
@@ -704,9 +679,10 @@ typedef enum {
 
    this_data and this_data_size describe the most recent block of data
    retrieved from the URL.  Each chunk of data passed to this function
-   is appended together by the plugin to define the total set of data
-   retrieved from the URL.  For a particular call to feed_url_stream,
-   this may contain no data at all (e.g. this_data_size may be 0).
+   is appended together by the core API to define the total set of
+   data retrieved from the URL.  For a particular call to
+   feed_url_stream, this may contain no data at all
+   (e.g. this_data_size may be 0).
 
    The return value of this function is true if there are no problems
    and the download should continue, false if there was an error
@@ -739,7 +715,6 @@ EXPCL_P3D_PLUGIN P3D_new_bool_object_func P3D_new_bool_object;
 EXPCL_P3D_PLUGIN P3D_new_int_object_func P3D_new_int_object;
 EXPCL_P3D_PLUGIN P3D_new_float_object_func P3D_new_float_object;
 EXPCL_P3D_PLUGIN P3D_new_string_object_func P3D_new_string_object;
-EXPCL_P3D_PLUGIN P3D_new_list_object_func P3D_new_list_object;
 EXPCL_P3D_PLUGIN P3D_instance_get_script_object_func P3D_instance_get_script_object;
 EXPCL_P3D_PLUGIN P3D_instance_set_script_object_func P3D_instance_set_script_object;
 

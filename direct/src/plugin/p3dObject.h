@@ -46,11 +46,8 @@ public:
   virtual P3D_object *get_property(const string &property) const;
   virtual bool set_property(const string &property, P3D_object *value);
 
-  virtual int get_list_length() const;
-  virtual P3D_object *get_element(int n) const;
-  virtual bool set_element(int n, P3D_object *value);
-
-  virtual P3D_object *call(const string &method_name, P3D_object *params) const;
+  virtual P3D_object *call(const string &method_name, 
+                           P3D_object *params[], int num_params) const;
 
   virtual TiXmlElement *make_xml() const=0;
 

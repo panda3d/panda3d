@@ -21,7 +21,6 @@
 #include "p3dIntObject.h"
 #include "p3dFloatObject.h"
 #include "p3dStringObject.h"
-#include "p3dListObject.h"
 
 #include <assert.h>
 
@@ -183,17 +182,6 @@ P3D_new_string_object(const char *str, int length) {
   ACQUIRE_LOCK(_api_lock);
 
   P3D_object *result = new P3DStringObject(string(str, length));
-  
-  RELEASE_LOCK(_api_lock);
-  return result;
-}
-
-P3D_object *
-P3D_new_list_object() {
-  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
-  ACQUIRE_LOCK(_api_lock);
-
-  P3D_object *result = new P3DListObject;
   
   RELEASE_LOCK(_api_lock);
   return result;
