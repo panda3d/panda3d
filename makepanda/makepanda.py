@@ -498,7 +498,10 @@ def BracketNameWithQuotes(name):
 def CompileCxx(obj,src,opts):
     ipath = GetListOption(opts, "DIR:")
     if (COMPILER=="MSVC"):
-        cmd = "cl /favor:blend /wd4996 /wd4275 /wd4267 /wd4101 /Fo" + obj + " /nologo /c "
+        cmd = "cl "
+        if (platform.architecture()[0]=="64bit"):
+            cmd += "/favor:blend "
+        cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /Fo" + obj + " /nologo /c "
         for x in ipath: cmd = cmd + " /I" + x
         for (opt,dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /I' + BracketNameWithQuotes(dir)
@@ -965,6 +968,10 @@ def WriteConfigSettings():
                 dtool_config["HAVE_"+x] = 'UNDEF'
     
     dtool_config["HAVE_NET"] = '1'
+
+    # On Windows, there's still an ancient ffmpeg version in thirdparty.
+    if (PkgSkip("FFMPEG")==0 and not sys.platform.startswith("win")):
+        dtool_config["HAVE_SWSCALE"] = '1'
     
     if (PkgSkip("NVIDIACG")==0):
         dtool_config["HAVE_CG"] = '1'
@@ -1193,11 +1200,15 @@ ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make M
 #
 ########################################################################
 
-CopyAllFiles(GetOutputDir()+'/include/parser-inc/','dtool/src/parser-inc/')
+CopyTree(GetOutputDir()+'/include/parser-inc','dtool/src/parser-inc')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/openssl')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/netinet')
+MakeDirectory(GetOutputDir()+'/include/parser-inc/Cg')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/openssl/','dtool/src/parser-inc/')
 CopyAllFiles(GetOutputDir()+'/include/parser-inc/netinet/','dtool/src/parser-inc/')
 CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cg.h')
 CopyFile(GetOutputDir()+'/include/parser-inc/Cg/','dtool/src/parser-inc/cgGL.h')
+DeleteCVS(GetOutputDir()+'/include/parser-inc')
 
 ########################################################################
 #
