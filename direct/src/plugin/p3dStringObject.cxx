@@ -77,20 +77,6 @@ make_string(string &value) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DStringObject::make_xml
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new XML structure
-//               corresponding to this value.
-////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DStringObject::
-make_xml() const {
-  TiXmlElement *xvalue = new TiXmlElement("value");
-  xvalue->SetAttribute("type", "string");
-  xvalue->SetAttribute("value", _value);
-  return xvalue;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DStringObject::output
 //       Access: Public, Virtual
 //  Description: Writes a formatted representation of the value to the

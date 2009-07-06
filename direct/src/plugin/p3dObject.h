@@ -49,8 +49,6 @@ public:
   virtual P3D_object *call(const string &method_name, 
                            P3D_object *params[], int num_params) const;
 
-  virtual TiXmlElement *make_xml() const=0;
-
   virtual void output(ostream &out) const;
 
   inline void ref() const;
@@ -62,26 +60,17 @@ private:
 
 public:
   static P3D_class_definition _object_class;
+  static P3D_class_definition _generic_class;
 };
 
 #include "p3dObject.I"
 
 // For classes that inherit from P3DObject, above, we can use the
-// virtual method to write the output simply.
+// virtual method to write the output simply.  (For classes that
+// inherit only from P3D_object, we have to use the generic C method
+// defined in p3d_plugin_common.h, a little clumsier.)
 inline ostream &operator << (ostream &out, const P3DObject &value) {
   value.output(out);
-  return out;
-}
-
-// For classes that inherit only from P3D_object, we have to use the
-// generic C method, a little clumsier.
-inline ostream &operator << (ostream &out, const P3D_object &value) {
-  int size = P3D_OBJECT_GET_REPR(&value, NULL, 0);
-  char *buffer = new char[size];
-  P3D_OBJECT_GET_REPR(&value, buffer, size);
-  out.write(buffer, size);
-  delete[] buffer;
-
   return out;
 }
 

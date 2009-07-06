@@ -156,6 +156,7 @@ start_instance(P3DInstance *inst) {
   xcommand->LinkEndChild(xinstance);
 
   send_command(doc);
+  inst->send_browser_script_object();
 
   if (_panda3d->get_ready()) {
     // If it's ready immediately, go ahead and start.
@@ -212,6 +213,7 @@ void P3DSession::
 send_command(TiXmlDocument *command) {
   if (_p3dpython_running) {
     // Python is running.  Send the command.
+    nout << "Sending " << *command << "\n" << flush;
     _pipe_write << *command << flush;
     delete command;
   } else {
@@ -300,7 +302,7 @@ command_and_response(TiXmlDocument *command) {
 //               Returns the newly-allocated object.
 ////////////////////////////////////////////////////////////////////
 P3DObject *P3DSession::
-xml_to_object(TiXmlElement *xvalue) {
+xml_to_object(const TiXmlElement *xvalue) {
   const char *type = xvalue->Attribute("type");
   if (strcmp(type, "none") == 0) {
     return new P3DNoneObject;
@@ -340,6 +342,75 @@ xml_to_object(TiXmlElement *xvalue) {
 
   // Something went wrong in decoding.
   return new P3DNoneObject;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::object_to_xml
+//       Access: Public
+//  Description: Allocates and returns a new XML structure
+//               corresponding to the indicated value.  The supplied
+//               P3DObject passed in is *not* deleted.
+////////////////////////////////////////////////////////////////////
+TiXmlElement *P3DSession::
+object_to_xml(const P3D_object *obj) {
+  TiXmlElement *xvalue = new TiXmlElement("value");
+
+  switch (P3D_OBJECT_GET_TYPE(obj)) {
+  case P3D_OT_none:
+    xvalue->SetAttribute("type", "none");
+    break;
+
+  case P3D_OT_bool:
+    xvalue->SetAttribute("type", "bool");
+    xvalue->SetAttribute("value", (int)P3D_OBJECT_GET_BOOL(obj));
+    break;
+
+  case P3D_OT_int:
+    xvalue->SetAttribute("type", "int");
+    xvalue->SetAttribute("value", P3D_OBJECT_GET_INT(obj));
+    break;
+
+  case P3D_OT_float:
+    xvalue->SetAttribute("type", "float");
+    xvalue->SetDoubleAttribute("value", P3D_OBJECT_GET_FLOAT(obj));
+    break;
+
+  case P3D_OT_string:
+    {
+      xvalue->SetAttribute("type", "string");
+      int size = P3D_OBJECT_GET_STRING(obj, NULL, 0);
+      char *buffer = new char[size];
+      P3D_OBJECT_GET_STRING(obj, buffer, size);
+      xvalue->SetAttribute("value", string(buffer, size));
+      delete [] buffer;
+    }
+    break;
+
+  case P3D_OT_object:
+    if (obj->_class == &P3DObject::_object_class) {
+      // If it's one of our kind of objects, it must be a
+      // P3DPythonObject.  In this case, just send the object_id down,
+      // since the actual implementation of this object exists (as a
+      // Python object) in the sub-process space.
+      int object_id = ((P3DPythonObject *)obj)->get_object_id();
+      xvalue->SetAttribute("type", "python");
+      xvalue->SetAttribute("object_id", object_id);
+
+    } else {
+      // Otherwise, it must a host-provided object, which means we
+      // should pass a reference down to this particular object, so
+      // the Python process knows to call back up to here to query it.
+      // TODO: pass pointers better.
+      int object_id = (int)obj;
+      xvalue->SetAttribute("type", "browser");
+      xvalue->SetAttribute("object_id", object_id);
+
+      // TODO: manage this reference count somehow.
+    }
+    break;
+  }
+
+  return xvalue;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -583,6 +654,32 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
         request->_request_type = P3D_RT_notify;
         request->_request._notify._message = strdup(message);
       }
+
+    } else if (strcmp(rtype, "script") == 0) {
+      const char *operation = xrequest->Attribute("operation");
+      TiXmlElement *xobject = xrequest->FirstChildElement("object");
+      const char *property_name = xrequest->Attribute("property_name");
+      TiXmlElement *xvalue = xrequest->FirstChildElement("value");
+      int unique_id = 0;
+      xrequest->Attribute("unique_id", &unique_id);
+
+      if (operation != NULL && xobject != NULL) {
+        P3D_object *object = xml_to_object(xobject);
+        if (strcmp(operation, "get_property") == 0 && property_name != NULL) {
+          request = new P3D_request;
+          request->_request_type = P3D_RT_script;
+          request->_request._script._object = object;
+          request->_request._script._op = P3D_SO_get_property;
+          request->_request._script._property_name = strdup(property_name);
+          request->_request._script._value = NULL;
+          request->_request._script._unique_id = unique_id;
+        }
+        if (request == NULL) {
+          // If we haven't dispatched a request yet, we didn't use the
+          // object, so delete it.
+          P3D_OBJECT_FINISH(object);
+        }
+      }          
 
     } else {
       nout << "ignoring request of type " << rtype << "\n";

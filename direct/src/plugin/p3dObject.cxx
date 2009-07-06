@@ -15,7 +15,7 @@
 #include "p3dObject.h"
 #include <string.h>  // strncpy
 
-// The following functions are C-style wrappers around the above
+// The following functions are C-style wrappers around the below
 // P3DObject virtual methods; they are defined to allow us to create
 // the C-style P3D_class_definition method table to store in the
 // P3D_object structure.
@@ -91,6 +91,93 @@ P3D_class_definition P3DObject::_object_class = {
   &object_get_property,
   &object_set_property,
   &object_call,
+};
+
+// The next functions are used to construct the generic
+// P3D_class_definition class returned by P3D_make_class_definition().
+// These are pointers to no-op functions, which the host may or may
+// not choose to override.
+static void
+generic_finish(P3D_object *object) {
+  // You must override finish(), though, otherwise it's a leak.  The
+  // core API has no idea how to delete your object.
+  nout << "Warning!  default object_finish() method does nothing; object will leak.\n" << flush;
+}
+
+static P3D_object *
+generic_copy(const P3D_object *object) {
+  nout << "Warning!  default object_copy() method does nothing; object pointer will be shared.\n" << flush;
+  return (P3D_object *)object;
+}
+
+static P3D_object_type 
+generic_get_type(const P3D_object *object) {
+  // We assume anyone going through the trouble of subclassing this
+  // will want to return an object, not one of the other fundamental
+  // types.
+  return P3D_OT_object;
+}
+
+static bool 
+generic_get_bool(const P3D_object *object) {
+  return false;
+}
+
+static int
+generic_get_int(const P3D_object *object) {
+  return 0;
+}
+
+static double 
+generic_get_float(const P3D_object *object) {
+  return 0.0;
+}
+
+static int 
+generic_get_string(const P3D_object *object, char *buffer, int buffer_length) {
+  return 0;
+}
+
+static int 
+generic_get_repr(const P3D_object *object, char *buffer, int buffer_length) {
+  return 0;
+}
+
+static P3D_object *
+generic_get_property(const P3D_object *object, const char *property) {
+  return NULL;
+}
+
+static bool
+generic_set_property(P3D_object *object, const char *property,
+                     P3D_object *value) {
+  if (value != NULL) {
+    P3D_OBJECT_FINISH(value);
+  }
+  return false;
+}
+
+static P3D_object *
+generic_call(const P3D_object *object, const char *method_name,
+            P3D_object *params[], int num_params) {
+  for (int i = 0; i < num_params; ++i) {
+    P3D_OBJECT_FINISH(params[i]);
+  }
+  return NULL;
+}
+
+P3D_class_definition P3DObject::_generic_class = {
+  &generic_finish,
+  &generic_copy,
+  &generic_get_type,
+  &generic_get_bool,
+  &generic_get_int,
+  &generic_get_float,
+  &generic_get_string,
+  &generic_get_repr,
+  &generic_get_property,
+  &generic_set_property,
+  &generic_call,
 };
 
 ////////////////////////////////////////////////////////////////////

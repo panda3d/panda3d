@@ -46,7 +46,8 @@ public:
   void set_wparams(const P3DWindowParams &wparams);
   inline const P3DWindowParams &get_wparams() const;
 
-  P3DObject *get_script_object() const;
+  P3DObject *get_panda_script_object() const;
+  void set_browser_script_object(P3D_object *object);
 
   bool has_request();
   P3D_request *get_request();
@@ -86,10 +87,14 @@ private:
     P3DInstance *_inst;
   };
 
+  void send_browser_script_object();
+  void handle_notify_request(P3D_request *request);
+  void handle_script_request(P3D_request *request);
   void make_splash_window();
   void install_progress(P3DPackage *package, double progress);
 
   P3D_request_ready_func *_func;
+  P3D_object *_browser_script_object;
 
   bool _got_fparams;
   P3DFileParams _fparams;

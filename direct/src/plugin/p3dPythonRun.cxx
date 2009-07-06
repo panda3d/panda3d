@@ -112,19 +112,26 @@ run_python() {
   }
 
   // Get the pointers to the objects needed within the module.
-  PyObject *AppRunner = PyObject_GetAttrString(runp3d, "AppRunner");
-  if (AppRunner == NULL) {
+  PyObject *app_runner_class = PyObject_GetAttrString(runp3d, "AppRunner");
+  if (app_runner_class == NULL) {
     PyErr_Print();
     return false;
   }
 
   // Construct an instance of AppRunner.
-  _runner = PyObject_CallFunction(AppRunner, (char*) "");
+  _runner = PyObject_CallFunction(app_runner_class, (char *)"");
   if (_runner == NULL) {
     PyErr_Print();
     return false;
   }
-  Py_DECREF(AppRunner);
+  Py_DECREF(app_runner_class);
+
+  // Get the BrowserObject class.
+  _browser_object_class = PyObject_GetAttrString(runp3d, "BrowserObject");
+  if (_browser_object_class == NULL) {
+    PyErr_Print();
+    return false;
+  }
 
   // Get the global TaskManager.
   _taskMgr = PyObject_GetAttrString(runp3d, "taskMgr");
@@ -139,7 +146,7 @@ run_python() {
   // Construct a Python wrapper around our request_func() method.
   static PyMethodDef p3dpython_methods[] = {
     {"request_func", P3DPythonRun::st_request_func, METH_VARARGS,
-     "Check for communications to and from the plugin host."},
+     "Send an asynchronous request to the plugin host"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
   };
   PyObject *p3dpython = Py_InitModule("p3dpython", p3dpython_methods);
@@ -155,7 +162,7 @@ run_python() {
 
   // Now pass that func pointer back to our AppRunner instance, so it
   // can call up to us.
-  PyObject *result = PyObject_CallMethod(_runner, (char*) "setRequestFunc", (char*) "O", request_func);
+  PyObject *result = PyObject_CallMethod(_runner, (char *)"setRequestFunc", (char *)"O", request_func);
   if (result == NULL) {
     PyErr_Print();
     return false;
@@ -171,7 +178,7 @@ run_python() {
 
   // Finally, get lost in taskMgr.run().
   nout << "calling run()\n";
-  PyObject *done = PyObject_CallMethod(_taskMgr, (char*) "run", (char*) "");
+  PyObject *done = PyObject_CallMethod(_taskMgr, (char *)"run", (char *)"");
   if (done == NULL) {
     PyErr_Print();
     return false;
@@ -231,11 +238,13 @@ handle_command(TiXmlDocument *doc) {
         terminate_session();
 
       } else if (strcmp(cmd, "pyobj") == 0) {
-        // Manipulate or query a python object.  Presumably this
-        // command will want a response.
-        assert(needs_response);
+        // Manipulate or query a python object.
+        handle_pyobj_command(xcommand, needs_response, want_response_id);
 
-        handle_pyobj_command(xcommand, want_response_id);
+      } else if (strcmp(cmd, "script_response") == 0) {
+        // Response from a script request.
+        assert(!needs_response);
+        handle_script_response_command(xcommand);
         
       } else {
         nout << "Unhandled command " << cmd << "\n";
@@ -262,7 +271,8 @@ handle_command(TiXmlDocument *doc) {
 //               a Python object from the browser scripts.
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
-handle_pyobj_command(TiXmlElement *xcommand, int want_response_id) {
+handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
+                     int want_response_id) {
   TiXmlDocument doc;
   TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xresponse = new TiXmlElement("response");
@@ -272,13 +282,30 @@ handle_pyobj_command(TiXmlElement *xcommand, int want_response_id) {
 
   const char *op = xcommand->Attribute("op");
   if (op != NULL) {
-    if (strcmp(op, "get_script_object") == 0) {
-      // Get the toplevel Python object.
+    if (strcmp(op, "get_panda_script_object") == 0) {
+      // Get Panda's toplevel Python object.
       PyObject *obj = PyObject_GetAttrString(_runner, "scriptRoot");
       if (obj != NULL) {
         xresponse->LinkEndChild(pyobj_to_xml(obj));
         Py_DECREF(obj);
       }
+
+    } else if (strcmp(op, "set_browser_script_object") == 0) {
+      // Set the Browser's toplevel window object.
+      PyObject *obj;
+      TiXmlElement *xvalue = xcommand->FirstChildElement("value");
+      if (xvalue != NULL) {
+        obj = xml_to_pyobj(xvalue);
+      } else {
+        obj = Py_None;
+        Py_INCREF(obj);
+      }
+
+      PyObject *result = PyObject_CallMethod
+        (_runner, (char *)"setBrowserScriptObject", (char *)"O", obj);
+      Py_DECREF(obj);
+      Py_XDECREF(result);
+
     } else if (strcmp(op, "call") == 0) {
       // Call the named method on the indicated object, or the object
       // itself if method_name isn't given.
@@ -375,8 +402,35 @@ handle_pyobj_command(TiXmlElement *xcommand, int want_response_id) {
     }
   }
 
-  nout << "sending " << doc << "\n" << flush;
-  _pipe_write << doc << flush;
+  if (needs_response) {
+    nout << "sending " << doc << "\n" << flush;
+    _pipe_write << doc << flush;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::handle_script_response_command
+//       Access: Private
+//  Description: Handles the script_response command, a response from
+//               the browser to a previous script request from this
+//               process.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+handle_script_response_command(TiXmlElement *xcommand) {
+  int unique_id;
+  if (xcommand->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
+    PyObject *value = NULL;
+    TiXmlElement *xvalue = xcommand->FirstChildElement("value");
+    if (xvalue != NULL) {
+      value = xml_to_pyobj(xvalue);
+    } else {
+      value = Py_None;
+      Py_INCREF(value);
+    }
+    PyObject *result = PyObject_CallMethod
+      (_runner, (char *)"scriptResponse", (char *)"iO", unique_id, value);
+    Py_DECREF(value);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -459,6 +513,30 @@ py_request_func(PyObject *args) {
     nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
+  } else if (strcmp(request_type, "script") == 0) {
+    // Meddling with a scripting variable on the browser side.
+    const char *operation;
+    PyObject *object;
+    const char *property_name;
+    PyObject *value;
+    int unique_id;
+    if (!PyArg_ParseTuple(extra_args, "sOsOi", 
+                          &operation, &object, &property_name, &value, &unique_id)) {
+      return NULL;
+    }
+    xrequest->SetAttribute("operation", operation);
+    xrequest->SetAttribute("property_name", property_name);
+    xrequest->SetAttribute("unique_id", unique_id);
+    TiXmlElement *xobject = pyobj_to_xml(object);
+    xobject->SetValue("object");
+    xrequest->LinkEndChild(xobject);
+    TiXmlElement *xvalue = pyobj_to_xml(value);
+    xrequest->LinkEndChild(xvalue);
+
+    nout << "sending " << doc << "\n" << flush;
+    _pipe_write << doc << flush;
+
+    /*
   } else if (strcmp(request_type, "evaluate") == 0) {
     // An evaluate request.
     const char *expression;
@@ -471,6 +549,7 @@ py_request_func(PyObject *args) {
     xrequest->SetAttribute("unique_id", unique_id);
     nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
+    */
 
   } else {
     string message = string("Unsupported request type: ") + string(request_type);
@@ -610,7 +689,7 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   }
   
   PyObject *result = PyObject_CallMethod
-    (_runner, (char*) "setP3DFilename", (char*) "sOi", p3d_filename.c_str(),
+    (_runner, (char *)"setP3DFilename", (char *)"sOi", p3d_filename.c_str(),
      token_list, inst->get_instance_id());
   Py_DECREF(token_list);
 
@@ -669,7 +748,7 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   // TODO: direct this into the particular instance.  This will
   // require a specialized ShowBase replacement.
   PyObject *result = PyObject_CallMethod
-    (_runner, (char*)"setupWindow", (char*)"siiiii", window_type.c_str(),
+    (_runner, (char *)"setupWindow", (char *)"siiiii", window_type.c_str(),
      win_x, win_y, win_width, win_height,
      parent_window_handle);
   if (result == NULL) {
@@ -694,7 +773,7 @@ terminate_session() {
   _instances.clear();
 
   nout << "calling stop()\n";
-  PyObject *result = PyObject_CallMethod(_taskMgr, (char*) "stop", (char*) "");
+  PyObject *result = PyObject_CallMethod(_taskMgr, (char *)"stop", (char *)"");
   if (result == NULL) {
     PyErr_Print();
     return;
@@ -772,15 +851,28 @@ pyobj_to_xml(PyObject *value) {
       xvalue->SetAttribute("value", str);
     }
 
+  } else if (PyObject_IsInstance(value, _browser_object_class)) {
+    // This is a BrowserObject, a reference to an object that actually
+    // exists in the host namespace.  So, pass up the appropriate
+    // object ID.
+    PyObject *objectId = PyObject_GetAttrString(value, (char *)"_BrowserObject__objectId");
+    if (objectId != NULL) {
+      int object_id = PyInt_AsLong(objectId);
+      xvalue->SetAttribute("type", "browser");
+      xvalue->SetAttribute("object_id", object_id);
+      Py_DECREF(objectId);
+    }
+
   } else {
     // Some other kind of object.  Make it a generic Python object.
     // This is more expensive for the caller to deal with--it requires
     // a back-and-forth across the XML pipe--but it's much more
     // general.
+    // TODO: pass pointers better.
     xvalue->SetAttribute("type", "python");
-    xvalue->SetAttribute("object_id", (long)value);
+    xvalue->SetAttribute("object_id", (int)value);
 
-    // Temporary hack.
+    // TODO: fix this hack, properly manage these reference counts.
     Py_INCREF(value);
   }
 
@@ -823,6 +915,13 @@ xml_to_pyobj(TiXmlElement *xvalue) {
     const string *value = xvalue->Attribute(string("value"));
     if (value != NULL) {
       return PyString_FromStringAndSize(value->data(), value->length());
+    }
+
+  } else if (strcmp(type, "browser") == 0) {
+    int object_id;
+    if (xvalue->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
+      // Construct a new BrowserObject wrapper around this object.
+      return PyObject_CallFunction(_browser_object_class, (char *)"i", object_id);
     }
 
   } else if (strcmp(type, "python") == 0) {

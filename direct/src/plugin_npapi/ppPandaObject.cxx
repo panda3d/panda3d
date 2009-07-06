@@ -175,7 +175,7 @@ get_property(NPIdentifier name, NPVariant *result) {
   }
 
   // We have the property, and its value is stored in value.
-  object_to_variant(result, value);
+  _instance->object_to_variant(result, value);
   P3D_OBJECT_FINISH(value);
   return true;
 }
@@ -195,7 +195,7 @@ set_property(NPIdentifier name, const NPVariant *value) {
     return false;
   }
 
-  P3D_object *object = variant_to_object(value);
+  P3D_object *object = _instance->variant_to_object(value);
   bool result = P3D_OBJECT_SET_PROPERTY(_p3d_object, property_name.c_str(), object);
   return result;
 }
@@ -265,80 +265,6 @@ identifier_to_string(NPIdentifier ident) {
   }
 
   return string();
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PPPandaObject::object_to_variant
-//       Access: Private
-//  Description: Converts the indicated P3D_object to the equivalent
-//               NPVariant, and stores it in result.
-////////////////////////////////////////////////////////////////////
-void PPPandaObject::
-object_to_variant(NPVariant *result, const P3D_object *object) {
-  switch (P3D_OBJECT_GET_TYPE(object)) {
-  case P3D_OT_none:
-    VOID_TO_NPVARIANT(*result);
-    break;
-
-  case P3D_OT_bool:
-    BOOLEAN_TO_NPVARIANT(P3D_OBJECT_GET_BOOL(object), *result);
-    break;
-
-  case P3D_OT_int:
-    INT32_TO_NPVARIANT(P3D_OBJECT_GET_INT(object), *result);
-    break;
-
-  case P3D_OT_float:
-    DOUBLE_TO_NPVARIANT(P3D_OBJECT_GET_FLOAT(object), *result);
-    break;
-
-  case P3D_OT_string:
-    {
-      int size = P3D_OBJECT_GET_STRING(object, NULL, 0);
-      char *buffer = (char *)browser->memalloc(size);
-      P3D_OBJECT_GET_STRING(object, buffer, size);
-      STRINGN_TO_NPVARIANT(buffer, size, *result);
-    }
-    break;
-
-  case P3D_OT_object:
-    {
-      PPPandaObject *ppobj = PPPandaObject::make_new(_instance, P3D_OBJECT_COPY(object));
-      OBJECT_TO_NPVARIANT(ppobj, *result);
-    }
-    break;
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PPPandaObject::variant_to_object
-//       Access: Private
-//  Description: Converts the indicated NPVariant to the equivalent
-//               P3D_object, and returns it (newly-allocated).  The
-//               caller is responsible for freeing the returned object
-//               later.
-////////////////////////////////////////////////////////////////////
-P3D_object *PPPandaObject::
-variant_to_object(const NPVariant *variant) {
-  if (NPVARIANT_IS_VOID(*variant) ||
-      NPVARIANT_IS_NULL(*variant)) {
-    return P3D_new_none_object();
-  } else if (NPVARIANT_IS_BOOLEAN(*variant)) {
-    return P3D_new_bool_object(NPVARIANT_TO_BOOLEAN(*variant));
-  } else if (NPVARIANT_IS_INT32(*variant)) {
-    return P3D_new_int_object(NPVARIANT_TO_INT32(*variant));
-  } else if (NPVARIANT_IS_DOUBLE(*variant)) {
-    return P3D_new_float_object(NPVARIANT_TO_DOUBLE(*variant));
-  } else if (NPVARIANT_IS_STRING(*variant)) {
-    NPString str = NPVARIANT_TO_STRING(*variant);
-    return P3D_new_string_object(str.utf8characters, str.utf8length);
-  } else if (NPVARIANT_IS_OBJECT(*variant)) {
-    // TODO.
-    return P3D_new_none_object();
-  }
-
-  // Hmm, none of the above?
-  return P3D_new_none_object();
 }
 
 

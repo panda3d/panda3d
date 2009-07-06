@@ -54,16 +54,3 @@ void P3DNoneObject::
 make_string(string &value) const {
   value = "None";
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DNoneObject::make_xml
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new XML structure
-//               corresponding to this value.
-////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DNoneObject::
-make_xml() const {
-  TiXmlElement *xvalue = new TiXmlElement("value");
-  xvalue->SetAttribute("type", "none");
-  return xvalue;
-}

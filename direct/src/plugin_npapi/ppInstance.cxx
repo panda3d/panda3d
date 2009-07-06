@@ -14,6 +14,7 @@
 
 #include "ppInstance.h"
 #include "ppPandaObject.h"
+#include "ppBrowserObject.h"
 #include "startup.h"
 #include "p3d_plugin_config.h"
 #include "find_root_dir.h"
@@ -399,7 +400,7 @@ handle_request(P3D_request *request) {
           strcmp(request->_request._notify._message, "onpythonload") == 0) {
         // Now that Python is running, initialize our script_object
         // with the proper P3D object pointer.
-        P3D_object *obj = P3D_instance_get_script_object(_p3d_inst);
+        P3D_object *obj = P3D_instance_get_panda_script_object(_p3d_inst);
         logfile << "late obj = " << obj << "\n" << flush;
         _script_object->set_p3d_object(obj);
       }
@@ -416,14 +417,14 @@ handle_request(P3D_request *request) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::get_script_object
+//     Function: PPInstance::get_panda_script_object
 //       Access: Public
 //  Description: Returns a toplevel object that JavaScript or whatever
 //               can read and/or modify to control the instance.
 ////////////////////////////////////////////////////////////////////
 NPObject *PPInstance::
-get_script_object() {
-  logfile << "get_script_object\n" << flush;
+get_panda_script_object() {
+  logfile << "get_panda_script_object\n" << flush;
   if (_script_object != NULL) {
     logfile << "returning _script_object ref = " << _script_object->referenceCount << "\n";
     return _script_object;
@@ -432,7 +433,7 @@ get_script_object() {
   P3D_object *obj = NULL;
 
   if (_p3d_inst != NULL) {
-    obj = P3D_instance_get_script_object(_p3d_inst);
+    obj = P3D_instance_get_panda_script_object(_p3d_inst);
     logfile << "obj = " << obj << "\n" << flush;
   }
 
@@ -442,6 +443,80 @@ get_script_object() {
   logfile << "after retain, _script_object ref = " << _script_object->referenceCount << "\n";
   logfile << "ppobj = " << _script_object << "\n" << flush;
   return _script_object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::object_to_variant
+//       Access: Private
+//  Description: Converts the indicated P3D_object to the equivalent
+//               NPVariant, and stores it in result.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+object_to_variant(NPVariant *result, const P3D_object *object) {
+  switch (P3D_OBJECT_GET_TYPE(object)) {
+  case P3D_OT_none:
+    VOID_TO_NPVARIANT(*result);
+    break;
+
+  case P3D_OT_bool:
+    BOOLEAN_TO_NPVARIANT(P3D_OBJECT_GET_BOOL(object), *result);
+    break;
+
+  case P3D_OT_int:
+    INT32_TO_NPVARIANT(P3D_OBJECT_GET_INT(object), *result);
+    break;
+
+  case P3D_OT_float:
+    DOUBLE_TO_NPVARIANT(P3D_OBJECT_GET_FLOAT(object), *result);
+    break;
+
+  case P3D_OT_string:
+    {
+      int size = P3D_OBJECT_GET_STRING(object, NULL, 0);
+      char *buffer = (char *)browser->memalloc(size);
+      P3D_OBJECT_GET_STRING(object, buffer, size);
+      STRINGN_TO_NPVARIANT(buffer, size, *result);
+    }
+    break;
+
+  case P3D_OT_object:
+    {
+      PPPandaObject *ppobj = PPPandaObject::make_new(this, P3D_OBJECT_COPY(object));
+      OBJECT_TO_NPVARIANT(ppobj, *result);
+    }
+    break;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::variant_to_object
+//       Access: Private
+//  Description: Converts the indicated NPVariant to the equivalent
+//               P3D_object, and returns it (newly-allocated).  The
+//               caller is responsible for freeing the returned object
+//               later.
+////////////////////////////////////////////////////////////////////
+P3D_object *PPInstance::
+variant_to_object(const NPVariant *variant) {
+  if (NPVARIANT_IS_VOID(*variant) ||
+      NPVARIANT_IS_NULL(*variant)) {
+    return P3D_new_none_object();
+  } else if (NPVARIANT_IS_BOOLEAN(*variant)) {
+    return P3D_new_bool_object(NPVARIANT_TO_BOOLEAN(*variant));
+  } else if (NPVARIANT_IS_INT32(*variant)) {
+    return P3D_new_int_object(NPVARIANT_TO_INT32(*variant));
+  } else if (NPVARIANT_IS_DOUBLE(*variant)) {
+    return P3D_new_float_object(NPVARIANT_TO_DOUBLE(*variant));
+  } else if (NPVARIANT_IS_STRING(*variant)) {
+    NPString str = NPVARIANT_TO_STRING(*variant);
+    return P3D_new_string_object(str.utf8characters, str.utf8length);
+  } else if (NPVARIANT_IS_OBJECT(*variant)) {
+    // TODO.
+    return P3D_new_none_object();
+  }
+
+  // Hmm, none of the above?
+  return P3D_new_none_object();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -619,6 +694,18 @@ create_instance() {
   _p3d_inst = P3D_new_instance(request_ready, this);
 
   if (_p3d_inst != NULL) {
+    // Now get the browser's window object, to pass to the plugin.
+    NPObject *window_object = NULL;
+    if (browser->getvalue(_npp_instance, NPNVWindowNPObject,
+                          &window_object) == NPERR_NO_ERROR) {
+      logfile << "Got window_object " << window_object << "\n" << flush;
+      PPBrowserObject *pobj = new PPBrowserObject(this, window_object);
+      P3D_instance_set_browser_script_object(_p3d_inst, pobj);
+      browser->releaseobject(window_object);
+    } else {
+      logfile << "Couldn't get window_object\n" << flush;
+    }
+    
     const P3D_token *tokens = NULL;
     if (!_tokens.empty()) {
       tokens = &_tokens[0];

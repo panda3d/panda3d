@@ -90,18 +90,3 @@ make_string(string &value) const {
   strm << _value;
   value = strm.str();
 }
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DFloatObject::make_xml
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new XML structure
-//               corresponding to this value.
-////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DFloatObject::
-make_xml() const {
-  TiXmlElement *xvalue = new TiXmlElement("value");
-  xvalue->SetAttribute("type", "float");
-  xvalue->SetDoubleAttribute("value", _value);
-  return xvalue;
-}

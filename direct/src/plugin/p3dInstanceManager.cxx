@@ -301,8 +301,9 @@ signal_request_ready(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 P3D_class_definition *P3DInstanceManager::
 make_class_definition() const {
-  // TODO.
-  return NULL;
+  P3D_class_definition *new_class = new P3D_class_definition(P3DObject::_generic_class);
+  // TODO: save this pointer so we can delete it on destruction.
+  return new_class;
 }
 
 ////////////////////////////////////////////////////////////////////

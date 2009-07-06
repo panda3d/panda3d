@@ -43,6 +43,7 @@ P3DInstance::
 P3DInstance(P3D_request_ready_func *func, void *user_data) :
   _func(func)
 {
+  _browser_script_object = NULL;
   _user_data = user_data;
   _request_pending = false;
   _got_fparams = false;
@@ -67,6 +68,10 @@ P3DInstance(P3D_request_ready_func *func, void *user_data) :
 P3DInstance::
 ~P3DInstance() {
   assert(_session == NULL);
+
+  if (_browser_script_object != NULL) {
+    P3D_OBJECT_FINISH(_browser_script_object);
+  }
 
   DESTROY_LOCK(_request_lock);
 
@@ -162,22 +167,22 @@ set_wparams(const P3DWindowParams &wparams) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_script_object
+//     Function: P3DInstance::get_panda_script_object
 //       Access: Public
 //  Description: Returns a pointer to the top-level scriptable object
 //               of the instance, to be used by JavaScript code in the
 //               browser to control this program.
 ////////////////////////////////////////////////////////////////////
 P3DObject *P3DInstance::
-get_script_object() const {
+get_panda_script_object() const {
   assert(_session != NULL);
-  nout << "Called P3DInstance::get_script_object()\n";
+  nout << "Called P3DInstance::get_panda_script_object()\n";
 
   TiXmlDocument *doc = new TiXmlDocument;
   TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "pyobj");
-  xcommand->SetAttribute("op", "get_script_object");
+  xcommand->SetAttribute("op", "get_panda_script_object");
   doc->LinkEndChild(decl);
   doc->LinkEndChild(xcommand);
   TiXmlDocument *response = _session->command_and_response(doc);
@@ -200,6 +205,29 @@ get_script_object() const {
     nout << "result = " << *result << "\n" << flush;
   }
   return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::set_browser_script_object
+//       Access: Public
+//  Description: Stores a pointer to the top-level window object
+//               of the browser, to be used by Panda code to control
+//               JavaScript.  Ownership of this object is passed into
+//               the instance.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+set_browser_script_object(P3D_object *browser_script_object) {
+  nout << "Called P3DInstance::set_browser_script_object()\n";
+  if (browser_script_object != _browser_script_object) {
+    if (_browser_script_object != NULL) {
+      P3D_OBJECT_FINISH(_browser_script_object);
+    }
+    _browser_script_object = browser_script_object;
+
+    if (_session != NULL) {
+      send_browser_script_object();
+    }
+  }
 }
 
 
@@ -237,22 +265,22 @@ get_request() {
   }
   RELEASE_LOCK(_request_lock);
 
+  nout << "get_request: " << result << "\n" << flush;
+
   if (result != NULL) {
-    if (result->_request_type == P3D_RT_notify) {
-      // If we received a notify request, process the notification
-      // immediately--it might be interesting to this instance.
-      const char *message = result->_request._notify._message;
-      if (strcmp(message, "onwindowopen") == 0) {
-        // The process told us that it just succesfully opened its
-        // window.
-        nout << "Instance " << this << " got onwindowopen\n" << flush;
-        _instance_window_opened = true;
-        if (_splash_window != NULL) {
-          nout << "Deleting splash window\n" << flush;
-          delete _splash_window;
-          _splash_window = NULL;
-        }
-      }
+    switch (result->_request_type) {
+    case P3D_RT_notify:
+      handle_notify_request(result);
+      break;
+
+    case P3D_RT_script:
+      handle_script_request(result);
+      break;
+
+    default:
+      // Other kinds of requests don't require special handling at
+      // this level; pass it up unmolested.
+      break;
     }
   }
 
@@ -420,6 +448,100 @@ make_xml() {
   }
 
   return xinstance;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::send_browser_script_object
+//       Access: Private
+//  Description: Sends the XML sequence to inform the session of our
+//               browser's toplevel window object.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+send_browser_script_object() {
+  TiXmlDocument *doc = new TiXmlDocument;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "pyobj");
+  xcommand->SetAttribute("op", "set_browser_script_object");
+  if (_browser_script_object != NULL) {
+    xcommand->LinkEndChild(_session->object_to_xml(_browser_script_object));
+  }
+  
+  doc->LinkEndChild(decl);
+  doc->LinkEndChild(xcommand);
+  
+  _session->send_command(doc);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::handle_notify_request
+//       Access: Private
+//  Description: Called (in the main thread) when a notify request is
+//               received from the subprocess.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+handle_notify_request(P3D_request *request) {
+  assert(request->_request_type == P3D_RT_notify);
+
+  // We look for certain notify events that have particular meaning
+  // to this instance.
+  const char *message = request->_request._notify._message;
+  if (strcmp(message, "onwindowopen") == 0) {
+    // The process told us that it just succesfully opened its
+    // window.
+    nout << "Instance " << this << " got onwindowopen\n" << flush;
+    _instance_window_opened = true;
+    if (_splash_window != NULL) {
+      nout << "Deleting splash window\n" << flush;
+      delete _splash_window;
+      _splash_window = NULL;
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::handle_script_request
+//       Access: Private
+//  Description: Called (in the main thread) when a script request is
+//               received from the subprocess.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+handle_script_request(P3D_request *request) {
+  assert(request->_request_type == P3D_RT_script);
+
+  P3D_object *object = request->_request._script._object;
+  int unique_id = request->_request._script._unique_id;
+  switch (request->_request._script._op) {
+  case P3D_SO_get_property:
+    {
+      P3D_object *value = P3D_OBJECT_GET_PROPERTY(object, request->_request._script._property_name);
+      nout << "get_property, object = " << object << "\n";
+      if (object != NULL) {
+        nout << "  *object = " << *object << "\n" << flush;
+      }
+      nout << "value = " << value << "\n" << flush;
+      if (value != NULL) {
+        nout << "  *value = " << *value << "\n" << flush;
+      }
+      // We've got the property value; feed it back down to the
+      // subprocess.
+      TiXmlDocument *doc = new TiXmlDocument;
+      TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+      TiXmlElement *xcommand = new TiXmlElement("command");
+      xcommand->SetAttribute("cmd", "script_response");
+      xcommand->SetAttribute("unique_id", unique_id);
+      
+      doc->LinkEndChild(decl);
+      doc->LinkEndChild(xcommand);
+      if (value != NULL) {
+        xcommand->LinkEndChild(_session->object_to_xml(value));
+        P3D_OBJECT_FINISH(value);
+      }
+      
+      _session->send_command(doc);
+    }
+    break;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

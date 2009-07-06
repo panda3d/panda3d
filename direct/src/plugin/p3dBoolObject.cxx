@@ -81,17 +81,3 @@ make_string(string &value) const {
     value = "False";
   }
 }
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DBoolObject::make_xml
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new XML structure
-//               corresponding to this value.
-////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DBoolObject::
-make_xml() const {
-  TiXmlElement *xvalue = new TiXmlElement("value");
-  xvalue->SetAttribute("type", "bool");
-  xvalue->SetAttribute("value", (int)_value);
-  return xvalue;
-}

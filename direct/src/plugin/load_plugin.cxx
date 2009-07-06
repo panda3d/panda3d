@@ -46,8 +46,8 @@ P3D_new_bool_object_func *P3D_new_bool_object;
 P3D_new_int_object_func *P3D_new_int_object;
 P3D_new_float_object_func *P3D_new_float_object;
 P3D_new_string_object_func *P3D_new_string_object;
-P3D_instance_get_script_object_func *P3D_instance_get_script_object;
-P3D_instance_set_script_object_func *P3D_instance_set_script_object;
+P3D_instance_get_panda_script_object_func *P3D_instance_get_panda_script_object;
+P3D_instance_set_browser_script_object_func *P3D_instance_set_browser_script_object;
 
 P3D_instance_get_request_func *P3D_instance_get_request;
 P3D_check_request_func *P3D_check_request;
@@ -188,8 +188,8 @@ load_plugin(const string &p3d_plugin_filename) {
   P3D_new_int_object = (P3D_new_int_object_func *)get_func(module, "P3D_new_int_object");
   P3D_new_float_object = (P3D_new_float_object_func *)get_func(module, "P3D_new_float_object");
   P3D_new_string_object = (P3D_new_string_object_func *)get_func(module, "P3D_new_string_object");
-  P3D_instance_get_script_object = (P3D_instance_get_script_object_func *)get_func(module, "P3D_instance_get_script_object");
-  P3D_instance_set_script_object = (P3D_instance_set_script_object_func *)get_func(module, "P3D_instance_set_script_object");
+  P3D_instance_get_panda_script_object = (P3D_instance_get_panda_script_object_func *)get_func(module, "P3D_instance_get_panda_script_object");
+  P3D_instance_set_browser_script_object = (P3D_instance_set_browser_script_object_func *)get_func(module, "P3D_instance_set_browser_script_object");
 
   P3D_instance_get_request = (P3D_instance_get_request_func *)get_func(module, "P3D_instance_get_request");  
   P3D_check_request = (P3D_check_request_func *)get_func(module, "P3D_check_request");  
@@ -212,8 +212,8 @@ load_plugin(const string &p3d_plugin_filename) {
       P3D_new_int_object == NULL ||
       P3D_new_float_object == NULL ||
       P3D_new_string_object == NULL ||
-      P3D_instance_get_script_object == NULL ||
-      P3D_instance_set_script_object == NULL ||
+      P3D_instance_get_panda_script_object == NULL ||
+      P3D_instance_set_browser_script_object == NULL ||
       
       P3D_instance_get_request == NULL ||
       P3D_check_request == NULL ||
@@ -235,8 +235,8 @@ load_plugin(const string &p3d_plugin_filename) {
       << "\nP3D_new_int_object = " << P3D_new_int_object
       << "\nP3D_new_float_object = " << P3D_new_float_object
       << "\nP3D_new_string_object = " << P3D_new_string_object
-      << "\nP3D_instance_get_script_object = " << P3D_instance_get_script_object
-      << "\nP3D_instance_set_script_object = " << P3D_instance_set_script_object
+      << "\nP3D_instance_get_panda_script_object = " << P3D_instance_get_panda_script_object
+      << "\nP3D_instance_set_browser_script_object = " << P3D_instance_set_browser_script_object
       
       << "\nP3D_instance_get_request = " << P3D_instance_get_request
       << "\nP3D_check_request = " << P3D_check_request
@@ -313,8 +313,8 @@ unload_dso() {
   P3D_new_int_object = NULL;
   P3D_new_float_object = NULL;
   P3D_new_string_object = NULL;
-  P3D_instance_get_script_object = NULL;
-  P3D_instance_set_script_object = NULL;
+  P3D_instance_get_panda_script_object = NULL;
+  P3D_instance_set_browser_script_object = NULL;
 
   P3D_instance_get_request = NULL;
   P3D_check_request = NULL;

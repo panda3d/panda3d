@@ -33,8 +33,8 @@ extern P3D_new_bool_object_func *P3D_new_bool_object;
 extern P3D_new_int_object_func *P3D_new_int_object;
 extern P3D_new_float_object_func *P3D_new_float_object;
 extern P3D_new_string_object_func *P3D_new_string_object;
-extern P3D_instance_get_script_object_func *P3D_instance_get_script_object;
-extern P3D_instance_set_script_object_func *P3D_instance_set_script_object;
+extern P3D_instance_get_panda_script_object_func *P3D_instance_get_panda_script_object;
+extern P3D_instance_set_browser_script_object_func *P3D_instance_set_browser_script_object;
 
 extern P3D_instance_get_request_func *P3D_instance_get_request;
 extern P3D_check_request_func *P3D_check_request;

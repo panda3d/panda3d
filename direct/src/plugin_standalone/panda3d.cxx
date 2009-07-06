@@ -409,7 +409,7 @@ handle_request(P3D_request *request) {
     /*
     {
       // Temporary.
-      P3D_object *obj = P3D_instance_get_script_object(request->_instance);
+      P3D_object *obj = P3D_instance_get_panda_script_object(request->_instance);
       cerr << "script_object is " << obj << "\n";
       if (obj != NULL) {
         if (P3D_OBJECT_SET_PROPERTY(obj, "foo", P3D_new_int_object(1))) {

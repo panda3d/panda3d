@@ -443,7 +443,7 @@ struct _P3D_object {
    generic function pointers that have reasonable default behavior for
    all methods.  The host should use this function to get a clean
    P3D_class_definition object before calling
-   P3D_instance_set_script_object() (see below).  Note that this
+   P3D_instance_set_browser_script_object() (see below).  Note that this
    pointer will automatically be freed when P3D_finalize() is
    called. */
 typedef P3D_class_definition *
@@ -481,7 +481,7 @@ P3D_new_string_object_func(const char *string, int length);
    ownership of the object is passed to the caller, who should be
    responsible for deleting it eventually. */
 typedef P3D_object *
-P3D_instance_get_script_object_func(P3D_instance *instance);
+P3D_instance_get_panda_script_object_func(P3D_instance *instance);
 
 /* The inverse functionality: this supplies an object pointer to the
    instance to allow the Panda instance to control the browser.  In
@@ -493,14 +493,14 @@ P3D_instance_get_script_object_func(P3D_instance *instance);
    have a custom P3D_class_definition pointer, which also must have
    been created by the host.  The best way to create an appropriate
    class definition is call P3D_make_class_definition(), and then
-   replace the function pointers for at least _finish, _get_property,
-   _set_property, and _call.  Set these pointers to the host's own
-   functions that make the appropriate changes in the DOM, or invoke
-   the appropriate JavaScript functions.
+   replace the function pointers for at least _finish, _copy,
+   _get_property, _set_property, and _call.  Set these pointers to the
+   host's own functions that make the appropriate changes in the DOM,
+   or invoke the appropriate JavaScript functions.
 
    If this function is never called, the instance will not be able to
    make outcalls to the DOM or to JavaScript, but scripts may still be
-   able to control the instance via P3D_instance_get_script_object(),
+   able to control the instance via P3D_instance_get_panda_script_object(),
    above. 
 
    Ownership of the object is passed into the instance.  The caller
@@ -508,7 +508,7 @@ P3D_instance_get_script_object_func(P3D_instance *instance);
    or delete it.  The instance will eventually delete it by calling
    its _finish method. */
 typedef void
-P3D_instance_set_script_object_func(P3D_instance *instance, 
+P3D_instance_set_browser_script_object_func(P3D_instance *instance, 
                                     P3D_object *object);
 
 
@@ -543,6 +543,7 @@ typedef enum {
   P3D_RT_get_url,
   P3D_RT_post_url,
   P3D_RT_notify,
+  P3D_RT_script,
 } P3D_request_type;
 
 /* Structures corresponding to the request types in the above enum. */
@@ -586,6 +587,23 @@ typedef struct {
   const char *_message;
 } P3D_request_notify;
 
+/* A script object request.  This is used to call out into the
+   browser_script_object (above).  This request is handled internally
+   by the core API, and may safely be ignored by the host.
+*/
+typedef enum {
+  P3D_SO_get_property,
+  P3D_SO_set_property,
+  P3D_SO_call,
+} P3D_script_operation;
+typedef struct {
+  P3D_object *_object;
+  P3D_script_operation _op;
+  const char *_property_name;
+  P3D_object *_value;
+  int _unique_id;
+} P3D_request_script;
+
 /* This is the overall structure that represents a single request.  It
    is returned by P3D_instance_get_request(). */
 typedef struct {
@@ -596,6 +614,7 @@ typedef struct {
     P3D_request_get_url _get_url;
     P3D_request_post_url _post_url;
     P3D_request_notify _notify;
+    P3D_request_script _script;
   } _request;
 } P3D_request;
 
@@ -715,8 +734,8 @@ EXPCL_P3D_PLUGIN P3D_new_bool_object_func P3D_new_bool_object;
 EXPCL_P3D_PLUGIN P3D_new_int_object_func P3D_new_int_object;
 EXPCL_P3D_PLUGIN P3D_new_float_object_func P3D_new_float_object;
 EXPCL_P3D_PLUGIN P3D_new_string_object_func P3D_new_string_object;
-EXPCL_P3D_PLUGIN P3D_instance_get_script_object_func P3D_instance_get_script_object;
-EXPCL_P3D_PLUGIN P3D_instance_set_script_object_func P3D_instance_set_script_object;
+EXPCL_P3D_PLUGIN P3D_instance_get_panda_script_object_func P3D_instance_get_panda_script_object;
+EXPCL_P3D_PLUGIN P3D_instance_set_browser_script_object_func P3D_instance_set_browser_script_object;
 
 EXPCL_P3D_PLUGIN P3D_instance_get_request_func P3D_instance_get_request;
 EXPCL_P3D_PLUGIN P3D_check_request_func P3D_check_request;

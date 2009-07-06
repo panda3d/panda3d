@@ -188,23 +188,23 @@ P3D_new_string_object(const char *str, int length) {
 }
 
 P3D_object *
-P3D_instance_get_script_object(P3D_instance *instance) {
+P3D_instance_get_panda_script_object(P3D_instance *instance) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
 
-  P3D_object *result = ((P3DInstance *)instance)->get_script_object();
+  P3D_object *result = ((P3DInstance *)instance)->get_panda_script_object();
   
   RELEASE_LOCK(_api_lock);
   return result;
 }
 
 void
-P3D_instance_set_script_object(P3D_instance *instance, 
+P3D_instance_set_browser_script_object(P3D_instance *instance, 
                                P3D_object *object) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
 
-  // TODO.
+  ((P3DInstance *)instance)->set_browser_script_object(object);
   
   RELEASE_LOCK(_api_lock);
 }

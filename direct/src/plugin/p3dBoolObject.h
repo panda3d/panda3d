@@ -33,8 +33,6 @@ public:
   virtual int get_int() const;
   virtual void make_string(string &value) const;
 
-  virtual TiXmlElement *make_xml() const;
-
 private:
   bool _value;
 };

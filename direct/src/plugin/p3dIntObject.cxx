@@ -80,17 +80,3 @@ make_string(string &value) const {
   value = strm.str();
 }
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DIntObject::make_xml
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new XML structure
-//               corresponding to this value.
-////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DIntObject::
-make_xml() const {
-  TiXmlElement *xvalue = new TiXmlElement("value");
-  xvalue->SetAttribute("type", "int");
-  xvalue->SetAttribute("value", _value);
-  return xvalue;
-}

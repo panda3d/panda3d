@@ -17,12 +17,14 @@
 
   #define SOURCES \
     nppanda3d_common.h \
+    ppBrowserObject.h ppBrowserObject.I \
     ppDownloadRequest.h ppDownloadRequest.I \
     ppInstance.h ppInstance.I \
     ppPandaObject.h ppPandaObject.I \
     startup.h
 
   #define INCLUDED_SOURCES \
+    ppBrowserObject.cxx \
     ppDownloadRequest.cxx \
     ppInstance.cxx \
     ppPandaObject.cxx \

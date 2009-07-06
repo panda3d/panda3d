@@ -34,8 +34,6 @@ public:
   virtual bool get_bool() const;
   virtual void make_string(string &value) const;
 
-  virtual TiXmlElement *make_xml() const;
-
   virtual void output(ostream &out) const;
 
 private:

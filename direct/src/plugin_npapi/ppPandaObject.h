@@ -23,6 +23,9 @@
 //               P3D_object.  It maps calls from NPAPI into the
 //               P3D_object system, thus allowing the browser to
 //               view and operate on a Panda object.
+//
+//               Also see PPBrowserObject, which maps calls the other
+//               way.
 ////////////////////////////////////////////////////////////////////
 class PPPandaObject : public NPObject {
 public:
@@ -51,8 +54,6 @@ private:
 
 private:
   static string identifier_to_string(NPIdentifier ident);
-  void object_to_variant(NPVariant *result, const P3D_object *object);
-  P3D_object *variant_to_object(const NPVariant *variant);
   
 
 private:

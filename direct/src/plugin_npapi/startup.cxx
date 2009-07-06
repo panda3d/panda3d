@@ -407,7 +407,7 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   assert(inst != NULL);
 
   if (variable == NPPVpluginScriptableNPObject) {
-    NPObject *obj = inst->get_script_object();
+    NPObject *obj = inst->get_panda_script_object();
     if (obj != NULL) {
       *(NPObject **)value = obj;
       return NPERR_NO_ERROR;

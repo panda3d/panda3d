@@ -48,7 +48,10 @@ public:
 
   void handle_request(P3D_request *request);
 
-  NPObject *get_script_object();
+  NPObject *get_panda_script_object();
+
+  void object_to_variant(NPVariant *result, const P3D_object *object);
+  P3D_object *variant_to_object(const NPVariant *variant);
 
 private:
   bool read_contents_file(const string &filename);

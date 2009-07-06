@@ -47,9 +47,8 @@ public:
   virtual P3D_object *call(const string &method_name, 
                            P3D_object *params[], int num_params) const;
 
-  virtual TiXmlElement *make_xml() const;
-
   virtual void output(ostream &out) const;
+  int get_object_id() const;
 
 private:
   P3DSession *_session;

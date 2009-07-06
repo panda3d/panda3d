@@ -194,8 +194,7 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
   }
 
   for (int i = 0; i < num_params; ++i) {
-    assert(params[i]->_class == &P3DObject::_object_class);
-    TiXmlElement *xparams = ((P3DObject *)params[i])->make_xml();
+    TiXmlElement *xparams = _session->object_to_xml(params[i]);
     xcommand->LinkEndChild(xparams);
 
     // Now we're done with the params object passed in, we can delete
@@ -244,18 +243,14 @@ output(ostream &out) const {
   }    
 }
 
-
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::make_xml
-//       Access: Public, Virtual
-//  Description: Allocates and returns a new XML structure
-//               corresponding to this value.
+//     Function: P3DPythonObject::get_object_id
+//       Access: Public
+//  Description: Returns the object_id number that is used to uniquely
+//               identify this object in the XML stream.
 ////////////////////////////////////////////////////////////////////
-TiXmlElement *P3DPythonObject::
-make_xml() const {
-  TiXmlElement *xvalue = new TiXmlElement("value");
-  xvalue->SetAttribute("type", "python");
-  xvalue->SetAttribute("object_id", _object_id);
-
-  return xvalue;
+int P3DPythonObject::
+get_object_id() const {
+  return _object_id;
 }
+

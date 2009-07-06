@@ -70,7 +70,9 @@ public:
 
 private:
   void handle_command(TiXmlDocument *doc);
-  void handle_pyobj_command(TiXmlElement *xcommand, int want_response_id);
+  void handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
+                            int want_response_id);
+  void handle_script_response_command(TiXmlElement *xcommand);
 
   AsyncTask::DoneStatus check_comm(GenericAsyncTask *task);
   static AsyncTask::DoneStatus st_check_comm(GenericAsyncTask *task, void *user_data);
@@ -107,6 +109,7 @@ private:
   char **_py_argv;
 
   PyObject *_runner;
+  PyObject *_browser_object_class;
   PyObject *_taskMgr;
 
   PT(GenericAsyncTask) _check_comm_task;

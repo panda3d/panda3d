@@ -57,9 +57,15 @@ class AppRunner(DirectObject):
         self.started = False
         self.windowPrc = None
 
+        # This is per session.
+        self.nextScriptId = 0
+
         # TODO: we need one of these per instance, not per session.
         self.instanceId = None
         self.scriptRoot = ScriptRoot()
+
+        # This will be the browser's toplevel window DOM object.
+        self.window = None
 
         # This is the default requestFunc that is installed if we
         # never call setRequestFunc().
@@ -144,6 +150,13 @@ class AppRunner(DirectObject):
             import main
             if hasattr(main, 'main') and callable(main.main):
                 main.main()
+
+    def setBrowserScriptObject(self, window):
+        """ Replaces self.window with the browser's toplevel DOM
+        object, for controlling the JavaScript and the document in the
+        same page with the Panda3D plugin. """
+        print "setBrowserScriptObject(%s)" % (window)
+        self.window = window
 
     def setP3DFilename(self, p3dFilename, tokens = [],
                        instanceId = None):
@@ -255,6 +268,34 @@ class AppRunner(DirectObject):
 
         self.sendRequest('notify', 'onwindowopen')
 
+    def scriptRequest(self, operation, object, propertyName = None,
+                      value = None):
+        """ Issues a new script request to the browser.  This queries
+        or modifies one of the browser's DOM properties.
+        
+        operation may be one of [ 'get_property', 'set_property',
+        'call', 'evaluate' ].
+
+        object is the browser object to manipulate, or the scope in
+        which to evaluate the expression.
+
+        propertyName is the name of the property to manipulate, if
+        relevant (set to None for the default method name).
+
+        value is the new value to assign to the property for
+        set_property, or the parameter list for call, or the string
+        expression for evaluate.
+        """
+        uniqueId = self.nextScriptId
+        self.nextScriptId += 1
+        self.sendRequest('script', operation, object,
+                         propertyName, value, uniqueId);
+
+    def scriptResponse(self, uniqueId, value):
+        """ Called by the browser in response to a scriptRequest,
+        above. """
+        print "Got scriptResponse: %s, %s" % (uniqueId, value)
+
     def parseSysArgs(self):
         """ Converts sys.argv into (p3dFilename, tokens). """
         import getopt
@@ -287,6 +328,13 @@ class AppRunner(DirectObject):
 
         return (osFilename, tokens)
 
+class BrowserObject:
+    """ This class provides the Python wrapper around some object that
+    actually exists in the plugin host's namespace, e.g. a JavaScript
+    or DOM object. """
+
+    def __init__(self, objectId):
+        self.__objectId = objectId
         
 
 if __name__ == '__main__':
