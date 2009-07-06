@@ -185,4 +185,6 @@ get_class_definition() {
     _browser_object_class->_set_property = &object_set_property;
     _browser_object_class->_call = &object_call;
   }
+
+  return _browser_object_class;
 }
