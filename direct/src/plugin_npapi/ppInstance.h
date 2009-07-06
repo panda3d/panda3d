@@ -48,6 +48,7 @@ public:
   void stream_as_file(NPStream *stream, const char *fname);
 
   void handle_request(P3D_request *request);
+  static void handle_request_loop();
 
   NPObject *get_panda_script_object();
 
@@ -66,6 +67,11 @@ private:
   void show_np_variant(const NPVariant &result);
   P3D_object *np_variant_to_object(const NPVariant &result);
 
+#ifdef _WIN32
+  static LONG 
+  window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+#endif  // _WIN32
+
 private:
   NPP _npp_instance;
   unsigned int _npp_mode;
@@ -81,6 +87,9 @@ private:
 
   bool _got_window;
   NPWindow _window;
+#ifdef _WIN32
+  LONG_PTR _orig_window_proc;
+#endif  // _WIN32
 
   PPPandaObject *_script_object;
 

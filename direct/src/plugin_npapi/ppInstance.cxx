@@ -73,7 +73,15 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
 PPInstance::
 ~PPInstance() {
   logfile
-    << "destructing " << this << ", " << _p3d_inst << "\n" << flush;
+    << "destructing PPInstance " << this << "\n";
+
+#ifdef _WIN32
+  if (_got_window) {
+    // Restore the parent window to its own window handler.
+    HWND hwnd = (HWND)_window.window;
+    SetWindowLongPtr(hwnd, GWL_WNDPROC, _orig_window_proc);
+  }
+#endif  // _WIN32
 
   if (_p3d_inst != NULL) {
     P3D_instance_finish(_p3d_inst);
@@ -100,13 +108,33 @@ PPInstance::
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 set_window(NPWindow *window) {
-  if (window->x == _window.x &&
+  if (_got_window && 
+      window->x == _window.x &&
       window->y == _window.y &&
       window->width == _window.width &&
       window->height == _window.height) {
     // No changes.
     return;
   }
+
+  if (_got_window) {
+    // We don't expect the browser to change the window's parent
+    // on-the-fly.
+    assert(_window.window == window->window);
+  }
+
+#ifdef _WIN32
+  if (!_got_window) {
+    _orig_window_proc = NULL;
+    if (window->type == NPWindowTypeWindow) {
+      // Subclass the window to make it call our own window_proc instead
+      // of whatever window_proc it has already.  This is just a dopey
+      // trick to allow us to poll events in the main thread.
+      HWND hwnd = (HWND)window->window;
+      _orig_window_proc = SetWindowLongPtr(hwnd, GWL_WNDPROC, (LONG_PTR)window_proc);
+    }
+  }
+#endif  // _WIN32
 
   _window = *window;
   _got_window = true;
@@ -414,6 +442,31 @@ handle_request(P3D_request *request) {
   };
 
   P3D_request_finish(request, handled);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::handle_request_loop
+//       Access: Public, Static
+//  Description: Checks for any new requests from the plugin, and
+//               dispatches them to the appropriate PPInstance.  This
+//               function is called only in the main thread.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+handle_request_loop() {
+  if (!is_plugin_loaded()) {
+    return;
+  }
+
+  P3D_instance *p3d_inst = P3D_check_request(false);
+  while (p3d_inst != (P3D_instance *)NULL) {
+    P3D_request *request = P3D_instance_get_request(p3d_inst);
+    if (request != (P3D_request *)NULL) {
+      PPInstance *inst = (PPInstance *)(p3d_inst->_user_data);
+      assert(inst != NULL);
+      inst->handle_request(request);
+    }
+    p3d_inst = P3D_check_request(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -803,3 +856,30 @@ np_variant_to_object(const NPVariant &result) {
   // Huh, what is this?
   return NULL;
 }
+
+
+#ifdef _WIN32
+////////////////////////////////////////////////////////////////////
+//     Function: window_proc
+//       Access: Private, Static
+//  Description: We bind this function to the parent window we were
+//               given in set_window, so we can spin the request_loop
+//               when needed.  This is only in the Windows case; other
+//               platforms rely on explicit windows events.
+////////////////////////////////////////////////////////////////////
+LONG PPInstance::
+window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+  // If this is a toplevel window event, but not something caused as a
+  // result of something done by handle_request_loop(), then call
+  // handle_request_loop() to see if there are any new requests to be
+  // forwarded to the main thread.
+  static int recursion_protect = 0;
+  ++recursion_protect;
+  if (recursion_protect == 1) {
+    handle_request_loop();
+  }
+  --recursion_protect;
+
+  return DefWindowProc(hwnd, msg, wparam, lparam);
+}
+#endif  // _WIN32

@@ -35,53 +35,6 @@ open_logfile() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: handle_request_loop
-//  Description: Checks for any new requests from the plugin.  This
-//               function is called only in the main thread.
-////////////////////////////////////////////////////////////////////
-static void
-handle_request_loop() {
-  if (!is_plugin_loaded()) {
-    return;
-  }
-
-  P3D_instance *p3d_inst = P3D_check_request(false);
-  while (p3d_inst != (P3D_instance *)NULL) {
-    P3D_request *request = P3D_instance_get_request(p3d_inst);
-    if (request != (P3D_request *)NULL) {
-      PPInstance *inst = (PPInstance *)(p3d_inst->_user_data);
-      assert(inst != NULL);
-      inst->handle_request(request);
-    }
-    p3d_inst = P3D_check_request(false);
-  }
-}
-
-#ifdef _WIN32
-////////////////////////////////////////////////////////////////////
-//     Function: window_proc
-//  Description: We bind this function to the parent windows we are
-//               given in NPP_New(), so we can spin the request_loop
-//               when needed.
-////////////////////////////////////////////////////////////////////
-static LONG 
-window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-  // If this is a toplevel window event, but not something caused as a
-  // result of something done by handle_request_loop(), then call
-  // handle_request_loop() to see if there are any new requests to be
-  // forwarded to the main thread.
-  static int recursion_protect = 0;
-  ++recursion_protect;
-  if (recursion_protect == 1) {
-    handle_request_loop();
-  }
-  --recursion_protect;
-
-  return DefWindowProc(hwnd, msg, wparam, lparam);
-}
-#endif  // _WIN32
-
-////////////////////////////////////////////////////////////////////
 //     Function: request_ready
 //  Description: This function is attached as an asynchronous callback
 //               to each instance; it will be notified when the
@@ -241,16 +194,6 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
           << ", " << window->width << ", " << window->height
           << "\n" << flush;
 
-#ifdef _WIN32
-  if (window->type == NPWindowTypeWindow) {
-    // Subclass the window to make it call our own window_proc instead
-    // of whatever window_proc it has already.  This is just a dopey
-    // trick to allow us to poll events in the main thread.
-    HWND hwnd = (HWND)window->window;
-    LONG_PTR orig = SetWindowLongPtr(hwnd, GWL_WNDPROC, (LONG_PTR)window_proc);
-  }
-#endif  // _WIN32
-
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
   inst->set_window(window);
@@ -367,7 +310,7 @@ NPP_HandleEvent(NPP instance, void *event) {
   //  logfile << "HandleEvent\n";
 
   // Here's a fine opportunity to check for new requests.
-  handle_request_loop();
+  PPInstance::handle_request_loop();
 
   return 0;
 }
