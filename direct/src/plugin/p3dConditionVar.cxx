@@ -14,6 +14,11 @@
 
 #include "p3dConditionVar.h"
 
+#ifndef _WIN32
+#include <sys/time.h>
+#include <math.h>
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DConditionVar::Constructor
 //       Access: Public

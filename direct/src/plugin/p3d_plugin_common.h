@@ -34,7 +34,6 @@
 using namespace std;
 
 // Appears in p3d_plugin.cxx.
-extern ofstream log;
 extern string plugin_output_filename;
 extern ostream *nout_stream;
 #define nout (*nout_stream)

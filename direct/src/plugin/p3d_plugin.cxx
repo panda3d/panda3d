@@ -30,7 +30,7 @@
 bool initialized_lock = false;
 LOCK _api_lock;
 
-ofstream log;
+ofstream logfile;
 string plugin_output_filename;
 ostream *nout_stream;
 
@@ -54,9 +54,9 @@ P3D_initialize(int api_version, const char *output_filename) {
   }
   nout_stream = &cerr;
   if (!plugin_output_filename.empty()) {
-    log.open(plugin_output_filename.c_str(), ios::out | ios::trunc);
-    if (log) {
-      nout_stream = &log;
+    logfile.open(plugin_output_filename.c_str(), ios::out | ios::trunc);
+    if (logfile) {
+      nout_stream = &logfile;
     }
   }
 
