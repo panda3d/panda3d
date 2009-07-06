@@ -2,7 +2,7 @@
 
 #define OTHER_LIBS interrogatedb:c dconfig:c dtoolconfig:m \
                    dtoolutil:c dtoolbase:c dtool:m
-#define USE_PACKAGES gl glx cg
+#define USE_PACKAGES gl glx cg xf86dga
 #if $[LINK_IN_GLXGETPROCADDRESS]
   #define EXTRA_CDEFS LINK_IN_GLXGETPROCADDRESS
 #endif

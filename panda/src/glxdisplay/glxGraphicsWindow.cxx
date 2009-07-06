@@ -32,6 +32,9 @@
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
+#ifdef HAVE_XF86DGA
+#include <X11/extensions/xf86dga.h>
+#endif
 
 #ifdef HAVE_LINUX_INPUT_H
 #include <linux/input.h>
@@ -63,6 +66,7 @@ glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _xwindow = (Window)NULL;
   _ic = (XIC)NULL;
   _awaiting_configure = false;
+  _dga_mouse_enabled = false;
   _wm_delete_window = glx_pipe->_wm_delete_window;
   _net_wm_window_type = glx_pipe->_net_wm_window_type;
   _net_wm_window_type_splash = glx_pipe->_net_wm_window_type_splash;
@@ -333,18 +337,27 @@ process_events() {
     case ButtonPress:
       // This refers to the mouse buttons.
       button = get_mouse_button(event.xbutton);
-      _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      if (!_dga_mouse_enabled) {
+        _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      }
       _input_devices[0].button_down(button);
       break;
       
     case ButtonRelease:
       button = get_mouse_button(event.xbutton);
-      _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      if (!_dga_mouse_enabled) {
+        _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+      }
       _input_devices[0].button_up(button);
       break;
 
     case MotionNotify:
-      _input_devices[0].set_pointer_in_window(event.xmotion.x, event.xmotion.y);
+      if (_dga_mouse_enabled) {
+        const MouseData &md = _input_devices[0].get_raw_pointer();
+        _input_devices[0].set_pointer_in_window(md.get_x() + event.xmotion.x_root, md.get_x() + event.xmotion.y_root);
+      } else {
+        _input_devices[0].set_pointer_in_window(event.xmotion.x, event.xmotion.y);
+      }
       break;
 
     case KeyPress:
@@ -361,7 +374,12 @@ process_events() {
       break;
 
     case EnterNotify:
-      _input_devices[0].set_pointer_in_window(event.xcrossing.x, event.xcrossing.y);
+      if (_dga_mouse_enabled) {
+        const MouseData &md = _input_devices[0].get_raw_pointer();
+        _input_devices[0].set_pointer_in_window(md.get_x(), md.get_y());
+      } else {
+        _input_devices[0].set_pointer_in_window(event.xcrossing.x, event.xcrossing.y);
+      }
       break;
 
     case LeaveNotify:
@@ -571,6 +589,68 @@ set_properties_now(WindowProperties &properties) {
   }
 
   set_wm_properties(wm_properties, true);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::mouse_mode_absolute
+//       Access: Private, Virtual
+//  Description: Overridden from GraphicsWindow.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+mouse_mode_absolute() {
+#ifdef HAVE_XF86DGA
+  if (!_dga_mouse_enabled) return;
+
+  XUngrabPointer(_display, CurrentTime);
+  glxdisplay_cat.info() << "Disabling relative mouse using XF86DGA extension\n";
+  XF86DGADirectVideo(_display, _screen, 0);
+  _dga_mouse_enabled = false;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: glxGraphicsWindow::mouse_mode_relative
+//       Access: Private, Virtual
+//  Description: Overridden from GraphicsWindow.
+////////////////////////////////////////////////////////////////////
+void glxGraphicsWindow::
+mouse_mode_relative() {
+#ifdef HAVE_XF86DGA
+  if (_dga_mouse_enabled) return;
+
+  int major_ver, minor_ver;
+  if (XF86DGAQueryVersion(_display, &major_ver, &minor_ver)) {
+
+    Cursor cursor = None;
+    if (_properties.get_cursor_hidden()) {
+      glxGraphicsPipe *glx_pipe;
+      DCAST_INTO_V(glx_pipe, _pipe);
+      cursor = glx_pipe->get_hidden_cursor();
+    }
+
+    if (XGrabPointer(_display, _xwindow, True, 0, GrabModeAsync,
+        GrabModeAsync, _xwindow, cursor, CurrentTime) != GrabSuccess) {
+      glxdisplay_cat.error() << "Failed to grab pointer!\n";
+      return;
+    }
+
+    glxdisplay_cat.info() << "Enabling relative mouse using XF86DGA extension\n";
+    XF86DGADirectVideo(_display, _screen, XF86DGADirectMouse);
+
+    _dga_mouse_enabled = true;
+  } else {
+    glxdisplay_cat.info() << "XF86DGA extension not available\n";
+    _dga_mouse_enabled = false;
+  }
+
+  // Get the real mouse position, so we can add/subtract
+  // our relative coordinates later.
+  XEvent event;
+  XQueryPointer(_display, _xwindow, &event.xbutton.root,
+    &event.xbutton.window, &event.xbutton.x_root, &event.xbutton.y_root,
+    &event.xbutton.x, &event.xbutton.y, &event.xbutton.state);
+  _input_devices[0].set_pointer_in_window(event.xbutton.x, event.xbutton.y);
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1210,7 +1290,9 @@ poll_raw_mice()
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
 handle_keystroke(XKeyEvent &event) {
-  _input_devices[0].set_pointer_in_window(event.x, event.y);
+  if (!_dga_mouse_enabled) {
+    _input_devices[0].set_pointer_in_window(event.x, event.y);
+  }
 
   if (_ic) {
     // First, get the keystroke as a wide-character sequence.
@@ -1247,7 +1329,9 @@ handle_keystroke(XKeyEvent &event) {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
 handle_keypress(XKeyEvent &event) {
-  _input_devices[0].set_pointer_in_window(event.x, event.y);
+  if (!_dga_mouse_enabled) {
+    _input_devices[0].set_pointer_in_window(event.x, event.y);
+  }
 
   // Now get the raw unshifted button.
   ButtonHandle button = get_button(event, false);
@@ -1273,7 +1357,9 @@ handle_keypress(XKeyEvent &event) {
 ////////////////////////////////////////////////////////////////////
 void glxGraphicsWindow::
 handle_keyrelease(XKeyEvent &event) {
-  _input_devices[0].set_pointer_in_window(event.x, event.y);
+  if (!_dga_mouse_enabled) {
+    _input_devices[0].set_pointer_in_window(event.x, event.y);
+  }
 
   // Now get the raw unshifted button.
   ButtonHandle button = get_button(event, false);

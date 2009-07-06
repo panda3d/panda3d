@@ -52,6 +52,9 @@ protected:
   virtual bool open_window();
 
 private:
+  virtual void mouse_mode_absolute();
+  virtual void mouse_mode_relative();
+
   void set_wm_properties(const WindowProperties &properties,
                          bool already_mapped);
 
@@ -81,6 +84,7 @@ private:
 
   long _event_mask;
   bool _awaiting_configure;
+  bool _dga_mouse_enabled;
   Atom _wm_delete_window;
   Atom _net_wm_window_type;
   Atom _net_wm_window_type_splash;
