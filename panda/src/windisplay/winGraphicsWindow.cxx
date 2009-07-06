@@ -888,16 +888,22 @@ open_regular_window() {
       y_origin = _properties.get_y_origin();
     }
 
+    nout << "Creating embedded window\n";
     _hWnd = CreateWindow(wclass._name.c_str(), title.c_str(), 
                          WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS ,
                          x_origin,y_origin,
                          x_size, y_size,
                          _hparent, NULL, hinstance, 0);
-    
+    nout << "Done creating embedded window, _hwnd = " << _hWnd << "\n";
     
     if (_hWnd) {
       // join our keyboard state with the parents
-      AttachThreadInput(GetWindowThreadProcessId(_hparent,NULL), GetCurrentThreadId(),TRUE);
+
+      // Actually, let's not.  Is there really any reason to do this?
+      // It causes problems with the browser plugin--it deadlocks when
+      // the parent process is waiting on the child process.
+      //AttachThreadInput(GetWindowThreadProcessId(_hparent,NULL), GetCurrentThreadId(),TRUE);
+
       // set us as the focus window for keyboard input
       SetFocus(_hWnd);
       
