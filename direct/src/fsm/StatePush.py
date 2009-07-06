@@ -24,6 +24,10 @@ class PushesStateChanges:
     def getState(self):
         return self._value
 
+    def pushCurrentState(self):
+        self._handleStateChange()
+        return self
+
     def _addSubscription(self, subscriber):
         self._subscribers.add(subscriber)
         subscriber._recvStatePush(self)
@@ -213,8 +217,9 @@ class FunctionCall(ReceivesMultipleStateChanges, PushesStateChanges):
             else:
                 self._bakedKargs[key] = arg
         self._initialized = True
-        # push the current state to any listeners
-        self._handleStateChange()
+        # call pushCurrentState() instead
+        ## push the current state to any listeners
+        ##self._handleStateChange()
 
     def destroy(self):
         ReceivesMultipleStateChanges.destroy(self)
@@ -252,6 +257,8 @@ if __debug__:
     assert l == []
     sv = StateVar(0)
     fc = FunctionCall(handler, sv)
+    assert l == []
+    fc.pushCurrentState()
     assert l == [0,]
     sv.set(1)
     assert l == [0,1,]
@@ -271,6 +278,8 @@ if __debug__:
     sv = StateVar(0)
     ksv = StateVar('a')
     fc = FunctionCall(handler, sv, kValue=ksv)
+    assert l == []
+    fc.pushCurrentState()
     assert l == [(0,'a',),]
     sv.set(1)
     assert l == [(0,'a'),(1,'a'),]
@@ -349,6 +358,8 @@ if __debug__:
         l.append(value)
     p = Pulse()
     fc = FunctionCall(handler, p)
+    assert l == []
+    fc.pushCurrentState()
     assert l == [False, ]
     p.sendPulse()
     assert l == [False, True, False, ]
@@ -377,11 +388,11 @@ if __debug__:
         l.append(value)
     ep = EventPulse('testEvent')
     fc = FunctionCall(handler, ep)
-    assert l == [False, ]
+    assert l == []
     messenger.send('testEvent')
-    assert l == [False, True, False, ]
+    assert l == [True, False, ]
     messenger.send('testEvent')
-    assert l == [False, True, False, True, False, ]
+    assert l == [True, False, True, False, ]
     fc.destroy()
     ep.destroy()
     del fc
@@ -410,6 +421,9 @@ if __debug__:
         l.append(value)
     ea = EventArgument('testEvent', index=1)
     fc = FunctionCall(handler, ea)
+    assert l == []
+    fc.pushCurrentState()
+    assert l == [None, ]
     messenger.send('testEvent', ['a', 'b'])
     assert l == [None, 'b', ]
     messenger.send('testEvent', [1, 2, 3, ])
