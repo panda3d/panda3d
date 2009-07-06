@@ -117,7 +117,9 @@ move_pointer(int device, int x, int y) {
 
     const MouseData &md = _input_devices[0].get_pointer();
     if (!md.get_in_window() || md.get_x() != x || md.get_y() != y) {
-      XWarpPointer(_display, None, _xwindow, 0, 0, 0, 0, x, y);
+      if (!_dga_mouse_enabled) {
+        XWarpPointer(_display, None, _xwindow, 0, 0, 0, 0, x, y);
+      }
       _input_devices[0].set_pointer_in_window(x, y);
     }
     return true;
@@ -354,7 +356,7 @@ process_events() {
     case MotionNotify:
       if (_dga_mouse_enabled) {
         const MouseData &md = _input_devices[0].get_raw_pointer();
-        _input_devices[0].set_pointer_in_window(md.get_x() + event.xmotion.x_root, md.get_x() + event.xmotion.y_root);
+        _input_devices[0].set_pointer_in_window(md.get_x() + event.xmotion.x_root, md.get_y() + event.xmotion.y_root);
       } else {
         _input_devices[0].set_pointer_in_window(event.xmotion.x, event.xmotion.y);
       }
