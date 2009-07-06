@@ -38,6 +38,7 @@ public:
 
   inline NPP get_npp_instance() const;
 
+  inline const NPWindow *get_window() const;
   void set_window(NPWindow *window);
   NPError new_stream(NPMIMEType type, NPStream *stream, 
                      bool seekable, uint16 *stype);

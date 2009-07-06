@@ -33,10 +33,6 @@ open_logfile() {
   }
 }
 
-#ifdef _WIN32
-DWORD main_thread_id = 0;
-#endif
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: handle_request_loop
@@ -103,7 +99,14 @@ request_ready(P3D_instance *instance) {
   // Since we might be in a sub-thread at this point, use a Windows
   // message to forward this event to the main thread.
 
-  PostThreadMessage(main_thread_id, WM_USER, 0, 0);
+  // Get the window handle for the window associated with this
+  // instance.
+  PPInstance *inst = (PPInstance *)(instance->_user_data);
+  assert(inst != NULL);
+  const NPWindow *win = inst->get_window();
+  if (win != NULL) {
+    PostMessage((HWND)(win->window), WM_USER, 0, 0);
+  }
 
 #else
   // On Mac, we ignore this asynchronous event, and rely on detecting
@@ -138,13 +141,6 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 
   open_logfile();
   logfile << "initializing\n" << flush;
-
-#ifdef _WIN32
-  // Save the calling thread ID (i.e. the main thread) so we can post
-  // messages back to this thread when needed.
-  main_thread_id = GetCurrentThreadId();
-  logfile << "main thread = " << main_thread_id << "\n";
-#endif
 
   logfile << "browserFuncs = " << browserFuncs << "\n" << flush;
 

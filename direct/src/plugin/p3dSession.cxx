@@ -279,7 +279,24 @@ command_and_response(TiXmlDocument *command) {
       return NULL;
     }
 
+#ifdef _WIN32
+    // Make sure we process the Windows event loop while we're
+    // waiting, or everything that depends on Windows messages--in
+    // particular, the CreateWindow() call within the subprocess--will
+    // starve, and we could end up with deadlock.
+
+    // A single PeekMessage() seems to be sufficient.
+    MSG msg;
+    PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
+
+    // We wait with a timeout, so we can go back and spin the event
+    // loop some more.
+    _response_ready.wait(0.1);
+#else  // _WIN32
+    
+    // On non-Windows platforms, we can just wait indefinitely.
     _response_ready.wait();
+#endif  // _WIN32
   }
   // When we exit the loop, we've found the desired response.
 

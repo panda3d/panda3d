@@ -23,3 +23,16 @@ inline NPP PPInstance::
 get_npp_instance() const {
   return _npp_instance;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::get_window
+//       Access: Public
+//  Description: Returns the current window parameters.
+////////////////////////////////////////////////////////////////////
+const NPWindow *PPInstance::
+get_window() const {
+  if (_got_window) {
+    return &_window;
+  }
+  return NULL;
+}
