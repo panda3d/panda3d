@@ -45,6 +45,7 @@ class FrameProfiler:
                 assert (self._logSchedule[j] % e) == 0
         assert isInteger(self._period)
         self._enableFC = FunctionCall(self._setEnabled, taskMgr.getProfileFramesSV())
+        self._enableFC.pushCurrentState()
 
     def destroy(self):
         self._enableFC.set(False)

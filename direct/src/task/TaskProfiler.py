@@ -91,6 +91,7 @@ class TaskProfiler:
 
     def __init__(self):
         self._enableFC = FunctionCall(self._setEnabled, taskMgr.getProfileTasksSV())
+        self._enableFC.pushCurrentState()
         # table of task name pattern to TaskTracker
         self._namePrefix2tracker = {}
         self._task = None
