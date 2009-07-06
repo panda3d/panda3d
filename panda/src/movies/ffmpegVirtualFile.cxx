@@ -166,7 +166,11 @@ register_protocol() {
   protocol.url_write = pandavfs_write;
   protocol.url_seek  = pandavfs_seek;
   protocol.url_close = pandavfs_close;
+#if LIBAVFORMAT_VERSION_INT < 3415296
+  ::register_protocol(&protocol);
+#else
   av_register_protocol(&protocol);
+#endif
 }
 
 #endif // HAVE_FFMPEG

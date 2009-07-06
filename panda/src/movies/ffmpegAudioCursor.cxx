@@ -190,13 +190,25 @@ reload_buffer() {
       return;
     } else if (_packet_size > 0) {
       int bufsize = _buffer_size * 2;
-	    AVPacket pkt; 
- 	    av_init_packet(&pkt); 
- 	    pkt.data = _packet_data;
- 	    pkt.size = _packet_size;
+#if LIBAVCODEC_VERSION_INT < 3414272
+#if LIBAVCODEC_VERSION_INT < 3349504
+      int len = avcodec_decode_audio(_audio_ctx, _buffer, &bufsize,
+                                    _packet_data, _packet_size);
+      movies_debug("avcodec_decode_audio returned " << len);
+#else
+      int len = avcodec_decode_audio2(_audio_ctx, _buffer, &bufsize,
+                                      _packet_data, _packet_size);
+      movies_debug("avcodec_decode_audio2 returned " << len);
+#endif
+#else
+      AVPacket pkt; 
+      av_init_packet(&pkt); 
+      pkt.data = _packet_data;
+      pkt.size = _packet_size;
       int len = avcodec_decode_audio3(_audio_ctx, _buffer, &bufsize, &pkt);
       movies_debug("avcodec_decode_audio3 returned " << len);
       av_free_packet(&pkt); // Not sure about this
+#endif
       if (len <= 0) {
         break;
       }

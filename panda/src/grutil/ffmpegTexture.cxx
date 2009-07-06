@@ -518,8 +518,13 @@ get_frame_data(int frame_number) {
         int err = read_video_frame(&packet);
         if (err < 0) {
           return false;
+
         }
+#if LIBAVCODEC_VERSION_INT < 3414272
+        avcodec_decode_video(_codec_context, _frame, &got_frame, packet.data, packet.size);
+#else
         avcodec_decode_video2(_codec_context, _frame, &got_frame, &packet);
+#endif
         av_free_packet(&packet);
         ++coming_from;
       }
@@ -558,7 +563,11 @@ get_frame_data(int frame_number) {
         break;
       }
 
-      avcodec_decode_video2(_codec_context, _frame, &got_frame, &packet);
+#if LIBAVCODEC_VERSION_INT < 3414272
+        avcodec_decode_video(_codec_context, _frame, &got_frame, packet.data, packet.size);
+#else
+        avcodec_decode_video2(_codec_context, _frame, &got_frame, &packet);
+#endif
 
       av_free_packet(&packet);
     } while (true);
@@ -574,7 +583,11 @@ get_frame_data(int frame_number) {
   // Is this a packet from the video stream?
   if (packet.stream_index == _stream_number) {
     // Decode video frame
-    avcodec_decode_video2(_codec_context, _frame, &frame_finished, &packet);
+#if LIBAVCODEC_VERSION_INT < 3414272
+        avcodec_decode_video(_codec_context, _frame, &frame_finished, packet.data, packet.size);
+#else
+        avcodec_decode_video2(_codec_context, _frame, &frame_finished, &packet);
+#endif
 
     // Did we get a video frame?
     if (frame_finished) {

@@ -230,7 +230,12 @@ fetch_frame() {
   int finished = 0;
   _last_start = _packet_time;
   while (!finished && _packet->data) {
+#if LIBAVCODEC_VERSION_INT < 3414272
+    avcodec_decode_video(_video_ctx, _frame,
+                          &finished, _packet->data, _packet->size);
+#else
     avcodec_decode_video2(_video_ctx, _frame, &finished, _packet);
+#endif
     fetch_packet(_last_start + 1.0);
   }
   _next_start = _packet_time;
