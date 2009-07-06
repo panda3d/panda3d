@@ -30,6 +30,7 @@ public:
 
   void acquire();
   void wait();
+  void wait(double timeout);
   void notify();
   void release();
   

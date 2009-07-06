@@ -65,7 +65,8 @@ P3DConditionVar::
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DConditionVar::acquire
 //       Access: Public
-//  Description: 
+//  Description: Acquires the internal lock.  The lock should be held
+//               during any calls to wait() or notify().
 ////////////////////////////////////////////////////////////////////
 void P3DConditionVar::
 acquire() {
@@ -82,7 +83,9 @@ acquire() {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DConditionVar::wait
 //       Access: Public
-//  Description: 
+//  Description: Requires the lock to be held on entry.  Releases the
+//               lock, waits for another thread to call notify(), then
+//               reacquires the lock on exit.
 ////////////////////////////////////////////////////////////////////
 void P3DConditionVar::
 wait() {
@@ -102,9 +105,46 @@ wait() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DConditionVar::wait
+//       Access: Public
+//  Description: As above, but waits no longer than timeout seconds
+//               before returning.
+////////////////////////////////////////////////////////////////////
+void P3DConditionVar::
+wait(double timeout) {
+#ifdef _WIN32
+  LeaveCriticalSection(&_lock);
+
+  DWORD result = WaitForSingleObject(_event_signal, (DWORD)(timeout * 1000.0));
+  assert(result == WAIT_OBJECT_0 || result == WAIT_TIMEOUT);
+
+  EnterCriticalSection(&_lock);
+#else  // _WIN32
+
+  struct timeval now;
+  gettimeofday(&now, NULL);
+
+  // Convert from timeval to timespec
+  struct timespec ts;
+  ts.tv_sec  = now.tv_sec;
+  ts.tv_nsec = now.tv_usec * 1000;
+
+  int seconds = (int)floor(timeout);
+  ts.tv_sec += seconds;
+  ts.tv_nsec += (int)((timeout - seconds) * 1000000.0);
+
+  int result = pthread_cond_timedwait(&_cvar, &_lock, &ts);
+  assert(result == 0);
+
+#endif  // _WIN32
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DConditionVar::notify
 //       Access: Public
-//  Description: 
+//  Description: Waits a single thread blocked on wait(), if any.  If
+//               no threads are waiting, the event is lost.  The lock
+//               should be held during this call.
 ////////////////////////////////////////////////////////////////////
 void P3DConditionVar::
 notify() {
@@ -121,7 +161,7 @@ notify() {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DConditionVar::release
 //       Access: Public
-//  Description: 
+//  Description: Releases the internal lock.
 ////////////////////////////////////////////////////////////////////
 void P3DConditionVar::
 release() {
