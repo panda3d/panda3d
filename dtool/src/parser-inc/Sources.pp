@@ -18,7 +18,6 @@
     netinet/tcp.h netinet/ip.h sys/socket.h \
     rfftw.h libtar.h malloc.h ucontext.h ctype.h \
     libavutil/avutil.h libavformat/avformat.h \
-    libavcodec/avcodec.h libswscale/swscale.h
-
-
+    libavcodec/avcodec.h libswscale/swscale.h \
+    libavformat/avio.h
 
