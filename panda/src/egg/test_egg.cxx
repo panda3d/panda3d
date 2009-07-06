@@ -28,7 +28,7 @@ main(int argc, char *argv[]) {
   data.set_coordinate_system(CS_default);
 
   if (data.read(egg_filename)) {
-    data.load_externals("");
+    data.load_externals(DSearchPath(Filename("")));
     data.write_egg(cout);
   } else {
     nout << "Errors.\n";
