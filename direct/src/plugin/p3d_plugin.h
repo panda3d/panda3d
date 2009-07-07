@@ -517,7 +517,7 @@ P3D_instance_get_panda_script_object_func(P3D_instance *instance);
    its _finish method. */
 typedef void
 P3D_instance_set_browser_script_object_func(P3D_instance *instance, 
-                                    P3D_object *object);
+                                            P3D_object *object);
 
 
 /********************** REQUEST HANDLING **************************/
