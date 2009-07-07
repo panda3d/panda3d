@@ -419,6 +419,10 @@ handle_request(P3D_request *request) {
     }
     break;
 
+  case P3D_RT_script:
+    // We're allowed to ignore this.
+    break;
+
   default:
     // Some request types are not handled.
     logfile << "Unhandled request: " << request->_request_type << "\n";
@@ -762,24 +766,34 @@ void PPInstance::
 send_window() {
   assert(_p3d_inst != NULL);
 
+  int x = _window.x;
+  int y = _window.y;
+
   P3D_window_handle parent_window;
 #ifdef _WIN32
   if (_window.type == NPWindowTypeWindow) {
+    // We have a "windowed" plugin.  Parent our window to the one we
+    // were given.  In this case, we should also reset the offset to
+    // (0, 0), since the window we were given is already placed in the
+    // right spot.
     parent_window._hwnd = (HWND)(_window.window);
+    x = 0;
+    y = 0;
   } else {
-    // Hmm, it's just a drawable; but we didn't ask for a windowless
-    // plugin.
+    // We have a "windowless" plugin.  Parent our window directly to
+    // the browser window.
     parent_window._hwnd = 0;
+    HWND hwnd;
+    if (browser->getvalue(_npp_instance, NPNVnetscapeWindow,
+                          &hwnd) == NPERR_NO_ERROR) {
+      parent_window._hwnd = hwnd;
+    }
   }
 #endif
 
-  // Actually, we set up the window starting at (0, 0), instead of
-  // whatever Mozilla tells us, because the window handle we get is a
-  // specially created window that is already aligned to where we want
-  // our window to be.
   P3D_instance_setup_window
     (_p3d_inst, P3D_WT_embedded,
-     0, 0, _window.width, _window.height,
+     x, y, _window.width, _window.height,
      parent_window);
 }
 
@@ -831,6 +845,13 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     handle_request_loop();
   }
   --recursion_protect;
+
+  switch (msg) {
+  case WM_ERASEBKGND:
+    // Eat the WM_ERASEBKGND message, so the browser's intervening
+    // window won't overdraw on top of our own window.
+    return true;
+  }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }

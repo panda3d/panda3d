@@ -39,6 +39,9 @@ public:
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress);
 
+  static void register_window_class();
+  static void unregister_window_class();
+
 private:
   void start_thread();
   void stop_thread();
@@ -55,6 +58,7 @@ private:
                              bool image_filename_temp);
   void close_window();
 
+  void paint_window(HDC dc);
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   static LONG WINAPI st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
@@ -79,6 +83,8 @@ private:
   int _bitmap_width, _bitmap_height;
   HWND _progress_bar;
   HWND _text_label;
+
+  static bool _registered_window_class;
 };
 
 #include "p3dWinSplashWindow.I"

@@ -209,6 +209,7 @@ run_python() {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 handle_command(TiXmlDocument *doc) {
+  nout << "received: " << *doc << "\n" << flush;
   TiXmlElement *xcommand = doc->FirstChildElement("command");
   if (xcommand != NULL) {
     bool needs_response = false;
@@ -267,6 +268,7 @@ handle_command(TiXmlDocument *doc) {
           xresponse->SetAttribute("response_id", want_response_id);
           doc.LinkEndChild(decl);
           doc.LinkEndChild(xresponse);
+          nout << "sent: " << doc << "\n" << flush;
           _pipe_write << doc << flush;
         }
       }
@@ -413,6 +415,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
   }
 
   if (needs_response) {
+    nout << "sent: " << doc << "\n" << flush;
     _pipe_write << doc << flush;
   }
 }
@@ -488,6 +491,7 @@ wait_script_response(int response_id) {
               // This is the response we were waiting for.
               _commands.erase(ci);
               RELEASE_LOCK(_commands_lock);
+              nout << "received: " << *doc << "\n" << flush;
               return doc;
             }
           }
@@ -585,6 +589,7 @@ py_request_func(PyObject *args) {
     }
 
     xrequest->SetAttribute("message", message);
+    nout << "sent: " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
   } else if (strcmp(request_type, "script") == 0) {
@@ -609,6 +614,7 @@ py_request_func(PyObject *args) {
     TiXmlElement *xvalue = pyobj_to_xml(value);
     xrequest->LinkEndChild(xvalue);
 
+    nout << "sent: " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
   } else {

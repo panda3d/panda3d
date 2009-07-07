@@ -57,7 +57,7 @@ request_ready(P3D_instance *instance) {
   PPInstance *inst = (PPInstance *)(instance->_user_data);
   assert(inst != NULL);
   const NPWindow *win = inst->get_window();
-  if (win != NULL) {
+  if (win != NULL && win->type == NPWindowTypeWindow) {
     PostMessage((HWND)(win->window), WM_USER, 0, 0);
   }
 
@@ -160,6 +160,12 @@ NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
 
   instance->pdata = new PPInstance(pluginType, instance, mode,
                                    argc, argn, argv, saved);
+
+  // To experiment with a "windowless" plugin, which really means we
+  // create our own window without an intervening window, try this.
+  // At the moment, there's a deadlock condition when we try it, but
+  // surely it can be solved.
+  //  browser->setvalue(instance, NPPVpluginWindowBool, (void *)false);
 
   return NPERR_NO_ERROR;
 }
@@ -307,7 +313,7 @@ NPP_Print(NPP instance, NPPrint *platformPrint) {
 ////////////////////////////////////////////////////////////////////
 int16
 NPP_HandleEvent(NPP instance, void *event) {
-  //  logfile << "HandleEvent\n";
+  logfile << "HandleEvent\n" << flush;
 
   // Here's a fine opportunity to check for new requests.
   PPInstance::handle_request_loop();

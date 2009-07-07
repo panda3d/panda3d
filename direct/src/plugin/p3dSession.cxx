@@ -85,6 +85,7 @@ P3DSession::
     xcommand->SetAttribute("cmd", "exit");
     doc.LinkEndChild(decl);
     doc.LinkEndChild(xcommand);
+    nout << "sent: " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
     // Also close the pipe, to help underscore the point.
@@ -214,6 +215,7 @@ void P3DSession::
 send_command(TiXmlDocument *command) {
   if (_p3dpython_running) {
     // Python is running.  Send the command.
+    nout << "sent: " << *command << "\n" << flush;
     _pipe_write << *command << flush;
     delete command;
   } else {
@@ -252,6 +254,7 @@ command_and_response(TiXmlDocument *command) {
   assert(xcommand != NULL);
   xcommand->SetAttribute("want_response_id", response_id);
 
+  nout << "sent: " << *command << "\n" << flush;
   _pipe_write << *command << flush;
   delete command;
 
@@ -541,6 +544,7 @@ start_p3dpython() {
   // may have queued up.
   Commands::iterator ci;
   for (ci = _commands.begin(); ci != _commands.end(); ++ci) {
+    nout << "sent: " << *(*ci) << "\n" << flush;
     _pipe_write << *(*ci);
     delete (*ci);
   }

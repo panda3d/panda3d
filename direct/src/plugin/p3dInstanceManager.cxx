@@ -17,6 +17,7 @@
 #include "p3dSession.h"
 #include "p3dPackage.h"
 #include "p3d_plugin_config.h"
+#include "p3dWinSplashWindow.h"
 #include "find_root_dir.h"
 #include "mkdir_complete.h"
 
@@ -70,6 +71,10 @@ P3DInstanceManager::
 
   assert(_instances.empty());
   assert(_sessions.empty());
+
+#ifdef _WIN32
+  P3DWinSplashWindow::unregister_window_class();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////

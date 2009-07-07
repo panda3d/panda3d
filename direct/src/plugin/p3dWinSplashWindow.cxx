@@ -16,6 +16,8 @@
 
 #ifdef _WIN32
 
+bool P3DWinSplashWindow::_registered_window_class = false;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DWinSplashWindow::Constructor
 //       Access: Public
@@ -132,7 +134,49 @@ set_install_progress(double install_progress) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::start_thraed
+//     Function: P3DWinSplashWindow::register_window_class
+//       Access: Public, Static
+//  Description: Registers the window class for this window, if
+//               needed.
+////////////////////////////////////////////////////////////////////
+void P3DWinSplashWindow::
+register_window_class() {
+  if (!_registered_window_class) {
+    HINSTANCE application = GetModuleHandle(NULL);
+
+    WNDCLASS wc;
+    ZeroMemory(&wc, sizeof(WNDCLASS));
+    wc.lpfnWndProc = st_window_proc;
+    wc.hInstance = application;
+    wc.lpszClassName = "panda3d_splash";
+    
+    if (!RegisterClass(&wc)) {
+      nout << "Could not register window class panda3d_splash\n";
+    }
+    _registered_window_class = true;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DWinSplashWindow::unregister_window_class
+//       Access: Public, Static
+//  Description: Unregisters the window class for this window.  It is
+//               necessary to do this before unloading the DLL.
+////////////////////////////////////////////////////////////////////
+void P3DWinSplashWindow::
+unregister_window_class() {
+  if (_registered_window_class) {
+    HINSTANCE application = GetModuleHandle(NULL);
+
+    if (!UnregisterClass("panda3d_splash", application)) {
+      nout << "Could not unregister window class panda3d_splash\n";
+    }
+    _registered_window_class = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DWinSplashWindow::start_thread
 //       Access: Private
 //  Description: Spawns the sub-thread.
 ////////////////////////////////////////////////////////////////////
@@ -146,7 +190,7 @@ start_thread() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::stop_thraed
+//     Function: P3DWinSplashWindow::stop_thread
 //       Access: Private
 //  Description: Terminates and joins the sub-thread.
 ////////////////////////////////////////////////////////////////////
@@ -241,23 +285,8 @@ win_thread_run(LPVOID data) {
 ////////////////////////////////////////////////////////////////////
 void P3DWinSplashWindow::
 make_window() {
-  WNDCLASS wc;
-
+  register_window_class();
   HINSTANCE application = GetModuleHandle(NULL);
-
-  static bool registered_class = false;
-  if (!registered_class) {
-    ZeroMemory(&wc, sizeof(WNDCLASS));
-    wc.lpfnWndProc = st_window_proc;
-    wc.hInstance = application;
-    wc.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-    wc.lpszClassName = "panda3d_splash";
-    
-    if (!RegisterClass(&wc)) {
-      nout << "Could not register window class!\n";
-    }
-    registered_class = true;
-  }
   
   int x = CW_USEDEFAULT;
   int y = CW_USEDEFAULT;
@@ -483,6 +512,69 @@ close_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DWinSplashWindow::paint_window
+//       Access: Private
+//  Description: Paints the contents of the window into the indicated
+//               DC.
+////////////////////////////////////////////////////////////////////
+void P3DWinSplashWindow::
+paint_window(HDC dc) {
+  RECT rect;
+  GetClientRect(_hwnd, &rect);
+  int win_width = rect.right - rect.left;
+  int win_height = rect.bottom - rect.top;
+  
+  if (_bitmap != NULL) {
+    // Paint the background splash image.
+    HDC mem_dc = CreateCompatibleDC(dc);
+    SelectObject(mem_dc, _bitmap);
+    
+    // Determine the relative size of bitmap and window.
+    int bm_width = _bitmap_width;
+    int bm_height = _bitmap_height;
+    
+    int win_cx = win_width / 2;
+    int win_cy = win_height / 2;
+    
+    if (bm_width <= win_width && bm_height <= win_height) {
+      // The bitmap fits within the window; center it.
+      
+      // This is the top-left corner of the bitmap in window coordinates.
+      int p_x = win_cx - bm_width / 2;
+      int p_y = win_cy - bm_height / 2;
+      
+      BitBlt(dc, p_x, p_y, bm_width, bm_height,
+             mem_dc, 0, 0, SRCCOPY);
+
+      // Now don't paint over this in the below FillRect().
+      ExcludeClipRect(dc, p_x, p_y, p_x + bm_width, p_y + bm_height);
+      
+    } else {
+      // The bitmap is larger than the window; scale it down.
+      double x_scale = (double)win_width / (double)bm_width;
+      double y_scale = (double)win_height / (double)bm_height;
+      double scale = min(x_scale, y_scale);
+      int sc_width = (int)(bm_width * scale);
+      int sc_height = (int)(bm_height * scale);
+      
+      int p_x = win_cx - sc_width / 2;
+      int p_y = win_cy - sc_height / 2;
+      StretchBlt(dc, p_x, p_y, sc_width, sc_height,
+                 mem_dc, 0, 0, bm_width, bm_height, SRCCOPY);
+
+      // Now don't paint over this in the below FillRect().
+      ExcludeClipRect(dc, p_x, p_y, p_x + sc_width, p_y + sc_height);
+    }
+    
+    SelectObject(mem_dc, NULL);
+    DeleteDC(mem_dc);
+  }
+
+  // Paint everything else the background color.
+  FillRect(dc, &rect, WHITE_BRUSH);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DWinSplashWindow::window_proc
 //       Access: Private
 //  Description: The windows event-processing handler.
@@ -495,59 +587,20 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     break;
 
   case WM_SIZE:
-    InvalidateRect(hwnd, NULL, TRUE);
+    InvalidateRect(hwnd, NULL, FALSE);
     break;
+
+  case WM_ERASEBKGND:
+    return true;
 
   case WM_PAINT:
     {
       PAINTSTRUCT ps;
       HDC dc = BeginPaint(hwnd, &ps);
-      if (_bitmap != NULL) {
-        // Paint the background splash image.
-        HDC mem_dc = CreateCompatibleDC(dc);
-        SelectObject(mem_dc, _bitmap);
-        
-        // Determine the relative size of bitmap and window.
-        RECT rect;
-        GetClientRect(hwnd, &rect);
-        int win_width = rect.right - rect.left;
-        int win_height = rect.bottom - rect.top;
-        int bm_width = _bitmap_width;
-        int bm_height = _bitmap_height;
-        
-        int win_cx = win_width / 2;
-        int win_cy = win_height / 2;
-        
-        if (bm_width <= win_width && bm_height <= win_height) {
-          // The bitmap fits within the window; center it.
-          
-          // This is the top-left corner of the bitmap in window coordinates.
-          int p_x = win_cx - bm_width / 2;
-          int p_y = win_cy - bm_height / 2;
-          
-          BitBlt(dc, p_x, p_y, bm_width, bm_height,
-                 mem_dc, 0, 0, SRCCOPY);
-          
-        } else {
-          // The bitmap is larger than the window; scale it down.
-          double x_scale = (double)win_width / (double)bm_width;
-          double y_scale = (double)win_height / (double)bm_height;
-          double scale = min(x_scale, y_scale);
-          int sc_width = (int)(bm_width * scale);
-          int sc_height = (int)(bm_height * scale);
-          
-          int p_x = win_cx - sc_width / 2;
-          int p_y = win_cy - sc_height / 2;
-          StretchBlt(dc, p_x, p_y, sc_width, sc_height,
-                     mem_dc, 0, 0, bm_width, bm_height, SRCCOPY);
-        }
-        
-        SelectObject(mem_dc, NULL);
-        DeleteDC(mem_dc);
-      }
+      paint_window(dc);
       EndPaint(hwnd, &ps);
     }
-    break;
+    return true;
 
   case WM_DRAWITEM:
     // Draw a text label placed within the window.
