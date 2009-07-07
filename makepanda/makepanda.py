@@ -380,6 +380,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavcodec")
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavformat")
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavutil")
+    if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lswscale")
     if (PkgSkip("ZLIB")==0):       LibName("ZLIB", "-lz")
     if (PkgSkip("PNG")==0):        LibName("PNG", "-lpng")
     if (PkgSkip("JPEG")==0):       LibName("JPEG", "-ljpeg")
