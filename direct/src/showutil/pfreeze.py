@@ -94,12 +94,18 @@ if __name__ == '__main__':
         basename = os.path.splitext(basename)[0]
         outputType = 'dll'
 
-    freezer.addModule(args[0])
+    startfile = args[0]
+    if startfile.endswith('.py') or startfile.endswith('.pyw') or \
+       startfile.endswith('.pyc') or startfile.endswith('.pyo'):
+        startfile = os.path.splitext(startfile)[0]
+
+    freezer.addModule(startfile)
     if outputType != 'dll':
-        freezer.setMain(args[0])
+        freezer.setMain(startfile)
     freezer.done()
 
     if outputType == 'mf':
         freezer.writeMultifile(basename)
     else:
         freezer.generateCode(basename)
+

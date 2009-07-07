@@ -6,6 +6,7 @@ import sys
 import os
 import marshal
 import imp
+from distutils.sysconfig import get_python_inc, get_python_lib, get_python_version
 
 import direct
 from pandac.PandaModules import *
@@ -36,7 +37,9 @@ linkDll = 'error'
 Python = None
 
 # The directory that includes Python.h.
-PythonIPath = None
+PythonIPath = get_python_inc()
+PythonLPath = get_python_lib()
+PythonVersion = get_python_version()
 
 # The root directory of Microsoft Visual Studio (if relevant)
 MSVS = None
@@ -61,9 +64,9 @@ elif sys.platform == 'darwin':
 
 else:
     # Linux
-    compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 %(filename)s"
-    linkExe = "gcc -o %(basename)s %(basename)s.o"
-    linkDll = "gcc -shared -o %(basename)s.so %(basename)s.o"
+    compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 %(filename)s -I %(pythonIPath)s"
+    linkExe = "gcc -o %(basename)s %(basename)s.o -lpython2.6 -L %(pythonLPath)s"
+    linkDll = "gcc -shared -o %(basename)s.so %(basename)s.o -lpython%(pythonVersion)s -L %(pythonLPath)s"
 
 # The code from frozenmain.c in the Python source repository.
 frozenMainCode = """
@@ -770,6 +773,8 @@ class Freezer:
             'python' : Python,
             'msvs' : MSVS,
             'pythonIPath' : PythonIPath,
+            'pythonLPath' : PythonLPath,
+            'pythonVersion' : PythonVersion,
             'filename' : filename,
             'basename' : basename,
             }
@@ -792,6 +797,8 @@ class Freezer:
             'python' : Python,
             'msvs' : MSVS,
             'pythonIPath' : PythonIPath,
+            'pythonLPath' : PythonLPath,
+            'pythonVersion' : PythonVersion,
             'filename' : filename,
             'basename' : basename,
             }
