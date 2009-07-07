@@ -2,6 +2,10 @@
 // text into the DLL, so Mozilla will recognize the DLL as a plugin.
 // It also defines the MIME type supported by the plugin.
 
+#define APSTUDIO_READONLY_SYMBOLS
+#include "winresrc.h"
+#undef APSTUDIO_READONLY_SYMBOLS
+
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 1,0,0,1
