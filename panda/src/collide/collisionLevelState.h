@@ -49,7 +49,7 @@ public:
   INLINE void prepare_collider(const ColliderDef &def, const NodePath &root);
 
   bool any_in_bounds();
-  void apply_transform();
+  bool apply_transform();
 
   INLINE static bool has_max_colliders();
   INLINE static int get_max_colliders();

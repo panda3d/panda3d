@@ -229,9 +229,14 @@ any_in_bounds() {
 //       Access: Public
 //  Description: Applies the inverse transform from the current node,
 //               if any, onto all the colliders in the level state.
+//
+//               Returns true if the inverse transform is valid, or
+//               false if it is not valid (e.g. the transform has a
+//               scale to zero).  If the inverse transform is not
+//               valid, the caller should not visit this node.
 ////////////////////////////////////////////////////////////////////
 template<class MaskType>
-void CollisionLevelState<MaskType>::
+bool CollisionLevelState<MaskType>::
 apply_transform() {
   // The "parent" bounds list remembers the bounds list of the
   // previous node.
@@ -260,6 +265,11 @@ apply_transform() {
     if (!node_transform->is_identity()) {
       CPT(TransformState) inv_transform = 
         node_transform->invert_compose(TransformState::make_identity());
+      if (!inv_transform->has_mat()) {
+        // No inverse.
+        return false;
+      }
+
       const LMatrix4f &mat = inv_transform->get_mat();
       
       // Now build the new bounding volumes list.
@@ -283,6 +293,8 @@ apply_transform() {
       _local_bounds = new_bounds;
     }    
   }
+
+  return true;
 }
 #endif  // CPPPARSER
 
