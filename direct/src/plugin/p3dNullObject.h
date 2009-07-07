@@ -1,5 +1,5 @@
-// Filename: p3dNoneObject.h
-// Created by:  drose (30Jun09)
+// Filename: p3dNullObject.h
+// Created by:  drose (07Jul09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,20 +12,22 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DNONEOBJECT_H
-#define P3DNONEOBJECT_H
+#ifndef P3DNULLOBJECT_H
+#define P3DNULLOBJECT_H
 
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DNoneObject
-// Description : An object type that contains no value, similar to
-//               Python's None type, or JavaScript's void type.
+//       Class : P3DNullObject
+// Description : An object type that represents a NULL pointer.
+//               Python doesn't have such a concept, but C and
+//               JavaScript do, and it is sometimes an important
+//               return value.
 ////////////////////////////////////////////////////////////////////
-class P3DNoneObject : public P3DObject {
+class P3DNullObject : public P3DObject {
 public:
-  P3DNoneObject();
+  P3DNullObject();
 
 public:
   virtual P3D_object_type get_type() const;

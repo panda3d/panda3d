@@ -126,6 +126,20 @@ run_python() {
   }
   Py_DECREF(app_runner_class);
 
+  // Get the NullObject class.
+  _null_object_class = PyObject_GetAttrString(runp3d, "NullObject");
+  if (_null_object_class == NULL) {
+    PyErr_Print();
+    return false;
+  }
+
+  // And the "Null" instance.
+  _null = PyObject_GetAttrString(runp3d, "Null");
+  if (_null == NULL) {
+    PyErr_Print();
+    return false;
+  }
+
   // Get the BrowserObject class.
   _browser_object_class = PyObject_GetAttrString(runp3d, "BrowserObject");
   if (_browser_object_class == NULL) {
@@ -552,7 +566,8 @@ py_request_func(PyObject *args) {
       nout << "Converting xvalue: " << *xvalue << "\n";
       value = xml_to_pyobj(xvalue);
     } else {
-      value = Py_None;
+      // An absence of a <value> element means a NULL pointer.
+      value = _null;
       Py_INCREF(value);
     }
     nout << "Got script_response " << response_id << ", xvalue = " << xvalue << "\n";
@@ -930,6 +945,10 @@ pyobj_to_xml(PyObject *value) {
       xvalue->SetAttribute("value", str);
     }
 
+  } else if (PyObject_IsInstance(value, _null_object_class)) {
+    // This is a NullObject, our equivalent to a NULL pointer.
+    xvalue->SetAttribute("type", "null");
+
   } else if (PyObject_IsInstance(value, _browser_object_class)) {
     // This is a BrowserObject, a reference to an object that actually
     // exists in the host namespace.  So, pass up the appropriate
@@ -995,6 +1014,10 @@ xml_to_pyobj(TiXmlElement *xvalue) {
     if (value != NULL) {
       return PyString_FromStringAndSize(value->data(), value->length());
     }
+
+  } else if (strcmp(type, "null") == 0) {
+    Py_INCREF(_null);
+    return _null;
 
   } else if (strcmp(type, "browser") == 0) {
     int object_id;

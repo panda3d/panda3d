@@ -294,6 +294,7 @@ typedef struct _P3D_object P3D_object;
 
 /* A list of fundamental object types. */
 typedef enum {
+  P3D_OT_null,
   P3D_OT_none,
   P3D_OT_bool,
   P3D_OT_int,
@@ -449,6 +450,13 @@ struct _P3D_object {
 typedef P3D_class_definition *
 P3D_make_class_definition_func();
 
+/* Allocates a new P3D_object of type null.  This value has no
+   particular value and corresponds a NULL pointer in C or JavaScript.
+   It has no Python equivalent (but we map it to an explicit Null
+   instance in runp3d.py). */
+typedef P3D_object *
+P3D_new_null_object_func();
+
 /* Allocates a new P3D_object of type none.  This value has no
    particular value and corresponds to Python's None type or C's void
    type. */
@@ -594,6 +602,7 @@ typedef struct {
 typedef enum {
   P3D_SO_get_property,
   P3D_SO_set_property,
+  P3D_SO_del_property,
   P3D_SO_call,
 } P3D_script_operation;
 typedef struct {
@@ -729,6 +738,7 @@ EXPCL_P3D_PLUGIN P3D_instance_finish_func P3D_instance_finish;
 EXPCL_P3D_PLUGIN P3D_instance_setup_window_func P3D_instance_setup_window;
 
 EXPCL_P3D_PLUGIN P3D_make_class_definition_func P3D_make_class_definition;
+EXPCL_P3D_PLUGIN P3D_new_null_object_func P3D_new_null_object;
 EXPCL_P3D_PLUGIN P3D_new_none_object_func P3D_new_none_object;
 EXPCL_P3D_PLUGIN P3D_new_bool_object_func P3D_new_bool_object;
 EXPCL_P3D_PLUGIN P3D_new_int_object_func P3D_new_int_object;

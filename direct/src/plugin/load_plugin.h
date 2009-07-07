@@ -28,6 +28,7 @@ extern P3D_instance_finish_func *P3D_instance_finish;
 extern P3D_instance_setup_window_func *P3D_instance_setup_window;
 
 extern P3D_make_class_definition_func *P3D_make_class_definition;
+extern P3D_new_null_object_func *P3D_new_null_object;
 extern P3D_new_none_object_func *P3D_new_none_object;
 extern P3D_new_bool_object_func *P3D_new_bool_object;
 extern P3D_new_int_object_func *P3D_new_int_object;

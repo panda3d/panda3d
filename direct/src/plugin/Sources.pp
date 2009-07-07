@@ -30,6 +30,7 @@
     p3dInstanceManager.h p3dInstanceManager.I \
     p3dIntObject.h \
     p3dMultifileReader.h p3dMultifileReader.I \
+    p3dNoneObject.h p3dNullObject.h \
     p3dPackage.h p3dPackage.I \
     p3dPythonObject.h \
     p3dSession.h p3dSession.I \
@@ -51,6 +52,7 @@
     p3dInstanceManager.cxx \
     p3dIntObject.cxx \
     p3dMultifileReader.cxx \
+    p3dNoneObject.cxx p3dNullObject.cxx \
     p3dPackage.cxx \
     p3dPythonObject.cxx \
     p3dSession.cxx \

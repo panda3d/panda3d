@@ -514,14 +514,14 @@ handle_script_request(P3D_request *request) {
   switch (request->_request._script._op) {
   case P3D_SO_get_property:
     {
-      P3D_object *value = P3D_OBJECT_GET_PROPERTY(object, request->_request._script._property_name);
+      P3D_object *result = P3D_OBJECT_GET_PROPERTY(object, request->_request._script._property_name);
       nout << "get_property, object = " << object << "\n";
       if (object != NULL) {
         nout << "  *object = " << *object << "\n" << flush;
       }
-      nout << "value = " << value << "\n" << flush;
-      if (value != NULL) {
-        nout << "  *value = " << *value << "\n" << flush;
+      nout << "result = " << result << "\n" << flush;
+      if (result != NULL) {
+        nout << "  *result = " << *result << "\n" << flush;
       }
       // We've got the property value; feed it back down to the
       // subprocess.
@@ -533,10 +533,68 @@ handle_script_request(P3D_request *request) {
       
       doc->LinkEndChild(decl);
       doc->LinkEndChild(xcommand);
-      if (value != NULL) {
-        xcommand->LinkEndChild(_session->p3dobj_to_xml(value));
-        P3D_OBJECT_FINISH(value);
+      if (result != NULL) {
+        xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
+        P3D_OBJECT_FINISH(result);
       }
+      
+      _session->send_command(doc);
+    }
+    break;
+
+  case P3D_SO_set_property:
+    {
+      bool result = P3D_OBJECT_SET_PROPERTY(object, request->_request._script._property_name,
+                                            request->_request._script._value);
+      nout << "set_property, object = " << object << "\n";
+      if (object != NULL) {
+        nout << "  *object = " << *object << "\n" << flush;
+      }
+      nout << "result = " << result << "\n" << flush;
+
+      // Feed the result back down to the subprocess.
+      TiXmlDocument *doc = new TiXmlDocument;
+      TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+      TiXmlElement *xcommand = new TiXmlElement("command");
+      xcommand->SetAttribute("cmd", "script_response");
+      xcommand->SetAttribute("unique_id", unique_id);
+      
+      doc->LinkEndChild(decl);
+      doc->LinkEndChild(xcommand);
+
+      TiXmlElement *xvalue = new TiXmlElement("value");
+      xvalue->SetAttribute("type", "bool");
+      xvalue->SetAttribute("value", (int)result);
+      xcommand->LinkEndChild(xvalue);
+      
+      _session->send_command(doc);
+    }
+    break;
+
+  case P3D_SO_del_property:
+    {
+      bool result = P3D_OBJECT_SET_PROPERTY(object, request->_request._script._property_name,
+                                            NULL);
+      nout << "del_property, object = " << object << "\n";
+      if (object != NULL) {
+        nout << "  *object = " << *object << "\n" << flush;
+      }
+      nout << "result = " << result << "\n" << flush;
+
+      // Feed the result back down to the subprocess.
+      TiXmlDocument *doc = new TiXmlDocument;
+      TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+      TiXmlElement *xcommand = new TiXmlElement("command");
+      xcommand->SetAttribute("cmd", "script_response");
+      xcommand->SetAttribute("unique_id", unique_id);
+      
+      doc->LinkEndChild(decl);
+      doc->LinkEndChild(xcommand);
+
+      TiXmlElement *xvalue = new TiXmlElement("value");
+      xvalue->SetAttribute("type", "bool");
+      xvalue->SetAttribute("value", (int)result);
+      xcommand->LinkEndChild(xvalue);
       
       _session->send_command(doc);
     }

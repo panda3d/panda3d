@@ -110,6 +110,8 @@ private:
   char **_py_argv;
 
   PyObject *_runner;
+  PyObject *_null_object_class;
+  PyObject *_null;
   PyObject *_browser_object_class;
   PyObject *_taskMgr;
 

@@ -16,6 +16,7 @@
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
 #include "p3dWindowParams.h"
+#include "p3dNullObject.h"
 #include "p3dNoneObject.h"
 #include "p3dBoolObject.h"
 #include "p3dIntObject.h"
@@ -127,6 +128,17 @@ P3D_make_class_definition() {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3D_class_definition *result = inst_mgr->make_class_definition();
+  
+  RELEASE_LOCK(_api_lock);
+  return result;
+}
+
+P3D_object *
+P3D_new_null_object() {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
+  ACQUIRE_LOCK(_api_lock);
+
+  P3D_object *result = new P3DNullObject();
   
   RELEASE_LOCK(_api_lock);
   return result;

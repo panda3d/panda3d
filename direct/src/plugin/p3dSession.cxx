@@ -16,6 +16,7 @@
 #include "p3dInstance.h"
 #include "p3dInstanceManager.h"
 #include "p3d_plugin_config.h"
+#include "p3dNullObject.h"
 #include "p3dNoneObject.h"
 #include "p3dBoolObject.h"
 #include "p3dIntObject.h"
@@ -321,7 +322,10 @@ command_and_response(TiXmlDocument *command) {
 P3D_object *P3DSession::
 xml_to_p3dobj(const TiXmlElement *xvalue) {
   const char *type = xvalue->Attribute("type");
-  if (strcmp(type, "none") == 0) {
+  if (strcmp(type, "null") == 0) {
+    return new P3DNullObject;
+
+  } else if (strcmp(type, "none") == 0) {
     return new P3DNoneObject;
 
   } else if (strcmp(type, "bool") == 0) {
@@ -382,6 +386,10 @@ p3dobj_to_xml(const P3D_object *obj) {
   TiXmlElement *xvalue = new TiXmlElement("value");
 
   switch (P3D_OBJECT_GET_TYPE(obj)) {
+  case P3D_OT_null:
+    xvalue->SetAttribute("type", "null");
+    break;
+
   case P3D_OT_none:
     xvalue->SetAttribute("type", "none");
     break;
@@ -701,6 +709,22 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
           request->_request_type = P3D_RT_script;
           request->_request._script._object = object;
           request->_request._script._op = P3D_SO_get_property;
+          request->_request._script._property_name = strdup(property_name);
+          request->_request._script._value = NULL;
+          request->_request._script._unique_id = unique_id;
+        } else if (strcmp(operation, "set_property") == 0 && property_name != NULL && xvalue != NULL) {
+          request = new P3D_request;
+          request->_request_type = P3D_RT_script;
+          request->_request._script._object = object;
+          request->_request._script._op = P3D_SO_set_property;
+          request->_request._script._property_name = strdup(property_name);
+          request->_request._script._value = xml_to_p3dobj(xvalue);
+          request->_request._script._unique_id = unique_id;
+        } else if (strcmp(operation, "del_property") == 0 && property_name != NULL) {
+          request = new P3D_request;
+          request->_request_type = P3D_RT_script;
+          request->_request._script._object = object;
+          request->_request._script._op = P3D_SO_del_property;
           request->_request._script._property_name = strdup(property_name);
           request->_request._script._value = NULL;
           request->_request._script._unique_id = unique_id;

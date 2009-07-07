@@ -11,6 +11,7 @@
 #include "p3dMultifileReader.cxx"
 #include "p3dPythonObject.cxx"
 #include "p3dNoneObject.cxx"
+#include "p3dNullObject.cxx"
 #include "p3dObject.cxx"
 #include "p3dPackage.cxx"
 #include "p3dSession.cxx"

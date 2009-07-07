@@ -42,6 +42,7 @@ P3D_instance_finish_func *P3D_instance_finish;
 P3D_instance_setup_window_func *P3D_instance_setup_window;
 
 P3D_make_class_definition_func *P3D_make_class_definition;
+P3D_new_null_object_func *P3D_new_null_object;
 P3D_new_none_object_func *P3D_new_none_object;
 P3D_new_bool_object_func *P3D_new_bool_object;
 P3D_new_int_object_func *P3D_new_int_object;
@@ -165,6 +166,7 @@ load_plugin(const string &p3d_plugin_filename) {
   P3D_instance_setup_window = (P3D_instance_setup_window_func *)get_func(module, "P3D_instance_setup_window");  
 
   P3D_make_class_definition = (P3D_make_class_definition_func *)get_func(module, "P3D_make_class_definition");
+  P3D_new_null_object = (P3D_new_null_object_func *)get_func(module, "P3D_new_null_object");
   P3D_new_none_object = (P3D_new_none_object_func *)get_func(module, "P3D_new_none_object");
   P3D_new_bool_object = (P3D_new_bool_object_func *)get_func(module, "P3D_new_bool_object");
   P3D_new_int_object = (P3D_new_int_object_func *)get_func(module, "P3D_new_int_object");
@@ -189,6 +191,7 @@ load_plugin(const string &p3d_plugin_filename) {
       P3D_instance_setup_window == NULL ||
 
       P3D_make_class_definition == NULL ||
+      P3D_new_null_object == NULL ||
       P3D_new_none_object == NULL ||
       P3D_new_bool_object == NULL ||
       P3D_new_int_object == NULL ||
@@ -212,6 +215,7 @@ load_plugin(const string &p3d_plugin_filename) {
       << "\nP3D_instance_setup_window = " << P3D_instance_setup_window
       
       << "\nP3D_make_class_definition = " << P3D_make_class_definition
+      << "\nP3D_new_null_object = " << P3D_new_null_object
       << "\nP3D_new_none_object = " << P3D_new_none_object
       << "\nP3D_new_bool_object = " << P3D_new_bool_object
       << "\nP3D_new_int_object = " << P3D_new_int_object
@@ -293,6 +297,7 @@ unload_dso() {
   P3D_instance_setup_window = NULL;
 
   P3D_make_class_definition = NULL;
+  P3D_new_null_object = NULL;
   P3D_new_none_object = NULL;
   P3D_new_bool_object = NULL;
   P3D_new_int_object = NULL;
