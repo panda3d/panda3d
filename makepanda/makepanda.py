@@ -40,10 +40,10 @@ THREADCOUNT=0
 CFLAGS=""
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
-  "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN",
+  "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
   "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE",
-  "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM",
-  "OPENCV","FFMPEG","FCOLLADA","PANDATOOL"
+  "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
+  "OPENCV","FFMPEG","FCOLLADA","PLUGIN","PANDATOOL"
 ])
 
 CheckPandaSourceTree()
@@ -72,7 +72,7 @@ def usage(problem):
     print "compiled copy of Panda3D.  Command-line arguments are:"
     print ""
     print "  --help            (print the help message you're reading now)"
-    print "  --target T        (target can be 'all','panda3d','plugins','installer')"
+    print "  --installer       (build an installer)"
     print "  --optimize X      (optimization level can be 1,2,3,4)"
     print "  --version         (set the panda version number)"
     print "  --lzma            (use lzma compression when building installer)"
@@ -306,6 +306,7 @@ if (COMPILER=="MSVC"):
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   THIRDPARTYLIBS + "opencv/lib/cvaux.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   THIRDPARTYLIBS + "opencv/lib/ml.lib")
     if (PkgSkip("OPENCV")==0):   LibName("OPENCV",   THIRDPARTYLIBS + "opencv/lib/cxcore.lib")
+    if (PkgSkip("TINYXML")==0):  LibName("TINYXML",  THIRDPARTYLIBS + "tinyxml/lib/tinyxml.lib")
     for pkg in MAYAVERSIONS:
         if (PkgSkip(pkg)==0):
             LibName(pkg, '"' + SDK[pkg] + '/lib/Foundation.lib"')
@@ -338,9 +339,9 @@ if (COMPILER=="LINUX"):
     PkgConfigEnable("GTK2", "gtk+-2.0")
     
     if (sys.platform == "darwin"):
-        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "FFMPEG", "PNG", "JPEG", "TIFF"]
+        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "FFMPEG", "PNG", "JPEG", "TIFF", "TINYXML"]
     else:
-        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "NVIDIACG", "FFMPEG", "OPENAL"]
+        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "NVIDIACG", "FFMPEG", "OPENAL", "TINYXML"]
     for pkg in pkgs:
         if (PkgSkip(pkg)==0):
             if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
@@ -505,9 +506,9 @@ def CompileCxx(obj,src,opts):
         cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /Fo" + obj + " /nologo /c "
         for x in ipath: cmd = cmd + " /I" + x
         for (opt,dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /I' + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " /I" + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /D' + var + "=" + val
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " /D" + var + "=" + val
         if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
         if (opts.count('MSFORSCOPE')): cmd = cmd + ' /Zc:forScope-'
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
@@ -769,6 +770,26 @@ def CompileEggPZ(eggpz, src, opts):
 
 ##########################################################################################
 #
+# CompileRC
+#
+##########################################################################################
+
+def CompileRC(target, src, opts):
+    ipath = GetListOption(opts, "DIR:")
+    if (COMPILER=="MSVC"):
+        cmd = "rc "
+        cmd += "/Fo" + BracketNameWithQuotes(target)
+        for x in ipath: cmd = cmd + " /I" + x
+        for (opt,dir) in INCDIRECTORIES:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " /I" + BracketNameWithQuotes(dir)
+        for (opt,var,val) in DEFSYMBOLS:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " /D" + var + "=" + val
+        cmd += " " + BracketNameWithQuotes(src)
+
+        oscmd(cmd)
+
+##########################################################################################
+#
 # CompileAnything
 #
 ##########################################################################################
@@ -788,6 +809,8 @@ def CompileAnything(target, inputs, opts):
         return CompileIgate(target, inputs, opts)
     elif (origsuffix==".pz"):
         return CompileEggPZ(target, infile, opts)
+    elif (origsuffix==".res"):
+        return CompileRC(target, infile, opts)
     elif (origsuffix==".obj"):
         if (infile.endswith(".cxx") or infile.endswith(".c") or infile.endswith(".mm")):
             return CompileCxx(target, infile, opts)
@@ -797,6 +820,8 @@ def CompileAnything(target, inputs, opts):
             return CompileFlex(target, infile, opts)
         elif (infile.endswith(".in")):
             return CompileImod(target, inputs, opts)
+        elif (infile.endswith(".rc")):
+            return CompileRC(target, infile, opts)
     exit("Don't know how to compile: "+target)
 
 ##########################################################################################
@@ -927,6 +952,7 @@ DTOOL_CONFIG=[
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_FCOLLADA",                  'UNDEF',                  'UNDEF'),
+    ("HAVE_NPAPI",                     'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 ]
@@ -949,6 +975,7 @@ PRC_PARAMETERS=[
 def WriteConfigSettings():
     dtool_config={}
     prc_parameters={}
+    plugin_config={}
 
     if (sys.platform == "win32") or (sys.platform == "win64"):
         for key,win,unix in DTOOL_CONFIG:
@@ -1016,6 +1043,16 @@ def WriteConfigSettings():
     if (sys.platform.startswith('win') and platform.architecture()[0] == '64bit'):
         dtool_config["SIMPLE_THREADS"] = 'UNDEF'
 
+    if (PkgSkip("PLUGIN")==0):
+        #FIXME: do this at runtime or so.
+        plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file://C:\\p3dstage"
+        plugin_config["P3D_PLUGIN_LOGFILE1"] = ""
+        plugin_config["P3D_PLUGIN_LOGFILE2"] = ""
+        plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
+        plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
+        if sys.platform.startswith("win"):
+          plugin_config["P3D_PLUGIN_PLATFORM"] = sys.platform
+
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in prc_parameters.keys():
         if ((key == "DEFAULT_PRC_DIR") or (key[:4]=="PRC_")):
@@ -1032,6 +1069,15 @@ def WriteConfigSettings():
         else:                conf = conf + "#define " + key + " " + val + "\n"
         del dtool_config[key]
     ConditionalWriteFile(GetOutputDir() + '/include/dtool_config.h', conf)
+
+    if (PkgSkip("PLUGIN")==0):
+        conf = "/* p3d_plugin_config.h.  Generated automatically by makepanda.py */\n"
+        for key in plugin_config.keys():
+            val = plugin_config[key]
+            if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
+            else:                conf = conf + "#define " + key + " \"" + val + "\"\n"
+            del plugin_config[key]
+        ConditionalWriteFile(GetOutputDir() + '/include/p3d_plugin_config.h', conf)
 
     for x in PkgListGet():
         if (PkgSkip(x)): ConditionalWriteFile(GetOutputDir() + '/tmp/dtool_have_'+x.lower()+'.dat',"0\n")
@@ -1312,6 +1358,9 @@ CopyAllHeaders('direct/src/showbase')
 CopyAllHeaders('direct/metalibs/direct')
 CopyAllHeaders('direct/src/dcparse')
 CopyAllHeaders('direct/src/heapq')
+CopyAllHeaders('direct/src/plugin')
+CopyAllHeaders('direct/src/plugin_npapi')
+CopyAllHeaders('direct/src/plugin_standalone')
 
 CopyAllHeaders('pandatool/src/pandatoolbase')
 CopyAllHeaders('pandatool/src/converter')
@@ -2767,6 +2816,51 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('libp3heapq.dll', input='libpandaexpress.dll')
   TargetAdd('libp3heapq.dll', input=COMMON_DTOOL_LIBS)
   TargetAdd('libp3heapq.dll', opts=['ADVAPI'])
+
+#
+# DIRECTORY: direct/src/plugin/
+#
+
+if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  OPTS=['DIR:direct/src/plugin', 'TINYXML', 'OPENSSL']
+  TargetAdd('plugin_common.obj', opts=OPTS, input='plugin_common_composite1.cxx')
+  
+  OPTS=['DIR:direct/src/plugin', 'TINYXML', 'ZLIB', 'JPEG']
+  TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
+  TargetAdd('plugin_handleStream.obj', opts=OPTS, input='handleStream.cxx')
+  TargetAdd('plugin_handleStreamBuf.obj', opts=OPTS, input='handleStreamBuf.cxx')
+  TargetAdd('p3d_plugin.dll', input='plugin_common.obj')
+  TargetAdd('p3d_plugin.dll', input='plugin_plugin.obj')
+  TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
+  TargetAdd('p3d_plugin.dll', input='plugin_handleStreamBuf.obj')
+  TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL'])
+
+  if (PkgSkip("PYTHON")==0):
+    TargetAdd('plugin_p3dCInstance.obj', opts=OPTS, input='p3dCInstance.cxx')
+    TargetAdd('plugin_p3dPythonRun.obj', opts=OPTS, input='p3dPythonRun.cxx')
+    TargetAdd('p3dpython.exe', input='plugin_p3dCInstance.obj')
+    TargetAdd('p3dpython.exe', input='plugin_handleStream.obj')
+    TargetAdd('p3dpython.exe', input='plugin_handleStreamBuf.obj')
+    TargetAdd('p3dpython.exe', input='plugin_p3dPythonRun.obj')
+    TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
+    TargetAdd('p3dpython.exe', opts=['TINYXML'])
+
+#
+# DIRECTORY: direct/src/plugin_npapi/
+#
+
+if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
+  OPTS=['DIR:direct/src/plugin_npapi']
+  ConditionalWriteFile(GetOutputDir()+"/include/resource.h", "")
+  TargetAdd('nppanda3d.res', opts=OPTS, input='nppanda3d.rc')
+  
+  OPTS=['DIR:direct/src/plugin_npapi', 'NPAPI', 'TINYXML']
+  TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
+  TargetAdd('nppanda3d.dll', input='plugin_common.obj')
+  TargetAdd('nppanda3d.dll', input='plugin_npapi_nppanda3d_composite1.obj')
+  TargetAdd('nppanda3d.dll', input='nppanda3d.res')
+  TargetAdd('nppanda3d.dll', input='nppanda3d.def', ipath=OPTS)
+  TargetAdd('nppanda3d.dll', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
