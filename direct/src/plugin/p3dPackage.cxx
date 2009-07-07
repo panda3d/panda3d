@@ -252,8 +252,6 @@ desc_file_download_finished(bool success) {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
-  nout << "got desc file\n";
-
   TiXmlElement *xpackage = doc->FirstChildElement("package");
   TiXmlElement *uncompressed_archive = NULL;
   TiXmlElement *compressed_archive = NULL;
@@ -285,8 +283,6 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
     _components.push_back(file);
     component = component->NextSiblingElement("component");
   }
-
-  nout << "got " << _components.size() << " components\n";
 
   // Verify all of the components.
   bool all_components_ok = true;
@@ -383,8 +379,6 @@ compressed_archive_download_finished(bool success) {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 uncompress_archive() {
-  nout << "uncompressing " << _compressed_archive.get_filename() << "\n";
-
   string source_pathname = _package_dir + "/" + _compressed_archive.get_filename();
   string target_pathname = _package_dir + "/" + _uncompressed_archive.get_filename();
 
@@ -517,8 +511,6 @@ uncompress_archive() {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 extract_archive() {
-  nout << "extracting " << _uncompressed_archive.get_filename() << "\n";
-
   string source_pathname = _package_dir + "/" + _uncompressed_archive.get_filename();
   P3DMultifileReader reader;
   if (!reader.extract(source_pathname, _package_dir,
@@ -529,7 +521,6 @@ extract_archive() {
     return;
   }
 
-  nout << "done extracting\n";
   report_done(true);
 }
 
@@ -556,8 +547,6 @@ report_progress(double progress) {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 report_done(bool success) {
-  nout << "report_done(" << success << "), "
-       << _callbacks.size() << " callbacks\n";
   if (success) {
     _ready = true;
     _failed = false;

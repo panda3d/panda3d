@@ -104,7 +104,6 @@ extract(const string &pathname, const string &to_dir,
   Subfiles::iterator si;
   for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
     const Subfile &s = (*si);
-    nout << s._filename << "\n";
 
     string output_pathname = to_dir + "/" + s._filename;
     if (!mkfile_complete(output_pathname)) {

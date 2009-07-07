@@ -59,7 +59,6 @@ P3DInstanceManager() {
 ////////////////////////////////////////////////////////////////////
 P3DInstanceManager::
 ~P3DInstanceManager() {
-  nout << "~P3DInstanceManager\n" << flush;
   if (_started_notify_thread) {
     _notify_ready.acquire();
     _notify_thread_continue = false;
@@ -71,7 +70,6 @@ P3DInstanceManager::
 
   assert(_instances.empty());
   assert(_sessions.empty());
-  nout << "done ~P3DInstanceManager\n" << flush;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -155,7 +153,6 @@ start_instance(P3DInstance *inst, const string &p3d_filename,
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
 finish_instance(P3DInstance *inst) {
-  nout << "finish_instance(" << inst << ")\n" << flush;
   Instances::iterator ii;
   ii = _instances.find(inst);
   assert(ii != _instances.end());
@@ -376,5 +373,4 @@ nt_thread_run() {
     _notify_ready.wait();
   }
   _notify_ready.release();
-  nout << "exiting nt_thread_run\n" << flush;
 }

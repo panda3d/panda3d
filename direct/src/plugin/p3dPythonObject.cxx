@@ -205,7 +205,6 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
   doc->LinkEndChild(decl);
   doc->LinkEndChild(xcommand);
   TiXmlDocument *response = _session->command_and_response(doc);
-  nout << "call response pointer: " << response << "\n" << flush;
 
   P3D_object *result = NULL;
   if (response != NULL) {
@@ -219,10 +218,6 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
     delete response;
   }
 
-  nout << "call result = " << result << "\n" << flush;
-  if (result != NULL) {
-    nout << "  result = " << *result << "\n" << flush;
-  }
   return result;
 }
 
