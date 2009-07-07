@@ -20,8 +20,7 @@
 #include "p3dSplashWindow.h"
 #include "p3dWinSplashWindow.h"
 #include "p3dObject.h"
-#include "p3dNoneObject.h"
-#include "p3dPythonObject.h"
+#include "p3dNullObject.h"
 
 #include <sstream>
 #include <algorithm>
@@ -84,7 +83,6 @@ P3DInstance::
   _packages.clear();
 
   if (_splash_window != NULL) {
-    nout << "Deleting splash window in destructor\n" << flush;
     delete _splash_window;
     _splash_window = NULL;
   }
@@ -93,8 +91,6 @@ P3DInstance::
 
   // TODO: Is it possible for someone to delete an instance while a
   // download is still running?  Who will crash when this happens?
-
-  nout << "deleting instance " << this << "\n" << flush;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -176,7 +172,6 @@ set_wparams(const P3DWindowParams &wparams) {
 P3D_object *P3DInstance::
 get_panda_script_object() const {
   assert(_session != NULL);
-  nout << "Called P3DInstance::get_panda_script_object()\n";
 
   TiXmlDocument *doc = new TiXmlDocument;
   TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
@@ -186,7 +181,6 @@ get_panda_script_object() const {
   doc->LinkEndChild(decl);
   doc->LinkEndChild(xcommand);
   TiXmlDocument *response = _session->command_and_response(doc);
-  nout << "response pointer: " << response << "\n" << flush;
 
   P3D_object *result = NULL;
   if (response != NULL) {
@@ -200,10 +194,10 @@ get_panda_script_object() const {
     delete response;
   }
 
-  nout << "Returning " << result << "\n" << flush;
-  if (result != NULL) {
-    nout << "result = " << *result << "\n" << flush;
+  if (result == NULL) {
+    result = new P3DNullObject;
   }
+
   return result;
 }
 
@@ -217,7 +211,6 @@ get_panda_script_object() const {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_browser_script_object(P3D_object *browser_script_object) {
-  nout << "Called P3DInstance::set_browser_script_object()\n";
   if (browser_script_object != _browser_script_object) {
     if (_browser_script_object != NULL) {
       P3D_OBJECT_FINISH(_browser_script_object);
@@ -265,8 +258,6 @@ get_request() {
   }
   RELEASE_LOCK(_request_lock);
 
-  nout << "get_request: " << result << "\n" << flush;
-
   if (result != NULL) {
     switch (result->_request_type) {
     case P3D_RT_notify:
@@ -295,8 +286,6 @@ get_request() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_request(P3D_request *request) {
-  nout << "Instance " << this << " add_request(" << request->_request_type
-       << ")\n" << flush;
   request->_instance = this;
 
   ACQUIRE_LOCK(_request_lock);
@@ -353,7 +342,6 @@ feed_url_stream(int unique_id,
 
   if (!download_ok || download->get_download_finished()) {
     // All done.
-    nout << "completed download " << unique_id << "\n" << flush;
     _downloads.erase(di);
     delete download;
   }
@@ -397,9 +385,6 @@ start_download(P3DDownload *download) {
 
   bool inserted = _downloads.insert(Downloads::value_type(download_id, download)).second;
   assert(inserted);
-
-  nout << "beginning download " << download_id << ": " << download->get_url()
-       << "\n" << flush;
 
   P3D_request *request = new P3D_request;
   request->_request_type = P3D_RT_get_url;
@@ -489,10 +474,8 @@ handle_notify_request(P3D_request *request) {
   if (strcmp(message, "onwindowopen") == 0) {
     // The process told us that it just succesfully opened its
     // window.
-    nout << "Instance " << this << " got onwindowopen\n" << flush;
     _instance_window_opened = true;
     if (_splash_window != NULL) {
-      nout << "Deleting splash window\n" << flush;
       delete _splash_window;
       _splash_window = NULL;
     }
@@ -515,14 +498,7 @@ handle_script_request(P3D_request *request) {
   case P3D_SO_get_property:
     {
       P3D_object *result = P3D_OBJECT_GET_PROPERTY(object, request->_request._script._property_name);
-      nout << "get_property, object = " << object << "\n";
-      if (object != NULL) {
-        nout << "  *object = " << *object << "\n" << flush;
-      }
-      nout << "result = " << result << "\n" << flush;
-      if (result != NULL) {
-        nout << "  *result = " << *result << "\n" << flush;
-      }
+
       // We've got the property value; feed it back down to the
       // subprocess.
       TiXmlDocument *doc = new TiXmlDocument;
@@ -546,11 +522,6 @@ handle_script_request(P3D_request *request) {
     {
       bool result = P3D_OBJECT_SET_PROPERTY(object, request->_request._script._property_name,
                                             request->_request._script._value);
-      nout << "set_property, object = " << object << "\n";
-      if (object != NULL) {
-        nout << "  *object = " << *object << "\n" << flush;
-      }
-      nout << "result = " << result << "\n" << flush;
 
       // Feed the result back down to the subprocess.
       TiXmlDocument *doc = new TiXmlDocument;
@@ -575,11 +546,6 @@ handle_script_request(P3D_request *request) {
     {
       bool result = P3D_OBJECT_SET_PROPERTY(object, request->_request._script._property_name,
                                             NULL);
-      nout << "del_property, object = " << object << "\n";
-      if (object != NULL) {
-        nout << "  *object = " << *object << "\n" << flush;
-      }
-      nout << "result = " << result << "\n" << flush;
 
       // Feed the result back down to the subprocess.
       TiXmlDocument *doc = new TiXmlDocument;
@@ -633,8 +599,6 @@ make_splash_window() {
   char *name = tempnam(NULL, "p3d_");
   string filename = name;
   free(name);
-
-  nout << "Downloading splash image into " << filename << "\n";
 
   // Start downloading the requested splash image.
   SplashDownload *download = new SplashDownload(this);

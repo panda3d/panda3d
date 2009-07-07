@@ -27,6 +27,7 @@ from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase import AppRunnerGlobal
 import os
+import types
 import __builtin__
 
 MultifileRoot = '/mf'
@@ -41,10 +42,10 @@ default-model-extension .bam
 class ArgumentError(AttributeError):
     pass
 
-class ScriptRoot:
+class ScriptAttributes:
     """ This dummy class serves as the root object for the scripting
     interface.  The Python code can store objects and functions here
-    for direct meddling by the browser's JavaScript code. """
+    for direct inspection by the browser's JavaScript code. """
     pass
 
 class AppRunner(DirectObject):
@@ -57,15 +58,23 @@ class AppRunner(DirectObject):
         self.started = False
         self.windowPrc = None
 
+        # Store this Null instance where the application can easily
+        # get to it.
+        self.Null = Null
+
         # This is per session.
         self.nextScriptId = 0
 
         # TODO: we need one of these per instance, not per session.
         self.instanceId = None
-        self.scriptRoot = ScriptRoot()
 
-        # This will be the browser's toplevel window DOM object.
-        self.window = None
+        # The attributes of this object will be exposed as attributes
+        # of the plugin instance in the DOM.
+        self.attributes = ScriptAttributes()
+
+        # This will be the browser's toplevel window DOM object;
+        # e.g. self.dom.document will be the document.
+        self.dom = None
 
         # This is the default requestFunc that is installed if we
         # never call setRequestFunc().
@@ -151,13 +160,20 @@ class AppRunner(DirectObject):
             if hasattr(main, 'main') and callable(main.main):
                 main.main()
 
-    def setBrowserScriptObject(self, window):
-        """ Replaces self.window with the browser's toplevel DOM
+    def getPandaScriptObject(self):
+        """ Called by the browser to query the Panda instance's
+        toplevel scripting object, for querying properties in the
+        Panda instance.  The attributes on this object are mapped to
+        the plugin instance within the DOM. """
+        return self.attributes
+
+    def setBrowserScriptObject(self, dom):
+        """ Called by the browser to supply the browser's toplevel DOM
         object, for controlling the JavaScript and the document in the
         same page with the Panda3D plugin. """
 
-        self.window = window
-        print "setBrowserScriptObject(%s)" % (window)
+        self.dom = dom
+        print "setBrowserScriptObject(%s)" % (dom)
 
     def setP3DFilename(self, p3dFilename, tokens = [],
                        instanceId = None):
@@ -166,7 +182,7 @@ class AppRunner(DirectObject):
         # for this instance.
         self.instanceId = instanceId
         
-        # Now that we have an instanceId, we can response to queries
+        # Now that we have an instanceId, we can respond to queries
         # and such.
         self.sendRequest('notify', 'onpythonload')
 
@@ -266,8 +282,6 @@ class AppRunner(DirectObject):
         return self.requestFunc(self.instanceId, request, args)
 
     def windowEvent(self, win):
-        print "Got window event in runp3d"
-
         self.sendRequest('notify', 'onwindowopen')
 
     def scriptRequest(self, operation, object, propertyName = None,
@@ -297,7 +311,6 @@ class AppRunner(DirectObject):
 
         # Now wait for the response to come in.
         result = self.sendRequest('wait_script_response', uniqueId)
-        print "result for %s.%s = %s" % (object, propertyName, result,)
         return result
 
     def parseSysArgs(self):
@@ -332,6 +345,16 @@ class AppRunner(DirectObject):
 
         return (osFilename, tokens)
 
+class NullObject:
+    """ This is a special object that is returned by the browser to
+    represent a NULL pointer, typically the return value for a failed
+    operation.  It has no attributes. """
+    pass
+
+# In fact, we normally always return this precise instance of the
+# NullObject.
+Null = NullObject()
+
 class BrowserObject:
     """ This class provides the Python wrapper around some object that
     actually exists in the plugin host's namespace, e.g. a JavaScript
@@ -348,25 +371,27 @@ class BrowserObject:
         return True
 
     def __getattr__(self, name):
-        """ Remaps attempts to query an attribute into the appropriate
-        calls to query the actual browser object under the hood.  """
+        """ Remaps attempts to query an attribute, as in obj.attr,
+        into the appropriate calls to query the actual browser object
+        under the hood.  """
 
-        print "__getattr_(self, %s)" % (name)
-        print "runner = %s" % (self.__runner)
         value = self.__runner.scriptRequest('get_property', self,
                                             propertyName = name)
+        if value is Null:
+            # Failed to retrieve the attribute.
+            raise AttributeError(name)
+
         return value
-        # raise AttributeError(name)
 
     def __setattr__(self, name, value):
         if name in self.__dict__:
             self.__dict__[name] = value
             return
 
-        value = self.__runner.scriptRequest('set_property', self,
-                                            propertyName = name,
-                                            value = value)
-        if not value:
+        result = self.__runner.scriptRequest('set_property', self,
+                                             propertyName = name,
+                                             value = value)
+        if not result:
             raise AttributeError(name)
 
     def __delattr__(self, name):
@@ -374,10 +399,49 @@ class BrowserObject:
             del self.__dict__[name]
             return
 
-        value = self.__runner.scriptRequest('del_property', self,
-                                            propertyName = name)
-        if not value:
+        result = self.__runner.scriptRequest('del_property', self,
+                                             propertyName = name)
+        if not result:
             raise AttributeError(name)
+
+    def __getitem__(self, key):
+        """ Remaps attempts to query an attribute, as in obj['attr'],
+        into the appropriate calls to query the actual browser object
+        under the hood.  Following the JavaScript convention, we treat
+        obj['attr'] almost the same as obj.attr. """
+
+        value = self.__runner.scriptRequest('get_property', self,
+                                            propertyName = str(key))
+        if value is Null:
+            # Failed to retrieve the property.  We return IndexError
+            # for numeric keys so we can properly support Python's
+            # iterators, but we return KeyError for string keys to
+            # emulate mapping objects.
+            if isinstance(key, types.StringTypes):
+                raise KeyError(key)
+            else:
+                raise IndexError(key)
+
+        return value;
+
+    def __setitem__(self, key, value):
+        result = self.__runner.scriptRequest('set_property', self,
+                                             propertyName = str(key),
+                                             value = value)
+        if not result:
+            if isinstance(key, types.StringTypes):
+                raise KeyError(key)
+            else:
+                raise IndexError(key)
+
+    def __delitem__(self, key):
+        result = self.__runner.scriptRequest('del_property', self,
+                                             propertyName = str(key))
+        if not result:
+            if isinstance(key, types.StringTypes):
+                raise KeyError(key)
+            else:
+                raise IndexError(key)
 
 if __name__ == '__main__':
     runner = AppRunner()

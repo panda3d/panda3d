@@ -214,7 +214,6 @@ void P3DSession::
 send_command(TiXmlDocument *command) {
   if (_p3dpython_running) {
     // Python is running.  Send the command.
-    nout << "Sending " << *command << "\n" << flush;
     _pipe_write << *command << flush;
     delete command;
   } else {
@@ -258,7 +257,6 @@ command_and_response(TiXmlDocument *command) {
 
   // Now block, waiting for a response to be delivered.  We assume
   // only one thread will be waiting at a time.
-  nout << "Waiting for response " << response_id << "\n" << flush;
   _response_ready.acquire();
   while (_response == NULL || _got_response_id != response_id) {
     if (_response != NULL) {
@@ -306,8 +304,6 @@ command_and_response(TiXmlDocument *command) {
   _got_response_id = -1;
 
   _response_ready.release();
-
-  nout << "Got response: " << *response << "\n" << flush;
 
   return response;
 }
@@ -358,8 +354,6 @@ xml_to_p3dobj(const TiXmlElement *xvalue) {
     int object_id;
     if (xvalue->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
       P3D_object *obj = (P3D_object *)object_id;
-      nout << "Found object " << obj << "\n" << flush;
-      nout << "  formatted is " << *obj << "\n" << flush;
       return P3D_OBJECT_COPY(obj);
     }
 
@@ -534,8 +528,6 @@ start_p3dpython() {
   }
   _p3dpython_running = true;
 
-  nout << "Created child process\n" << flush;
-
   if (!_pipe_read) {
     nout << "unable to open read pipe\n" << flush;
   }
@@ -597,14 +589,12 @@ join_read_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 rt_thread_run() {
-  nout << "session thread reading.\n" << flush;
   while (_read_thread_continue) {
     TiXmlDocument *doc = new TiXmlDocument;
 
     _pipe_read >> *doc;
     if (!_pipe_read || _pipe_read.eof()) {
       // Some error on reading.  Abort.
-      nout << "Error on session reading.\n" << flush;
       rt_terminate();
       return;
     }
@@ -622,8 +612,6 @@ rt_thread_run() {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 rt_handle_request(TiXmlDocument *doc) {
-  nout << "Session got request: " << *doc << "\n" << flush;
-
   TiXmlElement *xresponse = doc->FirstChildElement("response");
   if (xresponse != (TiXmlElement *)NULL) {
     int response_id;
@@ -649,7 +637,6 @@ rt_handle_request(TiXmlDocument *doc) {
 
   TiXmlElement *xrequest = doc->FirstChildElement("request");
   if (xrequest != (TiXmlElement *)NULL) {
-    nout << "Handling request\n" << flush;
     int instance_id;
     if (xrequest->QueryIntAttribute("instance_id", &instance_id) == TIXML_SUCCESS) {
       // Look up the particular instance this is related to.
@@ -665,7 +652,6 @@ rt_handle_request(TiXmlDocument *doc) {
       }
       RELEASE_LOCK(_instances_lock);
     }
-    nout << "done handling request\n" << flush;
   }
 
   delete doc;
@@ -699,11 +685,7 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
       xrequest->Attribute("unique_id", &unique_id);
 
       if (operation != NULL && xobject != NULL) {
-        nout << "xobject = " << *xobject << "\n" << flush;
         P3D_object *object = xml_to_p3dobj(xobject);
-        nout << "converted to " << object << "\n" << flush;
-        nout << "object = " << *object << "\n" << flush;
-        nout << "operation = " << *operation << "\n" << flush;
         if (strcmp(operation, "get_property") == 0 && property_name != NULL) {
           request = new P3D_request;
           request->_request_type = P3D_RT_script;
@@ -737,7 +719,7 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
       }          
 
     } else {
-      nout << "ignoring request of type " << rtype << "\n";
+      nout << "Ignoring request of type " << rtype << "\n";
     }
   }
 

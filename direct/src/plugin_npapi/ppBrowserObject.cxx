@@ -121,6 +121,12 @@ get_repr(char *buffer, int buffer_length) const {
 P3D_object *PPBrowserObject::
 get_property(const string &property) const {
   NPIdentifier property_name = browser->getstringidentifier(property.c_str());
+  if (!browser->hasproperty(_instance->get_npp_instance(), _npobj,
+                            property_name)) {
+    // No such property.
+    return NULL;
+  }
+
   NPVariant result;
   if (!browser->getproperty(_instance->get_npp_instance(), _npobj,
                             property_name, &result)) {
@@ -142,10 +148,30 @@ get_property(const string &property) const {
 ////////////////////////////////////////////////////////////////////
 bool PPBrowserObject::
 set_property(const string &property, P3D_object *value) {
+  NPIdentifier property_name = browser->getstringidentifier(property.c_str());
+  bool result;
   if (value != NULL) {
+    // Set the property.
+    if (P3D_OBJECT_GET_TYPE(value) != P3D_OT_null) {
+      NPVariant npvalue;
+      _instance->p3dobj_to_variant(&npvalue, value);
+      result = browser->setproperty(_instance->get_npp_instance(), _npobj,
+                                    property_name, &npvalue);
+      browser->releasevariantvalue(&npvalue);
+    } else {
+      // Actually, delete the property after all.
+      result = browser->removeproperty(_instance->get_npp_instance(), _npobj,
+                                       property_name);
+    }
     P3D_OBJECT_FINISH(value);
+
+  } else {
+    // Delete the property.
+    result = browser->removeproperty(_instance->get_npp_instance(), _npobj,
+                                     property_name);
   }
-  return false;
+
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -34,7 +34,6 @@
 PPInstance::
 PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode, 
            int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
-  logfile << "constructing " << this << "\n" << flush;
   _p3d_inst = NULL;
 
   _npp_instance = instance;
@@ -47,8 +46,6 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
     P3D_token token;
     token._keyword = strdup(argn[i]);
     token._value = strdup(argv[i]);
-    logfile
-      << " " << i << ": " << token._keyword << " = " << token._value << "\n";
     _tokens.push_back(token);
   }
 
@@ -72,9 +69,6 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
 ////////////////////////////////////////////////////////////////////
 PPInstance::
 ~PPInstance() {
-  logfile
-    << "destructing PPInstance " << this << "\n";
-
 #ifdef _WIN32
   if (_got_window) {
     // Restore the parent window to its own window handler.
@@ -330,7 +324,6 @@ stream_as_file(NPStream *stream, const char *fname) {
       }
     }
     filename = fname2;
-    logfile << "converted filename to " << filename << "\n";
   }
 
   // Here's another temporary hack.  In addition to the weird filename
@@ -343,7 +336,6 @@ stream_as_file(NPStream *stream, const char *fname) {
   // the filename to point to the source file.
   if (strncmp(stream->url, "file://", 7) == 0) {
     filename = stream->url + 7;
-    logfile << "converted filename again to " << filename << "\n";
   }
 
 #endif  // __APPLE__
@@ -353,7 +345,6 @@ stream_as_file(NPStream *stream, const char *fname) {
   case PPDownloadRequest::RT_contents_file:
     // Now we have the contents.xml file.  Read this to get the
     // filename and md5 hash of our core API DLL.
-    logfile << "got contents file " << filename << "\n" << flush;
     if (!read_contents_file(filename)) {
       logfile << "Unable to read contents file\n";
       // TODO: fail
@@ -388,16 +379,12 @@ stream_as_file(NPStream *stream, const char *fname) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 handle_request(P3D_request *request) {
-  logfile
-    << "handle_request: " << request << ", " << request->_request_type
-    << " within " << this << "\n" << flush;
   assert(request->_instance == _p3d_inst);
 
   bool handled = false;
 
   switch (request->_request_type) {
   case P3D_RT_stop:
-    logfile << "Got P3D_RT_stop\n";
     if (_p3d_inst != NULL) {
       P3D_instance_finish(_p3d_inst);
       _p3d_inst = NULL;
@@ -408,9 +395,6 @@ handle_request(P3D_request *request) {
 
   case P3D_RT_get_url:
     {
-      logfile << "Got P3D_RT_get_url: " << request->_request._get_url._url
-              << "\n";
-      
       PPDownloadRequest *req = 
         new PPDownloadRequest(PPDownloadRequest::RT_user, 
                               request->_request._get_url._unique_id);
@@ -421,15 +405,11 @@ handle_request(P3D_request *request) {
 
   case P3D_RT_notify:
     {
-      logfile << "Got P3D_RT_notify: " << request->_request._notify._message
-              << "\n" << flush;
-
       if (_script_object != NULL &&
           strcmp(request->_request._notify._message, "onpythonload") == 0) {
         // Now that Python is running, initialize our script_object
         // with the proper P3D object pointer.
         P3D_object *obj = P3D_instance_get_panda_script_object(_p3d_inst);
-        logfile << "late obj = " << obj << "\n" << flush;
         _script_object->set_p3d_object(obj);
       }
     }
@@ -477,9 +457,7 @@ handle_request_loop() {
 ////////////////////////////////////////////////////////////////////
 NPObject *PPInstance::
 get_panda_script_object() {
-  logfile << "get_panda_script_object\n" << flush;
   if (_script_object != NULL) {
-    logfile << "returning _script_object ref = " << _script_object->referenceCount << "\n";
     return _script_object;
   }
 
@@ -487,14 +465,10 @@ get_panda_script_object() {
 
   if (_p3d_inst != NULL) {
     obj = P3D_instance_get_panda_script_object(_p3d_inst);
-    logfile << "obj = " << obj << "\n" << flush;
   }
 
   _script_object = PPPandaObject::make_new(this, obj);
-  logfile << "_script_object ref = " << _script_object->referenceCount << "\n";
   browser->retainobject(_script_object);
-  logfile << "after retain, _script_object ref = " << _script_object->referenceCount << "\n";
-  logfile << "ppobj = " << _script_object << "\n" << flush;
   return _script_object;
 }
 
@@ -507,6 +481,10 @@ get_panda_script_object() {
 void PPInstance::
 p3dobj_to_variant(NPVariant *result, const P3D_object *object) {
   switch (P3D_OBJECT_GET_TYPE(object)) {
+  case P3D_OT_null:
+    NULL_TO_NPVARIANT(*result);
+    break;
+
   case P3D_OT_none:
     VOID_TO_NPVARIANT(*result);
     break;
@@ -551,8 +529,9 @@ p3dobj_to_variant(NPVariant *result, const P3D_object *object) {
 ////////////////////////////////////////////////////////////////////
 P3D_object *PPInstance::
 variant_to_p3dobj(const NPVariant *variant) {
-  if (NPVARIANT_IS_VOID(*variant) ||
-      NPVARIANT_IS_NULL(*variant)) {
+  if (NPVARIANT_IS_NULL(*variant)) {
+    return P3D_new_null_object();
+  } else if (NPVARIANT_IS_VOID(*variant)) {
     return P3D_new_none_object();
   } else if (NPVARIANT_IS_BOOLEAN(*variant)) {
     return P3D_new_bool_object(NPVARIANT_TO_BOOLEAN(*variant));
@@ -675,7 +654,6 @@ downloaded_plugin(const string &filename) {
 
   if (_core_api_dll.quick_verify(_root_dir)) {
     // We downloaded and installed it successfully.  Now load it.
-    logfile << "Successfully downloaded " << pathname << "\n";
     do_load_plugin();
     return;
   }
@@ -711,7 +689,6 @@ do_load_plugin() {
     logfile << "Unable to launch core API in " << pathname << "\n" << flush;
     return;
   }
-  logfile << "loaded core API from " << pathname << "\n" << flush;
   create_instance();
 }
 
@@ -750,7 +727,6 @@ create_instance() {
     NPObject *window_object = NULL;
     if (browser->getvalue(_npp_instance, NPNVWindowNPObject,
                           &window_object) == NPERR_NO_ERROR) {
-      logfile << "Got window_object " << window_object << "\n" << flush;
       PPBrowserObject *pobj = new PPBrowserObject(this, window_object);
       P3D_instance_set_browser_script_object(_p3d_inst, pobj);
       browser->releaseobject(window_object);

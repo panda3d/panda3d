@@ -191,14 +191,12 @@ run_python() {
   task_mgr->add(_check_comm_task);
 
   // Finally, get lost in taskMgr.run().
-  nout << "calling run()\n";
   PyObject *done = PyObject_CallMethod(_taskMgr, (char *)"run", (char *)"");
   if (done == NULL) {
     PyErr_Print();
     return false;
   }
   Py_DECREF(done);
-  nout << "done calling run()\n";
 
   return true;
 }
@@ -211,7 +209,6 @@ run_python() {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 handle_command(TiXmlDocument *doc) {
-  nout << "got command: " << *doc << "\n";
   TiXmlElement *xcommand = doc->FirstChildElement("command");
   if (xcommand != NULL) {
     bool needs_response = false;
@@ -270,7 +267,6 @@ handle_command(TiXmlDocument *doc) {
           xresponse->SetAttribute("response_id", want_response_id);
           doc.LinkEndChild(decl);
           doc.LinkEndChild(xresponse);
-          nout << "sending " << doc << "\n" << flush;
           _pipe_write << doc << flush;
         }
       }
@@ -298,7 +294,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
   if (op != NULL) {
     if (strcmp(op, "get_panda_script_object") == 0) {
       // Get Panda's toplevel Python object.
-      PyObject *obj = PyObject_GetAttrString(_runner, "scriptRoot");
+      PyObject *obj = PyObject_CallMethod(_runner, "getPandaScriptObject", (char *)"");
       if (obj != NULL) {
         xresponse->LinkEndChild(pyobj_to_xml(obj));
         Py_DECREF(obj);
@@ -417,7 +413,6 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
   }
 
   if (needs_response) {
-    nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
   }
 }
@@ -554,23 +549,19 @@ py_request_func(PyObject *args) {
       return NULL;
     }
 
-    nout << "Waiting for script_response " << response_id << "\n";
     TiXmlDocument *doc = wait_script_response(response_id);
-    nout << "got: " << *doc << "\n";
     TiXmlElement *xcommand = doc->FirstChildElement("command");
     assert(xcommand != NULL);
     TiXmlElement *xvalue = xcommand->FirstChildElement("value");
 
     PyObject *value = NULL;
     if (xvalue != NULL) {
-      nout << "Converting xvalue: " << *xvalue << "\n";
       value = xml_to_pyobj(xvalue);
     } else {
       // An absence of a <value> element means a NULL pointer.
       value = _null;
       Py_INCREF(value);
     }
-    nout << "Got script_response " << response_id << ", xvalue = " << xvalue << "\n";
 
     delete doc;
     Py_DECREF(extra_args);
@@ -594,7 +585,6 @@ py_request_func(PyObject *args) {
     }
 
     xrequest->SetAttribute("message", message);
-    nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 
   } else if (strcmp(request_type, "script") == 0) {
@@ -619,24 +609,7 @@ py_request_func(PyObject *args) {
     TiXmlElement *xvalue = pyobj_to_xml(value);
     xrequest->LinkEndChild(xvalue);
 
-    nout << "sending " << doc << "\n" << flush;
     _pipe_write << doc << flush;
-
-    /*
-  } else if (strcmp(request_type, "evaluate") == 0) {
-    // An evaluate request.
-    const char *expression;
-    int unique_id;
-    if (!PyArg_ParseTuple(extra_args, "si", &expression, &unique_id)) {
-      Py_DECREF(extra_args);
-      return NULL;
-    }
-
-    xrequest->SetAttribute("expression", expression);
-    xrequest->SetAttribute("unique_id", unique_id);
-    nout << "sending " << doc << "\n" << flush;
-    _pipe_write << doc << flush;
-    */
 
   } else {
     string message = string("Unsupported request type: ") + string(request_type);
@@ -687,12 +660,10 @@ spawn_read_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 join_read_thread() {
-  nout << "waiting for thread\n";
   _read_thread_continue = false;
   _pipe_read.close();
 
   JOIN_THREAD(_read_thread);
-  nout << "done waiting for thread\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -703,7 +674,6 @@ join_read_thread() {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 start_instance(P3DCInstance *inst, TiXmlElement *xinstance) {
-  nout << "starting instance " << inst << "\n";
   _instances[inst->get_instance_id()] = inst;
 
   TiXmlElement *xfparams = xinstance->FirstChildElement("fparams");
@@ -861,14 +831,12 @@ terminate_session() {
   }
   _instances.clear();
 
-  nout << "calling stop()\n";
   PyObject *result = PyObject_CallMethod(_taskMgr, (char *)"stop", (char *)"");
   if (result == NULL) {
     PyErr_Print();
     return;
   }
   Py_DECREF(result);
-  nout << "done calling stop()\n";
 
   // The task manager is cleaned up.  Let's exit immediately here,
   // rather than returning all the way up.  This just makes it easier
@@ -1045,14 +1013,12 @@ xml_to_pyobj(TiXmlElement *xvalue) {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 rt_thread_run() {
-  nout << "thread reading.\n";
   while (_read_thread_continue) {
     TiXmlDocument *doc = new TiXmlDocument;
 
     _pipe_read >> *doc;
     if (!_pipe_read || _pipe_read.eof()) {
       // Some error on reading.  Abort.
-      nout << "Error on reading.\n";
       _program_continue = false;
       return;
     }
