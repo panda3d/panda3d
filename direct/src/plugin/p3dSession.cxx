@@ -312,14 +312,14 @@ command_and_response(TiXmlDocument *command) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::xml_to_object
+//     Function: P3DSession::xml_to_p3dobj
 //       Access: Public
 //  Description: Converts the XML representation of the particular
-//               object value into a corresponding P3DObject object.
+//               object value into a corresponding P3D_object.
 //               Returns the newly-allocated object.
 ////////////////////////////////////////////////////////////////////
-P3DObject *P3DSession::
-xml_to_object(const TiXmlElement *xvalue) {
+P3D_object *P3DSession::
+xml_to_p3dobj(const TiXmlElement *xvalue) {
   const char *type = xvalue->Attribute("type");
   if (strcmp(type, "none") == 0) {
     return new P3DNoneObject;
@@ -350,6 +350,15 @@ xml_to_object(const TiXmlElement *xvalue) {
       return new P3DStringObject(*value);
     }
 
+  } else if (strcmp(type, "browser") == 0) {
+    int object_id;
+    if (xvalue->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
+      P3D_object *obj = (P3D_object *)object_id;
+      nout << "Found object " << obj << "\n" << flush;
+      nout << "  formatted is " << *obj << "\n" << flush;
+      return P3D_OBJECT_COPY(obj);
+    }
+
   } else if (strcmp(type, "python") == 0) {
     int object_id;
     if (xvalue->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
@@ -362,14 +371,14 @@ xml_to_object(const TiXmlElement *xvalue) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::object_to_xml
+//     Function: P3DSession::p3dobj_to_xml
 //       Access: Public
 //  Description: Allocates and returns a new XML structure
 //               corresponding to the indicated value.  The supplied
 //               P3DObject passed in is *not* deleted.
 ////////////////////////////////////////////////////////////////////
 TiXmlElement *P3DSession::
-object_to_xml(const P3D_object *obj) {
+p3dobj_to_xml(const P3D_object *obj) {
   TiXmlElement *xvalue = new TiXmlElement("value");
 
   switch (P3D_OBJECT_GET_TYPE(obj)) {
@@ -681,7 +690,11 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
       xrequest->Attribute("unique_id", &unique_id);
 
       if (operation != NULL && xobject != NULL) {
-        P3D_object *object = xml_to_object(xobject);
+        nout << "xobject = " << *xobject << "\n" << flush;
+        P3D_object *object = xml_to_p3dobj(xobject);
+        nout << "converted to " << object << "\n" << flush;
+        nout << "object = " << *object << "\n" << flush;
+        nout << "operation = " << *operation << "\n" << flush;
         if (strcmp(operation, "get_property") == 0 && property_name != NULL) {
           request = new P3D_request;
           request->_request_type = P3D_RT_script;

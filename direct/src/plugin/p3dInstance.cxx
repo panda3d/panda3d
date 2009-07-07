@@ -173,7 +173,7 @@ set_wparams(const P3DWindowParams &wparams) {
 //               of the instance, to be used by JavaScript code in the
 //               browser to control this program.
 ////////////////////////////////////////////////////////////////////
-P3DObject *P3DInstance::
+P3D_object *P3DInstance::
 get_panda_script_object() const {
   assert(_session != NULL);
   nout << "Called P3DInstance::get_panda_script_object()\n";
@@ -188,13 +188,13 @@ get_panda_script_object() const {
   TiXmlDocument *response = _session->command_and_response(doc);
   nout << "response pointer: " << response << "\n" << flush;
 
-  P3DObject *result = NULL;
+  P3D_object *result = NULL;
   if (response != NULL) {
     TiXmlElement *xresponse = response->FirstChildElement("response");
     if (xresponse != NULL) {
       TiXmlElement *xvalue = xresponse->FirstChildElement("value");
       if (xvalue != NULL) {
-        result = _session->xml_to_object(xvalue);
+        result = _session->xml_to_p3dobj(xvalue);
       }
     }
     delete response;
@@ -464,7 +464,7 @@ send_browser_script_object() {
   xcommand->SetAttribute("cmd", "pyobj");
   xcommand->SetAttribute("op", "set_browser_script_object");
   if (_browser_script_object != NULL) {
-    xcommand->LinkEndChild(_session->object_to_xml(_browser_script_object));
+    xcommand->LinkEndChild(_session->p3dobj_to_xml(_browser_script_object));
   }
   
   doc->LinkEndChild(decl);
@@ -534,7 +534,7 @@ handle_script_request(P3D_request *request) {
       doc->LinkEndChild(decl);
       doc->LinkEndChild(xcommand);
       if (value != NULL) {
-        xcommand->LinkEndChild(_session->object_to_xml(value));
+        xcommand->LinkEndChild(_session->p3dobj_to_xml(value));
         P3D_OBJECT_FINISH(value);
       }
       

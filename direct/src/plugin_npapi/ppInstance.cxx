@@ -499,13 +499,13 @@ get_panda_script_object() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::object_to_variant
+//     Function: PPInstance::p3dobj_to_variant
 //       Access: Private
 //  Description: Converts the indicated P3D_object to the equivalent
 //               NPVariant, and stores it in result.
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
-object_to_variant(NPVariant *result, const P3D_object *object) {
+p3dobj_to_variant(NPVariant *result, const P3D_object *object) {
   switch (P3D_OBJECT_GET_TYPE(object)) {
   case P3D_OT_none:
     VOID_TO_NPVARIANT(*result);
@@ -542,7 +542,7 @@ object_to_variant(NPVariant *result, const P3D_object *object) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::variant_to_object
+//     Function: PPInstance::variant_to_p3dobj
 //       Access: Private
 //  Description: Converts the indicated NPVariant to the equivalent
 //               P3D_object, and returns it (newly-allocated).  The
@@ -550,7 +550,7 @@ object_to_variant(NPVariant *result, const P3D_object *object) {
 //               later.
 ////////////////////////////////////////////////////////////////////
 P3D_object *PPInstance::
-variant_to_object(const NPVariant *variant) {
+variant_to_p3dobj(const NPVariant *variant) {
   if (NPVARIANT_IS_VOID(*variant) ||
       NPVARIANT_IS_NULL(*variant)) {
     return P3D_new_none_object();
@@ -564,8 +564,7 @@ variant_to_object(const NPVariant *variant) {
     NPString str = NPVARIANT_TO_STRING(*variant);
     return P3D_new_string_object(str.utf8characters, str.utf8length);
   } else if (NPVARIANT_IS_OBJECT(*variant)) {
-    // TODO.
-    return P3D_new_none_object();
+    return new PPBrowserObject(this, NPVARIANT_TO_OBJECT(*variant));
   }
 
   // Hmm, none of the above?
@@ -824,37 +823,6 @@ show_np_variant(const NPVariant &result) {
     NPObject *child = NPVARIANT_TO_OBJECT(result);
     logfile << "object " << child;
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::np_variant_to_object
-//       Access: Private
-//  Description: Returns a freshly-allocated P3D_object corresponding
-//               to the indicated NPVariant.
-////////////////////////////////////////////////////////////////////
-P3D_object *PPInstance::
-np_variant_to_object(const NPVariant &result) {
-  if (NPVARIANT_IS_NULL(result)) {
-    return NULL;
-  } else if (NPVARIANT_IS_VOID(result)) {
-    return P3D_new_none_object();
-  } else if (NPVARIANT_IS_BOOLEAN(result)) {
-    return P3D_new_bool_object(NPVARIANT_TO_BOOLEAN(result));
-  } else if (NPVARIANT_IS_INT32(result)) {
-    return P3D_new_int_object(NPVARIANT_TO_INT32(result));
-  } else if (NPVARIANT_IS_DOUBLE(result)) {
-    return P3D_new_float_object(NPVARIANT_TO_DOUBLE(result));
-  } else if (NPVARIANT_IS_STRING(result)) {
-    NPString str = NPVARIANT_TO_STRING(result);
-    return P3D_new_string_object(str.utf8characters, str.utf8length);
-  } else if (NPVARIANT_IS_OBJECT(result)) {
-    // TODO?
-    return P3D_new_none_object();
-    // NPVARIANT_TO_OBJECT(result);
-  }
-
-  // Huh, what is this?
-  return NULL;
 }
 
 

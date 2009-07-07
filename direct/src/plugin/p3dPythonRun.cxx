@@ -172,7 +172,7 @@ run_python() {
  
 
   // Now add check_comm() as a task.
-  _check_comm_task = new GenericAsyncTask("check_comm", st_check_comm, this);
+  _check_comm_task = new GenericAsyncTask("check_comm", task_check_comm, this);
   AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
   task_mgr->add(_check_comm_task);
 
@@ -244,7 +244,7 @@ handle_command(TiXmlDocument *doc) {
       } else if (strcmp(cmd, "script_response") == 0) {
         // Response from a script request.
         assert(!needs_response);
-        handle_script_response_command(xcommand);
+        nout << "Ignoring unexpected script_response\n";
         
       } else {
         nout << "Unhandled command " << cmd << "\n";
@@ -409,40 +409,15 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::handle_script_response_command
-//       Access: Private
-//  Description: Handles the script_response command, a response from
-//               the browser to a previous script request from this
-//               process.
-////////////////////////////////////////////////////////////////////
-void P3DPythonRun::
-handle_script_response_command(TiXmlElement *xcommand) {
-  int unique_id;
-  if (xcommand->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
-    PyObject *value = NULL;
-    TiXmlElement *xvalue = xcommand->FirstChildElement("value");
-    if (xvalue != NULL) {
-      value = xml_to_pyobj(xvalue);
-    } else {
-      value = Py_None;
-      Py_INCREF(value);
-    }
-    PyObject *result = PyObject_CallMethod
-      (_runner, (char *)"scriptResponse", (char *)"iO", unique_id, value);
-    Py_DECREF(value);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonRun::check_comm
 //       Access: Private
-//  Description: This method is added to the Python task manager (via
-//               py_check_comm, below) so that it gets a call every
+//  Description: This method is added to the task manager (via
+//               task_check_comm, below) so that it gets a call every
 //               frame.  Its job is to check for commands received
 //               from the plugin host in the parent process.
 ////////////////////////////////////////////////////////////////////
-AsyncTask::DoneStatus P3DPythonRun::
-check_comm(GenericAsyncTask *task) {
+void P3DPythonRun::
+check_comm() {
   ACQUIRE_LOCK(_commands_lock);
   while (!_commands.empty()) {
     TiXmlDocument *doc = _commands.front();
@@ -461,21 +436,82 @@ check_comm(GenericAsyncTask *task) {
   }
 
   RELEASE_LOCK(_commands_lock);
-
-  return AsyncTask::DS_cont;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::st_check_comm
+//     Function: P3DPythonRun::task_check_comm
 //       Access: Private, Static
 //  Description: This static function wrapper around check_comm is
 //               necessary to add the method function to the
 //               GenericAsyncTask object.
 ////////////////////////////////////////////////////////////////////
 AsyncTask::DoneStatus P3DPythonRun::
-st_check_comm(GenericAsyncTask *task, void *user_data) {
+task_check_comm(GenericAsyncTask *task, void *user_data) {
   P3DPythonRun *self = (P3DPythonRun *)user_data;
-  return self->check_comm(task);
+  self->check_comm();
+  return AsyncTask::DS_cont;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::wait_script_response
+//       Access: Private
+//  Description: This method is similar to check_comm(), above, but
+//               instead of handling all events, it waits for a
+//               specific script_response ID to come back from the
+//               browser, and leaves all other events in the queue.
+////////////////////////////////////////////////////////////////////
+TiXmlDocument *P3DPythonRun::
+wait_script_response(int response_id) {
+  while (true) {
+    ACQUIRE_LOCK(_commands_lock);
+    
+    Commands::iterator ci;
+    for (ci = _commands.begin(); ci != _commands.end(); ++ci) {
+      TiXmlDocument *doc = (*ci);
+
+      TiXmlElement *xcommand = doc->FirstChildElement("command");
+      if (xcommand != NULL) {
+        const char *cmd = xcommand->Attribute("cmd");
+        if (cmd != NULL && strcmp(cmd, "script_response") == 0) {
+          int unique_id;
+          if (xcommand->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
+            if (unique_id == response_id) {
+              // This is the response we were waiting for.
+              _commands.erase(ci);
+              RELEASE_LOCK(_commands_lock);
+              return doc;
+            }
+          }
+        }
+
+        // It's not the response we're waiting for, but maybe we need
+        // to handle it anyway.
+        bool needs_response = false;
+        int want_response_id;
+        if (xcommand->QueryIntAttribute("want_response_id", &want_response_id) == TIXML_SUCCESS) {
+          // This command will be wanting a response.  We'd better
+          // honor it right away, or we risk deadlock with the browser
+          // process and the Python process waiting for each other.
+          _commands.erase(ci);
+          RELEASE_LOCK(_commands_lock);
+          handle_command(doc);
+          delete doc;
+          ACQUIRE_LOCK(_commands_lock);
+          break;
+        }
+      }
+    }
+    
+    if (!_program_continue) {
+      terminate_session();
+    }
+    
+    RELEASE_LOCK(_commands_lock);
+
+    // It hasn't shown up yet.  Give the sub-thread a chance to
+    // process the input and append it to the queue.
+    Thread::force_yield();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -494,6 +530,38 @@ py_request_func(PyObject *args) {
     return NULL;
   }
 
+  if (strcmp(request_type, "wait_script_response") == 0) {
+    // This is a special case.  Instead of generating a new request,
+    // this means to wait for a particular script_response to come in
+    // on the wire.
+    int response_id;
+    if (!PyArg_ParseTuple(extra_args, "i", &response_id)) {
+      Py_DECREF(extra_args);
+      return NULL;
+    }
+
+    nout << "Waiting for script_response " << response_id << "\n";
+    TiXmlDocument *doc = wait_script_response(response_id);
+    nout << "got: " << *doc << "\n";
+    TiXmlElement *xcommand = doc->FirstChildElement("command");
+    assert(xcommand != NULL);
+    TiXmlElement *xvalue = xcommand->FirstChildElement("value");
+
+    PyObject *value = NULL;
+    if (xvalue != NULL) {
+      nout << "Converting xvalue: " << *xvalue << "\n";
+      value = xml_to_pyobj(xvalue);
+    } else {
+      value = Py_None;
+      Py_INCREF(value);
+    }
+    nout << "Got script_response " << response_id << ", xvalue = " << xvalue << "\n";
+
+    delete doc;
+    Py_DECREF(extra_args);
+    return value;
+  }
+
   TiXmlDocument doc;
   TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xrequest = new TiXmlElement("request");
@@ -506,6 +574,7 @@ py_request_func(PyObject *args) {
     // A general notification to be sent directly to the instance.
     const char *message;
     if (!PyArg_ParseTuple(extra_args, "s", &message)) {
+      Py_DECREF(extra_args);
       return NULL;
     }
 
@@ -522,8 +591,10 @@ py_request_func(PyObject *args) {
     int unique_id;
     if (!PyArg_ParseTuple(extra_args, "sOsOi", 
                           &operation, &object, &property_name, &value, &unique_id)) {
+      Py_DECREF(extra_args);
       return NULL;
     }
+
     xrequest->SetAttribute("operation", operation);
     xrequest->SetAttribute("property_name", property_name);
     xrequest->SetAttribute("unique_id", unique_id);
@@ -542,6 +613,7 @@ py_request_func(PyObject *args) {
     const char *expression;
     int unique_id;
     if (!PyArg_ParseTuple(extra_args, "si", &expression, &unique_id)) {
+      Py_DECREF(extra_args);
       return NULL;
     }
 
@@ -554,9 +626,11 @@ py_request_func(PyObject *args) {
   } else {
     string message = string("Unsupported request type: ") + string(request_type);
     PyErr_SetString(PyExc_ValueError, message.c_str());
+    Py_DECREF(extra_args);
     return NULL;
   }
 
+  Py_DECREF(extra_args);
   return Py_BuildValue("");
 }
 
@@ -780,6 +854,11 @@ terminate_session() {
   }
   Py_DECREF(result);
   nout << "done calling stop()\n";
+
+  // The task manager is cleaned up.  Let's exit immediately here,
+  // rather than returning all the way up.  This just makes it easier
+  // when we call terminate_session() from a deeply-nested loop.
+  exit(0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -921,7 +1000,8 @@ xml_to_pyobj(TiXmlElement *xvalue) {
     int object_id;
     if (xvalue->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
       // Construct a new BrowserObject wrapper around this object.
-      return PyObject_CallFunction(_browser_object_class, (char *)"i", object_id);
+      return PyObject_CallFunction(_browser_object_class, (char *)"Oi", 
+                                   _runner, object_id);
     }
 
   } else if (strcmp(type, "python") == 0) {

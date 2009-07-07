@@ -128,7 +128,7 @@ get_property(const string &property) const {
     return NULL;
   }
 
-  P3D_object *object = _instance->variant_to_object(&result);
+  P3D_object *object = _instance->variant_to_p3dobj(&result);
   browser->releasevariantvalue(&result);
   return object;
 }

@@ -22,7 +22,7 @@ See pack3d.py for a script that generates these p3d files.
 import sys
 from direct.showbase import VFSImporter
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase import AppRunnerGlobal
@@ -155,8 +155,9 @@ class AppRunner(DirectObject):
         """ Replaces self.window with the browser's toplevel DOM
         object, for controlling the JavaScript and the document in the
         same page with the Panda3D plugin. """
-        print "setBrowserScriptObject(%s)" % (window)
+
         self.window = window
+        print "setBrowserScriptObject(%s)" % (window)
 
     def setP3DFilename(self, p3dFilename, tokens = [],
                        instanceId = None):
@@ -261,7 +262,8 @@ class AppRunner(DirectObject):
         self.requestFunc = func
 
     def sendRequest(self, request, *args):
-        self.requestFunc(self.instanceId, request, args)
+        assert self.requestFunc
+        return self.requestFunc(self.instanceId, request, args)
 
     def windowEvent(self, win):
         print "Got window event in runp3d"
@@ -271,7 +273,9 @@ class AppRunner(DirectObject):
     def scriptRequest(self, operation, object, propertyName = None,
                       value = None):
         """ Issues a new script request to the browser.  This queries
-        or modifies one of the browser's DOM properties.
+        or modifies one of the browser's DOM properties.  This method
+        blocks until the return value is received from the browser,
+        and then it returns that value.
         
         operation may be one of [ 'get_property', 'set_property',
         'call', 'evaluate' ].
@@ -291,10 +295,10 @@ class AppRunner(DirectObject):
         self.sendRequest('script', operation, object,
                          propertyName, value, uniqueId);
 
-    def scriptResponse(self, uniqueId, value):
-        """ Called by the browser in response to a scriptRequest,
-        above. """
-        print "Got scriptResponse: %s, %s" % (uniqueId, value)
+        # Now wait for the response to come in.
+        result = self.sendRequest('wait_script_response', uniqueId)
+        print "result for %s.%s = %s" % (object, propertyName, result,)
+        return result
 
     def parseSysArgs(self):
         """ Converts sys.argv into (p3dFilename, tokens). """
@@ -333,9 +337,47 @@ class BrowserObject:
     actually exists in the plugin host's namespace, e.g. a JavaScript
     or DOM object. """
 
-    def __init__(self, objectId):
-        self.__objectId = objectId
-        
+    def __init__(self, runner, objectId):
+        self.__dict__['_BrowserObject__runner'] = runner
+        self.__dict__['_BrowserObject__objectId'] = objectId
+
+    def __str__(self):
+        return "BrowserObject(%s)" % (self.__objectId)
+
+    def __nonzero__(self):
+        return True
+
+    def __getattr__(self, name):
+        """ Remaps attempts to query an attribute into the appropriate
+        calls to query the actual browser object under the hood.  """
+
+        print "__getattr_(self, %s)" % (name)
+        print "runner = %s" % (self.__runner)
+        value = self.__runner.scriptRequest('get_property', self,
+                                            propertyName = name)
+        return value
+        # raise AttributeError(name)
+
+    def __setattr__(self, name, value):
+        if name in self.__dict__:
+            self.__dict__[name] = value
+            return
+
+        value = self.__runner.scriptRequest('set_property', self,
+                                            propertyName = name,
+                                            value = value)
+        if not value:
+            raise AttributeError(name)
+
+    def __delattr__(self, name):
+        if name in self.__dict__:
+            del self.__dict__[name]
+            return
+
+        value = self.__runner.scriptRequest('del_property', self,
+                                            propertyName = name)
+        if not value:
+            raise AttributeError(name)
 
 if __name__ == '__main__':
     runner = AppRunner()

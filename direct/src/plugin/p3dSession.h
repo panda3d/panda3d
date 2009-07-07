@@ -49,8 +49,8 @@ public:
 
   void send_command(TiXmlDocument *command);
   TiXmlDocument *command_and_response(TiXmlDocument *command);
-  P3DObject *xml_to_object(const TiXmlElement *xvalue);
-  TiXmlElement *object_to_xml(const P3D_object *obj);
+  P3D_object *xml_to_p3dobj(const TiXmlElement *xvalue);
+  TiXmlElement *p3dobj_to_xml(const P3D_object *obj);
 
 private:
   void install_progress(P3DPackage *package, double progress);

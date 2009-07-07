@@ -46,7 +46,7 @@ public:
   void set_wparams(const P3DWindowParams &wparams);
   inline const P3DWindowParams &get_wparams() const;
 
-  P3DObject *get_panda_script_object() const;
+  P3D_object *get_panda_script_object() const;
   void set_browser_script_object(P3D_object *object);
 
   bool has_request();

@@ -194,7 +194,7 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
   }
 
   for (int i = 0; i < num_params; ++i) {
-    TiXmlElement *xparams = _session->object_to_xml(params[i]);
+    TiXmlElement *xparams = _session->p3dobj_to_xml(params[i]);
     xcommand->LinkEndChild(xparams);
 
     // Now we're done with the params object passed in, we can delete
@@ -207,13 +207,13 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
   TiXmlDocument *response = _session->command_and_response(doc);
   nout << "call response pointer: " << response << "\n" << flush;
 
-  P3DObject *result = NULL;
+  P3D_object *result = NULL;
   if (response != NULL) {
     TiXmlElement *xresponse = response->FirstChildElement("response");
     if (xresponse != NULL) {
       TiXmlElement *xvalue = xresponse->FirstChildElement("value");
       if (xvalue != NULL) {
-        result = _session->xml_to_object(xvalue);
+        result = _session->xml_to_p3dobj(xvalue);
       }
     }
     delete response;

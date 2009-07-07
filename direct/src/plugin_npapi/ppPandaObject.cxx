@@ -175,7 +175,7 @@ get_property(NPIdentifier name, NPVariant *result) {
   }
 
   // We have the property, and its value is stored in value.
-  _instance->object_to_variant(result, value);
+  _instance->p3dobj_to_variant(result, value);
   P3D_OBJECT_FINISH(value);
   return true;
 }
@@ -195,7 +195,7 @@ set_property(NPIdentifier name, const NPVariant *value) {
     return false;
   }
 
-  P3D_object *object = _instance->variant_to_object(value);
+  P3D_object *object = _instance->variant_to_p3dobj(value);
   bool result = P3D_OBJECT_SET_PROPERTY(_p3d_object, property_name.c_str(), object);
   return result;
 }

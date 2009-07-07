@@ -74,8 +74,9 @@ private:
                             int want_response_id);
   void handle_script_response_command(TiXmlElement *xcommand);
 
-  AsyncTask::DoneStatus check_comm(GenericAsyncTask *task);
-  static AsyncTask::DoneStatus st_check_comm(GenericAsyncTask *task, void *user_data);
+  void check_comm();
+  static AsyncTask::DoneStatus task_check_comm(GenericAsyncTask *task, void *user_data);
+  TiXmlDocument *wait_script_response(int response_id);
 
   PyObject *py_request_func(PyObject *args);
   static PyObject *st_request_func(PyObject *, PyObject *args);

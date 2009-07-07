@@ -52,8 +52,8 @@ public:
 
   NPObject *get_panda_script_object();
 
-  void object_to_variant(NPVariant *result, const P3D_object *object);
-  P3D_object *variant_to_object(const NPVariant *variant);
+  void p3dobj_to_variant(NPVariant *result, const P3D_object *object);
+  P3D_object *variant_to_p3dobj(const NPVariant *variant);
 
 private:
   bool read_contents_file(const string &filename);
@@ -65,7 +65,6 @@ private:
   void send_window();
 
   void show_np_variant(const NPVariant &result);
-  P3D_object *np_variant_to_object(const NPVariant &result);
 
 #ifdef _WIN32
   static LONG 
