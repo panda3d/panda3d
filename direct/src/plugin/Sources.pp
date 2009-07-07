@@ -98,6 +98,7 @@
     load_plugin.cxx load_plugin.h \
     fileSpec.cxx fileSpec.h fileSpec.I \
     find_root_dir.cxx find_root_dir.h \
+    is_pathsep.h is_pathsep.I \
     mkdir_complete.cxx mkdir_complete.h
 
 #end static_lib_target

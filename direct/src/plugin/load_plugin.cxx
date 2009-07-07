@@ -14,6 +14,7 @@
 
 #include "load_plugin.h"
 #include "p3d_plugin_config.h"
+#include "is_pathsep.h"
 
 #include "assert.h"
 
@@ -72,25 +73,6 @@ static bool plugin_loaded = false;
 string
 get_plugin_basename() {
   return default_plugin_filename + dll_ext;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: is_pathsep
-//  Description: Returns true if the indicated character is a path
-//               separator character (e.g. slash or backslash), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
-static inline bool
-is_pathsep(char ch) {
-  if (ch == '/') {
-    return true;
-  }
-#ifdef _WIN32
-  if (ch == '\\') {
-    return true;
-  }
-#endif
-  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
