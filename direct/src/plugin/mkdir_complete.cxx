@@ -23,26 +23,6 @@
 #endif
 
 
-
-////////////////////////////////////////////////////////////////////
-//     Function: is_pathsep
-//  Description: Returns true if the indicated character is a path
-//               separator character (e.g. slash or backslash), false
-//               otherwise.
-////////////////////////////////////////////////////////////////////
-static inline bool
-is_pathsep(char ch) {
-  if (ch == '/') {
-    return true;
-  }
-#ifdef _WIN32
-  if (ch == '\\') {
-    return true;
-  }
-#endif
-  return false;
-}
-
 ////////////////////////////////////////////////////////////////////
 //     Function: get_dirname
 //  Description: Returns the directory component of the indicated
@@ -61,8 +41,6 @@ get_dirname(const string &filename) {
 
   return string();
 }
-
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: mkdir_complete
