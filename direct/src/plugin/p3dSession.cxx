@@ -426,8 +426,9 @@ p3dobj_to_xml(const P3D_object *obj) {
       // Otherwise, it must a host-provided object, which means we
       // should pass a reference down to this particular object, so
       // the Python process knows to call back up to here to query it.
-      // TODO: pass pointers better.
-      int object_id = (int)obj;
+      // TODO: pass pointers better.  Fix this hideous leak.
+      P3D_object *dup = P3D_OBJECT_COPY(obj);
+      int object_id = (int)dup;
       xvalue->SetAttribute("type", "browser");
       xvalue->SetAttribute("object_id", object_id);
 
