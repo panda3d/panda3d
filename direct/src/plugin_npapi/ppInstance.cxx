@@ -82,9 +82,13 @@ PPInstance::
     _p3d_inst = NULL;
   }
 
+  // It's not clear why we shoudn't release this object now, but if we
+  // do we crash (at least on Windows).
+  /*
   if (_script_object != NULL) {
     browser->releaseobject(_script_object);
   }
+  */
 
   // Free the tokens we allocated.
   Tokens::iterator ti;
@@ -468,7 +472,11 @@ get_panda_script_object() {
   }
 
   _script_object = PPPandaObject::make_new(this, obj);
+
+  // It's not clear why we need to explicitly retain this object now,
+  // but if we don't we crash.
   browser->retainobject(_script_object);
+
   return _script_object;
 }
 

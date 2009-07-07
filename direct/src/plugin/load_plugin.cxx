@@ -261,9 +261,6 @@ unload_plugin() {
   cerr << "unload_plugin called\n";
 
   P3D_finalize();
-
-  // TODO: unloading the DLL causes crashy problems on Windows.  Must
-  // be an outstanding pointer or two still uncleaned-up.
   unload_dso();
 }
 
