@@ -52,14 +52,6 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
   _started_instance_data = false;
   _got_instance_data = false;
   _got_window = false;
-
-  if (!is_plugin_loaded()) {
-    // Go download the contents file, so we can download the core DLL.
-    string url = P3D_PLUGIN_DOWNLOAD;
-    url += "contents.xml";
-    PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_contents_file);
-    browser->geturlnotify(_npp_instance, url.c_str(), NULL, req);
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -97,6 +89,27 @@ PPInstance::
     free((char *)(*ti)._value);
   }
   _tokens.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::begin
+//       Access: Public
+//  Description: Begins the initial download of the core API.  This
+//               should be called after constructing the PPInstance.
+//               It is a separate method than the constructor, because
+//               it initiates some callbacks that might rely on the
+//               object having been fully constructed and its pointer
+//               stored.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+begin() {
+  if (!is_plugin_loaded()) {
+    // Go download the contents file, so we can download the core DLL.
+    string url = P3D_PLUGIN_DOWNLOAD;
+    url += "contents.xml";
+    PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_contents_file);
+    start_download(url, req);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -172,7 +185,7 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
   switch (req->_rtype) {
   case PPDownloadRequest::RT_contents_file:
     // This is the initial contents.xml file.  We'll just download
-    // this directoy to a file, since it is small and this is easy.
+    // this directly to a file, since it is small and this is easy.
     *stype = NP_ASFILEONLY;
     return NPERR_NO_ERROR;
 
@@ -290,6 +303,13 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
       req->_notified_done = true;
     }
     break;
+
+  case PPDownloadRequest::RT_contents_file:
+    if (reason != NPRES_DONE) {
+      logfile << "Failure downloading " << url << "\n";
+      // TODO: fail
+    }
+    break;
     
   default:
     break;
@@ -345,34 +365,7 @@ stream_as_file(NPStream *stream, const char *fname) {
 #endif  // __APPLE__
 
   PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
-  switch (req->_rtype) {
-  case PPDownloadRequest::RT_contents_file:
-    // Now we have the contents.xml file.  Read this to get the
-    // filename and md5 hash of our core API DLL.
-    if (!read_contents_file(filename)) {
-      logfile << "Unable to read contents file\n";
-      // TODO: fail
-    }
-    break;
-
-  case PPDownloadRequest::RT_core_dll:
-    // This is the core API DLL (or dylib or whatever).  Now that
-    // we've downloaded it, we can load it.
-    downloaded_plugin(filename);
-    break;
-
-  case PPDownloadRequest::RT_instance_data:
-    // This is the instance data, e.g. the p3d filename.  Now we can
-    // launch the instance.
-    _got_instance_data = true;
-    _p3d_filename = filename;
-    create_instance();
-    break;
-
-  default:
-    // Don't know what this is.
-    logfile << "Unexpected stream_as_file, type " << (int)req->_rtype << "\n";
-  }
+  downloaded_file(req, filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -402,8 +395,7 @@ handle_request(P3D_request *request) {
       PPDownloadRequest *req = 
         new PPDownloadRequest(PPDownloadRequest::RT_user, 
                               request->_request._get_url._unique_id);
-      browser->geturlnotify(_npp_instance, request->_request._get_url._url,
-                            NULL, req);
+      start_download(request->_request._get_url._url, req);
     }
     break;
 
@@ -486,7 +478,7 @@ get_panda_script_object() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::p3dobj_to_variant
-//       Access: Private
+//       Access: Public
 //  Description: Converts the indicated P3D_object to the equivalent
 //               NPVariant, and stores it in result.
 ////////////////////////////////////////////////////////////////////
@@ -533,7 +525,7 @@ p3dobj_to_variant(NPVariant *result, const P3D_object *object) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::variant_to_p3dobj
-//       Access: Private
+//       Access: Public
 //  Description: Converts the indicated NPVariant to the equivalent
 //               P3D_object, and returns it (newly-allocated).  The
 //               caller is responsible for freeing the returned object
@@ -560,6 +552,23 @@ variant_to_p3dobj(const NPVariant *variant) {
 
   // Hmm, none of the above?
   return P3D_new_none_object();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::start_download
+//       Access: Private
+//  Description: Initiates a download request.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+start_download(const string &url, PPDownloadRequest *req) {
+  if (url.substr(0, 7) == "file://") {
+    // If we're "downloading" a file URL, just go read the file directly.
+    downloaded_file(req, get_filename_from_url(url));
+    delete req;
+  } else {
+    // Otherwise, ask the browser to download it.
+    browser->geturlnotify(_npp_instance, url.c_str(), NULL, req);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -592,6 +601,122 @@ read_contents_file(const string &filename) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::get_filename_from_url
+//       Access: Private, Static
+//  Description: Returns the actual filename referenced by a file://
+//               url.
+////////////////////////////////////////////////////////////////////
+string PPInstance::
+get_filename_from_url(const string &url) {
+  string filename = url.substr(7);
+
+#ifdef _WIN32 
+  // On Windows, we have to munge the filename specially, because it's
+  // been URL-munged.  It might begin with a leading slash as well as
+  // a drive letter.  Clean up that nonsense.
+  if (filename.length() >= 3 && 
+      (filename[0] == '/' || filename[0] == '\\') &&
+      isalpha(filename[1]) && filename[2] == ':') {
+    filename = filename.substr(1);
+  }
+#endif  // _WIN32
+
+  return filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::downloaded_file
+//       Access: Private
+//  Description: Called to receive the fully-downloaded contents of a
+//               URL.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+downloaded_file(PPDownloadRequest *req, const string &filename) {
+  switch (req->_rtype) {
+  case PPDownloadRequest::RT_contents_file:
+    // Now we have the contents.xml file.  Read this to get the
+    // filename and md5 hash of our core API DLL.
+    if (!read_contents_file(filename)) {
+      logfile << "Unable to read contents file\n";
+      // TODO: fail
+    }
+    break;
+
+  case PPDownloadRequest::RT_core_dll:
+    // This is the core API DLL (or dylib or whatever).  Now that
+    // we've downloaded it, we can load it.
+    downloaded_plugin(filename);
+    break;
+
+  case PPDownloadRequest::RT_instance_data:
+    // This is the instance data, e.g. the p3d filename.  Now we can
+    // launch the instance.
+    _got_instance_data = true;
+    _p3d_filename = filename;
+    create_instance();
+    break;
+
+  case PPDownloadRequest::RT_user:
+    // Normally, RT_user requests won't come here, unless we
+    // short-circuited the browser by "downloading" a file:// url.  In
+    // any case, we'll now open the file and feed it to the user.
+    feed_file(req, filename);
+    break;
+
+  default:
+    // Don't know what this is.
+    logfile << "Unexpected downloaded file, type " << (int)req->_rtype << "\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::feed_file
+//       Access: Private
+//  Description: Opens the named file (extracted from a file:// URL)
+//               and feeds its contents to the plugin.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+feed_file(PPDownloadRequest *req, const string &filename) {
+  ifstream file(filename.c_str(), ios::in | ios::binary);
+
+  // First, seek to the end to get the file size.
+  file.seekg(0, ios::end);
+  size_t file_size = file.tellg();
+
+  // Then return to the beginning to read the data.
+  file.seekg(0, ios::beg);
+
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+
+  file.read(buffer, buffer_size);
+  size_t count = file.gcount();
+  size_t total_count = 0;
+  while (count != 0) {
+    bool download_ok = P3D_instance_feed_url_stream
+      (_p3d_inst, req->_user_id, P3D_RC_in_progress,
+       0, file_size, (const unsigned char *)buffer, count);
+
+    if (!download_ok) {
+      // Never mind.
+      return;
+    }
+    file.read(buffer, buffer_size);
+    count = file.gcount();
+    total_count += count;
+  }
+  
+  P3D_result_code result = P3D_RC_done;
+  if (file.fail() && !file.eof()) {
+    // Got an error while reading.
+    result = P3D_RC_generic_error;
+  }
+
+  P3D_instance_feed_url_stream
+    (_p3d_inst, req->_user_id, result, 0, total_count, NULL, 0);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::get_core_api
 //       Access: Private
 //  Description: Checks the core API DLL file against the
@@ -614,7 +739,7 @@ get_core_api(TiXmlElement *xpackage) {
     url += _core_api_dll.get_filename();
     
     PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
-    browser->geturlnotify(_npp_instance, url.c_str(), NULL, req);
+    start_download(url, req);
   }
 }
 

@@ -22,6 +22,7 @@
 #include <vector>
 
 class PPPandaObject;
+class PPDownloadRequest;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : PPInstance
@@ -35,6 +36,8 @@ public:
   PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode, 
              int16 argc, char *argn[], char *argv[], NPSavedData *saved);
   ~PPInstance();
+
+  void begin();
 
   inline NPP get_npp_instance() const;
 
@@ -56,6 +59,11 @@ public:
   P3D_object *variant_to_p3dobj(const NPVariant *variant);
 
 private:
+  void start_download(const string &url, PPDownloadRequest *req);
+  void downloaded_file(PPDownloadRequest *req, const string &filename);
+  static string get_filename_from_url(const string &url);
+  void feed_file(PPDownloadRequest *req, const string &filename);
+
   bool read_contents_file(const string &filename);
   void get_core_api(TiXmlElement *xpackage);
   void downloaded_plugin(const string &filename);

@@ -201,14 +201,19 @@ NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
         int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
   logfile << "new instance\n" << flush;
 
-  instance->pdata = new PPInstance(pluginType, instance, mode,
-                                   argc, argn, argv, saved);
+  PPInstance *inst = new PPInstance(pluginType, instance, mode,
+                                    argc, argn, argv, saved);
+  instance->pdata = inst;
 
   // To experiment with a "windowless" plugin, which really means we
   // create our own window without an intervening window, try this.
   // At the moment, there's a deadlock condition when we try it, but
   // surely it can be solved.
   //  browser->setvalue(instance, NPPVpluginWindowBool, (void *)false);
+
+  // Now that we have stored the pointer, we can call begin(), which
+  // starts to initiate downloads.
+  inst->begin();
 
   return NPERR_NO_ERROR;
 }
@@ -331,7 +336,6 @@ NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
           << ", " << stream->end 
           << ", notifyData = " << stream->notifyData
           << "\n" << flush;
-  logfile << "filename: " << fname << "\n" << flush;
 
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
