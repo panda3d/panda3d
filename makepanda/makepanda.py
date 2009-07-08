@@ -1048,10 +1048,8 @@ def WriteConfigSettings():
         plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file://C:\\p3dstage"
         plugin_config["P3D_PLUGIN_LOGFILE1"] = ""
         plugin_config["P3D_PLUGIN_LOGFILE2"] = ""
-        plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
-        plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
         if sys.platform.startswith("win"):
-          plugin_config["P3D_PLUGIN_PLATFORM"] = sys.platform
+            plugin_config["P3D_PLUGIN_PLATFORM"] = sys.platform
 
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in prc_parameters.keys():
@@ -1185,15 +1183,15 @@ if (os.path.isfile("makepanda/myconfig.in")):
 else:
   configprc=ReadFile("makepanda/config.in")
 
-if (sys.platform == "win32"):
-    confautoprc = confautoprc.replace(".panda3d","Panda3D-%s" % VERSION)
+if (sys.platform.startswith("win")):
+    configprc = configprc.replace(".panda3d","Panda3D-%s" % VERSION)
 else:
-    confautoprc = confautoprc.replace("aux-display pandadx9","")
-    confautoprc = confautoprc.replace("aux-display pandadx8","")
+    configprc = configprc.replace("aux-display pandadx9","")
+    configprc = configprc.replace("aux-display pandadx8","")
 
 # OpenAL is not yet working well on OSX for us, so let's do this for now.
 if (sys.platform == "darwin"):
-    confautoprc = confautoprc.replace("p3openal_audio","p3fmod_audio")
+    configprc = configprc.replace("p3openal_audio","p3fmod_audio")
 
 ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
 ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
@@ -2850,17 +2848,30 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
 #
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
-  OPTS=['DIR:direct/src/plugin_npapi']
-  ConditionalWriteFile(GetOutputDir()+"/include/resource.h", "")
-  TargetAdd('nppanda3d.res', opts=OPTS, input='nppanda3d.rc')
+  if sys.platform.startswith("win"):
+    OPTS=['DIR:direct/src/plugin_npapi']
+    TargetAdd('nppanda3d.res', opts=OPTS, input='nppanda3d.rc')
   
   OPTS=['DIR:direct/src/plugin_npapi', 'NPAPI', 'TINYXML']
   TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
   TargetAdd('nppanda3d.dll', input='plugin_common.obj')
   TargetAdd('nppanda3d.dll', input='plugin_npapi_nppanda3d_composite1.obj')
-  TargetAdd('nppanda3d.dll', input='nppanda3d.res')
-  TargetAdd('nppanda3d.dll', input='nppanda3d.def', ipath=OPTS)
+  if sys.platform.startswith("win"):
+    TargetAdd('nppanda3d.dll', input='nppanda3d.res')
+    TargetAdd('nppanda3d.dll', input='nppanda3d.def', ipath=OPTS)
   TargetAdd('nppanda3d.dll', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL'])
+
+#
+# DIRECTORY: direct/src/plugin_standalone/
+#
+
+if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  OPTS=['DIR:direct/src/plugin_standalone', 'TINYXML', 'OPENSSL']
+  TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
+  TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
+  TargetAdd('panda3d.exe', input='plugin_common.obj')
+  TargetAdd('panda3d.exe', input=COMMON_PANDA_LIBS)
+  TargetAdd('panda3d.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
