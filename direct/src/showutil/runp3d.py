@@ -284,7 +284,7 @@ class AppRunner(DirectObject):
     def windowEvent(self, win):
         self.sendRequest('notify', 'onwindowopen')
 
-    def scriptRequest(self, operation, object, propertyName = None,
+    def scriptRequest(self, operation, object, propertyName = '',
                       value = None):
         """ Issues a new script request to the browser.  This queries
         or modifies one of the browser's DOM properties.  This method
@@ -364,11 +364,36 @@ class BrowserObject:
         self.__dict__['_BrowserObject__runner'] = runner
         self.__dict__['_BrowserObject__objectId'] = objectId
 
+        # This element is filled in by __getattr__; it connects
+        # the object to its parent.
+        self.__dict__['_BrowserObject__boundMethod'] = (None, None)
+
     def __str__(self):
-        return "BrowserObject(%s)" % (self.__objectId)
+        parentObj, attribName = self.__boundMethod
+        if parentObj:
+            # Format it from its parent.
+            return "%s.%s" % (parentObj, attribName)
+        else:
+            # Format it directly.
+            return "BrowserObject(%s)" % (self.__objectId)
 
     def __nonzero__(self):
         return True
+
+    def __call__(self, *args):
+        parentObj, attribName = self.__boundMethod
+        if parentObj:
+            # Call it as a method.
+            result = self.__runner.scriptRequest('call', parentObj, propertyName = attribName, value = args)
+        else:
+            # Call it as a plain function.
+            result = self.__runner.scriptRequest('call', self, value = args)
+
+        if result is Null:
+            # Could not call the method.
+            raise TypeError
+
+        return result
 
     def __getattr__(self, name):
         """ Remaps attempts to query an attribute, as in obj.attr,
@@ -380,6 +405,13 @@ class BrowserObject:
         if value is Null:
             # Failed to retrieve the attribute.
             raise AttributeError(name)
+
+        if isinstance(value, BrowserObject):
+            # Fill in the parent object association, so __call__ can
+            # properly call a method.  (Javascript needs to know the
+            # method container at the time of the call, and doesn't
+            # store it on the function object.)
+            value.__dict__['_BrowserObject__boundMethod'] = (self, name)
 
         return value
 

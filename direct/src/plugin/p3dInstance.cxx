@@ -266,7 +266,9 @@ get_request() {
 
     case P3D_RT_script:
       handle_script_request(result);
-      break;
+      // Completely eat this request; don't return it to the caller.
+      finish_request(result, true);
+      return get_request();
 
     default:
       // Other kinds of requests don't require special handling at
@@ -520,8 +522,14 @@ handle_script_request(P3D_request *request) {
 
   case P3D_SO_set_property:
     {
-      bool result = P3D_OBJECT_SET_PROPERTY(object, request->_request._script._property_name,
-                                            request->_request._script._value);
+      bool result;
+      if (request->_request._script._num_values == 1) {
+        result = P3D_OBJECT_SET_PROPERTY(object, request->_request._script._property_name,
+                                         request->_request._script._values[0]);
+      } else {
+        // Wrong number of values.  Error.
+        result = false;
+      }
 
       // Feed the result back down to the subprocess.
       TiXmlDocument *doc = new TiXmlDocument;
@@ -561,6 +569,36 @@ handle_script_request(P3D_request *request) {
       xvalue->SetAttribute("type", "bool");
       xvalue->SetAttribute("value", (int)result);
       xcommand->LinkEndChild(xvalue);
+      
+      _session->send_command(doc);
+    }
+    break;
+
+  case P3D_SO_call:
+    {
+      P3D_object *result = 
+        P3D_OBJECT_CALL(object, request->_request._script._property_name,
+                        request->_request._script._values,
+                        request->_request._script._num_values);
+      // Reset the value count to 0 so we won't double-delete the
+      // values when the request is deleted (the above call has
+      // already deleted them).
+      request->_request._script._num_values = 0;
+
+      // Feed the result back down to the subprocess.
+      TiXmlDocument *doc = new TiXmlDocument;
+      TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+      TiXmlElement *xcommand = new TiXmlElement("command");
+      xcommand->SetAttribute("cmd", "script_response");
+      xcommand->SetAttribute("unique_id", unique_id);
+      
+      doc->LinkEndChild(decl);
+      doc->LinkEndChild(xcommand);
+
+      if (result != NULL) {
+        xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
+        P3D_OBJECT_FINISH(result);
+      }
       
       _session->send_command(doc);
     }

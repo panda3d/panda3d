@@ -609,7 +609,8 @@ typedef struct {
   P3D_object *_object;
   P3D_script_operation _op;
   const char *_property_name;
-  P3D_object *_value;
+  P3D_object **_values;
+  int _num_values;
   int _unique_id;
 } P3D_request_script;
 

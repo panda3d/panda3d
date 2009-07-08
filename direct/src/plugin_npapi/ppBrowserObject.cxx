@@ -184,10 +184,39 @@ set_property(const string &property, P3D_object *value) {
 ////////////////////////////////////////////////////////////////////
 P3D_object *PPBrowserObject::
 call(const string &method_name, P3D_object *params[], int num_params) const {
+  // First, convert all of the parameters.
+  NPVariant *npparams = new NPVariant[num_params];
   for (int i = 0; i < num_params; ++i) {
-    P3D_OBJECT_FINISH(params[i]);
+    _instance->p3dobj_to_variant(&npparams[i], params[i]);
   }
-  return NULL;
+
+  NPVariant result;
+  if (method_name.empty()) {
+    // Call the default method.
+    if (!browser->invokeDefault(_instance->get_npp_instance(), _npobj,
+                                npparams, num_params, &result)) {
+      // Failed to invoke.
+      logfile << "invoke failed\n" << flush;
+      delete[] npparams;
+      return NULL;
+    }
+  } else {
+    // Call the named method.
+
+    NPIdentifier method_id = browser->getstringidentifier(method_name.c_str());
+    if (!browser->invoke(_instance->get_npp_instance(), _npobj, method_id,
+                         npparams, num_params, &result)) {
+      // Failed to invoke.
+      delete[] npparams;
+      return NULL;
+    }
+  }
+
+  logfile << "invoke succeeded\n" << flush;
+
+  P3D_object *object = _instance->variant_to_p3dobj(&result);
+  browser->releasevariantvalue(&result);
+  return object;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -474,6 +474,7 @@ task_check_comm(GenericAsyncTask *task, void *user_data) {
 ////////////////////////////////////////////////////////////////////
 TiXmlDocument *P3DPythonRun::
 wait_script_response(int response_id) {
+  nout << "Waiting script_response " << response_id << "\n";
   while (true) {
     ACQUIRE_LOCK(_commands_lock);
     
@@ -491,7 +492,7 @@ wait_script_response(int response_id) {
               // This is the response we were waiting for.
               _commands.erase(ci);
               RELEASE_LOCK(_commands_lock);
-              nout << "received: " << *doc << "\n" << flush;
+              nout << "received script_response: " << *doc << "\n" << flush;
               return doc;
             }
           }
@@ -525,6 +526,7 @@ wait_script_response(int response_id) {
     // process the input and append it to the queue.
     Thread::force_yield();
   }
+  assert(false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -549,11 +551,11 @@ py_request_func(PyObject *args) {
     // on the wire.
     int response_id;
     if (!PyArg_ParseTuple(extra_args, "i", &response_id)) {
-      Py_DECREF(extra_args);
       return NULL;
     }
 
     TiXmlDocument *doc = wait_script_response(response_id);
+    assert(doc != NULL);
     TiXmlElement *xcommand = doc->FirstChildElement("command");
     assert(xcommand != NULL);
     TiXmlElement *xvalue = xcommand->FirstChildElement("value");
@@ -568,7 +570,6 @@ py_request_func(PyObject *args) {
     }
 
     delete doc;
-    Py_DECREF(extra_args);
     return value;
   }
 
@@ -584,7 +585,6 @@ py_request_func(PyObject *args) {
     // A general notification to be sent directly to the instance.
     const char *message;
     if (!PyArg_ParseTuple(extra_args, "s", &message)) {
-      Py_DECREF(extra_args);
       return NULL;
     }
 
@@ -601,7 +601,6 @@ py_request_func(PyObject *args) {
     int unique_id;
     if (!PyArg_ParseTuple(extra_args, "sOsOi", 
                           &operation, &object, &property_name, &value, &unique_id)) {
-      Py_DECREF(extra_args);
       return NULL;
     }
 
@@ -611,8 +610,26 @@ py_request_func(PyObject *args) {
     TiXmlElement *xobject = pyobj_to_xml(object);
     xobject->SetValue("object");
     xrequest->LinkEndChild(xobject);
-    TiXmlElement *xvalue = pyobj_to_xml(value);
-    xrequest->LinkEndChild(xvalue);
+
+    if (strcmp(operation, "call") == 0 && PySequence_Check(value)) {
+      // A special case: operation "call" receives a tuple of
+      // parameters; unpack the tuple for the XML.
+      Py_ssize_t length = PySequence_Length(value);
+      for (Py_ssize_t i = 0; i < length; ++i) {
+        PyObject *p = PySequence_GetItem(value, i);
+        if (p != NULL) {
+          TiXmlElement *xvalue = pyobj_to_xml(p);
+          xrequest->LinkEndChild(xvalue);
+          Py_DECREF(p);
+        }
+      }
+      
+    } else {
+      // Other kinds of operations receive only a single parameter, if
+      // any.
+      TiXmlElement *xvalue = pyobj_to_xml(value);
+      xrequest->LinkEndChild(xvalue);
+    }
 
     nout << "sent: " << doc << "\n" << flush;
     _pipe_write << doc << flush;
@@ -620,11 +637,9 @@ py_request_func(PyObject *args) {
   } else {
     string message = string("Unsupported request type: ") + string(request_type);
     PyErr_SetString(PyExc_ValueError, message.c_str());
-    Py_DECREF(extra_args);
     return NULL;
   }
 
-  Py_DECREF(extra_args);
   return Py_BuildValue("");
 }
 

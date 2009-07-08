@@ -684,41 +684,54 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
       const char *operation = xrequest->Attribute("operation");
       TiXmlElement *xobject = xrequest->FirstChildElement("object");
       const char *property_name = xrequest->Attribute("property_name");
-      TiXmlElement *xvalue = xrequest->FirstChildElement("value");
       int unique_id = 0;
       xrequest->Attribute("unique_id", &unique_id);
 
       if (operation != NULL && xobject != NULL) {
-        P3D_object *object = xml_to_p3dobj(xobject);
-        if (strcmp(operation, "get_property") == 0 && property_name != NULL) {
-          request = new P3D_request;
-          request->_request_type = P3D_RT_script;
-          request->_request._script._object = object;
-          request->_request._script._op = P3D_SO_get_property;
-          request->_request._script._property_name = strdup(property_name);
-          request->_request._script._value = NULL;
-          request->_request._script._unique_id = unique_id;
-        } else if (strcmp(operation, "set_property") == 0 && property_name != NULL && xvalue != NULL) {
-          request = new P3D_request;
-          request->_request_type = P3D_RT_script;
-          request->_request._script._object = object;
-          request->_request._script._op = P3D_SO_set_property;
-          request->_request._script._property_name = strdup(property_name);
-          request->_request._script._value = xml_to_p3dobj(xvalue);
-          request->_request._script._unique_id = unique_id;
-        } else if (strcmp(operation, "del_property") == 0 && property_name != NULL) {
-          request = new P3D_request;
-          request->_request_type = P3D_RT_script;
-          request->_request._script._object = object;
-          request->_request._script._op = P3D_SO_del_property;
-          request->_request._script._property_name = strdup(property_name);
-          request->_request._script._value = NULL;
-          request->_request._script._unique_id = unique_id;
+        P3D_script_operation op;
+        if (strcmp(operation, "get_property") == 0) {
+          op = P3D_SO_get_property;
+        } else if (strcmp(operation, "set_property") == 0) {
+          op = P3D_SO_set_property;
+        } else if (strcmp(operation, "del_property") == 0) {
+          op = P3D_SO_del_property;
+        } else if (strcmp(operation, "call") == 0) {
+          op = P3D_SO_call;
+        } else {
+          // An unexpected operation.
+          return NULL;
         }
-        if (request == NULL) {
-          // If we haven't dispatched a request yet, we didn't use the
-          // object, so delete it.
-          P3D_OBJECT_FINISH(object);
+
+        request = new P3D_request;
+        request->_request_type = P3D_RT_script;
+        request->_request._script._op = op;
+        request->_request._script._object = xml_to_p3dobj(xobject);
+        request->_request._script._property_name = NULL;
+        if (property_name != NULL) {
+          request->_request._script._property_name = strdup(property_name);
+        }
+        request->_request._script._unique_id = unique_id;
+        
+        // Fill in the value(s).
+        vector<P3D_object *> values;
+        TiXmlElement *xvalue = xrequest->FirstChildElement("value");
+        while (xvalue != NULL) {
+          P3D_object *value = xml_to_p3dobj(xvalue);
+          values.push_back(value);
+          xvalue = xvalue->NextSiblingElement("value");
+        }
+
+        if (values.empty()) {
+          // No values.
+          request->_request._script._values = NULL;
+          request->_request._script._num_values = 0;
+        } else {
+          // Some values.
+          int num_values = (int)values.size();
+          P3D_object **valuesp = new P3D_object *[num_values];
+          memcpy(valuesp, &values[0], num_values * sizeof(P3D_object *));
+          request->_request._script._values = valuesp;
+          request->_request._script._num_values = num_values;
         }
       }          
 

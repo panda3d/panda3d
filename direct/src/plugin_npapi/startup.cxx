@@ -313,7 +313,7 @@ NPP_Print(NPP instance, NPPrint *platformPrint) {
 ////////////////////////////////////////////////////////////////////
 int16
 NPP_HandleEvent(NPP instance, void *event) {
-  logfile << "HandleEvent\n" << flush;
+  //  logfile << "HandleEvent\n" << flush;
 
   // Here's a fine opportunity to check for new requests.
   PPInstance::handle_request_loop();
