@@ -1584,7 +1584,7 @@ separate_switches(EggNode *egg_node) {
   bool parent_has_switch = false;
   if (egg_node->is_of_type(EggGroup::get_class_type())) {
     EggGroup *egg_group = DCAST(EggGroup, egg_node);
-    parent_has_switch = egg_group->get_switch_flag() || egg_group->has_lod();
+    parent_has_switch = egg_group->get_switch_flag();
   }
 
   if (egg_node->is_of_type(EggGroupNode::get_class_type())) {
