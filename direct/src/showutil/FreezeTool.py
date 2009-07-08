@@ -785,6 +785,9 @@ class Freezer:
         link = self.linkExe % {
             'python' : Python,
             'msvs' : MSVS,
+            'pythonIPath' : PythonIPath,
+            'pythonLPath' : PythonLPath,
+            'pythonVersion' : PythonVersion,
             'filename' : filename,
             'basename' : basename,
             }
@@ -809,6 +812,9 @@ class Freezer:
         link = self.linkDll % {
             'python' : Python,
             'msvs' : MSVS,
+            'pythonIPath' : PythonIPath,
+            'pythonLPath' : PythonLPath,
+            'pythonVersion' : PythonVersion,
             'filename' : filename,
             'basename' : basename,
             }
