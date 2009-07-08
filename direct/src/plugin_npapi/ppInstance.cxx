@@ -348,18 +348,41 @@ stream_as_file(NPStream *stream, const char *fname) {
       }
     }
     filename = fname2;
-  }
 
-  // Here's another temporary hack.  In addition to the weird filename
-  // format, the file that Safari tells us about appears to be a
-  // temporary file that Safari's about to delete.  In order to
-  // protect ourselves from this, we need to either open the file
-  // immediately, or copy it somewhere else.  The instance_data
-  // filename can't be copied, so in the short term, we implement this
-  // quick hack: if we're just downloading from "file://", then remap
-  // the filename to point to the source file.
-  if (strncmp(stream->url, "file://", 7) == 0) {
-    filename = stream->url + 7;
+    // Here's another temporary hack.  In addition to the weird
+    // filename format, the file that Safari tells us about appears to
+    // be a temporary file that Safari's about to delete.  In order to
+    // protect ourselves from this, we need to temporarily copy the
+    // file somewhere else.
+    char *name = tempnam(NULL, "p3d_");
+
+    // We prefer just making a hard link; it's quick and easy.
+    if (link(filename.c_str(), name) == 0) {
+      logfile << "linked " << filename << " to " << name << "\n";
+    } else {
+      // But sometimes the hard link might fail, particularly if these
+      // are two different file systems.  In this case we have to open
+      // the files and copy the data by hand.
+      ifstream in(filename.c_str(), ios::in | ios::binary);
+      ofstream out(name, ios::out | ios::binary);
+
+      static const size_t buffer_size = 4096;
+      char buffer[buffer_size];
+      
+      in.read(buffer, buffer_size);
+      size_t count = in.gcount();
+      while (count != 0) {
+        out.write(buffer, count);
+        in.read(buffer, buffer_size);
+        count = in.gcount();
+      }
+      logfile << "copied " << filename << " to " << name << "\n";
+    }
+
+    filename = name;
+    free(name);
+
+    // TODO: remove this temporary file when we're done with it.
   }
 
 #endif  // __APPLE__

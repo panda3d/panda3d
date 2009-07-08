@@ -33,7 +33,7 @@
 string
 find_root_dir() {
 #ifdef _WIN32
-  // e.g., c:/Documents and Settings/<username>/Panda3D
+  // e.g., c:/Documents and Settings/<username>/Application Data/Panda3D
 
   char buffer[MAX_PATH];
   if (SHGetSpecialFolderPath(NULL, buffer, CSIDL_APPDATA, true)) {
@@ -85,7 +85,7 @@ find_root_dir() {
 
 #endif
 
-  // Couldn't find a directory.  Bail.
+  // Couldn't find a directory.  Punt.
   return ".";
 }
 
