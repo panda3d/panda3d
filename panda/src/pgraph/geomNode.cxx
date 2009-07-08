@@ -32,6 +32,11 @@
 #include "boundingBox.h"
 #include "config_mathutil.h"
 
+
+bool allow_flatten_color = ConfigVariableBool
+    ("allow-flatten-color", false,
+     PRC_DESC("allows color to always be flattened to vertices"));
+
 TypeHandle GeomNode::_type_handle;
 
 ////////////////////////////////////////////////////////////////////
@@ -140,43 +145,58 @@ apply_attribs_to_vertices(const AccumulatedAttribs &attribs, int attrib_types,
         }
 
         ra = entry->_state->get_attrib_def(ColorAttrib::get_class_slot());
-        const ColorAttrib *ca = DCAST(ColorAttrib, ra);
+        CPT (ColorAttrib) ca = DCAST(ColorAttrib, ra);          
         if (ca->get_color_type() != ColorAttrib::T_vertex) {
-          if (transformer.remove_column(new_geom, InternalName::get_color())) {
-            any_changed = true;
-          }
+          if(allow_flatten_color) { 
+              if(transformer.set_color(new_geom, ca->get_color())) {
+                any_changed = true;
+                entry->_state = entry->_state->set_attrib(ColorAttrib::make_vertex());
+              }
+          } else {
+            if (transformer.remove_column(new_geom, InternalName::get_color())) {
+              any_changed = true;
+            }
+          }            
         }
-      }
+      }      
       if ((attrib_types & SceneGraphReducer::TT_color_scale) != 0) {
         if (geom_attribs._color_scale != (const RenderAttrib *)NULL) {
-          const ColorScaleAttrib *csa = DCAST(ColorScaleAttrib, geom_attribs._color_scale);
+          CPT(ColorScaleAttrib) csa = DCAST(ColorScaleAttrib, geom_attribs._color_scale);
           if (csa->get_scale() != LVecBase4f(1.0f, 1.0f, 1.0f, 1.0f)) {
 
+            
             // Now, if we have an "off" or "flat" color attribute, we
             // simply modify the color attribute, and leave the
             // vertices alone.
-            const RenderAttrib *ra = entry->_state->get_attrib_def(ColorAttrib::get_class_slot());
-            const ColorAttrib *ca = DCAST(ColorAttrib, ra);
-            if (ca->get_color_type() == ColorAttrib::T_off) {
-              entry->_state = entry->_state->set_attrib(ColorAttrib::make_vertex());
-              // ColorAttrib::T_off means the color scale becomes
-              // the new color.
-              entry->_state = entry->_state->set_attrib(ColorAttrib::make_flat(csa->get_scale()));
-              
-            } else if (ca->get_color_type() == ColorAttrib::T_flat) {
-              // ColorAttrib::T_flat means the color scale modulates
-              // the specified color to produce a new color.
-              const Colorf &c1 = ca->get_color();
-              const LVecBase4f &c2 = csa->get_scale();
-              Colorf color(c1[0] * c2[0], c1[1] * c2[1], 
-                           c1[2] * c2[2], c1[3] * c2[3]);
-              entry->_state = entry->_state->set_attrib(ColorAttrib::make_flat(color));
-              
-            } else {
-              // Otherwise, we have vertex color, and we just scale
-              // it normally.
+            CPT(RenderAttrib) ra = entry->_state->get_attrib_def(ColorAttrib::get_class_slot());
+            CPT(ColorAttrib) ca = DCAST(ColorAttrib, ra);
+            if(allow_flatten_color) {
               if (transformer.transform_colors(new_geom, csa->get_scale())) {
                 any_changed = true;
+              }
+            } else {
+              if (ca->get_color_type() == ColorAttrib::T_off) {
+                entry->_state = entry->_state->set_attrib(ColorAttrib::make_vertex());
+                // ColorAttrib::T_off means the color scale becomes
+                // the new color.
+                entry->_state = entry->_state->set_attrib(ColorAttrib::make_flat(csa->get_scale()));
+              
+              } else if (ca->get_color_type() == ColorAttrib::T_flat) {
+                // ColorAttrib::T_flat means the color scale modulates
+                // the specified color to produce a new color.
+                const Colorf &c1 = ca->get_color();
+                const LVecBase4f &c2 = csa->get_scale();
+                Colorf color(c1[0] * c2[0], c1[1] * c2[1], 
+                             c1[2] * c2[2], c1[3] * c2[3]);
+                entry->_state = entry->_state->set_attrib(ColorAttrib::make_flat(color));
+              
+              } else {
+                // Otherwise, we have vertex color, and we just scale
+                // it normally.
+                if (transformer.transform_colors(new_geom, csa->get_scale())) {
+                  any_changed = true;
+                }
+                entry->_state = entry->_state->set_attrib(ColorAttrib::make_vertex());
               }
             }
           }
