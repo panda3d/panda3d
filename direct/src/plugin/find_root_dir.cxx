@@ -17,6 +17,12 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <shlobj.h>
+#else
+#include <unistd.h>
+#include <stdlib.h>
+#include <pwd.h>
+#include <errno.h>
+#include <sys/stat.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -58,12 +64,28 @@ find_root_dir() {
     }
   }
 
-  // Couldn't find a directory.  Bail.
-  return ".";
-
 #else  // _WIN32
-  // TODO.
-  return "/Users/drose/p3ddir";
+  // e.g., /home/<username>/.panda3d
+
+  string root;
+  const char* uname = getlogin();
+  if (uname == NULL) uname = getenv("USER");
+
+  const passwd* pwdata = getpwnam(uname);
+  if (pwdata == NULL) {
+    root = getenv("HOME");
+  } else {
+    root = pwdata->pw_dir;
+  }
+  
+  root += "/.panda3d";
+  if (mkdir(root.c_str(), 0700) == 0 || errno == EEXIST) {
+    return root;
+  }
 
 #endif
+
+  // Couldn't find a directory.  Bail.
+  return ".";
 }
+
