@@ -29,7 +29,11 @@
   #if $[WINDOWS_PLATFORM]
     #define P3D_PLUGIN_PLATFORM win32
   #elif $[UNIX_PLATFORM]
-    #define P3D_PLUGIN_PLATFORM linux.$[shell uname -m]
+    #if $[eq $[shell uname -m], x86_64]
+      #define P3D_PLUGIN_PLATFORM linux.amd64
+    #else
+      #define P3D_PLUGIN_PLATFORM linux.i386
+    #endif
   #else
     #define P3D_PLUGIN_PLATFORM osx.i386
   #endif
