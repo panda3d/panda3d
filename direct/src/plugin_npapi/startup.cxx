@@ -69,6 +69,41 @@ request_ready(P3D_instance *instance) {
 #endif
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: NP_GetMIMEDescription
+//  Description: On Unix, this function is called by the browser to
+//               get the mimetypes and extensions this plugin is
+//               supposed to handle.
+////////////////////////////////////////////////////////////////////
+char*
+NP_GetMIMEDescription(void) {
+  return (char*) "application/x-panda3d:p3d;Panda3D applet";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: NP_GetValue
+//  Description: On Unix, this function is called by the browser to
+//               get some information like the name and description.
+////////////////////////////////////////////////////////////////////
+NPError
+NP_GetValue(void*, NPPVariable variable, void* value) {
+  if (value == NULL) {
+    return NPERR_INVALID_PARAM;
+  }
+  
+  switch (variable) {
+    case NPPVpluginNameString:
+      *(const char **)value = "Panda3D Game Engine Plug-in";
+      break;
+    case NPPVpluginDescriptionString:
+      *(const char **)value = "Runs 3-D games and interactive applets";
+      break;
+    default:
+      return NPERR_INVALID_PARAM;
+  }
+  
+  return NPERR_NO_ERROR;
+}
 
 ////////////////////////////////////////////////////////////////////
 //     Function: NP_Initialize
@@ -81,9 +116,9 @@ request_ready(P3D_instance *instance) {
 NPError OSCALL 
 NP_Initialize(NPNetscapeFuncs *browserFuncs)
 #else
-// On Mac, the API specifies this second parameter is included, but it
-// lies.  We actually don't get a second parameter on Mac, but we have
-// to put it here to make the compiler happy.
+// On Unix/Mac, the API specifies this second parameter is included,
+// but it lies.  We actually don't get a second parameter there,
+// but we have to put it here to make the compiler happy.
 NPError OSCALL
 NP_Initialize(NPNetscapeFuncs *browserFuncs,
               NPPluginFuncs *pluginFuncs)
@@ -357,6 +392,8 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
       *(NPObject **)value = obj;
       return NPERR_NO_ERROR;
     }
+  } else {
+    return NP_GetValue(NULL, variable, value);
   }
 
   return NPERR_GENERIC_ERROR;

@@ -433,7 +433,7 @@ p3dobj_to_xml(const P3D_object *obj) {
       // the Python process knows to call back up to here to query it.
       // TODO: pass pointers better.  Fix this hideous leak.
       P3D_object *dup = P3D_OBJECT_COPY(obj);
-      int object_id = (int)dup;
+      int object_id = (int)(intptr_t)dup;
       xvalue->SetAttribute("type", "browser");
       xvalue->SetAttribute("object_id", object_id);
 

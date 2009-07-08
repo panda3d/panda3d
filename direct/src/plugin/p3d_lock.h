@@ -89,7 +89,7 @@ pthread_join((thread), &return_val); \
 
 // As above, declare this macro within your class declaration.
 #define THREAD_CALLBACK_DECLARATION(class, callback_function) \
-  static void *class::                                               \
+  static void *                                               \
   posix_ ## callback_function(void *data) {        \
     ((class *)data)->callback_function();       \
     return NULL;                                   \

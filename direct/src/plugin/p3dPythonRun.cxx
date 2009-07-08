@@ -957,7 +957,7 @@ pyobj_to_xml(PyObject *value) {
     // general.
     // TODO: pass pointers better.
     xvalue->SetAttribute("type", "python");
-    xvalue->SetAttribute("object_id", (int)value);
+    xvalue->SetAttribute("object_id", (int)(intptr_t)value);
 
     // TODO: fix this hack, properly manage these reference counts.
     Py_INCREF(value);

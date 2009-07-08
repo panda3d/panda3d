@@ -25,6 +25,8 @@ extern "C" {
                                NPPluginFuncs *pluginFuncs);
 #endif
 
+  char* NP_GetMIMEDescription(void);
+  NPError NP_GetValue(void*, NPPVariable variable, void* value);
   NPError OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs);
   NPError OSCALL NP_Shutdown(void);
 }
