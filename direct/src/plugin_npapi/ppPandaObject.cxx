@@ -103,7 +103,9 @@ bool PPPandaObject::
 has_method(NPIdentifier name) {
   string property_name = identifier_to_string(name);
   logfile << "has_method: " << this << ", " << property_name << "\n" << flush;
-  return false;
+
+  // As above, we always return true.  Why not?
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -116,8 +118,31 @@ has_method(NPIdentifier name) {
 bool PPPandaObject::
 invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
        NPVariant *result) {
-  logfile << "invoke: " << this << "\n" << flush;
-  return false;
+  string method_name = identifier_to_string(name);
+  logfile << "invoke: " << this << ", " << method_name << "\n" << flush;
+  if (_p3d_object == NULL) {
+    // Not powered up yet.
+    return false;
+  }
+
+  P3D_object **p3dargs = new P3D_object *[argCount];
+  for (int i = 0; i < argCount; ++i) {
+    p3dargs[i] = _instance->variant_to_p3dobj(&args[i]);
+  }
+
+  P3D_object *value = P3D_OBJECT_CALL(_p3d_object, method_name.c_str(), 
+                                      p3dargs, argCount);
+  delete[] p3dargs;
+
+  if (value == NULL) {
+    // No such method, or some problem with the parameters.
+    return false;
+  }
+
+  // We have the return value, and its value is stored in value.
+  _instance->p3dobj_to_variant(result, value);
+  P3D_OBJECT_FINISH(value);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,7 +156,29 @@ bool PPPandaObject::
 invoke_default(const NPVariant *args, uint32_t argCount,
                NPVariant *result) {
   logfile << "invoke_default: " << this << "\n" << flush;
-  return false;
+  if (_p3d_object == NULL) {
+    // Not powered up yet.
+    return false;
+  }
+
+  P3D_object **p3dargs = new P3D_object *[argCount];
+  for (int i = 0; i < argCount; ++i) {
+    p3dargs[i] = _instance->variant_to_p3dobj(&args[i]);
+  }
+
+  P3D_object *value = P3D_OBJECT_CALL(_p3d_object, "",
+                                      p3dargs, argCount);
+  delete[] p3dargs;
+
+  if (value == NULL) {
+    // No such method, or some problem with the parameters.
+    return false;
+  }
+
+  // We have the return value, and its value is stored in value.
+  _instance->p3dobj_to_variant(result, value);
+  P3D_OBJECT_FINISH(value);
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
