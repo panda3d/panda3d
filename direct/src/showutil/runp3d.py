@@ -22,7 +22,7 @@ See pack3d.py for a script that generates these p3d files.
 import sys
 from direct.showbase import VFSImporter
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase import AppRunnerGlobal
@@ -244,6 +244,7 @@ class AppRunner(DirectObject):
         self.startIfReady()
 
     def setupWindow(self, windowType, x, y, width, height, parent):
+        print "setupWindow %s, %s, %s, %s, %s, %s" % (windowType, x, y, width, height, parent)
         if windowType == 'hidden':
             data = 'window-type none\n'
         else:
@@ -259,7 +260,7 @@ class AppRunner(DirectObject):
         else:
             data += 'parent-window-handle 0\n'
 
-        if x or y:
+        if x or y or windowType == 'embedded':
             data += 'win-origin %s %s\n' % (x, y)
         if width or height:
             data += 'win-size %s %s\n' % (width, height)
@@ -268,8 +269,20 @@ class AppRunner(DirectObject):
             unloadPrcFile(self.windowPrc)
         self.windowPrc = loadPrcFileData("setupWindow", data)
 
-        self.gotWindow = True
-        self.startIfReady()
+        if self.started and base.win:
+            # If we've already got a window, this must be a
+            # resize/reposition request.
+            wp = WindowProperties()
+            if x or y or windowType == 'embedded':
+                wp.setOrigin(x, y)
+            if width or height:
+                wp.setSize(width, height)
+            base.win.requestProperties(wp)
+
+        else:
+            # If we haven't got a window already, start 'er up.
+            self.gotWindow = True
+            self.startIfReady()
 
     def setRequestFunc(self, func):
         """ This method is called by the plugin at startup to supply a

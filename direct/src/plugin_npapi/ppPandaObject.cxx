@@ -126,7 +126,7 @@ invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
   }
 
   P3D_object **p3dargs = new P3D_object *[argCount];
-  for (int i = 0; i < argCount; ++i) {
+  for (unsigned int i = 0; i < argCount; ++i) {
     p3dargs[i] = _instance->variant_to_p3dobj(&args[i]);
   }
 
@@ -162,7 +162,7 @@ invoke_default(const NPVariant *args, uint32_t argCount,
   }
 
   P3D_object **p3dargs = new P3D_object *[argCount];
-  for (int i = 0; i < argCount; ++i) {
+  for (unsigned int i = 0; i < argCount; ++i) {
     p3dargs[i] = _instance->variant_to_p3dobj(&args[i]);
   }
 
