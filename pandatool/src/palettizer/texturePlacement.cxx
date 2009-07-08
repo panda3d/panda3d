@@ -1113,6 +1113,10 @@ operator ()(TexturePlacement *a, TexturePlacement *b) const {
 
   } else if (b->get_x_size() < a->get_x_size()) {
     return true;
+  } else if (a->get_name() < b->get_name()) {
+    //use this fall through case to let alphabetically smaller textures show up first
+    return true;
   }
+  
   return false;
 }
