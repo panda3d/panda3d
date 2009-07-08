@@ -79,6 +79,11 @@ object_call(const P3D_object *object, const char *method_name,
   return ((const P3DObject *)object)->call(method_name, params, num_params);
 }
 
+static P3D_object *
+object_eval(const P3D_object *object, const char *expression) {
+  return ((const P3DObject *)object)->eval(expression);
+}
+
 P3D_class_definition P3DObject::_object_class = {
   &object_finish,
   &object_copy,
@@ -91,6 +96,7 @@ P3D_class_definition P3DObject::_object_class = {
   &object_get_property,
   &object_set_property,
   &object_call,
+  &object_eval,
 };
 
 // The next functions are used to construct the generic
@@ -166,6 +172,11 @@ generic_call(const P3D_object *object, const char *method_name,
   return NULL;
 }
 
+static P3D_object *
+generic_eval(const P3D_object *object, const char *expression) {
+  return NULL;
+}
+
 P3D_class_definition P3DObject::_generic_class = {
   &generic_finish,
   &generic_copy,
@@ -178,6 +189,7 @@ P3D_class_definition P3DObject::_generic_class = {
   &generic_get_property,
   &generic_set_property,
   &generic_call,
+  &generic_eval,
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -298,6 +310,17 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
   for (int i = 0; i < num_params; ++i) {
     P3D_OBJECT_FINISH(params[i]);
   }
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::eval
+//       Access: Public, Virtual
+//  Description: Evaluates an arbitrary JavaScript expression.  None
+//               of the P3DObject classes implement this.
+////////////////////////////////////////////////////////////////////
+P3D_object *P3DObject::
+eval(const string &expression) const {
   return NULL;
 }
 

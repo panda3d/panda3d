@@ -684,6 +684,8 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
       const char *operation = xrequest->Attribute("operation");
       TiXmlElement *xobject = xrequest->FirstChildElement("object");
       const char *property_name = xrequest->Attribute("property_name");
+      int needs_response = 0;
+      xrequest->Attribute("needs_response", &needs_response);
       int unique_id = 0;
       xrequest->Attribute("unique_id", &unique_id);
 
@@ -697,6 +699,8 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
           op = P3D_SO_del_property;
         } else if (strcmp(operation, "call") == 0) {
           op = P3D_SO_call;
+        } else if (strcmp(operation, "eval") == 0) {
+          op = P3D_SO_eval;
         } else {
           // An unexpected operation.
           return NULL;
@@ -710,6 +714,7 @@ rt_make_p3d_request(TiXmlElement *xrequest) {
         if (property_name != NULL) {
           request->_request._script._property_name = strdup(property_name);
         }
+        request->_request._script._needs_response = (needs_response != 0);
         request->_request._script._unique_id = unique_id;
         
         // Fill in the value(s).

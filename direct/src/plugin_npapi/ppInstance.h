@@ -58,6 +58,8 @@ public:
   void p3dobj_to_variant(NPVariant *result, const P3D_object *object);
   P3D_object *variant_to_p3dobj(const NPVariant *variant);
 
+  static void output_np_variant(ostream &out, const NPVariant &result);
+
 private:
   void start_download(const string &url, PPDownloadRequest *req);
   void downloaded_file(PPDownloadRequest *req, const string &filename);
@@ -71,8 +73,6 @@ private:
 
   void create_instance();
   void send_window();
-
-  void show_np_variant(const NPVariant &result);
 
 #ifdef _WIN32
   static LONG 

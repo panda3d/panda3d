@@ -74,7 +74,7 @@ extern "C" {
 libraries match.  It should be passed to P3D_initialize() (below).
 This number will be incremented whenever there are changes to any of
 the interface specifications defined in this header file. */
-#define P3D_API_VERSION 3
+#define P3D_API_VERSION 4
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -391,6 +391,15 @@ typedef P3D_object *
 P3D_object_call_method(const P3D_object *object, const char *method_name,
                        P3D_object *params[], int num_params);
 
+/* Evaluates an arbitrary JavaScript expression in the context of the
+   object.
+
+   The return value is a newly-allocated P3D_object on success, or
+   NULL on failure.  Ownership of the return value is transferred to
+   the caller. */
+typedef P3D_object *
+P3D_object_eval_method(const P3D_object *object, const char *expression);
+
 /* This defines the class structure that implements all of the above
    methods. */
 typedef struct _P3D_class_definition {
@@ -408,6 +417,7 @@ typedef struct _P3D_class_definition {
   P3D_object_set_property_method *_set_property;
 
   P3D_object_call_method *_call;
+  P3D_object_eval_method *_eval;
 
 } P3D_class_definition;
 
@@ -435,6 +445,7 @@ struct _P3D_object {
 #define P3D_OBJECT_SET_PROPERTY(object, property, value) ((object)->_class->_set_property((object), (property), (value)))
 
 #define P3D_OBJECT_CALL(object, method_name, params, num_params) ((object)->_class->_call((object), (method_name), (params), (num_params)))
+#define P3D_OBJECT_EVAL(object, expression) ((object)->_class->_eval((object), (expression)))
 
 
 /* The following function types are once again meant to define
@@ -604,6 +615,7 @@ typedef enum {
   P3D_SO_set_property,
   P3D_SO_del_property,
   P3D_SO_call,
+  P3D_SO_eval,
 } P3D_script_operation;
 typedef struct {
   P3D_object *_object;
@@ -611,6 +623,7 @@ typedef struct {
   const char *_property_name;
   P3D_object **_values;
   int _num_values;
+  bool _needs_response;
   int _unique_id;
 } P3D_request_script;
 

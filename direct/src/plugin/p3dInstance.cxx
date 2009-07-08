@@ -475,7 +475,7 @@ handle_notify_request(P3D_request *request) {
   const char *message = request->_request._notify._message;
   if (strcmp(message, "onwindowopen") == 0) {
     // The process told us that it just succesfully opened its
-    // window.
+    // window.  Tear down the splash window.
     _instance_window_opened = true;
     if (_splash_window != NULL) {
       delete _splash_window;
@@ -495,6 +495,7 @@ handle_script_request(P3D_request *request) {
   assert(request->_request_type == P3D_RT_script);
 
   P3D_object *object = request->_request._script._object;
+  bool needs_response = request->_request._script._needs_response;
   int unique_id = request->_request._script._unique_id;
   switch (request->_request._script._op) {
   case P3D_SO_get_property:
@@ -515,8 +516,12 @@ handle_script_request(P3D_request *request) {
         xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
         P3D_OBJECT_FINISH(result);
       }
-      
-      _session->send_command(doc);
+
+      if (needs_response) {
+        _session->send_command(doc);
+      } else {
+        delete doc;
+      }
     }
     break;
 
@@ -546,7 +551,11 @@ handle_script_request(P3D_request *request) {
       xvalue->SetAttribute("value", (int)result);
       xcommand->LinkEndChild(xvalue);
       
-      _session->send_command(doc);
+      if (needs_response) {
+        _session->send_command(doc);
+      } else {
+        delete doc;
+      }
     }
     break;
 
@@ -570,7 +579,11 @@ handle_script_request(P3D_request *request) {
       xvalue->SetAttribute("value", (int)result);
       xcommand->LinkEndChild(xvalue);
       
-      _session->send_command(doc);
+      if (needs_response) {
+        _session->send_command(doc);
+      } else {
+        delete doc;
+      }
     }
     break;
 
@@ -581,8 +594,8 @@ handle_script_request(P3D_request *request) {
                         request->_request._script._values,
                         request->_request._script._num_values);
       // Reset the value count to 0 so we won't double-delete the
-      // values when the request is deleted (the above call has
-      // already deleted them).
+      // parameter values when the request is deleted (the above call
+      // has already deleted them).
       request->_request._script._num_values = 0;
 
       // Feed the result back down to the subprocess.
@@ -600,7 +613,52 @@ handle_script_request(P3D_request *request) {
         P3D_OBJECT_FINISH(result);
       }
       
-      _session->send_command(doc);
+      if (needs_response) {
+        _session->send_command(doc);
+      } else {
+        delete doc;
+      }
+    }
+    break;
+
+  case P3D_SO_eval:
+    {
+      P3D_object *result;
+      if (request->_request._script._num_values == 1) {
+        P3D_object *expression = request->_request._script._values[0];
+        int size = P3D_OBJECT_GET_STRING(expression, NULL, 0);
+        char *buffer = new char[size + 1];
+        P3D_OBJECT_GET_STRING(expression, buffer, size + 1);
+        result = P3D_OBJECT_EVAL(object, buffer);
+        logfile << " eval " << *object << ": " << buffer << ", result = " << result << "\n";
+        delete[] buffer;
+      } else {
+        // Wrong number of values.  Error.
+        result = NULL;
+      }
+
+      // Feed the result back down to the subprocess.
+      TiXmlDocument *doc = new TiXmlDocument;
+      TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+      TiXmlElement *xcommand = new TiXmlElement("command");
+      xcommand->SetAttribute("cmd", "script_response");
+      xcommand->SetAttribute("unique_id", unique_id);
+      
+      doc->LinkEndChild(decl);
+      doc->LinkEndChild(xcommand);
+
+      if (result != NULL) {
+        xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
+        P3D_OBJECT_FINISH(result);
+      }
+
+      logfile << "eval  response: " << *doc << "\n";
+      
+      if (needs_response) {
+        _session->send_command(doc);
+      } else {
+        delete doc;
+      }
     }
     break;
   }

@@ -48,6 +48,7 @@ public:
 
   virtual P3D_object *call(const string &method_name, 
                            P3D_object *params[], int num_params) const;
+  virtual P3D_object *eval(const string &expression) const;
 
   virtual void output(ostream &out) const;
 

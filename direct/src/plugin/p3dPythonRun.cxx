@@ -598,14 +598,17 @@ py_request_func(PyObject *args) {
     PyObject *object;
     const char *property_name;
     PyObject *value;
+    int needs_response;
     int unique_id;
-    if (!PyArg_ParseTuple(extra_args, "sOsOi", 
-                          &operation, &object, &property_name, &value, &unique_id)) {
+    if (!PyArg_ParseTuple(extra_args, "sOsOii", 
+                          &operation, &object, &property_name, &value, 
+                          &needs_response, &unique_id)) {
       return NULL;
     }
 
     xrequest->SetAttribute("operation", operation);
     xrequest->SetAttribute("property_name", property_name);
+    xrequest->SetAttribute("needs_response", (int)(needs_response != 0));
     xrequest->SetAttribute("unique_id", unique_id);
     TiXmlElement *xobject = pyobj_to_xml(object);
     xobject->SetValue("object");

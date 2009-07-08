@@ -17,5 +17,5 @@ class FileSpec:
         self.hash = hv.asHex()
 
     def getParams(self):
-        return 'filename="%s" size=%s timestamp=%s hash="%s"' % (
+        return 'filename="%s" size="%s" timestamp="%s" hash="%s"' % (
             self.filename, self.size, self.timestamp, self.hash)

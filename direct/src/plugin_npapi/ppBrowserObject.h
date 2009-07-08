@@ -41,6 +41,7 @@ public:
 
   P3D_object *call(const string &method_name, 
                    P3D_object *params[], int num_params) const;
+  P3D_object *eval(const string &expression) const;
 
 private:
   static P3D_class_definition *get_class_definition();

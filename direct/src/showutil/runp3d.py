@@ -56,6 +56,7 @@ class AppRunner(DirectObject):
         self.gotWindow = False
         self.gotP3DFilename = False
         self.started = False
+        self.windowOpened = False
         self.windowPrc = None
 
         # Store this Null instance where the application can easily
@@ -75,6 +76,10 @@ class AppRunner(DirectObject):
         # This will be the browser's toplevel window DOM object;
         # e.g. self.dom.document will be the document.
         self.dom = None
+
+        # This is the list of expressions we will evaluate when
+        # self.dom gets assigned.
+        self.deferredEvals = []
 
         # This is the default requestFunc that is installed if we
         # never call setRequestFunc().
@@ -175,18 +180,27 @@ class AppRunner(DirectObject):
         self.dom = dom
         print "setBrowserScriptObject(%s)" % (dom)
 
+        # Now evaluate any deferred expressions.
+        for expression in self.deferredEvals:
+            self.scriptRequest('eval', self.dom, value = expression,
+                               needsResponse = False)
+        self.deferredEvals = []
+
     def setP3DFilename(self, p3dFilename, tokens = [],
                        instanceId = None):
         # One day we will have support for multiple instances within a
         # Python session.  Against that day, we save the instance ID
         # for this instance.
         self.instanceId = instanceId
-        
-        # Now that we have an instanceId, we can respond to queries
-        # and such.
-        self.sendRequest('notify', 'onpythonload')
 
-        tokenDict = dict(tokens)
+        self.tokens = tokens
+        self.tokenDict = dict(tokens)
+
+        # Tell the browser that Python is up and running, and ready to
+        # respond to queries.
+        self.notifyRequest('onpythonload')
+
+        # Now go load the applet.
         fname = Filename.fromOsSpecific(p3dFilename)
         if not p3dFilename:
             # If we didn't get a literal filename, we have to download it
@@ -194,7 +208,7 @@ class AppRunner(DirectObject):
             fname = Filename.temporary('', 'p3d_')
             fname.setExtension('p3d')
             p3dFilename = fname.toOsSpecific()
-            src = tokenDict.get('src', None)
+            src = self.tokenDict.get('src', None)
             if not src:
                 raise ArgumentError, "No Panda app specified."
 
@@ -241,6 +255,7 @@ class AppRunner(DirectObject):
                 loadPrcFileData(pathname, data)
 
         self.gotP3DFilename = True
+
         self.startIfReady()
 
     def setupWindow(self, windowType, x, y, width, height, parent):
@@ -291,14 +306,53 @@ class AppRunner(DirectObject):
         self.requestFunc = func
 
     def sendRequest(self, request, *args):
+        """ Delivers a request to the browser via self.requestFunc.
+        This low-level function is not intended to be called directly
+        by user code. """
+        
         assert self.requestFunc
         return self.requestFunc(self.instanceId, request, args)
 
     def windowEvent(self, win):
-        self.sendRequest('notify', 'onwindowopen')
+        """ This method is called when we get a window event.  We
+        listen for this to detect when the window has been
+        successfully opened. """
 
+        if not self.windowOpened:
+            self.notifyRequest('onwindowopen')
+            self.windowOpened = True
+
+    def notifyRequest(self, message):
+        """ Delivers a notify request to the browser.  This is a "this
+        happened" type notification; it optionally triggers some
+        JavaScript code execution, and may also trigger some internal
+        automatic actions.  (For instance, the plugin takes down the
+        splash window when it sees the onwindowopen notification. """
+
+        self.sendRequest('notify', message)
+
+        # Now process any JavaScript that might be waiting for the
+        # event as well.  These are the JavaScript expressions that
+        # were specified in the HTML embed or object tag.
+        #expression = self.tokenDict.get(message)
+        #if expression:
+        #    self.evalScript(expression)
+
+    def evalScript(self, expression):
+        """ Evaluates an arbitrary JavaScript expression in the global
+        DOM space.  This may be deferred if necessary if self.dom has
+        not yet been assigned. """
+
+        if not self.dom:
+            # Defer the expression.
+            self.deferredEvals.append(expression)
+        else:
+            # Evaluate it now.
+            self.scriptRequest('eval', self.dom, value = expression,
+                               needsResponse = False)
+        
     def scriptRequest(self, operation, object, propertyName = '',
-                      value = None):
+                      value = None, needsResponse = True):
         """ Issues a new script request to the browser.  This queries
         or modifies one of the browser's DOM properties.  This method
         blocks until the return value is received from the browser,
@@ -320,11 +374,12 @@ class AppRunner(DirectObject):
         uniqueId = self.nextScriptId
         self.nextScriptId += 1
         self.sendRequest('script', operation, object,
-                         propertyName, value, uniqueId);
+                         propertyName, value, needsResponse, uniqueId);
 
-        # Now wait for the response to come in.
-        result = self.sendRequest('wait_script_response', uniqueId)
-        return result
+        if needsResponse:
+            # Now wait for the response to come in.
+            result = self.sendRequest('wait_script_response', uniqueId)
+            return result
 
     def parseSysArgs(self):
         """ Converts sys.argv into (p3dFilename, tokens). """
@@ -397,7 +452,25 @@ class BrowserObject:
         parentObj, attribName = self.__boundMethod
         if parentObj:
             # Call it as a method.
-            result = self.__runner.scriptRequest('call', parentObj, propertyName = attribName, value = args)
+            needsResponse = True
+            if parentObj is self.__runner.dom and attribName == 'alert':
+                # As a special hack, we don't wait for the return
+                # value from the alert() call, since this is a
+                # blocking call, and waiting for this could cause
+                # problems.
+                needsResponse = False
+
+            if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], types.StringTypes):
+                # As another special hack, we make dom.eval() a
+                # special case, and map it directly into an eval()
+                # call.  If the string begins with 'void ', we further
+                # assume we're not waiting for a response.
+                if args[0].startswith('void '):
+                    needsResponse = False
+                result = self.__runner.scriptRequest('eval', parentObj, value = args[0], needsResponse = needsResponse)
+            else:
+                # This is a normal method call.
+                result = self.__runner.scriptRequest('call', parentObj, propertyName = attribName, value = args, needsResponse = needsResponse)
         else:
             # Call it as a plain function.
             result = self.__runner.scriptRequest('call', self, value = args)

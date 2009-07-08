@@ -74,13 +74,9 @@ PPInstance::
     _p3d_inst = NULL;
   }
 
-  // It's not clear why we shoudn't release this object now, but if we
-  // do we crash (at least on Windows).
-  /*
   if (_script_object != NULL) {
     browser->releaseobject(_script_object);
   }
-  */
 
   // Free the tokens we allocated.
   Tokens::iterator ti;
@@ -430,12 +426,9 @@ handle_request(P3D_request *request) {
         // with the proper P3D object pointer.
         P3D_object *obj = P3D_instance_get_panda_script_object(_p3d_inst);
         _script_object->set_p3d_object(obj);
+        logfile << "got onpythonload\n";
       }
     }
-    break;
-
-  case P3D_RT_script:
-    // We're allowed to ignore this.
     break;
 
   default:
@@ -481,6 +474,8 @@ handle_request_loop() {
 NPObject *PPInstance::
 get_panda_script_object() {
   if (_script_object != NULL) {
+    // NPRuntime "steals" a reference to this object.
+    browser->retainobject(_script_object);
     return _script_object;
   }
 
@@ -492,10 +487,7 @@ get_panda_script_object() {
 
   _script_object = PPPandaObject::make_new(this, obj);
 
-  // It's not clear why we need to explicitly retain this object now,
-  // but if we don't we crash.
   browser->retainobject(_script_object);
-
   return _script_object;
 }
 
@@ -946,28 +938,28 @@ send_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::show_np_variant
-//       Access: Private
+//     Function: PPInstance::output_np_variant
+//       Access: Public
 //  Description: Outputs the variant value.
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
-show_np_variant(const NPVariant &result) {
+output_np_variant(ostream &out, const NPVariant &result) {
   if (NPVARIANT_IS_NULL(result)) {
-    logfile << "null";
+    out << "null";
   } else if (NPVARIANT_IS_VOID(result)) {
-    logfile << "void";
+    out << "void";
   } else if (NPVARIANT_IS_BOOLEAN(result)) {
-    logfile << "bool " << NPVARIANT_TO_BOOLEAN(result);
+    out << "bool " << NPVARIANT_TO_BOOLEAN(result);
   } else if (NPVARIANT_IS_INT32(result)) {
-    logfile << "int " << NPVARIANT_TO_INT32(result);
+    out << "int " << NPVARIANT_TO_INT32(result);
   } else if (NPVARIANT_IS_DOUBLE(result)) {
-    logfile << "double " << NPVARIANT_TO_DOUBLE(result);
+    out << "double " << NPVARIANT_TO_DOUBLE(result);
   } else if (NPVARIANT_IS_STRING(result)) {
     NPString str = NPVARIANT_TO_STRING(result);
-    logfile << "string " << string(str.utf8characters, str.utf8length);
+    out << "string " << string(str.utf8characters, str.utf8length);
   } else if (NPVARIANT_IS_OBJECT(result)) {
     NPObject *child = NPVARIANT_TO_OBJECT(result);
-    logfile << "object " << child;
+    out << "object " << child;
   }
 }
 
