@@ -469,15 +469,14 @@ make_parent_window(P3D_window_handle &parent_window,
 
   parent_window._hwnd = toplevel_window;
 }
-#endif // _WIN32
 
-#ifdef __APPLE__
+#else
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::make_parent_window
 //       Access: Private
 //  Description: Creates a toplevel window to contain the embedded
-//               instances.  OS X implementation.
+//               instances.
 ////////////////////////////////////////////////////////////////////
 void Panda3D::
 make_parent_window(P3D_window_handle &parent_window, 
@@ -486,7 +485,7 @@ make_parent_window(P3D_window_handle &parent_window,
   assert(false);
 }
 
-#endif  // __APPLE__
+#endif
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::create_instance
