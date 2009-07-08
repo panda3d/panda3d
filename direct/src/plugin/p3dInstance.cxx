@@ -20,7 +20,7 @@
 #include "p3dSplashWindow.h"
 #include "p3dWinSplashWindow.h"
 #include "p3dObject.h"
-#include "p3dNullObject.h"
+#include "p3dUndefinedObject.h"
 
 #include <sstream>
 #include <algorithm>
@@ -195,7 +195,7 @@ get_panda_script_object() const {
   }
 
   if (result == NULL) {
-    result = new P3DNullObject;
+    result = new P3DUndefinedObject;
   }
 
   return result;

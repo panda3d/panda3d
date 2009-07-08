@@ -1,4 +1,4 @@
-// Filename: p3dNullObject.cxx
+// Filename: p3dUndefinedObject.cxx
 // Created by:  drose (07Jul09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,45 +12,45 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dNullObject.h"
+#include "p3dUndefinedObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DNullObject::Constructor
+//     Function: P3DUndefinedObject::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DNullObject::
-P3DNullObject() {
+P3DUndefinedObject::
+P3DUndefinedObject() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DNullObject::get_type
+//     Function: P3DUndefinedObject::get_type
 //       Access: Public, Virtual
 //  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
-P3D_object_type P3DNullObject::
+P3D_object_type P3DUndefinedObject::
 get_type() const {
-  return P3D_OT_null;
+  return P3D_OT_undefined;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DNullObject::get_bool
+//     Function: P3DUndefinedObject::get_bool
 //       Access: Public, Virtual
 //  Description: Returns the object value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DNullObject::
+bool P3DUndefinedObject::
 get_bool() const {
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DNullObject::make_string
+//     Function: P3DUndefinedObject::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DNullObject::
+void P3DUndefinedObject::
 make_string(string &value) const {
-  value = "Null";
+  value = "Undefined";
 }

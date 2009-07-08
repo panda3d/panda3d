@@ -500,12 +500,12 @@ get_panda_script_object() {
 void PPInstance::
 p3dobj_to_variant(NPVariant *result, const P3D_object *object) {
   switch (P3D_OBJECT_GET_TYPE(object)) {
-  case P3D_OT_null:
-    NULL_TO_NPVARIANT(*result);
+  case P3D_OT_undefined:
+    VOID_TO_NPVARIANT(*result);
     break;
 
   case P3D_OT_none:
-    VOID_TO_NPVARIANT(*result);
+    NULL_TO_NPVARIANT(*result);
     break;
 
   case P3D_OT_bool:
@@ -548,9 +548,9 @@ p3dobj_to_variant(NPVariant *result, const P3D_object *object) {
 ////////////////////////////////////////////////////////////////////
 P3D_object *PPInstance::
 variant_to_p3dobj(const NPVariant *variant) {
-  if (NPVARIANT_IS_NULL(*variant)) {
-    return P3D_new_null_object();
-  } else if (NPVARIANT_IS_VOID(*variant)) {
+  if (NPVARIANT_IS_VOID(*variant)) {
+    return P3D_new_undefined_object();
+  } else if (NPVARIANT_IS_NULL(*variant)) {
     return P3D_new_none_object();
   } else if (NPVARIANT_IS_BOOLEAN(*variant)) {
     return P3D_new_bool_object(NPVARIANT_TO_BOOLEAN(*variant));

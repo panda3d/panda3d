@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DNoneObject
 // Description : An object type that contains no value, similar to
-//               Python's None type, or JavaScript's void type.
+//               Python's None type, or JavaScript's null type.
 ////////////////////////////////////////////////////////////////////
 class P3DNoneObject : public P3DObject {
 public:

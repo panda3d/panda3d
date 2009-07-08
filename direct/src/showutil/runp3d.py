@@ -59,9 +59,9 @@ class AppRunner(DirectObject):
         self.windowOpened = False
         self.windowPrc = None
 
-        # Store this Null instance where the application can easily
+        # Store this Undefined instance where the application can easily
         # get to it.
-        self.Null = Null
+        self.Undefined = Undefined
 
         # This is per session.
         self.nextScriptId = 0
@@ -413,15 +413,20 @@ class AppRunner(DirectObject):
 
         return (osFilename, tokens)
 
-class NullObject:
+class UndefinedObject:
     """ This is a special object that is returned by the browser to
     represent a NULL pointer, typically the return value for a failed
-    operation.  It has no attributes. """
-    pass
+    operation.  It has no attributes, similar to None. """
+
+    def __nonzero__(self):
+        return False
+
+    def __str__(self):
+        return "Undefined"
 
 # In fact, we normally always return this precise instance of the
-# NullObject.
-Null = NullObject()
+# UndefinedObject.
+Undefined = UndefinedObject()
 
 class BrowserObject:
     """ This class provides the Python wrapper around some object that
@@ -475,10 +480,6 @@ class BrowserObject:
             # Call it as a plain function.
             result = self.__runner.scriptRequest('call', self, value = args)
 
-        if result is Null:
-            # Could not call the method.
-            raise TypeError
-
         return result
 
     def __getattr__(self, name):
@@ -486,9 +487,10 @@ class BrowserObject:
         into the appropriate calls to query the actual browser object
         under the hood.  """
 
-        value = self.__runner.scriptRequest('get_property', self,
-                                            propertyName = name)
-        if value is Null:
+        try:
+            value = self.__runner.scriptRequest('get_property', self,
+                                                propertyName = name)
+        except EnvironmentError:
             # Failed to retrieve the attribute.
             raise AttributeError(name)
 
@@ -528,9 +530,10 @@ class BrowserObject:
         under the hood.  Following the JavaScript convention, we treat
         obj['attr'] almost the same as obj.attr. """
 
-        value = self.__runner.scriptRequest('get_property', self,
-                                            propertyName = str(key))
-        if value is Null:
+        try:
+            value = self.__runner.scriptRequest('get_property', self,
+                                                propertyName = str(key))
+        except EnvironmentError:
             # Failed to retrieve the property.  We return IndexError
             # for numeric keys so we can properly support Python's
             # iterators, but we return KeyError for string keys to

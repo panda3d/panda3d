@@ -16,7 +16,7 @@
 #include "p3dInstance.h"
 #include "p3dInstanceManager.h"
 #include "p3d_plugin_config.h"
-#include "p3dNullObject.h"
+#include "p3dUndefinedObject.h"
 #include "p3dNoneObject.h"
 #include "p3dBoolObject.h"
 #include "p3dIntObject.h"
@@ -321,8 +321,8 @@ command_and_response(TiXmlDocument *command) {
 P3D_object *P3DSession::
 xml_to_p3dobj(const TiXmlElement *xvalue) {
   const char *type = xvalue->Attribute("type");
-  if (strcmp(type, "null") == 0) {
-    return new P3DNullObject;
+  if (strcmp(type, "undefined") == 0) {
+    return new P3DUndefinedObject;
 
   } else if (strcmp(type, "none") == 0) {
     return new P3DNoneObject;
@@ -383,8 +383,8 @@ p3dobj_to_xml(const P3D_object *obj) {
   TiXmlElement *xvalue = new TiXmlElement("value");
 
   switch (P3D_OBJECT_GET_TYPE(obj)) {
-  case P3D_OT_null:
-    xvalue->SetAttribute("type", "null");
+  case P3D_OT_undefined:
+    xvalue->SetAttribute("type", "undefined");
     break;
 
   case P3D_OT_none:

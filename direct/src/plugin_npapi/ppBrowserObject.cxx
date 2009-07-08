@@ -157,17 +157,11 @@ set_property(const string &property, P3D_object *value) {
   bool result;
   if (value != NULL) {
     // Set the property.
-    if (P3D_OBJECT_GET_TYPE(value) != P3D_OT_null) {
-      NPVariant npvalue;
-      _instance->p3dobj_to_variant(&npvalue, value);
-      result = browser->setproperty(_instance->get_npp_instance(), _npobj,
-                                    property_name, &npvalue);
-      browser->releasevariantvalue(&npvalue);
-    } else {
-      // Actually, delete the property after all.
-      result = browser->removeproperty(_instance->get_npp_instance(), _npobj,
-                                       property_name);
-    }
+    NPVariant npvalue;
+    _instance->p3dobj_to_variant(&npvalue, value);
+    result = browser->setproperty(_instance->get_npp_instance(), _npobj,
+                                  property_name, &npvalue);
+    browser->releasevariantvalue(&npvalue);
     P3D_OBJECT_FINISH(value);
 
   } else {
