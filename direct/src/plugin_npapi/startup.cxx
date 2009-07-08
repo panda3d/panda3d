@@ -116,7 +116,7 @@ NP_GetValue(void*, NPPVariable variable, void* value) {
 NPError OSCALL 
 NP_Initialize(NPNetscapeFuncs *browserFuncs)
 #else
-// On Unix/Mac, the API specifies this second parameter is included,
+// On Mac, the API specifies this second parameter is included,
 // but it lies.  We actually don't get a second parameter there,
 // but we have to put it here to make the compiler happy.
 NPError OSCALL
@@ -131,6 +131,14 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   logfile << "initializing\n" << flush;
 
   logfile << "browserFuncs = " << browserFuncs << "\n" << flush;
+
+  // On Unix, we have to use the pluginFuncs argument
+  // to pass our entry points.
+#if !defined(_WIN32) && !defined(__APPLE__)
+  if (pluginFuncs != NULL) {
+    NP_GetEntryPoints(pluginFuncs);
+  }
+#endif
 
   return NPERR_NO_ERROR;
 }
