@@ -77,7 +77,7 @@ request_ready(P3D_instance *instance) {
 ////////////////////////////////////////////////////////////////////
 char*
 NP_GetMIMEDescription(void) {
-  return (char*) "application/x-panda3d:p3d;Panda3D applet";
+  return (char*) "application/x-panda3d:p3d:Panda3D applet;";
 }
 
 ////////////////////////////////////////////////////////////////////
