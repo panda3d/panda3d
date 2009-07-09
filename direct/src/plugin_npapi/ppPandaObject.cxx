@@ -101,11 +101,26 @@ invalidate() {
 ////////////////////////////////////////////////////////////////////
 bool PPPandaObject::
 has_method(NPIdentifier name) {
-  string property_name = identifier_to_string(name);
-  logfile << "has_method: " << this << ", " << property_name << "\n" << flush;
+  string method_name = identifier_to_string(name);
+  logfile << "has_method: " << this << ", " << method_name << "\n" << flush;
+  if (_p3d_object == NULL) {
+    // Not powered up yet.
+    return false;
+  }
 
-  // As below, we always return true.  Why not?
-  return true;
+  // Unlike has_property(), below, it turns out that we really do need
+  // to honestly answer whether there is a method by this name,
+  // because if there is, then Firefox won't query the property in a
+  // meaningful fashion.
+
+  // Of course, in Python the distinction between property and method
+  // is a little looser than Firefox seems to want to make it, and
+  // sometimes you have an object which is both.  This could become
+  // problematic in obscure situations.  Too bad, say I.  Mozilla's
+  // bug, not mine.
+
+  bool result = P3D_OBJECT_HAS_METHOD(_p3d_object, method_name.c_str());
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

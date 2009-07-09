@@ -395,6 +395,28 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
             }
           }
 
+        } else if (strcmp(method_name, "__has_method__") == 0) {
+          char *property_name;
+          result = Py_False;
+          if (PyArg_ParseTuple(params, "s", &property_name)) {
+            if (*property_name) {
+              // Check for a callable method
+              if (PyObject_HasAttrString(obj, property_name)) {
+                PyObject *prop = PyObject_GetAttrString(obj, property_name);
+                if (PyCallable_Check(prop)) {
+                  result = Py_True;
+                }
+                Py_DECREF(prop);
+              }
+            } else {
+              // Check for the default method
+              if (PyCallable_Check(obj)) {
+                result = Py_True;
+              }
+            }
+          }
+          Py_INCREF(result);
+
         } else {
           // Not a special-case name.  Call the named method.
           PyObject *method = PyObject_GetAttrString(obj, (char *)method_name);

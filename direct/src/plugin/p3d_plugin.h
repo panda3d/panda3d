@@ -377,6 +377,14 @@ typedef bool
 P3D_object_set_property_method(P3D_object *object, const char *property,
                                P3D_object *value);
 
+/* Returns true if the indicated method name exists on the object,
+   false otherwise.  In the Python case, this actually returns true if
+   the object has the indicated property, and that property represents
+   a callable object.  If method_name is empty or NULL, returns true
+   if the object itself is callable. */
+typedef bool
+P3D_object_has_method_method(const P3D_object *object, const char *method_name);
+
 /* Invokes a named method on the object.  If method_name is empty or
    NULL, invokes the object itself as a function.  You must pass an
    array of P3D_objects as the list of parameters.  The ownership of
@@ -416,6 +424,7 @@ typedef struct _P3D_class_definition {
   P3D_object_get_property_method *_get_property;
   P3D_object_set_property_method *_set_property;
 
+  P3D_object_has_method_method *_has_method;
   P3D_object_call_method *_call;
   P3D_object_eval_method *_eval;
 
@@ -444,6 +453,7 @@ struct _P3D_object {
 #define P3D_OBJECT_GET_PROPERTY(object, property) ((object)->_class->_get_property((object), (property)))
 #define P3D_OBJECT_SET_PROPERTY(object, property, value) ((object)->_class->_set_property((object), (property), (value)))
 
+#define P3D_OBJECT_HAS_METHOD(object, property) ((object)->_class->_has_method((object), (property)))
 #define P3D_OBJECT_CALL(object, method_name, params, num_params) ((object)->_class->_call((object), (method_name), (params), (num_params)))
 #define P3D_OBJECT_EVAL(object, expression) ((object)->_class->_eval((object), (expression)))
 

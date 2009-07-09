@@ -174,6 +174,29 @@ set_property(const string &property, P3D_object *value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonObject::has_method
+//       Access: Public, Virtual
+//  Description: Returns true if the named method exists on this
+//               object, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool P3DPythonObject::
+has_method(const string &method_name) const {
+  bool bresult = false;
+
+  P3D_object *params[1];
+  params[0] = new P3DStringObject(method_name);
+
+  P3D_object *result = call("__has_method__", params, 1);
+
+  if (result != NULL) {
+    bresult = P3D_OBJECT_GET_BOOL(result);
+    P3D_OBJECT_FINISH(result);
+  }
+
+  return bresult;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonObject::call
 //       Access: Public, Virtual
 //  Description: Invokes the named method on the object, passing the

@@ -46,6 +46,7 @@ public:
   virtual P3D_object *get_property(const string &property) const;
   virtual bool set_property(const string &property, P3D_object *value);
 
+  virtual bool has_method(const string &method_name) const;
   virtual P3D_object *call(const string &method_name, 
                            P3D_object *params[], int num_params) const;
   virtual P3D_object *eval(const string &expression) const;

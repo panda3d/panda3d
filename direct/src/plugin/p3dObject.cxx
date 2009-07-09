@@ -70,6 +70,11 @@ object_set_property(P3D_object *object, const char *property,
   return ((P3DObject *)object)->set_property(property, value);
 }
 
+static bool
+object_has_method(const P3D_object *object, const char *method_name) {
+  return ((const P3DObject *)object)->has_method(method_name);
+}
+
 static P3D_object *
 object_call(const P3D_object *object, const char *method_name,
             P3D_object *params[], int num_params) {
@@ -95,6 +100,7 @@ P3D_class_definition P3DObject::_object_class = {
   &object_get_repr,
   &object_get_property,
   &object_set_property,
+  &object_has_method,
   &object_call,
   &object_eval,
 };
@@ -163,6 +169,11 @@ generic_set_property(P3D_object *object, const char *property,
   return false;
 }
 
+static bool
+generic_has_method(const P3D_object *object, const char *method_name) {
+  return ((const P3DObject *)object)->has_method(method_name);
+}
+
 static P3D_object *
 generic_call(const P3D_object *object, const char *method_name,
             P3D_object *params[], int num_params) {
@@ -188,6 +199,7 @@ P3D_class_definition P3DObject::_generic_class = {
   &generic_get_repr,
   &generic_get_property,
   &generic_set_property,
+  &generic_has_method,
   &generic_call,
   &generic_eval,
 };
@@ -294,6 +306,17 @@ set_property(const string &property, P3D_object *value) {
   if (value != NULL) {
     P3D_OBJECT_FINISH(value);
   }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::has_method
+//       Access: Public, Virtual
+//  Description: Returns true if the named method exists on this
+//               object, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool P3DObject::
+has_method(const string &method_name) const {
   return false;
 }
 
