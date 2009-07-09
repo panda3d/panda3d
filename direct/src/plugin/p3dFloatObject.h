@@ -28,11 +28,11 @@ public:
   P3DFloatObject(const P3DFloatObject &copy);
 
 public:
-  virtual P3D_object_type get_type() const;
-  virtual bool get_bool() const;
-  virtual int get_int() const;
-  virtual double get_float() const;
-  virtual void make_string(string &value) const;
+  virtual P3D_object_type get_type();
+  virtual bool get_bool();
+  virtual int get_int();
+  virtual double get_float();
+  virtual void make_string(string &value);
 
 private:
   double _value;

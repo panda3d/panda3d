@@ -138,7 +138,8 @@ P3D_new_undefined_object() {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
 
-  P3D_object *result = new P3DUndefinedObject();
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3D_object *result = inst_mgr->new_undefined_object();
   
   RELEASE_LOCK(_api_lock);
   return result;
@@ -149,7 +150,8 @@ P3D_new_none_object() {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
 
-  P3D_object *result = new P3DNoneObject();
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3D_object *result = inst_mgr->new_none_object();
   
   RELEASE_LOCK(_api_lock);
   return result;
@@ -160,7 +162,8 @@ P3D_new_bool_object(bool value) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
 
-  P3D_object *result = new P3DBoolObject(value);
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3D_object *result = inst_mgr->new_bool_object(value);
   
   RELEASE_LOCK(_api_lock);
   return result;
@@ -212,7 +215,7 @@ P3D_instance_get_panda_script_object(P3D_instance *instance) {
 
 void
 P3D_instance_set_browser_script_object(P3D_instance *instance, 
-                               P3D_object *object) {
+                                       P3D_object *object) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
 

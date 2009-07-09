@@ -41,7 +41,7 @@ P3DIntObject(const P3DIntObject &copy) :
 //  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
 P3D_object_type P3DIntObject::
-get_type() const {
+get_type() {
   return P3D_OT_int;
 }
 
@@ -52,7 +52,7 @@ get_type() const {
 //               possible.
 ////////////////////////////////////////////////////////////////////
 bool P3DIntObject::
-get_bool() const {
+get_bool() {
   return (_value != 0);
 }
 
@@ -63,7 +63,7 @@ get_bool() const {
 //               possible.
 ////////////////////////////////////////////////////////////////////
 int P3DIntObject::
-get_int() const {
+get_int() {
   return _value;
 }
 
@@ -74,7 +74,7 @@ get_int() const {
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
 void P3DIntObject::
-make_string(string &value) const {
+make_string(string &value) {
   ostringstream strm;
   strm << _value;
   value = strm.str();

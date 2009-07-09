@@ -66,6 +66,10 @@ public:
 
   P3D_class_definition *make_class_definition() const;
 
+  inline P3D_object *new_undefined_object();
+  inline P3D_object *new_none_object();
+  inline P3D_object *new_bool_object(bool value);
+
   static P3DInstanceManager *get_global_ptr();
   static void delete_global_ptr();
 
@@ -81,6 +85,11 @@ private:
   string _root_dir;
   string _download_url;
   string _platform;
+
+  P3D_object *_undefined_object;
+  P3D_object *_none_object;
+  P3D_object *_true_object;
+  P3D_object *_false_object;
 
   typedef set<P3DInstance *> Instances;
   Instances _instances;

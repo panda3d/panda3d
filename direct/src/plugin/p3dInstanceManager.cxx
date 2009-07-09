@@ -18,6 +18,9 @@
 #include "p3dPackage.h"
 #include "p3d_plugin_config.h"
 #include "p3dWinSplashWindow.h"
+#include "p3dUndefinedObject.h"
+#include "p3dNoneObject.h"
+#include "p3dBoolObject.h"
 #include "find_root_dir.h"
 #include "mkdir_complete.h"
 
@@ -42,6 +45,12 @@ P3DInstanceManager() {
   _notify_thread_continue = false;
   _started_notify_thread = false;
   INIT_THREAD(_notify_thread);
+
+  // Initialize the singleton objects.
+  _undefined_object = new P3DUndefinedObject();
+  _none_object = new P3DNoneObject();
+  _true_object = new P3DBoolObject(true);
+  _false_object = new P3DBoolObject(false);
 
 #ifdef _WIN32
   // Ensure the appropriate Windows common controls are available to
@@ -71,6 +80,22 @@ P3DInstanceManager::
 
   assert(_instances.empty());
   assert(_sessions.empty());
+
+  nout << "counts: " << _undefined_object->_ref_count
+       << " " << _none_object->_ref_count
+       << " " << _true_object->_ref_count
+       << " " << _false_object->_ref_count
+       << "\n" << flush;
+
+  assert(_undefined_object->_ref_count == 1);
+  assert(_none_object->_ref_count == 1);
+  assert(_true_object->_ref_count == 1);
+  assert(_false_object->_ref_count == 1);
+
+  P3D_OBJECT_DECREF(_undefined_object);
+  P3D_OBJECT_DECREF(_none_object);
+  P3D_OBJECT_DECREF(_true_object);
+  P3D_OBJECT_DECREF(_false_object);
 
 #ifdef _WIN32
   P3DWinSplashWindow::unregister_window_class();

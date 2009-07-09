@@ -28,10 +28,10 @@ public:
   P3DBoolObject(const P3DBoolObject &copy);
 
 public:
-  virtual P3D_object_type get_type() const;
-  virtual bool get_bool() const;
-  virtual int get_int() const;
-  virtual void make_string(string &value) const;
+  virtual P3D_object_type get_type();
+  virtual bool get_bool();
+  virtual int get_int();
+  virtual void make_string(string &value);
 
 private:
   bool _value;

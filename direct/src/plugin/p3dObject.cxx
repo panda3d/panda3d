@@ -21,47 +21,42 @@
 // P3D_object structure.
 static void
 object_finish(P3D_object *object) {
-  P3DObject::unref_delete(((P3DObject *)object));
-}
-
-static P3D_object *
-object_copy(const P3D_object *object) {
-  return ((const P3DObject *)object)->make_copy();
+  delete (P3DObject *)object;
 }
 
 static P3D_object_type 
-object_get_type(const P3D_object *object) {
-  return ((const P3DObject *)object)->get_type();
+object_get_type(P3D_object *object) {
+  return ((P3DObject *)object)->get_type();
 }
 
 static bool 
-object_get_bool(const P3D_object *object) {
-  return ((const P3DObject *)object)->get_bool();
+object_get_bool(P3D_object *object) {
+  return ((P3DObject *)object)->get_bool();
 }
 
 static int
-object_get_int(const P3D_object *object) {
-  return ((const P3DObject *)object)->get_int();
+object_get_int(P3D_object *object) {
+  return ((P3DObject *)object)->get_int();
 }
 
 static double 
-object_get_float(const P3D_object *object) {
-  return ((const P3DObject *)object)->get_float();
+object_get_float(P3D_object *object) {
+  return ((P3DObject *)object)->get_float();
 }
 
 static int 
-object_get_string(const P3D_object *object, char *buffer, int buffer_length) {
-  return ((const P3DObject *)object)->get_string(buffer, buffer_length);
+object_get_string(P3D_object *object, char *buffer, int buffer_length) {
+  return ((P3DObject *)object)->get_string(buffer, buffer_length);
 }
 
 static int 
-object_get_repr(const P3D_object *object, char *buffer, int buffer_length) {
-  return ((const P3DObject *)object)->get_repr(buffer, buffer_length);
+object_get_repr(P3D_object *object, char *buffer, int buffer_length) {
+  return ((P3DObject *)object)->get_repr(buffer, buffer_length);
 }
 
 static P3D_object *
-object_get_property(const P3D_object *object, const char *property) {
-  return ((const P3DObject *)object)->get_property(property);
+object_get_property(P3D_object *object, const char *property) {
+  return ((P3DObject *)object)->get_property(property);
 }
 
 static bool
@@ -71,27 +66,26 @@ object_set_property(P3D_object *object, const char *property,
 }
 
 static bool
-object_has_method(const P3D_object *object, const char *method_name) {
-  return ((const P3DObject *)object)->has_method(method_name);
+object_has_method(P3D_object *object, const char *method_name) {
+  return ((P3DObject *)object)->has_method(method_name);
 }
 
 static P3D_object *
-object_call(const P3D_object *object, const char *method_name,
+object_call(P3D_object *object, const char *method_name,
             P3D_object *params[], int num_params) {
   if (method_name == NULL) {
     method_name = "";
   }
-  return ((const P3DObject *)object)->call(method_name, params, num_params);
+  return ((P3DObject *)object)->call(method_name, params, num_params);
 }
 
 static P3D_object *
-object_eval(const P3D_object *object, const char *expression) {
-  return ((const P3DObject *)object)->eval(expression);
+object_eval(P3D_object *object, const char *expression) {
+  return ((P3DObject *)object)->eval(expression);
 }
 
 P3D_class_definition P3DObject::_object_class = {
   &object_finish,
-  &object_copy,
   &object_get_type,
   &object_get_bool,
   &object_get_int,
@@ -116,14 +110,8 @@ generic_finish(P3D_object *object) {
   nout << "Warning!  default object_finish() method does nothing; object will leak.\n" << flush;
 }
 
-static P3D_object *
-generic_copy(const P3D_object *object) {
-  nout << "Warning!  default object_copy() method does nothing; object pointer will be shared.\n" << flush;
-  return (P3D_object *)object;
-}
-
 static P3D_object_type 
-generic_get_type(const P3D_object *object) {
+generic_get_type(P3D_object *object) {
   // We assume anyone going through the trouble of subclassing this
   // will want to return an object, not one of the other fundamental
   // types.
@@ -131,66 +119,59 @@ generic_get_type(const P3D_object *object) {
 }
 
 static bool 
-generic_get_bool(const P3D_object *object) {
+generic_get_bool(P3D_object *object) {
   return false;
 }
 
 static int
-generic_get_int(const P3D_object *object) {
+generic_get_int(P3D_object *object) {
   return 0;
 }
 
 static double 
-generic_get_float(const P3D_object *object) {
+generic_get_float(P3D_object *object) {
   return 0.0;
 }
 
 static int 
-generic_get_string(const P3D_object *object, char *buffer, int buffer_length) {
+generic_get_string(P3D_object *object, char *buffer, int buffer_length) {
   return 0;
 }
 
 static int 
-generic_get_repr(const P3D_object *object, char *buffer, int buffer_length) {
+generic_get_repr(P3D_object *object, char *buffer, int buffer_length) {
   return 0;
 }
 
 static P3D_object *
-generic_get_property(const P3D_object *object, const char *property) {
+generic_get_property(P3D_object *object, const char *property) {
   return NULL;
 }
 
 static bool
 generic_set_property(P3D_object *object, const char *property,
                      P3D_object *value) {
-  if (value != NULL) {
-    P3D_OBJECT_FINISH(value);
-  }
   return false;
 }
 
 static bool
-generic_has_method(const P3D_object *object, const char *method_name) {
-  return ((const P3DObject *)object)->has_method(method_name);
+generic_has_method(P3D_object *object, const char *method_name) {
+  return false;
 }
 
 static P3D_object *
-generic_call(const P3D_object *object, const char *method_name,
+generic_call(P3D_object *object, const char *method_name,
             P3D_object *params[], int num_params) {
-  for (int i = 0; i < num_params; ++i) {
-    P3D_OBJECT_FINISH(params[i]);
-  }
   return NULL;
 }
 
 static P3D_object *
-generic_eval(const P3D_object *object, const char *expression) {
+generic_eval(P3D_object *object, const char *expression) {
   return NULL;
 }
 
 P3D_class_definition P3DObject::_generic_class = {
   &generic_finish,
-  &generic_copy,
   &generic_get_type,
   &generic_get_bool,
   &generic_get_int,
@@ -211,20 +192,7 @@ P3D_class_definition P3DObject::_generic_class = {
 ////////////////////////////////////////////////////////////////////
 P3DObject::
 ~P3DObject() {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::make_copy
-//       Access: Public, Virtual
-//  Description: Returns a new copy of the object, if necessary.  If
-//               the object type is static and all instances are
-//               identical, this actually simply ups the reference
-//               count and returns the same object.
-////////////////////////////////////////////////////////////////////
-P3DObject *P3DObject::
-make_copy() const {
-  ref();
-  return (P3DObject *)this;
+  assert(_ref_count == 0);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -234,7 +202,7 @@ make_copy() const {
 //               possible.
 ////////////////////////////////////////////////////////////////////
 int P3DObject::
-get_int() const {
+get_int() {
   return 0;
 }
 
@@ -245,7 +213,7 @@ get_int() const {
 //               value, if possible.
 ////////////////////////////////////////////////////////////////////
 double P3DObject::
-get_float() const {
+get_float() {
   return get_int();
 }
 
@@ -260,7 +228,7 @@ get_float() const {
 //               was too small).
 ////////////////////////////////////////////////////////////////////
 int P3DObject::
-get_string(char *buffer, int buffer_length) const {
+get_string(char *buffer, int buffer_length) {
   string result;
   make_string(result);
   strncpy(buffer, result.c_str(), buffer_length);
@@ -274,7 +242,7 @@ get_string(char *buffer, int buffer_length) const {
 //               similar to get_string(), above.
 ////////////////////////////////////////////////////////////////////
 int P3DObject::
-get_repr(char *buffer, int buffer_length) const {
+get_repr(char *buffer, int buffer_length) {
   ostringstream strm;
   output(strm);
   string result = strm.str();
@@ -290,7 +258,7 @@ get_repr(char *buffer, int buffer_length) const {
 //               that must be deleted by the caller, or NULL on error.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DObject::
-get_property(const string &property) const {
+get_property(const string &property) {
   return NULL;
 }
 
@@ -303,9 +271,6 @@ get_property(const string &property) const {
 ////////////////////////////////////////////////////////////////////
 bool P3DObject::
 set_property(const string &property, P3D_object *value) {
-  if (value != NULL) {
-    P3D_OBJECT_FINISH(value);
-  }
   return false;
 }
 
@@ -316,7 +281,7 @@ set_property(const string &property, P3D_object *value) {
 //               object, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool P3DObject::
-has_method(const string &method_name) const {
+has_method(const string &method_name) {
   return false;
 }
 
@@ -329,10 +294,7 @@ has_method(const string &method_name) const {
 //               on success, NULL on error.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DObject::
-call(const string &method_name, P3D_object *params[], int num_params) const {
-  for (int i = 0; i < num_params; ++i) {
-    P3D_OBJECT_FINISH(params[i]);
-  }
+call(const string &method_name, P3D_object *params[], int num_params) {
   return NULL;
 }
 
@@ -343,7 +305,7 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
 //               of the P3DObject classes implement this.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DObject::
-eval(const string &expression) const {
+eval(const string &expression) {
   return NULL;
 }
 
@@ -355,7 +317,7 @@ eval(const string &expression) const {
 //               assistance.
 ////////////////////////////////////////////////////////////////////
 void P3DObject::
-output(ostream &out) const {
+output(ostream &out) {
   string value;
   make_string(value);
   out << value;

@@ -42,7 +42,7 @@ P3DPythonObject::
 //  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
 P3D_object_type P3DPythonObject::
-get_type() const {
+get_type() {
   return P3D_OT_object;
 }
 
@@ -53,13 +53,13 @@ get_type() const {
 //               possible.
 ////////////////////////////////////////////////////////////////////
 bool P3DPythonObject::
-get_bool() const {
+get_bool() {
   bool bresult = 0;
 
   P3D_object *result = call("__bool__", NULL, 0);
   if (result != NULL) {
     bresult = P3D_OBJECT_GET_BOOL(result);
-    P3D_OBJECT_FINISH(result);
+    P3D_OBJECT_DECREF(result);
   }    
 
   return bresult;
@@ -72,13 +72,13 @@ get_bool() const {
 //               possible.
 ////////////////////////////////////////////////////////////////////
 int P3DPythonObject::
-get_int() const {
+get_int() {
   int iresult = 0;
 
   P3D_object *result = call("__int__", NULL, 0);
   if (result != NULL) {
     iresult = P3D_OBJECT_GET_INT(result);
-    P3D_OBJECT_FINISH(result);
+    P3D_OBJECT_DECREF(result);
   }    
 
   return iresult;
@@ -91,13 +91,13 @@ get_int() const {
 //               value, if possible.
 ////////////////////////////////////////////////////////////////////
 double P3DPythonObject::
-get_float() const {
+get_float() {
   double fresult = 0.0;
 
   P3D_object *result = call("__float__", NULL, 0);
   if (result != NULL) {
     fresult = P3D_OBJECT_GET_FLOAT(result);
-    P3D_OBJECT_FINISH(result);
+    P3D_OBJECT_DECREF(result);
   }    
 
   return fresult;
@@ -110,7 +110,7 @@ get_float() const {
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
 void P3DPythonObject::
-make_string(string &value) const {
+make_string(string &value) {
   P3D_object *result = call("__str__", NULL, 0);
   if (result != NULL) {
     int size = P3D_OBJECT_GET_STRING(result, NULL, 0);
@@ -119,7 +119,7 @@ make_string(string &value) const {
     value = string(buffer, size);
     delete[] buffer;
 
-    P3D_OBJECT_FINISH(result);
+    P3D_OBJECT_DECREF(result);
   }    
 }
 
@@ -131,7 +131,7 @@ make_string(string &value) const {
 //               that must be deleted by the caller, or NULL on error.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DPythonObject::
-get_property(const string &property) const {
+get_property(const string &property) {
   P3D_object *params[1];
   params[0] = new P3DStringObject(property);
 
@@ -167,7 +167,7 @@ set_property(const string &property, P3D_object *value) {
 
   if (result != NULL) {
     bresult = P3D_OBJECT_GET_BOOL(result);
-    P3D_OBJECT_FINISH(result);
+    P3D_OBJECT_DECREF(result);
   }
 
   return bresult;
@@ -180,7 +180,7 @@ set_property(const string &property, P3D_object *value) {
 //               object, false otherwise.
 ////////////////////////////////////////////////////////////////////
 bool P3DPythonObject::
-has_method(const string &method_name) const {
+has_method(const string &method_name) {
   bool bresult = false;
 
   P3D_object *params[1];
@@ -190,7 +190,7 @@ has_method(const string &method_name) const {
 
   if (result != NULL) {
     bresult = P3D_OBJECT_GET_BOOL(result);
-    P3D_OBJECT_FINISH(result);
+    P3D_OBJECT_DECREF(result);
   }
 
   return bresult;
@@ -205,7 +205,7 @@ has_method(const string &method_name) const {
 //               on success, NULL on error.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DPythonObject::
-call(const string &method_name, P3D_object *params[], int num_params) const {
+call(const string &method_name, P3D_object *params[], int num_params) {
   TiXmlDocument *doc = new TiXmlDocument;
   TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
@@ -222,10 +222,6 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
   for (int i = 0; i < num_params; ++i) {
     TiXmlElement *xparams = _session->p3dobj_to_xml(params[i]);
     xcommand->LinkEndChild(xparams);
-
-    // Now we're done with the params object passed in, we can delete
-    // it as promised.
-    P3D_OBJECT_FINISH(params[i]);
   }
 
   doc->LinkEndChild(decl);
@@ -255,12 +251,12 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
 //               assistance.
 ////////////////////////////////////////////////////////////////////
 void P3DPythonObject::
-output(ostream &out) const {
+output(ostream &out) {
   P3D_object *result = call("__repr__", NULL, 0);
   out << "Python " << _object_id;
   if (result != NULL) {
     out << ": " << *result;
-    P3D_OBJECT_FINISH(result);
+    P3D_OBJECT_DECREF(result);
   }    
 }
 
@@ -271,7 +267,7 @@ output(ostream &out) const {
 //               identify this object in the XML stream.
 ////////////////////////////////////////////////////////////////////
 int P3DPythonObject::
-get_object_id() const {
+get_object_id() {
   return _object_id;
 }
 

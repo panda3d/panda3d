@@ -307,17 +307,22 @@ typedef enum {
   P3D_OT_object,
 } P3D_object_type;
 
+/* Most methods and functions that return a P3D_object return it with
+   its reference count already incremented by one for the benefit of
+   the caller, leaving the caller the owner of the implicit reference
+   count.  This is referred to as returning a "new reference", using
+   the Python naming convention.  Similarly, most methods that receive
+   a P3D_object will implicitly increment the reference count
+   internally if necessary, leaving the caller still the owner of its
+   own reference count.  Thus, it is the caller's responsibility to
+   call P3D_OBJECT_DECREF() on any P3D_objects it has received but no
+   longer wishes to keep. */
+
 /* This method is called to deallocate the object and all of its
-   internal structures. */
+   internal structures.  Do not call it directly; call
+   P3D_OBJECT_DECREF() instead. */
 typedef void
 P3D_object_finish_method(P3D_object *object);
-
-/* Returns a new copy of the object.  The caller receives ownership of
-   the new object and must eventually pass its pointer to
-   P3D_OBJECT_FINISH() to delete it, or into some other call that
-   transfers ownership. */
-typedef P3D_object *
-P3D_object_copy_method(const P3D_object *object);
 
 /* Returns the fundamental type of the object.  This should be treated
    as a hint to suggest how the object can most accurately be
@@ -325,7 +330,7 @@ P3D_object_copy_method(const P3D_object *object);
    an object.  For instance, you may call P3D_OBJECT_GET_PROPERTY()
    even if the object's type is not "object". */
 typedef P3D_object_type
-P3D_object_get_type_method(const P3D_object *object);
+P3D_object_get_type_method(P3D_object *object);
 
 /* Each of the following methods returns the object's value expressed
    as the corresponding type.  If the object is not precisely that
@@ -333,15 +338,15 @@ P3D_object_get_type_method(const P3D_object *object);
 
 /* Return the object as a bool. */
 typedef bool
-P3D_object_get_bool_method(const P3D_object *object);
+P3D_object_get_bool_method(P3D_object *object);
 
 /* Return the object as an integer. */
 typedef int
-P3D_object_get_int_method(const P3D_object *object);
+P3D_object_get_int_method(P3D_object *object);
 
 /* Return the object as a floating-point number. */
 typedef double
-P3D_object_get_float_method(const P3D_object *object);
+P3D_object_get_float_method(P3D_object *object);
 
 /* Get the object as a string.  This method copies the string into the
    provided buffer, and returns the actual length of the internal
@@ -352,7 +357,7 @@ P3D_object_get_float_method(const P3D_object *object);
    buffer = NULL and buffer_length = 0 to return just the required
    size of the buffer. */
 typedef int
-P3D_object_get_string_method(const P3D_object *object, 
+P3D_object_get_string_method(P3D_object *object, 
                              char *buffer, int buffer_length);
 
 /* As above, but instead of the literal object data, returns a
@@ -362,23 +367,19 @@ P3D_object_get_string_method(const P3D_object *object,
    marks and escape characters from P3D_OBJECT_GET_REPR().
    Mechanically, this function works the same way as get_string(). */
 typedef int
-P3D_object_get_repr_method(const P3D_object *object, 
+P3D_object_get_repr_method(P3D_object *object, 
                            char *buffer, int buffer_length);
 
 /* Looks up a property on the object by name, i.e. a data member or a
-   method.  The return value is a newly-allocated P3D_object if the
-   property exists, or NULL if it does not.  If it is not NULL,
-   ownership of the return value is transferred to the caller, who
-   will be responsible for deleting it later. */
+   method.  The return value is a new-reference P3D_object if the
+   property exists, or NULL if it does not. */
 typedef P3D_object *
-P3D_object_get_property_method(const P3D_object *object, const char *property);
+P3D_object_get_property_method(P3D_object *object, const char *property);
 
 /* Changes the value at the indicated property.  Any existing object
    already at the corresponding property is deleted.  If the value
-   object pointer is NULL, the property is deleted.  Returns true on
-   success, false on failure.  The caller must have ownership of the
-   value object before the call; after the call, ownership of the
-   value object is transferred to this object. */
+   pointer is NULL, the property is deleted.  Returns true on success,
+   false on failure.  */
 typedef bool
 P3D_object_set_property_method(P3D_object *object, const char *property,
                                P3D_object *value);
@@ -389,36 +390,32 @@ P3D_object_set_property_method(P3D_object *object, const char *property,
    a callable object.  If method_name is empty or NULL, returns true
    if the object itself is callable. */
 typedef bool
-P3D_object_has_method_method(const P3D_object *object, const char *method_name);
+P3D_object_has_method_method(P3D_object *object, const char *method_name);
 
 /* Invokes a named method on the object.  If method_name is empty or
    NULL, invokes the object itself as a function.  You must pass an
-   array of P3D_objects as the list of parameters.  The ownership of
-   each of the parameters in this array (but not of the array pointer
-   itself) is passed into this call; the objects will be deleted when
-   the call is completed.
+   array of P3D_objects as the list of parameters, and ownership of
+   these objects' reference counts is not transferred with the call
+   (you must still DECREF these objects afterwards).
 
-   The return value is a newly-allocated P3D_object on success, or
-   NULL on failure.  Ownership of the return value is transferred to
-   the caller. */
+   The return value is a new-reference P3D_object on success, or NULL
+   on failure. */
 typedef P3D_object *
-P3D_object_call_method(const P3D_object *object, const char *method_name,
+P3D_object_call_method(P3D_object *object, const char *method_name,
                        P3D_object *params[], int num_params);
 
 /* Evaluates an arbitrary JavaScript expression in the context of the
    object.
 
-   The return value is a newly-allocated P3D_object on success, or
-   NULL on failure.  Ownership of the return value is transferred to
-   the caller. */
+   The return value is a new-reference P3D_object on success, or NULL
+   on failure. */
 typedef P3D_object *
-P3D_object_eval_method(const P3D_object *object, const char *expression);
+P3D_object_eval_method(P3D_object *object, const char *expression);
 
 /* This defines the class structure that implements all of the above
    methods. */
 typedef struct _P3D_class_definition {
   P3D_object_finish_method *_finish;
-  P3D_object_copy_method *_copy;
 
   P3D_object_get_type_method *_get_type;
   P3D_object_get_bool_method *_get_bool;
@@ -439,15 +436,13 @@ typedef struct _P3D_class_definition {
 /* And this structure defines the actual instances of P3D_object. */
 struct _P3D_object {
   const P3D_class_definition *_class;
+  int _ref_count;
 
   /* Additional opaque data may be stored here. */
 };
 
 /* These macros are defined for the convenience of invoking any of the
    above method functions on an object. */
-
-#define P3D_OBJECT_FINISH(object) ((object)->_class->_finish((object)))
-#define P3D_OBJECT_COPY(object) ((object)->_class->_copy((object)))
 
 #define P3D_OBJECT_GET_TYPE(object) ((object)->_class->_get_type((object)))
 #define P3D_OBJECT_GET_BOOL(object) ((object)->_class->_get_bool((object)))
@@ -463,58 +458,65 @@ struct _P3D_object {
 #define P3D_OBJECT_CALL(object, method_name, params, num_params) ((object)->_class->_call((object), (method_name), (params), (num_params)))
 #define P3D_OBJECT_EVAL(object, expression) ((object)->_class->_eval((object), (expression)))
 
+/* These macros are provided to manipulate the reference count of the
+   indicated object.  Following Python's convention, XDECREF is
+   provided to decrement the reference count for a pointer that might
+   be NULL (it does nothing in the case of a NULL pointer). */
 
-/* The following function types are once again meant to define
-   actual function pointers to be found within the core API DLL. */
+#define P3D_OBJECT_INCREF(object) (++(object)->_ref_count)
+#define P3D_OBJECT_DECREF(object) { if (--(object)->_ref_count <= 0) { (object)->_class->_finish((object)); } }
+#define P3D_OBJECT_XDECREF(object) { if ((object) != (P3D_object *)NULL) { P3D_OBJECT_DECREF(object); } }
 
-/* Returns a newly-allocated P3D_class_definition object, filled with
-   generic function pointers that have reasonable default behavior for
-   all methods.  The host should use this function to get a clean
+
+/* End of method pointer definitions.  The following function types
+   are once again meant to define actual function pointers to be found
+   within the core API DLL. */
+
+/* Returns a new P3D_class_definition object, filled with generic
+   function pointers that have reasonable default behavior for all
+   methods.  The host should use this function to get a clean
    P3D_class_definition object before calling
-   P3D_instance_set_browser_script_object() (see below).  Note that this
-   pointer will automatically be freed when P3D_finalize() is
+   P3D_instance_set_browser_script_object() (see below).  Note that
+   this pointer will automatically be freed when P3D_finalize() is
    called. */
 typedef P3D_class_definition *
 P3D_make_class_definition_func();
 
-/* Allocates a new P3D_object of type "undefined".  This corresponds
-   to the undefined or void type on JavaScript.  It is similar to
-   Python's None, but has a subtly different shade of meaning; we map
-   it to an explicit Undefined instance in runp3d.py. */
+/* Returns a new-reference P3D_object of type "undefined".  This
+   corresponds to the undefined or void type on JavaScript.  It is
+   similar to Python's None, but has a subtly different shade of
+   meaning; we map it to an explicit Undefined instance in
+   runp3d.py. */
 typedef P3D_object *
 P3D_new_undefined_object_func();
 
-/* Allocates a new P3D_object of type none.  This value has no
+/* Returns a new-reference P3D_object of type none.  This value has no
    particular value and corresponds to Python's None type or
    JavaScript's null type. */
 typedef P3D_object *
 P3D_new_none_object_func();
 
-/* Allocates a new P3D_object of type bool. */
+/* Returns a new-reference P3D_object of type bool. */
 typedef P3D_object *
 P3D_new_bool_object_func(bool value);
 
-/* Allocates a new P3D_object of type int. */
+/* Returns a new-reference P3D_object of type int. */
 typedef P3D_object *
 P3D_new_int_object_func(int value);
 
-/* Allocates a new P3D_object of type float. */
+/* Returns a new-reference P3D_object of type float. */
 typedef P3D_object *
 P3D_new_float_object_func(double value);
 
-/* Allocates a new P3D_object of type string.  The supplied string is
-   copied into the object and stored internally. */
+/* Returns a new-reference P3D_object of type string.  The supplied
+   string is copied into the object and stored internally. */
 typedef P3D_object *
 P3D_new_string_object_func(const char *string, int length);
 
-/* Returns a pointer to the top-level scriptable object of the
-   instance.  Scripts running on the host may use this object to
-   communicate with the instance, by using the above methods to set or
-   query properties, and/or call methods, on the instance. 
-
-   The return value from this function is a newly-allocated object;
-   ownership of the object is passed to the caller, who should be
-   responsible for deleting it eventually. */
+/* Returns a new-reference pointer to the top-level scriptable object
+   of the instance.  Scripts running on the host may use this object
+   to communicate with the instance, by using the above methods to set
+   or query properties, and/or call methods, on the instance. */
 typedef P3D_object *
 P3D_instance_get_panda_script_object_func(P3D_instance *instance);
 
@@ -528,8 +530,8 @@ P3D_instance_get_panda_script_object_func(P3D_instance *instance);
    have a custom P3D_class_definition pointer, which also must have
    been created by the host.  The best way to create an appropriate
    class definition is call P3D_make_class_definition(), and then
-   replace the function pointers for at least _finish, _copy,
-   _get_property, _set_property, and _call.  Set these pointers to the
+   replace the function pointers for at least _finish, _get_property,
+   _set_property, _has_method, and _call.  Set these pointers to the
    host's own functions that make the appropriate changes in the DOM,
    or invoke the appropriate JavaScript functions.
 
@@ -538,10 +540,10 @@ P3D_instance_get_panda_script_object_func(P3D_instance *instance);
    able to control the instance via P3D_instance_get_panda_script_object(),
    above. 
 
-   Ownership of the object is passed into the instance.  The caller
-   must have freshly allocated the object, and should no longer store
-   or delete it.  The instance will eventually delete it by calling
-   its _finish method. */
+   Note that the object's constructor should initialize its reference
+   count to 1.  The instance will increment reference count as a
+   result of this call; the caller is responsible for calling DECREF
+   on the object after this call to remove its own reference. */
 typedef void
 P3D_instance_set_browser_script_object_func(P3D_instance *instance, 
                                             P3D_object *object);

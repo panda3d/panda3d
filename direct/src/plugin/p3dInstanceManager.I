@@ -70,3 +70,40 @@ inline int P3DInstanceManager::
 get_num_instances() const {
   return _instances.size();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::new_undefined_object
+//       Access: Public
+//  Description: Returns the singleton "undefined" object, as a new
+//               reference.
+////////////////////////////////////////////////////////////////////
+inline P3D_object *P3DInstanceManager::
+new_undefined_object() {
+  P3D_OBJECT_INCREF(_undefined_object);
+  return _undefined_object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::new_none_object
+//       Access: Public
+//  Description: Returns the singleton "none" object, as a new
+//               reference.
+////////////////////////////////////////////////////////////////////
+inline P3D_object *P3DInstanceManager::
+new_none_object() {
+  P3D_OBJECT_INCREF(_none_object);
+  return _none_object;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::new_bool_object
+//       Access: Public
+//  Description: Returns the singleton "true" or "false" object, as a
+//               new reference.
+////////////////////////////////////////////////////////////////////
+inline P3D_object *P3DInstanceManager::
+new_bool_object(bool value) {
+  P3D_object *obj = (value) ? _true_object : _false_object;
+  P3D_OBJECT_INCREF(obj);
+  return obj;
+}

@@ -53,16 +53,17 @@ make_new(PPInstance *inst, P3D_object *p3d_object) {
 //     Function: PPPandaObject::set_p3d_object
 //       Access: Public
 //  Description: Changes the p3d_object this PPPandaObject maps to.  The
-//               previous object, if any, is deleted.  Ownership of
-//               the new object is passed to the PPPandaObject.
+//               new object's reference count is incremented, and the
+//               previous object's is decremented.
 ////////////////////////////////////////////////////////////////////
 void PPPandaObject::
 set_p3d_object(P3D_object *p3d_object) {
   if (_p3d_object != p3d_object) {
-    if (_p3d_object != NULL) {
-      P3D_OBJECT_FINISH(_p3d_object);
-    }
+    P3D_OBJECT_XDECREF(_p3d_object);
     _p3d_object = p3d_object;
+    if (_p3d_object != NULL) {
+      P3D_OBJECT_INCREF(_p3d_object);
+    }
   }
 }
  
@@ -78,7 +79,8 @@ void PPPandaObject::
 construct(PPInstance *inst, P3D_object *p3d_object) {
   logfile << "construct: " << this << "\n" << flush;
   _instance = inst;
-  _p3d_object = p3d_object;
+  _p3d_object = NULL;
+  set_p3d_object(p3d_object);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -141,12 +143,16 @@ invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
   }
 
   P3D_object **p3dargs = new P3D_object *[argCount];
-  for (unsigned int i = 0; i < argCount; ++i) {
+  unsigned int i;
+  for (i = 0; i < argCount; ++i) {
     p3dargs[i] = _instance->variant_to_p3dobj(&args[i]);
   }
 
   P3D_object *value = P3D_OBJECT_CALL(_p3d_object, method_name.c_str(), 
                                       p3dargs, argCount);
+  for (i = 0; i < argCount; ++i) {
+    P3D_OBJECT_DECREF(p3dargs[i]);
+  }
   delete[] p3dargs;
 
   if (value == NULL) {
@@ -156,7 +162,7 @@ invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
 
   // We have the return value, and its value is stored in value.
   _instance->p3dobj_to_variant(result, value);
-  P3D_OBJECT_FINISH(value);
+  P3D_OBJECT_DECREF(value);
   return true;
 }
 
@@ -177,12 +183,16 @@ invoke_default(const NPVariant *args, uint32_t argCount,
   }
 
   P3D_object **p3dargs = new P3D_object *[argCount];
-  for (unsigned int i = 0; i < argCount; ++i) {
+  unsigned int i;
+  for (i = 0; i < argCount; ++i) {
     p3dargs[i] = _instance->variant_to_p3dobj(&args[i]);
   }
 
   P3D_object *value = P3D_OBJECT_CALL(_p3d_object, "",
                                       p3dargs, argCount);
+  for (i = 0; i < argCount; ++i) {
+    P3D_OBJECT_DECREF(p3dargs[i]);
+  }
   delete[] p3dargs;
 
   if (value == NULL) {
@@ -192,7 +202,7 @@ invoke_default(const NPVariant *args, uint32_t argCount,
 
   // We have the return value, and its value is stored in value.
   _instance->p3dobj_to_variant(result, value);
-  P3D_OBJECT_FINISH(value);
+  P3D_OBJECT_DECREF(value);
   return true;
 }
 
@@ -239,7 +249,7 @@ get_property(NPIdentifier name, NPVariant *result) {
 
   // We have the property, and its value is stored in value.
   _instance->p3dobj_to_variant(result, value);
-  P3D_OBJECT_FINISH(value);
+  P3D_OBJECT_DECREF(value);
   return true;
 }
 
@@ -260,6 +270,7 @@ set_property(NPIdentifier name, const NPVariant *value) {
 
   P3D_object *object = _instance->variant_to_p3dobj(value);
   bool result = P3D_OBJECT_SET_PROPERTY(_p3d_object, property_name.c_str(), object);
+  P3D_OBJECT_DECREF(object);
   return result;
 }
 

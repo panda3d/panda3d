@@ -41,7 +41,7 @@ extern ostream *nout_stream;
 // A convenience function for formatting a generic P3D_object to an
 // ostream.
 inline ostream &
-operator << (ostream &out, const P3D_object &value) {
+operator << (ostream &out, P3D_object &value) {
   int size = P3D_OBJECT_GET_REPR(&value, NULL, 0);
   char *buffer = new char[size];
   P3D_OBJECT_GET_REPR(&value, buffer, size);

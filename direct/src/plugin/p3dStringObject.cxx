@@ -50,7 +50,7 @@ P3DStringObject::
 //  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
 P3D_object_type P3DStringObject::
-get_type() const {
+get_type() {
   return P3D_OT_string;
 }
 
@@ -61,7 +61,7 @@ get_type() const {
 //               possible.
 ////////////////////////////////////////////////////////////////////
 bool P3DStringObject::
-get_bool() const {
+get_bool() {
   return !_value.empty();
 }
 
@@ -72,7 +72,7 @@ get_bool() const {
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
 void P3DStringObject::
-make_string(string &value) const {
+make_string(string &value) {
   value = _value;
 }
 
@@ -84,7 +84,7 @@ make_string(string &value) const {
 //               assistance.
 ////////////////////////////////////////////////////////////////////
 void P3DStringObject::
-output(ostream &out) const {
+output(ostream &out) {
   out << '"';
   for (string::const_iterator si = _value.begin(); si != _value.end(); ++si) {
     if (isprint(*si)) {

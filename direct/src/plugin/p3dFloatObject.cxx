@@ -41,7 +41,7 @@ P3DFloatObject(const P3DFloatObject &copy) :
 //  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
 P3D_object_type P3DFloatObject::
-get_type() const {
+get_type() {
   return P3D_OT_float;
 }
 
@@ -52,7 +52,7 @@ get_type() const {
 //               possible.
 ////////////////////////////////////////////////////////////////////
 bool P3DFloatObject::
-get_bool() const {
+get_bool() {
   return (_value != 0.0);
 }
 
@@ -63,7 +63,7 @@ get_bool() const {
 //               possible.
 ////////////////////////////////////////////////////////////////////
 int P3DFloatObject::
-get_int() const {
+get_int() {
   return (int)_value;
 }
 
@@ -74,7 +74,7 @@ get_int() const {
 //               value, if possible.
 ////////////////////////////////////////////////////////////////////
 double P3DFloatObject::
-get_float() const {
+get_float() {
   return _value;
 }
 
@@ -85,7 +85,7 @@ get_float() const {
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
 void P3DFloatObject::
-make_string(string &value) const {
+make_string(string &value) {
   ostringstream strm;
   strm << _value;
   value = strm.str();

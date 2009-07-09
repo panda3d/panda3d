@@ -18,8 +18,12 @@
 //       Access: Public
 //  Description: Returns the p3d_object this PPPandaObject maps to.  This
 //               may be NULL if the object is not fully initialized.
+//               If not NULL, this returns a new reference.
 ////////////////////////////////////////////////////////////////////
 inline P3D_object *PPPandaObject::
 get_p3d_object() const {
+  if (_p3d_object != NULL) {
+    P3D_OBJECT_INCREF(_p3d_object);
+  }
   return _p3d_object;
 }

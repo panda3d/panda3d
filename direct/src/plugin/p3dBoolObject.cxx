@@ -41,7 +41,7 @@ P3DBoolObject(const P3DBoolObject &copy) :
 //  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
 P3D_object_type P3DBoolObject::
-get_type() const {
+get_type() {
   return P3D_OT_bool;
 }
 
@@ -52,7 +52,7 @@ get_type() const {
 //               possible.
 ////////////////////////////////////////////////////////////////////
 bool P3DBoolObject::
-get_bool() const {
+get_bool() {
   return _value;
 }
 
@@ -63,7 +63,7 @@ get_bool() const {
 //               possible.
 ////////////////////////////////////////////////////////////////////
 int P3DBoolObject::
-get_int() const {
+get_int() {
   return _value;
 }
 
@@ -74,7 +74,7 @@ get_int() const {
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
 void P3DBoolObject::
-make_string(string &value) const {
+make_string(string &value) {
   if (_value) {
     value = "True";
   } else {

@@ -26,18 +26,13 @@ object_finish(P3D_object *object) {
   delete ((PPBrowserObject *)object);
 }
 
-static P3D_object *
-object_copy(const P3D_object *object) {
-  return new PPBrowserObject(*(const PPBrowserObject *)object);
-}
-
 static int 
-object_get_repr(const P3D_object *object, char *buffer, int buffer_length) {
+object_get_repr(P3D_object *object, char *buffer, int buffer_length) {
   return ((const PPBrowserObject *)object)->get_repr(buffer, buffer_length);
 }
 
 static P3D_object *
-object_get_property(const P3D_object *object, const char *property) {
+object_get_property(P3D_object *object, const char *property) {
   return ((const PPBrowserObject *)object)->get_property(property);
 }
 
@@ -48,7 +43,7 @@ object_set_property(P3D_object *object, const char *property,
 }
 
 static P3D_object *
-object_call(const P3D_object *object, const char *method_name,
+object_call(P3D_object *object, const char *method_name,
             P3D_object *params[], int num_params) {
   if (method_name == NULL) {
     method_name = "";
@@ -57,7 +52,7 @@ object_call(const P3D_object *object, const char *method_name,
 }
 
 static P3D_object *
-object_eval(const P3D_object *object, const char *expression) {
+object_eval(P3D_object *object, const char *expression) {
   return ((const PPBrowserObject *)object)->eval(expression);
 }
 
@@ -74,6 +69,7 @@ PPBrowserObject(PPInstance *inst, NPObject *npobj) :
   _npobj(npobj)
 {
   _class = get_class_definition();
+  _ref_count = 1;
   browser->retainobject(_npobj);
 }
 
@@ -88,6 +84,7 @@ PPBrowserObject(const PPBrowserObject &copy) :
   _npobj(copy._npobj)
 {
   _class = get_class_definition();
+  _ref_count = 1;
   browser->retainobject(_npobj);
 }
 
@@ -98,6 +95,7 @@ PPBrowserObject(const PPBrowserObject &copy) :
 ////////////////////////////////////////////////////////////////////
 PPBrowserObject::
 ~PPBrowserObject() {
+  assert(_ref_count == 0);
   browser->releaseobject(_npobj);
 }
 
@@ -162,7 +160,6 @@ set_property(const string &property, P3D_object *value) {
     result = browser->setproperty(_instance->get_npp_instance(), _npobj,
                                   property_name, &npvalue);
     browser->releasevariantvalue(&npvalue);
-    P3D_OBJECT_FINISH(value);
 
   } else {
     // Delete the property.
@@ -268,7 +265,6 @@ get_class_definition() {
     // appropriate pointers.
     _browser_object_class = P3D_make_class_definition();
     _browser_object_class->_finish = &object_finish;
-    _browser_object_class->_copy = &object_copy;
 
     _browser_object_class->_get_repr = &object_get_repr;
     _browser_object_class->_get_property = &object_get_property;

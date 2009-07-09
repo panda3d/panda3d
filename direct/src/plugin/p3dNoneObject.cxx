@@ -29,7 +29,7 @@ P3DNoneObject() {
 //  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
 P3D_object_type P3DNoneObject::
-get_type() const {
+get_type() {
   return P3D_OT_none;
 }
 
@@ -40,7 +40,7 @@ get_type() const {
 //               possible.
 ////////////////////////////////////////////////////////////////////
 bool P3DNoneObject::
-get_bool() const {
+get_bool() {
   return false;
 }
 
@@ -51,6 +51,6 @@ get_bool() const {
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
 void P3DNoneObject::
-make_string(string &value) const {
+make_string(string &value) {
   value = "None";
 }

@@ -34,22 +34,22 @@ public:
   virtual ~P3DPythonObject();
 
 public:
-  virtual P3D_object_type get_type() const;
-  virtual bool get_bool() const;
-  virtual int get_int() const;
-  virtual double get_float() const;
+  virtual P3D_object_type get_type();
+  virtual bool get_bool();
+  virtual int get_int();
+  virtual double get_float();
 
-  virtual void make_string(string &value) const;
+  virtual void make_string(string &value);
 
-  virtual P3D_object *get_property(const string &property) const;
+  virtual P3D_object *get_property(const string &property);
   virtual bool set_property(const string &property, P3D_object *value);
 
-  virtual bool has_method(const string &method_name) const;
+  virtual bool has_method(const string &method_name);
   virtual P3D_object *call(const string &method_name, 
-                           P3D_object *params[], int num_params) const;
+                           P3D_object *params[], int num_params);
 
-  virtual void output(ostream &out) const;
-  int get_object_id() const;
+  virtual void output(ostream &out);
+  int get_object_id();
 
 private:
   P3DSession *_session;

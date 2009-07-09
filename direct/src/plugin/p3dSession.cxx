@@ -321,21 +321,23 @@ command_and_response(TiXmlDocument *command) {
 //       Access: Public
 //  Description: Converts the XML representation of the particular
 //               object value into a corresponding P3D_object.
-//               Returns the newly-allocated object.
+//               Returns the object, a new reference.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DSession::
 xml_to_p3dobj(const TiXmlElement *xvalue) {
   const char *type = xvalue->Attribute("type");
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
   if (strcmp(type, "undefined") == 0) {
-    return new P3DUndefinedObject;
+    return inst_mgr->new_undefined_object();
 
   } else if (strcmp(type, "none") == 0) {
-    return new P3DNoneObject;
+    return inst_mgr->new_none_object();
 
   } else if (strcmp(type, "bool") == 0) {
     int value;
     if (xvalue->QueryIntAttribute("value", &value) == TIXML_SUCCESS) {
-      return new P3DBoolObject(value != 0);
+      return inst_mgr->new_bool_object(value != 0);
     }
 
   } else if (strcmp(type, "int") == 0) {
@@ -364,11 +366,12 @@ xml_to_p3dobj(const TiXmlElement *xvalue) {
       SentObjects::iterator si = _sent_objects.find(object_id);
       if (si == _sent_objects.end()) {
         // Hmm, the child process gave us a bogus object ID.
-        return new P3DUndefinedObject;
+        return inst_mgr->new_undefined_object();
       }
 
       P3D_object *obj = (*si).second;
-      return P3D_OBJECT_COPY(obj);
+      P3D_OBJECT_INCREF(obj);
+      return obj;
     }
 
   } else if (strcmp(type, "python") == 0) {
@@ -379,7 +382,7 @@ xml_to_p3dobj(const TiXmlElement *xvalue) {
   }
 
   // Something went wrong in decoding.
-  return new P3DUndefinedObject;
+  return inst_mgr->new_undefined_object();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -387,10 +390,11 @@ xml_to_p3dobj(const TiXmlElement *xvalue) {
 //       Access: Public
 //  Description: Allocates and returns a new XML structure
 //               corresponding to the indicated value.  The supplied
-//               P3DObject passed in is *not* deleted.
+//               P3DObject's reference count is not decremented; the
+//               caller remains responsible for decrementing it later.
 ////////////////////////////////////////////////////////////////////
 TiXmlElement *P3DSession::
-p3dobj_to_xml(const P3D_object *obj) {
+p3dobj_to_xml(P3D_object *obj) {
   TiXmlElement *xvalue = new TiXmlElement("value");
 
   switch (P3D_OBJECT_GET_TYPE(obj)) {
@@ -443,21 +447,21 @@ p3dobj_to_xml(const P3D_object *obj) {
       // should pass a reference down to this particular object, so
       // the Python process knows to call back up to here to query it.
 
-      P3D_object *dup = P3D_OBJECT_COPY(obj);
-
       int object_id = _next_sent_id;
       ++_next_sent_id;
-      bool inserted = _sent_objects.insert(SentObjects::value_type(object_id, dup)).second;
+      bool inserted = _sent_objects.insert(SentObjects::value_type(object_id, obj)).second;
       while (!inserted) {
         // Hmm, we must have cycled around the entire int space?  Either
         // that, or there's a logic bug somewhere.  Assume the former,
         // and keep looking for an empty slot.
         object_id = _next_sent_id;
         ++_next_sent_id;
-        inserted = _sent_objects.insert(SentObjects::value_type(object_id, dup)).second;
+        inserted = _sent_objects.insert(SentObjects::value_type(object_id, obj)).second;
       }
 
+      // Now that it's stored in the map, increment its reference count.
       // TODO: implement removing things from this map.
+      P3D_OBJECT_INCREF(obj);
 
       xvalue->SetAttribute("type", "browser");
       xvalue->SetAttribute("object_id", object_id);

@@ -33,32 +33,24 @@ protected:
 public:
   virtual ~P3DObject();
 
-  virtual P3DObject *make_copy() const; 
-  virtual P3D_object_type get_type() const=0;
-  virtual bool get_bool() const=0;
-  virtual int get_int() const;
-  virtual double get_float() const;
+  virtual P3D_object_type get_type()=0;
+  virtual bool get_bool()=0;
+  virtual int get_int();
+  virtual double get_float();
 
-  int get_string(char *buffer, int buffer_length) const;
-  int get_repr(char *buffer, int buffer_length) const;
-  virtual void make_string(string &value) const=0;
+  int get_string(char *buffer, int buffer_length);
+  int get_repr(char *buffer, int buffer_length);
+  virtual void make_string(string &value)=0;
 
-  virtual P3D_object *get_property(const string &property) const;
+  virtual P3D_object *get_property(const string &property);
   virtual bool set_property(const string &property, P3D_object *value);
 
-  virtual bool has_method(const string &method_name) const;
+  virtual bool has_method(const string &method_name);
   virtual P3D_object *call(const string &method_name, 
-                           P3D_object *params[], int num_params) const;
-  virtual P3D_object *eval(const string &expression) const;
+                           P3D_object *params[], int num_params);
+  virtual P3D_object *eval(const string &expression);
 
-  virtual void output(ostream &out) const;
-
-  inline void ref() const;
-  inline int unref() const;
-  static inline void unref_delete(P3DObject *obj);
-
-private:
-  int _ref_count;
+  virtual void output(ostream &out);
 
 public:
   static P3D_class_definition _object_class;
@@ -71,7 +63,7 @@ public:
 // virtual method to write the output simply.  (For classes that
 // inherit only from P3D_object, we have to use the generic C method
 // defined in p3d_plugin_common.h, a little clumsier.)
-inline ostream &operator << (ostream &out, const P3DObject &value) {
+inline ostream &operator << (ostream &out, P3DObject &value) {
   value.output(out);
   return out;
 }

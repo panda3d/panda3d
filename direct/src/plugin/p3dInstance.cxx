@@ -73,9 +73,7 @@ P3DInstance::
 ~P3DInstance() {
   assert(_session == NULL);
 
-  if (_browser_script_object != NULL) {
-    P3D_OBJECT_FINISH(_browser_script_object);
-  }
+  P3D_OBJECT_XDECREF(_browser_script_object);
 
   DESTROY_LOCK(_request_lock);
 
@@ -118,6 +116,7 @@ set_fparams(const P3DFileParams &fparams) {
   strm << inst_mgr->get_unique_session_index();
   _session_key = strm.str();
 
+  // TODO.
   _python_version = "python24";
 
 
@@ -200,7 +199,8 @@ get_panda_script_object() const {
   }
 
   if (result == NULL) {
-    result = new P3DUndefinedObject;
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    result = inst_mgr->new_undefined_object();
   }
 
   return result;
@@ -211,16 +211,18 @@ get_panda_script_object() const {
 //       Access: Public
 //  Description: Stores a pointer to the top-level window object
 //               of the browser, to be used by Panda code to control
-//               JavaScript.  Ownership of this object is passed into
-//               the instance.
+//               JavaScript.  The new object's reference count is
+//               incremented, and the previous object's is
+//               decremented.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_browser_script_object(P3D_object *browser_script_object) {
   if (browser_script_object != _browser_script_object) {
-    if (_browser_script_object != NULL) {
-      P3D_OBJECT_FINISH(_browser_script_object);
-    }
+    P3D_OBJECT_XDECREF(_browser_script_object);
     _browser_script_object = browser_script_object;
+    if (_browser_script_object != NULL) {
+      P3D_OBJECT_INCREF(_browser_script_object);
+    }
 
     if (_session != NULL) {
       send_browser_script_object();
@@ -316,6 +318,36 @@ add_request(P3D_request *request) {
 void P3DInstance::
 finish_request(P3D_request *request, bool handled) {
   assert(request != NULL);
+
+  switch (request->_request_type) {
+  case P3D_RT_stop:
+    break;
+
+  case P3D_RT_get_url:
+    free((char *)request->_request._get_url._url);
+    break;
+
+  case P3D_RT_post_url:
+    free((char *)request->_request._post_url._url);
+    free((char *)request->_request._post_url._post_data);
+    break;
+
+  case P3D_RT_notify:
+    free((char *)request->_request._notify._message);
+    break;
+
+  case P3D_RT_script:
+    {
+      P3D_OBJECT_DECREF(request->_request._script._object);
+      if (request->_request._script._property_name != NULL) {
+        free((char *)request->_request._script._property_name);
+      }
+      for (int i = 0; i < request->_request._script._num_values; ++i) {
+        P3D_OBJECT_DECREF(request->_request._script._values[i]);
+      }
+    }
+    break;
+  }
 
   delete request;
 }
@@ -519,7 +551,7 @@ handle_script_request(P3D_request *request) {
       doc->LinkEndChild(xcommand);
       if (result != NULL) {
         xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
-        P3D_OBJECT_FINISH(result);
+        P3D_OBJECT_DECREF(result);
       }
 
       if (needs_response) {
@@ -598,10 +630,6 @@ handle_script_request(P3D_request *request) {
         P3D_OBJECT_CALL(object, request->_request._script._property_name,
                         request->_request._script._values,
                         request->_request._script._num_values);
-      // Reset the value count to 0 so we won't double-delete the
-      // parameter values when the request is deleted (the above call
-      // has already deleted them).
-      request->_request._script._num_values = 0;
 
       // Feed the result back down to the subprocess.
       TiXmlDocument *doc = new TiXmlDocument;
@@ -615,7 +643,7 @@ handle_script_request(P3D_request *request) {
 
       if (result != NULL) {
         xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
-        P3D_OBJECT_FINISH(result);
+        P3D_OBJECT_DECREF(result);
       }
       
       if (needs_response) {
@@ -654,7 +682,7 @@ handle_script_request(P3D_request *request) {
 
       if (result != NULL) {
         xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
-        P3D_OBJECT_FINISH(result);
+        P3D_OBJECT_DECREF(result);
       }
 
       logfile << "eval  response: " << *doc << "\n";

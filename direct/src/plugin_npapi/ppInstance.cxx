@@ -501,7 +501,7 @@ get_panda_script_object() {
 //               NPVariant, and stores it in result.
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
-p3dobj_to_variant(NPVariant *result, const P3D_object *object) {
+p3dobj_to_variant(NPVariant *result, P3D_object *object) {
   switch (P3D_OBJECT_GET_TYPE(object)) {
   case P3D_OT_undefined:
     VOID_TO_NPVARIANT(*result);
@@ -534,7 +534,7 @@ p3dobj_to_variant(NPVariant *result, const P3D_object *object) {
 
   case P3D_OT_object:
     {
-      PPPandaObject *ppobj = PPPandaObject::make_new(this, P3D_OBJECT_COPY(object));
+      PPPandaObject *ppobj = PPPandaObject::make_new(this, object);
       OBJECT_TO_NPVARIANT(ppobj, *result);
     }
     break;
@@ -571,7 +571,7 @@ variant_to_p3dobj(const NPVariant *variant) {
       PPPandaObject *ppobject = (PPPandaObject *)object;
       P3D_object *obj = ppobject->get_p3d_object();
       logfile << "Found nested Panda Object " << obj << "\n" << flush;
-      return P3D_OBJECT_COPY(obj);
+      return obj;
     }
 
     // It's a generic NPObject of some kind.
@@ -899,7 +899,7 @@ create_instance() {
       logfile << "Couldn't get window_object\n" << flush;
     }
     
-    const P3D_token *tokens = NULL;
+    P3D_token *tokens = NULL;
     if (!_tokens.empty()) {
       tokens = &_tokens[0];
     }
