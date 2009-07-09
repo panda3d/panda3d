@@ -467,6 +467,24 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
     return;
   }
 
+  size_t data_length = data.length();
+  char *new_data = new char[data_length];
+  memcpy(new_data, data.data(), data_length);
+
+  if (num_channels == 3) {
+    // We have to reverse the order of the RGB channels: libjpeg and
+    // Windows follow an opposite convention.
+    for (int yi = 0; yi < _bitmap_height; ++yi) {
+      char *dp = new_data + yi * row_stride;
+      for (int xi = 0; xi < _bitmap_width; ++xi) {
+        char b = dp[0];
+        dp[0] = dp[2];
+        dp[2] = b;
+        dp += 3;
+      }
+    }
+  }
+
   // Now load the image.
   BITMAPINFOHEADER bmih;
   bmih.biSize = sizeof(bmih);
@@ -485,8 +503,10 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
   memcpy(&bmi, &bmih, sizeof(bmih));
 
   HDC dc = GetDC(_hwnd);
-  _bitmap = CreateDIBitmap(dc, &bmih, CBM_INIT, data.data(), &bmi, 0);
+  _bitmap = CreateDIBitmap(dc, &bmih, CBM_INIT, new_data, &bmi, 0);
   ReleaseDC(_hwnd, dc);
+
+  delete[] new_data;
 
   nout << "Loaded splash file image: " << image_filename << "\n"
        << flush;
