@@ -19,6 +19,7 @@
 #include "p3dPackage.h"
 #include "p3dSplashWindow.h"
 #include "p3dWinSplashWindow.h"
+#include "p3dX11SplashWindow.h"
 #include "p3dObject.h"
 #include "p3dUndefinedObject.h"
 
@@ -28,7 +29,11 @@
 #ifdef _WIN32
 typedef P3DWinSplashWindow SplashWindowType;
 #else
+#ifdef HAVE_X11
+typedef P3DX11SplashWindow SplashWindowType;
+#else
 typedef P3DSplashWindow SplashWindowType;
+#endif
 #endif
 
 int P3DInstance::_next_instance_id = 0;

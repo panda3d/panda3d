@@ -368,8 +368,9 @@ nt_thread_run() {
       for (ni = instances.begin(); ni != instances.end(); ++ni) {
         // TODO: a race condition here when instances are deleted.
         P3DInstance *inst = (*ni);
-        P3D_request_ready_func *func = inst->get_request_ready_func();
         assert(inst != NULL);
+        P3D_request_ready_func *func = inst->get_request_ready_func();
+        assert(func != NULL);
         (*func)(inst);
       }
       _notify_ready.acquire();

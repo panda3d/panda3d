@@ -3,9 +3,15 @@
 #define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB]]
 
 #begin lib_target
-  #define USE_PACKAGES tinyxml openssl zlib jpeg
+  #define USE_PACKAGES tinyxml openssl zlib jpeg x11
   #define TARGET p3d_plugin
   #define LIB_PREFIX
+  
+  // We need this because we don't
+  // include dtool_config.h.
+  #if $[HAVE_X11]
+    #define EXTRA_CDEFS HAVE_X11
+  #endif
 
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx
@@ -39,6 +45,7 @@
     p3dStringObject.h \
     p3dUndefinedObject.h \
     p3dWinSplashWindow.h p3dWinSplashWindow.I \
+    p3dX11SplashWindow.h \
     p3dWindowParams.h p3dWindowParams.I
 
   #define INCLUDED_SOURCES \
@@ -62,6 +69,7 @@
     p3dStringObject.cxx \
     p3dUndefinedObject.cxx \
     p3dWinSplashWindow.cxx \
+    p3dX11SplashWindow.cxx \
     p3dWindowParams.cxx
 
   #define INSTALL_HEADERS \

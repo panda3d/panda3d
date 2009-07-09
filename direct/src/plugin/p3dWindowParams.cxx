@@ -80,6 +80,9 @@ make_xml() {
 #ifdef _WIN32
     xwparams->SetAttribute("parent_hwnd", (int)_parent_window._hwnd);
 #endif
+#ifdef HAVE_X11
+    xwparams->SetAttribute("parent_xwindow", (unsigned long)_parent_window._xwindow);
+#endif
     break;
 
   case P3D_WT_toplevel:

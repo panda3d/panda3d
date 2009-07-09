@@ -851,6 +851,13 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
     parent_window_handle = (long)hwnd;
   }
 #endif
+#ifdef HAVE_X11
+  // Bad! Casting to int loses precision.
+  int xwindow;
+  if (xwparams->Attribute("parent_xwindow", &xwindow)) {
+    parent_window_handle = (unsigned long)xwindow;
+  }
+#endif
 
   // TODO: direct this into the particular instance.  This will
   // require a specialized ShowBase replacement.

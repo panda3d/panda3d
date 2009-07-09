@@ -66,7 +66,13 @@ request_ready(P3D_instance *instance) {
   // it within HandleEvent().  TODO: enable a timer to ensure we get
   // HandleEvent callbacks in a timely manner?  Or maybe we should
   // enable a one-shot timer in response to this asynchronous event?
-#endif
+  
+#ifndef __APPLE__
+  // On Unix, HandleEvent isn't called, so we will do what it does
+  // right here. Not sure if this is right.
+  PPInstance::handle_request_loop();
+#endif  // __APPLE__
+#endif  // _WIN32
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -98,7 +104,11 @@ NP_GetValue(void*, NPPVariable variable, void* value) {
     case NPPVpluginDescriptionString:
       *(const char **)value = "Runs 3-D games and interactive applets";
       break;
+    case NPPVpluginNeedsXEmbed:
+      *((PRBool *)value) = PR_FALSE;
+      break;
     default:
+      logfile << "Ignoring GetValue request " << variable << "\n" << flush;
       return NPERR_INVALID_PARAM;
   }
   

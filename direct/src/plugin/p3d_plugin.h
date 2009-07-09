@@ -131,6 +131,10 @@ typedef struct {
 #ifdef _WIN32
   HWND _hwnd;
 #endif
+#ifdef HAVE_X11
+  unsigned long _xwindow;
+  void *_xdisplay;
+#endif
 #ifdef __APPLE__
   void *_nswindow;
 #endif
