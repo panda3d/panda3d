@@ -107,6 +107,13 @@ private:
   typedef vector<TiXmlDocument *> Commands;
   Commands _commands;
 
+  // This map keeps track of the P3D_object pointers we have delivered
+  // to the child process.  We have to keep each of these until the
+  // child process tells us it's safe to delete them.
+  typedef map<int, P3D_object *> SentObjects;
+  SentObjects _sent_objects;
+  int _next_sent_id;
+
   P3DPackage *_panda3d;
   PackageCallback *_panda3d_callback;
 

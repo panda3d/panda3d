@@ -32,6 +32,8 @@ P3DPythonRun(int argc, char *argv[]) {
   INIT_LOCK(_commands_lock);
   INIT_THREAD(_read_thread);
 
+  _next_sent_id = 0;
+
   _program_name = argv[0];
   _py_argc = 1;
   _py_argv = (char **)malloc(2 * sizeof(char *));
@@ -321,9 +323,10 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
     } else if (strcmp(op, "call") == 0) {
       // Call the named method on the indicated object, or the object
       // itself if method_name isn't given.
-      int object_id;
-      if (xcommand->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
-        PyObject *obj = (PyObject *)(void *)object_id;
+      TiXmlElement *xobject = xcommand->FirstChildElement("object");
+      if (xobject != NULL) {
+        PyObject *obj = xml_to_pyobj(xobject);
+
         const char *method_name = xcommand->Attribute("method_name");
 
         // Build up a list of params.
@@ -433,6 +436,8 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
           xresponse->LinkEndChild(pyobj_to_xml(result));
           Py_DECREF(result);
         }
+
+        Py_DECREF(obj);
       }
     }
   }
@@ -989,12 +994,25 @@ pyobj_to_xml(PyObject *value) {
     // This is more expensive for the caller to deal with--it requires
     // a back-and-forth across the XML pipe--but it's much more
     // general.
-    // TODO: pass pointers better.
-    xvalue->SetAttribute("type", "python");
-    xvalue->SetAttribute("object_id", (int)(intptr_t)value);
 
-    // TODO: fix this hack, properly manage these reference counts.
+    int object_id = _next_sent_id;
+    ++_next_sent_id;
+    bool inserted = _sent_objects.insert(SentObjects::value_type(object_id, value)).second;
+    while (!inserted) {
+      // Hmm, we must have cycled around the entire int space?  Either
+      // that, or there's a logic bug somewhere.  Assume the former,
+      // and keep looking for an empty slot.
+      object_id = _next_sent_id;
+      ++_next_sent_id;
+      inserted = _sent_objects.insert(SentObjects::value_type(object_id, value)).second;
+    }
+
+    // Now that it's stored in the map, increment its reference count.
+    // TODO: implement removing things from this map.
     Py_INCREF(value);
+
+    xvalue->SetAttribute("type", "python");
+    xvalue->SetAttribute("object_id", object_id);
   }
 
   return xvalue;
@@ -1053,12 +1071,23 @@ xml_to_pyobj(TiXmlElement *xvalue) {
   } else if (strcmp(type, "python") == 0) {
     int object_id;
     if (xvalue->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
-      return (PyObject *)(void *)object_id;
+      SentObjects::iterator si = _sent_objects.find(object_id);
+      PyObject *result;
+      if (si == _sent_objects.end()) {
+        // Hmm, the parent process gave us a bogus object ID.
+        result = _undefined;
+      } else {
+        result = (*si).second;
+      }
+      Py_INCREF(result);
+      return result;
     }
   }
 
   // Something went wrong in decoding.
-  return Py_BuildValue("");
+  PyObject *result = _undefined;
+  Py_INCREF(result);
+  return result;
 }
 
 ////////////////////////////////////////////////////////////////////

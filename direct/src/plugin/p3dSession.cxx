@@ -41,6 +41,8 @@ P3DSession(P3DInstance *inst) {
   _session_key = inst->get_session_key();
   _python_version = inst->get_python_version();
 
+  _next_sent_id = 0;
+
   _p3dpython_running = false;
   _next_response_id = 0;
   _response = NULL;
@@ -359,7 +361,13 @@ xml_to_p3dobj(const TiXmlElement *xvalue) {
   } else if (strcmp(type, "browser") == 0) {
     int object_id;
     if (xvalue->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
-      P3D_object *obj = (P3D_object *)object_id;
+      SentObjects::iterator si = _sent_objects.find(object_id);
+      if (si == _sent_objects.end()) {
+        // Hmm, the child process gave us a bogus object ID.
+        return new P3DUndefinedObject;
+      }
+
+      P3D_object *obj = (*si).second;
       return P3D_OBJECT_COPY(obj);
     }
 
@@ -371,7 +379,7 @@ xml_to_p3dobj(const TiXmlElement *xvalue) {
   }
 
   // Something went wrong in decoding.
-  return new P3DNoneObject;
+  return new P3DUndefinedObject;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -434,13 +442,25 @@ p3dobj_to_xml(const P3D_object *obj) {
       // Otherwise, it must a host-provided object, which means we
       // should pass a reference down to this particular object, so
       // the Python process knows to call back up to here to query it.
-      // TODO: pass pointers better.  Fix this hideous leak.
+
       P3D_object *dup = P3D_OBJECT_COPY(obj);
-      int object_id = (int)(intptr_t)dup;
+
+      int object_id = _next_sent_id;
+      ++_next_sent_id;
+      bool inserted = _sent_objects.insert(SentObjects::value_type(object_id, dup)).second;
+      while (!inserted) {
+        // Hmm, we must have cycled around the entire int space?  Either
+        // that, or there's a logic bug somewhere.  Assume the former,
+        // and keep looking for an empty slot.
+        object_id = _next_sent_id;
+        ++_next_sent_id;
+        inserted = _sent_objects.insert(SentObjects::value_type(object_id, dup)).second;
+      }
+
+      // TODO: implement removing things from this map.
+
       xvalue->SetAttribute("type", "browser");
       xvalue->SetAttribute("object_id", object_id);
-
-      // TODO: manage this reference count somehow.
     }
     break;
   }

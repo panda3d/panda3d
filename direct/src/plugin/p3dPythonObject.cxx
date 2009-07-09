@@ -211,10 +211,13 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "pyobj");
   xcommand->SetAttribute("op", "call");
-  xcommand->SetAttribute("object_id", _object_id);
   if (!method_name.empty()) {
     xcommand->SetAttribute("method_name", method_name);
   }
+
+  TiXmlElement *xobject = _session->p3dobj_to_xml(this);
+  xobject->SetValue("object");
+  xcommand->LinkEndChild(xobject);
 
   for (int i = 0; i < num_params; ++i) {
     TiXmlElement *xparams = _session->p3dobj_to_xml(params[i]);

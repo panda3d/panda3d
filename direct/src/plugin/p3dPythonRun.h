@@ -117,6 +117,14 @@ private:
 
   PT(GenericAsyncTask) _check_comm_task;
 
+  // This map keeps track of the PyObject pointers we have delivered
+  // to the parent process.  We have to hold the reference count on
+  // each of these until the parent process tells us it's safe to
+  // release them.
+  typedef pmap<int, PyObject *> SentObjects;
+  SentObjects _sent_objects;
+  int _next_sent_id;
+
   // The remaining members are manipulated by the read thread.
   typedef pdeque<TiXmlDocument *> Commands;
   Commands _commands;
