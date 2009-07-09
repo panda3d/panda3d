@@ -260,13 +260,14 @@ command_and_response(TiXmlDocument *command) {
 
   // Now block, waiting for a response to be delivered.  We assume
   // only one thread will be waiting at a time.
+  nout << "waiting for response " << response_id << "\n" << flush;
   _response_ready.acquire();
   while (_response == NULL || _got_response_id != response_id) {
     if (_response != NULL) {
       // This is a bogus response.  Since we're the only thread waiting,
       // it follows that no one is waiting for this response, so we can
       // throw it away.
-      nout << "Discarding bogus response: " << *_response << "\n";
+      nout << "Discarding bogus response: " << *_response << "\n" << flush;
       delete _response;
       _response = NULL;
       _got_response_id = -1;
@@ -294,6 +295,7 @@ command_and_response(TiXmlDocument *command) {
     // We wait with a timeout, so we can go back and spin the event
     // loop some more.
     _response_ready.wait(0.1);
+    nout << "." << flush;
 #else  // _WIN32
     
     // On non-Windows platforms, we can just wait indefinitely.
@@ -301,6 +303,7 @@ command_and_response(TiXmlDocument *command) {
 #endif  // _WIN32
   }
   // When we exit the loop, we've found the desired response.
+  nout << "got response: " << *_response << "\n" << flush;
 
   TiXmlDocument *response = _response;
   _response = NULL;

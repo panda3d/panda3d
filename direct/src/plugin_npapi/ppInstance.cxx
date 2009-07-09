@@ -139,6 +139,10 @@ set_window(NPWindow *window) {
       // trick to allow us to poll events in the main thread.
       HWND hwnd = (HWND)window->window;
       _orig_window_proc = SetWindowLongPtr(hwnd, GWL_WNDPROC, (LONG_PTR)window_proc);
+
+      // Also set a timer to go off every once in a while, just in
+      // case something slips through.
+      SetTimer(hwnd, 1, 1000, NULL);
     }
   }
 #endif  // _WIN32
@@ -426,7 +430,6 @@ handle_request(P3D_request *request) {
         // with the proper P3D object pointer.
         P3D_object *obj = P3D_instance_get_panda_script_object(_p3d_inst);
         _script_object->set_p3d_object(obj);
-        logfile << "got onpythonload\n";
       }
     }
     break;
@@ -975,22 +978,23 @@ output_np_variant(ostream &out, const NPVariant &result) {
 ////////////////////////////////////////////////////////////////////
 LONG PPInstance::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-  // If this is a toplevel window event, but not something caused as a
-  // result of something done by handle_request_loop(), then call
-  // handle_request_loop() to see if there are any new requests to be
-  // forwarded to the main thread.
-  static int recursion_protect = 0;
-  ++recursion_protect;
-  if (recursion_protect == 1) {
-    handle_request_loop();
-  }
-  --recursion_protect;
+  // Since we're here in the main thread, call handle_request_loop()
+  // to see if there are any new requests to be serviced by the main
+  // thread.
+
+  // This might end up recursing repeatedly into
+  // handle_request_loop().  Not sure if this is bad or not.
+  // *Something* appears to be a little unstable.
+  handle_request_loop();
 
   switch (msg) {
   case WM_ERASEBKGND:
     // Eat the WM_ERASEBKGND message, so the browser's intervening
     // window won't overdraw on top of our own window.
     return true;
+
+  case WM_TIMER:
+    break;
   }
 
   return DefWindowProc(hwnd, msg, wparam, lparam);

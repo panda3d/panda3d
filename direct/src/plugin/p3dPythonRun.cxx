@@ -360,7 +360,8 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
         } else if (strcmp(method_name, "__repr__") == 0) {
           result = PyObject_Repr(obj);
 
-        } else if (strcmp(method_name, "__str__") == 0) {
+        } else if (strcmp(method_name, "__str__") == 0 ||
+                   strcmp(method_name, "toString") == 0) {
           result = PyObject_Str(obj);
 
         } else if (strcmp(method_name, "__setattr__") == 0) {

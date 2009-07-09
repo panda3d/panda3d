@@ -104,7 +104,7 @@ has_method(NPIdentifier name) {
   string property_name = identifier_to_string(name);
   logfile << "has_method: " << this << ", " << property_name << "\n" << flush;
 
-  // As above, we always return true.  Why not?
+  // As below, we always return true.  Why not?
   return true;
 }
 
@@ -218,6 +218,7 @@ get_property(NPIdentifier name, NPVariant *result) {
   P3D_object *value = P3D_OBJECT_GET_PROPERTY(_p3d_object, property_name.c_str());
   if (value == NULL) {
     // No such property.
+    logfile << "  no such property\n" << flush;
     return false;
   }
 

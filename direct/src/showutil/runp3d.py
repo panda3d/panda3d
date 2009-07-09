@@ -334,9 +334,9 @@ class AppRunner(DirectObject):
         # Now process any JavaScript that might be waiting for the
         # event as well.  These are the JavaScript expressions that
         # were specified in the HTML embed or object tag.
-        #expression = self.tokenDict.get(message)
-        #if expression:
-        #    self.evalScript(expression)
+        expression = self.tokenDict.get(message)
+        if expression:
+            self.evalScript(expression)
 
     def evalScript(self, expression):
         """ Evaluates an arbitrary JavaScript expression in the global
