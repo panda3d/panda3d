@@ -55,6 +55,7 @@ private:
   void close_window();
 
 private:
+  bool _own_display;
   bool _got_install;
   bool _image_filename_changed;
   string _image_filename;

@@ -16,6 +16,14 @@
 
 #ifdef HAVE_X11
 
+#include <time.h>
+
+// Sleeps for a millisecond.
+#define MILLISLEEP() \
+  timespec ts; \
+  ts.tv_sec = 0; ts.tv_nsec = 1000000; \
+  nanosleep(&ts, NULL);
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DX11SplashWindow::Constructor
 //       Access: Public
@@ -72,8 +80,7 @@ set_image_filename(const string &image_filename,
   }
   RELEASE_LOCK(_install_lock);
 
-  // Post a silly message to spin the message loop.
-  //PostThreadMessage(_thread_id, WM_USER, 0, 0);
+  MILLISLEEP();
 
   if (!_thread_running && _thread_continue) {
     // The user must have closed the window.  Let's shut down the
@@ -97,8 +104,7 @@ set_install_label(const string &install_label) {
   }
   RELEASE_LOCK(_install_lock);
 
-  // Post a silly message to spin the message loop.
-  //PostThreadMessage(_thread_id, WM_USER, 0, 0);
+  MILLISLEEP();
 
   if (!_thread_running && _thread_continue) {
     // The user must have closed the window.  Let's shut down the
@@ -120,8 +126,7 @@ set_install_progress(double install_progress) {
   _install_progress = install_progress;
   RELEASE_LOCK(_install_lock);
 
-  // Post a silly message to spin the message loop.
-  //PostThreadMessage(_thread_id, WM_USER, 0, 0);
+  MILLISLEEP();
 
   if (!_thread_running && _thread_continue) {
     // The user must have closed the window.  Let's shut down the
@@ -153,8 +158,7 @@ start_thread() {
 void P3DX11SplashWindow::
 stop_thread() {
   _thread_continue = false;
-  // Post a silly message to spin the message loop.
-  //PostThreadMessage(_thread_id, WM_USER, 0, 0);
+  MILLISLEEP();
 
   JOIN_THREAD(_thread);
 }
@@ -231,8 +235,10 @@ make_window() {
 
   Window parent = 0;
   _display = (Display*) _wparams.get_parent_window()._xdisplay;
+  _own_display = false;
   if (_display == 0) {
     _display = XOpenDisplay(NULL);
+    _own_display = true;
   }
   _screen = DefaultScreen(_display);
 
@@ -287,12 +293,16 @@ setup_gc() {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 close_window() {
+  if (_graphics_context != None) {
+    XFreeGC(_display, _graphics_context);
+  }
+  
   if (_window != None) {
     XDestroyWindow(_display, _window);
     _window = None;
   }
 
-  if (_display != None) {
+  if (_display != None && _own_display) {
     XCloseDisplay(_display);
     _display = None;
   }
