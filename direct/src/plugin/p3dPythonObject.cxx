@@ -136,6 +136,7 @@ get_property(const string &property) {
   params[0] = new P3DStringObject(property);
 
   P3D_object *result = call("__getattr__", params, 1);
+  P3D_OBJECT_DECREF(params[0]);
   return result;
 }
 
@@ -165,6 +166,8 @@ set_property(const string &property, P3D_object *value) {
     result = call("__setattr__", params, 2);
   }
 
+  P3D_OBJECT_DECREF(params[0]);
+
   if (result != NULL) {
     bresult = P3D_OBJECT_GET_BOOL(result);
     P3D_OBJECT_DECREF(result);
@@ -187,6 +190,7 @@ has_method(const string &method_name) {
   params[0] = new P3DStringObject(method_name);
 
   P3D_object *result = call("__has_method__", params, 1);
+  P3D_OBJECT_DECREF(params[0]);
 
   if (result != NULL) {
     bresult = P3D_OBJECT_GET_BOOL(result);
