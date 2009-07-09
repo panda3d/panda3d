@@ -18,10 +18,10 @@
 
 #include <time.h>
 
-// Sleeps for a millisecond.
+// Sleeps for a short time.
 #define MILLISLEEP() \
   timespec ts; \
-  ts.tv_sec = 0; ts.tv_nsec = 1000000; \
+  ts.tv_sec = 0; ts.tv_nsec = 100000; \
   nanosleep(&ts, NULL);
 
 ////////////////////////////////////////////////////////////////////
@@ -37,6 +37,8 @@ P3DX11SplashWindow(P3DInstance *inst) :
   _display = None;
   _window = None;
   _screen = 0;
+  _width = 0;
+  _height = 0;
   _graphics_context = None;
   _thread_running = false;
   _got_install = false;
@@ -178,20 +180,28 @@ thread_run() {
   
   bool override = true, have_event = false;
   string prev_label;
+  double prev_progress;
   
   while (_thread_continue) {
-    have_event = XCheckTypedWindowEvent(_display, _window, Expose, &event);
+    have_event = XCheckTypedWindowEvent(_display, _window, Expose, &event)
+              || XCheckTypedWindowEvent(_display, _window, GraphicsExpose, &event);
     
     ACQUIRE_LOCK(_install_lock);
     double install_progress = _install_progress;
     
     if (have_event || _install_label != prev_label) {
-      redraw(_install_label, install_progress);
+      redraw(_install_label);
       override = false;
+    }
+    if (_install_progress != prev_progress) {
+      XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
+                                      install_progress * (_width - 24), 7);
     }
     prev_label = _install_label;
     
     RELEASE_LOCK(_install_lock);
+    prev_progress = install_progress;
+    MILLISLEEP();
   }
 
   close_window();
@@ -204,11 +214,13 @@ thread_run() {
 //  Description: Redraws the window.
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
-redraw(string label, double progress) {
+redraw(string label) {
   if (_graphics_context == NULL) return;
   
   XClearWindow(_display, _window);
-  XDrawString(_display, _window, _graphics_context, 10, 20, label.c_str(), label.size());
+  XDrawString(_display, _window, _graphics_context, _width / 2 - label.size() * 3,
+                                        _height - 30, label.c_str(), label.size());
+  XDrawRectangle(_display, _window, _graphics_context, 10, _height - 20, _width - 20, 10);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -219,27 +231,29 @@ redraw(string label, double progress) {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 make_window() {
-  int x = 0;
-  int y = 0;
-  if (_wparams.get_win_x() != 0 && _wparams.get_win_y() != 0) {
-    x = _wparams.get_win_x();
-    y = _wparams.get_win_y();
-  }
+  int x = _wparams.get_win_x();
+  int y = _wparams.get_win_y();
   
-  int width = 320;
-  int height = 240;
+  _width = 320;
+  _height = 240;
   if (_wparams.get_win_width() != 0 && _wparams.get_win_height() != 0) {
-    width = _wparams.get_win_width();
-    height = _wparams.get_win_height();
+    _width = _wparams.get_win_width();
+    _height = _wparams.get_win_height();
   }
 
   Window parent = 0;
-  _display = (Display*) _wparams.get_parent_window()._xdisplay;
-  _own_display = false;
-  if (_display == 0) {
+  
+  // Hum, if we use the display provided by the browser,
+  // it causes a crash in some browsers when you make an Xlib
+  // call with the plugin window minimized.
+  // So I kept XOpenDisplay until we have a better workaround.
+  
+  //_display = (Display*) _wparams.get_parent_window()._xdisplay;
+  //_own_display = false;
+  //if (_display == 0) {
     _display = XOpenDisplay(NULL);
     _own_display = true;
-  }
+  //}
   _screen = DefaultScreen(_display);
 
   if (_wparams.get_window_type() == P3D_WT_embedded) {
@@ -252,10 +266,9 @@ make_window() {
   
   assert(_display != NULL);
   assert(parent != None);
-  _window = XCreateSimpleWindow(_display, parent, x, y, width, height, 0, 0, -1);
+  _window = XCreateSimpleWindow(_display, parent, x, y, _width, _height, 0, 0, -1);
   XMapWindow(_display, _window);
 }
-
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DX11SplashWindow::setup_gc
@@ -273,7 +286,6 @@ setup_gc() {
   double install_progress = _install_progress;
   _install_label_changed = false;
   RELEASE_LOCK(_install_lock);
-
   
   XFontStruct* fs = XLoadQueryFont(_display, "6x13");
   XGCValues gcval;

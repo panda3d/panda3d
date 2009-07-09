@@ -49,12 +49,14 @@ private:
   void thread_run();
   THREAD_CALLBACK_DECLARATION(P3DX11SplashWindow, thread_run);
 
-  void redraw(string label, double progress);
+  void redraw(string label);
   void make_window();
   void setup_gc();
   void close_window();
 
 private:
+  int _width, _height;
+  
   bool _own_display;
   bool _got_install;
   bool _image_filename_changed;
@@ -75,7 +77,6 @@ private:
   
   THREAD _thread;
   Window _window;
-  int _bitmap_width, _bitmap_height;
 };
 
 #endif  // HAVE_X11
