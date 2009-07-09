@@ -467,19 +467,38 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
     return;
   }
 
-  size_t data_length = data.length();
-  char *new_data = new char[data_length];
-  memcpy(new_data, data.data(), data_length);
+  // Massage the data into Windows' conventions.
+  int new_row_stride = (_bitmap_width * 3);
+  // DWORD-pad the row.
+  new_row_stride = 4 * ((new_row_stride + 3) / 4);
+
+  int new_data_length = new_row_stride * _bitmap_height;
+  char *new_data = new char[new_data_length];
 
   if (num_channels == 3) {
     // We have to reverse the order of the RGB channels: libjpeg and
     // Windows follow an opposite convention.
     for (int yi = 0; yi < _bitmap_height; ++yi) {
-      char *dp = new_data + yi * row_stride;
+      const char *sp = data.data() + yi * row_stride;
+      char *dp = new_data + yi * new_row_stride;
       for (int xi = 0; xi < _bitmap_width; ++xi) {
-        char b = dp[0];
-        dp[0] = dp[2];
-        dp[2] = b;
+        dp[0] = sp[2];
+        dp[1] = sp[1];
+        dp[2] = sp[0];
+        sp += num_channels;
+        dp += 3;
+      }
+    }
+  } else if (num_channels == 1) {
+    // A grayscale image.  Replicate out the channels.
+    for (int yi = 0; yi < _bitmap_height; ++yi) {
+      const char *sp = data.data() + yi * row_stride;
+      char *dp = new_data + yi * new_row_stride;
+      for (int xi = 0; xi < _bitmap_width; ++xi) {
+        dp[0] = sp[0];
+        dp[1] = sp[0];
+        dp[2] = sp[0];
+        sp += num_channels;
         dp += 3;
       }
     }
@@ -491,7 +510,7 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
   bmih.biWidth = _bitmap_width;
   bmih.biHeight = -_bitmap_height;
   bmih.biPlanes = 1;
-  bmih.biBitCount = 8 * num_channels;
+  bmih.biBitCount = 24;
   bmih.biCompression = BI_RGB;
   bmih.biSizeImage = 0;
   bmih.biXPelsPerMeter = 0;

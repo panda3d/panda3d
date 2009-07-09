@@ -188,7 +188,8 @@ read_image(const string &image_filename, bool image_filename_temp,
 
   row_stride = width * num_channels;
 
-  // We'll pad row_stride out to word alignment.  Windows requires this.
+  // We'll pad row_stride out to word alignment, in case someone
+  // requires this.
   row_stride = 4 * ((row_stride + 3) / 4);
 
   size_t buffer_size = height * row_stride;
