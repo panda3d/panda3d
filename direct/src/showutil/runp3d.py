@@ -354,9 +354,7 @@ class AppRunner(DirectObject):
     def scriptRequest(self, operation, object, propertyName = '',
                       value = None, needsResponse = True):
         """ Issues a new script request to the browser.  This queries
-        or modifies one of the browser's DOM properties.  This method
-        blocks until the return value is received from the browser,
-        and then it returns that value.
+        or modifies one of the browser's DOM properties.
         
         operation may be one of [ 'get_property', 'set_property',
         'call', 'evaluate' ].
@@ -370,6 +368,11 @@ class AppRunner(DirectObject):
         value is the new value to assign to the property for
         set_property, or the parameter list for call, or the string
         expression for evaluate.
+
+        If needsResponse is true, this method will block until the
+        return value is received from the browser, and then it returns
+        that value.  Otherwise, it returns None immediately, without
+        waiting for the browser to process the request.
         """
         uniqueId = self.nextScriptId
         self.nextScriptId += 1

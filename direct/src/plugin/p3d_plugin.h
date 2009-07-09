@@ -348,7 +348,9 @@ P3D_object_get_float_method(const P3D_object *object);
    string (not counting any terminating null character).  If the
    return value is larger than buffer_length, the string has been
    truncated.  If it is equal, there is no null character written to
-   the buffer (like strncpy). */
+   the buffer (like strncpy).  You may call this method first with
+   buffer = NULL and buffer_length = 0 to return just the required
+   size of the buffer. */
 typedef int
 P3D_object_get_string_method(const P3D_object *object, 
                              char *buffer, int buffer_length);
