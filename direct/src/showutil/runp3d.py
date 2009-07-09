@@ -377,12 +377,19 @@ class AppRunner(DirectObject):
         uniqueId = self.nextScriptId
         self.nextScriptId += 1
         self.sendRequest('script', operation, object,
-                         propertyName, value, needsResponse, uniqueId);
+                         propertyName, value, needsResponse, uniqueId)
 
         if needsResponse:
             # Now wait for the response to come in.
             result = self.sendRequest('wait_script_response', uniqueId)
             return result
+
+    def dropObject(self, objectId):
+        """ Inform the parent process that we no longer have an
+        interest in the P3D_object corresponding to the indicated
+        objectId. """
+
+        self.sendRequest('drop_p3dobj', objectId)
 
     def parseSysArgs(self):
         """ Converts sys.argv into (p3dFilename, tokens). """
@@ -443,6 +450,12 @@ class BrowserObject:
         # This element is filled in by __getattr__; it connects
         # the object to its parent.
         self.__dict__['_BrowserObject__boundMethod'] = (None, None)
+
+    def __del__(self):
+        # When the BrowserObject destructs, tell the parent process it
+        # doesn't need to keep around its corresponding P3D_object any
+        # more.
+        self.__runner.dropObject(self.__objectId)
 
     def __str__(self):
         parentObj, attribName = self.__boundMethod
@@ -546,7 +559,7 @@ class BrowserObject:
             else:
                 raise IndexError(key)
 
-        return value;
+        return value
 
     def __setitem__(self, key, value):
         result = self.__runner.scriptRequest('set_property', self,

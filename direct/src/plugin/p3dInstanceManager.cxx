@@ -138,6 +138,7 @@ initialize() {
 P3DInstance *P3DInstanceManager::
 create_instance(P3D_request_ready_func *func, void *user_data) {
   P3DInstance *inst = new P3DInstance(func, user_data);
+  inst->ref();
   _instances.insert(inst);
 
   return inst;
@@ -164,6 +165,7 @@ start_instance(P3DInstance *inst, const string &p3d_filename,
   Sessions::iterator si = _sessions.find(inst->get_session_key());
   if (si == _sessions.end()) {
     session = new P3DSession(inst);
+    session->ref();
     bool inserted = _sessions.insert(Sessions::value_type(session->get_session_key(), session)).second;
     assert(inserted);
   } else {
@@ -197,10 +199,11 @@ finish_instance(P3DInstance *inst) {
   // session.
   if (session->get_num_instances() == 0) {
     _sessions.erase(session->get_session_key());
-    delete session;
+    session->shutdown();
+    unref_delete(session);
   }
 
-  delete inst;
+  unref_delete(inst);
 }
 
 ////////////////////////////////////////////////////////////////////

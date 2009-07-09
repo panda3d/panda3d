@@ -580,7 +580,6 @@ typedef enum {
   P3D_RT_get_url,
   P3D_RT_post_url,
   P3D_RT_notify,
-  P3D_RT_script,
 } P3D_request_type;
 
 /* Structures corresponding to the request types in the above enum. */
@@ -624,27 +623,6 @@ typedef struct {
   const char *_message;
 } P3D_request_notify;
 
-/* A script object request.  This is used to call out into the
-   browser_script_object (above).  This request is handled internally
-   by the core API, and may safely be ignored by the host.
-*/
-typedef enum {
-  P3D_SO_get_property,
-  P3D_SO_set_property,
-  P3D_SO_del_property,
-  P3D_SO_call,
-  P3D_SO_eval,
-} P3D_script_operation;
-typedef struct {
-  P3D_object *_object;
-  P3D_script_operation _op;
-  const char *_property_name;
-  P3D_object **_values;
-  int _num_values;
-  bool _needs_response;
-  int _unique_id;
-} P3D_request_script;
-
 /* This is the overall structure that represents a single request.  It
    is returned by P3D_instance_get_request(). */
 typedef struct {
@@ -655,7 +633,6 @@ typedef struct {
     P3D_request_get_url _get_url;
     P3D_request_post_url _post_url;
     P3D_request_notify _notify;
-    P3D_request_script _script;
   } _request;
 } P3D_request;
 

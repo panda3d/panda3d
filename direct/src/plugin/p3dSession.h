@@ -19,6 +19,7 @@
 #include "handleStream.h"
 #include "p3dPackage.h"
 #include "p3dConditionVar.h"
+#include "p3dReferenceCount.h"
 #include "get_tinyxml.h"
 
 #include <map>
@@ -34,10 +35,12 @@ class P3DProgressWindow;
 //               might include one or more P3DInstance objects running
 //               in the same memory space with each other.
 ////////////////////////////////////////////////////////////////////
-class P3DSession {
+class P3DSession : public P3DReferenceCount {
 public:
   P3DSession(P3DInstance *inst);
   ~P3DSession();
+
+  void shutdown();
 
   inline const string &get_session_key() const;
   inline const string &get_python_version() const;
@@ -52,6 +55,11 @@ public:
   P3D_object *xml_to_p3dobj(const TiXmlElement *xvalue);
   TiXmlElement *p3dobj_to_xml(P3D_object *obj);
 
+  void signal_request_ready(P3DInstance *inst);
+
+  void drop_pyobj(int object_id);
+  void drop_p3dobj(int object_id);
+
 private:
   void install_progress(P3DPackage *package, double progress);
   void start_p3dpython();
@@ -65,7 +73,6 @@ private:
   void rt_thread_run();
   void rt_terminate();
   void rt_handle_request(TiXmlDocument *doc);
-  P3D_request *rt_make_p3d_request(TiXmlElement *xrequest);
 
 #ifdef _WIN32
   static HANDLE 

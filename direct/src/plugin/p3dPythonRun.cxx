@@ -259,6 +259,18 @@ handle_command(TiXmlDocument *doc) {
         // Response from a script request.
         assert(!needs_response);
         nout << "Ignoring unexpected script_response\n";
+
+      } else if (strcmp(cmd, "drop_pyobj") == 0) {
+        int object_id;
+        if (xcommand->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
+          nout << "got drop_pyobj(" << object_id << ")\n" << flush;
+          SentObjects::iterator si = _sent_objects.find(object_id);
+          if (si != _sent_objects.end()) {
+            PyObject *obj = (*si).second;
+            Py_DECREF(obj);
+            _sent_objects.erase(si);
+          }
+        }
         
       } else {
         nout << "Unhandled command " << cmd << "\n";
@@ -663,6 +675,19 @@ py_request_func(PyObject *args) {
       xrequest->LinkEndChild(xvalue);
     }
 
+    nout << "sent: " << doc << "\n" << flush;
+    _pipe_write << doc << flush;
+
+  } else if (strcmp(request_type, "drop_p3dobj") == 0) {
+    // Release a particular P3D_object that we were holding a
+    // reference to.
+    int object_id;
+    if (!PyArg_ParseTuple(extra_args, "i", &object_id)) {
+      return NULL;
+    }
+    nout << "got drop_p3dobj(" << object_id << ")\n" << flush;
+
+    xrequest->SetAttribute("object_id", object_id);
     nout << "sent: " << doc << "\n" << flush;
     _pipe_write << doc << flush;
 

@@ -19,6 +19,7 @@
 #include "p3dFileDownload.h"
 #include "p3dFileParams.h"
 #include "p3dWindowParams.h"
+#include "p3dReferenceCount.h"
 #include "get_tinyxml.h"
 
 #include <deque>
@@ -35,7 +36,7 @@ class P3DObject;
 // Description : This is an instance of a Panda3D window, as seen in
 //               the parent-level process.
 ////////////////////////////////////////////////////////////////////
-class P3DInstance : public P3D_instance {
+class P3DInstance : public P3D_instance, public P3DReferenceCount {
 public:
   P3DInstance(P3D_request_ready_func *func, void *user_data);
   ~P3DInstance();
@@ -51,7 +52,9 @@ public:
 
   bool has_request();
   P3D_request *get_request();
-  void add_request(P3D_request *request);
+  void bake_requests();
+  void add_raw_request(TiXmlDocument *doc);
+  void add_baked_request(P3D_request *request);
   void finish_request(P3D_request *request, bool handled);
 
   bool feed_url_stream(int unique_id,
@@ -88,8 +91,12 @@ private:
   };
 
   void send_browser_script_object();
-  void handle_notify_request(P3D_request *request);
-  void handle_script_request(P3D_request *request);
+  P3D_request *make_p3d_request(TiXmlElement *xrequest);
+  void handle_notify_request(const string &message);
+  void handle_script_request(const string &operation, P3D_object *object, 
+                             const string &property_name,
+                             P3D_object *values[], int num_values,
+                             bool needs_response, int unique_id);
   void make_splash_window();
   void install_progress(P3DPackage *package, double progress);
 
@@ -105,7 +112,10 @@ private:
   int _instance_id;
   string _session_key;
   string _python_version;
+
+  // Not ref-counted: session is the parent.
   P3DSession *_session;
+
   P3DSplashWindow *_splash_window;
   bool _instance_window_opened;
 
@@ -115,10 +125,17 @@ private:
   typedef map<int, P3DDownload *> Downloads;
   Downloads _downloads;
 
+  // The _raw_requests queue might be filled up by the read thread, so
+  // we protect it in a lock.
   LOCK _request_lock;
-  typedef deque<P3D_request *> Requests;
-  Requests _pending_requests;
+  typedef deque<TiXmlDocument *> RawRequests;
+  RawRequests _raw_requests;
   bool _requested_stop;
+
+  // The _baked_requests queue is only touched in the main thread; no
+  // lock needed.
+  typedef deque<P3D_request *> BakedRequests;
+  BakedRequests _baked_requests;
 
   static int _next_instance_id;
 

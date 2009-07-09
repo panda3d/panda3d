@@ -71,6 +71,9 @@ P3DInstance(P3D_request_ready_func *func, void *user_data) :
 ////////////////////////////////////////////////////////////////////
 P3DInstance::
 ~P3DInstance() {
+  // TODO: maybe this should be a reference-counted object, so we
+  // don't delete it too soon.
+
   assert(_session == NULL);
 
   P3D_OBJECT_XDECREF(_browser_script_object);
@@ -90,7 +93,8 @@ P3DInstance::
     _splash_window = NULL;
   }
 
-  // TODO: empty _pending_requests queue and _downloads map.
+  // TODO: empty _raw_requests and _baked_requests queues, and
+  // _downloads map.
 
   // TODO: Is it possible for someone to delete an instance while a
   // download is still running?  Who will crash when this happens?
@@ -239,10 +243,7 @@ set_browser_script_object(P3D_object *browser_script_object) {
 ////////////////////////////////////////////////////////////////////
 bool P3DInstance::
 has_request() {
-  ACQUIRE_LOCK(_request_lock);
-  bool any_requests = !_pending_requests.empty();
-  RELEASE_LOCK(_request_lock);
-  return any_requests;
+  return _request_pending;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -256,51 +257,104 @@ has_request() {
 ////////////////////////////////////////////////////////////////////
 P3D_request *P3DInstance::
 get_request() {
-  P3D_request *result = NULL;
-  ACQUIRE_LOCK(_request_lock);
-  if (!_pending_requests.empty()) {
-    result = _pending_requests.front();
-    _pending_requests.pop_front();
-    _request_pending = !_pending_requests.empty();
-  }
-  RELEASE_LOCK(_request_lock);
-
-  if (result != NULL) {
-    switch (result->_request_type) {
-    case P3D_RT_notify:
-      handle_notify_request(result);
-      break;
-
-    case P3D_RT_script:
-      handle_script_request(result);
-      // Completely eat this request; don't return it to the caller.
-      finish_request(result, true);
-      return get_request();
-
-    default:
-      // Other kinds of requests don't require special handling at
-      // this level; pass it up unmolested.
-      break;
-    }
+  bake_requests();
+  if (_baked_requests.empty()) {
+    // No requests ready.
+    _request_pending = false;
+    return NULL;
   }
 
-  return result;
+  P3D_request *request = _baked_requests.front();
+  _baked_requests.pop_front();
+  _request_pending = !_baked_requests.empty();
+  
+  return request;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::add_request
+//     Function: P3DInstance::bake_requests
 //       Access: Public
-//  Description: May be called in any thread to add a new P3D_request
-//               to the pending_request queue for this instance.
+//  Description: Copies requests from the _raw_requests queue, which
+//               is built up in one or more sub-threads, into the
+//               _baked_requests queue, which is publicly presented
+//               to the browser.  Along the way, some requests (like
+//               script requests) are handled immediately.
+//
+//               At the end of this call, _baked_requests will contain
+//               the current set of requests pending for the browser.
+//
+//               This method should only be called in the main thread.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-add_request(P3D_request *request) {
-  request->_instance = this;
+bake_requests() {
+  while (true) {
+    // Get the latest request from the read thread.
+    TiXmlDocument *doc = NULL;
+    ACQUIRE_LOCK(_request_lock);
+    if (!_raw_requests.empty()) {
+      doc = _raw_requests.front();
+      _raw_requests.pop_front();
+    }
+    RELEASE_LOCK(_request_lock);
+    
+    if (doc == NULL) {
+      // No more requests to process right now.
+      return;
+    }
+    nout << "received: " << *doc << "\n" << flush;
+    
+    // Now we've got a request in XML form; convert it to P3D_request
+    // form.
+    TiXmlElement *xrequest = doc->FirstChildElement("request");
+    assert(xrequest != (TiXmlElement *)NULL);
+    P3D_request *request = make_p3d_request(xrequest);
+    delete doc;
+    
+    if (request != NULL) {
+      _baked_requests.push_back(request);
+    }
+  }
+}
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::add_raw_request
+//       Access: Public
+//  Description: May be called in any thread to add a new XML request
+//               to the pending_request queue for this instance.  The
+//               XML document will be deleted when the request is
+//               eventually handled.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+add_raw_request(TiXmlDocument *doc) {
   ACQUIRE_LOCK(_request_lock);
-  _pending_requests.push_back(request);
+  _raw_requests.push_back(doc);
   _request_pending = true;
   RELEASE_LOCK(_request_lock);
+
+  // We don't decode the XML yet, since we might be running in any
+  // thread here.  We'll decode it in the main thread, where it's
+  // safe.
+
+  // Tell the world we've got a new request.
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  inst_mgr->signal_request_ready(this);
+  _session->signal_request_ready(this);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::add_baked_request
+//       Access: Public
+//  Description: May be called in the main thread only to add a new
+//               request to the baked_request queue.  This request
+//               queue is directly passed on the browser without
+//               further processing at this level.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+add_baked_request(P3D_request *request) {
+  request->_instance = this;
+
+  _baked_requests.push_back(request);
+  _request_pending = true;
 
   // Tell the world we've got a new request.
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
@@ -334,18 +388,6 @@ finish_request(P3D_request *request, bool handled) {
 
   case P3D_RT_notify:
     free((char *)request->_request._notify._message);
-    break;
-
-  case P3D_RT_script:
-    {
-      P3D_OBJECT_DECREF(request->_request._script._object);
-      if (request->_request._script._property_name != NULL) {
-        free((char *)request->_request._script._property_name);
-      }
-      for (int i = 0; i < request->_request._script._num_values; ++i) {
-        P3D_OBJECT_DECREF(request->_request._script._values[i]);
-      }
-    }
     break;
   }
 
@@ -430,7 +472,7 @@ start_download(P3DDownload *download) {
   request->_request._get_url._url = strdup(download->get_url().c_str());
   request->_request._get_url._unique_id = download_id;
 
-  add_request(request);
+  add_baked_request(request);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -446,7 +488,7 @@ request_stop() {
     _requested_stop = true;
     P3D_request *request = new P3D_request;
     request->_request_type = P3D_RT_stop;
-    add_request(request);
+    add_baked_request(request);
   }
 }
 
@@ -498,19 +540,103 @@ send_browser_script_object() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::make_p3d_request
+//       Access: Private
+//  Description: Creates a new P3D_request structure from the XML.
+//               Returns NULL if no request is needed.
+////////////////////////////////////////////////////////////////////
+P3D_request *P3DInstance::
+make_p3d_request(TiXmlElement *xrequest) {
+  P3D_request *request = NULL;
+
+  const char *rtype = xrequest->Attribute("rtype");
+  if (rtype != NULL) {
+    if (strcmp(rtype, "notify") == 0) {
+      const char *message = xrequest->Attribute("message");
+      if (message != NULL) {
+        request = new P3D_request;
+        request->_request_type = P3D_RT_notify;
+        request->_request._notify._message = strdup(message);
+      }
+
+    } else if (strcmp(rtype, "script") == 0) {
+      // We don't actually build a P3D_request for a script request;
+      // we always just handle it immediately.
+      const char *operation = xrequest->Attribute("operation");
+      TiXmlElement *xobject = xrequest->FirstChildElement("object");
+      const char *property_name = xrequest->Attribute("property_name");
+      int needs_response = 0;
+      xrequest->Attribute("needs_response", &needs_response);
+      int unique_id = 0;
+      xrequest->Attribute("unique_id", &unique_id);
+        
+      vector<P3D_object *> values;
+      TiXmlElement *xvalue = xrequest->FirstChildElement("value");
+      while (xvalue != NULL) {
+        P3D_object *value = _session->xml_to_p3dobj(xvalue);
+        values.push_back(value);
+        xvalue = xvalue->NextSiblingElement("value");
+      }
+      
+      P3D_object **values_ptr = NULL;
+      if (!values.empty()) {
+        values_ptr = &values[0];
+      }
+
+      if (operation != NULL && xobject != NULL) {
+        P3D_object *object = _session->xml_to_p3dobj(xobject);
+
+        if (property_name == NULL) {
+          property_name = "";
+        }
+
+        handle_script_request(operation, object, property_name,
+                              values_ptr, values.size(),
+                              (needs_response != 0), unique_id);
+      }
+
+      for (size_t i = 0; i < values.size(); ++i) {
+        P3D_OBJECT_DECREF(values[i]);
+      }
+
+    } else if (strcmp(rtype, "notify") == 0) {
+      const char *message = xrequest->Attribute("message");
+      if (message != NULL) {
+        request = new P3D_request;
+        request->_request_type = P3D_RT_notify;
+        request->_request._notify._message = strdup(message);
+        handle_notify_request(message);
+      }
+
+    } else if (strcmp(rtype, "drop_p3dobj") == 0) {
+      int object_id;
+      if (xrequest->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
+        // We no longer need to keep this reference.
+        _session->drop_p3dobj(object_id);
+      }
+
+    } else {
+      nout << "Ignoring request of type " << rtype << "\n";
+    }
+  }
+
+  if (request != NULL) {
+    request->_instance = this;
+  }
+  return request;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::handle_notify_request
 //       Access: Private
 //  Description: Called (in the main thread) when a notify request is
 //               received from the subprocess.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-handle_notify_request(P3D_request *request) {
-  assert(request->_request_type == P3D_RT_notify);
-
+handle_notify_request(const string &message) {
   // We look for certain notify events that have particular meaning
   // to this instance.
-  const char *message = request->_request._notify._message;
-  if (strcmp(message, "onwindowopen") == 0) {
+  if (message == "onwindowopen") {
     // The process told us that it just succesfully opened its
     // window.  Tear down the splash window.
     _instance_window_opened = true;
@@ -528,172 +654,87 @@ handle_notify_request(P3D_request *request) {
 //               received from the subprocess.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-handle_script_request(P3D_request *request) {
-  assert(request->_request_type == P3D_RT_script);
+handle_script_request(const string &operation, P3D_object *object, 
+                      const string &property_name,
+                      P3D_object *values[], int num_values,
+                      bool needs_response, int unique_id) {
 
-  P3D_object *object = request->_request._script._object;
-  bool needs_response = request->_request._script._needs_response;
-  int unique_id = request->_request._script._unique_id;
-  switch (request->_request._script._op) {
-  case P3D_SO_get_property:
-    {
-      P3D_object *result = P3D_OBJECT_GET_PROPERTY(object, request->_request._script._property_name);
+  TiXmlDocument *doc = new TiXmlDocument;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "script_response");
+  xcommand->SetAttribute("unique_id", unique_id);
+  
+  doc->LinkEndChild(decl);
+  doc->LinkEndChild(xcommand);
 
-      // We've got the property value; feed it back down to the
-      // subprocess.
-      TiXmlDocument *doc = new TiXmlDocument;
-      TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
-      TiXmlElement *xcommand = new TiXmlElement("command");
-      xcommand->SetAttribute("cmd", "script_response");
-      xcommand->SetAttribute("unique_id", unique_id);
-      
-      doc->LinkEndChild(decl);
-      doc->LinkEndChild(xcommand);
-      if (result != NULL) {
-        xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
-        P3D_OBJECT_DECREF(result);
-      }
+  if (operation == "get_property") {
+    P3D_object *result = P3D_OBJECT_GET_PROPERTY(object, property_name.c_str());
 
-      if (needs_response) {
-        _session->send_command(doc);
-      } else {
-        delete doc;
-      }
+    // We've got the property value; feed it back down to the
+    // subprocess.
+    
+    if (result != NULL) {
+      xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
+      P3D_OBJECT_DECREF(result);
     }
-    break;
 
-  case P3D_SO_set_property:
-    {
-      bool result;
-      if (request->_request._script._num_values == 1) {
-        result = P3D_OBJECT_SET_PROPERTY(object, request->_request._script._property_name,
-                                         request->_request._script._values[0]);
-      } else {
-        // Wrong number of values.  Error.
-        result = false;
-      }
-
-      // Feed the result back down to the subprocess.
-      TiXmlDocument *doc = new TiXmlDocument;
-      TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
-      TiXmlElement *xcommand = new TiXmlElement("command");
-      xcommand->SetAttribute("cmd", "script_response");
-      xcommand->SetAttribute("unique_id", unique_id);
-      
-      doc->LinkEndChild(decl);
-      doc->LinkEndChild(xcommand);
-
-      TiXmlElement *xvalue = new TiXmlElement("value");
-      xvalue->SetAttribute("type", "bool");
-      xvalue->SetAttribute("value", (int)result);
-      xcommand->LinkEndChild(xvalue);
-      
-      if (needs_response) {
-        _session->send_command(doc);
-      } else {
-        delete doc;
-      }
+  } else if (operation == "set_property") {
+    bool result;
+    if (num_values == 1) {
+      result = P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), values[0]);
+    } else {
+      // Wrong number of values.  Error.
+      result = false;
     }
-    break;
+    
+    TiXmlElement *xvalue = new TiXmlElement("value");
+    xvalue->SetAttribute("type", "bool");
+    xvalue->SetAttribute("value", (int)result);
+    xcommand->LinkEndChild(xvalue);
 
-  case P3D_SO_del_property:
-    {
-      bool result = P3D_OBJECT_SET_PROPERTY(object, request->_request._script._property_name,
-                                            NULL);
+  } else if (operation == "del_property") {
+    bool result = P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), NULL);
+    
+    TiXmlElement *xvalue = new TiXmlElement("value");
+    xvalue->SetAttribute("type", "bool");
+    xvalue->SetAttribute("value", (int)result);
+    xcommand->LinkEndChild(xvalue);
 
-      // Feed the result back down to the subprocess.
-      TiXmlDocument *doc = new TiXmlDocument;
-      TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
-      TiXmlElement *xcommand = new TiXmlElement("command");
-      xcommand->SetAttribute("cmd", "script_response");
-      xcommand->SetAttribute("unique_id", unique_id);
-      
-      doc->LinkEndChild(decl);
-      doc->LinkEndChild(xcommand);
-
-      TiXmlElement *xvalue = new TiXmlElement("value");
-      xvalue->SetAttribute("type", "bool");
-      xvalue->SetAttribute("value", (int)result);
-      xcommand->LinkEndChild(xvalue);
-      
-      if (needs_response) {
-        _session->send_command(doc);
-      } else {
-        delete doc;
-      }
+  } else if (operation == "call") {
+    P3D_object *result =
+      P3D_OBJECT_CALL(object, property_name.c_str(), values, num_values);
+    
+    if (result != NULL) {
+      xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
+      P3D_OBJECT_DECREF(result);
     }
-    break;
 
-  case P3D_SO_call:
-    {
-      P3D_object *result = 
-        P3D_OBJECT_CALL(object, request->_request._script._property_name,
-                        request->_request._script._values,
-                        request->_request._script._num_values);
-
-      // Feed the result back down to the subprocess.
-      TiXmlDocument *doc = new TiXmlDocument;
-      TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
-      TiXmlElement *xcommand = new TiXmlElement("command");
-      xcommand->SetAttribute("cmd", "script_response");
-      xcommand->SetAttribute("unique_id", unique_id);
-      
-      doc->LinkEndChild(decl);
-      doc->LinkEndChild(xcommand);
-
-      if (result != NULL) {
-        xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
-        P3D_OBJECT_DECREF(result);
-      }
-      
-      if (needs_response) {
-        _session->send_command(doc);
-      } else {
-        delete doc;
-      }
+  } else if (operation == "eval") {
+    P3D_object *result;
+    if (num_values == 1) {
+      P3D_object *expression = values[0];
+      int size = P3D_OBJECT_GET_STRING(expression, NULL, 0);
+      char *buffer = new char[size + 1];
+      P3D_OBJECT_GET_STRING(expression, buffer, size + 1);
+      result = P3D_OBJECT_EVAL(object, buffer);
+      logfile << " eval " << *object << ": " << buffer << ", result = " << result << "\n";
+      delete[] buffer;
+    } else {
+      // Wrong number of values.  Error.
+      result = NULL;
     }
-    break;
-
-  case P3D_SO_eval:
-    {
-      P3D_object *result;
-      if (request->_request._script._num_values == 1) {
-        P3D_object *expression = request->_request._script._values[0];
-        int size = P3D_OBJECT_GET_STRING(expression, NULL, 0);
-        char *buffer = new char[size + 1];
-        P3D_OBJECT_GET_STRING(expression, buffer, size + 1);
-        result = P3D_OBJECT_EVAL(object, buffer);
-        logfile << " eval " << *object << ": " << buffer << ", result = " << result << "\n";
-        delete[] buffer;
-      } else {
-        // Wrong number of values.  Error.
-        result = NULL;
-      }
-
-      // Feed the result back down to the subprocess.
-      TiXmlDocument *doc = new TiXmlDocument;
-      TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
-      TiXmlElement *xcommand = new TiXmlElement("command");
-      xcommand->SetAttribute("cmd", "script_response");
-      xcommand->SetAttribute("unique_id", unique_id);
-      
-      doc->LinkEndChild(decl);
-      doc->LinkEndChild(xcommand);
-
-      if (result != NULL) {
-        xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
-        P3D_OBJECT_DECREF(result);
-      }
-
-      logfile << "eval  response: " << *doc << "\n";
-      
-      if (needs_response) {
-        _session->send_command(doc);
-      } else {
-        delete doc;
-      }
+    
+    if (result != NULL) {
+      xcommand->LinkEndChild(_session->p3dobj_to_xml(result));
+      P3D_OBJECT_DECREF(result);
     }
-    break;
+  }
+
+  if (needs_response) {
+    _session->send_command(doc);
+  } else {
+    delete doc;
   }
 }
 

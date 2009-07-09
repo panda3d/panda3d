@@ -69,14 +69,26 @@ P3DSession(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::Destructor
 //       Access: Public
-//  Description: Terminates the session by shutting down Python and
-//               stopping the subprocess.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DSession::
 ~P3DSession() {
+  assert(!_p3dpython_running);
+  DESTROY_LOCK(_instances_lock);  
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::shutdown
+//       Access: Public
+//  Description: Terminates the session by shutting down Python and
+//               stopping the subprocess.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+shutdown() {
   if (_panda3d_callback != NULL) {
     _panda3d->cancel_callback(_panda3d_callback);
     delete _panda3d_callback;
+    _panda3d_callback = NULL;
   }
 
   if (_p3dpython_running) {
@@ -106,12 +118,13 @@ P3DSession::
     }
 
     CloseHandle(_p3dpython_handle);
-
 #else  // _WIN32
 
     // TODO: posix kill().
 
 #endif  // _WIN32
+
+    _p3dpython_running = false;
   }
 
   // If there are any leftover commands in the queue (presumably
@@ -124,7 +137,6 @@ P3DSession::
   _commands.clear();
 
   join_read_thread();
-  DESTROY_LOCK(_instances_lock);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -143,6 +155,7 @@ start_instance(P3DInstance *inst) {
   assert(inst->get_session_key() == _session_key);
   assert(inst->get_python_version() == _python_version);
 
+  inst->ref();
   ACQUIRE_LOCK(_instances_lock);
   inst->_session = this;
   bool inserted = _instances.insert(Instances::value_type(inst->get_instance_id(), inst)).second;
@@ -200,6 +213,7 @@ terminate_instance(P3DInstance *inst) {
     _instances.erase(inst->get_instance_id());
   }
   RELEASE_LOCK(_instances_lock);
+  unref_delete(inst);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -282,6 +296,16 @@ command_and_response(TiXmlDocument *command) {
       // process dies unexpectedly.
       _response_ready.release();
       return NULL;
+    }
+
+    // Make sure we bake requests while we are waiting, to process
+    // recursive script requests.  (The child process might have to
+    // wait for us to process some of these before it can fulfill the
+    // command we're actually waiting for.)
+    Instances::iterator ii;
+    for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+      P3DInstance *inst = (*ii).second;
+      inst->bake_requests();
     }
 
 #ifdef _WIN32
@@ -370,6 +394,7 @@ xml_to_p3dobj(const TiXmlElement *xvalue) {
       }
 
       P3D_object *obj = (*si).second;
+
       P3D_OBJECT_INCREF(obj);
       return obj;
     }
@@ -470,6 +495,69 @@ p3dobj_to_xml(P3D_object *obj) {
   }
 
   return xvalue;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::signal_request_ready
+//       Access: Public
+//  Description: May be called in any thread to indicate that a new
+//               P3D_request is available in the indicated instance.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+signal_request_ready(P3DInstance *inst) {
+  // Since a new request might require baking, we should wake up a
+  // blocked command_and_request() process, so the main thread can go
+  // back and bake the new request.
+
+  // Technically, a response isn't really ready now, but we still need
+  // the main thread to wake up and look around for a bit.
+  _response_ready.acquire();
+  _response_ready.notify();
+  _response_ready.release();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::drop_pyobj
+//       Access: Public
+//  Description: If the session is still active, issues the command to
+//               the child process to release the indicated PyObject
+//               from its table.  This is intended to be called
+//               strictly by the P3DPythonObject destructor.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+drop_pyobj(int object_id) {
+  nout << "got drop_pyobj(" << object_id << ")\n" << flush;
+  if (_p3dpython_running) {
+    TiXmlDocument doc;
+    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+    TiXmlElement *xcommand = new TiXmlElement("command");
+    xcommand->SetAttribute("cmd", "drop_pyobj");
+    xcommand->SetAttribute("object_id", object_id);
+    doc.LinkEndChild(decl);
+    doc.LinkEndChild(xcommand);
+    nout << "sent: " << doc << "\n" << flush;
+    _pipe_write << doc << flush;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::drop_p3dobj
+//       Access: Public
+//  Description: Responds to a drop_p3dobj message from the child
+//               process indicating that a particular P3D_object is no
+//               longer being used by the child.  This removes the
+//               corresponding P3D_object from our tables and
+//               decrements its reference count.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+drop_p3dobj(int object_id) {
+  nout << "got drop_p3dobj(" << object_id << ")\n" << flush;
+  SentObjects::iterator si = _sent_objects.find(object_id);
+  if (si != _sent_objects.end()) {
+    P3D_object *obj = (*si).second;
+    P3D_OBJECT_DECREF(obj);
+    _sent_objects.erase(si);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -676,103 +764,16 @@ rt_handle_request(TiXmlDocument *doc) {
       ii = _instances.find(instance_id);
       if (ii != _instances.end()) {
         P3DInstance *inst = (*ii).second;
-        P3D_request *request = rt_make_p3d_request(xrequest);
-        if (request != NULL) {
-          inst->add_request(request);
-        }
+        inst->add_raw_request(doc);
+        doc = NULL;
       }
       RELEASE_LOCK(_instances_lock);
     }
   }
 
-  delete doc;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::rt_make_p3d_request
-//       Access: Private
-//  Description: Creates a new P3D_request structure from the XML.
-////////////////////////////////////////////////////////////////////
-P3D_request *P3DSession::
-rt_make_p3d_request(TiXmlElement *xrequest) {
-  P3D_request *request = NULL;
-
-  const char *rtype = xrequest->Attribute("rtype");
-  if (rtype != NULL) {
-    if (strcmp(rtype, "notify") == 0) {
-      const char *message = xrequest->Attribute("message");
-      if (message != NULL) {
-        request = new P3D_request;
-        request->_request_type = P3D_RT_notify;
-        request->_request._notify._message = strdup(message);
-      }
-
-    } else if (strcmp(rtype, "script") == 0) {
-      const char *operation = xrequest->Attribute("operation");
-      TiXmlElement *xobject = xrequest->FirstChildElement("object");
-      const char *property_name = xrequest->Attribute("property_name");
-      int needs_response = 0;
-      xrequest->Attribute("needs_response", &needs_response);
-      int unique_id = 0;
-      xrequest->Attribute("unique_id", &unique_id);
-
-      if (operation != NULL && xobject != NULL) {
-        P3D_script_operation op;
-        if (strcmp(operation, "get_property") == 0) {
-          op = P3D_SO_get_property;
-        } else if (strcmp(operation, "set_property") == 0) {
-          op = P3D_SO_set_property;
-        } else if (strcmp(operation, "del_property") == 0) {
-          op = P3D_SO_del_property;
-        } else if (strcmp(operation, "call") == 0) {
-          op = P3D_SO_call;
-        } else if (strcmp(operation, "eval") == 0) {
-          op = P3D_SO_eval;
-        } else {
-          // An unexpected operation.
-          return NULL;
-        }
-
-        request = new P3D_request;
-        request->_request_type = P3D_RT_script;
-        request->_request._script._op = op;
-        request->_request._script._object = xml_to_p3dobj(xobject);
-        request->_request._script._property_name = NULL;
-        if (property_name != NULL) {
-          request->_request._script._property_name = strdup(property_name);
-        }
-        request->_request._script._needs_response = (needs_response != 0);
-        request->_request._script._unique_id = unique_id;
-        
-        // Fill in the value(s).
-        vector<P3D_object *> values;
-        TiXmlElement *xvalue = xrequest->FirstChildElement("value");
-        while (xvalue != NULL) {
-          P3D_object *value = xml_to_p3dobj(xvalue);
-          values.push_back(value);
-          xvalue = xvalue->NextSiblingElement("value");
-        }
-
-        if (values.empty()) {
-          // No values.
-          request->_request._script._values = NULL;
-          request->_request._script._num_values = 0;
-        } else {
-          // Some values.
-          int num_values = (int)values.size();
-          P3D_object **valuesp = new P3D_object *[num_values];
-          memcpy(valuesp, &values[0], num_values * sizeof(P3D_object *));
-          request->_request._script._values = valuesp;
-          request->_request._script._num_values = num_values;
-        }
-      }          
-
-    } else {
-      nout << "Ignoring request of type " << rtype << "\n";
-    }
+  if (doc != NULL) {
+    delete doc;
   }
-
-  return request;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -40,6 +40,7 @@
     p3dObject.h p3dObject.I \
     p3dPackage.h p3dPackage.I \
     p3dPythonObject.h \
+    p3dReferenceCount.h p3dReferenceCount.I \
     p3dSession.h p3dSession.I \
     p3dSplashWindow.h p3dSplashWindow.I \
     p3dStringObject.h \
@@ -64,6 +65,7 @@
     p3dObject.cxx \
     p3dPackage.cxx \
     p3dPythonObject.cxx \
+    p3dReferenceCount.cxx \
     p3dSession.cxx \
     p3dSplashWindow.cxx \
     p3dStringObject.cxx \
