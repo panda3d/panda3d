@@ -296,7 +296,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
   if (op != NULL) {
     if (strcmp(op, "get_panda_script_object") == 0) {
       // Get Panda's toplevel Python object.
-      PyObject *obj = PyObject_CallMethod(_runner, "getPandaScriptObject", (char *)"");
+      PyObject *obj = PyObject_CallMethod(_runner, (char*)"getPandaScriptObject", (char *)"");
       if (obj != NULL) {
         xresponse->LinkEndChild(pyobj_to_xml(obj));
         Py_DECREF(obj);
