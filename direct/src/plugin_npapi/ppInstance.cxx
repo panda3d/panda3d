@@ -565,7 +565,17 @@ variant_to_p3dobj(const NPVariant *variant) {
     NPString str = NPVARIANT_TO_STRING(*variant);
     return P3D_new_string_object(str.utf8characters, str.utf8length);
   } else if (NPVARIANT_IS_OBJECT(*variant)) {
-    return new PPBrowserObject(this, NPVARIANT_TO_OBJECT(*variant));
+    NPObject *object = NPVARIANT_TO_OBJECT(*variant);
+    if (object->_class == &PPPandaObject::_object_class) {
+      // This is really a PPPandaObject.
+      PPPandaObject *ppobject = (PPPandaObject *)object;
+      P3D_object *obj = ppobject->get_p3d_object();
+      logfile << "Found nested Panda Object " << obj << "\n" << flush;
+      return P3D_OBJECT_COPY(obj);
+    }
+
+    // It's a generic NPObject of some kind.
+    return new PPBrowserObject(this, object);
   }
 
   // Hmm, none of the above?

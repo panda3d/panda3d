@@ -86,6 +86,7 @@ private:
   PPInstance *_instance;
   P3D_object *_p3d_object;
 
+public:
   static NPClass _object_class;
 };
 
