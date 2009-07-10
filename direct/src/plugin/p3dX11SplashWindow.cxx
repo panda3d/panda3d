@@ -176,7 +176,7 @@ thread_run() {
   setup_gc();
 
   XEvent event;
-  XSelectInput(_display, _window, ExposureMask);
+  XSelectInput(_display, _window, ExposureMask | StructureNotifyMask);
   
   bool override = true, have_event = false;
   string prev_label;
@@ -185,6 +185,11 @@ thread_run() {
   while (_thread_continue) {
     have_event = XCheckTypedWindowEvent(_display, _window, Expose, &event)
               || XCheckTypedWindowEvent(_display, _window, GraphicsExpose, &event);
+    
+    if (XCheckTypedWindowEvent(_display, _window, ConfigureNotify, &event)) {
+      _width = event.xconfigure.width;
+      _height = event.xconfigure.height;
+    }
     
     ACQUIRE_LOCK(_install_lock);
     double install_progress = _install_progress;
