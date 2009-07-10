@@ -35,47 +35,6 @@ open_logfile() {
 
 
 ////////////////////////////////////////////////////////////////////
-//     Function: request_ready
-//  Description: This function is attached as an asynchronous callback
-//               to each instance; it will be notified when the
-//               instance has a request ready.  This function may be
-//               called in a sub-thread.
-////////////////////////////////////////////////////////////////////
-void
-request_ready(P3D_instance *instance) {
-  logfile
-    << "request_ready in " << instance
-    //    << " thread = " << GetCurrentThreadId()
-    << "\n" << flush;
-
-#ifdef _WIN32
-  // Since we might be in a sub-thread at this point, use a Windows
-  // message to forward this event to the main thread.
-
-  // Get the window handle for the window associated with this
-  // instance.
-  PPInstance *inst = (PPInstance *)(instance->_user_data);
-  assert(inst != NULL);
-  const NPWindow *win = inst->get_window();
-  if (win != NULL && win->type == NPWindowTypeWindow) {
-    PostMessage((HWND)(win->window), WM_USER, 0, 0);
-  }
-
-#else
-  // On Mac, we ignore this asynchronous event, and rely on detecting
-  // it within HandleEvent().  TODO: enable a timer to ensure we get
-  // HandleEvent callbacks in a timely manner?  Or maybe we should
-  // enable a one-shot timer in response to this asynchronous event?
-  
-#ifndef __APPLE__
-  // On Unix, HandleEvent isn't called, so we will do what it does
-  // right here. Not sure if this is right.
-  PPInstance::handle_request_loop();
-#endif  // __APPLE__
-#endif  // _WIN32
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: NP_GetMIMEDescription
 //  Description: On Unix, this function is called by the browser to
 //               get the mimetypes and extensions this plugin is

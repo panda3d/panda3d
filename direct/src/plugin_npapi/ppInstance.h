@@ -61,6 +61,8 @@ public:
   static void output_np_variant(ostream &out, const NPVariant &result);
 
 private:
+  static void request_ready(P3D_instance *instance);
+
   void start_download(const string &url, PPDownloadRequest *req);
   void downloaded_file(PPDownloadRequest *req, const string &filename);
   static string get_filename_from_url(const string &url);
