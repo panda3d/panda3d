@@ -41,8 +41,20 @@ P3D_instance_start_func *P3D_instance_start;
 P3D_instance_finish_func *P3D_instance_finish;
 P3D_instance_setup_window_func *P3D_instance_setup_window;
 
+P3D_object_get_type_func *P3D_object_get_type;
+P3D_object_get_bool_func *P3D_object_get_bool;
+P3D_object_get_int_func *P3D_object_get_int;
+P3D_object_get_float_func *P3D_object_get_float;
+P3D_object_get_string_func *P3D_object_get_string;
+P3D_object_get_repr_func *P3D_object_get_repr;
+P3D_object_get_property_func *P3D_object_get_property;
+P3D_object_set_property_func *P3D_object_set_property;
+P3D_object_has_method_func *P3D_object_has_method;
+P3D_object_call_func *P3D_object_call;
+P3D_object_eval_func *P3D_object_eval;
 P3D_object_incref_func *P3D_object_incref;
 P3D_object_decref_func *P3D_object_decref;
+
 P3D_make_class_definition_func *P3D_make_class_definition;
 P3D_new_undefined_object_func *P3D_new_undefined_object;
 P3D_new_none_object_func *P3D_new_none_object;
@@ -167,6 +179,17 @@ load_plugin(const string &p3d_plugin_filename) {
   P3D_instance_finish = (P3D_instance_finish_func *)get_func(module, "P3D_instance_finish");  
   P3D_instance_setup_window = (P3D_instance_setup_window_func *)get_func(module, "P3D_instance_setup_window");  
 
+  P3D_object_get_type = (P3D_object_get_type_func *)get_func(module, "P3D_object_get_type");
+  P3D_object_get_bool = (P3D_object_get_bool_func *)get_func(module, "P3D_object_get_bool");
+  P3D_object_get_int = (P3D_object_get_int_func *)get_func(module, "P3D_object_get_int");
+  P3D_object_get_float = (P3D_object_get_float_func *)get_func(module, "P3D_object_get_float");
+  P3D_object_get_string = (P3D_object_get_string_func *)get_func(module, "P3D_object_get_string");
+  P3D_object_get_repr = (P3D_object_get_repr_func *)get_func(module, "P3D_object_get_repr");
+  P3D_object_get_property = (P3D_object_get_property_func *)get_func(module, "P3D_object_get_property");
+  P3D_object_set_property = (P3D_object_set_property_func *)get_func(module, "P3D_object_set_property");
+  P3D_object_has_method = (P3D_object_has_method_func *)get_func(module, "P3D_object_has_method");
+  P3D_object_call = (P3D_object_call_func *)get_func(module, "P3D_object_call");
+  P3D_object_eval = (P3D_object_eval_func *)get_func(module, "P3D_object_eval");
   P3D_object_incref = (P3D_object_incref_func *)get_func(module, "P3D_object_incref");
   P3D_object_decref = (P3D_object_decref_func *)get_func(module, "P3D_object_decref");
   P3D_make_class_definition = (P3D_make_class_definition_func *)get_func(module, "P3D_make_class_definition");
@@ -194,8 +217,20 @@ load_plugin(const string &p3d_plugin_filename) {
       P3D_instance_finish == NULL ||
       P3D_instance_setup_window == NULL ||
 
+      P3D_object_get_type == NULL ||
+      P3D_object_get_bool == NULL ||
+      P3D_object_get_int == NULL ||
+      P3D_object_get_float == NULL ||
+      P3D_object_get_string == NULL ||
+      P3D_object_get_repr == NULL ||
+      P3D_object_get_property == NULL ||
+      P3D_object_set_property == NULL ||
+      P3D_object_has_method == NULL ||
+      P3D_object_call == NULL ||
+      P3D_object_eval == NULL ||
       P3D_object_incref == NULL ||
       P3D_object_decref == NULL ||
+
       P3D_make_class_definition == NULL ||
       P3D_new_undefined_object == NULL ||
       P3D_new_none_object == NULL ||
@@ -220,8 +255,20 @@ load_plugin(const string &p3d_plugin_filename) {
       << "\nP3D_instance_finish = " << P3D_instance_finish
       << "\nP3D_instance_setup_window = " << P3D_instance_setup_window
       
+      << "\nP3D_object_get_type = " << P3D_object_get_type
+      << "\nP3D_object_get_bool = " << P3D_object_get_bool
+      << "\nP3D_object_get_int = " << P3D_object_get_int
+      << "\nP3D_object_get_float = " << P3D_object_get_float
+      << "\nP3D_object_get_string = " << P3D_object_get_string
+      << "\nP3D_object_get_repr = " << P3D_object_get_repr
+      << "\nP3D_object_get_property = " << P3D_object_get_property
+      << "\nP3D_object_set_property = " << P3D_object_set_property
+      << "\nP3D_object_has_method = " << P3D_object_has_method
+      << "\nP3D_object_call = " << P3D_object_call
+      << "\nP3D_object_eval = " << P3D_object_eval
       << "\nP3D_object_incref = " << P3D_object_incref
       << "\nP3D_object_decref = " << P3D_object_decref
+
       << "\nP3D_make_class_definition = " << P3D_make_class_definition
       << "\nP3D_new_undefined_object = " << P3D_new_undefined_object
       << "\nP3D_new_none_object = " << P3D_new_none_object
@@ -301,8 +348,20 @@ unload_dso() {
   P3D_instance_finish = NULL;
   P3D_instance_setup_window = NULL;
 
+  P3D_object_get_type = NULL;
+  P3D_object_get_bool = NULL;
+  P3D_object_get_int = NULL;
+  P3D_object_get_float = NULL;
+  P3D_object_get_string = NULL;
+  P3D_object_get_repr = NULL;
+  P3D_object_get_property = NULL;
+  P3D_object_set_property = NULL;
+  P3D_object_has_method = NULL;
+  P3D_object_call = NULL;
+  P3D_object_eval = NULL;
   P3D_object_incref = NULL;
   P3D_object_decref = NULL;
+
   P3D_make_class_definition = NULL;
   P3D_new_undefined_object = NULL;
   P3D_new_none_object = NULL;

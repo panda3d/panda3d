@@ -352,14 +352,14 @@ P3D_object_get_float_method(P3D_object *object);
 /* Get the object as a string.  This method copies the string into the
    provided buffer, and returns the actual length of the internal
    string (not counting any terminating null character).  If the
-   return value is larger than buffer_length, the string has been
+   return value is larger than buffer_size, the string has been
    truncated.  If it is equal, there is no null character written to
    the buffer (like strncpy).  You may call this method first with
-   buffer = NULL and buffer_length = 0 to return just the required
+   buffer = NULL and buffer_size = 0 to return just the required
    size of the buffer. */
 typedef int
 P3D_object_get_string_method(P3D_object *object, 
-                             char *buffer, int buffer_length);
+                             char *buffer, int buffer_size);
 
 /* As above, but instead of the literal object data, returns a
    user-friendly reprensentation of the object as a string.  For
@@ -369,7 +369,7 @@ P3D_object_get_string_method(P3D_object *object,
    Mechanically, this function works the same way as get_string(). */
 typedef int
 P3D_object_get_repr_method(P3D_object *object, 
-                           char *buffer, int buffer_length);
+                           char *buffer, int buffer_size);
 
 /* Looks up a property on the object by name, i.e. a data member or a
    method.  The return value is a new-reference P3D_object if the
@@ -446,7 +446,12 @@ struct _P3D_object {
 };
 
 /* These macros are defined for the convenience of invoking any of the
-   above method functions on an object. */
+   above method functions on an object.
+
+   CAUTION!  None of these macros are thread-safe; you may use them
+   only in a single-threaded application (or when only a single thread
+   of the application makes any calls into this API).  For thread-safe
+   variants, see the similarly-named function calls below. */
 
 #define P3D_OBJECT_GET_TYPE(object) ((object)->_class->_get_type((object)))
 #define P3D_OBJECT_GET_BOOL(object) ((object)->_class->_get_bool((object)))
@@ -458,14 +463,14 @@ struct _P3D_object {
 #define P3D_OBJECT_GET_PROPERTY(object, property) ((object)->_class->_get_property((object), (property)))
 #define P3D_OBJECT_SET_PROPERTY(object, property, value) ((object)->_class->_set_property((object), (property), (value)))
 
-#define P3D_OBJECT_HAS_METHOD(object, property) ((object)->_class->_has_method((object), (property)))
+#define P3D_OBJECT_HAS_METHOD(object, method_name) ((object)->_class->_has_method((object), (method_name)))
 #define P3D_OBJECT_CALL(object, method_name, params, num_params) ((object)->_class->_call((object), (method_name), (params), (num_params)))
 #define P3D_OBJECT_EVAL(object, expression) ((object)->_class->_eval((object), (expression)))
 
 /* These macros are provided to manipulate the reference count of the
-   indicated object.  They are not thread-safe; they should be called
-   only within the main thread.  If you need a thread-safe reference
-   count adjustment, see the similarly-named function calls below.  
+   indicated object.  As above, these macros are NOT thread-safe.  If
+   you need a thread-safe reference count adjustment, see the
+   similarly-named function calls below.
 
    Following Python's convention, XDECREF is provided to decrement the
    reference count for a pointer that might be NULL (it does nothing
@@ -475,8 +480,34 @@ struct _P3D_object {
 #define P3D_OBJECT_DECREF(object) { if (--(object)->_ref_count <= 0) { (object)->_class->_finish((object)); } }
 #define P3D_OBJECT_XDECREF(object) { if ((object) != (P3D_object *)NULL) { P3D_OBJECT_DECREF(object); } }
 
-/* Use these functions for thread-safe variants of the above.  You may
-   safely pass a NULL pointer into either; it will be ignored. */
+/* Use these functions for thread-safe variants of the above macros. */
+typedef P3D_object_type
+P3D_object_get_type_func(P3D_object *object);
+typedef bool
+P3D_object_get_bool_func(P3D_object *object);
+typedef int
+P3D_object_get_int_func(P3D_object *object);
+typedef double
+P3D_object_get_float_func(P3D_object *object);
+typedef int
+P3D_object_get_string_func(P3D_object *object, char *buffer, int buffer_size);
+typedef int
+P3D_object_get_repr_func(P3D_object *object, char *buffer, int buffer_size);
+typedef P3D_object *
+P3D_object_get_property_func(P3D_object *object, const char *property);
+typedef bool
+P3D_object_set_property_func(P3D_object *object, const char *property, 
+                             P3D_object *value);
+typedef bool
+P3D_object_has_method_func(P3D_object *object, const char *method_name);
+typedef P3D_object *
+P3D_object_call_func(P3D_object *object, const char *method_name, 
+                     P3D_object *params[], int num_params);
+typedef P3D_object *
+P3D_object_eval_func(P3D_object *object, const char *expression);
+
+/* A NULL pointer passed into either incref or decref is safe and will
+   be quietly ignored. */
 typedef void 
 P3D_object_incref_func(P3D_object *object);
 typedef void 
@@ -761,8 +792,20 @@ EXPCL_P3D_PLUGIN P3D_instance_start_func P3D_instance_start;
 EXPCL_P3D_PLUGIN P3D_instance_finish_func P3D_instance_finish;
 EXPCL_P3D_PLUGIN P3D_instance_setup_window_func P3D_instance_setup_window;
 
+EXPCL_P3D_PLUGIN P3D_object_get_type_func P3D_object_get_type;
+EXPCL_P3D_PLUGIN P3D_object_get_bool_func P3D_object_get_bool;
+EXPCL_P3D_PLUGIN P3D_object_get_int_func P3D_object_get_int;
+EXPCL_P3D_PLUGIN P3D_object_get_float_func P3D_object_get_float;
+EXPCL_P3D_PLUGIN P3D_object_get_string_func P3D_object_get_string;
+EXPCL_P3D_PLUGIN P3D_object_get_repr_func P3D_object_get_repr;
+EXPCL_P3D_PLUGIN P3D_object_get_property_func P3D_object_get_property;
+EXPCL_P3D_PLUGIN P3D_object_set_property_func P3D_object_set_property;
+EXPCL_P3D_PLUGIN P3D_object_has_method_func P3D_object_has_method;
+EXPCL_P3D_PLUGIN P3D_object_call_func P3D_object_call;
+EXPCL_P3D_PLUGIN P3D_object_eval_func P3D_object_eval;
 EXPCL_P3D_PLUGIN P3D_object_incref_func P3D_object_incref;
 EXPCL_P3D_PLUGIN P3D_object_decref_func P3D_object_decref;
+
 EXPCL_P3D_PLUGIN P3D_make_class_definition_func P3D_make_class_definition;
 EXPCL_P3D_PLUGIN P3D_new_undefined_object_func P3D_new_undefined_object;
 EXPCL_P3D_PLUGIN P3D_new_none_object_func P3D_new_none_object;

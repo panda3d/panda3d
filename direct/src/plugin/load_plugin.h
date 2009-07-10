@@ -27,8 +27,20 @@ extern P3D_instance_start_func *P3D_instance_start;
 extern P3D_instance_finish_func *P3D_instance_finish;
 extern P3D_instance_setup_window_func *P3D_instance_setup_window;
 
+extern P3D_object_get_type_func *P3D_object_get_type;
+extern P3D_object_get_bool_func *P3D_object_get_bool;
+extern P3D_object_get_int_func *P3D_object_get_int;
+extern P3D_object_get_float_func *P3D_object_get_float;
+extern P3D_object_get_string_func *P3D_object_get_string;
+extern P3D_object_get_repr_func *P3D_object_get_repr;
+extern P3D_object_get_property_func *P3D_object_get_property;
+extern P3D_object_set_property_func *P3D_object_set_property;
+extern P3D_object_has_method_func *P3D_object_has_method;
+extern P3D_object_call_func *P3D_object_call;
+extern P3D_object_eval_func *P3D_object_eval;
 extern P3D_object_incref_func *P3D_object_incref;
 extern P3D_object_decref_func *P3D_object_decref;
+
 extern P3D_make_class_definition_func *P3D_make_class_definition;
 extern P3D_new_undefined_object_func *P3D_new_undefined_object;
 extern P3D_new_none_object_func *P3D_new_none_object;
