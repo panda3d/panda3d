@@ -1033,7 +1033,6 @@ pyobj_to_xml(PyObject *value) {
     }
 
     // Now that it's stored in the map, increment its reference count.
-    // TODO: implement removing things from this map.
     Py_INCREF(value);
 
     xvalue->SetAttribute("type", "python");

@@ -485,7 +485,6 @@ p3dobj_to_xml(P3D_object *obj) {
       }
 
       // Now that it's stored in the map, increment its reference count.
-      // TODO: implement removing things from this map.
       P3D_OBJECT_INCREF(obj);
 
       xvalue->SetAttribute("type", "browser");

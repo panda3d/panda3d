@@ -475,7 +475,8 @@ struct _P3D_object {
 #define P3D_OBJECT_DECREF(object) { if (--(object)->_ref_count <= 0) { (object)->_class->_finish((object)); } }
 #define P3D_OBJECT_XDECREF(object) { if ((object) != (P3D_object *)NULL) { P3D_OBJECT_DECREF(object); } }
 
-/* Use these functions for thread-safe variants of the above. */
+/* Use these functions for thread-safe variants of the above.  You may
+   safely pass a NULL pointer into either; it will be ignored. */
 typedef void 
 P3D_object_incref_func(P3D_object *object);
 typedef void 
