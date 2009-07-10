@@ -24,6 +24,9 @@
   ts.tv_sec = 0; ts.tv_nsec = 100000; \
   nanosleep(&ts, NULL);
 
+// Clamps a value to two boundaries.
+#define clamp(x, lb, hb) (x < lb ? lb : (x > hb ? hb : x))
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DX11SplashWindow::Constructor
 //       Access: Public
@@ -36,9 +39,15 @@ P3DX11SplashWindow(P3DInstance *inst) :
   INIT_THREAD(_thread);
   _display = None;
   _window = None;
+  _image = NULL;
+  _resized_image = NULL;
   _screen = 0;
   _width = 0;
   _height = 0;
+  _image_width = 0;
+  _image_height = 0;
+  _resized_width = 0;
+  _resized_height = 0;
   _graphics_context = None;
   _thread_running = false;
   _got_install = false;
@@ -187,24 +196,35 @@ thread_run() {
               || XCheckTypedWindowEvent(_display, _window, GraphicsExpose, &event);
     
     if (XCheckTypedWindowEvent(_display, _window, ConfigureNotify, &event)) {
+      if (_resized_image != NULL && (event.xconfigure.width  != _width ||
+                                     event.xconfigure.height != _height)) {
+        XDestroyImage(_resized_image);
+        _resized_image = NULL;
+      }
       _width = event.xconfigure.width;
       _height = event.xconfigure.height;
     }
     
     ACQUIRE_LOCK(_install_lock);
     double install_progress = _install_progress;
+    string install_label = _install_label;
     
-    if (have_event || _install_label != prev_label) {
-      redraw(_install_label);
+    if (_image_filename_changed) {
+      update_image_filename(_image_filename, _image_filename_temp);
+    }
+    _image_filename_changed = false;
+    
+    RELEASE_LOCK(_install_lock);
+    
+    if (have_event || install_label != prev_label) {
+      redraw(install_label);
       override = false;
     }
-    if (_install_progress != prev_progress) {
+    if (install_progress != prev_progress) {
       XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
                                       install_progress * (_width - 24), 7);
     }
-    prev_label = _install_label;
-    
-    RELEASE_LOCK(_install_lock);
+    prev_label = install_label;
     prev_progress = install_progress;
     MILLISLEEP();
   }
@@ -222,7 +242,40 @@ void P3DX11SplashWindow::
 redraw(string label) {
   if (_graphics_context == NULL) return;
   
-  XClearWindow(_display, _window);
+  if (_image == NULL) {
+    XClearWindow(_display, _window);
+  } else {
+    // We have an image. Let's see how we can output it.
+    if (_image_width <= _width && _image_height <= _height) {
+      // It fits within the window - just draw it.
+      XPutImage(_display, _window, _graphics_context, _image, 0, 0, (_width - _image_width) * 0.5, (_height - _image_height) * 0.5, _image_width, _image_height);
+    } else if (_resized_image != NULL) {
+      // We have a resized image already, draw that one.
+      XPutImage(_display, _window, _graphics_context, _resized_image, 0, 0, (_width - _resized_width) * 0.5, (_height - _resized_height) * 0.5, _resized_width, _resized_height);
+    } else {
+      // Yuck, the bad case - we need to scale it down.
+      double scale = min((double) _width  / (double) _image_width,
+                         (double) _height / (double) _image_height);
+      _resized_width = (int)(_image_width * scale);
+      _resized_height = (int)(_image_height * scale);
+      char *new_data = (char*) malloc(4 * _width * _height);
+      _resized_image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
+                                        ZPixmap, 0, (char *) new_data, _width, _height, 32, 0);
+      double x_ratio = ((double) _image_width) / ((double) _resized_width);
+      double y_ratio = ((double) _image_height) / ((double) _resized_height);
+      for (int x = 0; x < _width; ++x) {
+        for (int y = 0; y < _height; ++y) {
+          XPutPixel(_resized_image, x, y, XGetPixel(_image,
+                         clamp(x * x_ratio, 0, _image_width),
+                         clamp(y * y_ratio, 0, _image_height)));
+        }
+      }
+      XPutImage(_display, _window, _graphics_context, _resized_image, 0, 0, (_width - _resized_width) * 0.5, (_height - _resized_height) * 0.5, _resized_width, _resized_height);
+    }
+    XClearArea(_display, _window, 10, _height - 20, _width - 20, 10, false);
+  }
+  
+  // Draw the rest - the label and the progress bar outline.
   XDrawString(_display, _window, _graphics_context, _width / 2 - label.size() * 3,
                                         _height - 30, label.c_str(), label.size());
   XDrawRectangle(_display, _window, _graphics_context, 10, _height - 20, _width - 20, 10);
@@ -310,6 +363,14 @@ setup_gc() {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 close_window() {
+  if (_image != NULL) {
+    XDestroyImage(_image);
+  }
+  
+  if (_resized_image != NULL) {
+    XDestroyImage(_resized_image);
+  }
+  
   if (_graphics_context != None) {
     XFreeGC(_display, _graphics_context);
   }
@@ -323,6 +384,72 @@ close_window() {
     XCloseDisplay(_display);
     _display = None;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::update_image_filename
+//       Access: Private
+//  Description: Loads the splash image, converts to to bitmap form,
+//               and stores it in _image.  Runs only in the
+//               sub-thread.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+update_image_filename(const string &image_filename, bool image_filename_temp) {
+  // Clear the old image.
+  if (_image != NULL) {
+    XDestroyImage(_image);
+    _image = NULL;
+  }
+  if (_resized_image != NULL) {
+    XDestroyImage(_resized_image);
+    _resized_image = NULL;
+  }
+
+  // Go read the image.
+  string data;
+  int num_channels, row_stride;
+  if (!read_image(image_filename, image_filename_temp, 
+                  _image_height, _image_width, num_channels, row_stride,
+                  data)) {
+    return;
+  }
+
+  Visual *dvisual = DefaultVisual(_display, _screen);
+  double r_ratio = dvisual->red_mask / 255.0;
+  double g_ratio = dvisual->green_mask / 255.0;
+  double b_ratio = dvisual->blue_mask / 255.0;
+  uint32_t *new_data = (uint32_t*) malloc(4 * _image_width * _image_height);
+
+  if (num_channels == 3) {
+    int j = 0;
+    for (int i = 0; i < 3 * _image_width * _image_height; i += 3) {
+      unsigned int r, g, b;
+      r = data[i+0] * r_ratio;
+      g = data[i+1] * g_ratio;
+      b = data[i+2] * b_ratio;
+      new_data[j++] = (r & dvisual->red_mask) |
+                      (g & dvisual->green_mask) |
+                      (b & dvisual->blue_mask);
+    }
+  } else if (num_channels == 1) {
+    // A grayscale image.  Replicate out the channels.
+    for (int i = 0; i < _image_width * _image_height; ++i) {
+      unsigned int r, g, b;
+      r = data[i] * r_ratio;
+      g = data[i] * g_ratio;
+      b = data[i] * b_ratio;
+      new_data[i] = (r & dvisual->red_mask) |
+                    (g & dvisual->green_mask) |
+                    (b & dvisual->blue_mask);
+    }
+  }
+
+  // Now load the image.
+  _image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
+                ZPixmap, 0, (char *) new_data, _image_width, _image_height, 32, 0);
+
+  nout << "Loaded splash file image: " << image_filename << "\n"
+       << flush;
 }
 
 #endif  // HAVE_X11

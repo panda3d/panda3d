@@ -52,6 +52,8 @@ private:
   void redraw(string label);
   void make_window();
   void setup_gc();
+  void update_image_filename(const string &image_filename, 
+                             bool image_filename_temp);
   void close_window();
 
 private:
@@ -74,6 +76,10 @@ private:
   Display *_display;
   int _screen;
   GC _graphics_context;
+  XImage* _image;
+  XImage* _resized_image;
+  int _image_width, _image_height;
+  int _resized_width, _resized_height;
   
   THREAD _thread;
   Window _window;
