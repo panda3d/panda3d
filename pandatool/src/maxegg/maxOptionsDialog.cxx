@@ -185,7 +185,7 @@ int AddNodeCB::filter(INode *node) {
     return is_bone && !ph->FindNode(node->GetHandle());
   else
     return (
-    !is_bone &&
+    is_bone ||
     ((obj->SuperClassID() == GEOMOBJECT_CLASS_ID && //Allow geometrics
       obj->CanConvertToType(Class_ID(TRIOBJ_CLASS_ID, 0))) ||
      (obj->SuperClassID() == SHAPE_CLASS_ID &&      //Allow CV NURBS
