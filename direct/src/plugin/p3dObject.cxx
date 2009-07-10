@@ -13,6 +13,10 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3dObject.h"
+#include "p3dBoolObject.h"
+#include "p3dIntObject.h"
+#include "p3dFloatObject.h"
+#include "p3dStringObject.h"
 #include <string.h>  // strncpy
 
 // The following functions are C-style wrappers around the below
@@ -254,8 +258,8 @@ get_repr(char *buffer, int buffer_length) {
 //     Function: P3DObject::get_property
 //       Access: Public, Virtual
 //  Description: Returns the named property element in the object.  The
-//               return value is a freshly-allocated P3DObject object
-//               that must be deleted by the caller, or NULL on error.
+//               return value is a new-reference P3D_object, or NULL
+//               on error.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DObject::
 get_property(const string &property) {
@@ -323,3 +327,134 @@ output(ostream &out) {
   out << value;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::get_bool_property
+//       Access: Public
+//  Description: Returns the value of the named property, as a
+//               boolean.  Returns 0 if the property does not exist.
+////////////////////////////////////////////////////////////////////
+bool P3DObject::
+get_bool_property(const string &property) {
+  P3D_object *result = get_property(property);
+  if (result == NULL) {
+    return 0;
+  }
+  bool bresult = P3D_OBJECT_GET_BOOL(result);
+  P3D_OBJECT_DECREF(result);
+  return bresult;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::set_bool_property
+//       Access: Public
+//  Description: Changes the value of the named property to the
+//               indicated boolean value.
+////////////////////////////////////////////////////////////////////
+bool P3DObject::
+set_bool_property(const string &property, bool value) {
+  P3D_object *bvalue = new P3DBoolObject(value);
+  bool result = set_property(property, bvalue);
+  P3D_OBJECT_DECREF(bvalue);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::get_int_property
+//       Access: Public
+//  Description: Returns the value of the named property, as an
+//               integer.  Returns 0 if the property does not exist.
+////////////////////////////////////////////////////////////////////
+int P3DObject::
+get_int_property(const string &property) {
+  P3D_object *result = get_property(property);
+  if (result == NULL) {
+    return 0;
+  }
+  int iresult = P3D_OBJECT_GET_INT(result);
+  P3D_OBJECT_DECREF(result);
+  return iresult;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::set_int_property
+//       Access: Public
+//  Description: Changes the value of the named property to the
+//               indicated integer value.
+////////////////////////////////////////////////////////////////////
+bool P3DObject::
+set_int_property(const string &property, int value) {
+  P3D_object *ivalue = new P3DIntObject(value);
+  bool result = set_property(property, ivalue);
+  P3D_OBJECT_DECREF(ivalue);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::get_float_property
+//       Access: Public
+//  Description: Returns the value of the named property, as a
+//               floating-point number.  Returns 0.0 if the property
+//               does not exist.
+////////////////////////////////////////////////////////////////////
+double P3DObject::
+get_float_property(const string &property) {
+  P3D_object *result = get_property(property);
+  if (result == NULL) {
+    return 0.0;
+  }
+  double fresult = P3D_OBJECT_GET_FLOAT(result);
+  P3D_OBJECT_DECREF(result);
+  return fresult;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::set_float_property
+//       Access: Public
+//  Description: Changes the value of the named property to the
+//               indicated floating-point value.
+////////////////////////////////////////////////////////////////////
+bool P3DObject::
+set_float_property(const string &property, double value) {
+  P3D_object *fvalue = new P3DFloatObject(value);
+  bool result = set_property(property, fvalue);
+  P3D_OBJECT_DECREF(fvalue);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::get_string_property
+//       Access: Public
+//  Description: Returns the value of the named property, as a
+//               string.  Returns empty string if the property does
+//               not exist.
+////////////////////////////////////////////////////////////////////
+string P3DObject::
+get_string_property(const string &property) {
+  P3D_object *result = get_property(property);
+  if (result == NULL) {
+    return string();
+  }
+
+  int size = P3D_OBJECT_GET_STRING(result, NULL, 0);
+  char *buffer = new char[size];
+  P3D_OBJECT_GET_STRING(result, buffer, size);
+  string sresult(buffer, size);
+  delete[] buffer;
+
+  P3D_OBJECT_DECREF(result);
+  return sresult;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::set_string_property
+//       Access: Public
+//  Description: Changes the value of the named property to the
+//               indicated string value.
+////////////////////////////////////////////////////////////////////
+bool P3DObject::
+set_string_property(const string &property, const string &value) {
+  P3D_object *svalue = new P3DStringObject(value);
+  bool result = set_property(property, svalue);
+  P3D_OBJECT_DECREF(svalue);
+  return result;
+}

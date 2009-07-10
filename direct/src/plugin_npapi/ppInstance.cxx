@@ -423,15 +423,8 @@ handle_request(P3D_request *request) {
     break;
 
   case P3D_RT_notify:
-    {
-      if (_script_object != NULL &&
-          strcmp(request->_request._notify._message, "onpythonload") == 0) {
-        // Now that Python is running, initialize our script_object
-        // with the proper P3D object pointer.
-        P3D_object *obj = P3D_instance_get_panda_script_object(_p3d_inst);
-        _script_object->set_p3d_object(obj);
-      }
-    }
+    // We can ignore notifies, since these are handled by the core
+    // API.
     break;
 
   default:
@@ -922,11 +915,6 @@ create_instance() {
     return;
   }
 
-  if (!_got_window) {
-    // No window yet.
-    return;
-  }
-
   _p3d_inst = P3D_new_instance(request_ready, this);
 
   if (_p3d_inst != NULL) {
@@ -940,13 +928,25 @@ create_instance() {
     } else {
       logfile << "Couldn't get window_object\n" << flush;
     }
-    
-    P3D_token *tokens = NULL;
-    if (!_tokens.empty()) {
-      tokens = &_tokens[0];
+
+    if (_script_object != NULL) {
+      // Now that we have a true instance, initialize our
+      // script_object with the proper P3D_object pointer.
+      P3D_object *obj = P3D_instance_get_panda_script_object(_p3d_inst);
+      _script_object->set_p3d_object(obj);
     }
-    P3D_instance_start(_p3d_inst, _p3d_filename.c_str(), tokens, _tokens.size());
-    send_window();
+
+    if (_got_instance_data) {
+      P3D_token *tokens = NULL;
+      if (!_tokens.empty()) {
+        tokens = &_tokens[0];
+      }
+      P3D_instance_start(_p3d_inst, _p3d_filename.c_str(), tokens, _tokens.size());
+    }
+
+    if (_got_window) {
+      send_window();
+    }
   }
 }
 

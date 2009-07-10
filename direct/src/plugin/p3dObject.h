@@ -52,6 +52,19 @@ public:
 
   virtual void output(ostream &out);
 
+  // Convenience functions.
+  bool get_bool_property(const string &property);
+  bool set_bool_property(const string &property, bool value);
+
+  int get_int_property(const string &property);
+  bool set_int_property(const string &property, int value);
+
+  double get_float_property(const string &property);
+  bool set_float_property(const string &property, double value);
+
+  string get_string_property(const string &property);
+  bool set_string_property(const string &property, const string &value);
+
 public:
   static P3D_class_definition _object_class;
   static P3D_class_definition _generic_class;

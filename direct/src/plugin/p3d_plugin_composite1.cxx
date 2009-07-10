@@ -17,6 +17,7 @@
 #include "p3dSession.cxx"
 #include "p3dSplashWindow.cxx"
 #include "p3dStringObject.cxx"
+#include "p3dToplevelObject.cxx"
 #include "p3dUndefinedObject.cxx"
 #include "p3dWinSplashWindow.cxx"
 #include "p3dX11SplashWindow.cxx"

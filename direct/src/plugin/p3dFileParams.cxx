@@ -12,8 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-
 #include "p3dFileParams.h"
+#include <ctype.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DFileParams::Default Constructor
@@ -37,7 +37,11 @@ P3DFileParams(const string &p3d_filename,
   for (size_t i = 0; i < num_tokens; ++i) {
     Token token;
     if (tokens[i]._keyword != NULL) {
-      token._keyword = tokens[i]._keyword;
+      // Make the token lowercase, since HTML is case-insensitive but
+      // we're not.
+      for (const char *p = tokens[i]._keyword; *p; ++p) {
+        token._keyword += tolower(*p);
+      }
     }
     if (tokens[i]._value != NULL) {
       token._value = tokens[i]._value;

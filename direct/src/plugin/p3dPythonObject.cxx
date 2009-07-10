@@ -134,8 +134,8 @@ make_string(string &value) {
 //     Function: P3DPythonObject::get_property
 //       Access: Public, Virtual
 //  Description: Returns the named property element in the object.  The
-//               return value is a freshly-allocated P3DPythonObject object
-//               that must be deleted by the caller, or NULL on error.
+//               return value is a new-reference P3D_object, or NULL
+//               on error.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DPythonObject::
 get_property(const string &property) {
