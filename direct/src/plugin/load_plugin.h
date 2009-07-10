@@ -27,6 +27,8 @@ extern P3D_instance_start_func *P3D_instance_start;
 extern P3D_instance_finish_func *P3D_instance_finish;
 extern P3D_instance_setup_window_func *P3D_instance_setup_window;
 
+extern P3D_object_incref_func *P3D_object_incref;
+extern P3D_object_decref_func *P3D_object_decref;
 extern P3D_make_class_definition_func *P3D_make_class_definition;
 extern P3D_new_undefined_object_func *P3D_new_undefined_object;
 extern P3D_new_none_object_func *P3D_new_none_object;

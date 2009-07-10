@@ -307,19 +307,20 @@ typedef enum {
   P3D_OT_object,
 } P3D_object_type;
 
-/* Most methods and functions that return a P3D_object return it with
-   its reference count already incremented by one for the benefit of
-   the caller, leaving the caller the owner of the implicit reference
+/* Methods and functions that return a P3D_object return it with its
+   reference count already incremented by one for the benefit of the
+   caller, leaving the caller the owner of the implicit reference
    count.  This is referred to as returning a "new reference", using
-   the Python naming convention.  Similarly, most methods that receive
-   a P3D_object will implicitly increment the reference count
-   internally if necessary, leaving the caller still the owner of its
-   own reference count.  Thus, it is the caller's responsibility to
-   call P3D_OBJECT_DECREF() on any P3D_objects it has received but no
+   the Python naming convention.  Similarly, methods that receive a
+   P3D_object as a parameter will generally *not* adjust that object's
+   reference count (except to increment it the object is stored
+   internally), leaving the caller still the owner of the original
+   reference.  Thus, it is the caller's responsibility to call
+   P3D_OBJECT_DECREF() on any P3D_objects it has received but no
    longer wishes to keep. */
 
-/* This method is called to deallocate the object and all of its
-   internal structures.  Do not call it directly; call
+/* This method is called internally to deallocate the object and all
+   of its internal structures.  Do not call it directly; call
    P3D_OBJECT_DECREF() instead. */
 typedef void
 P3D_object_finish_method(P3D_object *object);
@@ -376,10 +377,13 @@ P3D_object_get_repr_method(P3D_object *object,
 typedef P3D_object *
 P3D_object_get_property_method(P3D_object *object, const char *property);
 
-/* Changes the value at the indicated property.  Any existing object
-   already at the corresponding property is deleted.  If the value
-   pointer is NULL, the property is deleted.  Returns true on success,
-   false on failure.  */
+/* Changes the value at the indicated property.  The new value is
+   assigned to the indicating property, and its reference count is
+   correspondingly incremented.  Any existing object previously
+   assigned to the corresponding property is replaced, and its
+   reference count decremented.  If the value pointer is NULL, the
+   property is removed altogether.  Returns true on success, false on
+   failure.  */
 typedef bool
 P3D_object_set_property_method(P3D_object *object, const char *property,
                                P3D_object *value);
@@ -405,7 +409,7 @@ P3D_object_call_method(P3D_object *object, const char *method_name,
                        P3D_object *params[], int num_params);
 
 /* Evaluates an arbitrary JavaScript expression in the context of the
-   object.
+   object.  Python objects do not support this method.
 
    The return value is a new-reference P3D_object on success, or NULL
    on failure. */
@@ -459,13 +463,23 @@ struct _P3D_object {
 #define P3D_OBJECT_EVAL(object, expression) ((object)->_class->_eval((object), (expression)))
 
 /* These macros are provided to manipulate the reference count of the
-   indicated object.  Following Python's convention, XDECREF is
-   provided to decrement the reference count for a pointer that might
-   be NULL (it does nothing in the case of a NULL pointer). */
+   indicated object.  They are not thread-safe; they should be called
+   only within the main thread.  If you need a thread-safe reference
+   count adjustment, see the similarly-named function calls below.  
+
+   Following Python's convention, XDECREF is provided to decrement the
+   reference count for a pointer that might be NULL (it does nothing
+   in the case of a NULL pointer). */
 
 #define P3D_OBJECT_INCREF(object) (++(object)->_ref_count)
 #define P3D_OBJECT_DECREF(object) { if (--(object)->_ref_count <= 0) { (object)->_class->_finish((object)); } }
 #define P3D_OBJECT_XDECREF(object) { if ((object) != (P3D_object *)NULL) { P3D_OBJECT_DECREF(object); } }
+
+/* Use these functions for thread-safe variants of the above. */
+typedef void 
+P3D_object_incref_func(P3D_object *object);
+typedef void 
+P3D_object_decref_func(P3D_object *object);
 
 
 /* End of method pointer definitions.  The following function types
@@ -746,6 +760,8 @@ EXPCL_P3D_PLUGIN P3D_instance_start_func P3D_instance_start;
 EXPCL_P3D_PLUGIN P3D_instance_finish_func P3D_instance_finish;
 EXPCL_P3D_PLUGIN P3D_instance_setup_window_func P3D_instance_setup_window;
 
+EXPCL_P3D_PLUGIN P3D_object_incref_func P3D_object_incref;
+EXPCL_P3D_PLUGIN P3D_object_decref_func P3D_object_decref;
 EXPCL_P3D_PLUGIN P3D_make_class_definition_func P3D_make_class_definition;
 EXPCL_P3D_PLUGIN P3D_new_undefined_object_func P3D_new_undefined_object;
 EXPCL_P3D_PLUGIN P3D_new_none_object_func P3D_new_none_object;

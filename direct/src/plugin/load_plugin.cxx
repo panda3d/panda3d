@@ -41,6 +41,8 @@ P3D_instance_start_func *P3D_instance_start;
 P3D_instance_finish_func *P3D_instance_finish;
 P3D_instance_setup_window_func *P3D_instance_setup_window;
 
+P3D_object_incref_func *P3D_object_incref;
+P3D_object_decref_func *P3D_object_decref;
 P3D_make_class_definition_func *P3D_make_class_definition;
 P3D_new_undefined_object_func *P3D_new_undefined_object;
 P3D_new_none_object_func *P3D_new_none_object;
@@ -165,6 +167,8 @@ load_plugin(const string &p3d_plugin_filename) {
   P3D_instance_finish = (P3D_instance_finish_func *)get_func(module, "P3D_instance_finish");  
   P3D_instance_setup_window = (P3D_instance_setup_window_func *)get_func(module, "P3D_instance_setup_window");  
 
+  P3D_object_incref = (P3D_object_incref_func *)get_func(module, "P3D_object_incref");
+  P3D_object_decref = (P3D_object_decref_func *)get_func(module, "P3D_object_decref");
   P3D_make_class_definition = (P3D_make_class_definition_func *)get_func(module, "P3D_make_class_definition");
   P3D_new_undefined_object = (P3D_new_undefined_object_func *)get_func(module, "P3D_new_undefined_object");
   P3D_new_none_object = (P3D_new_none_object_func *)get_func(module, "P3D_new_none_object");
@@ -190,6 +194,8 @@ load_plugin(const string &p3d_plugin_filename) {
       P3D_instance_finish == NULL ||
       P3D_instance_setup_window == NULL ||
 
+      P3D_object_incref == NULL ||
+      P3D_object_decref == NULL ||
       P3D_make_class_definition == NULL ||
       P3D_new_undefined_object == NULL ||
       P3D_new_none_object == NULL ||
@@ -214,6 +220,8 @@ load_plugin(const string &p3d_plugin_filename) {
       << "\nP3D_instance_finish = " << P3D_instance_finish
       << "\nP3D_instance_setup_window = " << P3D_instance_setup_window
       
+      << "\nP3D_object_incref = " << P3D_object_incref
+      << "\nP3D_object_decref = " << P3D_object_decref
       << "\nP3D_make_class_definition = " << P3D_make_class_definition
       << "\nP3D_new_undefined_object = " << P3D_new_undefined_object
       << "\nP3D_new_none_object = " << P3D_new_none_object
@@ -293,6 +301,8 @@ unload_dso() {
   P3D_instance_finish = NULL;
   P3D_instance_setup_window = NULL;
 
+  P3D_object_incref = NULL;
+  P3D_object_decref = NULL;
   P3D_make_class_definition = NULL;
   P3D_new_undefined_object = NULL;
   P3D_new_none_object = NULL;

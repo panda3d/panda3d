@@ -121,6 +121,26 @@ P3D_instance_setup_window(P3D_instance *instance,
   RELEASE_LOCK(_api_lock);
 }
 
+void 
+P3D_object_incref(P3D_object *object) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
+  ACQUIRE_LOCK(_api_lock);
+
+  P3D_OBJECT_INCREF(object);
+  
+  RELEASE_LOCK(_api_lock);
+}
+
+void 
+P3D_object_decref(P3D_object *object) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
+  ACQUIRE_LOCK(_api_lock);
+
+  P3D_OBJECT_DECREF(object);
+  
+  RELEASE_LOCK(_api_lock);
+}
+
 P3D_class_definition *
 P3D_make_class_definition() {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
