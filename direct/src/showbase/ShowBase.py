@@ -345,7 +345,7 @@ class ShowBase(DirectObject.DirectObject):
         # Now hang a hook on the window-event from Panda.  This allows
         # us to detect when the user resizes, minimizes, or closes the
         # main window.
-        self.accept('window-event', self.__windowEvent)
+        self.accept('window-event', self.windowEvent)
 
         # Transition effects (fade, iris, etc)
         import Transitions
@@ -2336,7 +2336,7 @@ class ShowBase(DirectObject.DirectObject):
         else:
             return Task.cont
 
-    def __windowEvent(self, win):
+    def windowEvent(self, win):
         if win == self.win:
             properties = win.getProperties()
             self.notify.info("Got window event: %s" % (repr(properties)))
