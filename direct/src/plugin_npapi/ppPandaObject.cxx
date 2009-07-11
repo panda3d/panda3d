@@ -216,6 +216,10 @@ bool PPPandaObject::
 has_property(NPIdentifier name) {
   string property_name = identifier_to_string(name);
   logfile << "has_property: " << this << ", " << property_name << "\n" << flush;
+  if (_p3d_object == NULL) {
+    // Not powered up yet.
+    return false;
+  }
 
   // If we say we don't have a given property, then set_property()
   // will never be called.  So we always say we *do* have any
