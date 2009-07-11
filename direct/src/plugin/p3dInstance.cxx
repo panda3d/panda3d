@@ -37,8 +37,6 @@ typedef P3DSplashWindow SplashWindowType;
 #endif
 #endif
 
-int P3DInstance::_next_instance_id = 0;
-
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::Constructor
 //       Access: Public
@@ -55,8 +53,8 @@ P3DInstance(P3D_request_ready_func *func, void *user_data) :
   _got_fparams = false;
   _got_wparams = false;
 
-  _instance_id = _next_instance_id;
-  ++_next_instance_id;
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  _instance_id = inst_mgr->get_unique_id();
 
   INIT_LOCK(_request_lock);
 
@@ -123,7 +121,7 @@ set_fparams(const P3DFileParams &fparams) {
   // For the moment, all sessions will be unique.
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   ostringstream strm;
-  strm << inst_mgr->get_unique_session_index();
+  strm << inst_mgr->get_unique_id();
   _session_key = strm.str();
 
   // TODO.
@@ -457,8 +455,8 @@ void P3DInstance::
 start_download(P3DDownload *download) {
   assert(download->get_download_id() == 0);
 
-  int download_id = _next_instance_id;
-  ++_next_instance_id;
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  int download_id = inst_mgr->get_unique_id();
   download->set_download_id(download_id);
 
   bool inserted = _downloads.insert(Downloads::value_type(download_id, download)).second;

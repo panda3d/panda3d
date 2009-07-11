@@ -221,7 +221,13 @@ has_property(NPIdentifier name) {
   // will never be called.  So we always say we *do* have any
   // particular property, whether we currently have it right now or
   // not (since we *could* have it if you call set_property()).
-  return true;
+
+  // On the other hand, Firefox gets confused about methods that are
+  // also properties.  So you have to say there's *no* property if
+  // there is in fact a callable method by that name, or Firefox will
+  // never call the method.
+  bool result = P3D_OBJECT_HAS_METHOD(_p3d_object, property_name.c_str());
+  return !result;
 }
 
 ////////////////////////////////////////////////////////////////////

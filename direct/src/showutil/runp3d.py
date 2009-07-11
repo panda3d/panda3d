@@ -518,7 +518,12 @@ class BrowserObject:
             value = self.__runner.scriptRequest('get_property', self,
                                                 propertyName = name)
         except EnvironmentError:
-            # Failed to retrieve the attribute.
+            # Failed to retrieve the attribute.  But maybe there's a
+            # method instead?
+            if self.__runner.scriptRequest('has_method', self, propertyName = name):
+                # Yes, so create a method wrapper for it.
+                return MethodWrapper(self.__runner, self, name)
+            
             raise AttributeError(name)
 
         if isinstance(value, BrowserObject):
@@ -590,6 +595,64 @@ class BrowserObject:
                 raise KeyError(key)
             else:
                 raise IndexError(key)
+
+class MethodWrapper:
+    """ This is a Python wrapper around a property of a BrowserObject
+    that doesn't appear to be a first-class object in the Python
+    sense, but is nonetheless a callable method. """
+
+    def __init__(self, runner, parentObj, objectId):
+        self.__dict__['_MethodWrapper__runner'] = runner
+        self.__dict__['_MethodWraper__boundMethod'] = (parentObj, objectId)
+
+    def __str__(self):
+        parentObj, attribName = self.__boundMethod
+        return "%s.%s" % (parentObj, attribName)
+
+    def __nonzero__(self):
+        return True
+
+    def __call__(self, *args):
+        try:
+            parentObj, attribName = self.__boundMethod
+            # Call it as a method.
+            needsResponse = True
+            if parentObj is self.__runner.dom and attribName == 'alert':
+                # As a special hack, we don't wait for the return
+                # value from the alert() call, since this is a
+                # blocking call, and waiting for this could cause
+                # problems.
+                needsResponse = False
+
+            if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], types.StringTypes):
+                # As another special hack, we make dom.eval() a
+                # special case, and map it directly into an eval()
+                # call.  If the string begins with 'void ', we further
+                # assume we're not waiting for a response.
+                if args[0].startswith('void '):
+                    needsResponse = False
+                result = self.__runner.scriptRequest('eval', parentObj, value = args[0], needsResponse = needsResponse)
+            else:
+                # This is a normal method call.
+                try:
+                    result = self.__runner.scriptRequest('call', parentObj, propertyName = attribName, value = args, needsResponse = needsResponse)
+                except EnvironmentError:
+                    # Problem on the call.  Maybe no such method?
+                    raise AttributeError
+
+        except EnvironmentError:
+            # Some odd problem on the call.
+            raise TypeError
+
+        return result
+
+    def __setattr__(self, name, value):
+        """ setattr will generally fail on method objects. """
+        raise AttributeError(name)
+
+    def __delattr__(self, name):
+        """ delattr will generally fail on method objects. """
+        raise AttributeError(name)
 
 if __name__ == '__main__':
     runner = AppRunner()

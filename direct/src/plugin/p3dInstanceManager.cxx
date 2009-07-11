@@ -40,7 +40,7 @@ P3DInstanceManager *P3DInstanceManager::_global_ptr;
 P3DInstanceManager::
 P3DInstanceManager() {
   _is_initialized = false;
-  _unique_session_index = 0;
+  _unique_id = 0;
 
   _notify_thread_continue = false;
   _started_notify_thread = false;
@@ -280,16 +280,17 @@ get_package(const string &package_name, const string &package_version,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_unique_session_index
+//     Function: P3DInstanceManager::get_unique_id
 //       Access: Public
-//  Description: Returns a number used to uniquify the session_key for
-//               different instances.  This number is guaranteed to be
-//               different at each call.
+//  Description: Returns a number used to uniquify different
+//               instances.  This number is guaranteed to be different
+//               at each call, at least until the int space rolls
+//               over.
 ////////////////////////////////////////////////////////////////////
 int P3DInstanceManager::
-get_unique_session_index() {
-  ++_unique_session_index;
-  return _unique_session_index;
+get_unique_id() {
+  ++_unique_id;
+  return _unique_id;
 }
 
 ////////////////////////////////////////////////////////////////////

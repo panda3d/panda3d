@@ -32,6 +32,7 @@ P3DPythonRun(int argc, char *argv[]) {
   INIT_LOCK(_commands_lock);
   INIT_THREAD(_read_thread);
 
+  _session_id = 0;
   _next_sent_id = 0;
 
   _program_name = argv[0];
@@ -223,7 +224,20 @@ handle_command(TiXmlDocument *doc) {
 
     const char *cmd = xcommand->Attribute("cmd");
     if (cmd != NULL) {
-      if (strcmp(cmd, "start_instance") == 0) {
+      if (strcmp(cmd, "init") == 0) {
+        assert(!needs_response);
+
+        // The only purpose of the "init" command is to send us a
+        // unique session ID, which in fact we don't do much with.
+        xcommand->Attribute("session_id", &_session_id);
+
+        // We do use it to initiate our object id sequence with a
+        // number at least a little bit distinct from other sessions,
+        // though.  No technical requirement that we do this, but it
+        // does make debugging the logs a bit easier.
+        _next_sent_id = _session_id * 1000;
+
+      } else if (strcmp(cmd, "start_instance") == 0) {
         assert(!needs_response);
         TiXmlElement *xinstance = xcommand->FirstChildElement("instance");
         if (xinstance != (TiXmlElement *)NULL) {
@@ -405,6 +419,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
           if (PyArg_ParseTuple(params, "s", &property_name)) {
             if (PyObject_HasAttrString(obj, property_name)) {
               result = PyObject_GetAttrString(obj, property_name);
+
             } else {
               result = NULL;
             }

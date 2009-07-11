@@ -105,6 +105,8 @@ private:
   typedef pmap<int, P3DCInstance *> Instances;
   Instances _instances;
 
+  int _session_id;
+
   string _program_name;
   int _py_argc;
   char **_py_argv;

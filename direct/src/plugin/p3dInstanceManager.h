@@ -61,7 +61,7 @@ public:
 
   inline int get_num_instances() const;
 
-  int get_unique_session_index();
+  int get_unique_id();
   void signal_request_ready(P3DInstance *inst);
 
   P3D_class_definition *make_class_definition() const;
@@ -100,7 +100,7 @@ private:
   typedef map<string, P3DPackage *> Packages;
   Packages _packages;
 
-  int _unique_session_index;
+  int _unique_id;
 
   // This condition var is waited on the main thread and signaled in a
   // sub-thread when new request notices arrive.

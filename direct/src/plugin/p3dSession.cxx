@@ -38,13 +38,12 @@
 ////////////////////////////////////////////////////////////////////
 P3DSession::
 P3DSession(P3DInstance *inst) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  _session_id = inst_mgr->get_unique_id();
   _session_key = inst->get_session_key();
   _python_version = inst->get_python_version();
 
-  _next_sent_id = 0;
-
   _p3dpython_running = false;
-  _next_response_id = 0;
   _response = NULL;
   _got_response_id = -1;
 
@@ -57,8 +56,6 @@ P3DSession(P3DInstance *inst) {
 
   INIT_LOCK(_instances_lock);
   INIT_THREAD(_read_thread);
-
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   _panda3d = inst_mgr->get_package("panda3d", "dev", "Panda3D");
   _python_root_dir = _panda3d->get_package_dir();
@@ -261,8 +258,8 @@ command_and_response(TiXmlDocument *command) {
     return NULL;
   }
 
-  int response_id = _next_response_id;
-  ++_next_response_id;
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  int response_id = inst_mgr->get_unique_id();
 
   // Add the "want_response_id" attribute to the toplevel command, so
   // the sub-process knows we'll be waiting for its response.
@@ -474,15 +471,14 @@ p3dobj_to_xml(P3D_object *obj) {
       // should pass a reference down to this particular object, so
       // the Python process knows to call back up to here to query it.
 
-      int object_id = _next_sent_id;
-      ++_next_sent_id;
+      P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+      int object_id = inst_mgr->get_unique_id();
       bool inserted = _sent_objects.insert(SentObjects::value_type(object_id, obj)).second;
       while (!inserted) {
         // Hmm, we must have cycled around the entire int space?  Either
         // that, or there's a logic bug somewhere.  Assume the former,
         // and keep looking for an empty slot.
-        object_id = _next_sent_id;
-        ++_next_sent_id;
+        object_id = inst_mgr->get_unique_id();
         inserted = _sent_objects.insert(SentObjects::value_type(object_id, obj)).second;
       }
 
@@ -656,16 +652,28 @@ start_p3dpython() {
   
   spawn_read_thread();
 
-  // Now that the process has been started, feed it any commands we
-  // may have queued up.
+  // The very first command we send to the process is its session_id.
+  TiXmlDocument doc;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "init");
+  xcommand->SetAttribute("session_id", _session_id);
+  doc.LinkEndChild(decl);
+  doc.LinkEndChild(xcommand);
+  nout << "sent: " << doc << "\n" << flush;
+  _pipe_write << doc;
+  
+  // Also feed it any commands we may have queued up from before the
+  // process was started.
   Commands::iterator ci;
   for (ci = _commands.begin(); ci != _commands.end(); ++ci) {
     nout << "sent: " << *(*ci) << "\n" << flush;
     _pipe_write << *(*ci);
     delete (*ci);
   }
-  _pipe_write << flush;
   _commands.clear();
+
+  _pipe_write << flush;
 }
 
 ////////////////////////////////////////////////////////////////////

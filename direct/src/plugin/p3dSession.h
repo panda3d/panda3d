@@ -98,6 +98,7 @@ private:
   };
 
 private:
+  int _session_id;
   string _session_key;
   string _python_version;
   string _output_filename;
@@ -119,7 +120,6 @@ private:
   // child process tells us it's safe to delete them.
   typedef map<int, P3D_object *> SentObjects;
   SentObjects _sent_objects;
-  int _next_sent_id;
 
   P3DPackage *_panda3d;
   PackageCallback *_panda3d_callback;
@@ -131,8 +131,6 @@ private:
   int _p3dpython_pid;
 #endif
   bool _p3dpython_running;
-
-  int _next_response_id;
 
   // The _response_ready mutex protects this pointer.
   TiXmlDocument *_response;

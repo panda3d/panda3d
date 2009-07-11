@@ -139,8 +139,6 @@ private:
   typedef deque<P3D_request *> BakedRequests;
   BakedRequests _baked_requests;
 
-  static int _next_instance_id;
-
   friend class P3DSession;
   friend class SplashDownload;
 };
