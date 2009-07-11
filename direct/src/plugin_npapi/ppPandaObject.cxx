@@ -26,10 +26,10 @@ NPClass PPPandaObject::_object_class = {
   &PPPandaObject::NPGetProperty,
   &PPPandaObject::NPSetProperty,
   &PPPandaObject::NPRemoveProperty,
-#if NP_CLASS_STRUCT_VERSION >= NP_CLASS_STRUCT_VERSION_ENUM
+#if defined(NP_CLASS_STRUCT_VERSION_ENUM) && NP_CLASS_STRUCT_VERSION >= NP_CLASS_STRUCT_VERSION_ENUM
   &PPPandaObject::NPEnumerate,
 #endif
-#if NP_CLASS_STRUCT_VERSION >= NP_CLASS_STRUCT_VERSION_CTOR
+#if defined(NP_CLASS_STRUCT_VERSION_CTOR) && NP_CLASS_STRUCT_VERSION >= NP_CLASS_STRUCT_VERSION_CTOR
   &PPPandaObject::NPConstruct,
 #endif
 };
