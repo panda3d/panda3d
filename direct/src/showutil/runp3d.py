@@ -338,18 +338,21 @@ class AppRunner(DirectObject):
         if expression:
             self.evalScript(expression)
 
-    def evalScript(self, expression):
+    def evalScript(self, expression, needsResponse = False):
         """ Evaluates an arbitrary JavaScript expression in the global
         DOM space.  This may be deferred if necessary if self.dom has
-        not yet been assigned. """
+        not yet been assigned.  If needsResponse is true, this waits
+        for the value and returns it, which means it may not be
+        deferred. """
 
         if not self.dom:
             # Defer the expression.
+            assert not needsResponse
             self.deferredEvals.append(expression)
         else:
             # Evaluate it now.
-            self.scriptRequest('eval', self.dom, value = expression,
-                               needsResponse = False)
+            return self.scriptRequest('eval', self.dom, value = expression,
+                                      needsResponse = needsResponse)
         
     def scriptRequest(self, operation, object, propertyName = '',
                       value = None, needsResponse = True):
