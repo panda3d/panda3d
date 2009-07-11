@@ -200,6 +200,17 @@ P3DObject::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::is_python_object
+//       Access: Public, Virtual
+//  Description: Returns true if this is actually an instance of a
+//               P3DPythonObject, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool P3DObject::
+is_python_object() {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DObject::get_int
 //       Access: Public, Virtual
 //  Description: Returns the object value coerced to an integer, if

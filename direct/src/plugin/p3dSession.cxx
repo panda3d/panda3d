@@ -458,7 +458,9 @@ p3dobj_to_xml(P3D_object *obj) {
     break;
 
   case P3D_OT_object:
-    if (obj->_class == &P3DObject::_object_class) {
+    if (obj->_class == &P3DObject::_object_class &&
+        ((P3DObject *)obj)->is_python_object() &&
+        ((P3DPythonObject *)obj)->get_session() == this) {
       // If it's one of our kind of objects, it must be a
       // P3DPythonObject.  In this case, just send the object_id down,
       // since the actual implementation of this object exists (as a

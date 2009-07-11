@@ -33,6 +33,8 @@ public:
   P3DPythonObject(P3DSession *session, int object_id);
   virtual ~P3DPythonObject();
 
+  virtual bool is_python_object();
+
 public:
   virtual P3D_object_type get_type();
   virtual bool get_bool();
@@ -49,6 +51,8 @@ public:
                            P3D_object *params[], int num_params);
 
   virtual void output(ostream &out);
+
+  P3DSession *get_session();
   int get_object_id();
 
 private:

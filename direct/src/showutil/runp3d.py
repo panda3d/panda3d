@@ -473,31 +473,39 @@ class BrowserObject:
         return True
 
     def __call__(self, *args):
-        parentObj, attribName = self.__boundMethod
-        if parentObj:
-            # Call it as a method.
-            needsResponse = True
-            if parentObj is self.__runner.dom and attribName == 'alert':
-                # As a special hack, we don't wait for the return
-                # value from the alert() call, since this is a
-                # blocking call, and waiting for this could cause
-                # problems.
-                needsResponse = False
-
-            if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], types.StringTypes):
-                # As another special hack, we make dom.eval() a
-                # special case, and map it directly into an eval()
-                # call.  If the string begins with 'void ', we further
-                # assume we're not waiting for a response.
-                if args[0].startswith('void '):
+        try:
+            parentObj, attribName = self.__boundMethod
+            if parentObj:
+                # Call it as a method.
+                needsResponse = True
+                if parentObj is self.__runner.dom and attribName == 'alert':
+                    # As a special hack, we don't wait for the return
+                    # value from the alert() call, since this is a
+                    # blocking call, and waiting for this could cause
+                    # problems.
                     needsResponse = False
-                result = self.__runner.scriptRequest('eval', parentObj, value = args[0], needsResponse = needsResponse)
+
+                if parentObj is self.__runner.dom and attribName == 'eval' and len(args) == 1 and isinstance(args[0], types.StringTypes):
+                    # As another special hack, we make dom.eval() a
+                    # special case, and map it directly into an eval()
+                    # call.  If the string begins with 'void ', we further
+                    # assume we're not waiting for a response.
+                    if args[0].startswith('void '):
+                        needsResponse = False
+                    result = self.__runner.scriptRequest('eval', parentObj, value = args[0], needsResponse = needsResponse)
+                else:
+                    # This is a normal method call.
+                    try:
+                        result = self.__runner.scriptRequest('call', parentObj, propertyName = attribName, value = args, needsResponse = needsResponse)
+                    except EnvironmentError:
+                        # Problem on the call.  Maybe no such method?
+                        raise AttributeError
             else:
-                # This is a normal method call.
-                result = self.__runner.scriptRequest('call', parentObj, propertyName = attribName, value = args, needsResponse = needsResponse)
-        else:
-            # Call it as a plain function.
-            result = self.__runner.scriptRequest('call', self, value = args)
+                # Call it as a plain function.
+                result = self.__runner.scriptRequest('call', self, value = args)
+        except EnvironmentError:
+            # Some odd problem on the call.
+            raise TypeError
 
         return result
 

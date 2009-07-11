@@ -44,6 +44,17 @@ P3DPythonObject::
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonObject::is_python_object
+//       Access: Public, Virtual
+//  Description: Returns true if this is actually an instance of a
+//               P3DPythonObject, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool P3DPythonObject::
+is_python_object() {
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonObject::get_type
 //       Access: Public, Virtual
 //  Description: Returns the fundamental type of this kind of object.
@@ -270,6 +281,18 @@ output(ostream &out) {
     P3D_OBJECT_DECREF(result);
   }    
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonObject::get_session
+//       Access: Public
+//  Description: Returns the session that this object is identified
+//               with.
+////////////////////////////////////////////////////////////////////
+P3DSession *P3DPythonObject::
+get_session() {
+  return _session;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonObject::get_object_id

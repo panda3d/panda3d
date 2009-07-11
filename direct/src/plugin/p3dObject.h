@@ -33,6 +33,8 @@ protected:
 public:
   virtual ~P3DObject();
 
+  virtual bool is_python_object();
+
   virtual P3D_object_type get_type()=0;
   virtual bool get_bool()=0;
   virtual int get_int();
