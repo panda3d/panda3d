@@ -107,7 +107,7 @@
   // link with it in direct/src/plugin, without pulling in the rest of
   // Panda.
 
-  #define BUILD_TARGET $[and $[OSX_PLATFORM],$[HAVE_P3D_PLUGIN]]
+  #define BUILD_TARGET $[and $[or $[OSX_PLATFORM],$[UNIX_PLATFORM]],$[HAVE_P3D_PLUGIN]]
 
   #define TARGET subprocbuffer
 

@@ -15,6 +15,7 @@
 #include "subprocessWindowBuffer.h"
 #include <sys/mman.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include <iostream>
 using namespace std;
