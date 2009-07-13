@@ -21,6 +21,7 @@
 #include "tinyOsxGraphicsWindow.h"
 #include "tinyGraphicsBuffer.h"
 #include "pnmImage.h"
+#include "subprocessWindow.h"
 
 TypeHandle TinyOsxGraphicsPipe::_type_handle;
   
@@ -234,6 +235,13 @@ make_output(const string &name,
         return NULL;
       }
     }
+#ifdef SUPPORT_SUBPROCESS_WINDOW
+    if (win_prop.has_subprocess_window()) {
+      return new SubprocessWindow(engine, this, name, fb_prop, win_prop,
+                                  flags, gsg, host,
+                                  win_prop.get_subprocess_window().to_os_specific());
+    }
+#endif  // SUPPORT_SUBPROCESS_WINDOW
     return new TinyOsxGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                      flags, gsg, host);
   }

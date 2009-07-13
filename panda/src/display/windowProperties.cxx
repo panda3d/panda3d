@@ -45,6 +45,7 @@ operator = (const WindowProperties &copy) {
   _flags = copy._flags;
   _mouse_mode = copy._mouse_mode;
   _parent_window = copy._parent_window;
+  _subprocess_window = copy._subprocess_window;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -86,7 +87,11 @@ get_default() {
   if (parent_window_handle.get_value() != 0) {
     props.set_parent_window(parent_window_handle);
   }
+  if (subprocess_window.has_value()) {
+    props.set_subprocess_window(subprocess_window);
+  }
   props.set_mouse_mode(M_absolute);
+
   return props;
 }
 
@@ -122,8 +127,8 @@ operator == (const WindowProperties &other) const {
           _icon_filename == other._icon_filename &&
           _cursor_filename == other._cursor_filename &&
           _mouse_mode == other._mouse_mode &&
-          _parent_window == other._parent_window);
-  
+          _parent_window == other._parent_window &&
+          _subprocess_window == other._subprocess_window);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -147,6 +152,7 @@ clear() {
   _flags = 0;
   _mouse_mode = M_absolute;
   _parent_window = 0;
+  _subprocess_window = Filename();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -200,15 +206,15 @@ add_properties(const WindowProperties &other) {
   if (other.has_z_order()) {
     set_z_order(other.get_z_order());
   }
-
   if (other.has_mouse_mode()) {
     set_mouse_mode(other.get_mouse_mode());
   }
-
   if (other.has_parent_window()) {
     set_parent_window(other.get_parent_window());
   }
-
+  if (other.has_subprocess_window()) {
+    set_subprocess_window(other.get_subprocess_window());
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -267,6 +273,9 @@ output(ostream &out) const {
   }
   if (has_parent_window()) {
     out << "parent:" << get_parent_window() << " ";
+  }
+  if (has_subprocess_window()) {
+    out << "subprocess_window:" << get_subprocess_window() << " ";
   }
 
 }

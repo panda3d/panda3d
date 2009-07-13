@@ -749,7 +749,18 @@ clear_z_order() {
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::set_mouse_mode
 //       Access: Published
-//  Description: Removes the z_order specification from the properties.
+//  Description: Specifies the mode in which the window is to operate
+//               its mouse pointer.  The default is M_absolute, which
+//               is the normal mode in which a mouse pointer operates;
+//               but you can also set M_relative, which is
+//               particularly useful for FPS-style mouse movements
+//               where you have hidden the mouse pointer and are are
+//               more interested in how fast the mouse is moving,
+//               rather than precisely where the pointer is hovering.
+//
+//               This has no effect on Windows and Linux, which do not
+//               have this concept; but is important to do on OSX to
+//               properly enable a smooth FPS-style mouselook mode.
 ////////////////////////////////////////////////////////////////////
 INLINE void WindowProperties::
 set_mouse_mode(MouseMode mode) {
@@ -760,7 +771,7 @@ set_mouse_mode(MouseMode mode) {
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::get_mouse_mode
 //       Access: Published
-//  Description: Removes the z_order specification from the properties.
+//  Description: See set_mouse_mode().
 ////////////////////////////////////////////////////////////////////
 INLINE WindowProperties::MouseMode WindowProperties::
 get_mouse_mode() const {
@@ -768,9 +779,9 @@ get_mouse_mode() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: WindowProperties::has_moude_mode
+//     Function: WindowProperties::has_mouse_mode
 //       Access: Published
-//  Description: Removes the z_order specification from the properties.
+//  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE bool WindowProperties::
 has_mouse_mode() const {
@@ -780,7 +791,7 @@ has_mouse_mode() const {
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::clear_mouse_mode
 //       Access: Published
-//  Description: Removes the z_order specification from the properties.
+//  Description: Removes the mouse_mode specification from the properties.
 ////////////////////////////////////////////////////////////////////
 INLINE void WindowProperties::
 clear_mouse_mode() {
@@ -791,7 +802,22 @@ clear_mouse_mode() {
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::set_parent_window
 //       Access: Published
-//  Description: Removes the z_order specification from the properties.
+//  Description: Specifies the window that this window should be
+//               attached to.  If this is zero or unspecified, the
+//               window will be created as a toplevel window on the
+//               desktop; if this is nonzero, the window will be bound
+//               as a child window to the indicated parent window.
+//
+//               The actual value for "parent" is platform-specific.
+//               On Windows, it is the HWND of the parent window, cast
+//               to an unsigned integer.  On X11, it is the Window
+//               pointer of the parent window, similarly cast (yes,
+//               it's a portability issue).
+//
+//               On OSX, this is the NSWindow pointer, though there
+//               appear to be some compatibility issues (OSX doesn't
+//               easily support the parent-window model).  On OSX,
+//               consider using subprocess_window instead.
 ////////////////////////////////////////////////////////////////////
 INLINE void WindowProperties::
 set_parent_window(size_t parent) {
@@ -802,7 +828,7 @@ set_parent_window(size_t parent) {
 ////////////////////////////////////////////////////////////////////
 //     Function: WindowProperties::get_parent_window
 //       Access: Published
-//  Description: Removes the parent Window 
+//  Description: Returns the parent window specification.
 ////////////////////////////////////////////////////////////////////
 INLINE size_t WindowProperties::
 get_parent_window() const {
@@ -828,6 +854,70 @@ INLINE void WindowProperties::
 clear_parent_window() {
   _specified &= ~S_parent_window;
   _parent_window = (size_t)NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::set_subprocess_window
+//       Access: Published
+//  Description: Specifies that the window should be created as a
+//               "subprocess window", which is a special concept
+//               needed on OSX, to support windows that may run in a
+//               subprocess and communicate the output of their
+//               rendering to a parent process.
+//
+//               To use it, create a SubprocessWindowBuffer in the
+//               parent process, pass the resulting temporary filename
+//               to the child process, and set that filename here
+//               before opening a window.  Panda will open a
+//               SubprocessWindow instead of a normal window; and that
+//               class will take the output of the rendering and write
+//               it to the SubprocessWindowBuffer for the parent
+//               process to extract.
+//
+//               This is particularly useful for implementing the web
+//               browser plugin on OSX, which requires exactly this
+//               sort of process isolation in order to render to the
+//               browser page.
+//
+//               This feature is not currently available on other
+//               platforms (and they have no need of it).
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+set_subprocess_window(const Filename &filename) {
+  _subprocess_window = filename;
+  _specified |= S_subprocess_window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::get_subprocess_window
+//       Access: Published
+//  Description: Returns the filename specified to set_subprocess_window().
+////////////////////////////////////////////////////////////////////
+INLINE const Filename &WindowProperties::
+get_subprocess_window() const {
+ return _subprocess_window;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::has_subprocess_window
+//       Access: Published
+//  Description: Returns true if set_subprocess_window() was set.
+////////////////////////////////////////////////////////////////////
+INLINE bool WindowProperties::
+has_subprocess_window() const {
+  return ((_specified & S_subprocess_window) != 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: WindowProperties::clear_subprocess_window
+//       Access: Published
+//  Description: Removes the subprocess_window specification from the
+//               properties.
+////////////////////////////////////////////////////////////////////
+INLINE void WindowProperties::
+clear_subprocess_window() {
+  _specified &= ~S_subprocess_window;
+  _subprocess_window = Filename();
 }
 
 

@@ -73,6 +73,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableFilename cursor_filename;
 extern EXPCL_PANDA_DISPLAY ConfigVariableEnum<WindowProperties::ZOrder> z_order;
 extern EXPCL_PANDA_DISPLAY ConfigVariableString window_title;
 extern EXPCL_PANDA_DISPLAY ConfigVariableInt parent_window_handle;
+extern EXPCL_PANDA_DISPLAY ConfigVariableFilename subprocess_window;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableString framebuffer_mode;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool framebuffer_hardware;

@@ -15,6 +15,8 @@
 #include "osxGraphicsBuffer.h"
 #include "osxGraphicsStateGuardian.h"
 #include "pnmImage.h"
+#include "subprocessWindow.h"
+
 
 
 TypeHandle osxGraphicsPipe::_type_handle;
@@ -221,7 +223,7 @@ make_output(const string &name,
     DCAST_INTO_R(osxgsg, gsg, NULL);
   }
   
-  // First thing to try: a osxGraphicsWindow
+  // First thing to try: an osxGraphicsWindow
 
   if (retry == 0) {
     if (((flags&BF_require_parasite)!=0)||
@@ -232,6 +234,13 @@ make_output(const string &name,
         ((flags&BF_can_bind_every)!=0)) {
       return NULL;
     }
+#ifdef SUPPORT_SUBPROCESS_WINDOW
+    if (win_prop.has_subprocess_window()) {
+      return new SubprocessWindow(engine, this, name, fb_prop, win_prop,
+                                  flags, gsg, host,
+                                  win_prop.get_subprocess_window().to_os_specific());
+    }
+#endif  // SUPPORT_SUBPROCESS_WINDOW
     return new osxGraphicsWindow(engine, this, name, fb_prop, win_prop,
                                  flags, gsg, host);
   }

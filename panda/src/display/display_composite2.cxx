@@ -13,3 +13,4 @@
 #include "displaySearchParameters.cxx"
 #include "displayInformation.cxx"
 #include "stereoDisplayRegion.cxx"
+#include "subprocessWindow.cxx"

@@ -26,6 +26,7 @@
 #include "parasiteBuffer.h"
 #include "pandaSystem.h"
 #include "stereoDisplayRegion.h"
+#include "subprocessWindow.h"
 
 ConfigureDef(config_display);
 NotifyCategoryDef(display, "");
@@ -289,6 +290,15 @@ ConfigVariableInt parent_window_handle
           "an HWND on Windows, or the NSWindow pointer or XWindow pointer "
           "converted to an integer, on OSX and X11."));
 
+ConfigVariableFilename subprocess_window
+("subprocess-window", "",
+ PRC_DESC("The filename of a SubprocessWindowBuffer's temporary mmap file, "
+          "used for opening a window in a child process and rendering "
+          "to a different window in the parent process.  "
+          "This is specifically used for OSX when the plugin is compiled, "
+          "and is not used or needed in other environments.  See "
+          "WindowProperties::set_subprocess_window()."));
+
 ConfigVariableString framebuffer_mode
 ("framebuffer-mode", "",
  PRC_DESC("No longer has any effect.  Do not use."));
@@ -400,6 +410,9 @@ init_libdisplay() {
   ParasiteBuffer::init_type();
   StandardMunger::init_type();
   StereoDisplayRegion::init_type();
+#ifdef SUPPORT_SUBPROCESS_WINDOW
+  SubprocessWindow::init_type();
+#endif
 
 #if defined(HAVE_THREADS) && defined(DO_PIPELINING)
   PandaSystem *ps = PandaSystem::get_global_ptr();

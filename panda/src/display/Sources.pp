@@ -37,7 +37,9 @@
     stencilRenderStates.h \
     stereoDisplayRegion.I stereoDisplayRegion.h \
     displaySearchParameters.h \
-    displayInformation.h    
+    displayInformation.h \
+    subprocessWindow.h subprocessWindow.I \
+    $[if $[and $[OSX_PLATFORM],$[HAVE_P3D_PLUGIN]], subprocessWindowBuffer.h subprocessWindowBuffer.I subprocessWindowBuffer.cxx]
     
  #define INCLUDED_SOURCES  \
     standardMunger.cxx \
@@ -62,7 +64,8 @@
     stencilRenderStates.cxx \
     stereoDisplayRegion.cxx \
     displaySearchParameters.cxx \
-    displayInformation.cxx    
+    displayInformation.cxx \
+    subprocessWindow.cxx
 
   #define INSTALL_HEADERS \
     standardMunger.I standardMunger.h \
@@ -90,11 +93,30 @@
     stencilRenderStates.h \
     stereoDisplayRegion.I stereoDisplayRegion.h \
     displaySearchParameters.h \
-    displayInformation.h    
+    displayInformation.h \
+    subprocessWindow.h subprocessWindow.I \
+    subprocessWindowBuffer.h subprocessWindowBuffer.I
 
   #define IGATESCAN all
 
 #end lib_target
+
+
+#begin static_lib_target
+  // We build a static library of just these files, so the plugin can
+  // link with it in direct/src/plugin, without pulling in the rest of
+  // Panda.
+
+  #define BUILD_TARGET $[and $[OSX_PLATFORM],$[HAVE_P3D_PLUGIN]]
+
+  #define TARGET subprocbuffer
+
+  #define SOURCES \
+    subprocessWindowBuffer.h subprocessWindowBuffer.I \
+    subprocessWindowBuffer.cxx
+
+#end static_lib_target
+
 
 #begin test_bin_target
   #define TARGET test_display

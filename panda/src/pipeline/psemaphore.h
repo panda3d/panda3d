@@ -1,4 +1,4 @@
-// Filename: semaphore.h
+// Filename: psemaphore.h
 // Created by:  drose (13Oct08)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,8 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef SEMAPHORE_H
-#define SEMAPHORE_H
+#ifndef PSEMAPHORE_H
+#define PSEMAPHORE_H
 
 #include "pandabase.h"
 #include "pmutex.h"
@@ -58,6 +58,6 @@ operator << (ostream &out, const Semaphore &sem) {
   return out;
 }
 
-#include "semaphore.I"
+#include "psemaphore.I"
 
 #endif
