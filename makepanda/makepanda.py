@@ -695,7 +695,7 @@ def CompileLink(dll, obj, opts):
         if arch == "64bit":
             cmd += "/MACHINE:X64 "
         cmd += '/NOD:MFC90.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
-        cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk"
+        cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
         if (GetOrigExt(dll) != ".exe"): cmd = cmd + " /DLL"
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:EXPORTS"
