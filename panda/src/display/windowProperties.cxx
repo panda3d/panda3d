@@ -74,10 +74,10 @@ get_default() {
   props.set_fullscreen(fullscreen);
   props.set_undecorated(undecorated);
   props.set_cursor_hidden(cursor_hidden);
-  if (icon_filename.has_value()) {
+  if (!icon_filename.empty()) {
     props.set_icon_filename(icon_filename);
   }
-  if (cursor_filename.has_value()) {
+  if (!cursor_filename.empty()) {
     props.set_cursor_filename(cursor_filename);
   }
   if (z_order.has_value()) {
@@ -87,7 +87,7 @@ get_default() {
   if (parent_window_handle.get_value() != 0) {
     props.set_parent_window(parent_window_handle);
   }
-  if (subprocess_window.has_value()) {
+  if (!subprocess_window.empty()) {
     props.set_subprocess_window(subprocess_window);
   }
   props.set_mouse_mode(M_absolute);
