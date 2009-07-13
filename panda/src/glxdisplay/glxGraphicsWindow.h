@@ -17,6 +17,7 @@
 
 #include "pandabase.h"
 
+#include "x11GraphicsWindow.h"
 #include "glxGraphicsPipe.h"
 #include "graphicsWindow.h"
 #include "buttonHandle.h"
@@ -26,7 +27,7 @@
 // Description : An interface to the glx system for managing GL
 //               windows under X.
 ////////////////////////////////////////////////////////////////////
-class glxGraphicsWindow : public GraphicsWindow {
+class glxGraphicsWindow : public x11GraphicsWindow {
 public:
   glxGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
                     const string &name,
@@ -35,82 +36,30 @@ public:
                     int flags,
                     GraphicsStateGuardian *gsg,
                     GraphicsOutput *host);
-  virtual ~glxGraphicsWindow();
+  virtual ~glxGraphicsWindow() {};
 
-  virtual bool move_pointer(int device, int x, int y);
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
-  virtual void end_frame(FrameMode mode, Thread *current_thread);
   virtual void begin_flip();
-
-  virtual void process_events();
-  virtual void set_properties_now(WindowProperties &properties);
-
-  INLINE Window get_xwindow() const;
 
 protected:
   virtual void close_window();
   virtual bool open_window();
 
 private:
-  virtual void mouse_mode_absolute();
-  virtual void mouse_mode_relative();
-
-  void set_wm_properties(const WindowProperties &properties,
-                         bool already_mapped);
 
 #ifdef HAVE_GLXFBCONFIG
-  void setup_colormap(GLXFBConfig fbconfig);
+  virtual void setup_colormap(GLXFBConfig fbconfig);
 #endif  // HAVE_GLXFBCONFIG
-  void setup_colormap(XVisualInfo *visual);
-  void handle_keystroke(XKeyEvent &event);
-  void handle_keypress(XKeyEvent &event);
-  void handle_keyrelease(XKeyEvent &event);
-
-  ButtonHandle get_button(XKeyEvent &key_event, bool allow_shift);
-  ButtonHandle map_button(KeySym key);
-  ButtonHandle get_mouse_button(XButtonEvent &button_event);
-
-  static Bool check_event(Display *display, XEvent *event, char *arg);
-
-  void open_raw_mice();
-  void poll_raw_mice();
-  
-private:
-  Display *_display;
-  int _screen;
-  Window _xwindow;
-  Colormap _colormap;
-  XIC _ic;
-
-  long _event_mask;
-  bool _awaiting_configure;
-  bool _dga_mouse_enabled;
-  Atom _wm_delete_window;
-  Atom _net_wm_window_type;
-  Atom _net_wm_window_type_splash;
-  Atom _net_wm_window_type_fullscreen;
-  Atom _net_wm_state;
-  Atom _net_wm_state_fullscreen;
-  Atom _net_wm_state_above;
-  Atom _net_wm_state_below;
-  Atom _net_wm_state_add;
-  Atom _net_wm_state_remove;
-
-  struct MouseDeviceInfo {
-    int    _fd;
-    int    _input_device_index;
-    string _io_buffer;
-  };
-  pvector<MouseDeviceInfo> _mouse_device_info;
+  virtual void setup_colormap(XVisualInfo *visual);
   
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    GraphicsWindow::init_type();
+    x11GraphicsWindow::init_type();
     register_type(_type_handle, "glxGraphicsWindow",
-                  GraphicsWindow::get_class_type());
+                  x11GraphicsWindow::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();
@@ -120,7 +69,5 @@ public:
 private:
   static TypeHandle _type_handle;
 };
-
-#include "glxGraphicsWindow.I"
 
 #endif

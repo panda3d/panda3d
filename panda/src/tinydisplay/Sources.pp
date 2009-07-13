@@ -14,7 +14,7 @@
   #define TARGET tinydisplay
   #define LOCAL_LIBS \
     gsgbase gobj display \
-    putil linmath mathutil pnmimage windisplay
+    putil linmath mathutil pnmimage windisplay x11display
 
   #define COMBINED_SOURCES $[TARGET]_composite1.cxx $[TARGET]_composite2.cxx
 

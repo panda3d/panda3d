@@ -200,6 +200,14 @@
   #define EXPTP_PANDAWIN extern
 #endif
 
+#ifdef BUILDING_PANDAX11
+  #define EXPCL_PANDAX11 __declspec(dllexport)
+  #define EXPTP_PANDAX11
+#else
+  #define EXPCL_PANDAX11 __declspec(dllimport)
+  #define EXPTP_PANDAX11 extern
+#endif
+
 #ifdef BUILDING_SHADER
   #define EXPCL_SHADER __declspec(dllexport)
   #define EXPTP_SHADER
@@ -291,6 +299,9 @@
 
 #define EXPCL_PANDAWIN
 #define EXPTP_PANDAWIN
+
+#define EXPCL_PANDAX11
+#define EXPTP_PANDAX11
 
 #define EXPCL_SHADER
 #define EXPTP_SHADER
