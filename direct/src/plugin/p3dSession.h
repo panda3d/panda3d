@@ -132,9 +132,9 @@ private:
 #endif
   bool _p3dpython_running;
 
-  // The _response_ready mutex protects this pointer.
-  TiXmlDocument *_response;
-  int _got_response_id;
+  // The _response_ready mutex protects this structure.
+  typedef map<int, TiXmlDocument *> Responses;
+  Responses _responses;
   P3DConditionVar _response_ready;
 
   // The remaining members are manipulated by or for the read thread.

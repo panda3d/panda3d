@@ -44,8 +44,6 @@ P3DSession(P3DInstance *inst) {
   _python_version = inst->get_python_version();
 
   _p3dpython_running = false;
-  _response = NULL;
-  _got_response_id = -1;
 
   _started_read_thread = false;
   _read_thread_continue = false;
@@ -275,17 +273,8 @@ command_and_response(TiXmlDocument *command) {
   // only one thread will be waiting at a time.
   nout << "waiting for response " << response_id << "\n" << flush;
   _response_ready.acquire();
-  while (_response == NULL || _got_response_id != response_id) {
-    if (_response != NULL) {
-      // This is a bogus response.  Since we're the only thread waiting,
-      // it follows that no one is waiting for this response, so we can
-      // throw it away.
-      nout << "Discarding bogus response: " << *_response << "\n" << flush;
-      delete _response;
-      _response = NULL;
-      _got_response_id = -1;
-    }
-
+  Responses::iterator ri = _responses.find(response_id);
+  while (ri == _responses.end()) {
     if (!_p3dpython_running) {
       // Hmm, looks like Python has gone away.
 
@@ -299,10 +288,22 @@ command_and_response(TiXmlDocument *command) {
     // recursive script requests.  (The child process might have to
     // wait for us to process some of these before it can fulfill the
     // command we're actually waiting for.)
+
+    // Release the mutex while we do this, so we can safely call back
+    // in recursively.
+    _response_ready.release();
     Instances::iterator ii;
     for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
       P3DInstance *inst = (*ii).second;
       inst->bake_requests();
+    }
+    _response_ready.acquire();
+
+    ri = _responses.find(response_id);
+    if (ri != _responses.end()) {
+      // We got the response we were waiting for while we had the
+      // mutex unlocked.
+      break;
     }
 
 #ifdef _WIN32
@@ -314,23 +315,19 @@ command_and_response(TiXmlDocument *command) {
     // A single PeekMessage() seems to be sufficient.
     MSG msg;
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
+#endif  // _WIN32
 
     // We wait with a timeout, so we can go back and spin the event
     // loop some more.
     _response_ready.wait(0.1);
     nout << "." << flush;
-#else  // _WIN32
-    
-    // On non-Windows platforms, we can just wait indefinitely.
-    _response_ready.wait();
-#endif  // _WIN32
+
+    ri = _responses.find(response_id);
   }
   // When we exit the loop, we've found the desired response.
-  nout << "got response: " << *_response << "\n" << flush;
-
-  TiXmlDocument *response = _response;
-  _response = NULL;
-  _got_response_id = -1;
+  TiXmlDocument *response = (*ri).second;
+  nout << "got response: " << *response << "\n" << flush;
+  _responses.erase(ri);
 
   _response_ready.release();
 
@@ -747,16 +744,8 @@ rt_handle_request(TiXmlDocument *doc) {
       // This is a response to a previous command-and-response.  Send
       // it to the parent thread.
       _response_ready.acquire();
-      if (_response != NULL) {
-        // Hey, there's already a response there.  Since there's only
-        // one thread waiting at a time on the command-response cycle,
-        // this must be a bogus response that never got picked up.
-        // Discard it.
-        nout << "Discarding bogus response: " << *_response << "\n";
-        delete _response;
-      }
-      _response = doc;
-      _got_response_id = response_id;
+      bool inserted = _responses.insert(Responses::value_type(response_id, doc)).second;
+      assert(inserted);
       _response_ready.notify();
       _response_ready.release();
       return;

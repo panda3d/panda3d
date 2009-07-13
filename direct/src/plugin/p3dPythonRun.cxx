@@ -237,6 +237,9 @@ handle_command(TiXmlDocument *doc) {
         // does make debugging the logs a bit easier.
         _next_sent_id = _session_id * 1000;
 
+        PyObject *obj = PyObject_CallMethod(_runner, (char*)"setSessionId", (char *)"i", _session_id);
+        Py_XDECREF(obj);
+
       } else if (strcmp(cmd, "start_instance") == 0) {
         assert(!needs_response);
         TiXmlElement *xinstance = xcommand->FirstChildElement("instance");

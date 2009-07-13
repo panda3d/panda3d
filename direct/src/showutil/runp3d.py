@@ -51,7 +51,8 @@ class ScriptAttributes:
 class AppRunner(DirectObject):
     def __init__(self):
         DirectObject.__init__(self)
-        
+
+        self.sessionId = 0
         self.packedAppEnvironmentInitialized = False
         self.gotWindow = False
         self.gotP3DFilename = False
@@ -93,6 +94,11 @@ class AppRunner(DirectObject):
         # Store our pointer so DirectStart-based apps can find us.
         if AppRunnerGlobal.appRunner is None:
             AppRunnerGlobal.appRunner = self
+
+    def setSessionId(self, sessionId):
+        """ This message should come in at startup. """
+        self.sessionId = sessionId
+        self.nextScriptId = self.sessionId * 1000 + 10000
 
     def initPackedAppEnvironment(self):
         """ This function sets up the Python environment suitably for
@@ -272,6 +278,9 @@ class AppRunner(DirectObject):
         settings, for future windows; or applies them directly to the
         main window if the window has already been opened. """
 
+        print "session %s, nextScriptId = %s" % (self.sessionId, self.nextScriptId)
+
+
         print "setupWindow %s, %s, %s, %s, %s, %s, %s" % (windowType, x, y, width, height, parent, subprocessWindow)
 
         if self.started and base.win:
@@ -400,7 +409,7 @@ class AppRunner(DirectObject):
         waiting for the browser to process the request.
         """
         uniqueId = self.nextScriptId
-        self.nextScriptId += 1
+        self.nextScriptId = (self.nextScriptId + 1) % 0xffffffff
         self.sendRequest('script', operation, object,
                          propertyName, value, needsResponse, uniqueId)
 
@@ -677,7 +686,7 @@ class MethodWrapper:
         raise AttributeError(name)
 
 if __name__ == '__main__':
-    runner = AppRunner()
+    runner = AppRunner(0)
     runner.gotWindow = True
     try:
         runner.setP3DFilename(*runner.parseSysArgs())

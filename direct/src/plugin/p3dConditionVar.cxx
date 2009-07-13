@@ -139,7 +139,7 @@ wait(double timeout) {
   ts.tv_nsec += (int)((timeout - seconds) * 1000000.0);
 
   int result = pthread_cond_timedwait(&_cvar, &_lock, &ts);
-  assert(result == 0);
+  assert(result == 0 || errno == ETIMEDOUT);
 
 #endif  // _WIN32
 }
