@@ -69,7 +69,7 @@ HandleStreamBuf::
 //               output.
 ////////////////////////////////////////////////////////////////////
 void HandleStreamBuf::
-open_read(Handle handle) {
+open_read(FHandle handle) {
   close();
 
   _handle = handle;
@@ -84,7 +84,7 @@ open_read(Handle handle) {
 //               output.
 ////////////////////////////////////////////////////////////////////
 void HandleStreamBuf::
-open_write(Handle handle) {
+open_write(FHandle handle) {
   close();
 
   _handle = handle;

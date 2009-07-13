@@ -53,6 +53,8 @@ public:
   void handle_request(P3D_request *request);
   static void handle_request_loop();
 
+  void handle_event(void *event);
+
   NPObject *get_panda_script_object();
 
   void p3dobj_to_variant(NPVariant *result, P3D_object *object);

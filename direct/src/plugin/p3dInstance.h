@@ -22,6 +22,10 @@
 #include "p3dReferenceCount.h"
 #include "get_tinyxml.h"
 
+#ifdef __APPLE__
+#include "subprocessWindowBuffer.h"
+#endif
+
 #include <deque>
 #include <map>
 
@@ -65,6 +69,8 @@ public:
                        const unsigned char *this_data, 
                        size_t this_data_size);
 
+  void handle_event(P3D_event_data event);
+
   inline int get_instance_id() const;
   inline const string &get_session_key() const;
   inline const string &get_python_version() const;
@@ -101,6 +107,8 @@ private:
   void make_splash_window();
   void install_progress(P3DPackage *package, double progress);
 
+  void paint_window();
+
   P3D_request_ready_func *_func;
   P3D_object *_browser_script_object;
   P3DToplevelObject *_panda_script_object;
@@ -117,6 +125,17 @@ private:
 
   // Not ref-counted: session is the parent.
   P3DSession *_session;
+
+#ifdef __APPLE__
+  // On OSX, we have to get a copy of the framebuffer data back from
+  // the child process, and draw it to the window, here in the parent
+  // process.  Crazy!
+  int _shared_fd;
+  size_t _shared_mmap_size;
+  string _shared_filename;
+  SubprocessWindowBuffer *_swbuffer;
+  char *_reversed_buffer;
+#endif __APPLE__
 
   P3DSplashWindow *_splash_window;
   bool _instance_window_opened;

@@ -889,27 +889,37 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   xwparams->Attribute("win_height", &win_height);
 
   long parent_window_handle = 0;
+  const char *subprocess_window = "";
 
 #ifdef _WIN32
   int hwnd;
   if (xwparams->Attribute("parent_hwnd", &hwnd)) {
     parent_window_handle = (long)hwnd;
   }
-#endif
-#ifdef HAVE_X11
+
+#elif __APPLE__
+  // On Mac, we don't parent windows directly to the browser; instead,
+  // we have to go through this subprocess-window nonsense.
+
+  subprocess_window = xwparams->Attribute("subprocess_window");
+  if (subprocess_window == NULL) {
+    subprocess_window = "";
+  }
+
+#elif defined(HAVE_X11)
   // Bad! Casting to int loses precision.
   int xwindow;
   if (xwparams->Attribute("parent_xwindow", &xwindow)) {
-    parent_window_handle = (unsigned long)xwindow;
+    parent_window_handle = (long)xwindow;
   }
 #endif
 
   // TODO: direct this into the particular instance.  This will
   // require a specialized ShowBase replacement.
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setupWindow", (char *)"siiiii", window_type.c_str(),
+    (_runner, (char *)"setupWindow", (char *)"siiiiis", window_type.c_str(),
      win_x, win_y, win_width, win_height,
-     parent_window_handle);
+     parent_window_handle, subprocess_window);
   if (result == NULL) {
     PyErr_Print();
   }

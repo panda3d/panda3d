@@ -6,6 +6,8 @@
   #define USE_PACKAGES tinyxml openssl zlib jpeg x11
   #define TARGET p3d_plugin
   #define LIB_PREFIX
+
+  #define OTHER_LIBS subprocbuffer
   
   // We need this because we don't
   // include dtool_config.h.

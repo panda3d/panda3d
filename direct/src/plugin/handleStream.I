@@ -39,7 +39,7 @@ inline HandleStream::
 //               output.
 ////////////////////////////////////////////////////////////////////
 inline void HandleStream::
-open_read(Handle handle) {
+open_read(FHandle handle) {
   clear((ios::iostate)0);
   _buf.open_read(handle);
   if (!_buf.is_open_read()) {
@@ -55,7 +55,7 @@ open_read(Handle handle) {
 //               output.
 ////////////////////////////////////////////////////////////////////
 inline void HandleStream::
-open_write(Handle handle) {
+open_write(FHandle handle) {
   clear((ios::iostate)0);
   _buf.open_write(handle);
   if (!_buf.is_open_write()) {

@@ -27,14 +27,16 @@
 #include <sstream>
 #include <algorithm>
 
+#ifdef __APPLE__
+#include <sys/mman.h>
+#endif  // __APPLE__
+
 #ifdef _WIN32
 typedef P3DWinSplashWindow SplashWindowType;
-#else
-#ifdef HAVE_X11
+#elif defined(HAVE_X11)
 typedef P3DX11SplashWindow SplashWindowType;
 #else
 typedef P3DSplashWindow SplashWindowType;
-#endif
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -62,6 +64,13 @@ P3DInstance(P3D_request_ready_func *func, void *user_data) :
   _splash_window = NULL;
   _instance_window_opened = false;
   _requested_stop = false;
+
+#ifdef __APPLE__
+  _shared_fd = -1;
+  _shared_mmap_size = 0;
+  _swbuffer = NULL;
+  _reversed_buffer = NULL;
+#endif  // __APPLE__
 
   // Set some initial properties.
   _panda_script_object->set_float_property("downloadProgress", 0.0);
@@ -94,6 +103,19 @@ P3DInstance::
     delete _splash_window;
     _splash_window = NULL;
   }
+
+#ifdef __APPLE__
+  if (_swbuffer != NULL) {
+    SubprocessWindowBuffer::destroy_buffer(_shared_fd, _shared_mmap_size,
+                                           _shared_filename, _swbuffer);
+    _swbuffer = NULL;
+  }
+
+  if (_reversed_buffer != NULL) {
+    delete[] _reversed_buffer;
+    _reversed_buffer = NULL;
+  }
+#endif    
 
   DESTROY_LOCK(_request_lock);
 
@@ -184,6 +206,24 @@ set_wparams(const P3DWindowParams &wparams) {
     xcommand->SetAttribute("cmd", "setup_window");
     xcommand->SetAttribute("instance_id", get_instance_id());
     TiXmlElement *xwparams = _wparams.make_xml();
+
+#ifdef __APPLE__
+    // On Mac, we have to communicate the results of the rendering
+    // back via shared memory, instead of directly parenting windows
+    // to the browser.  Set up this mechanism.
+    int x_size = _wparams.get_win_width();
+    int y_size = _wparams.get_win_height();
+    nout << "size = " << x_size << " * " << y_size << "\n" << flush;
+    if (_shared_fd == -1 && x_size != 0 && y_size != 0) {
+      _swbuffer = SubprocessWindowBuffer::new_buffer
+        (_shared_fd, _shared_mmap_size, _shared_filename, x_size, y_size);
+      if (_swbuffer != NULL) {
+        _reversed_buffer = new char[_swbuffer->get_framebuffer_size()];
+      }
+
+      xwparams->SetAttribute("subprocess_window", _shared_filename);
+    }
+#endif   // __APPLE__
     
     doc->LinkEndChild(decl);
     doc->LinkEndChild(xcommand);
@@ -423,6 +463,85 @@ feed_url_stream(int unique_id,
   }
 
   return download_ok;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::handle_event
+//       Access: Public
+//  Description: Responds to the os-generated window event.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+handle_event(P3D_event_data event) {
+#ifdef _WIN32
+  // This function is not used in Win32 and does nothing.
+
+#elif defined(__APPLE__)
+  EventRecord *er = event._event;
+
+  switch (er->what) {
+  case nullEvent:
+    break;
+
+  case mouseDown:
+  case mouseUp:
+    {
+      Point pt = er->where;
+      GlobalToLocal(&pt);
+      P3D_window_handle window = _wparams.get_parent_window();
+      cerr << "mouse " << pt.h << " " << pt.v << "\n";
+      if (_swbuffer != NULL) {
+        SubprocessWindowBuffer::Event swb_event;
+        swb_event._up = (er->what == mouseUp);
+        swb_event._x = pt.h;
+        swb_event._y = pt.v;
+        _swbuffer->add_event(swb_event);
+      }
+    }
+    break;
+
+  case keyDown:
+  case keyUp:
+  case autoKey:
+    cerr << "keycode: " << (er->message & 0xffff) << "\n";
+    break;
+
+  case updateEvt:
+    paint_window();
+    break;
+
+  case activateEvt:
+    cerr << "activate window: " << er->message << "\n";
+    break;
+
+  case diskEvt:
+    break;
+
+  case osEvt:
+    if ((er->message & 0xf0000000) == suspendResumeMessage) {
+      if (er->message & 1) {
+        cerr << "suspend\n";
+      } else {
+        cerr << "resume\n";
+      }
+    } else if ((er->message & 0xf0000000) == mouseMovedMessage) {
+      cerr << "mouse moved\n";
+    } else {
+      cerr << "unhandled osEvt: " << hex << er->message << dec << "\n";
+    }
+    break;
+
+  case kHighLevelEvent:
+    cerr << "high level: " << er->message << "\n";
+    break;
+
+  default:
+    cerr << "unhandled event: " << er->what << ", " << er->message << "\n";
+    break;
+  }
+
+#elif defined(HAVE_X11)
+
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -809,6 +928,81 @@ install_progress(P3DPackage *package, double progress) {
     _splash_window->set_install_progress(progress);
   }
   _panda_script_object->set_float_property("downloadProgress", progress);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::paint_window
+//       Access: Private
+//  Description: Actually paints the rendered image to the browser
+//               window.  This is only implemented (and needed) for
+//               OSX, where the child process isn't allowed to do it
+//               directly.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+paint_window() {
+#ifdef __APPLE__
+  if (_swbuffer == NULL) {
+    nout << "no _swbuffer\n";
+    return;
+  }
+
+  QDErr err;
+
+  // blit rendered framebuffer into window backing store
+  int x_size = min(_wparams.get_win_width(), _swbuffer->get_x_size());
+  int y_size = min(_wparams.get_win_height(), _swbuffer->get_y_size());
+  Rect src_rect = {0, 0, y_size, x_size};
+  Rect ddrc_rect = {0, 0, y_size, x_size};
+
+  size_t rowsize = _swbuffer->get_row_size();
+
+  if (_swbuffer->ready_for_read()) {
+    // Copy the new framebuffer image from the child process.
+    const void *framebuffer = _swbuffer->open_read_framebuffer();
+    
+    // We have to reverse the image vertically first (different
+    // conventions between Panda and Mac).
+    for (int yi = 0; yi < y_size; ++yi) {
+      memcpy(_reversed_buffer + (y_size - 1 - yi) * rowsize,
+             (char *)framebuffer + yi * rowsize,
+             rowsize);
+    }
+    
+    _swbuffer->close_read_framebuffer();
+
+  } else {
+    // No frame ready.  Just re-paint the frame we had saved last
+    // time.
+  }
+
+  // create a GWorld containing our image
+  GWorldPtr pGWorld;
+  err = NewGWorldFromPtr(&pGWorld, k32BGRAPixelFormat, &src_rect, 0, 0, 0, 
+                         _reversed_buffer, rowsize);
+  if (err != noErr) {
+    nout << " error in NewGWorldFromPtr, called from paint_window()\n";
+    return;
+  }
+
+  GrafPtr out_port = _wparams.get_parent_window()._port;
+  GrafPtr portSave = NULL;
+  Boolean portChanged = QDSwapPort(out_port, &portSave);
+
+  // Make sure the clipping rectangle isn't in the way.  Is there a
+  // better way to eliminate the cliprect from consideration?
+  Rect r = { 0, 0, 0x7fff, 0x7fff }; 
+  ClipRect(&r);
+
+  CopyBits(GetPortBitMapForCopyBits(pGWorld), 
+           GetPortBitMapForCopyBits(out_port), 
+           &src_rect, &ddrc_rect, srcCopy, 0);
+  
+  if (portChanged) {
+    QDSwapPort(portSave, NULL);
+  }
+  
+  DisposeGWorld(pGWorld);
+#endif  // __APPLE__  
 }
 
 ////////////////////////////////////////////////////////////////////

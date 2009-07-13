@@ -258,8 +258,36 @@ class AppRunner(DirectObject):
 
         self.startIfReady()
 
-    def setupWindow(self, windowType, x, y, width, height, parent):
-        print "setupWindow %s, %s, %s, %s, %s, %s" % (windowType, x, y, width, height, parent)
+    def clearWindowPrc(self):
+        """ Clears the windowPrc file that was created in a previous
+        call to setupWindow(), if any. """
+        
+        if self.windowPrc:
+            unloadPrcFile(self.windowPrc)
+            self.windowPrc = None
+
+    def setupWindow(self, windowType, x, y, width, height,
+                    parent, subprocessWindow):
+        """ Applies the indicated window parameters to the prc
+        settings, for future windows; or applies them directly to the
+        main window if the window has already been opened. """
+
+        print "setupWindow %s, %s, %s, %s, %s, %s, %s" % (windowType, x, y, width, height, parent, subprocessWindow)
+
+        if self.started and base.win:
+            # If we've already got a window, this must be a
+            # resize/reposition request.
+            wp = WindowProperties()
+            if x or y or windowType == 'embedded':
+                wp.setOrigin(x, y)
+            if width or height:
+                wp.setSize(width, height)
+            base.win.requestProperties(wp)
+            return
+
+        # If we haven't got a window already, start 'er up.  Apply the
+        # requested setting to the prc file.
+
         if windowType == 'hidden':
             data = 'window-type none\n'
         else:
@@ -271,33 +299,21 @@ class AppRunner(DirectObject):
             data += 'fullscreen 0\n'
 
         if windowType == 'embedded':
-            data += 'parent-window-handle %s\n' % (parent)
+            data += 'parent-window-handle %s\nsubprocess-window %s\n' % (
+                parent, subprocessWindow)
         else:
-            data += 'parent-window-handle 0\n'
+            data += 'parent-window-handle 0\nsubprocess-window \n'
 
         if x or y or windowType == 'embedded':
             data += 'win-origin %s %s\n' % (x, y)
         if width or height:
             data += 'win-size %s %s\n' % (width, height)
 
-        if self.windowPrc:
-            unloadPrcFile(self.windowPrc)
+        self.clearWindowPrc()
         self.windowPrc = loadPrcFileData("setupWindow", data)
 
-        if self.started and base.win:
-            # If we've already got a window, this must be a
-            # resize/reposition request.
-            wp = WindowProperties()
-            if x or y or windowType == 'embedded':
-                wp.setOrigin(x, y)
-            if width or height:
-                wp.setSize(width, height)
-            base.win.requestProperties(wp)
-
-        else:
-            # If we haven't got a window already, start 'er up.
-            self.gotWindow = True
-            self.startIfReady()
+        self.gotWindow = True
+        self.startIfReady()
 
     def setRequestFunc(self, func):
         """ This method is called by the plugin at startup to supply a
@@ -319,8 +335,14 @@ class AppRunner(DirectObject):
         successfully opened. """
 
         if not self.windowOpened:
-            self.notifyRequest('onwindowopen')
             self.windowOpened = True
+
+            # Now that the window is open, we don't need to keep those
+            # prc settings around any more.
+            self.clearWindowPrc()
+
+            # Inform the plugin and browser.
+            self.notifyRequest('onwindowopen')
 
     def notifyRequest(self, message):
         """ Delivers a notify request to the browser.  This is a "this
@@ -340,10 +362,10 @@ class AppRunner(DirectObject):
 
     def evalScript(self, expression, needsResponse = False):
         """ Evaluates an arbitrary JavaScript expression in the global
-        DOM space.  This may be deferred if necessary if self.dom has
-        not yet been assigned.  If needsResponse is true, this waits
-        for the value and returns it, which means it may not be
-        deferred. """
+        DOM space.  This may be deferred if necessary if needsResponse
+        is False and self.dom has not yet been assigned.  If
+        needsResponse is true, this waits for the value and returns
+        it, which means it cannot be deferred. """
 
         if not self.dom:
             # Defer the expression.

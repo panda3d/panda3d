@@ -331,8 +331,10 @@ int16
 NPP_HandleEvent(NPP instance, void *event) {
   //  logfile << "HandleEvent\n" << flush;
 
-  // Here's a fine opportunity to check for new requests.
-  PPInstance::handle_request_loop();
+  PPInstance *inst = (PPInstance *)(instance->pdata);
+  assert(inst != NULL);
+
+  inst->handle_event(event);
 
   return 0;
 }

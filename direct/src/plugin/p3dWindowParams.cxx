@@ -79,8 +79,11 @@ make_xml() {
     xwparams->SetAttribute("win_height", _win_height);
 #ifdef _WIN32
     xwparams->SetAttribute("parent_hwnd", (int)_parent_window._hwnd);
-#endif
-#ifdef HAVE_X11
+
+#elif defined(__APPLE__)
+    // The subprocess_window setting is applied by the caller.
+
+#elif defined(HAVE_X11)
     xwparams->SetAttribute("parent_xwindow", (unsigned long)_parent_window._xwindow);
 #endif
     break;

@@ -406,3 +406,11 @@ P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
   RELEASE_LOCK(_api_lock);
   return result;
 }
+
+void
+P3D_instance_handle_event(P3D_instance *instance, P3D_event_data event) {
+  assert(P3DInstanceManager::get_global_ptr()->is_initialized());
+  ACQUIRE_LOCK(_api_lock);
+  ((P3DInstance *)instance)->handle_event(event);
+  RELEASE_LOCK(_api_lock);
+}

@@ -55,6 +55,7 @@ extern P3D_instance_get_request_func *P3D_instance_get_request;
 extern P3D_check_request_func *P3D_check_request;
 extern P3D_request_finish_func *P3D_request_finish;
 extern P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;
+extern P3D_instance_handle_event_func *P3D_instance_handle_event;
 
 string get_plugin_basename();
 bool load_plugin(const string &p3d_plugin_filename);

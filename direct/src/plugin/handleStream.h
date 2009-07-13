@@ -29,8 +29,8 @@ public:
   inline HandleStream();
   inline ~HandleStream();
 
-  inline void open_read(Handle handle);
-  inline void open_write(Handle handle);
+  inline void open_read(FHandle handle);
+  inline void open_write(FHandle handle);
   inline void close();
 
 private:

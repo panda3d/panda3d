@@ -57,6 +57,10 @@
 
 #endif  /* _WIN32 */
 
+#ifdef __APPLE__
+#include <Carbon/Carbon.h>
+#endif  /* __APPLE__ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -130,13 +134,13 @@ typedef struct {
 typedef struct {
 #ifdef _WIN32
   HWND _hwnd;
-#endif
-#ifdef HAVE_X11
+
+#elif defined(__APPLE__)
+  GrafPtr _port;
+
+#elif defined(HAVE_X11)
   unsigned long _xwindow;
   void *_xdisplay;
-#endif
-#ifdef __APPLE__
-  void *_nswindow;
 #endif
 } P3D_window_handle;
 
@@ -781,6 +785,29 @@ P3D_instance_feed_url_stream_func(P3D_instance *instance, int unique_id,
                                   const void *this_data, 
                                   size_t this_data_size);
 
+/* This structure abstracts out the event pointer data types for the
+   different platforms, as passed to P3D_instance_handle_event(),
+   below. */
+typedef struct {
+#ifdef _WIN32
+  // Not used for Win32.
+
+#elif defined(__APPLE__)
+  EventRecord *_event;
+
+#elif defined(HAVE_X11)
+  //  XEvent *_event; ?
+#endif
+} P3D_event_data;
+
+/* Use this function to supply a new os-specific window event to the
+   plugin.  This is presently used only on OSX, where the window
+   events are needed for proper plugin handling; and possibly also on
+   X11.  On Windows, window events are handled natively by the plugin.
+*/
+typedef void
+P3D_instance_handle_event_func(P3D_instance *instance, P3D_event_data event);
+
 #ifdef P3D_FUNCTION_PROTOTYPES
 
 /* Define all of the actual prototypes for the above functions. */
@@ -820,6 +847,7 @@ EXPCL_P3D_PLUGIN P3D_instance_get_request_func P3D_instance_get_request;
 EXPCL_P3D_PLUGIN P3D_check_request_func P3D_check_request;
 EXPCL_P3D_PLUGIN P3D_request_finish_func P3D_request_finish;
 EXPCL_P3D_PLUGIN P3D_instance_feed_url_stream_func P3D_instance_feed_url_stream;
+EXPCL_P3D_PLUGIN P3D_instance_handle_event_func P3D_instance_handle_event;
 
 #endif  /* P3D_FUNCTION_PROTOTYPES */
 

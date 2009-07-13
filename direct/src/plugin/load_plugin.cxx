@@ -69,6 +69,7 @@ P3D_instance_get_request_func *P3D_instance_get_request;
 P3D_check_request_func *P3D_check_request;
 P3D_request_finish_func *P3D_request_finish;
 P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;
+P3D_instance_handle_event_func *P3D_instance_handle_event;
 
 #ifdef _WIN32
 static HMODULE module = NULL;
@@ -206,6 +207,7 @@ load_plugin(const string &p3d_plugin_filename) {
   P3D_check_request = (P3D_check_request_func *)get_func(module, "P3D_check_request");  
   P3D_request_finish = (P3D_request_finish_func *)get_func(module, "P3D_request_finish");  
   P3D_instance_feed_url_stream = (P3D_instance_feed_url_stream_func *)get_func(module, "P3D_instance_feed_url_stream");  
+  P3D_instance_handle_event = (P3D_instance_handle_event_func *)get_func(module, "P3D_instance_handle_event");  
 
   #undef get_func
 
@@ -244,7 +246,8 @@ load_plugin(const string &p3d_plugin_filename) {
       P3D_instance_get_request == NULL ||
       P3D_check_request == NULL ||
       P3D_request_finish == NULL ||
-      P3D_instance_feed_url_stream == NULL) {
+      P3D_instance_feed_url_stream == NULL ||
+      P3D_instance_handle_event == NULL) {
     
     cerr
       << "Some function pointers not found:"
@@ -283,6 +286,7 @@ load_plugin(const string &p3d_plugin_filename) {
       << "\nP3D_check_request = " << P3D_check_request
       << "\nP3D_request_finish = " << P3D_request_finish
       << "\nP3D_instance_feed_url_stream = " << P3D_instance_feed_url_stream
+      << "\nP3D_instance_handle_event = " << P3D_instance_handle_event
       << "\n";
     return false;
   }
@@ -376,6 +380,7 @@ unload_dso() {
   P3D_check_request = NULL;
   P3D_request_finish = NULL;
   P3D_instance_feed_url_stream = NULL;
+  P3D_instance_handle_event = NULL;
 
   plugin_loaded = false;
 }

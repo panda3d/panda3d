@@ -438,7 +438,7 @@ handle_request(P3D_request *request) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::handle_request_loop
-//       Access: Private, Static
+//       Access: Public, Static
 //  Description: Checks for any new requests from the plugin, and
 //               dispatches them to the appropriate PPInstance.  This
 //               function is called only in the main thread.
@@ -459,6 +459,47 @@ handle_request_loop() {
     }
     p3d_inst = P3D_check_request(false);
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::handle_event
+//       Access: Public
+//  Description: Called by the browser as new window events are
+//               generated.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+handle_event(void *event) {
+  // This is a good time to check for new requests.
+  handle_request_loop();
+
+  if (_p3d_inst == NULL) {
+    // Ignore events that come in before we've launched the instance.
+    return;
+  }
+
+#ifdef __APPLE__
+  EventRecord *er = (EventRecord *)event;
+
+  switch (er->what) {
+  case nullEvent:
+    // We appear to get this event pretty frequently when nothing else
+    // is going on.  Great; we'll take advantage of it to invalidate
+    // the instance rectangle, which will cause updateEvt to be
+    // triggered (if the instance is still onscreen).
+
+    if (_got_window) {
+      NPRect rect = { 0, 0, _window.height, _window.width };
+      browser->invalidaterect(_npp_instance, &rect);
+    }
+    break;
+  }
+
+  // All other events we feed down to the plugin for processing.
+  P3D_event_data edata;
+  edata._event = er;
+  P3D_instance_handle_event(_p3d_inst, edata);
+
+#endif  // __APPLE__
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -972,14 +1013,24 @@ send_window() {
     // right spot.
 #ifdef _WIN32
     parent_window._hwnd = (HWND)(_window.window);
-#endif
-#ifdef HAVE_X11
+    x = 0;
+    y = 0;
+
+#elif defined(__APPLE__)
+    logfile << "windowed plugin\n" << flush;
+    NP_Port *port = (NP_Port *)_window.window;
+    logfile << "portx, porty = " << port->portx << ", " << port->porty << "\n";
+    logfile << "x, y = " << _window.x << ", " << _window.y << "\n";
+    parent_window._port = port->port;
+
+#elif defined(HAVE_X11)
     // We make it an 'unsigned long' instead of 'Window'
     // to avoid nppanda3d.so getting a dependency on X11.
     parent_window._xwindow = (unsigned long)(_window.window);
-#endif
     x = 0;
     y = 0;
+#endif
+
   } else {
     // We have a "windowless" plugin.  Parent our window directly to
     // the browser window.
@@ -990,8 +1041,15 @@ send_window() {
                           &hwnd) == NPERR_NO_ERROR) {
       parent_window._hwnd = hwnd;
     }
-#endif
-#ifdef HAVE_X11
+
+#elif defined(__APPLE__)
+    logfile << "windowless plugin\n" << flush;
+    NP_Port *port = (NP_Port *)_window.window;
+    logfile << "portx, porty = " << port->portx << ", " << port->porty << "\n";
+    logfile << "x, y = " << _window.x << ", " << _window.y << "\n";
+    parent_window._port = port->port;
+
+#elif defined(HAVE_X11)
     parent_window._xwindow = 0;
     unsigned long win;
     if (browser->getvalue(_npp_instance, NPNVnetscapeWindow,

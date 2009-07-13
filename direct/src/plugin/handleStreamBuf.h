@@ -17,10 +17,10 @@
 
 #ifdef _WIN32
 #include <windows.h>
-typedef HANDLE Handle;
+typedef HANDLE FHandle;
 #else
 // On POSIX, we use a file descriptor as a "handle".
-typedef int Handle;
+typedef int FHandle;
 #endif
 
 #include <iostream>
@@ -37,8 +37,8 @@ public:
   HandleStreamBuf();
   virtual ~HandleStreamBuf();
 
-  void open_read(Handle handle);
-  void open_write(Handle handle);
+  void open_read(FHandle handle);
+  void open_write(FHandle handle);
   bool is_open_read() const;
   bool is_open_write() const;
   void close();
@@ -56,7 +56,7 @@ private:
   bool _is_open_read;
   bool _is_open_write;
 
-  Handle _handle;
+  FHandle _handle;
 
   char *_buffer;
 };
