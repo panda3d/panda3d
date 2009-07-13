@@ -669,6 +669,9 @@ $[cdefine USE_STL_ALLOCATOR]
 /* Static linkage instead of the normal dynamic linkage? */
 $[cdefine LINK_ALL_STATIC]
 
+/* Define to compile the plugin code. */
+$[cdefine HAVE_P3D_PLUGIN]
+
 /* Platform-identifying defines. */
 $[cdefine IS_OSX]
 $[cdefine IS_LINUX]
