@@ -108,6 +108,7 @@ private:
   void install_progress(P3DPackage *package, double progress);
 
   void paint_window();
+  void add_modifier_flags(unsigned int &swb_flags, int modifiers);
 
   P3D_request_ready_func *_func;
   P3D_object *_browser_script_object;

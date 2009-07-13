@@ -485,16 +485,35 @@ handle_event(P3D_event_data event) {
   case mouseDown:
   case mouseUp:
     {
+      // Need to ensure we have the correct port set, in order to
+      // convert the mouse coordinates successfully via
+      // GlobalToLocal().
+      GrafPtr out_port = _wparams.get_parent_window()._port;
+      GrafPtr portSave = NULL;
+      Boolean portChanged = QDSwapPort(out_port, &portSave);
+
       Point pt = er->where;
       GlobalToLocal(&pt);
       P3D_window_handle window = _wparams.get_parent_window();
       cerr << "mouse " << pt.h << " " << pt.v << "\n";
       if (_swbuffer != NULL) {
         SubprocessWindowBuffer::Event swb_event;
-        swb_event._up = (er->what == mouseUp);
+        swb_event._source = SubprocessWindowBuffer::ES_mouse;
+        swb_event._code = 0;
+        if (er->what == mouseUp) {
+          swb_event._trans = SubprocessWindowBuffer::BT_up;
+        } else {
+          swb_event._trans = SubprocessWindowBuffer::BT_down;
+        }
         swb_event._x = pt.h;
         swb_event._y = pt.v;
+        swb_event._flags = SubprocessWindowBuffer::EF_mouse_position;
+        add_modifier_flags(swb_event._flags, er->modifiers);
         _swbuffer->add_event(swb_event);
+      }
+
+      if (portChanged) {
+        QDSwapPort(portSave, NULL);
       }
     }
     break;
@@ -502,7 +521,22 @@ handle_event(P3D_event_data event) {
   case keyDown:
   case keyUp:
   case autoKey:
-    cerr << "keycode: " << (er->message & 0xffff) << "\n";
+    cerr << "keycode: " << hex << (er->message & 0xffff) << dec << "\n";
+    if (_swbuffer != NULL) {
+      SubprocessWindowBuffer::Event swb_event;
+      swb_event._source = SubprocessWindowBuffer::ES_keyboard;
+      swb_event._code = er->message;
+      if (er->what == keyUp) {
+        swb_event._trans = SubprocessWindowBuffer::BT_up;
+      } else if (er->what == keyDown) {
+        swb_event._trans = SubprocessWindowBuffer::BT_down;
+      } else {
+        swb_event._trans = SubprocessWindowBuffer::BT_again;
+      }
+      swb_event._flags = 0;
+      add_modifier_flags(swb_event._flags, er->modifiers);
+      _swbuffer->add_event(swb_event);
+    }
     break;
 
   case updateEvt:
@@ -1003,6 +1037,31 @@ paint_window() {
   
   DisposeGWorld(pGWorld);
 #endif  // __APPLE__  
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::add_modifier_flags
+//       Access: Private
+//  Description: OSX only: adds the appropriate bits to the Event flag
+//               bitmask to correspond to the modifier buttons held in
+//               the MacOS-style EventRecord::modifiers mask.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+add_modifier_flags(unsigned int &swb_flags, int modifiers) {
+#ifdef __APPLE__
+  if (modifiers & cmdKey) {
+    swb_flags |= SubprocessWindowBuffer::EF_meta_held;
+  }
+  if (modifiers & shiftKey) {
+    swb_flags |= SubprocessWindowBuffer::EF_shift_held;
+  }
+  if (modifiers & optionKey) {
+    swb_flags |= SubprocessWindowBuffer::EF_alt_held;
+  }
+  if (modifiers & controlKey) {
+    swb_flags |= SubprocessWindowBuffer::EF_control_held;
+  }
+#endif  // __APPLE__
 }
 
 ////////////////////////////////////////////////////////////////////

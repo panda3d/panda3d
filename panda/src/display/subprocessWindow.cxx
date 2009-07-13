@@ -63,6 +63,7 @@ SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
   _mmap_size = 0;
   _filename = filename;
   _swbuffer = NULL;
+  _last_event_flags = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -93,14 +94,45 @@ process_events() {
   GraphicsWindow::process_events();
 
   if (_swbuffer != NULL) {
-    SubprocessWindowBuffer::Event event;
-    while (_swbuffer->get_event(event)) {
-      // Deal with this event.  For now, we only have mouse down/up.
-      _input_devices[0].set_pointer_in_window(event._x, event._y);
-      if (event._up) {
-        _input_devices[0].button_up(MouseButton::one());
+    SubprocessWindowBuffer::Event swb_event;
+    while (_swbuffer->get_event(swb_event)) {
+      // Deal with this event.
+      if (swb_event._flags & SubprocessWindowBuffer::EF_mouse_position) {
+        _input_devices[0].set_pointer_in_window(swb_event._x, swb_event._y);
+      }
+
+      unsigned int diff = swb_event._flags ^ _last_event_flags;
+      _last_event_flags = swb_event._flags;
+
+      if (diff & SubprocessWindowBuffer::EF_shift_held) {
+        transition_button(swb_event._flags & SubprocessWindowBuffer::EF_shift_held, KeyboardButton::shift());
+      }
+      if (diff & SubprocessWindowBuffer::EF_control_held) {
+        transition_button(swb_event._flags & SubprocessWindowBuffer::EF_control_held, KeyboardButton::control());
+      }
+      if (diff & SubprocessWindowBuffer::EF_alt_held) {
+        transition_button(swb_event._flags & SubprocessWindowBuffer::EF_alt_held, KeyboardButton::alt());
+      }
+      if (diff & SubprocessWindowBuffer::EF_meta_held) {
+        transition_button(swb_event._flags & SubprocessWindowBuffer::EF_meta_held, KeyboardButton::meta());
+      }
+
+      ButtonHandle button;
+      if (swb_event._source == SubprocessWindowBuffer::ES_mouse) {
+        button = MouseButton::button(swb_event._code);
+
       } else {
-        _input_devices[0].button_down(MouseButton::one());
+        int keycode;
+        button = translate_key(keycode, swb_event._code, swb_event._flags);
+        if (keycode != 0 && swb_event._trans != SubprocessWindowBuffer::BT_up) {
+          _input_devices[0].keystroke(keycode);
+        }
+      }
+
+      if (swb_event._trans == SubprocessWindowBuffer::BT_up) {
+        _input_devices[0].button_up(button);
+      } else if (swb_event._trans == SubprocessWindowBuffer::BT_down) {
+        _input_devices[0].button_down(button);
       }
     }
   }
@@ -249,27 +281,156 @@ open_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: SubprocessWindow::set_properties_now
-//       Access: Public, Virtual
-//  Description: Applies the requested set of properties to the
-//               window, if possible, for instance to request a change
-//               in size or minimization status.
-//
-//               The window properties are applied immediately, rather
-//               than waiting until the next frame.  This implies that
-//               this method may *only* be called from within the
-//               window thread.
-//
-//               The properties that have been applied are cleared
-//               from the structure by this function; so on return,
-//               whatever remains in the properties structure are
-//               those that were unchanged for some reason (probably
-//               because the underlying interface does not support
-//               changing that property on an open window).
+//     Function: SubprocessWindow::translate_key
+//       Access: Private
+//  Description: Converts the os-specific keycode into the appropriate
+//               ButtonHandle object.  Also stores the corresponding
+//               Unicode keycode in keycode, if any; or 0 otherwise.
+////////////////////////////////////////////////////////////////////
+ButtonHandle SubprocessWindow::
+translate_key(int &keycode, int os_code, unsigned int flags) const {
+  keycode = 0;
+  ButtonHandle nk = ButtonHandle::none();
+
+#ifdef __APPLE__
+  switch ((os_code >> 8) & 0xff) {
+  case   0: nk = KeyboardButton::ascii_key('a'); break;
+  case  11: nk = KeyboardButton::ascii_key('b'); break;
+  case   8: nk = KeyboardButton::ascii_key('c'); break;
+  case   2: nk = KeyboardButton::ascii_key('d'); break;
+  case  14: nk = KeyboardButton::ascii_key('e'); break;
+  case   3: nk = KeyboardButton::ascii_key('f'); break;
+  case   5: nk = KeyboardButton::ascii_key('g'); break;
+  case   4: nk = KeyboardButton::ascii_key('h'); break;
+  case  34: nk = KeyboardButton::ascii_key('i'); break;
+  case  38: nk = KeyboardButton::ascii_key('j'); break;
+  case  40: nk = KeyboardButton::ascii_key('k'); break;
+  case  37: nk = KeyboardButton::ascii_key('l'); break;
+  case  46: nk = KeyboardButton::ascii_key('m'); break;
+  case  45: nk = KeyboardButton::ascii_key('n'); break;
+  case  31: nk = KeyboardButton::ascii_key('o'); break;
+  case  35: nk = KeyboardButton::ascii_key('p'); break;
+  case  12: nk = KeyboardButton::ascii_key('q'); break;
+  case  15: nk = KeyboardButton::ascii_key('r'); break;
+  case   1: nk = KeyboardButton::ascii_key('s'); break;
+  case  17: nk = KeyboardButton::ascii_key('t'); break;
+  case  32: nk = KeyboardButton::ascii_key('u'); break;
+  case   9: nk = KeyboardButton::ascii_key('v'); break;
+  case  13: nk = KeyboardButton::ascii_key('w'); break;
+  case   7: nk = KeyboardButton::ascii_key('x'); break;
+  case  16: nk = KeyboardButton::ascii_key('y'); break;
+  case   6: nk = KeyboardButton::ascii_key('z'); break;
+
+    // top row numbers
+  case  29: nk = KeyboardButton::ascii_key('0'); break;
+  case  18: nk = KeyboardButton::ascii_key('1'); break;
+  case  19: nk = KeyboardButton::ascii_key('2'); break;
+  case  20: nk = KeyboardButton::ascii_key('3'); break;
+  case  21: nk = KeyboardButton::ascii_key('4'); break;
+  case  23: nk = KeyboardButton::ascii_key('5'); break;
+  case  22: nk = KeyboardButton::ascii_key('6'); break;
+  case  26: nk = KeyboardButton::ascii_key('7'); break;
+  case  28: nk = KeyboardButton::ascii_key('8'); break;
+  case  25: nk = KeyboardButton::ascii_key('9'); break;
+
+    // key pad ... do they really map to the top number in panda ?
+  case  82: nk = KeyboardButton::ascii_key('0'); break;
+  case  83: nk = KeyboardButton::ascii_key('1'); break;
+  case  84: nk = KeyboardButton::ascii_key('2'); break;
+  case  85: nk = KeyboardButton::ascii_key('3'); break;
+  case  86: nk = KeyboardButton::ascii_key('4'); break;
+  case  87: nk = KeyboardButton::ascii_key('5'); break;
+  case  88: nk = KeyboardButton::ascii_key('6'); break;
+  case  89: nk = KeyboardButton::ascii_key('7'); break;
+  case  91: nk = KeyboardButton::ascii_key('8'); break;
+  case  92: nk = KeyboardButton::ascii_key('9'); break;
+
+    // case  36: nk = KeyboardButton::ret(); break; // no return in panda ???
+  case  49: nk = KeyboardButton::space(); break;
+  case  51: nk = KeyboardButton::backspace(); break;
+  case  48: nk = KeyboardButton::tab(); break;
+  case  53: nk = KeyboardButton::escape(); break;
+  case  76: nk = KeyboardButton::enter(); break; 
+  case  36: nk = KeyboardButton::enter(); break; 
+
+  case 123: nk = KeyboardButton::left(); break;
+  case 124: nk = KeyboardButton::right(); break;
+  case 125: nk = KeyboardButton::down(); break;
+  case 126: nk = KeyboardButton::up(); break;
+  case 116: nk = KeyboardButton::page_up(); break;
+  case 121: nk = KeyboardButton::page_down(); break;
+  case 115: nk = KeyboardButton::home(); break;
+  case 119: nk = KeyboardButton::end(); break;
+  case 114: nk = KeyboardButton::help(); break; 
+  case 117: nk = KeyboardButton::del(); break; 
+
+    // case  71: nk = KeyboardButton::num_lock() break; 
+
+  case 122: nk = KeyboardButton::f1(); break;
+  case 120: nk = KeyboardButton::f2(); break;
+  case  99: nk = KeyboardButton::f3(); break;
+  case 118: nk = KeyboardButton::f4(); break;
+  case  96: nk = KeyboardButton::f5(); break;
+  case  97: nk = KeyboardButton::f6(); break;
+  case  98: nk = KeyboardButton::f7(); break;
+  case 100: nk = KeyboardButton::f8(); break;
+  case 101: nk = KeyboardButton::f9(); break;
+  case 109: nk = KeyboardButton::f10(); break;
+  case 103: nk = KeyboardButton::f11(); break;
+  case 111: nk = KeyboardButton::f12(); break;
+
+  case 105: nk = KeyboardButton::f13(); break;
+  case 107: nk = KeyboardButton::f14(); break;
+  case 113: nk = KeyboardButton::f15(); break;
+  case 106: nk = KeyboardButton::f16(); break;
+
+    // shiftable chartablet 
+  case  50: nk = KeyboardButton::ascii_key('`'); break;
+  case  27: nk = KeyboardButton::ascii_key('-'); break;
+  case  24: nk = KeyboardButton::ascii_key('='); break;
+  case  33: nk = KeyboardButton::ascii_key('['); break;
+  case  30: nk = KeyboardButton::ascii_key(']'); break;
+  case  42: nk = KeyboardButton::ascii_key('\\'); break;
+  case  41: nk = KeyboardButton::ascii_key(';'); break;
+  case  39: nk = KeyboardButton::ascii_key('\''); break;
+  case  43: nk = KeyboardButton::ascii_key(','); break;
+  case  47: nk = KeyboardButton::ascii_key('.'); break;
+  case  44: nk = KeyboardButton::ascii_key('/'); break;
+
+  default:
+    // Punt.
+    nk = KeyboardButton::ascii_key(os_code & 0xff); 
+  }
+
+  if (nk.has_ascii_equivalent()) {
+    // If we assigned an ASCII button, then get the original ASCII
+    // code from the event (it will include shift et al).
+
+    // TODO: is it possible to get any international characters via
+    // this old EventRecord interface?
+    keycode = os_code & 0xff;
+  }
+  
+#endif __APPLE__
+
+  return nk;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SubprocessWindow::transition_button
+//       Access: Private
+//  Description: Sends the appropriate up/down transition for the
+//               indicated modifier key, as determined implicitly from
+//               the flags.
 ////////////////////////////////////////////////////////////////////
 void SubprocessWindow::
-set_properties_now(WindowProperties &properties) {
-  GraphicsWindow::set_properties_now(properties);
+transition_button(unsigned int flags, ButtonHandle button) {
+  if (flags) {
+    _input_devices[0].button_down(button);
+  } else {  
+    _input_devices[0].button_up(button);
+  }
 }
+
 
 #endif  // SUPPORT_SUBPROCESS_WINDOW

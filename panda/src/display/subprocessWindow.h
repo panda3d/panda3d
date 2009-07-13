@@ -65,11 +65,13 @@ public:
   virtual void end_frame(FrameMode mode, Thread *current_thread);
   virtual void begin_flip();
 
-  virtual void set_properties_now(WindowProperties &properties);
-
 protected:
   virtual void close_window();
   virtual bool open_window();
+
+private:
+  ButtonHandle translate_key(int &keycode, int os_code, unsigned int flags) const;
+  void transition_button(unsigned int flag, ButtonHandle button);
 
 private:
   PT(GraphicsBuffer) _buffer;
@@ -79,6 +81,8 @@ private:
   size_t _mmap_size;
   string _filename;
   SubprocessWindowBuffer *_swbuffer;
+
+  unsigned int _last_event_flags;
 
 public:
   static TypeHandle get_class_type() {
