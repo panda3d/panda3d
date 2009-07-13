@@ -73,9 +73,9 @@ protected:
   CPT(RenderAttrib) create_shader_attrib(const string &txt);
   PT(Texture) update_shadow_buffer(NodePath light_np);
   static const string combine_mode_as_string(CPT(TextureStage) stage,
-               TextureStage::CombineMode c_mode, bool single_value, short texindex);
+                      TextureStage::CombineMode c_mode, bool alpha, short texindex);
   static const string combine_source_as_string(CPT(TextureStage) stage,
-                                      short num, bool single_value, short texindex);
+                         short num, bool alpha, bool single_value, short texindex);
   static const string texture_type_as_string(Texture::TextureType ttype);
 
   // Shader register allocation:

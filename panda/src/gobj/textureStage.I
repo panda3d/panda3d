@@ -628,6 +628,18 @@ get_combine_alpha_operand2() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::involves_color_scale
+//       Access: Published
+//  Description: Returns true if the TextureStage is affected by the
+//               setting of the current ColorScaleAttrib, false
+//               otherwise.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureStage::
+involves_color_scale() const {
+  return _involves_color_scale;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::uses_color
 //       Access: Published
 //  Description: Returns true if the TextureStage makes use of
@@ -640,15 +652,25 @@ uses_color() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: TextureStage::involves_color_scale
+//     Function: TextureStage::uses_primary_color
 //       Access: Published
-//  Description: Returns true if the TextureStage is affected by the
-//               setting of the current ColorScaleAttrib, false
-//               otherwise.
+//  Description: Returns true if the TextureStage makes use of
+//               the CS_primary_color combine source.
 ////////////////////////////////////////////////////////////////////
 INLINE bool TextureStage::
-involves_color_scale() const {
-  return _involves_color_scale;
+uses_primary_color() const {
+  return _uses_primary_color;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TextureStage::uses_last_saved_result
+//       Access: Published
+//  Description: Returns true if the TextureStage makes use of
+//               the CS_primary_color combine source.
+////////////////////////////////////////////////////////////////////
+INLINE bool TextureStage::
+uses_last_saved_result() const {
+  return _uses_last_saved_result;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -684,7 +706,8 @@ get_sort_seq() {
 ////////////////////////////////////////////////////////////////////
 //     Function: TextureStage::update_color_flags
 //       Access: Private
-//  Description: Updates _uses_color and _involves_color_scale
+//  Description: Updates _uses_color, _involves_color_scale,
+//               _uses_primary_color and _uses_last_saved_result
 //               appropriately.
 ////////////////////////////////////////////////////////////////////
 INLINE void TextureStage::
@@ -709,6 +732,24 @@ update_color_flags() {
        _combine_alpha_source0 == CS_constant ||
        _combine_alpha_source1 == CS_constant ||
        _combine_alpha_source2 == CS_constant)));
+
+  _uses_primary_color = 
+     (_mode == M_combine &&
+      (_combine_rgb_source0 == CS_primary_color ||
+       _combine_rgb_source1 == CS_primary_color ||
+       _combine_rgb_source2 == CS_primary_color ||
+       _combine_alpha_source0 == CS_primary_color ||
+       _combine_alpha_source1 == CS_primary_color ||
+       _combine_alpha_source2 == CS_primary_color));
+
+  _uses_last_saved_result = 
+     (_mode == M_combine &&
+      (_combine_rgb_source0 == CS_last_saved_result ||
+       _combine_rgb_source1 == CS_last_saved_result ||
+       _combine_rgb_source2 == CS_last_saved_result ||
+       _combine_alpha_source0 == CS_last_saved_result ||
+       _combine_alpha_source1 == CS_last_saved_result ||
+       _combine_alpha_source2 == CS_last_saved_result));
 }
 
 INLINE ostream &

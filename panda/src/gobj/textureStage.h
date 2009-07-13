@@ -168,8 +168,10 @@ PUBLISHED:
   INLINE CombineSource get_combine_alpha_source2() const;
   INLINE CombineOperand get_combine_alpha_operand2() const;
 
-  INLINE bool uses_color() const;
   INLINE bool involves_color_scale() const;
+  INLINE bool uses_color() const;
+  INLINE bool uses_primary_color() const;
+  INLINE bool uses_last_saved_result() const;
 
   void write(ostream &out) const;
   void output(ostream &out) const;
@@ -195,8 +197,10 @@ private:
   int _rgb_scale;
   int _alpha_scale;
   bool _saved_result;
-  bool _uses_color;
   bool _involves_color_scale;
+  bool _uses_color;
+  bool _uses_primary_color;
+  bool _uses_last_saved_result;
 
   CombineMode _combine_rgb_mode;
   int _num_combine_rgb_operands;
