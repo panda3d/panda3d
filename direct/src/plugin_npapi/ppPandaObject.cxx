@@ -58,13 +58,11 @@ make_new(PPInstance *inst, P3D_object *p3d_object) {
 ////////////////////////////////////////////////////////////////////
 void PPPandaObject::
 set_p3d_object(P3D_object *p3d_object) {
-  if (_p3d_object != p3d_object) {
-    P3D_OBJECT_XDECREF(_p3d_object);
-    _p3d_object = p3d_object;
-    if (_p3d_object != NULL) {
-      P3D_OBJECT_INCREF(_p3d_object);
-    }
+  if (p3d_object != NULL) {
+    P3D_OBJECT_INCREF(p3d_object);
   }
+  P3D_OBJECT_XDECREF(_p3d_object);
+  _p3d_object = p3d_object;
 }
  
 ////////////////////////////////////////////////////////////////////

@@ -22,6 +22,8 @@
 #include "p3dIntObject.h"
 #include "p3dFloatObject.h"
 #include "p3dPythonObject.h"
+#include "p3dConcreteSequence.h"
+#include "p3dConcreteStruct.h"
 #include "binaryXml.h"
 
 #ifndef _WIN32
@@ -387,6 +389,35 @@ xml_to_p3dobj(const TiXmlElement *xvalue) {
       return new P3DStringObject(*value);
     }
 
+  } else if (strcmp(type, "concrete_sequence") == 0) {
+    P3DConcreteSequence *obj = new P3DConcreteSequence;
+    const TiXmlElement *xitem = xvalue->FirstChildElement("value");
+    while (xitem != NULL) {
+      P3D_object *item = xml_to_p3dobj(xitem);
+      if (item != NULL) {
+        obj->append(item);
+        P3D_OBJECT_DECREF(item);
+      }
+      xitem = xitem->NextSiblingElement("value");
+    }
+    return obj;
+
+  } else if (strcmp(type, "concrete_struct") == 0) {
+    P3DConcreteStruct *obj = new P3DConcreteStruct;
+    const TiXmlElement *xitem = xvalue->FirstChildElement("value");
+    while (xitem != NULL) {
+      const char *key = xitem->Attribute("key");
+      if (key != NULL) {
+        P3D_object *item = xml_to_p3dobj(xitem);
+        if (item != NULL) {
+          obj->set_property(key, item);
+          P3D_OBJECT_DECREF(item);
+        }
+      }
+      xitem = xitem->NextSiblingElement("value");
+    }
+    return obj;
+
   } else if (strcmp(type, "browser") == 0) {
     int object_id;
     if (xvalue->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
@@ -461,21 +492,21 @@ p3dobj_to_xml(P3D_object *obj) {
     break;
 
   case P3D_OT_object:
-    if (obj->_class == &P3DObject::_object_class &&
-        ((P3DObject *)obj)->is_python_object() &&
-        ((P3DPythonObject *)obj)->get_session() == this) {
-      // If it's one of our kind of objects, it must be a
-      // P3DPythonObject.  In this case, just send the object_id down,
-      // since the actual implementation of this object exists (as a
-      // Python object) in the sub-process space.
-      int object_id = ((P3DPythonObject *)obj)->get_object_id();
-      xvalue->SetAttribute("type", "python");
-      xvalue->SetAttribute("object_id", object_id);
+    P3DObject *p3dobj = NULL;
+    if (obj->_class == &P3DObject::_object_class) {
+      p3dobj = (P3DObject *)obj;
+    }
+
+    if (p3dobj != NULL && p3dobj->fill_xml(xvalue, this)) {
+      // This object has a specialized XML representation, valid for
+      // this particular session.  It has already been filled into
+      // xvalue.
 
     } else {
-      // Otherwise, it must a host-provided object, which means we
-      // should pass a reference down to this particular object, so
-      // the Python process knows to call back up to here to query it.
+      // Otherwise, it must a host-provided object, or a Python object
+      // from another session; which means we should pass a reference
+      // down to this particular object, so the Python process knows
+      // to call back up to here to query it.
 
       P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
       int object_id = inst_mgr->get_unique_id();

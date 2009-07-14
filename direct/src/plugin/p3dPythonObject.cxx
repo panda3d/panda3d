@@ -44,17 +44,6 @@ P3DPythonObject::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonObject::is_python_object
-//       Access: Public, Virtual
-//  Description: Returns true if this is actually an instance of a
-//               P3DPythonObject, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool P3DPythonObject::
-is_python_object() {
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DPythonObject::get_type
 //       Access: Public, Virtual
 //  Description: Returns the fundamental type of this kind of object.
@@ -153,7 +142,7 @@ get_property(const string &property) {
   P3D_object *params[1];
   params[0] = new P3DStringObject(property);
 
-  P3D_object *result = call("__getattr__", params, 1);
+  P3D_object *result = call("__get_property__", params, 1);
   P3D_OBJECT_DECREF(params[0]);
   return result;
 }
@@ -176,12 +165,12 @@ set_property(const string &property, P3D_object *value) {
 
   if (value == NULL) {
     // Delete an attribute.
-    result = call("__delattr__", params, 1);
+    result = call("__del_property__", params, 1);
 
   } else {
     // Set a new attribute.
     params[1] = value;
-    result = call("__setattr__", params, 2);
+    result = call("__set_property__", params, 2);
   }
 
   P3D_OBJECT_DECREF(params[0]);
@@ -280,6 +269,31 @@ output(ostream &out) {
     out << ": " << *result;
     P3D_OBJECT_DECREF(result);
   }    
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonObject::fill_xml
+//       Access: Public, Virtual
+//  Description: If this object has a valid XML representation for the
+//               indicated session (that hasn't already been
+//               implemented by the generic code in P3DSession), this
+//               method will apply it to the indicated "value" element
+//               and return true.  Otherwise, this method will leave
+//               the element unchanged and return false.
+////////////////////////////////////////////////////////////////////
+bool P3DPythonObject::
+fill_xml(TiXmlElement *xvalue, P3DSession *session) {
+  if (session == _session) {
+    // If it's a P3DPythonObject from the same session, just send
+    // the object_id down, since the actual implementation of this
+    // object exists (as a Python object) in the sub-process space.
+    xvalue->SetAttribute("type", "python");
+    xvalue->SetAttribute("object_id", _object_id);
+    return true;
+  }
+
+  // Otherwise, we have to send it as a browser object.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

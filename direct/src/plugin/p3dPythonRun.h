@@ -114,6 +114,7 @@ private:
   PyObject *_runner;
   PyObject *_undefined_object_class;
   PyObject *_undefined;
+  PyObject *_concrete_struct_class;
   PyObject *_browser_object_class;
   PyObject *_taskMgr;
 

@@ -1,5 +1,5 @@
-// Filename: p3dPythonObject.h
-// Created by:  drose (02Jul09)
+// Filename: p3dConcreteSequence.h
+// Created by:  drose (30Jun09)
 //
 ////////////////////////////////////////////////////////////////////
 //
@@ -12,51 +12,48 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DPYTHONOBJECT_H
-#define P3DPYTHONOBJECT_H
+#ifndef P3DCONCRETESEQUENCE_H
+#define P3DCONCRETESEQUENCE_H
 
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
 
-class P3DSession;
-
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DPythonObject
-// Description : An object type that references a PyObject in the
-//               subordinate process.  It allows querying and/or
-//               modifying the state of the referenced PyObject, via
-//               clever XML communication in
-//               P3DSession::command_and_response().
+//       Class : P3DConcreteSequence
+// Description : An object type that contains a sequence of objects,
+//               which is passed by value between Python and
+//               JavaScript, so may be more optimal for small lists
+//               that are accessed repeatedly.
+//
+//               This is converted from a Python "tuple" object.
 ////////////////////////////////////////////////////////////////////
-class P3DPythonObject : public P3DObject {
+class P3DConcreteSequence : public P3DObject {
 public:
-  P3DPythonObject(P3DSession *session, int object_id);
-  virtual ~P3DPythonObject();
+  P3DConcreteSequence();
+  virtual ~P3DConcreteSequence();
 
-public:
+  virtual bool is_sequence_object();
+
   virtual P3D_object_type get_type();
   virtual bool get_bool();
-  virtual int get_int();
-  virtual double get_float();
 
   virtual void make_string(string &value);
 
   virtual P3D_object *get_property(const string &property);
   virtual bool set_property(const string &property, P3D_object *value);
 
-  virtual bool has_method(const string &method_name);
-  virtual P3D_object *call(const string &method_name, 
-                           P3D_object *params[], int num_params);
-
-  virtual void output(ostream &out);
   virtual bool fill_xml(TiXmlElement *xvalue, P3DSession *session);
+  virtual P3D_object **get_object_array();
+  virtual int get_object_array_size();
 
-  P3DSession *get_session();
-  int get_object_id();
+  int get_length() const;
+  P3D_object *get_element(int n) const;
+  bool set_element(int n, P3D_object *value);
+  void append(P3D_object *value);
 
 private:
-  P3DSession *_session;
-  int _object_id;
+  typedef vector<P3D_object *> Elements;
+  Elements _elements;
 };
 
 #endif

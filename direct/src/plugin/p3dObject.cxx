@@ -200,17 +200,6 @@ P3DObject::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DObject::is_python_object
-//       Access: Public, Virtual
-//  Description: Returns true if this is actually an instance of a
-//               P3DPythonObject, false otherwise.
-////////////////////////////////////////////////////////////////////
-bool P3DObject::
-is_python_object() {
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DObject::get_int
 //       Access: Public, Virtual
 //  Description: Returns the object value coerced to an integer, if
@@ -336,6 +325,47 @@ output(ostream &out) {
   string value;
   make_string(value);
   out << value;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::fill_xml
+//       Access: Public, Virtual
+//  Description: If this object has a valid XML representation for the
+//               indicated session (that hasn't already been
+//               implemented by the generic code in P3DSession), this
+//               method will apply it to the indicated "value" element
+//               and return true.  Otherwise, this method will leave
+//               the element unchanged and return false.
+////////////////////////////////////////////////////////////////////
+bool P3DObject::
+fill_xml(TiXmlElement *xvalue, P3DSession *session) {
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::get_object_array
+//       Access: Public
+//  Description: Returns a pointer to the array of objects represented
+//               by this object, if any, or NULL if the object does
+//               not represent an array of objects.  This may also
+//               return NULL for a zero-length array; use
+//               get_object_array_size() to differentiate.
+////////////////////////////////////////////////////////////////////
+P3D_object **P3DObject::
+get_object_array() {
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DObject::get_object_array_size
+//       Access: Public
+//  Description: Returns the number of elements in the array returned
+//               by get_object_array(), or -1 if this object does not
+//               representan array of objects.
+////////////////////////////////////////////////////////////////////
+int P3DObject::
+get_object_array_size() {
+  return -1;
 }
 
 ////////////////////////////////////////////////////////////////////

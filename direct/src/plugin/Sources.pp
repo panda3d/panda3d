@@ -30,6 +30,8 @@
     p3d_plugin_config.h \
     p3d_plugin_common.h \
     p3dBoolObject.h \
+    p3dConcreteSequence.h \
+    p3dConcreteStruct.h \
     p3dConditionVar.h p3dConditionVar.I \
     p3dDownload.h p3dDownload.I \
     p3dFileDownload.h p3dFileDownload.I \
@@ -56,6 +58,8 @@
   #define INCLUDED_SOURCES \
     p3d_plugin.cxx \
     p3dBoolObject.cxx \
+    p3dConcreteSequence.cxx \
+    p3dConcreteStruct.cxx \
     p3dConditionVar.cxx \
     p3dDownload.cxx \
     p3dFileDownload.cxx \

@@ -144,6 +144,13 @@ run_python() {
     return false;
   }
 
+  // Get the ConcreteStruct class.
+  _concrete_struct_class = PyObject_GetAttrString(runp3d, "ConcreteStruct");
+  if (_concrete_struct_class == NULL) {
+    PyErr_Print();
+    return false;
+  }
+
   // Get the BrowserObject class.
   _browser_object_class = PyObject_GetAttrString(runp3d, "BrowserObject");
   if (_browser_object_class == NULL) {
@@ -324,7 +331,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
   doc.LinkEndChild(xresponse);
 
   const char *op = xcommand->Attribute("op");
-  if (op != NULL) {
+  if (op != NULL && !PyErr_Occurred()) {
     if (strcmp(op, "get_panda_script_object") == 0) {
       // Get Panda's toplevel Python object.
       PyObject *obj = PyObject_CallMethod(_runner, (char*)"getPandaScriptObject", (char *)"");
@@ -396,20 +403,44 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
                    strcmp(method_name, "toString") == 0) {
           result = PyObject_Str(obj);
 
-        } else if (strcmp(method_name, "__setattr__") == 0) {
+        } else if (strcmp(method_name, "__set_property__") == 0) {
+          // We call these methods __set_property__ et al instead of
+          // __setattr__ et al, because they do not precisely
+          // duplicate the Python semantics.
           char *property_name;
           PyObject *value;
           if (PyArg_ParseTuple(params, "sO", &property_name, &value)) {
-            PyObject_SetAttrString(obj, property_name, value);
-            result = Py_True;
-            Py_INCREF(result);
-          }
+            bool success = false;
 
-        } else if (strcmp(method_name, "__delattr__") == 0) {
-          char *property_name;
-          if (PyArg_ParseTuple(params, "s", &property_name)) {
+            // If it already exists as an attribute, update it there.
             if (PyObject_HasAttrString(obj, property_name)) {
-              PyObject_DelAttrString(obj, property_name);
+              if (PyObject_SetAttrString(obj, property_name, value) != -1) {
+                success = true;
+              } else {
+                PyErr_Clear();
+              }
+            }
+            
+            // If the object supports the mapping protocol, store it
+            // in the object's dictionary.
+            if (!success && PyMapping_Check(obj)) {
+              if (PyMapping_SetItemString(obj, property_name, value) != -1) {
+                success = true;
+              } else {
+                PyErr_Clear();
+              }
+            }
+
+            // Finally, try to store it on the object.
+            if (!success) {
+              if (PyObject_SetAttrString(obj, property_name, value) != -1) {
+                success = true;
+              } else {
+                PyErr_Clear();
+              }
+            }
+
+            if (success) {
               result = Py_True;
             } else {
               result = Py_False;
@@ -417,13 +448,61 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
             Py_INCREF(result);
           }
 
-        } else if (strcmp(method_name, "__getattr__") == 0) {
+        } else if (strcmp(method_name, "__del_property__") == 0) {
           char *property_name;
           if (PyArg_ParseTuple(params, "s", &property_name)) {
+            bool success = false;
+
+            if (PyObject_HasAttrString(obj, property_name)) {
+              if (PyObject_DelAttrString(obj, property_name) != -1) {
+                success = true;
+              } else {
+                PyErr_Clear();
+              }
+            }
+
+            if (!success) {
+              if (PyObject_DelItemString(obj, property_name) != -1) {
+                success = true;
+              } else {
+                PyErr_Clear();
+              }
+            }
+            
+            if (success) {
+              result = Py_True;
+            } else {
+              result = Py_False;
+            }
+            Py_INCREF(result);
+          }
+
+        } else if (strcmp(method_name, "__get_property__") == 0) {
+          char *property_name;
+          if (PyArg_ParseTuple(params, "s", &property_name)) {
+            bool success = false;
+
             if (PyObject_HasAttrString(obj, property_name)) {
               result = PyObject_GetAttrString(obj, property_name);
+              if (result != NULL) {
+                success = true;
+              } else {
+                PyErr_Clear();
+              }
+            }
 
-            } else {
+            if (!success) {
+              if (PyMapping_HasKeyString(obj, property_name)) {
+                result = PyMapping_GetItemString(obj, property_name);
+                if (result != NULL) {
+                  success = true;
+                } else {
+                  PyErr_Clear();
+                }
+              }
+            }
+
+            if (!success) {
               result = NULL;
             }
           }
@@ -693,26 +772,8 @@ py_request_func(PyObject *args) {
     TiXmlElement *xobject = pyobj_to_xml(object);
     xobject->SetValue("object");
     xrequest->LinkEndChild(xobject);
-
-    if (strcmp(operation, "call") == 0 && PySequence_Check(value)) {
-      // A special case: operation "call" receives a tuple of
-      // parameters; unpack the tuple for the XML.
-      Py_ssize_t length = PySequence_Length(value);
-      for (Py_ssize_t i = 0; i < length; ++i) {
-        PyObject *p = PySequence_GetItem(value, i);
-        if (p != NULL) {
-          TiXmlElement *xvalue = pyobj_to_xml(p);
-          xrequest->LinkEndChild(xvalue);
-          Py_DECREF(p);
-        }
-      }
-      
-    } else {
-      // Other kinds of operations receive only a single parameter, if
-      // any.
-      TiXmlElement *xvalue = pyobj_to_xml(value);
-      xrequest->LinkEndChild(xvalue);
-    }
+    TiXmlElement *xvalue = pyobj_to_xml(value);
+    xrequest->LinkEndChild(xvalue);
 
     write_xml(_pipe_write, &doc, nout);
 
@@ -1045,6 +1106,71 @@ pyobj_to_xml(PyObject *value) {
       xvalue->SetAttribute("value", str);
     }
 
+  } else if (PyTuple_Check(value)) {
+    // An immutable sequence.  Pass it as a concrete.
+    xvalue->SetAttribute("type", "concrete_sequence");
+
+    Py_ssize_t length = PySequence_Length(value);
+    for (Py_ssize_t i = 0; i < length; ++i) {
+      PyObject *item = PySequence_GetItem(value, i);
+      if (item != NULL) {
+        xvalue->LinkEndChild(pyobj_to_xml(item));
+        Py_DECREF(item);
+      }
+    }
+
+  } else if (PyObject_IsInstance(value, _concrete_struct_class)) {
+    // This is a ConcreteStruct.
+    xvalue->SetAttribute("type", "concrete_struct");
+
+    PyObject *items = PyObject_CallMethod(value, (char *)"getConcreteProperties", (char *)"");
+    if (items == NULL) {
+      PyErr_Print();
+      return xvalue;
+    }
+
+    Py_ssize_t length = PySequence_Length(items);
+    for (Py_ssize_t i = 0; i < length; ++i) {
+      PyObject *item = PySequence_GetItem(items, i);
+      if (item != NULL) {
+        PyObject *a = PySequence_GetItem(item, 0);
+        if (a != NULL) {
+          PyObject *b = PySequence_GetItem(item, 1);
+          if (b != NULL) {
+            TiXmlElement *xitem = pyobj_to_xml(b);
+            Py_DECREF(b);
+
+            PyObject *as_str;
+            if (PyUnicode_Check(a)) {
+              // The key is a unicode value.
+              as_str = PyUnicode_AsUTF8String(a);
+            } else {
+              // The key is a string value or something else.  Make it
+              // a string.
+              as_str = PyObject_Str(a);
+            }
+            char *buffer;
+            Py_ssize_t length;
+            if (PyString_AsStringAndSize(as_str, &buffer, &length) != -1) {
+              string str(buffer, length);
+              xitem->SetAttribute("key", str);
+            }
+            Py_DECREF(as_str);
+
+            xvalue->LinkEndChild(xitem);
+          }
+          Py_DECREF(a);
+        }
+        Py_DECREF(item);
+      }
+    }
+
+    // We've already avoided errors in the above code; clear the error
+    // flag.
+    PyErr_Clear();
+
+    Py_DECREF(items);
+
   } else if (PyObject_IsInstance(value, _undefined_object_class)) {
     // This is an UndefinedObject.
     xvalue->SetAttribute("type", "undefined");
@@ -1137,6 +1263,44 @@ xml_to_pyobj(TiXmlElement *xvalue) {
       // Construct a new BrowserObject wrapper around this object.
       return PyObject_CallFunction(_browser_object_class, (char *)"Oi", 
                                    _runner, object_id);
+    }
+
+  } else if (strcmp(type, "concrete_sequence") == 0) {
+    // Receive a concrete sequence as a tuple.
+    PyObject *list = PyList_New(0);
+
+    TiXmlElement *xitem = xvalue->FirstChildElement("value");
+    while (xitem != NULL) {
+      PyObject *item = xml_to_pyobj(xitem);
+      if (item != NULL) {
+        PyList_Append(list, item);
+        Py_DECREF(item);
+      }
+      xitem = xitem->NextSiblingElement("value");
+    }
+
+    PyObject *result = PyList_AsTuple(list);
+    Py_DECREF(list);
+    return result;
+
+  } else if (strcmp(type, "concrete_struct") == 0) {
+    // Receive a concrete struct as a new ConcreteStruct instance.
+    PyObject *obj = PyObject_CallFunction(_concrete_struct_class, (char *)"");
+
+    if (obj != NULL) {
+      TiXmlElement *xitem = xvalue->FirstChildElement("value");
+      while (xitem != NULL) {
+        const char *key = xitem->Attribute("key");
+        if (key != NULL) {
+          PyObject *item = xml_to_pyobj(xitem);
+          if (item != NULL) {
+            PyObject_SetAttrString(obj, key, item);
+            Py_DECREF(item);
+          }
+        }
+        xitem = xitem->NextSiblingElement("value");
+      }
+      return obj;
     }
 
   } else if (strcmp(type, "python") == 0) {

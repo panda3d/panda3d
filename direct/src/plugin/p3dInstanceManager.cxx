@@ -87,10 +87,12 @@ P3DInstanceManager::
        << " " << _false_object->_ref_count
        << "\n" << flush;
 
+  /*
   assert(_undefined_object->_ref_count == 1);
   assert(_none_object->_ref_count == 1);
   assert(_true_object->_ref_count == 1);
   assert(_false_object->_ref_count == 1);
+  */
 
   P3D_OBJECT_DECREF(_undefined_object);
   P3D_OBJECT_DECREF(_none_object);

@@ -726,6 +726,7 @@ send_browser_script_object() {
 ////////////////////////////////////////////////////////////////////
 P3D_request *P3DInstance::
 make_p3d_request(TiXmlElement *xrequest) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3D_request *request = NULL;
 
   const char *rtype = xrequest->Attribute("rtype");
@@ -750,17 +751,13 @@ make_p3d_request(TiXmlElement *xrequest) {
       int unique_id = 0;
       xrequest->Attribute("unique_id", &unique_id);
         
-      vector<P3D_object *> values;
+      P3D_object *value = NULL;
       TiXmlElement *xvalue = xrequest->FirstChildElement("value");
-      while (xvalue != NULL) {
-        P3D_object *value = _session->xml_to_p3dobj(xvalue);
-        values.push_back(value);
-        xvalue = xvalue->NextSiblingElement("value");
+      if (xvalue != NULL) {
+        value = _session->xml_to_p3dobj(xvalue);
       }
-      
-      P3D_object **values_ptr = NULL;
-      if (!values.empty()) {
-        values_ptr = &values[0];
+      if (value == NULL) {
+        value = inst_mgr->new_none_object();
       }
 
       if (operation != NULL && xobject != NULL) {
@@ -770,14 +767,11 @@ make_p3d_request(TiXmlElement *xrequest) {
           property_name = "";
         }
 
-        handle_script_request(operation, object, property_name,
-                              values_ptr, values.size(),
+        handle_script_request(operation, object, property_name, value,
                               (needs_response != 0), unique_id);
       }
 
-      for (size_t i = 0; i < values.size(); ++i) {
-        P3D_OBJECT_DECREF(values[i]);
-      }
+      P3D_OBJECT_DECREF(value);
 
     } else if (strcmp(rtype, "drop_p3dobj") == 0) {
       int object_id;
@@ -858,8 +852,7 @@ handle_notify_request(const string &message) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 handle_script_request(const string &operation, P3D_object *object, 
-                      const string &property_name,
-                      P3D_object *values[], int num_values,
+                      const string &property_name, P3D_object *value,
                       bool needs_response, int unique_id) {
 
   TiXmlDocument *doc = new TiXmlDocument;
@@ -883,13 +876,8 @@ handle_script_request(const string &operation, P3D_object *object,
     }
 
   } else if (operation == "set_property") {
-    bool result;
-    if (num_values == 1) {
-      result = P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), values[0]);
-    } else {
-      // Wrong number of values.  Error.
-      result = false;
-    }
+    bool result = 
+      P3D_OBJECT_SET_PROPERTY(object, property_name.c_str(), value);
     
     TiXmlElement *xvalue = new TiXmlElement("value");
     xvalue->SetAttribute("type", "bool");
@@ -905,6 +893,17 @@ handle_script_request(const string &operation, P3D_object *object,
     xcommand->LinkEndChild(xvalue);
 
   } else if (operation == "call") {
+    // Convert the single value parameter into an array of parameters.
+    P3D_object **values = &value;
+    int num_values = 1;
+    if (value->_class == &P3DObject::_object_class) {
+      P3DObject *p3dobj = (P3DObject *)value;
+      if (p3dobj->get_object_array_size() != -1) {
+        values = p3dobj->get_object_array();
+        num_values = p3dobj->get_object_array_size();
+      }
+    }
+
     P3D_object *result =
       P3D_OBJECT_CALL(object, property_name.c_str(), values, num_values);
     
@@ -915,18 +914,12 @@ handle_script_request(const string &operation, P3D_object *object,
 
   } else if (operation == "eval") {
     P3D_object *result;
-    if (num_values == 1) {
-      P3D_object *expression = values[0];
-      int size = P3D_OBJECT_GET_STRING(expression, NULL, 0);
-      char *buffer = new char[size + 1];
-      P3D_OBJECT_GET_STRING(expression, buffer, size + 1);
-      result = P3D_OBJECT_EVAL(object, buffer);
-      logfile << " eval " << *object << ": " << buffer << ", result = " << result << "\n";
-      delete[] buffer;
-    } else {
-      // Wrong number of values.  Error.
-      result = NULL;
-    }
+    int size = P3D_OBJECT_GET_STRING(value, NULL, 0);
+    char *buffer = new char[size + 1];
+    P3D_OBJECT_GET_STRING(value, buffer, size + 1);
+    result = P3D_OBJECT_EVAL(object, buffer);
+    logfile << " eval " << *object << ": " << buffer << ", result = " << result << "\n";
+    delete[] buffer;
     
     if (result != NULL) {
       xcommand->LinkEndChild(_session->p3dobj_to_xml(result));

@@ -1,5 +1,7 @@
 #include "p3d_plugin.cxx"
 #include "p3dBoolObject.cxx"
+#include "p3dConcreteSequence.cxx"
+#include "p3dConcreteStruct.cxx"
 #include "p3dConditionVar.cxx"
 #include "p3dDownload.cxx"
 #include "p3dFileDownload.cxx"

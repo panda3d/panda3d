@@ -102,8 +102,7 @@ private:
   P3D_request *make_p3d_request(TiXmlElement *xrequest);
   void handle_notify_request(const string &message);
   void handle_script_request(const string &operation, P3D_object *object, 
-                             const string &property_name,
-                             P3D_object *values[], int num_values,
+                             const string &property_name, P3D_object *value,
                              bool needs_response, int unique_id);
   void make_splash_window();
   void install_progress(P3DPackage *package, double progress);
