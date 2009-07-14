@@ -270,7 +270,6 @@ command_and_response(TiXmlDocument *command) {
   // Now block, waiting for a response to be delivered.  We assume
   // only one thread will be waiting at a time.
   nout << "waiting for response " << response_id << "\n" << flush;
-  int tick_start = GetTickCount();
 
   _response_ready.acquire();
   Responses::iterator ri = _responses.find(response_id);
