@@ -33,6 +33,8 @@ public:
   inline void open_write(FHandle handle);
   inline void close();
 
+  inline FHandle get_handle() const;
+
 private:
   HandleStreamBuf _buf;
 };

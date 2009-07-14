@@ -14,6 +14,7 @@
 
 #include "p3dPythonRun.h"
 #include "asyncTaskManager.h"
+#include "binaryXml.h"
 
 // There is only one P3DPythonRun object in any given process space.
 // Makes the statics easier to deal with, and we don't need multiple
@@ -299,8 +300,7 @@ handle_command(TiXmlDocument *doc) {
           xresponse->SetAttribute("response_id", want_response_id);
           doc.LinkEndChild(decl);
           doc.LinkEndChild(xresponse);
-          nout << "sent: " << doc << "\n" << flush;
-          _pipe_write << doc << flush;
+          write_xml(_pipe_write, &doc, nout);
         }
       }
     }
@@ -473,8 +473,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
   }
 
   if (needs_response) {
-    nout << "sent: " << doc << "\n" << flush;
-    _pipe_write << doc << flush;
+    write_xml(_pipe_write, &doc, nout);
   }
 }
 
@@ -488,6 +487,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 check_comm() {
+  nout << ":" << flush;
   ACQUIRE_LOCK(_commands_lock);
   while (!_commands.empty()) {
     TiXmlDocument *doc = _commands.front();
@@ -532,7 +532,7 @@ task_check_comm(GenericAsyncTask *task, void *user_data) {
 ////////////////////////////////////////////////////////////////////
 TiXmlDocument *P3DPythonRun::
 wait_script_response(int response_id) {
-  nout << "Waiting script_response " << response_id << "\n";
+  nout << "waiting script_response " << response_id << "\n" << flush;
   while (true) {
     ACQUIRE_LOCK(_commands_lock);
     
@@ -550,7 +550,7 @@ wait_script_response(int response_id) {
               // This is the response we were waiting for.
               _commands.erase(ci);
               RELEASE_LOCK(_commands_lock);
-              nout << "received script_response: " << *doc << "\n" << flush;
+              nout << "got script_response " << unique_id << "\n" << flush;
               return doc;
             }
           }
@@ -564,6 +564,7 @@ wait_script_response(int response_id) {
           // This command will be wanting a response.  We'd better
           // honor it right away, or we risk deadlock with the browser
           // process and the Python process waiting for each other.
+          nout << "honoring response " << want_response_id << "\n" << flush;
           _commands.erase(ci);
           RELEASE_LOCK(_commands_lock);
           handle_command(doc);
@@ -579,6 +580,27 @@ wait_script_response(int response_id) {
     }
     
     RELEASE_LOCK(_commands_lock);
+
+#ifdef _WIN32
+    // Make sure we process the Windows event loop while we're
+    // waiting, or everything that depends on Windows messages will
+    // starve.
+
+    // We appear to be best off with just a single PeekMessage() call
+    // here; the full message pump seems to cause problems.
+    MSG msg;
+    PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
+    /*
+      if (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE | PM_NOYIELD)) {
+        nout << "  pumping " << msg.message << "\n" << flush;
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+        nout << "  done pumping\n" << flush;
+      }
+    */
+#endif  // _WIN32
+
+    nout << "." << flush;
 
     // It hasn't shown up yet.  Give the sub-thread a chance to
     // process the input and append it to the queue.
@@ -648,8 +670,7 @@ py_request_func(PyObject *args) {
     }
 
     xrequest->SetAttribute("message", message);
-    nout << "sent: " << doc << "\n" << flush;
-    _pipe_write << doc << flush;
+    write_xml(_pipe_write, &doc, nout);
 
   } else if (strcmp(request_type, "script") == 0) {
     // Meddling with a scripting variable on the browser side.
@@ -693,8 +714,7 @@ py_request_func(PyObject *args) {
       xrequest->LinkEndChild(xvalue);
     }
 
-    nout << "sent: " << doc << "\n" << flush;
-    _pipe_write << doc << flush;
+    write_xml(_pipe_write, &doc, nout);
 
   } else if (strcmp(request_type, "drop_p3dobj") == 0) {
     // Release a particular P3D_object that we were holding a
@@ -706,8 +726,7 @@ py_request_func(PyObject *args) {
     nout << "got drop_p3dobj(" << object_id << ")\n" << flush;
 
     xrequest->SetAttribute("object_id", object_id);
-    nout << "sent: " << doc << "\n" << flush;
-    _pipe_write << doc << flush;
+    write_xml(_pipe_write, &doc, nout);
 
   } else {
     string message = string("Unsupported request type: ") + string(request_type);
@@ -1150,10 +1169,8 @@ xml_to_pyobj(TiXmlElement *xvalue) {
 void P3DPythonRun::
 rt_thread_run() {
   while (_read_thread_continue) {
-    TiXmlDocument *doc = new TiXmlDocument;
-
-    _pipe_read >> *doc;
-    if (!_pipe_read || _pipe_read.eof()) {
+    TiXmlDocument *doc = read_xml(_pipe_read, nout);
+    if (doc == NULL) {
       // Some error on reading.  Abort.
       _program_continue = false;
       return;

@@ -51,7 +51,6 @@ public:
   void stream_as_file(NPStream *stream, const char *fname);
 
   void handle_request(P3D_request *request);
-  static void handle_request_loop();
 
   void handle_event(void *event);
 
@@ -77,6 +76,9 @@ private:
 
   void create_instance();
   void send_window();
+
+  static void handle_request_loop();
+  static void browser_sync_callback(void *);
 
 #ifdef _WIN32
   static LONG 

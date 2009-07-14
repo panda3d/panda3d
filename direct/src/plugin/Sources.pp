@@ -22,8 +22,9 @@
     fileSpec.cxx fileSpec.h fileSpec.I \
     find_root_dir.cxx find_root_dir.h \
     get_tinyxml.h \
+    binaryXml.cxx binaryXml.h \
     handleStream.cxx handleStream.h handleStream.I \
-    handleStreamBuf.cxx handleStreamBuf.h \
+    handleStreamBuf.cxx handleStreamBuf.h handleStreamBuf.I \
     mkdir_complete.cxx mkdir_complete.h \
     p3d_lock.h p3d_plugin.h \
     p3d_plugin_config.h \
@@ -98,13 +99,16 @@
     pipeline:c event:c nativenet:c panda:m
 
   #define SOURCES \
+    binaryXml.cxx binaryXml.h \
     handleStream.cxx handleStream.h handleStream.I \
-    handleStreamBuf.cxx handleStreamBuf.h \
+    handleStreamBuf.cxx handleStreamBuf.h handleStreamBuf.I \
     p3d_lock.h p3d_plugin.h \
     p3d_plugin_config.h \
     p3dCInstance.cxx \
     p3dCInstance.h p3dCInstance.I \
     p3dPythonRun.cxx p3dPythonRun.h p3dPythonRun.I
+
+  #define WIN_SYS_LIBS user32.lib
 
 #end bin_target
 

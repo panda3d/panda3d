@@ -22,6 +22,7 @@
 #include "p3dIntObject.h"
 #include "p3dFloatObject.h"
 #include "p3dPythonObject.h"
+#include "binaryXml.h"
 
 #ifndef _WIN32
 #include <fcntl.h>
@@ -94,8 +95,7 @@ shutdown() {
     xcommand->SetAttribute("cmd", "exit");
     doc.LinkEndChild(decl);
     doc.LinkEndChild(xcommand);
-    nout << "sent: " << doc << "\n" << flush;
-    _pipe_write << doc << flush;
+    write_xml(_pipe_write, &doc, nout);
 
     // Also close the pipe, to help underscore the point.
     _pipe_write.close();
@@ -226,8 +226,7 @@ void P3DSession::
 send_command(TiXmlDocument *command) {
   if (_p3dpython_running) {
     // Python is running.  Send the command.
-    nout << "sent: " << *command << "\n" << flush;
-    _pipe_write << *command << flush;
+    write_xml(_pipe_write, command, nout);
     delete command;
   } else {
     // Python not yet running.  Queue up the command instead.
@@ -265,13 +264,14 @@ command_and_response(TiXmlDocument *command) {
   assert(xcommand != NULL);
   xcommand->SetAttribute("want_response_id", response_id);
 
-  nout << "sent: " << *command << "\n" << flush;
-  _pipe_write << *command << flush;
+  write_xml(_pipe_write, command, nout);
   delete command;
 
   // Now block, waiting for a response to be delivered.  We assume
   // only one thread will be waiting at a time.
   nout << "waiting for response " << response_id << "\n" << flush;
+  int tick_start = GetTickCount();
+
   _response_ready.acquire();
   Responses::iterator ri = _responses.find(response_id);
   while (ri == _responses.end()) {
@@ -296,6 +296,7 @@ command_and_response(TiXmlDocument *command) {
     for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
       P3DInstance *inst = (*ii).second;
       inst->bake_requests();
+      inst->pump_messages();
     }
     _response_ready.acquire();
 
@@ -312,9 +313,18 @@ command_and_response(TiXmlDocument *command) {
     // particular, the CreateWindow() call within the subprocess--will
     // starve, and we could end up with deadlock.
 
-    // A single PeekMessage() seems to be sufficient.
     MSG msg;
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
+    /*
+    MSG msg;
+    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE | PM_NOYIELD)) {
+      //      nout << "  pumping " << msg.message << "\n" << flush;
+      TranslateMessage(&msg);
+      DispatchMessage(&msg);
+      //      nout << "  done pumping\n" << flush;
+    }
+    */
+      
 #endif  // _WIN32
 
     // We wait with a timeout, so we can go back and spin the event
@@ -529,8 +539,7 @@ drop_pyobj(int object_id) {
     xcommand->SetAttribute("object_id", object_id);
     doc.LinkEndChild(decl);
     doc.LinkEndChild(xcommand);
-    nout << "sent: " << doc << "\n" << flush;
-    _pipe_write << doc << flush;
+    write_xml(_pipe_write, &doc, nout);
   }
 }
 
@@ -657,20 +666,16 @@ start_p3dpython() {
   xcommand->SetAttribute("session_id", _session_id);
   doc.LinkEndChild(decl);
   doc.LinkEndChild(xcommand);
-  nout << "sent: " << doc << "\n" << flush;
-  _pipe_write << doc;
+  write_xml(_pipe_write, &doc, nout);
   
   // Also feed it any commands we may have queued up from before the
   // process was started.
   Commands::iterator ci;
   for (ci = _commands.begin(); ci != _commands.end(); ++ci) {
-    nout << "sent: " << *(*ci) << "\n" << flush;
-    _pipe_write << *(*ci);
+    write_xml(_pipe_write, (*ci), nout);
     delete (*ci);
   }
   _commands.clear();
-
-  _pipe_write << flush;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -715,10 +720,8 @@ join_read_thread() {
 void P3DSession::
 rt_thread_run() {
   while (_read_thread_continue) {
-    TiXmlDocument *doc = new TiXmlDocument;
-
-    _pipe_read >> *doc;
-    if (!_pipe_read || _pipe_read.eof()) {
+    TiXmlDocument *doc = read_xml(_pipe_read, nout);
+    if (doc == NULL) {
       // Some error on reading.  Abort.
       rt_terminate();
       return;
@@ -727,6 +730,8 @@ rt_thread_run() {
     // Successfully read an XML document.
     rt_handle_request(doc);
   }
+
+  logfile << "Exiting rt_thread_run in " << this << "\n" << flush;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -737,6 +742,7 @@ rt_thread_run() {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 rt_handle_request(TiXmlDocument *doc) {
+  nout << "rt_handle_request in " << this << "\n" << flush;
   TiXmlElement *xresponse = doc->FirstChildElement("response");
   if (xresponse != (TiXmlElement *)NULL) {
     int response_id;
@@ -748,6 +754,7 @@ rt_handle_request(TiXmlDocument *doc) {
       assert(inserted);
       _response_ready.notify();
       _response_ready.release();
+      nout << "done a, rt_handle_request in " << this << "\n" << flush;
       return;
     }
   }
@@ -772,6 +779,7 @@ rt_handle_request(TiXmlDocument *doc) {
   if (doc != NULL) {
     delete doc;
   }
+  nout << "done rt_handle_request in " << this << "\n" << flush;
 }
 
 ////////////////////////////////////////////////////////////////////

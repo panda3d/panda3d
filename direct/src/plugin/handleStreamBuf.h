@@ -24,7 +24,6 @@ typedef int FHandle;
 #endif
 
 #include <iostream>
-#include <iostream>
 
 using namespace std;
 
@@ -43,6 +42,8 @@ public:
   bool is_open_write() const;
   void close();
 
+  inline FHandle get_handle() const;
+
 protected:
   virtual int overflow(int c);
   virtual int sync();
@@ -60,5 +61,7 @@ private:
 
   char *_buffer;
 };
+
+#include "handleStreamBuf.I"
 
 #endif

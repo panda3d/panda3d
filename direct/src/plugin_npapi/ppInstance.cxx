@@ -437,31 +437,6 @@ handle_request(P3D_request *request) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::handle_request_loop
-//       Access: Public, Static
-//  Description: Checks for any new requests from the plugin, and
-//               dispatches them to the appropriate PPInstance.  This
-//               function is called only in the main thread.
-////////////////////////////////////////////////////////////////////
-void PPInstance::
-handle_request_loop() {
-  if (!is_plugin_loaded()) {
-    return;
-  }
-
-  P3D_instance *p3d_inst = P3D_check_request(false);
-  while (p3d_inst != (P3D_instance *)NULL) {
-    P3D_request *request = P3D_instance_get_request(p3d_inst);
-    if (request != (P3D_request *)NULL) {
-      PPInstance *inst = (PPInstance *)(p3d_inst->_user_data);
-      assert(inst != NULL);
-      inst->handle_request(request);
-    }
-    p3d_inst = P3D_check_request(false);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::handle_event
 //       Access: Public
 //  Description: Called by the browser as new window events are
@@ -469,8 +444,12 @@ handle_request_loop() {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 handle_event(void *event) {
-  // This is a good time to check for new requests.
+#ifndef HAS_PLUGIN_THREAD_ASYNC_CALL
+  // If we can't ask Mozilla to call us back using
+  // NPN_PluginThreadAsyncCall(), then we'll take advantage of the
+  // event loop to do it now.
   handle_request_loop();
+#endif
 
   if (_p3d_inst == NULL) {
     // Ignore events that come in before we've launched the instance.
@@ -631,14 +610,24 @@ request_ready(P3D_instance *instance) {
     //    << " thread = " << GetCurrentThreadId()
     << "\n" << flush;
 
+  PPInstance *inst = (PPInstance *)(instance->_user_data);
+  assert(inst != NULL);
+
+#ifdef HAS_PLUGIN_THREAD_ASYNC_CALL
+  // Since we are running at least Gecko 1.9, and we have this very
+  // useful function, let's use it to ask the browser to call us back
+  // in the main thread.
+  browser->pluginthreadasynccall(inst->_npp_instance, browser_sync_callback, NULL);
+#else  // HAS_PLUGIN_THREAD_ASYNC_CALL
+
+  // If we're using an older version of Gecko, we have to do this some
+  // other, OS-dependent way.
+
 #ifdef _WIN32
-  // Since we might be in a sub-thread at this point, use a Windows
-  // message to forward this event to the main thread.
+  // Use a Windows message to forward this event to the main thread.
 
   // Get the window handle for the window associated with this
   // instance.
-  PPInstance *inst = (PPInstance *)(instance->_user_data);
-  assert(inst != NULL);
   const NPWindow *win = inst->get_window();
   if (win != NULL && win->type == NPWindowTypeWindow) {
     PostMessage((HWND)(win->window), WM_USER, 0, 0);
@@ -656,6 +645,8 @@ request_ready(P3D_instance *instance) {
   handle_request_loop();
 #endif  // __APPLE__
 #endif  // _WIN32
+
+#endif  // HAS_PLUGIN_THREAD_ASYNC_CALL
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1101,6 +1092,45 @@ output_np_variant(ostream &out, const NPVariant &result) {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::handle_request_loop
+//       Access: Private, Static
+//  Description: Checks for any new requests from the plugin, and
+//               dispatches them to the appropriate PPInstance.  This
+//               function is called only in the main thread.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+handle_request_loop() {
+  if (!is_plugin_loaded()) {
+    return;
+  }
+
+  P3D_instance *p3d_inst = P3D_check_request(false);
+  while (p3d_inst != (P3D_instance *)NULL) {
+    P3D_request *request = P3D_instance_get_request(p3d_inst);
+    if (request != (P3D_request *)NULL) {
+      PPInstance *inst = (PPInstance *)(p3d_inst->_user_data);
+      assert(inst != NULL);
+      inst->handle_request(request);
+    }
+    p3d_inst = P3D_check_request(false);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::browser_sync_callback
+//       Access: Private, Static
+//  Description: This callback hook is passed to
+//               NPN_PluginThreadAsyncCall() (if that function is
+//               available) to forward a request to the main thread.
+//               The callback is actually called in the main thread.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+browser_sync_callback(void *) {
+  logfile << "browser_sync_callback\n";
+  handle_request_loop();
+}
+
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
@@ -1113,14 +1143,12 @@ output_np_variant(ostream &out, const NPVariant &result) {
 ////////////////////////////////////////////////////////////////////
 LONG PPInstance::
 window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+#ifndef HAS_PLUGIN_THREAD_ASYNC_CALL
   // Since we're here in the main thread, call handle_request_loop()
   // to see if there are any new requests to be serviced by the main
   // thread.
-
-  // This might end up recursing repeatedly into
-  // handle_request_loop().  Not sure if this is bad or not.
-  // *Something* appears to be a little unstable.
   handle_request_loop();
+#endif
 
   switch (msg) {
   case WM_ERASEBKGND:
@@ -1129,6 +1157,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     return true;
 
   case WM_TIMER:
+  case WM_USER:
     break;
   }
 

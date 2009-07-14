@@ -23,11 +23,25 @@
 // Windows case
 
 // Locks are straightforward.
+class _lock {
+public:
+  CRITICAL_SECTION _l;
+  int _count;
+};
+
+#define LOCK _lock
+#define INIT_LOCK(lock) { InitializeCriticalSection(&(lock)._l); (lock)._count = 0; }
+#define ACQUIRE_LOCK(lock) { EnterCriticalSection(&(lock)._l); ++((lock)._count); if ((lock)._count > 1) { nout << "count = " << (lock)._count << "\n"; } }
+#define RELEASE_LOCK(lock) { --((lock)._count); LeaveCriticalSection(&(lock)._l); }
+#define DESTROY_LOCK(lock) DeleteCriticalSection(&(lock)._l)
+
+/*
 #define LOCK CRITICAL_SECTION
 #define INIT_LOCK(lock) InitializeCriticalSection(&(lock))
 #define ACQUIRE_LOCK(lock) EnterCriticalSection(&(lock))
 #define RELEASE_LOCK(lock) LeaveCriticalSection(&(lock))
 #define DESTROY_LOCK(lock) DeleteCriticalSection(&(lock))
+*/
 
 // Threads.
 #define THREAD HANDLE

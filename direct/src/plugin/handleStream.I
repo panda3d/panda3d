@@ -14,7 +14,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HandleStream::Constructor
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 inline HandleStream::
@@ -23,7 +23,7 @@ HandleStream() : iostream(&_buf) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HandleStream::Destructor
-//       Access: Published
+//       Access: Public
 //  Description:
 ////////////////////////////////////////////////////////////////////
 inline HandleStream::
@@ -33,7 +33,7 @@ inline HandleStream::
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HandleStream::open_read
-//       Access: Published
+//       Access: Public
 //  Description: Attempts to open the given handle for input.  The
 //               stream may not be simultaneously open for input and
 //               output.
@@ -49,7 +49,7 @@ open_read(FHandle handle) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HandleStream::open_write
-//       Access: Published
+//       Access: Public
 //  Description: Attempts to open the given handle for output.  The
 //               stream may not be simultaneously open for input and
 //               output.
@@ -65,10 +65,21 @@ open_write(FHandle handle) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: HandleStream::close
-//       Access: Published
+//       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 inline void HandleStream::
 close() {
   _buf.close();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HandleStream::get_handle
+//       Access: Public
+//  Description: Returns the handle that was passed to open_read() or
+//               open_write().
+////////////////////////////////////////////////////////////////////
+inline FHandle HandleStream::
+get_handle() const {
+  return _buf.get_handle();
 }
