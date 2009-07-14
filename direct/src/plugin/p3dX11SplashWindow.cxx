@@ -216,11 +216,13 @@ thread_run() {
     
     RELEASE_LOCK(_install_lock);
     
-    if (have_event || install_label != prev_label) {
+    if (override || have_event || install_label != prev_label) {
       redraw(install_label);
       override = false;
-    }
-    if (install_progress != prev_progress) {
+      XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
+                                       install_progress * (_width - 24), 7);
+      XFlush(_display);
+    } else if (install_progress != prev_progress) {
       XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
                                       install_progress * (_width - 24), 7);
     }
