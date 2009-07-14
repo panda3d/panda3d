@@ -65,9 +65,11 @@ extern ofstream logfile;
 // Uncomment the following to enable use of the PluginThreadAsyncCall
 // function.  (It's commented out for now to assist development of the
 // case in which this is not available.)
+/*
 #if defined(NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) && NP_VERSION_MINOR >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL
 #define HAS_PLUGIN_THREAD_ASYNC_CALL 1
 #endif
+*/
 
 // Appears in startup.cxx.
 extern NPNetscapeFuncs *browser;
