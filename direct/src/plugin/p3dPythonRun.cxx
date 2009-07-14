@@ -1294,7 +1294,7 @@ xml_to_pyobj(TiXmlElement *xvalue) {
         if (key != NULL) {
           PyObject *item = xml_to_pyobj(xitem);
           if (item != NULL) {
-            PyObject_SetAttrString(obj, key, item);
+            PyObject_SetAttrString(obj, (char *)key, item);
             Py_DECREF(item);
           }
         }
