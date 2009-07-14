@@ -106,7 +106,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
     if (s->_glsl_parameter_map.size() == 0) {
       int seqno = 0, texunitno = 0;
       string noprefix;
-      int param_count, param_maxlength, param_size;
+      GLint param_count, param_maxlength, param_size;
       GLenum param_type;
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORMS, &param_count);
       gsg->_glGetProgramiv(_glsl_program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &param_maxlength);
@@ -320,7 +320,7 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
     // calls won't have any effect.
     gsg->_glLinkProgram(_glsl_program);
 
-    int status;
+    GLint status;
     gsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
     if (status != GL_TRUE) {
       GLCAT.error() << "An error occurred while relinking shader program!\n";
@@ -848,8 +848,8 @@ cg_report_errors() {
 void CLP(ShaderContext)::
 glsl_report_shader_errors(GSG *gsg, unsigned int shader) {
   char *info_log;
-  int length = 0;
-  int num_chars  = 0;
+  GLint length = 0;
+  GLint num_chars  = 0;
 
   gsg->_glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
@@ -871,8 +871,8 @@ glsl_report_shader_errors(GSG *gsg, unsigned int shader) {
 void CLP(ShaderContext)::
 glsl_report_program_errors(GSG *gsg, unsigned int program) {
   char *info_log;
-  int length = 0;
-  int num_chars  = 0;
+  GLint length = 0;
+  GLint num_chars  = 0;
 
   gsg->_glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
 
@@ -913,7 +913,7 @@ glsl_compile_entry_point(GSG *gsg, Shader::ShaderType type) {
   const char* text = _shader->get_text(type).c_str();
   gsg->_glShaderSource(handle, 1, &text, NULL);
   gsg->_glCompileShader(handle);
-  int status;
+  GLint status;
   gsg->_glGetShaderiv(handle, GL_COMPILE_STATUS, &status);
   if (status != GL_TRUE) {
     GLCAT.error() << "An error occurred while compiling shader!\n";
@@ -966,7 +966,7 @@ glsl_compile_shader(GSG *gsg) {
 
   gsg->_glLinkProgram(_glsl_program);
 
-  int status;
+  GLint status;
   gsg->_glGetProgramiv(_glsl_program, GL_LINK_STATUS, &status);
   if (status != GL_TRUE) {
     GLCAT.error() << "An error occurred while linking shader program!\n";
