@@ -21,7 +21,7 @@
 //       Class : P3DReferenceCount
 // Description : A base class for reference-counted objects in this
 //               module.  We follow the Panda convention, rather than
-//               the Pythong convention: the reference count of a new
+//               the Python convention: the reference count of a new
 //               object is initially 0.
 ////////////////////////////////////////////////////////////////////
 class P3DReferenceCount {
