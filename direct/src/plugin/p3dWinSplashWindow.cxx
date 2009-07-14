@@ -201,7 +201,7 @@ stop_thread() {
   PostThreadMessage(_thread_id, WM_USER, 0, 0);
 
   // We can't actually wait for the thread to finish, since there
-  // might a deadlock there: the thread can't finish deleting its
+  // might be a deadlock there: the thread can't finish deleting its
   // window unless we're pumping the message loop for the parent,
   // which won't happen if we're sitting here waiting.  No worries; we
   // don't *really* need to wait for the thread.
