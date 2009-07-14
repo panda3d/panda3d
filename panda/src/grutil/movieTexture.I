@@ -14,6 +14,17 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: MovieTexture::get_video_length
+//       Access: Published
+//  Description: Returns the length of the video.
+////////////////////////////////////////////////////////////////////
+INLINE double MovieTexture::
+get_video_length() const {
+  CDReader cdata(_cycler);
+  return cdata->_video_length;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: MovieTexture::get_video_width
 //       Access: Published
 //  Description: Returns the width in texels of the source video

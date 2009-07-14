@@ -37,6 +37,7 @@ private:
 PUBLISHED:
   virtual ~MovieTexture();
 
+  INLINE double get_video_length() const;
   INLINE int get_video_width() const;
   INLINE int get_video_height() const;
   INLINE LVecBase2f get_tex_scale() const;
