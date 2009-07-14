@@ -137,7 +137,7 @@ private:
   string _shared_filename;
   SubprocessWindowBuffer *_swbuffer;
   char *_reversed_buffer;
-#endif __APPLE__
+#endif  // __APPLE__
 
   P3DSplashWindow *_splash_window;
   bool _instance_window_opened;

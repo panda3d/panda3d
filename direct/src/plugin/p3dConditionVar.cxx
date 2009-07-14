@@ -18,6 +18,7 @@
 #include <sys/time.h>
 #include <math.h>
 #endif
+#include <errno.h>
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DConditionVar::Constructor
