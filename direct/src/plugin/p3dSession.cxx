@@ -346,7 +346,6 @@ command_and_response(TiXmlDocument *command) {
     for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
       P3DInstance *inst = (*ii).second;
       inst->bake_requests();
-      inst->pump_messages();
     }
     _response_ready.acquire();
 
@@ -359,27 +358,35 @@ command_and_response(TiXmlDocument *command) {
 
 #ifdef _WIN32
     // Make sure we process the Windows event loop while we're
-    // waiting, or everything that depends on Windows messages--in
-    // particular, the CreateWindow() call within the subprocess--will
-    // starve, and we could end up with deadlock.
+    // waiting, or everything that depends on Windows messages within
+    // the subprocess will starve, and we could end up with deadlock.
+
+    // A single call to PeekMessage() appears to be sufficient.  This
+    // will scan the message queue and deliver messages to the
+    // appropriate threads, so that our subprocess can find them.  If
+    // we don't do this, the messages that come into this parent
+    // window will never get delivered to the subprocess, even though
+    // somehow the subprocess will know they're coming and will block
+    // waiting for them.
 
     MSG msg;
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
-    /*
-    MSG msg;
-    if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE | PM_NOYIELD)) {
-      //      nout << "  pumping " << msg.message << "\n" << flush;
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-      //      nout << "  done pumping\n" << flush;
-    }
-    */
-      
-#endif  // _WIN32
 
     // We wait with a timeout, so we can go back and spin the event
-    // loop some more.
-    _response_ready.wait(0.1);
+    // loop some more.  On Windows, the timeout needs to be small, so
+    // we continue to process windows messages in a timely fashion.
+    _response_ready.wait(0.01);
+
+#else
+    // On other platforms, we shouldn't need a timeout at all--we
+    // could just block indefinitely--but we go ahead and put one in
+    // anyway, just in case a notification slips past somehow, and
+    // also so we can see evidence that we're actively waiting.  This
+    // timeout doesn't need to be nearly so small, since it's only a
+    // "just in case" sort of thing.
+    _response_ready.wait(0.5);
+#endif  // _WIN32
+
     nout << "." << flush;
 
     ri = _responses.find(response_id);

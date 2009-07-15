@@ -644,35 +644,6 @@ request_stop() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::pump_messages
-//       Access: Public
-//  Description: Windows only: pump the message queue on this
-//               instance's parent window, so that any child-window
-//               operations will be able to continue.
-////////////////////////////////////////////////////////////////////
-void P3DInstance::
-pump_messages() {
-#ifdef _WIN32
-  if (_got_wparams) {
-    HWND hwnd = _wparams.get_parent_window()._hwnd;
-    if (hwnd != NULL) {
-      MSG msg;
-      nout << "  peeking " << hwnd << "\n" << flush;
-
-      // It appears to be bad to pump messages for any other
-      // window--Mozilla is apparently not reentrant in this way.
-      if (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE | PM_NOYIELD)) {
-        nout << "  pumping " << msg.message << "\n" << flush;
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-        nout << "  done pumping\n" << flush;
-      }
-    }
-  }
-#endif  // _WIN32
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::make_xml
 //       Access: Public
 //  Description: Returns a newly-allocated XML structure that

@@ -669,14 +669,6 @@ wait_script_response(int response_id) {
     // here; the full message pump seems to cause problems.
     MSG msg;
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
-    /*
-      if (PeekMessage(&msg, hwnd, 0, 0, PM_REMOVE | PM_NOYIELD)) {
-        nout << "  pumping " << msg.message << "\n" << flush;
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-        nout << "  done pumping\n" << flush;
-      }
-    */
 #endif  // _WIN32
 
     nout << "." << flush;
