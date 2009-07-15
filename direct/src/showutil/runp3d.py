@@ -461,7 +461,7 @@ class AppRunner(DirectObject):
         return (osFilename, tokens)
 
 if __name__ == '__main__':
-    runner = AppRunner(0)
+    runner = AppRunner()
     runner.gotWindow = True
     try:
         runner.setP3DFilename(*runner.parseSysArgs())
