@@ -1196,7 +1196,7 @@ if (sys.platform == "darwin"):
     configprc = configprc.replace("p3openal_audio","p3fmod_audio")
     
     # Because <auto> doesn't work well yet.
-    configprc = configprc += "\nplugin-path $THIS_PRC_DIR/../lib"
+    configprc += "\nplugin-path $THIS_PRC_DIR/../lib"
 
 ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
 ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
