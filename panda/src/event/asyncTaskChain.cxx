@@ -805,6 +805,7 @@ service_one_task(AsyncTaskChain::AsyncTaskChainThread *thread) {
         << *Thread::get_current_thread() << "\n";
     }
   }
+  thread_consider_yield();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1209,6 +1210,7 @@ do_get_sleeping_tasks() const {
 ////////////////////////////////////////////////////////////////////
 void AsyncTaskChain::
 do_poll() {
+  thread_consider_yield();
   if (_num_tasks == 0) {
     return;
   }
