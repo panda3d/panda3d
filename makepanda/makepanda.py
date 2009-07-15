@@ -487,6 +487,9 @@ printStatus("Makepanda Initial Status Report", WARNINGS)
 ########################################################################
 
 def BracketNameWithQuotes(name):
+    # Workaround for OSX bug - compiler doesn't like quoted "-framework Blah" there.
+    if (name.startswith("-framework")): return name
+    
     # Account for quoted name (leave as is) but quote everything else (e.g., to protect spaces within paths from improper parsing)
     if (name.startswith('"') and name.endswith('"')): return name
     else: return '"' + name + '"'
@@ -1018,8 +1021,6 @@ def WriteConfigSettings():
         dtool_config["HAVE_PROC_SELF_MAPS"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_CMDLINE"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_ENVIRON"] = 'UNDEF'
-        # OSX still doesn't always recognize the <auto> correctly. Might have been fixed by now though.
-        prc_parameters["DEFAULT_PRC_DIR"] = '"/Applications/Panda3D/' + VERSION + '/etc"'
     
     if (OPTIMIZE <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):
