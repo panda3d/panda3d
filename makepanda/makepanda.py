@@ -1191,9 +1191,12 @@ else:
     configprc = configprc.replace("aux-display pandadx9","")
     configprc = configprc.replace("aux-display pandadx8","")
 
-# OpenAL is not yet working well on OSX for us, so let's do this for now.
 if (sys.platform == "darwin"):
+    # OpenAL is not yet working well on OSX for us, so let's do this for now.
     configprc = configprc.replace("p3openal_audio","p3fmod_audio")
+    
+    # Because <auto> doesn't work well yet.
+    configprc = configprc += "\nplugin-path $THIS_PRC_DIR/../lib"
 
 ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
 ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
@@ -3948,11 +3951,8 @@ def MakeInstallerOSX():
       oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
       oscmd("ln -s /usr/bin/python Panda3D-tpl-rw/Panda3D/%s/bin/ppython" % VERSION)
       oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
-      # Append the plugin-path to the Config.prc.
-      f = open("Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % VERSION, "a")
-      f.write("\nplugin-path /Applications/Panda3D/%s/lib\n" % VERSION)
-      f.close()
       WriteFile("Panda3D-tpl-rw/Panda3D/%s/lib/direct/__init__.py" % VERSION, "")
+      oscmd("cp %s/etc/Config.prc     Panda3D-tpl-rw/Panda3D/%s/etc/Config.prc" % (GetOutputDir(), VERSION))
       oscmd("cp %s/etc/Confauto.prc   Panda3D-tpl-rw/Panda3D/%s/etc/Confauto.prc" % (GetOutputDir(), VERSION))
       oscmd("cp -R %s/include         Panda3D-tpl-rw/Panda3D/%s/include" % (GetOutputDir(), VERSION))
       oscmd("cp -R direct/src/*       Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
