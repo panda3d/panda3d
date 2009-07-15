@@ -29,6 +29,7 @@
 
 #ifdef __APPLE__
 #include <sys/mman.h>
+#include <ApplicationServices/ApplicationServices.h>
 #endif  // __APPLE__
 
 #ifdef _WIN32
@@ -1009,8 +1010,6 @@ paint_window() {
   // blit rendered framebuffer into window backing store
   int x_size = min(_wparams.get_win_width(), _swbuffer->get_x_size());
   int y_size = min(_wparams.get_win_height(), _swbuffer->get_y_size());
-  Rect src_rect = {0, 0, y_size, x_size};
-  Rect ddrc_rect = {0, 0, y_size, x_size};
 
   size_t rowsize = _swbuffer->get_row_size();
 
@@ -1033,7 +1032,48 @@ paint_window() {
     // time.
   }
 
-  // create a GWorld containing our image
+  // This is an attempt to paint the frame using the less-deprecated
+  // Quartz interfaces.  Not working yet.  Sure does seem like a lot
+  // of layers to go through just to paint a bitmap.
+  /*
+  CFDataRef data =
+    CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)_reversed_buffer, 
+                                y_size * rowsize, kCFAllocatorNull);
+
+  CGDataProviderRef provider = CGDataProviderCreateWithCFData(data);
+  CGColorSpaceRef color_space = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+
+  CGImageRef image =
+    CGImageCreate(x_size, y_size, 8, 32, rowsize, color_space,
+                  kCGBitmapByteOrder32Little, provider,
+                  NULL, false, kCGRenderingIntentDefault);
+
+  CGrafPtr port = _wparams.get_parent_window()._port;
+  CGContextRef context;
+  err = QDBeginCGContext(port, &context);
+  if (err != noErr) {
+    nout << "Error: QDBeginCGContext\n";
+    return;
+  }
+
+  CGRect rect = { { 0, 0 }, { x_size, y_size } };
+  CGContextDrawImage(context, rect, image);
+  
+  //CGContextSynchronize(context);
+  CGContextFlush(context);
+  QDEndCGContext(port, &context);
+
+  CGImageRelease(image);
+  CGColorSpaceRelease(color_space);
+  CGDataProviderRelease(provider);
+
+  CFRelease(data);
+  */
+
+  // Painting the frame using the deprecated QuickDraw interfaces.
+  Rect src_rect = {0, 0, y_size, x_size};
+  Rect ddrc_rect = {0, 0, y_size, x_size};
+
   GWorldPtr pGWorld;
   err = NewGWorldFromPtr(&pGWorld, k32BGRAPixelFormat, &src_rect, 0, 0, 0, 
                          _reversed_buffer, rowsize);
