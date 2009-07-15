@@ -109,14 +109,14 @@ shutdown() {
     // a hang.  Don't need to close it yet.
     //  _pipe_read.close();
 
-    static const double max_wait_secs = 2;
+    static const int max_wait_ms = 2000;
 
 #ifdef _WIN32
     // Now give the process a chance to terminate itself cleanly.
-    if (WaitForSingleObject(_p3dpython_handle, 2000) == WAIT_TIMEOUT) {
+    if (WaitForSingleObject(_p3dpython_handle, max_wait_ms) == WAIT_TIMEOUT) {
       // It didn't shut down cleanly, so kill it the hard way.
       nout << "Force-killing python process.\n" << flush;
-      TerminateProcess(_p3dpython_handle, max_wait_secs);
+      TerminateProcess(_p3dpython_handle, 2);
     }
 
     CloseHandle(_p3dpython_handle);
@@ -126,7 +126,7 @@ shutdown() {
     // itself.
     struct timeval start;
     gettimeofday(&start, NULL);
-    double start_secs = start.tv_sec + start.tv_usec / 1000000.0;
+    int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
     
     int status;
     nout << "waiting for pid " << _p3dpython_pid << "\n" << flush;
@@ -139,15 +139,15 @@ shutdown() {
 
       struct timeval now;
       gettimeofday(&now, NULL);
-      double now_secs = now.tv_sec + now.tv_usec / 1000000.0;
-      double elapsed = now_secs - start_secs;
+      int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
+      double elapsed = now_ms - start_ms;
 
-      if (elapsed > max_wait_secs) {
+      if (elapsed > max_wait_ms) {
         // Tired of waiting.  Kill the process.
         nout << "Force-killing python process, pid " << _p3dpython_pid 
              << "\n" << flush;
         kill(_p3dpython_pid, SIGKILL);
-        start_secs = now_secs;
+        start_ms = now_ms;
       }
       
       // Yield the timeslice and wait some more.
