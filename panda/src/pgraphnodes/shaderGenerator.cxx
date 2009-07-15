@@ -1129,13 +1129,15 @@ synthesize_shader(const RenderState *rs) {
 
   // Loop first to see if something is using primary_color or last_saved_result.
   bool have_saved_result = false;
+  bool have_primary_color = false;
   for (int i=0; i<_num_textures; i++) {
     TextureStage *stage = texture->get_on_stage(i);
     if (stage->get_mode() != TextureStage::M_combine) continue;
-    if (stage->uses_primary_color()) {
+    if (stage->uses_primary_color() && !have_primary_color) {
       text << "\t float4 primary_color = result;\n";
+      have_primary_color = true;
     }
-    if (stage->uses_last_saved_result()) {
+    if (stage->uses_last_saved_result() && !have_saved_result) {
       text << "\t float4 last_saved_result = result;\n";
       have_saved_result = true;
     }
@@ -1169,9 +1171,23 @@ synthesize_shader(const RenderState *rs) {
       break;
     case TextureStage::M_combine:
       text << "\t result.rgb = ";
-      text << combine_mode_as_string(stage, stage->get_combine_rgb_mode(), false, i);
+      if (stage->get_combine_rgb_mode() != TextureStage::CM_undefined) {
+        text << combine_mode_as_string(stage, stage->get_combine_rgb_mode(), false, i);
+      } else {
+        text << "tex" << i << ".rgb";
+      }
+      if (stage->get_rgb_scale() != 1) {
+        text << " * " << stage->get_rgb_scale();
+      }
       text << ";\n\t result.a = ";
-      text << combine_mode_as_string(stage, stage->get_combine_alpha_mode(), true, i);
+      if (stage->get_combine_alpha_mode() != TextureStage::CM_undefined) {
+        text << combine_mode_as_string(stage, stage->get_combine_alpha_mode(), true, i);
+      } else {
+        text << "tex" << i << ".a";
+      }
+      if (stage->get_alpha_scale() != 1) {
+        text << " * " << stage->get_alpha_scale();
+      }
       text << ";\n";
       break;
     case TextureStage::M_blend_color_scale:
