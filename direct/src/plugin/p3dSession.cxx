@@ -28,6 +28,9 @@
 
 #ifndef _WIN32
 #include <fcntl.h>
+#include <sys/wait.h>
+#include <sys/select.h>
+#include <signal.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -106,18 +109,64 @@ shutdown() {
     // a hang.  Don't need to close it yet.
     //  _pipe_read.close();
 
+    static const double max_wait_secs = 2;
+
 #ifdef _WIN32
     // Now give the process a chance to terminate itself cleanly.
     if (WaitForSingleObject(_p3dpython_handle, 2000) == WAIT_TIMEOUT) {
       // It didn't shut down cleanly, so kill it the hard way.
-      nout << "Terminating process.\n" << flush;
-      TerminateProcess(_p3dpython_handle, 2);
+      nout << "Force-killing python process.\n" << flush;
+      TerminateProcess(_p3dpython_handle, max_wait_secs);
     }
 
     CloseHandle(_p3dpython_handle);
 #else  // _WIN32
 
-    // TODO: posix kill().
+    // Wait for a certain amount of time for the process to stop by
+    // itself.
+    struct timeval start;
+    gettimeofday(&start, NULL);
+    double start_secs = start.tv_sec + start.tv_usec / 1000000.0;
+    
+    int status;
+    nout << "waiting for pid " << _p3dpython_pid << "\n" << flush;
+    pid_t result = waitpid(_p3dpython_pid, &status, WNOHANG);
+    while (result != _p3dpython_pid) {
+      if (result == -1) {
+        perror("waitpid");
+        break;
+      }
+
+      struct timeval now;
+      gettimeofday(&now, NULL);
+      double now_secs = now.tv_sec + now.tv_usec / 1000000.0;
+      double elapsed = now_secs - start_secs;
+
+      if (elapsed > max_wait_secs) {
+        // Tired of waiting.  Kill the process.
+        nout << "Force-killing python process, pid " << _p3dpython_pid 
+             << "\n" << flush;
+        kill(_p3dpython_pid, SIGKILL);
+        start_secs = now_secs;
+      }
+      
+      // Yield the timeslice and wait some more.
+      struct timeval tv;
+      tv.tv_sec = 0;
+      tv.tv_usec = 1;
+      select(0, NULL, NULL, NULL, &tv);
+      result = waitpid(_p3dpython_pid, &status, WNOHANG);
+    }
+
+    if (WIFEXITED(status)) {
+      nout << "  exited normally, status = "
+           << WEXITSTATUS(status) << "\n";
+    } else if (WIFSIGNALED(status)) {
+      nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+           << WCOREDUMP(status) << "\n";
+    } else if (WIFSTOPPED(status)) {
+      nout << "  stopped by " << WSTOPSIG(status) << "\n";
+    }
 
 #endif  // _WIN32
 
