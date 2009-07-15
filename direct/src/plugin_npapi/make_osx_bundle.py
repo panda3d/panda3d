@@ -110,7 +110,7 @@ def makeBundle(startDir):
     f.write(ResourceFile)
     f.close()
     
-    os.system('/Developer/usr/bin/Rez -useDF -o %s %s' % (
+    os.system('/Developer/Tools/Rez -useDF -o %s %s' % (
         resourceFilename.toOsSpecific(), tfile.toOsSpecific()))
     tfile.unlink()
 

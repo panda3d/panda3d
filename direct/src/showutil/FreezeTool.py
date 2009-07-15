@@ -55,12 +55,13 @@ if sys.platform == 'win32':
 
 elif sys.platform == 'darwin':
     # OSX
-
-    PythonIPath = '/Developer/SDKs/MacOSX10.5.sdk/System/Library/Frameworks/Python.framework/Versions/2.5/include/python2.5'
-
-    compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 -arch i386 -arch ppc -I %(pythonIPath)s %(filename)s"
+    compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
     linkExe = "gcc -o %(basename)s %(basename)s.o -framework Python"
-    linkDll = "gcc -dynamiclib -o %(basename)s.so %(basename)s.o -framework Python"
+    linkDll = "gcc -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o -framework Python"
+    #PythonLPath = '/Users/drose/player/osxtools/built/lib'
+    #PythonVersion = '2.4_panda'
+    #linkExe = "gcc -o %(basename)s %(basename)s.o -lpython%(pythonVersion)s -L%(pythonLPath)s"
+    #linkDll = "gcc -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o -lpython%(pythonVersion)s -L%(pythonLPath)s"
 
 else:
     # Linux

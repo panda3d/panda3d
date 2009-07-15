@@ -46,6 +46,7 @@
   // Mac-specific options.
   #if $[OSX_PLATFORM]
     #define LINK_AS_BUNDLE 1
+    #define BUNDLE_EXT
   #endif
 
   #define INSTALL_HEADERS

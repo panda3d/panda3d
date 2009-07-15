@@ -337,54 +337,61 @@ stream_as_file(NPStream *stream, const char *fname) {
   // "Macintosh HD:blah:blah:blah" instead of the new-style form
   // "/blah/blah/blah".  How annoying.
 
-  // TODO: Is "Macintosh HD:" the only possible prefix?
-  if (filename.substr(0, 13) == "Macintosh HD:") {
-    string fname2;
-    for (size_t p = 12; p < filename.size(); ++p) {
+  size_t colon = filename.find(':');
+  size_t slash = filename.find('/');
+  if (colon < slash) {
+    // This might be such a filename.
+
+    string fname2 = "/Volumes/";
+    for (size_t p = 0; p < filename.size(); ++p) {
       if (filename[p] == ':') {
         fname2 += '/';
       } else {
         fname2 += filename[p];
       }
     }
-    filename = fname2;
 
-    // Here's another temporary hack.  In addition to the weird
-    // filename format, the file that Safari tells us about appears to
-    // be a temporary file that Safari's about to delete.  In order to
-    // protect ourselves from this, we need to temporarily copy the
-    // file somewhere else.
-    char *name = tempnam(NULL, "p3d_");
+    if (access(fname2.c_str(), R_OK) == 0) {
+      // Looks like we've converted it successfully.
+      filename = fname2;
 
-    // We prefer just making a hard link; it's quick and easy.
-    if (link(filename.c_str(), name) == 0) {
-      logfile << "linked " << filename << " to " << name << "\n";
-    } else {
-      // But sometimes the hard link might fail, particularly if these
-      // are two different file systems.  In this case we have to open
-      // the files and copy the data by hand.
-      ifstream in(filename.c_str(), ios::in | ios::binary);
-      ofstream out(name, ios::out | ios::binary);
+      // Here's another temporary hack.  In addition to the weird
+      // filename format, the file that Safari tells us about appears
+      // to be a temporary file that Safari's about to delete.  In
+      // order to protect ourselves from this, we need to temporarily
+      // copy the file somewhere else.
+      char *name = tempnam(NULL, "p3d_");
 
-      static const size_t buffer_size = 4096;
-      char buffer[buffer_size];
-      
-      in.read(buffer, buffer_size);
-      size_t count = in.gcount();
-      while (count != 0) {
-        out.write(buffer, count);
+      // We prefer just making a hard link; it's quick and easy.
+      if (link(filename.c_str(), name) == 0) {
+        logfile << "linked " << filename << " to " << name << "\n";
+      } else {
+        // But sometimes the hard link might fail, particularly if these
+        // are two different file systems.  In this case we have to open
+        // the files and copy the data by hand.
+        ifstream in(filename.c_str(), ios::in | ios::binary);
+        ofstream out(name, ios::out | ios::binary);
+        
+        static const size_t buffer_size = 4096;
+        char buffer[buffer_size];
+        
         in.read(buffer, buffer_size);
-        count = in.gcount();
+        size_t count = in.gcount();
+        while (count != 0) {
+          out.write(buffer, count);
+          in.read(buffer, buffer_size);
+          count = in.gcount();
+        }
+        logfile << "copied " << filename << " to " << name << "\n";
       }
-      logfile << "copied " << filename << " to " << name << "\n";
+      
+      filename = name;
+      free(name);
+      
+      // TODO: remove this temporary file when we're done with it.
     }
-
-    filename = name;
-    free(name);
-
-    // TODO: remove this temporary file when we're done with it.
   }
-
+    
 #endif  // __APPLE__
 
   PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);

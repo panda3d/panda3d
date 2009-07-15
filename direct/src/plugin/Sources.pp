@@ -100,7 +100,7 @@
     interrogatedb:c dconfig:c dtoolconfig:m \
     express:c pandaexpress:m \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
-    pipeline:c event:c nativenet:c panda:m
+    pipeline:c event:c nativenet:c net:c panda:m
 
   #define SOURCES \
     binaryXml.cxx binaryXml.h \
