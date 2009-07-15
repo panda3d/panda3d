@@ -92,8 +92,6 @@ class AnimControlInterval(Interval.Interval):
             numFrames = self.controls.getAnim(0).getNumFrames()
             self.endFrame = numFrames - 1
 
-        print self.startFrame, self.endFrame
-
         # Must we play the animation backwards?  We play backwards if
         # either (or both) of the following is true: the playRate is
         # negative, or endFrame is before startFrame.
