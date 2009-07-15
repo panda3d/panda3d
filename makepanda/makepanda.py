@@ -487,8 +487,9 @@ printStatus("Makepanda Initial Status Report", WARNINGS)
 ########################################################################
 
 def BracketNameWithQuotes(name):
-    # Workaround for OSX bug - compiler doesn't like quoted "-framework Blah" there.
+    # Workaround for OSX bug - compiler doesn't like those flags quoted.
     if (name.startswith("-framework")): return name
+    if (name.startswith("-dylib_file")): return name
     
     # Account for quoted name (leave as is) but quote everything else (e.g., to protect spaces within paths from improper parsing)
     if (name.startswith('"') and name.endswith('"')): return name
