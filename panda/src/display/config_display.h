@@ -41,6 +41,7 @@ extern EXPCL_PANDA_DISPLAY ConfigVariableBool allow_nonpipeline_threads;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool auto_flip;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool sync_flip;
 extern EXPCL_PANDA_DISPLAY ConfigVariableBool yield_timeslice;
+extern EXPCL_PANDA_DISPLAY ConfigVariableDouble subprocess_window_max_wait;
 
 extern EXPCL_PANDA_DISPLAY ConfigVariableString screenshot_filename;
 extern EXPCL_PANDA_DISPLAY ConfigVariableString screenshot_extension;

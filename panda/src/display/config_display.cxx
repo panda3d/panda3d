@@ -92,6 +92,14 @@ ConfigVariableBool yield_timeslice
  PRC_DESC("Set this true to yield the timeslice at the end of the frame to be "
           "more polite to other applications that are trying to run."));
 
+ConfigVariableDouble subprocess_window_max_wait
+("subprocess-window-max-wait", 0.2,
+ PRC_DESC("This is the amount of time, in seconds, that the SubprocessWindow will "
+          "wait in begin_flip for the parent process to remove the previously-rendered "
+          "frame.  When this time is exceeded, the next frame will be rendered without "
+          "having flipped the previous one.  This is designed to allow the Python "
+          "process some time to run even when the parent window is offscreen or minimized."));
+
 ConfigVariableString screenshot_filename
 ("screenshot-filename", "%~p-%a-%b-%d-%H-%M-%S-%Y-%~f.%~e",
  PRC_DESC("This specifies the filename pattern to be used to generate "

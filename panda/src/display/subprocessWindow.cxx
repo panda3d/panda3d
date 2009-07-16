@@ -17,6 +17,7 @@
 #ifdef SUPPORT_SUBPROCESS_WINDOW
 
 #include "graphicsEngine.h"
+#include "config_display.h"
 
 TypeHandle SubprocessWindow::_type_handle;
 
@@ -153,13 +154,6 @@ begin_frame(FrameMode mode, Thread *current_thread) {
     return false;
   }
 
-  if (!_swbuffer->ready_for_write()) {
-    // The other end hasn't removed a frame lately; don't bother to
-    // render.
-    Thread::force_yield();
-    return false;
-  }
-
   bool result = _buffer->begin_frame(mode, current_thread);
   return result;
 }
@@ -212,7 +206,25 @@ begin_flip() {
     size_t framebuffer_size = _swbuffer->get_framebuffer_size();
     nassertv(image.size() == framebuffer_size);
 
-    // Now copy the image to our shared framebuffer.
+    if (!_swbuffer->ready_for_write()) {
+      // We have to wait for the other end to remove the last frame we
+      // rendered.  We only wait so long before we give up, so we
+      // don't completely starve the Python process just because the
+      // render window is offscreen or something.
+      
+      ClockObject *clock = ClockObject::get_global_clock();
+      double start = clock->get_real_time();
+      while (!_swbuffer->ready_for_write()) {
+        Thread::force_yield();
+        double now = clock->get_real_time();
+        if (now - start > subprocess_window_max_wait) {
+          // Never mind.
+          return;
+        }
+      }
+    }
+
+    // We're ready to go.  Copy the image to our shared framebuffer.
     void *target = _swbuffer->open_write_framebuffer();
     memcpy(target, image.p(), framebuffer_size);
     _swbuffer->close_write_framebuffer();
