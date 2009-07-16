@@ -700,7 +700,7 @@ def CompileLink(dll, obj, opts):
         (arch, osName) = platform.architecture()
         if arch == "64bit":
             cmd += "/MACHINE:X64 "
-        cmd += '/NOD:MFC90.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
+        cmd += '/NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
         cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
         if (GetOrigExt(dll) != ".exe"): cmd = cmd + " /DLL"
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
