@@ -392,11 +392,13 @@ get_egg_group(MayaNodeDesc *node_desc) {
         egg_group->add_object_type(object_type);
       }
 
-      if(get_vec3d_attribute(dag_object, "scrollUV", value)) {
-        egg_group->set_scroll_u(value[0]);
-        egg_group->set_scroll_v(value[1]);
+      if(has_attribute(dag_object, "scrollUV")) {
+        if(get_vec3d_attribute(dag_object, "scrollUV", value)) {
+          egg_group->set_scroll_u(value[0]);
+          egg_group->set_scroll_v(value[1]);
+        }
       }
-      
+
       pvector<string> tag_attribute_names;
       get_tag_attribute_names(dag_object, tag_attribute_names);
       for (uint ti=0; ti < tag_attribute_names.size(); ti++) {
