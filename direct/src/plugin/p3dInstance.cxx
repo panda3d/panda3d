@@ -1031,10 +1031,10 @@ paint_window() {
     // time.
   }
 
-  // This is an attempt to paint the frame using the less-deprecated
-  // Quartz interfaces.  Not working yet.  Sure does seem like a lot
-  // of layers to go through just to paint a bitmap.
   /*
+  // This is an attempt to paint the frame using the less-deprecated
+  // Quartz interfaces.  Sure does seem like a lot of layers to go
+  // through just to paint a bitmap.
   CFDataRef data =
     CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)_reversed_buffer, 
                                 y_size * rowsize, kCFAllocatorNull);
@@ -1044,7 +1044,7 @@ paint_window() {
 
   CGImageRef image =
     CGImageCreate(x_size, y_size, 8, 32, rowsize, color_space,
-                  kCGBitmapByteOrder32Little, provider,
+                  kCGImageAlphaFirst | kCGBitmapByteOrder32Little, provider,
                   NULL, false, kCGRenderingIntentDefault);
 
   CGrafPtr port = _wparams.get_parent_window()._port;
@@ -1055,7 +1055,20 @@ paint_window() {
     return;
   }
 
-  CGRect rect = { { 0, 0 }, { x_size, y_size } };
+  //  CGContextTranslateCTM(context, 0.0, win_height);
+  //  CGContextScaleCTM(context, 1.0, -1.0);
+
+  // We have to rely on the clipping rectangle having been set up
+  // correctly in order to get the proper location to draw the image.
+  // This isn't completely right, because if the image is slightly
+  // offscreen, the top left of the clipping rectangle will no longer
+  // correspond to the top left of the original image.
+  CGRect rect = CGContextGetClipBoundingBox(context);
+  cerr << "rect: " << rect.origin.x << " " << rect.origin.y
+       << " " << rect.size.width << " " << rect.size.height << "\n";
+  rect.size.width = x_size;
+  rect.size.height = y_size;
+
   CGContextDrawImage(context, rect, image);
   
   //CGContextSynchronize(context);
