@@ -774,6 +774,8 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _num_pages = scan.get_uint32();
   manager->read_pointers(scan, _num_pages);
 
-  _has_margin_override = scan.get_bool();
-  _margin_override = scan.get_int16();
+  if(Palettizer::_read_pi_version >= 19) {    
+    _has_margin_override = scan.get_bool();
+    _margin_override = scan.get_int16();
+  } 
 }
