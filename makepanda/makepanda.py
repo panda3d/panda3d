@@ -2839,10 +2839,12 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   
   OPTS=['DIR:direct/src/plugin', 'TINYXML', 'ZLIB', 'JPEG']
   TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
+  TargetAdd('plugin_binaryXml.obj', opts=OPTS, input='binaryXml.cxx')
   TargetAdd('plugin_handleStream.obj', opts=OPTS, input='handleStream.cxx')
   TargetAdd('plugin_handleStreamBuf.obj', opts=OPTS, input='handleStreamBuf.cxx')
   TargetAdd('p3d_plugin.dll', input='plugin_common.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_plugin.obj')
+  TargetAdd('p3d_plugin.dll', input='plugin_binaryXml.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStreamBuf.obj')
   TargetAdd('p3d_plugin.dll', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'JPEG', 'WINUSER', 'WINGDI', 'WINSHELL', 'WINCOMCTL'])
@@ -2851,6 +2853,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
     TargetAdd('plugin_p3dCInstance.obj', opts=OPTS, input='p3dCInstance.cxx')
     TargetAdd('plugin_p3dPythonRun.obj', opts=OPTS, input='p3dPythonRun.cxx')
     TargetAdd('p3dpython.exe', input='plugin_p3dCInstance.obj')
+    TargetAdd('p3dpython.exe', input='plugin_binaryXml.obj')
     TargetAdd('p3dpython.exe', input='plugin_handleStream.obj')
     TargetAdd('p3dpython.exe', input='plugin_handleStreamBuf.obj')
     TargetAdd('p3dpython.exe', input='plugin_p3dPythonRun.obj')
