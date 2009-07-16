@@ -13,6 +13,7 @@
 #ifndef __MaxEgg__H
 #define __MaxEgg__H
 
+#include "pandatoolbase.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -23,7 +24,6 @@
 #include "eggTable.h"
 #include "eggXfmSAnim.h"
 #include "eggData.h"
-#include "pandatoolbase.h"
 #include "referenceCount.h"
 #include "pointerTo.h"
 #include "namable.h"
