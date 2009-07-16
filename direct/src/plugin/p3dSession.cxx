@@ -140,7 +140,7 @@ shutdown() {
       struct timeval now;
       gettimeofday(&now, NULL);
       int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
-      double elapsed = now_ms - start_ms;
+      int elapsed = now_ms - start_ms;
 
       if (elapsed > max_wait_ms) {
         // Tired of waiting.  Kill the process.
