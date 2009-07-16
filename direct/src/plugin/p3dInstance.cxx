@@ -991,38 +991,35 @@ paint_window() {
     // We have to reverse the image vertically first (different
     // conventions between Panda and Mac).
     for (int yi = 0; yi < y_size; ++yi) {
+#ifndef __BIG_ENDIAN__
+      // On a little-endian machine, we only have to reverse the order of the rows.
       memcpy(_reversed_buffer + (y_size - 1 - yi) * rowsize,
              (char *)framebuffer + yi * rowsize,
              rowsize);
 
-#ifdef __BIG_ENDIAN__
+#else  // __BIG_ENDIAN__
+      // On a big-endian machine, we need to do more work.
+
       // It appears that kBGRAPixelFormat, below, is ignored on
       // big-endian machines, and it is treated as KARGBPixelFormat
       // regardless of what we specify.  Vexing.  To compensate for
       // this, we have to reverse the color channels ourselves on
       // big-endian machines.
 
-      /*
-      unsigned int *b = (unsigned int *)(_reversed_buffer + (y_size - 1 - yi) * rowsize);
-      for (int xi = 0; xi < x_size; ++xi) {
-        unsigned int w = *b;
-        *b = ((w >> 24) & 0xff) | ((w >> 8) & 0xff00) | ((w << 8) & 0xff0000) | ((w << 24) & 0xff000000);
-        ++b;
-      }
-      */
-      
-      // This was measured to be faster than the above.
-      unsigned char *t = (unsigned char *)(_reversed_buffer + (y_size - 1 - yi) * rowsize);
-      for (int xi = 0; xi < x_size; ++xi) {
-        unsigned char b = t[0];
-        unsigned char g = t[1];
-        unsigned char r = t[2];
-        unsigned char a = t[3];
-        t[0] = a;
-        t[1] = r;
-        t[2] = g;
-        t[3] = b;
-        t += 4;
+      const char *source = (const char *)framebuffer + yi * rowsize;
+      const char *stop = source + x_size * 4;
+      char *dest = (_reversed_buffer + (y_size - 1 - yi) * rowsize);
+      while (source < stop) {
+        char b = source[0];
+        char g = source[1];
+        char r = source[2];
+        char a = source[3];
+        dest[0] = a;
+        dest[1] = r;
+        dest[2] = g;
+        dest[3] = b;
+        dest += 4;
+        source += 4;
       }
 #endif
     }
