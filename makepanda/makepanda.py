@@ -1050,8 +1050,17 @@ def WriteConfigSettings():
         plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file://C:\\p3dstage"
         plugin_config["P3D_PLUGIN_LOGFILE1"] = ""
         plugin_config["P3D_PLUGIN_LOGFILE2"] = ""
-        if sys.platform.startswith("win"):
+        plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
+        plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
+        if (sys.platform.startswith("win")):
             plugin_config["P3D_PLUGIN_PLATFORM"] = sys.platform
+        elif (sys.platform.startswith("linux")):
+            if (platform.architecture()[0] == "64bit"):
+                plugin_config["P3D_PLUGIN_PLATFORM"] = "linux.amd64"
+            else:
+                plugin_config["P3D_PLUGIN_PLATFORM"] = "linux.i386"
+        elif (sys.platform == "darwin"):
+            plugin_config["P3D_PLUGIN_PLATFORM"] = "osx.i386"
 
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in prc_parameters.keys():
@@ -1075,7 +1084,7 @@ def WriteConfigSettings():
         for key in plugin_config.keys():
             val = plugin_config[key]
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
-            else:                conf = conf + "#define " + key + " \"" + val + "\"\n"
+            else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
             del plugin_config[key]
         ConditionalWriteFile(GetOutputDir() + '/include/p3d_plugin_config.h', conf)
 
