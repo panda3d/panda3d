@@ -2855,7 +2855,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
     TargetAdd('p3dpython.exe', input='plugin_handleStreamBuf.obj')
     TargetAdd('p3dpython.exe', input='plugin_p3dPythonRun.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('p3dpython.exe', opts=['TINYXML'])
+    TargetAdd('p3dpython.exe', opts=['TINYXML', 'WINUSER'])
 
 #
 # DIRECTORY: direct/src/plugin_npapi/
