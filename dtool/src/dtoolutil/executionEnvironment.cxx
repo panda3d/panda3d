@@ -454,7 +454,21 @@ read_args() {
   }
   maps.close();
 #endif
-  
+
+#ifdef __APPLE__
+  // And on OSX we don't have /proc/self/maps, but some _dyld_* functions.
+  if (_dtool_name.empty()) {
+    uint32_t ic = _dyld_image_count();
+    for (uint32_t i = 0; i < ic; ++i) {
+      const char *buffer = _dyld_get_image_name(i);
+      const char *tail = strrchr(buffer, '/');
+      if (tail && (strcmp(tail,"/libp3dtool.dylib")==0)) {
+        _dtool_name = buffer;
+      }
+    }
+  }
+#endif
+
 #ifdef WIN32_VC
   static const DWORD buffer_size = 1024;
   char buffer[buffer_size];
