@@ -40,6 +40,8 @@ PaletteGroup() {
   _dependency_level = 0;
   _dependency_order = 0;
   _dirname_order = 0;
+  _has_margin_override = false;
+  _margin_override = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -663,6 +665,9 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   for (pai = _pages.begin(); pai != _pages.end(); ++pai) {
     writer->write_pointer(datagram, (*pai).second);
   }
+  datagram.add_bool(_has_override_margin);
+  datagram.add_int16(_override_margin);
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -768,4 +773,7 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _num_pages = scan.get_uint32();
   manager->read_pointers(scan, _num_pages);
+
+  _has_override_margin = scan.get_bool();
+  _override_margin = scan.get_int16();
 }
