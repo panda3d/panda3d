@@ -120,6 +120,37 @@ get_groups() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::get_margin_override
+//       Access: Public
+//  Description: Returns the set of groups this group depends on.
+////////////////////////////////////////////////////////////////////
+int PaletteGroup::
+get_margin_override() const {
+  return _margin_override;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::get_margin_override
+//       Access: Public
+//  Description: Returns the set of groups this group depends on.
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+set_margin_override(const int override) {
+  _margin_override = override;
+  _has_margin_override = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::has_margin_override
+//       Access: Public
+//  Description: Returns the set of groups this group depends on.
+////////////////////////////////////////////////////////////////////
+bool PaletteGroup::
+has_margin_override() const {
+  return _has_margin_override;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteGroup::get_placements
 //       Access: Public
 //  Description: Adds the set of TexturePlacements associated with

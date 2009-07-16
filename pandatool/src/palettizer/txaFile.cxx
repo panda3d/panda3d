@@ -228,6 +228,7 @@ parse_group_line(const vector_string &words) {
     S_on,
     S_includes,
     S_dir,
+    S_margin,
   };
   State state = S_none;
 
@@ -247,6 +248,9 @@ parse_group_line(const vector_string &words) {
 
     } else if (word == "dir") {
       state = S_dir;
+
+    } else if (word == "margin") {
+      state = S_margin;
 
     } else {
       switch (state) {
@@ -275,7 +279,16 @@ parse_group_line(const vector_string &words) {
         group->set_dirname(word);
         state = S_none;
         break;
+
+      case S_margin:
+        int margin_override;
+        if (!string_to_int(word, margin_override)) {
+          group->set_margin_override(margin_override);
+        }
+        state = S_none;
+        break;
       }
+
     }
 
     ++wi;

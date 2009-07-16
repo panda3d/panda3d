@@ -939,7 +939,11 @@ compute_size_from_uvs(const TexCoordd &min_uv, const TexCoordd &max_uv) {
   _position._x_size = max(_position._x_size, 4);
   _position._y_size = max(_position._y_size, 4);
 
-  _position._margin = _texture->get_margin();
+  if(get_group()->has_margin_override()) {
+    _position._margin = get_group()->get_margin_override();
+  } else {
+    _position._margin = _texture->get_margin();
+  }
   //cout << "margin: " << _position._margin << endl;
   
   // Normally, we have interior margins, but if the image size is too

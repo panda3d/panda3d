@@ -128,6 +128,8 @@ private:
   // don't use it otherwise.
   int _num_references;
 
+  int _margin_override;
+
 public:
   static TypeHandle get_class_type() {
     return _type_handle;

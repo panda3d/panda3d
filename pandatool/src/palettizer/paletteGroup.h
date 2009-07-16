@@ -65,6 +65,10 @@ public:
   int get_dependency_order() const;
   int get_dirname_order() const;
 
+  void set_margin_override(const int override);
+  int get_margin_override() const;
+  bool has_margin_override() const;
+
   bool is_preferred_over(const PaletteGroup &other) const;
 
   void increment_egg_count();
@@ -116,6 +120,8 @@ private:
   // don't use them otherwise.
   int _num_placements;
   int _num_pages;
+  bool _has_margin_override;
+  int _margin_override;
   pvector<PalettePage *> _load_pages;
 
 public:
