@@ -38,6 +38,7 @@ MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "max
                   ("MAX8", "SOFTWARE\\Autodesk\\3DSMAX\\8.0", "Installdir", "maxsdk\\include\\CS"),
                   ("MAX9", "SOFTWARE\\Autodesk\\3DSMAX\\9.0", "Installdir", "maxsdk\\include\\CS"),
                   ("MAX2009", "SOFTWARE\\Autodesk\\3DSMAX\\11.0", "Installdir", "maxsdk\\include\\CS"),
+                  ("MAX2010", "SOFTWARE\\Autodesk\\3DSMAX\\12.0", "Installdir", "maxsdk\\include\\CS"),
 ]
 
 MAYAVERSIONS=[]
