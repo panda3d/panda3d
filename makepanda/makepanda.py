@@ -1203,9 +1203,6 @@ else:
 if (sys.platform == "darwin"):
     # OpenAL is not yet working well on OSX for us, so let's do this for now.
     configprc = configprc.replace("p3openal_audio","p3fmod_audio")
-    
-    # Because <auto> doesn't work well yet.
-    configprc += "\nplugin-path $THIS_PRC_DIR/../lib"
 
 ConditionalWriteFile(GetOutputDir()+"/etc/Config.prc", configprc)
 ConditionalWriteFile(GetOutputDir()+"/etc/Confauto.prc", confautoprc)
