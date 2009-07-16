@@ -665,8 +665,8 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
   for (pai = _pages.begin(); pai != _pages.end(); ++pai) {
     writer->write_pointer(datagram, (*pai).second);
   }
-  datagram.add_bool(_has_override_margin);
-  datagram.add_int16(_override_margin);
+  datagram.add_bool(_has_margin_override);
+  datagram.add_int16(_margin_override);
 
 }
 
@@ -774,6 +774,6 @@ fillin(DatagramIterator &scan, BamReader *manager) {
   _num_pages = scan.get_uint32();
   manager->read_pointers(scan, _num_pages);
 
-  _has_override_margin = scan.get_bool();
-  _override_margin = scan.get_int16();
+  _has_margin_override = scan.get_bool();
+  _margin_override = scan.get_int16();
 }
