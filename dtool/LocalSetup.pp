@@ -146,7 +146,11 @@
 //#print - Did not find SDL
 //#endif
 #if $[HAVE_X11]
+#if $[HAVE_XF86DGA]
+#print + X11, with XFree86-DGA
+#else
 #print + X11
+#endif
 #else
 #print - Did not find X11
 #endif
@@ -381,6 +385,9 @@ $[cdefine HAVE_SDL]
 
 /* Define if we have X11. */
 $[cdefine HAVE_X11]
+
+/* Define if we have the XFree86-DGA extension. */
+$[cdefine HAVE_XF86DGA]
 
 /* Define if we want to compile the threading code.  */
 $[cdefine HAVE_THREADS]

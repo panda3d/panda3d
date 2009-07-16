@@ -143,6 +143,13 @@
   #define x11_framework $[X11_FRAMEWORK]
 #endif
 
+#if $[HAVE_XF86DGA]
+  #define xf86dga_ipath $[wildcard $[XF86DGA_IPATH]]
+  #define xf86dga_lpath $[wildcard $[XF86DGA_LPATH]]
+  #define xf86dga_cflags $[XF86DGA_CFLAGS]
+  #define xf86dga_libs $[XF86DGA_LIBS]
+#endif
+
 #if $[HAVE_MESA]
   #define mesa_ipath $[wildcard $[MESA_IPATH]]
   #define mesa_lpath $[wildcard $[MESA_LPATH]]
