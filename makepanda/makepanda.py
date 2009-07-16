@@ -243,7 +243,9 @@ if (COMPILER=="MSVC"):
                 DefSymbol(pkg, "MAYAVERSION", pkg)
             elif (pkg[:3]=="MAX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
+                IncDirectory(pkg, SDK[pkg]      + "/include/CS")
                 IncDirectory(pkg, SDK[pkg+"CS"] + "/include")
+                IncDirectory(pkg, SDK[pkg+"CS"] + "/include/CS")
                 DefSymbol(pkg, "MAX", pkg)
             elif (pkg[:2]=="DX"):
                 IncDirectory(pkg, SDK[pkg]      + "/include")
