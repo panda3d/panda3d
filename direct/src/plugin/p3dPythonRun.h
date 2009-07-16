@@ -25,9 +25,10 @@
 #include "p3d_lock.h"
 #include "handleStream.h"
 #include "p3dCInstance.h"
-#include "genericAsyncTask.h"
+#include "pythonTask.h"
 #include "pmap.h"
 #include "pdeque.h"
+#include "pmutex.h"
 #include "get_tinyxml.h"
 
 #include <Python.h>
@@ -75,7 +76,7 @@ private:
   void handle_script_response_command(TiXmlElement *xcommand);
 
   void check_comm();
-  static AsyncTask::DoneStatus task_check_comm(GenericAsyncTask *task, void *user_data);
+  static PyObject *st_check_comm(PyObject *, PyObject *args);
   TiXmlDocument *wait_script_response(int response_id);
 
   PyObject *py_request_func(PyObject *args);
@@ -118,7 +119,7 @@ private:
   PyObject *_browser_object_class;
   PyObject *_taskMgr;
 
-  PT(GenericAsyncTask) _check_comm_task;
+  PT(PythonTask) _check_comm_task;
 
   // This map keeps track of the PyObject pointers we have delivered
   // to the parent process.  We have to hold the reference count on
@@ -128,8 +129,14 @@ private:
   SentObjects _sent_objects;
   int _next_sent_id;
 
-  // The remaining members are manipulated by the read thread.
   typedef pdeque<TiXmlDocument *> Commands;
+
+  // This is a special queue of responses extracted from the _commands
+  // queue, below.  It's protected by the Panda mutex.
+  Commands _responses;
+  Mutex _responses_lock;
+
+  // The remaining members are manipulated by the read thread.
   Commands _commands;
   
   // This has to be an actual OS LOCK instead of Panda's Mutex,

@@ -25,6 +25,7 @@ from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
+from direct.showbase.MessengerGlobal import messenger
 from direct.showbase import AppRunnerGlobal
 
 # These imports are read by the C++ wrapper in p3dPythonRun.cxx.
@@ -98,6 +99,11 @@ class AppRunner(DirectObject):
         if AppRunnerGlobal.appRunner is None:
             AppRunnerGlobal.appRunner = self
 
+        # We use this messenger hook to dispatch this startIfReady()
+        # call back to the main thread.
+        self.accept('startIfReady', self.startIfReady)
+            
+
     def setSessionId(self, sessionId):
         """ This message should come in at startup. """
         self.sessionId = sessionId
@@ -166,6 +172,9 @@ class AppRunner(DirectObject):
 
         if self.gotWindow and self.gotP3DFilename:
             self.started = True
+
+            # Now we can ignore future calls to startIfReady().
+            self.ignore('startIfReady')
 
             # Hang a hook so we know when the window is actually opened.
             self.acceptOnce('window-event', self.windowEvent)
@@ -265,7 +274,8 @@ class AppRunner(DirectObject):
 
         self.gotP3DFilename = True
 
-        self.startIfReady()
+        # Send this call to the main thread; don't call it directly.
+        messenger.send('startIfReady', taskChain = 'default')
 
     def clearWindowPrc(self):
         """ Clears the windowPrc file that was created in a previous
@@ -325,7 +335,9 @@ class AppRunner(DirectObject):
         self.windowPrc = loadPrcFileData("setupWindow", data)
 
         self.gotWindow = True
-        self.startIfReady()
+
+        # Send this call to the main thread; don't call it directly.
+        messenger.send('startIfReady', taskChain = 'default')
 
     def setRequestFunc(self, func):
         """ This method is called by the plugin at startup to supply a
@@ -468,4 +480,4 @@ if __name__ == '__main__':
     except ArgumentError, e:
         print e.args[0]
         sys.exit(1)
-    run()
+    taskMgr.run()

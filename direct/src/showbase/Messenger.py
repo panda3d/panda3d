@@ -311,6 +311,7 @@ class Messenger:
 
             if taskChain:
                 # Queue the event onto the indicated task chain.
+                from direct.task.TaskManagerGlobal import taskMgr
                 taskMgr.add(self.__lockAndDispatch, name = 'Messenger-%s-%s' % (event, taskChain), extraArgs = [acceptorDict, event, sentArgs, foundWatch], taskChain = taskChain)
             else:
                 # Handle the event immediately.

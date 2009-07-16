@@ -68,12 +68,18 @@ class BrowserObject:
     def __nonzero__(self):
         return True
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kw):
+        needsResponse = True
+        if 'needsResponse' in kw:
+            needsResponse = kw['needsResponse']
+            del kw['needsResponse']
+        if kw:
+            raise ArgumentError, 'Keyword arguments not supported'
+        
         try:
             parentObj, attribName = self.__boundMethod
             if parentObj:
                 # Call it as a method.
-                needsResponse = True
                 if parentObj is self.__runner.dom and attribName == 'alert':
                     # As a special hack, we don't wait for the return
                     # value from the alert() call, since this is a
@@ -98,7 +104,7 @@ class BrowserObject:
                         raise AttributeError
             else:
                 # Call it as a plain function.
-                result = self.__runner.scriptRequest('call', self, value = args)
+                result = self.__runner.scriptRequest('call', self, value = args, needsResponse = needsResponse)
         except EnvironmentError:
             # Some odd problem on the call.
             raise TypeError
@@ -208,11 +214,17 @@ class MethodWrapper:
     def __nonzero__(self):
         return True
 
-    def __call__(self, *args):
+    def __call__(self, *args, **kw):
+        needsResponse = True
+        if 'needsResponse' in kw:
+            needsResponse = kw['needsResponse']
+            del kw['needsResponse']
+        if kw:
+            raise ArgumentError, 'Keyword arguments not supported'
+        
         try:
             parentObj, attribName = self.__boundMethod
             # Call it as a method.
-            needsResponse = True
             if parentObj is self.__runner.dom and attribName == 'alert':
                 # As a special hack, we don't wait for the return
                 # value from the alert() call, since this is a

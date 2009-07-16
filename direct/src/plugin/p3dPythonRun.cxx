@@ -168,11 +168,13 @@ run_python() {
   Py_DECREF(runp3d);
 
 
-  // Construct a Python wrapper around our request_func() method.
+  // Construct a Python wrapper around our methods we need to expose to Python.
   static PyMethodDef p3dpython_methods[] = {
-    {"request_func", P3DPythonRun::st_request_func, METH_VARARGS,
-     "Send an asynchronous request to the plugin host"},
-    {NULL, NULL, 0, NULL}        /* Sentinel */
+    { "check_comm", P3DPythonRun::st_check_comm, METH_VARARGS,
+      "Poll for communications from the parent process" },
+    { "request_func", P3DPythonRun::st_request_func, METH_VARARGS,
+      "Send an asynchronous request to the plugin host" },
+    { NULL, NULL, 0, NULL }        /* Sentinel */
   };
   PyObject *p3dpython = Py_InitModule("p3dpython", p3dpython_methods);
   if (p3dpython == NULL) {
@@ -196,10 +198,30 @@ run_python() {
   Py_DECREF(request_func);
  
 
-  // Now add check_comm() as a task.
-  _check_comm_task = new GenericAsyncTask("check_comm", task_check_comm, this);
+  // Now add check_comm() as a task.  It can be a threaded task, but
+  // this does mean that application programmers will have to be alert
+  // to asynchronous calls coming in from JavaScript.  We'll put it on
+  // its own task chain so the application programmer can decide how
+  // it should be.
   AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
+  PT(AsyncTaskChain) chain = task_mgr->make_task_chain("JavaScript");
+  chain->set_num_threads(1);
+  chain->set_thread_priority(TP_low);
+
+  PyObject *check_comm = PyObject_GetAttrString(p3dpython, "check_comm");
+  if (check_comm == NULL) {
+    PyErr_Print();
+    return false;
+  }
+
+  // We have to make it a PythonTask, not just a GenericAsyncTask,
+  // because we need the code in PythonTask that supports calling into
+  // Python from a separate thread.
+  _check_comm_task = new PythonTask(check_comm, "check_comm");
+  _check_comm_task->set_task_chain("JavaScript");
   task_mgr->add(_check_comm_task);
+
+  Py_DECREF(check_comm);
 
   // Finally, get lost in taskMgr.run().
   PyObject *done = PyObject_CallMethod(_taskMgr, (char *)"run", (char *)"");
@@ -216,11 +238,14 @@ run_python() {
 //     Function: P3DPythonRun::handle_command
 //       Access: Private
 //  Description: Handles a command received from the plugin host, via
-//               an XML syntax on the wire.
+//               an XML syntax on the wire.  Ownership of the XML
+//               document object is passed into this method.
+//
+//               It's important *not* to be holding _commands_lock
+//               when calling this method.
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 handle_command(TiXmlDocument *doc) {
-  nout << "received: " << *doc << "\n" << flush;
   TiXmlElement *xcommand = doc->FirstChildElement("command");
   if (xcommand != NULL) {
     bool needs_response = false;
@@ -281,9 +306,15 @@ handle_command(TiXmlDocument *doc) {
         handle_pyobj_command(xcommand, needs_response, want_response_id);
 
       } else if (strcmp(cmd, "script_response") == 0) {
-        // Response from a script request.
-        assert(!needs_response);
-        nout << "Ignoring unexpected script_response\n";
+        // Response from a script request.  In this case, we just
+        // store it away instead of processing it immediately.
+
+        MutexHolder holder(_responses_lock);
+        _responses.push_back(doc);
+
+        // And now we must return out, instead of deleting the
+        // document at the bottom of this method.
+        return;
 
       } else if (strcmp(cmd, "drop_pyobj") == 0) {
         int object_id;
@@ -312,6 +343,8 @@ handle_command(TiXmlDocument *doc) {
       }
     }
   }
+
+  delete doc;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -560,45 +593,40 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
 //     Function: P3DPythonRun::check_comm
 //       Access: Private
 //  Description: This method is added to the task manager (via
-//               task_check_comm, below) so that it gets a call every
+//               st_check_comm, below) so that it gets a call every
 //               frame.  Its job is to check for commands received
 //               from the plugin host in the parent process.
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 check_comm() {
-  nout << ":" << flush;
+  //  nout << ":" << flush;
   ACQUIRE_LOCK(_commands_lock);
   while (!_commands.empty()) {
     TiXmlDocument *doc = _commands.front();
     _commands.pop_front();
-    assert(_commands.size() < 10);
     RELEASE_LOCK(_commands_lock);
     handle_command(doc);
-    delete doc;
     ACQUIRE_LOCK(_commands_lock);
   }
+  RELEASE_LOCK(_commands_lock);
 
   if (!_program_continue) {
     // The low-level thread detected an error, for instance pipe
     // closed.  We should exit gracefully.
     terminate_session();
   }
-
-  RELEASE_LOCK(_commands_lock);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPythonRun::task_check_comm
+//     Function: P3DPythonRun::st_check_comm
 //       Access: Private, Static
-//  Description: This static function wrapper around check_comm is
-//               necessary to add the method function to the
-//               GenericAsyncTask object.
+//  Description: This is a static Python wrapper around py_check_comm,
+//               needed to add the function to a PythonTask.
 ////////////////////////////////////////////////////////////////////
-AsyncTask::DoneStatus P3DPythonRun::
-task_check_comm(GenericAsyncTask *task, void *user_data) {
-  P3DPythonRun *self = (P3DPythonRun *)user_data;
-  self->check_comm();
-  return AsyncTask::DS_cont;
+PyObject *P3DPythonRun::
+st_check_comm(PyObject *, PyObject *args) {
+  P3DPythonRun::_global_ptr->check_comm();
+  return Py_BuildValue("i", AsyncTask::DS_cont);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -611,54 +639,63 @@ task_check_comm(GenericAsyncTask *task, void *user_data) {
 ////////////////////////////////////////////////////////////////////
 TiXmlDocument *P3DPythonRun::
 wait_script_response(int response_id) {
-  nout << "waiting script_response " << response_id << "\n" << flush;
+  //  nout << "waiting script_response " << response_id << "\n" << flush;
   while (true) {
-    ACQUIRE_LOCK(_commands_lock);
-    
     Commands::iterator ci;
+
+    // First, walk through the _commands queue to see if there's
+    // anything that needs immediate processing.
+    ACQUIRE_LOCK(_commands_lock);
     for (ci = _commands.begin(); ci != _commands.end(); ++ci) {
       TiXmlDocument *doc = (*ci);
 
       TiXmlElement *xcommand = doc->FirstChildElement("command");
       if (xcommand != NULL) {
         const char *cmd = xcommand->Attribute("cmd");
-        if (cmd != NULL && strcmp(cmd, "script_response") == 0) {
-          int unique_id;
-          if (xcommand->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
-            if (unique_id == response_id) {
-              // This is the response we were waiting for.
-              _commands.erase(ci);
-              RELEASE_LOCK(_commands_lock);
-              nout << "got script_response " << unique_id << "\n" << flush;
-              return doc;
-            }
-          }
-        }
+        if ((cmd != NULL && strcmp(cmd, "script_response") == 0) ||
+            xcommand->Attribute("want_response_id") != NULL) {
 
-        // It's not the response we're waiting for, but maybe we need
-        // to handle it anyway.
-        bool needs_response = false;
-        int want_response_id;
-        if (xcommand->QueryIntAttribute("want_response_id", &want_response_id) == TIXML_SUCCESS) {
-          // This command will be wanting a response.  We'd better
-          // honor it right away, or we risk deadlock with the browser
-          // process and the Python process waiting for each other.
-          nout << "honoring response " << want_response_id << "\n" << flush;
+          // This is either a response, or it's a command that will
+          // want a response itself.  In either case we should handle
+          // it right away.  ("handling" a response means moving it to
+          // the _responses queue.)
           _commands.erase(ci);
           RELEASE_LOCK(_commands_lock);
           handle_command(doc);
-          delete doc;
           ACQUIRE_LOCK(_commands_lock);
           break;
         }
       }
     }
-    
+    RELEASE_LOCK(_commands_lock);
+
+    // Now, walk through the _responses queue to look for the
+    // particular response we're waiting for.
+    _responses_lock.acquire();
+    for (ci = _responses.begin(); ci != _responses.end(); ++ci) {
+      TiXmlDocument *doc = (*ci);
+
+      TiXmlElement *xcommand = doc->FirstChildElement("command");
+      assert(xcommand != NULL);
+      const char *cmd = xcommand->Attribute("cmd");
+      assert(cmd != NULL && strcmp(cmd, "script_response") == 0);
+
+      int unique_id;
+      if (xcommand->QueryIntAttribute("unique_id", &unique_id) == TIXML_SUCCESS) {
+        if (unique_id == response_id) {
+          // This is the response we were waiting for.
+          _responses.erase(ci);
+          _responses_lock.release();
+          //          nout << "got script_response " << unique_id << "\n" << flush;
+          return doc;
+        }
+      }
+    }
+    _responses_lock.release();
+
     if (!_program_continue) {
       terminate_session();
     }
-    
-    RELEASE_LOCK(_commands_lock);
 
 #ifdef _WIN32
     // Make sure we process the Windows event loop while we're
@@ -671,7 +708,7 @@ wait_script_response(int response_id) {
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
 #endif  // _WIN32
 
-    nout << "." << flush;
+    //    nout << "." << flush;
 
     // It hasn't shown up yet.  Give the sub-thread a chance to
     // process the input and append it to the queue.
