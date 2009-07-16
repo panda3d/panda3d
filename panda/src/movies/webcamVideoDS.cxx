@@ -65,12 +65,13 @@
 // See "dxtrans.h missing in Microsoft DirectX SDK" at
 // http://social.msdn.microsoft.com/forums/en-US/windowssdk/thread/ed097d2c-3d68-4f48-8448-277eaaf68252/ for example.
 // This header file is referenced only by qedit.h and not needed.
-// Solution:  add this pragma and these 4 defines before the qedit.h inclusion:
+// Solution:  add this pragma and these defines before the qedit.h inclusion:
 #pragma include_alias( "dxtrans.h", "qedit.h" )
 #define __IDxtCompositor_INTERFACE_DEFINED__
 #define __IDxtAlphaSetter_INTERFACE_DEFINED__
 #define __IDxtJpeg_INTERFACE_DEFINED_
 #define __IDxtKey_INTERFACE_DEFINED__
+#define IDXEffect IUnknown
 #include <qedit.h>
 #include <atlbase.h>
 
