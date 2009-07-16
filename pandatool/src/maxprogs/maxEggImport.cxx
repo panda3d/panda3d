@@ -22,6 +22,9 @@
 //
 ////////////////////////////////////////////////////////////////////
 
+// Include this before everything
+#include "pandatoolbase.h"
+
 // MAX includes
 #include "maxEggLoader.h"
 #include "Max.h"
