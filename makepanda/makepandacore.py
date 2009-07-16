@@ -756,10 +756,39 @@ def PkgConfigEnable(opt, pkgname):
 
 SDK = {}
 
+def GetSdkDir(sdkname, sdkkey = None):
+    # Returns the default SDK directory. If it exists,
+    # and sdkkey is not None, it is put in SDK[sdkkey].
+    # Note: return value may not be an existing path.
+    sdir = "sdks"
+    if (sys.platform.startswith("win")):
+        sdir += "/win"
+        sdir += platform.architecture()[0][:2]
+    elif (sys.platform.startswith("linux")):
+        sdir += "/linux"
+        sdir += platform.architecture()[0][:2]
+    elif (sys.platform == "darwin"):
+        sdir += "/macosx"
+    sdir += "/" + sdkname
+    
+    # If it does not exist, try the old location.
+    if (sdkkey and not os.path.isdir(sdir)):
+        sdir = "sdks/" + sdir
+        if (sys.platform.startswith("linux")):
+            sdir += "-linux"
+            sdir += platform.architecture()[0][:2]
+        elif (sys.platform == "darwin"):
+            sdir += "-osx"
+
+    if (os.path.isdir(sdir)):
+        SDK[sdkkey] = sdir
+    
+    return sdir
+
 def SdkLocateDirectX():
     if (sys.platform != "win32"): return
-    if (os.path.isdir("sdks/directx8")): SDK["DX8"]="sdks/directx8"
-    if (os.path.isdir("sdks/directx9")): SDK["DX9"]="sdks/directx9"
+    GetSdkDir("directx8", "DX8")
+    GetSdkDir("directx9", "DX9")
     if (SDK.has_key("DX9")==0):
         ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
         dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
@@ -790,46 +819,37 @@ def SdkLocateDirectX():
 def SdkLocateMaya():
     for (ver,key) in MAYAVERSIONINFO:
         if (PkgSkip(ver)==0 and SDK.has_key(ver)==0):
-            if (sys.platform == "win32"):
-                ddir = "sdks/"+ver.lower().replace("x","")
-                if (os.path.isdir(ddir)):
-                    SDK[ver] = ddir
-                else:
+            GetSdkDir(ver.lower().replace("x",""), ver)
+            if (not SDK.has_key(ver)):
+                if (sys.platform == "win32"):
                     for dev in ["Alias|Wavefront","Alias","Autodesk"]:
                         fullkey="SOFTWARE\\"+dev+"\\Maya\\"+key+"\\Setup\\InstallPath"
                         res = GetRegistryKey(fullkey, "MAYA_INSTALL_LOCATION")
                         if (res != 0):
                             res = res.replace("\\", "/").rstrip("/")
                             SDK[ver] = res
-            elif (sys.platform == "darwin"):
-                ddir1 = "sdks/"+ver.lower().replace("x","")+"-osx"
-                ddir2 = "/Applications/Autodesk/maya"+key+"/Maya.app/Contents"
-                
-                if (os.path.isdir(ddir1)):   SDK[ver] = ddir1
-                elif (os.path.isdir(ddir2)): SDK[ver] = ddir2
-            else:
-                ddir1 = "sdks/"+ver.lower().replace("x","")+"-linux"+platform.architecture()[0].replace("bit","")
-                if (platform.architecture()[0] == "64bit"):
-                    ddir2 = "/usr/autodesk/maya"+key+"-x64"
-                    ddir3 = "/usr/aw/maya"+key+"-x64"
+                elif (sys.platform == "darwin"):
+                    ddir = "/Applications/Autodesk/maya"+key+"/Maya.app/Contents"
+                    if (os.path.isdir(ddir)): SDK[ver] = ddir
                 else:
-                    ddir2 = "/usr/autodesk/maya"+key
-                    ddir3 = "/usr/aw/maya"+key
-                
-                if (os.path.isdir(ddir1)):   SDK[ver] = ddir1
-                elif (os.path.isdir(ddir2)): SDK[ver] = ddir2
-                elif (os.path.isdir(ddir3)): SDK[ver] = ddir3
+                    if (platform.architecture()[0] == "64bit"):
+                        ddir1 = "/usr/autodesk/maya"+key+"-x64"
+                        ddir2 = "/usr/aw/maya"+key+"-x64"
+                    else:
+                        ddir1 = "/usr/autodesk/maya"+key
+                        ddir2 = "/usr/aw/maya"+key
+                    
+                    if (os.path.isdir(ddir1)):   SDK[ver] = ddir1
+                    elif (os.path.isdir(ddir2)): SDK[ver] = ddir2
 
 def SdkLocateMax():
     if (sys.platform != "win32"): return
     for version,key1,key2,subdir in MAXVERSIONINFO:
         if (PkgSkip(version)==0):
             if (SDK.has_key(version)==0):
-                ddir = "sdks/maxsdk"+version.lower()[3:]
-                if (os.path.isdir(ddir)):
-                    SDK[version] = ddir
-                    SDK[version+"CS"] = ddir
-                else:
+                GetSdkDir("maxsdk"+version.lower()[3:], version)
+                GetSdkDir("maxsdk"+version.lower()[3:], version+"CS")
+                if (not SDK.has_key(version)):
                     top = GetRegistryKey(key1,key2)
                     if (top != 0):
                         SDK[version] = top + "maxsdk"
