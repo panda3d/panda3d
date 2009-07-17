@@ -20,7 +20,7 @@
 #ifdef HAVE_X11
 
 #include "tinyXGraphicsPipe.h"
-#include "graphicsWindow.h"
+#include "x11GraphicsWindow.h"
 #include "buttonHandle.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -28,7 +28,7 @@
 // Description : Opens a window on X11 to display the TinyPanda
 //               software rendering.
 ////////////////////////////////////////////////////////////////////
-class EXPCL_TINYDISPLAY TinyXGraphicsWindow : public GraphicsWindow {
+class EXPCL_TINYDISPLAY TinyXGraphicsWindow : public x11GraphicsWindow {
 public:
   TinyXGraphicsWindow(GraphicsEngine *engine, GraphicsPipe *pipe, 
                       const string &name,
@@ -54,23 +54,6 @@ protected:
   virtual void pixel_factor_changed();
 
 private:
-  void set_wm_properties(const WindowProperties &properties,
-                         bool already_mapped);
-
-  void setup_colormap(XVisualInfo *visual);
-  void handle_keystroke(XKeyEvent &event);
-  void handle_keypress(XKeyEvent &event);
-  void handle_keyrelease(XKeyEvent &event);
-
-  ButtonHandle get_button(XKeyEvent &key_event, bool allow_shift);
-  ButtonHandle map_button(KeySym key);
-  ButtonHandle get_mouse_button(XButtonEvent &button_event);
-
-  static Bool check_event(Display *display, XEvent *event, char *arg);
-
-  void open_raw_mice();
-  void poll_raw_mice();
-
   void create_full_frame_buffer();
   void create_reduced_frame_buffer();
   void create_ximage();
@@ -80,45 +63,19 @@ private:
   ZBuffer *_full_frame_buffer;
   int _pitch;
   XImage *_ximage;
-
-  Display *_display;
-  int _screen;
+  GC _gc;
+  int _bytes_per_pixel;
   Visual *_visual;
   int _depth;
-  int _bytes_per_pixel;
-  Window _xwindow;
-  Colormap _colormap;
-  XIC _ic;
-  GC _gc;
-
-  long _event_mask;
-  bool _awaiting_configure;
-  Atom _wm_delete_window;
-  Atom _net_wm_window_type;
-  Atom _net_wm_window_type_splash;
-  Atom _net_wm_window_type_fullscreen;
-  Atom _net_wm_state;
-  Atom _net_wm_state_fullscreen;
-  Atom _net_wm_state_above;
-  Atom _net_wm_state_below;
-  Atom _net_wm_state_add;
-  Atom _net_wm_state_remove;
-
-  struct MouseDeviceInfo {
-    int    _fd;
-    int    _input_device_index;
-    string _io_buffer;
-  };
-  pvector<MouseDeviceInfo> _mouse_device_info;
   
 public:
   static TypeHandle get_class_type() {
     return _type_handle;
   }
   static void init_type() {
-    GraphicsWindow::init_type();
+    x11GraphicsWindow::init_type();
     register_type(_type_handle, "TinyXGraphicsWindow",
-                  GraphicsWindow::get_class_type());
+                  x11GraphicsWindow::get_class_type());
   }
   virtual TypeHandle get_type() const {
     return get_class_type();

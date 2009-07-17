@@ -26,13 +26,6 @@ NotifyCategoryDecl(tinydisplay, EXPCL_TINYDISPLAY, EXPTP_TINYDISPLAY);
 extern EXPCL_TINYDISPLAY void init_libtinydisplay();
 extern "C" EXPCL_TINYDISPLAY int get_pipe_type_tinydisplay();
 
-extern ConfigVariableString display_cfg;
-extern ConfigVariableBool x_error_abort;
-extern ConfigVariableInt x_wheel_up_button;
-extern ConfigVariableInt x_wheel_down_button;
-extern ConfigVariableInt x_wheel_left_button;
-extern ConfigVariableInt x_wheel_right_button;
-
 extern ConfigVariableBool show_resize_box;
 extern ConfigVariableBool osx_disable_event_loop;
 extern ConfigVariableInt osx_mouse_wheel_scale;
