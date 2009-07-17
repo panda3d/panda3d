@@ -2853,11 +2853,15 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   
   OPTS=['DIR:direct/src/plugin', 'TINYXML', 'ZLIB', 'JPEG']
   TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
+  TargetAdd('plugin_mkdir_complete.obj', opts=OPTS, input='mkdir_complete.cxx')
+  TargetAdd('plugin_find_root_dir.obj', opts=OPTS, input='find_root_dir.cxx')
   TargetAdd('plugin_binaryXml.obj', opts=OPTS, input='binaryXml.cxx')
   TargetAdd('plugin_fileSpec.obj', opts=OPTS, input='fileSpec.cxx')
   TargetAdd('plugin_handleStream.obj', opts=OPTS, input='handleStream.cxx')
   TargetAdd('plugin_handleStreamBuf.obj', opts=OPTS, input='handleStreamBuf.cxx')
   TargetAdd('p3d_plugin.dll', input='plugin_plugin.obj')
+  TargetAdd('p3d_plugin.dll', input='plugin_mkdir_complete.obj')
+  TargetAdd('p3d_plugin.dll', input='plugin_find_root_dir.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_fileSpec.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_binaryXml.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
