@@ -401,6 +401,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lml")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcxcore")
     if (PkgSkip("TINYXML")==0):    LibName("TINYXML", "-ltinyxml")
+    if (PkgSkip("PYTHON")==0):     LibName("PYTHON", "-l" + SDK["PYTHONVERSION"])
     if (sys.platform == "darwin"):
         LibName("ALWAYS", "-framework AppKit")
         if (PkgSkip("OPENCV")==0):   LibName("OPENCV", "-framework QuickTime")
@@ -1355,6 +1356,7 @@ if (sys.platform == "win32"):
 elif (sys.platform == "darwin"):
     CopyAllHeaders('panda/src/osxdisplay')
 else:
+    CopyAllHeaders('panda/src/x11display')
     CopyAllHeaders('panda/src/glxdisplay')
 CopyAllHeaders('panda/metalibs/pandagl')
 
@@ -2501,6 +2503,14 @@ if (sys.platform != "win32"):
   TargetAdd('libpandamesa.dll', opts=['GLUT'])
 
 #
+# DIRECTORY: panda/src/x11display/
+#
+
+if (sys.platform != "win32" and sys.platform != "darwin"):
+  OPTS=['DIR:panda/src/x11display', 'BUILDING:PANDAX11']
+  TargetAdd('x11display_composite.obj', opts=OPTS, input='x11display_composite.cxx')
+
+#
 # DIRECTORY: panda/src/glxdisplay/
 #
 
@@ -2509,6 +2519,7 @@ if (sys.platform != "win32" and sys.platform != "darwin"):
   TargetAdd('glxdisplay_composite.obj', opts=OPTS, input='glxdisplay_composite.cxx')
   OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT',  'GLUT', 'NVIDIACG', 'CGGL']
   TargetAdd('pandagl_pandagl.obj', opts=OPTS, input='pandagl.cxx')
+  TargetAdd('libpandagl.dll', input='x11display_composite.obj')
   TargetAdd('libpandagl.dll', input='pandagl_pandagl.obj')
   TargetAdd('libpandagl.dll', input='glgsg_config_glgsg.obj')
   TargetAdd('libpandagl.dll', input='glgsg_glgsg.obj')
@@ -2844,7 +2855,6 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   TargetAdd('plugin_binaryXml.obj', opts=OPTS, input='binaryXml.cxx')
   TargetAdd('plugin_handleStream.obj', opts=OPTS, input='handleStream.cxx')
   TargetAdd('plugin_handleStreamBuf.obj', opts=OPTS, input='handleStreamBuf.cxx')
-  TargetAdd('p3d_plugin.dll', input='plugin_common.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_plugin.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_binaryXml.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
@@ -2860,7 +2870,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
     TargetAdd('p3dpython.exe', input='plugin_handleStreamBuf.obj')
     TargetAdd('p3dpython.exe', input='plugin_p3dPythonRun.obj')
     TargetAdd('p3dpython.exe', input=COMMON_PANDA_LIBS)
-    TargetAdd('p3dpython.exe', opts=['TINYXML', 'WINUSER'])
+    TargetAdd('p3dpython.exe', opts=['PYTHON', 'TINYXML', 'WINUSER'])
 
 #
 # DIRECTORY: direct/src/plugin_npapi/
@@ -2890,7 +2900,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
   TargetAdd('panda3d.exe', input=COMMON_PANDA_LIBS)
-  TargetAdd('panda3d.exe', opts=['TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL'])
+  TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
