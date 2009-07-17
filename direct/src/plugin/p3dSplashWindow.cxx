@@ -114,10 +114,12 @@ set_install_progress(double install_progress) {
 //     Function: P3DSplashWindow::handle_event
 //       Access: Public, Virtual
 //  Description: Deals with the event callback from the OS window
-//               system.
+//               system.  Returns true if the event is handled, false
+//               if ignored.
 ////////////////////////////////////////////////////////////////////
-void P3DSplashWindow::
+bool P3DSplashWindow::
 handle_event(P3D_event_data event) {
+  return false;
 }
 
 

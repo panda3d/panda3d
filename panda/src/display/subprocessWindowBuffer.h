@@ -76,30 +76,33 @@ public:
   inline void close_write_framebuffer();
 
   enum EventSource {
+    ES_none,
     ES_mouse,
     ES_keyboard
   };
   
-  enum ButtonTransition {
-    BT_down,
-    BT_up,
-    BT_again  // if supported
+  enum EventType {
+    ET_none,
+    ET_button_down,
+    ET_button_up,
+    ET_button_again,  // if supported
   };
 
   enum EventFlags {
-    EF_mouse_position = 0x0001,
-    EF_shift_held     = 0x0002,
-    EF_control_held   = 0x0004,
-    EF_alt_held       = 0x0008,
-    EF_meta_held      = 0x0010,
-    EF_caps_lock      = 0x0020,
+    EF_has_mouse      = 0x0001,
+    EF_mouse_position = 0x0002,
+    EF_shift_held     = 0x0004,
+    EF_control_held   = 0x0008,
+    EF_alt_held       = 0x0010,
+    EF_meta_held      = 0x0020,
+    EF_caps_lock      = 0x0040,
   };
 
   class Event {
   public:
     EventSource _source;
     int _code;  // mouse button, or os-specific keycode.
-    ButtonTransition _trans;
+    EventType _type;
     int _x, _y;  // position of mouse at the time of the event, if EF_mouse_position is set
     unsigned int _flags;
   };

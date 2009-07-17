@@ -149,14 +149,16 @@ set_install_progress(double install_progress) {
 //     Function: P3DOsxSplashWindow::handle_event
 //       Access: Public, Virtual
 //  Description: Deals with the event callback from the OS window
-//               system.
+//               system.  Returns true if the event is handled, false
+//               if ignored.
 ////////////////////////////////////////////////////////////////////
-void P3DOsxSplashWindow::
+bool P3DOsxSplashWindow::
 handle_event(P3D_event_data event) {
   EventRecord *er = event._event;
   if (er->what == updateEvt) {
     paint_window();
   }
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

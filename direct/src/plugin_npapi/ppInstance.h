@@ -52,7 +52,7 @@ public:
 
   void handle_request(P3D_request *request);
 
-  void handle_event(void *event);
+  bool handle_event(void *event);
 
   NPObject *get_panda_script_object();
 

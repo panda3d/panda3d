@@ -334,9 +334,7 @@ NPP_HandleEvent(NPP instance, void *event) {
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
 
-  inst->handle_event(event);
-
-  return 0;
+  return inst->handle_event(event);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -100,6 +100,8 @@ process_events() {
       // Deal with this event.
       if (swb_event._flags & SubprocessWindowBuffer::EF_mouse_position) {
         _input_devices[0].set_pointer_in_window(swb_event._x, swb_event._y);
+      } else if ((swb_event._flags & SubprocessWindowBuffer::EF_has_mouse) == 0) {
+        _input_devices[0].set_pointer_out_of_window();
       }
 
       unsigned int diff = swb_event._flags ^ _last_event_flags;
@@ -118,21 +120,21 @@ process_events() {
         transition_button(swb_event._flags & SubprocessWindowBuffer::EF_meta_held, KeyboardButton::meta());
       }
 
-      ButtonHandle button;
+      ButtonHandle button = ButtonHandle::none();
       if (swb_event._source == SubprocessWindowBuffer::ES_mouse) {
         button = MouseButton::button(swb_event._code);
 
-      } else {
+      } else if (swb_event._source == SubprocessWindowBuffer::ES_keyboard) {
         int keycode;
         button = translate_key(keycode, swb_event._code, swb_event._flags);
-        if (keycode != 0 && swb_event._trans != SubprocessWindowBuffer::BT_up) {
+        if (keycode != 0 && swb_event._type != SubprocessWindowBuffer::ET_button_up) {
           _input_devices[0].keystroke(keycode);
         }
       }
 
-      if (swb_event._trans == SubprocessWindowBuffer::BT_up) {
+      if (swb_event._type == SubprocessWindowBuffer::ET_button_up) {
         _input_devices[0].button_up(button);
-      } else if (swb_event._trans == SubprocessWindowBuffer::BT_down) {
+      } else if (swb_event._type == SubprocessWindowBuffer::ET_button_down) {
         _input_devices[0].button_down(button);
       }
     }

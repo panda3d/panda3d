@@ -38,7 +38,7 @@ public:
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress);
 
-  virtual void handle_event(P3D_event_data event);
+  virtual bool handle_event(P3D_event_data event);
 
 private:
   void paint_window();

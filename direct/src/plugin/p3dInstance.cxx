@@ -74,6 +74,7 @@ P3DInstance(P3D_request_ready_func *func, void *user_data) :
   _shared_mmap_size = 0;
   _swbuffer = NULL;
   _reversed_buffer = NULL;
+  _mouse_active = false;
 #endif  // __APPLE__
 
   // Set some initial properties.
@@ -467,12 +468,16 @@ feed_url_stream(int unique_id,
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::handle_event
 //       Access: Public
-//  Description: Responds to the os-generated window event.
+//  Description: Responds to the os-generated window event.  Returns
+//               true if the event is handled, false if ignored.
 ////////////////////////////////////////////////////////////////////
-void P3DInstance::
+bool P3DInstance::
 handle_event(P3D_event_data event) {
+  bool retval = false;
   if (_splash_window != NULL) {
-    _splash_window->handle_event(event);
+    if (_splash_window->handle_event(event)) {
+      retval = true;
+    }
   }
 
 #ifdef _WIN32
@@ -481,6 +486,29 @@ handle_event(P3D_event_data event) {
 #elif defined(__APPLE__)
   EventRecord *er = event._event;
 
+  // Need to ensure we have the correct port set, in order to
+  // convert the mouse coordinates successfully via
+  // GlobalToLocal().
+  GrafPtr out_port = _wparams.get_parent_window()._port;
+  GrafPtr portSave = NULL;
+  Boolean portChanged = QDSwapPort(out_port, &portSave);
+  
+  Point pt = er->where;
+  GlobalToLocal(&pt);
+
+  if (portChanged) {
+    QDSwapPort(portSave, NULL);
+  }
+
+  SubprocessWindowBuffer::Event swb_event;
+  swb_event._source = SubprocessWindowBuffer::ES_none;
+  swb_event._type = SubprocessWindowBuffer::ET_none;
+  swb_event._code = 0;
+  swb_event._flags = 0;
+  add_modifier_flags(swb_event._flags, er->modifiers);
+
+  bool keep_event = false;
+  
   switch (er->what) {
   case nullEvent:
     // We appear to get this event pretty frequently when nothing else
@@ -490,40 +518,21 @@ handle_event(P3D_event_data event) {
     if (_instance_window_opened && _swbuffer != NULL && _swbuffer->ready_for_read()) {
       request_refresh();
     }
+    keep_event = true;
     break;
 
   case mouseDown:
   case mouseUp:
     {
-      // Need to ensure we have the correct port set, in order to
-      // convert the mouse coordinates successfully via
-      // GlobalToLocal().
-      GrafPtr out_port = _wparams.get_parent_window()._port;
-      GrafPtr portSave = NULL;
-      Boolean portChanged = QDSwapPort(out_port, &portSave);
-
-      Point pt = er->where;
-      GlobalToLocal(&pt);
       P3D_window_handle window = _wparams.get_parent_window();
-      if (_swbuffer != NULL) {
-        SubprocessWindowBuffer::Event swb_event;
-        swb_event._source = SubprocessWindowBuffer::ES_mouse;
-        swb_event._code = 0;
-        if (er->what == mouseUp) {
-          swb_event._trans = SubprocessWindowBuffer::BT_up;
-        } else {
-          swb_event._trans = SubprocessWindowBuffer::BT_down;
-        }
-        swb_event._x = pt.h;
-        swb_event._y = pt.v;
-        swb_event._flags = SubprocessWindowBuffer::EF_mouse_position;
-        add_modifier_flags(swb_event._flags, er->modifiers);
-        _swbuffer->add_event(swb_event);
+      swb_event._source = SubprocessWindowBuffer::ES_mouse;
+      if (er->what == mouseUp) {
+        swb_event._type = SubprocessWindowBuffer::ET_button_up;
+      } else {
+        swb_event._type = SubprocessWindowBuffer::ET_button_down;
       }
-
-      if (portChanged) {
-        QDSwapPort(portSave, NULL);
-      }
+      keep_event = true;
+      retval = true;
     }
     break;
 
@@ -531,59 +540,48 @@ handle_event(P3D_event_data event) {
   case keyUp:
   case autoKey:
     if (_swbuffer != NULL) {
-      SubprocessWindowBuffer::Event swb_event;
       swb_event._source = SubprocessWindowBuffer::ES_keyboard;
       swb_event._code = er->message;
       if (er->what == keyUp) {
-        swb_event._trans = SubprocessWindowBuffer::BT_up;
+        swb_event._type = SubprocessWindowBuffer::ET_button_up;
       } else if (er->what == keyDown) {
-        swb_event._trans = SubprocessWindowBuffer::BT_down;
+        swb_event._type = SubprocessWindowBuffer::ET_button_down;
       } else {
-        swb_event._trans = SubprocessWindowBuffer::BT_again;
+        swb_event._type = SubprocessWindowBuffer::ET_button_again;
       }
-      swb_event._flags = 0;
-      add_modifier_flags(swb_event._flags, er->modifiers);
-      _swbuffer->add_event(swb_event);
+      keep_event = true;
+      retval = true;
     }
     break;
 
   case updateEvt:
     paint_window();
+    retval = true;
     break;
 
   case activateEvt:
-    break;
-
-  case diskEvt:
-    break;
-
-  case osEvt:
-    // Not getting this event for some reason?
-    /*
-    if ((er->message & 0xf0000000) == suspendResumeMessage) {
-      if (er->message & 1) {
-        cerr << "suspend\n";
-      } else {
-        cerr << "resume\n";
-      }
-    } else if ((er->message & 0xf0000000) == mouseMovedMessage) {
-      cerr << "mouse moved\n";
-    } else {
-      cerr << "unhandled osEvt: " << hex << er->message << dec << "\n";
-    }
-    */
-    break;
-
-  case kHighLevelEvent:
+    _mouse_active = ((er->modifiers & 1) != 0);
+    keep_event = true;
     break;
 
   default:
     break;
   }
 
+  if (_mouse_active) {
+    swb_event._x = pt.h;
+    swb_event._y = pt.v;
+    swb_event._flags |= SubprocessWindowBuffer::EF_mouse_position | SubprocessWindowBuffer::EF_has_mouse;
+  }
+
+  if (keep_event && _swbuffer != NULL) {
+    _swbuffer->add_event(swb_event);
+  }
+
 #elif defined(HAVE_X11)
 
 #endif
+  return retval;
 }
 
 ////////////////////////////////////////////////////////////////////

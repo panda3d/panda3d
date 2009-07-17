@@ -462,10 +462,13 @@ handle_request(P3D_request *request) {
 //     Function: PPInstance::handle_event
 //       Access: Public
 //  Description: Called by the browser as new window events are
-//               generated.
+//               generated.  Returns true if the event is handled,
+//               false if ignored.
 ////////////////////////////////////////////////////////////////////
-void PPInstance::
+bool PPInstance::
 handle_event(void *event) {
+  bool retval = false;
+
 #ifndef HAS_PLUGIN_THREAD_ASYNC_CALL
   // If we can't ask Mozilla to call us back using
   // NPN_PluginThreadAsyncCall(), then we'll take advantage of the
@@ -475,15 +478,32 @@ handle_event(void *event) {
 
   if (_p3d_inst == NULL) {
     // Ignore events that come in before we've launched the instance.
-    return;
+    return retval;
   }
 
 #ifdef __APPLE__
+  EventRecord *er = (EventRecord *)event;
+
+  switch (er->what) {
+  case NPEventType_GetFocusEvent:
+  case NPEventType_LoseFocusEvent:
+    retval = true;
+    break;
+
+  case NPEventType_AdjustCursorEvent:
+    retval = true;
+    break;
+  }
+
   P3D_event_data edata;
-  edata._event = (EventRecord *)event;
-  P3D_instance_handle_event(_p3d_inst, edata);
+  edata._event = er;
+  if (P3D_instance_handle_event(_p3d_inst, edata)) {
+    retval = true;
+  }
 
 #endif  // __APPLE__
+
+  return retval;
 }
 
 ////////////////////////////////////////////////////////////////////

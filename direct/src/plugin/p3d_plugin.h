@@ -812,8 +812,10 @@ typedef struct {
    plugin.  This is presently used only on OSX, where the window
    events are needed for proper plugin handling; and possibly also on
    X11.  On Windows, window events are handled natively by the plugin.
-*/
-typedef void
+
+   The return value is true if the handler has processed the event,
+   false if it has been ignored. */
+typedef bool
 P3D_instance_handle_event_func(P3D_instance *instance, P3D_event_data event);
 
 #ifdef P3D_FUNCTION_PROTOTYPES
