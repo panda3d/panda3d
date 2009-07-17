@@ -253,6 +253,11 @@ close_window() {
   }
 
   _is_valid = false;
+
+  WindowProperties properties;
+  properties.set_open(false);
+  properties.set_foreground(false);
+  system_changed_properties(properties);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -288,6 +293,11 @@ open_window() {
     _is_valid = false;
     return false;
   }
+
+  WindowProperties properties;
+  properties.set_open(true);
+  properties.set_foreground(true);
+  system_changed_properties(properties);
 
   return true;
 }
