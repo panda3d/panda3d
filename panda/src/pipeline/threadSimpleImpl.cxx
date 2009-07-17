@@ -38,6 +38,7 @@ ThreadSimpleImpl(Thread *parent_obj) :
 
   _status = S_new;
   _joinable = false;
+  _priority = TP_normal;
   _priority_weight = 1.0;
   _run_ticks = 0;
   _start_time = 0.0;
@@ -80,6 +81,7 @@ ThreadSimpleImpl::
 void ThreadSimpleImpl::
 setup_main_thread() {
   _status = S_running;
+  _priority = TP_normal;
   _priority_weight = _manager->_simple_thread_normal_weight;
 
   _manager->set_current_thread(this);
@@ -104,6 +106,7 @@ start(ThreadPriority priority, bool joinable) {
 
   _joinable = joinable;
   _status = S_running;
+  _priority = priority;
 
   switch (priority) {
   case TP_low:

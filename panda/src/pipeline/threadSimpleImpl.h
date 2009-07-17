@@ -105,6 +105,7 @@ private:
   Thread *_parent_obj;
   bool _joinable;
   Status _status;
+  ThreadPriority _priority;
 
   // The relative weight of this thread, relative to other threads, in
   // priority.
