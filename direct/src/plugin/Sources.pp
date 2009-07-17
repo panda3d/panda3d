@@ -116,9 +116,6 @@
 
   #define WIN_SYS_LIBS user32.lib
 
-// hack
-  #define EXTRA_LIBS python2.4_panda
-
 #end bin_target
 
 #begin static_lib_target
