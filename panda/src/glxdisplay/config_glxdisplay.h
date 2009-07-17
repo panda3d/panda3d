@@ -25,15 +25,8 @@ NotifyCategoryDecl(glxdisplay, EXPCL_PANDAGL, EXPTP_PANDAGL);
 
 extern EXPCL_PANDAGL void init_libglxdisplay();
 
-extern ConfigVariableString display_cfg;
-extern ConfigVariableBool x_error_abort;
 extern ConfigVariableBool glx_get_proc_address;
 extern ConfigVariableBool glx_get_os_address;
-
-extern ConfigVariableInt x_wheel_up_button;
-extern ConfigVariableInt x_wheel_down_button;
-extern ConfigVariableInt x_wheel_left_button;
-extern ConfigVariableInt x_wheel_right_button;
 
 extern ConfigVariableBool glx_support_pbuffer;
 extern ConfigVariableBool glx_support_pixmap;
