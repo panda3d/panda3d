@@ -229,27 +229,38 @@ paint_window() {
   int progress = bar_x + 1 + (int)((bar_width - 2) * _install_progress);
 
   Rect rbar = { bar_y, bar_x, bar_y + bar_height, bar_x + bar_width };
-  Rect rneed = { bar_y + 1, progress + 1, bar_y + bar_height - 1, bar_x + bar_width - 1 };
+  Rect rneed = { bar_y + 1, progress, bar_y + bar_height - 1, bar_x + bar_width - 1 };
   Rect rdone = { bar_y + 1, bar_x + 1, bar_y + bar_height - 1, progress };
   FrameRect(&rbar);
+
+  RGBColor blue = { 27756, 42405, 57568 };
+  RGBForeColor(&blue);
   PaintRect(&rdone);
   EraseRect(&rneed);
+
+  RGBColor black = { 0, 0, 0 };
+  RGBForeColor(&black);
 
   TextFont(0);
   TextFace(bold);
   TextMode(srcOr);
   TextSize(0);
 
-  Point numer, denom;
+  Point numer = { 1, 1 };
+  Point denom = { 1, 1 };
   FontInfo font_info;
   StdTxMeas(_install_label.size(), _install_label.data(), &numer, &denom, &font_info);
+  int ascent = font_info.ascent * numer.v / denom.v;
+  int descent = font_info.descent * numer.v / denom.v;
+
+  cerr << "ascent = " << font_info.ascent << " * " << numer.v << " / " << denom.v << "\n";
 
   int text_width = TextWidth(_install_label.data(), 0, _install_label.size());
   int text_x = (win_width - text_width) / 2;
-  int text_y = bar_y - font_info.descent - 8;
+  int text_y = bar_y - descent - 8;
 
-  Rect rtext = { text_y - font_info.ascent - 2, text_x - 2, 
-                 text_y + font_info.descent + 2, text_x + text_width + 2 }; 
+  Rect rtext = { text_y - ascent - 2, text_x - 2, 
+                 text_y + descent + 2, text_x + text_width + 2 }; 
   EraseRect(&rtext);
 
   MoveTo(text_x, text_y);
