@@ -199,18 +199,18 @@ int main(int argc, char **argv)
   // Calculate MODARGV
   
   modargc=0;
-  modargv[modargc++]="python";
+  modargv[modargc++]   = (char*)"python";
 #ifdef BUILDING_GENPYCODE
-    modargv[modargc++] = "-c";
-    modargv[modargc++] = "import direct.ffi.jGenPyCode";
+    modargv[modargc++] = (char*)"-c";
+    modargv[modargc++] = (char*)"import direct.ffi.jGenPyCode";
 #endif
 #ifdef BUILDING_PACKPANDA
-    modargv[modargc++] = "-c";
-    modargv[modargc++] = "import direct.directscripts.packpanda";
+    modargv[modargc++] = (char*)"-c";
+    modargv[modargc++] = (char*)"import direct.directscripts.packpanda";
 #endif
 #ifdef BUILDING_EGGCACHER
-    modargv[modargc++] = "-c";
-    modargv[modargc++] = "import direct.directscripts.eggcacher";
+    modargv[modargc++] = (char*)"-c";
+    modargv[modargc++] = (char*)"import direct.directscripts.eggcacher";
 #endif
   for (int i=1; i<argc; i++) modargv[modargc++] = argv[i];
   modargv[modargc] = 0;
