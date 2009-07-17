@@ -121,7 +121,9 @@ do_particles(float dt) {
       }
     }
 
-    ++cur;
+    if (cur != _ps_list.end()) {
+      ++cur;
+    }
   }
   //  cout << "PSM::do_particles finished." << endl;
   //  cout << "ParticleSystemManager::doparticles exiting." << endl;
