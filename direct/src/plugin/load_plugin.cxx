@@ -170,8 +170,6 @@ load_plugin(const string &p3d_plugin_filename) {
 
 #endif  // _WIN32
 
-  cerr << "Got module = " << module << "\n";
-
   // Now get all of the function pointers.
   P3D_initialize = (P3D_initialize_func *)get_func(module, "P3D_initialize");  
   P3D_finalize = (P3D_finalize_func *)get_func(module, "P3D_finalize");  
@@ -316,8 +314,6 @@ unload_plugin() {
   if (!plugin_loaded) {
     return;
   }
-
-  cerr << "unload_plugin called\n";
 
   P3D_finalize();
   unload_dso();

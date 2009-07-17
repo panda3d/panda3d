@@ -98,6 +98,28 @@ private:
   bool _got_instance_data;
   string _p3d_filename;
 
+  // This class is used for feeding local files (accessed via a
+  // "file://" url) into the core API.
+  class StreamingFileData {
+  public:
+    StreamingFileData(PPDownloadRequest *req, const string &filename,
+                      P3D_instance *p3d_inst);
+    ~StreamingFileData();
+
+    bool feed_data();
+
+  private:
+    P3D_instance *_p3d_inst;
+    int _user_id;
+    string _filename;
+    ifstream _file;
+    size_t _file_size;
+    size_t _total_count;
+  };
+
+  typedef vector<StreamingFileData *> FileDatas;
+  static FileDatas _file_datas;
+  
   bool _got_window;
   NPWindow _window;
 #ifdef _WIN32

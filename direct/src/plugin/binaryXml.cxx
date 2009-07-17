@@ -18,7 +18,7 @@
 // Actually, we haven't implemented the binary I/O for XML files yet.
 // We just map these directly to the classic formatted I/O for now.
 
-static const bool debug_xml_output = true;
+static const bool debug_xml_output = false;
 
 ////////////////////////////////////////////////////////////////////
 //     Function: write_xml

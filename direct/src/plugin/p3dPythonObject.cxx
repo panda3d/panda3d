@@ -25,7 +25,6 @@ P3DPythonObject(P3DSession *session, int object_id) :
   _object_id(object_id)
 {
   _session->ref();
-  nout << "new P3DPythonObject " << this << " : " << object_id << "\n" << flush;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -35,7 +34,6 @@ P3DPythonObject(P3DSession *session, int object_id) :
 ////////////////////////////////////////////////////////////////////
 P3DPythonObject::
 ~P3DPythonObject() {
-  nout << "del P3DPythonObject " << this << " : " << _object_id << "\n";
   // When the P3DPythonObject wrapper goes away, we have to inform the
   // child process that we no longer need the corresponding PyObject
   // to be kept around.

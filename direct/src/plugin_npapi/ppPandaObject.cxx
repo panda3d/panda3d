@@ -75,7 +75,6 @@ set_p3d_object(P3D_object *p3d_object) {
 ////////////////////////////////////////////////////////////////////
 void PPPandaObject::
 construct(PPInstance *inst, P3D_object *p3d_object) {
-  logfile << "construct: " << this << "\n" << flush;
   _instance = inst;
   _p3d_object = NULL;
   set_p3d_object(p3d_object);
@@ -88,7 +87,6 @@ construct(PPInstance *inst, P3D_object *p3d_object) {
 ////////////////////////////////////////////////////////////////////
 void PPPandaObject::
 invalidate() {
-  logfile << "invalidate: " << this << "\n" << flush;
   _instance = NULL;
   set_p3d_object(NULL);
 }
@@ -102,7 +100,6 @@ invalidate() {
 bool PPPandaObject::
 has_method(NPIdentifier name) {
   string method_name = identifier_to_string(name);
-  logfile << "has_method: " << this << ", " << method_name << "\n" << flush;
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -134,7 +131,6 @@ bool PPPandaObject::
 invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
        NPVariant *result) {
   string method_name = identifier_to_string(name);
-  logfile << "invoke: " << this << ", " << method_name << "\n" << flush;
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -174,7 +170,6 @@ invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
 bool PPPandaObject::
 invoke_default(const NPVariant *args, uint32_t argCount,
                NPVariant *result) {
-  logfile << "invoke_default: " << this << "\n" << flush;
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -213,7 +208,6 @@ invoke_default(const NPVariant *args, uint32_t argCount,
 bool PPPandaObject::
 has_property(NPIdentifier name) {
   string property_name = identifier_to_string(name);
-  logfile << "has_property: " << this << ", " << property_name << "\n" << flush;
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -242,7 +236,6 @@ has_property(NPIdentifier name) {
 bool PPPandaObject::
 get_property(NPIdentifier name, NPVariant *result) {
   string property_name = identifier_to_string(name);
-  logfile << "get_property: " << this << ", " << property_name << "\n" << flush;
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -251,7 +244,6 @@ get_property(NPIdentifier name, NPVariant *result) {
   P3D_object *value = P3D_OBJECT_GET_PROPERTY(_p3d_object, property_name.c_str());
   if (value == NULL) {
     // No such property.
-    logfile << "  no such property\n" << flush;
     return false;
   }
 
@@ -270,7 +262,6 @@ get_property(NPIdentifier name, NPVariant *result) {
 bool PPPandaObject::
 set_property(NPIdentifier name, const NPVariant *value) {
   string property_name = identifier_to_string(name);
-  logfile << "set_property: " << this << ", " << property_name << "\n" << flush;
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -291,7 +282,6 @@ set_property(NPIdentifier name, const NPVariant *value) {
 bool PPPandaObject::
 remove_property(NPIdentifier name) {
   string property_name = identifier_to_string(name);
-  logfile << "remove_property: " << this << ", " << property_name << "\n" << flush;
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -309,7 +299,6 @@ remove_property(NPIdentifier name) {
 ////////////////////////////////////////////////////////////////////
 bool PPPandaObject::
 enumerate(NPIdentifier **value, uint32_t *count) {
-  logfile << "enumerate: " << this << "\n" << flush;
   // TODO: Not implemented yet.
 
   // Note that the array of values must be allocated here with
@@ -362,7 +351,6 @@ identifier_to_string(NPIdentifier ident) {
 ////////////////////////////////////////////////////////////////////
 NPObject *PPPandaObject::
 NPAllocate(NPP npp, NPClass *aClass) {
-  logfile << "NPAllocate\n";
   assert(aClass == &_object_class);
   return (PPPandaObject *)malloc(sizeof(PPPandaObject));
 }
@@ -375,7 +363,6 @@ NPAllocate(NPP npp, NPClass *aClass) {
 ////////////////////////////////////////////////////////////////////
 void PPPandaObject::
 NPDeallocate(NPObject *npobj) {
-  logfile << "NPDeallocate: " << npobj << "\n" << flush;
   ((PPPandaObject *)npobj)->invalidate();
   free(npobj);
 }
@@ -387,8 +374,6 @@ NPDeallocate(NPObject *npobj) {
 ////////////////////////////////////////////////////////////////////
 void PPPandaObject::
 NPInvalidate(NPObject *npobj) {
-  logfile << "NPInvalidate: " << npobj << "\n" << flush;
-
   // It turns out that this method isn't actually called by Safari's
   // implementation of NPAPI, so we'll move the actual destructor call
   // into NPDeallocate, above.

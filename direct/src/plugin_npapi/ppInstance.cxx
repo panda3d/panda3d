@@ -23,6 +23,8 @@
 #include <fstream>
 #include <string.h>  // strcmp()
 
+PPInstance::FileDatas PPInstance::_file_datas;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::Constructor
 //       Access: Public
@@ -364,9 +366,7 @@ stream_as_file(NPStream *stream, const char *fname) {
       char *name = tempnam(NULL, "p3d_");
 
       // We prefer just making a hard link; it's quick and easy.
-      if (link(filename.c_str(), name) == 0) {
-        logfile << "linked " << filename << " to " << name << "\n";
-      } else {
+      if (link(filename.c_str(), name) != 0) {
         // But sometimes the hard link might fail, particularly if these
         // are two different file systems.  In this case we have to open
         // the files and copy the data by hand.
@@ -383,7 +383,6 @@ stream_as_file(NPStream *stream, const char *fname) {
           in.read(buffer, buffer_size);
           count = in.gcount();
         }
-        logfile << "copied " << filename << " to " << name << "\n";
       }
       
       filename = name;
@@ -605,7 +604,6 @@ variant_to_p3dobj(const NPVariant *variant) {
       // This is really a PPPandaObject.
       PPPandaObject *ppobject = (PPPandaObject *)object;
       P3D_object *obj = ppobject->get_p3d_object();
-      logfile << "Found nested Panda Object " << obj << "\n" << flush;
       return obj;
     }
 
@@ -785,47 +783,12 @@ downloaded_file(PPDownloadRequest *req, const string &filename) {
 //     Function: PPInstance::feed_file
 //       Access: Private
 //  Description: Opens the named file (extracted from a file:// URL)
-//               and feeds its contents to the plugin.
+//               and feeds its contents to the core API.
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 feed_file(PPDownloadRequest *req, const string &filename) {
-  ifstream file(filename.c_str(), ios::in | ios::binary);
-
-  // First, seek to the end to get the file size.
-  file.seekg(0, ios::end);
-  size_t file_size = file.tellg();
-
-  // Then return to the beginning to read the data.
-  file.seekg(0, ios::beg);
-
-  static const size_t buffer_size = 4096;
-  char buffer[buffer_size];
-
-  file.read(buffer, buffer_size);
-  size_t count = file.gcount();
-  size_t total_count = 0;
-  while (count != 0) {
-    bool download_ok = P3D_instance_feed_url_stream
-      (_p3d_inst, req->_user_id, P3D_RC_in_progress,
-       0, file_size, (const unsigned char *)buffer, count);
-
-    if (!download_ok) {
-      // Never mind.
-      return;
-    }
-    file.read(buffer, buffer_size);
-    count = file.gcount();
-    total_count += count;
-  }
-  
-  P3D_result_code result = P3D_RC_done;
-  if (file.fail() && !file.eof()) {
-    // Got an error while reading.
-    result = P3D_RC_generic_error;
-  }
-
-  P3D_instance_feed_url_stream
-    (_p3d_inst, req->_user_id, result, 0, total_count, NULL, 0);
+  StreamingFileData *file_data = new StreamingFileData(req, filename, _p3d_inst);
+  _file_datas.push_back(file_data);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1025,10 +988,7 @@ send_window() {
     y = 0;
 
 #elif defined(__APPLE__)
-    logfile << "windowed plugin\n" << flush;
     NP_Port *port = (NP_Port *)_window.window;
-    logfile << "portx, porty = " << port->portx << ", " << port->porty << "\n";
-    logfile << "x, y = " << _window.x << ", " << _window.y << "\n";
     parent_window._port = port->port;
 
 #elif defined(HAVE_X11)
@@ -1051,10 +1011,7 @@ send_window() {
     }
 
 #elif defined(__APPLE__)
-    logfile << "windowless plugin\n" << flush;
     NP_Port *port = (NP_Port *)_window.window;
-    logfile << "portx, porty = " << port->portx << ", " << port->porty << "\n";
-    logfile << "x, y = " << _window.x << ", " << _window.y << "\n";
     parent_window._port = port->port;
 
 #elif defined(HAVE_X11)
@@ -1132,6 +1089,23 @@ handle_request_loop() {
     }
     p3d_inst = P3D_check_request(false);
   }
+
+  // Also check to see if we have any file datas that need streaming.
+  // Only stream up to the front four in the queue, so we don't
+  // overwhelm the browser all at once.
+  size_t num_file_datas = min(_file_datas.size(), (size_t)4);
+  size_t i = 0;
+  while (i < num_file_datas) {
+    if (_file_datas[i]->feed_data()) {
+      // This one keeps going.
+      ++i;
+    } else {
+      // This one is done.
+      delete _file_datas[i];
+      _file_datas.erase(_file_datas.begin() + i);
+      --num_file_datas;
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1144,14 +1118,13 @@ handle_request_loop() {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 browser_sync_callback(void *) {
-  logfile << "browser_sync_callback\n";
   handle_request_loop();
 }
 
 
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
-//     Function: window_proc
+//     Function: PPInstance::window_proc
 //       Access: Private, Static
 //  Description: We bind this function to the parent window we were
 //               given in set_window, so we can spin the request_loop
@@ -1181,3 +1154,77 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 #endif  // _WIN32
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::StreamingFileData::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PPInstance::StreamingFileData::
+StreamingFileData(PPDownloadRequest *req, const string &filename,
+                  P3D_instance *p3d_inst) :
+  _p3d_inst(p3d_inst),
+  _user_id(req->_user_id),
+  _filename(filename),
+  _file(filename.c_str(), ios::in | ios::binary)
+{
+  // First, seek to the end to get the file size.
+  _file.seekg(0, ios::end);
+  _file_size = _file.tellg();
+  _total_count = 0;
+
+  // Then return to the beginning to read the data.
+  _file.seekg(0, ios::beg);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::StreamingFileData::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+PPInstance::StreamingFileData::
+~StreamingFileData() {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::StreamingFileData::feed_data
+//       Access: Public
+//  Description: Feeds the next batch of the file to the instance.
+//               Returns true if there is more to come and this method
+//               should be called again, false if we're done.
+////////////////////////////////////////////////////////////////////
+bool PPInstance::StreamingFileData::
+feed_data() {
+  static const size_t buffer_size = 81920;
+  char buffer[buffer_size];
+
+  _file.read(buffer, buffer_size);
+  size_t count = _file.gcount();
+  if (count != 0) {
+    _total_count += count;
+    bool download_ok = P3D_instance_feed_url_stream
+      (_p3d_inst, _user_id, P3D_RC_in_progress,
+       0, _file_size, (const unsigned char *)buffer, count);
+
+    if (!download_ok) {
+      // Never mind.
+      return false;
+    }
+
+    // So far, so good.
+    return true;
+  }
+
+  // End of file.
+  P3D_result_code result = P3D_RC_done;
+  if (_file.fail() && !_file.eof()) {
+    // Got an error while reading.
+    result = P3D_RC_generic_error;
+  }
+
+  P3D_instance_feed_url_stream
+    (_p3d_inst, _user_id, result, 0, _total_count, NULL, 0);
+
+  // We're done.
+  return false;
+}

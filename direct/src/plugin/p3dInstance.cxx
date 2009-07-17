@@ -167,9 +167,6 @@ set_fparams(const P3DFileParams &fparams) {
   string expression = _fparams.lookup_token("onpluginload");
   if (!expression.empty() && _browser_script_object != NULL) {
     P3D_object *result = P3D_OBJECT_EVAL(_browser_script_object, expression.c_str());
-    if (result != NULL) {
-      nout << "onpluginload returned: " << *result << "\n";
-    }
     P3D_OBJECT_XDECREF(result);
   }
 
@@ -217,7 +214,6 @@ set_wparams(const P3DWindowParams &wparams) {
     // to the browser.  Set up this mechanism.
     int x_size = _wparams.get_win_width();
     int y_size = _wparams.get_win_height();
-    nout << "size = " << x_size << " * " << y_size << "\n" << flush;
     if (_shared_fd == -1 && x_size != 0 && y_size != 0) {
       _swbuffer = SubprocessWindowBuffer::new_buffer
         (_shared_fd, _shared_mmap_size, _shared_filename, x_size, y_size);
@@ -340,7 +336,6 @@ bake_requests() {
       // No more requests to process right now.
       return;
     }
-    nout << "received: " << *doc << "\n" << flush;
     
     // Now we've got a request in XML form; convert it to P3D_request
     // form.
@@ -365,7 +360,6 @@ bake_requests() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_raw_request(TiXmlDocument *doc) {
-  nout << "add_raw_request " << this << "\n" << flush;
   ACQUIRE_LOCK(_request_lock);
   _raw_requests.push_back(doc);
   _request_pending = true;
@@ -379,7 +373,6 @@ add_raw_request(TiXmlDocument *doc) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   inst_mgr->signal_request_ready(this);
   _session->signal_request_ready(this);
-  nout << "done add_raw_request " << this << "\n" << flush;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -505,7 +498,6 @@ handle_event(P3D_event_data event) {
       Point pt = er->where;
       GlobalToLocal(&pt);
       P3D_window_handle window = _wparams.get_parent_window();
-      cerr << "mouse " << pt.h << " " << pt.v << "\n";
       if (_swbuffer != NULL) {
         SubprocessWindowBuffer::Event swb_event;
         swb_event._source = SubprocessWindowBuffer::ES_mouse;
@@ -531,7 +523,6 @@ handle_event(P3D_event_data event) {
   case keyDown:
   case keyUp:
   case autoKey:
-    cerr << "keycode: " << hex << (er->message & 0xffff) << dec << "\n";
     if (_swbuffer != NULL) {
       SubprocessWindowBuffer::Event swb_event;
       swb_event._source = SubprocessWindowBuffer::ES_keyboard;
@@ -554,13 +545,14 @@ handle_event(P3D_event_data event) {
     break;
 
   case activateEvt:
-    cerr << "activate window: " << er->message << "\n";
     break;
 
   case diskEvt:
     break;
 
   case osEvt:
+    // Not getting this event for some reason?
+    /*
     if ((er->message & 0xf0000000) == suspendResumeMessage) {
       if (er->message & 1) {
         cerr << "suspend\n";
@@ -572,14 +564,13 @@ handle_event(P3D_event_data event) {
     } else {
       cerr << "unhandled osEvt: " << hex << er->message << dec << "\n";
     }
+    */
     break;
 
   case kHighLevelEvent:
-    cerr << "high level: " << er->message << "\n";
     break;
 
   default:
-    cerr << "unhandled event: " << er->what << ", " << er->message << "\n";
     break;
   }
 
@@ -794,8 +785,6 @@ void P3DInstance::
 handle_notify_request(const string &message) {
   // We look for certain notify events that have particular meaning
   // to this instance.
-  nout << "handle_notify: " << message << "\n";
-
   if (message == "onpythonload") {
     // Once Python is up and running, we can get the actual toplevel
     // object from the Python side, and merge it with our own.

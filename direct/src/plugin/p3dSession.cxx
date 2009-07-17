@@ -129,7 +129,6 @@ shutdown() {
     int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
     
     int status;
-    nout << "waiting for pid " << _p3dpython_pid << "\n" << flush;
     pid_t result = waitpid(_p3dpython_pid, &status, WNOHANG);
     while (result != _p3dpython_pid) {
       if (result == -1) {
@@ -318,10 +317,7 @@ command_and_response(TiXmlDocument *command) {
   write_xml(_pipe_write, command, nout);
   delete command;
 
-  // Now block, waiting for a response to be delivered.  We assume
-  // only one thread will be waiting at a time.
-  nout << "waiting for response " << response_id << "\n" << flush;
-
+  // Now block, waiting for the response to be delivered.
   _response_ready.acquire();
   Responses::iterator ri = _responses.find(response_id);
   while (ri == _responses.end()) {
@@ -387,13 +383,10 @@ command_and_response(TiXmlDocument *command) {
     _response_ready.wait(0.5);
 #endif  // _WIN32
 
-    nout << "." << flush;
-
     ri = _responses.find(response_id);
   }
   // When we exit the loop, we've found the desired response.
   TiXmlDocument *response = (*ri).second;
-  nout << "got response: " << *response << "\n" << flush;
   _responses.erase(ri);
 
   _response_ready.release();
@@ -616,7 +609,6 @@ signal_request_ready(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 drop_pyobj(int object_id) {
-  nout << "got drop_pyobj(" << object_id << ")\n" << flush;
   if (_p3dpython_running) {
     TiXmlDocument doc;
     TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
@@ -640,7 +632,6 @@ drop_pyobj(int object_id) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 drop_p3dobj(int object_id) {
-  nout << "got drop_p3dobj(" << object_id << ")\n" << flush;
   SentObjects::iterator si = _sent_objects.find(object_id);
   if (si != _sent_objects.end()) {
     P3D_object *obj = (*si).second;
@@ -828,7 +819,6 @@ rt_thread_run() {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 rt_handle_request(TiXmlDocument *doc) {
-  nout << "rt_handle_request in " << this << "\n" << flush;
   TiXmlElement *xresponse = doc->FirstChildElement("response");
   if (xresponse != (TiXmlElement *)NULL) {
     int response_id;
@@ -840,7 +830,6 @@ rt_handle_request(TiXmlDocument *doc) {
       assert(inserted);
       _response_ready.notify();
       _response_ready.release();
-      nout << "done a, rt_handle_request in " << this << "\n" << flush;
       return;
     }
   }
@@ -865,7 +854,6 @@ rt_handle_request(TiXmlDocument *doc) {
   if (doc != NULL) {
     delete doc;
   }
-  nout << "done rt_handle_request in " << this << "\n" << flush;
 }
 
 ////////////////////////////////////////////////////////////////////

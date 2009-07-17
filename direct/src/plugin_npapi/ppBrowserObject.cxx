@@ -180,15 +180,11 @@ set_property(const string &property, P3D_object *value) {
 ////////////////////////////////////////////////////////////////////
 P3D_object *PPBrowserObject::
 call(const string &method_name, P3D_object *params[], int num_params) const {
-  logfile << "call " << method_name << "(";
   // First, convert all of the parameters.
   NPVariant *npparams = new NPVariant[num_params];
   for (int i = 0; i < num_params; ++i) {
     _instance->p3dobj_to_variant(&npparams[i], params[i]);
-    _instance->output_np_variant(logfile, npparams[i]);
-    logfile << ", ";
   }
-  logfile << ")\n";
 
   NPVariant result;
   if (method_name.empty()) {
@@ -196,7 +192,6 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
     if (!browser->invokeDefault(_instance->get_npp_instance(), _npobj,
                                 npparams, num_params, &result)) {
       // Failed to invoke.
-      logfile << "invokeDefault failed\n" << flush;
       delete[] npparams;
       return NULL;
     }
@@ -207,15 +202,12 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
     if (!browser->invoke(_instance->get_npp_instance(), _npobj, method_id,
                          npparams, num_params, &result)) {
       // Failed to invoke.
-      logfile << "invoke failed\n" << flush;
       delete[] npparams;
       return NULL;
     }
   }
 
   delete[] npparams;
-
-  logfile << "invoke succeeded\n" << flush;
 
   P3D_object *object = _instance->variant_to_p3dobj(&result);
   browser->releasevariantvalue(&result);
@@ -230,8 +222,6 @@ call(const string &method_name, P3D_object *params[], int num_params) const {
 ////////////////////////////////////////////////////////////////////
 P3D_object *PPBrowserObject::
 eval(const string &expression) const {
-  logfile << "eval " << expression << "\n";
-
   NPString npexpr;
   npexpr.utf8characters = expression.c_str();
   npexpr.utf8length = expression.length();
@@ -240,11 +230,8 @@ eval(const string &expression) const {
   if (!browser->evaluate(_instance->get_npp_instance(), _npobj, 
                          &npexpr, &result)) {
     // Failed to eval.
-    logfile << "eval failed\n" << flush;
     return NULL;
   }
-
-  logfile << "eval succeeded\n" << flush;
 
   P3D_object *object = _instance->variant_to_p3dobj(&result);
   browser->releasevariantvalue(&result);

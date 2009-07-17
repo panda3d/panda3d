@@ -166,7 +166,6 @@ handle_event(P3D_event_data event) {
 ////////////////////////////////////////////////////////////////////
 void P3DOsxSplashWindow::
 paint_window() {
-  cerr << "paint_window, _image = " << _image << ", label = " << _install_label << "\n";
   GrafPtr out_port = _wparams.get_parent_window()._port;
   GrafPtr portSave = NULL;
   Boolean portChanged = QDSwapPort(out_port, &portSave);
@@ -252,8 +251,6 @@ paint_window() {
   StdTxMeas(_install_label.size(), _install_label.data(), &numer, &denom, &font_info);
   int ascent = font_info.ascent * numer.v / denom.v;
   int descent = font_info.descent * numer.v / denom.v;
-
-  cerr << "ascent = " << font_info.ascent << " * " << numer.v << " / " << denom.v << "\n";
 
   int text_width = TextWidth(_install_label.data(), 0, _install_label.size());
   int text_x = (win_width - text_width) / 2;

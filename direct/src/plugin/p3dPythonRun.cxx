@@ -319,7 +319,6 @@ handle_command(TiXmlDocument *doc) {
       } else if (strcmp(cmd, "drop_pyobj") == 0) {
         int object_id;
         if (xcommand->QueryIntAttribute("object_id", &object_id) == TIXML_SUCCESS) {
-          nout << "got drop_pyobj(" << object_id << ")\n" << flush;
           SentObjects::iterator si = _sent_objects.find(object_id);
           if (si != _sent_objects.end()) {
             PyObject *obj = (*si).second;
@@ -813,7 +812,6 @@ py_request_func(PyObject *args) {
     if (!PyArg_ParseTuple(extra_args, "i", &object_id)) {
       return NULL;
     }
-    nout << "got drop_p3dobj(" << object_id << ")\n" << flush;
 
     xrequest->SetAttribute("object_id", object_id);
     write_xml(_pipe_write, &doc, nout);
