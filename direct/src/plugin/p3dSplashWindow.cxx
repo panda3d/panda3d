@@ -110,6 +110,16 @@ void P3DSplashWindow::
 set_install_progress(double install_progress) {
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::handle_event
+//       Access: Public, Virtual
+//  Description: Deals with the event callback from the OS window
+//               system.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+handle_event(P3D_event_data event) {
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::read_image

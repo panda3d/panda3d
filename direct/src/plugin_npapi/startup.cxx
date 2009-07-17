@@ -329,7 +329,7 @@ NPP_Print(NPP instance, NPPrint *platformPrint) {
 ////////////////////////////////////////////////////////////////////
 int16
 NPP_HandleEvent(NPP instance, void *event) {
-  logfile << "HandleEvent\n" << flush;
+  //  logfile << "HandleEvent\n" << flush;
 
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);

@@ -82,6 +82,7 @@ public:
   void start_download(P3DDownload *download);
   inline bool is_started() const;
   void request_stop();
+  void request_refresh();
 
   TiXmlElement *make_xml();
 

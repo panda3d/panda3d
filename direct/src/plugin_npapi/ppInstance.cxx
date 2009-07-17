@@ -52,6 +52,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
   _started_instance_data = false;
   _got_instance_data = false;
   _got_window = false;
+  _python_window_open = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -430,8 +431,23 @@ handle_request(P3D_request *request) {
     break;
 
   case P3D_RT_notify:
-    // We can ignore notifies, since these are handled by the core
-    // API.
+    // We mostly ignore notifies, since these are handled by the core
+    // API.  But we do check for the "onwindowopen" notify, at which
+    // point we start spamming the refresh requests.
+    if (strcmp(request->_request._notify._message, "onwindowopen") == 0) {
+      _python_window_open = true;
+      if (_got_window) {
+        NPRect rect = { 0, 0, _window.height, _window.width };
+        browser->invalidaterect(_npp_instance, &rect);
+      }
+    }
+    break;
+
+  case P3D_RT_refresh:
+    if (_got_window) {
+      NPRect rect = { 0, 0, _window.height, _window.width };
+      browser->invalidaterect(_npp_instance, &rect);
+    }
     break;
 
   default:
@@ -472,8 +488,7 @@ handle_event(void *event) {
     // is going on.  Great; we'll take advantage of it to invalidate
     // the instance rectangle, which will cause updateEvt to be
     // triggered (if the instance is still onscreen).
-
-    if (_got_window) {
+    if (_got_window && _python_window_open) {
       NPRect rect = { 0, 0, _window.height, _window.width };
       browser->invalidaterect(_npp_instance, &rect);
     }
@@ -612,11 +627,6 @@ variant_to_p3dobj(const NPVariant *variant) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 request_ready(P3D_instance *instance) {
-  logfile
-    << "request_ready in " << instance
-    //    << " thread = " << GetCurrentThreadId()
-    << "\n" << flush;
-
   PPInstance *inst = (PPInstance *)(instance->_user_data);
   assert(inst != NULL);
 

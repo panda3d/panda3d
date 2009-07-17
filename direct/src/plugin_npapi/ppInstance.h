@@ -104,6 +104,8 @@ private:
   LONG_PTR _orig_window_proc;
 #endif  // _WIN32
 
+  bool _python_window_open;
+
   PPPandaObject *_script_object;
 
   P3D_instance *_p3d_inst;

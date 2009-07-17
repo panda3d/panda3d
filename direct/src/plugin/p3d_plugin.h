@@ -630,6 +630,7 @@ typedef enum {
   P3D_RT_get_url,
   P3D_RT_post_url,
   P3D_RT_notify,
+  P3D_RT_refresh,
 } P3D_request_type;
 
 /* Structures corresponding to the request types in the above enum. */
@@ -673,6 +674,12 @@ typedef struct {
   const char *_message;
 } P3D_request_notify;
 
+/* A refresh request.  The instance would like to get a repaint event
+   on its own window.  Only relevant for windowless plugins, e.g. on
+   OSX. */
+typedef struct {
+} P3D_request_refresh;
+
 /* This is the overall structure that represents a single request.  It
    is returned by P3D_instance_get_request(). */
 typedef struct {
@@ -683,6 +690,7 @@ typedef struct {
     P3D_request_get_url _get_url;
     P3D_request_post_url _post_url;
     P3D_request_notify _notify;
+    P3D_request_refresh _refresh;
   } _request;
 } P3D_request;
 

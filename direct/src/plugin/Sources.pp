@@ -43,6 +43,7 @@
     p3dMultifileReader.h p3dMultifileReader.I \
     p3dNoneObject.h \
     p3dObject.h p3dObject.I \
+    p3dOsxSplashWindow.h p3dOsxSplashWindow.I \
     p3dPackage.h p3dPackage.I \
     p3dPythonObject.h \
     p3dReferenceCount.h p3dReferenceCount.I \
@@ -71,6 +72,7 @@
     p3dMultifileReader.cxx \
     p3dNoneObject.cxx \
     p3dObject.cxx \
+    p3dOsxSplashWindow.cxx \
     p3dPackage.cxx \
     p3dPythonObject.cxx \
     p3dReferenceCount.cxx \
