@@ -366,11 +366,13 @@ if (COMPILER=="LINUX"):
             DefSymbol(pkg, "MAYAVERSION", pkg)
     
     if (sys.platform == "darwin"):
+      if (PkgSkip("PYTHON")==0):   LibName("PYTHON", "-framework Python")
       if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-framework Cg")
       if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-framework OpenAL")
       if (PkgSkip("OPENSSL")==0):  LibName("OPENSSL",  "-lcrypto")
       if (PkgSkip("TIFF")==0):     LibName("TIFF",  "-lpandatiff")
     else:
+      if (PkgSkip("PYTHON")==0):   LibName("PYTHON", "-l" + SDK["PYTHONVERSION"])
       if (PkgSkip("NVIDIACG")==0): LibName("CGGL", "-lCgGL")
       if (PkgSkip("NVIDIACG")==0): LibName("NVIDIACG", "-lCg")
       if (PkgSkip("OPENAL")==0):   LibName("OPENAL", "-lopenal")
@@ -401,7 +403,6 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lml")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcxcore")
     if (PkgSkip("TINYXML")==0):    LibName("TINYXML", "-ltinyxml")
-    if (PkgSkip("PYTHON")==0):     LibName("PYTHON", "-l" + SDK["PYTHONVERSION"])
     if (sys.platform == "darwin"):
         LibName("ALWAYS", "-framework AppKit")
         if (PkgSkip("OPENCV")==0):   LibName("OPENCV", "-framework QuickTime")
@@ -962,7 +963,7 @@ DTOOL_CONFIG=[
     ("HAVE_DIRECTCAM",                 'UNDEF',                  'UNDEF'),
     ("HAVE_SQUISH",                    'UNDEF',                  'UNDEF'),
     ("HAVE_FCOLLADA",                  'UNDEF',                  'UNDEF'),
-    ("HAVE_NPAPI",                     'UNDEF',                  'UNDEF'),
+    ("HAVE_TINYXML",                   'UNDEF',                  'UNDEF'),
     ("HAVE_OPENAL_FRAMEWORK",          'UNDEF',                  'UNDEF'),
     ("PRC_SAVE_DESCRIPTIONS",          '1',                      '1'),
 ]
@@ -2853,9 +2854,11 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   OPTS=['DIR:direct/src/plugin', 'TINYXML', 'ZLIB', 'JPEG']
   TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
   TargetAdd('plugin_binaryXml.obj', opts=OPTS, input='binaryXml.cxx')
+  TargetAdd('plugin_fileSpec.obj', opts=OPTS, input='fileSpec.cxx')
   TargetAdd('plugin_handleStream.obj', opts=OPTS, input='handleStream.cxx')
   TargetAdd('plugin_handleStreamBuf.obj', opts=OPTS, input='handleStreamBuf.cxx')
   TargetAdd('p3d_plugin.dll', input='plugin_plugin.obj')
+  TargetAdd('p3d_plugin.dll', input='plugin_fileSpec.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_binaryXml.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStream.obj')
   TargetAdd('p3d_plugin.dll', input='plugin_handleStreamBuf.obj')
