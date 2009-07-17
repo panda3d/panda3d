@@ -941,11 +941,9 @@ def SdkAutoDisableDirectX():
     for ver in ["DX8","DX9","DIRECTCAM"]:
         if (PkgSkip(ver)==0):
             if (SDK.has_key(ver)==0):
-                if (sys.platform == "win32"):
+                if (sys.platform.startswith("win")):
                     WARNINGS.append("I cannot locate SDK for "+ver)
-                else:
-                    WARNINGS.append(ver+" only supported on windows yet")
-                WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
+                    WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
                 PkgDisable(ver)
             else:
                 WARNINGS.append("Using "+ver+" sdk: "+SDK[ver])
@@ -963,14 +961,12 @@ def SdkAutoDisableMaya():
 def SdkAutoDisableMax():
     for version,key1,key2,subdir in MAXVERSIONINFO:
         if (PkgSkip(version)==0) and ((SDK.has_key(version)==0) or (SDK.has_key(version+"CS")==0)): 
-            if (sys.platform == "win32"):
+            if (sys.platform.startswith("win")):
                 if (SDK.has_key(version)):
                     WARNINGS.append("Your copy of "+version+" does not include the character studio SDK")
                 else: 
                     WARNINGS.append("The registry does not appear to contain a pointer to "+version)
-            else:
-                WARNINGS.append(version+" only supported on windows yet")
-            WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
+                WARNINGS.append("I have automatically added this command-line option: --no-"+version.lower())
             PkgDisable(version)
 
 ########################################################################
@@ -1041,32 +1037,41 @@ def DefSymbol(opt, sym, val):
 
 ########################################################################
 #
-# On Linux, to run panda, the dynamic linker needs to know how to find
-# the shared libraries.  This subroutine verifies that the dynamic
+# On Linux/OSX, to run panda, the dynamic linker needs to know how to
+# find the shared libraries.  This subroutine verifies that the dynamic
 # linker is properly configured.  If not, it sets it up on a temporary
 # basis and issues a warning.
 #
 ########################################################################
 
-
 def CheckLinkerLibraryPath():
     if (sys.platform == "win32"): return
     builtlib = os.path.abspath(os.path.join(OUTPUTDIR,"lib"))
+    dyldpath = []
     try:
         ldpath = []
         f = file("/etc/ld.so.conf","r")
         for line in f: ldpath.append(line.rstrip())
         f.close()
     except: ldpath = []
+    
+    # Get the current 
     if (os.environ.has_key("LD_LIBRARY_PATH")):
         ldpath = ldpath + os.environ["LD_LIBRARY_PATH"].split(":")
+    if (sys.platform == "darwin" and os.environ.has_key("DYLD_LIBRARY_PATH")):
+        dyldpath = os.environ["DYLD_LIBRARY_PATH"].split(":")
+
+    # Add built/lib/ to (DY)LD_LIBRARY_PATH if it's not already there
     if (ldpath.count(builtlib)==0):
-        #WARNINGS.append("Caution: the "+os.path.join(OUTPUTDIR,"lib")+" directory is not in LD_LIBRARY_PATH")
-        #WARNINGS.append("or /etc/ld.so.conf.  You must add it before using panda.")
         if (os.environ.has_key("LD_LIBRARY_PATH")):
             os.environ["LD_LIBRARY_PATH"] = builtlib + ":" + os.environ["LD_LIBRARY_PATH"]
         else:
             os.environ["LD_LIBRARY_PATH"] = builtlib
+    if (sys.platform == "darwin" and dyldpath.count(builtlib)==0):
+        if (os.environ.has_key("DYLD_LIBRARY_PATH")):
+            os.environ["DYLD_LIBRARY_PATH"] = builtlib + ":" + os.environ["DYLD_LIBRARY_PATH"]
+        else:
+            os.environ["DYLD_LIBRARY_PATH"] = builtlib
 
 ########################################################################
 ##

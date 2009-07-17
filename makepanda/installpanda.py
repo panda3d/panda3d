@@ -49,7 +49,8 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("echo '"+prefix+libdir+"/panda3d'>>   "+destdir+PPATH+"/panda3d.pth")
     oscmd("cp "+outputdir+"/bin/*               "+destdir+prefix+"/bin/")
     for base in os.listdir(outputdir+"/lib"):
-        oscmd("cp "+outputdir+"/lib/"+base+" "+destdir+prefix+libdir+"/panda3d/"+base)
+        if (not base.endswith(".a")):
+            oscmd("cp "+outputdir+"/lib/"+base+" "+destdir+prefix+libdir+"/panda3d/"+base)
     # rpmlint doesn't like it if we compile pyc.
     #for base in os.listdir(destdir+prefix+"/share/panda3d/direct"):
     #    if ((base != "extensions") and (base != "extensions_native")):

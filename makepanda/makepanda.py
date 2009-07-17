@@ -341,9 +341,9 @@ if (COMPILER=="LINUX"):
     PkgConfigEnable("GTK2", "gtk+-2.0")
     
     if (sys.platform == "darwin"):
-        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "FFMPEG", "PNG", "JPEG", "TIFF", "TINYXML"]
+        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "FFMPEG", "PNG", "JPEG", "TIFF", "TINYXML", "NPAPI"]
     else:
-        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "NVIDIACG", "FFMPEG", "OPENAL", "TINYXML"]
+        pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "NVIDIACG", "FFMPEG", "OPENAL", "TINYXML", "NPAPI"]
     for pkg in pkgs:
         if (PkgSkip(pkg)==0):
             if (os.path.isdir(THIRDPARTYLIBS + pkg.lower())):
@@ -400,6 +400,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcvaux")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lml")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcxcore")
+    if (PkgSkip("TINYXML")==0):    LibName("TINYXML", "-ltinyxml")
     if (sys.platform == "darwin"):
         LibName("ALWAYS", "-framework AppKit")
         if (PkgSkip("OPENCV")==0):   LibName("OPENCV", "-framework QuickTime")
@@ -684,9 +685,10 @@ def CompileLib(lib, obj, opts):
         if sys.platform == 'darwin':
             cmd = 'libtool -static -o ' + BracketNameWithQuotes(lib)
         else:
-            cmd = 'ar cru ' + lib
+            cmd = 'ar cru ' + BracketNameWithQuotes(lib)
         for x in obj: cmd=cmd + ' ' + BracketNameWithQuotes(x)
         oscmd(cmd)
+        os.system('chmod +x ' + BracketNameWithQuotes(lib))
 
 ########################################################################
 ##
@@ -741,7 +743,7 @@ def CompileLink(dll, obj, opts):
         if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
         else:
             if (sys.platform == "darwin"):
-                cmd = 'g++ -undefined dynamic_lookup -dynamic -dynamiclib -o ' + dll + ' -install_name ' + GetOutputDir() + '/lib/' + os.path.basename(dll) + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
+                cmd = 'g++ -undefined dynamic_lookup -dynamic -dynamiclib -o ' + dll + ' -install_name ' + os.path.basename(dll) + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
             else:
                 cmd = 'g++ -shared -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
         for x in obj:
@@ -760,6 +762,7 @@ def CompileLink(dll, obj, opts):
             cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch ppc -arch i386"
         
         oscmd(cmd)
+        os.system("chmod +x " + BracketNameWithQuotes(dll))
 
 ##########################################################################################
 #
@@ -3976,27 +3979,9 @@ def MakeInstallerOSX():
       if os.path.isdir(GetOutputDir()+"/Pmw"):     oscmd("cp -R %s/Pmw Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % (GetOutputDir(), VERSION))
       if os.path.isdir(GetOutputDir()+"/plugins"): oscmd("cp -R %s/plugins Panda3D-tpl-rw/Panda3D/%s/plugins" % (GetOutputDir(), VERSION))
       for base in os.listdir(GetOutputDir()+"/lib"):
-          oscmd("cp "+GetOutputDir()+"/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
-      # Loop through the binaries and libraries and execute install_name_tool on them
-      bindir = "Panda3D-tpl-rw/Panda3D/%s/bin/" % VERSION
-      libdir = "Panda3D-tpl-rw/Panda3D/%s/lib/" % VERSION
-      for fn in os.listdir(bindir):
-          if os.path.isfile(bindir + fn):
-              oscmd("otool -L %s%s | grep %s/lib/ > %s/tmp/otool-libs.txt" % (bindir, fn, GetOutputDir(), GetOutputDir()), True)
-              for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
-                  if len(line.strip()) > 0:
-                      libname = line.strip().split(GetOutputDir()+"/lib/")[1].split(" ")[0]
-                      oscmd("install_name_tool -change %s/lib/%s %s %s%s" % (GetOutputDir(), libname, libname, bindir, fn), True)
-              oscmd("chmod +x %s%s" % (bindir, fn), True)
-      for fn in os.listdir(libdir):
-          if os.path.isfile(libdir + fn):
-              oscmd("install_name_tool -id %s %s%s" % (fn, libdir, fn), True)
-              oscmd("otool -L %s%s | grep %s/lib/ > %s/tmp/otool-libs.txt" % (libdir, fn, GetOutputDir(), GetOutputDir()), True)
-              for line in open(GetOutputDir()+"/tmp/otool-libs.txt", "r"):
-                  if len(line.strip()) > 0:
-                      libname = line.strip().split(GetOutputDir()+"/lib/")[1].split(" ")[0]
-                      oscmd("install_name_tool -change %s/lib/%s %s %s%s" % (GetOutputDir(), libname, libname, libdir, fn), True)
-              oscmd("chmod +x %s%s" % (libdir, fn), True)
+          if (not base.endswith(".a")):
+              oscmd("cp "+GetOutputDir()+"/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
+      
       # Compile the python files
       for base in os.listdir("Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/direct"):
           if ((base != "extensions") and (base != "extensions_native")):
