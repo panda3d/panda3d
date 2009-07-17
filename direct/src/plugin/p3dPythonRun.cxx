@@ -614,6 +614,12 @@ check_comm() {
     // closed.  We should exit gracefully.
     terminate_session();
   }
+
+  // Sleep to yield the timeslice, but only if we're not running in
+  // the main thread.
+  if (Thread::get_current_thread() != Thread::get_main_thread()) {
+    Thread::sleep(0.001);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
