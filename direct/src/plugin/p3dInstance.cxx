@@ -483,6 +483,13 @@ handle_event(P3D_event_data event) {
 
   switch (er->what) {
   case nullEvent:
+    // We appear to get this event pretty frequently when nothing else
+    // is going on.  Great; we'll take advantage of it to request a
+    // refresh, which will cause updateEvt to be triggered (if the
+    // instance is still onscreen).
+    if (_instance_window_opened && _swbuffer != NULL && _swbuffer->ready_for_read()) {
+      request_refresh();
+    }
     break;
 
   case mouseDown:

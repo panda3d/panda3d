@@ -479,24 +479,8 @@ handle_event(void *event) {
   }
 
 #ifdef __APPLE__
-  EventRecord *er = (EventRecord *)event;
-
-  switch (er->what) {
-  case nullEvent:
-    // We appear to get this event pretty frequently when nothing else
-    // is going on.  Great; we'll take advantage of it to invalidate
-    // the instance rectangle, which will cause updateEvt to be
-    // triggered (if the instance is still onscreen).
-    if (_got_window && _python_window_open) {
-      NPRect rect = { 0, 0, _window.height, _window.width };
-      browser->invalidaterect(_npp_instance, &rect);
-    }
-    break;
-  }
-
-  // All other events we feed down to the plugin for processing.
   P3D_event_data edata;
-  edata._event = er;
+  edata._event = (EventRecord *)event;
   P3D_instance_handle_event(_p3d_inst, edata);
 
 #endif  // __APPLE__
