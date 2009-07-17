@@ -205,7 +205,10 @@ run_python() {
   // it should be.
   AsyncTaskManager *task_mgr = AsyncTaskManager::get_global_ptr();
   PT(AsyncTaskChain) chain = task_mgr->make_task_chain("JavaScript");
-  chain->set_num_threads(1);
+
+  // The default is not threaded (num_threads == 0), but if the app
+  // programmer decides to enable threads, the default is TP_low
+  // priority.
   chain->set_thread_priority(TP_low);
 
   PyObject *check_comm = PyObject_GetAttrString(p3dpython, "check_comm");
