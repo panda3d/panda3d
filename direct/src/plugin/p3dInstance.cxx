@@ -879,6 +879,14 @@ handle_script_request(const string &operation, P3D_object *object,
     xvalue->SetAttribute("value", (int)result);
     xcommand->LinkEndChild(xvalue);
 
+  } else if (operation == "has_method") {
+    bool result = P3D_OBJECT_HAS_METHOD(object, property_name.c_str());
+    
+    TiXmlElement *xvalue = new TiXmlElement("value");
+    xvalue->SetAttribute("type", "bool");
+    xvalue->SetAttribute("value", (int)result);
+    xcommand->LinkEndChild(xvalue);
+
   } else if (operation == "call") {
     // Convert the single value parameter into an array of parameters.
     P3D_object **values = &value;
