@@ -39,14 +39,12 @@ public:
                       GraphicsOutput *host);
   virtual ~TinyXGraphicsWindow();
 
-  virtual bool move_pointer(int device, int x, int y);
   virtual bool begin_frame(FrameMode mode, Thread *current_thread);
   virtual void end_frame(FrameMode mode, Thread *current_thread);
   virtual void begin_flip();
   virtual bool supports_pixel_zoom() const;
 
   virtual void process_events();
-  virtual void set_properties_now(WindowProperties &properties);
 
 protected:
   virtual void close_window();
