@@ -527,8 +527,8 @@ scan_auto_prc_dir(Filename &prc_dir) const {
       return true;
     }
     
-    // Try the current working directory.
-    dir = ExecutionEnvironment::get_cwd();
+    // Try the program's directory.
+    dir = ExecutionEnvironment::get_environment_variable("MAIN_DIR");
     if (scan_up_from(prc_dir, dir, suffix)) {
       return true;
     }

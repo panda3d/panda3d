@@ -35,6 +35,10 @@
 #define environ (*_NSGetEnviron())
 #endif
 
+#ifdef HAVE_PYTHON
+#include "Python.h"
+#endif
+
 // We define the symbol PREREAD_ENVIRONMENT if we cannot rely on
 // getenv() to read environment variables at static init time.  In
 // this case, we must read all of the environment variables directly
@@ -205,6 +209,26 @@ ns_get_environment_variable(const string &var) const {
     return Filename::get_user_appdata_directory().to_os_specific();
   } else if (var == "COMMON_APPDATA") {
     return Filename::get_common_appdata_directory().to_os_specific();
+  } else if (var == "MAIN_DIR") {
+#ifdef HAVE_PYTHON
+    // If we're running from Python code, read out sys.argv.
+    if (PyObject* obj = PySys_GetObject((char*) "argv")) {
+      Filename main_dir (PyString_AsString(PyList_GetItem(obj, 0)));
+      if (main_dir.empty()) {
+        // We must be running in the Python interpreter directly, so return the CWD.
+        return get_cwd();
+      }
+      main_dir.make_absolute();
+      return Filename(main_dir.get_dirname()).to_os_specific();
+    }
+#endif
+    
+    // Otherwise, Return the binary name's parent directory.
+    if (!_binary_name.empty()) {
+      Filename main_dir (_binary_name);
+      main_dir.make_absolute();
+      return Filename(main_dir.get_dirname()).to_os_specific();
+    }
   }
 
 #ifdef PREREAD_ENVIRONMENT
@@ -550,10 +574,6 @@ read_args() {
     ch = proc.get();
   }
 #endif
-
-  if (!_binary_name.empty()) {
-    ns_set_environment_variable("MAIN_DIR", Filename(_binary_name).get_dirname());
-  }
 
   if (_dtool_name.empty()) {
     _dtool_name = _binary_name;

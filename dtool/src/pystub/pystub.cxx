@@ -96,6 +96,7 @@ extern "C" {
   EXPCL_DTOOLCONFIG int PyString_FromString(...);
   EXPCL_DTOOLCONFIG int PyString_FromStringAndSize(...);
   EXPCL_DTOOLCONFIG int PyString_Type(...);
+  EXPCL_DTOOLCONFIG int PySys_GetObject(...);
   EXPCL_DTOOLCONFIG int PyThreadState_Clear(...);
   EXPCL_DTOOLCONFIG int PyThreadState_Delete(...);
   EXPCL_DTOOLCONFIG int PyThreadState_Get(...);
@@ -223,6 +224,7 @@ int PyString_AsStringAndSize(...) { return 0; }
 int PyString_FromString(...) { return 0; }
 int PyString_FromStringAndSize(...) { return 0; }
 int PyString_Type(...) { return 0; }
+int PySys_GetObject(...) { return 0; }
 int PyThreadState_Clear(...) { return 0; }
 int PyThreadState_Delete(...) { return 0; }
 int PyThreadState_Get(...) { return 0; }
