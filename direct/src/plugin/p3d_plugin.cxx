@@ -205,10 +205,12 @@ P3D_object_has_method(P3D_object *object, const char *method_name) {
 
 P3D_object *
 P3D_object_call(P3D_object *object, const char *method_name, 
+                bool needs_response,
                 P3D_object *params[], int num_params) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
-  P3D_object *result = P3D_OBJECT_CALL(object, method_name, params, num_params);
+  P3D_object *result = P3D_OBJECT_CALL(object, method_name, needs_response,
+                                       params, num_params);
   RELEASE_LOCK(_api_lock);
   return result;
 }

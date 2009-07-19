@@ -61,7 +61,7 @@ bool P3DPythonObject::
 get_bool() {
   bool bresult = 0;
 
-  P3D_object *result = call("__bool__", NULL, 0);
+  P3D_object *result = call("__bool__", true, NULL, 0);
   if (result != NULL) {
     bresult = P3D_OBJECT_GET_BOOL(result);
     P3D_OBJECT_DECREF(result);
@@ -80,7 +80,7 @@ int P3DPythonObject::
 get_int() {
   int iresult = 0;
 
-  P3D_object *result = call("__int__", NULL, 0);
+  P3D_object *result = call("__int__", true, NULL, 0);
   if (result != NULL) {
     iresult = P3D_OBJECT_GET_INT(result);
     P3D_OBJECT_DECREF(result);
@@ -99,7 +99,7 @@ double P3DPythonObject::
 get_float() {
   double fresult = 0.0;
 
-  P3D_object *result = call("__float__", NULL, 0);
+  P3D_object *result = call("__float__", true, NULL, 0);
   if (result != NULL) {
     fresult = P3D_OBJECT_GET_FLOAT(result);
     P3D_OBJECT_DECREF(result);
@@ -116,7 +116,7 @@ get_float() {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonObject::
 make_string(string &value) {
-  P3D_object *result = call("__str__", NULL, 0);
+  P3D_object *result = call("__str__", true, NULL, 0);
   if (result != NULL) {
     int size = P3D_OBJECT_GET_STRING(result, NULL, 0);
     char *buffer = new char[size];
@@ -140,7 +140,7 @@ get_property(const string &property) {
   P3D_object *params[1];
   params[0] = new P3DStringObject(property);
 
-  P3D_object *result = call("__get_property__", params, 1);
+  P3D_object *result = call("__get_property__", true, params, 1);
   P3D_OBJECT_DECREF(params[0]);
   return result;
 }
@@ -163,12 +163,12 @@ set_property(const string &property, P3D_object *value) {
 
   if (value == NULL) {
     // Delete an attribute.
-    result = call("__del_property__", params, 1);
+    result = call("__del_property__", true, params, 1);
 
   } else {
     // Set a new attribute.
     params[1] = value;
-    result = call("__set_property__", params, 2);
+    result = call("__set_property__", true, params, 2);
   }
 
   P3D_OBJECT_DECREF(params[0]);
@@ -202,7 +202,7 @@ has_method(const string &method_name) {
   P3D_object *params[1];
   params[0] = new P3DStringObject(method_name);
 
-  P3D_object *result = call("__has_method__", params, 1);
+  P3D_object *result = call("__has_method__", true, params, 1);
   P3D_OBJECT_DECREF(params[0]);
 
   if (result != NULL) {
@@ -223,11 +223,17 @@ has_method(const string &method_name) {
 //       Access: Public, Virtual
 //  Description: Invokes the named method on the object, passing the
 //               indicated parameters.  If the method name is empty,
-//               invokes the object itself.  Returns the return value
-//               on success, NULL on error.
+//               invokes the object itself.
+//
+//               If needs_response is true, the return value is a
+//               new-reference P3D_object on success, or NULL on
+//               failure.  If needs_response is false, the return
+//               value is always NULL, and there is no way to
+//               determine success or failure.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DPythonObject::
-call(const string &method_name, P3D_object *params[], int num_params) {
+call(const string &method_name, bool needs_response,
+     P3D_object *params[], int num_params) {
   TiXmlDocument *doc = new TiXmlDocument;
   TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
@@ -248,6 +254,16 @@ call(const string &method_name, P3D_object *params[], int num_params) {
 
   doc->LinkEndChild(decl);
   doc->LinkEndChild(xcommand);
+
+  // If no response is requested, send the command out in a vacuum,
+  // and return NULL.
+  if (!needs_response) {
+    _session->send_command(doc);
+    return NULL;
+  }
+
+  // If a response is requested, we have to send the command and wait
+  // for it.
   TiXmlDocument *response = _session->command_and_response(doc);
 
   P3D_object *result = NULL;
@@ -274,7 +290,7 @@ call(const string &method_name, P3D_object *params[], int num_params) {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonObject::
 output(ostream &out) {
-  P3D_object *result = call("__repr__", NULL, 0);
+  P3D_object *result = call("__repr__", true, NULL, 0);
   out << "Python " << _object_id;
   if (result != NULL) {
     out << ": " << *result;

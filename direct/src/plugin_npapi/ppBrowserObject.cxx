@@ -43,12 +43,20 @@ object_set_property(P3D_object *object, const char *property,
 }
 
 static P3D_object *
-object_call(P3D_object *object, const char *method_name,
+object_call(P3D_object *object, const char *method_name, 
+            bool needs_response,
             P3D_object *params[], int num_params) {
   if (method_name == NULL) {
     method_name = "";
   }
-  return ((const PPBrowserObject *)object)->call(method_name, params, num_params);
+  P3D_object *response = ((const PPBrowserObject *)object)->call(method_name, params, num_params);
+  if (!needs_response) {
+    // No response was expected.  Throw away the response we received,
+    // so we can be consistent with defined semantics.
+    P3D_OBJECT_XDECREF(response);
+    response = NULL;
+  }
+  return response;
 }
 
 static P3D_object *

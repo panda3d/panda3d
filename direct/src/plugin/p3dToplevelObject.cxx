@@ -189,17 +189,24 @@ has_method(const string &method_name) {
 //       Access: Public, Virtual
 //  Description: Invokes the named method on the object, passing the
 //               indicated parameters.  If the method name is empty,
-//               invokes the object itself.  Returns the return value
-//               on success, NULL on error.
+//               invokes the object itself.
+//
+//               If needs_response is true, the return value is a
+//               new-reference P3D_object on success, or NULL on
+//               failure.  If needs_response is false, the return
+//               value is always NULL, and there is no way to
+//               determine success or failure.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DToplevelObject::
-call(const string &method_name, P3D_object *params[], int num_params) {
+call(const string &method_name, bool needs_response,
+     P3D_object *params[], int num_params) {
   if (_pyobj == NULL) {
     // No methods until we get our pyobj.
     return NULL;
   }
 
-  return P3D_OBJECT_CALL(_pyobj, method_name.c_str(), params, num_params);
+  return P3D_OBJECT_CALL(_pyobj, method_name.c_str(), needs_response,
+                         params, num_params);
 }
 
 ////////////////////////////////////////////////////////////////////

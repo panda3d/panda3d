@@ -143,7 +143,7 @@ invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
   }
 
   P3D_object *value = P3D_OBJECT_CALL(_p3d_object, method_name.c_str(), 
-                                      p3dargs, argCount);
+                                      true, p3dargs, argCount);
   for (i = 0; i < argCount; ++i) {
     P3D_OBJECT_DECREF(p3dargs[i]);
   }
@@ -181,7 +181,7 @@ invoke_default(const NPVariant *args, uint32_t argCount,
     p3dargs[i] = _instance->variant_to_p3dobj(&args[i]);
   }
 
-  P3D_object *value = P3D_OBJECT_CALL(_p3d_object, "",
+  P3D_object *value = P3D_OBJECT_CALL(_p3d_object, "", true,
                                       p3dargs, argCount);
   for (i = 0; i < argCount; ++i) {
     P3D_OBJECT_DECREF(p3dargs[i]);

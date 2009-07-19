@@ -6,7 +6,7 @@ code that runs in a browser via the web plugin. """
 class UndefinedObject:
     """ This is a special object that is returned by the browser to
     represent an "undefined" value, typically the value for an
-    uninitialize variable or undefined property.  It has no
+    uninitialized variable or undefined property.  It has no
     attributes, similar to None, but it is a slightly different
     concept in JavaScript. """
 
@@ -48,7 +48,11 @@ class BrowserObject:
 
         # This element is filled in by __getattr__; it connects
         # the object to its parent.
-        self.__dict__['_BrowserObject__boundMethod'] = (None, None)
+        self.__dict__['_BrowserObject__childObject'] = (None, None)
+
+        # This is a cache of method names to MethodWrapper objects in
+        # the parent object.
+        self.__dict__['_BrowserObject__methods'] = {}
 
     def __del__(self):
         # When the BrowserObject destructs, tell the parent process it
@@ -56,8 +60,23 @@ class BrowserObject:
         # more.
         self.__runner.dropObject(self.__objectId)
 
+    def __cacheMethod(self, methodName):
+        """ Stores a pointer to the named method on this object, so
+        that the next time __getattr__ is called, it can retrieve the
+        method wrapper without having to query the browser.  This
+        cache assumes that callable methods don't generally come and
+        go on and object.
+
+        The return value is the MethodWrapper object. """
+
+        method = self.__methods.get(methodName, None)
+        if method is None:
+            method = MethodWrapper(self.__runner, self, methodName)
+            self.__methods[methodName] = method
+        return method
+
     def __str__(self):
-        parentObj, attribName = self.__boundMethod
+        parentObj, attribName = self.__childObject
         if parentObj:
             # Format it from its parent.
             return "%s.%s" % (parentObj, attribName)
@@ -77,7 +96,7 @@ class BrowserObject:
             raise ArgumentError, 'Keyword arguments not supported'
         
         try:
-            parentObj, attribName = self.__boundMethod
+            parentObj, attribName = self.__childObject
             if parentObj:
                 # Call it as a method.
                 if parentObj is self.__runner.dom and attribName == 'alert':
@@ -102,6 +121,12 @@ class BrowserObject:
                     except EnvironmentError:
                         # Problem on the call.  Maybe no such method?
                         raise AttributeError
+
+                # Hey, the method call appears to have succeeded.
+                # Cache the method object on the parent so we won't
+                # have to look up the method wrapper again next time.
+                parentObj.__cacheMethod(attribName)
+                
             else:
                 # Call it as a plain function.
                 result = self.__runner.scriptRequest('call', self, value = args, needsResponse = needsResponse)
@@ -116,6 +141,13 @@ class BrowserObject:
         into the appropriate calls to query the actual browser object
         under the hood.  """
 
+        # First check to see if there's a cached method wrapper from a
+        # previous call.
+        method = self.__methods.get(name, None)
+        if method:
+            return method
+
+        # No cache.  Go query the browser for the desired value.
         try:
             value = self.__runner.scriptRequest('get_property', self,
                                                 propertyName = name)
@@ -124,7 +156,7 @@ class BrowserObject:
             # method instead?
             if self.__runner.scriptRequest('has_method', self, propertyName = name):
                 # Yes, so create a method wrapper for it.
-                return MethodWrapper(self.__runner, self, name)
+                return self.__cacheMethod(name)
             
             raise AttributeError(name)
 
@@ -133,7 +165,7 @@ class BrowserObject:
             # properly call a method.  (Javascript needs to know the
             # method container at the time of the call, and doesn't
             # store it on the function object.)
-            value.__dict__['_BrowserObject__boundMethod'] = (self, name)
+            value.__dict__['_BrowserObject__childObject'] = (self, name)
 
         return value
 
@@ -205,10 +237,10 @@ class MethodWrapper:
 
     def __init__(self, runner, parentObj, objectId):
         self.__dict__['_MethodWrapper__runner'] = runner
-        self.__dict__['_MethodWraper__boundMethod'] = (parentObj, objectId)
+        self.__dict__['_MethodWrapper__childObject'] = (parentObj, objectId)
 
     def __str__(self):
-        parentObj, attribName = self.__boundMethod
+        parentObj, attribName = self.__childObject
         return "%s.%s" % (parentObj, attribName)
 
     def __nonzero__(self):
@@ -223,7 +255,7 @@ class MethodWrapper:
             raise ArgumentError, 'Keyword arguments not supported'
         
         try:
-            parentObj, attribName = self.__boundMethod
+            parentObj, attribName = self.__childObject
             # Call it as a method.
             if parentObj is self.__runner.dom and attribName == 'alert':
                 # As a special hack, we don't wait for the return

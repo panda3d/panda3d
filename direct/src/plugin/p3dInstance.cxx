@@ -900,7 +900,8 @@ handle_script_request(const string &operation, P3D_object *object,
     }
 
     P3D_object *result =
-      P3D_OBJECT_CALL(object, property_name.c_str(), values, num_values);
+      P3D_OBJECT_CALL(object, property_name.c_str(), needs_response,
+                      values, num_values);
     
     if (result != NULL) {
       xcommand->LinkEndChild(_session->p3dobj_to_xml(result));

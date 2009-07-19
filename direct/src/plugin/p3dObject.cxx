@@ -76,11 +76,12 @@ object_has_method(P3D_object *object, const char *method_name) {
 
 static P3D_object *
 object_call(P3D_object *object, const char *method_name,
+            bool needs_response,
             P3D_object *params[], int num_params) {
   if (method_name == NULL) {
     method_name = "";
   }
-  return ((P3DObject *)object)->call(method_name, params, num_params);
+  return ((P3DObject *)object)->call(method_name, needs_response, params, num_params);
 }
 
 static P3D_object *
@@ -165,7 +166,7 @@ generic_has_method(P3D_object *object, const char *method_name) {
 
 static P3D_object *
 generic_call(P3D_object *object, const char *method_name,
-            P3D_object *params[], int num_params) {
+             bool needs_response, P3D_object *params[], int num_params) {
   return NULL;
 }
 
@@ -294,11 +295,17 @@ has_method(const string &method_name) {
 //       Access: Public, Virtual
 //  Description: Invokes the named method on the object, passing the
 //               indicated parameters.  If the method name is empty,
-//               invokes the object itself.  Returns the return value
-//               on success, NULL on error.
+//               invokes the object itself.
+//
+//               If needs_response is true, the return value is a
+//               new-reference P3D_object on success, or NULL on
+//               failure.  If needs_response is false, the return
+//               value is always NULL, and there is no way to
+//               determine success or failure.
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DObject::
-call(const string &method_name, P3D_object *params[], int num_params) {
+call(const string &method_name, bool needs_response,
+     P3D_object *params[], int num_params) {
   return NULL;
 }
 

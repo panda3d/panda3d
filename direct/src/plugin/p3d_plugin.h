@@ -406,10 +406,13 @@ P3D_object_has_method_method(P3D_object *object, const char *method_name);
    these objects' reference counts is not transferred with the call
    (you must still DECREF these objects afterwards).
 
-   The return value is a new-reference P3D_object on success, or NULL
-   on failure. */
+   If needs_response is true, the return value is a new-reference
+   P3D_object on success, or NULL on failure.  If needs_response is
+   false, the return value is always NULL, and there is no way to
+   determine success or failure. */
 typedef P3D_object *
 P3D_object_call_method(P3D_object *object, const char *method_name,
+                       bool needs_response,
                        P3D_object *params[], int num_params);
 
 /* Evaluates an arbitrary JavaScript expression in the context of the
@@ -468,7 +471,7 @@ struct _P3D_object {
 #define P3D_OBJECT_SET_PROPERTY(object, property, value) ((object)->_class->_set_property((object), (property), (value)))
 
 #define P3D_OBJECT_HAS_METHOD(object, method_name) ((object)->_class->_has_method((object), (method_name)))
-#define P3D_OBJECT_CALL(object, method_name, params, num_params) ((object)->_class->_call((object), (method_name), (params), (num_params)))
+#define P3D_OBJECT_CALL(object, method_name, needs_response, params, num_params) ((object)->_class->_call((object), (method_name), (needs_response), (params), (num_params)))
 #define P3D_OBJECT_EVAL(object, expression) ((object)->_class->_eval((object), (expression)))
 
 /* These macros are provided to manipulate the reference count of the
@@ -506,6 +509,7 @@ typedef bool
 P3D_object_has_method_func(P3D_object *object, const char *method_name);
 typedef P3D_object *
 P3D_object_call_func(P3D_object *object, const char *method_name, 
+                     bool needs_response,
                      P3D_object *params[], int num_params);
 typedef P3D_object *
 P3D_object_eval_func(P3D_object *object, const char *expression);
