@@ -57,6 +57,9 @@ public:
 private:
   P3DSession *_session;
   int _object_id;
+
+  typedef map<string, bool> HasMethod;
+  HasMethod _has_method;
 };
 
 #endif

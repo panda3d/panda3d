@@ -189,6 +189,14 @@ set_property(const string &property, P3D_object *value) {
 ////////////////////////////////////////////////////////////////////
 bool P3DPythonObject::
 has_method(const string &method_name) {
+  // First, check the cache.
+  pair<HasMethod::iterator, bool> cresult = _has_method.insert(HasMethod::value_type(method_name, false));
+  HasMethod::iterator hi = cresult.first;
+  if (!cresult.second) {
+    // Already cached.
+    return (*hi).second;
+  }
+
   bool bresult = false;
 
   P3D_object *params[1];
@@ -201,6 +209,11 @@ has_method(const string &method_name) {
     bresult = P3D_OBJECT_GET_BOOL(result);
     P3D_OBJECT_DECREF(result);
   }
+
+  // Save the cached result, so we don't have to keep asking this
+  // question.  We assume that the set of methods on an object don't
+  // change substantially, so we can get away with keeping this cache.
+  (*hi).second = bresult;
 
   return bresult;
 }
