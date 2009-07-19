@@ -467,14 +467,14 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
 
   // Go read the image.
   string data;
-  int num_channels, row_stride;
+  int num_channels;
   if (!read_image(image_filename, image_filename_temp, 
-                  _bitmap_height, _bitmap_width, num_channels, row_stride,
-                  data)) {
+                  _bitmap_height, _bitmap_width, num_channels, data)) {
     return;
   }
 
   // Massage the data into Windows' conventions.
+  int row_stride = _bitmap_width * num_channels;
   int new_row_stride = (_bitmap_width * 3);
   // DWORD-pad the row.
   new_row_stride = 4 * ((new_row_stride + 3) / 4);

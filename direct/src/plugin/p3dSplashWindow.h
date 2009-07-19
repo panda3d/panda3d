@@ -53,8 +53,7 @@ public:
 
 protected:
   bool read_image(const string &image_filename, bool image_filename_temp,
-                  int &height, int &width, int &num_channels, int &row_stride,
-                  string &data);
+                  int &height, int &width, int &num_channels, string &data);
 
 protected:
   P3DInstance *_inst;

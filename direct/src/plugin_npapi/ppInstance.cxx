@@ -459,6 +459,25 @@ handle_request(P3D_request *request) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::generic_browser_call
+//       Access: Public, Static
+//  Description: This method is called from strategically-chosen
+//               browser callback functions.  Its purpose is to
+//               provide another hook into the main thread callback,
+//               particularly if the PluginAsyncCall function isn't
+//               available.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+generic_browser_call() {
+#ifndef HAS_PLUGIN_THREAD_ASYNC_CALL
+  // If we can't ask Mozilla to call us back using
+  // NPN_PluginThreadAsyncCall(), then we'll do it explicitly now,
+  // since we know we're in the main thread here.
+  handle_request_loop();
+#endif
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::handle_event
 //       Access: Public
 //  Description: Called by the browser as new window events are
@@ -468,13 +487,6 @@ handle_request(P3D_request *request) {
 bool PPInstance::
 handle_event(void *event) {
   bool retval = false;
-
-#ifndef HAS_PLUGIN_THREAD_ASYNC_CALL
-  // If we can't ask Mozilla to call us back using
-  // NPN_PluginThreadAsyncCall(), then we'll take advantage of the
-  // event loop to do it now.
-  handle_request_loop();
-#endif
 
   if (_p3d_inst == NULL) {
     // Ignore events that come in before we've launched the instance.
@@ -653,16 +665,9 @@ request_ready(P3D_instance *instance) {
   }
 
 #else
-  // On Mac, we ignore this asynchronous event, and rely on detecting
-  // it within HandleEvent().  TODO: enable a timer to ensure we get
-  // HandleEvent callbacks in a timely manner?  Or maybe we should
-  // enable a one-shot timer in response to this asynchronous event?
-  
-#ifndef __APPLE__
-  // On Unix, HandleEvent isn't called, so we will do what it does
-  // right here. Not sure if this is right.
-  handle_request_loop();
-#endif  // __APPLE__
+  // On Mac and Linux, we ignore this asynchronous event, and rely on
+  // detecting it within HandleEvent() and similar callbacks.
+
 #endif  // _WIN32
 
 #endif  // HAS_PLUGIN_THREAD_ASYNC_CALL
@@ -709,8 +714,8 @@ read_contents_file(const string &filename) {
     xpackage = xpackage->NextSiblingElement("package");
   }
 
-  // Couldn't find the core package description.
-  logfile << "No core package defined in contents file.\n" << flush;
+  // Couldn't find the coreapi package description.
+  logfile << "No coreapi package defined in contents file.\n" << flush;
   return false;
 }
 

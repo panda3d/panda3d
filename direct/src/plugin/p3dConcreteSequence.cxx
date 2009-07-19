@@ -122,7 +122,7 @@ set_property(const string &property, P3D_object *value) {
   char *endptr;
   int index = strtoul(property.c_str(), &endptr, 10);
   if (*endptr != '\0') {
-    return NULL;
+    return false;
   }
 
   return set_element(index, value);

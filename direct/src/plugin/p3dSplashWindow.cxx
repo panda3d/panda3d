@@ -127,19 +127,17 @@ handle_event(P3D_event_data event) {
 //     Function: P3DSplashWindow::read_image
 //       Access: Protected
 //  Description: Reads the image filename and sets image parameters
-//               height, width, num_channels, row_stride, and data.
-//               Returns true on success, false on failure.  If
-//               image_filename_temp is true, the file will be deleted
-//               after reading.
+//               height, width, num_channels, and data.  Returns true
+//               on success, false on failure.  If image_filename_temp
+//               is true, the file will be deleted after reading.
 ////////////////////////////////////////////////////////////////////
 bool P3DSplashWindow::
 read_image(const string &image_filename, bool image_filename_temp,
-           int &height, int &width, int &num_channels, int &row_stride,
+           int &height, int &width, int &num_channels, 
            string &data) {
   height = 0;
   width = 0;
   num_channels = 0;
-  row_stride = 0;
   data.clear();
 
   // We currently only support JPEG images.  Maybe that's all we'll
@@ -198,11 +196,7 @@ read_image(const string &image_filename, bool image_filename_temp,
   height = cinfo.output_height;
   num_channels = cinfo.output_components;
 
-  row_stride = width * num_channels;
-
-  // We'll pad row_stride out to word alignment, in case someone
-  // requires this.
-  row_stride = 4 * ((row_stride + 3) / 4);
+  int row_stride = width * num_channels;
 
   size_t buffer_size = height * row_stride;
   buffer = new JSAMPLE[buffer_size];

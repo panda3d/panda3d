@@ -60,11 +60,10 @@ P3DOsxSplashWindow::
 void P3DOsxSplashWindow::
 set_image_filename(const string &image_filename,
                    bool image_filename_temp) {
-  int num_channels, row_stride;
+  int num_channels;
   string data;
   if (!read_image(image_filename, image_filename_temp, 
-                  _image_height, _image_width, num_channels, row_stride,
-                  data)) {
+                  _image_height, _image_width, num_channels, data)) {
     return;
   }
 
@@ -82,6 +81,7 @@ set_image_filename(const string &image_filename,
   }
 
   // Now we need to copy from the RGB source image into the BGRA target image.
+  int row_stride = _image_width * num_channels;
   int new_row_stride = _image_width * 4;
   _image_data = new char[new_row_stride * _image_height];
   for (int yi = 0; yi < _image_height; ++yi) {

@@ -62,14 +62,12 @@ extern ofstream logfile;
 
 #include "load_plugin.h"
 
-// Uncomment the following to enable use of the PluginThreadAsyncCall
-// function.  (It's commented out for now to assist development of the
-// case in which this is not available.)
-/*
+// If we are building with a version of Gecko that supports the
+// asynchronous callback function, we should use it--it's just so
+// handy.
 #if defined(NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL) && NP_VERSION_MINOR >= NPVERS_HAS_PLUGIN_THREAD_ASYNC_CALL
 #define HAS_PLUGIN_THREAD_ASYNC_CALL 1
 #endif
-*/
 
 // Appears in startup.cxx.
 extern NPNetscapeFuncs *browser;

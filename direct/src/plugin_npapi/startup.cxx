@@ -176,9 +176,7 @@ NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
 
   // To experiment with a "windowless" plugin, which really means we
   // create our own window without an intervening window, try this.
-  // At the moment, there's a deadlock condition when we try it, but
-  // surely it can be solved.
-  //  browser->setvalue(instance, NPPVpluginWindowBool, (void *)false);
+  //browser->setvalue(instance, NPPVpluginWindowBool, (void *)false);
 
   // Now that we have stored the pointer, we can call begin(), which
   // starts to initiate downloads.
@@ -239,6 +237,7 @@ NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream,
           << ", " << stream->end 
           << ", notifyData = " << stream->notifyData
           << "\n" << flush;
+  PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
 
@@ -258,6 +257,7 @@ NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
           << ", reason = " << reason
           << "\n" << flush;
 
+  PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
 
@@ -286,6 +286,7 @@ NPP_WriteReady(NPP instance, NPStream *stream) {
 int32
 NPP_Write(NPP instance, NPStream *stream, int32 offset, 
           int32 len, void *buffer) {
+  PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
 
@@ -306,6 +307,7 @@ NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
           << ", notifyData = " << stream->notifyData
           << "\n" << flush;
 
+  PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
 
@@ -330,6 +332,7 @@ NPP_Print(NPP instance, NPPrint *platformPrint) {
 int16
 NPP_HandleEvent(NPP instance, void *event) {
   //  logfile << "HandleEvent\n" << flush;
+  PPInstance::generic_browser_call();
 
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
@@ -350,6 +353,7 @@ NPP_URLNotify(NPP instance, const char *url,
           << ", reason = " << reason
           << "\n" << flush;
 
+  PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
 
@@ -364,6 +368,7 @@ NPP_URLNotify(NPP instance, const char *url,
 NPError
 NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
   logfile << "GetValue " << variable << "\n";
+  PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
 
@@ -387,6 +392,7 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
 NPError 
 NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
   logfile << "SetValue " << variable << "\n";
+  PPInstance::generic_browser_call();
   return NPERR_GENERIC_ERROR;
 }
 

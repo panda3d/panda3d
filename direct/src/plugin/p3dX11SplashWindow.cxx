@@ -220,11 +220,11 @@ thread_run() {
       redraw(install_label);
       override = false;
       XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
-                                       install_progress * (_width - 24), 7);
+                     (unsigned int)(install_progress * (_width - 24)), 7);
       XFlush(_display);
     } else if (install_progress != prev_progress) {
       XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
-                                      install_progress * (_width - 24), 7);
+                     (unsigned int)(install_progress * (_width - 24)), 7);
     }
     prev_label = install_label;
     prev_progress = install_progress;
@@ -250,10 +250,14 @@ redraw(string label) {
     // We have an image. Let's see how we can output it.
     if (_image_width <= _width && _image_height <= _height) {
       // It fits within the window - just draw it.
-      XPutImage(_display, _window, _graphics_context, _image, 0, 0, (_width - _image_width) * 0.5, (_height - _image_height) * 0.5, _image_width, _image_height);
+      XPutImage(_display, _window, _graphics_context, _image, 0, 0, 
+                (_width - _image_width) / 2, (_height - _image_height) / 2,
+                _image_width, _image_height);
     } else if (_resized_image != NULL) {
       // We have a resized image already, draw that one.
-      XPutImage(_display, _window, _graphics_context, _resized_image, 0, 0, (_width - _resized_width) * 0.5, (_height - _resized_height) * 0.5, _resized_width, _resized_height);
+      XPutImage(_display, _window, _graphics_context, _resized_image, 0, 0, 
+                (_width - _resized_width) / 2, (_height - _resized_height) / 2,
+                _resized_width, _resized_height);
     } else {
       // Yuck, the bad case - we need to scale it down.
       double scale = min((double) _width  / (double) _image_width,
@@ -262,17 +266,20 @@ redraw(string label) {
       _resized_height = (int)(_image_height * scale);
       char *new_data = (char*) malloc(4 * _width * _height);
       _resized_image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
-                                        ZPixmap, 0, (char *) new_data, _width, _height, 32, 0);
+                                    ZPixmap, 0, (char *) new_data, _width, _height, 32, 0);
       double x_ratio = ((double) _image_width) / ((double) _resized_width);
       double y_ratio = ((double) _image_height) / ((double) _resized_height);
       for (int x = 0; x < _width; ++x) {
         for (int y = 0; y < _height; ++y) {
-          XPutPixel(_resized_image, x, y, XGetPixel(_image,
-                         clamp(x * x_ratio, 0, _image_width),
-                         clamp(y * y_ratio, 0, _image_height)));
+          XPutPixel(_resized_image, x, y, 
+                    XGetPixel(_image,
+                              (int)clamp(x * x_ratio, 0, _image_width),
+                              (int)clamp(y * y_ratio, 0, _image_height)));
         }
       }
-      XPutImage(_display, _window, _graphics_context, _resized_image, 0, 0, (_width - _resized_width) * 0.5, (_height - _resized_height) * 0.5, _resized_width, _resized_height);
+      XPutImage(_display, _window, _graphics_context, _resized_image, 0, 0,
+                (_width - _resized_width) / 2, (_height - _resized_height) / 2,
+                _resized_width, _resized_height);
     }
     XClearArea(_display, _window, 10, _height - 20, _width - 20, 10, false);
   }
@@ -409,10 +416,9 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
 
   // Go read the image.
   string data;
-  int num_channels, row_stride;
+  int num_channels;
   if (!read_image(image_filename, image_filename_temp, 
-                  _image_height, _image_width, num_channels, row_stride,
-                  data)) {
+                  _image_height, _image_width, num_channels, data)) {
     return;
   }
 

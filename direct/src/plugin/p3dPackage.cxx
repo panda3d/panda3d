@@ -402,9 +402,9 @@ uncompress_archive() {
     return;
   }
   
-  static const int decompress_buffer_size = 1024;
+  static const int decompress_buffer_size = 81920;
   char decompress_buffer[decompress_buffer_size];
-  static const int write_buffer_size = 1024;
+  static const int write_buffer_size = 81920;
   char write_buffer[write_buffer_size];
 
   z_stream z;
