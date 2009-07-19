@@ -51,7 +51,6 @@
 
 Filename *Filename::_home_directory;
 Filename *Filename::_temp_directory;
-Filename *Filename::_app_directory;
 Filename *Filename::_user_appdata_directory;
 Filename *Filename::_common_appdata_directory;
 TypeHandle Filename::_type_handle;
@@ -559,52 +558,6 @@ get_temp_directory() {
   }
 
   return (*_temp_directory);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Filename::get_app_directory
-//       Access: Published
-//  Description: Returns a path to the current application's
-//               directory, as nearly as this can be determined.
-////////////////////////////////////////////////////////////////////
-const Filename &Filename::
-get_app_directory() {
-  if (AtomicAdjust::get_ptr(_app_directory) == NULL) {
-    Filename app_directory;
-
-#if defined(IS_OSX)
-    app_directory = get_osx_app_directory();
-
-#endif  // WIN32
-
-    if (app_directory.empty()) {
-      // Fallback case.
-      Filename binary_name = ExecutionEnvironment::get_binary_name();
-      if (!binary_name.empty()) {
-        app_directory = binary_name.get_dirname();
-      }
-    }
-    if (app_directory.empty()) {
-      // Another fallback.
-      Filename dtool_name = ExecutionEnvironment::get_dtool_name();
-      if (!dtool_name.empty()) {
-        app_directory = dtool_name.get_dirname();
-      }
-    }
-    if (app_directory.empty()) {
-      // The final fallback.
-      app_directory = ExecutionEnvironment::get_cwd();
-    }
-
-    Filename *newdir = new Filename(app_directory);
-    if (AtomicAdjust::compare_and_exchange_ptr((void * TVOLATILE &)_app_directory, NULL, newdir) != NULL) {
-      // Didn't store it.  Must have been stored by someone else.
-      assert(_app_directory != NULL);
-      delete newdir;
-    }
-  }
-
-  return (*_app_directory);
 }
 
 ////////////////////////////////////////////////////////////////////

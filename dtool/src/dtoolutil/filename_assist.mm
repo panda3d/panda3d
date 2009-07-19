@@ -82,29 +82,6 @@ get_osx_home_directory() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: get_osx_app_directory
-//  Description: 
-////////////////////////////////////////////////////////////////////
-string
-get_osx_app_directory() {
-#ifndef BUILD_IPHONE
-  NSApplicationLoad();
-#endif
-
-  NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init]; 
-
-  string result;
-  NSBundle *bundle = [NSBundle mainBundle];
-  if (bundle != nil) {
-    NSString *dir = [bundle bundlePath];
-    result = NSString_to_cpp_string(dir);
-  }
-  [pool release]; 
-
-  return result;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: get_NSCachesDirectory
 //  Description: 
 ////////////////////////////////////////////////////////////////////

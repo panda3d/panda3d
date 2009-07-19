@@ -203,8 +203,6 @@ ns_get_environment_variable(const string &var) const {
     return Filename::get_home_directory().to_os_specific();
   } else if (var == "TEMP") {
     return Filename::get_temp_directory().to_os_specific();
-  } else if (var == "APP") {
-    return Filename::get_app_directory().to_os_specific();
   } else if (var == "USER_APPDATA") {
     return Filename::get_user_appdata_directory().to_os_specific();
   } else if (var == "COMMON_APPDATA") {

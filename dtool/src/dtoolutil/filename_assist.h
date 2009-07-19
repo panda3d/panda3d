@@ -23,7 +23,6 @@
 
 string get_osx_home_directory();
 string get_osx_temp_directory();
-string get_osx_app_directory();
 string get_osx_user_appdata_directory();
 string get_osx_common_appdata_directory();
 
