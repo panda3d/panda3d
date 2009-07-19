@@ -15,10 +15,178 @@
 #include "binaryXml.h"
 #include <sstream>
 
-// Actually, we haven't implemented the binary I/O for XML files yet.
-// We just map these directly to the classic formatted I/O for now.
 
-static const bool debug_xml_output = false;
+static const bool debug_xml_output = true;
+
+#define DO_BINARY_XML 1
+
+enum NodeType {
+  NT_unknown,
+  NT_document,
+  NT_element,
+  NT_text,
+};
+
+////////////////////////////////////////////////////////////////////
+//     Function: write_xml_node
+//  Description: Recursively writes a node and all of its children to
+//               the given stream.
+////////////////////////////////////////////////////////////////////
+static void
+write_xml_node(ostream &out, TiXmlNode *xnode) {
+  NodeType type = NT_element;
+  if (xnode->ToDocument() != NULL) {
+    type = NT_document;
+  } else if (xnode->ToElement() != NULL) {
+    type = NT_element;
+  } else if (xnode->ToText() != NULL) {
+    type = NT_text;
+  } else {
+    type = NT_unknown;
+  }
+
+  out.put((char)type);
+  // We don't bother to write any data for the unknown types.
+  if (type == NT_unknown) {
+    return;
+  }
+
+  const string &value = xnode->ValueStr();
+  size_t value_length = value.length();
+  out.write((char *)&value_length, sizeof(value_length));
+  out.write(value.data(), value_length);
+
+  if (type == NT_element) {
+    // Write the element attributes.
+    TiXmlElement *xelement = xnode->ToElement();
+    assert(xelement != NULL);
+    const TiXmlAttribute *xattrib = xelement->FirstAttribute();
+
+    while (xattrib != NULL) {
+      // We have an attribute.
+      out.put((char)true);
+      
+      string name = xattrib->Name();
+      size_t name_length = name.length();
+      out.write((char *)&name_length, sizeof(name_length));
+      out.write(name.data(), name_length);
+      
+      const string &value = xattrib->ValueStr();
+      size_t value_length = value.length();
+      out.write((char *)&value_length, sizeof(value_length));
+      out.write(value.data(), value_length);
+      
+      xattrib = xattrib->Next();
+    }
+
+    // The end of the attributes list.
+    out.put((char)false);
+  }
+
+  // Now write all of the children.
+  TiXmlNode *xchild = xnode->FirstChild();
+  while (xchild != NULL) {
+    // We have a child.
+    out.put((char)true);
+    write_xml_node(out, xchild);
+    xchild = xchild->NextSibling();
+  }
+  
+  // The end of the children list.
+  out.put((char)false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: read_xml_node
+//  Description: Recursively reads a node and all of its children to
+//               the given stream.  Returns the newly-allocated node.
+//               The caller is responsible for eventually deleting the
+//               return value.  Returns NULL on error.
+////////////////////////////////////////////////////////////////////
+static TiXmlNode *
+read_xml_node(istream &in) {
+  NodeType type = (NodeType)in.get();
+  if (type == NT_unknown) {
+    return NULL;
+  }
+
+  size_t value_length;
+  in.read((char *)&value_length, sizeof(value_length));
+  if (in.gcount() != sizeof(value_length)) {
+    return NULL;
+  }
+
+  char *buffer = new char[value_length];
+  in.read(buffer, value_length);
+  string value(buffer, value_length);
+  delete[] buffer;
+
+  TiXmlNode *xnode = NULL;
+  if (type == NT_element) {
+    xnode = new TiXmlElement(value);
+  } else if (type == NT_document) {
+    xnode = new TiXmlDocument;
+  } else if (type == NT_text) {
+    xnode = new TiXmlText(value);
+  } else {
+    assert(false);
+  }
+
+  if (type == NT_element) {
+    // Read the element attributes.
+    TiXmlElement *xelement = xnode->ToElement();
+    assert(xelement != NULL);
+    bool got_attrib = (bool)in.get();
+
+    while (got_attrib && in && !in.eof()) {
+      // We have an attribute.
+      size_t name_length;
+      in.read((char *)&name_length, sizeof(name_length));
+      if (in.gcount() != sizeof(name_length)) {
+        delete xnode;
+        return NULL;
+      }
+
+      buffer = new char[name_length];
+      in.read(buffer, name_length);
+      string name(buffer, name_length);
+      delete[] buffer;
+
+      size_t value_length;
+      in.read((char *)&value_length, sizeof(value_length));
+      if (in.gcount() != sizeof(value_length)) {
+        delete xnode;
+        return NULL;
+      }
+
+      buffer = new char[value_length];
+      in.read(buffer, value_length);
+      string value(buffer, value_length);
+      delete[] buffer;
+
+      xelement->SetAttribute(name, value);
+
+      got_attrib = (bool)in.get();
+    }
+  }
+
+  // Now read all of the children.
+  bool got_child = (bool)in.get();
+  
+  while (got_child && in && !in.eof()) {
+    // We have a child.
+    TiXmlNode *xchild = read_xml_node(in);
+    if (xchild != NULL) {
+      xnode->LinkEndChild(xchild);
+    }
+
+    got_child = (bool)in.get();
+  }
+
+  return xnode;
+}
+
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: write_xml
@@ -26,18 +194,24 @@ static const bool debug_xml_output = false;
 //               stream.
 ////////////////////////////////////////////////////////////////////
 void
-write_xml(HandleStream &out, TiXmlDocument *doc, ostream &logfile) {
-  ostringstream strm;
-  strm << *doc;
-  string data = strm.str();
+write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile) {
+#ifdef DO_BINARY_XML
+  // Binary write.
+  write_xml_node(out, doc);
 
-  size_t length = data.length();
-  out.write((char *)&length, sizeof(length));
-  out.write(data.data(), length);
+#else
+  // Formatted ASCII write.
+  out << *doc;
+#endif
+
   out << flush;
 
   if (debug_xml_output) {
-    logfile << "sent: " << data << "\n" << flush;
+    // Write via ostringstream, so it all goes in one operation, to
+    // help out the interleaving from multiple threads.
+    ostringstream logout;
+    logout << "sent: " << *doc << "\n";
+    logfile << logout.str() << flush;
   }
 }
 
@@ -55,84 +229,26 @@ write_xml(HandleStream &out, TiXmlDocument *doc, ostream &logfile) {
 //               with delete.
 ////////////////////////////////////////////////////////////////////
 TiXmlDocument *
-read_xml(HandleStream &in, ostream &logfile) {
-
-#ifdef _WIN32
-  HANDLE handle = in.get_handle();
-
-  size_t length;
-  DWORD bytes_read = 0;
-  logfile << "ReadFile\n" << flush;
-  BOOL success = ReadFile(handle, &length, sizeof(length), &bytes_read, NULL);
-  logfile << "done ReadFile\n" << flush;
-  if (!success) {
-    DWORD error = GetLastError();
-    if (error != ERROR_HANDLE_EOF && error != ERROR_BROKEN_PIPE) {
-      logfile << "Error reading " << sizeof(length)
-              << " bytes, windows error code 0x" << hex
-              << error << dec << ".\n";
-    }
+read_xml(istream &in, ostream &logfile) {
+#if DO_BINARY_XML
+  // binary read.
+  TiXmlNode *xnode = read_xml_node(in);
+  if (xnode == NULL) {
     return NULL;
   }
-  assert(bytes_read == sizeof(length));
 
-  if (debug_xml_output) {
-    ostringstream logout;
-    logout << "reading " << length << " bytes\n";
-    logfile << logout.str() << flush;
-  }
-
-  char *buffer = new char[length];
-
-  bytes_read = 0;
-  success = ReadFile(handle, buffer, length, &bytes_read, NULL);
-  if (!success) {
-    DWORD error = GetLastError();
-    if (error != ERROR_HANDLE_EOF && error != ERROR_BROKEN_PIPE) {
-      logfile << "Error reading " << length
-              << " bytes, windows error code 0x" << hex
-              << error << dec << ".\n";
-    }
-    delete[] buffer;
-    return NULL;
-  }
-  assert(bytes_read == length);
-
-  string data(buffer, length);
-  delete[] buffer;
+  TiXmlDocument *doc = xnode->ToDocument();
+  assert(doc != NULL);
 
 #else
-  size_t length;
-  in.read((char *)&length, sizeof(length));
-  if (in.gcount() != sizeof(length)) {
-    logfile << "read " << in.gcount() << " bytes instead of " << sizeof(length)
-            << "\n";
-    return NULL;
-  }
-
-  if (debug_xml_output) {
-    ostringstream logout;
-    logout << "reading " << length << " bytes\n";
-    logfile << logout.str() << flush;
-  }
-
-  char *buffer = new char[length];
-  in.read(buffer, length);
-  if (in.gcount() != length) {
-    delete[] buffer;
-    return NULL;
-  }
-
-  string data(buffer, length);
-  delete[] buffer;
-
-#endif  // _WIN32
-
-  istringstream strm(data);
+  // standard ASCII read.
   TiXmlDocument *doc = new TiXmlDocument;
-  strm >> *doc;
+  in >> *doc;
+#endif
 
   if (debug_xml_output) {
+    // Write via ostringstream, so it all goes in one operation, to
+    // help out the interleaving from multiple threads.
     ostringstream logout;
     logout << "received: " << *doc << "\n";
     logfile << logout.str() << flush;

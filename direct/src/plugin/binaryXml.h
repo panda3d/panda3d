@@ -26,7 +26,7 @@ using namespace std;
 // operators, but this is a smidge more efficient and gives us more
 // control.
 
-void write_xml(HandleStream &out, TiXmlDocument *doc, ostream &logfile);
-TiXmlDocument *read_xml(HandleStream &in, ostream &logfile);
+void write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile);
+TiXmlDocument *read_xml(istream &in, ostream &logfile);
 
 #endif
