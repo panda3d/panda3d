@@ -1293,20 +1293,15 @@ for pkg in PkgListGet():
         if (COMPILER == "LINUX"):
             if (os.path.exists(THIRDPARTYLIBS+pkg.lower()+"/lib")):
                 CopyAllFiles(GetOutputDir()+"/lib/",THIRDPARTYLIBS+pkg.lower()+"/lib/")
+
 if (COMPILER=="MSVC"):
     CopyAllFiles(GetOutputDir()+"/bin/", THIRDPARTYLIBS+"extras"+"/bin/")
 if (sys.platform == "win32"):
     if (PkgSkip("PYTHON")==0):
-        (arch, osName) = platform.architecture()
-        archName = "win64"
-        if arch=='32bit': archName = "win32"
-        if os.path.isdir('thirdparty/' + archName + '/win-python'):
-            CopyFile(GetOutputDir()+'/bin/python25.dll', 'thirdparty/' + archName + '/win-python/python25.dll')
-            CopyTree(GetOutputDir()+'/python', 'thirdparty/' + archName + '/win-python')
-        else:
-            CopyFile(GetOutputDir()+'/bin/python25.dll', 'thirdparty/win-python/python25.dll')
-            CopyTree(GetOutputDir()+'/python', 'thirdparty/win-python')
-        ConditionalWriteFile(GetOutputDir()+'/python/panda.pth',"..\n../bin\n")
+        pydll = "/" + SDK["PYTHONVERSION"].replace(".", "") + ".dll"
+        CopyFile(GetOutputDir()+"/bin"+pydll, SDK["PYTHON"]+pydll)
+        CopyTree(GetOutputDir()+"/python", SDK["PYTHON"])
+        ConditionalWriteFile(GetOutputDir()+"/python/panda.pth", "..\n../bin\n")
 
 ########################################################################
 ##

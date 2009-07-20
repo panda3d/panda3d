@@ -868,12 +868,23 @@ def SdkLocatePython():
     if (PkgSkip("PYTHON")==0):
         if (sys.platform == "win32"):
             (arch, osName) = platform.architecture()
-            if arch=='32bit':
-                SDK["PYTHON"]="thirdparty/win32/win-python"
+            if arch == "32bit":
+                SDK["PYTHON"] = "thirdparty/win32/win-python"
             else:
-                SDK["PYTHON"]="thirdparty/win64/win-python"
+                SDK["PYTHON"] = "thirdparty/win64/win-python"
+            
+            if (not os.path.exists(SDK["PYTHON"])):
+                SDK["PYTHON"] = "thirdparty/win-python"
+            if (not os.path.exists(SDK["PYTHON"]+"/python.exe")):
+                exit("Could not find thirdparty/win-python/python.exe!")
+            
+            os.system(SDK["PYTHON"].replace("/", "\\") + "\\python.exe -V > "+OUTPUTDIR+"/tmp/pythonversion 2>&1")
+            pv=ReadFile(OUTPUTDIR+"/tmp/pythonversion")
+            if (pv.startswith("Python ")==0):
+                exit("python -V did not produce the expected output")
+            pv = pv[7:10]
+            SDK["PYTHONVERSION"]="python"+pv
 
-            SDK["PYTHONVERSION"]="python2.5"
         elif (sys.platform == "darwin"):
             if not SDK.has_key("MACOSX"): SdkLocateMacOSX()
             if (os.path.isdir("%s/System/Library/Frameworks/Python.framework" % SDK["MACOSX"])):
@@ -883,6 +894,7 @@ def SdkLocatePython():
                 SDK["PYTHONVERSION"] = "python"+pv
             else:
                 exit("Could not find the python framework!")
+
         else:
             os.system("python -V > "+OUTPUTDIR+"/tmp/pythonversion 2>&1")
             pv=ReadFile(OUTPUTDIR+"/tmp/pythonversion")
