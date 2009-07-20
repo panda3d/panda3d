@@ -28,6 +28,11 @@
 #define LINK_TARGET "\\python\\python.exe"
 #endif
 
+#ifdef BUILDING_PFREEZE
+#define LINK_SOURCE "\\bin\\pfreeze.exe"
+#define LINK_TARGET "\\python\\python.exe"
+#endif
+
 #include <windows.h>
 #include <winuser.h>
 #include <stdlib.h>
@@ -102,6 +107,9 @@ int main(int argc, char **argv)
 #ifdef BUILDING_EGGCACHER
   sprintf(modcmd,"python -c \"import direct.directscripts.eggcacher\" %s",args);
 #endif
+#ifdef BUILDING_PFREEZE
+  sprintf(modcmd,"python -c \"import direct.showutil.pfreeze\" %s",args);
+#endif
 
   // Run it.
 
@@ -136,6 +144,10 @@ int main(int argc, char **argv)
 
 #ifdef BUILDING_EGGCACHER
 #define LINK_SOURCE "/bin/eggcacher"
+#endif
+
+#ifdef BUILDING_PFREEZE
+#define LINK_SOURCE "/bin/pfreeze"
 #endif
 
 #include <stdlib.h>
@@ -211,6 +223,10 @@ int main(int argc, char **argv)
 #ifdef BUILDING_EGGCACHER
     modargv[modargc++] = (char*)"-c";
     modargv[modargc++] = (char*)"import direct.directscripts.eggcacher";
+#endif
+#ifdef BUILDING_PFREEZE
+    modargv[modargc++] = (char*)"-c";
+    modargv[modargc++] = (char*)"import direct.showutil.pfreeze";
 #endif
   for (int i=1; i<argc; i++) modargv[modargc++] = argv[i];
   modargv[modargc] = 0;
