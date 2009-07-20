@@ -580,7 +580,6 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR+"/tmp")
     MakeDirectory(OUTPUTDIR+"/etc")
     MakeDirectory(OUTPUTDIR+"/plugins")
-    MakeDirectory(OUTPUTDIR+"/modelcache")
     MakeDirectory(OUTPUTDIR+"/include")
     MakeDirectory(OUTPUTDIR+"/include/openssl")
     MakeDirectory(OUTPUTDIR+"/models")

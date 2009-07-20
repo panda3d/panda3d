@@ -2869,7 +2869,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   OPTS=['DIR:direct/src/plugin', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_common.obj', opts=OPTS, input='plugin_common_composite1.cxx')
   
-  OPTS=['DIR:direct/src/plugin', 'TINYXML', 'ZLIB', 'JPEG']
+  OPTS=['DIR:direct/src/plugin', 'TINYXML', 'ZLIB', 'JPEG', 'OPENSSL']
   TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
   TargetAdd('plugin_mkdir_complete.obj', opts=OPTS, input='mkdir_complete.cxx')
   TargetAdd('plugin_find_root_dir.obj', opts=OPTS, input='find_root_dir.cxx')
@@ -3865,7 +3865,8 @@ except:
 #
 ##########################################################################################
 
-RUNTIME_OMIT = ["libp3mayaloader*.*", "libp3ptloader.*", "libpandaskel.*", "libpanda*stripped.*", "lib*fmod*.*", "libpandaegg.*"]
+RUNTIME_OMIT = ["libp3mayaloader*.*", "libp3ptloader.*", "libpandaskel.*", "libpanda*stripped.*",
+                            "lib*fmod*.*", "libpandaegg.*", "codec_*.*", "output_*.*", "dsp_*.*"]
 
 def MakeRuntime():
     # Delete the current.
@@ -3892,7 +3893,7 @@ def MakeRuntime():
     CopyFile(GetOutputDir()+"/rlib/"+os.path.basename(plugfile), plugfile)
     if (sys.platform.startswith("win")):
         for base in os.listdir(GetOutputDir()+"/bin"):
-            if (base.startswith("lib") and base.endswith(".dll")):
+            if (base.endswith(".dll")):
                 omit = False
                 for romit in RUNTIME_OMIT:
                     if fnmatch.fnmatch(base, romit):
