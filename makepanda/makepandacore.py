@@ -1015,6 +1015,7 @@ def SetupVisualStudioEnviron():
     if ("MSPLATFORM" not in SDK):
         exit("Could not find the Microsoft Platform SDK")
     os.environ["VCINSTALLDIR"] = SDK["VISUALSTUDIO"] + "VC"
+    os.environ["WindowsSdkDir"] = SDK["MSPLATFORM"]
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "VC\\bin")
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\include")
