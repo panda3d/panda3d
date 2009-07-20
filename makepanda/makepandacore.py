@@ -1004,7 +1004,10 @@ def SdkAutoDisableMax():
 
 def AddToPathEnv(path,add):
     if (path in os.environ):
-        os.environ[path] = add + ";" + os.environ[path]
+        if (sys.platform.startswith("win")):
+            os.environ[path] = add + ";" + os.environ[path]
+        else:
+            os.environ[path] = add + ":" + os.environ[path]
     else:
         os.environ[path] = add
 
@@ -1318,4 +1321,5 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0):
     if (target.endswith(".in")):
         t.deps[FindLocation("interrogate.exe",[])] = 1
         t.deps[FindLocation("dtool_have_python.dat",[])] = 1
+
 

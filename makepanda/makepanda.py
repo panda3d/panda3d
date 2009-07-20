@@ -229,10 +229,11 @@ else:
 
 builtdir = os.path.join(os.path.abspath(GetOutputDir()))
 sys.path += [builtdir, os.path.join(builtdir, "lib")]
-if ("PYTHONPATH" in os.environ):
-    os.environ["PYTHONPATH"] = "%s:%s:%s" % (builtdir, os.path.join(builtdir, "lib"), os.environ["PYTHONPATH"])
+AddToPathEnv("PYTHONPATH", builtdir)
+if (sys.platform.startswith("win")):
+    AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "bin"))
 else:
-    os.environ["PYTHONPATH"] = builtdir + ":" + os.path.join(builtdir, "lib")
+    AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "lib"))
 
 ##########################################################################################
 #
