@@ -167,12 +167,12 @@ def GetDirectoryContents(dir, filters="*", skip=[]):
                 if (skip.count(file)==0):
                     cvs[file] = 1
         for file in actual.keys():
-            if (cvs.has_key(file)==0):
+            if (file not in cvs):
                 msg = "WARNING: %s is in %s, but not in CVS"%(file, dir)
                 print msg
                 WARNINGS.append(msg)
         for file in cvs.keys():
-            if (actual.has_key(file)==0):
+            if (file not in actual):
                 msg = "WARNING: %s is not in %s, but is in CVS"%(file, dir)
                 print msg
                 WARNINGS.append(msg)
@@ -190,7 +190,7 @@ def GetDirectoryContents(dir, filters="*", skip=[]):
 ########################################################################
 
 def LocateBinary(binary):
-    if not os.environ.has_key("PATH") or os.environ["PATH"] == "":
+    if "PATH" not in environ or os.environ["PATH"] == "":
         p = os.defpath
     else:
         p = os.environ["PATH"]
@@ -213,7 +213,7 @@ def LocateBinary(binary):
 TIMESTAMPCACHE = {}
 
 def GetTimestamp(path):
-    if TIMESTAMPCACHE.has_key(path):
+    if path in TIMESTAMPCACHE:
         return TIMESTAMPCACHE[path]
     try: date = os.path.getmtime(path)
     except: date = 0
@@ -257,7 +257,7 @@ def NeedsBuild(files,others):
     for file in others:
         dates.append(GetTimestamp(file))
     key = tuple(files)
-    if (BUILTFROMCACHE.has_key(key)):
+    if (key in BUILTFROMCACHE):
         if (BUILTFROMCACHE[key] == [others,dates]):
             return 0
         else:
@@ -294,7 +294,7 @@ CxxIncludeRegex = re.compile('^[ \t]*[#][ \t]*include[ \t]+"([^"]+)"[ \t\r\n]*$'
 
 def CxxGetIncludes(path):
     date = GetTimestamp(path)
-    if (CXXINCLUDECACHE.has_key(path)):
+    if (path in CXXINCLUDECACHE):
         cached = CXXINCLUDECACHE[path]
         if (cached[0]==date): return cached[1]
     try: sfile = open(path, 'rb')
@@ -321,8 +321,8 @@ def CxxGetIncludes(path):
 def SaveDependencyCache():
     try:
         if (os.path.exists(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"))):
-            os.rename(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache-backup"),
-                      os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"))
+            os.rename(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),
+                      os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache-backup"))
     except: pass
     try: icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'wb')
     except: icache = 0
@@ -405,7 +405,7 @@ CxxIgnoreHeader = {}
 CxxDependencyCache = {}
 
 def CxxCalcDependencies(srcfile, ipath, ignore):
-    if (CxxDependencyCache.has_key(srcfile)):
+    if (srcfile in CxxDependencyCache):
         return CxxDependencyCache[srcfile]
     if (ignore.count(srcfile)): return []
     dep = {}
@@ -470,7 +470,7 @@ def GetRegistryKey(path, subkey):
     return k1
 
 def GetProgramFiles():
-    if (os.environ.has_key("PROGRAMFILES")):
+    if ("PROGRAMFILES" in os.environ):
         return os.environ["PROGRAMFILES"]
     elif (os.path.isdir("C:\\Program Files")):
         return "C:\\Program Files"
@@ -797,38 +797,38 @@ def SdkLocateDirectX():
     if (sys.platform != "win32"): return
     GetSdkDir("directx8", "DX8")
     GetSdkDir("directx9", "DX9")
-    if (SDK.has_key("DX9")==0):
+    if ("DX9" not in SDK):
         ## Try to locate the key within the "new" March 2009 location in the registry (yecch):
         dir = GetRegistryKey("SOFTWARE\\Microsoft\\DirectX\\Microsoft DirectX SDK (March 2009)", "InstallPath")
         if (dir != 0):
             SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-    if (SDK.has_key("DX9")==0 or SDK.has_key("DX8")==0):
+    if ("DX9" not in SDK) or ("DX8" not in SDK):
         uninstaller = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
         for subdir in ListRegistryKeys(uninstaller):
             if (subdir[0]=="{"):
                 dir = GetRegistryKey(uninstaller+"\\"+subdir, "InstallLocation")
                 if (dir != 0):
-                    if ((SDK.has_key("DX8")==0) and
+                    if (("DX8" not in SDK) and
                         (os.path.isfile(dir+"\\Include\\d3d8.h")) and
                         (os.path.isfile(dir+"\\Include\\d3dx8.h")) and
                         (os.path.isfile(dir+"\\Lib\\d3d8.lib")) and
                         (os.path.isfile(dir+"\\Lib\\d3dx8.lib"))):
                         SDK["DX8"] = dir.replace("\\", "/").rstrip("/")
-                    if ((SDK.has_key("DX9")==0) and
+                    if (("DX9" not in SDK) and
                         (os.path.isfile(dir+"\\Include\\d3d9.h")) and
                         (os.path.isfile(dir+"\\Include\\d3dx9.h")) and
                         (os.path.isfile(dir+"\\Include\\dxsdkver.h")) and
                         (os.path.isfile(dir+"\\Lib\\x86\\d3d9.lib")) and
                         (os.path.isfile(dir+"\\Lib\\x86\\d3dx9.lib"))):
                         SDK["DX9"] = dir.replace("\\", "/").rstrip("/")
-    if (SDK.has_key("DX9")):
+    if ("DX9" in SDK):
         SDK["DIRECTCAM"] = SDK["DX9"]
 
 def SdkLocateMaya():
     for (ver,key) in MAYAVERSIONINFO:
-        if (PkgSkip(ver)==0 and SDK.has_key(ver)==0):
+        if (PkgSkip(ver)==0 and ver not in SDK):
             GetSdkDir(ver.lower().replace("x",""), ver)
-            if (not SDK.has_key(ver)):
+            if (not ver in SDK):
                 if (sys.platform == "win32"):
                     for dev in ["Alias|Wavefront","Alias","Autodesk"]:
                         fullkey="SOFTWARE\\"+dev+"\\Maya\\"+key+"\\Setup\\InstallPath"
@@ -854,10 +854,10 @@ def SdkLocateMax():
     if (sys.platform != "win32"): return
     for version,key1,key2,subdir in MAXVERSIONINFO:
         if (PkgSkip(version)==0):
-            if (SDK.has_key(version)==0):
+            if (version not in SDK):
                 GetSdkDir("maxsdk"+version.lower()[3:], version)
                 GetSdkDir("maxsdk"+version.lower()[3:], version+"CS")
-                if (not SDK.has_key(version)):
+                if (not version in SDK):
                     top = GetRegistryKey(key1,key2)
                     if (top != 0):
                         SDK[version] = top + "maxsdk"
@@ -886,7 +886,7 @@ def SdkLocatePython():
             SDK["PYTHONVERSION"]="python"+pv
 
         elif (sys.platform == "darwin"):
-            if not SDK.has_key("MACOSX"): SdkLocateMacOSX()
+            if "MACOSX" not in SDK: SdkLocateMacOSX()
             if (os.path.isdir("%s/System/Library/Frameworks/Python.framework" % SDK["MACOSX"])):
                 os.system("readlink %s/System/Library/Frameworks/Python.framework/Versions/Current > %s/tmp/pythonversion 2>&1" % (SDK["MACOSX"], OUTPUTDIR))
                 pv = ReadFile(OUTPUTDIR+"/tmp/pythonversion")
@@ -913,8 +913,13 @@ def SdkLocateVisualStudio():
         vcdir = vcdir[:-3]
         SDK["VISUALSTUDIO"] = vcdir
     else:
-        if os.environ.has_key("VCINSTALLDIR"):
-            SDK["VISUALSTUDIO"] = os.environ["VCINSTALLDIR"]
+        if "VCINSTALLDIR" in os.environ:
+            vcdir = os.environ["VCINSTALLDIR"]
+            if (vcdir[-3:] == "\\VC"):
+                vcdir = vcdir[:-2]
+            elif (vcdir[-4:] == "\\VC\\"):
+                vcdir = vcdir[:-3]
+            SDK["VISUALSTUDIO"] = vcdir
 
 def SdkLocateMSPlatform():
     if (sys.platform != "win32"): return
@@ -931,7 +936,7 @@ def SdkLocateMSPlatform():
     
     # This may not be the best idea but it does give a warning
     if (platsdk == 0):
-        if( os.environ.has_key("WindowsSdkDir") ):
+        if ("WindowsSdkDir" in os.environ):
             WARNINGS.append("Windows SDK directory not found in registry, found in Environment variables instead")
             platsdk = os.environ["WindowsSdkDir"]
     if (platsdk != 0):
@@ -961,7 +966,7 @@ def SdkLocateMacOSX():
 def SdkAutoDisableDirectX():
     for ver in ["DX8","DX9","DIRECTCAM"]:
         if (PkgSkip(ver)==0):
-            if (SDK.has_key(ver)==0):
+            if (ver not in SDK):
                 if (sys.platform.startswith("win")):
                     WARNINGS.append("I cannot locate SDK for "+ver)
                     WARNINGS.append("I have automatically added this command-line option: --no-"+ver.lower())
@@ -971,7 +976,7 @@ def SdkAutoDisableDirectX():
 
 def SdkAutoDisableMaya():
     for (ver,key) in MAYAVERSIONINFO:
-        if (SDK.has_key(ver)==0) and (PkgSkip(ver)==0):
+        if (ver not in SDK) and (PkgSkip(ver)==0):
             if (sys.platform == "win32"):
                 WARNINGS.append("The registry does not appear to contain a pointer to the "+ver+" SDK.")
             else:
@@ -981,9 +986,9 @@ def SdkAutoDisableMaya():
 
 def SdkAutoDisableMax():
     for version,key1,key2,subdir in MAXVERSIONINFO:
-        if (PkgSkip(version)==0) and ((SDK.has_key(version)==0) or (SDK.has_key(version+"CS")==0)): 
+        if (PkgSkip(version)==0) and ((version not in SDK) or (version+"CS" not in SDK)): 
             if (sys.platform.startswith("win")):
-                if (SDK.has_key(version)):
+                if (version in SDK):
                     WARNINGS.append("Your copy of "+version+" does not include the character studio SDK")
                 else: 
                     WARNINGS.append("The registry does not appear to contain a pointer to "+version)
@@ -999,15 +1004,15 @@ def SdkAutoDisableMax():
 ########################################################################
 
 def AddToPathEnv(path,add):
-    if (os.environ.has_key(path)):
+    if (path in os.environ):
         os.environ[path] = add + ";" + os.environ[path]
     else:
         os.environ[path] = add
 
 def SetupVisualStudioEnviron():
-    if (SDK.has_key("VISUALSTUDIO")==0):
+    if ("VISUALSTUDIO" not in SDK):
         exit("Could not find Visual Studio install directory")
-    if (SDK.has_key("MSPLATFORM")==0):
+    if ("MSPLATFORM" not in SDK):
         exit("Could not find the Microsoft Platform SDK")
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "VC\\bin")
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
@@ -1077,9 +1082,9 @@ def CheckLinkerLibraryPath():
     except: ldpath = []
     
     # Get the current 
-    if (os.environ.has_key("LD_LIBRARY_PATH")):
+    if ("LD_LIBRARY_PATH" in os.environ):
         ldpath = ldpath + os.environ["LD_LIBRARY_PATH"].split(":")
-    if (sys.platform == "darwin" and os.environ.has_key("DYLD_LIBRARY_PATH")):
+    if (sys.platform == "darwin" and "DYLD_LIBRARY_PATH" in os.environ):
         dyldpath = os.environ["DYLD_LIBRARY_PATH"].split(":")
     
     # Remove any potential current Panda installation lib dirs
@@ -1092,12 +1097,12 @@ def CheckLinkerLibraryPath():
     
     # Add built/lib/ to (DY)LD_LIBRARY_PATH if it's not already there
     if (ldpath.count(builtlib)==0):
-        if (os.environ.has_key("LD_LIBRARY_PATH")):
+        if ("LD_LIBRARY_PATH" in os.environ):
             os.environ["LD_LIBRARY_PATH"] = builtlib + ":" + os.environ["LD_LIBRARY_PATH"]
         else:
             os.environ["LD_LIBRARY_PATH"] = builtlib
     if (sys.platform == "darwin" and dyldpath.count(builtlib)==0):
-        if (os.environ.has_key("DYLD_LIBRARY_PATH")):
+        if ("DYLD_LIBRARY_PATH" in os.environ):
             os.environ["DYLD_LIBRARY_PATH"] = builtlib + ":" + os.environ["DYLD_LIBRARY_PATH"]
         else:
             os.environ["DYLD_LIBRARY_PATH"] = builtlib
@@ -1281,7 +1286,7 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0):
     if (type(input) == str): input = [input]
     if (type(dep) == str): dep = [dep]
     full = FindLocation(target,[OUTPUTDIR+"/include"])
-    if (TARGET_TABLE.has_key(full) == 0):
+    if (full not in TARGET_TABLE):
         t = Target()
         t.name = full
         t.inputs = []
