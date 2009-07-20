@@ -6,7 +6,7 @@ import sys
 import os
 import marshal
 import imp
-from distutils.sysconfig import get_python_inc, get_python_lib, get_python_version
+from distutils.sysconfig import PREFIX, get_python_inc, get_python_version
 
 import direct
 from pandac.PandaModules import *
@@ -33,24 +33,44 @@ linkExe = 'error'
 # The command to link a single object file into a shared library.
 linkDll = 'error'
 
-# The root directory of the Python installation
+# Paths to Python stuff.
 Python = None
-
-# The directory that includes Python.h.
 PythonIPath = get_python_inc()
 PythonVersion = get_python_version()
 
-# The root directory of Microsoft Visual Studio (if relevant)
-MSVS = None
+# The VC directory of Microsoft Visual Studio (if relevant)
+MSVC = None
+# Directory to Windows Platform SDK (if relevant)
+PSDK = None
 
 if sys.platform == 'win32':
-    wtpython = '$WINTOOLS/sdk/python/Python-2.4.1'
-    Python = Filename(ExecutionEnvironment.expandString(wtpython)).toOsSpecific()
-
-    MSVS = Filename('/c/Program Files/Microsoft Visual Studio .NET 2003').toOsSpecific()
-    compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c /MD /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(python)s\Include" /I"%(python)s\PC" /I"%(msvs)s\Vc7\PlatformSDK\include" /I"%(msvs)s\Vc7\include" %(filename)s'
-    linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /out:%(basename)s.exe %(basename)s.obj'
-    linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(msvs)s\Vc7\PlatformSDK\lib" /LIBPATH:"%(msvs)s\Vc7\lib" /LIBPATH:"%(python)s\PCbuild"  /out:%(basename)s.pyd %(basename)s.obj'
+    Python = PREFIX
+    
+    if ('VCINSTALLDIR' in os.environ):
+        MSVC = os.environ['VCINSTALLDIR']
+    elif (Filename('/c/Program Files/Microsoft Visual Studio 9.0/VC').exists()):
+        MSVC = Filename('/c/Program Files/Microsoft Visual Studio 9.0/VC').toOsSpecific()
+    elif (Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').exists()):
+        MSVC = Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').toOsSpecific()
+    else:
+        print 'Could not locate Microsoft Visual C++ Compiler! Try running from the Visual Studio Command Prompt.'
+        exit(1)
+    
+    if ('WindowsSdkDir' in os.environ):
+        PSDK = os.environ['WindowsSdkDir']
+    elif (Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').exists()):
+        PSDK = Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').toOsSpecific()
+    elif (os.path.exists(os.path.join(MSVC, 'PlatformSDK'))):
+        PSDK = os.path.join(MSVC, 'PlatformSDK')
+    else:
+        print 'Could not locate the Microsoft Windows Platform SDK! Try running from the Visual Studio Command Prompt.'
+        exit(1)
+    
+    os.environ['PATH'] += ';' + MSVC + '\\bin;' + MSVC + '\\Common7\\IDE;' + PSDK + '\\bin'
+    
+    compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c /MD /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" /I"%(PSDK)s\include" /I"%(MSVC)s\include" %(filename)s'
+    linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
+    linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.pyd %(basename)s.obj'
 
 elif sys.platform == 'darwin':
     # OSX
@@ -775,7 +795,8 @@ class Freezer:
     def compileExe(self, filename, basename):
         compile = self.compileObj % {
             'python' : Python,
-            'msvs' : MSVS,
+            'MSVC' : MSVC,
+            'PSDK' : PSDK,
             'pythonIPath' : PythonIPath,
             'pythonVersion' : PythonVersion,
             'filename' : filename,
@@ -787,7 +808,8 @@ class Freezer:
 
         link = self.linkExe % {
             'python' : Python,
-            'msvs' : MSVS,
+            'MSVC' : MSVC,
+            'PSDK' : PSDK,
             'pythonIPath' : PythonIPath,
             'pythonVersion' : PythonVersion,
             'filename' : filename,
@@ -800,7 +822,8 @@ class Freezer:
     def compileDll(self, filename, basename):
         compile = self.compileObj % {
             'python' : Python,
-            'msvs' : MSVS,
+            'MSVC' : MSVC,
+            'PSDK' : PSDK,
             'pythonIPath' : PythonIPath,
             'pythonVersion' : PythonVersion,
             'filename' : filename,
@@ -812,7 +835,8 @@ class Freezer:
 
         link = self.linkDll % {
             'python' : Python,
-            'msvs' : MSVS,
+            'MSVC' : MSVC,
+            'PSDK' : PSDK,
             'pythonIPath' : PythonIPath,
             'pythonVersion' : PythonVersion,
             'filename' : filename,
@@ -841,3 +865,4 @@ class Freezer:
 
     def makeForbiddenModuleListEntry(self, moduleName):
         return '  {"%s", NULL, 0},' % (moduleName)
+

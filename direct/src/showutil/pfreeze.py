@@ -95,6 +95,8 @@ if bl.endswith('.mf'):
 elif bl.endswith('.dll') or bl.endswith('.pyd') or bl.endswith('.so'):
     basename = os.path.splitext(basename)[0]
     outputType = 'dll'
+elif bl.endswith('.exe'):
+    basename = os.path.splitext(basename)[0]
 
 startfile = args[0]
 if startfile.endswith('.py') or startfile.endswith('.pyw') or \
