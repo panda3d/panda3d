@@ -1,7 +1,10 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#ifndef NDEBUG
+// Question: doesn't having this kinda defeat the purpose?
 #define NDEBUG
+#endif
 
 #ifdef NDEBUG
 #define NO_DEBUG_OUTPUT
