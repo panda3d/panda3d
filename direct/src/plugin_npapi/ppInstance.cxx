@@ -469,12 +469,12 @@ handle_request(P3D_request *request) {
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
 generic_browser_call() {
-#ifndef HAS_PLUGIN_THREAD_ASYNC_CALL
+  //#ifndef HAS_PLUGIN_THREAD_ASYNC_CALL
   // If we can't ask Mozilla to call us back using
   // NPN_PluginThreadAsyncCall(), then we'll do it explicitly now,
   // since we know we're in the main thread here.
   handle_request_loop();
-#endif
+  //#endif
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1099,13 +1099,12 @@ handle_request_loop() {
     p3d_inst = P3D_check_request(false);
   }
 
-  // Also check to see if we have any file datas that need streaming.
-  // Only stream up to the front four in the queue, so we don't
-  // overwhelm the browser all at once.
-  size_t num_file_datas = min(_file_datas.size(), (size_t)4);
+  // Also check to see if we have any file_data objects that have
+  // finished and may be deleted.
+  size_t num_file_datas = _file_datas.size();
   size_t i = 0;
   while (i < num_file_datas) {
-    if (_file_datas[i]->feed_data()) {
+    if (!_file_datas[i]->is_done()) {
       // This one keeps going.
       ++i;
     } else {
@@ -1184,6 +1183,13 @@ StreamingFileData(PPDownloadRequest *req, const string &filename,
 
   // Then return to the beginning to read the data.
   _file.seekg(0, ios::beg);
+
+  // Now start up the thread.
+  _thread_done = false;
+  _thread_continue = true;
+  INIT_THREAD(_thread);
+
+  SPAWN_THREAD(_thread, thread_run, this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1193,23 +1199,38 @@ StreamingFileData(PPDownloadRequest *req, const string &filename,
 ////////////////////////////////////////////////////////////////////
 PPInstance::StreamingFileData::
 ~StreamingFileData() {
+  // Time to stop.
+  _thread_continue = false;
+
+  JOIN_THREAD(_thread);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: PPInstance::StreamingFileData::feed_data
+//     Function: PPInstance::StreamingFileData::is_done
 //       Access: Public
-//  Description: Feeds the next batch of the file to the instance.
-//               Returns true if there is more to come and this method
-//               should be called again, false if we're done.
+//  Description: Returns true if the file has been fully read and this
+//               object is ready to be deleted, or false if there is
+//               more work to do.
 ////////////////////////////////////////////////////////////////////
 bool PPInstance::StreamingFileData::
-feed_data() {
+is_done() const {
+  return _thread_done;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::StreamingFileData::thread_run
+//       Access: Private
+//  Description: The main function of the file thread.  This reads the
+//               file contents and feeds it to the core API.
+////////////////////////////////////////////////////////////////////
+void PPInstance::StreamingFileData::
+thread_run() {
   static const size_t buffer_size = 81920;
   char buffer[buffer_size];
 
   _file.read(buffer, buffer_size);
   size_t count = _file.gcount();
-  if (count != 0) {
+  while (count != 0) {
     _total_count += count;
     bool download_ok = P3D_instance_feed_url_stream
       (_p3d_inst, _user_id, P3D_RC_in_progress,
@@ -1217,11 +1238,20 @@ feed_data() {
 
     if (!download_ok) {
       // Never mind.
-      return false;
+      _thread_done = true;
+      return;
     }
 
-    // So far, so good.
-    return true;
+    if (!_thread_continue) {
+      // Interrupted by the main thread.  Presumably we're being shut
+      // down.
+      _thread_done = true;
+      return;
+    }
+
+    // So far, so good.  Read some more.
+    _file.read(buffer, buffer_size);
+    count = _file.gcount();
   }
 
   // End of file.
@@ -1234,6 +1264,6 @@ feed_data() {
   P3D_instance_feed_url_stream
     (_p3d_inst, _user_id, result, 0, _total_count, NULL, 0);
 
-  // We're done.
-  return false;
+  // All done.
+  _thread_done = true;
 }

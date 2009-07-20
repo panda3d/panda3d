@@ -157,6 +157,7 @@ shutdown() {
       result = waitpid(_p3dpython_pid, &status, WNOHANG);
     }
 
+    nout << "Python process has successfully stopped.\n";
     if (WIFEXITED(status)) {
       nout << "  exited normally, status = "
            << WEXITSTATUS(status) << "\n";

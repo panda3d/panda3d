@@ -18,6 +18,7 @@
 #include "nppanda3d_common.h"
 #include "fileSpec.h"
 #include "get_tinyxml.h"
+#include "p3d_lock.h"
 
 #include <vector>
 
@@ -107,15 +108,24 @@ private:
                       P3D_instance *p3d_inst);
     ~StreamingFileData();
 
-    bool feed_data();
+    bool is_done() const;
 
   private:
+    void thread_run();
+    THREAD_CALLBACK_DECLARATION(PPInstance::StreamingFileData, thread_run);
+
+  private:
+    bool _thread_done;
+    bool _thread_continue;
+
     P3D_instance *_p3d_inst;
     int _user_id;
     string _filename;
     ifstream _file;
     size_t _file_size;
     size_t _total_count;
+
+    THREAD _thread;
   };
 
   typedef vector<StreamingFileData *> FileDatas;

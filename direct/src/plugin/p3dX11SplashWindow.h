@@ -20,7 +20,7 @@
 #ifdef HAVE_X11
 
 #include "p3dSplashWindow.h"
-#include "p3d_lock.h"
+#include "handleStream.h"
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -41,13 +41,19 @@ public:
   virtual void set_install_progress(double install_progress);
 
 private:
-  void start_thread();
-  void stop_thread();
+  void start_subprocess();
+  void stop_subprocess();
+  void check_stopped();
 
 private:
-  // These methods run only within the window thread.
-  void thread_run();
-  THREAD_CALLBACK_DECLARATION(P3DX11SplashWindow, thread_run);
+  // Data members that are stored in the parent process.
+  pid_t _subprocess_pid;
+  HandleStream _pipe_write;
+
+private:
+  // These methods run only within the subprocess.
+  void subprocess_run();
+  void receive_command();
 
   void redraw(string label);
   void make_window();
@@ -57,6 +63,9 @@ private:
   void close_window();
 
 private:
+  // Data members that are stored in the subprocess.
+  bool _subprocess_continue;
+  HandleStream _pipe_read;
   int _width, _height;
   
   bool _own_display;
@@ -67,12 +76,9 @@ private:
   bool _install_label_changed;
   string _install_label;
   double _install_progress;
-  LOCK _install_lock;
   
   string _label_text;
 
-  bool _thread_continue;
-  bool _thread_running;
   Display *_display;
   int _screen;
   GC _graphics_context;
@@ -81,7 +87,6 @@ private:
   int _image_width, _image_height;
   int _resized_width, _resized_height;
   
-  THREAD _thread;
   Window _window;
 };
 

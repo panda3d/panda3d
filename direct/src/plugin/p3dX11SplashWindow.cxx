@@ -16,7 +16,12 @@
 
 #ifdef HAVE_X11
 
+#include "get_tinyxml.h"
 #include <time.h>
+#include <fcntl.h>
+#include <sys/wait.h>
+#include <sys/select.h>
+#include <signal.h>
 
 // Sleeps for a short time.
 #define MILLISLEEP() \
@@ -36,7 +41,10 @@ P3DX11SplashWindow::
 P3DX11SplashWindow(P3DInstance *inst) : 
   P3DSplashWindow(inst)
 {
-  INIT_THREAD(_thread);
+  // Init for parent process
+  _subprocess_pid = -1;
+
+  // Init for subprocess
   _display = None;
   _window = None;
   _image = NULL;
@@ -49,16 +57,13 @@ P3DX11SplashWindow(P3DInstance *inst) :
   _resized_width = 0;
   _resized_height = 0;
   _graphics_context = None;
-  _thread_running = false;
   _got_install = false;
   _image_filename_changed = false;
   _image_filename_temp = false;
   _install_label_changed = false;
   _install_progress = 0.0;
 
-  INIT_LOCK(_install_lock);
-
-  start_thread();
+  start_subprocess();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -68,14 +73,13 @@ P3DX11SplashWindow(P3DInstance *inst) :
 ////////////////////////////////////////////////////////////////////
 P3DX11SplashWindow::
 ~P3DX11SplashWindow() {
-  stop_thread();
-
-  DESTROY_LOCK(_install_lock);
+  stop_subprocess();
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DX11SplashWindow::set_image_filename
 //       Access: Public, Virtual
+//  Description: Specifies the name of a JPEG image file that is
 //               displayed in the center of the splash window.  If
 //               image_filename_temp is true, the file is immediately
 //               deleted after it has been read.
@@ -83,21 +87,21 @@ P3DX11SplashWindow::
 void P3DX11SplashWindow::
 set_image_filename(const string &image_filename,
                    bool image_filename_temp) {
-  ACQUIRE_LOCK(_install_lock);
-  if (_image_filename != image_filename) {
-    _image_filename = image_filename;
-    _image_filename_temp = image_filename_temp;
-    _image_filename_changed = true;
+  if (_subprocess_pid == -1) {
+    return;
   }
-  RELEASE_LOCK(_install_lock);
 
-  MILLISLEEP();
+  TiXmlDocument doc;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "set_image_filename");
+  xcommand->SetAttribute("image_filename", image_filename);
+  xcommand->SetAttribute("image_filename_temp", (int)image_filename_temp);
+  doc.LinkEndChild(decl);
+  doc.LinkEndChild(xcommand);
+  write_xml(_pipe_write, &doc, nout);
 
-  if (!_thread_running && _thread_continue) {
-    // The user must have closed the window.  Let's shut down the
-    // instance, too.
-    _inst->request_stop();
-  }
+  check_stopped();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -108,20 +112,20 @@ set_image_filename(const string &image_filename,
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 set_install_label(const string &install_label) {
-  ACQUIRE_LOCK(_install_lock);
-  if (_install_label != install_label) {
-    _install_label = install_label;
-    _install_label_changed = true;
+  if (_subprocess_pid == -1) {
+    return;
   }
-  RELEASE_LOCK(_install_lock);
 
-  MILLISLEEP();
+  TiXmlDocument doc;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "set_install_label");
+  xcommand->SetAttribute("install_label", install_label);
+  doc.LinkEndChild(decl);
+  doc.LinkEndChild(xcommand);
+  write_xml(_pipe_write, &doc, nout);
 
-  if (!_thread_running && _thread_continue) {
-    // The user must have closed the window.  Let's shut down the
-    // instance, too.
-    _inst->request_stop();
-  }
+  check_stopped();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -131,56 +135,194 @@ set_install_label(const string &install_label) {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 set_install_progress(double install_progress) {
-  _got_install = true;
+  if (_subprocess_pid == -1) {
+    return;
+  }
 
-  ACQUIRE_LOCK(_install_lock);
-  _install_progress = install_progress;
-  RELEASE_LOCK(_install_lock);
+  TiXmlDocument doc;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "set_install_progress");
+  xcommand->SetDoubleAttribute("install_progress", install_progress);
+  doc.LinkEndChild(decl);
+  doc.LinkEndChild(xcommand);
+  write_xml(_pipe_write, &doc, nout);
 
-  MILLISLEEP();
+  check_stopped();
+}
 
-  if (!_thread_running && _thread_continue) {
-    // The user must have closed the window.  Let's shut down the
-    // instance, too.
-    _inst->request_stop();
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::start_subprocess
+//       Access: Private
+//  Description: Spawns the subprocess that runs the window.  We have
+//               to use a subprocess instead of just a sub-thread, to
+//               protect X11 against mutual access.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+start_subprocess() {
+  assert(_subprocess_pid == -1);
+
+  // Create a directional pipe to send messages to the sub-process.
+  // (We don't need a receive pipe.)
+  int to_fd[2];
+  if (pipe(to_fd) < 0) {
+    perror("failed to create pipe");
+  }
+
+  // Fork and exec.
+  pid_t child = fork();
+  if (child < 0) {
+    close(to_fd[0]);
+    close(to_fd[1]);
+    perror("fork");
+    return;
+  }
+
+  if (child == 0) {
+    // Here we are in the child process.
+
+    // Open the read end of the pipe, and close the write end.
+    _pipe_read.open_read(to_fd[0]);
+    close(to_fd[1]);
+
+    subprocess_run();
+    _exit(0);
+  }
+
+  // In the parent process.
+  _subprocess_pid = child;
+  _pipe_write.open_write(to_fd[1]);
+  close(to_fd[0]);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::stop_subprocess
+//       Access: Private
+//  Description: Terminates the subprocess.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+stop_subprocess() {
+  if (_subprocess_pid == -1) {
+    // Already stopped.
+    return;
+  }
+
+  // Ask the subprocess to stop.
+  TiXmlDocument doc;
+  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "exit");
+  doc.LinkEndChild(decl);
+  doc.LinkEndChild(xcommand);
+  write_xml(_pipe_write, &doc, nout);
+
+  // Also close the pipe, to help underscore the point.
+  _pipe_write.close();
+
+  static const int max_wait_ms = 2000;
+  
+  // Wait for a certain amount of time for the process to stop by
+  // itself.
+  struct timeval start;
+  gettimeofday(&start, NULL);
+  int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
+  
+  int status;
+  pid_t result = waitpid(_subprocess_pid, &status, WNOHANG);
+  while (result != _subprocess_pid) {
+    if (result == -1) {
+      perror("waitpid");
+      break;
+    }
+    
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
+    int elapsed = now_ms - start_ms;
+    
+    if (elapsed > max_wait_ms) {
+      // Tired of waiting.  Kill the process.
+      nout << "Force-killing splash window process, pid " << _subprocess_pid 
+           << "\n" << flush;
+      kill(_subprocess_pid, SIGKILL);
+      start_ms = now_ms;
+    }
+    
+    // Yield the timeslice and wait some more.
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 1;
+    select(0, NULL, NULL, NULL, &tv);
+    result = waitpid(_subprocess_pid, &status, WNOHANG);
+  }
+
+  nout << "Splash window process has successfully stopped.\n";
+  if (WIFEXITED(status)) {
+    nout << "  exited normally, status = "
+         << WEXITSTATUS(status) << "\n";
+  } else if (WIFSIGNALED(status)) {
+    nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+         << WCOREDUMP(status) << "\n";
+  } else if (WIFSTOPPED(status)) {
+    nout << "  stopped by " << WSTOPSIG(status) << "\n";
   }
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::start_thread
+//     Function: P3DX11SplashWindow::check_stopped
 //       Access: Private
-//  Description: Spawns the sub-thread.
+//  Description: Shuts down the instance if the window is closed
+//               prematurely (for instance, due to user action).
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
-start_thread() {
-  _thread_continue = true;
-  INIT_THREAD(_thread);
-  SPAWN_THREAD(_thread, thread_run, this);
-  if (_thread != 0) {
-    _thread_running = true;
+check_stopped() {
+  if (_subprocess_pid == -1) {
+    // Already stopped.
+    return;
   }
+
+  int status;
+  int result = waitpid(_subprocess_pid, &status, WNOHANG);
+  if (result == 0) {
+    // Process is still running.
+    return;
+  }
+
+  if (result == -1) {
+    // Error in waitpid.
+    perror("waitpid");
+    return;
+  }
+
+  // Process has stopped.
+  assert(result == _subprocess_pid);
+
+  nout << "Splash window process has stopped unexpectedly.\n";
+  if (WIFEXITED(status)) {
+    nout << "  exited normally, status = "
+         << WEXITSTATUS(status) << "\n";
+  } else if (WIFSIGNALED(status)) {
+    nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+         << WCOREDUMP(status) << "\n";
+  } else if (WIFSTOPPED(status)) {
+    nout << "  stopped by " << WSTOPSIG(status) << "\n";
+  }
+
+  _subprocess_pid = -1;
+  _inst->request_stop();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::stop_thread
+//     Function: P3DX11SplashWindow::subprocess_run
 //       Access: Private
-//  Description: Terminates and joins the sub-thread.
+//  Description: The subprocess's main run method.
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
-stop_thread() {
-  _thread_continue = false;
-  MILLISLEEP();
+subprocess_run() {
+  // Since we're now isolated in a subprocess, we can safely make all
+  // the X calls we like, and run independently of the browser
+  // process.
 
-  JOIN_THREAD(_thread);
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::thread_run
-//       Access: Private
-//  Description: The sub-thread's main run method.
-////////////////////////////////////////////////////////////////////
-void P3DX11SplashWindow::
-thread_run() {
   make_window();
   setup_gc();
 
@@ -190,8 +332,10 @@ thread_run() {
   bool override = true, have_event = false;
   string prev_label;
   double prev_progress;
-  
-  while (_thread_continue) {
+
+  _subprocess_continue = true;
+  while (_subprocess_continue) {
+    // First, scan for X events.
     have_event = XCheckTypedWindowEvent(_display, _window, Expose, &event)
               || XCheckTypedWindowEvent(_display, _window, GraphicsExpose, &event);
     
@@ -205,7 +349,6 @@ thread_run() {
       _height = event.xconfigure.height;
     }
     
-    ACQUIRE_LOCK(_install_lock);
     double install_progress = _install_progress;
     string install_label = _install_label;
     
@@ -213,8 +356,6 @@ thread_run() {
       update_image_filename(_image_filename, _image_filename_temp);
     }
     _image_filename_changed = false;
-    
-    RELEASE_LOCK(_install_lock);
     
     if (override || have_event || install_label != prev_label) {
       redraw(install_label);
@@ -228,11 +369,82 @@ thread_run() {
     }
     prev_label = install_label;
     prev_progress = install_progress;
-    MILLISLEEP();
+
+    // Now check for input from the parent.
+    int read_fd = _pipe_read.get_handle();
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(read_fd, &fds);
+
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 1;  // Sleep a bit to yield the timeslice if there's
+                     // nothing new.
+
+    int result = select(read_fd + 1, &fds, NULL, NULL, &tv);
+    if (result == 1) {
+      // There is some noise on the pipe, so read it.
+      receive_command();
+    } else if (result == -1) {
+      // Error in select.
+      perror("select");
+    }
   }
 
   close_window();
-  _thread_running = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::receive_command
+//       Access: Private
+//  Description: Receives a command from the parent.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+receive_command() {
+  TiXmlDocument *doc = read_xml(_pipe_read, cerr);
+  if (doc == NULL) {
+    // Pipe closed or something.
+    _subprocess_continue = false;
+    return;
+  }
+
+  TiXmlElement *xcommand = doc->FirstChildElement("command");
+  if (xcommand != NULL) {
+    const char *cmd = xcommand->Attribute("cmd");
+    if (cmd != NULL) {
+      if (strcmp(cmd, "exit") == 0) {
+        _subprocess_continue = false;
+
+      } else if (strcmp(cmd, "set_image_filename") == 0) {
+        const char *str = xcommand->Attribute("image_filename");
+        int image_filename_temp = 0;
+        xcommand->Attribute("image_filename_temp", &image_filename_temp);
+        if (str != NULL) {
+          if (_image_filename != string(str)) {
+            _image_filename = str;
+            _image_filename_temp = image_filename_temp;
+            _image_filename_changed = true;
+          }
+        }
+
+      } else if (strcmp(cmd, "set_install_label") == 0) {
+        const char *str = xcommand->Attribute("install_label");
+        if (str != NULL) {
+          if (_install_label != string(str)) {
+            _install_label = str;
+            _install_label_changed = true;
+          }
+        }
+
+      } else if (strcmp(cmd, "set_install_progress") == 0) {
+        double install_progress = 0.0;
+        xcommand->Attribute("install_progress", &install_progress);
+
+        _got_install = true;
+        _install_progress = install_progress;
+      }
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -348,11 +560,9 @@ setup_gc() {
     return;
   }
 
-  ACQUIRE_LOCK(_install_lock);
   string install_label = _install_label;
   double install_progress = _install_progress;
   _install_label_changed = false;
-  RELEASE_LOCK(_install_lock);
   
   XFontStruct* fs = XLoadQueryFont(_display, "6x13");
   XGCValues gcval;
@@ -455,9 +665,6 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
   // Now load the image.
   _image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
                 ZPixmap, 0, (char *) new_data, _image_width, _image_height, 32, 0);
-
-  nout << "Loaded splash file image: " << image_filename << "\n"
-       << flush;
 }
 
 #endif  // HAVE_X11

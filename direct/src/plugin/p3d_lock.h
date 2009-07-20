@@ -59,7 +59,7 @@ public:
 // SPAWN_THREAD call.  The wrapper will in turn call the method
 // function you provide.
 #define THREAD_CALLBACK_DECLARATION(class, callback_function) \
-  static DWORD WINAPI class::                                        \
+  static DWORD WINAPI                           \
   win_ ## callback_function(LPVOID data) {        \
     ((class *)data)->callback_function();       \
     return 0;                                   \

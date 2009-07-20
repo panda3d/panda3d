@@ -60,6 +60,7 @@ P3DWinSplashWindow::
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DWinSplashWindow::set_image_filename
 //       Access: Public, Virtual
+//  Description: Specifies the name of a JPEG image file that is
 //               displayed in the center of the splash window.  If
 //               image_filename_temp is true, the file is immediately
 //               deleted after it has been read.
