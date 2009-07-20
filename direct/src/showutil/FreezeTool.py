@@ -38,7 +38,6 @@ Python = None
 
 # The directory that includes Python.h.
 PythonIPath = get_python_inc()
-PythonLPath = get_python_lib()
 PythonVersion = get_python_version()
 
 # The root directory of Microsoft Visual Studio (if relevant)
@@ -57,14 +56,13 @@ elif sys.platform == 'darwin':
     # OSX
     compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 -I%(pythonIPath)s %(filename)s"
     linkExe = "gcc -o %(basename)s %(basename)s.o -framework Python"
-    #linkExe = "gcc -o %(basename)s %(basename)s.o -lpython%(pythonVersion)s -L%(pythonLPath)s"
     linkDll = "gcc -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o"
 
 else:
     # Linux
     compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 %(filename)s -I %(pythonIPath)s"
-    linkExe = "gcc -o %(basename)s %(basename)s.o -lpython2.6 -L %(pythonLPath)s"
-    linkDll = "gcc -shared -o %(basename)s.so %(basename)s.o -lpython%(pythonVersion)s -L %(pythonLPath)s"
+    linkExe = "gcc -o %(basename)s %(basename)s.o -lpython%(pythonVersion)s"
+    linkDll = "gcc -shared -o %(basename)s.so %(basename)s.o -lpython%(pythonVersion)s"
 
 # The code from frozenmain.c in the Python source repository.
 frozenMainCode = """
@@ -431,6 +429,8 @@ class Freezer:
         directories within a particular directory.
         """
 
+        moduleName = moduleName.replace("/", ".").replace("direct.src", "direct")
+
         if implicit:
             token = self.MTAuto
         else:
@@ -476,6 +476,7 @@ class Freezer:
             self.modules[moduleName] = token
 
     def setMain(self, moduleName):
+        moduleName = moduleName.replace("/", ".").replace("direct.src", "direct")
         self.addModule(moduleName)
         self.mainModule = moduleName
         self.compileToExe = True
@@ -718,13 +719,15 @@ class Freezer:
                             # Add a special entry for __main__.
                             moduleList.append(self.makeModuleListEntry(mangledName, code, '__main__', module))
 
+        filename = basename + self.sourceExtension
+
         if self.compileToExe:
             code = self.frozenMainCode
             if self.platform == 'win32':
                 code += self.frozenDllMainCode
             initCode = self.mainInitCode % {
                 'frozenMainCode' : code,
-                'programName' : basename,
+                'programName' : os.path.basename(basename),
                 }
             if self.platform == 'win32':
                 initCode += self.frozenExtensions
@@ -732,7 +735,7 @@ class Freezer:
             else:
                 target = basename
 
-            doCompile = self.compileExe
+            compileFunc = self.compileExe
             
         else:
             dllexport = ''
@@ -741,13 +744,13 @@ class Freezer:
                 target = basename + '.pyd'
             else:
                 target = basename + '.so'
-                
+            
             initCode = dllInitCode % {
                 'dllexport' : dllexport,
-                'moduleName' : basename.split('.')[0],
+                'moduleName' : os.path.basename(basename),
                 'newcount' : len(moduleList),
                 }
-            doCompile = self.compileDll
+            compileFunc = self.compileDll
 
         text = programFile % {
             'moduleDefs' : '\n'.join(moduleDefs),
@@ -755,15 +758,18 @@ class Freezer:
             'initCode' : initCode,
             }
 
-        filename = basename + self.sourceExtension
         file = open(filename, 'w')
         file.write(text)
         file.close()
 
-        doCompile(filename, basename)
-        os.unlink(filename)
-        os.unlink(basename + self.objectExtension)
-
+        try:
+            compileFunc(filename, basename)
+        finally:
+            if (os.path.exists(filename)):
+                os.unlink(filename)
+            if (os.path.exists(basename + self.objectExtension)):
+                os.unlink(basename + self.objectExtension)
+        
         return target
 
     def compileExe(self, filename, basename):
@@ -771,7 +777,6 @@ class Freezer:
             'python' : Python,
             'msvs' : MSVS,
             'pythonIPath' : PythonIPath,
-            'pythonLPath' : PythonLPath,
             'pythonVersion' : PythonVersion,
             'filename' : filename,
             'basename' : basename,
@@ -784,7 +789,6 @@ class Freezer:
             'python' : Python,
             'msvs' : MSVS,
             'pythonIPath' : PythonIPath,
-            'pythonLPath' : PythonLPath,
             'pythonVersion' : PythonVersion,
             'filename' : filename,
             'basename' : basename,
@@ -798,7 +802,6 @@ class Freezer:
             'python' : Python,
             'msvs' : MSVS,
             'pythonIPath' : PythonIPath,
-            'pythonLPath' : PythonLPath,
             'pythonVersion' : PythonVersion,
             'filename' : filename,
             'basename' : basename,
@@ -811,7 +814,6 @@ class Freezer:
             'python' : Python,
             'msvs' : MSVS,
             'pythonIPath' : PythonIPath,
-            'pythonLPath' : PythonLPath,
             'pythonVersion' : PythonVersion,
             'filename' : filename,
             'basename' : basename,

@@ -52,60 +52,62 @@ def usage(code, msg = ''):
     print >> sys.stderr, msg
     sys.exit(code)
 
-if __name__ == '__main__':
-    freezer = FreezeTool.Freezer()
+# We're not protecting the next part under a __name__ == __main__
+# check, just so we can import this file directly in ppython.cxx.
 
-    basename = None
-    
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], 'o:i:x:p:h')
-    except getopt.error, msg:
-        usage(1, msg)
+freezer = FreezeTool.Freezer()
 
-    for opt, arg in opts:
-        if opt == '-o':
-            basename = arg
-        elif opt == '-i':
-            for module in arg.split(','):
-                freezer.addModule(module)
-        elif opt == '-x':
-            for module in arg.split(','):
-                freezer.excludeModule(module)
-        elif opt == '-p':
-            for module in arg.split(','):
-                freezer.handleCustomPath(module)
-        elif opt == '-h':
-            usage(0)
+basename = None
 
-    if not args:
+try:
+    opts, args = getopt.getopt(sys.argv[1:], 'o:i:x:p:h')
+except getopt.error, msg:
+    usage(1, msg)
+
+for opt, arg in opts:
+    if opt == '-o':
+        basename = arg
+    elif opt == '-i':
+        for module in arg.split(','):
+            freezer.addModule(module)
+    elif opt == '-x':
+        for module in arg.split(','):
+            freezer.excludeModule(module)
+    elif opt == '-p':
+        for module in arg.split(','):
+            freezer.handleCustomPath(module)
+    elif opt == '-h':
         usage(0)
 
-    if not basename:
-        usage(1, 'You did not specify an output file.')
+if not args:
+    usage(0)
 
-    if len(args) != 1:
-        usage(1, 'Only one main file may be specified.')
+if not basename:
+    usage(1, 'You did not specify an output file.')
 
-    outputType = 'exe'
-    bl = basename.lower()
-    if bl.endswith('.mf'):
-        outputType = 'mf'
-    elif bl.endswith('.dll') or bl.endswith('.pyd') or bl.endswith('.so'):
-        basename = os.path.splitext(basename)[0]
-        outputType = 'dll'
+if len(args) != 1:
+    usage(1, 'Only one main file may be specified.')
 
-    startfile = args[0]
-    if startfile.endswith('.py') or startfile.endswith('.pyw') or \
-       startfile.endswith('.pyc') or startfile.endswith('.pyo'):
-        startfile = os.path.splitext(startfile)[0]
+outputType = 'exe'
+bl = basename.lower()
+if bl.endswith('.mf'):
+    outputType = 'mf'
+elif bl.endswith('.dll') or bl.endswith('.pyd') or bl.endswith('.so'):
+    basename = os.path.splitext(basename)[0]
+    outputType = 'dll'
 
-    freezer.addModule(startfile)
-    if outputType != 'dll':
-        freezer.setMain(startfile)
-    freezer.done()
+startfile = args[0]
+if startfile.endswith('.py') or startfile.endswith('.pyw') or \
+   startfile.endswith('.pyc') or startfile.endswith('.pyo'):
+    startfile = os.path.splitext(startfile)[0]
 
-    if outputType == 'mf':
-        freezer.writeMultifile(basename)
-    else:
-        freezer.generateCode(basename)
+freezer.addModule(startfile)
+if outputType != 'dll':
+    freezer.setMain(startfile)
+freezer.done()
+
+if outputType == 'mf':
+    freezer.writeMultifile(basename)
+else:
+    freezer.generateCode(basename)
 
