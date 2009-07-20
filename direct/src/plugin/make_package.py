@@ -222,9 +222,8 @@ def makePackage(args):
     pm.build()
         
 
-if __name__ == '__main__':
-    try:
-        makePackage(sys.argv[1:])
-    except ArgumentError, e:
-        print e.args[0]
-        sys.exit(1)
+try:
+    makePackage(sys.argv[1:])
+except ArgumentError, e:
+    print e.args[0]
+    sys.exit(1)

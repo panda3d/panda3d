@@ -117,9 +117,8 @@ def makeContents(args):
     cm.build()
         
 
-if __name__ == '__main__':
-    try:
-        makeContents(sys.argv[1:])
-    except ArgumentError, e:
-        print e.args[0]
-        sys.exit(1)
+try:
+    makeContents(sys.argv[1:])
+except ArgumentError, e:
+    print e.args[0]
+    sys.exit(1)
