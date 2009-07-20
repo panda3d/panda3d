@@ -319,6 +319,11 @@ def CxxGetIncludes(path):
 ########################################################################
 
 def SaveDependencyCache():
+    try:
+        if (os.path.exists(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"))):
+            os.rename(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache-backup"),
+                      os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"))
+    except: pass
     try: icache = open(os.path.join(OUTPUTDIR, "tmp", "makepanda-dcache"),'wb')
     except: icache = 0
     if (icache!=0):
