@@ -928,7 +928,8 @@ def SdkLocateMSPlatform():
     # Doesn't work with the Express versions, so we're checking for the "atlmfc" dir, which is not in the Express 
     if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\atlmfc"))):
         platsdk = os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\PlatformSDK")
-	#This may not be the best idea but it does give a warning
+    
+    # This may not be the best idea but it does give a warning
     if (platsdk == 0):
         if( os.environ.has_key("WindowsSdkDir") ):
             WARNINGS.append("Windows SDK directory not found in registry, found in Environment variables instead")

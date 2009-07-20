@@ -2513,48 +2513,6 @@ TargetAdd('libpandaegg.dll', input=COMMON_PANDA_LIBS)
 TargetAdd('libpandaegg.dll', opts=['ADVAPI'])
 
 #
-# DIRECTORY: panda/metalibs/panda/
-#
-
-OPTS=['DIR:panda/metalibs/panda', 'BUILDING:PANDA',  'FFTW', 'PNG', 'JPEG', 'TIFF', 'ZLIB', 'OPENSSL', 'ADVAPI', 'WINSOCK2', 'WINUSER', 'WINMM']
-TargetAdd('libpandastripped.dll', input='pipeline_composite.obj')
-TargetAdd('libpandastripped.dll', input='pipeline_contextSwitch.obj')
-TargetAdd('libpandastripped.dll', input='event_composite.obj')
-TargetAdd('libpandastripped.dll', input='net_composite.obj')
-TargetAdd('libpandastripped.dll', input='nativenet_composite.obj')
-TargetAdd('libpandastripped.dll', input='pstatclient_composite.obj')
-TargetAdd('libpandastripped.dll', input='linmath_composite.obj')
-TargetAdd('libpandastripped.dll', input='mathutil_composite.obj')
-TargetAdd('libpandastripped.dll', input='putil_composite1.obj')
-TargetAdd('libpandastripped.dll', input='putil_composite2.obj')
-TargetAdd('libpandastripped.dll', input='pnmimagetypes_composite.obj')
-TargetAdd('libpandastripped.dll', input='pnmimage_composite.obj')
-TargetAdd('libpandastripped.dll', input='pandabase_pandabase.obj')
-TargetAdd('libpandastripped.dll', input='libpandaexpress.dll')
-TargetAdd('libpandastripped.dll', input='libp3dtoolconfig.dll')
-TargetAdd('libpandastripped.dll', input='libp3dtool.dll')
-TargetAdd('libpandastripped.dll', input='dtool_have_vrpn.dat')
-TargetAdd('libpandastripped.dll', input='dtool_have_freetype.dat')
-TargetAdd('libpandastripped.dll', opts=OPTS)
-
-#
-# DIRECTORY: panda/metalibs/pandaegg/
-#
-
-OPTS=['DIR:panda/metalibs/pandaegg', 'DIR:panda/src/egg', 'BUILDING:PANDAEGG']
-TargetAdd('pandaegg_pandaeggnopg.obj', opts=OPTS, input='pandaeggnopg.cxx')
-TargetAdd('libpandaeggstripped.dll', input='pandaegg_pandaeggnopg.obj')
-TargetAdd('libpandaeggstripped.dll', input='egg_composite1.obj')
-TargetAdd('libpandaeggstripped.dll', input='egg_composite2.obj')
-TargetAdd('libpandaeggstripped.dll', input='egg_parser.obj')
-TargetAdd('libpandaeggstripped.dll', input='egg_lexer.obj')
-TargetAdd('libpandaeggstripped.dll', input='libpandastripped.dll')
-TargetAdd('libpandaeggstripped.dll', input='libpandaexpress.dll')
-TargetAdd('libpandaeggstripped.dll', input='libp3dtoolconfig.dll')
-TargetAdd('libpandaeggstripped.dll', input='libp3dtool.dll')
-TargetAdd('libpandaeggstripped.dll', opts=['ADVAPI'])
-
-#
 # DIRECTORY: panda/src/mesadisplay/
 #
 
@@ -3432,8 +3390,8 @@ for VER in MAXVERSIONS:
     TargetAdd('maxeggimport'+VNUM+'.dle', input='maxegg'+VNUM+'_loader.obj')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='maxprogs'+VNUM+'_maxeggimport.obj')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='maxImportRes.obj')
-    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandaeggstripped.dll')
-    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandastripped.dll')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandaegg.dll')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='libpanda.dll')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandaexpress.dll')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='maxEggImport.def', ipath=OPTS)
     TargetAdd('maxeggimport'+VNUM+'.dle', input=COMMON_DTOOL_LIBS)
