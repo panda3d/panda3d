@@ -26,6 +26,7 @@
 #include "lightReMutexHolder.h"
 
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/time.h>
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
