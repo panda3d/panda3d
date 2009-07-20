@@ -12,7 +12,7 @@
 import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform
 
 SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx",".mm"]
-SUFFIX_DLL=[".dll",".dlo",".dle",".dli",".dlm",".mll",".exe"]
+SUFFIX_DLL=[".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd"]
 SUFFIX_LIB=[".lib",".ilb"]
 STARTTIME=time.time()
 MAINTHREAD=threading.currentThread()
@@ -82,7 +82,7 @@ def PrettyTime(t):
     if (minutes): return str(minutes)+" min "+str(seconds)+" sec"
     return str(seconds)+" sec"
 
-def exit(msg):
+def exit(msg = ""):
     if (threading.currentThread() == MAINTHREAD):
         SaveDependencyCache()
         # Move any files we've moved away back.
@@ -111,7 +111,9 @@ def oscmd(cmd, ignoreError = False):
     print cmd
     sys.stdout.flush()
     if sys.platform == "win32":
-        exe = cmd.split()[0]+".exe"
+        exe = cmd.split[0]
+        if not (len(exe) > 4 and exe[-4:] == ".exe"):
+            exe += ".exe"
         if os.path.isfile(exe)==0:
             for i in os.environ["PATH"].split(";"):
                 if os.path.isfile(os.path.join(i, exe)):
@@ -251,6 +253,7 @@ def NeedsBuild(files,others):
     dates = []
     for file in files:
         dates.append(GetTimestamp(file))
+        if (not os.path.exists(file)): return 1
     for file in others:
         dates.append(GetTimestamp(file))
     key = tuple(files)
@@ -1142,7 +1145,8 @@ def GetOrigExt(x):
 
 def CalcLocation(fn, ipath):
     if (fn.count("/")): return fn
-    
+
+    if (fn == "PandaModules.py"): return "pandac/" + fn
     if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".I")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".h")):   return CxxFindSource(fn, ipath)
@@ -1156,6 +1160,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".res")): return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".dll")): return OUTPUTDIR+"/bin/"+fn
+        if (fn.endswith(".pyd")): return OUTPUTDIR+"/bin/"+fn
         if (fn.endswith(".dlo")): return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".dli")): return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".dle")): return OUTPUTDIR+"/plugins/"+fn
@@ -1168,6 +1173,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".mm")):  return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")): return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
+        if (fn.endswith(".pyd")): return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
         if (fn.endswith(".exe")): return OUTPUTDIR+"/bin/"+fn[:-4]
         if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
         if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
@@ -1176,6 +1182,7 @@ def CalcLocation(fn, ipath):
     else:
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")): return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
+        if (fn.endswith(".pyd")): return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
         if (fn.endswith(".exe")): return OUTPUTDIR+"/bin/"+fn[:-4]
         if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
         if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"

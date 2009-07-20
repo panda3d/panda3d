@@ -32,7 +32,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     oscmd("mkdir -p "+destdir+PPATH)
     oscmd("mkdir -p "+destdir+"/etc/ld.so.conf.d")
     WriteFile(destdir+prefix+"/share/panda3d/direct/__init__.py", "")
-    oscmd("sed -e 's@model-cache-@# model-cache-@' -e 's@$THIS_PRC_DIR/[.][.]@"+prefix+"/share/panda3d@' < "+outputdir+"/etc/Config.prc > "+destdir+"/etc/Config.prc")
+    oscmd("cp "+outputdir+"/etc/Config.prc      "+destdir+"/etc/Config.prc")
     oscmd("cp "+outputdir+"/etc/Confauto.prc    "+destdir+"/etc/Confauto.prc")
     oscmd("cp -R "+outputdir+"/include          "+destdir+prefix+"/include/panda3d")
     oscmd("cp -R direct/src/*                   "+destdir+prefix+"/share/panda3d/direct")

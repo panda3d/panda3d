@@ -142,9 +142,9 @@ parseopts(sys.argv[1:])
 ##
 ########################################################################
 
-if (os.environ.has_key("CFLAGS")):
+if ("CFLAGS" in os.environ):
     CFLAGS=os.environ["CFLAGS"]
-if (os.environ.has_key("RPM_OPT_FLAGS")):
+if ("RPM_OPT_FLAGS" in os.environ):
     CFLAGS+=os.environ["RPM_OPT_FLAGS"]
 
 ########################################################################
@@ -206,6 +206,13 @@ else:
     else:
         THIRDPARTYLIBS="thirdparty/linux-libs-a/"
     VC90CRTVERSION = 0
+
+builtdir = os.path.join(os.path.abspath(GetOutputDir()))
+sys.path += [builtdir, os.path.join(builtdir, "lib")]
+if ("PYTHONPATH" in os.environ):
+    os.environ["PYTHONPATH"] = "%s:%s:%s" % (builtdir, os.path.join(builtdir, "lib"), os.environ["PYTHONPATH"])
+else:
+    os.environ["PYTHONPATH"] = builtdir + ":" + os.path.join(builtdir, "lib")
 
 ##########################################################################################
 #
@@ -801,6 +808,44 @@ def CompileRC(target, src, opts):
 
 ##########################################################################################
 #
+# RunGenPyCode
+#
+##########################################################################################
+
+def RunGenPyCode(target, inputs, opts):
+    if (PkgSkip("PYTHON") != 0): return
+    
+    cmdstr = os.path.join(GetOutputDir(), "bin", "genpycode")
+    if (GENMAN): cmdstr += " -d"
+    cmdstr += " -r"
+    for i in inputs:
+        if (GetOrigExt(i)==".dll"):
+            cmdstr += " " + os.path.splitext(i)[0].replace(GetOutputDir()+"/lib/","")
+    
+    oscmd(cmdstr)
+
+##########################################################################################
+#
+# FreezePy
+#
+##########################################################################################
+
+def FreezePy(target, src, opts):
+    # Make sure this function isn't called before genpycode is run.
+    cmdstr = os.path.join(GetOutputDir(), "bin", "pfreeze")
+    cmdstr += " -o " + target + " " + src
+
+    if ("LINK_PYTHON_STATIC" in opts):
+        os.environ["LINK_PYTHON_STATIC"] = "1"
+    oscmd(cmdstr)
+    if ("LINK_PYTHON_STATIC" in os.environ):
+        del os.environ["LINK_PYTHON_STATIC"]
+    
+    if (not os.path.exists(target)):
+        exit("")
+
+##########################################################################################
+#
 # CompileAnything
 #
 ##########################################################################################
@@ -812,7 +857,11 @@ def CompileAnything(target, inputs, opts):
         exit("No input files for target "+target)
     infile = inputs[0]
     origsuffix = GetOrigExt(target)
-    if SUFFIX_LIB.count(origsuffix):
+    if (target == "pandac/PandaModules.py"):
+        return RunGenPyCode(target, inputs, opts)
+    elif (infile.endswith(".py")):
+        return FreezePy(target, infile, opts)
+    elif SUFFIX_LIB.count(origsuffix):
         return CompileLib(target, inputs, opts)
     elif SUFFIX_DLL.count(origsuffix):
         return CompileLink(target, inputs, opts)
@@ -1000,7 +1049,7 @@ def WriteConfigSettings():
             prc_parameters[key] = unix
 
     for x in PkgListGet():
-        if (dtool_config.has_key("HAVE_"+x)):
+        if ("HAVE_"+x in dtool_config):
             if (PkgSkip(x)==0):
                 dtool_config["HAVE_"+x] = '1'
             else:
@@ -2704,17 +2753,23 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('genpycode.exe', input='genpycode.obj')
   TargetAdd('genpycode.exe', opts=['WINUSER'])
 
-  TargetAdd('packpanda.obj', opts=OPTS+['BUILDING:PACKPANDA'], input='ppython.cxx')
-  TargetAdd('packpanda.exe', input='packpanda.obj')
-  TargetAdd('packpanda.exe', opts=['WINUSER'])
-
-  TargetAdd('eggcacher.obj', opts=OPTS+['BUILDING:EGGCACHER'], input='ppython.cxx')
-  TargetAdd('eggcacher.exe', input='eggcacher.obj')
-  TargetAdd('eggcacher.exe', opts=['WINUSER'])
+  TargetAdd('pfreeze.obj', opts=OPTS+['BUILDING:PFREEZE'], input='ppython.cxx')
+  TargetAdd('pfreeze.exe', input='pfreeze.obj')
+  TargetAdd('pfreeze.exe', opts=['WINUSER'])
 
   OPTS=['DIR:direct/src/directbase', 'BUILDING:DIRECT']
-
   TargetAdd('directbase_directbase.obj', opts=OPTS, input='directbase.cxx')
+
+#
+# Freeze whatever we need to freeze.
+#
+
+if (PkgSkip("PYTHON")==0):
+  if (sys.platform == "darwin" or sys.platform.startswith("win") or ("PYTHONVERSION" in SDK and SDK["PYTHONVERSION"] == "python2.6")):
+    TargetAdd('runp3d.exe', input='direct/src/showutil/runp3d.py')
+    TargetAdd('packp3d.exe', input='direct/src/showutil/packp3d.py')
+  TargetAdd('packpanda.exe', input='direct/src/directscripts/packpanda.py')
+  TargetAdd('eggcacher.exe', input='direct/src/directscripts/eggcacher.py')
 
 #
 # DIRECTORY: direct/src/dcparser/
@@ -3679,6 +3734,21 @@ for VER in MAYAVERSIONS:
     TargetAdd('mayacopy'+VNUM+'.exe', opts=['ADVAPI'])
 
 #
+# Run genpycode
+#
+
+if (PkgSkip("PYTHON")==0):
+  TargetAdd('PandaModules.py', input='libpandaexpress.dll')
+  TargetAdd('PandaModules.py', input='libpanda.dll')
+  TargetAdd('PandaModules.py', input='libpandaphysics.dll')
+  TargetAdd('PandaModules.py', input='libpandafx.dll')
+  TargetAdd('PandaModules.py', input='libp3direct.dll')
+  TargetAdd('PandaModules.py', input='libpandaskel.dll')
+  TargetAdd('PandaModules.py', input='libpandaegg.dll')
+  if (PkgSkip("ODE")==0):
+    TargetAdd('PandaModules.py', input='libpandaode.dll')
+
+#
 # Generate the models directory and samples directory
 #
 
@@ -3709,7 +3779,6 @@ if (PkgSkip("PANDATOOL")==0):
     CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgb")
     CopyAllFiles(GetOutputDir()+"/models/maps/",       "dmodels/src/maps/",      ".rgba")
 
-
 ##########################################################################################
 #
 # Dependency-Based Distributed Build System.
@@ -3739,29 +3808,29 @@ def BuildWorker(taskqueue, donequeue):
 def AllSourcesReady(task, pending):
     sources = task[3]
     for x in sources:
-        if (pending.has_key(x)):
+        if (x in pending):
             return 0
     altsources = task[4]
     for x in altsources:
-        if (pending.has_key(x)):
+        if (x in pending):
             return 0
     return 1
 
 def ParallelMake(tasklist):
-    # create the communication queues.
+    # Create the communication queues.
     donequeue=Queue.Queue()
     taskqueue=Queue.Queue()
-    # build up a table listing all the pending targets
+    # Build up a table listing all the pending targets
     pending = {}
     for task in tasklist:
         for target in task[2]:
             pending[target] = 1
-    # create the workers
+    # Create the workers
     for slave in range(THREADCOUNT):
         th = threading.Thread(target=BuildWorker, args=[taskqueue,donequeue])
         th.setDaemon(1)
         th.start()
-    # feed tasks to the workers.
+    # Feed tasks to the workers.
     tasksqueued = 0
     while (1):
         if (tasksqueued < THREADCOUNT*2):
@@ -3787,10 +3856,10 @@ def ParallelMake(tasklist):
         JustBuilt(donetask[2], donetask[3])
         for target in donetask[2]:
             del pending[target]
-    # kill the workers.
+    # Kill the workers.
     for slave in range(THREADCOUNT):
         taskqueue.put(0)
-    # make sure there aren't any unsatisfied tasks
+    # Make sure there aren't any unsatisfied tasks
     if (len(tasklist)>0):
         exit("Dependency problem - task unsatisfied: "+str(tasklist[0][2]))
 
@@ -3807,26 +3876,11 @@ def RunDependencyQueue(tasklist):
     else:
         SequentialMake(tasklist)
 
-RunDependencyQueue(DEPENDENCYQUEUE)
-
-##########################################################################################
-#
-# Run genpycode
-#
-##########################################################################################
-
-if (PkgSkip("PYTHON")==0):
-    inputs = []
-    for x in GetDirectoryContents(GetOutputDir()+"/pandac/input", ["*.in"]):
-        inputs.append(GetOutputDir()+"/pandac/input/" + x)
-    if (NeedsBuild([GetOutputDir()+'/pandac/PandaModules.py'],inputs)):
-        cmdstr = GetOutputDir()+"/bin/genpycode"
-        if (GENMAN): cmdstr += " -d"
-        cmdstr += " -r libpandaexpress libpanda libpandaphysics libpandafx libp3direct libpandaskel libpandaegg"
-        if (PkgSkip("ODE")==0):
-            cmdstr += " libpandaode"
-        oscmd(cmdstr)
-        JustBuilt([GetOutputDir()+'/pandac/PandaModules.py'],inputs)
+try:
+    RunDependencyQueue(DEPENDENCYQUEUE)
+except:
+    SaveDependencyCache()
+    raise
 
 ##########################################################################################
 #
