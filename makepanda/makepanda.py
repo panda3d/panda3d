@@ -2777,17 +2777,6 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('directbase_directbase.obj', opts=OPTS, input='directbase.cxx')
 
 #
-# Freeze whatever we need to freeze.
-#
-
-if (PkgSkip("PYTHON")==0):
-  if (sys.platform == "darwin" or sys.platform.startswith("win") or ("PYTHONVERSION" in SDK and SDK["PYTHONVERSION"] == "python2.6")):
-    TargetAdd('runp3d.exe', input='direct/src/showutil/runp3d.py')
-    TargetAdd('packp3d.exe', input='direct/src/showutil/packp3d.py')
-  TargetAdd('packpanda.exe', input='direct/src/directscripts/packpanda.py')
-  TargetAdd('eggcacher.exe', input='direct/src/directscripts/eggcacher.py')
-
-#
 # DIRECTORY: direct/src/dcparser/
 #
 
@@ -3763,6 +3752,17 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('PandaModules.py', input='libpandaegg.dll')
   if (PkgSkip("ODE")==0):
     TargetAdd('PandaModules.py', input='libpandaode.dll')
+
+#
+# Freeze whatever we need to freeze.
+#
+
+if (PkgSkip("PYTHON")==0):
+  if (sys.platform == "darwin" or sys.platform.startswith("win") or ("PYTHONVERSION" in SDK and SDK["PYTHONVERSION"] == "python2.6")):
+    TargetAdd('runp3d.exe', input='direct/src/showutil/runp3d.py')
+    TargetAdd('packp3d.exe', input='direct/src/showutil/packp3d.py')
+  TargetAdd('packpanda.exe', input='direct/src/directscripts/packpanda.py')
+  TargetAdd('eggcacher.exe', input='direct/src/directscripts/eggcacher.py')
 
 #
 # Generate the models directory and samples directory

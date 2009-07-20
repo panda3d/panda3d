@@ -111,7 +111,7 @@ def oscmd(cmd, ignoreError = False):
     print cmd
     sys.stdout.flush()
     if sys.platform == "win32":
-        exe = cmd.split[0]
+        exe = cmd.split()[0]
         if not (len(exe) > 4 and exe[-4:] == ".exe"):
             exe += ".exe"
         if os.path.isfile(exe)==0:
@@ -1068,7 +1068,15 @@ def CheckLinkerLibraryPath():
         ldpath = ldpath + os.environ["LD_LIBRARY_PATH"].split(":")
     if (sys.platform == "darwin" and os.environ.has_key("DYLD_LIBRARY_PATH")):
         dyldpath = os.environ["DYLD_LIBRARY_PATH"].split(":")
-
+    
+    # Remove any potential current Panda installation lib dirs
+    for i in ldpath:
+        if i.startswith("/usr/lib/panda"): ldpath.remove(i)
+    for i in ldpath:
+        if i.startswith("/usr/local/panda"): ldpath.remove(i)
+    for i in dyldpath:
+        if i.startswith("/Applications/Panda3D"): dyldpath.remove(i)
+    
     # Add built/lib/ to (DY)LD_LIBRARY_PATH if it's not already there
     if (ldpath.count(builtlib)==0):
         if (os.environ.has_key("LD_LIBRARY_PATH")):
