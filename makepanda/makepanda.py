@@ -844,7 +844,7 @@ def RunGenPyCode(target, inputs, opts):
     cmdstr += " -r"
     for i in inputs:
         if (GetOrigExt(i)==".dll"):
-            cmdstr += " " + os.path.splitext(i)[0].replace(GetOutputDir()+"/lib/","")
+            cmdstr += " " + os.path.basename(os.path.splitext(i)[0].replace(GetOutputDir()+"/lib/",""))
     
     oscmd(cmdstr)
 
