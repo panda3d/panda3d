@@ -12,7 +12,7 @@
 #
 ########################################################################
 
-import sys,os,platform,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil
+import sys,os,platform,time,stat,string,re,getopt,fnmatch,threading,Queue,signal,shutil
 
 from makepandacore import *
 from installpanda import *
@@ -33,6 +33,7 @@ THIRDPARTYLIBS=0
 VC90CRTVERSION=""
 OPTIMIZE="3"
 INSTALLER=0
+RUNTIME=0
 GENMAN=0
 VERBOSE=1
 COMPRESSOR="zlib"
@@ -54,6 +55,24 @@ def keyboardInterruptHandler(x,y):
     exit("keyboard interrupt")
 
 signal.signal(signal.SIGINT, keyboardInterruptHandler)
+
+########################################################################
+##
+## Store version and platform for the runtime build.
+##
+########################################################################
+
+RUNTIME_VERSION = "dev"
+RUNTIME_PLATFORM = "other"
+if (sys.platform.startswith("win")):
+    RUNTIME_PLATFORM = sys.platform
+elif (sys.platform.startswith("linux")):
+    if (platform.architecture()[0] == "64bit"):
+        RUNTIME_PLATFORM = "linux.amd64"
+    else:
+        RUNTIME_PLATFORM = "linux.i386"
+elif (sys.platform == "darwin"):
+    RUNTIME_PLATFORM = "osx.i386"
 
 ########################################################################
 ##
@@ -89,14 +108,14 @@ def usage(problem):
     print ""
     print "  makepanda --everything"
     print ""
-    exit("")
+    os._exit(0)
 
 def parseopts(args):
-    global OPTIMIZE,INSTALLER,GENMAN
+    global OPTIMIZE,INSTALLER,RUNTIME,GENMAN
     global VERSION,COMPRESSOR,VERBOSE,THREADCOUNT
     longopts = [
         "help",
-        "optimize=","everything","nothing","installer",
+        "optimize=","everything","nothing","installer","runtime",
         "version=","lzma","no-python","threads=","outputdir="]
     anything = 0
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
@@ -107,6 +126,7 @@ def parseopts(args):
             if (option=="--help"): raise "usage"
             elif (option=="--optimize"): OPTIMIZE=value
             elif (option=="--installer"): INSTALLER=1
+            elif (option=="--runtime"): RUNTIME=1
             elif (option=="--genman"): GENMAN=1
             elif (option=="--everything"): PkgEnableAll()
             elif (option=="--nothing"): PkgDisableAll()
@@ -225,6 +245,9 @@ if (sys.platform == "win32"):
 
 if (INSTALLER) and (PkgSkip("PYTHON")):
     exit("Cannot build installer without python")
+
+if (RUNTIME) and (PkgSkip("PLUGIN") or PkgSkip("TINYXML")):
+    exit("Cannot build runtime without plugin or tinyxml")
 
 ########################################################################
 ##
@@ -484,6 +507,7 @@ def printStatus(header,warnings):
         if (sys.platform == "win32"):
             if INSTALLER:  print "Makepanda: Build installer, using",COMPRESSOR
             else        :  print "Makepanda: Don't build installer"
+            if RUNTIME:    print "Makepanda: Runtime will be built"
         print "Makepanda: Version ID: "+VERSION
         for x in warnings: print "Makepanda: "+x
         print "-------------------------------------------------------------------"
@@ -553,7 +577,7 @@ def CompileCxx(obj,src,opts):
         if (optlevel==1): cmd = cmd + " -g"
         if (optlevel==2): cmd = cmd + " -O1"
         if (optlevel==3): cmd = cmd + " -O2"
-        if (optlevel==4): cmd = cmd + " -O2 -DNDEBUG"
+        if (optlevel==4): cmd = cmd + " -O3 -DNDEBUG"
         if (CFLAGS !=""): cmd = cmd + " " + CFLAGS
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd = cmd + " -DBUILDING_" + building
@@ -1108,15 +1132,7 @@ def WriteConfigSettings():
         plugin_config["P3D_PLUGIN_LOGFILE2"] = ""
         plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
         plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
-        if (sys.platform.startswith("win")):
-            plugin_config["P3D_PLUGIN_PLATFORM"] = sys.platform
-        elif (sys.platform.startswith("linux")):
-            if (platform.architecture()[0] == "64bit"):
-                plugin_config["P3D_PLUGIN_PLATFORM"] = "linux.amd64"
-            else:
-                plugin_config["P3D_PLUGIN_PLATFORM"] = "linux.i386"
-        elif (sys.platform == "darwin"):
-            plugin_config["P3D_PLUGIN_PLATFORM"] = "osx.i386"
+        plugin_config["P3D_PLUGIN_PLATFORM"] = RUNTIME_PLATFORM
 
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in prc_parameters.keys():
@@ -3881,6 +3897,79 @@ try:
 except:
     SaveDependencyCache()
     raise
+
+##########################################################################################
+#
+# The Runtime
+#
+# This is a package that can be uploaded to a web server, to host panda3d versions
+# for the plugin.
+#
+##########################################################################################
+
+RUNTIME_OMIT = ["libp3mayaloader*.*", "libp3ptloader.*", "libpandaskel.*", "libpanda*stripped.*", "lib*fmod*.*", "libpandaegg.*"]
+
+def MakeRuntime():
+    # Delete the current.
+    if (os.path.exists(GetOutputDir()+"/stage")):
+      shutil.rmtree(GetOutputDir()+"/stage")
+    if (os.path.exists(GetOutputDir()+"/rlib")):
+      shutil.rmtree(GetOutputDir()+"/rlib")
+    
+    # Create a couple of directories.
+    coreapidir = GetOutputDir()+"/stage/coreapi/"+RUNTIME_VERSION+"/"+RUNTIME_PLATFORM+"/"
+    MakeDirectory(GetOutputDir()+"/rlib")
+    MakeDirectory(GetOutputDir()+"/stage")
+    MakeDirectory(GetOutputDir()+"/stage/coreapi")
+    MakeDirectory(GetOutputDir()+"/stage/coreapi/"+RUNTIME_VERSION)
+    MakeDirectory(coreapidir)
+    
+    # Copy the p3d_plugin file.
+    plugfile = CalcLocation("p3d_plugin.dll", None)
+    CopyFile(coreapidir + os.path.basename(plugfile), plugfile)
+    
+    # Copy the important libraries to built/rlib/.
+    plugfile = CalcLocation("p3dpython.exe", None)
+    
+    CopyFile(GetOutputDir()+"/rlib/"+os.path.basename(plugfile), plugfile)
+    if (sys.platform.startswith("win")):
+        for base in os.listdir(GetOutputDir()+"/bin"):
+            if (base.startswith("lib") and base.endswith(".dll")):
+                omit = False
+                for romit in RUNTIME_OMIT:
+                    if fnmatch.fnmatch(base, romit):
+                        omit = True
+                if omit: continue
+                CopyFile(GetOutputDir()+"/rlib/"+base, GetOutputDir()+"/bin/"+base)
+    else:
+        for base in os.listdir(GetOutputDir()+"/lib"):
+            if (base.startswith("lib")) and (base.endswith(".so") or base.endswith(".dylib")):
+                omit = False
+                for romit in RUNTIME_OMIT:
+                    if fnmatch.fnmatch(base, romit):
+                        omit = True
+                if omit: continue
+                CopyFile(GetOutputDir()+"/rlib/"+base, GetOutputDir()+"/lib/"+base)
+                oscmd("strip --strip-all "+GetOutputDir()+"/rlib/"+base)
+    
+    # Invoke the make_package and make_contents scripts.
+    command = sys.executable + " direct/src/plugin/make_package.py"
+    command += " -d \"" + GetOutputDir() + "/stage\""
+    command += " -s \"" + GetOutputDir() + "/rlib\""
+    command += " -p panda3d_%s_%s" % (RUNTIME_VERSION, RUNTIME_PLATFORM)
+    oscmd(command)
+    command = sys.executable + " direct/src/plugin/make_contents.py"
+    command += " -d \"" + GetOutputDir() + "/stage\""
+    oscmd(command)
+    
+    # Tar the whole thing.
+    if (not sys.platform.startswith("win")):
+        if (os.path.exists("runtime_%s_%s.tar.bz2" % (RUNTIME_VERSION, RUNTIME_PLATFORM))):
+            os.remove("runtime_%s_%s.tar.bz2" % (RUNTIME_VERSION, RUNTIME_PLATFORM))
+        oscmd("cd " + GetOutputDir() + "/stage/ && tar -cjvf " + os.getcwd() + "/runtime.tar.bz2 coreapi panda3d")
+
+if (RUNTIME != 0):
+    MakeRuntime()
 
 ##########################################################################################
 #
