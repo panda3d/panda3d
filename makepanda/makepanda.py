@@ -805,7 +805,9 @@ def CompileLink(dll, obj, opts):
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -L' + BracketNameWithQuotes(dir)
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + BracketNameWithQuotes(name)
-        cmd = cmd + " -lpthread -ldl"
+        cmd = cmd + " -lpthread"
+        if (not sys.platform.startswith("freebsd")):
+            cmd = cmd + " -ldl"
         if (sys.platform == "darwin"):
             cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch ppc -arch i386"
         
@@ -1124,6 +1126,8 @@ def WriteConfigSettings():
     if (sys.platform.startswith("freebsd")):
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["IS_FREEBSD"] = '1'
+        dtool_config["HAVE_ALLOCA_H"] = 'UNDEF'
+        dtool_config["HAVE_MALLOC_H"] = 'UNDEF'
     
     if (OPTIMIZE <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):

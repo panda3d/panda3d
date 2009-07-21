@@ -10,6 +10,7 @@
 ########################################################################
 
 import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform
+from distutils import sysconfig
 
 SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx",".mm"]
 SUFFIX_DLL=[".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd"]
@@ -895,15 +896,8 @@ def SdkLocatePython():
                 exit("Could not find the python framework!")
 
         else:
-            os.system("python -V > "+OUTPUTDIR+"/tmp/pythonversion 2>&1")
-            pv=ReadFile(OUTPUTDIR+"/tmp/pythonversion")
-            if (pv.startswith("Python ")==0):
-                exit("python -V did not produce the expected output")
-            pv = pv[7:10]
-            if (os.path.isdir("/usr/include/python"+pv)==0):
-                exit("Python reports version "+pv+" but /usr/include/python"+pv+" is not installed.")
-            SDK["PYTHON"]="/usr/include/python"+pv
-            SDK["PYTHONVERSION"]="python"+pv
+            SDK["PYTHON"]=sysconfig.get_python_inc()
+            SDK["PYTHONVERSION"]="python"+sysconfig.get_python_version()
 
 def SdkLocateVisualStudio():
     if (sys.platform != "win32"): return
