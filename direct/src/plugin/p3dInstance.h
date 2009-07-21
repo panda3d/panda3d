@@ -24,6 +24,7 @@
 
 #ifdef __APPLE__
 #include "subprocessWindowBuffer.h"
+#include <CoreFoundation/CoreFoundation.h>
 #endif
 
 #include <deque>
@@ -110,6 +111,10 @@ private:
   void paint_window();
   void add_modifier_flags(unsigned int &swb_flags, int modifiers);
 
+#ifdef __APPLE__
+  static void timer_callback(CFRunLoopTimerRef timer, void *info);
+#endif  // __APPLE__
+
   P3D_request_ready_func *_func;
   P3D_object *_browser_script_object;
   P3DToplevelObject *_panda_script_object;
@@ -137,6 +142,8 @@ private:
   SubprocessWindowBuffer *_swbuffer;
   char *_reversed_buffer;
   bool _mouse_active;
+
+  CFRunLoopTimerRef _frame_timer;
 #endif  // __APPLE__
 
   P3DSplashWindow *_splash_window;

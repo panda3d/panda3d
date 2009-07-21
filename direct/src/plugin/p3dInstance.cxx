@@ -74,7 +74,8 @@ P3DInstance(P3D_request_ready_func *func, void *user_data) :
   _shared_mmap_size = 0;
   _swbuffer = NULL;
   _reversed_buffer = NULL;
-  _mouse_active = false;
+  _mouse_active = true;
+  _frame_timer = NULL;
 #endif  // __APPLE__
 
   // Set some initial properties.
@@ -110,6 +111,11 @@ P3DInstance::
   }
 
 #ifdef __APPLE__
+  if (_frame_timer != NULL) {
+    CFRunLoopTimerInvalidate(_frame_timer);
+    CFRelease(_frame_timer);
+  }
+
   if (_swbuffer != NULL) {
     SubprocessWindowBuffer::destroy_buffer(_shared_fd, _shared_mmap_size,
                                            _shared_filename, _swbuffer);
@@ -510,17 +516,6 @@ handle_event(P3D_event_data event) {
   bool keep_event = false;
   
   switch (er->what) {
-  case nullEvent:
-    // We appear to get this event pretty frequently when nothing else
-    // is going on.  Great; we'll take advantage of it to request a
-    // refresh, which will cause updateEvt to be triggered (if the
-    // instance is still onscreen).
-    if (_instance_window_opened && _swbuffer != NULL && _swbuffer->ready_for_read()) {
-      request_refresh();
-    }
-    keep_event = true;
-    break;
-
   case mouseDown:
   case mouseUp:
     {
@@ -828,6 +823,18 @@ handle_notify_request(const string &message) {
       delete _splash_window;
       _splash_window = NULL;
     }
+
+#ifdef __APPLE__
+    // Start a timer to update the frame repeatedly.  This seems to be
+    // steadier than waiting for nullEvent.
+    CFRunLoopTimerContext timer_context;
+    memset(&timer_context, 0, sizeof(timer_context));
+    timer_context.info = this;
+    _frame_timer = CFRunLoopTimerCreate
+      (NULL, 0, 1.0 / 60.0, 0, 0, timer_callback, &timer_context);
+    CFRunLoopRef run_loop = CFRunLoopGetCurrent();
+    CFRunLoopAddTimer(run_loop, _frame_timer, kCFRunLoopCommonModes);
+#endif  // __APPLE__
   }
 }
 
@@ -1162,6 +1169,22 @@ add_modifier_flags(unsigned int &swb_flags, int modifiers) {
   }
 #endif  // __APPLE__
 }
+
+#ifdef __APPLE__
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::timer_callback
+//       Access: Private
+//  Description: OSX only: this callback is associated with a
+//               CFRunLoopTimer, to be called periodically for
+//               updating the frame.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+timer_callback(CFRunLoopTimerRef timer, void *info) {
+  P3DInstance *self = (P3DInstance *)info;
+  self->request_refresh();
+  //self->paint_window();
+}
+#endif  // __APPLE__
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::SplashDownload::Constructor
