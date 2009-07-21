@@ -138,14 +138,15 @@ wait(double timeout) {
   int seconds = (int)floor(timeout);
   ts.tv_sec += seconds;
   ts.tv_nsec += (int)((timeout - seconds) * 1000000.0);
+  if (ts.tv_nsec > 1000000) {
+    ts.tv_nsec -= 1000000;
+    ++ts.tv_sec;
+  }
 
   int result = pthread_cond_timedwait(&_cvar, &_lock, &ts);
   if (result != 0 && result != ETIMEDOUT) {
     errno = result;
     perror("pthread_cond_timedwait");
-    // TODO: investigate why we sometimes get an "Invalid Value" or
-    // some such here.
-    //    assert(false);
   }
 
 #endif  // _WIN32

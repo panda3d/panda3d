@@ -39,6 +39,10 @@ wait(double timeout) {
   int seconds = (int)floor(timeout);
   ts.tv_sec += seconds;
   ts.tv_nsec += (int)((timeout - seconds) * 1000000.0);
+  if (ts.tv_nsec > 1000000) {
+    ts.tv_nsec -= 1000000;
+    ++ts.tv_sec;
+  }
 
   int result = pthread_cond_timedwait(&_cvar, &_mutex._lock, &ts);
 #ifndef NDEBUG
