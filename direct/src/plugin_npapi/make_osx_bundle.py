@@ -96,7 +96,8 @@ def makeBundle(startDir):
     optDir = optDirs[0]
 
     # Generate the bundle directory structure
-    bundleFilename = Filename(fstartDir, 'nppanda3d.plugin')
+    rootFilename = Filename(fstartDir, 'bundle')
+    bundleFilename = Filename(rootFilename, 'nppanda3d.plugin')
     plistFilename = Filename(bundleFilename, 'Contents/Info.plist')
     plistFilename.makeDir()
     exeFilename = Filename(bundleFilename, 'Contents/MacOS/nppanda3d')
@@ -129,6 +130,18 @@ def makeBundle(startDir):
     bundleFilename.touch()
     print bundleFilename.toOsSpecific()
 
+def buildDmg(startDir):
+    fstartDir = Filename.fromOsSpecific(startDir)
+    rootFilename = Filename(fstartDir, 'bundle')
+    output = Filename(fstartDir, 'nppanda3d.dmg')
+    cmd = 'hdiutil create -fs HFS+ -srcfolder "%(dir)s" -volname "%(volname)s" "%(output)s"' % {
+        'dir' : rootFilename.toOsSpecific(),
+        'volname' : 'nppanda3d',
+        'output' : output.toOsSpecific(),
+        }
+    os.system(cmd)
+    shutil.rmtree(rootFilename.toOsSpecific())
+
 if __name__ == '__main__':
     try:
         opts, args = getopt.getopt(sys.argv[1:], 'h')
@@ -144,4 +157,5 @@ if __name__ == '__main__':
 
     startDir = os.path.split(sys.argv[0])[0]
     makeBundle(startDir)
+    buildDmg(startDir)
     
