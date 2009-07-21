@@ -227,12 +227,12 @@ else:
     if (sys.platform == "darwin"):
         THIRDPARTYLIBS="thirdparty/darwin-libs-a/"
     elif (sys.platform.startswith("linux")):
-      elif (platform.architecture()[0] == "64bit"):
+      if (platform.architecture()[0] == "64bit"):
           THIRDPARTYLIBS="thirdparty/linux-libs-x64/"
       else:
           THIRDPARTYLIBS="thirdparty/linux-libs-a/"
     elif (sys.platform.startswith("freebsd")):
-      elif (platform.architecture()[0] == "64bit"):
+      if (platform.architecture()[0] == "64bit"):
           THIRDPARTYLIBS="thirdparty/freebsd-libs-x64/"
       else:
           THIRDPARTYLIBS="thirdparty/freebsd-libs-a/"
