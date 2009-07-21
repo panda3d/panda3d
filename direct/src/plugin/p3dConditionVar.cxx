@@ -143,7 +143,9 @@ wait(double timeout) {
   if (result != 0 && result != ETIMEDOUT) {
     errno = result;
     perror("pthread_cond_timedwait");
-    assert(false);
+    // TODO: investigate why we sometimes get an "Invalid Value" or
+    // some such here.
+    //    assert(false);
   }
 
 #endif  // _WIN32
