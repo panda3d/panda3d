@@ -1,0 +1,16 @@
+pview
+	command=pview
+	name=Panda3D Model Viewer
+	can_open_multiple_files=true
+	expects_uris=false
+	requires_terminal=false
+	mime_types=model/x-egg,model/x-bam,model/x-compressed-egg,model/x-compressed-bam
+
+panda3d
+	command=panda3d
+	name=Panda3D
+	can_open_multiple_files=false
+	expects_uris=false
+	requires_terminal=false
+	mime_types=application/x-panda3d
+

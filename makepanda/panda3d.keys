@@ -1,0 +1,35 @@
+model/x-egg:
+	description=EGG model file
+	default_action_type=application
+	short_list_application_ids_for_novice_user_level=pview
+	open=pview %f
+	view=pview %f
+
+model/x-compressed-egg:
+	description=Compressed EGG model file
+	default_action_type=application
+	short_list_application_ids_for_novice_user_level=pview
+	open=pview %f
+	view=pview %f
+
+model/x-bam:
+	description=Panda3D binary model file
+	default_action_type=application
+	short_list_application_ids_for_novice_user_level=pview
+	open=pview %f
+	view=pview %f
+
+model/x-compressed-bam:
+	description=Compressed Panda3D binary model file
+	default_action_type=application
+	short_list_application_ids_for_novice_user_level=pview
+	open=pview %f
+	view=pview %f
+
+application/x-panda3d:
+	description=Panda3D applet
+	default_action_type=application
+	short_list_application_ids_for_novice_user_level=panda3d
+	open=panda3d %f
+	view=panda3d %f
+

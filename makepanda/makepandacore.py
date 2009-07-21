@@ -190,7 +190,7 @@ def GetDirectoryContents(dir, filters="*", skip=[]):
 ########################################################################
 
 def LocateBinary(binary):
-    if "PATH" not in environ or os.environ["PATH"] == "":
+    if "PATH" not in os.environ or os.environ["PATH"] == "":
         p = os.defpath
     else:
         p = os.environ["PATH"]

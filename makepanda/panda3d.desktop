@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Panda3D
+Comment=Runs 3-D games and interactive applets
+TryExec=panda3d
+Exec=panda3d %U
+StartupNotify=true
+NoDisplay=true
+Terminal=false
+Type=Application
+Categories=Game;Viewer;
+MimeType=application/x-panda3d;

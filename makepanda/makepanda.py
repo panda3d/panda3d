@@ -434,6 +434,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lml")
     if (PkgSkip("OPENCV")==0):     LibName("OPENCV", "-lcxcore")
     if (PkgSkip("TINYXML")==0):    LibName("TINYXML", "-ltinyxml")
+    LibName("XF86DGA", "-lXxf86dga")
     if (sys.platform == "darwin"):
         LibName("ALWAYS", "-framework AppKit")
         if (PkgSkip("OPENCV")==0):   LibName("OPENCV", "-framework QuickTime")
@@ -1349,7 +1350,7 @@ CopyAllHeaders('dtool/src/dtoolbase')
 CopyAllHeaders('dtool/src/dtoolutil', skip=["pandaVersion.h", "checkPandaVersion.h"])
 CopyAllHeaders('dtool/metalibs/dtool')
 CopyAllHeaders('dtool/src/cppparser')
-CopyAllHeaders('dtool/src/prc')
+CopyAllHeaders('dtool/src/prc', skip=["prc_parameters.h"])
 CopyAllHeaders('dtool/src/dconfig')
 CopyAllHeaders('dtool/src/interrogatedb')
 CopyAllHeaders('dtool/metalibs/dtoolconfig')
@@ -1441,7 +1442,7 @@ CopyAllHeaders('direct/src/showbase')
 CopyAllHeaders('direct/metalibs/direct')
 CopyAllHeaders('direct/src/dcparse')
 CopyAllHeaders('direct/src/heapq')
-CopyAllHeaders('direct/src/plugin')
+CopyAllHeaders('direct/src/plugin', skip=["p3d_plugin_config.h"])
 CopyAllHeaders('direct/src/plugin_npapi')
 CopyAllHeaders('direct/src/plugin_standalone')
 
@@ -2552,7 +2553,7 @@ if (sys.platform != "win32" and sys.platform != "darwin"):
   TargetAdd('libpandagl.dll', input='libp3glstuff.dll')
   TargetAdd('libpandagl.dll', input='libpandafx.dll')
   TargetAdd('libpandagl.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libpandagl.dll', opts=['GLUT', 'NVIDIACG', 'CGGL'])
+  TargetAdd('libpandagl.dll', opts=['GLUT', 'NVIDIACG', 'CGGL', 'XF86DGA'])
 
 #
 # DIRECTORY: panda/src/osxdisplay/
@@ -3722,6 +3723,8 @@ if (PkgSkip("PYTHON")==0):
     TargetAdd('packp3d.exe', input='direct/src/showutil/packp3d.py')
   TargetAdd('packpanda.exe', input='direct/src/directscripts/packpanda.py')
   TargetAdd('eggcacher.exe', input='direct/src/directscripts/eggcacher.py')
+  
+  TargetAdd('runp3d_frozen.pyd', input='direct/src/showutil/runp3d.py')
 
 #
 # Generate the models directory and samples directory
@@ -3884,13 +3887,14 @@ def MakeRuntime():
     MakeDirectory(GetOutputDir()+"/stage/coreapi/"+RUNTIME_VERSION)
     MakeDirectory(coreapidir)
     
-    # Copy the p3d_plugin file.
+    # Copy the p3d_plugin file to coreapi dir.
     plugfile = CalcLocation("p3d_plugin.dll", None)
     CopyFile(coreapidir + os.path.basename(plugfile), plugfile)
     
     # Copy the important libraries to built/rlib/.
     plugfile = CalcLocation("p3dpython.exe", None)
-    
+    CopyFile(GetOutputDir()+"/rlib/"+os.path.basename(plugfile), plugfile)
+    plugfile = CalcLocation("runp3d_frozen.pyd", None)
     CopyFile(GetOutputDir()+"/rlib/"+os.path.basename(plugfile), plugfile)
     if (sys.platform.startswith("win")):
         for base in os.listdir(GetOutputDir()+"/bin"):
@@ -4012,6 +4016,11 @@ The Panda3D engine.
 /etc/Confauto.prc
 /etc/Config.prc
 /usr/share/panda3d
+/usr/share/mime-info/panda3d.mime
+/usr/share/mime-info/panda3d.keys
+/usr/share/mime/packages/panda3d.xml
+/usr/share/application-registry/panda3d.applications
+/usr/share/applications/*.desktop
 /etc/ld.so.conf.d/panda3d.conf
 /usr/bin
 /usr/lib
