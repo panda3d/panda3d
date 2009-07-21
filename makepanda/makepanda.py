@@ -73,6 +73,11 @@ elif (sys.platform.startswith("linux")):
         RUNTIME_PLATFORM = "linux.i386"
 elif (sys.platform == "darwin"):
     RUNTIME_PLATFORM = "osx.i386"
+elif (sys.platform.startswith("freebsd")):
+    if (platform.architecture()[0] == "64bit"):
+        RUNTIME_PLATFORM = "freebsd.amd64"
+    else:
+        RUNTIME_PLATFORM = "freebsd.i386"
 
 ########################################################################
 ##
@@ -221,10 +226,18 @@ else:
     COMPILER="LINUX"
     if (sys.platform == "darwin"):
         THIRDPARTYLIBS="thirdparty/darwin-libs-a/"
-    elif (platform.architecture()[0] == "64bit"):
-        THIRDPARTYLIBS="thirdparty/linux-libs-x64/"
+    elif (sys.platform.startswith("linux")):
+      elif (platform.architecture()[0] == "64bit"):
+          THIRDPARTYLIBS="thirdparty/linux-libs-x64/"
+      else:
+          THIRDPARTYLIBS="thirdparty/linux-libs-a/"
+    elif (sys.platform.startswith("freebsd")):
+      elif (platform.architecture()[0] == "64bit"):
+          THIRDPARTYLIBS="thirdparty/freebsd-libs-x64/"
+      else:
+          THIRDPARTYLIBS="thirdparty/freebsd-libs-a/"
     else:
-        THIRDPARTYLIBS="thirdparty/linux-libs-a/"
+        exit("Unknown platform")
     VC90CRTVERSION = 0
 
 builtdir = os.path.join(os.path.abspath(GetOutputDir()))
@@ -241,8 +254,8 @@ else:
 #
 ##########################################################################################
 
-if (sys.platform == "win32"):
-     os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
+if (sys.platform.startswith("win")):
+    os.environ["BISON_SIMPLE"] = "thirdparty/win-util/bison.simple"
 
 if (INSTALLER) and (PkgSkip("PYTHON")):
     exit("Cannot build installer without python")
@@ -1005,6 +1018,7 @@ DTOOL_CONFIG=[
     ("HAVE_XF86DGA",                   'UNDEF',                  '1'),
     ("IS_LINUX",                       'UNDEF',                  '1'),
     ("IS_OSX",                         'UNDEF',                  'UNDEF'),
+    ("IS_FREEBSD",                     'UNDEF',                  'UNDEF'),
     ("GLOBAL_OPERATOR_NEW_EXCEPTIONS", 'UNDEF',                  '1'),
     ("USE_STL_ALLOCATOR",              '1',                      '1'),
     ("USE_MEMORY_DLMALLOC",            '1',                      'UNDEF'),
@@ -1064,7 +1078,7 @@ def WriteConfigSettings():
     prc_parameters={}
     plugin_config={}
 
-    if (sys.platform == "win32") or (sys.platform == "win64"):
+    if (sys.platform.startswith("win")):
         for key,win,unix in DTOOL_CONFIG:
             dtool_config[key] = win
         for key,win,unix in PRC_PARAMETERS:
@@ -1107,6 +1121,10 @@ def WriteConfigSettings():
         dtool_config["HAVE_PROC_SELF_CMDLINE"] = 'UNDEF'
         dtool_config["HAVE_PROC_SELF_ENVIRON"] = 'UNDEF'
     
+    if (sys.platform.startswith("freebsd")):
+        dtool_config["IS_LINUX"] = 'UNDEF'
+        dtool_config["IS_FREEBSD"] = '1'
+    
     if (OPTIMIZE <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):
             dtool_config["DO_PSTATS"] = '1'
@@ -1131,7 +1149,7 @@ def WriteConfigSettings():
 
     if (PkgSkip("PLUGIN")==0):
         #FIXME: do this at runtime or so.
-        if (sys.platform == "win32"):
+        if (sys.platform.startswith("win")):
             plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file://C:\\p3dstage"
         else:
             plugin_config["P3D_PLUGIN_DOWNLOAD"] = "/p3dstage"
@@ -1303,7 +1321,7 @@ for pkg in PkgListGet():
 
 if (COMPILER=="MSVC"):
     CopyAllFiles(GetOutputDir()+"/bin/", THIRDPARTYLIBS+"extras"+"/bin/")
-if (sys.platform == "win32"):
+if (sys.platform.startswith("win")):
     if (PkgSkip("PYTHON")==0):
         pydll = "/" + SDK["PYTHONVERSION"].replace(".", "") + ".dll"
         CopyFile(GetOutputDir()+"/bin"+pydll, SDK["PYTHON"]+pydll)
@@ -1419,7 +1437,7 @@ CopyAllHeaders('panda/metalibs/pandafx')
 CopyAllHeaders('panda/src/glstuff')
 CopyAllHeaders('panda/src/glgsg')
 CopyAllHeaders('panda/metalibs/pandaegg')
-if (sys.platform == "win32"):
+if (sys.platform.startswith("win")):
     CopyAllHeaders('panda/src/wgldisplay')
 elif (sys.platform == "darwin"):
     CopyAllHeaders('panda/src/osxdisplay')
@@ -2390,7 +2408,7 @@ if PkgSkip("ZLIB")==0:
 # DIRECTORY: panda/src/windisplay/
 #
 
-if (sys.platform == "win32"):
+if (sys.platform.startswith("win")):
   OPTS=['DIR:panda/src/windisplay', 'BUILDING:PANDAWIN']
   TargetAdd('windisplay_composite.obj', opts=OPTS+["BIGOBJ:TRUE"], input='windisplay_composite.cxx')
   TargetAdd('windisplay_windetectdx8.obj', opts=OPTS + ["DX8"], input='winDetectDx8.cxx')
@@ -2518,7 +2536,7 @@ TargetAdd('libpandaegg.dll', opts=['ADVAPI'])
 # DIRECTORY: panda/src/mesadisplay/
 #
 
-if (sys.platform != "win32"):
+if (not sys.platform.startswith("win")):
   OPTS=['DIR:panda/src/mesadisplay', 'DIR:panda/src/glstuff', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'GLUT']
   TargetAdd('mesadisplay_composite.obj', opts=OPTS, input='mesadisplay_composite.cxx')
   OPTS=['DIR:panda/metalibs/pandagl', 'BUILDING:PANDAGLUT', 'NVIDIACG', 'GLUT']
@@ -3571,8 +3589,8 @@ if (PkgSkip("PANDATOOL")==0):
 # DIRECTORY: pandatool/src/gtk-stats/
 #
 
-if (PkgSkip("PANDATOOL")==0 and (sys.platform == "win32" or PkgConfigHavePkg("gtk+-2.0"))):
-    if (sys.platform == "win32"):
+if (PkgSkip("PANDATOOL")==0 and (sys.platform.startswith("win") or PkgConfigHavePkg("gtk+-2.0"))):
+    if (sys.platform.startswith("win")):
       OPTS=['DIR:pandatool/src/win-stats']
       TargetAdd('pstats_composite1.obj', opts=OPTS, input='winstats_composite1.cxx')
     else:
@@ -3628,7 +3646,7 @@ for VER in MAYAVERSIONS:
     TargetAdd('mayaeggimport'+VNUM+'.mll', input='mayaeggimport'+VNUM+'_mayaeggimport.obj')
     TargetAdd('mayaeggimport'+VNUM+'.mll', input='libpandaegg.dll')
     TargetAdd('mayaeggimport'+VNUM+'.mll', input=COMMON_PANDA_LIBS)
-    if sys.platform == "win32":
+    if sys.platform.startswith("win32"):
       TargetAdd('mayaeggimport'+VNUM+'.mll', input='libp3pystub.dll')
     TargetAdd('mayaeggimport'+VNUM+'.mll', opts=['ADVAPI', VER])
 
@@ -3869,8 +3887,8 @@ except:
 #
 ##########################################################################################
 
-RUNTIME_OMIT = ["libp3mayaloader*.*", "libp3ptloader.*", "libpandaskel.*", "libpanda*stripped.*",
-                            "lib*fmod*.*", "libpandaegg.*", "codec_*.*", "output_*.*", "dsp_*.*"]
+RUNTIME_OMIT = ["libp3mayaloader*.*", "libp3ptloader.*", "libpandaskel.*","libpandaegg.*",
+                              "libpanda*stripped.*", "codec_*.*", "output_*.*", "dsp_*.*"]
 
 def MakeRuntime():
     # Delete the current.
