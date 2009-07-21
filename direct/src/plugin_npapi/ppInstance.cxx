@@ -707,15 +707,19 @@ read_contents_file(const string &filename) {
   while (xpackage != NULL) {
     const char *name = xpackage->Attribute("name");
     if (name != NULL && strcmp(name, "coreapi") == 0) {
-      get_core_api(xpackage);
-      return true;
+      const char *platform = xpackage->Attribute("platform");
+      if (platform != NULL && strcmp(platform, P3D_PLUGIN_PLATFORM) == 0) {
+        get_core_api(xpackage);
+        return true;
+      }
     }
     
     xpackage = xpackage->NextSiblingElement("package");
   }
 
   // Couldn't find the coreapi package description.
-  logfile << "No coreapi package defined in contents file.\n" << flush;
+  logfile << "No coreapi package defined in contents file for "
+          << P3D_PLUGIN_PLATFORM << "\n" << flush;
   return false;
 }
 
