@@ -136,7 +136,7 @@ read_xml_node(istream &in) {
     // Read the element attributes.
     TiXmlElement *xelement = xnode->ToElement();
     assert(xelement != NULL);
-    bool got_attrib = (bool)in.get();
+    bool got_attrib = (bool)(in.get() != 0);
 
     while (got_attrib && in && !in.eof()) {
       // We have an attribute.
@@ -166,12 +166,12 @@ read_xml_node(istream &in) {
 
       xelement->SetAttribute(name, value);
 
-      got_attrib = (bool)in.get();
+      got_attrib = (bool)(in.get() != 0);
     }
   }
 
   // Now read all of the children.
-  bool got_child = (bool)in.get();
+  bool got_child = (bool)(in.get() != 0);
   
   while (got_child && in && !in.eof()) {
     // We have a child.
@@ -180,7 +180,7 @@ read_xml_node(istream &in) {
       xnode->LinkEndChild(xchild);
     }
 
-    got_child = (bool)in.get();
+    got_child = (bool)(in.get() != 0);
   }
 
   return xnode;

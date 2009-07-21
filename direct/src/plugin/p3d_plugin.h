@@ -75,9 +75,10 @@ extern "C" {
 
 
 /* This symbol serves to validate that runtime and compile-time
-libraries match.  It should be passed to P3D_initialize() (below).
-This number will be incremented whenever there are changes to any of
-the interface specifications defined in this header file. */
+   libraries match.  It should be passed to P3D_initialize()
+   (below). This number will be incremented whenever there are changes
+   to any of the interface specifications defined in this header
+   file. */
 #define P3D_API_VERSION 4
 
 /************************ GLOBAL FUNCTIONS **************************/
