@@ -69,9 +69,6 @@ run(int argc, char *argv[]) {
     switch (flag) {
     case 'u':
       root_url = optarg;
-      if (!root_url.empty() && root_url[root_url.length() - 1] != '/') {
-        root_url += '/';
-      }
       break;
 
     case 'p':
@@ -130,6 +127,11 @@ run(int argc, char *argv[]) {
   if (argc < 2) {
     usage();
     return 1;
+  }
+
+  // Make sure it ends with a slash.
+  if (!root_url.empty() && root_url[root_url.length() - 1] != '/') {
+    root_url += '/';
   }
 
   if (!get_plugin(root_url, this_platform, force_download)) {
@@ -292,9 +294,6 @@ get_plugin(const string &root_url, const string &this_platform, bool force_downl
 
   // Couldn't read it, so go get it.
   string url = root_url;
-  if (url.size() > 0 && url[url.size()-1] != '/') {
-    url += "/";
-  }
   url += "contents.xml";
   cerr << "Getting URL " << url << "\n";
   
