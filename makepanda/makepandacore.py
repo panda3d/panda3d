@@ -563,7 +563,7 @@ def DeleteBuildFiles(dir):
     for entry in os.listdir(dir):
         if (entry != ".") and (entry != ".."):
             subdir = dir + "/" + entry
-            if (os.path.isfile(subdir) and os.path.splitext(subdir)[-1] in [".h", ".I", ".c", ".cxx", ".cpp", ".pp"]):
+            if (os.path.isfile(subdir) and os.path.splitext(subdir)[-1] in [".h", ".I", ".c", ".cxx", ".cpp", ".pp", ".moved"]):
                 os.remove(subdir)
             elif (os.path.isdir(subdir)):
                 DeleteBuildFiles(subdir)
