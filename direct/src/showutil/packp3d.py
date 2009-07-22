@@ -29,10 +29,6 @@ Options:
      (this is preferable to having the module start itself immediately
      upon importing).
 
-     Note that your main.py must *not* call run().  This call should
-     not be part of the p3d file--the Panda3D runtime must be free to
-     call it, not your code!
-
   -c [py,pyc,pyo]
 
      Specifies the compilation mode of python files.  'py' means to

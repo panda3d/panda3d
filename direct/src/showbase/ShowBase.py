@@ -2477,7 +2477,14 @@ class ShowBase(DirectObject.DirectObject):
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)
 
     def run(self):
-        self.taskMgr.run()
+        # This method only does anything when self.appRunner is None,
+        # which is to say, when we are not running from within a p3d
+        # file.  When we *are* within a p3d file, the Panda runtime
+        # has to be responsible for running the main loop, so we can't
+        # allow the application to do it.  This is a minor hack, but
+        # should work for 99% of the cases.
+        if self.appRunner is None:
+            self.taskMgr.run()
 
 
 # A class to encapsulate information necessary for multiwindow support.
