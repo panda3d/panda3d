@@ -3,6 +3,7 @@
 #define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB]]
 
 #begin lib_target
+  #define BUILD_TARGET $[HAVE_JPEG]
   #define USE_PACKAGES tinyxml openssl zlib jpeg x11
   #define TARGET p3d_plugin
   #define LIB_PREFIX
