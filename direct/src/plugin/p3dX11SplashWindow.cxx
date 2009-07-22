@@ -347,6 +347,7 @@ subprocess_run() {
       }
       _width = event.xconfigure.width;
       _height = event.xconfigure.height;
+      override = true;
     }
     
     double install_progress = _install_progress;

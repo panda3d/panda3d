@@ -28,7 +28,25 @@ static bool logfile_is_open = false;
 static void
 open_logfile() {
   if (!logfile_is_open) {
-    logfile.open(P3D_PLUGIN_LOGFILE1);
+#ifdef P3D_PLUGIN_LOGFILE1
+    string logfilename = P3D_PLUGIN_LOGFILE1;
+#else
+    string logfilename;
+#endif  // P3D_PLUGIN_LOGFILE1
+
+    if (logfilename.empty()) {
+#ifdef _WIN32
+      static const size_t buffer_size = 4096;
+      char buffer[buffer_size];
+      if (GetTempPath(buffer_size, buffer) != 0) {
+        logfilename = buffer;
+        logfilename += "panda3d.1.log";
+      }
+#else
+      logfilename = "/tmp/panda3d.1.log";
+#endif  // _WIN32
+    }
+    logfile.open(logfilename.c_str());
     logfile_is_open = true;
   }
 }
