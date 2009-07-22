@@ -99,5 +99,5 @@ make_global_ptr() {
     // Someone else got there first.
     delete ptr;
   }
-  assert(_global_ptr != (NeverFreeMemory *)NULL);
 }
+
