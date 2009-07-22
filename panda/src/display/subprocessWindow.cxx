@@ -35,34 +35,24 @@ SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
                  const WindowProperties &win_prop,
                  int flags,
                  GraphicsStateGuardian *gsg,
-                 GraphicsOutput *host,
-                 const string &filename) :
+                 GraphicsOutput *host) :
   GraphicsWindow(engine, pipe, name, fb_prop, win_prop, flags, gsg, host)
 {
   GraphicsWindowInputDevice device =
     GraphicsWindowInputDevice::pointer_and_keyboard(this, "keyboard/mouse");
   _input_devices.push_back(device);
 
-  // Create a buffer with the same properties as the window.
-  flags = ((flags & ~GraphicsPipe::BF_require_window) | GraphicsPipe::BF_refuse_window);
+  // This will be an offscreen buffer that we use to render the actual
+  // contents.
+  _buffer = NULL;
 
-  GraphicsOutput *buffer = 
-    engine->make_output(pipe, name, 0, 
-                        fb_prop, win_prop, flags, gsg, host);
-  if (buffer != NULL) {
-    _buffer = DCAST(GraphicsBuffer, buffer);
-    // However, the buffer is not itself intended to be rendered.  We
-    // only render it indirectly, via callbacks in here.
-    _buffer->set_active(false);
-  }
-
-  // Now create a texture to receive the contents of the framebuffer
-  // from the buffer.
+  // Create a texture to receive the contents of the framebuffer from
+  // the offscreen buffer.
   _texture = new Texture(name);
 
   _fd = -1;
   _mmap_size = 0;
-  _filename = filename;
+  _filename = string();
   _swbuffer = NULL;
   _last_event_flags = 0;
 }
@@ -74,9 +64,7 @@ SubprocessWindow(GraphicsEngine *engine, GraphicsPipe *pipe,
 ////////////////////////////////////////////////////////////////////
 SubprocessWindow::
 ~SubprocessWindow() {
-  if (_buffer != NULL) {
-    _engine->remove_window(_buffer);
-  }
+  nassertv(_buffer == NULL);
   nassertv(_swbuffer == NULL);
 }
 
@@ -193,7 +181,9 @@ end_frame(FrameMode mode, Thread *current_thread) {
 void SubprocessWindow::
 begin_flip() {
   nassertv(_buffer != (GraphicsBuffer *)NULL);
-  nassertv(_swbuffer != NULL);
+  if (_swbuffer == NULL) {
+    return;
+  }
 
   RenderBuffer buffer(_gsg, DrawableRegion::get_renderbuffer_type(RTP_color));
   buffer = _gsg->get_render_buffer(_buffer->get_draw_buffer_type(),
@@ -234,6 +224,54 @@ begin_flip() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: SubprocessWindow::set_properties_now
+//       Access: Public, Virtual
+//  Description: Applies the requested set of properties to the
+//               window, if possible, for instance to request a change
+//               in size or minimization status.
+//
+//               The window properties are applied immediately, rather
+//               than waiting until the next frame.  This implies that
+//               this method may *only* be called from within the
+//               window thread.
+//
+//               The properties that have been applied are cleared
+//               from the structure by this function; so on return,
+//               whatever remains in the properties structure are
+//               those that were unchanged for some reason (probably
+//               because the underlying interface does not support
+//               changing that property on an open window).
+////////////////////////////////////////////////////////////////////
+void SubprocessWindow::
+set_properties_now(WindowProperties &properties) {
+  if (properties.has_subprocess_window() && 
+      properties.get_subprocess_window() != _filename) {
+    // We're changing the subprocess buffer filename; that means we
+    // might as well completely close and re-open the window.
+    internal_close_window();
+
+    _properties.add_properties(properties);
+    properties.clear();
+
+    internal_open_window();
+    set_size_and_recalc(_properties.get_x_size(), _properties.get_y_size());
+    throw_event(get_window_event(), this);
+    return;
+  }
+
+  GraphicsWindow::set_properties_now(properties);
+  if (!properties.is_any_specified()) {
+    // The base class has already handled this case.
+    return;
+  }
+
+  if (properties.has_subprocess_window()) {
+    // Redundant subprocess specification.
+    properties.clear_subprocess_window();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: SubprocessWindow::close_window
 //       Access: Protected, Virtual
 //  Description: Closes the window right now.  Called from the window
@@ -241,20 +279,7 @@ begin_flip() {
 ////////////////////////////////////////////////////////////////////
 void SubprocessWindow::
 close_window() {
-  if (_swbuffer != NULL) {
-    SubprocessWindowBuffer::close_buffer(_fd, _mmap_size, _filename, _swbuffer);
-    _fd = -1;
-    _filename = string();
-
-    _swbuffer = NULL;
-  }
-
-  if (_buffer != NULL) {
-    _buffer->request_close();
-    _buffer->process_events();
-  }
-
-  _is_valid = false;
+  internal_close_window();
 
   WindowProperties properties;
   properties.set_open(false);
@@ -271,28 +296,7 @@ close_window() {
 ////////////////////////////////////////////////////////////////////
 bool SubprocessWindow::
 open_window() {
-  nout << "open_window\n";
-  
-  if (_buffer != NULL) {
-    _buffer->request_open();
-    _buffer->process_events();
-
-    _is_valid = _buffer->is_valid();
-  }
-
-  if (!_is_valid) {
-    return false;
-  }
-
-  _gsg = _buffer->get_gsg();
-
-  _swbuffer = SubprocessWindowBuffer::open_buffer(_fd, _mmap_size, _filename);
-
-  if (_swbuffer == NULL) {
-    close(_fd);
-    _fd = -1;
-    _filename = string();
-    _is_valid = false;
+  if (!internal_open_window()) {
     return false;
   }
 
@@ -300,6 +304,88 @@ open_window() {
   properties.set_open(true);
   properties.set_foreground(true);
   system_changed_properties(properties);
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SubprocessWindow::internal_close_window
+//       Access: Private
+//  Description: Closes the "window" and resets the buffer, without
+//               changing the WindowProperties.
+////////////////////////////////////////////////////////////////////
+void SubprocessWindow::
+internal_close_window() {
+  if (_swbuffer != NULL) {
+    SubprocessWindowBuffer::close_buffer
+      (_fd, _mmap_size, _filename.to_os_specific(), _swbuffer);
+    _fd = -1;
+    _filename = string();
+
+    _swbuffer = NULL;
+  }
+
+  if (_buffer != NULL) {
+    _buffer->request_close();
+    _buffer->process_events();
+    _engine->remove_window(_buffer);
+    _buffer = NULL;
+  }
+
+  _is_valid = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: SubprocessWindow::internal_open_window
+//       Access: Private
+//  Description: Opens the "window" and the associated offscreen
+//               buffer, without changing the WindowProperties.
+////////////////////////////////////////////////////////////////////
+bool SubprocessWindow::
+internal_open_window() {
+  nassertr(_buffer == NULL, false);
+
+  // Create a buffer with the same properties as the window.
+  int flags = _creation_flags;
+  flags = ((flags & ~GraphicsPipe::BF_require_window) | GraphicsPipe::BF_refuse_window);
+
+  GraphicsOutput *buffer = 
+    _engine->make_output(_pipe, _name, 0, _fb_properties, _properties, 
+                         flags, _gsg, _host);
+  if (buffer != NULL) {
+    _buffer = DCAST(GraphicsBuffer, buffer);
+    // However, the buffer is not itself intended to be rendered.  We
+    // only render it indirectly, via callbacks in here.
+    _buffer->set_active(false);
+
+    _buffer->request_open();
+    _buffer->process_events();
+
+    _is_valid = _buffer->is_valid();
+  }
+
+  if (!_is_valid) {
+    display_cat.error()
+      << "Failed to open SubprocessWindowBuffer's internal offscreen buffer.\n";
+    return false;
+  }
+
+  _gsg = _buffer->get_gsg();
+  _filename = _properties.get_subprocess_window();
+
+  _swbuffer = SubprocessWindowBuffer::open_buffer
+    (_fd, _mmap_size, _filename.to_os_specific());
+
+  if (_swbuffer == NULL) {
+    close(_fd);
+    _fd = -1;
+    _filename = string();
+    _is_valid = false;
+    display_cat.error()
+      << "Failed to open SubprocessWindowBuffer's shared-memory buffer "
+      << _filename << "\n";
+    return false;
+  }
 
   return true;
 }

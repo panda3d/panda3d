@@ -237,8 +237,7 @@ make_output(const string &name,
 #ifdef SUPPORT_SUBPROCESS_WINDOW
     if (win_prop.has_subprocess_window()) {
       return new SubprocessWindow(engine, this, name, fb_prop, win_prop,
-                                  flags, gsg, host,
-                                  win_prop.get_subprocess_window().to_os_specific());
+                                  flags, gsg, host);
     }
 #endif  // SUPPORT_SUBPROCESS_WINDOW
     return new osxGraphicsWindow(engine, this, name, fb_prop, win_prop,

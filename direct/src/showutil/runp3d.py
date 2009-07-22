@@ -304,6 +304,8 @@ class AppRunner(DirectObject):
                 wp.setOrigin(x, y)
             if width or height:
                 wp.setSize(width, height)
+            if subprocessWindow:
+                wp.setSubprocessWindow(subprocessWindow)
             base.win.requestProperties(wp)
             return
 

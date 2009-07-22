@@ -221,14 +221,30 @@ set_wparams(const P3DWindowParams &wparams) {
     // to the browser.  Set up this mechanism.
     int x_size = _wparams.get_win_width();
     int y_size = _wparams.get_win_height();
-    if (_shared_fd == -1 && x_size != 0 && y_size != 0) {
-      _swbuffer = SubprocessWindowBuffer::new_buffer
-        (_shared_fd, _shared_mmap_size, _shared_filename, x_size, y_size);
-      if (_swbuffer != NULL) {
-        _reversed_buffer = new char[_swbuffer->get_framebuffer_size()];
+    if (x_size != 0 && y_size != 0) {
+      if (_swbuffer == NULL || _swbuffer->get_x_size() != x_size ||
+          _swbuffer->get_y_size() != y_size) {
+        // We need to open a new shared buffer.
+        if (_swbuffer != NULL) {
+          SubprocessWindowBuffer::destroy_buffer(_shared_fd, _shared_mmap_size,
+                                                 _shared_filename, _swbuffer);
+          _swbuffer = NULL;
+        }
+        if (_reversed_buffer != NULL) {
+          delete[] _reversed_buffer;
+          _reversed_buffer = NULL;
+        }
+
+        _swbuffer = SubprocessWindowBuffer::new_buffer
+          (_shared_fd, _shared_mmap_size, _shared_filename, x_size, y_size);
+        if (_swbuffer != NULL) {
+          _reversed_buffer = new char[_swbuffer->get_framebuffer_size()];
+        }
       }
 
-      xwparams->SetAttribute("subprocess_window", _shared_filename);
+      if (_swbuffer != NULL) {
+        xwparams->SetAttribute("subprocess_window", _shared_filename);
+      }
     }
 #endif   // __APPLE__
     
@@ -513,8 +529,6 @@ handle_event(P3D_event_data event) {
   swb_event._flags = 0;
   add_modifier_flags(swb_event._flags, er->modifiers);
 
-  bool keep_event = false;
-  
   switch (er->what) {
   case mouseDown:
   case mouseUp:
@@ -526,7 +540,6 @@ handle_event(P3D_event_data event) {
       } else {
         swb_event._type = SubprocessWindowBuffer::ET_button_down;
       }
-      keep_event = true;
       retval = true;
     }
     break;
@@ -544,7 +557,6 @@ handle_event(P3D_event_data event) {
       } else {
         swb_event._type = SubprocessWindowBuffer::ET_button_again;
       }
-      keep_event = true;
       retval = true;
     }
     break;
@@ -556,7 +568,6 @@ handle_event(P3D_event_data event) {
 
   case activateEvt:
     _mouse_active = ((er->modifiers & 1) != 0);
-    keep_event = true;
     break;
 
   default:
@@ -569,11 +580,9 @@ handle_event(P3D_event_data event) {
     swb_event._flags |= SubprocessWindowBuffer::EF_mouse_position | SubprocessWindowBuffer::EF_has_mouse;
   }
 
-  if (keep_event && _swbuffer != NULL) {
+  if (_swbuffer != NULL) {
     _swbuffer->add_event(swb_event);
   }
-
-#elif defined(HAVE_X11)
 
 #endif
   return retval;
@@ -785,6 +794,7 @@ void P3DInstance::
 handle_notify_request(const string &message) {
   // We look for certain notify events that have particular meaning
   // to this instance.
+  nout << "Got notify: " << message << "\n" << flush;
   if (message == "onpythonload") {
     // Once Python is up and running, we can get the actual toplevel
     // object from the Python side, and merge it with our own.

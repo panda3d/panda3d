@@ -33,6 +33,7 @@
 #include "graphicsBuffer.h"
 #include "texture.h"
 #include "subprocessWindowBuffer.h"
+#include "filename.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : SubprocessWindow
@@ -55,8 +56,7 @@ public:
                    const WindowProperties &win_prop,
                    int flags,
                    GraphicsStateGuardian *gsg,
-                   GraphicsOutput *host,
-                   const string &filename);
+                   GraphicsOutput *host);
   virtual ~SubprocessWindow();
 
   virtual void process_events();
@@ -65,11 +65,16 @@ public:
   virtual void end_frame(FrameMode mode, Thread *current_thread);
   virtual void begin_flip();
 
+  virtual void set_properties_now(WindowProperties &properties);
+
 protected:
   virtual void close_window();
   virtual bool open_window();
 
 private:
+  void internal_close_window();
+  bool internal_open_window();
+
   ButtonHandle translate_key(int &keycode, int os_code, unsigned int flags) const;
   void transition_button(unsigned int flag, ButtonHandle button);
 
@@ -79,7 +84,7 @@ private:
 
   int _fd;
   size_t _mmap_size;
-  string _filename;
+  Filename _filename;
   SubprocessWindowBuffer *_swbuffer;
 
   unsigned int _last_event_flags;

@@ -134,6 +134,7 @@ def buildDmg(startDir):
     fstartDir = Filename.fromOsSpecific(startDir)
     rootFilename = Filename(fstartDir, 'bundle')
     output = Filename(fstartDir, 'nppanda3d.dmg')
+    output.unlink()
     cmd = 'hdiutil create -fs HFS+ -srcfolder "%(dir)s" -volname "%(volname)s" "%(output)s"' % {
         'dir' : rootFilename.toOsSpecific(),
         'volname' : 'nppanda3d',
