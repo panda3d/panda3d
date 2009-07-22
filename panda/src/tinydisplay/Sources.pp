@@ -34,7 +34,6 @@
     tinyOsxGraphicsPipe.I tinyOsxGraphicsPipe.h \
     tinyOsxGraphicsWindow.h tinyOsxGraphicsWindow.I \
     $[if $[IS_OSX],tinyOsxGraphicsWindow.mm,] \
-    msghandling.h \
     zbuffer.h zfeatures.h zgl.h \
     zline.h zmath.h \
     ztriangle_1.cxx ztriangle_2.cxx \
@@ -53,7 +52,6 @@
     init.cxx \
     td_light.cxx \
     memory.cxx \
-    msghandling.cxx \
     specbuf.cxx \
     store_pixel.cxx \
     td_texture.cxx \

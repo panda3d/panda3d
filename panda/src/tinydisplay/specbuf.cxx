@@ -1,5 +1,4 @@
 #include "zgl.h"
-#include "msghandling.h"
 #include <math.h>
 #include <stdlib.h>
 
@@ -44,7 +43,6 @@ specbuf_get_buffer(GLContext *c, const int shininess_i,
     return buf;     
   }
   /* overwrite the lru buffer */
-  /*tgl_trace("overwriting spec buffer :(\n");*/
   oldest->shininess_i = shininess_i;
   oldest->last_used = c->specbuf_used_counter++;
   calc_buf(oldest, shininess);

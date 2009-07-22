@@ -5,7 +5,6 @@
 #include "init.cxx"
 #include "td_light.cxx"
 #include "memory.cxx"
-#include "msghandling.cxx"
 #include "specbuf.cxx"
 #include "store_pixel.cxx"
 #include "td_texture.cxx"
