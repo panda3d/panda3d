@@ -292,8 +292,11 @@ get_plugin(const string &root_url, const string &this_platform, bool force_downl
 
   // Couldn't read it, so go get it.
   string url = root_url;
+  if (url.size() > 0 && url[url.size()-1] != '/') {
+    url += "/";
+  }
   url += "contents.xml";
-  cerr << "Getting URL " << root_url << "\n";
+  cerr << "Getting URL " << url << "\n";
   
   HTTPClient *http = HTTPClient::get_global_ptr();
   PT(HTTPChannel) channel = http->get_document(url);
