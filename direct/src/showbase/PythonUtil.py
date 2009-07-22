@@ -3961,7 +3961,6 @@ def isInteger(n):
 
 def configIsToday(configName):
     # TODO: replace usage of strptime with something else
-    return False
     # returns true if config string is a valid representation of today's date
     today = time.localtime()
     confStr = config.GetString(configName, '')
