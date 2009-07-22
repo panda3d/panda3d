@@ -54,7 +54,16 @@ P3DSession(P3DInstance *inst) {
   _started_read_thread = false;
   _read_thread_continue = false;
 
-  _output_filename = inst->get_fparams().lookup_token("output_filename");
+#ifdef _WIN32
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+  if (GetTempPath(buffer_size, buffer) != 0) {
+    _output_filename = buffer;
+    _output_filename += "panda3d.3.log";
+  }
+#else
+  _output_filename = "/tmp/panda3d.3.log";
+#endif  // _WIN32
 
   _panda3d_callback = NULL;
 

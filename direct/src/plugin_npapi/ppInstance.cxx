@@ -105,6 +105,9 @@ begin() {
   if (!is_plugin_loaded()) {
     // Go download the contents file, so we can download the core DLL.
     string url = P3D_PLUGIN_DOWNLOAD;
+    if (!url.empty() && url[url.length() - 1] != '/') {
+      url += '/';
+    }
     url += "contents.xml";
     PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_contents_file);
     start_download(url, req);
@@ -827,6 +830,9 @@ get_core_api(TiXmlElement *xpackage) {
   } else {
     // The DLL file needs to be downloaded.  Go get it.
     string url = P3D_PLUGIN_DOWNLOAD;
+    if (!url.empty() && url[url.length() - 1] != '/') {
+      url += '/';
+    }
     url += _core_api_dll.get_filename();
     
     PPDownloadRequest *req = new PPDownloadRequest(PPDownloadRequest::RT_core_dll);
