@@ -595,7 +595,8 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -D' + var + '=' + val
         for x in ipath: cmd = cmd + ' -I' + x
         if (sys.platform == "darwin"):
-            cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -arch i386 -arch ppc"
+            cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -arch i386"
+            if ("NOPPC" not in opts): cmd += " -arch ppc"
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
         if (optlevel==1): cmd = cmd + " -g"
         if (optlevel==2): cmd = cmd + " -O1"
@@ -1212,6 +1213,17 @@ def WriteConfigSettings():
 
 WriteConfigSettings()
 
+# Move any potentially conflicting files out of the way.
+if os.path.isfile("dtool/src/dtoolutil/pandaVersion.h"):
+  os.rename("dtool/src/dtoolutil/pandaVersion.h", "dtool/src/dtoolutil/pandaVersion.h.moved")
+if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.h"):
+  os.rename("dtool/src/dtoolutil/checkPandaVersion.h", "dtool/src/dtoolutil/checkPandaVersion.h.moved")
+if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.cxx"):
+  os.rename("dtool/src/dtoolutil/checkPandaVersion.cxx", "dtool/src/dtoolutil/checkPandaVersion.cxx.moved")
+if os.path.isfile("dtool/src/prc/prc_parameters.h"):
+  os.rename("dtool/src/prc/prc_parameters.h", "dtool/src/prc/prc_parameters.h.moved")
+if os.path.isfile("direct/src/plugin/p3d_plugin_config.h"):
+  os.rename("direct/src/plugin/p3d_plugin_config.h", "direct/src/plugin/p3d_plugin_config.h.moved")
 
 ##########################################################################################
 #
@@ -1246,14 +1258,6 @@ static int check_panda_version = panda_version_VERSION1_VERSION2_VERSION3;
 # endif
 """
 def CreatePandaVersionFiles():
-    # First, move any conflicting files out of the way.
-    if os.path.isfile("dtool/src/dtoolutil/pandaVersion.h"):
-      os.rename("dtool/src/dtoolutil/pandaVersion.h", "dtool/src/dtoolutil/pandaVersion.h.moved")
-    if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.h"):
-      os.rename("dtool/src/dtoolutil/checkPandaVersion.h", "dtool/src/dtoolutil/checkPandaVersion.h.moved")
-    if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.cxx"):
-      os.rename("dtool/src/dtoolutil/checkPandaVersion.cxx", "dtool/src/dtoolutil/checkPandaVersion.cxx.moved")
-    
     version1=int(VERSION.split(".")[0])
     version2=int(VERSION.split(".")[1])
     version3=int(VERSION.split(".")[2])
@@ -1278,7 +1282,6 @@ def CreatePandaVersionFiles():
     ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.cxx', checkpandaversion_cxx)
     ConditionalWriteFile(GetOutputDir()+'/include/checkPandaVersion.h',   checkpandaversion_h)
     ConditionalWriteFile(GetOutputDir()+"/tmp/null.cxx","")
-
 
 CreatePandaVersionFiles()
 
@@ -3708,7 +3711,7 @@ for VER in MAYAVERSIONS:
     TargetAdd('libmayapview'+VNUM+'.mll', input='libmayaegg'+VNUM+'.lib')
     TargetAdd('libmayapview'+VNUM+'.mll', input='libmaya'+VNUM+'.lib')
     TargetAdd('libmayapview'+VNUM+'.mll', input='libp3framework.dll')
-    if sys.platform == "win32":
+    if (sys.platform.startswith("win")):
       TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS_PYSTUB)
     else:
       TargetAdd('libmayapview'+VNUM+'.mll', input=COMMON_EGG2X_LIBS)
@@ -3718,11 +3721,14 @@ for VER in MAYAVERSIONS:
     TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='maya2egg'+VNUM+'_mayaToEgg.obj')
     TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='libmayaegg'+VNUM+'.lib')
     TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input='libmaya'+VNUM+'.lib')
-    if sys.platform == "win32":
+    if (sys.platform.startswith("win")):
       TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     else:
       TargetAdd('maya2egg'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS)
-    TargetAdd('maya2egg'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
+    if (sys.platform == "darwin" and int(VNUM) >= 2009):
+      TargetAdd('maya2egg'+VNUM+'-wrapped.exe', opts=['ADVAPI', 'NOPPC', VER])
+    else:
+      TargetAdd('maya2egg'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
     
     TargetAdd('mayacopy'+VNUM+'_mayaCopy.obj', opts=OPTS, input='mayaCopy.cxx')
     TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='mayacopy'+VNUM+'_mayaCopy.obj')
@@ -3732,7 +3738,10 @@ for VER in MAYAVERSIONS:
       TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
     else:
       TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS)
-    TargetAdd('mayacopy'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
+    if (sys.platform == "darwin" and int(VNUM) >= 2009):
+      TargetAdd('mayacopy'+VNUM+'-wrapped.exe', opts=['ADVAPI', 'NOPPC', VER])
+    else:
+      TargetAdd('mayacopy'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
     
     TargetAdd('mayasavepview'+VNUM+'_mayaSavePview.obj', opts=OPTS, input='mayaSavePview.cxx')
     TargetAdd('libmayasavepview'+VNUM+'.mll', input='mayasavepview'+VNUM+'_mayaSavePview.obj')
@@ -4204,6 +4213,10 @@ if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.h.moved"):
   os.rename("dtool/src/dtoolutil/checkPandaVersion.h.moved", "dtool/src/dtoolutil/checkPandaVersion.h")
 if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.cxx.moved"):
   os.rename("dtool/src/dtoolutil/checkPandaVersion.cxx.moved", "dtool/src/dtoolutil/checkPandaVersion.cxx")
+if os.path.isfile("dtool/src/prc/prc_parameters.h.moved"):
+  os.rename("dtool/src/prc/prc_parameters.h.moved", "dtool/src/prc/prc_parameters.h")
+if os.path.isfile("direct/src/plugin/p3d_plugin_config.h.moved"):
+  os.rename("direct/src/plugin/p3d_plugin_config.h.moved", "direct/src/plugin/p3d_plugin_config.h")
 
 WARNINGS.append("Elapsed Time: "+PrettyTime(time.time() - STARTTIME))
 

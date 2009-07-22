@@ -93,6 +93,10 @@ def exit(msg = ""):
           os.rename("dtool/src/dtoolutil/checkPandaVersion.h.moved", "dtool/src/dtoolutil/checkPandaVersion.h")
         if os.path.isfile("dtool/src/dtoolutil/checkPandaVersion.cxx.moved"):
           os.rename("dtool/src/dtoolutil/checkPandaVersion.cxx.moved", "dtool/src/dtoolutil/checkPandaVersion.cxx")
+        if os.path.isfile("dtool/src/prc/prc_parameters.h.moved"):
+          os.rename("dtool/src/prc/prc_parameters.h.moved", "dtool/src/prc/prc_parameters.h")
+        if os.path.isfile("direct/src/plugin/p3d_plugin_config.h.moved"):
+          os.rename("direct/src/plugin/p3d_plugin_config.h.moved", "direct/src/plugin/p3d_plugin_config.h")
         print "Elapsed Time: "+PrettyTime(time.time() - STARTTIME)
         print msg
         sys.stdout.flush()
@@ -582,7 +586,7 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR+"/etc")
     MakeDirectory(OUTPUTDIR+"/plugins")
     MakeDirectory(OUTPUTDIR+"/include")
-    MakeDirectory(OUTPUTDIR+"/include/openssl")
+    MakeDirectory(OUTPUTDIR+"/include/parser-inc")
     MakeDirectory(OUTPUTDIR+"/models")
     MakeDirectory(OUTPUTDIR+"/models/audio")
     MakeDirectory(OUTPUTDIR+"/models/audio/sfx")
@@ -684,7 +688,10 @@ def PkgSelected(pkglist, pkg):
     if (pkglist.count(pkg)==0): return 0
     if (PKG_LIST_OMIT[pkg]): return 0
     return 1
-
+if os.path.isfile("dtool/src/prc/prc_parameters.h.moved"):
+  os.rename("dtool/src/prc/prc_parameters.h.moved", "dtool/src/prc/prc_parameters.h")
+if os.path.isfile("direct/src/plugin/p3d_plugin_config.h.moved"):
+  os.rename("direct/src/plugin/p3d_plugin_config.h.moved", "direct/src/plugin/p3d_plugin_config.h")
 ########################################################################
 ##
 ## These functions are for libraries which use pkg-config.
