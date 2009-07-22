@@ -2979,7 +2979,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   TargetAdd('panda3d.exe', input='express_composite1.obj')
   TargetAdd('panda3d.exe', input='express_composite2.obj')
   if (sys.platform == 'darwin'):
-    TargetAdd('panda3d.exe', input='filename_assist.mm')
+    TargetAdd('panda3d.exe', input='dtoolutil_filename_assist.obj')
   TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL'])
 
 #
