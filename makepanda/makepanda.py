@@ -375,8 +375,11 @@ if (COMPILER=="LINUX"):
     if (sys.platform == "darwin"):
         if (PkgSkip("FREETYPE")==0):
           IncDirectory("FREETYPE", "/usr/X11R6/include")
-          IncDirectory("FREETYPE", "/usr/X11/include/freetype2/")
+          IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
         IncDirectory("GLUT", "/usr/X11R6/include")
+    elif (platform.uname()[1]=="pcbsd"):
+        IncDirectory("FREETYPE", "/usr/PCBSD/local/include")
+        IncDirectory("FREETYPE", "/usr/PCBSD/local/include/freetype2")
     else:
         if (PkgSkip("FREETYPE")==0): IncDirectory("FREETYPE", "/usr/include/freetype2")
         if (os.path.exists("/usr/lib64")):
