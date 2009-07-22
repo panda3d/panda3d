@@ -378,7 +378,6 @@ if (COMPILER=="LINUX"):
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
         IncDirectory("GLUT", "/usr/X11R6/include")
         if (PkgSkip("PNG")==0):        LibName("PNG", "-lpng")
-        if (PkgSkip("OPENSSL")==0):    LibName("OPENSSL",  "-lssl")
         if (PkgSkip("FREETYPE")==0):   LibName("FREETYPE", "-lfreetype")
     elif (LocateBinary("pkg-config")):
         PkgConfigEnable("GTK2", "gtk+-2.0")
@@ -389,6 +388,7 @@ if (COMPILER=="LINUX"):
     
     if (platform.uname()[1]=="pcbsd"):
         IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
+        LibDirectory("ALWAYS", "/usr/PCBSD/local/lib")
      
     if (os.path.exists("/usr/lib64")):
         IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
@@ -440,6 +440,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavformat")
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavutil")
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lswscale")
+    if (PkgSkip("OPENSSL")==0):    LibName("OPENSSL", "-lssl")
     if (PkgSkip("ZLIB")==0):       LibName("ZLIB", "-lz")
     if (PkgSkip("JPEG")==0):       LibName("JPEG", "-ljpeg")
     if (PkgSkip("VRPN")==0):       LibName("VRPN", "-lvrpn")
