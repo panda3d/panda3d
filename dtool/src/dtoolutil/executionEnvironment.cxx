@@ -35,6 +35,10 @@
 #define environ (*_NSGetEnviron())
 #endif
 
+#ifdef IS_FREEBSD
+extern char **environ;
+#endif
+
 #ifdef HAVE_PYTHON
 #include "Python.h"
 #endif
@@ -408,8 +412,9 @@ read_environment_variables() {
     }
     ch = proc.get();
   }
-#elif defined(IS_OSX)
+#elif defined(IS_OSX) || defined(IS_FREEBSD)
   // In the case of Mac, there's always _NSGetEnviron() which we can read.
+  // In the case of FreeBSD, it's the "environ" variable.
   
   char **envp;
   for (envp = environ; envp && *envp; envp++) {
