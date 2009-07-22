@@ -125,14 +125,14 @@ int main(int argc, char **argv)
 
 ///////////////////////////////////////////////////////////////////////
 //
-// Linux and OSX Version
+// Linux and OSX and FreeBSD Version
 //
 // This would probably work on most unixes, with the possible
 // exception of the /proc/self/exe bit.
 //
 ///////////////////////////////////////////////////////////////////////
 
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__)
 
 #ifdef BUILDING_GENPYCODE
 #define LINK_SOURCE "/bin/genpycode"
@@ -156,9 +156,9 @@ int main(int argc, char **argv)
 #include <unistd.h>
 #include <string.h>
 #include <sys/param.h>
-#ifdef __APPLE__
+#if defined( __APPLE__)
   #include <sys/malloc.h>
-#else
+#elif !defined(__FreeBSD__)
   #include <malloc.h>
 #endif
 
@@ -180,8 +180,12 @@ int main(int argc, char **argv)
   char *modargv[1024];
   int fnlen,modargc;
 
-  // Ask linux for the file name of this executable.
+  // Ask the OS for the file name of this executable.
+#ifdef __FreeBSD__
+  int ok = readlink("/proc/curproc/file", fnbuf, PATH_MAX-1);
+#else
   int ok = readlink("/proc/self/exe", fnbuf, PATH_MAX-1);
+#endif
   if (ok<0) {
     if (argc>0) strcpy(fnbuf, argv[0]);
     else errorexit("Cannot read /proc/sys/exe");
