@@ -1141,6 +1141,7 @@ def WriteConfigSettings():
         dtool_config["IS_FREEBSD"] = '1'
         dtool_config["HAVE_ALLOCA_H"] = 'UNDEF'
         dtool_config["HAVE_MALLOC_H"] = 'UNDEF'
+        dtool_config["HAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["HAVE_PROC_CURPROC_FILE"] = '1'
         dtool_config["HAVE_PROC_CURPROC_MAP"] = '1'
         dtool_config["HAVE_PROC_CURPROC_CMDLINE"] = '1'
