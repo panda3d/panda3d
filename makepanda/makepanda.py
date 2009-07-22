@@ -377,15 +377,22 @@ if (COMPILER=="LINUX"):
           IncDirectory("FREETYPE", "/usr/X11R6/include")
           IncDirectory("FREETYPE", "/usr/X11/include/freetype2")
         IncDirectory("GLUT", "/usr/X11R6/include")
-    elif (platform.uname()[1]=="pcbsd"):
-        IncDirectory("FREETYPE", "/usr/PCBSD/local/include")
-        IncDirectory("FREETYPE", "/usr/PCBSD/local/include/freetype2")
+        if (PkgSkip("PNG")==0):        LibName("PNG", "-lpng")
+        if (PkgSkip("OPENSSL")==0):    LibName("OPENSSL",  "-lssl")
+        if (PkgSkip("FREETYPE")==0):   LibName("FREETYPE", "-lfreetype")
+    elif (LocateBinary("pkg-config")):
+        PkgConfigEnable("GTK2", "gtk+-2.0")
+        PkgConfigEnable("FREETYPE", "freetype2")
+        PkgConfigEnable("PNG", "libpng")
     else:
-        if (PkgSkip("FREETYPE")==0): IncDirectory("FREETYPE", "/usr/include/freetype2")
-        if (os.path.exists("/usr/lib64")):
-            IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
-            IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
-    PkgConfigEnable("GTK2", "gtk+-2.0")
+        exit("Failed to locate pkg-config binary!")
+    
+    if (platform.uname()[1]=="pcbsd"):
+        IncDirectory("ALWAYS", "/usr/PCBSD/local/include")
+     
+    if (os.path.exists("/usr/lib64")):
+        IncDirectory("GTK2", "/usr/lib64/glib-2.0/include")
+        IncDirectory("GTK2", "/usr/lib64/gtk-2.0/include")
     
     if (sys.platform == "darwin"):
         pkgs = ["VRPN", "FFTW", "FMODEX", "ARTOOLKIT", "ODE", "OPENCV", "FCOLLADA", "SQUISH", "FFMPEG", "PNG", "JPEG", "TIFF", "TINYXML", "NPAPI"]
@@ -434,10 +441,7 @@ if (COMPILER=="LINUX"):
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lavutil")
     if (PkgSkip("FFMPEG")==0):     LibName("FFMPEG", "-lswscale")
     if (PkgSkip("ZLIB")==0):       LibName("ZLIB", "-lz")
-    if (PkgSkip("PNG")==0):        LibName("PNG", "-lpng")
     if (PkgSkip("JPEG")==0):       LibName("JPEG", "-ljpeg")
-    if (PkgSkip("OPENSSL")==0):    LibName("OPENSSL",  "-lssl")
-    if (PkgSkip("FREETYPE")==0):   LibName("FREETYPE", "-lfreetype")
     if (PkgSkip("VRPN")==0):       LibName("VRPN", "-lvrpn")
     if (PkgSkip("VRPN")==0):       LibName("VRPN", "-lquat")
     if (PkgSkip("FFTW")==0):       LibName("FFTW", "-lrfftw")
@@ -1167,7 +1171,7 @@ def WriteConfigSettings():
         if (sys.platform.startswith("win")):
             plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file://C:\\p3dstage"
         else:
-            plugin_config["P3D_PLUGIN_DOWNLOAD"] = "/p3dstage"
+            plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file:///p3dstage"
         plugin_config["P3D_PLUGIN_LOGFILE1"] = ""
         plugin_config["P3D_PLUGIN_LOGFILE2"] = ""
         plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
@@ -2959,7 +2963,16 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
-  TargetAdd('panda3d.exe', input=COMMON_PANDA_LIBS)
+  # This is maybe a bit ugly, but it keeps panda3d.exe independent.
+  TargetAdd('panda3d.exe', input='dtoolutil_composite.obj')
+  TargetAdd('panda3d.exe', input='dtoolbase_composite1.obj')
+  TargetAdd('panda3d.exe', input='dtoolbase_composite2.obj')
+  TargetAdd('panda3d.exe', input='dtoolbase_indent.obj')
+  TargetAdd('panda3d.exe', input='dtoolbase_lookup3.obj')
+  TargetAdd('panda3d.exe', input='prc_composite.obj')
+  TargetAdd('panda3d.exe', input='downloader_composite.obj')
+  TargetAdd('panda3d.exe', input='express_composite1.obj')
+  TargetAdd('panda3d.exe', input='express_composite2.obj')
   TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL'])
 
 #
