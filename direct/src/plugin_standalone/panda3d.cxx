@@ -483,8 +483,6 @@ handle_request(P3D_request *request) {
     break;
 
   default:
-    // Some request types are not handled.
-    cerr << "Unhandled request: " << request->_request_type << "\n";
     break;
   };
 
