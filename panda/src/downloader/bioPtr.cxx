@@ -29,10 +29,35 @@
 ////////////////////////////////////////////////////////////////////
 BioPtr::
 BioPtr(const URLSpec &url) {
-  _server_name = url.get_server();
-  _port = url.get_port();
-  _bio = BIO_new_connect((char *)_server_name.c_str());
-  BIO_set_conn_int_port(_bio, &_port);
+  if (url.get_scheme() == "file") {
+    // We're just reading a disk file.
+    string filename = url.get_path();
+#ifdef _WIN32 
+    // On Windows, we have to munge the filename specially, because it's
+    // been URL-munged.  It might begin with a leading slash as well as
+    // a drive letter.  Clean up that nonsense.
+    if (!filename.empty()) {
+      if (filename[0] == '/' || filename[0] == '\\') {
+        Filename fname = Filename::from_os_specific(filename.substr(1));
+        if (fname.is_local()) {
+          // Put the slash back on.
+          fname = string("/") + fname.get_fullpath();
+        }
+        filename = fname.to_os_specific();
+      }
+    }
+#endif  // _WIN32
+    _server_name = "";
+    _port = 0;
+    _bio = BIO_new_file(filename.c_str(), "rb");
+
+  } else {
+    // A normal network-based URL.
+    _server_name = url.get_server();
+    _port = url.get_port();
+    _bio = BIO_new_connect((char *)_server_name.c_str());
+    BIO_set_conn_int_port(_bio, &_port);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

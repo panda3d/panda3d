@@ -215,6 +215,7 @@ private:
   bool run_ready();
   bool run_request_sent();
   bool run_reading_header();
+  bool run_start_direct_file_read();
   bool run_read_header();
   bool run_begin_body();
   bool run_reading_body();
@@ -287,6 +288,7 @@ public:
     S_ready,
     S_request_sent,
     S_reading_header,
+    S_start_direct_file_read,
     S_read_header,
     S_begin_body,
     S_reading_body,

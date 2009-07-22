@@ -23,6 +23,8 @@
 #include "virtualFileMountHTTP.h"
 #include "ramfile.h"
 
+#include <stdio.h>
+
 #ifdef HAVE_OPENSSL
 #include "openssl/x509.h"
 
@@ -460,6 +462,10 @@ run() {
       
     case S_reading_header:
       repeat_later = run_reading_header();
+      break;
+      
+    case S_start_direct_file_read:
+      repeat_later = run_start_direct_file_read();
       break;
       
     case S_read_header:
@@ -912,7 +918,7 @@ reached_done_state() {
     if (_body_stream == (ISocketStream *)NULL) {
       if (downloader_cat.is_debug()) {
         downloader_cat.debug()
-          << "Unable to download body.\n";
+          << "Unable to download body: " << _request.get_url() << "\n";
       }
       return false;
 
@@ -1982,6 +1988,18 @@ run_reading_header() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::run_start_direct_file_read
+//       Access: Private
+//  Description: This is the first state when reading a file:// URL.
+//               All it does is skip past the non-existent "header".
+////////////////////////////////////////////////////////////////////
+bool HTTPChannel::
+run_start_direct_file_read() {
+  _state = S_read_header;
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::run_read_header
 //       Access: Private
 //  Description: In this state we have completely read the header
@@ -2436,27 +2454,60 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
 
   reconsider_proxy();
 
-  // Also, reset from whatever previous request might still be pending.
-  if (_state == S_failure || (_state < S_read_header && _state != S_ready)) {
-    if (downloader_cat.is_debug()) {
-      downloader_cat.debug()
-        << "resetting to clear previous request.\n";
-    }
+  // Reset from whatever previous request might still be pending.
+  if (_request.get_url().get_scheme() == "file") {
+    // A "file" URL just means we're reading a raw file.  This only
+    // supports actual disk files, not the VFS, because we use a
+    // BIO_new_file() underneath this.
     reset_to_new();
+    _bio = new BioPtr(_request.get_url());
+    if (_bio->get_bio() != NULL) {
+      // Successfully opened the file.
+      _source = new BioStreamPtr(new BioStream(_bio));
+      _status_entry._status_code = 200;
+      _state = S_start_direct_file_read;
 
-  } else if (TrueClock::get_global_ptr()->get_short_time() - _last_run_time >= _idle_timeout) {
-    if (downloader_cat.is_debug()) {
-      downloader_cat.debug()
-        << "resetting old connection: " 
-        << TrueClock::get_global_ptr()->get_short_time() - _last_run_time
-        << " s old.\n";
+      // Get the file size.
+      FILE *fp = NULL;
+      BIO_get_fp(_bio->get_bio(), &fp);
+      if (fp != NULL) {
+        if (fseek(fp, 0, SEEK_END) == 0) {
+          _file_size = ftell(fp);
+          _got_file_size = true;
+          fseek(fp, 0, SEEK_SET);
+        }
+      }
+
+    } else {
+      // Couldn't read the file.
+      notify_ssl_errors();
+      _status_entry._status_code = SC_no_connection;
+      _state = S_failure;
     }
-    reset_to_new();
 
-  } else if (_state == S_read_header) {
-    // Roll one step forwards to start skipping past the previous
-    // body.
-    _state = S_begin_body;
+  } else {
+    // We're reading a normal network URL.
+    if (_state == S_failure || (_state < S_read_header && _state != S_ready)) {
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug()
+          << "resetting to clear previous request.\n";
+      }
+      reset_to_new();
+      
+    } else if (TrueClock::get_global_ptr()->get_short_time() - _last_run_time >= _idle_timeout) {
+      if (downloader_cat.is_debug()) {
+        downloader_cat.debug()
+          << "resetting old connection: " 
+          << TrueClock::get_global_ptr()->get_short_time() - _last_run_time
+          << " s old.\n";
+      }
+      reset_to_new();
+      
+    } else if (_state == S_read_header) {
+      // Roll one step forwards to start skipping past the previous
+      // body.
+      _state = S_begin_body;
+    }
   }
 
   if (_method == HTTPEnum::M_connect) {
@@ -3822,6 +3873,9 @@ operator << (ostream &out, HTTPChannel::State state) {
 
   case HTTPChannel::S_reading_header:
     return out << "reading_header";
+
+  case HTTPChannel::S_start_direct_file_read:
+    return out << "start_direct_file_read";
 
   case HTTPChannel::S_read_header:
     return out << "read_header";

@@ -193,7 +193,7 @@ underflow() {
         // which that never returns true, if the socket is closed by
         // the server.  But BIO_should_retry() *appears* to be
         // reliable.
-        _read_open = (bool)BIO_should_retry(*_source);
+        _read_open = (BIO_should_retry(*_source) != 0);
         if (!_read_open) {
           downloader_cat.info()
             << "Lost connection to "
@@ -262,7 +262,7 @@ write_chars(const char *start, size_t length) {
         // without a retry request
         //_write_open = BIO_should_retry(*_source);
         //_write_open = !BIO_eof(*_source);
-        _write_open = (bool)BIO_should_write(*_source);
+        _write_open = (BIO_should_write(*_source) != 0);
         if (!_write_open) {
           return wrote_so_far;
         }
