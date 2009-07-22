@@ -187,9 +187,12 @@
 // Can we safely call getenv() at static init time?
 #define STATIC_INIT_GETENV 1
 
-// Can we read the file /proc/self/environ to determine our
+// Can we read the file /proc/self/* to determine our
 // environment variables at static init time?
-#define HAVE_PROC_SELF_ENVIRON 1
+#define HAVE_PROC_SELF_EXE
+#define HAVE_PROC_SELF_MAPS
+#define HAVE_PROC_SELF_ENVIRON
+#define HAVE_PROC_SELF_CMDLINE
 
 // Do we have a global pair of argc/argv variables that we can read at
 // static init time?  Should we prototype them?  What are they called?
@@ -197,10 +200,6 @@
 #define PROTOTYPE_GLOBAL_ARGV
 #define GLOBAL_ARGV __Argv
 #define GLOBAL_ARGC __Argc
-
-// Can we read the file /proc/self/cmdline to determine our
-// command-line arguments at static init time?
-#define HAVE_PROC_SELF_CMDLINE 
 
 // Should we include <iostream> or <iostream.h>?  Define HAVE_IOSTREAM
 // to nonempty if we should use <iostream>, or empty if we should use

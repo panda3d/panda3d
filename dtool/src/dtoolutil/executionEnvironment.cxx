@@ -460,10 +460,14 @@ read_args() {
   }
 #endif
 
-#if defined(HAVE_PROC_SELF_MAPS)
+#if defined(HAVE_PROC_SELF_MAPS) || defined(HAVE_PROC_CURPROC_MAP)
   // This is how you tell whether or not libdtool.so is loaded,
   // and if so, where it was loaded from.
+#ifdef HAVE_PROC_CURPROC_MAP
+  pifstream maps("/proc/curproc/map");
+#else
   pifstream maps("/proc/self/maps");
+#endif
   while (!maps.fail() && !maps.eof()) {
     char buffer[PATH_MAX];
     buffer[0] = 0;
@@ -502,11 +506,15 @@ read_args() {
   }
 #endif  // WIN32_VC
 
-#if defined(HAVE_PROC_SELF_EXE)
+#if defined(HAVE_PROC_SELF_EXE) || defined(HAVE_PROC_CURPROC_FILE)
   // This is more reliable than using (argc,argv), so it given precedence.
   if (_binary_name.empty()) {
     char readlinkbuf[PATH_MAX];
+#ifdef HAVE_PROC_CURPROC_FILE
+    int pathlen = readlink("/proc/curproc/file",readlinkbuf,PATH_MAX-1);
+#else
     int pathlen = readlink("/proc/self/exe",readlinkbuf,PATH_MAX-1);
+#endif
     if (pathlen > 0) {
       readlinkbuf[pathlen] = 0;
       _binary_name = readlinkbuf;
@@ -538,18 +546,26 @@ read_args() {
     _args.push_back(GLOBAL_ARGV[i]);
   }
 
-#elif defined(HAVE_PROC_SELF_CMDLINE)
+#elif defined(HAVE_PROC_SELF_CMDLINE) || defined(HAVE_PROC_CURPROC_CMDLINE)
   // In Linux, and possibly in other systems as well, we might not be
   // able to use the global ARGC/ARGV variables at static init time.
   // However, we may be lucky and have a file called
   // /proc/self/cmdline that may be read to determine all of our
   // command-line arguments.
 
+#ifdef HAVE_PROC_CURPROC_CMDLINE
+  pifstream proc("/proc/curproc/cmdline");
+  if (proc.fail()) {
+    cerr << "Cannot read /proc/curproc/cmdline; command-line arguments unavailable to config.\n";
+    return;
+  }
+#else
   pifstream proc("/proc/self/cmdline");
   if (proc.fail()) {
     cerr << "Cannot read /proc/self/cmdline; command-line arguments unavailable to config.\n";
     return;
   }
+#endif
   
   int ch = proc.get();
   int index = 0;

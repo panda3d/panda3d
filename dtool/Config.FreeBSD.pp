@@ -84,9 +84,15 @@
 #define GLOBAL_ARGV
 #define GLOBAL_ARGC
 
-// Can we read the file /proc/self/cmdline to determine our
+// Can we read the file /proc/curproc/* to determine our
 // command-line arguments at static init time?
+#define HAVE_PROC_SELF_EXE
+#define HAVE_PROC_SELF_MAPS
+#define HAVE_PROC_SELF_ENVIRON
 #define HAVE_PROC_SELF_CMDLINE
+#define HAVE_PROC_CURPROC_FILE 1
+#define HAVE_PROC_CURPROC_MAP 1
+#define HAVE_PROC_CURPROC_CMDLINE 1
 
 // Should we include <iostream> or <iostream.h>?  Define HAVE_IOSTREAM
 // to nonempty if we should use <iostream>, or empty if we should use

@@ -994,6 +994,9 @@ DTOOL_CONFIG=[
     ("HAVE_PROC_SELF_MAPS",            'UNDEF',                  '1'),
     ("HAVE_PROC_SELF_ENVIRON",         'UNDEF',                  '1'),
     ("HAVE_PROC_SELF_CMDLINE",         'UNDEF',                  '1'),
+    ("HAVE_PROC_CURPROC_FILE",         'UNDEF',                  'UNDEF'),
+    ("HAVE_PROC_CURPROC_MAP",          'UNDEF',                  'UNDEF'),
+    ("HAVE_PROC_SELF_CMDLINE",         'UNDEF',                  'UNDEF'),
     ("HAVE_GLOBAL_ARGV",               '1',                      'UNDEF'),
     ("PROTOTYPE_GLOBAL_ARGV",          'UNDEF',                  'UNDEF'),
     ("GLOBAL_ARGV",                    '__argv',                 'UNDEF'),
@@ -1112,6 +1115,12 @@ def WriteConfigSettings():
         dtool_config["HAVE_CGGL"] = '1'
         dtool_config["HAVE_CGDX9"] = '1'
     
+    if (not sys.platform.startswith("linux")):
+        dtool_config["HAVE_PROC_SELF_EXE"] = 'UNDEF'
+        dtool_config["HAVE_PROC_SELF_MAPS"] = 'UNDEF'
+        dtool_config["HAVE_PROC_SELF_CMDLINE"] = 'UNDEF'
+        dtool_config["HAVE_PROC_SELF_ENVIRON"] = 'UNDEF'
+    
     if (sys.platform == "darwin"):
         dtool_config["PYTHON_FRAMEWORK"] = 'Python'
         dtool_config["HAVE_MALLOC_H"] = 'UNDEF'
@@ -1121,16 +1130,15 @@ def WriteConfigSettings():
         dtool_config["HAVE_XF86DGA"] = 'UNDEF'
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["IS_OSX"] = '1'
-        dtool_config["HAVE_PROC_SELF_EXE"] = 'UNDEF'
-        dtool_config["HAVE_PROC_SELF_MAPS"] = 'UNDEF'
-        dtool_config["HAVE_PROC_SELF_CMDLINE"] = 'UNDEF'
-        dtool_config["HAVE_PROC_SELF_ENVIRON"] = 'UNDEF'
     
     if (sys.platform.startswith("freebsd")):
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["IS_FREEBSD"] = '1'
         dtool_config["HAVE_ALLOCA_H"] = 'UNDEF'
         dtool_config["HAVE_MALLOC_H"] = 'UNDEF'
+        dtool_config["HAVE_PROC_CURPROC_FILE"] = '1'
+        dtool_config["HAVE_PROC_CURPROC_MAP"] = '1'
+        dtool_config["HAVE_PROC_CURPROC_CMDLINE"] = '1'
     
     if (OPTIMIZE <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):

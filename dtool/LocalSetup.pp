@@ -529,9 +529,15 @@ $[cdefine HAVE_IOS_BINARY]
 /* Can we safely call getenv() at static init time? */
 $[cdefine STATIC_INIT_GETENV]
 
-/* Can we read the file /proc/self/environ to determine our
+/* Can we read the file /proc/self/* to determine our
    environment variables at static init time? */
+$[cdefine HAVE_PROC_SELF_EXE]
+$[cdefine HAVE_PROC_SELF_MAPS]
 $[cdefine HAVE_PROC_SELF_ENVIRON]
+$[cdefine HAVE_PROC_SELF_CMDLINE]
+$[cdefine HAVE_PROC_CURPROC_FILE]
+$[cdefine HAVE_PROC_CURPROC_MAP]
+$[cdefine HAVE_PROC_CURPROC_CMDLINE]
 
 /* Do we have a global pair of argc/argv variables that we can read at
    static init time?  Should we prototype them?  What are they called? */
@@ -539,10 +545,6 @@ $[cdefine HAVE_GLOBAL_ARGV]
 $[cdefine PROTOTYPE_GLOBAL_ARGV]
 $[cdefine GLOBAL_ARGV]
 $[cdefine GLOBAL_ARGC]
-
-/* Can we read the file /proc/self/cmdline to determine our
-   command-line arguments at static init time? */
-$[cdefine HAVE_PROC_SELF_CMDLINE]
 
 /* Define if you have the <io.h> header file.  */
 $[cdefine HAVE_IO_H]
