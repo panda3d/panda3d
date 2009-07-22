@@ -55,7 +55,7 @@
   #forscopes lib_target
     #if $[eq $[module $[TARGET],$[TARGET]],]
       // This library is not on a metalib, so we can build it.
-      #set real_lib_targets $[real_lib_targets] $[TARGET]
+      #set real_lib_targets $[real_lib_targets] $[active_target]
     #else
       // This library is on a metalib, so we can't build it, but we
       // should build all the obj's that go into it.

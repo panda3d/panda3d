@@ -53,15 +53,17 @@
   #define real_lib_target_libs
   #define deferred_objs
   #forscopes lib_target
-    #if $[eq $[module $[TARGET],$[TARGET]],]
-      // This library is not on a metalib, so we can build it.
-      #set real_lib_targets $[real_lib_targets] $[TARGET]
-      #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
-    #else
-      // This library is on a metalib, so we can't build it, but we
-      // should build all the obj's that go into it.
-      #set deferred_objs $[deferred_objs] \
-        $[patsubst %,$[%_obj],$[compile_sources]]
+    #if $[build_target]
+      #if $[eq $[module $[TARGET],$[TARGET]],]
+        // This library is not on a metalib, so we can build it.
+        #set real_lib_targets $[real_lib_targets] $[TARGET]
+        #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+      #else
+        // This library is on a metalib, so we can't build it, but we
+        // should build all the obj's that go into it.
+        #set deferred_objs $[deferred_objs] \
+          $[patsubst %,$[%_obj],$[compile_sources]]
+      #endif
     #endif
   #end lib_target
 
