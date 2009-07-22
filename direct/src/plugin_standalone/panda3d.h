@@ -27,6 +27,7 @@
 #include "p3d_plugin.h"
 #include "httpChannel.h"
 #include "ramfile.h"
+#include "fileSpec.h"
 #include "pset.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -41,7 +42,11 @@ public:
   int run(int argc, char *argv[]);
 
 private:
-  void feed_file(P3D_instance *inst, int unique_id, string filename);
+  bool get_plugin(const string &root_url, const string &this_platform,
+                  bool force_download);
+  bool read_contents_file(Filename contents, const string &root_url, 
+                          const string &this_platform);
+  bool get_core_api(const string &root_url, TiXmlElement *xpackage);
   void run_getters();
   void handle_request(P3D_request *request);
   void make_parent_window(P3D_window_handle &parent_window, 
@@ -58,6 +63,9 @@ private:
   bool parse_int_pair(char *arg, int &x, int &y);
 
 private:
+  string _root_dir;
+  FileSpec _core_api_dll;
+
   typedef pset<P3D_instance *> Instances;
   Instances _instances;
 

@@ -15,7 +15,10 @@
 #include "panda3d.h"
 #include "httpClient.h"
 #include "load_plugin.h"
+#include "find_root_dir.h"
+#include "p3d_plugin_config.h"
 
+#include <sstream>
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -36,6 +39,7 @@
 ////////////////////////////////////////////////////////////////////
 Panda3D::
 Panda3D() {
+  _root_dir = find_root_dir();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -48,9 +52,12 @@ int Panda3D::
 run(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "p:l:t:s:o:h";
+  const char *optstr = "u:p:fl:t:s:o:h";
 
-  Filename p3d_plugin_filename;
+  string root_url = P3D_PLUGIN_DOWNLOAD;
+  string this_platform = P3D_PLUGIN_PLATFORM;
+  bool force_download = false;
+
   Filename output_filename;
   P3D_window_type window_type = P3D_WT_toplevel;
   int win_x = 0, win_y = 0;
@@ -60,8 +67,19 @@ run(int argc, char *argv[]) {
 
   while (flag != EOF) {
     switch (flag) {
+    case 'u':
+      root_url = optarg;
+      if (!root_url.empty() && root_url[root_url.length() - 1] != '/') {
+        root_url += '/';
+      }
+      break;
+
     case 'p':
-      p3d_plugin_filename = Filename::from_os_specific(optarg);
+      this_platform = optarg;
+      break;
+
+    case 'f':
+      force_download = true;
       break;
 
     case 'l':
@@ -114,7 +132,7 @@ run(int argc, char *argv[]) {
     return 1;
   }
 
-  if (!load_plugin(p3d_plugin_filename.to_os_specific())) {
+  if (!get_plugin(root_url, this_platform, force_download)) {
     cerr << "Unable to load Panda3D plugin.\n";
     return 1;
   }
@@ -257,66 +275,132 @@ run(int argc, char *argv[]) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Panda3D::feed_file
+//     Function: Panda3D::get_plugin
 //       Access: Private
-//  Description: Opens the named file (extracted from a file:// URL)
-//               and feeds its contents to the plugin.
+//  Description: Downloads the contents.xml file from the named URL
+//               and attempts to use it to load the core API.  Returns
+//               true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-void Panda3D::
-feed_file(P3D_instance *inst, int unique_id, string filename) {
-#ifdef _WIN32 
-  // On Windows, we have to munge the filename specially, because it's
-  // been URL-munged.  It might begin with a leading slash as well as
-  // a drive letter.  Clean up that nonsense.
-  if (!filename.empty()) {
-    if (filename[0] == '/' || filename[0] == '\\') {
-      Filename fname = Filename::from_os_specific(filename.substr(1));
-      if (fname.is_local()) {
-        // Put the slash back on.
-        fname = string("/") + fname.get_fullpath();
-      }
-      filename = fname.to_os_specific();
-    }
+bool Panda3D::
+get_plugin(const string &root_url, const string &this_platform, bool force_download) {
+  // First, look for the existing contents.xml file.
+  Filename contents = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
+  if (!force_download && read_contents_file(contents, root_url, this_platform)) {
+    // Got the file, and it's good.
+    return true;
   }
-#endif  // _WIN32
 
-  ifstream file(filename.c_str(), ios::in | ios::binary);
-
-  // First, seek to the end to get the file size.
-  file.seekg(0, ios::end);
-  size_t file_size = file.tellg();
-
-  // Then return to the beginning to read the data.
-  file.seekg(0, ios::beg);
-
-  static const size_t buffer_size = 4096;
-  char buffer[buffer_size];
-
-  file.read(buffer, buffer_size);
-  size_t count = file.gcount();
-  size_t total_count = 0;
-  while (count != 0) {
-    bool download_ok = P3D_instance_feed_url_stream
-      (inst, unique_id, P3D_RC_in_progress,
-       0, file_size, (const unsigned char *)buffer, count);
-
-    if (!download_ok) {
-      // Never mind.
-      return;
-    }
-    file.read(buffer, buffer_size);
-    count = file.gcount();
-    total_count += count;
+  // Couldn't read it, so go get it.
+  string url = root_url;
+  url += "contents.xml";
+  cerr << "Getting URL " << root_url << "\n";
+  
+  HTTPClient *http = HTTPClient::get_global_ptr();
+  PT(HTTPChannel) channel = http->get_document(url);
+  Ramfile rf;
+  if (!channel->download_to_file(contents)) {
+    cerr << "Unable to download " << url << "\n";
+    return false;
   }
   
-  P3D_result_code result = P3D_RC_done;
-  if (file.fail() && !file.eof()) {
-    // Got an error while reading.
-    result = P3D_RC_generic_error;
+  return read_contents_file(contents, root_url, this_platform);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::read_contents_file
+//       Access: Private
+//  Description: Attempts to open and read the contents.xml file on
+//               disk, and uses that data to load the plugin, if
+//               possible.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool Panda3D::
+read_contents_file(Filename contents, const string &root_url, 
+                   const string &this_platform) {
+  ifstream in;
+  contents.set_text();
+  if (!contents.open_read(in)) {
+    cerr << "Couldn't read " << contents.to_os_specific() << "\n";
+    return false;
   }
 
-  P3D_instance_feed_url_stream
-    (inst, unique_id, result, 0, total_count, NULL, 0);
+  TiXmlDocument doc;
+  in >> doc;
+
+  TiXmlElement *xcontents = doc.FirstChildElement("contents");
+  if (xcontents != NULL) {
+    TiXmlElement *xpackage = xcontents->FirstChildElement("package");
+    while (xpackage != NULL) {
+      const char *name = xpackage->Attribute("name");
+      if (name != NULL && strcmp(name, "coreapi") == 0) {
+        const char *xplatform = xpackage->Attribute("platform");
+        if (xplatform != NULL && strcmp(xplatform, this_platform.c_str()) == 0) {
+          return get_core_api(root_url, xpackage);
+        }
+      }
+      
+      xpackage = xpackage->NextSiblingElement("package");
+    }
+  }
+
+  // Couldn't find the coreapi package description.
+  cerr << "No coreapi package defined in contents file for "
+       << this_platform << "\n";
+  return false;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::get_core_api
+//       Access: Private
+//  Description: Checks the core API DLL file against the
+//               specification in the contents file, and downloads it
+//               if necessary.
+////////////////////////////////////////////////////////////////////
+bool Panda3D::
+get_core_api(const string &root_url, TiXmlElement *xpackage) {
+  _core_api_dll.load_xml(xpackage);
+
+  if (!_core_api_dll.quick_verify(_root_dir)) {
+    // The DLL file needs to be downloaded.  Go get it.
+    string url = root_url;
+    url += _core_api_dll.get_filename();
+    
+    Filename pathname = Filename::from_os_specific(_core_api_dll.get_pathname(_root_dir));
+    HTTPClient *http = HTTPClient::get_global_ptr();
+    PT(HTTPChannel) channel = http->get_document(url);
+    if (!channel->download_to_file(pathname)) {
+      cerr << "Unable to download " << url << "\n";
+      return false;
+    }
+
+    if (!_core_api_dll.quick_verify(_root_dir)) {
+      cerr << "Mismatched download for " << url << "\n";
+      return false;
+    }
+  }
+
+  // Now we've got the DLL.  Load it.
+  string pathname = _core_api_dll.get_pathname(_root_dir);
+
+#ifdef P3D_PLUGIN_P3D_PLUGIN
+  // This is a convenience macro for development.  If defined and
+  // nonempty, it indicates the name of the plugin DLL that we will
+  // actually run, even after downloading a possibly different
+  // (presumably older) version.  Its purpose is to simplify iteration
+  // on the plugin DLL.
+  string override_filename = P3D_PLUGIN_P3D_PLUGIN;
+  if (!override_filename.empty()) {
+    pathname = override_filename;
+  }
+#endif  // P3D_PLUGIN_P3D_PLUGIN
+
+  if (!load_plugin(pathname)) {
+    cerr << "Unable to launch core API in " << pathname << "\n" << flush;
+    return false;
+  }
+
+  // Successfully loaded.
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -370,18 +454,9 @@ handle_request(P3D_request *request) {
     {
       int unique_id = request->_request._get_url._unique_id;
       const string &url = request->_request._get_url._url;
-      if (url.substr(0, 7) == "file://") {
-        // A special case: if the url begins with "file://", just open
-        // the named file and feed it directly to the plugin.
-        feed_file(request->_instance, unique_id, url.substr(7));
-
-      } else {
-        // Otherwise, assume it's a legitimate URL and pass it down to
-        // Panda's HTTPClient to read it.
-        URLGetter *getter = new URLGetter
-          (request->_instance, unique_id, URLSpec(url), "");
-        _url_getters.insert(getter);
-      }
+      URLGetter *getter = new URLGetter
+        (request->_instance, unique_id, URLSpec(url), "");
+      _url_getters.insert(getter);
       handled = true;
     }
     break;
@@ -570,11 +645,6 @@ usage() {
 
     << "Options:\n\n"
 
-    << "  -p " << get_plugin_basename() << "\n"
-    << "    Specify the full path to the particular Panda plugin DLL to\n"
-    << "    run.  Normally, this will be found by searching in the usual\n"
-    << "    places.\n\n"
-
     << "  -l output.log\n"
     << "    Specify the name of the file to receive the log output of the\n"
     << "    plugin process(es).  The default is to send this output to the\n"
@@ -589,7 +659,20 @@ usage() {
 
     << "  -o x,y\n"
     << "    Specify the position (origin) of the graphic window on the\n"
-    << "    screen, or on the parent window.\n\n";
+    << "    screen, or on the parent window.\n\n"
+
+    << "  -f\n"
+    << "    Force a HTTP contact to the Panda3D download server, to check\n"
+    << "    if a new version is available.  Normally, this is done only\n"
+    << "    if contents.xml cannot be read.\n\n"
+
+    << "  -u url\n"
+    << "    Specify the URL of the Panda3D download server.  The default is\n"
+    << "    " << P3D_PLUGIN_DOWNLOAD << "\n\n"
+
+    << "  -p platform\n"
+    << "    Specify the platform to masquerade as.  The default is "
+    << P3D_PLUGIN_PLATFORM << "\n\n";
 }
 
 ////////////////////////////////////////////////////////////////////

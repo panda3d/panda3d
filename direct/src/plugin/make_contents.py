@@ -53,9 +53,11 @@ class ContentsMaker:
         f = open(contentsFilePathname.toOsSpecific(), 'w')
         print >> f, '<?xml version="1.0" ?>'
         print >> f, ''
+        print >> f, '<contents>'
         for packageName, packageVersion, packagePlatform, file in self.packages:
-            print >> f, '<package name="%s" version="%s" platform="%s" %s />' % (
+            print >> f, '  <package name="%s" version="%s" platform="%s" %s />' % (
                 packageName, packageVersion, packagePlatform or '', file.getParams())
+        print >> f, '</contents>'
         f.close()
 
     def scanDirectory(self):
