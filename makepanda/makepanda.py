@@ -787,7 +787,7 @@ def CompileLink(dll, obj, opts):
                 pass
             else: cmd = cmd + ' ' + BracketNameWithQuotes(x)
         if (GetOrigExt(dll)==".exe" and platform.architecture()[0] == "32bit"):
-            cmd = cmd + ' panda/src/configfiles/pandaIcon.obj'
+            cmd = cmd + ' built/tmp/pandaIcon.res'
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + BracketNameWithQuotes(name)
         oscmd(cmd)
@@ -1569,6 +1569,16 @@ COMMON_EGG2X_LIBS_PYSTUB = COMMON_EGG2X_LIBS + ['libp3pystub.dll']
 
 print "Generating dependencies..."
 sys.stdout.flush()
+
+#
+# Compile Panda icon resource file.
+# We do it first because we need it at
+# the time we compile an executable.
+#
+
+if (sys.platform.startswith("win")):
+  OPTS=['DIR:panda/src/configfiles']
+  TargetAdd('pandaIcon.res', input='pandaIcon.rc')
 
 #
 # DIRECTORY: dtool/src/dtoolbase/
@@ -3423,11 +3433,11 @@ for VER in MAXVERSIONS:
   VNUM=VER[3:]
   if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/maxegg', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
-    CopyFile(GetOutputDir()+"/tmp/maxEgg.obj", "pandatool/src/maxegg/maxEgg.obj")
+    TargetAdd('maxEgg.res', input='maxEgg.rc')
     TargetAdd('maxegg'+VNUM+'_loader.obj', opts=OPTS, input='maxEggLoader.cxx')
     TargetAdd('maxegg'+VNUM+'_composite1.obj', opts=OPTS, input='maxegg_composite1.cxx')
     TargetAdd('maxegg'+VNUM+'.dlo', input='maxegg'+VNUM+'_composite1.obj')
-    TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg.obj')
+    TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg.res')
     TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg.def', ipath=OPTS)
     TargetAdd('maxegg'+VNUM+'.dlo', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('maxegg'+VNUM+'.dlo', opts=OPTS)
@@ -3440,14 +3450,14 @@ for VER in MAXVERSIONS:
   VNUM=VER[3:]
   if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/maxprogs', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
-    CopyFile(GetOutputDir()+"/tmp/maxImportRes.obj", "pandatool/src/maxprogs/maxImportRes.obj")
+    TargetAdd('maxImportRes.res', input='maxImportRes.rc')
     TargetAdd('maxprogs'+VNUM+'_maxeggimport.obj', opts=OPTS, input='maxEggImport.cxx')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='maxegg'+VNUM+'_loader.obj')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='maxprogs'+VNUM+'_maxeggimport.obj')
-    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxImportRes.obj')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandaegg.dll')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='libpanda.dll')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='libpandaexpress.dll')
+    TargetAdd('maxeggimport'+VNUM+'.dle', input='maxImportRes.res')
     TargetAdd('maxeggimport'+VNUM+'.dle', input='maxEggImport.def', ipath=OPTS)
     TargetAdd('maxeggimport'+VNUM+'.dle', input=COMMON_DTOOL_LIBS)
     TargetAdd('maxeggimport'+VNUM+'.dle', opts=OPTS)
