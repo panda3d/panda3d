@@ -943,11 +943,12 @@ def CompileBundle(target, inputs, opts):
     
     oscmd("rm -rf %s" % target)
     oscmd("mkdir -p %s/Contents/MacOS/" % target)
+    oscmd("mkdir -p %s/Contents/Resources/" % target)
     SetOrigExt("%s/Contents/MacOS/%s" % (target, bundleName), ".dll")
     CompileLink("%s/Contents/MacOS/%s" % (target, bundleName), objects, opts + ["BUNDLE"])
     oscmd("cp %s %s/Contents/Info.plist" % (plist, target))
     for r in resources:
-        oscmd("cp %s %s/Contents/Resources/" % (plist, target))
+        oscmd("cp %s %s/Contents/Resources/" % (r, target))
 
 ##########################################################################################
 #
@@ -3041,23 +3042,32 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
 #
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
-  # This is maybe a bit ugly, but it keeps panda3d.exe independent.
+  # This is maybe a little bit ugly, but it keeps panda3d.exe independent.
+  TargetAdd('libpandaexpress-static.lib', input='dtool_dtool.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_gnu_getopt.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_gnu_getopt1.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_composite.obj')
+  if (sys.platform == 'darwin'):
+    TargetAdd('libpandaexpress-static.lib', input='dtoolutil_filename_assist.obj')
   TargetAdd('libpandaexpress-static.lib', input='dtoolbase_composite1.obj')
   TargetAdd('libpandaexpress-static.lib', input='dtoolbase_composite2.obj')
   TargetAdd('libpandaexpress-static.lib', input='dtoolbase_indent.obj')
   TargetAdd('libpandaexpress-static.lib', input='dtoolbase_lookup3.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_composite.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_gnu_getopt.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_gnu_getopt1.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolconfig_dtoolconfig.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolconfig_pydtool.obj')
+  TargetAdd('libpandaexpress-static.lib', input='interrogatedb_composite.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dconfig_composite.obj')
   TargetAdd('libpandaexpress-static.lib', input='prc_composite.obj')
+  TargetAdd('libpandaexpress-static.lib', input='libp3dtool.dll')
+  TargetAdd('libpandaexpress-static.lib', input='pandaexpress_pandaexpress.obj')
+  TargetAdd('libpandaexpress-static.lib', input='libpandaexpress_module.obj')
   TargetAdd('libpandaexpress-static.lib', input='downloader_composite.obj')
+  TargetAdd('libpandaexpress-static.lib', input='libdownloader_igate.obj')
   TargetAdd('libpandaexpress-static.lib', input='express_composite1.obj')
   TargetAdd('libpandaexpress-static.lib', input='express_composite2.obj')
-  TargetAdd('libpandaexpress-static.lib', input='interrogatedb_composite.obj')
   TargetAdd('libpandaexpress-static.lib', input='libexpress_igate.obj')
-  if (sys.platform == 'darwin'):
-    TargetAdd('libpandaexpress-static.lib', input='dtoolutil_filename_assist.obj')
-  TargetAdd('libpandaexpress-static.lib', opts=['ADVAPI','WINSHELL','WINKERNEL'])
+  TargetAdd('libpandaexpress-static.lib', input='pandabase_pandabase.obj')
+  TargetAdd('libpandaexpress-static.lib', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB', 'WINSHELL','WINKERNEL'])
 
   OPTS=['DIR:direct/src/plugin_standalone', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
