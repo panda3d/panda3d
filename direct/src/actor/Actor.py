@@ -1813,7 +1813,7 @@ class Actor(DirectObject, NodePath):
                             controls.append(anim.animControl)
             else:
                 # get the named animation(s) only.
-                if isinstance(animName, types.StringType):
+                if isinstance(animName, types.StringTypes):
                     # A single animName
                     animNameList = [animName]
                 else:
