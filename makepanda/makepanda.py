@@ -4053,7 +4053,10 @@ def MakeRuntime():
                         omit = True
                 if omit: continue
                 CopyFile(GetOutputDir()+"/rlib/"+base, GetOutputDir()+"/lib/"+base)
-                oscmd("strip --strip-all "+GetOutputDir()+"/rlib/"+base)
+                if (sys.platform == "darwin"):
+                    oscmd("strip "+GetOutputDir()+"/rlib/"+base)
+                else:
+                    oscmd("strip --strip-all "+GetOutputDir()+"/rlib/"+base)
     
     # Invoke the make_package and make_contents scripts.
     command = sys.executable + " direct/src/plugin/make_package.py"
