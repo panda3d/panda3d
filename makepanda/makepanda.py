@@ -1697,7 +1697,11 @@ TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL'])
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   pref = ""
-  if (sys.platform.startswith("win")): pref = "static_"
+  if (sys.platform.startswith("win")):
+    pref = "static_"
+    OPTS=['DIR:dtool/metalibs/dtool', 'LINK_ALL_STATIC']
+    TargetAdd('static_dtool_dtool.obj', opts=OPTS, input='dtool.cxx')
+  
   TargetAdd('libp3dtool.ilb', input=pref+'dtool_dtool.obj')
   TargetAdd('libp3dtool.ilb', input=pref+'dtoolutil_gnu_getopt.obj')
   TargetAdd('libp3dtool.ilb', input=pref+'dtoolutil_gnu_getopt1.obj')
