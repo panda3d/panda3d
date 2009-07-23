@@ -1389,6 +1389,7 @@ ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make M
 ########################################################################
 
 CopyTree(GetOutputDir()+'/include/parser-inc','dtool/src/parser-inc')
+CopyAllFiles(GetOutputDir()+'/include/parser-inc/','dtool/src/parser-inc/')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/openssl')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/netinet')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Cg')
