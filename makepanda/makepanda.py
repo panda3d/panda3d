@@ -13,7 +13,7 @@
 ########################################################################
 
 import sys,os,platform,time,stat,string,re,getopt,fnmatch,threading,Queue,signal,shutil
-from xml.dom.minidom import parse
+if (sys.platform == "darwin"): import plistlib
 
 from makepandacore import *
 from installpanda import *
@@ -939,23 +939,8 @@ def CompileBundle(target, inputs, opts):
     
     # Now link the object files to form the bundle.
     if (plist == None): exit("One plist file must be used when creating a bundle!")
-    bundleName = None
-    try:
-        plistXML = parse(plist)
-        plistXML = plistXML.getElementsByTagName("plist")[0]
-        plistXML = plistXML.getElementsByTagName("dict")[0]
-        for i, node in enumerate(plistXML.childNodes):
-            if (node.nodeName.lower() == "key" and \
-                node.firstChild.nodeValue.strip() == "CFBundleExecutable"):
-                # Find the next <string> element.
-                for j in range(j+1, len(plistXML.childNodes)):
-                    if (node.nodeName.lower() == "string"):
-                        bundleName = node.firstChild.nodeValue.strip()
-                        break
-    except:
-        exit("Error parsing plist file %s" % plist)
+    bundleName = plistlib.readPlist(plist)["CFBundleExecutable"]
     
-    if (not bundleName): exit("Couldn't find key 'CFBundleExecutable' in plist file %s" % plist)
     oscmd("rm -rf %s" % target)
     oscmd("mkdir -p %s/Contents/MacOS/" % target)
     CompileLink("%s/Contents/MacOS/%s" % (target, bundleName), objects, opts + ["BUNDLE"])
