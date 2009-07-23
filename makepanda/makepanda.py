@@ -801,10 +801,10 @@ def CompileLink(dll, obj, opts):
         if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
         else:
             if (sys.platform == "darwin"):
-                cmd = 'g++ -undefined dynamic_lookup '
-                if ("BUNDLE" in opts): cmd += '-bundle '
-                else: cmd += '-dynamiclib '
-                cmd += '-o ' + dll + ' -install_name ' + os.path.basename(dll) + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
+                cmd = 'g++ -undefined dynamic_lookup'
+                if ("BUNDLE" in opts): cmd += ' -bundle '
+                else: cmd += ' -dynamiclib -install_name ' + os.path.basename(dll)
+                cmd += ' -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
             else:
                 cmd = 'g++ -shared -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
         for x in obj:
