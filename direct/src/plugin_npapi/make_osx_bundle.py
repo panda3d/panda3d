@@ -45,29 +45,7 @@ InfoPlist = """<?xml version="1.0" encoding="UTF-8"?>
 	</dict>
 </dict>
 </plist>
-"""
-
-# The contents of the source nppanda3d.r file.  Apparently Firefox
-# ignores the Info.plist file, above, and looks only in the .rsrc file
-# within the bundle, which is compiled from the following source file.
-ResourceFile = """
-#include <Carbon/Carbon.r>
-
-resource 'STR#' (126) {
-	{ "Runs 3-D games and interactive applets", 
-          "Panda3D Game Engine Plug-In" }
-};
-
-resource 'STR#' (127) {
-	{ "Panda3D applet" }
-};
-
-resource 'STR#' (128) {
-	{ "application/x-panda3d", "p3d" }
-};
-
-"""
-        
+"""        
 
 import getopt
 import sys
@@ -104,15 +82,10 @@ def makeBundle(startDir):
     exeFilename.makeDir()
     resourceFilename = Filename(bundleFilename, 'Contents/Resources/nppanda3d.rsrc')
     resourceFilename.makeDir()
-
-    # Generate the resource file.
-    tfile = Filename.temporary('', 'rsrc')
-    f = open(tfile.toOsSpecific(), 'w')
-    f.write(ResourceFile)
-    f.close()
     
+    # Compile the .r file to an .rsrc file.
     os.system('/Developer/Tools/Rez -useDF -o %s %s' % (
-        resourceFilename.toOsSpecific(), tfile.toOsSpecific()))
+        resourceFilename.toOsSpecific(), Filename(fStartDir, "nppanda3d.r").toOsSpecific()))
     tfile.unlink()
 
     if not resourceFilename.exists():

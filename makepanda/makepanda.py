@@ -838,15 +838,15 @@ def CompileEggPZ(eggpz, src, opts):
 
 ##########################################################################################
 #
-# CompileRC
+# CompileResource
 #
 ##########################################################################################
 
-def CompileRC(target, src, opts):
+def CompileResource(target, src, opts):
     ipath = GetListOption(opts, "DIR:")
     if (COMPILER=="MSVC"):
-        cmd = "rc "
-        cmd += "/Fo" + BracketNameWithQuotes(target)
+        cmd = "rc"
+        cmd += " /Fo" + BracketNameWithQuotes(target)
         for x in ipath: cmd = cmd + " /I" + x
         for (opt,dir) in INCDIRECTORIES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " /I" + BracketNameWithQuotes(dir)
@@ -854,6 +854,22 @@ def CompileRC(target, src, opts):
             if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " /D" + var + "=" + val
         cmd += " " + BracketNameWithQuotes(src)
 
+        oscmd(cmd)
+
+    elif (sys.platform == "darwin"):
+        cmd = "/Developer/Tools/Rez -useDF"
+        cmd += " -o " + BracketNameWithQuotes(target)
+        for x in ipath: cmd = cmd + " -i " + x
+        for (opt,dir) in INCDIRECTORIES:
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " -i " + BracketNameWithQuotes(dir)
+        for (opt,var,val) in DEFSYMBOLS:
+            if (opt=="ALWAYS") or (opts.count(opt)):
+                if (val == ""):
+                    cmd = cmd + " -d " + var
+                else:
+                    cmd = cmd + " -d " + var + " = " + val
+        
+        cmd += " " + BracketNameWithQuotes(src)
         oscmd(cmd)
 
 ##########################################################################################
@@ -919,8 +935,8 @@ def CompileAnything(target, inputs, opts):
         return CompileIgate(target, inputs, opts)
     elif (origsuffix==".pz"):
         return CompileEggPZ(target, infile, opts)
-    elif (origsuffix==".res"):
-        return CompileRC(target, infile, opts)
+    elif (origsuffix in [".res", ".rsrc"]):
+        return CompileResource(target, infile, opts)
     elif (origsuffix==".obj"):
         if (infile.endswith(".cxx") or infile.endswith(".c") or infile.endswith(".mm")):
             return CompileCxx(target, infile, opts)
@@ -930,8 +946,8 @@ def CompileAnything(target, inputs, opts):
             return CompileFlex(target, infile, opts)
         elif (infile.endswith(".in")):
             return CompileImod(target, inputs, opts)
-        elif (infile.endswith(".rc")):
-            return CompileRC(target, infile, opts)
+        elif (infile.endswith(".rc") or infile.endswith(".r")):
+            return CompileResource(target, infile, opts)
     exit("Don't know how to compile: "+target)
 
 ##########################################################################################
@@ -2956,15 +2972,17 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
 #
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
-  if sys.platform.startswith("win"):
-    OPTS=['DIR:direct/src/plugin_npapi']
+  OPTS=['DIR:direct/src/plugin_npapi']
+  if (sys.platform.startswith("win")):
     TargetAdd('nppanda3d.res', opts=OPTS, input='nppanda3d.rc')
+  elif (sys.platform=="darwin"):
+    TargetAdd('nppanda3d.rsrc', opts=OPTS, input='nppanda3d.r')
   
   OPTS=['DIR:direct/src/plugin_npapi', 'NPAPI', 'TINYXML']
   TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
   TargetAdd('nppanda3d.dll', input='plugin_common.obj')
   TargetAdd('nppanda3d.dll', input='plugin_npapi_nppanda3d_composite1.obj')
-  if sys.platform.startswith("win"):
+  if (sys.platform.startswith("win")):
     TargetAdd('nppanda3d.dll', input='nppanda3d.res')
     TargetAdd('nppanda3d.dll', input='nppanda3d.def', ipath=OPTS)
   TargetAdd('nppanda3d.dll', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL'])

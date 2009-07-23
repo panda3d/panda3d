@@ -12,7 +12,7 @@
 import sys,os,time,stat,string,re,getopt,cPickle,fnmatch,threading,Queue,signal,shutil,platform
 from distutils import sysconfig
 
-SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx",".mm"]
+SUFFIX_INC=[".cxx",".c",".h",".I",".yxx",".lxx",".mm",".rc",".r"]
 SUFFIX_DLL=[".dll",".dlo",".dle",".dli",".dlm",".mll",".exe",".pyd"]
 SUFFIX_LIB=[".lib",".ilb"]
 STARTTIME=time.time()
@@ -563,7 +563,7 @@ def DeleteBuildFiles(dir):
     for entry in os.listdir(dir):
         if (entry != ".") and (entry != ".."):
             subdir = dir + "/" + entry
-            if (os.path.isfile(subdir) and os.path.splitext(subdir)[-1] in [".h", ".I", ".c", ".cxx", ".cpp", ".pp", ".moved"]):
+            if (os.path.isfile(subdir) and os.path.splitext(subdir)[-1] in SUFFIX_INC+[".pp", ".moved"]):
                 os.remove(subdir)
             elif (os.path.isdir(subdir)):
                 DeleteBuildFiles(subdir)
@@ -1207,6 +1207,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".in")):  return OUTPUTDIR+"/pandac/input/"+fn
     elif (sys.platform == "darwin"):
         if (fn.endswith(".mm")):  return CxxFindSource(fn, ipath)
+        if (fn.endswith(".r")):   return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")): return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
         if (fn.endswith(".pyd")): return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
@@ -1214,6 +1215,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
         if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
         if (fn.endswith(".dat")): return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".rsrc")):return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".in")):  return OUTPUTDIR+"/pandac/input/"+fn
     else:
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
