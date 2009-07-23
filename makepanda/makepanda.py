@@ -583,6 +583,7 @@ def CompileCxx(obj,src,opts):
         cmd += " /Fd" + obj[:-4] + ".pdb"
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " /DBUILDING_" + building
+        if ("LINK_ALL_STATIC" in opts): cmd += " /DLINK_ALL_STATIC"
         bigObjFlag = GetValueOption(opts, "BIGOBJ:")
         if (bigObjFlag): cmd += " /bigobj"
         cmd += " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
@@ -606,6 +607,7 @@ def CompileCxx(obj,src,opts):
         if (CFLAGS !=""): cmd += " " + CFLAGS
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " -DBUILDING_" + building
+        if ("LINK_ALL_STATIC" in opts): cmd += " -DLINK_ALL_STATIC"
         cmd += ' ' + BracketNameWithQuotes(src)
         oscmd(cmd)
 
@@ -694,6 +696,7 @@ def CompileIgate(woutd,wsrc,opts):
         if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
     building = GetValueOption(opts, "BUILDING:")
     if (building): cmd += " -DBUILDING_"+building
+    if ("LINK_ALL_STATIC" in opts): cmd += " -DLINK_ALL_STATIC"
     cmd += ' -module ' + module + ' -library ' + library
     for x in wsrc: cmd += ' ' + BracketNameWithQuotes(os.path.basename(x))
     oscmd(cmd)
@@ -812,6 +815,8 @@ def CompileLink(dll, obj, opts):
                 base = os.path.basename(x)
                 if (base[-3:]==".so") and (base[:3]=="lib"):
                     cmd += ' -l' + base[3:-3]
+                elif (base[-2:]==".a") and (base[:3]=="lib"):
+                    cmd += ' -l' + base[3:-2]
                 else:
                     cmd += ' ' + x
         for (opt, dir) in LIBDIRECTORIES:
@@ -1648,6 +1653,13 @@ TargetAdd('dtoolbase_composite2.obj', opts=OPTS, input='dtoolbase_composite2.cxx
 TargetAdd('dtoolbase_lookup3.obj',    opts=OPTS, input='lookup3.c')
 TargetAdd('dtoolbase_indent.obj',     opts=OPTS, input='indent.cxx')
 
+if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  OPTS=['DIR:dtool/src/dtoolbase', 'LINK_ALL_STATIC']
+  TargetAdd('static_dtoolbase_composite1.obj', opts=OPTS, input='dtoolbase_composite1.cxx')
+  TargetAdd('static_dtoolbase_composite2.obj', opts=OPTS, input='dtoolbase_composite2.cxx')
+  TargetAdd('static_dtoolbase_lookup3.obj',    opts=OPTS, input='lookup3.c')
+  TargetAdd('static_dtoolbase_indent.obj',     opts=OPTS, input='indent.cxx')
+
 #
 # DIRECTORY: dtool/src/dtoolutil/
 #
@@ -1658,6 +1670,12 @@ TargetAdd('dtoolutil_gnu_getopt1.obj', opts=OPTS, input='gnu_getopt1.c')
 TargetAdd('dtoolutil_composite.obj',   opts=OPTS, input='dtoolutil_composite.cxx')
 if (sys.platform == 'darwin'):
   TargetAdd('dtoolutil_filename_assist.obj',   opts=OPTS, input='filename_assist.mm')
+
+if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  OPTS=['DIR:dtool/src/dtoolutil', 'LINK_ALL_STATIC']
+  TargetAdd('static_dtoolutil_gnu_getopt.obj',  opts=OPTS, input='gnu_getopt.c')
+  TargetAdd('static_dtoolutil_gnu_getopt1.obj', opts=OPTS, input='gnu_getopt1.c')
+  TargetAdd('static_dtoolutil_composite.obj',   opts=OPTS, input='dtoolutil_composite.cxx')
 
 #
 # DIRECTORY: dtool/metalibs/dtool/
@@ -1670,12 +1688,27 @@ TargetAdd('libp3dtool.dll', input='dtoolutil_gnu_getopt.obj')
 TargetAdd('libp3dtool.dll', input='dtoolutil_gnu_getopt1.obj')
 TargetAdd('libp3dtool.dll', input='dtoolutil_composite.obj')
 if (sys.platform == 'darwin'):
-  TargetAdd('libp3dtool.dll',   opts=OPTS, input='dtoolutil_filename_assist.obj')
+  TargetAdd('libp3dtool.dll', input='dtoolutil_filename_assist.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_composite1.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_composite2.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_indent.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_lookup3.obj')
 TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL'])
+
+if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  pref = ""
+  if (sys.platform.startswith("win")): pref = "static_"
+  TargetAdd('libp3dtool.ilb', input=pref+'dtool_dtool.obj')
+  TargetAdd('libp3dtool.ilb', input=pref+'dtoolutil_gnu_getopt.obj')
+  TargetAdd('libp3dtool.ilb', input=pref+'dtoolutil_gnu_getopt1.obj')
+  TargetAdd('libp3dtool.ilb', input=pref+'dtoolutil_composite.obj')
+  if (sys.platform == 'darwin'):
+    TargetAdd('libp3dtool.ilb', input='dtoolutil_filename_assist.obj')
+  TargetAdd('libp3dtool.ilb', input=pref+'dtoolbase_composite1.obj')
+  TargetAdd('libp3dtool.ilb', input=pref+'dtoolbase_composite2.obj')
+  TargetAdd('libp3dtool.ilb', input=pref+'dtoolbase_indent.obj')
+  TargetAdd('libp3dtool.ilb', input=pref+'dtoolbase_lookup3.obj')
+  TargetAdd('libp3dtool.ilb', opts=['ADVAPI','WINSHELL','WINKERNEL'])
 
 #
 # DIRECTORY: dtool/src/cppparser/
@@ -1696,6 +1729,10 @@ TargetAdd('libcppParser.ilb', input='cppParser_cppBison.obj')
 OPTS=['DIR:dtool/src/prc', 'BUILDING:DTOOLCONFIG', 'OPENSSL']
 TargetAdd('prc_composite.obj', opts=OPTS, input='prc_composite.cxx')
 
+if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  OPTS=['DIR:dtool/src/prc', 'LINK_ALL_STATIC', 'OPENSSL']
+  TargetAdd('static_prc_composite.obj', opts=OPTS, input='prc_composite.cxx')
+
 #
 # DIRECTORY: dtool/src/dconfig/
 #
@@ -1703,12 +1740,20 @@ TargetAdd('prc_composite.obj', opts=OPTS, input='prc_composite.cxx')
 OPTS=['DIR:dtool/src/dconfig', 'BUILDING:DTOOLCONFIG']
 TargetAdd('dconfig_composite.obj', opts=OPTS, input='dconfig_composite.cxx')
 
+if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  OPTS=['DIR:dtool/src/dconfig', 'LINK_ALL_STATIC']
+  TargetAdd('static_dconfig_composite.obj', opts=OPTS, input='dconfig_composite.cxx')
+
 #
 # DIRECTORY: dtool/src/interrogatedb/
 #
 
 OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:DTOOLCONFIG']
 TargetAdd('interrogatedb_composite.obj', opts=OPTS, input='interrogatedb_composite.cxx')
+
+if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  OPTS=['DIR:dtool/src/interrogatedb', 'LINK_ALL_STATIC']
+  TargetAdd('static_interrogatedb_composite.obj', opts=OPTS, input='interrogatedb_composite.cxx')
 
 #
 # DIRECTORY: dtool/metalibs/dtoolconfig/
@@ -1728,6 +1773,15 @@ TargetAdd('libp3dtoolconfig.dll', input='dconfig_composite.obj')
 TargetAdd('libp3dtoolconfig.dll', input='prc_composite.obj')
 TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
 TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI',  'OPENSSL'])
+
+if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  pref = ""
+  if (sys.platform.startswith("win")): pref = "static_"
+  TargetAdd('libp3dtoolconfig.ilb', input=pref+'interrogatedb_composite.obj')
+  TargetAdd('libp3dtoolconfig.ilb', input=pref+'dconfig_composite.obj')
+  TargetAdd('libp3dtoolconfig.ilb', input=pref+'prc_composite.obj')
+  TargetAdd('libp3dtoolconfig.ilb', input='libp3dtool.ilb')
+  TargetAdd('libp3dtoolconfig.ilb', opts=['ADVAPI',  'OPENSSL'])
 
 #
 # DIRECTORY: dtool/src/pystub/
@@ -1802,6 +1856,11 @@ TargetAdd('libexpress.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libexpress.in', opts=['IMOD:pandaexpress', 'ILIB:libexpress', 'SRCDIR:panda/src/express'])
 TargetAdd('libexpress_igate.obj', input='libexpress.in', opts=["DEPENDENCYONLY"])
 
+if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  OPTS=['DIR:panda/src/express', 'LINK_ALL_STATIC', 'OPENSSL', 'ZLIB']
+  TargetAdd('static_express_composite1.obj', opts=OPTS, input='express_composite1.cxx')
+  TargetAdd('static_express_composite2.obj', opts=OPTS, input='express_composite2.cxx')
+
 #
 # DIRECTORY: panda/src/downloader/
 #
@@ -1812,6 +1871,10 @@ IGATEFILES=GetDirectoryContents('panda/src/downloader', ["*.h", "*_composite.cxx
 TargetAdd('libdownloader.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libdownloader.in', opts=['IMOD:pandaexpress', 'ILIB:libdownloader', 'SRCDIR:panda/src/downloader'])
 TargetAdd('libdownloader_igate.obj', input='libdownloader.in', opts=["DEPENDENCYONLY"])
+
+if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  OPTS=['DIR:panda/src/downloader', 'LINK_ALL_STATIC', 'OPENSSL', 'ZLIB']
+  TargetAdd('static_downloader_composite.obj', opts=OPTS, input='downloader_composite.cxx')
 
 #
 # DIRECTORY: panda/metalibs/pandaexpress/
@@ -1834,6 +1897,17 @@ TargetAdd('libpandaexpress.dll', input='libexpress_igate.obj')
 TargetAdd('libpandaexpress.dll', input='pandabase_pandabase.obj')
 TargetAdd('libpandaexpress.dll', input=COMMON_DTOOL_LIBS)
 TargetAdd('libpandaexpress.dll', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB'])
+
+if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  pref = ""
+  if (sys.platform.startswith("win")): pref = "static_"
+  TargetAdd('libpandaexpress.ilb', input=pref+'pandaexpress_pandaexpress.obj')
+  TargetAdd('libpandaexpress.ilb', input=pref+'downloader_composite.obj')
+  TargetAdd('libpandaexpress.ilb', input=pref+'express_composite1.obj')
+  TargetAdd('libpandaexpress.ilb', input=pref+'express_composite2.obj')
+  TargetAdd('libpandaexpress.ilb', input=pref+'pandabase_pandabase.obj')
+  TargetAdd('libpandaexpress.ilb', input='libp3dtoolconfig.ilb')
+  TargetAdd('libpandaexpress.ilb', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB'])
 
 #
 # DIRECTORY: panda/src/pipeline/
@@ -3046,20 +3120,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
-  # This is maybe a little bit ugly, but it keeps panda3d.exe independent.
-  TargetAdd('panda3d.exe', input='dtoolutil_composite.obj')
-  TargetAdd('panda3d.exe', input='dtoolbase_composite1.obj')
-  TargetAdd('panda3d.exe', input='dtoolbase_composite2.obj')
-  TargetAdd('panda3d.exe', input='dtoolbase_indent.obj')
-  TargetAdd('panda3d.exe', input='dtoolbase_lookup3.obj')
-  TargetAdd('panda3d.exe', input='prc_composite.obj')
-  TargetAdd('panda3d.exe', input='downloader_composite.obj')
-  TargetAdd('panda3d.exe', input='express_composite1.obj')
-  TargetAdd('panda3d.exe', input='express_composite2.obj')
-  TargetAdd('panda3d.exe', input='interrogatedb_composite.obj')
-  TargetAdd('panda3d.exe', input='libexpress_igate.obj')
-  if (sys.platform == 'darwin'):
-    TargetAdd('panda3d.exe', input='dtoolutil_filename_assist.obj')
+  TargetAdd('panda3d.exe', input='libpandaexpress.ilb')
   TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2'])
 
 #
