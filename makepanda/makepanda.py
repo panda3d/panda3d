@@ -3042,38 +3042,24 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
 #
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
-  # This is maybe a little bit ugly, but it keeps panda3d.exe independent.
-  TargetAdd('libpandaexpress-static.lib', input='dtool_dtool.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_gnu_getopt.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_gnu_getopt1.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_composite.obj')
-  if (sys.platform == 'darwin'):
-    TargetAdd('libpandaexpress-static.lib', input='dtoolutil_filename_assist.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolbase_composite1.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolbase_composite2.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolbase_indent.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolbase_lookup3.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolconfig_dtoolconfig.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dtoolconfig_pydtool.obj')
-  TargetAdd('libpandaexpress-static.lib', input='interrogatedb_composite.obj')
-  TargetAdd('libpandaexpress-static.lib', input='dconfig_composite.obj')
-  TargetAdd('libpandaexpress-static.lib', input='prc_composite.obj')
-  TargetAdd('libpandaexpress-static.lib', input='libp3dtool.dll')
-  TargetAdd('libpandaexpress-static.lib', input='pandaexpress_pandaexpress.obj')
-  TargetAdd('libpandaexpress-static.lib', input='libpandaexpress_module.obj')
-  TargetAdd('libpandaexpress-static.lib', input='downloader_composite.obj')
-  TargetAdd('libpandaexpress-static.lib', input='libdownloader_igate.obj')
-  TargetAdd('libpandaexpress-static.lib', input='express_composite1.obj')
-  TargetAdd('libpandaexpress-static.lib', input='express_composite2.obj')
-  TargetAdd('libpandaexpress-static.lib', input='libexpress_igate.obj')
-  TargetAdd('libpandaexpress-static.lib', input='pandabase_pandabase.obj')
-  TargetAdd('libpandaexpress-static.lib', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB', 'WINSHELL','WINKERNEL'])
-
   OPTS=['DIR:direct/src/plugin_standalone', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
-  TargetAdd('panda3d.exe', input='libpandaexpress-static.lib')
+  # This is maybe a little bit ugly, but it keeps panda3d.exe independent.
+  TargetAdd('panda3d.exe', input='dtoolutil_composite.obj')
+  TargetAdd('panda3d.exe', input='dtoolbase_composite1.obj')
+  TargetAdd('panda3d.exe', input='dtoolbase_composite2.obj')
+  TargetAdd('panda3d.exe', input='dtoolbase_indent.obj')
+  TargetAdd('panda3d.exe', input='dtoolbase_lookup3.obj')
+  TargetAdd('panda3d.exe', input='prc_composite.obj')
+  TargetAdd('panda3d.exe', input='downloader_composite.obj')
+  TargetAdd('panda3d.exe', input='express_composite1.obj')
+  TargetAdd('panda3d.exe', input='express_composite2.obj')
+  TargetAdd('panda3d.exe', input='interrogatedb_composite.obj')
+  TargetAdd('panda3d.exe', input='libexpress_igate.obj')
+  if (sys.platform == 'darwin'):
+    TargetAdd('panda3d.exe', input='dtoolutil_filename_assist.obj')
   TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2'])
 
 #
