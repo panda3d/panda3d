@@ -8,45 +8,6 @@ parameters, and produces the plugin bundle in the same place.
 
 """
 
-# The contents of the Info.plist file.
-InfoPlist = """<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>en-US</string>
-	<key>CFBundleExecutable</key>
-	<string>nppanda3d</string>
-	<key>CFBundleIdentifier</key>
-	<string>org.panda3d.nppanda3d</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>Panda3D</string>
-	<key>CFBundlePackageType</key>
-	<string>BRPL</string>
-	<key>CFBundleVersion</key>
-	<string>1.0</string>
-	<key>WebPluginName</key>
-	<string>Panda3D Game Engine Plug-In</string>
-	<key>WebPluginDescription</key>
-	<string>Runs 3-D games and interactive applets</string>
-	<key>WebPluginMIMETypes</key>
-	<dict>
-		<key>application/x-panda3d</key>
-		<dict>
-			<key>WebPluginExtensions</key>
-			<array>
-				<string>p3d</string>
-			</array>
-			<key>WebPluginTypeDescription</key>
-			<string>Panda3D applet</string>
-		</dict>
-	</dict>
-</dict>
-</plist>
-"""        
-
 import getopt
 import sys
 import os
@@ -91,12 +52,8 @@ def makeBundle(startDir):
     if not resourceFilename.exists():
         raise IOError, 'Unable to run Rez'
 
-    # Generate the Info.plist file.
-    f = open(plistFilename.toOsSpecific(), 'w')
-    f.write(InfoPlist)
-    f.close()
-
-    # Copy in the compiled executable.
+    # Copy in Info.plist and the compiled executable.
+    shutil.copyfile(Filename(fstartDir, "nppanda3d.plist").toOsSpecific(), plistFilename.toOsSpecific())
     shutil.copyfile(optDir + '/nppanda3d', exeFilename.toOsSpecific())
 
     # All done!

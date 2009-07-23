@@ -821,7 +821,8 @@ def CompileLink(dll, obj, opts):
         if (not sys.platform.startswith("freebsd")):
             cmd += " -ldl"
         if (sys.platform == "darwin"):
-            cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch ppc -arch i386"
+            cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch i386"
+            if ("NOPPC" not in opts): cmd += " -arch ppc"
         
         oscmd(cmd)
         os.system("chmod +x " + BracketNameWithQuotes(dll))
@@ -915,6 +916,45 @@ def FreezePy(target, src, opts):
 
 ##########################################################################################
 #
+# CompileBundle
+#
+##########################################################################################
+
+def CompileBundle(target, inputs, opts):
+    if (sys.platform != "darwin"): return
+    plist = None
+    resources = []
+    objects = []
+    for i in inputs:
+        if (i.endswith(".plist")):
+            if (plist != None): exit("Only one plist file can be used when creating a bundle!")
+            plist = i
+        elif (i.endswith(".rsrc")):
+            resources.append(i)
+        elif (GetOrigExt(i) == ".obj"):
+            objects.append(i)
+        else:
+            exit("Don't know how to bundle file %s" % i)
+    
+    # Now link the object files to form the bundle.
+    if (plist == None): exit("One plist file must be used when creating a bundle!")
+    try:
+        plistXML = parse(plist)
+        plistXML.getElementsByTagName("plist")[0]
+        plistXML.getElementsByTagName("dict")[0]
+        bundleName = plistXML.getElementsByTagName("CFBundleExecutable")[0]
+    except:
+        exit("Error parsing plist file %s" % plist)
+    
+    oscmd("rm -rf %s" % target)
+    oscmd("mkdir -p %s/Contents/MacOS/" % target)
+    CompileLink("%s/Contents/MacOS/%s" % (target, bundleName), objects, opts + ["BUNDLE"])
+    oscmd("cp %s %s/Contents/Info.plist" % (plist, target))
+    for r in resources:
+        oscmd("cp %s %s/Contents/Resources/" % (plist, target))
+
+##########################################################################################
+#
 # CompileAnything
 #
 ##########################################################################################
@@ -936,6 +976,8 @@ def CompileAnything(target, inputs, opts):
         return CompileLink(target, inputs, opts)
     elif (origsuffix==".in"):
         return CompileIgate(target, inputs, opts)
+    elif (origsuffix==".plugin"):
+        return CompileBundle(target, inputs, opts)
     elif (origsuffix==".pz"):
         return CompileEggPZ(target, infile, opts)
     elif (origsuffix in [".res", ".rsrc"]):
@@ -2983,12 +3025,20 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
   
   OPTS=['DIR:direct/src/plugin_npapi', 'NPAPI', 'TINYXML']
   TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
-  TargetAdd('nppanda3d.dll', input='plugin_common.obj')
-  TargetAdd('nppanda3d.dll', input='plugin_npapi_nppanda3d_composite1.obj')
-  if (sys.platform.startswith("win")):
-    TargetAdd('nppanda3d.dll', input='nppanda3d.res')
-    TargetAdd('nppanda3d.dll', input='nppanda3d.def', ipath=OPTS)
-  TargetAdd('nppanda3d.dll', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL'])
+  
+  if (sys.platform=="darwin"):
+    TargetAdd('nppanda3d.plugin', input='plugin_common.obj')
+    TargetAdd('nppanda3d.plugin', input='plugin_npapi_nppanda3d_composite1.obj')
+    TargetAdd('nppanda3d.plugin', input='nppanda3d.rsrc')
+    TargetAdd('nppanda3d.plugin', input='nppanda3d.plist')
+    TargetAdd('nppanda3d.plugin', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'CARBON'])
+  else:
+    TargetAdd('nppanda3d.dll', input='plugin_common.obj')
+    TargetAdd('nppanda3d.dll', input='plugin_npapi_nppanda3d_composite1.obj')
+    if (sys.platform.startswith("win")):
+      TargetAdd('nppanda3d.dll', input='nppanda3d.res')
+      TargetAdd('nppanda3d.dll', input='nppanda3d.def', ipath=OPTS)
+    TargetAdd('nppanda3d.dll', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'WINUSER', 'WINSHELL'])
 
 #
 # DIRECTORY: direct/src/plugin_standalone/
@@ -3011,6 +3061,8 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   TargetAdd('panda3d.exe', input='express_composite2.obj')
   if (sys.platform == 'darwin'):
     TargetAdd('panda3d.exe', input='dtoolutil_filename_assist.obj')
+    TargetAdd('panda3d.exe', input='interrogatedb_composite.obj')
+    TargetAdd('panda3d.exe', input='libexpress_igate.obj')
   TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL'])
 
 #

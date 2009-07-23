@@ -556,7 +556,7 @@ def DeleteCVS(dir):
                     shutil.rmtree(subdir)
                 else:
                     DeleteCVS(subdir)
-            elif (os.path.isfile(subdir) and entry == ".cvsignore"):
+            elif (os.path.isfile(subdir) and (entry == ".cvsignore" or entry.startswith(".#")):
                 os.remove(subdir)
 
 def DeleteBuildFiles(dir):
