@@ -1578,7 +1578,7 @@ sys.stdout.flush()
 
 if (sys.platform.startswith("win")):
   OPTS=['DIR:panda/src/configfiles']
-  TargetAdd('pandaIcon.res', input='pandaIcon.rc')
+  TargetAdd('pandaIcon.res', opts=OPTS, input='pandaIcon.rc')
 
 #
 # DIRECTORY: dtool/src/dtoolbase/

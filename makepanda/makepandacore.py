@@ -1189,9 +1189,8 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
-    if (fn.endswith(".rc")):  return CxxFindSource(fn, ipath)
     if (fn.endswith(".mll")): return OUTPUTDIR+"/plugins/"+fn
-    if (sys.platform == "win32"):
+    if (sys.platform.startswith("win")):
         if (fn.endswith(".def")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".rc")):  return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn
