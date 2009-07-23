@@ -1904,7 +1904,11 @@ TargetAdd('libpandaexpress.dll', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB']
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   pref = ""
-  if (sys.platform.startswith("win")): pref = "static_"
+  if (sys.platform.startswith("win")):
+    pref = "static_"
+    OPTS=['DIR:panda/metalibs/pandaexpress', 'LINK_ALL_STATIC', 'ZLIB']
+    TargetAdd('static_pandaexpress_pandaexpress.obj', opts=OPTS, input='pandaexpress.cxx')
+  
   TargetAdd('libpandaexpress.ilb', input=pref+'pandaexpress_pandaexpress.obj')
   TargetAdd('libpandaexpress.ilb', input=pref+'downloader_composite.obj')
   TargetAdd('libpandaexpress.ilb', input=pref+'express_composite1.obj')
