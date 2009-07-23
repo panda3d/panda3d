@@ -1178,6 +1178,9 @@ ORIG_EXT={}
 def GetOrigExt(x):
     return ORIG_EXT[x]
 
+def SetOrigExt(x, v):
+    ORIG_EXT[x] = v
+
 def CalcLocation(fn, ipath):
     if (fn.count("/")): return fn
 

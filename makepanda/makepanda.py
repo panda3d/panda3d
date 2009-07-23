@@ -943,6 +943,7 @@ def CompileBundle(target, inputs, opts):
     
     oscmd("rm -rf %s" % target)
     oscmd("mkdir -p %s/Contents/MacOS/" % target)
+    SetOrigExt("%s/Contents/MacOS/%s" % (target, bundleName), ".dll")
     CompileLink("%s/Contents/MacOS/%s" % (target, bundleName), objects, opts + ["BUNDLE"])
     oscmd("cp %s %s/Contents/Info.plist" % (plist, target))
     for r in resources:
