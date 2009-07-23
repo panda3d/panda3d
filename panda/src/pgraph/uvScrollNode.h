@@ -36,6 +36,7 @@ protected:
 public:
   virtual PandaNode *make_copy() const;
   virtual bool safe_to_flatten() const;
+  virtual bool safe_to_combine() const;
   virtual bool cull_callback(CullTraverser *trav, CullTraverserData &data);
 
 PUBLISHED:

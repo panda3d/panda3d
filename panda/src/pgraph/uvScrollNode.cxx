@@ -148,3 +148,14 @@ bool UvScrollNode::
 safe_to_flatten() const {
   return false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: UvScrollNode::safe_to_combine
+//       Access: Public, Virtual
+//  Description: Returns true if it is generally safe to combine this
+//               with other nodes, which it isn't, so don't. Ever.
+////////////////////////////////////////////////////////////////////
+bool UvScrollNode::
+safe_to_combine() const {
+  return false;
+}
