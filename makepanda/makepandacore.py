@@ -1205,18 +1205,19 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".dat")): return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".in")):  return OUTPUTDIR+"/pandac/input/"+fn
     elif (sys.platform == "darwin"):
-        if (fn.endswith(".mm")):  return CxxFindSource(fn, ipath)
-        if (fn.endswith(".r")):   return CxxFindSource(fn, ipath)
-        if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
-        if (fn.endswith(".dll")): return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
-        if (fn.endswith(".pyd")): return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
-        if (fn.endswith(".exe")): return OUTPUTDIR+"/bin/"+fn[:-4]
-        if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
-        if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
-        if (fn.endswith(".dat")): return OUTPUTDIR+"/tmp/"+fn
-        if (fn.endswith(".rsrc")):return OUTPUTDIR+"/tmp/"+fn
-        if (fn.endswith(".plugin")): return OUTPUTDIR+"/plugins/"+fn
-        if (fn.endswith(".in")):  return OUTPUTDIR+"/pandac/input/"+fn
+        if (fn.endswith(".mm")):    return CxxFindSource(fn, ipath)
+        if (fn.endswith(".r")):     return CxxFindSource(fn, ipath)
+        if (fn.endswith(".plist")): return CxxFindSource(fn, ipath)
+        if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
+        if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
+        if (fn.endswith(".pyd")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
+        if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]
+        if (fn.endswith(".lib")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
+        if (fn.endswith(".ilb")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
+        if (fn.endswith(".dat")):   return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".rsrc")):  return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".plugin")):return OUTPUTDIR+"/plugins/"+fn
+        if (fn.endswith(".in")):    return OUTPUTDIR+"/pandac/input/"+fn
     else:
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")): return OUTPUTDIR+"/lib/"+fn[:-4]+".so"

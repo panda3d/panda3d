@@ -13,6 +13,7 @@
 ########################################################################
 
 import sys,os,platform,time,stat,string,re,getopt,fnmatch,threading,Queue,signal,shutil
+from xml.dom.minidom import parse
 
 from makepandacore import *
 from installpanda import *
@@ -3063,7 +3064,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
     TargetAdd('panda3d.exe', input='dtoolutil_filename_assist.obj')
     TargetAdd('panda3d.exe', input='interrogatedb_composite.obj')
     TargetAdd('panda3d.exe', input='libexpress_igate.obj')
-  TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL'])
+  TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
