@@ -567,45 +567,45 @@ def CompileCxx(obj,src,opts):
         if (platform.architecture()[0]=="64bit"):
             cmd += "/favor:blend "
         cmd += "/wd4996 /wd4275 /wd4267 /wd4101 /Fo" + obj + " /nologo /c "
-        for x in ipath: cmd = cmd + " /I" + x
+        for x in ipath: cmd += " /I" + x
         for (opt,dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " /I" + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /I" + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " /D" + var + "=" + val
-        if (opts.count('NOFLOATWARN')): cmd = cmd + ' /wd4244 /wd4305'
-        if (opts.count('MSFORSCOPE')): cmd = cmd + ' /Zc:forScope-'
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /D" + var + "=" + val
+        if (opts.count('NOFLOATWARN')): cmd += ' /wd4244 /wd4305'
+        if (opts.count('MSFORSCOPE')): cmd += ' /Zc:forScope-'
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
-        if (optlevel==1): cmd = cmd + " /MD /Zi /RTCs /GS"
-        if (optlevel==2): cmd = cmd + " /MD /Zi "
-        if (optlevel==3): cmd = cmd + " /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
-        if (optlevel==4): cmd = cmd + " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /DNDEBUG /GL "
-        cmd = cmd + " /Fd" + obj[:-4] + ".pdb"
+        if (optlevel==1): cmd += " /MD /Zi /RTCs /GS"
+        if (optlevel==2): cmd += " /MD /Zi "
+        if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
+        if (optlevel==4): cmd += " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /DNDEBUG /GL "
+        cmd += " /Fd" + obj[:-4] + ".pdb"
         building = GetValueOption(opts, "BUILDING:")
-        if (building): cmd = cmd + " /DBUILDING_" + building
+        if (building): cmd += " /DBUILDING_" + building
         bigObjFlag = GetValueOption(opts, "BIGOBJ:")
         if (bigObjFlag): cmd += " /bigobj"
-        cmd = cmd + " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
+        cmd += " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
         oscmd(cmd)
     if (COMPILER=="LINUX"):
         if (src.endswith(".c")): cmd = 'gcc -fPIC -c -o ' + obj
         else:                    cmd = 'g++ -ftemplate-depth-30 -fPIC -c -o ' + obj
         for (opt, dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -I' + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -I' + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -D' + var + '=' + val
-        for x in ipath: cmd = cmd + ' -I' + x
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
+        for x in ipath: cmd += ' -I' + x
         if (sys.platform == "darwin"):
-            cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -arch i386"
+            cmd += " -isysroot " + SDK["MACOSX"] + " -arch i386"
             if ("NOPPC" not in opts): cmd += " -arch ppc"
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
-        if (optlevel==1): cmd = cmd + " -g"
-        if (optlevel==2): cmd = cmd + " -O1"
-        if (optlevel==3): cmd = cmd + " -O2"
-        if (optlevel==4): cmd = cmd + " -O3 -DNDEBUG"
-        if (CFLAGS !=""): cmd = cmd + " " + CFLAGS
+        if (optlevel==1): cmd += " -g"
+        if (optlevel==2): cmd += " -O1"
+        if (optlevel==3): cmd += " -O2"
+        if (optlevel==4): cmd += " -O3 -DNDEBUG"
+        if (CFLAGS !=""): cmd += " " + CFLAGS
         building = GetValueOption(opts, "BUILDING:")
-        if (building): cmd = cmd + " -DBUILDING_" + building
-        cmd = cmd + ' ' + BracketNameWithQuotes(src)
+        if (building): cmd += " -DBUILDING_" + building
+        cmd += ' ' + BracketNameWithQuotes(src)
         oscmd(cmd)
 
 ########################################################################
@@ -669,32 +669,32 @@ def CompileIgate(woutd,wsrc,opts):
         ConditionalWriteFile(woutd,"")
         return
     cmd = GetOutputDir()+"/bin/interrogate -srcdir "+srcdir+" -I"+srcdir
-    cmd = cmd + ' -Dvolatile -Dmutable'
+    cmd += ' -Dvolatile -Dmutable'
     if (COMPILER=="MSVC"):
-        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
+        cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -longlong __int64 -D_X86_ -DWIN32_VC -D_WIN32'
         #NOTE: this 1500 value is the version number for VC2008.
-        cmd = cmd + ' -D_MSC_VER=1500 -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
+        cmd += ' -D_MSC_VER=1500 -D"_declspec(param)=" -D_near -D_far -D__near -D__far -D__stdcall'
     if (COMPILER=="LINUX") and (platform.architecture()[0]=="64bit"):
-        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D_LP64'
+        cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D_LP64'
     if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit"):
-        cmd = cmd + ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D__i386__'
+        cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D__i386__'
     optlevel=GetOptimizeOption(opts,OPTIMIZE)
-    if (optlevel==1): cmd = cmd + ' '
-    if (optlevel==2): cmd = cmd + ' '
-    if (optlevel==3): cmd = cmd + ' -DFORCE_INLINING'
-    if (optlevel==4): cmd = cmd + ' -DNDEBUG -DFORCE_INLINING'
-    cmd = cmd + ' -oc ' + woutc + ' -od ' + woutd
-    cmd = cmd + ' -fnames -string -refcount -assert -python-native'
-    cmd = cmd + ' -S' + GetOutputDir() + '/include/parser-inc'
-    for x in ipath: cmd = cmd + ' -I' + BracketNameWithQuotes(x)
+    if (optlevel==1): cmd += ' '
+    if (optlevel==2): cmd += ' '
+    if (optlevel==3): cmd += ' -DFORCE_INLINING'
+    if (optlevel==4): cmd += ' -DNDEBUG -DFORCE_INLINING'
+    cmd += ' -oc ' + woutc + ' -od ' + woutd
+    cmd += ' -fnames -string -refcount -assert -python-native'
+    cmd += ' -S' + GetOutputDir() + '/include/parser-inc'
+    for x in ipath: cmd += ' -I' + BracketNameWithQuotes(x)
     for (opt,dir) in INCDIRECTORIES:
-        if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -S' + BracketNameWithQuotes(dir)
+        if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -S' + BracketNameWithQuotes(dir)
     for (opt,var,val) in DEFSYMBOLS:
-        if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -D' + var + '=' + val
+        if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
     building = GetValueOption(opts, "BUILDING:")
-    if (building): cmd = cmd + " -DBUILDING_"+building
-    cmd = cmd + ' -module ' + module + ' -library ' + library
-    for x in wsrc: cmd = cmd + ' ' + BracketNameWithQuotes(os.path.basename(x))
+    if (building): cmd += " -DBUILDING_"+building
+    cmd += ' -module ' + module + ' -library ' + library
+    for x in wsrc: cmd += ' ' + BracketNameWithQuotes(os.path.basename(x))
     oscmd(cmd)
     CompileCxx(wobj,woutc,opts)
     return
@@ -717,8 +717,8 @@ def CompileImod(wobj, wsrc, opts):
         CompileCxx(wobj,woutc,opts)
         return
     cmd = GetOutputDir() + '/bin/interrogate_module '
-    cmd = cmd + ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
-    for x in wsrc: cmd = cmd + ' ' + BracketNameWithQuotes(x)
+    cmd += ' -oc ' + woutc + ' -module ' + module + ' -library ' + library + ' -python-native '
+    for x in wsrc: cmd += ' ' + BracketNameWithQuotes(x)
     oscmd(cmd)
     CompileCxx(wobj,woutc,opts)
     return
@@ -736,7 +736,7 @@ def CompileLib(lib, obj, opts):
         if arch=='64bit':
             cmd += "/MACHINE:X64 "
         cmd += '/OUT:' + BracketNameWithQuotes(lib)
-        for x in obj: cmd = cmd + ' ' + BracketNameWithQuotes(x)
+        for x in obj: cmd += ' ' + BracketNameWithQuotes(x)
         oscmd(cmd)
     if (COMPILER=="LINUX"):
         if sys.platform == 'darwin':
@@ -760,36 +760,36 @@ def CompileLink(dll, obj, opts):
         if arch == "64bit":
             cmd += "/MACHINE:X64 "
         cmd += '/NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
-        cmd = cmd + " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
-        if (GetOrigExt(dll) != ".exe"): cmd = cmd + " /DLL"
+        cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
+        if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
-        if (optlevel==1): cmd = cmd + " /MAP /MAPINFO:EXPORTS"
-        if (optlevel==2): cmd = cmd + " /MAP:NUL "
-        if (optlevel==3): cmd = cmd + " /MAP:NUL "
-        if (optlevel==4): cmd = cmd + " /MAP:NUL /LTCG "
-        cmd = cmd + " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
-        cmd = cmd + ' /OUT:' + BracketNameWithQuotes(dll)
+        if (optlevel==1): cmd += " /MAP /MAPINFO:EXPORTS"
+        if (optlevel==2): cmd += " /MAP:NUL "
+        if (optlevel==3): cmd += " /MAP:NUL "
+        if (optlevel==4): cmd += " /MAP:NUL /LTCG "
+        cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
+        cmd += ' /OUT:' + BracketNameWithQuotes(dll)
         if (dll.endswith(".dll")):
-            cmd = cmd + ' /IMPLIB:' + GetOutputDir() + '/lib/'+dll[len(GetOutputDir()+"/bin/"):-4]+".lib"
+            cmd += ' /IMPLIB:' + GetOutputDir() + '/lib/'+dll[len(GetOutputDir()+"/bin/"):-4]+".lib"
         for (opt, dir) in LIBDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' /LIBPATH:' + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' /LIBPATH:' + BracketNameWithQuotes(dir)
         for x in obj:
             if (x.endswith(".dll")):
-                cmd = cmd + ' ' + GetOutputDir() + '/lib/' + x[len(GetOutputDir()+"/bin/"):-4] + ".lib"
+                cmd += ' ' + GetOutputDir() + '/lib/' + x[len(GetOutputDir()+"/bin/"):-4] + ".lib"
             elif (x.endswith(".lib")):
                 dname = x[:-4]+".dll"
                 if (os.path.exists(GetOutputDir()+"/bin/" + x[len(GetOutputDir()+"/bin/"):-4] + ".dll")):
                     exit("Error: in makepanda, specify "+dname+", not "+x)
-                cmd = cmd + ' ' + BracketNameWithQuotes(x)
+                cmd += ' ' + BracketNameWithQuotes(x)
             elif (x.endswith(".def")):
-                cmd = cmd + ' /DEF:' + BracketNameWithQuotes(x)
+                cmd += ' /DEF:' + BracketNameWithQuotes(x)
             elif (x.endswith(".dat")):
                 pass
-            else: cmd = cmd + ' ' + BracketNameWithQuotes(x)
+            else: cmd += ' ' + BracketNameWithQuotes(x)
         if (GetOrigExt(dll)==".exe" and platform.architecture()[0] == "32bit"):
-            cmd = cmd + ' built/tmp/pandaIcon.res'
+            cmd += ' built/tmp/pandaIcon.res'
         for (opt, name) in LIBNAMES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + BracketNameWithQuotes(name)
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' ' + BracketNameWithQuotes(name)
         oscmd(cmd)
         SetVC90CRTVersion(dll+".manifest", VC90CRTVERSION)
         mtcmd = 'mt -manifest ' + dll + '.manifest -outputresource:' + dll
@@ -800,25 +800,28 @@ def CompileLink(dll, obj, opts):
         if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
         else:
             if (sys.platform == "darwin"):
-                cmd = 'g++ -undefined dynamic_lookup -dynamic -dynamiclib -o ' + dll + ' -install_name ' + os.path.basename(dll) + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
+                cmd = 'g++ -undefined dynamic_lookup '
+                if ("BUNDLE" in opts): cmd += '-bundle '
+                else: cmd += '-dynamiclib '
+                cmd += '-o ' + dll + ' -install_name ' + os.path.basename(dll) + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
             else:
                 cmd = 'g++ -shared -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
         for x in obj:
             if (GetOrigExt(x) != ".dat"):
                 base = os.path.basename(x)
                 if (base[-3:]==".so") and (base[:3]=="lib"):
-                    cmd = cmd + ' -l' + base[3:-3]
+                    cmd += ' -l' + base[3:-3]
                 else:
-                    cmd = cmd + ' ' + x
+                    cmd += ' ' + x
         for (opt, dir) in LIBDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' -L' + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -L' + BracketNameWithQuotes(dir)
         for (opt, name) in LIBNAMES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + ' ' + BracketNameWithQuotes(name)
-        cmd = cmd + " -lpthread"
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' ' + BracketNameWithQuotes(name)
+        cmd += " -lpthread"
         if (not sys.platform.startswith("freebsd")):
-            cmd = cmd + " -ldl"
+            cmd += " -ldl"
         if (sys.platform == "darwin"):
-            cmd = cmd + " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch ppc -arch i386"
+            cmd += " -isysroot " + SDK["MACOSX"] + " -Wl,-syslibroot," + SDK["MACOSX"] + " -arch ppc -arch i386"
         
         oscmd(cmd)
         os.system("chmod +x " + BracketNameWithQuotes(dll))
@@ -847,11 +850,11 @@ def CompileResource(target, src, opts):
     if (COMPILER=="MSVC"):
         cmd = "rc"
         cmd += " /Fo" + BracketNameWithQuotes(target)
-        for x in ipath: cmd = cmd + " /I" + x
+        for x in ipath: cmd += " /I" + x
         for (opt,dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " /I" + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /I" + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " /D" + var + "=" + val
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /D" + var + "=" + val
         cmd += " " + BracketNameWithQuotes(src)
 
         oscmd(cmd)
@@ -859,15 +862,15 @@ def CompileResource(target, src, opts):
     elif (sys.platform == "darwin"):
         cmd = "/Developer/Tools/Rez -useDF"
         cmd += " -o " + BracketNameWithQuotes(target)
-        for x in ipath: cmd = cmd + " -i " + x
+        for x in ipath: cmd += " -i " + x
         for (opt,dir) in INCDIRECTORIES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd = cmd + " -i " + BracketNameWithQuotes(dir)
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " -i " + BracketNameWithQuotes(dir)
         for (opt,var,val) in DEFSYMBOLS:
             if (opt=="ALWAYS") or (opts.count(opt)):
                 if (val == ""):
-                    cmd = cmd + " -d " + var
+                    cmd += " -d " + var
                 else:
-                    cmd = cmd + " -d " + var + " = " + val
+                    cmd += " -d " + var + " = " + val
         
         cmd += " " + BracketNameWithQuotes(src)
         oscmd(cmd)
@@ -1389,7 +1392,6 @@ ConditionalWriteFile(GetOutputDir()+'/include/ctl3d.h', '/* dummy file to make M
 ########################################################################
 
 CopyTree(GetOutputDir()+'/include/parser-inc','dtool/src/parser-inc')
-CopyAllFiles(GetOutputDir()+'/include/parser-inc/','dtool/src/parser-inc/')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/openssl')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/netinet')
 MakeDirectory(GetOutputDir()+'/include/parser-inc/Cg')

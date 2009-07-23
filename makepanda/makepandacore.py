@@ -586,7 +586,6 @@ def MakeBuildTree():
     MakeDirectory(OUTPUTDIR+"/etc")
     MakeDirectory(OUTPUTDIR+"/plugins")
     MakeDirectory(OUTPUTDIR+"/include")
-    MakeDirectory(OUTPUTDIR+"/include/parser-inc")
     MakeDirectory(OUTPUTDIR+"/models")
     MakeDirectory(OUTPUTDIR+"/models/audio")
     MakeDirectory(OUTPUTDIR+"/models/audio/sfx")
@@ -1216,6 +1215,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
         if (fn.endswith(".dat")): return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".rsrc")):return OUTPUTDIR+"/tmp/"+fn
+        if (fn.endswith(".plugin")): return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".in")):  return OUTPUTDIR+"/pandac/input/"+fn
     else:
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
