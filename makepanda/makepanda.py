@@ -782,7 +782,7 @@ def CompileLink(dll, obj, opts):
                 cmd += ' ' + GetOutputDir() + '/lib/' + x[len(GetOutputDir()+"/bin/"):-4] + ".lib"
             elif (x.endswith(".lib")):
                 dname = x[:-4]+".dll"
-                if (os.path.exists(GetOutputDir()+"/bin/" + x[len(GetOutputDir()+"/bin/"):-4] + ".dll")):
+                if (GetOrigExt(x) != ".ilb" and os.path.exists(GetOutputDir()+"/bin/" + x[len(GetOutputDir()+"/bin/"):-4] + ".dll")):
                     exit("Error: in makepanda, specify "+dname+", not "+x)
                 cmd += ' ' + BracketNameWithQuotes(x)
             elif (x.endswith(".def")):
@@ -1847,6 +1847,10 @@ TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL'])
 
 OPTS=['DIR:panda/src/pandabase', 'BUILDING:PANDAEXPRESS']
 TargetAdd('pandabase_pandabase.obj', opts=OPTS, input='pandabase.cxx')
+
+if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  OPTS=['DIR:panda/src/pandabase', 'LINK_ALL_STATIC']
+  TargetAdd('static_pandabase_pandabase.obj', opts=OPTS, input='pandabase.cxx')
 
 #
 # DIRECTORY: panda/src/express/
@@ -3124,7 +3128,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
 #
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
-  OPTS=['DIR:direct/src/plugin_standalone', 'TINYXML', 'OPENSSL']
+  OPTS=['DIR:direct/src/plugin_standalone', 'LINK_ALL_STATIC', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
