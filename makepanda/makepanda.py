@@ -946,11 +946,12 @@ def CompileBundle(target, inputs, opts):
         plistXML = plistXML.getElementsByTagName("dict")[0]
         for i, node in enumerate(plistXML.childNodes):
             if (node.nodeName.lower() == "key" and \
-              key.firstChild.nodeValue.strip().lower() == "CFBundleExecutable"):
-                node = plistXML.childNodes[i+1]
-                assert node.nodeName.lower() == "string"
-                bundleName = node.nodeValue.strip()
-                break
+                node.firstChild.nodeValue.strip() == "CFBundleExecutable"):
+                # Find the next <string> element.
+                for j in range(j+1, len(plistXML.childNodes)):
+                    if (node.nodeName.lower() == "string"):
+                        bundleName = node.firstChild.nodeValue.strip()
+                        break
     except:
         exit("Error parsing plist file %s" % plist)
     
@@ -3055,11 +3056,13 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   # This is maybe a bit ugly, but it keeps panda3d.exe independent.
-  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_composite.obj')
   TargetAdd('libpandaexpress-static.lib', input='dtoolbase_composite1.obj')
   TargetAdd('libpandaexpress-static.lib', input='dtoolbase_composite2.obj')
   TargetAdd('libpandaexpress-static.lib', input='dtoolbase_indent.obj')
   TargetAdd('libpandaexpress-static.lib', input='dtoolbase_lookup3.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_composite.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_gnu_getopt.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_gnu_getopt1.obj')
   TargetAdd('libpandaexpress-static.lib', input='prc_composite.obj')
   TargetAdd('libpandaexpress-static.lib', input='downloader_composite.obj')
   TargetAdd('libpandaexpress-static.lib', input='express_composite1.obj')
