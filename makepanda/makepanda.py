@@ -939,14 +939,22 @@ def CompileBundle(target, inputs, opts):
     
     # Now link the object files to form the bundle.
     if (plist == None): exit("One plist file must be used when creating a bundle!")
+    bundleName = None
     try:
         plistXML = parse(plist)
-        plistXML.getElementsByTagName("plist")[0]
-        plistXML.getElementsByTagName("dict")[0]
-        bundleName = plistXML.getElementsByTagName("CFBundleExecutable")[0]
+        plistXML = plistXML.getElementsByTagName("plist")[0]
+        plistXML = plistXML.getElementsByTagName("dict")[0]
+        for i, node in enumerate(plistXML.childNodes):
+            if (node.nodeName.lower() == "key" and \
+              key.firstChild.nodeValue.strip().lower() == "CFBundleExecutable"):
+                node = plistXML.childNodes[i+1]
+                assert node.nodeName.lower() == "string"
+                bundleName = node.nodeValue.strip()
+                break
     except:
         exit("Error parsing plist file %s" % plist)
     
+    if (not bundleName): exit("Couldn't find key 'CFBundleExecutable' in plist file %s" % plist)
     oscmd("rm -rf %s" % target)
     oscmd("mkdir -p %s/Contents/MacOS/" % target)
     CompileLink("%s/Contents/MacOS/%s" % (target, bundleName), objects, opts + ["BUNDLE"])
@@ -3031,7 +3039,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
     TargetAdd('nppanda3d.plugin', input='plugin_common.obj')
     TargetAdd('nppanda3d.plugin', input='plugin_npapi_nppanda3d_composite1.obj')
     TargetAdd('nppanda3d.plugin', input='nppanda3d.rsrc')
-    TargetAdd('nppanda3d.plugin', input='nppanda3d.plist')
+    TargetAdd('nppanda3d.plugin', input='nppanda3d.plist', ipath=OPTS)
     TargetAdd('nppanda3d.plugin', opts=['NPAPI', 'TINYXML', 'OPENSSL', 'CARBON'])
   else:
     TargetAdd('nppanda3d.dll', input='plugin_common.obj')
@@ -3046,25 +3054,28 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
 #
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+  # This is maybe a bit ugly, but it keeps panda3d.exe independent.
+  TargetAdd('libpandaexpress-static.lib', input='dtoolutil_composite.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolbase_composite1.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolbase_composite2.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolbase_indent.obj')
+  TargetAdd('libpandaexpress-static.lib', input='dtoolbase_lookup3.obj')
+  TargetAdd('libpandaexpress-static.lib', input='prc_composite.obj')
+  TargetAdd('libpandaexpress-static.lib', input='downloader_composite.obj')
+  TargetAdd('libpandaexpress-static.lib', input='express_composite1.obj')
+  TargetAdd('libpandaexpress-static.lib', input='express_composite2.obj')
+  TargetAdd('libpandaexpress-static.lib', input='interrogatedb_composite.obj')
+  TargetAdd('libpandaexpress-static.lib', input='libexpress_igate.obj')
+  if (sys.platform == 'darwin'):
+    TargetAdd('libpandaexpress-static.lib', input='dtoolutil_filename_assist.obj')
+  TargetAdd('libpandaexpress-static.lib', opts=['ADVAPI','WINSHELL','WINKERNEL'])
+
   OPTS=['DIR:direct/src/plugin_standalone', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
-  # This is maybe a bit ugly, but it keeps panda3d.exe independent.
-  TargetAdd('panda3d.exe', input='dtoolutil_composite.obj')
-  TargetAdd('panda3d.exe', input='dtoolbase_composite1.obj')
-  TargetAdd('panda3d.exe', input='dtoolbase_composite2.obj')
-  TargetAdd('panda3d.exe', input='dtoolbase_indent.obj')
-  TargetAdd('panda3d.exe', input='dtoolbase_lookup3.obj')
-  TargetAdd('panda3d.exe', input='prc_composite.obj')
-  TargetAdd('panda3d.exe', input='downloader_composite.obj')
-  TargetAdd('panda3d.exe', input='express_composite1.obj')
-  TargetAdd('panda3d.exe', input='express_composite2.obj')
-  if (sys.platform == 'darwin'):
-    TargetAdd('panda3d.exe', input='dtoolutil_filename_assist.obj')
-    TargetAdd('panda3d.exe', input='interrogatedb_composite.obj')
-    TargetAdd('panda3d.exe', input='libexpress_igate.obj')
-  TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI'])
+  TargetAdd('panda3d.exe', input='libpandaexpress-static.lib')
+  TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2'])
 
 #
 # DIRECTORY: pandatool/src/pandatoolbase/
