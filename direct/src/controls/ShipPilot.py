@@ -180,7 +180,7 @@ class ShipPilot(PhysicsWalker):
         assert self.debugPrint("collisionsActive(active=%s)"%(active,))
         if self.collisionsActive != active:
             self.collisionsActive = active
-            shipCollWall = self.shipNodePath.find("**/collision_hull;+s")
+            shipCollWall = self.shipNodePath.getWallCollisions()
             if active:
                 self.cNodePath.node().setFromCollideMask(self.wallBitmask)
                 self.cNodePath.node().setIntoCollideMask(BitMask32.allOff())
