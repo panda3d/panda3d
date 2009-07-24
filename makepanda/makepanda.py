@@ -906,9 +906,13 @@ def RunGenPyCode(target, inputs, opts):
 #
 ##########################################################################################
 
-def FreezePy(target, src, opts):
+def FreezePy(target, inputs, opts):
+    assert len(inputs) > 0
     # Make sure this function isn't called before genpycode is run.
     cmdstr = os.path.join(GetOutputDir(), "bin", "pfreeze")
+    src = inputs.pop(0)
+    for i in inputs:
+      cmdstr += " -i " + os.path.splitext(i)[0]
     cmdstr += " -o " + target + " " + src
 
     if ("LINK_PYTHON_STATIC" in opts):
@@ -971,7 +975,7 @@ def CompileAnything(target, inputs, opts):
     if (target == "pandac/PandaModules.py"):
         return RunGenPyCode(target, inputs, opts)
     elif (infile.endswith(".py")):
-        return FreezePy(target, infile, opts)
+        return FreezePy(target, inputs, opts)
     elif SUFFIX_LIB.count(origsuffix):
         return CompileLib(target, inputs, opts)
     elif SUFFIX_DLL.count(origsuffix):
@@ -3933,6 +3937,10 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('eggcacher.exe', input='direct/src/directscripts/eggcacher.py')
   
   TargetAdd('runp3d_frozen.pyd', input='direct/src/showutil/runp3d.py')
+  TargetAdd('runp3d_frozen.pyd', input='direct/src/directbase/DirectStart.py')
+  TargetAdd('runp3d_frozen.pyd', input='direct/src/actor/Actor.py')
+  TargetAdd('runp3d_frozen.pyd', input='direct/src/fsm/FSM.py')
+  TargetAdd('runp3d_frozen.pyd', input='direct/src/directutil/Mopath.py')
 
 #
 # Generate the models directory and samples directory
@@ -4106,6 +4114,7 @@ def MakeRuntime():
         CopyFile(plugindir + os.path.basename(plugfile), plugfile)
     
     # Copy the important libraries to built/rlib/.
+    CopyFile(GetOutputDir()+"/rlib/Config.prc", GetOutputDir()+"/etc/Config.prc")
     plugfile = CalcLocation("p3dpython.exe", None)
     CopyFile(GetOutputDir()+"/rlib/"+os.path.basename(plugfile), plugfile)
     plugfile = CalcLocation("runp3d_frozen.pyd", None)
