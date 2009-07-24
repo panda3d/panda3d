@@ -3572,11 +3572,11 @@ for VER in MAXVERSIONS:
   VNUM=VER[3:]
   if (PkgSkip(VER)==0) and (PkgSkip("PANDATOOL")==0):
     OPTS=['DIR:pandatool/src/maxegg', VER,  "WINCOMCTL", "WINCOMDLG", "WINUSER", "MSFORSCOPE"]
-    TargetAdd('maxEgg.res', opts=OPTS, input='maxEgg.rc')
+    TargetAdd('maxEgg'+VNUM+'.res', opts=OPTS, input='maxEgg.rc')
     TargetAdd('maxegg'+VNUM+'_loader.obj', opts=OPTS, input='maxEggLoader.cxx')
     TargetAdd('maxegg'+VNUM+'_composite1.obj', opts=OPTS, input='maxegg_composite1.cxx')
     TargetAdd('maxegg'+VNUM+'.dlo', input='maxegg'+VNUM+'_composite1.obj')
-    TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg.res')
+    TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg'+VNUM+'.res')
     TargetAdd('maxegg'+VNUM+'.dlo', input='maxEgg.def', ipath=OPTS)
     TargetAdd('maxegg'+VNUM+'.dlo', input=COMMON_EGG2X_LIBS_PYSTUB)
     TargetAdd('maxegg'+VNUM+'.dlo', opts=OPTS)
@@ -4089,15 +4089,21 @@ def MakeRuntime():
     
     # Create a couple of directories.
     coreapidir = GetOutputDir()+"/stage/coreapi/"+RUNTIME_VERSION+"/"+RUNTIME_PLATFORM+"/"
+    plugindir = GetOutputDir()+"/stage/plugin/"+RUNTIME_VERSION+"/"+RUNTIME_PLATFORM+"/"
     MakeDirectory(GetOutputDir()+"/rlib")
     MakeDirectory(GetOutputDir()+"/stage")
     MakeDirectory(GetOutputDir()+"/stage/coreapi")
     MakeDirectory(GetOutputDir()+"/stage/coreapi/"+RUNTIME_VERSION)
-    MakeDirectory(coreapidir)
+    MakeDirectory(GetOutputDir()+"/stage/plugin")
+    MakeDirectory(GetOutputDir()+"/stage/plugin/"+RUNTIME_VERSION)
+    MakeDirectory(coreapidir); MakeDirectory(plugindir)
     
-    # Copy the p3d_plugin file to coreapi dir.
+    # Copy the p3d_plugin file to coreapi dir and the plugin to the plugin dir.
     plugfile = CalcLocation("p3d_plugin.dll", None)
     CopyFile(coreapidir + os.path.basename(plugfile), plugfile)
+    if (sys.platform != "darwin"): #TODO: bundle OSX plugin in DMG
+        plugfile = CalcLocation("nppanda3d.dll", None)
+        CopyFile(plugindir + os.path.basename(plugfile), plugfile)
     
     # Copy the important libraries to built/rlib/.
     plugfile = CalcLocation("p3dpython.exe", None)
