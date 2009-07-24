@@ -1235,9 +1235,9 @@ def WriteConfigSettings():
     if (PkgSkip("PLUGIN")==0):
         #FIXME: do this at runtime or so.
         if (sys.platform.startswith("win")):
-            plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file://C:\\p3dstage"
+            plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file://C:\\p3dstage/"
         else:
-            plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file:///p3dstage"
+            plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file:///p3dstage/"
         plugin_config["P3D_PLUGIN_LOGFILE1"] = ""
         plugin_config["P3D_PLUGIN_LOGFILE2"] = ""
         plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
@@ -1265,7 +1265,6 @@ def WriteConfigSettings():
         conf = "/* p3d_plugin_config.h.  Generated automatically by makepanda.py */\n"
         for key in plugin_config.keys():
             val = plugin_config[key]
-            if (val != 'UNDEF' and not val.endswith("/")): val += "/"
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
             del plugin_config[key]
