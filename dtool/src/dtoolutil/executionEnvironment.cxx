@@ -214,14 +214,17 @@ ns_get_environment_variable(const string &var) const {
   } else if (var == "MAIN_DIR") {
 #ifdef HAVE_PYTHON
     // If we're running from Python code, read out sys.argv.
-    if (Py_IsInitialized() && PyObject* obj = PySys_GetObject((char*) "argv")) {
-      Filename main_dir (PyString_AsString(PyList_GetItem(obj, 0)));
-      if (main_dir.empty()) {
-        // We must be running in the Python interpreter directly, so return the CWD.
-        return get_cwd();
+    if (Py_IsInitialized()) {
+      PyObject* obj = PySys_GetObject((char*) "argv");
+      if (obj) {
+        Filename main_dir (PyString_AsString(PyList_GetItem(obj, 0)));
+        if (main_dir.empty()) {
+          // We must be running in the Python interpreter directly, so return the CWD.
+          return get_cwd();
+        }
+        main_dir.make_absolute();
+        return Filename(main_dir.get_dirname()).to_os_specific();
       }
-      main_dir.make_absolute();
-      return Filename(main_dir.get_dirname()).to_os_specific();
     }
 #endif
     
