@@ -27,8 +27,8 @@ class ShipPilot(PhysicsWalker):
     wantDebugIndicator = base.config.GetBool(
         'want-avatar-physics-indicator', 0)
     
-    MAX_STRAIGHT_SAIL_BONUS = 1.5     # 1.25 Old
-    STRAIGHT_SAIL_BONUS_TIME = 16.0
+    MAX_STRAIGHT_SAIL_BONUS = 2.1     # 1.25 Old
+    STRAIGHT_SAIL_BONUS_TIME = 18.0
     TURNING_BONUS_REDUCTION = 3.0
     
     # special methods
@@ -382,9 +382,12 @@ class ShipPilot(PhysicsWalker):
         if reverse:
             # Reverse kills Travel Speed totally
             self.straightHeading = 0
-        elif self.ship.threatCounter:
+        elif (self.__speed < (self.ship.acceleration + self.ship.speedboost) * self.ship.speednerf) and forward:
+            # If not at MinSpeed, Accelerate regardless
+            self.straightHeading += dt * 1.5
+        elif self.ship.threatCounter:            
             # If ship is recently damaged, do not increase Travel Speed
-            pass
+            self.straightHeading = min(1.0 / self.MAX_STRAIGHT_SAIL_BONUS * self.STRAIGHT_SAIL_BONUS_TIME * self.ship.speednerf, self.straightHeading)           
         elif turnLeft or turnRight or not forward:
             # Reset Straight Sailing Bonus
             self.straightHeading -= dt * self.TURNING_BONUS_REDUCTION
@@ -395,12 +398,9 @@ class ShipPilot(PhysicsWalker):
         
         # Straight Sailing Acceleration Bonus
         straightSailBonus = 0.0
-        #if self.straightHeading > self.STRAIGHT_SAIL_BONUS_TIME * 0.333:
-        #    straightSailBonus = (self.straightHeading - (self.STRAIGHT_SAIL_BONUS_TIME * 0.333)) / self.STRAIGHT_SAIL_BONUS_TIME * 0.666
         straightSailBonus = self.straightHeading / self.STRAIGHT_SAIL_BONUS_TIME
         straightSailBonus = min(self.MAX_STRAIGHT_SAIL_BONUS, straightSailBonus * self.MAX_STRAIGHT_SAIL_BONUS)
-        straightSailBonus += 1.0
-
+        
         self.__speed=(forward and self.ship.acceleration) or \
                       (reverse and -self.ship.reverseAcceleration)
         
@@ -416,11 +416,11 @@ class ShipPilot(PhysicsWalker):
                 (turnRight and -self.ship.turnRate))
         
         # Add in Straight Sailing Multiplier
-        self.__speed *= straightSailBonus
+        self.__speed *= straightSailBonus 
         self.__speed += self.ship.speedboost
-        # self.__speed *= straightSailBonus
         self.__slideSpeed *= straightSailBonus
         maxSpeed = self.ship.maxSpeed
+        self.__speed *= self.ship.speednerf
         
         # Enable debug turbo modec
         debugRunning = inputState.isSet("debugRunning")
@@ -446,16 +446,16 @@ class ShipPilot(PhysicsWalker):
         if self.currentTurning < 0.001 and self.currentTurning > -0.001:
             self.currentTurning = 0.0
         self.__rotationSpeed = self.currentTurning
-                
+        
         #print "########################"
         #print self.__speed
+        #print self.ship.baseAcceleration
         #print self.ship.acceleration
         #print self.ship.speedboost
         #print straightSailBonus
-                
+        
         # Broadcast Event to Handlers (ShipStatusMeter)
-        # messenger.send("setShipSpeed-%s" % (self.ship.getDoId()), [self.__speed, self.ship.acceleration * (1+self.MAX_STRAIGHT_SAIL_BONUS) * (1+self.MAX_STRAIGHT_SAIL_BONUS)])
-        messenger.send("setShipSpeed-%s" % (self.ship.getDoId()), [self.__speed, self.ship.acceleration * (1+self.MAX_STRAIGHT_SAIL_BONUS) + self.ship.speedboost])
+        messenger.send("setShipSpeed-%s" % (self.ship.getDoId()), [self.__speed, self.getMaxSpeed()])
         
         if self.wantDebugIndicator:
             self.displayDebugInfo()
@@ -606,6 +606,9 @@ class ShipPilot(PhysicsWalker):
 
         return Task.cont
 
+    def getMaxSpeed(self):
+        return self.ship.acceleration * self.MAX_STRAIGHT_SAIL_BONUS + self.ship.speedboost
+
     def getVelocity(self):
         return self.__vel
 
@@ -650,6 +653,12 @@ class ShipPilot(PhysicsWalker):
         if __debug__:
             self.ignore("control-f3") #*#
             self.ignore("f3")
+
+        self.__speed = 0;
+        
+        # Broadcast Event to Handlers (ShipStatusMeter)
+        if self.ship:
+            messenger.send("setShipSpeed-%s" % (self.ship.getDoId()), [self.__speed, self.getMaxSpeed()])
 
     if __debug__:
         def setupAvatarPhysicsIndicator(self):
