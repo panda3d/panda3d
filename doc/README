@@ -1,7 +1,7 @@
 Panda3D is an open source 3D Engine originally developed, and still
 actively maintained, by the Walt Disney VR Studio.  Additional
 development and support for the open source community is provided by
-the Entertainment Technology Center of Carnegie-Mellon University.
+the Entertainment Technology Center of Carnegie Mellon University.
 
 At the present, we are providing two completely unrelated systems for
 building Panda.  The original build system, ppremake, is still in
