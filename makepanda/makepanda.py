@@ -1265,6 +1265,7 @@ def WriteConfigSettings():
         conf = "/* p3d_plugin_config.h.  Generated automatically by makepanda.py */\n"
         for key in plugin_config.keys():
             val = plugin_config[key]
+            if (val != 'UNDEF' and not val.endswith("/")): val += "/"
             if (val == 'UNDEF'): conf = conf + "#undef " + key + "\n"
             else:                conf = conf + "#define " + key + " \"" + val.replace("\\", "\\\\") + "\"\n"
             del plugin_config[key]
@@ -1848,10 +1849,6 @@ TargetAdd('test_interrogate.exe', opts=['ADVAPI',  'OPENSSL'])
 OPTS=['DIR:panda/src/pandabase', 'BUILDING:PANDAEXPRESS']
 TargetAdd('pandabase_pandabase.obj', opts=OPTS, input='pandabase.cxx')
 
-if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
-  OPTS=['DIR:panda/src/pandabase', 'LINK_ALL_STATIC']
-  TargetAdd('static_pandabase_pandabase.obj', opts=OPTS, input='pandabase.cxx')
-
 #
 # DIRECTORY: panda/src/express/
 #
@@ -1868,6 +1865,10 @@ if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML
   OPTS=['DIR:panda/src/express', 'LINK_ALL_STATIC', 'OPENSSL', 'ZLIB']
   TargetAdd('static_express_composite1.obj', opts=OPTS, input='express_composite1.cxx')
   TargetAdd('static_express_composite2.obj', opts=OPTS, input='express_composite2.cxx')
+  
+  TargetAdd('static_libexpress.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('static_libexpress.in', opts=['IMOD:pandaexpress', 'ILIB:libexpress', 'SRCDIR:panda/src/express'])
+  TargetAdd('static_libexpress_igate.obj', input='static_libexpress.in', opts=["DEPENDENCYONLY"])
 
 #
 # DIRECTORY: panda/src/downloader/
@@ -1908,16 +1909,12 @@ TargetAdd('libpandaexpress.dll', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB']
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   pref = ""
-  if (sys.platform.startswith("win")):
-    pref = "static_"
-    OPTS=['DIR:panda/metalibs/pandaexpress', 'LINK_ALL_STATIC', 'ZLIB']
-    TargetAdd('static_pandaexpress_pandaexpress.obj', opts=OPTS, input='pandaexpress.cxx')
+  if (sys.platform.startswith("win")): pref = "static_"
   
-  TargetAdd('libpandaexpress.ilb', input=pref+'pandaexpress_pandaexpress.obj')
   TargetAdd('libpandaexpress.ilb', input=pref+'downloader_composite.obj')
   TargetAdd('libpandaexpress.ilb', input=pref+'express_composite1.obj')
   TargetAdd('libpandaexpress.ilb', input=pref+'express_composite2.obj')
-  TargetAdd('libpandaexpress.ilb', input=pref+'pandabase_pandabase.obj')
+  TargetAdd('libpandaexpress.ilb', input=pref+'libexpress_igate.obj')
   TargetAdd('libpandaexpress.ilb', input='libp3dtoolconfig.ilb')
   TargetAdd('libpandaexpress.ilb', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB'])
 
