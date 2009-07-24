@@ -801,7 +801,7 @@ def CompileLink(dll, obj, opts):
         else:                          mtcmd = mtcmd + ';1'
         oscmd(mtcmd)
     if (COMPILER=="LINUX"):
-        if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -L' + GetOutputDir() + '/lib -L/usr/X11R6/lib'
+        if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
         else:
             if (sys.platform == "darwin"):
                 cmd = 'g++ -undefined dynamic_lookup'
