@@ -875,9 +875,9 @@ def SdkLocatePython():
         if (sys.platform == "win32"):
             (arch, osName) = platform.architecture()
             if arch == "32bit":
-                SDK["PYTHON"] = "thirdparty/win32/win-python"
+                SDK["PYTHON"] = "thirdparty/win-python"
             else:
-                SDK["PYTHON"] = "thirdparty/win64/win-python"
+                SDK["PYTHON"] = "thirdparty/win-python-x64"
             
             if (not os.path.exists(SDK["PYTHON"])):
                 SDK["PYTHON"] = "thirdparty/win-python"

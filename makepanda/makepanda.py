@@ -66,7 +66,10 @@ signal.signal(signal.SIGINT, keyboardInterruptHandler)
 RUNTIME_VERSION = "dev"
 RUNTIME_PLATFORM = "other"
 if (sys.platform.startswith("win")):
-    RUNTIME_PLATFORM = sys.platform
+    if (platform.architecture()[0] == "64bit"):
+        RUNTIME_PLATFORM = "win64"
+    else:
+        RUNTIME_PLATFORM = "win32"
 elif (sys.platform.startswith("linux")):
     if (platform.architecture()[0] == "64bit"):
         RUNTIME_PLATFORM = "linux.amd64"
@@ -214,11 +217,10 @@ if (sys.platform == "win32"):
     SetupVisualStudioEnviron()
     COMPILER="MSVC"
 
-    (arch, osName) = platform.architecture()
-    if arch=='32bit':
-        THIRDPARTYLIBS="thirdparty/win32/win-libs-vc9/"
+    if (platform.architecture()[0] == "64bit"):
+        THIRDPARTYLIBS="thirdparty/win-libs-vc9-x64/"
     else:
-        THIRDPARTYLIBS="thirdparty/win64/win-libs-vc9/"
+        THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
     if not os.path.isdir(THIRDPARTYLIBS):
         THIRDPARTYLIBS="thirdparty/win-libs-vc9/"
     VC90CRTVERSION = GetVC90CRTVersion(THIRDPARTYLIBS+"extras/bin/Microsoft.VC90.CRT.manifest")
@@ -271,13 +273,10 @@ if (RUNTIME) and (PkgSkip("PLUGIN") or PkgSkip("TINYXML")):
 ########################################################################
 
 if (COMPILER=="MSVC"):
-    (arch, osName) = platform.architecture()
-    archName = 'win64'
-    if arch=='32bit': archName = 'win32'
     if (PkgSkip("PYTHON")==0):
-        if os.path.isdir("thirdparty/" + archName + "/win-python"):
-            IncDirectory("ALWAYS", "thirdparty/" + archName + "/win-python/include")
-            LibDirectory("ALWAYS", "thirdparty/" + archName + "/win-python/libs")
+        if (platform.architecture() == "64bit" and os.path.isdir("thirdparty/win-python-x64")):
+            IncDirectory("ALWAYS", "thirdparty/win-python-x64/include")
+            LibDirectory("ALWAYS", "thirdparty/win-python-x64/libs")
         else:
             IncDirectory("ALWAYS", "thirdparty/win-python/include")
             LibDirectory("ALWAYS", "thirdparty/win-python/libs")
@@ -736,8 +735,7 @@ def CompileImod(wobj, wsrc, opts):
 def CompileLib(lib, obj, opts):
     if (COMPILER=="MSVC"):
         cmd = 'link /lib /nologo '
-        (arch, osName) = platform.architecture()
-        if arch=='64bit':
+        if (platform.architecture()[0] == "64bit"):
             cmd += "/MACHINE:X64 "
         cmd += '/OUT:' + BracketNameWithQuotes(lib)
         for x in obj: cmd += ' ' + BracketNameWithQuotes(x)
@@ -760,8 +758,7 @@ def CompileLib(lib, obj, opts):
 def CompileLink(dll, obj, opts):
     if (COMPILER=="MSVC"):
         cmd = 'link /nologo '
-        (arch, osName) = platform.architecture()
-        if arch == "64bit":
+        if (platform.architecture()[0] == "64bit"):
             cmd += "/MACHINE:X64 "
         cmd += '/NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
         cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
@@ -790,7 +787,7 @@ def CompileLink(dll, obj, opts):
             elif (x.endswith(".dat")):
                 pass
             else: cmd += ' ' + BracketNameWithQuotes(x)
-        if (GetOrigExt(dll)==".exe" and platform.architecture()[0] == "32bit"):
+        if (GetOrigExt(dll)==".exe"):
             cmd += ' built/tmp/pandaIcon.res'
         for (opt, name) in LIBNAMES:
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' ' + BracketNameWithQuotes(name)
@@ -1233,7 +1230,7 @@ def WriteConfigSettings():
     if (OPTIMIZE <= 3):
         dtool_config["NOTIFY_DEBUG"] = '1'
 
-    if (sys.platform.startswith('win') and platform.architecture()[0] == '64bit'):
+    if (sys.platform.startswith("win") and platform.architecture()[0] == "64bit"):
         dtool_config["SIMPLE_THREADS"] = 'UNDEF'
 
     if (PkgSkip("PLUGIN")==0):
