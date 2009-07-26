@@ -244,7 +244,6 @@ else:
     VC90CRTVERSION = 0
 
 builtdir = os.path.join(os.path.abspath(GetOutputDir()))
-sys.path += [builtdir, os.path.join(builtdir, "lib")]
 AddToPathEnv("PYTHONPATH", builtdir)
 if (sys.platform.startswith("win")):
     AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "bin"))
@@ -274,7 +273,7 @@ if (RUNTIME) and (PkgSkip("PLUGIN") or PkgSkip("TINYXML")):
 
 if (COMPILER=="MSVC"):
     if (PkgSkip("PYTHON")==0):
-        if (platform.architecture() == "64bit" and os.path.isdir("thirdparty/win-python-x64")):
+        if (platform.architecture()[0]=="64bit" and os.path.isdir("thirdparty/win-python-x64")):
             IncDirectory("ALWAYS", "thirdparty/win-python-x64/include")
             LibDirectory("ALWAYS", "thirdparty/win-python-x64/libs")
         else:
@@ -4168,7 +4167,7 @@ if (RUNTIME != 0):
 #
 ##########################################################################################
 
-def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
+def MakeInstallerNSIS(file, fullname, smdirectory, installdir):
     print "Building "+fullname+" installer. This can take up to an hour."
     if (COMPRESSOR != "lzma"):
         print("Note: you are using zlib, which is faster, but lzma gives better compression.")
@@ -4195,7 +4194,7 @@ def MakeInstallerNSIS(file,fullname,smdirectory,installdir):
     cmd=cmd+'/DPSOURCE="'+psource+'" '
     cmd=cmd+'/DPYEXTRAS="'+psource+'\\thirdparty\\win-extras" '
     cmd=cmd+'"'+psource+'\\direct\\src\\directscripts\\packpanda.nsi"'
-    oscmd( cmd)
+    oscmd(cmd)
     os.rename("nsis-output.exe", file)
 
 
@@ -4355,8 +4354,11 @@ def MakeInstallerOSX():
     oscmd("rm -rf Panda3D-tpl-rw")
 
 if (INSTALLER != 0):
-    if (sys.platform == "win32"):
-        MakeInstallerNSIS("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+    if (sys.platform.startswith("win")):
+        if (platform.architecture()[0] == "64bit"):
+            MakeInstallerNSIS("Panda3D-"+VERSION+"-x64.exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+        else:
+            MakeInstallerNSIS("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
     elif (sys.platform == "linux2"):
         MakeInstallerLinux()
     elif (sys.platform == "darwin"):
