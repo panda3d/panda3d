@@ -303,7 +303,7 @@ IObjParam *MaxEggPlugin::iObjParams;
    dialog box that appears at the beginning of the conversion process.
  */
 
-BOOL CALLBACK MaxEggPluginOptionsDlgProc( HWND hWnd, UINT message, 
+INT_PTR CALLBACK MaxEggPluginOptionsDlgProc( HWND hWnd, UINT message, 
                                           WPARAM wParam, LPARAM lParam ) 
 {
   MaxOptionsDialog *tempEgg;

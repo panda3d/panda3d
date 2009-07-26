@@ -41,7 +41,7 @@ char *ChunkLoadString(ILoad *iload, char *buffer, int maxBytes);
 int ChunkLoadInt(ILoad *iload);
 bool ChunkLoadBool(ILoad *iload);
 void SetICustEdit(HWND wnd, int nIDDlgItem, char *text);
-BOOL CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, 
+INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, 
                                     WPARAM wParam, LPARAM lParam );
 
 struct MaxEggOptions

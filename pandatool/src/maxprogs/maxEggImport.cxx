@@ -124,7 +124,7 @@ unsigned int MaxEggImporter::Version()
   return 100;
 }
 
-static BOOL CALLBACK AboutBoxDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK AboutBoxDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   switch (msg) {
   case WM_INITDIALOG:
@@ -150,7 +150,7 @@ void MaxEggImporter::ShowAbout(HWND hWnd)
 }
 
 
-static BOOL CALLBACK ImportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+static INT_PTR CALLBACK ImportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   MaxEggImporter *imp = (MaxEggImporter*)GetWindowLong(hWnd,GWL_USERDATA); 
   switch (msg) {

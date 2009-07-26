@@ -241,7 +241,7 @@ MaxEggOptions::MaxEggOptions() {
     _successful = false;
 }
 
-BOOL CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) 
+INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam ) 
 {
     char tempFilename[2048];
     //We pass in our plugin through the lParam variable. Let's convert it back.
