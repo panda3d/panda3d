@@ -152,11 +152,11 @@ void MaxEggImporter::ShowAbout(HWND hWnd)
 
 static INT_PTR CALLBACK ImportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  MaxEggImporter *imp = (MaxEggImporter*)GetWindowLong(hWnd,GWL_USERDATA); 
+  MaxEggImporter *imp = (MaxEggImporter*) GetWindowLongPtr(hWnd, GWLP_USERDATA); 
   switch (msg) {
   case WM_INITDIALOG:
     imp = (MaxEggImporter*)lParam;
-    SetWindowLong(hWnd,GWL_USERDATA,lParam); 
+    SetWindowLongPtr(hWnd, GWLP_USERDATA, lParam);
     CenterWindow(hWnd, GetParent(hWnd)); 
     CheckDlgButton(hWnd, IDC_MERGE,       imp->_merge);
     CheckDlgButton(hWnd, IDC_IMPORTMODEL, imp->_importmodel);
