@@ -465,6 +465,8 @@ def ListRegistryKeys(path):
     return result
 
 def GetRegistryKey(path, subkey):
+    if (platform.architecture()[0]=="64bit"):
+        path = path.replace("SOFTWARE\\", "SOFTWARE\\Wow6432Node\\")
     k1=0
     key = TryRegistryKey(path)
     if (key != 0):
@@ -911,27 +913,32 @@ def SdkLocateVisualStudio():
     if (vcdir != 0) and (vcdir[-4:] == "\\VC\\"):
         vcdir = vcdir[:-3]
         SDK["VISUALSTUDIO"] = vcdir
-    else:
-        if "VCINSTALLDIR" in os.environ:
-            vcdir = os.environ["VCINSTALLDIR"]
-            if (vcdir[-3:] == "\\VC"):
-                vcdir = vcdir[:-2]
-            elif (vcdir[-4:] == "\\VC\\"):
-                vcdir = vcdir[:-3]
-            SDK["VISUALSTUDIO"] = vcdir
+    elif "VCINSTALLDIR" in os.environ:
+        vcdir = os.environ["VCINSTALLDIR"]
+        if (vcdir[-3:] == "\\VC"):
+            vcdir = vcdir[:-2]
+        elif (vcdir[-4:] == "\\VC\\"):
+            vcdir = vcdir[:-3]
+        SDK["VISUALSTUDIO"] = vcdir
 
 def SdkLocateMSPlatform():
     if (sys.platform != "win32"): return
-    platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1", "Install Dir")
+    platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\MicrosoftSDK\\InstalledSDKs\\D2FF9F89-8AA2-4373-8A31-C838BF4DBBE1", "Install Dir")
+    if (platsdk and not os.path.isdir(platsdk)): platsdk = 0
     if (platsdk == 0):
-        platsdk=GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.1","InstallationFolder")
+        platsdk = GetRegistryKey("SOFTWARE\\Microsoft\\Microsoft SDKs\\Windows\\v6.1","InstallationFolder")
+        if (platsdk and not os.path.isdir(platsdk)): platsdk = 0
     
     if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2"))):
-        platsdk = os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2")
+        if (platform.architecture()[0]!="64bit" or os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2", "Lib", "AMD64"))):
+            platsdk = os.path.join(GetProgramFiles(), "Microsoft Platform SDK for Windows Server 2003 R2")
+            if (not os.path.isdir(platsdk)): platsdk = 0
     
     # Doesn't work with the Express versions, so we're checking for the "atlmfc" dir, which is not in the Express 
-    if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\atlmfc"))):
+    if (platsdk == 0 and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\atlmfc"))
+                     and os.path.isdir(os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\PlatformSDK"))):
         platsdk = os.path.join(GetProgramFiles(), "Microsoft Visual Studio 9\\VC\\PlatformSDK")
+        if (not os.path.isdir(platsdk)): platsdk = 0
     
     # This may not be the best idea but it does give a warning
     if (platsdk == 0):
@@ -939,8 +946,8 @@ def SdkLocateMSPlatform():
             WARNINGS.append("Windows SDK directory not found in registry, found in Environment variables instead")
             platsdk = os.environ["WindowsSdkDir"]
     if (platsdk != 0):
-        if (not platsdk.endswith("//")):
-            platsdk += "//"
+        if (not platsdk.endswith("\\")):
+            platsdk += "\\"
         SDK["MSPLATFORM"] = platsdk
 
 def SdkLocateMacOSX():
@@ -1018,16 +1025,24 @@ def SetupVisualStudioEnviron():
         exit("Could not find the Microsoft Platform SDK")
     os.environ["VCINSTALLDIR"] = SDK["VISUALSTUDIO"] + "VC"
     os.environ["WindowsSdkDir"] = SDK["MSPLATFORM"]
-    AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "VC\\bin")
+    suffix=""
+    if (platform.architecture()[0]=="64bit"): suffix = "\\amd64"
+    AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "VC\\bin"+suffix)
     AddToPathEnv("PATH",    SDK["VISUALSTUDIO"] + "Common7\\IDE")
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\include")
     AddToPathEnv("INCLUDE", SDK["VISUALSTUDIO"] + "VC\\atlmfc\\include")
-    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib")
-    AddToPathEnv("PATH",    SDK["MSPLATFORM"] + "bin")
+    AddToPathEnv("LIB",     SDK["VISUALSTUDIO"] + "VC\\lib"+suffix)
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\atl")
     AddToPathEnv("INCLUDE", SDK["MSPLATFORM"] + "include\\mfc")
-    AddToPathEnv("LIB",     SDK["MSPLATFORM"] + "lib")
+    if (platform.architecture()[0]=="32bit"):
+        AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib")
+    elif (os.path.isdir(SDK["MSPLATFORM"] + "lib\\x64")):
+        AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib\\x64")
+    elif (os.path.isdir(SDK["MSPLATFORM"] + "lib\\amd64")):
+        AddToPathEnv("LIB", SDK["MSPLATFORM"] + "lib\\amd64")
+    else:
+        exit("Could not locate 64-bits libraries in Platform SDK!")
 
 ########################################################################
 #
@@ -1329,5 +1344,4 @@ def TargetAdd(target, dummy=0, opts=0, input=0, dep=0, ipath=0):
     if (target.endswith(".in")):
         t.deps[FindLocation("interrogate.exe",[])] = 1
         t.deps[FindLocation("dtool_have_python.dat",[])] = 1
-
 

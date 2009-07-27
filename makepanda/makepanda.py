@@ -176,6 +176,8 @@ if ("CFLAGS" in os.environ):
 if ("RPM_OPT_FLAGS" in os.environ):
     CFLAGS+=os.environ["RPM_OPT_FLAGS"]
 
+os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
+
 ########################################################################
 ##
 ## Load the dependency cache.
@@ -582,8 +584,7 @@ def CompileCxx(obj,src,opts):
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " /DBUILDING_" + building
         if ("LINK_ALL_STATIC" in opts): cmd += " /DLINK_ALL_STATIC"
-        bigObjFlag = GetValueOption(opts, "BIGOBJ:")
-        if (bigObjFlag): cmd += " /bigobj"
+        if ("BIGOBJ" in opts): cmd += " /bigobj"
         cmd += " /EHsc /Zm300 /DWIN32_VC /DWIN32 /W3 " + BracketNameWithQuotes(src)
         oscmd(cmd)
     if (COMPILER=="LINUX"):
@@ -756,10 +757,10 @@ def CompileLib(lib, obj, opts):
 
 def CompileLink(dll, obj, opts):
     if (COMPILER=="MSVC"):
-        cmd = 'link /nologo '
+        cmd = "link /nologo"
         if (platform.architecture()[0] == "64bit"):
-            cmd += "/MACHINE:X64 "
-        cmd += '/NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG '
+            cmd += " /MACHINE:X64"
+        cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG"
         cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
         if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
         optlevel = GetOptimizeOption(opts,OPTIMIZE)
@@ -787,14 +788,14 @@ def CompileLink(dll, obj, opts):
                 pass
             else: cmd += ' ' + BracketNameWithQuotes(x)
         if (GetOrigExt(dll)==".exe"):
-            cmd += ' built/tmp/pandaIcon.res'
+            cmd += " built/tmp/pandaIcon.res"
         for (opt, name) in LIBNAMES:
-            if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' ' + BracketNameWithQuotes(name)
+            if (opt=="ALWAYS") or (opts.count(opt)): cmd += " " + BracketNameWithQuotes(name)
         oscmd(cmd)
         SetVC90CRTVersion(dll+".manifest", VC90CRTVERSION)
-        mtcmd = 'mt -manifest ' + dll + '.manifest -outputresource:' + dll
-        if (dll.endswith(".exe")==0): mtcmd = mtcmd + ';2'
-        else:                          mtcmd = mtcmd + ';1'
+        mtcmd = "mt -manifest " + dll + ".manifest -outputresource:" + dll
+        if (dll.endswith(".exe")==0): mtcmd = mtcmd + ";2"
+        else:                          mtcmd = mtcmd + ";1"
         oscmd(mtcmd)
     if (COMPILER=="LINUX"):
         if (GetOrigExt(dll)==".exe"): cmd = 'g++ -o ' + dll + ' -L' + GetOutputDir() + '/lib -L' + GetOutputDir() + '/tmp -L/usr/X11R6/lib'
@@ -2050,7 +2051,7 @@ TargetAdd('libpstatclient_igate.obj', input='libpstatclient.in', opts=["DEPENDEN
 # DIRECTORY: panda/src/gobj/
 #
 
-OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH', "BIGOBJ:TRUE"]
+OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH', "BIGOBJ"]
 TargetAdd('gobj_composite1.obj', opts=OPTS, input='gobj_composite1.cxx')
 TargetAdd('gobj_composite2.obj', opts=OPTS, input='gobj_composite2.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite.cxx"])
@@ -2074,7 +2075,7 @@ TargetAdd('liblerp_igate.obj', input='liblerp.in', opts=["DEPENDENCYONLY"])
 # DIRECTORY: panda/src/pgraphnodes/
 #
 
-OPTS=['DIR:panda/src/pgraphnodes', 'BUILDING:PANDA']
+OPTS=['DIR:panda/src/pgraphnodes', 'BUILDING:PANDA', "BIGOBJ"]
 TargetAdd('pgraphnodes_composite1.obj', opts=OPTS, input='pgraphnodes_composite1.cxx')
 TargetAdd('pgraphnodes_composite2.obj', opts=OPTS, input='pgraphnodes_composite2.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/pgraphnodes', ["*.h", "*_composite.cxx"])
@@ -2088,15 +2089,15 @@ TargetAdd('libpgraphnodes_igate.obj', input='libpgraphnodes.in', opts=["DEPENDEN
 
 OPTS=['DIR:panda/src/pgraph', 'BUILDING:PANDA']
 TargetAdd('pgraph_nodePath.obj', opts=OPTS, input='nodePath.cxx')
-TargetAdd('pgraph_composite1.obj', opts=OPTS+['BIGOBJ:True'], input='pgraph_composite1.cxx')
-TargetAdd('pgraph_composite2.obj', opts=OPTS+['BIGOBJ:True'], input='pgraph_composite2.cxx')
-TargetAdd('pgraph_composite3.obj', opts=OPTS+['BIGOBJ:True'], input='pgraph_composite3.cxx')
-TargetAdd('pgraph_composite4.obj', opts=OPTS+['BIGOBJ:True'], input='pgraph_composite4.cxx')
+TargetAdd('pgraph_composite1.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite1.cxx')
+TargetAdd('pgraph_composite2.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite2.cxx')
+TargetAdd('pgraph_composite3.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite3.cxx')
+TargetAdd('pgraph_composite4.obj', opts=OPTS+['BIGOBJ'], input='pgraph_composite4.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/pgraph', ["*.h", "nodePath.cxx", "*_composite.cxx"])
 # IGATEFILES.remove("antialiasAttrib.h")
-TargetAdd('libpgraph.in', opts=OPTS+["BIGOBJ:TRUE"], input=IGATEFILES)
+TargetAdd('libpgraph.in', opts=OPTS+["BIGOBJ"], input=IGATEFILES)
 TargetAdd('libpgraph.in', opts=['IMOD:panda', 'ILIB:libpgraph', 'SRCDIR:panda/src/pgraph'])
-TargetAdd('libpgraph_igate.obj', input='libpgraph.in', opts=["DEPENDENCYONLY","BIGOBJ:TRUE"])
+TargetAdd('libpgraph_igate.obj', input='libpgraph.in', opts=["DEPENDENCYONLY","BIGOBJ"])
 
 #
 # DIRECTORY: panda/src/cull/
@@ -2149,7 +2150,7 @@ TargetAdd('libdgraph_igate.obj', input='libdgraph.in', opts=["DEPENDENCYONLY"])
 #
 
 OPTS=['DIR:panda/src/display', 'BUILDING:PANDA']
-TargetAdd('display_composite.obj', opts=OPTS+["BIGOBJ:TRUE"], input='display_composite.cxx')
+TargetAdd('display_composite.obj', opts=OPTS+["BIGOBJ"], input='display_composite.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/display', ["*.h", "*_composite.cxx"])
 IGATEFILES.remove("renderBuffer.h")
 TargetAdd('libdisplay.in', opts=OPTS, input=IGATEFILES)
@@ -2183,7 +2184,7 @@ if (PkgSkip("FREETYPE")==0):
 # DIRECTORY: panda/src/text/
 #
 
-OPTS=['DIR:panda/src/text', 'BUILDING:PANDA', 'ZLIB',  'FREETYPE', 'BIGOBJ:TRUE']
+OPTS=['DIR:panda/src/text', 'BUILDING:PANDA', 'ZLIB',  'FREETYPE', 'BIGOBJ']
 TargetAdd('text_composite.obj', opts=OPTS, input='text_composite.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/text', ["*.h", "*_composite.cxx"])
 TargetAdd('libtext.in', opts=OPTS, input=IGATEFILES)
@@ -2205,10 +2206,10 @@ TargetAdd('libmovies_igate.obj', input='libmovies.in', opts=["DEPENDENCYONLY"])
 # DIRECTORY: panda/src/grutil/
 #
 
-OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA',  'FFMPEG', 'ARTOOLKIT', 'OPENCV', 'BIGOBJ:TRUE']
+OPTS=['DIR:panda/src/grutil', 'BUILDING:PANDA',  'FFMPEG', 'ARTOOLKIT', 'OPENCV', 'BIGOBJ']
 TargetAdd('grutil_multitexReducer.obj', opts=OPTS, input='multitexReducer.cxx')
-TargetAdd('grutil_composite1.obj', opts=OPTS+["BIGOBJ:TRUE"], input='grutil_composite1.cxx')
-TargetAdd('grutil_composite2.obj', opts=OPTS+["BIGOBJ:TRUE"], input='grutil_composite2.cxx')
+TargetAdd('grutil_composite1.obj', opts=OPTS+["BIGOBJ"], input='grutil_composite1.cxx')
+TargetAdd('grutil_composite2.obj', opts=OPTS+["BIGOBJ"], input='grutil_composite2.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/grutil', ["*.h", "*_composite.cxx"])
 TargetAdd('libgrutil.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libgrutil.in', opts=['IMOD:panda', 'ILIB:libgrutil', 'SRCDIR:panda/src/grutil'])
@@ -2218,7 +2219,7 @@ TargetAdd('libgrutil_igate.obj', input='libgrutil.in', opts=["DEPENDENCYONLY"])
 # DIRECTORY: panda/src/tform/
 #
 
-OPTS=['DIR:panda/src/tform', 'BUILDING:PANDA', 'BIGOBJ:TRUE']
+OPTS=['DIR:panda/src/tform', 'BUILDING:PANDA', 'BIGOBJ']
 TargetAdd('tform_composite.obj', opts=OPTS, input='tform_composite.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/tform', ["*.h", "*_composite.cxx"])
 TargetAdd('libtform.in', opts=OPTS, input=IGATEFILES)
@@ -2230,7 +2231,7 @@ TargetAdd('libtform_igate.obj', input='libtform.in', opts=["DEPENDENCYONLY"])
 #
 
 OPTS=['DIR:panda/src/collide', 'BUILDING:PANDA']
-TargetAdd('collide_composite.obj', opts=OPTS+["BIGOBJ:TRUE"], input='collide_composite.cxx')
+TargetAdd('collide_composite.obj', opts=OPTS+["BIGOBJ"], input='collide_composite.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/collide', ["*.h", "*_composite.cxx"])
 TargetAdd('libcollide.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libcollide.in', opts=['IMOD:panda', 'ILIB:libcollide', 'SRCDIR:panda/src/collide'])
@@ -2252,7 +2253,7 @@ TargetAdd('libparametrics_igate.obj', input='libparametrics.in', opts=["DEPENDEN
 #
 
 OPTS=['DIR:panda/src/pgui', 'BUILDING:PANDA']
-TargetAdd('pgui_composite.obj', opts=OPTS+["BIGOBJ:TRUE"], input='pgui_composite.cxx')
+TargetAdd('pgui_composite.obj', opts=OPTS+["BIGOBJ"], input='pgui_composite.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/pgui', ["*.h", "*_composite.cxx"])
 TargetAdd('libpgui.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libpgui.in', opts=['IMOD:panda', 'ILIB:libpgui', 'SRCDIR:panda/src/pgui'])
@@ -2584,14 +2585,14 @@ if PkgSkip("ZLIB")==0:
 
 if (sys.platform.startswith("win")):
   OPTS=['DIR:panda/src/windisplay', 'BUILDING:PANDAWIN']
-  TargetAdd('windisplay_composite.obj', opts=OPTS+["BIGOBJ:TRUE"], input='windisplay_composite.cxx')
+  TargetAdd('windisplay_composite.obj', opts=OPTS+["BIGOBJ"], input='windisplay_composite.cxx')
   TargetAdd('windisplay_windetectdx8.obj', opts=OPTS + ["DX8"], input='winDetectDx8.cxx')
   TargetAdd('windisplay_windetectdx9.obj', opts=OPTS + ["DX9"], input='winDetectDx9.cxx')
   TargetAdd('libp3windisplay.dll', input='windisplay_composite.obj')
   TargetAdd('libp3windisplay.dll', input='windisplay_windetectdx8.obj')
   TargetAdd('libp3windisplay.dll', input='windisplay_windetectdx9.obj')
   TargetAdd('libp3windisplay.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3windisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',"BIGOBJ:TRUE"])
+  TargetAdd('libp3windisplay.dll', opts=['WINIMM', 'WINGDI', 'WINKERNEL', 'WINOLDNAMES', 'WINUSER', 'WINMM',"BIGOBJ"])
 
 #
 # DIRECTORY: panda/metalibs/pandadx8/

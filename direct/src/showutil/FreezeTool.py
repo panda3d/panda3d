@@ -6,6 +6,7 @@ import sys
 import os
 import marshal
 import imp
+import platform
 from distutils.sysconfig import PREFIX, get_python_inc, get_python_version
 
 import direct
@@ -58,7 +59,7 @@ if sys.platform == 'win32':
     
     if ('WindowsSdkDir' in os.environ):
         PSDK = os.environ['WindowsSdkDir']
-    elif (Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').exists()):
+    elif (platform.architecture()[0] == '32bit' and Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').exists()):
         PSDK = Filename('/c/Program Files/Microsoft Platform SDK for Windows Server 2003 R2').toOsSpecific()
     elif (os.path.exists(os.path.join(MSVC, 'PlatformSDK'))):
         PSDK = os.path.join(MSVC, 'PlatformSDK')
@@ -66,11 +67,17 @@ if sys.platform == 'win32':
         print 'Could not locate the Microsoft Windows Platform SDK! Try running from the Visual Studio Command Prompt.'
         exit(1)
     
-    os.environ['PATH'] += ';' + MSVC + '\\bin;' + MSVC + '\\Common7\\IDE;' + PSDK + '\\bin'
-    
-    compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c /MD /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" /I"%(PSDK)s\include" /I"%(MSVC)s\include" %(filename)s'
-    linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
-    linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.pyd %(basename)s.obj'
+    # If it is run by makepanda, it handles the MSVC and PlatformSDK paths itself.
+    if ('MAKEPANDA' in os.environ):
+        compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c /MD /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" %(filename)s'
+        linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
+        linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s.pyd %(basename)s.obj'
+    else:
+        os.environ['PATH'] += ';' + MSVC + '\\bin;' + MSVC + '\\Common7\\IDE;' + PSDK + '\\bin'
+        
+        compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c /MD /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" /I"%(PSDK)s\include" /I"%(MSVC)s\include" %(filename)s'
+        linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
+        linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.pyd %(basename)s.obj'
 
 elif sys.platform == 'darwin':
     # OSX
