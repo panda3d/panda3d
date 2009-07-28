@@ -91,8 +91,11 @@ P3D_instance_start(P3D_instance *instance, const char *p3d_filename,
   }
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  bool result = inst_mgr->start_instance
-    ((P3DInstance *)instance, p3d_filename, tokens, num_tokens);
+  P3DInstance *inst = inst_mgr->validate_instance(instance);
+  bool result = false;
+  if (inst != NULL) {
+    result = inst_mgr->start_instance(inst, p3d_filename, tokens, num_tokens);
+  }
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -102,7 +105,10 @@ P3D_instance_finish(P3D_instance *instance) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  inst_mgr->finish_instance((P3DInstance *)instance);
+  P3DInstance *inst = inst_mgr->validate_instance(instance);
+  if (inst != NULL) {
+    inst_mgr->finish_instance(inst);
+  }
   RELEASE_LOCK(_api_lock);
 }
 
@@ -117,7 +123,11 @@ P3D_instance_setup_window(P3D_instance *instance,
                           win_width, win_height, parent_window);
 
   ACQUIRE_LOCK(_api_lock);
-  ((P3DInstance *)instance)->set_wparams(wparams);
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3DInstance *inst = inst_mgr->validate_instance(instance);
+  if (inst != NULL) {
+    inst->set_wparams(wparams);
+  }
   RELEASE_LOCK(_api_lock);
 }
 
@@ -331,7 +341,12 @@ P3D_instance_get_panda_script_object(P3D_instance *instance) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
 
-  P3D_object *result = ((P3DInstance *)instance)->get_panda_script_object();
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3DInstance *inst = inst_mgr->validate_instance(instance);
+  P3D_object *result = NULL;
+  if (inst != NULL) {
+    result = inst->get_panda_script_object();
+  }
   
   RELEASE_LOCK(_api_lock);
   return result;
@@ -343,7 +358,11 @@ P3D_instance_set_browser_script_object(P3D_instance *instance,
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
 
-  ((P3DInstance *)instance)->set_browser_script_object(object);
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3DInstance *inst = inst_mgr->validate_instance(instance);
+  if (inst != NULL) {
+    inst->set_browser_script_object(object);
+  }
   
   RELEASE_LOCK(_api_lock);
 }
@@ -353,7 +372,14 @@ P3D_request *
 P3D_instance_get_request(P3D_instance *instance) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
-  P3D_request *result = ((P3DInstance *)instance)->get_request();
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3DInstance *inst = inst_mgr->validate_instance(instance);
+  P3D_request *result = NULL;
+  if (inst != NULL) {
+    result = inst->get_request();
+  }
+
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -387,7 +413,11 @@ P3D_request_finish(P3D_request *request, bool handled) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
   if (request != (P3D_request *)NULL) {
-    ((P3DInstance *)request->_instance)->finish_request(request, handled);
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    P3DInstance *inst = inst_mgr->validate_instance(request->_instance);
+    if (inst != NULL) {
+      inst->finish_request(request, handled);
+    }
   }
   RELEASE_LOCK(_api_lock);
 }
@@ -401,10 +431,17 @@ P3D_instance_feed_url_stream(P3D_instance *instance, int unique_id,
                              size_t this_data_size) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
-  bool result = ((P3DInstance *)instance)->
-    feed_url_stream(unique_id, result_code, http_status_code,
-                    total_expected_data, 
-                    (const unsigned char *)this_data, this_data_size);
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3DInstance *inst = inst_mgr->validate_instance(instance);
+  bool result = false;
+  if (inst != NULL) {
+    result = inst->
+      feed_url_stream(unique_id, result_code, http_status_code,
+                      total_expected_data, 
+                      (const unsigned char *)this_data, this_data_size);
+  }
+
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -413,7 +450,14 @@ bool
 P3D_instance_handle_event(P3D_instance *instance, P3D_event_data event) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
-  bool result = ((P3DInstance *)instance)->handle_event(event);
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  P3DInstance *inst = inst_mgr->validate_instance(instance);
+  bool result = false;
+  if (inst != NULL) {
+    result = inst->handle_event(event);
+  }
+
   RELEASE_LOCK(_api_lock);
   return result;
 }

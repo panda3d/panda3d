@@ -52,6 +52,8 @@ public:
                       const P3D_token tokens[], size_t num_tokens);
   void finish_instance(P3DInstance *inst);
 
+  P3DInstance *validate_instance(P3D_instance *instance);
+
   P3DInstance *check_request();
   void wait_request();
 

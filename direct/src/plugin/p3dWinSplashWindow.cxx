@@ -41,8 +41,6 @@ P3DWinSplashWindow(P3DInstance *inst) :
   _install_progress = 0.0;
 
   INIT_LOCK(_install_lock);
-
-  start_thread();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -55,6 +53,22 @@ P3DWinSplashWindow::
   stop_thread();
 
   DESTROY_LOCK(_install_lock);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DWinSplashWindow::set_wparams
+//       Access: Public, Virtual
+//  Description: Changes the window parameters, e.g. to resize or
+//               reposition the window; or sets the parameters for the
+//               first time, creating the initial window.
+////////////////////////////////////////////////////////////////////
+void P3DWinSplashWindow::
+set_wparams(const P3DWindowParams &wparams) {
+  P3DSplashWindow::set_wparams(wparams);
+
+  if (_thread_id == 0) {
+    start_thread();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -76,13 +90,15 @@ set_image_filename(const string &image_filename,
   }
   RELEASE_LOCK(_install_lock);
 
-  // Post a silly message to spin the message loop.
-  PostThreadMessage(_thread_id, WM_USER, 0, 0);
+  if (_thread_id != 0) {
+    // Post a silly message to spin the message loop.
+    PostThreadMessage(_thread_id, WM_USER, 0, 0);
 
-  if (!_thread_running && _thread_continue) {
-    // The user must have closed the window.  Let's shut down the
-    // instance, too.
-    _inst->request_stop();
+    if (!_thread_running && _thread_continue) {
+      // The user must have closed the window.  Let's shut down the
+      // instance, too.
+      _inst->request_stop();
+    }
   }
 }
 
@@ -101,13 +117,15 @@ set_install_label(const string &install_label) {
   }
   RELEASE_LOCK(_install_lock);
 
-  // Post a silly message to spin the message loop.
-  PostThreadMessage(_thread_id, WM_USER, 0, 0);
+  if (_thread_id != 0) {
+    // Post a silly message to spin the message loop.
+    PostThreadMessage(_thread_id, WM_USER, 0, 0);
 
-  if (!_thread_running && _thread_continue) {
-    // The user must have closed the window.  Let's shut down the
-    // instance, too.
-    _inst->request_stop();
+    if (!_thread_running && _thread_continue) {
+      // The user must have closed the window.  Let's shut down the
+      // instance, too.
+      _inst->request_stop();
+    }
   }
 }
 
@@ -124,13 +142,15 @@ set_install_progress(double install_progress) {
   _install_progress = install_progress;
   RELEASE_LOCK(_install_lock);
 
-  // Post a silly message to spin the message loop.
-  PostThreadMessage(_thread_id, WM_USER, 0, 0);
+  if (_thread_id != 0) {
+    // Post a silly message to spin the message loop.
+    PostThreadMessage(_thread_id, WM_USER, 0, 0);
 
-  if (!_thread_running && _thread_continue) {
-    // The user must have closed the window.  Let's shut down the
-    // instance, too.
-    _inst->request_stop();
+    if (!_thread_running && _thread_continue) {
+      // The user must have closed the window.  Let's shut down the
+      // instance, too.
+      _inst->request_stop();
+    }
   }
 }
 
@@ -198,19 +218,24 @@ start_thread() {
 void P3DWinSplashWindow::
 stop_thread() {
   _thread_continue = false;
-  // Post a silly message to spin the message loop.
-  PostThreadMessage(_thread_id, WM_USER, 0, 0);
 
-  // We can't actually wait for the thread to finish, since there
-  // might be a deadlock there: the thread can't finish deleting its
-  // window unless we're pumping the message loop for the parent,
-  // which won't happen if we're sitting here waiting.  No worries; we
-  // don't *really* need to wait for the thread.
+  if (_thread_id != 0) {
+    // Post a silly message to spin the message loop.
+    PostThreadMessage(_thread_id, WM_USER, 0, 0);
+  }
 
-  //  WaitForSingleObject(_thread, INFINITE);
+  if (_thread != NULL){ 
+    // We can't actually wait for the thread to finish, since there
+    // might be a deadlock there: the thread can't finish deleting its
+    // window unless we're pumping the message loop for the parent,
+    // which won't happen if we're sitting here waiting.  No worries;
+    // we don't *really* need to wait for the thread.
+    
+    //  WaitForSingleObject(_thread, INFINITE);
 
-  CloseHandle(_thread);
-  _thread = NULL;
+    CloseHandle(_thread);
+    _thread = NULL;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -209,6 +209,24 @@ finish_instance(P3DInstance *inst) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::validate_instance
+//       Access: Public
+//  Description: Returns the P3DInstance pointer corresponding to the
+//               indicated P3D_instance if it is valid, or NULL if it
+//               is not.
+////////////////////////////////////////////////////////////////////
+P3DInstance *P3DInstanceManager::
+validate_instance(P3D_instance *instance) {
+  Instances::iterator ii;
+  ii = _instances.find((P3DInstance *)instance);
+  if (ii != _instances.end()) {
+    return (*ii);
+  }
+
+  return NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::check_request
 //       Access: Public
 //  Description: If a request is currently pending on any instance,
