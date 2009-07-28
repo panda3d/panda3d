@@ -282,7 +282,7 @@ parse_group_line(const vector_string &words) {
 
       case S_margin:
         int margin_override;
-        if (!string_to_int(word, margin_override)) {
+        if (string_to_int(word, margin_override)) {
           group->set_margin_override(margin_override);
         }
         state = S_none;
