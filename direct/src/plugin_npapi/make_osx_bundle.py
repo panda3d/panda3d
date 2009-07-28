@@ -46,8 +46,7 @@ def makeBundle(startDir):
     
     # Compile the .r file to an .rsrc file.
     os.system('/Developer/Tools/Rez -useDF -o %s %s' % (
-        resourceFilename.toOsSpecific(), Filename(fStartDir, "nppanda3d.r").toOsSpecific()))
-    tfile.unlink()
+        resourceFilename.toOsSpecific(), Filename(fstartDir, "nppanda3d.r").toOsSpecific()))
 
     if not resourceFilename.exists():
         raise IOError, 'Unable to run Rez'
