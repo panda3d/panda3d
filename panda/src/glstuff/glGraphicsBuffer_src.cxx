@@ -358,7 +358,7 @@ rebuild_bitplanes() {
     int update;
     
     update = false;
-    for (int f = 0; f < 6; f++) {    
+    for (int f = 0; f < 6; f++) {
       if (_cubemap_fbo [f] == 0) {
         glgsg->_glGenFramebuffers(1, &_cubemap_fbo [f]);
         update = true;
@@ -369,7 +369,7 @@ rebuild_bitplanes() {
       }
     }
     
-    if (update) {    
+    if (update) {
       int color_attachment = GL_COLOR_ATTACHMENT0_EXT;
 
       for (int i=0; i<count_textures(); i++) {
@@ -413,7 +413,7 @@ rebuild_bitplanes() {
           case RTP_aux_float_1:
           case RTP_aux_float_2:
           case RTP_aux_float_3:
-            for (int f = 0; f < 6; f++) {    
+            for (int f = 0; f < 6; f++) {
               glgsg->bind_fbo(_cubemap_fbo [f]);
               glgsg->_glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, color_attachment,
                                              GL_TEXTURE_CUBE_MAP_POSITIVE_X + f,

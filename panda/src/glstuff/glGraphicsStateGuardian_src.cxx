@@ -834,36 +834,29 @@ reset() {
     if (basic_shaders_only) {
       _shader_caps._active_vprofile = (int)CG_PROFILE_ARBVP1;
       _shader_caps._active_fprofile = (int)CG_PROFILE_ARBFP1;
-      _shader_caps._active_gprofile = (int)0; // No geometry shader if only using basic
+      _shader_caps._active_gprofile = (int)CG_PROFILE_UNKNOWN; // No geometry shader if only using basic
     } else { 
       _shader_caps._active_vprofile = (int)cgGLGetLatestProfile(CG_GL_VERTEX);
       _shader_caps._active_fprofile = (int)cgGLGetLatestProfile(CG_GL_FRAGMENT);
-#ifdef CG_CL_GEOMETRY
       _shader_caps._active_gprofile = (int)cgGLGetLatestProfile(CG_GL_GEOMETRY);
-#else
-      _shader_caps._active_gprofile = (int)0;
-#endif
     }
     _shader_caps._ultimate_vprofile = (int)CG_PROFILE_VP40;
     _shader_caps._ultimate_fprofile = (int)CG_PROFILE_FP40;
-#ifdef CG_PROFILE_GPU_CP
     _shader_caps._ultimate_gprofile = (int)CG_PROFILE_GPU_GP;
-#else
-    _shader_caps._ultimate_gprofile = (int)0;
-#endif
+
     _glBindProgram = (PFNGLBINDPROGRAMARBPROC)
       get_extension_func(GLPREFIX_QUOTED, "BindProgramARB");
     // Bug workaround for radeons.
     // For some reason, OSX reports to have this extension too,
     // even when there's no ATI card, resulting in cgc not being
     // able to find the hint. So, I've disabled the hack there.
-#ifndef IS_OSX
+#ifndef __APPLE__
     if (_shader_caps._active_fprofile == CG_PROFILE_ARBFP1) {
       if (has_extension("GL_ATI_draw_buffers")) {
         _shader_caps._bug_list.insert(Shader::SBUG_ati_draw_buffers);
       }
     }
-#endif // IS_OSX
+#endif // __APPLE__
   }
 #endif // HAVE_CG
 

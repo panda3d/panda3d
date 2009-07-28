@@ -57,39 +57,39 @@ CLP(ShaderContext)(Shader *s, GSG *gsg) : ShaderContext(s) {
     
     // Load the program.
     
-    cgGLLoadProgram(_cg_vprogram);
-    CGerror verror = cgGetError();
-    if (verror != CG_NO_ERROR) {
-      const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-      GLCAT.error() << "Could not load Cg vertex program:" << s->get_filename() << " (" << 
-        cgGetProfileString(cgGetProgramProfile(_cg_vprogram)) << " " << str << ")\n";
-      release_resources(gsg);
+    if (_cg_vprogram != 0) {
+      cgGLLoadProgram(_cg_vprogram);
+      CGerror verror = cgGetError();
+      if (verror != CG_NO_ERROR) {
+        const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
+        GLCAT.error() << "Could not load Cg vertex program:" << s->get_filename(Shader::ST_vertex) << " (" << 
+          cgGetProfileString(cgGetProgramProfile(_cg_vprogram)) << " " << str << ")\n";
+        release_resources(gsg);
+      }
     }
-    cgGLLoadProgram(_cg_fprogram);
-    CGerror ferror = cgGetError();
-    if (ferror != CG_NO_ERROR) {
-      const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-      GLCAT.error() << "Could not load Cg fragment program:" << s->get_filename() << " (" << 
-        cgGetProfileString(cgGetProgramProfile(_cg_fprogram)) << " " << str << ")\n";
-      release_resources(gsg);
+
+    if (_cg_fprogram != 0) {
+      cgGLLoadProgram(_cg_fprogram);
+      CGerror ferror = cgGetError();
+      if (ferror != CG_NO_ERROR) {
+        const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
+        GLCAT.error() << "Could not load Cg fragment program:" << s->get_filename(Shader::ST_fragment) << " (" << 
+          cgGetProfileString(cgGetProgramProfile(_cg_fprogram)) << " " << str << ")\n";
+        release_resources(gsg);
+      }
     }
-    gsg->report_my_gl_errors();
+
     if (_cg_gprogram != 0) {
       cgGLLoadProgram(_cg_gprogram);
-      if (GLCAT.is_debug()) {
-        GLCAT.debug()
-          << "Loaded geom prog: " << _cg_gprogram << "\n";
-      }
-
       CGerror gerror = cgGetError();
       if (gerror != CG_NO_ERROR) {
         const char *str = (const char *)GLP(GetString)(GL_PROGRAM_ERROR_STRING_ARB);
-        GLCAT.error() << "Could not load Cg geometry program:" << s->get_filename() << " (" << 
+        GLCAT.error() << "Could not load Cg geometry program:" << s->get_filename(Shader::ST_geometry) << " (" << 
           cgGetProfileString(cgGetProgramProfile(_cg_gprogram)) << " " << str << ")\n";
         release_resources(gsg);
       }
-      gsg->report_my_gl_errors();
     }
+    gsg->report_my_gl_errors();
   }
 #endif
 
@@ -416,10 +416,14 @@ bind(GSG *gsg, bool reissue_parameters) {
 #ifdef HAVE_CG
   if (_cg_context != 0) {
     // Bind the shaders.
-    cgGLEnableProfile(cgGetProgramProfile(_cg_vprogram));
-    cgGLBindProgram(_cg_vprogram);
-    cgGLEnableProfile(cgGetProgramProfile(_cg_fprogram));
-    cgGLBindProgram(_cg_fprogram);
+    if (_cg_vprogram != 0) {
+      cgGLEnableProfile(cgGetProgramProfile(_cg_vprogram));
+      cgGLBindProgram(_cg_vprogram);
+    }
+    if (_cg_fprogram != 0) {
+      cgGLEnableProfile(cgGetProgramProfile(_cg_fprogram));
+      cgGLBindProgram(_cg_fprogram);
+    }
     if (_cg_gprogram != 0) {
       cgGLEnableProfile(cgGetProgramProfile(_cg_gprogram));
       cgGLBindProgram(_cg_gprogram);
@@ -443,8 +447,12 @@ unbind(GSG *gsg) {
 
 #ifdef HAVE_CG
   if (_cg_context != 0) {
-    cgGLDisableProfile(cgGetProgramProfile(_cg_vprogram));
-    cgGLDisableProfile(cgGetProgramProfile(_cg_fprogram));
+    if (_cg_vprogram != 0) {
+      cgGLDisableProfile(cgGetProgramProfile(_cg_vprogram));
+    }
+    if (_cg_fprogram != 0) {
+      cgGLDisableProfile(cgGetProgramProfile(_cg_fprogram));
+    }
     if (_cg_gprogram != 0) {
       cgGLDisableProfile(cgGetProgramProfile(_cg_gprogram));
     }
@@ -835,7 +843,7 @@ void CLP(ShaderContext)::
 cg_report_errors() {
   CGerror err = cgGetError();
   if (err != CG_NO_ERROR) {
-    GLCAT.error() << _shader->get_filename() << " " << cgGetErrorString(err) << "\n";
+    GLCAT.error() << cgGetErrorString(err) << "\n";
   }
 }
 #endif
