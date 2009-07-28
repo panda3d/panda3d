@@ -84,7 +84,13 @@ make_xml() {
     // The subprocess_window setting is applied by the caller.
 
 #elif defined(HAVE_X11)
-    xwparams->SetAttribute("parent_xwindow", (unsigned long)_parent_window._xwindow);
+    // TinyXml doesn't support a "long" attribute.  We'll use
+    // stringstream to do it ourselves.
+    {
+      ostringstream strm;
+      strm << _parent_window._xwindow;
+      xwparams->SetAttribute("parent_xwindow", strm.str());
+    }
 #endif
     break;
 

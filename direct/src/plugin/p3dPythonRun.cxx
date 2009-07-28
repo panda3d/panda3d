@@ -1026,10 +1026,11 @@ setup_window(P3DCInstance *inst, TiXmlElement *xwparams) {
   }
 
 #elif defined(HAVE_X11)
-  // Bad! Casting to int loses precision.
-  int xwindow;
-  if (xwparams->Attribute("parent_xwindow", &xwindow)) {
-    parent_window_handle = (long)xwindow;
+  // Use stringstream to decode the "long" attribute.
+  const char *parent_cstr = xwparams->Attribute("parent_xwindow");
+  if (parent_cstr != NULL) {
+    istringstream strm(parent_cstr);
+    strm >> parent_window_handle;
   }
 #endif
 

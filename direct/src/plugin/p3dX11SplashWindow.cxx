@@ -62,8 +62,6 @@ P3DX11SplashWindow(P3DInstance *inst) :
   _image_filename_temp = false;
   _install_label_changed = false;
   _install_progress = 0.0;
-
-  start_subprocess();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -74,6 +72,22 @@ P3DX11SplashWindow(P3DInstance *inst) :
 P3DX11SplashWindow::
 ~P3DX11SplashWindow() {
   stop_subprocess();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::set_wparams
+//       Access: Public, Virtual
+//  Description: Changes the window parameters, e.g. to resize or
+//               reposition the window; or sets the parameters for the
+//               first time, creating the initial window.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+set_wparams(const P3DWindowParams &wparams) {
+  P3DSplashWindow::set_wparams(wparams);
+
+  if (_subprocess_pid == -1) {
+    start_subprocess();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -402,7 +416,7 @@ subprocess_run() {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 receive_command() {
-  TiXmlDocument *doc = read_xml(_pipe_read, cerr);
+  TiXmlDocument *doc = read_xml(_pipe_read, nout);
   if (doc == NULL) {
     // Pipe closed or something.
     _subprocess_continue = false;

@@ -201,9 +201,8 @@ set_wparams(const P3DWindowParams &wparams) {
   if (!_instance_window_opened && _got_fparams) {
     if (_splash_window == NULL) {
       make_splash_window();
-    } else {
-      _splash_window->set_wparams(_wparams);
     }
+    _splash_window->set_wparams(_wparams);
   }
 
   // Update the instance in the sub-process.
