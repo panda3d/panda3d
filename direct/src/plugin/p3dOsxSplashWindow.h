@@ -33,6 +33,7 @@ public:
   P3DOsxSplashWindow(P3DInstance *inst);
   virtual ~P3DOsxSplashWindow();
 
+  virtual void set_wparams(const P3DWindowParams &wparams);
   virtual void set_image_filename(const string &image_filename,
                                   bool image_filename_temp);
   virtual void set_install_label(const string &install_label);
@@ -44,6 +45,7 @@ private:
   void paint_window();
 
 private:
+  bool _got_wparams;
   GWorldPtr _image;
   char *_image_data;
   int _image_height, _image_width;

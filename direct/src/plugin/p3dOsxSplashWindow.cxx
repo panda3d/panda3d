@@ -30,6 +30,7 @@ P3DOsxSplashWindow(P3DInstance *inst) :
   _image = NULL;
   _image_data = NULL;
   _install_progress = 0;
+  _got_wparams = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -47,6 +48,19 @@ P3DOsxSplashWindow::
     delete[] _image_data;
     _image_data = NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::set_wparams
+//       Access: Public, Virtual
+//  Description: Changes the window parameters, e.g. to resize or
+//               reposition the window; or sets the parameters for the
+//               first time, creating the initial window.
+////////////////////////////////////////////////////////////////////
+void P3DOsxSplashWindow::
+set_wparams(const P3DWindowParams &wparams) {
+  P3DSplashWindow::set_wparams(wparams);
+  _got_wparams = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -168,6 +182,10 @@ handle_event(P3D_event_data event) {
 ////////////////////////////////////////////////////////////////////
 void P3DOsxSplashWindow::
 paint_window() {
+  if (!_got_wparams) {
+    return;
+  }
+
   GrafPtr out_port = _wparams.get_parent_window()._port;
   GrafPtr portSave = NULL;
   Boolean portChanged = QDSwapPort(out_port, &portSave);
