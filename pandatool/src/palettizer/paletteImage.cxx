@@ -155,6 +155,8 @@ PaletteImage() {
   _index = 0;
   _new_image = false;
   _got_image = false;
+
+  _swapped_image = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -173,9 +175,32 @@ PaletteImage(PalettePage *page, int index) :
   _y_size = pal->_pal_y_size;
   _new_image = true;
   _got_image = false;
+  _swapped_image = 0;
 
   setup_filename();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::Constructor
+//       Access: Public
+//  Description:
+////////////////////////////////////////////////////////////////////
+PaletteImage::
+PaletteImage(PalettePage *page, int index, unsigned swapIndex) :
+  _page(page),
+  _index(index),
+  _swapped_image(swapIndex)
+{
+  _properties = page->get_properties();
+  _size_known = true;
+  _x_size = pal->_pal_x_size;
+  _y_size = pal->_pal_y_size;
+  _new_image = true;
+  _got_image = false;
+
+  setup_filename();
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::get_page
@@ -293,6 +318,17 @@ place(TexturePlacement *placement) {
   if (find_hole(x, y, placement->get_x_size(), placement->get_y_size())) {
     placement->place_at(this, x, y);
     _placements.push_back(placement);
+
+    // [gjeon] create swappedImages
+    TexturePlacement::TextureSwaps::iterator tsi;
+    for (tsi = placement->_textureSwaps.begin(); tsi != placement->_textureSwaps.end(); ++tsi) {
+      if ((tsi - placement->_textureSwaps.begin()) >= _swappedImages.size()) {
+        PaletteImage *swappedImage = new PaletteImage(_page, _swappedImages.size(), tsi - placement->_textureSwaps.begin() + 1);
+        swappedImage->_masterPlacements = &_placements;
+        _swappedImages.push_back(swappedImage);
+      }
+    }
+
     return true;
   }
 
@@ -314,7 +350,6 @@ unplace(TexturePlacement *placement) {
     _placements.erase(pi);
     pi = find(_placements.begin(), _placements.end(), placement);
   }
-
   _cleared_regions.push_back(ClearedRegion(placement));
 }
 
@@ -373,7 +408,7 @@ check_solitary() {
 ////////////////////////////////////////////////////////////////////
 void PaletteImage::
 optimal_resize() {
-  if (is_empty()) {
+  if (is_empty()) { // && (_swapped_image == 0)) {
     return;
   }
 
@@ -392,12 +427,20 @@ optimal_resize() {
       success = true;
       resized_any = true;
     }
+
   } while (success);
 
   if (resized_any) {
     nout << "Resizing "
          << FilenameUnifier::make_user_filename(get_filename()) << " to "
          << _x_size << " " << _y_size << "\n";
+
+    // [gjeon] resize swapped images, also
+    SwappedImages::iterator si;
+    for (si = _swappedImages.begin(); si != _swappedImages.end(); ++si) {
+      PaletteImage *swappedImage = (*si);
+      swappedImage->resize_swapped_image(_x_size, _y_size);
+    }  
   }
 }
 
@@ -472,6 +515,22 @@ resize_image(int x_size, int y_size) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::resize_swapped_image
+//       Access: Public
+//  Description: Attempts to resize the palette image, and repack all
+//               of the textures within the new size.  Returns true if
+//               successful, false otherwise.  If this fails, it will
+//               still result in repacking all the textures in the
+//               original size.
+////////////////////////////////////////////////////////////////////
+void PaletteImage::
+resize_swapped_image(int x_size, int y_size) {
+  // Finally, apply the new size and try to fit all the textures.
+  _x_size = x_size;
+  _y_size = y_size;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::write_placements
 //       Access: Public
 //  Description: Writes a list of the textures that have been placed
@@ -518,6 +577,13 @@ reset_image() {
 void PaletteImage::
 setup_shadow_image() {
   _shadow_image.make_shadow_image(_basename);
+
+  // [gjeon] setup shadoe_image of swappedImages
+  SwappedImages::iterator si;
+  for (si = _swappedImages.begin(); si != _swappedImages.end(); ++si) {
+    PaletteImage *swappedImage = (*si);
+    swappedImage->setup_shadow_image();
+  }  
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -576,6 +642,25 @@ update_image(bool redo_all) {
           needs_update = true;
         }
       }
+
+      // [gjeon] to find out all of the swappable textures is up to date
+      TexturePlacement::TextureSwaps::iterator tsi;
+      for (tsi = placement->_textureSwaps.begin(); tsi != placement->_textureSwaps.end(); ++tsi) {
+        TextureImage *swapTexture = (*tsi);
+
+        if (swapTexture->is_texture_named()) {
+          SourceTextureImage *sourceSwapTexture = swapTexture->get_preferred_source();
+
+          if (sourceSwapTexture != (SourceTextureImage *)NULL &&
+              sourceSwapTexture->get_filename().compare_timestamps(get_filename()) > 0) {
+            // The source image is newer than the palette image; we need to
+            // regenerate.
+            placement->mark_unfilled();
+            needs_update = true;
+          }
+        }
+      }
+
     }
   }
 
@@ -585,12 +670,21 @@ update_image(bool redo_all) {
   }
 
   get_image();
+  // [gjeon] get swapped images, too
+  get_swapped_images();
 
   // Set to black any parts of the image that we recently unplaced.
   ClearedRegions::iterator ci;
   for (ci = _cleared_regions.begin(); ci != _cleared_regions.end(); ++ci) {
     ClearedRegion &region = (*ci);
     region.clear(_image);
+
+    // [gjeon] clear swapped images also
+    SwappedImages::iterator si;
+    for (si = _swappedImages.begin(); si != _swappedImages.end(); ++si) {
+      PaletteImage *swappedImage = (*si);
+      region.clear(swappedImage->_image);
+    }
   }
   _cleared_regions.clear();
 
@@ -599,6 +693,14 @@ update_image(bool redo_all) {
     TexturePlacement *placement = (*pi);
     if (!placement->is_filled()) {
       placement->fill_image(_image);
+
+      // [gjeon] fill swapped images
+      SwappedImages::iterator si;
+      for (si = _swappedImages.begin(); si != _swappedImages.end(); ++si) {
+        PaletteImage *swappedImage = (*si);
+        swappedImage->update_filename();
+        placement->fill_swapped_image(swappedImage->_image, si - _swappedImages.begin());
+      }
     }
   }
 
@@ -609,6 +711,17 @@ update_image(bool redo_all) {
   }
 
   release_image();
+
+  // [gjeon] write and release swapped images
+  SwappedImages::iterator si;
+  for (si = _swappedImages.begin(); si != _swappedImages.end(); ++si) {
+    PaletteImage *swappedImage = (*si);
+    swappedImage->write(swappedImage->_image);
+    if (pal->_shadow_color_type != (PNMFileType *)NULL) {
+      swappedImage->_shadow_image.write(swappedImage->_image);
+    }
+    swappedImage->release_image();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -662,7 +775,6 @@ update_filename() {
   return false;
 }
 
-
 ////////////////////////////////////////////////////////////////////
 //     Function: PaletteImage::setup_filename
 //       Access: Private
@@ -713,6 +825,11 @@ setup_filename() {
       ++si;
     }
   }
+
+  if (_swapped_image > 0) {
+    _basename += "_swp_";
+    _basename += format_string(_swapped_image);
+  }
     
   // We must end the basename with a dot, so that it does not appear
   // to have a filename extension.  Otherwise, an embedded dot in the
@@ -731,7 +848,7 @@ setup_filename() {
   if (_shadow_image.make_shadow_image(_basename)) {
     any_changed = true;
   }
-
+  
   return any_changed;
 }
 
@@ -846,6 +963,72 @@ get_image() {
   for (pi = _placements.begin(); pi != _placements.end(); ++pi) {
     TexturePlacement *placement = (*pi);
     placement->fill_image(_image);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::get_swapped_image
+//       Access: Public
+//  Description: Reads or generates the PNMImage for swapped textures
+////////////////////////////////////////////////////////////////////
+void PaletteImage::
+get_swapped_image(int index) {
+  if (_got_image) {
+    return;
+  }
+
+  if (!_new_image) {
+    if (pal->_shadow_color_type != (PNMFileType *)NULL) {
+      if (_shadow_image.get_filename().exists() && _shadow_image.read(_image)) {
+        _got_image = true;
+        return;
+      }
+    } else {
+      if (get_filename().exists() && read(_image)) {
+        _got_image = true;
+        return;
+      }
+    }
+  }
+
+  nout << "Generating new "
+       << FilenameUnifier::make_user_filename(get_filename()) << "\n";
+
+  // We won't be using this any more.
+  _cleared_regions.clear();
+
+  _image.clear(get_x_size(), get_y_size(), _properties.get_num_channels());
+  _image.fill(pal->_background[0], pal->_background[1], pal->_background[2]);
+  if (_image.has_alpha()) {
+    _image.alpha_fill(pal->_background[3]);
+  }
+
+  _new_image = false;
+  _got_image = true;
+
+  // Now fill up the image.
+  Placements::iterator pi;
+  for (pi = _masterPlacements->begin(); pi != _masterPlacements->end(); ++pi) {
+    TexturePlacement *placement = (*pi);
+    if (placement->_textureSwaps.size() > index)
+      placement->fill_swapped_image(_image, index);
+    else
+      placement->fill_image(_image);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteImage::get_swapped_images
+//       Access: Public
+//  Description: Reads or generates the PNMImage that corresponds to
+//               the palette as it is known so far.
+////////////////////////////////////////////////////////////////////
+void PaletteImage::
+get_swapped_images() {
+  SwappedImages::iterator si;
+  for (si = _swappedImages.begin(); si != _swappedImages.end(); ++si) {
+    PaletteImage *swappedImage = (*si);
+    swappedImage->get_swapped_image(si - _swappedImages.begin());
   }
 }
 

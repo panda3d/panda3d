@@ -25,6 +25,7 @@
 
 #include "pset.h"
 #include "pvector.h"
+#include "vector_string.h"
 
 class EggFile;
 class TexturePlacement;
@@ -89,6 +90,8 @@ public:
   void setup_shadow_images();
   void update_images(bool redo_all);
 
+  void add_texture_swap_info(const string sourceTextureName, const vector_string &swapTextures);
+
 private:
   string _dirname;
   int _egg_count;
@@ -102,6 +105,9 @@ private:
 
   typedef pmap<TextureProperties, PalettePage *> Pages;
   Pages _pages;
+
+  typedef pmap<string, vector_string> TextureSwapInfo;
+  TextureSwapInfo _textureSwapInfo;
 
   // The TypedWritable interface follows.
 public:

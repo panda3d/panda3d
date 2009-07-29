@@ -424,6 +424,36 @@ prepare(TextureImage *texture) {
   TexturePlacement *placement = new TexturePlacement(texture, this);
   _placements.insert(placement);
 
+  // [gjeon] update swapTexture information
+  TextureSwapInfo::iterator tsi = _textureSwapInfo.find(texture->get_name());
+  if (tsi != _textureSwapInfo.end()) {
+    vector_string swapTextures = (*tsi).second;
+
+    vector_string::const_iterator wi;
+    wi = swapTextures.begin();
+    ++wi;
+    ++wi;
+
+    // [gjeon] since swapped texture usually didn't mapped to any egg file
+    // we need to create soucreTextureImage by using original texture file's info
+    const string originalTextureName = (*wi);
+    TextureImage *originalTexture = pal->get_texture(originalTextureName);
+    SourceTextureImage *source = originalTexture->get_preferred_source();
+    const Filename originalTextureFilename = source->get_filename();
+    const Filename originalTextureAlphaFilename = source->get_alpha_filename();
+    int originalTextureAlphaFileChannel = source->get_alpha_file_channel();
+
+    ++wi;
+    while (wi != swapTextures.end()) {
+      const string &swapTextureName = (*wi);
+      TextureImage *swapTextureImage = pal->get_texture(swapTextureName);
+      Filename swapTextureFilename = Filename(originalTextureFilename.get_dirname(), swapTextureName + "." + originalTextureFilename.get_extension());
+      swapTextureImage->get_source(swapTextureFilename, originalTextureAlphaFilename, originalTextureAlphaFileChannel);
+      placement->_textureSwaps.push_back(swapTextureImage);
+      ++wi;
+    }
+  }  
+
   return placement;
 }
 
@@ -778,4 +808,18 @@ fillin(DatagramIterator &scan, BamReader *manager) {
     _has_margin_override = scan.get_bool();
     _margin_override = scan.get_int16();
   } 
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::add_texture_swap_info
+//       Access: Public
+//  Description: Store textureswap information from textures.txa
+////////////////////////////////////////////////////////////////////
+void PaletteGroup::
+add_texture_swap_info(const string sourceTextureName, const vector_string &swapTextures) {
+  TextureSwapInfo::iterator tsi = _textureSwapInfo.find(sourceTextureName);
+  if (tsi != _textureSwapInfo.end()) {
+    _textureSwapInfo.erase(tsi);
+  }
+  _textureSwapInfo.insert(TextureSwapInfo::value_type(sourceTextureName, swapTextures));
 }

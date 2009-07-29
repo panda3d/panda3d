@@ -91,7 +91,11 @@ public:
   bool is_filled() const;
   void mark_unfilled();
   void fill_image(PNMImage &image);
+  void fill_swapped_image(PNMImage &image, int index);
   void flag_error_image(PNMImage &image);
+
+  typedef pvector<TextureImage *> TextureSwaps;
+  TextureSwaps _textureSwaps;
 
 private:
   void compute_size_from_uvs(const TexCoordd &min_uv, const TexCoordd &max_uv);
@@ -127,8 +131,8 @@ private:
   // This value is only filled in while reading from the bam file;
   // don't use it otherwise.
   int _num_references;
-
   int _margin_override;
+  int _num_textureSwaps;
 
 public:
   static TypeHandle get_class_type() {

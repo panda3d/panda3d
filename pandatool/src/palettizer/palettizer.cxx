@@ -37,7 +37,7 @@ Palettizer *pal = (Palettizer *)NULL;
 // allows us to easily update egg-palettize to write out additional
 // information to its pi file, without having it increment the bam
 // version number for all bam and boo files anywhere in the world.
-int Palettizer::_pi_version = 19;
+int Palettizer::_pi_version = 20;
 // Updated to version 8 on 3/20/03 to remove extensions from texture key names.
 // Updated to version 9 on 4/13/03 to add a few properties in various places.
 // Updated to version 10 on 4/15/03 to add _alpha_file_channel.
@@ -50,7 +50,7 @@ int Palettizer::_pi_version = 19;
 // Updated to version 17 on 3/02/07 to add TextureImage::_txa_wrap_u etc.
 // Updated to version 18 on 5/13/08 to add TextureProperties::_quality_level.
 // Updated to version 19 on 7/16/09 to add PaletteGroup::_override_margin
-
+// Updated to version 20 on 7/27/09 to add TexturePlacement::_swapTextures
 
 int Palettizer::_min_pi_version = 8;
 // Dropped support for versions 7 and below on 7/14/03.
@@ -562,7 +562,6 @@ process_all(bool force_texture_read, const Filename &state_filename) {
   EggFiles::const_iterator efi;
   for (efi = _egg_files.begin(); efi != _egg_files.end(); ++efi) {
     EggFile *egg_file = (*efi).second;
-
     egg_file->pre_txa_file();
     _txa_file.match_egg(egg_file);
     egg_file->post_txa_file();
@@ -583,7 +582,6 @@ process_all(bool force_texture_read, const Filename &state_filename) {
   // .txa file.
   for (ti = _textures.begin(); ti != _textures.end(); ++ti) {
     TextureImage *texture = (*ti).second;
-
     if (force_texture_read || texture->is_newer_than(state_filename)) {
       texture->read_source_image();
     }

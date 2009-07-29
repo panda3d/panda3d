@@ -885,6 +885,109 @@ fill_image(PNMImage &image) {
   _texture->release_source_image();
 }
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: TexturePlacement::fill_swapped_image
+//       Access: Public
+//  Description: Fills in the rectangle of the swapped palette image
+//               represented by the texture placement with the image
+//               pixels.
+////////////////////////////////////////////////////////////////////
+void TexturePlacement::
+fill_swapped_image(PNMImage &image, int index) {
+  nassertv(is_placed());
+
+  _is_filled = true;
+
+  // We determine the pixels to place the source image at by
+  // transforming the unit texture box: the upper-left and lower-right
+  // corners.  These corners, in the final texture coordinate space,
+  // represent where on the palette image the original texture should
+  // be located.
+
+  LMatrix3d transform;
+  compute_tex_matrix(transform);
+  TexCoordd ul = TexCoordd(0.0, 1.0) * transform;
+  TexCoordd lr = TexCoordd(1.0, 0.0) * transform;
+
+  // Now we convert those texture coordinates back to pixel units.
+  int pal_x_size = _image->get_x_size();
+  int pal_y_size = _image->get_y_size();
+
+  int top = (int)floor((1.0 - ul[1]) * pal_y_size + 0.5);
+  int left = (int)floor(ul[0] * pal_x_size + 0.5);
+  int bottom = (int)floor((1.0 - lr[1]) * pal_y_size + 0.5);
+  int right = (int)floor(lr[0] * pal_x_size + 0.5);
+
+  // And now we can determine the size to scale the image to based on
+  // that.  This may not be the same as texture->size() because of
+  // margins.
+  int x_size = right - left;
+  int y_size = bottom - top;
+  nassertv(x_size >= 0 && y_size >= 0);
+
+  // Now we get a PNMImage that represents the swapped texture at that
+  // size.
+  TextureSwaps::iterator tsi;
+  tsi = _textureSwaps.begin() + index;
+  TextureImage *swapTexture = (*tsi);
+  const PNMImage &source_full = swapTexture->read_source_image();
+  if (!source_full.is_valid()) {
+    flag_error_image(image);
+    return;
+  }
+
+  PNMImage source(x_size, y_size, source_full.get_num_channels(),
+                  source_full.get_maxval());
+  source.quick_filter_from(source_full);
+
+  bool alpha = image.has_alpha();
+  bool source_alpha = source.has_alpha();
+
+  // Now copy the pixels.  We do this by walking through the
+  // rectangular region on the palette image that we have reserved for
+  // this texture; for each pixel in this region, we determine its
+  // appropriate color based on its relation to the actual texture
+  // image location (determined above), and on whether the texture
+  // wraps or clamps.
+  for (int y = _placed._y; y < _placed._y + _placed._y_size; y++) {
+    int sy = y - top;
+
+    if (_placed._wrap_v == EggTexture::WM_clamp) {
+      // Clamp at [0, y_size).
+      sy = max(min(sy, y_size - 1), 0);
+
+    } else {
+      // Wrap: sign-independent modulo.
+      sy = (sy < 0) ? y_size - 1 - ((-sy - 1) % y_size) : sy % y_size;
+    }
+
+    for (int x = _placed._x; x < _placed._x + _placed._x_size; x++) {
+      int sx = x - left;
+
+      if (_placed._wrap_u == EggTexture::WM_clamp) {
+        // Clamp at [0, x_size).
+        sx = max(min(sx, x_size - 1), 0);
+
+      } else {
+        // Wrap: sign-independent modulo.
+        sx = (sx < 0) ? x_size - 1 - ((-sx - 1) % x_size) : sx % x_size;
+      }
+
+      image.set_xel(x, y, source.get_xel(sx, sy));
+      if (alpha) {
+        if (source_alpha) {
+          image.set_alpha(x, y, source.get_alpha(sx, sy));
+        } else {
+          image.set_alpha(x, y, 1.0);
+        }
+      }
+    }
+  }
+
+  swapTexture->release_source_image();
+}
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TexturePlacement::flag_error_image
 //       Access: Public
@@ -1003,6 +1106,12 @@ write_datagram(BamWriter *writer, Datagram &datagram) {
     writer->write_pointer(datagram, (*ri));
   }
 
+  datagram.add_int32(_textureSwaps.size());
+  TextureSwaps::const_iterator tsi;
+  for (tsi = _textureSwaps.begin(); tsi != _textureSwaps.end(); ++tsi) {
+    writer->write_pointer(datagram, (*tsi));
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1043,6 +1152,13 @@ complete_pointers(TypedWritable **p_list, BamReader *manager) {
     TextureReference *reference;
     DCAST_INTO_R(reference, p_list[index], index);
     _references.insert(reference);
+    index++;
+  }
+
+  for (i = 0; i < _num_textureSwaps; i++) {
+    TextureImage *swapTexture;
+    DCAST_INTO_R(swapTexture, p_list[index], index);
+    _textureSwaps.push_back(swapTexture);
     index++;
   }
 
@@ -1094,6 +1210,13 @@ fillin(DatagramIterator &scan, BamReader *manager) {
 
   _num_references = scan.get_int32();
   manager->read_pointers(scan, _num_references);
+
+  if (Palettizer::_read_pi_version >= 20) {
+    _num_textureSwaps = scan.get_int32();
+  } else {
+    _num_textureSwaps = 0;
+  }
+  manager->read_pointers(scan, _num_textureSwaps);
 }
 
 

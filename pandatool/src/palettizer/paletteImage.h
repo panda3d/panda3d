@@ -39,6 +39,7 @@ private:
 
 public:
   PaletteImage(PalettePage *page, int index);
+  PaletteImage(PalettePage *page, int index, unsigned swapIndex);
 
   PalettePage *get_page() const;
 
@@ -52,6 +53,7 @@ public:
 
   void optimal_resize();
   bool resize_image(int x_size, int y_size);
+  void resize_swapped_image(int x_size, int y_size);
 
   void write_placements(ostream &out, int indent_level = 0) const;
   void reset_image();
@@ -67,6 +69,8 @@ private:
   void get_image();
   void release_image();
   void remove_image();
+  void get_swapped_image(int index);
+  void get_swapped_images();
 
   // The ClearedRegion object keeps track of TexturePlacements that
   // were recently removed and thus need to be set to black.
@@ -92,6 +96,8 @@ private:
   typedef pvector<TexturePlacement *> Placements;
   Placements _placements;
 
+  Placements *_masterPlacements;
+
   PalettePage *_page;
   int _index;
   string _basename;
@@ -99,8 +105,13 @@ private:
   bool _new_image;
   bool _got_image;
   PNMImage _image;
+  
+  unsigned _swapped_image; // 0 for non swapped image
 
   ImageFile _shadow_image;
+
+  typedef pvector<PaletteImage *> SwappedImages;
+  SwappedImages _swappedImages;
 
   // The TypedWritable interface follows.
 public:

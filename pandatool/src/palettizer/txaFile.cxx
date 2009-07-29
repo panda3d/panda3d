@@ -91,6 +91,9 @@ read(istream &in, const string &filename) {
       } else if (words[0] == ":cutout") {
         okflag = parse_cutout_line(words);
 
+      } else if (words[0] == ":textureswap") {
+        okflag = parse_textureswap_line(words);
+
       } else {
         nout << "Invalid keyword " << words[0] << "\n";
         okflag = false;
@@ -577,6 +580,7 @@ parse_remap_line(const vector_string &words) {
   return true;
 }
 
+
 ////////////////////////////////////////////////////////////////////
 //     Function: TxaFile::parse_cutout_line
 //       Access: Private
@@ -606,5 +610,38 @@ parse_cutout_line(const vector_string &words) {
     }
   }
 
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TxaFile::parse_textureswap_line
+//       Access: Private
+//  Description: Handles the line in a .txa file that begins with the
+//               keyword ":textureswap" and indicates the relationships
+//               between textures to be swapped.
+////////////////////////////////////////////////////////////////////
+bool TxaFile::
+parse_textureswap_line(const vector_string &words) {
+  vector_string::const_iterator wi;
+  wi = words.begin();
+  assert (wi != words.end());
+  ++wi;
+
+  const string &group_name = (*wi);
+  PaletteGroup *group = pal->get_palette_group(group_name);
+  ++wi;
+
+  string sourceTextureName = (*wi);
+  ++wi;
+
+  //vector_string swapTextures;
+  //copy(words.begin(), words.end(), swapTextures);
+  //group->add_texture_swap_info(sourceTextureName, swapTextures);
+  size_t dot = sourceTextureName.rfind('.');
+  if (dot != string::npos) {
+    sourceTextureName = sourceTextureName.substr(0, dot);
+  }
+  group->add_texture_swap_info(sourceTextureName, words);
+  
   return true;
 }
