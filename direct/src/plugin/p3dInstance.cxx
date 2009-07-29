@@ -49,7 +49,8 @@ typedef P3DSplashWindow SplashWindowType;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DInstance::
-P3DInstance(P3D_request_ready_func *func, void *user_data) :
+P3DInstance(P3D_request_ready_func *func, 
+            const P3D_token tokens[], size_t num_tokens, void *user_data) :
   _func(func)
 {
   _browser_script_object = NULL;
@@ -58,6 +59,8 @@ P3DInstance(P3D_request_ready_func *func, void *user_data) :
   _request_pending = false;
   _got_fparams = false;
   _got_wparams = false;
+
+  _fparams.set_tokens(tokens, num_tokens);
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _instance_id = inst_mgr->get_unique_id();
@@ -137,16 +140,17 @@ P3DInstance::
   // download is still running?  Who will crash when this happens?
 }
 
+
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::set_fparams
+//     Function: P3DInstance::set_p3d_filename
 //       Access: Public
-//  Description: Sets up the initial file parameters for the instance.
+//  Description: Specifies the file that contains the instance data.
 //               Normally this is only called once.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-set_fparams(const P3DFileParams &fparams) {
+set_p3d_filename(const string &p3d_filename) {
   _got_fparams = true;
-  _fparams = fparams;
+  _fparams.set_p3d_filename(p3d_filename);
 
   // This also sets up some internal data based on the contents of the
   // above file and the associated tokens.
@@ -176,13 +180,6 @@ set_fparams(const P3DFileParams &fparams) {
     P3D_object *result = P3D_OBJECT_EVAL(_browser_script_object, expression.c_str());
     P3D_OBJECT_XDECREF(result);
   }
-
-  // Maybe create the splash window.
-  if (!_instance_window_opened && _got_wparams) {
-    if (_splash_window == NULL) {
-      make_splash_window();
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,7 +195,7 @@ set_wparams(const P3DWindowParams &wparams) {
   _wparams = wparams;
 
   // Update or create the splash window.
-  if (!_instance_window_opened && _got_fparams) {
+  if (!_instance_window_opened) {
     if (_splash_window == NULL) {
       make_splash_window();
     }

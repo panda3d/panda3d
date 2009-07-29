@@ -82,6 +82,7 @@ set_wparams(const P3DWindowParams &wparams) {
 void P3DWinSplashWindow::
 set_image_filename(const string &image_filename,
                    bool image_filename_temp) {
+  nout << "image_filename = " << image_filename << ", thread_id = " << _thread_id << "\n";
   ACQUIRE_LOCK(_install_lock);
   if (_image_filename != image_filename) {
     _image_filename = image_filename;
@@ -261,34 +262,33 @@ thread_run() {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
 
-    if (_got_install) {
-      ACQUIRE_LOCK(_install_lock);
-      double install_progress = _install_progress;
-      if (_image_filename_changed) {
-        update_image_filename(_image_filename, _image_filename_temp);
-      }
-      _image_filename_changed = false;
-      if (_install_label_changed && _progress_bar != NULL) {
-        update_install_label(_install_label);
-      }
-      _install_label_changed = false;
-      RELEASE_LOCK(_install_lock);
+    ACQUIRE_LOCK(_install_lock);
+    bool got_install = _got_install;
+    double install_progress = _install_progress;
+    if (_image_filename_changed) {
+      update_image_filename(_image_filename, _image_filename_temp);
+    }
+    _image_filename_changed = false;
+    if (_install_label_changed && _progress_bar != NULL) {
+      update_install_label(_install_label);
+    }
+    _install_label_changed = false;
+    RELEASE_LOCK(_install_lock);
 
-      if (install_progress != last_progress) {
-        if (_progress_bar == NULL) {
-          // Is it time to create the progress bar?
-          int now = GetTickCount();
-          if (now - _loop_started > 2000) {
-            make_progress_bar();
-          }
-        } else {
-          // Update the progress bar.  We do this only within the
-          // thread, to ensure we don't get a race condition when
-          // starting or closing the thread.
-          SendMessage(_progress_bar, PBM_SETPOS, (int)(install_progress * 100.0), 0);
-          
-          last_progress = install_progress;
+    if (got_install && install_progress != last_progress) {
+      if (_progress_bar == NULL) {
+        // Is it time to create the progress bar?
+        int now = GetTickCount();
+        if (now - _loop_started > 2000) {
+          make_progress_bar();
         }
+      } else {
+        // Update the progress bar.  We do this only within the
+        // thread, to ensure we don't get a race condition when
+        // starting or closing the thread.
+        SendMessage(_progress_bar, PBM_SETPOS, (int)(install_progress * 100.0), 0);
+        
+        last_progress = install_progress;
       }
     }
 

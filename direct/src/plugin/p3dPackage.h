@@ -36,8 +36,9 @@ class P3DInstance;
 ////////////////////////////////////////////////////////////////////
 class P3DPackage {
 public:
-  P3DPackage(const string &package_name, const string &package_version,
+  P3DPackage(const string &package_name, 
              const string &package_platform,
+             const string &package_version,
              const string &package_display_name);
   ~P3DPackage();
 
@@ -63,6 +64,7 @@ public:
 
 private:
   enum DownloadType {
+    DT_contents_file,
     DT_desc_file,
     DT_compressed_archive
   };
@@ -81,6 +83,9 @@ private:
   };
 
   void begin_download();
+  void download_contents_file();
+  void contents_file_download_finished(bool success);
+
   void download_desc_file();
   void desc_file_download_finished(bool success);
   void got_desc_file(TiXmlDocument *doc, bool freshly_downloaded);
@@ -104,6 +109,8 @@ private:
   string _package_display_name;
   string _package_fullname;
   string _package_dir;
+
+  string _contents_file_pathname;
 
   string _desc_file_basename;
   string _desc_file_pathname;

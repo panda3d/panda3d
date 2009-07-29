@@ -13,6 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3d_plugin_common.h"
+#include "p3d_plugin_config.h"
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
 #include "p3dWindowParams.h"
@@ -37,7 +38,7 @@ ostream *nout_stream;
 
 
 bool 
-P3D_initialize(int api_version, const char *output_filename) {
+P3D_initialize(int api_version, const char *contents_filename) {
   if (api_version != P3D_API_VERSION) {
     // Can't accept an incompatible version.
     return false;
@@ -49,21 +50,40 @@ P3D_initialize(int api_version, const char *output_filename) {
   }
   ACQUIRE_LOCK(_api_lock);
 
-  plugin_output_filename = string();
-  if (output_filename != NULL) {
-    plugin_output_filename = output_filename;
+  if (contents_filename == NULL){ 
+    contents_filename = "";
   }
-  nout_stream = &cerr;
-  if (!plugin_output_filename.empty()) {
-    logfile.open(plugin_output_filename.c_str(), ios::out | ios::trunc);
-    if (logfile) {
-      logfile.setf(ios::unitbuf);
-      nout_stream = &logfile;
+
+#ifdef P3D_PLUGIN_LOGFILE2
+  string logfilename = P3D_PLUGIN_LOGFILE2;
+#else
+  string logfilename;
+#endif  // P3D_PLUGIN_LOGFILE2
+
+  if (logfilename.empty()) {
+#ifdef _WIN32
+    static const size_t buffer_size = 4096;
+    char buffer[buffer_size];
+    if (GetTempPath(buffer_size, buffer) != 0) {
+      logfilename = buffer;
+      logfilename += "panda3d.2.log";
     }
+#else
+    logfilename = "/tmp/panda3d.2.log";
+#endif  // _WIN32
+  }
+
+  cerr << "logfile: " << logfilename << "\n";
+
+  nout_stream = &cerr;
+  logfile.open(logfilename.c_str(), ios::out | ios::trunc);
+  if (logfile) {
+    logfile.setf(ios::unitbuf);
+    nout_stream = &logfile;
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  bool result = inst_mgr->initialize();
+  bool result = inst_mgr->initialize(contents_filename);
   RELEASE_LOCK(_api_lock);
   return result;
 }
@@ -74,18 +94,21 @@ P3D_finalize() {
 }
 
 P3D_instance *
-P3D_new_instance(P3D_request_ready_func *func, void *user_data) {
+P3D_new_instance(P3D_request_ready_func *func, 
+                 const P3D_token tokens[], size_t num_tokens,
+                 void *user_data) {
+  nout << "new_instance\n";
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  P3DInstance *result = inst_mgr->create_instance(func, user_data);
+  P3DInstance *result = inst_mgr->create_instance(func, tokens, num_tokens, user_data);
   RELEASE_LOCK(_api_lock);
   return result;
 }
 
 bool
-P3D_instance_start(P3D_instance *instance, const char *p3d_filename, 
-                   const P3D_token tokens[], size_t num_tokens) {
+P3D_instance_start(P3D_instance *instance, const char *p3d_filename) {
+  nout << "instance_start\n";
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   if (p3d_filename == NULL) {
     p3d_filename = "";
@@ -95,7 +118,7 @@ P3D_instance_start(P3D_instance *instance, const char *p3d_filename,
   P3DInstance *inst = inst_mgr->validate_instance(instance);
   bool result = false;
   if (inst != NULL) {
-    result = inst_mgr->start_instance(inst, p3d_filename, tokens, num_tokens);
+    result = inst_mgr->start_instance(inst, p3d_filename);
   }
   RELEASE_LOCK(_api_lock);
   return result;
@@ -119,6 +142,7 @@ P3D_instance_setup_window(P3D_instance *instance,
                           int win_x, int win_y,
                           int win_width, int win_height,
                           P3D_window_handle parent_window) {
+  nout << "setup_window\n";
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   P3DWindowParams wparams(window_type, win_x, win_y,
                           win_width, win_height, parent_window);

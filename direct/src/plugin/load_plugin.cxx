@@ -123,7 +123,8 @@ static void unload_dso();
 //               path.
 ////////////////////////////////////////////////////////////////////
 bool
-load_plugin(const string &p3d_plugin_filename) {
+load_plugin(const string &p3d_plugin_filename, 
+            const string &contents_filename) {
   string filename = p3d_plugin_filename;
   if (filename.empty()) {
     // Look for the plugin along the path.
@@ -292,26 +293,7 @@ load_plugin(const string &p3d_plugin_filename) {
   // Successfully loaded.
   plugin_loaded = true;
 
-#ifdef P3D_PLUGIN_LOGFILE2
-  string logfilename = P3D_PLUGIN_LOGFILE2;
-#else
-  string logfilename;
-#endif  // P3D_PLUGIN_LOGFILE2
-
-  if (logfilename.empty()) {
-#ifdef _WIN32
-    static const size_t buffer_size = 4096;
-    char buffer[buffer_size];
-    if (GetTempPath(buffer_size, buffer) != 0) {
-      logfilename = buffer;
-      logfilename += "panda3d.2.log";
-    }
-#else
-    logfilename = "/tmp/panda3d.2.log";
-#endif  // _WIN32
-  }
-
-  if (!P3D_initialize(P3D_API_VERSION, logfilename.c_str())) {
+  if (!P3D_initialize(P3D_API_VERSION, contents_filename.c_str())) {
     // Oops, failure to initialize.
     cerr << "Failed to initialize plugin (wrong API version?)\n";
     unload_plugin();

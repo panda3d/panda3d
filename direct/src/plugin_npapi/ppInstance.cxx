@@ -51,6 +51,8 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
     _tokens.push_back(token);
   }
 
+  _root_dir = find_root_dir();
+
   _started_instance_data = false;
   _got_instance_data = false;
   _got_window = false;
@@ -313,7 +315,15 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
   case PPDownloadRequest::RT_contents_file:
     if (reason != NPRES_DONE) {
       nout << "Failure downloading " << url << "\n";
-      // TODO: fail
+
+      // Couldn't download a fresh contents.xml for some reason.  If
+      // there's an outstanding contents.xml file on disk, try to load
+      // that one as a fallback.
+      string contents_filename = _root_dir + "/contents.xml";
+      if (!read_contents_file(contents_filename)) {
+        nout << "Unable to read contents file " << contents_filename << "\n";
+        // TODO: fail
+      }
     }
     break;
     
@@ -361,11 +371,11 @@ stream_as_file(NPStream *stream, const char *fname) {
       // Looks like we've converted it successfully.
       filename = fname2;
 
-      // Here's another temporary hack.  In addition to the weird
-      // filename format, the file that Safari tells us about appears
-      // to be a temporary file that Safari's about to delete.  In
-      // order to protect ourselves from this, we need to temporarily
-      // copy the file somewhere else.
+      // Here's another crazy hack.  In addition to the weird filename
+      // format, the file that Safari tells us about appears to be a
+      // temporary file that Safari's about to delete.  In order to
+      // protect ourselves from this, we need to temporarily copy the
+      // file somewhere else.
       char *name = tempnam(NULL, "p3d_");
 
       // We prefer just making a hard link; it's quick and easy.
@@ -373,19 +383,7 @@ stream_as_file(NPStream *stream, const char *fname) {
         // But sometimes the hard link might fail, particularly if these
         // are two different file systems.  In this case we have to open
         // the files and copy the data by hand.
-        ifstream in(filename.c_str(), ios::in | ios::binary);
-        ofstream out(name, ios::out | ios::binary);
-        
-        static const size_t buffer_size = 4096;
-        char buffer[buffer_size];
-        
-        in.read(buffer, buffer_size);
-        size_t count = in.gcount();
-        while (count != 0) {
-          out.write(buffer, count);
-          in.read(buffer, buffer_size);
-          count = in.gcount();
-        }
+        copy_file(filename, name);
       }
       
       filename = name;
@@ -439,7 +437,7 @@ handle_request(P3D_request *request) {
     if (strcmp(request->_request._notify._message, "onwindowopen") == 0) {
       _python_window_open = true;
       if (_got_window) {
-        NPRect rect = { 0, 0, _window.height, _window.width };
+        NPRect rect = { 0, 0, (unsigned short)_window.height, (unsigned short)_window.width };
         browser->invalidaterect(_npp_instance, &rect);
       }
     }
@@ -447,7 +445,7 @@ handle_request(P3D_request *request) {
 
   case P3D_RT_refresh:
     if (_got_window) {
-      NPRect rect = { 0, 0, _window.height, _window.width };
+      NPRect rect = { 0, 0, (unsigned short)_window.height, (unsigned short)_window.width };
       browser->invalidaterect(_npp_instance, &rect);
     }
     break;
@@ -700,8 +698,8 @@ start_download(const string &url, PPDownloadRequest *req) {
 //               DLL downloading, if necessary.
 ////////////////////////////////////////////////////////////////////
 bool PPInstance::
-read_contents_file(const string &filename) {
-  TiXmlDocument doc(filename.c_str());
+read_contents_file(const string &contents_filename) {
+  TiXmlDocument doc(contents_filename.c_str());
   if (!doc.LoadFile()) {
     return false;
   }
@@ -765,9 +763,23 @@ downloaded_file(PPDownloadRequest *req, const string &filename) {
   case PPDownloadRequest::RT_contents_file:
     // Now we have the contents.xml file.  Read this to get the
     // filename and md5 hash of our core API DLL.
-    if (!read_contents_file(filename)) {
-      nout << "Unable to read contents file\n";
-      // TODO: fail
+    if (read_contents_file(filename)) {
+      // Successfully read.  Copy it into its normal place.
+      string contents_filename = _root_dir + "/contents.xml";
+      copy_file(filename, contents_filename);
+      
+    } else {
+      // Error reading the contents.xml file, or in loading the core
+      // API that it references.
+      nout << "Unable to read contents file " << filename << "\n";
+
+      // If there's an outstanding contents.xml file on disk, try to
+      // load that one as a fallback.
+      string contents_filename = _root_dir + "/contents.xml";
+      if (!read_contents_file(contents_filename)) {
+        nout << "Unable to read contents file " << contents_filename << "\n";
+        // TODO: fail
+      }
     }
     break;
 
@@ -782,7 +794,10 @@ downloaded_file(PPDownloadRequest *req, const string &filename) {
     // launch the instance.
     _got_instance_data = true;
     _p3d_filename = filename;
-    create_instance();
+
+    if (_p3d_inst != NULL) {
+      P3D_instance_start(_p3d_inst, _p3d_filename.c_str());
+    }
     break;
 
   case PPDownloadRequest::RT_user:
@@ -820,8 +835,6 @@ feed_file(PPDownloadRequest *req, const string &filename) {
 void PPInstance::
 get_core_api(TiXmlElement *xpackage) {
   _core_api_dll.load_xml(xpackage);
-
-  _root_dir = find_root_dir();
 
   if (_core_api_dll.quick_verify(_root_dir)) {
     // The DLL file is good.  Just load it.
@@ -919,7 +932,7 @@ do_load_plugin() {
   }
 #endif  // P3D_PLUGIN_P3D_PLUGIN
 
-  if (!load_plugin(pathname)) {
+  if (!load_plugin(pathname, "")) {
     nout << "Unable to launch core API in " << pathname << "\n";
     return;
   }
@@ -944,12 +957,11 @@ create_instance() {
     return;
   }
 
-  if (!_got_instance_data) {
-    // No instance data yet.
-    return;
+  P3D_token *tokens = NULL;
+  if (!_tokens.empty()) {
+    tokens = &_tokens[0];
   }
-
-  _p3d_inst = P3D_new_instance(request_ready, this);
+  _p3d_inst = P3D_new_instance(request_ready, tokens, _tokens.size(), this);
 
   if (_p3d_inst != NULL) {
     // Now get the browser's window object, to pass to the plugin.
@@ -971,11 +983,7 @@ create_instance() {
     }
 
     if (_got_instance_data) {
-      P3D_token *tokens = NULL;
-      if (!_tokens.empty()) {
-        tokens = &_tokens[0];
-      }
-      P3D_instance_start(_p3d_inst, _p3d_filename.c_str(), tokens, _tokens.size());
+      P3D_instance_start(_p3d_inst, _p3d_filename.c_str());
     }
 
     if (_got_window) {
@@ -1060,6 +1068,38 @@ send_window() {
     (_p3d_inst, P3D_WT_embedded,
      x, y, _window.width, _window.height,
      parent_window);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::copy_file
+//       Access: Public
+//  Description: Copies the data in the file named by from_filename
+//               into the file named by to_filename.
+////////////////////////////////////////////////////////////////////
+bool PPInstance::
+copy_file(const string &from_filename, const string &to_filename) {
+  ifstream in(from_filename.c_str(), ios::in | ios::binary);
+  ofstream out(to_filename.c_str(), ios::out | ios::binary);
+        
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+  
+  in.read(buffer, buffer_size);
+  size_t count = in.gcount();
+  while (count != 0) {
+    out.write(buffer, count);
+    if (out.fail()) {
+      return false;
+    }
+    in.read(buffer, buffer_size);
+    count = in.gcount();
+  }
+
+  if (!in.eof()) {
+    return false;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -77,8 +77,9 @@ class PackageMaker:
         self.packageStageDir = Filename(self.stageDir, '%s/%s' % (self.packageName, self.packageVersion))
 
         if self.packagePlatform:
-            self.packageFullname += '_%s' % (self.packagePlatform)
-            self.packageStageDir = Filename(self.packageStageDir, self.packagePlatform)
+            self.packageFullname = '%s_%s_%s' % (
+                self.packageName, self.packagePlatform, self.packageVersion)
+            self.packageStageDir = Filename(self.stageDir, '%s/%s/%s' % (self.packageName, self.packagePlatform, self.packageVersion))
 
         Filename(self.packageStageDir, '.').makeDir()
         self.cleanDir(self.packageStageDir)
@@ -121,7 +122,7 @@ class PackageMaker:
         f = open(descFilePathname.toOsSpecific(), 'w')
         print >> f, '<?xml version="1.0" ?>'
         print >> f, ''
-        print >> f, '<package name="%s" version="%s" platform="%s">' % (self.packageName, self.packageVersion, self.packagePlatform or '')
+        print >> f, '<package name="%s" platform="%s" version="%s">' % (self.packageName, self.packagePlatform or '', self.packageVersion)
         print >> f, '  <uncompressed_archive %s />' % (uncompressedArchive.getParams())
         print >> f, '  <compressed_archive %s />' % (compressedArchive.getParams())
         for file in self.components:
@@ -209,9 +210,9 @@ def makePackage(args):
             if len(tokens) >= 1:
                 pm.packageName = tokens[0]
             if len(tokens) >= 2:
-                pm.packageVersion = tokens[1]
-            if len(tokens) >= 3:
                 pm.packagePlatform = tokens[2]
+            if len(tokens) >= 3:
+                pm.packageVersion = tokens[1]
             if len(tokens) >= 4:
                 raise ArgumentError, 'Too many tokens in string: %s' % (value)
             

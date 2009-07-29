@@ -44,9 +44,10 @@ public:
 private:
   bool get_plugin(const string &root_url, const string &this_platform,
                   bool force_download);
-  bool read_contents_file(Filename contents, const string &root_url, 
+  bool read_contents_file(Filename contents_filename, const string &root_url, 
                           const string &this_platform);
-  bool get_core_api(const string &root_url, TiXmlElement *xpackage);
+  bool get_core_api(const Filename &contents_filename, const string &root_url,
+                    TiXmlElement *xpackage);
   void run_getters();
   void handle_request(P3D_request *request);
   void make_parent_window(P3D_window_handle &parent_window, 

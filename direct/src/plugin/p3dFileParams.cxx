@@ -25,15 +25,47 @@ P3DFileParams() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DFileParams::Constructor
+//     Function: P3DFileParams::Copy Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DFileParams::
-P3DFileParams(const string &p3d_filename, 
-              const P3D_token tokens[], size_t num_tokens) :
-  _p3d_filename(p3d_filename)
+P3DFileParams(const P3DFileParams &copy) :
+  _p3d_filename(copy._p3d_filename),
+  _tokens(copy._tokens)
 {
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::Copy Assignment
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+void P3DFileParams::
+operator = (const P3DFileParams &other) {
+  _p3d_filename = other._p3d_filename;
+  _tokens = other._tokens;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::set_p3d_filename
+//       Access: Public
+//  Description: Specifies the file that contains the instance data.
+////////////////////////////////////////////////////////////////////
+void P3DFileParams::
+set_p3d_filename(const string &p3d_filename) {
+  _p3d_filename = p3d_filename;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::set_tokens
+//       Access: Public
+//  Description: Specifies the tokens associated with the instance.
+////////////////////////////////////////////////////////////////////
+void P3DFileParams::
+set_tokens(const P3D_token tokens[], size_t num_tokens) {
+  _tokens.clear();
+
   for (size_t i = 0; i < num_tokens; ++i) {
     Token token;
     if (tokens[i]._keyword != NULL) {
@@ -48,17 +80,6 @@ P3DFileParams(const string &p3d_filename,
     }
     _tokens.push_back(token);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DFileParams::Copy Assignment
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void P3DFileParams::
-operator = (const P3DFileParams &other) {
-  _p3d_filename = other._p3d_filename;
-  _tokens = other._tokens;
 }
 
 ////////////////////////////////////////////////////////////////////

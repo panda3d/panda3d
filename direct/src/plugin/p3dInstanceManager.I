@@ -61,6 +61,17 @@ get_platform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::has_contents_file
+//       Access: Public
+//  Description: Returns true if a contents.xml file has been
+//               successfully read, false otherwise.
+////////////////////////////////////////////////////////////////////
+inline bool P3DInstanceManager::
+has_contents_file() const {
+  return (_xcontents != NULL);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_num_instances
 //       Access: Public
 //  Description: Returns the number of instances currently running

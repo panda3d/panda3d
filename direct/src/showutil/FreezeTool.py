@@ -55,7 +55,7 @@ if sys.platform == 'win32':
         MSVC = Filename('/c/Program Files/Microsoft Visual Studio .NET 2003/Vc7').toOsSpecific()
     else:
         print 'Could not locate Microsoft Visual C++ Compiler! Try running from the Visual Studio Command Prompt.'
-        exit(1)
+        sys.exit(1)
     
     if ('WindowsSdkDir' in os.environ):
         PSDK = os.environ['WindowsSdkDir']
@@ -65,7 +65,7 @@ if sys.platform == 'win32':
         PSDK = os.path.join(MSVC, 'PlatformSDK')
     else:
         print 'Could not locate the Microsoft Windows Platform SDK! Try running from the Visual Studio Command Prompt.'
-        exit(1)
+        sys.exit(1)
     
     # If it is run by makepanda, it handles the MSVC and PlatformSDK paths itself.
     if ('MAKEPANDA' in os.environ):

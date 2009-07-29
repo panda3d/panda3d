@@ -131,6 +131,8 @@ download_progress() {
   if (now != _last_reported_time || true) {
     _last_reported_time = now;
   }
+  nout << "Downloading " << get_url() << ": " 
+       << int(get_download_progress() * 1000.0) / 10.0 << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -143,6 +145,6 @@ download_progress() {
 ////////////////////////////////////////////////////////////////////
 void P3DDownload::
 download_finished(bool success) {
-  nout << "Downloading " << get_url() << ": " 
+  nout << "Downloaded " << get_url() << ": " 
        << int(get_download_progress() * 1000.0) / 10.0 << "\n";
 }

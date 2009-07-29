@@ -27,10 +27,11 @@
 class P3DFileParams {
 public:
   P3DFileParams();
-  P3DFileParams(const string &p3d_filename, 
-                const P3D_token tokens[], size_t num_tokens);
-
+  P3DFileParams(const P3DFileParams &copy);
   void operator = (const P3DFileParams &other);
+
+  void set_p3d_filename(const string &p3d_filename);
+  void set_tokens(const P3D_token tokens[], size_t num_tokens);
 
   inline const string &get_p3d_filename() const;
   string lookup_token(const string &keyword) const;

@@ -79,7 +79,7 @@ extern "C" {
    (below). This number will be incremented whenever there are changes
    to any of the interface specifications defined in this header
    file. */
-#define P3D_API_VERSION 4
+#define P3D_API_VERSION 5
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -91,17 +91,16 @@ extern "C" {
    the DLL can verify that it has been built with the same version of
    the API as the host.
 
-   The output_filename is usually NULL, but if you put a filename
-   here, it will be used as the log file for the output from the core
-   API.  This is useful for debugging, particularly when running
-   within a browser that squelches stderr.
+   The contents_filename, if not NULL or empty, names a contents.xml
+   file that has already been downloaded and verified from the server.
+   If this is NULL, a new file will be downloaded as needed.
 
    This function returns true if the core API is valid and uses a
    compatible API, false otherwise.  If it returns false, the host
    should not call any more functions in this API, and should
    immediately unload the DLL and (if possible) download a new one. */
 typedef bool 
-P3D_initialize_func(int api_version, const char *output_filename);
+P3D_initialize_func(int api_version, const char *contents_filename);
 
 /* This function should be called to unload the core API.  It will
    release all internally-allocated memory and return the core API to
@@ -210,16 +209,25 @@ typedef struct {
 
 /* This function creates a new Panda3D instance.  
 
+   For tokens, pass an array of P3D_token elements (above), which
+   correspond to the user-supplied keyword/value pairs that may appear
+   in the embed token within the HTML syntax; the host is responsible
+   for allocating this array, and for deallocating it after this call
+   (the core API will make its own copy of the array).  The tokens are
+   passed to the application, who is free to decide how to interpret
+   them; they have no meaning at the system level.
+
    The user_data pointer is any arbitrary pointer value; it will be
    copied into the _user_data member of the new P3D_instance object.
    This pointer is intended for the host to use to store private data
    associated with each instance; the core API will not do anything with
    this data.
-
  */
 
 typedef P3D_instance *
-P3D_new_instance_func(P3D_request_ready_func *func, void *user_data);
+P3D_new_instance_func(P3D_request_ready_func *func, 
+                      const P3D_token tokens[], size_t num_tokens,
+                      void *user_data);
 
 /* This function should be called at some point after
    P3D_new_instance(); it actually starts the instance running.
@@ -230,29 +238,9 @@ P3D_new_instance_func(P3D_request_ready_func *func, void *user_data);
    instance.  If this is empty or NULL, the "src" token (below) will
    be downloaded instead.
 
-   For tokens, pass an array of P3D_token elements (above), which
-   correspond to the user-supplied keyword/value pairs that may appear
-   in the embed token within the HTML syntax; the host is responsible
-   for allocating this array, and for deallocating it after this call
-   (the core API will make its own copy of the array).
-
-   Most tokens are implemented by the application and are undefined at
-   the system level.  However, two tokens in particular are
-   system-defined:
-
-     "src" : names a URL that will be loaded for the contents of the
-       p3d file, if p3d_filename is empty or NULL.
-
-     "output_filename" : names a file to create on disk which contains
-       the console output from the application.  This may be useful in
-       debugging.  If this is omitted, or an empty string, the console
-       output is written to the standard error output, which may be
-       NULL on a gui application.
-
    The return value is true on success, false on failure. */
 typedef bool
-P3D_instance_start_func(P3D_instance *instance, const char *p3d_filename, 
-                        const P3D_token tokens[], size_t num_tokens);
+P3D_instance_start_func(P3D_instance *instance, const char *p3d_filename);
 
 
 /* Call this function to interrupt a particular instance and stop it

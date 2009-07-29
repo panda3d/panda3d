@@ -85,7 +85,7 @@ mkdir_complete(const string &dirname, ostream &logfile) {
   return false;
 
 #else  //_WIN32
-  if (mkdir(dirname.c_str(), 0777) == 0) {
+  if (mkdir(dirname.c_str(), 0755) == 0) {
     // Success!
     return true;
   }
@@ -101,7 +101,7 @@ mkdir_complete(const string &dirname, ostream &logfile) {
     string parent = get_dirname(dirname);
     if (!parent.empty() && mkdir_complete(parent, logfile)) {
       // Parent successfully created.  Try again to make the child.
-      if (mkdir(dirname.c_str(), 0777) == 0) {
+      if (mkdir(dirname.c_str(), 0755) == 0) {
         // Got it!
         return true;
       }
@@ -147,13 +147,13 @@ mkfile_complete(const string &filename, ostream &logfile) {
   return true;
 
 #else  // _WIN32
-  int fd = creat(filename.c_str(), 0777);
+  int fd = creat(filename.c_str(), 0755);
   if (fd == -1) {
     // Try to make the parent directory first.
     string parent = get_dirname(filename);
     if (!parent.empty() && mkdir_complete(parent, logfile)) {
       // Parent successfully created.  Try again to make the file.
-      fd = creat(filename.c_str(), 0777);
+      fd = creat(filename.c_str(), 0755);
     }
     if (fd == -1) {
       logfile

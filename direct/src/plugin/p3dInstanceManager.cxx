@@ -22,6 +22,9 @@
 #include "p3dNoneObject.h"
 #include "p3dBoolObject.h"
 #include "find_root_dir.h"
+#include "mkdir_complete.h"
+#include "fileSpec.h"
+#include "get_tinyxml.h"
 
 #ifdef _WIN32
 #include <shlobj.h>
@@ -40,6 +43,7 @@ P3DInstanceManager::
 P3DInstanceManager() {
   _is_initialized = false;
   _unique_id = 0;
+  _xcontents = NULL;
 
   _notify_thread_continue = false;
   _started_notify_thread = false;
@@ -77,6 +81,10 @@ P3DInstanceManager::
     _started_notify_thread = false;
   }
 
+  if (_xcontents != NULL) {
+    delete _xcontents;
+  }
+
   assert(_instances.empty());
   assert(_sessions.empty());
 
@@ -112,13 +120,14 @@ P3DInstanceManager::
 //               redownloaded.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
-initialize() {
+initialize(const string &contents_filename) {
   _root_dir = find_root_dir();
   _download_url = P3D_PLUGIN_DOWNLOAD;
   _platform = P3D_PLUGIN_PLATFORM;
 
-  nout << "_root_dir = " << _root_dir << ", download = " 
-       << _download_url << "\n";
+  nout << "_root_dir = " << _root_dir
+       << ", download = " << _download_url
+       << ", contents = " << contents_filename << "\n";
 
   if (_root_dir.empty()) {
     nout << "Could not find root directory.\n";
@@ -126,6 +135,47 @@ initialize() {
   }
 
   _is_initialized = true;
+
+  // Attempt to read the supplied contents.xml file.
+  if (!contents_filename.empty()) {
+    if (!read_contents_file(contents_filename)) {
+      nout << "Couldn't read " << contents_filename << "\n";
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::read_contents_file
+//       Access: Public
+//  Description: Reads the contents.xml file in the indicated
+//               filename.  On success, copies the contents.xml file
+//               into the standard location.
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool P3DInstanceManager::
+read_contents_file(const string &contents_filename) {
+  TiXmlDocument doc(contents_filename.c_str());
+  if (!doc.LoadFile()) {
+    return false;
+  }
+
+  TiXmlElement *xcontents = doc.FirstChildElement("contents");
+  if (xcontents == NULL) {
+    return false;
+  }
+
+  if (_xcontents != NULL) {
+    delete _xcontents;
+  }
+  _xcontents = (TiXmlElement *)xcontents->Clone();
+
+  string standard_filename = _root_dir + "/contents.xml";
+  if (standard_filename != contents_filename) {
+    copy_file(contents_filename, standard_filename);
+  }
 
   return true;
 }
@@ -137,8 +187,10 @@ initialize() {
 //               indicated startup information.
 ////////////////////////////////////////////////////////////////////
 P3DInstance *P3DInstanceManager::
-create_instance(P3D_request_ready_func *func, void *user_data) {
-  P3DInstance *inst = new P3DInstance(func, user_data);
+create_instance(P3D_request_ready_func *func, 
+                const P3D_token tokens[], size_t num_tokens, 
+                void *user_data) {
+  P3DInstance *inst = new P3DInstance(func, tokens, num_tokens, user_data);
   inst->ref();
   _instances.insert(inst);
 
@@ -154,13 +206,12 @@ create_instance(P3D_request_ready_func *func, void *user_data) {
 //               particular instance.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
-start_instance(P3DInstance *inst, const string &p3d_filename,
-               const P3D_token tokens[], size_t num_tokens) {
+start_instance(P3DInstance *inst, const string &p3d_filename) {
   if (inst->is_started()) {
     nout << "Instance started twice: " << inst << "\n";
     return false;
   }
-  inst->set_fparams(P3DFileParams(p3d_filename, tokens, num_tokens));
+  inst->set_p3d_filename(p3d_filename);
 
   P3DSession *session;
   Sessions::iterator si = _sessions.find(inst->get_session_key());
@@ -192,16 +243,17 @@ finish_instance(P3DInstance *inst) {
   _instances.erase(ii);
 
   Sessions::iterator si = _sessions.find(inst->get_session_key());
-  assert(si != _sessions.end());
-  P3DSession *session = (*si).second;
-  session->terminate_instance(inst);
+  if (si != _sessions.end()) {
+    P3DSession *session = (*si).second;
+    session->terminate_instance(inst);
 
-  // If that was the last instance in this session, terminate the
-  // session.
-  if (session->get_num_instances() == 0) {
-    _sessions.erase(session->get_session_key());
-    session->shutdown();
-    unref_delete(session);
+    // If that was the last instance in this session, terminate the
+    // session.
+    if (session->get_num_instances() == 0) {
+      _sessions.erase(session->get_session_key());
+      session->shutdown();
+      unref_delete(session);
+    }
   }
 
   unref_delete(inst);
@@ -284,18 +336,59 @@ P3DPackage *P3DInstanceManager::
 get_package(const string &package_name, const string &package_version, 
             const string &package_display_name) {
   string package_platform = get_platform();
-  string key = package_name + "_" + package_version + "_" + package_platform;
+  string key = package_name + "_" + package_platform + "_" + package_version;
   Packages::iterator pi = _packages.find(key);
   if (pi != _packages.end()) {
     return (*pi).second;
   }
 
-  P3DPackage *package = new P3DPackage(package_name, package_version, 
-                                       package_platform, package_display_name);
+  P3DPackage *package = new P3DPackage(package_name, package_platform, 
+                                       package_version, package_display_name);
   bool inserted = _packages.insert(Packages::value_type(key, package)).second;
   assert(inserted);
 
   return package;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_package_desc_file
+//       Access: Public
+//  Description: Fills the indicated FileSpec with the hash
+//               information for the package's desc file.  Returns
+//               true if successful, false if the package is unknown.
+//               This requires has_contents_file() to return true in
+//               order to be successful.
+////////////////////////////////////////////////////////////////////
+bool P3DInstanceManager::
+get_package_desc_file(FileSpec &desc_file,
+                      const string &package_name,
+                      const string &package_version) {
+  if (_xcontents == NULL) {
+    return false;
+  }
+
+  string package_platform = get_platform();
+
+  // Scan the contents data for the indicated package.
+  TiXmlElement *xpackage = _xcontents->FirstChildElement("package");
+  while (xpackage != NULL) {
+    const char *name = xpackage->Attribute("name");
+    const char *platform = xpackage->Attribute("platform");
+    const char *version = xpackage->Attribute("version");
+    if (name != NULL && platform != NULL && version != NULL &&
+        package_name == name && 
+        package_platform == platform &&
+        package_version == version) {
+      // Here's the matching package definition.
+      desc_file.load_xml(xpackage);
+      return true;
+    }
+
+    xpackage = xpackage->NextSiblingElement("package");
+  }
+
+  // Couldn't find the named package.
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -382,6 +475,38 @@ delete_global_ptr() {
     delete _global_ptr;
     _global_ptr = NULL;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::copy_file
+//       Access: Private
+//  Description: Copies the data in the file named by from_filename
+//               into the file named by to_filename.
+////////////////////////////////////////////////////////////////////
+bool P3DInstanceManager::
+copy_file(const string &from_filename, const string &to_filename) {
+  ifstream in(from_filename.c_str(), ios::in | ios::binary);
+  ofstream out(to_filename.c_str(), ios::out | ios::binary);
+        
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+  
+  in.read(buffer, buffer_size);
+  size_t count = in.gcount();
+  while (count != 0) {
+    out.write(buffer, count);
+    if (out.fail()) {
+      return false;
+    }
+    in.read(buffer, buffer_size);
+    count = in.gcount();
+  }
+
+  if (!in.eof()) {
+    return false;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

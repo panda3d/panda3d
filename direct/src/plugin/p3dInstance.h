@@ -44,10 +44,11 @@ class P3DToplevelObject;
 ////////////////////////////////////////////////////////////////////
 class P3DInstance : public P3D_instance, public P3DReferenceCount {
 public:
-  P3DInstance(P3D_request_ready_func *func, void *user_data);
+  P3DInstance(P3D_request_ready_func *func, 
+              const P3D_token tokens[], size_t num_tokens, void *user_data);
   ~P3DInstance();
 
-  void set_fparams(const P3DFileParams &fparams);
+  void set_p3d_filename(const string &p3d_filename);
   inline const P3DFileParams &get_fparams() const;
 
   void set_wparams(const P3DWindowParams &wparams);

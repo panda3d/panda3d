@@ -54,9 +54,9 @@ class ContentsMaker:
         print >> f, '<?xml version="1.0" ?>'
         print >> f, ''
         print >> f, '<contents>'
-        for packageName, packageVersion, packagePlatform, file in self.packages:
-            print >> f, '  <package name="%s" version="%s" platform="%s" %s />' % (
-                packageName, packageVersion, packagePlatform or '', file.getParams())
+        for packageName, packagePlatform, packageVersion, file in self.packages:
+            print >> f, '  <package name="%s" platform="%s" version="%s" %s />' % (
+                packageName, packagePlatform or '', packageVersion, file.getParams())
         print >> f, '</contents>'
         f.close()
 
@@ -93,14 +93,14 @@ class ContentsMaker:
                 file = FileSpec(localpath + xml,
                                 Filename(self.stageDir, localpath + xml))
                 print file.filename
-                self.packages.append((packageName, packageVersion, packagePlatform, file))
+                self.packages.append((packageName, packagePlatform, packageVersion, file))
 
             if localpath.count('/') == 3:
-                packageName, packageVersion, packagePlatform, junk = localpath.split('/')
+                packageName, packagePlatform, packageVersion, junk = localpath.split('/')
                 file = FileSpec(localpath + xml,
                                 Filename(self.stageDir, localpath + xml))
                 print file.filename
-                self.packages.append((packageName, packageVersion, packagePlatform, file))
+                self.packages.append((packageName, packagePlatform, packageVersion, file))
         
                 
 def makeContents(args):

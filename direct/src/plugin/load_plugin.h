@@ -58,7 +58,8 @@ extern P3D_instance_feed_url_stream_func *P3D_instance_feed_url_stream;
 extern P3D_instance_handle_event_func *P3D_instance_handle_event;
 
 string get_plugin_basename();
-bool load_plugin(const string &p3d_plugin_filename);
+bool load_plugin(const string &p3d_plugin_filename,
+                 const string &contents_filename);
 void unload_plugin();
 bool is_plugin_loaded();
 

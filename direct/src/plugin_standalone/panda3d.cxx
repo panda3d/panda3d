@@ -286,8 +286,8 @@ run(int argc, char *argv[]) {
 bool Panda3D::
 get_plugin(const string &root_url, const string &this_platform, bool force_download) {
   // First, look for the existing contents.xml file.
-  Filename contents = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
-  if (!force_download && read_contents_file(contents, root_url, this_platform)) {
+  Filename contents_filename = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
+  if (!force_download && read_contents_file(contents_filename, root_url, this_platform)) {
     // Got the file, and it's good.
     return true;
   }
@@ -299,13 +299,13 @@ get_plugin(const string &root_url, const string &this_platform, bool force_downl
   
   HTTPClient *http = HTTPClient::get_global_ptr();
   PT(HTTPChannel) channel = http->get_document(url);
-  contents.make_dir();
-  if (!channel->download_to_file(contents)) {
+  contents_filename.make_dir();
+  if (!channel->download_to_file(contents_filename)) {
     cerr << "Unable to download " << url << "\n";
     return false;
   }
   
-  return read_contents_file(contents, root_url, this_platform);
+  return read_contents_file(contents_filename, root_url, this_platform);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -316,12 +316,12 @@ get_plugin(const string &root_url, const string &this_platform, bool force_downl
 //               possible.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
-read_contents_file(Filename contents, const string &root_url, 
+read_contents_file(Filename contents_filename, const string &root_url, 
                    const string &this_platform) {
   ifstream in;
-  contents.set_text();
-  if (!contents.open_read(in)) {
-    cerr << "Couldn't read " << contents.to_os_specific() << "\n";
+  contents_filename.set_text();
+  if (!contents_filename.open_read(in)) {
+    cerr << "Couldn't read " << contents_filename.to_os_specific() << "\n";
     return false;
   }
 
@@ -336,7 +336,7 @@ read_contents_file(Filename contents, const string &root_url,
       if (name != NULL && strcmp(name, "coreapi") == 0) {
         const char *xplatform = xpackage->Attribute("platform");
         if (xplatform != NULL && strcmp(xplatform, this_platform.c_str()) == 0) {
-          return get_core_api(root_url, xpackage);
+          return get_core_api(contents_filename, root_url, xpackage);
         }
       }
       
@@ -359,7 +359,8 @@ read_contents_file(Filename contents, const string &root_url,
 //               if necessary.
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
-get_core_api(const string &root_url, TiXmlElement *xpackage) {
+get_core_api(const Filename &contents_filename, const string &root_url, 
+             TiXmlElement *xpackage) {
   _core_api_dll.load_xml(xpackage);
 
   if (!_core_api_dll.quick_verify(_root_dir)) {
@@ -397,7 +398,7 @@ get_core_api(const string &root_url, TiXmlElement *xpackage) {
   }
 #endif  // P3D_PLUGIN_P3D_PLUGIN
 
-  if (!load_plugin(pathname)) {
+  if (!load_plugin(pathname, contents_filename.to_os_specific())) {
     cerr << "Unable to launch core API in " << pathname << "\n" << flush;
     return false;
   }
@@ -592,12 +593,12 @@ create_instance(const string &arg, P3D_window_type window_type,
     os_p3d_filename = p3d_filename.to_os_specific();
   } 
 
-  P3D_instance *inst = P3D_new_instance(NULL, NULL);
+  P3D_instance *inst = P3D_new_instance(NULL, tokens, num_tokens, NULL);
 
   if (inst != NULL) {
     P3D_instance_setup_window
       (inst, window_type, win_x, win_y, win_width, win_height, parent_window);
-    P3D_instance_start(inst, os_p3d_filename.c_str(), tokens, num_tokens);
+    P3D_instance_start(inst, os_p3d_filename.c_str());
   }
 
   return inst;

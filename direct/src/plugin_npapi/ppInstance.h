@@ -71,13 +71,14 @@ private:
   static string get_filename_from_url(const string &url);
   void feed_file(PPDownloadRequest *req, const string &filename);
 
-  bool read_contents_file(const string &filename);
+  bool read_contents_file(const string &contents_filename);
   void get_core_api(TiXmlElement *xpackage);
   void downloaded_plugin(const string &filename);
   void do_load_plugin();
 
   void create_instance();
   void send_window();
+  bool copy_file(const string &from_filename, const string &to_filename);
 
   static void handle_request_loop();
   static void browser_sync_callback(void *);

@@ -35,23 +35,25 @@ static const double extract_portion = 0.05;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DPackage::
-P3DPackage(const string &package_name, const string &package_version,
+P3DPackage(const string &package_name,
            const string &package_platform,
+           const string &package_version,
            const string &package_display_name) :
   _package_name(package_name),
-  _package_version(package_version),
   _package_platform(package_platform),
+  _package_version(package_version),
   _package_display_name(package_display_name)
 {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-  _package_fullname = _package_name + "_" + _package_version;
+  _package_fullname = _package_name;
   _package_dir = inst_mgr->get_root_dir() + string("/") + _package_name;
-
   if (!_package_platform.empty()) {
-    _package_fullname += "_" + _package_platform;
-    _package_dir += "/" + _package_platform;
+    _package_fullname += string("_") + _package_platform;
+    _package_dir += string("/") + _package_platform;
   }
+  _package_fullname += string("_") + _package_version;
+  _package_dir += string("/") + _package_version;
 
   _ready = false;
   _failed = false;
@@ -59,7 +61,6 @@ P3DPackage(const string &package_name, const string &package_version,
   _partial_download = false;
 
   // Ensure the package directory exists; create it if it does not.
-  _package_dir += string("/") + _package_version;
   mkdir_complete(_package_dir, nout);
 
   _desc_file_basename = _package_fullname + ".xml";
@@ -186,20 +187,68 @@ begin_download() {
     return;
   }
 
-  // TODO: we should check the desc file for updates with the server.
-  // Perhaps this should be done in a parent class.
+  download_contents_file();
+}
 
-  // TODO: if the desc file exists, and is consistent with the server
-  // contents file, don't re-download it.
-  /*
-  // Load the desc file, if it exists.
-  TiXmlDocument doc(_desc_file_pathname.c_str());
-  if (!doc.LoadFile()) {
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::download_contents_file
+//       Access: Private
+//  Description: Starts downloading the root-level contents.xml file.
+//               This is only done for the first package, and only if
+//               the instance manager doesn't have the file already.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+download_contents_file() {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  if (inst_mgr->has_contents_file()) {
+    // We've already got a contents.xml file; go straight to the
+    // package desc file.
     download_desc_file();
-  } else {
-    got_desc_file(&doc, false);
+    return;
   }
-  */
+
+  string url = inst_mgr->get_download_url();
+  url += "contents.xml";
+
+  // Download contents.xml to a temporary filename first, in case
+  // multiple packages are downloading it simultaneously.
+  _contents_file_pathname = tempnam(NULL, "p3d_");
+
+  cerr << "starting contents download\n";
+  start_download(DT_contents_file, url, _contents_file_pathname, false);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::contents_file_download_finished
+//       Access: Private
+//  Description: Called when the desc file has been fully downloaded.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+contents_file_download_finished(bool success) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  cerr << "done contents download: " << success 
+       << ", has_contents = " << inst_mgr->has_contents_file()
+       << "\n";
+
+  if (!inst_mgr->has_contents_file()) {
+    if (!success || !inst_mgr->read_contents_file(_contents_file_pathname)) {
+      nout << "Couldn't read " << _contents_file_pathname << "\n";
+
+      // Maybe we can read an already-downloaded contents.xml file.
+      string standard_filename = inst_mgr->get_root_dir() + "/contents.xml";
+      if (!inst_mgr->read_contents_file(standard_filename)) {
+        // Couldn't even read that.  Fail.
+        report_done(false);
+        unlink(_contents_file_pathname.c_str());
+        return;
+      }
+    }
+  }
+    
+  // The file is correctly installed by now; we can remove the
+  // temporary file.
+  unlink(_contents_file_pathname.c_str());
 
   download_desc_file();
 }
@@ -212,12 +261,40 @@ begin_download() {
 void P3DPackage::
 download_desc_file() {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  // Attempt to check the desc file for freshness.  If it already
+  // exists, and is consistent with the server contents file, we don't
+  // need to re-download it.
+  string root_dir = inst_mgr->get_root_dir();
+  FileSpec desc_file;
+  if (!inst_mgr->get_package_desc_file(desc_file, _package_name, _package_version)) {
+    nout << "Couldn't find package " << _package_fullname
+         << " in contents file.\n";
+
+  } else if (desc_file.get_pathname(root_dir) != _desc_file_pathname) {
+    nout << "Wrong pathname for desc file: " 
+         << desc_file.get_pathname(root_dir) 
+         << " instead of " << _desc_file_pathname << "\n";
+
+  } else if (!desc_file.quick_verify(root_dir)) {
+    nout << _desc_file_pathname << " is stale.\n";
+
+  } else {
+    // The desc file is current.  Attempt to read it.
+    TiXmlDocument doc(_desc_file_pathname.c_str());
+    if (doc.LoadFile()) {
+      got_desc_file(&doc, false);
+      return;
+    }
+  }
+
+  // The desc file is not current.  Go download it.
   string url = inst_mgr->get_download_url();
-  url += _package_name + "/" + _package_version;
+  url += _package_name;
   if (!_package_platform.empty()) {
     url += "/" + _package_platform;
   }
-
+  url += "/" + _package_version;
   url += "/" + _desc_file_basename;
 
   start_download(DT_desc_file, url, _desc_file_pathname, false);
@@ -321,11 +398,11 @@ void P3DPackage::
 download_compressed_archive(bool allow_partial) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   string url = inst_mgr->get_download_url();
-  url += _package_name + "/" + _package_version;
+  url += _package_name;
   if (!_package_platform.empty()) {
     url += "/" + _package_platform;
   }
-
+  url += "/" + _package_version;
   url += "/" + _compressed_archive.get_filename();
 
   string target_pathname = _package_dir + "/" + _compressed_archive.get_filename();
@@ -667,6 +744,10 @@ download_finished(bool success) {
   _package->_active_download = NULL;
 
   switch (_dtype) {
+  case DT_contents_file:
+    _package->contents_file_download_finished(success);
+    break;
+
   case DT_desc_file:
     _package->desc_file_download_finished(success);
     break;

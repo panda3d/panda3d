@@ -25,6 +25,8 @@
 class P3DInstance;
 class P3DSession;
 class P3DPackage;
+class FileSpec;
+class TiXmlElement;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DInstanceManager
@@ -37,7 +39,7 @@ private:
   ~P3DInstanceManager();
 
 public:
-  bool initialize();
+  bool initialize(const string &contents_xml_filename);
 
   inline bool is_initialized() const;
 
@@ -45,11 +47,15 @@ public:
   inline const string &get_download_url() const;
   inline const string &get_platform() const;
 
-  P3DInstance *
-  create_instance(P3D_request_ready_func *func, void *user_data);
+  inline bool has_contents_file() const;
+  bool read_contents_file(const string &contents_filename);
 
-  bool start_instance(P3DInstance *inst, const string &p3d_filename,
-                      const P3D_token tokens[], size_t num_tokens);
+  P3DInstance *
+  create_instance(P3D_request_ready_func *func, 
+                  const P3D_token tokens[], size_t num_tokens, 
+                  void *user_data);
+
+  bool start_instance(P3DInstance *inst, const string &p3d_filename);
   void finish_instance(P3DInstance *inst);
 
   P3DInstance *validate_instance(P3D_instance *instance);
@@ -60,6 +66,9 @@ public:
   P3DPackage *get_package(const string &package_name, 
                           const string &package_version,
                           const string &package_display_name);
+  bool get_package_desc_file(FileSpec &desc_file, 
+                             const string &package_name,
+                             const string &package_version);
 
   inline int get_num_instances() const;
 
@@ -76,6 +85,9 @@ public:
   static void delete_global_ptr();
 
 private:
+  bool copy_file(const string &from_filename, const string &to_filename);
+
+private:
   // The notify thread.  This thread runs only for the purpose of
   // generating asynchronous notifications of requests, to callers who
   // ask for it.
@@ -87,6 +99,8 @@ private:
   string _root_dir;
   string _download_url;
   string _platform;
+
+  TiXmlElement *_xcontents;
 
   P3D_object *_undefined_object;
   P3D_object *_none_object;
