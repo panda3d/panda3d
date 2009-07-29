@@ -22,7 +22,6 @@
 #include "p3dNoneObject.h"
 #include "p3dBoolObject.h"
 #include "find_root_dir.h"
-#include "mkdir_complete.h"
 
 #ifdef _WIN32
 #include <shlobj.h>

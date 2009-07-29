@@ -299,7 +299,7 @@ get_plugin(const string &root_url, const string &this_platform, bool force_downl
   
   HTTPClient *http = HTTPClient::get_global_ptr();
   PT(HTTPChannel) channel = http->get_document(url);
-  Ramfile rf;
+  contents.make_dir();
   if (!channel->download_to_file(contents)) {
     cerr << "Unable to download " << url << "\n";
     return false;
@@ -370,6 +370,7 @@ get_core_api(const string &root_url, TiXmlElement *xpackage) {
     Filename pathname = Filename::from_os_specific(_core_api_dll.get_pathname(_root_dir));
     HTTPClient *http = HTTPClient::get_global_ptr();
     PT(HTTPChannel) channel = http->get_document(url);
+    pathname.make_dir();
     if (!channel->download_to_file(pathname)) {
       cerr << "Unable to download " << url << "\n";
       return false;

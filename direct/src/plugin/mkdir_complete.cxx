@@ -21,6 +21,7 @@
 #include <fcntl.h>
 #include <sys/stat.h>  // for mkdir()
 #include <errno.h>
+#include <string.h>     // strerror()
 #endif
 
 
@@ -54,7 +55,7 @@ get_dirname(const string &filename) {
 //               necessary.
 ////////////////////////////////////////////////////////////////////
 bool
-mkdir_complete(const string &dirname) {
+mkdir_complete(const string &dirname, ostream &logfile) {
 #ifdef _WIN32
   if (CreateDirectory(dirname.c_str(), NULL) != 0) {
     // Success!
@@ -77,6 +78,8 @@ mkdir_complete(const string &dirname) {
         // Got it!
         return true;
       }
+      logfile 
+        << "Couldn't create " << dirname << "\n";
     }
   }
   return false;
@@ -93,15 +96,18 @@ mkdir_complete(const string &dirname) {
     return true;
   }
 
-  if (errno == ENOENT) {
+  if (errno == ENOENT || errno == EACCES) {
     // We need to make the parent directory first.
     string parent = get_dirname(dirname);
-    if (!parent.empty() && mkdir_complete(parent)) {
+    if (!parent.empty() && mkdir_complete(parent, logfile)) {
       // Parent successfully created.  Try again to make the child.
       if (mkdir(dirname.c_str(), 0777) == 0) {
         // Got it!
         return true;
       }
+      // Couldn't create the directory. :(
+      logfile 
+        << "Couldn't create " << dirname << ": " << strerror(errno) << "\n";
     }
   }
   return false;
@@ -117,7 +123,7 @@ mkdir_complete(const string &dirname) {
 //               needed.
 ////////////////////////////////////////////////////////////////////
 bool
-mkfile_complete(const string &filename) {
+mkfile_complete(const string &filename, ostream &logfile) {
 #ifdef _WIN32
   HANDLE file = CreateFile(filename.c_str(), GENERIC_READ | GENERIC_WRITE,
                            FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
@@ -125,13 +131,15 @@ mkfile_complete(const string &filename) {
   if (file == INVALID_HANDLE_VALUE) {
     // Try to make the parent directory first.
     string parent = get_dirname(filename);
-    if (!parent.empty() && mkdir_complete(parent)) {
+    if (!parent.empty() && mkdir_complete(parent, logfile)) {
       // Parent successfully created.  Try again to make the file.
       file = CreateFile(filename.c_str(), GENERIC_READ | GENERIC_WRITE,
                         FILE_SHARE_DELETE | FILE_SHARE_READ | FILE_SHARE_WRITE,
                         NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     }
     if (file == INVALID_HANDLE_VALUE) {
+      logfile
+        << "Couldn't create " << filename << "\n";
       return false;
     }
   }
@@ -143,11 +151,13 @@ mkfile_complete(const string &filename) {
   if (fd == -1) {
     // Try to make the parent directory first.
     string parent = get_dirname(filename);
-    if (!parent.empty() && mkdir_complete(parent)) {
+    if (!parent.empty() && mkdir_complete(parent, logfile)) {
       // Parent successfully created.  Try again to make the file.
       fd = creat(filename.c_str(), 0777);
     }
     if (fd == -1) {
+      logfile
+        << "Couldn't create " << filename << ": " << strerror(errno) << "\n";
       return false;
     }
   }

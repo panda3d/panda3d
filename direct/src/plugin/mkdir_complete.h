@@ -16,10 +16,11 @@
 #define MKDIR_COMPLETE_H
 
 #include <string>
+#include <iostream>
 using namespace std;
 
-bool mkdir_complete(const string &dirname);
-bool mkfile_complete(const string &dirname);
+bool mkdir_complete(const string &dirname, ostream &logfile);
+bool mkfile_complete(const string &dirname, ostream &logfile);
 
 #endif
 

@@ -106,8 +106,7 @@ extract(const string &pathname, const string &to_dir,
     const Subfile &s = (*si);
 
     string output_pathname = to_dir + "/" + s._filename;
-    if (!mkfile_complete(output_pathname)) {
-      nout << "Unable to create " << output_pathname << "\n";
+    if (!mkfile_complete(output_pathname, nout)) {
       return false;
     }
 

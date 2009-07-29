@@ -862,7 +862,7 @@ downloaded_plugin(const string &filename) {
 
   // Copy the file onto the target.
   string pathname = _core_api_dll.get_pathname(_root_dir);
-  mkfile_complete(pathname);
+  mkfile_complete(pathname, nout);
 
   ifstream in(filename.c_str(), ios::in | ios::binary);
   ofstream out(pathname.c_str(), ios::out | ios::binary);

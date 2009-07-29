@@ -46,8 +46,7 @@ set_filename(const string &filename) {
 ////////////////////////////////////////////////////////////////////
 bool P3DFileDownload::
 open_file() {
-  if (!mkfile_complete(_filename)) {
-    nout << "Unable to create " << _filename << "\n";
+  if (!mkfile_complete(_filename, nout)) {
     return false;
   }
   

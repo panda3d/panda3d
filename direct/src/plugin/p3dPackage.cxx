@@ -60,7 +60,7 @@ P3DPackage(const string &package_name, const string &package_version,
 
   // Ensure the package directory exists; create it if it does not.
   _package_dir += string("/") + _package_version;
-  mkdir_complete(_package_dir);
+  mkdir_complete(_package_dir, nout);
 
   _desc_file_basename = _package_fullname + ".xml";
   _desc_file_pathname = _package_dir + "/" + _desc_file_basename;
@@ -389,8 +389,7 @@ uncompress_archive() {
     return;
   }
 
-  if (!mkfile_complete(target_pathname)) {
-    nout << "Unable to create " << target_pathname << "\n";
+  if (!mkfile_complete(target_pathname, nout)) {
     report_done(false);
     return;
   }
