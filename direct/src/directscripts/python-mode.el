@@ -146,7 +146,7 @@ mode buffer is visited during an Emacs session.  After that, use
 		 (const :tag "JPython" jpython))
   :group 'python)
 
-(defcustom py-python-command-args '("-i")
+(defcustom py-python-command-args '("-u" "-i")
   "*List of string arguments to be used when starting a Python shell."
   :type '(repeat string)
   :group 'python)
