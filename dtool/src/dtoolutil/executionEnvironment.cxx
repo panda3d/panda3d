@@ -217,7 +217,7 @@ ns_get_environment_variable(const string &var) const {
     if (Py_IsInitialized()) {
       PyObject* obj = PySys_GetObject((char*) "argv");
       if (obj) {
-        Filename main_dir (PyString_AsString(PyList_GetItem(obj, 0)));
+        Filename main_dir = Filename::from_os_specific(PyString_AsString(PyList_GetItem(obj, 0)));
         if (main_dir.empty()) {
           // We must be running in the Python interpreter directly, so return the CWD.
           return get_cwd().to_os_specific();
