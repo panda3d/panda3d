@@ -200,7 +200,7 @@ open_window() {
   if (!_properties.has_parent_window()) {
     root_window = glx_pipe->get_root();
   } else {
-    root_window = (Window) (int) _properties.get_parent_window();
+    root_window = (Window)_properties.get_parent_window();
   }
   
 #ifdef HAVE_GLXFBCONFIG
