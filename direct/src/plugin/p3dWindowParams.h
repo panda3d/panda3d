@@ -18,6 +18,8 @@
 #include "p3d_plugin_common.h"
 #include "get_tinyxml.h"
 
+class P3DInstance *inst;
+
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DWindowParams
 // Description : Encapsulates the window parameters.
@@ -39,7 +41,7 @@ public:
   inline int get_win_height() const;
   inline P3D_window_handle get_parent_window() const;
 
-  TiXmlElement *make_xml();
+  TiXmlElement *make_xml(P3DInstance *inst);
 
 private:
   P3D_window_type _window_type;

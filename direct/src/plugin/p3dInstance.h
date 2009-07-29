@@ -170,6 +170,7 @@ private:
 
   friend class P3DSession;
   friend class SplashDownload;
+  friend class P3DWindowParams;
 };
 
 #include "p3dInstance.I"

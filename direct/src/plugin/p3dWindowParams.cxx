@@ -67,7 +67,7 @@ operator = (const P3DWindowParams &other) {
 //               instance.
 ////////////////////////////////////////////////////////////////////
 TiXmlElement *P3DWindowParams::
-make_xml() {
+make_xml(P3DInstance *inst) {
   TiXmlElement *xwparams = new TiXmlElement("wparams");
 
   switch (_window_type) {
@@ -81,7 +81,7 @@ make_xml() {
     xwparams->SetAttribute("parent_hwnd", (int)_parent_window._hwnd);
 
 #elif defined(__APPLE__)
-    // The subprocess_window setting is applied by the caller.
+    xwparams->SetAttribute("subprocess_window", inst->_shared_filename);
 
 #elif defined(HAVE_X11)
     // TinyXml doesn't support a "long" attribute.  We'll use
