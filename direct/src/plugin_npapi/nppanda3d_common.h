@@ -28,8 +28,9 @@
 
 using namespace std;
 
-// Appears in nppanda3d_startup.cxx.
-extern ofstream logfile;
+// Appears in startup.cxx.
+extern ostream *nout_stream;
+#define nout (*nout_stream)
 
 #ifdef _WIN32
 

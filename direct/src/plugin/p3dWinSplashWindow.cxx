@@ -560,8 +560,7 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
 
   delete[] new_data;
 
-  nout << "Loaded splash file image: " << image_filename << "\n"
-       << flush;
+  nout << "Loaded splash file image: " << image_filename << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////

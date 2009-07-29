@@ -94,7 +94,7 @@ P3DInstance::
   P3D_OBJECT_XDECREF(_browser_script_object);
 
   nout << "panda_script_object ref = "
-       << _panda_script_object->_ref_count << "\n" << flush;
+       << _panda_script_object->_ref_count << "\n";
   P3D_OBJECT_DECREF(_panda_script_object);
 
   // Tell all of the packages that we're no longer in business for
@@ -208,7 +208,6 @@ set_wparams(const P3DWindowParams &wparams) {
   // Update the instance in the sub-process.
   if (_session != NULL) {
     TiXmlDocument *doc = new TiXmlDocument;
-    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
     TiXmlElement *xcommand = new TiXmlElement("command");
     xcommand->SetAttribute("cmd", "setup_window");
     xcommand->SetAttribute("instance_id", get_instance_id());
@@ -247,7 +246,6 @@ set_wparams(const P3DWindowParams &wparams) {
     }
 #endif   // __APPLE__
     
-    doc->LinkEndChild(decl);
     doc->LinkEndChild(xcommand);
     xcommand->LinkEndChild(xwparams);
 
@@ -466,8 +464,7 @@ feed_url_stream(int unique_id,
                 size_t this_data_size) {
   Downloads::iterator di = _downloads.find(unique_id);
   if (di == _downloads.end()) {
-    nout << "Unexpected feed_url_stream for " << unique_id << "\n"
-         << flush;
+    nout << "Unexpected feed_url_stream for " << unique_id << "\n";
     // Don't know this request.
     return false;
   }
@@ -696,7 +693,6 @@ make_xml() {
 void P3DInstance::
 send_browser_script_object() {
   TiXmlDocument *doc = new TiXmlDocument;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "pyobj");
   xcommand->SetAttribute("op", "set_browser_script_object");
@@ -704,7 +700,6 @@ send_browser_script_object() {
     xcommand->LinkEndChild(_session->p3dobj_to_xml(_browser_script_object));
   }
   
-  doc->LinkEndChild(decl);
   doc->LinkEndChild(xcommand);
   
   _session->send_command(doc);
@@ -793,17 +788,15 @@ void P3DInstance::
 handle_notify_request(const string &message) {
   // We look for certain notify events that have particular meaning
   // to this instance.
-  nout << "Got notify: " << message << "\n" << flush;
+  nout << "Got notify: " << message << "\n";
   if (message == "onpythonload") {
     // Once Python is up and running, we can get the actual toplevel
     // object from the Python side, and merge it with our own.
 
     TiXmlDocument *doc = new TiXmlDocument;
-    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
     TiXmlElement *xcommand = new TiXmlElement("command");
     xcommand->SetAttribute("cmd", "pyobj");
     xcommand->SetAttribute("op", "get_panda_script_object");
-    doc->LinkEndChild(decl);
     doc->LinkEndChild(xcommand);
     TiXmlDocument *response = _session->command_and_response(doc);
     
@@ -859,12 +852,10 @@ handle_script_request(const string &operation, P3D_object *object,
                       bool needs_response, int unique_id) {
 
   TiXmlDocument *doc = new TiXmlDocument;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "script_response");
   xcommand->SetAttribute("unique_id", unique_id);
   
-  doc->LinkEndChild(decl);
   doc->LinkEndChild(xcommand);
 
   if (operation == "get_property") {

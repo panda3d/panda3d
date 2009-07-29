@@ -209,7 +209,7 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
 
   default:
     // Don't know what this is.
-    logfile << "Unexpected request " << (int)req->_rtype << "\n";
+    nout << "Unexpected request " << (int)req->_rtype << "\n";
   }
 
   return NPERR_GENERIC_ERROR;
@@ -224,7 +224,7 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
 int PPInstance::
 write_stream(NPStream *stream, int offset, int len, void *buffer) {
   if (stream->notifyData == NULL) {
-    logfile << "Unexpected write_stream on " << stream->url << "\n";
+    nout << "Unexpected write_stream on " << stream->url << "\n";
     return 0;
   }
 
@@ -237,7 +237,7 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
     return len;
     
   default:
-    logfile << "Unexpected write_stream on " << stream->url << "\n";
+    nout << "Unexpected write_stream on " << stream->url << "\n";
     break;
   }
 
@@ -254,7 +254,7 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
 NPError PPInstance::
 destroy_stream(NPStream *stream, NPReason reason) {
   if (stream->notifyData == NULL) {
-    logfile << "Unexpected destroy_stream on " << stream->url << "\n";
+    nout << "Unexpected destroy_stream on " << stream->url << "\n";
     return NPERR_GENERIC_ERROR;
   }
 
@@ -301,7 +301,7 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
       // We shouldn't have gotten here without notifying the stream
       // unless the stream never got started (and hence we never
       // called destroy_stream().
-      logfile << "Failure starting stream\n" << flush;
+      nout << "Failure starting stream\n";
       assert(reason != NPRES_DONE);
 
       P3D_instance_feed_url_stream(_p3d_inst, req->_user_id,
@@ -312,7 +312,7 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
 
   case PPDownloadRequest::RT_contents_file:
     if (reason != NPRES_DONE) {
-      logfile << "Failure downloading " << url << "\n";
+      nout << "Failure downloading " << url << "\n";
       // TODO: fail
     }
     break;
@@ -333,7 +333,7 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
 void PPInstance::
 stream_as_file(NPStream *stream, const char *fname) {
   if (stream->notifyData == NULL) {
-    logfile << "Unexpected stream_as_file on " << stream->url << "\n";
+    nout << "Unexpected stream_as_file on " << stream->url << "\n";
     return;
   }
 
@@ -454,7 +454,7 @@ handle_request(P3D_request *request) {
 
   default:
     // Some request types are not handled.
-    logfile << "Unhandled request: " << request->_request_type << "\n";
+    nout << "Unhandled request: " << request->_request_type << "\n";
     break;
   };
 
@@ -724,8 +724,8 @@ read_contents_file(const string &filename) {
   }
 
   // Couldn't find the coreapi package description.
-  logfile << "No coreapi package defined in contents file for "
-          << P3D_PLUGIN_PLATFORM << "\n" << flush;
+  nout << "No coreapi package defined in contents file for "
+       << P3D_PLUGIN_PLATFORM << "\n";
   return false;
 }
 
@@ -766,7 +766,7 @@ downloaded_file(PPDownloadRequest *req, const string &filename) {
     // Now we have the contents.xml file.  Read this to get the
     // filename and md5 hash of our core API DLL.
     if (!read_contents_file(filename)) {
-      logfile << "Unable to read contents file\n";
+      nout << "Unable to read contents file\n";
       // TODO: fail
     }
     break;
@@ -794,7 +794,7 @@ downloaded_file(PPDownloadRequest *req, const string &filename) {
 
   default:
     // Don't know what this is.
-    logfile << "Unexpected downloaded file, type " << (int)req->_rtype << "\n";
+    nout << "Unexpected downloaded file, type " << (int)req->_rtype << "\n";
   }
 }
 
@@ -879,7 +879,7 @@ downloaded_plugin(const string &filename) {
   }
 
   if (!out) {
-    logfile << "Could not write " << pathname << "\n";
+    nout << "Could not write " << pathname << "\n";
     // TODO: fail
     return;
   }
@@ -892,7 +892,7 @@ downloaded_plugin(const string &filename) {
     return;
   }
 
-  logfile << "After download, " << pathname << " is no good.\n";
+  nout << "After download, " << pathname << " is no good.\n";
   // TODO: fail
 }
 
@@ -920,7 +920,7 @@ do_load_plugin() {
 #endif  // P3D_PLUGIN_P3D_PLUGIN
 
   if (!load_plugin(pathname)) {
-    logfile << "Unable to launch core API in " << pathname << "\n" << flush;
+    nout << "Unable to launch core API in " << pathname << "\n";
     return;
   }
   create_instance();
@@ -960,7 +960,7 @@ create_instance() {
       P3D_instance_set_browser_script_object(_p3d_inst, pobj);
       browser->releaseobject(window_object);
     } else {
-      logfile << "Couldn't get window_object\n" << flush;
+      nout << "Couldn't get window_object\n";
     }
 
     if (_script_object != NULL) {

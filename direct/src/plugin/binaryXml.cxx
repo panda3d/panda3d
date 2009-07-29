@@ -104,7 +104,7 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
 //               return value.  Returns NULL on error.
 ////////////////////////////////////////////////////////////////////
 static TiXmlNode *
-read_xml_node(istream &in) {
+read_xml_node(istream &in, char *&buffer, size_t &buffer_length) {
   NodeType type = (NodeType)in.get();
   if (type == NT_unknown) {
     return NULL;
@@ -116,10 +116,14 @@ read_xml_node(istream &in) {
     return NULL;
   }
 
-  char *buffer = new char[value_length];
+  if (value_length > buffer_length) {
+    delete[] buffer;
+    buffer_length = value_length;
+    buffer = new char[buffer_length];
+  }
+
   in.read(buffer, value_length);
   string value(buffer, value_length);
-  delete[] buffer;
 
   TiXmlNode *xnode = NULL;
   if (type == NT_element) {
@@ -147,10 +151,14 @@ read_xml_node(istream &in) {
         return NULL;
       }
 
-      buffer = new char[name_length];
+      if (name_length > buffer_length) {
+        delete[] buffer;
+        buffer_length = name_length;
+        buffer = new char[buffer_length];
+      }
+
       in.read(buffer, name_length);
       string name(buffer, name_length);
-      delete[] buffer;
 
       size_t value_length;
       in.read((char *)&value_length, sizeof(value_length));
@@ -159,10 +167,14 @@ read_xml_node(istream &in) {
         return NULL;
       }
 
-      buffer = new char[value_length];
+      if (value_length > buffer_length) {
+        delete[] buffer;
+        buffer_length = value_length;
+        buffer = new char[buffer_length];
+      }
+
       in.read(buffer, value_length);
       string value(buffer, value_length);
-      delete[] buffer;
 
       xelement->SetAttribute(name, value);
 
@@ -175,7 +187,7 @@ read_xml_node(istream &in) {
   
   while (got_child && in && !in.eof()) {
     // We have a child.
-    TiXmlNode *xchild = read_xml_node(in);
+    TiXmlNode *xchild = read_xml_node(in, buffer, buffer_length);
     if (xchild != NULL) {
       xnode->LinkEndChild(xchild);
     }
@@ -201,6 +213,11 @@ write_xml(ostream &out, TiXmlDocument *doc, ostream &logfile) {
 
 #else
   // Formatted ASCII write.
+
+  // We need a declaration to write it safely.
+  TiXmlDeclaration decl("1.0", "utf-8", "");
+  doc->InsertBeforeChild(doc->FirstChild(), decl);
+
   out << *doc;
 #endif
 
@@ -232,7 +249,10 @@ TiXmlDocument *
 read_xml(istream &in, ostream &logfile) {
 #if DO_BINARY_XML
   // binary read.
-  TiXmlNode *xnode = read_xml_node(in);
+  size_t buffer_length = 128;
+  char *buffer = new char[buffer_length];
+  TiXmlNode *xnode = read_xml_node(in, buffer, buffer_length);
+  delete[] buffer;
   if (xnode == NULL) {
     return NULL;
   }

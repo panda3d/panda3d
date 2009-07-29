@@ -85,7 +85,7 @@ P3DInstanceManager::
        << " " << _none_object->_ref_count
        << " " << _true_object->_ref_count
        << " " << _false_object->_ref_count
-       << "\n" << flush;
+       << "\n";
 
   /*
   assert(_undefined_object->_ref_count == 1);
@@ -119,10 +119,10 @@ initialize() {
   _platform = P3D_PLUGIN_PLATFORM;
 
   nout << "_root_dir = " << _root_dir << ", download = " 
-       << _download_url << "\n" << flush;
+       << _download_url << "\n";
 
   if (_root_dir.empty()) {
-    nout << "Could not find root directory.\n" << flush;
+    nout << "Could not find root directory.\n";
     return false;
   }
 
@@ -158,7 +158,7 @@ bool P3DInstanceManager::
 start_instance(P3DInstance *inst, const string &p3d_filename,
                const P3D_token tokens[], size_t num_tokens) {
   if (inst->is_started()) {
-    nout << "Instance started twice: " << inst << "\n" << flush;
+    nout << "Instance started twice: " << inst << "\n";
     return false;
   }
   inst->set_fparams(P3DFileParams(p3d_filename, tokens, num_tokens));

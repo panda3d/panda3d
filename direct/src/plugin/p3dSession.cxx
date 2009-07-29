@@ -104,10 +104,8 @@ shutdown() {
   if (_p3dpython_running) {
     // Tell the process we're going away.
     TiXmlDocument doc;
-    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
     TiXmlElement *xcommand = new TiXmlElement("command");
     xcommand->SetAttribute("cmd", "exit");
-    doc.LinkEndChild(decl);
     doc.LinkEndChild(xcommand);
     write_xml(_pipe_write, &doc, nout);
 
@@ -124,7 +122,7 @@ shutdown() {
     // Now give the process a chance to terminate itself cleanly.
     if (WaitForSingleObject(_p3dpython_handle, max_wait_ms) == WAIT_TIMEOUT) {
       // It didn't shut down cleanly, so kill it the hard way.
-      nout << "Force-killing python process.\n" << flush;
+      nout << "Force-killing python process.\n";
       TerminateProcess(_p3dpython_handle, 2);
     }
 
@@ -153,7 +151,7 @@ shutdown() {
       if (elapsed > max_wait_ms) {
         // Tired of waiting.  Kill the process.
         nout << "Force-killing python process, pid " << _p3dpython_pid 
-             << "\n" << flush;
+             << "\n";
         kill(_p3dpython_pid, SIGKILL);
         start_ms = now_ms;
       }
@@ -218,12 +216,10 @@ start_instance(P3DInstance *inst) {
   assert(inserted);
 
   TiXmlDocument *doc = new TiXmlDocument;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "start_instance");
   TiXmlElement *xinstance = inst->make_xml();
   
-  doc->LinkEndChild(decl);
   doc->LinkEndChild(xcommand);
   xcommand->LinkEndChild(xinstance);
 
@@ -252,12 +248,10 @@ start_instance(P3DInstance *inst) {
 void P3DSession::
 terminate_instance(P3DInstance *inst) {
   TiXmlDocument *doc = new TiXmlDocument;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "terminate_instance");
   xcommand->SetAttribute("instance_id", inst->get_instance_id());
   
-  doc->LinkEndChild(decl);
   doc->LinkEndChild(xcommand);
 
   send_command(doc);
@@ -621,11 +615,9 @@ void P3DSession::
 drop_pyobj(int object_id) {
   if (_p3dpython_running) {
     TiXmlDocument doc;
-    TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
     TiXmlElement *xcommand = new TiXmlElement("command");
     xcommand->SetAttribute("cmd", "drop_pyobj");
     xcommand->SetAttribute("object_id", object_id);
-    doc.LinkEndChild(decl);
     doc.LinkEndChild(xcommand);
     write_xml(_pipe_write, &doc, nout);
   }
@@ -735,27 +727,25 @@ start_p3dpython() {
 #endif
 
   if (!started_p3dpython) {
-    nout << "Failed to create process.\n" << flush;
+    nout << "Failed to create process.\n";
     return;
   }
   _p3dpython_running = true;
 
   if (!_pipe_read) {
-    nout << "unable to open read pipe\n" << flush;
+    nout << "unable to open read pipe\n";
   }
   if (!_pipe_write) {
-    nout << "unable to open write pipe\n" << flush;
+    nout << "unable to open write pipe\n";
   }
   
   spawn_read_thread();
 
   // The very first command we send to the process is its session_id.
   TiXmlDocument doc;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "init");
   xcommand->SetAttribute("session_id", _session_id);
-  doc.LinkEndChild(decl);
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
   
@@ -822,7 +812,7 @@ rt_thread_run() {
     rt_handle_request(doc);
   }
 
-  logfile << "Exiting rt_thread_run in " << this << "\n" << flush;
+  logfile << "Exiting rt_thread_run in " << this << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -918,7 +908,7 @@ win_create_process(const string &program, const string &start_dir,
 
   // Create the pipe to the process.
   if (!CreatePipe(&r_to, &w_to, NULL, 0)) {
-    nout << "failed to create pipe\n" << flush;
+    nout << "failed to create pipe\n";
   } else {
     // Make sure the right end of the pipe is inheritable.
     SetHandleInformation(r_to, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
@@ -927,7 +917,7 @@ win_create_process(const string &program, const string &start_dir,
 
   // Create the pipe from the process.
   if (!CreatePipe(&r_from, &w_from, NULL, 0)) {
-    nout << "failed to create pipe\n" << flush;
+    nout << "failed to create pipe\n";
   } else { 
     // Make sure the right end of the pipe is inheritable.
     SetHandleInformation(w_from, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
@@ -947,7 +937,7 @@ win_create_process(const string &program, const string &start_dir,
       error_handle = handle;
       SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
     } else {
-      nout << "Unable to open " << output_filename << "\n" << flush;
+      nout << "Unable to open " << output_filename << "\n";
     }
   }
 
@@ -1046,7 +1036,7 @@ posix_create_process(const string &program, const string &start_dir,
       int logfile_fd = open(output_filename.c_str(), 
                             O_WRONLY | O_CREAT | O_TRUNC, 0666);
       if (logfile_fd < 0) {
-        nout << "Unable to open " << output_filename << "\n" << flush;
+        nout << "Unable to open " << output_filename << "\n";
       } else {
         dup2(logfile_fd, STDERR_FILENO);
         close(logfile_fd);
@@ -1061,7 +1051,7 @@ posix_create_process(const string &program, const string &start_dir,
     close(from_fd[0]);
 
     if (chdir(start_dir.c_str()) < 0) {
-      nout << "Could not chdir to " << start_dir << "\n" << flush;
+      nout << "Could not chdir to " << start_dir << "\n";
       _exit(1);
     }
 
@@ -1077,7 +1067,7 @@ posix_create_process(const string &program, const string &start_dir,
     ptrs.push_back((char *)NULL);
     
     execle(program.c_str(), program.c_str(), (char *)0, &ptrs[0]);
-    nout << "Failed to exec " << program << "\n" << flush;
+    nout << "Failed to exec " << program << "\n";
     _exit(1);
   }
 

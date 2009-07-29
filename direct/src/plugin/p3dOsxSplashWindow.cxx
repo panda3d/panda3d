@@ -257,31 +257,33 @@ paint_window() {
   PaintRect(&rdone);
   EraseRect(&rneed);
 
-  RGBColor black = { 0, 0, 0 };
-  RGBForeColor(&black);
+  if (!_install_label.empty()) {
+    RGBColor black = { 0, 0, 0 };
+    RGBForeColor(&black);
+    
+    TextFont(0);
+    TextFace(bold);
+    TextMode(srcOr);
+    TextSize(0);
+    
+    Point numer = { 1, 1 };
+    Point denom = { 1, 1 };
+    FontInfo font_info;
+    StdTxMeas(_install_label.size(), _install_label.data(), &numer, &denom, &font_info);
+    int ascent = font_info.ascent * numer.v / denom.v;
+    int descent = font_info.descent * numer.v / denom.v;
 
-  TextFont(0);
-  TextFace(bold);
-  TextMode(srcOr);
-  TextSize(0);
+    int text_width = TextWidth(_install_label.data(), 0, _install_label.size());
+    int text_x = (win_width - text_width) / 2;
+    int text_y = bar_y - descent - 8;
+    
+    Rect rtext = { text_y - ascent - 2, text_x - 2, 
+                   text_y + descent + 2, text_x + text_width + 2 }; 
+    EraseRect(&rtext);
 
-  Point numer = { 1, 1 };
-  Point denom = { 1, 1 };
-  FontInfo font_info;
-  StdTxMeas(_install_label.size(), _install_label.data(), &numer, &denom, &font_info);
-  int ascent = font_info.ascent * numer.v / denom.v;
-  int descent = font_info.descent * numer.v / denom.v;
-
-  int text_width = TextWidth(_install_label.data(), 0, _install_label.size());
-  int text_x = (win_width - text_width) / 2;
-  int text_y = bar_y - descent - 8;
-
-  Rect rtext = { text_y - ascent - 2, text_x - 2, 
-                 text_y + descent + 2, text_x + text_width + 2 }; 
-  EraseRect(&rtext);
-
-  MoveTo(text_x, text_y);
-  DrawText(_install_label.data(), 0, _install_label.size());
+    MoveTo(text_x, text_y);
+    DrawText(_install_label.data(), 0, _install_label.size());
+  }
 
   if (portChanged) {
     QDSwapPort(portSave, NULL);

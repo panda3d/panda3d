@@ -20,7 +20,8 @@
 #include <malloc.h>
 #endif
 
-ofstream logfile;
+static ofstream logfile;
+ostream *nout_stream = &logfile;
 
 NPNetscapeFuncs *browser;
 
@@ -47,6 +48,7 @@ open_logfile() {
 #endif  // _WIN32
     }
     logfile.open(logfilename.c_str());
+    logfile.setf(ios::unitbuf);
     logfile_is_open = true;
   }
 }
@@ -85,7 +87,7 @@ NP_GetValue(void*, NPPVariable variable, void* value) {
       *((PRBool *)value) = PR_FALSE;
       break;
     default:
-      logfile << "Ignoring GetValue request " << variable << "\n" << flush;
+      nout << "Ignoring GetValue request " << variable << "\n";
       return NPERR_INVALID_PARAM;
   }
   
@@ -115,9 +117,9 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
   browser = browserFuncs;
 
   open_logfile();
-  logfile << "initializing\n" << flush;
+  nout << "initializing\n";
 
-  logfile << "browserFuncs = " << browserFuncs << "\n" << flush;
+  nout << "browserFuncs = " << browserFuncs << "\n";
 
   // On Unix, we have to use the pluginFuncs argument
   // to pass our entry points.
@@ -141,8 +143,7 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
 NPError OSCALL
 NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
   open_logfile();
-  logfile << "NP_GetEntryPoints, pluginFuncs = " << pluginFuncs << "\n"
-          << flush;
+  nout << "NP_GetEntryPoints, pluginFuncs = " << pluginFuncs << "\n";
   pluginFuncs->version = 11;
   pluginFuncs->size = sizeof(pluginFuncs);
   pluginFuncs->newp = NPP_New;
@@ -170,7 +171,7 @@ NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
 ////////////////////////////////////////////////////////////////////
 NPError OSCALL
 NP_Shutdown(void) {
-  logfile << "shutdown\n" << flush;
+  nout << "shutdown\n";
   unload_plugin();
 
   // Not clear whether there's a return value or not.  Some versions
@@ -186,7 +187,7 @@ NP_Shutdown(void) {
 NPError 
 NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode, 
         int16 argc, char *argn[], char *argv[], NPSavedData *saved) {
-  logfile << "new instance\n" << flush;
+  nout << "new instance\n";
 
   PPInstance *inst = new PPInstance(pluginType, instance, mode,
                                     argc, argn, argv, saved);
@@ -210,8 +211,8 @@ NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
 ////////////////////////////////////////////////////////////////////
 NPError
 NPP_Destroy(NPP instance, NPSavedData **save) {
-  logfile << "destroy instance " << instance << "\n";
-  logfile << "save = " << (void *)save << "\n" << flush;
+  nout << "destroy instance " << instance << "\n";
+  nout << "save = " << (void *)save << "\n";
   //  (*save) = NULL;
   delete (PPInstance *)(instance->pdata);
   instance->pdata = NULL;
@@ -229,9 +230,9 @@ NPP_Destroy(NPP instance, NPSavedData **save) {
 ////////////////////////////////////////////////////////////////////
 NPError
 NPP_SetWindow(NPP instance, NPWindow *window) {
-  logfile << "SetWindow " << window->x << ", " << window->y
+  nout << "SetWindow " << window->x << ", " << window->y
           << ", " << window->width << ", " << window->height
-          << "\n" << flush;
+          << "\n";
 
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
@@ -251,10 +252,10 @@ NPP_SetWindow(NPP instance, NPWindow *window) {
 NPError
 NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream, 
               NPBool seekable, uint16 *stype) {
-  logfile << "NewStream " << type << ", " << stream->url 
-          << ", " << stream->end 
-          << ", notifyData = " << stream->notifyData
-          << "\n" << flush;
+  nout << "NewStream " << type << ", " << stream->url 
+       << ", " << stream->end 
+       << ", notifyData = " << stream->notifyData
+       << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
@@ -269,11 +270,11 @@ NPP_NewStream(NPP instance, NPMIMEType type, NPStream *stream,
 ////////////////////////////////////////////////////////////////////
 NPError 
 NPP_DestroyStream(NPP instance, NPStream *stream, NPReason reason) {
-  logfile << "DestroyStream " << stream->url 
-          << ", " << stream->end 
-          << ", notifyData = " << stream->notifyData
-          << ", reason = " << reason
-          << "\n" << flush;
+  nout << "DestroyStream " << stream->url 
+       << ", " << stream->end 
+       << ", notifyData = " << stream->notifyData
+       << ", reason = " << reason
+       << "\n";
 
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
@@ -304,7 +305,7 @@ NPP_WriteReady(NPP instance, NPStream *stream) {
 int32
 NPP_Write(NPP instance, NPStream *stream, int32 offset, 
           int32 len, void *buffer) {
-  //  logfile << "Write " << stream->url << ", " << len << "\n" << flush;
+  //  nout << "Write " << stream->url << ", " << len << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
@@ -321,10 +322,10 @@ NPP_Write(NPP instance, NPStream *stream, int32 offset,
 ////////////////////////////////////////////////////////////////////
 void
 NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
-  logfile << "StreamAsFile " << stream->url 
-          << ", " << stream->end 
-          << ", notifyData = " << stream->notifyData
-          << "\n" << flush;
+  nout << "StreamAsFile " << stream->url 
+       << ", " << stream->end 
+       << ", notifyData = " << stream->notifyData
+       << "\n";
 
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
@@ -340,7 +341,7 @@ NPP_StreamAsFile(NPP instance, NPStream *stream, const char *fname) {
 ////////////////////////////////////////////////////////////////////
 void 
 NPP_Print(NPP instance, NPPrint *platformPrint) {
-  logfile << "Print\n";
+  nout << "Print\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -350,7 +351,7 @@ NPP_Print(NPP instance, NPPrint *platformPrint) {
 ////////////////////////////////////////////////////////////////////
 int16
 NPP_HandleEvent(NPP instance, void *event) {
-  //  logfile << "HandleEvent\n" << flush;
+  //  nout << "HandleEvent\n";
   PPInstance::generic_browser_call();
 
   PPInstance *inst = (PPInstance *)(instance->pdata);
@@ -367,10 +368,10 @@ NPP_HandleEvent(NPP instance, void *event) {
 void
 NPP_URLNotify(NPP instance, const char *url,
               NPReason reason, void *notifyData) {
-  logfile << "URLNotify: " << url 
-          << ", notifyData = " << notifyData
-          << ", reason = " << reason
-          << "\n" << flush;
+  nout << "URLNotify: " << url 
+       << ", notifyData = " << notifyData
+       << ", reason = " << reason
+       << "\n";
 
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
@@ -386,7 +387,7 @@ NPP_URLNotify(NPP instance, const char *url,
 ////////////////////////////////////////////////////////////////////
 NPError
 NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
-  logfile << "GetValue " << variable << "\n";
+  nout << "GetValue " << variable << "\n";
   PPInstance::generic_browser_call();
   PPInstance *inst = (PPInstance *)(instance->pdata);
   assert(inst != NULL);
@@ -410,7 +411,7 @@ NPP_GetValue(NPP instance, NPPVariable variable, void *value) {
 ////////////////////////////////////////////////////////////////////
 NPError 
 NPP_SetValue(NPP instance, NPNVariable variable, void *value) {
-  logfile << "SetValue " << variable << "\n";
+  nout << "SetValue " << variable << "\n";
   PPInstance::generic_browser_call();
   return NPERR_GENERIC_ERROR;
 }

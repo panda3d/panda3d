@@ -106,12 +106,10 @@ set_image_filename(const string &image_filename,
   }
 
   TiXmlDocument doc;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "set_image_filename");
   xcommand->SetAttribute("image_filename", image_filename);
   xcommand->SetAttribute("image_filename_temp", (int)image_filename_temp);
-  doc.LinkEndChild(decl);
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
 
@@ -131,11 +129,9 @@ set_install_label(const string &install_label) {
   }
 
   TiXmlDocument doc;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "set_install_label");
   xcommand->SetAttribute("install_label", install_label);
-  doc.LinkEndChild(decl);
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
 
@@ -154,11 +150,9 @@ set_install_progress(double install_progress) {
   }
 
   TiXmlDocument doc;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "set_install_progress");
   xcommand->SetDoubleAttribute("install_progress", install_progress);
-  doc.LinkEndChild(decl);
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
 
@@ -223,10 +217,8 @@ stop_subprocess() {
 
   // Ask the subprocess to stop.
   TiXmlDocument doc;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "exit");
-  doc.LinkEndChild(decl);
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
 
@@ -257,7 +249,7 @@ stop_subprocess() {
     if (elapsed > max_wait_ms) {
       // Tired of waiting.  Kill the process.
       nout << "Force-killing splash window process, pid " << _subprocess_pid 
-           << "\n" << flush;
+           << "\n";
       kill(_subprocess_pid, SIGKILL);
       start_ms = now_ms;
     }

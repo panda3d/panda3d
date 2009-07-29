@@ -144,8 +144,7 @@ read_image(const string &image_filename, bool image_filename_temp,
   // ever support.
   FILE *fp = fopen(image_filename.c_str(), "rb");
   if (fp == NULL) {
-    nout << "Couldn't open splash file image: " << image_filename << "\n"
-         << flush;
+    nout << "Couldn't open splash file image: " << image_filename << "\n";
     if (image_filename_temp) {
       unlink(image_filename.c_str());
     }
@@ -164,8 +163,7 @@ read_image(const string &image_filename, bool image_filename_temp,
   // Establish the setjmp return context for my_error_exit to use
   if (setjmp(jerr.setjmp_buffer)) {
     // If we get here, the JPEG code has signaled an error.
-    nout << "JPEG error decoding " << image_filename << "\n"
-         << flush;
+    nout << "JPEG error decoding " << image_filename << "\n";
 
     // We need to clean up the JPEG object, close the input file, and return.
     jpeg_destroy_decompress(&cinfo);

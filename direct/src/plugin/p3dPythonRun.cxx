@@ -335,10 +335,8 @@ handle_command(TiXmlDocument *doc) {
         if (needs_response) {
           // Better send a response.
           TiXmlDocument doc;
-          TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
           TiXmlElement *xresponse = new TiXmlElement("response");
           xresponse->SetAttribute("response_id", want_response_id);
-          doc.LinkEndChild(decl);
           doc.LinkEndChild(xresponse);
           write_xml(_pipe_write, &doc, nout);
         }
@@ -359,10 +357,8 @@ void P3DPythonRun::
 handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
                      int want_response_id) {
   TiXmlDocument doc;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xresponse = new TiXmlElement("response");
   xresponse->SetAttribute("response_id", want_response_id);
-  doc.LinkEndChild(decl);
   doc.LinkEndChild(xresponse);
 
   const char *op = xcommand->Attribute("op");
@@ -601,7 +597,7 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 check_comm() {
-  //  nout << ":" << flush;
+  //  nout << ":";
   ACQUIRE_LOCK(_commands_lock);
   while (!_commands.empty()) {
     TiXmlDocument *doc = _commands.front();
@@ -647,7 +643,7 @@ st_check_comm(PyObject *, PyObject *args) {
 ////////////////////////////////////////////////////////////////////
 TiXmlDocument *P3DPythonRun::
 wait_script_response(int response_id) {
-  //  nout << "waiting script_response " << response_id << "\n" << flush;
+  //  nout << "waiting script_response " << response_id << "\n";
   while (true) {
     Commands::iterator ci;
 
@@ -694,7 +690,7 @@ wait_script_response(int response_id) {
           // This is the response we were waiting for.
           _responses.erase(ci);
           _responses_lock.release();
-          //          nout << "got script_response " << unique_id << "\n" << flush;
+          //          nout << "got script_response " << unique_id << "\n";
           return doc;
         }
       }
@@ -716,7 +712,7 @@ wait_script_response(int response_id) {
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE | PM_NOYIELD);
 #endif  // _WIN32
 
-    //    nout << "." << flush;
+    //    nout << ".";
 
     // It hasn't shown up yet.  Give the sub-thread a chance to
     // process the input and append it to the queue.
@@ -771,11 +767,9 @@ py_request_func(PyObject *args) {
   }
 
   TiXmlDocument doc;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xrequest = new TiXmlElement("request");
   xrequest->SetAttribute("instance_id", instance_id);
   xrequest->SetAttribute("rtype", request_type);
-  doc.LinkEndChild(decl);
   doc.LinkEndChild(xrequest);
 
   if (strcmp(request_type, "notify") == 0) {

@@ -57,6 +57,7 @@ P3D_initialize(int api_version, const char *output_filename) {
   if (!plugin_output_filename.empty()) {
     logfile.open(plugin_output_filename.c_str(), ios::out | ios::trunc);
     if (logfile) {
+      logfile.setf(ios::unitbuf);
       nout_stream = &logfile;
     }
   }

@@ -235,7 +235,6 @@ P3D_object *P3DPythonObject::
 call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
   TiXmlDocument *doc = new TiXmlDocument;
-  TiXmlDeclaration *decl = new TiXmlDeclaration("1.0", "utf-8", "");
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "pyobj");
   xcommand->SetAttribute("op", "call");
@@ -252,7 +251,6 @@ call(const string &method_name, bool needs_response,
     xcommand->LinkEndChild(xparams);
   }
 
-  doc->LinkEndChild(decl);
   doc->LinkEndChild(xcommand);
 
   // If no response is requested, send the command out in a vacuum,

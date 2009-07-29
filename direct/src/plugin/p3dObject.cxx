@@ -112,7 +112,7 @@ static void
 generic_finish(P3D_object *object) {
   // You must override finish(), though, otherwise it's a leak.  The
   // core API has no idea how to delete your object.
-  nout << "Warning!  default object_finish() method does nothing; object will leak.\n" << flush;
+  nout << "Warning!  default object_finish() method does nothing; object will leak.\n";
 }
 
 static P3D_object_type 
