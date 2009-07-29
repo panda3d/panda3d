@@ -22,7 +22,8 @@ OUTPUTDIR="built"
 ########################################################################
 ##
 ## Maya and Max Version List (with registry keys)
-##
+## Note that one installation site has MAX2009 with the key as specified below (11.0\\MAX-1:409) - 
+## you may need to edit this key to match how the product was installed at your location.
 ########################################################################
 
 MAYAVERSIONINFO=[("MAYA6",   "6.0"),
@@ -38,7 +39,7 @@ MAXVERSIONINFO = [("MAX6", "SOFTWARE\\Autodesk\\3DSMAX\\6.0", "installdir", "max
                   ("MAX7", "SOFTWARE\\Autodesk\\3DSMAX\\7.0", "Installdir", "maxsdk\\include\\CS"),
                   ("MAX8", "SOFTWARE\\Autodesk\\3DSMAX\\8.0", "Installdir", "maxsdk\\include\\CS"),
                   ("MAX9", "SOFTWARE\\Autodesk\\3DSMAX\\9.0", "Installdir", "maxsdk\\include\\CS"),
-                  ("MAX2009", "SOFTWARE\\Autodesk\\3DSMAX\\11.0", "Installdir", "maxsdk\\include\\CS"),
+                  ("MAX2009", "SOFTWARE\\Autodesk\\3DSMAX\\11.0\\MAX-1:409", "Installdir", "maxsdk\\include\\CS"),
                   ("MAX2010", "SOFTWARE\\Autodesk\\3DSMAX\\12.0", "Installdir", "maxsdk\\include\\CS"),
 ]
 
