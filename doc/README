@@ -5,8 +5,9 @@ the Entertainment Technology Center of Carnegie Mellon University.
 
 At the present, we are providing two completely unrelated systems for
 building Panda.  The original build system, ppremake, is still in
-active use by the VR Studio, but will probably eventually be phased
-out in favor of the new build system, makepanda.
+active use by the VR Studio, and is useful if you want advanced build
+control. The other build system, makepanda, is designed to build
+quickly and painlessly, and is used to generate the official releases.
 
 The ppremake system is a makefile generator, and allows you to
 configure your build environment to a high degree of customization.
