@@ -44,6 +44,11 @@ public:
 
   MaxNodeDesc* _root;
   float _fps;
+  // the flag for the setting up collision
+  bool _has_collision;
+  EggGroup::CollideFlags _cf_type;
+  EggGroup::CollisionSolidType _cs_type;
+  bool _export_mesh;
 
 private:
   EggData *_egg_data;

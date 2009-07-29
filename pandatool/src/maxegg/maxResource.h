@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by MaxEgg.rc
+// Used by maxEgg.rc
 //
 #define IDS_LIBDESCRIPTION              1
 #define IDS_CATEGORY                    2
@@ -40,6 +40,22 @@
 #define IDC_OK                          1058
 #define IDC_CANCEL                      1059
 #define IDC_LOGGING                     1060
+#define IDC_COLLISION                   1061
+#define IDC_PLANE                       1062
+#define IDC_SPHERE                      1063
+#define IDC_POLYGON                     1064
+#define IDC_POLYSET                     1067
+#define IDC_TUBE                        1068
+#define IDC_INSPHERE                    1069
+#define IDC_FLOORMESH                   1070
+#define IDC_DESCEND                     1071
+#define IDC_KEEP                        1072
+#define IDC_EVENT                       1073
+#define IDC_SOLID                       1074
+#define IDC_CENTER                      1076
+#define IDC_TURNSTILE                   1077
+#define IDC_LEVEL                       1078
+#define IDC_INTANGIBLE                  1079
 
 // Next default values for new objects
 // 
@@ -47,7 +63,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        103
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1061
+#define _APS_NEXT_CONTROL_VALUE         1080
 #define _APS_NEXT_SYMED_VALUE           102
 #endif
 #endif

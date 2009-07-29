@@ -232,6 +232,11 @@ MaxEggOptions::MaxEggOptions() {
     _start_frame = INT_MIN;
     _end_frame = INT_MIN;
     _double_sided = false;
+    // initialize newly added collision options, too
+    _add_collision = false;
+    _cs_type = CS_none;
+    _cf_type = CF_none;
+
     _file_name[0]=0;
     _short_name[0]=0;
     _path_replace = new PathReplace;
@@ -398,6 +403,90 @@ INT_PTR CALLBACK MaxOptionsDialogProc( HWND hWnd, UINT message, WPARAM wParam, L
                                "Panda3D Exporter", MB_YESNO | MB_ICONQUESTION) != IDYES)
                     CheckDlgButton(hWnd, IDC_CHECK1, BST_UNCHECKED);
             return TRUE; break;
+        // add IDC_COLLISION and related:
+        case IDC_COLLISION:
+            if(IsDlgButtonChecked(hWnd,IDC_COLLISION))
+                if(MessageBox(hWnd, "Exporting the egg with collision tag in it? Some choices may hurt performance in Panda3D","Panda3D Exporter",
+                    MB_YESNO | MB_ICONQUESTION) != IDYES)
+                    CheckDlgButton(hWnd,IDC_COLLISION, BST_UNCHECKED);
+            return TRUE; break;
+        case IDC_PLANE:
+            if(IsDlgButtonChecked(hWnd,IDC_PLANE))
+            {
+                CheckDlgButton(hWnd,IDC_SPHERE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYSET, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYGON, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_TUBE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_INSPHERE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_FLOORMESH, BST_UNCHECKED);
+            }
+            return TRUE; break;
+        case IDC_SPHERE:
+            if(IsDlgButtonChecked(hWnd,IDC_SPHERE))
+            {
+                CheckDlgButton(hWnd,IDC_PLANE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYSET, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYGON, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_TUBE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_INSPHERE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_FLOORMESH, BST_UNCHECKED);
+            }
+            return TRUE; break;
+        case IDC_POLYGON:
+            if(IsDlgButtonChecked(hWnd,IDC_POLYGON))
+            {
+                CheckDlgButton(hWnd,IDC_PLANE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYSET, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_SPHERE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_TUBE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_INSPHERE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_FLOORMESH, BST_UNCHECKED);
+            }
+            return TRUE; break;
+        case IDC_POLYSET:
+            if(IsDlgButtonChecked(hWnd,IDC_POLYSET))
+            {
+                CheckDlgButton(hWnd,IDC_PLANE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_SPHERE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYGON, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_TUBE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_INSPHERE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_FLOORMESH, BST_UNCHECKED);
+            }
+            return TRUE; break;
+        case IDC_TUBE:
+            if(IsDlgButtonChecked(hWnd,IDC_TUBE))
+            {
+                CheckDlgButton(hWnd,IDC_PLANE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYSET, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYGON, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_SPHERE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_INSPHERE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_FLOORMESH, BST_UNCHECKED);
+            }
+            return TRUE; break;
+        case IDC_INSPHERE:
+            if(IsDlgButtonChecked(hWnd,IDC_INSPHERE))
+            {
+                CheckDlgButton(hWnd,IDC_PLANE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYSET, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYGON, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_TUBE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_SPHERE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_FLOORMESH, BST_UNCHECKED);
+            }
+            return TRUE; break;
+        case IDC_FLOORMESH:
+            if(IsDlgButtonChecked(hWnd,IDC_FLOORMESH))
+            {
+                CheckDlgButton(hWnd,IDC_PLANE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYSET, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_POLYGON, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_TUBE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_INSPHERE, BST_UNCHECKED);
+                CheckDlgButton(hWnd,IDC_SPHERE, BST_UNCHECKED);
+            }
+            return TRUE; break;
         default:
             //char buf[255];
             //sprintf(buf, "%d", LOWORD(wParam));
@@ -454,6 +543,39 @@ void MaxOptionsDialog::UpdateUI(HWND hWnd) {
     CheckDlgButton(hWnd, IDC_CHECK1,
                    _double_sided ? BST_CHECKED : BST_UNCHECKED);
     
+    CheckDlgButton(hWnd, IDC_COLLISION,
+                   _add_collision ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_PLANE, 
+                    (_cs_type==CS_plane)? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_SPHERE, 
+                    (_cs_type==CS_sphere)? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_POLYGON, 
+                    (_cs_type==CS_polygon)? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_POLYSET, 
+                    (_cs_type==CS_polyset)? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_TUBE, 
+                    (_cs_type==CS_tube)? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_INSPHERE, 
+                    (_cs_type==CS_insphere)? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_FLOORMESH, 
+                    (_cs_type==CS_floormesh)? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_DESCEND,
+                   (_cf_type&CF_descend) ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_KEEP,
+                   (_cf_type&CF_keep) ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_EVENT,
+                   (_cf_type&CF_event) ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_SOLID,
+                   (_cf_type&CF_solid) ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_CENTER,
+                   (_cf_type&CF_center) ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_TURNSTILE,
+                   (_cf_type&CF_turnstile) ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_LEVEL,
+                   (_cf_type&CF_level) ? BST_CHECKED : BST_UNCHECKED);
+    CheckDlgButton(hWnd, IDC_INTANGIBLE,
+                   (_cf_type&CF_intangible) ? BST_CHECKED : BST_UNCHECKED);
+
     SetICustEdit(hWnd, IDC_FILENAME, _file_name);
     if (_start_frame != INT_MIN) {
         SetICustEdit(hWnd, IDC_SF, _start_frame);
@@ -553,6 +675,39 @@ bool MaxOptionsDialog::UpdateFromUI(HWND hWnd) {
   _end_frame = newEF;
   _anim_type = newAnimType;
   _double_sided = IsDlgButtonChecked(hWnd, IDC_CHECK1);
+  _add_collision = IsDlgButtonChecked(hWnd, IDC_COLLISION);
+  if(IsDlgButtonChecked(hWnd, IDC_PLANE))
+      _cs_type = CS_plane;
+  if(IsDlgButtonChecked(hWnd, IDC_SPHERE))
+      _cs_type = CS_sphere;
+  if(IsDlgButtonChecked(hWnd, IDC_POLYSET))
+      _cs_type = CS_polyset;
+  if(IsDlgButtonChecked(hWnd, IDC_POLYGON))
+      _cs_type = CS_polygon;
+  if(IsDlgButtonChecked(hWnd, IDC_TUBE))
+      _cs_type = CS_tube;
+  if(IsDlgButtonChecked(hWnd, IDC_INSPHERE))
+      _cs_type = CS_insphere;
+  if(IsDlgButtonChecked(hWnd, IDC_FLOORMESH))
+      _cs_type = CS_floormesh;
+
+  if(IsDlgButtonChecked(hWnd, IDC_DESCEND))
+      _cf_type = (CF_Type)(_cf_type | CF_descend);
+  if(IsDlgButtonChecked(hWnd, IDC_KEEP))
+      _cf_type = (CF_Type)(_cf_type | CF_keep);
+  if(IsDlgButtonChecked(hWnd, IDC_EVENT))
+      _cf_type = (CF_Type)(_cf_type | CF_event);
+  if(IsDlgButtonChecked(hWnd, IDC_SOLID))
+      _cf_type = (CF_Type)(_cf_type | CF_solid);
+  if(IsDlgButtonChecked(hWnd, IDC_CENTER))
+      _cf_type = (CF_Type)(_cf_type | CF_center);
+  if(IsDlgButtonChecked(hWnd, IDC_TURNSTILE))
+      _cf_type = (CF_Type)(_cf_type | CF_turnstile);
+  if(IsDlgButtonChecked(hWnd, IDC_LEVEL))
+      _cf_type = (CF_Type)(_cf_type | CF_level);
+  if(IsDlgButtonChecked(hWnd, IDC_INTANGIBLE))
+      _cf_type = (CF_Type)(_cf_type | CF_intangible);
+
   _export_whole_scene = IsDlgButtonChecked(hWnd, IDC_EXPORT_ALL);
   _export_all_frames = IsDlgButtonChecked(hWnd, IDC_EXP_ALL_FRAMES);
 
@@ -607,6 +762,11 @@ IOResult MaxOptionsDialog::Save(ISave *isave) {
     ChunkSave(isave, CHUNK_SF, _start_frame);
     ChunkSave(isave, CHUNK_EF, _end_frame);
     ChunkSave(isave, CHUNK_DBL_SIDED, _double_sided);
+    // save the collision options:
+    ChunkSave(isave, CHUNK_ADD_COLLISION, _add_collision);
+    ChunkSave(isave, CHUNK_CS_TYPE, _cs_type);
+    ChunkSave(isave, CHUNK_CF_TYPE, _cf_type);
+
     ChunkSave(isave, CHUNK_EGG_CHECKED, _checked);
     ChunkSave(isave, CHUNK_EXPORT_FULL, _export_whole_scene);
     ChunkSave(isave, CHUNK_ALL_FRAMES, _export_all_frames);
@@ -629,6 +789,10 @@ IOResult MaxOptionsDialog::Load(ILoad *iload) {
         case CHUNK_SF: _start_frame = ChunkLoadInt(iload); break;
         case CHUNK_EF: _end_frame = ChunkLoadInt(iload); break;
         case CHUNK_DBL_SIDED: _double_sided = ChunkLoadBool(iload); break;
+        case CHUNK_ADD_COLLISION: _add_collision = ChunkLoadBool(iload); break;
+        case CHUNK_CS_TYPE: _cs_type = (CS_Type)ChunkLoadInt(iload); break;
+        case CHUNK_CF_TYPE: _cf_type = (CF_Type)ChunkLoadInt(iload); break;
+
         case CHUNK_EGG_CHECKED: _checked = ChunkLoadBool(iload); break;
         case CHUNK_EXPORT_FULL: _export_whole_scene = ChunkLoadBool(iload); break;
         case CHUNK_ALL_FRAMES: _export_all_frames = ChunkLoadBool(iload); break;

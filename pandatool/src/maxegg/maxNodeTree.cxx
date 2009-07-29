@@ -24,6 +24,10 @@ MaxNodeTree::
 MaxNodeTree() {
   _root = new MaxNodeDesc;
   _fps = 0.0;
+  _has_collision = false;
+  _export_mesh = false;
+  _cs_type = EggGroup::CST_none;
+  _cf_type = EggGroup::CF_none;
   _egg_data = (EggData *)NULL;
   _egg_root = (EggGroupNode *)NULL;
   _skeleton_node = (EggGroupNode *)NULL;
@@ -174,10 +178,27 @@ get_egg_group(MaxNodeDesc *node_desc) {
 
     if (node_desc->_parent == _root) {
       // The parent is the root.
+      // Set collision properties for the root if it has them:
+      if(_has_collision && !_export_mesh)
+      {
+        egg_group->set_collision_name(node_desc->get_name());
+        egg_group->set_cs_type(_cs_type);
+        egg_group->set_collide_flags(_cf_type);
+      }
       _egg_root->add_child(egg_group);
 
     } else {
       // The parent is another node.
+      // if export mesh, the tag should be added at the second level
+      if(_has_collision && _export_mesh)
+      {
+        if(node_desc->_parent->_parent == _root)
+        {
+          egg_group->set_collision_name(node_desc->get_name());
+          egg_group->set_cs_type(_cs_type);
+          egg_group->set_collide_flags(_cf_type);
+        }
+      }
       EggGroup *parent_egg_group = get_egg_group(node_desc->_parent);
       parent_egg_group->add_child(egg_group);
     }

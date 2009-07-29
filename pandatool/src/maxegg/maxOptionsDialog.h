@@ -12,7 +12,6 @@
 
 #pragma conform(forScope, off)
 
-
 /* Externed Globals */
 extern HINSTANCE hInstance;
 
@@ -32,6 +31,10 @@ extern HINSTANCE hInstance;
 #define CHUNK_ALL_FRAMES      0x1109
 #define CHUNK_NODE_LIST       0x1200
 #define CHUNK_NODE_HANDLE     0x1201
+
+#define CHUNK_ADD_COLLISION   0x1202
+#define CHUNK_CS_TYPE         0x1203
+#define CHUNK_CF_TYPE         0x1204
 
 //Global functions
 void ChunkSave(ISave *isave, int chunkid, int value);
@@ -57,11 +60,39 @@ struct MaxEggOptions
         AT_both
     };
 
+    enum CS_Type{
+        CS_none                 = 0x00000000,
+        CS_plane                = 0x00010000,
+        CS_polygon              = 0x00020000,
+        CS_polyset              = 0x00030000,
+        CS_sphere               = 0x00040000,
+        CS_tube                 = 0x00050000,
+        CS_insphere             = 0x00060000,
+        CS_floormesh            = 0x00080000
+    };
+
+    enum CF_Type{
+        CF_none                  = 0x00000000,
+        CF_descend               = 0x00100000,
+        CF_event                 = 0x00200000,
+        CF_keep                  = 0x00400000,
+        CF_solid                 = 0x00800000,
+        CF_center                = 0x01000000,
+        CF_turnstile             = 0x02000000,
+        CF_level                 = 0x04000000,
+        CF_intangible            = 0x08000000,
+    };
+
     IObjParam *_max_interface;
     Anim_Type _anim_type;
     int _start_frame;
     int _end_frame;
     bool _double_sided;
+
+    bool _add_collision;
+    CS_Type _cs_type;
+    CF_Type _cf_type;
+
     bool _successful;
     bool _export_whole_scene;
     bool _export_all_frames;

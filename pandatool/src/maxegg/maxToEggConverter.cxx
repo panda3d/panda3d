@@ -2,6 +2,11 @@
 // Created by Corey Revilla and Ken Strickland (6/22/03)
 // from mayaToEggConverter.cxx created by drose (10Nov99)
 //
+// Updated by Fei Wang, Carnegie Mellon University Entertainment
+// Technology Center student, 29Jul2009:  Fixed vertex color, 
+// animation hierarchy, texture swapping bugs; added collision choices to 
+// exporter.
+//
 ////////////////////////////////////////////////////////////////////
 //
 // PANDA 3D SOFTWARE
@@ -90,9 +95,24 @@ bool MaxToEggConverter::convert(MaxEggOptions *options) {
 
     bool all_ok = true;
 
+    // check if we need the collision set, set the _tree's m_b_has collision to be true
+    if(_options->_add_collision)
+    {
+        _tree._has_collision = true;
+
+        _tree._cs_type = (EggGroup::CollisionSolidType)(_options->_cs_type);
+        _tree._cf_type = (EggGroup::CollideFlags)(_options->_cf_type);
+
+    }
+    else
+    {
+        _tree._has_collision = false;
+    }
     if (_options->_export_whole_scene) {
+        _tree._export_mesh = false;
         all_ok = _tree.build_complete_hierarchy(_options->_max_interface->GetRootNode(), NULL, 0);
     } else {
+        _tree._export_mesh = true;
         all_ok = _tree.build_complete_hierarchy(_options->_max_interface->GetRootNode(), &_options->_node_list.front(), _options->_node_list.size());
     }
     
@@ -656,10 +676,11 @@ make_polyset(INode *max_node, Mesh *mesh,
             vert.set_normal(n3d);
 
             // Get the vertex color
-            if(mesh->vcFace) { // if has vcFace, has used vertex color
-              VertColor vertexColor = get_max_vertex_color(mesh, iFace, iVertex);
-              Colorf pVC(vertexColor.x, vertexColor.y, vertexColor.z, 1);
-              vert.set_color(pVC);
+            if(mesh->vcFace)  // if has vcFace, has used vertex color
+            {
+                VertColor vertexColor = get_max_vertex_color(mesh, iFace, iVertex);
+                Colorf pVC(vertexColor.x, vertexColor.y, vertexColor.z, 1);
+                vert.set_color(pVC);
             }
 
             // Get the UVs for this vertex
@@ -668,7 +689,11 @@ make_polyset(INode *max_node, Mesh *mesh,
                 ostringstream uvname;
                 uvname << "m" << channel;
                 UVVert uvw = get_max_vertex_texcoord(mesh, iFace, iVertex, channel);
-                vert.set_uv( uvname.str(), TexCoordd(uvw.x, uvw.y));
+                // changes allow the first channel to be swapped
+                if(channel ==1)
+                    vert.set_uv( TexCoordd(uvw.x, uvw.y));
+                else
+                    vert.set_uv( uvname.str(), TexCoordd(uvw.x, uvw.y));
             }
 
             vert.set_external_index(face.v[iVertex]);
@@ -726,17 +751,38 @@ UVVert MaxToEggConverter::get_max_vertex_texcoord(Mesh *mesh, int faceNo, int ve
     return uvVert;
 }
 
-VertColor MaxToEggConverter::get_max_vertex_color(Mesh *mesh, int FaceNo, int VertexNo) {
+VertColor MaxToEggConverter::get_max_vertex_color(Mesh *mesh,int FaceNo,int VertexNo, int channel) {
+
   VertColor vc(0,0,0);
-  // We get the color from vcFace
-  TVFace& _vcface = mesh->vcFace[FaceNo];
-  // Get its index into the vertCol array
-  int VertexColorIndex = _vcface.t[VertexNo];
-  // Get its color
-  vc = mesh->vertCol[VertexColorIndex];
+  if(mesh->mapSupport(channel))
+  {
+    // We get the color from vcFace
+    TVFace& _vcface = mesh->vcFace[FaceNo];
+    //Get its index into the vertCol array
+    int VertexColorIndex = _vcface.t[VertexNo];
+    //Get its color
+    vc =mesh->vertCol[VertexColorIndex];
+  }
+  else
+  {
+    TVFace *pTVFace = mesh->mapFaces(channel);
+    vc = mesh->vertCol[pTVFace[FaceNo].t[VertexNo]];
+  }
   return vc;
 }
 
+VertColor MaxToEggConverter::get_max_vertex_color(Mesh *mesh,int FaceNo,int VertexNo)
+{
+    VertColor vc(0,0,0);
+    // We get the color from vcFace
+    TVFace& _vcface = mesh->vcFace[FaceNo];
+    //Get its index into the vertCol array
+    int VertexColorIndex = _vcface.t[VertexNo];
+    //Get its color
+    vc =mesh->vertCol[VertexColorIndex];
+    return vc;
+}
+    
 Point3 MaxToEggConverter::get_max_vertex_normal(Mesh *mesh, int faceNo, int vertNo)
 {
     Face f = mesh->faces[faceNo];
@@ -1222,7 +1268,11 @@ std::string MaxToEggConverter::get_uv_name(int channel) {
 void MaxToEggConverter::
 apply_texture_properties(EggTexture &tex, int channel) {
 
-    tex.set_uv_name(get_uv_name(channel));
+    // we leave a channel 1 for texture swapping, so don't name it
+    if(channel == 1)
+      tex.set_uv_name("");
+    else
+      tex.set_uv_name(get_uv_name(channel));
 
     tex.set_minfilter(EggTexture::FT_linear_mipmap_linear);
     tex.set_magfilter(EggTexture::FT_linear);
