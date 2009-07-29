@@ -14,7 +14,8 @@
 
 #include "config_interrogatedb.h"
 #include "interrogate_request.h"
-#include "configVariableString.h"
+#include "configVariableBool.h"
+#include "configVariableSearchPath.h"
 #include "dconfig.h"
 
 #if defined(WIN32_VC) && defined(_DEBUG)
@@ -30,12 +31,12 @@ ConfigureFn(config_interrogatedb) {
   //  interrogate_request_library("types");
 
 #ifdef USE_WIN32_DBGHEAP
-  string use_win32_dbgheap_str = config_interrogatedb.GetString("use-win32-dbgheap", "");
-  bool win32_report_leaks = config_interrogatedb.GetBool("win32-report-leaks", false);
+  ConfigVariableBool use_win32_dbgheap("use-win32-dbgheap", false);
+  ConfigVariableBool win32_report_leaks("win32-report-leaks", false);
 
   int dbg_flags = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
 
-  if (use_win32_dbgheap_str == "full") {
+  if (use_win32_dbgheap.get_string_value() == "full") {
     // "full" means check the heap after *every* alloc/dealloc.
     // Expensive.
     dbg_flags |= (_CRTDBG_ALLOC_MEM_DF | _CRTDBG_CHECK_ALWAYS_DF |
@@ -44,9 +45,7 @@ ConfigureFn(config_interrogatedb) {
   } else {
     // Otherwise, it's a bool flag.  true means check the heap
     // normally, false means don't do any debug checking.
-    bool use_win32_dbgheap_bool = config_interrogatedb.GetBool("use-win32-dbgheap", false);
-
-    if (!use_win32_dbgheap_bool) {
+    if (!use_win32_dbgheap) {
       // deflt disable complete heap verify every 1024 allocations (VC7 deflt).
       // With vc7 stl small-string-optimization causing more allocs, 
       // this can cause order-of-magnitude slowdowns in dbg builds

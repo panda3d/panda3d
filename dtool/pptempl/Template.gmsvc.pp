@@ -57,7 +57,7 @@
       #if $[eq $[module $[TARGET],$[TARGET]],]
         // This library is not on a metalib, so we can build it.
         #set real_lib_targets $[real_lib_targets] $[TARGET]
-        #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+        #set real_lib_target_libs $[real_lib_target_libs] $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
       #else
         // This library is on a metalib, so we can't build it, but we
         // should build all the obj's that go into it.
@@ -73,14 +73,14 @@
   // the list of binaries that are to be built only when specifically
   // asked for.
 
-  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]]] $[real_lib_target_libs]
+  #define lib_targets $[forscopes metalib_target noinst_lib_target test_lib_target static_lib_target dynamic_lib_target ss_lib_target,$[if $[build_target],$[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]] $[real_lib_target_libs]
 
   #define bin_targets \
       $[active_target(bin_target noinst_bin_target):%=$[ODIR]/%.exe] \
       $[active_target(sed_bin_target):%=$[ODIR]/%]
   #define test_bin_targets $[active_target(test_bin_target):%=$[ODIR]/%.exe]
 
-  #defer test_lib_targets $[active_target(test_lib_target):%=$[if $[TEST_ODIR],$[TEST_ODIR],$[ODIR]]/%$[lib_ext]]
+  #defer test_lib_targets $[active_target(test_lib_target):%=$[if $[TEST_ODIR],$[TEST_ODIR],$[ODIR]]/%$[dllext]$[lib_ext]]
 
   // And these variables will define the various things we need to
   // install.
@@ -368,9 +368,9 @@ igate : $[get_igatedb(metalib_target lib_target ss_lib_target)]
       $[components $[patsubst %,$[RELDIR]/$[%_obj],$[compile_sources]],$[active_component_libs]]
   #endif
 
-  #define varname $[subst -,_,.,_,$[lib_prefix]$[TARGET]$[lib_ext]]
+  #define varname $[subst -,_,.,_,$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]
 $[varname] = $[sources]
-  #define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+  #define target $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
   #define sources $($[varname])
   #define flags   $[get_cflags] $[C++FLAGS] $[CFLAGS_OPT$[OPTIMIZE]] $[CFLAGS_SHARED] $[building_var:%=/D%]
 
@@ -402,10 +402,10 @@ $[TAB] $[link_lib_c]
 // Additional dependency rules for the implicit files that get built
 // along with a .dll.
 #if $[not $[lib_is_static]]
-$[ODIR]/$[lib_prefix]$[TARGET].lib : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+$[ODIR]/$[lib_prefix]$[TARGET]$[dllext].lib : $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
 #endif
 #if $[has_pdb]
-$[ODIR]/$[lib_prefix]$[TARGET].pdb : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+$[ODIR]/$[lib_prefix]$[TARGET]$[dllext].pdb : $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
 #endif
 
 #endif
@@ -414,9 +414,9 @@ $[ODIR]/$[lib_prefix]$[TARGET].pdb : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 // everything that goes along with it.
 #define installed_files \
     $[if $[build_lib], \
-      $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] \
-      $[if $[not $[lib_is_static]],$[install_lib_dir]/$[lib_prefix]$[TARGET].lib] \
-      $[if $[has_pdb],$[install_lib_dir]/$[lib_prefix]$[TARGET].pdb] \
+      $[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext] \
+      $[if $[not $[lib_is_static]],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext].lib] \
+      $[if $[has_pdb],$[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext].pdb] \
     ] \
     $[INSTALL_SCRIPTS:%=$[install_bin_dir]/%] \
     $[INSTALL_HEADERS:%=$[install_headers_dir]/%] \
@@ -431,8 +431,8 @@ uninstall-lib$[TARGET] :
 $[TAB] rm -f $[sort $[installed_files]]
 #endif
 
-$[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
-#define local $[lib_prefix]$[TARGET]$[lib_ext]
+$[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
+#define local $[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
 #define dest $[install_lib_dir]
 #if $[eq $[USE_COMPILER], MSVC8]
 $[TAB] mt -manifest $[ODIR]/$[local].manifest -outputresource:$[ODIR]/$[local]\;2
@@ -442,16 +442,16 @@ $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
 
 // Install the .lib associated with a .dll.
 #if $[not $[lib_is_static]]
-$[install_lib_dir]/$[lib_prefix]$[TARGET].lib : $[ODIR]/$[lib_prefix]$[TARGET].lib
-#define local $[lib_prefix]$[TARGET].lib
+$[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext].lib : $[ODIR]/$[lib_prefix]$[TARGET]$[dllext].lib
+#define local $[lib_prefix]$[TARGET]$[dllext].lib
 #define dest $[install_lib_dir]
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
 #endif
 
 
 #if $[has_pdb]
-$[install_lib_dir]/$[lib_prefix]$[TARGET].pdb : $[ODIR]/$[lib_prefix]$[TARGET].pdb
-#define local $[lib_prefix]$[TARGET].pdb
+$[install_lib_dir]/$[lib_prefix]$[TARGET]$[dllext].pdb : $[ODIR]/$[lib_prefix]$[TARGET]$[dllext].pdb
+#define local $[lib_prefix]$[TARGET]$[dllext].pdb
 #define dest $[install_lib_dir]
 $[TAB] cp $[install_dash_p] -f $[ODIR]/$[local] $[dest]/
 #endif
@@ -514,9 +514,9 @@ $[TAB] $[INTERROGATE_MODULE] -oc $[target] -module "$[igatemod]" -library "$[iga
 /////////////////////////////////////////////////////////////////////
 
 #forscopes noinst_lib_target test_lib_target
-#define varname $[subst -,_,.,_,$[lib_prefix]$[TARGET]$[lib_ext]]
+#define varname $[subst -,_,.,_,$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]]
 $[varname] = $[patsubst %,$[%_obj],$[compile_sources]]
-#define target $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+#define target $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
 #define sources $($[varname])
 #define $[VER_RESOURCE] $[COMPILED_RESOURCES]
 $[target] : $[sources] $[static_lib_dependencies] $[GENERATED_SOURCES]
@@ -526,9 +526,9 @@ $[TAB] $[link_lib_c++]
 $[TAB] $[link_lib_c]
 #endif
 
-$[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+$[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
 #if $[has_pdb]
-$[ODIR]/$[lib_prefix]$[TARGET].pdb : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
+$[ODIR]/$[lib_prefix]$[TARGET]$[dllext].pdb : $[ODIR]/$[lib_prefix]$[TARGET]$[dllext]$[lib_ext]
 #endif
 
 // this section is all very clunky and not generalized enough
