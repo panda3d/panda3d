@@ -72,7 +72,7 @@ mkdir_complete(const string &dirname, ostream &logfile) {
   if (last_error == ERROR_PATH_NOT_FOUND) {
     // We need to make the parent directory first.
     string parent = get_dirname(dirname);
-    if (!parent.empty() && mkdir_complete(parent)) {
+    if (!parent.empty() && mkdir_complete(parent, logfile)) {
       // Parent successfully created.  Try again to make the child.
       if (CreateDirectory(dirname.c_str(), NULL) != 0) {
         // Got it!
