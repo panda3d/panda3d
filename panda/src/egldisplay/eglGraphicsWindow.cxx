@@ -669,7 +669,7 @@ open_window() {
   if (!_properties.has_parent_window()) {
     root_window = egl_pipe->get_root();
   } else {
-    root_window = (Window) (int) _properties.get_parent_window();
+    root_window = (Window) _properties.get_parent_window();
   }
 
   setup_colormap(visual_info);
