@@ -210,9 +210,9 @@ def makePackage(args):
             if len(tokens) >= 1:
                 pm.packageName = tokens[0]
             if len(tokens) >= 2:
-                pm.packagePlatform = tokens[2]
+                pm.packagePlatform = tokens[1]
             if len(tokens) >= 3:
-                pm.packageVersion = tokens[1]
+                pm.packageVersion = tokens[2]
             if len(tokens) >= 4:
                 raise ArgumentError, 'Too many tokens in string: %s' % (value)
             
