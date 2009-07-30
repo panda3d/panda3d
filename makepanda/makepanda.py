@@ -3563,6 +3563,7 @@ for VER in MAYAVERSIONS:
     OPTS=['DIR:pandatool/src/mayaegg', 'DIR:pandatool/src/maya', VER]
     TargetAdd('mayaegg'+VNUM+'_loader.obj', opts=OPTS, input='mayaEggLoader.cxx')
     TargetAdd('mayaegg'+VNUM+'_composite1.obj', opts=OPTS, input='mayaegg_composite1.cxx')
+    TargetAdd('libmayaegg'+VNUM+'.lib', input='mayaegg'+VNUM+'_loader.obj')
     TargetAdd('libmayaegg'+VNUM+'.lib', input='mayaegg'+VNUM+'_composite1.obj')
 
 #
@@ -3881,6 +3882,19 @@ for VER in MAYAVERSIONS:
       TargetAdd('maya2egg'+VNUM+'-wrapped.exe', opts=['ADVAPI', 'NOPPC', VER])
     else:
       TargetAdd('maya2egg'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
+
+    TargetAdd('egg2maya'+VNUM+'_eggToMaya.obj', opts=OPTS, input='eggToMaya.cxx')
+    TargetAdd('egg2maya'+VNUM+'-wrapped.exe', input='egg2maya'+VNUM+'_eggToMaya.obj')
+    TargetAdd('egg2maya'+VNUM+'-wrapped.exe', input='libmayaegg'+VNUM+'.lib')
+    TargetAdd('egg2maya'+VNUM+'-wrapped.exe', input='libmaya'+VNUM+'.lib')
+    if (sys.platform.startswith("win")):
+      TargetAdd('egg2maya'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS_PYSTUB)
+    else:
+      TargetAdd('egg2maya'+VNUM+'-wrapped.exe', input=COMMON_EGG2X_LIBS)
+    if (sys.platform == "darwin" and int(VNUM) >= 2009):
+      TargetAdd('egg2maya'+VNUM+'-wrapped.exe', opts=['ADVAPI', 'NOPPC', VER])
+    else:
+      TargetAdd('egg2maya'+VNUM+'-wrapped.exe', opts=['ADVAPI', VER])
     
     TargetAdd('mayacopy'+VNUM+'_mayaCopy.obj', opts=OPTS, input='mayaCopy.cxx')
     TargetAdd('mayacopy'+VNUM+'-wrapped.exe', input='mayacopy'+VNUM+'_mayaCopy.obj')
