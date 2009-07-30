@@ -22,6 +22,7 @@ if sys.platform == "win32":
     if dll_suffix is None:
         # Otherwise, we try to determine it from the executable name:
         # python_d.exe implies _d across the board.
+        dll_suffix = ''
         if sys.executable.endswith('_d.exe'):
             dll_suffix = '_d'
             
