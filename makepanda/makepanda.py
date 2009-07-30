@@ -3051,10 +3051,14 @@ if (PkgSkip("PYTHON")==0):
 #
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
-  OPTS=['DIR:direct/src/plugin', 'TINYXML', 'OPENSSL']
+  # Explicitly define this as we don't include dtool_config.h here.
+  if (sys.platform != "darwin" and not sys.platform.startswith("win")):
+    DefSymbol("PLUGIN", "HAVE_X11", "1")
+  
+  OPTS=['DIR:direct/src/plugin', 'PLUGIN', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_common.obj', opts=OPTS, input='plugin_common_composite1.cxx')
   
-  OPTS=['DIR:direct/src/plugin', 'TINYXML', 'ZLIB', 'JPEG', 'OPENSSL']
+  OPTS += ['ZLIB', 'JPEG']
   TargetAdd('plugin_plugin.obj', opts=OPTS, input='p3d_plugin_composite1.cxx')
   TargetAdd('plugin_mkdir_complete.obj', opts=OPTS, input='mkdir_complete.cxx')
   TargetAdd('plugin_find_root_dir.obj', opts=OPTS, input='find_root_dir.cxx')
@@ -3087,13 +3091,13 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
 #
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
-  OPTS=['DIR:direct/src/plugin_npapi']
+  OPTS=['DIR:direct/src/plugin_npapi', 'PLUGIN']
   if (sys.platform.startswith("win")):
     TargetAdd('nppanda3d.res', opts=OPTS, input='nppanda3d.rc')
   elif (sys.platform=="darwin"):
     TargetAdd('nppanda3d.rsrc', opts=OPTS, input='nppanda3d.r')
   
-  OPTS=['DIR:direct/src/plugin_npapi', 'NPAPI', 'TINYXML']
+  OPTS += ['NPAPI', 'TINYXML']
   TargetAdd('plugin_npapi_nppanda3d_composite1.obj', opts=OPTS, input='nppanda3d_composite1.cxx')
   
   if (sys.platform=="darwin"):
@@ -3115,7 +3119,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
 #
 
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
-  OPTS=['DIR:direct/src/plugin_standalone', 'LINK_ALL_STATIC', 'TINYXML', 'OPENSSL']
+  OPTS=['DIR:direct/src/plugin_standalone', 'PLUGIN', 'LINK_ALL_STATIC', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
