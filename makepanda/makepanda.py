@@ -888,7 +888,7 @@ def CompileResource(target, src, opts):
 def RunGenPyCode(target, inputs, opts):
     if (PkgSkip("PYTHON") != 0): return
     
-    cmdstr = os.path.join(GetOutputDir(), "bin", "genpycode")
+    cmdstr = sys.executable + " " + os.path.join("direct", "src", "ffi", "jGenPyCode.py")
     if (GENMAN): cmdstr += " -d"
     cmdstr += " -r"
     for i in inputs:
@@ -906,7 +906,7 @@ def RunGenPyCode(target, inputs, opts):
 def FreezePy(target, inputs, opts):
     assert len(inputs) > 0
     # Make sure this function isn't called before genpycode is run.
-    cmdstr = os.path.join(GetOutputDir(), "bin", "pfreeze")
+    cmdstr = sys.executable + " " + os.path.join("direct", "src", "showutil", "pfreeze.py")
     src = inputs.pop(0)
     for i in inputs:
       cmdstr += " -i " + os.path.splitext(i)[0]
@@ -2916,16 +2916,6 @@ if (sys.platform == "win32"):
 #
 
 if (PkgSkip("PYTHON")==0):
-  OPTS=['DIR:direct/src/directbase']
-
-  TargetAdd('genpycode.obj', opts=OPTS+['BUILDING:GENPYCODE'], input='ppython.cxx')
-  TargetAdd('genpycode.exe', input='genpycode.obj')
-  TargetAdd('genpycode.exe', opts=['WINUSER'])
-
-  TargetAdd('pfreeze.obj', opts=OPTS+['BUILDING:PFREEZE'], input='ppython.cxx')
-  TargetAdd('pfreeze.exe', input='pfreeze.obj')
-  TargetAdd('pfreeze.exe', opts=['WINUSER'])
-
   OPTS=['DIR:direct/src/directbase', 'BUILDING:DIRECT']
   TargetAdd('directbase_directbase.obj', opts=OPTS, input='directbase.cxx')
 
@@ -4107,14 +4097,14 @@ def MakeRuntime():
       shutil.rmtree(GetOutputDir()+"/rlib")
     
     # Create a couple of directories.
-    coreapidir = GetOutputDir()+"/stage/coreapi/"+RUNTIME_VERSION+"/"+RUNTIME_PLATFORM+"/"
-    plugindir = GetOutputDir()+"/stage/plugin/"+RUNTIME_VERSION+"/"+RUNTIME_PLATFORM+"/"
+    coreapidir = GetOutputDir()+"/stage/coreapi/"+RUNTIME_PLATFORM+"/"+RUNTIME_VERSION+"/"
+    plugindir = GetOutputDir()+"/stage/plugin/"+RUNTIME_PLATFORM+"/"+RUNTIME_VERSION+"/"
     MakeDirectory(GetOutputDir()+"/rlib")
     MakeDirectory(GetOutputDir()+"/stage")
     MakeDirectory(GetOutputDir()+"/stage/coreapi")
-    MakeDirectory(GetOutputDir()+"/stage/coreapi/"+RUNTIME_VERSION)
+    MakeDirectory(GetOutputDir()+"/stage/coreapi/"+RUNTIME_PLATFORM)
     MakeDirectory(GetOutputDir()+"/stage/plugin")
-    MakeDirectory(GetOutputDir()+"/stage/plugin/"+RUNTIME_VERSION)
+    MakeDirectory(GetOutputDir()+"/stage/plugin/"+RUNTIME_PLATFORM)
     MakeDirectory(coreapidir); MakeDirectory(plugindir)
     
     # Copy the p3d_plugin file to coreapi dir and the plugin to the plugin dir.
@@ -4157,7 +4147,7 @@ def MakeRuntime():
     command = sys.executable + " direct/src/plugin/make_package.py"
     command += " -d \"" + GetOutputDir() + "/stage\""
     command += " -s \"" + GetOutputDir() + "/rlib\""
-    command += " -p panda3d_%s_%s" % (RUNTIME_VERSION, RUNTIME_PLATFORM)
+    command += " -p panda3d_%s_%s" % (RUNTIME_PLATFORM, RUNTIME_VERSION)
     oscmd(command)
     command = sys.executable + " direct/src/plugin/make_contents.py"
     command += " -d \"" + GetOutputDir() + "/stage\""
@@ -4165,8 +4155,8 @@ def MakeRuntime():
     
     # Tar the whole thing.
     if (not sys.platform.startswith("win")):
-        if (os.path.exists("runtime_%s_%s.tar.bz2" % (RUNTIME_VERSION, RUNTIME_PLATFORM))):
-            os.remove("runtime_%s_%s.tar.bz2" % (RUNTIME_VERSION, RUNTIME_PLATFORM))
+        if (os.path.exists("runtime_%s_%s.tar.bz2" % (RUNTIME_PLATFORM, RUNTIME_VERSION))):
+            os.remove("runtime_%s_%s.tar.bz2" % (RUNTIME_PLATFORM, RUNTIME_VERSION))
         oscmd("cd " + GetOutputDir() + "/stage/ && tar -cjvf " + os.getcwd() + "/runtime.tar.bz2 coreapi panda3d")
 
 if (RUNTIME != 0):
