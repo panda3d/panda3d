@@ -98,6 +98,14 @@ P3DPythonRun::
 ////////////////////////////////////////////////////////////////////
 bool P3DPythonRun::
 run_python() {
+#if defined(_WIN32) && defined(USE_DEBUG_PYTHON)
+  // On Windows, in a debug build, we have to preload sys.dll_suffix =
+  // "_d", so that the Panda DLL preloader can import the correct
+  // filenames.
+  PyRun_SimpleString("import sys; sys.dll_suffix = '_d'");
+  
+#endif
+
   // First, load runp3d_frozen.pyd.  Since this is a magic frozen pyd,
   // importing it automatically makes all of its frozen contents
   // available to import as well.

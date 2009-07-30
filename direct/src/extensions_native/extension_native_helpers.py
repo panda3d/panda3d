@@ -16,10 +16,15 @@ if sys.platform == "win32":
     # On Windows, dynamic libraries end in ".dll".
     dll_ext = '.dll'
 
-    # If we launched from python_d.exe, we need to load
-    # libpanda_d.dll, etc.
-    if sys.executable.endswith('_d.exe'):
-        dll_suffix = '_d'
+    # We allow the caller to preload dll_suffix into the sys module.
+    dll_suffix = getattr(sys, 'dll_suffix', None)
+
+    if dll_suffix is None:
+        # Otherwise, we try to determine it from the executable name:
+        # python_d.exe implies _d across the board.
+        if sys.executable.endswith('_d.exe'):
+            dll_suffix = '_d'
+            
 elif sys.platform == "darwin":
     # On OSX, the dynamic libraries usually end in .dylib, but
     # sometimes we need .so.

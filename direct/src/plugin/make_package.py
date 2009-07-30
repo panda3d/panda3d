@@ -23,9 +23,9 @@ Options:
      the local machine that will be filled with the contents of the
      package directory for the web server.
 
-  -p name_version[_platform]
+  -p name[_platform]_version
 
-     Specify the package name, version, and optional platfom, of the
+     Specify the package name, (optional) platform, and version of the
      package to build.
 
 """
@@ -210,8 +210,9 @@ def makePackage(args):
             if len(tokens) >= 1:
                 pm.packageName = tokens[0]
             if len(tokens) >= 2:
-                pm.packagePlatform = tokens[1]
+                pm.packageVersion = tokens[1]
             if len(tokens) >= 3:
+                pm.packagePlatform = pm.packageVersion
                 pm.packageVersion = tokens[2]
             if len(tokens) >= 4:
                 raise ArgumentError, 'Too many tokens in string: %s' % (value)

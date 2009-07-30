@@ -12,6 +12,14 @@ from distutils.sysconfig import PREFIX, get_python_inc, get_python_version
 import direct
 from pandac.PandaModules import *
 
+# Check to see if we are running python_d, which implies we have a
+# debug build, and we have to build the module with debug options.
+# This is only relevant on Windows.
+
+# I wonder if there's a better way to determine this?
+python = os.path.splitext(os.path.split(sys.executable)[1])[0]
+isDebugBuild = (python.lower().endswith('_d'))
+
 # These are modules that Python always tries to import up-front.  They
 # must be frozen in any main.exe.
 startupModules = [
@@ -44,6 +52,14 @@ MSVC = None
 # Directory to Windows Platform SDK (if relevant)
 PSDK = None
 
+# The setting to control release vs. debug builds.  Only relevant on
+# Windows.
+MD = None
+
+# The _d extension to add to dll filenames on Windows in debug builds.
+dllext = ''
+
+
 if sys.platform == 'win32':
     Python = PREFIX
     
@@ -66,18 +82,24 @@ if sys.platform == 'win32':
     else:
         print 'Could not locate the Microsoft Windows Platform SDK! Try running from the Visual Studio Command Prompt.'
         sys.exit(1)
+
+    # We need to use the correct compiler setting for debug vs. release builds.
+    MD = '/MD'
+    if isDebugBuild:
+        MD = '/MDd'
+        dllext = '_d'
     
     # If it is run by makepanda, it handles the MSVC and PlatformSDK paths itself.
     if ('MAKEPANDA' in os.environ):
-        compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c /MD /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" %(filename)s'
+        compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" %(filename)s'
         linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
-        linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s.pyd %(basename)s.obj'
+        linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
     else:
         os.environ['PATH'] += ';' + MSVC + '\\bin;' + MSVC + '\\Common7\\IDE;' + PSDK + '\\bin'
         
-        compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c /MD /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" /I"%(PSDK)s\include" /I"%(MSVC)s\include" %(filename)s'
+        compileObj = 'cl /wd4996 /Fo%(basename)s.obj /nologo /c %(MD)s /Zi /O2 /Ob2 /EHsc /Zm300 /W3 /I"%(pythonIPath)s" /I"%(PSDK)s\include" /I"%(MSVC)s\include" %(filename)s'
         linkExe = 'link /nologo /MAP:NUL /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.exe %(basename)s.obj'
-        linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s.pyd %(basename)s.obj'
+        linkDll = 'link /nologo /DLL /MAP:NUL /FIXED:NO /OPT:REF /INCREMENTAL:NO /LIBPATH:"%(PSDK)s\lib" /LIBPATH:"%(MSVC)s\lib" /LIBPATH:"%(python)s\libs"  /out:%(basename)s%(dllext)s.pyd %(basename)s.obj'
 
 elif sys.platform == 'darwin':
     # OSX
@@ -457,7 +479,6 @@ class Freezer:
         """
 
         moduleName = moduleName.replace("/", ".").replace("direct.src", "direct")
-
         if implicit:
             token = self.MTAuto
         else:
@@ -768,7 +789,7 @@ class Freezer:
             dllexport = ''
             if self.platform == 'win32':
                 dllexport = '__declspec(dllexport) '
-                target = basename + '.pyd'
+                target = basename + dllext + '.pyd'
             else:
                 target = basename + '.so'
             
@@ -804,6 +825,7 @@ class Freezer:
             'python' : Python,
             'MSVC' : MSVC,
             'PSDK' : PSDK,
+            'MD' : MD,
             'pythonIPath' : PythonIPath,
             'pythonVersion' : PythonVersion,
             'filename' : filename,
@@ -831,6 +853,7 @@ class Freezer:
             'python' : Python,
             'MSVC' : MSVC,
             'PSDK' : PSDK,
+            'MD' : MD,
             'pythonIPath' : PythonIPath,
             'pythonVersion' : PythonVersion,
             'filename' : filename,
@@ -848,6 +871,7 @@ class Freezer:
             'pythonVersion' : PythonVersion,
             'filename' : filename,
             'basename' : basename,
+            'dllext' : dllext,
             }
         print >> sys.stderr, link
         if os.system(link) != 0:

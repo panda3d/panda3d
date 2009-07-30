@@ -205,9 +205,11 @@ unregister_window_class() {
 void P3DWinSplashWindow::
 start_thread() {
   _thread_continue = true;
+  _thread_running = true;
   _thread = CreateThread(NULL, 0, &win_thread_run, this, 0, &_thread_id);
-  if (_thread != NULL) {
-    _thread_running = true;
+  if (_thread == NULL) {
+    // Thread never got started.
+    _thread_running = false;
   }
 }
 
@@ -226,16 +228,17 @@ stop_thread() {
   }
 
   if (_thread != NULL){ 
-    // We can't actually wait for the thread to finish, since there
-    // might be a deadlock there: the thread can't finish deleting its
-    // window unless we're pumping the message loop for the parent,
-    // which won't happen if we're sitting here waiting.  No worries;
-    // we don't *really* need to wait for the thread.
-    
-    //  WaitForSingleObject(_thread, INFINITE);
+    WaitForSingleObject(_thread, INFINITE);
 
     CloseHandle(_thread);
     _thread = NULL;
+
+    // Now that the thread has exited, we can safely close its window.
+    // (We couldn't close the window in the thread, because that would
+    // cause a deadlock situation--the thread can't acknowledge the
+    // window closing until we spin the event loop in the parent
+    // thread.)
+    close_window();
   }
 }
 
@@ -295,7 +298,7 @@ thread_run() {
     retval = GetMessage(&msg, NULL, 0, 0);
   }
 
-  close_window();
+  // Tell our parent thread that we're done.
   _thread_running = false;
 }
 
@@ -566,7 +569,8 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DWinSplashWindow::close_window
 //       Access: Private
-//  Description: Closes the window created above.
+//  Description: Closes the window created above.  This call is
+//               actually made in the main thread.
 ////////////////////////////////////////////////////////////////////
 void P3DWinSplashWindow::
 close_window() {
