@@ -35,6 +35,7 @@
     collisionSegment.I collisionSegment.h  \
     collisionSolid.I collisionSolid.h \
     collisionSphere.I collisionSphere.h \
+    collisionBox.I collisionBox.h \
     collisionTraverser.I collisionTraverser.h  \
     collisionTube.I collisionTube.h \
     collisionVisualizer.I collisionVisualizer.h \
@@ -66,6 +67,7 @@
     collisionSegment.cxx  \
     collisionSolid.cxx \
     collisionSphere.cxx  \
+    collisionBox.cxx  \
     collisionTraverser.cxx \
     collisionTube.cxx  \
     collisionVisualizer.cxx \
@@ -97,6 +99,7 @@
     collisionSegment.I collisionSegment.h \
     collisionSolid.I collisionSolid.h \
     collisionSphere.I collisionSphere.h \
+    collisionBox.I collisionBox.h \
     collisionTraverser.I collisionTraverser.h \
     collisionTube.I collisionTube.h \
     collisionVisualizer.I collisionVisualizer.h \
