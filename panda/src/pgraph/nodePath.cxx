@@ -115,7 +115,7 @@ istream &operator >> (istream &in, EmptyNodePathType &enp) {
 }
 
 static ConfigVariableEnum<EmptyNodePathType> empty_node_path
-("empty-node-path", ENP_transition,
+("empty-node-path", ENP_future,
  PRC_DESC("This is a temporary transition variable to control the behavior "
           "of a NodePath when it is used as a boolean false.  Set this to "
           "'deprecated' to preserve the original behavior: every NodePath "
