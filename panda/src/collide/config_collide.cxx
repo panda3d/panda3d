@@ -39,6 +39,7 @@
 #include "collisionSphere.h"
 #include "collisionTraverser.h"
 #include "collisionTube.h"
+#include "collisionBox.h"
 #include "collisionVisualizer.h"
 #include "dconfig.h"
 
@@ -142,6 +143,7 @@ init_libcollide() {
   CollisionSphere::init_type();
   CollisionTraverser::init_type();
   CollisionTube::init_type();
+  CollisionBox::init_type();
 
 #ifdef DO_COLLISION_RECORDING
   CollisionRecorder::init_type();
@@ -160,4 +162,5 @@ init_libcollide() {
   CollisionSegment::register_with_read_factory();
   CollisionSphere::register_with_read_factory();
   CollisionTube::register_with_read_factory();
+  CollisionBox::register_with_read_factory();
 }

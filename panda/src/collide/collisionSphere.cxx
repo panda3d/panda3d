@@ -457,6 +457,132 @@ test_intersection_from_line(const CollisionEntry &entry) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CollisionSphere::test_intersection_from_box
+//       Access: Public, Virtual
+//  Description: Double dispatch point for box as a FROM object
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionSphere::
+test_intersection_from_box(const CollisionEntry &entry) const {
+  const CollisionBox *box;
+  DCAST_INTO_R(box, entry.get_from(), 0);
+
+  CPT(TransformState) wrt_space = entry.get_wrt_space();
+  CPT(TransformState) wrt_prev_space = entry.get_wrt_prev_space();
+
+  const LMatrix4f &wrt_mat = wrt_space->get_mat();
+
+  CollisionBox local_b( *box );
+  local_b.xform( wrt_mat );
+
+  LPoint3f from_center = local_b.get_center();
+
+  LPoint3f orig_center = get_center();
+  LPoint3f to_center = orig_center;
+  bool moved_from_center = false;
+  float t = 1.0f;
+  LPoint3f contact_point(from_center);
+  float actual_t = 1.0f;
+
+  float to_radius = get_radius();
+  float to_radius_2 = to_radius * to_radius;
+
+  int ip;
+  float max_dist,dist;
+  bool intersect;
+  Planef plane;
+  LVector3f normal;
+
+  for( ip = 0, intersect=false; ip < 6 && !intersect; ip++ ){
+    plane = local_b.get_plane( ip );
+    if (local_b.get_plane_points(ip).size() < 3) {
+      continue;
+    }
+    normal = (has_effective_normal() && box->get_respect_effective_normal()) ? get_effective_normal() : plane.get_normal();
+    
+    #ifndef NDEBUG
+    /*
+    if (!IS_THRESHOLD_EQUAL(normal.length_squared(), 1.0f, 0.001), NULL) {
+      collide_cat.info()
+      << "polygon being collided with " << entry.get_into_node_path()
+      << " has normal " << normal << " of length " << normal.length()
+      << "\n";
+      normal.normalize();
+    }
+    */
+    #endif
+
+    // The nearest point within the plane to our center is the
+    // intersection of the line (center, center - normal) with the plane.
+
+    if (!plane.intersects_line(dist, to_center, -(plane.get_normal()))) {
+      // No intersection with plane?  This means the plane's effective
+      // normal was within the plane itself.  A useless polygon.
+      continue;
+    }
+
+    if (dist > to_radius || dist < -to_radius) {
+      // No intersection with the plane.
+      continue;
+    }
+
+    LPoint2f p = local_b.to_2d(to_center - dist * plane.get_normal(), ip);
+    float edge_dist = 0.0f;
+
+    edge_dist = local_b.dist_to_polygon(p, local_b.get_plane_points(ip));
+
+    if(edge_dist < 0) {
+      intersect = true;
+      continue;
+    }
+
+    if((edge_dist > 0) && 
+      ((edge_dist * edge_dist + dist * dist) > to_radius_2)) {
+      // No intersection; the circle is outside the polygon.
+      continue;
+    }
+
+    // The sphere appears to intersect the polygon.  If the edge is less
+    // than to_radius away, the sphere may be resting on an edge of
+    // the polygon.  Determine how far the center of the sphere must
+    // remain from the plane, based on its distance from the nearest
+    // edge.
+
+    max_dist = to_radius;
+    if (edge_dist >= 0.0f) {
+      float max_dist_2 = max(to_radius_2 - edge_dist * edge_dist, 0.0f);
+      max_dist = csqrt(max_dist_2);
+    }
+
+    if (dist > max_dist) {
+      // There's no intersection: the sphere is hanging off the edge.
+      continue;
+    }
+    intersect = true;
+  }
+  if( !intersect )
+    return NULL;
+
+  if (collide_cat.is_debug()) {
+    collide_cat.debug()
+      << "intersection detected from " << entry.get_from_node_path()
+      << " into " << entry.get_into_node_path() << "\n";
+  }
+
+  PT(CollisionEntry) new_entry = new CollisionEntry(entry);
+
+  float into_depth = max_dist - dist;
+
+  new_entry->set_surface_normal(normal);
+  new_entry->set_surface_point(to_center - normal * dist);
+  new_entry->set_interior_point(to_center - normal * (dist + into_depth));
+  new_entry->set_contact_pos(contact_point);
+  new_entry->set_contact_normal(plane.get_normal());
+  new_entry->set_t(actual_t);
+
+  return new_entry;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CollisionSphere::test_intersection_from_ray
 //       Access: Public, Virtual
 //  Description:

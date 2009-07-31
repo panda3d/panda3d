@@ -19,6 +19,7 @@
 #include "collisionRay.h"
 #include "collisionSegment.h"
 #include "collisionParabola.h"
+#include "collisionBox.h"
 #include "collisionEntry.h"
 #include "boundingSphere.h"
 #include "datagram.h"
@@ -308,6 +309,21 @@ test_intersection_from_parabola(const CollisionEntry &) const {
                                      get_type());
   return NULL;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: CollisionSolid::test_intersection_from_box
+//       Access: Protected, Virtual
+//  Description: This is part of the double-dispatch implementation of
+//               test_intersection().  It is called when the "from"
+//               object is a box.
+////////////////////////////////////////////////////////////////////
+PT(CollisionEntry) CollisionSolid::
+test_intersection_from_box(const CollisionEntry &) const {
+  report_undefined_intersection_test(CollisionBox::get_class_type(),
+                                     get_type());
+  return NULL;
+}
+
 
 #ifndef NDEBUG
 class CollisionSolidUndefinedPair {

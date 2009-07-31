@@ -11,3 +11,4 @@
 #include "collisionTraverser.cxx"
 #include "collisionTube.cxx"
 #include "collisionVisualizer.cxx"
+#include "collisionBox.cxx"
