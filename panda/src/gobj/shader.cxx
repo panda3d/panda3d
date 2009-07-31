@@ -433,8 +433,18 @@ compile_parameter(const ShaderArgId  &arg_id,
 
   if (p._id._name.size() == 0) return true;
   if (p._id._name[0] == '$') return true;
+
+  // It could be inside a struct, strip off
+  // everything before the last dot.
+  size_t loc = p._id._name.find_last_of('.');
+  string basename (p._id._name);
+  if (loc < string::npos) {
+    basename = p._id._name.substr(loc + 1);
+  }
+
+  // Split it at the underscores.
   vector_string pieces;
-  tokenize(p._id._name, pieces, "_");
+  tokenize(basename, pieces, "_");
 
   if (pieces.size() < 2) {
     cp_report_error(p, "invalid parameter name");
@@ -910,7 +920,7 @@ compile_parameter(const ShaderArgId  &arg_id,
         (!cp_errchk_parameter_uniform(p)))
       return false;
     // In the case of k-parameters, we allow underscores in the name.
-    PT(InternalName) kinputname = InternalName::make(p._id._name.substr(2));
+    PT(InternalName) kinputname = InternalName::make(basename.substr(2));
     switch (p._type) {
     case SAT_float1:
     case SAT_float2:
