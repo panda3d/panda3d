@@ -6,10 +6,12 @@ class DistributedCameraOV(DistributedObjectOV):
         DistributedObjectOV.__init__(self, cr)
         self.parent = 0
         self.fixtures = []
+        self.accept('refresh-fixture', self.refreshFixture)
         pass
 
     def delete(self):
         self.ignore('escape')
+        self.ignore('refresh-fixture')
         DistributedObjectOV.delete(self)
         
     def getObject(self):
@@ -28,18 +30,37 @@ class DistributedCameraOV(DistributedObjectOV):
         f.writelines(self.getObject().pack())
         f.close()
         pass
+
+    def unpackFixture(self, data):
+        data = data.strip().replace('Camera','')
+        pos,hpr,fov = eval(data)
+        return pos,hpr,fov
     
     def loadFromFile(self, name):
         self.b_setFixtures([])
         f = file('cameras-%s.txt' % name, 'r');
         for line in f.readlines():
-            line = line.strip().replace('Camera(','').replace('))','')
-            line = line.replace('Point3(','').replace('), VBase3(',', ')
-            eval('self.addFixture([%s, \'Standby\'])' % line)
+            pos,hpr,fov = self.unpackFixture(line)
+            self.addFixture([pos[0],pos[1],pos[2],
+                             hpr[0],hpr[1],hpr[2],
+                             fov[0],fov[1],
+                             'Standby'])
             pass
         f.close()
         pass
 
+    def refreshFixture(self, id, data):
+        pos,hpr,fov = self.unpackFixture(data)
+        fixture = self.fixtures[id]
+        fixture = [pos[0],pos[1],pos[2],
+                   hpr[0],hpr[1],hpr[2],
+                   fov[0],fov[1],
+                   fixture[8]]
+
+        # distributed only
+        self.d_setFixtures(self.fixtures)
+        pass
+        
     def b_setFixtures(self, fixtures):
         self.getObject().setFixtures(fixtures)
         self.setFixtures(fixtures)

@@ -4,35 +4,67 @@ from direct.interval.IntervalGlobal import *
 from direct.distributed.DistributedObject import DistributedObject
 
 class Fixture(NodePath, FSM):
-    def __init__(self, id, parent, pos, hpr):
+    def __init__(self, id, parent, pos, hpr, fov):
         NodePath.__init__(self, 'cam-%s' % id)
         FSM.__init__(self, '%s-fsm' % self.getName())
         self.id = id
-
+        self.lens = PerspectiveLens()
+        self.lens.setFov(base.camLens.getFov())
+        
         model = loader.loadModel('models/misc/camera', okMissing = True)
         model.reparentTo(self)
 
         self.reparentTo(parent)
-        self.setPos(*pos)
-        self.setHpr(*hpr)
+        self.setPos(pos)
+        self.setHpr(hpr)
+        self.setFov(fov)
         self.setLightOff(100)
         self.hide()
 
         self.scaleIval = None
-
         self.recordingInProgress = False
+        self.dirty = False
         pass
 
     def __str__(self):
-        return 'Fixture(%d, \'%s\', %s, %s)' % (self.id, self.state, self.getPos(), self.getHpr())
+        return 'Fixture(%d, \'%s\', %s, %s, %s)' % (self.id, self.state, self.getPos(), self.getHpr(), self.getFov())
 
     def pack(self):
-        return 'Camera(%s, %s)' % (self.getPos(), self.getHpr())
+        return 'Camera(%s, %s, %s)' % (self.getPos(), self.getHpr(), self.getFov())
 
     def setId(self, id):
         self.id = id
         pass
+
+    def setFov(self, fov):
+        """
+        fov should be a VBase2.  Use VBase2(0) to indicate default.
+        """
+        if fov != VBase2(0):
+            self.lens.setFov(fov)
+            pass
+        self.setupFrustum()
+        pass
+
+    def adjustFov(self, x, y):
+        fov = self.lens.getFov()
+        self.lens.setFov(fov[0]+x, fov[1]+y)
+        self.dirty = True
+        pass
     
+    def getFov(self):
+        return self.lens.getFov()
+    
+    def setupFrustum(self):
+        oldFrustum = self.find('frustum')
+        if oldFrustum:
+            oldFrustum.detachNode()
+            pass
+        
+        self.attachNewNode(GeomNode('frustum')).node().addGeom(self.lens.makeGeometry())
+        pass
+        
+        
     def setRecordingInProgress(self, inProgress):
         self.recordingInProgress = inProgress
         if self.recordingInProgress and \
@@ -86,8 +118,10 @@ class Fixture(NodePath, FSM):
         self.show()
         if self.id == base.config.GetInt('camera-id', -1):
             self.setColorScale(3,0,0,1)
+            self.getScaleIval().loop()
         else:
             self.setColorScale(3,3,0,1)
+            self.getScaleIval().finish()
             pass
         pass
     
@@ -120,16 +154,53 @@ class Fixture(NodePath, FSM):
             pass
         pass
 
-    def enterUsing(self):
+    def enterUsing(self, args = []):
         localAvatar.b_setGameState('Camera')
         camera.setPosHpr(0,0,0,0,0,0)
         camera.reparentTo(self)
         self.hide()
+
+        base.cam.node().setLens(self.lens)
+
+        if args and args[0]:
+            self.accept('arrow_left', self.adjustFov, [-0.5,0])
+            self.accept('arrow_left-repeat', self.adjustFov, [-2,0])
+            self.accept('arrow_right', self.adjustFov, [0.5,0])
+            self.accept('arrow_right-repeat', self.adjustFov, [2,0])
+            self.accept('arrow_down', self.adjustFov, [0,-0.5])
+            self.accept('arrow_down-repeat', self.adjustFov, [0,-2])
+            self.accept('arrow_up', self.adjustFov, [0,0.5])
+            self.accept('arrow_up-repeat', self.adjustFov, [0,2])
+
+        # Could be toggled on/off on a fixture by fixture basis
+        # if added to the dc definition of the Fixture struct and
+        # saved out to the Camera file.
+        lodNodes = render.findAllMatches('**/+LODNode')
+        for i in xrange(0,lodNodes.getNumPaths()):
+            lodNodes[i].node().forceSwitch(lodNodes[i].node().getHighestSwitch())
+            pass
         pass
     
+    
     def exitUsing(self):
+        self.ignore('arrow_left')
+        self.ignore('arrow_left-repeat')
+        self.ignore('arrow_right')
+        self.ignore('arrow_right-repeat')
+        self.ignore('arrow_down')
+        self.ignore('arrow_down-repeat')
+        self.ignore('arrow_up')
+        self.ignore('arrow_up-repeat')
+
+        base.cam.node().setLens(base.camLens)
         localAvatar.b_setGameState('LandRoam')
         self.show()
+
+        if self.dirty:
+            messenger.send('refresh-fixture', [self.id, self.pack()])
+            self.dirty = False
+            pass
+        
         pass
     
 
@@ -156,7 +227,7 @@ class DistributedCamera(DistributedObject):
         for fixture in self.fixtures.itervalues():
             out = '%s\n%s' % (out, fixture.pack())
         return out[1:]
-
+            
     def disable(self):
         self.ignore('escape')
         
@@ -191,7 +262,6 @@ class DistributedCamera(DistributedObject):
         return self.parent
     
     def setFixtures(self, fixtures):
-
         for x in range(len(fixtures), len(self.fixtures)):
             fixture = self.fixtures.pop(x)
             fixture.cleanup()
@@ -200,18 +270,21 @@ class DistributedCamera(DistributedObject):
 
         recordingInProgress = False
         for x,fixture in enumerate(fixtures):
-            fix = self.fixtures.get(x)
-            if not fix:
-                fix = Fixture(x, self.parent, fixture[:3], fixture[3:6])
-                self.fixtures[x] = fix
-                pass
+            pos = Point3(*(fixture[:3]))
+            hpr = Point3(*(fixture[3:6]))
+            fov = VBase2(*(fixture[6:8]))
+            state = fixture[8]
 
-            posHpr = fixture[:6]
-            state = fixture[6]
+            if x not in self.fixtures:
+                self.fixtures[x] = Fixture(x, self.parent, Point3(0), hpr = Point3(0), fov = VBase2(0))
+                pass
+            
+            fix = self.fixtures.get(x)
             fix.setId(x)
-            fix.setPosHpr(*posHpr)
+            fix.setPosHpr(pos,hpr)
             fix.setState(state)
-            recordingInProgress = recordingInProgress or state == 'Recording'
+            fix.setFov(fov)
+            recordingInProgress |= state == 'Recording'
             pass
         
         messenger.send('recordingInProgress', [recordingInProgress])
@@ -219,7 +292,7 @@ class DistributedCamera(DistributedObject):
     def testFixture(self, index):
         fixture = self.fixtures.get(index)
         if fixture:
-            fixture.request('Using')
+            fixture.request('Using', [True])
             self.accept('escape', self.stopTesting, [index])
             pass
         pass
