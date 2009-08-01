@@ -65,8 +65,27 @@ fillin(DatagramIterator &scan, BamReader *) {
 ////////////////////////////////////////////////////////////////////
 PointLight::
 PointLight(const string &name) : 
-  LightNode(name) 
+  LightLensNode(name) 
 {
+  PT(Lens) lens;
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(1, 0, 0, 0, 0, 1);
+  set_lens(0, lens);
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(-1, 0, 0, 0, 0, 1);
+  set_lens(1, lens);
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(0, 1, 0, 0, 0, 1);
+  set_lens(2, lens);
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(0, -1, 0, 0, 0, 1);
+  set_lens(3, lens);
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(0, 0, 1, 0, 0, 1);
+  set_lens(4, lens);
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(0, 0, -1, 0, 0, 1);
+  set_lens(5, lens);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -78,9 +97,28 @@ PointLight(const string &name) :
 ////////////////////////////////////////////////////////////////////
 PointLight::
 PointLight(const PointLight &copy) :
-  LightNode(copy),
+  LightLensNode(copy),
   _cycler(copy._cycler)
 {
+  PT(Lens) lens;
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(1, 0, 0, 0, 0, 1);
+  set_lens(0, lens);
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(-1, 0, 0, 0, 0, 1);
+  set_lens(1, lens);
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(0, 1, 0, 0, 0, 1);
+  set_lens(2, lens);
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(0, -1, 0, 0, 0, 1);
+  set_lens(3, lens);
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(0, 0, 1, 0, 0, 1);
+  set_lens(4, lens);
+  lens = new PerspectiveLens(90, 90);
+  lens->set_view_vector(0, 0, -1, 0, 0, 1);
+  set_lens(5, lens);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -106,7 +144,7 @@ make_copy() const {
 ////////////////////////////////////////////////////////////////////
 void PointLight::
 xform(const LMatrix4f &mat) {
-  LightNode::xform(mat);
+  LightLensNode::xform(mat);
   CDWriter cdata(_cycler);
   cdata->_point = cdata->_point * mat;
   mark_viz_stale();
@@ -199,7 +237,7 @@ register_with_read_factory() {
 ////////////////////////////////////////////////////////////////////
 void PointLight::
 write_datagram(BamWriter *manager, Datagram &dg) {
-  LightNode::write_datagram(manager, dg);
+  LightLensNode::write_datagram(manager, dg);
   manager->write_cdata(dg, _cycler);
 }
 
@@ -232,6 +270,6 @@ make_from_bam(const FactoryParams &params) {
 ////////////////////////////////////////////////////////////////////
 void PointLight::
 fillin(DatagramIterator &scan, BamReader *manager) {
-  LightNode::fillin(scan, manager);
+  LightLensNode::fillin(scan, manager);
   manager->read_cdata(scan, _cycler);
 }
