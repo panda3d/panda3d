@@ -20,6 +20,10 @@
 #include "find_root_dir.h"
 #include "mkdir_complete.h"
 
+// We can include this header file to get the DTOOL_PLATFORM
+// definition, even though we don't link with dtool.
+#include "dtool_platform.h"
+
 #include <fstream>
 #include <string.h>  // strcmp()
 
@@ -711,7 +715,7 @@ read_contents_file(const string &contents_filename) {
       const char *name = xpackage->Attribute("name");
       if (name != NULL && strcmp(name, "coreapi") == 0) {
         const char *platform = xpackage->Attribute("platform");
-        if (platform != NULL && strcmp(platform, P3D_PLUGIN_PLATFORM) == 0) {
+        if (platform != NULL && strcmp(platform, DTOOL_PLATFORM) == 0) {
           get_core_api(xpackage);
           return true;
         }
@@ -723,7 +727,7 @@ read_contents_file(const string &contents_filename) {
 
   // Couldn't find the coreapi package description.
   nout << "No coreapi package defined in contents file for "
-       << P3D_PLUGIN_PLATFORM << "\n";
+       << DTOOL_PLATFORM << "\n";
   return false;
 }
 
@@ -932,7 +936,7 @@ do_load_plugin() {
   }
 #endif  // P3D_PLUGIN_P3D_PLUGIN
 
-  if (!load_plugin(pathname, "")) {
+  if (!load_plugin(pathname, "", "", "")) {
     nout << "Unable to launch core API in " << pathname << "\n";
     return;
   }

@@ -16,28 +16,12 @@
 #$[]define P3D_PLUGIN_LOGFILE1 "$[subst \,\\,$[osfilename $[P3D_PLUGIN_LOGFILE1]]]"
 #$[]define P3D_PLUGIN_LOGFILE2 "$[subst \,\\,$[osfilename $[P3D_PLUGIN_LOGFILE2]]]"
 
-/* Temporary: the location at which p3dpython.exe can be found.  Empty
-   string for the default. */
+/* For development only: the location at which p3dpython.exe can be
+   found.  Empty string for the default. */
 #$[]define P3D_PLUGIN_P3DPYTHON "$[subst \,\\,$[osfilename $[P3D_PLUGIN_P3DPYTHON]]]"
 
-/* Temporary: the location at which p3d_plugin.dll can be found.  Empty
-   string for the default. */
+/* For development only: the location at which p3d_plugin.dll/.so can
+   be found.  Empty string for the default. */
 #$[]define P3D_PLUGIN_P3D_PLUGIN "$[subst \,\\,$[osfilename $[P3D_PLUGIN_P3D_PLUGIN]]]"
-
-/* The string that corresponds to this particular platform. */
-#if $[not $[P3D_PLUGIN_PLATFORM]]
-  #if $[WINDOWS_PLATFORM]
-    #define P3D_PLUGIN_PLATFORM win32
-  #elif $[UNIX_PLATFORM]
-    #if $[eq $[shell uname -m], x86_64]
-      #define P3D_PLUGIN_PLATFORM linux.amd64
-    #else
-      #define P3D_PLUGIN_PLATFORM linux.i386
-    #endif
-  #else
-    #define P3D_PLUGIN_PLATFORM osx.i386
-  #endif
-#endif
-#$[]define P3D_PLUGIN_PLATFORM "$[P3D_PLUGIN_PLATFORM]"
 
 #end p3d_plugin_config.h

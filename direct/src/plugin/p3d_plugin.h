@@ -79,7 +79,7 @@ extern "C" {
    (below). This number will be incremented whenever there are changes
    to any of the interface specifications defined in this header
    file. */
-#define P3D_API_VERSION 5
+#define P3D_API_VERSION 6
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -95,12 +95,19 @@ extern "C" {
    file that has already been downloaded and verified from the server.
    If this is NULL, a new file will be downloaded as needed.
 
+   If download_url is not NULL or empty, it specifies the root URL of
+   the download server; otherwise, the compiled-in default is used.
+
+   If platform is not NULL or empty, it specifies the current platform
+   string; otherwise, the compiled-in default is used.
+
    This function returns true if the core API is valid and uses a
    compatible API, false otherwise.  If it returns false, the host
    should not call any more functions in this API, and should
    immediately unload the DLL and (if possible) download a new one. */
 typedef bool 
-P3D_initialize_func(int api_version, const char *contents_filename);
+P3D_initialize_func(int api_version, const char *contents_filename,
+                    const char *download_url, const char *platform);
 
 /* This function should be called to unload the core API.  It will
    release all internally-allocated memory and return the core API to

@@ -18,6 +18,10 @@
 #include "find_root_dir.h"
 #include "p3d_plugin_config.h"
 
+// We can include this header file to get the DTOOL_PLATFORM
+// definition, even though we don't link with dtool.
+#include "dtool_platform.h"
+
 #include <sstream>
 #ifdef _WIN32
 #include <windows.h>
@@ -54,8 +58,8 @@ run(int argc, char *argv[]) {
   extern int optind;
   const char *optstr = "u:p:fl:t:s:o:h";
 
-  string root_url = P3D_PLUGIN_DOWNLOAD;
-  string this_platform = P3D_PLUGIN_PLATFORM;
+  string download_url = P3D_PLUGIN_DOWNLOAD;
+  string this_platform = DTOOL_PLATFORM;
   bool force_download = false;
 
   Filename output_filename;
@@ -68,7 +72,7 @@ run(int argc, char *argv[]) {
   while (flag != EOF) {
     switch (flag) {
     case 'u':
-      root_url = optarg;
+      download_url = optarg;
       break;
 
     case 'p':
@@ -130,11 +134,11 @@ run(int argc, char *argv[]) {
   }
 
   // Make sure it ends with a slash.
-  if (!root_url.empty() && root_url[root_url.length() - 1] != '/') {
-    root_url += '/';
+  if (!download_url.empty() && download_url[download_url.length() - 1] != '/') {
+    download_url += '/';
   }
 
-  if (!get_plugin(root_url, this_platform, force_download)) {
+  if (!get_plugin(download_url, this_platform, force_download)) {
     cerr << "Unable to load Panda3D plugin.\n";
     return 1;
   }
@@ -284,16 +288,16 @@ run(int argc, char *argv[]) {
 //               true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
-get_plugin(const string &root_url, const string &this_platform, bool force_download) {
+get_plugin(const string &download_url, const string &this_platform, bool force_download) {
   // First, look for the existing contents.xml file.
   Filename contents_filename = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
-  if (!force_download && read_contents_file(contents_filename, root_url, this_platform)) {
+  if (!force_download && read_contents_file(contents_filename, download_url, this_platform)) {
     // Got the file, and it's good.
     return true;
   }
 
   // Couldn't read it, so go get it.
-  string url = root_url;
+  string url = download_url;
   url += "contents.xml";
   cerr << "Getting URL " << url << "\n";
   
@@ -305,7 +309,7 @@ get_plugin(const string &root_url, const string &this_platform, bool force_downl
     return false;
   }
   
-  return read_contents_file(contents_filename, root_url, this_platform);
+  return read_contents_file(contents_filename, download_url, this_platform);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -316,7 +320,7 @@ get_plugin(const string &root_url, const string &this_platform, bool force_downl
 //               possible.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
-read_contents_file(Filename contents_filename, const string &root_url, 
+read_contents_file(Filename contents_filename, const string &download_url, 
                    const string &this_platform) {
   ifstream in;
   contents_filename.set_text();
@@ -336,7 +340,8 @@ read_contents_file(Filename contents_filename, const string &root_url,
       if (name != NULL && strcmp(name, "coreapi") == 0) {
         const char *xplatform = xpackage->Attribute("platform");
         if (xplatform != NULL && strcmp(xplatform, this_platform.c_str()) == 0) {
-          return get_core_api(contents_filename, root_url, xpackage);
+          return get_core_api(contents_filename, download_url, this_platform,
+                              xpackage);
         }
       }
       
@@ -359,13 +364,13 @@ read_contents_file(Filename contents_filename, const string &root_url,
 //               if necessary.
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
-get_core_api(const Filename &contents_filename, const string &root_url, 
-             TiXmlElement *xpackage) {
+get_core_api(const Filename &contents_filename, const string &download_url,
+             const string &this_platform, TiXmlElement *xpackage) {
   _core_api_dll.load_xml(xpackage);
 
   if (!_core_api_dll.quick_verify(_root_dir)) {
     // The DLL file needs to be downloaded.  Go get it.
-    string url = root_url;
+    string url = download_url;
     url += _core_api_dll.get_filename();
     
     Filename pathname = Filename::from_os_specific(_core_api_dll.get_pathname(_root_dir));
@@ -398,7 +403,8 @@ get_core_api(const Filename &contents_filename, const string &root_url,
   }
 #endif  // P3D_PLUGIN_P3D_PLUGIN
 
-  if (!load_plugin(pathname, contents_filename.to_os_specific())) {
+  if (!load_plugin(pathname, contents_filename.to_os_specific(),
+                   download_url, this_platform)) {
     cerr << "Unable to launch core API in " << pathname << "\n" << flush;
     return false;
   }
@@ -670,11 +676,11 @@ usage() {
 
     << "  -u url\n"
     << "    Specify the URL of the Panda3D download server.  The default is\n"
-    << "    " << P3D_PLUGIN_DOWNLOAD << "\n\n"
+    << "    \"" << P3D_PLUGIN_DOWNLOAD << "\" .\n\n"
 
     << "  -p platform\n"
-    << "    Specify the platform to masquerade as.  The default is "
-    << P3D_PLUGIN_PLATFORM << "\n\n";
+    << "    Specify the platform to masquerade as.  The default is \""
+    << DTOOL_PLATFORM << "\" .\n\n";
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -38,7 +38,8 @@ ostream *nout_stream;
 
 
 bool 
-P3D_initialize(int api_version, const char *contents_filename) {
+P3D_initialize(int api_version, const char *contents_filename,
+               const char *download_url, const char *platform) {
   if (api_version != P3D_API_VERSION) {
     // Can't accept an incompatible version.
     return false;
@@ -52,6 +53,14 @@ P3D_initialize(int api_version, const char *contents_filename) {
 
   if (contents_filename == NULL){ 
     contents_filename = "";
+  }
+
+  if (download_url == NULL){ 
+    download_url = "";
+  }
+
+  if (platform == NULL) {
+    platform = "";
   }
 
 #ifdef P3D_PLUGIN_LOGFILE2
@@ -83,7 +92,7 @@ P3D_initialize(int api_version, const char *contents_filename) {
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  bool result = inst_mgr->initialize(contents_filename);
+  bool result = inst_mgr->initialize(contents_filename, download_url, platform);
   RELEASE_LOCK(_api_lock);
   return result;
 }

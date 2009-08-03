@@ -123,8 +123,8 @@ static void unload_dso();
 //               path.
 ////////////////////////////////////////////////////////////////////
 bool
-load_plugin(const string &p3d_plugin_filename, 
-            const string &contents_filename) {
+load_plugin(const string &p3d_plugin_filename, const string &contents_filename,
+            const string &download_url, const string &platform) {
   string filename = p3d_plugin_filename;
   if (filename.empty()) {
     // Look for the plugin along the path.
@@ -293,7 +293,8 @@ load_plugin(const string &p3d_plugin_filename,
   // Successfully loaded.
   plugin_loaded = true;
 
-  if (!P3D_initialize(P3D_API_VERSION, contents_filename.c_str())) {
+  if (!P3D_initialize(P3D_API_VERSION, contents_filename.c_str(),
+                      download_url.c_str(), platform.c_str())) {
     // Oops, failure to initialize.
     cerr << "Failed to initialize plugin (wrong API version?)\n";
     unload_plugin();

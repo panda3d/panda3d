@@ -39,7 +39,9 @@ private:
   ~P3DInstanceManager();
 
 public:
-  bool initialize(const string &contents_xml_filename);
+  bool initialize(const string &contents_filename,
+                  const string &download_url,
+                  const string &platform);
 
   inline bool is_initialized() const;
 

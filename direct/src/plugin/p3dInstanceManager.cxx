@@ -26,6 +26,10 @@
 #include "fileSpec.h"
 #include "get_tinyxml.h"
 
+// We can include this header file to get the DTOOL_PLATFORM
+// definition, even though we don't link with dtool.
+#include "dtool_platform.h"
+
 #ifdef _WIN32
 #include <shlobj.h>
 #else
@@ -120,14 +124,29 @@ P3DInstanceManager::
 //               redownloaded.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
-initialize(const string &contents_filename) {
+initialize(const string &contents_filename, const string &download_url,
+           const string &platform) {
+
   _root_dir = find_root_dir();
-  _download_url = P3D_PLUGIN_DOWNLOAD;
-  _platform = P3D_PLUGIN_PLATFORM;
+  _download_url = download_url;
+  if (_download_url.empty()) {
+    _download_url = P3D_PLUGIN_DOWNLOAD;
+  }
+  _platform = platform;
+  if (_platform.empty()) {
+    _platform = DTOOL_PLATFORM;
+  }
+
+  // Ensure that the download URL ends with a slash.
+  if (!_download_url.empty() && _download_url[_download_url.size() - 1] != '/') {
+    _download_url += "/";
+  }
 
   nout << "_root_dir = " << _root_dir
+       << ", contents = " << contents_filename
        << ", download = " << _download_url
-       << ", contents = " << contents_filename << "\n";
+       << ", platform = " << _platform
+       << "\n";
 
   if (_root_dir.empty()) {
     nout << "Could not find root directory.\n";
