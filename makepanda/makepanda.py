@@ -275,12 +275,8 @@ if (RUNTIME) and (PkgSkip("PLUGIN") or PkgSkip("TINYXML")):
 
 if (COMPILER=="MSVC"):
     if (PkgSkip("PYTHON")==0):
-        if (platform.architecture()[0]=="64bit" and os.path.isdir("thirdparty/win-python-x64")):
-            IncDirectory("ALWAYS", "thirdparty/win-python-x64/include")
-            LibDirectory("ALWAYS", "thirdparty/win-python-x64/libs")
-        else:
-            IncDirectory("ALWAYS", "thirdparty/win-python/include")
-            LibDirectory("ALWAYS", "thirdparty/win-python/libs")
+        IncDirectory("ALWAYS", SDK["PYTHON"] + "/include")
+        LibDirectory("ALWAYS", SDK["PYTHON"] + "/libs")
     for pkg in PkgListGet():
         if (PkgSkip(pkg)==0):
             if (pkg[:4]=="MAYA"):
@@ -576,10 +572,10 @@ def CompileCxx(obj,src,opts):
         if (opts.count('NOFLOATWARN')): cmd += ' /wd4244 /wd4305'
         if (opts.count('MSFORSCOPE')): cmd += ' /Zc:forScope-'
         optlevel = GetOptimizeOption(opts)
-        if (optlevel==1): cmd += " /MD /Zi /RTCs /GS"
-        if (optlevel==2): cmd += " /MD /Zi "
-        if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
-        if (optlevel==4): cmd += " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /DNDEBUG /GL "
+        if (optlevel==1): cmd += " /MDd /Zi /RTCs /GS"
+        if (optlevel==2): cmd += " /MDd /Zi"
+        if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /DFORCE_INLINING"
+        if (optlevel==4): cmd += " /MD /Zi /Ox /Ob2 /DFORCE_INLINING /DNDEBUG /GL"
         cmd += " /Fd" + obj[:-4] + ".pdb"
         building = GetValueOption(opts, "BUILDING:")
         if (building): cmd += " /DBUILDING_" + building
@@ -599,8 +595,8 @@ def CompileCxx(obj,src,opts):
             cmd += " -isysroot " + SDK["MACOSX"] + " -arch i386"
             if ("NOPPC" not in opts): cmd += " -arch ppc"
         optlevel = GetOptimizeOption(opts)
-        if (optlevel==1): cmd += " -g"
-        if (optlevel==2): cmd += " -O1"
+        if (optlevel==1): cmd += " -g -D_DEBUG"
+        if (optlevel==2): cmd += " -O1 -D_DEBUG"
         if (optlevel==3): cmd += " -O2"
         if (optlevel==4): cmd += " -O3 -DNDEBUG"
         if (CFLAGS !=""): cmd += " " + CFLAGS
@@ -681,8 +677,8 @@ def CompileIgate(woutd,wsrc,opts):
     if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit"):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D__i386__'
     optlevel=GetOptimizeOption(opts)
-    if (optlevel==1): cmd += ' '
-    if (optlevel==2): cmd += ' '
+    if (optlevel==1): cmd += ' -D_DEBUG'
+    if (optlevel==2): cmd += ' -D_DEBUG'
     if (optlevel==3): cmd += ' -DFORCE_INLINING'
     if (optlevel==4): cmd += ' -DNDEBUG -DFORCE_INLINING'
     cmd += ' -oc ' + woutc + ' -od ' + woutd
@@ -760,14 +756,14 @@ def CompileLink(dll, obj, opts):
         cmd = "link /nologo"
         if (platform.architecture()[0] == "64bit"):
             cmd += " /MACHINE:X64"
-        cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG"
+        cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCI.LIB /DEBUG"
         cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
         if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
         optlevel = GetOptimizeOption(opts)
-        if (optlevel==1): cmd += " /MAP /MAPINFO:EXPORTS"
-        if (optlevel==2): cmd += " /MAP:NUL "
-        if (optlevel==3): cmd += " /MAP:NUL "
-        if (optlevel==4): cmd += " /MAP:NUL /LTCG "
+        if (optlevel==1): cmd += " /MAP /MAPINFO:EXPORTS /NOD:MSVCRT.LIB"
+        if (optlevel==2): cmd += " /MAP:NUL /NOD:MSVCRT.LIB"
+        if (optlevel==3): cmd += " /MAP:NUL /NOD:MSVCRTD.LIB"
+        if (optlevel==4): cmd += " /MAP:NUL /LTCG /NOD:MSVCRTD.LIB"
         cmd += " /FIXED:NO /OPT:REF /STACK:4194304 /INCREMENTAL:NO "
         cmd += ' /OUT:' + BracketNameWithQuotes(dll)
         if (dll.endswith(".dll")):
@@ -1007,6 +1003,7 @@ def CompileAnything(target, inputs, opts):
 DTOOL_CONFIG=[
     #_Variable_________________________Windows___________________Unix__________
     ("HAVE_PYTHON",                    '1',                      '1'),
+    ("USE_DEBUG_PYTHON",               'UNDEF',                  'UNDEF'),
     ("PYTHON_FRAMEWORK",               'UNDEF',                  'UNDEF'),
     ("COMPILE_IN_DEFAULT_FONT",        '1',                      '1'),
     ("HAVE_MAYA",                      '1',                      '1'),
@@ -1210,6 +1207,9 @@ def WriteConfigSettings():
         dtool_config["HAVE_PROC_CURPROC_FILE"] = '1'
         dtool_config["HAVE_PROC_CURPROC_MAP"] = '1'
         dtool_config["HAVE_PROC_CURPROC_CMDLINE"] = '1'
+
+    if (GetOptimize() <= 2 and sys.platform.startswith("win")):
+        dtool_config["USE_DEBUG_PYTHON"] = '1'
     
     if (GetOptimize() <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):
