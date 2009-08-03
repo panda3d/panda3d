@@ -23,13 +23,13 @@
 #define BUILDING_P3D_PLUGIN
 #define TIXML_USE_STL
 
-#include "p3d_plugin.h"
-#include "p3d_lock.h"
-
 // It's a good idea to pick up this header file, even though we don't
 // actually link with dtool.  This header file defines useful
 // system-wide config settings.
 #include "dtool_config.h"
+
+#include "p3d_plugin.h"
+#include "p3d_lock.h"
 
 #include <iostream>
 #include <fstream>

@@ -12,12 +12,6 @@
 
   #define LOCAL_LIBS plugin_common
 
-  // We need this because we don't
-  // include dtool_config.h.
-  #if $[HAVE_X11]
-    #define EXTRA_CDEFS HAVE_X11
-  #endif
-
   #define COMBINED_SOURCES \
     $[TARGET]_composite1.cxx
 

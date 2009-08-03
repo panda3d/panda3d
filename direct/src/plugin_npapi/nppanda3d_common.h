@@ -17,6 +17,11 @@
 
 // This header file is included by all C++ files in this directory
 
+// It's a good idea to pick up this header file, even though we don't
+// actually link with dtool.  This header file defines useful
+// system-wide config settings.
+#include "dtool_config.h"
+
 // We include this header file directly out of its source directory,
 // so we don't have to link with the library that builds it.
 #include "../plugin/p3d_plugin.h"
