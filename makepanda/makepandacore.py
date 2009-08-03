@@ -507,10 +507,10 @@ def GetValueOption(opts, prefix):
             return x[len(prefix):]
     return 0
 
-def GetOptimizeOption(opts,defval):
+def GetOptimizeOption(opts):
     val = GetValueOption(opts, "OPT:")
     if (val == 0):
-        return defval
+        return OPTIMIZE
     return val
 
 ########################################################################
@@ -637,6 +637,7 @@ def SetVC90CRTVersion(fn, ver):
 ########################################################################
 ##
 ## Gets or sets the output directory, by default "built".
+## Gets or sets the optimize level.
 ##
 ########################################################################
 
@@ -646,6 +647,13 @@ def GetOutputDir():
 def SetOutputDir(outputdir):
   global OUTPUTDIR
   OUTPUTDIR=outputdir
+
+def GetOptimize():
+  return int(OPTIMIZE)
+
+def SetOptimize(optimize):
+  global OPTIMIZE
+  OPTIMIZE=optimize
 
 ########################################################################
 ##
@@ -876,18 +884,20 @@ def SdkLocateMax():
 def SdkLocatePython():
     if (PkgSkip("PYTHON")==0):
         if (sys.platform == "win32"):
-            (arch, osName) = platform.architecture()
-            if arch == "32bit":
-                SDK["PYTHON"] = "thirdparty/win-python"
-            else:
-                SDK["PYTHON"] = "thirdparty/win-python-x64"
+            SDK["PYTHON"] = "thirdparty/win-python"
+            if (GetOptimize() <= 2):
+                SDK["PYTHON"] += "-dbg"
+            if (platform.architecture()[0] == "64bit" and os.path.isdir(SDK["PYTHON"] + "-x64")):
+                SDK["PYTHON"] += "-x64"
             
-            if (not os.path.exists(SDK["PYTHON"])):
-                SDK["PYTHON"] = "thirdparty/win-python"
-            if (not os.path.exists(SDK["PYTHON"]+"/python.exe")):
-                exit("Could not find thirdparty/win-python/python.exe!")
+            SDK["PYTHONEXEC"] = SDK["PYTHON"] + "/python"
+            if (GetOptimize() <= 2): SDK["PYTHONEXEC"] += "_d.exe"
+            else: SDK["PYTHONEXEC"] += ".exe"
             
-            os.system(SDK["PYTHON"].replace("/", "\\") + "\\python.exe -V > "+OUTPUTDIR+"/tmp/pythonversion 2>&1")
+            if (not os.path.isfile(SDK["PYTHONEXEC"])):
+                exit("Could not find %s!" % SDK["PYTHONEXEC"])
+            
+            os.system(SDK["PYTHONEXEC"].replace("/", "\\") + " -V > "+OUTPUTDIR+"/tmp/pythonversion 2>&1")
             pv=ReadFile(OUTPUTDIR+"/tmp/pythonversion")
             if (pv.startswith("Python ")==0):
                 exit("python -V did not produce the expected output")
@@ -897,16 +907,17 @@ def SdkLocatePython():
         elif (sys.platform == "darwin"):
             if "MACOSX" not in SDK: SdkLocateMacOSX()
             if (os.path.isdir("%s/System/Library/Frameworks/Python.framework" % SDK["MACOSX"])):
-                os.system("readlink %s/System/Library/Frameworks/Python.framework/Versions/Current > %s/tmp/pythonversion 2>&1" % (SDK["MACOSX"], OUTPUTDIR))
-                pv = ReadFile(OUTPUTDIR+"/tmp/pythonversion")
-                SDK["PYTHON"] = SDK["MACOSX"]+"/System/Library/Frameworks/Python.framework/Headers"
-                SDK["PYTHONVERSION"] = "python"+pv
+                pv = os.readlink("%s/System/Library/Frameworks/Python.framework/Versions/Current" % SDK["MACOSX"])
+                SDK["PYTHON"] = SDK["MACOSX"] + "/System/Library/Frameworks/Python.framework/Headers"
+                SDK["PYTHONVERSION"] = "python " +pv
+                SDK["PYTHONEXEC"] = SDK["MACOSX"] + "/System/Library/Frameworks/Python.framework/Versions/Current/bin/python"
             else:
                 exit("Could not find the python framework!")
 
         else:
-            SDK["PYTHON"]=sysconfig.get_python_inc()
-            SDK["PYTHONVERSION"]="python"+sysconfig.get_python_version()
+            SDK["PYTHON"] = sysconfig.get_python_inc()
+            SDK["PYTHONVERSION"] = "python" + sysconfig.get_python_version()
+            SDK["PYTHONEXEC"] = sys.executable
 
 def SdkLocateVisualStudio():
     if (sys.platform != "win32"): return
@@ -1201,7 +1212,7 @@ def SetOrigExt(x, v):
 def CalcLocation(fn, ipath):
     if (fn.count("/")): return fn
     dllext = ""
-    if (int(OPTIMIZE) <= 2): dllext = "_d"
+    if (GetOptimize() <= 2): dllext = "_d"
 
     if (fn == "PandaModules.py"): return "pandac/" + fn
     if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
@@ -1210,7 +1221,6 @@ def CalcLocation(fn, ipath):
     if (fn.endswith(".c")):   return CxxFindSource(fn, ipath)
     if (fn.endswith(".yxx")): return CxxFindSource(fn, ipath)
     if (fn.endswith(".lxx")): return CxxFindSource(fn, ipath)
-    if (fn.endswith(".mll")): return OUTPUTDIR+"/plugins/"+fn
     if (sys.platform.startswith("win")):
         if (fn.endswith(".def")): return CxxFindSource(fn, ipath)
         if (fn.endswith(".rc")):  return CxxFindSource(fn, ipath)
@@ -1218,6 +1228,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".res")): return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".dll")): return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".dll"
         if (fn.endswith(".pyd")): return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".pyd"
+        if (fn.endswith(".mll")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".mll"
         if (fn.endswith(".dlo")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dlo"
         if (fn.endswith(".dli")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dli"
         if (fn.endswith(".dle")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dle"
@@ -1233,6 +1244,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".obj")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
         if (fn.endswith(".pyd")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".dylib"
+        if (fn.endswith(".mll")):   return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".exe")):   return OUTPUTDIR+"/bin/"+fn[:-4]
         if (fn.endswith(".lib")):   return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
         if (fn.endswith(".ilb")):   return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"
@@ -1244,6 +1256,7 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".o"
         if (fn.endswith(".dll")): return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
         if (fn.endswith(".pyd")): return OUTPUTDIR+"/lib/"+fn[:-4]+".so"
+        if (fn.endswith(".mll")): return OUTPUTDIR+"/plugins/"+fn
         if (fn.endswith(".exe")): return OUTPUTDIR+"/bin/"+fn[:-4]
         if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn[:-4]+".a"
         if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".a"

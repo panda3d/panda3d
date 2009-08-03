@@ -32,7 +32,6 @@ from installpanda import *
 COMPILER=0
 THIRDPARTYLIBS=0
 VC90CRTVERSION=""
-OPTIMIZE="3"
 INSTALLER=0
 RUNTIME=0
 GENMAN=0
@@ -120,20 +119,21 @@ def usage(problem):
     os._exit(0)
 
 def parseopts(args):
-    global OPTIMIZE,INSTALLER,RUNTIME,GENMAN
+    global INSTALLER,RUNTIME,GENMAN
     global VERSION,COMPRESSOR,VERBOSE,THREADCOUNT
     longopts = [
         "help",
         "optimize=","everything","nothing","installer","runtime",
         "version=","lzma","no-python","threads=","outputdir="]
     anything = 0
+    optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
     for pkg in PkgListGet(): longopts.append("use-"+pkg.lower())
     try:
         opts, extras = getopt.getopt(args, "", longopts)
         for option,value in opts:
             if (option=="--help"): raise "usage"
-            elif (option=="--optimize"): OPTIMIZE=value
+            elif (option=="--optimize"): optimize=value
             elif (option=="--installer"): INSTALLER=1
             elif (option=="--runtime"): RUNTIME=1
             elif (option=="--genman"): GENMAN=1
@@ -157,11 +157,11 @@ def parseopts(args):
             anything = 1
     except: usage(0)
     if (anything==0): usage(0)
-    if   (OPTIMIZE=="1"): OPTIMIZE=1
-    elif (OPTIMIZE=="2"): OPTIMIZE=2
-    elif (OPTIMIZE=="3"): OPTIMIZE=3
-    elif (OPTIMIZE=="4"): OPTIMIZE=4
-    else: usage("Invalid setting for OPTIMIZE")
+    try:
+        SetOptimize(int(optimize))
+        assert GetOptimize() in [1, 2, 3, 4]
+    except:
+        usage("Invalid setting for OPTIMIZE")
 
 parseopts(sys.argv[1:])
 
@@ -522,7 +522,7 @@ def printStatus(header,warnings):
             if (PkgSkip(x)==0): tkeep = tkeep + x + " "
             else:                  tomit = tomit + x + " "
         print "Makepanda: Compiler:",COMPILER
-        print "Makepanda: Optimize:",OPTIMIZE
+        print "Makepanda: Optimize:",GetOptimize()
         print "Makepanda: Keep Pkg:",tkeep
         print "Makepanda: Omit Pkg:",tomit
         print "Makepanda: Verbose vs. Quiet Level:",VERBOSE
@@ -575,7 +575,7 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += " /D" + var + "=" + val
         if (opts.count('NOFLOATWARN')): cmd += ' /wd4244 /wd4305'
         if (opts.count('MSFORSCOPE')): cmd += ' /Zc:forScope-'
-        optlevel = GetOptimizeOption(opts,OPTIMIZE)
+        optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " /MD /Zi /RTCs /GS"
         if (optlevel==2): cmd += " /MD /Zi "
         if (optlevel==3): cmd += " /MD /Zi /O2 /Ob2 /DFORCE_INLINING "
@@ -598,7 +598,7 @@ def CompileCxx(obj,src,opts):
         if (sys.platform == "darwin"):
             cmd += " -isysroot " + SDK["MACOSX"] + " -arch i386"
             if ("NOPPC" not in opts): cmd += " -arch ppc"
-        optlevel = GetOptimizeOption(opts,OPTIMIZE)
+        optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " -g"
         if (optlevel==2): cmd += " -O1"
         if (optlevel==3): cmd += " -O2"
@@ -680,7 +680,7 @@ def CompileIgate(woutd,wsrc,opts):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D_LP64'
     if (COMPILER=="LINUX") and (platform.architecture()[0]=="32bit"):
         cmd += ' -DCPPPARSER -D__STDC__=1 -D__cplusplus -D__inline -D__const=const -D__i386__'
-    optlevel=GetOptimizeOption(opts,OPTIMIZE)
+    optlevel=GetOptimizeOption(opts)
     if (optlevel==1): cmd += ' '
     if (optlevel==2): cmd += ' '
     if (optlevel==3): cmd += ' -DFORCE_INLINING'
@@ -763,7 +763,7 @@ def CompileLink(dll, obj, opts):
         cmd += " /NOD:MFC90.LIB /NOD:MFC80.LIB /NOD:LIBCI.LIB /NOD:MSVCRTD.LIB /DEBUG"
         cmd += " /nod:libc /nod:libcmtd /nod:atlthunk /nod:atls"
         if (GetOrigExt(dll) != ".exe"): cmd += " /DLL"
-        optlevel = GetOptimizeOption(opts,OPTIMIZE)
+        optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " /MAP /MAPINFO:EXPORTS"
         if (optlevel==2): cmd += " /MAP:NUL "
         if (optlevel==3): cmd += " /MAP:NUL "
@@ -888,7 +888,7 @@ def CompileResource(target, src, opts):
 def RunGenPyCode(target, inputs, opts):
     if (PkgSkip("PYTHON") != 0): return
     
-    cmdstr = sys.executable + " " + os.path.join("direct", "src", "ffi", "jGenPyCode.py")
+    cmdstr = SDK["PYTHONEXEC"] + " " + os.path.join("direct", "src", "ffi", "jGenPyCode.py")
     if (GENMAN): cmdstr += " -d"
     cmdstr += " -r"
     for i in inputs:
@@ -906,7 +906,7 @@ def RunGenPyCode(target, inputs, opts):
 def FreezePy(target, inputs, opts):
     assert len(inputs) > 0
     # Make sure this function isn't called before genpycode is run.
-    cmdstr = sys.executable + " " + os.path.join("direct", "src", "showutil", "pfreeze.py")
+    cmdstr = SDK["PYTHONEXEC"] + " " + os.path.join("direct", "src", "showutil", "pfreeze.py")
     src = inputs.pop(0)
     for i in inputs:
       cmdstr += " -i " + os.path.splitext(i)[0]
@@ -1211,23 +1211,23 @@ def WriteConfigSettings():
         dtool_config["HAVE_PROC_CURPROC_MAP"] = '1'
         dtool_config["HAVE_PROC_CURPROC_CMDLINE"] = '1'
     
-    if (OPTIMIZE <= 3):
+    if (GetOptimize() <= 3):
         if (dtool_config["HAVE_NET"] != 'UNDEF'):
             dtool_config["DO_PSTATS"] = '1'
     
-    if (OPTIMIZE <= 3):
+    if (GetOptimize() <= 3):
         dtool_config["DO_COLLISION_RECORDING"] = '1'
     
-    #if (OPTIMIZE <= 2):
+    #if (GetOptimize() <= 2):
     #    dtool_config["TRACK_IN_INTERPRETER"] = '1'
     
-    if (OPTIMIZE <= 3):
+    if (GetOptimize() <= 3):
         dtool_config["DO_MEMORY_USAGE"] = '1'
     
-    #if (OPTIMIZE <= 1):
+    #if (GetOptimize() <= 1):
     #    dtool_config["DO_PIPELINING"] = '1'
     
-    if (OPTIMIZE <= 3):
+    if (GetOptimize() <= 3):
         dtool_config["NOTIFY_DEBUG"] = '1'
 
     if (sys.platform.startswith("win") and platform.architecture()[0] == "64bit"):
@@ -4148,12 +4148,12 @@ def MakeRuntime():
                     oscmd("strip --strip-all "+GetOutputDir()+"/rlib/"+base)
     
     # Invoke the make_package and make_contents scripts.
-    command = sys.executable + " direct/src/plugin/make_package.py"
+    command = SDK["PYTHONEXEC"] + " direct/src/plugin/make_package.py"
     command += " -d \"" + GetOutputDir() + "/stage\""
     command += " -s \"" + GetOutputDir() + "/rlib\""
     command += " -p panda3d_%s_%s" % (RUNTIME_PLATFORM, RUNTIME_VERSION)
     oscmd(command)
-    command = sys.executable + " direct/src/plugin/make_contents.py"
+    command = SDK["PYTHONEXEC"] + " direct/src/plugin/make_contents.py"
     command += " -d \"" + GetOutputDir() + "/stage\""
     oscmd(command)
     
@@ -4364,10 +4364,12 @@ def MakeInstallerOSX():
 
 if (INSTALLER != 0):
     if (sys.platform.startswith("win")):
+        dbg = ""
+        if (GetOptimize() <= 2): dbg = "-dbg"
         if (platform.architecture()[0] == "64bit"):
-            MakeInstallerNSIS("Panda3D-"+VERSION+"-x64.exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+            MakeInstallerNSIS("Panda3D-"+VERSION+dbg+"-x64.exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
         else:
-            MakeInstallerNSIS("Panda3D-"+VERSION+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
+            MakeInstallerNSIS("Panda3D-"+VERSION+dbg+".exe", "Panda3D", "Panda3D "+VERSION, "C:\\Panda3D-"+VERSION)
     elif (sys.platform == "linux2"):
         MakeInstallerLinux()
     elif (sys.platform == "darwin"):
