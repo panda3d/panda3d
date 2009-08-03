@@ -18,6 +18,7 @@ SUFFIX_LIB=[".lib",".ilb"]
 STARTTIME=time.time()
 MAINTHREAD=threading.currentThread()
 OUTPUTDIR="built"
+OPTIMIZE="3"
 
 ########################################################################
 ##
@@ -1199,6 +1200,8 @@ def SetOrigExt(x, v):
 
 def CalcLocation(fn, ipath):
     if (fn.count("/")): return fn
+    dllext = ""
+    if (GetOptimizeOption(opts,OPTIMIZE) <= 2): dllext = "_d"
 
     if (fn == "PandaModules.py"): return "pandac/" + fn
     if (fn.endswith(".cxx")): return CxxFindSource(fn, ipath)
@@ -1213,14 +1216,14 @@ def CalcLocation(fn, ipath):
         if (fn.endswith(".rc")):  return CxxFindSource(fn, ipath)
         if (fn.endswith(".obj")): return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".res")): return OUTPUTDIR+"/tmp/"+fn
-        if (fn.endswith(".dll")): return OUTPUTDIR+"/bin/"+fn
-        if (fn.endswith(".pyd")): return OUTPUTDIR+"/bin/"+fn
-        if (fn.endswith(".dlo")): return OUTPUTDIR+"/plugins/"+fn
-        if (fn.endswith(".dli")): return OUTPUTDIR+"/plugins/"+fn
-        if (fn.endswith(".dle")): return OUTPUTDIR+"/plugins/"+fn
+        if (fn.endswith(".dll")): return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".dll"
+        if (fn.endswith(".pyd")): return OUTPUTDIR+"/bin/"+fn[:-4]+dllext+".pyd"
+        if (fn.endswith(".dlo")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dlo"
+        if (fn.endswith(".dli")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dli"
+        if (fn.endswith(".dle")): return OUTPUTDIR+"/plugins/"+fn[:-4]+dllext+".dle"
         if (fn.endswith(".exe")): return OUTPUTDIR+"/bin/"+fn
-        if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn
-        if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+".lib"
+        if (fn.endswith(".lib")): return OUTPUTDIR+"/lib/"+fn[:-4]+dllext+".lib"
+        if (fn.endswith(".ilb")): return OUTPUTDIR+"/tmp/"+fn[:-4]+dllext+".lib"
         if (fn.endswith(".dat")): return OUTPUTDIR+"/tmp/"+fn
         if (fn.endswith(".in")):  return OUTPUTDIR+"/pandac/input/"+fn
     elif (sys.platform == "darwin"):
