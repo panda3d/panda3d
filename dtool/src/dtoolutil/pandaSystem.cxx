@@ -14,6 +14,7 @@
 
 #include "pandaSystem.h"
 #include "pandaVersion.h"
+#include "dtool_platform.h"
 
 PandaSystem *PandaSystem::_global_ptr = NULL;
 TypeHandle PandaSystem::_type_handle;
@@ -181,6 +182,19 @@ get_compiler() {
 string PandaSystem::
 get_build_date() {
   return __DATE__ " " __TIME__;
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::get_platform
+//       Access: Published, Static
+//  Description: Returns a string representing the runtime platform
+//               that we are currently running on.  This will be
+//               something like "win32" or "osx.i386" or
+//               "linux.amd64".
+////////////////////////////////////////////////////////////////////
+string PandaSystem::
+get_platform() {
+  return DTOOL_PLATFORM;
 }
 
 ////////////////////////////////////////////////////////////////////

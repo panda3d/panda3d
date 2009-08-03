@@ -686,5 +686,6 @@ $[cdefine IS_OSX]
 $[cdefine IS_LINUX]
 $[cdefine IS_FREEBSD]
 $[cdefine BUILD_IPHONE]
+$[cdefine DTOOL_PLATFORM]
 
 #end dtool_config.h

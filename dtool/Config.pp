@@ -956,6 +956,12 @@
 #define ARTOOLKIT_LIBS $[if $[WINDOWS_PLATFORM],libAR.lib,AR]
 #defer HAVE_ARTOOLKIT $[libtest $[ARTOOLKIT_LPATH],$[ARTOOLKIT_LIBS]]
 
+// Define this to explicitly indicate the given platform string within
+// the resulting Panda runtime.  Normally it is best to leave this
+// undefined, in which case Panda will determine the best value
+// automatically.
+#define DTOOL_PLATFORM
+
 // Define this to generate static libraries and executables, rather than
 // dynamic libraries.
 //#define LINK_ALL_STATIC yes

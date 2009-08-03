@@ -17,6 +17,7 @@
     deletedBufferChain.h deletedBufferChain.I \
     deletedChain.h deletedChain.T \
     dtoolbase.h dtoolbase_cc.h dtoolsymbols.h \
+    dtool_platform.h \
     fakestringstream.h \
     indent.I indent.h indent.cxx \
     memoryBase.h \
@@ -73,7 +74,9 @@
     cmath.I cmath.h \
     deletedBufferChain.h deletedBufferChain.I \
     deletedChain.h deletedChain.T \
-    dtoolbase.h dtoolbase_cc.h dtoolsymbols.h fakestringstream.h \
+    dtoolbase.h dtoolbase_cc.h dtoolsymbols.h \
+    dtool_platform.h \
+    fakestringstream.h \
     indent.I indent.h \
     memoryBase.h \
     memoryHook.h memoryHook.I \

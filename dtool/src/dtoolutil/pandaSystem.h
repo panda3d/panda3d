@@ -43,6 +43,8 @@ PUBLISHED:
   static string get_compiler();
   static string get_build_date();
 
+  static string get_platform();
+
   bool has_system(const string &system) const;
   int get_num_systems() const;
   string get_system(int n) const;
