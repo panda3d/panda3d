@@ -1411,7 +1411,9 @@ if (COMPILER=="MSVC"):
     CopyAllFiles(GetOutputDir()+"/bin/", THIRDPARTYLIBS+"extras"+"/bin/")
 if (sys.platform.startswith("win")):
     if (PkgSkip("PYTHON")==0):
-        pydll = "/" + SDK["PYTHONVERSION"].replace(".", "") + ".dll"
+        pydll = "/" + SDK["PYTHONVERSION"].replace(".", "")
+        if (GetOptimize() <= 2): pydll += "_d.dll"
+        else: pydll += ".dll"
         CopyFile(GetOutputDir()+"/bin"+pydll, SDK["PYTHON"]+pydll)
         CopyTree(GetOutputDir()+"/python", SDK["PYTHON"])
         ConditionalWriteFile(GetOutputDir()+"/python/panda.pth", "..\n../bin\n")
