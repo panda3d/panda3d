@@ -47,7 +47,7 @@
 #define DTOOL_PLATFORM "linux.i386"
 
 #else
-#error Can't determine platform; please define DTOOL_PLATFORM in Config.pp file.
+#error "Can't determine platform; please define DTOOL_PLATFORM in Config.pp file."
 
 #endif
 
