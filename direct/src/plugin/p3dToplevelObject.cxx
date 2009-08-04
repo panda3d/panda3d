@@ -34,7 +34,7 @@ P3DToplevelObject::
 ~P3DToplevelObject() {
   set_pyobj(NULL);
 
-  // Just in case there are properties we haven't cleared yet.
+  // Clear the local properties.
   Properties::const_iterator pi;
   for (pi = _properties.begin(); pi != _properties.end(); ++pi) {
     P3D_object *value = (*pi).second;
@@ -139,32 +139,34 @@ get_property(const string &property) {
 ////////////////////////////////////////////////////////////////////
 bool P3DToplevelObject::
 set_property(const string &property, P3D_object *value) {
-  if (_pyobj == NULL) {
-    // Without a pyobj, we just store the value locally.
-    if (value != NULL) {
-      Properties::iterator pi;
-      pi = _properties.insert(Properties::value_type(property, NULL)).first;
-      assert(pi != _properties.end());
-      P3D_object *orig_value = (*pi).second;
-      if (orig_value != value) {
-        P3D_OBJECT_XDECREF(orig_value);
-        (*pi).second = value;
-        P3D_OBJECT_INCREF(value);
-      }
-    } else {
-      // Or delete the property locally.
-      Properties::iterator pi;
-      pi = _properties.find(property);
-      if (pi != _properties.end()) {
-        P3D_object *orig_value = (*pi).second;
-        P3D_OBJECT_DECREF(orig_value);
-        _properties.erase(pi);
-      }
+  // First, we set the property locally.
+  if (value != NULL) {
+    Properties::iterator pi;
+    pi = _properties.insert(Properties::value_type(property, NULL)).first;
+    assert(pi != _properties.end());
+    P3D_object *orig_value = (*pi).second;
+    if (orig_value != value) {
+      P3D_OBJECT_XDECREF(orig_value);
+      (*pi).second = value;
+      P3D_OBJECT_INCREF(value);
     }
+  } else {
+    // (Or delete the property locally.)
+    Properties::iterator pi;
+    pi = _properties.find(property);
+    if (pi != _properties.end()) {
+      P3D_object *orig_value = (*pi).second;
+      P3D_OBJECT_DECREF(orig_value);
+      _properties.erase(pi);
+    }
+  }
+
+  if (_pyobj == NULL) {
+    // Without a pyobj, that's all we do.
     return true;
   }
 
-  // With a pyobj, we pass this request down.
+  // With a pyobj, we also pass this request down.
   return P3D_OBJECT_SET_PROPERTY(_pyobj, property.c_str(), value);
 }
 
@@ -246,9 +248,7 @@ set_pyobj(P3D_object *pyobj) {
         const string &property_name = (*pi).first;
         P3D_object *value = (*pi).second;
         P3D_OBJECT_SET_PROPERTY(_pyobj, property_name.c_str(), value);
-        P3D_OBJECT_DECREF(value);
       }
-      _properties.clear();
     }
   }
 }

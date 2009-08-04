@@ -78,6 +78,9 @@ for opt, arg in opts:
             freezer.handleCustomPath(module)
     elif opt == '-h':
         usage(0)
+    else:
+        print 'illegal option: ' + flag
+        sys.exit(1)
 
 if not args:
     usage(0)

@@ -62,6 +62,7 @@ public:
 
 private:
   void install_progress(P3DPackage *package, double progress);
+  void package_ready(P3DPackage *package, bool success);
   void start_p3dpython();
 
   void spawn_read_thread();

@@ -107,10 +107,14 @@ private:
                              const string &property_name, P3D_object *value,
                              bool needs_response, int unique_id);
   void make_splash_window();
+  void start_package_download(P3DPackage *package);
   void install_progress(P3DPackage *package, double progress);
+  void package_ready(P3DPackage *package, bool success);
 
   void paint_window();
   void add_modifier_flags(unsigned int &swb_flags, int modifiers);
+
+  void send_notify(const string &message);
 
 #ifdef __APPLE__
   static void timer_callback(CFRunLoopTimerRef timer, void *info);

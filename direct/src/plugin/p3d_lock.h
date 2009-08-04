@@ -31,7 +31,7 @@ public:
 
 #define LOCK _lock
 #define INIT_LOCK(lock) { InitializeCriticalSection(&(lock)._l); (lock)._count = 0; }
-#define ACQUIRE_LOCK(lock) { EnterCriticalSection(&(lock)._l); ++((lock)._count); if ((lock)._count > 1) { nout << "count = " << (lock)._count << "\n"; } }
+#define ACQUIRE_LOCK(lock) { EnterCriticalSection(&(lock)._l); ++((lock)._count); }
 #define RELEASE_LOCK(lock) { --((lock)._count); LeaveCriticalSection(&(lock)._l); }
 #define DESTROY_LOCK(lock) DeleteCriticalSection(&(lock)._l)
 

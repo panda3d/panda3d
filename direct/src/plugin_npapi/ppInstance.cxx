@@ -70,13 +70,8 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
 ////////////////////////////////////////////////////////////////////
 PPInstance::
 ~PPInstance() {
-#ifdef _WIN32
-  if (_got_window) {
-    // Restore the parent window to its own window handler.
-    HWND hwnd = (HWND)_window.window;
-    SetWindowLongPtr(hwnd, GWL_WNDPROC, _orig_window_proc);
-  }
-#endif  // _WIN32
+  nout << "Destructing PPInstance\n";
+  cleanup_window();
 
   if (_p3d_inst != NULL) {
     P3D_instance_finish(_p3d_inst);
@@ -421,6 +416,7 @@ handle_request(P3D_request *request) {
       P3D_instance_finish(_p3d_inst);
       _p3d_inst = NULL;
     }
+    cleanup_window();
     // Guess the browser doesn't really care.
     handled = true;
     break;
@@ -1075,8 +1071,28 @@ send_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPInstance::cleanup_window
+//       Access: Private
+//  Description: Called at instance shutdown, this restores the parent
+//               window to its original state.
+////////////////////////////////////////////////////////////////////
+void PPInstance::
+cleanup_window() {
+  if (_got_window) {
+#ifdef _WIN32
+    // Restore the parent window to its own window handler.
+    HWND hwnd = (HWND)_window.window;
+    SetWindowLongPtr(hwnd, GWL_WNDPROC, _orig_window_proc);
+    nout << "Restored window handler for " << hwnd << "\n";
+    InvalidateRect(hwnd, NULL, true);
+#endif  // _WIN32
+    _got_window = false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPInstance::copy_file
-//       Access: Public
+//       Access: Private
 //  Description: Copies the data in the file named by from_filename
 //               into the file named by to_filename.
 ////////////////////////////////////////////////////////////////////

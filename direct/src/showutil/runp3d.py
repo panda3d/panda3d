@@ -372,19 +372,13 @@ class AppRunner(DirectObject):
 
     def notifyRequest(self, message):
         """ Delivers a notify request to the browser.  This is a "this
-        happened" type notification; it optionally triggers some
-        JavaScript code execution, and may also trigger some internal
-        automatic actions.  (For instance, the plugin takes down the
-        splash window when it sees the onwindowopen notification. """
+        happened" type notification; it also triggers some JavaScript
+        code execution, if indicated in the HTML tags, and may also
+        trigger some internal automatic actions.  (For instance, the
+        plugin takes down the splash window when it sees the
+        onwindowopen notification. """
 
         self.sendRequest('notify', message)
-
-        # Now process any JavaScript that might be waiting for the
-        # event as well.  These are the JavaScript expressions that
-        # were specified in the HTML embed or object tag.
-        expression = self.tokenDict.get(message)
-        if expression:
-            self.evalScript(expression)
 
     def evalScript(self, expression, needsResponse = False):
         """ Evaluates an arbitrary JavaScript expression in the global

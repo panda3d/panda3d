@@ -78,6 +78,7 @@ private:
 
   void create_instance();
   void send_window();
+  void cleanup_window();
   bool copy_file(const string &from_filename, const string &to_filename);
 
   static void handle_request_loop();
