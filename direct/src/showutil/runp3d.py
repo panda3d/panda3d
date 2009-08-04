@@ -78,6 +78,10 @@ class AppRunner(DirectObject):
         # of the plugin instance in the DOM.
         self.attributes = ScriptAttributes()
 
+        # By default, we publish a stop() method so the browser can
+        # easy stop the plugin.
+        self.attributes.stop = self.stop
+
         # This will be the browser's toplevel window DOM object;
         # e.g. self.dom.document will be the document.
         self.dom = None
@@ -103,6 +107,15 @@ class AppRunner(DirectObject):
         # call back to the main thread.
         self.accept('startIfReady', self.startIfReady)
             
+    def stop(self):
+        """ This method can be called by JavaScript to stop the
+        application. """
+
+        # We defer the actual exit for a few frames, so we don't raise
+        # an exception and invalidate the JavaScript call; and also to
+        # help protect against race conditions as the application
+        # shuts down.
+        taskMgr.doMethodLater(0.5, sys.exit, 'exit')
 
     def setSessionId(self, sessionId):
         """ This message should come in at startup. """
