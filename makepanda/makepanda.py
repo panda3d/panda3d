@@ -75,7 +75,7 @@ elif (sys.platform.startswith("linux")):
     else:
         RUNTIME_PLATFORM = "linux.i386"
 elif (sys.platform == "darwin"):
-    RUNTIME_PLATFORM = "osx.i386"
+    RUNTIME_PLATFORM = "osx.fat"
 elif (sys.platform.startswith("freebsd")):
     if (platform.architecture()[0] == "64bit"):
         RUNTIME_PLATFORM = "freebsd.amd64"
@@ -889,7 +889,7 @@ def RunGenPyCode(target, inputs, opts):
     cmdstr += " -r"
     for i in inputs:
         if (GetOrigExt(i)==".dll"):
-            cmdstr += " " + os.path.basename(os.path.splitext(i)[0].replace(GetOutputDir()+"/lib/",""))
+            cmdstr += " " + os.path.basename(os.path.splitext(i)[0].replace("_d","").replace(GetOutputDir()+"/lib/",""))
     
     oscmd(cmdstr)
 
