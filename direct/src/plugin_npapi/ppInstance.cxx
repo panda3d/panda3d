@@ -1064,8 +1064,18 @@ send_window() {
   }
 #endif
 
+  P3D_window_type window_type = P3D_WT_embedded;
+  if (_window.window == NULL) {
+    // No parent window: it must be a hidden window.
+    window_type = P3D_WT_hidden;
+  } else if (_window.width == 0 || _window.height == 0) {
+    // No size: hidden.
+    window_type = P3D_WT_hidden;
+  }    
+  nout << "window_type = " << window_type << "\n";
+
   P3D_instance_setup_window
-    (_p3d_inst, P3D_WT_embedded,
+    (_p3d_inst, window_type,
      x, y, _window.width, _window.height,
      parent_window);
 }

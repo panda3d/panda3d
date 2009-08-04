@@ -20,6 +20,10 @@
 #include <malloc.h>
 #endif
 
+#ifdef __APPLE__
+#include <signal.h>
+#endif
+
 static ofstream logfile;
 ostream *nout_stream = &logfile;
 
@@ -128,6 +132,12 @@ NP_Initialize(NPNetscapeFuncs *browserFuncs,
     NP_GetEntryPoints(pluginFuncs);
   }
 #endif
+
+#ifdef __APPLE__
+  // On Mac, we'd better ignore SIGPIPE, or this signal will shut down
+  // the application if the plugin exits unexpectedly.
+  signal(SIGPIPE, SIG_IGN);
+#endif  // __APPLE__
 
   return NPERR_NO_ERROR;
 }

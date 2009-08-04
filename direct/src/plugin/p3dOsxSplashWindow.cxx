@@ -257,10 +257,10 @@ paint_window() {
   PaintRect(&rdone);
   EraseRect(&rneed);
 
+  RGBColor black = { 0, 0, 0 };
+  RGBForeColor(&black);
+
   if (!_install_label.empty()) {
-    RGBColor black = { 0, 0, 0 };
-    RGBForeColor(&black);
-    
     TextFont(0);
     TextFace(bold);
     TextMode(srcOr);

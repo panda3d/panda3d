@@ -184,48 +184,51 @@ set_wparams(const P3DWindowParams &wparams) {
   nout << "set_wparams, _session = " << _session << "\n";
   _got_wparams = true;
   _wparams = wparams;
+  nout << "set window_type = " << _wparams.get_window_type() << "\n";
 
-  // Update or create the splash window.
-  if (!_instance_window_opened) {
-    if (_splash_window == NULL) {
-      make_splash_window();
-    }
-    _splash_window->set_wparams(_wparams);
-  }
-
-#ifdef __APPLE__
-  // On Mac, we have to communicate the results of the rendering
-  // back via shared memory, instead of directly parenting windows
-  // to the browser.  Set up this mechanism.
-  int x_size = _wparams.get_win_width();
-  int y_size = _wparams.get_win_height();
-  nout << "x_size, y_size = " << x_size << ", " << y_size << "\n";
-  if (x_size != 0 && y_size != 0) {
-    if (_swbuffer == NULL || _swbuffer->get_x_size() != x_size ||
-        _swbuffer->get_y_size() != y_size) {
-      // We need to open a new shared buffer.
-      if (_swbuffer != NULL) {
-        SubprocessWindowBuffer::destroy_buffer(_shared_fd, _shared_mmap_size,
-                                               _shared_filename, _swbuffer);
-        _swbuffer = NULL;
+  if (_wparams.get_window_type() != P3D_WT_hidden) {
+    // Update or create the splash window.
+    if (!_instance_window_opened) {
+      if (_splash_window == NULL) {
+        make_splash_window();
       }
-      if (_reversed_buffer != NULL) {
-        delete[] _reversed_buffer;
-        _reversed_buffer = NULL;
-      }
-      
-      _swbuffer = SubprocessWindowBuffer::new_buffer
-        (_shared_fd, _shared_mmap_size, _shared_filename, x_size, y_size);
-      if (_swbuffer != NULL) {
-        _reversed_buffer = new char[_swbuffer->get_framebuffer_size()];
-      }
+      _splash_window->set_wparams(_wparams);
     }
     
-    if (_swbuffer == NULL) {
-      nout << "Could not open swbuffer\n";
+#ifdef __APPLE__
+    // On Mac, we have to communicate the results of the rendering
+    // back via shared memory, instead of directly parenting windows
+    // to the browser.  Set up this mechanism.
+    int x_size = _wparams.get_win_width();
+    int y_size = _wparams.get_win_height();
+    nout << "x_size, y_size = " << x_size << ", " << y_size << "\n";
+    if (x_size != 0 && y_size != 0) {
+      if (_swbuffer == NULL || _swbuffer->get_x_size() != x_size ||
+          _swbuffer->get_y_size() != y_size) {
+        // We need to open a new shared buffer.
+        if (_swbuffer != NULL) {
+          SubprocessWindowBuffer::destroy_buffer(_shared_fd, _shared_mmap_size,
+                                                 _shared_filename, _swbuffer);
+          _swbuffer = NULL;
+        }
+        if (_reversed_buffer != NULL) {
+          delete[] _reversed_buffer;
+          _reversed_buffer = NULL;
+        }
+        
+        _swbuffer = SubprocessWindowBuffer::new_buffer
+          (_shared_fd, _shared_mmap_size, _shared_filename, x_size, y_size);
+        if (_swbuffer != NULL) {
+          _reversed_buffer = new char[_swbuffer->get_framebuffer_size()];
+        }
+      }
+      
+      if (_swbuffer == NULL) {
+        nout << "Could not open swbuffer\n";
+      }
     }
-  }
 #endif   // __APPLE__
+  }
 
   // Update the instance in the sub-process.
   if (_session != NULL) {

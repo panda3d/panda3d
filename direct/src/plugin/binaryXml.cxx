@@ -16,7 +16,7 @@
 #include <sstream>
 
 
-static const bool debug_xml_output = false;
+static const bool debug_xml_output = true;
 
 #define DO_BINARY_XML 1
 
