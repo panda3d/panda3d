@@ -730,6 +730,10 @@ start_p3dpython() {
   env += _python_root_dir;
   env += '\0';
 
+  env += "DYLD_LIBRARY_PATH=";
+  env += _python_root_dir;
+  env += '\0';
+
   env += "PYTHONPATH=";
   env += _python_root_dir;
   env += '\0';
