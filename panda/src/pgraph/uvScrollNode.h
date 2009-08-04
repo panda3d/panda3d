@@ -28,7 +28,8 @@
 ////////////////////////////////////////////////////////////////////
 class EXPCL_PANDA_PGRAPH UvScrollNode : public PandaNode {
 PUBLISHED:
-  INLINE UvScrollNode(const string &name, float u_speed, float v_speed);
+  INLINE UvScrollNode(const string &name, float u_speed, float v_speed, float r_speed);
+  INLINE UvScrollNode(const string &name);
 
 protected:
   INLINE UvScrollNode(const UvScrollNode &copy);
@@ -42,12 +43,15 @@ public:
 PUBLISHED:
   INLINE void set_u_speed(float u_speed);
   INLINE void set_v_speed(float v_speed);
+  INLINE void set_r_speed(float r_speed);
   INLINE float get_u_speed() const;
   INLINE float get_v_speed() const;
+  INLINE float get_r_speed() const;
   
 private:
   float _u_speed;
   float _v_speed;
+  float _r_speed;
 
   double _start_time;
 

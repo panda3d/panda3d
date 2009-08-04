@@ -1880,7 +1880,7 @@ make_node(EggGroup *egg_group, PandaNode *parent) {
       make_node(*ci, node);
     }
   } else if (egg_group->has_scrolling_uvs()) {
-    node = new UvScrollNode(egg_group->get_name(), egg_group->get_scroll_u(), egg_group->get_scroll_v());
+    node = new UvScrollNode(egg_group->get_name(), egg_group->get_scroll_u(), egg_group->get_scroll_v(), egg_group->get_scroll_r());
     
     EggGroup::const_iterator ci;
     for (ci = egg_group->begin(); ci != egg_group->end(); ++ci) {
