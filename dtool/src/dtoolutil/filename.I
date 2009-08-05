@@ -573,6 +573,23 @@ compare_to(const Filename &other) const {
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Filename::__nonzero__
+//       Access: Published
+//  Description: Returns true if the Filename is valid (not empty),
+//               or false if it is an empty string.
+//
+//               This implements the Python equivalent to operator
+//               bool.  Defining an actual operator bool method for
+//               C++ use would work too, but it seems to cause too
+//               many ambiguities for the C++ compiler, so we use this
+//               Python-only approach instead.
+////////////////////////////////////////////////////////////////////
+INLINE bool Filename::
+__nonzero__() const {
+  return !_filename.empty();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Filename::output
 //       Access: Published
 //  Description:

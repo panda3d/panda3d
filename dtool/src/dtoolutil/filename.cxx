@@ -1559,7 +1559,7 @@ get_file_size() const {
 bool Filename::
 resolve_filename(const DSearchPath &searchpath,
                  const string &default_extension) {
-  string found;
+  Filename found;
 
   if (is_local()) {
     found = searchpath.find_file(*this);
@@ -2586,7 +2586,11 @@ atomic_compare_and_exchange_contents(string &orig_contents,
 
   orig_contents = string();
 
-  lockf(fd, F_LOCK, 0);
+  if (lockf(fd, F_LOCK, 0) != 0) {
+    perror(os_specific.c_str());
+    close(fd);
+    return false;
+  }
     
   size_t bytes_read = read(fd, buf, buf_size);
   while (bytes_read > 0) {
@@ -2699,7 +2703,11 @@ atomic_read_contents(string &contents) const {
 
   contents = string();
 
-  lockf(fd, F_LOCK, 0);
+  if (lockf(fd, F_LOCK, 0) != 0) {
+    perror(os_specific.c_str());
+    close(fd);
+    return false;
+  }
     
   size_t bytes_read = read(fd, buf, buf_size);
   while (bytes_read > 0) {
