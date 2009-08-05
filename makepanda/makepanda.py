@@ -808,8 +808,8 @@ def CompileLink(dll, obj, opts):
                 base = os.path.basename(x)
                 if (base[-3:]==".so") and (base[:3]=="lib"):
                     cmd += ' -l' + base[3:-3]
-                elif (base[-2:]==".a") and (base[:3]=="lib"):
-                    cmd += ' -l' + base[3:-2]
+                elif (base[-2:]==".a") and (base[:3]=="lib") and (sys.platform != "darwin"):
+                    cmd += ' -l:lib' + base[3:]
                 else:
                     cmd += ' ' + x
         for (opt, dir) in LIBDIRECTORIES:

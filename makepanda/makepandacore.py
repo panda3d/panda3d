@@ -910,7 +910,7 @@ def SdkLocatePython():
                 pv = os.readlink("%s/System/Library/Frameworks/Python.framework/Versions/Current" % SDK["MACOSX"])
                 SDK["PYTHON"] = SDK["MACOSX"] + "/System/Library/Frameworks/Python.framework/Headers"
                 SDK["PYTHONVERSION"] = "python " +pv
-                SDK["PYTHONEXEC"] = SDK["MACOSX"] + "/System/Library/Frameworks/Python.framework/Versions/Current/bin/python"
+                SDK["PYTHONEXEC"] = "/System/Library/Frameworks/Python.framework/Versions/Current/bin/python"
             else:
                 exit("Could not find the python framework!")
 
