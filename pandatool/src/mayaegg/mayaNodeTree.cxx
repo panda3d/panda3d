@@ -396,6 +396,7 @@ get_egg_group(MayaNodeDesc *node_desc) {
         if(get_vec3d_attribute(dag_object, "scrollUV", value)) {
           egg_group->set_scroll_u(value[0]);
           egg_group->set_scroll_v(value[1]);
+          egg_group->set_scroll_r(value[2]);
         }
       }
 
