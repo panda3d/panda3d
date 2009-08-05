@@ -40,6 +40,13 @@
 #define DTOOL_PLATFORM "osx.i386"
 #endif
 
+#elif defined(__FreeBSD__)
+#if defined(__x86_64)
+#define DTOOL_PLATFORM "freebsd.amd64"
+#else
+#define DTOOL_PLATFORM "freebsd.i386"
+#endif
+
 #elif defined(__x86_64)
 #define DTOOL_PLATFORM "linux.amd64"
 
