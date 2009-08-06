@@ -42,6 +42,7 @@ EggGroup(const string &name) : EggGroupNode(name) {
   _blend_color = Colorf::zero();
   _u_speed = 0;
   _v_speed = 0;
+  _r_speed = 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -79,6 +80,7 @@ operator = (const EggGroup &copy) {
   _tag_data = copy._tag_data;
   _u_speed = copy._u_speed;
   _v_speed = copy._v_speed;
+  _r_speed = copy._r_speed;
   _default_pose = copy._default_pose;
 
   unref_all_vertices();
