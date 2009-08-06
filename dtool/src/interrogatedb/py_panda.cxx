@@ -73,6 +73,15 @@ attempt_coercion(PyObject *self, Dtool_PyTypedObject *classdef,
     // Attempt coercion: try to create a temporary instance of the
     // required class using the supplied parameter.
     PyObject *obj = PyObject_Call((PyObject *)classdef, self, NULL);
+    if (obj == NULL) {
+      // That didn't work; try to call a static "make" method instead.
+      PyObject *make = PyObject_GetAttrString((PyObject *)classdef, "make");
+      if (make != NULL) {
+        PyErr_Clear();
+        obj = PyObject_Call(make, self, NULL);
+        Py_DECREF(make);
+      }
+    }
     if (obj != NULL) {
       // Well, whaddaya know?  The supplied parameter(s) suited
       // the object's constructor.  Now we have a temporary object
