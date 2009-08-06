@@ -65,8 +65,15 @@ PUBLISHED:
 
   INLINE void set_encryption_flag(bool flag);
   INLINE bool get_encryption_flag() const;
-  INLINE void set_encryption_password(const string &password);
+  INLINE void set_encryption_password(const string &encryption_password);
   INLINE const string &get_encryption_password() const;
+
+  INLINE void set_encryption_algorithm(const string &encryption_algorithm);
+  INLINE const string &get_encryption_algorithm() const;
+  INLINE void set_encryption_key_length(int encryption_key_length);
+  INLINE int get_encryption_key_length() const;
+  INLINE void set_encryption_iteration_count(int encryption_iteration_count);
+  INLINE int get_encryption_iteration_count() const;
 
   string add_subfile(const string &subfile_name, const Filename &filename,
                      int compression_level);
@@ -180,6 +187,9 @@ private:
 
   bool _encryption_flag;
   string _encryption_password;
+  string _encryption_algorithm;
+  int _encryption_key_length;
+  int _encryption_iteration_count;
 
   pifstream _read_file;
   IStreamWrapper _read_filew;

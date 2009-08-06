@@ -145,9 +145,8 @@ get_scale_factor() const {
 //               When true, subfiles will be encrypted with the
 //               password specified by set_encryption_password().  It
 //               is possible to apply a different password to
-//               different files, but you must call flush() or
-//               repack() before changing these properties, and the
-//               resulting file can't be mounted via VFS.
+//               different files, but the resulting file can't be
+//               mounted via VFS.
 ////////////////////////////////////////////////////////////////////
 INLINE void Multifile::
 set_encryption_flag(bool flag) {
@@ -181,10 +180,20 @@ get_encryption_flag() const {
 //               subfiles subsequently added to the multifile, if the
 //               encryption flag is also set true (see
 //               set_encryption_flag()).
+//
+//               It is possible to apply a different password to
+//               different files, but the resulting file can't be
+//               mounted via VFS.  Changing this value may cause an
+//               implicit call to flush().
 ////////////////////////////////////////////////////////////////////
 INLINE void Multifile::
-set_encryption_password(const string &password) {
-  _encryption_password = password;
+set_encryption_password(const string &encryption_password) {
+  if (_encryption_password != encryption_password) {
+    if (!_new_subfiles.empty()) {
+      flush();
+    }
+    _encryption_password = encryption_password;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -197,6 +206,126 @@ set_encryption_password(const string &password) {
 INLINE const string &Multifile::
 get_encryption_password() const {
   return _encryption_password;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::set_encryption_algorithm
+//       Access: Public
+//  Description: Specifies the encryption algorithm that should be
+//               used for future calls to add_subfile().  The default
+//               is whatever is specified by the encryption-algorithm
+//               config variable.  The complete set of available
+//               algorithms is defined by the current version of
+//               OpenSSL.
+//
+//               If an invalid algorithm is specified, there is no
+//               immediate error return code, but flush() will fail
+//               and the file will be invalid.
+//
+//               It is possible to apply a different encryption
+//               algorithm to different files, and unlike the
+//               password, this does not interfere with mounting the
+//               multifile via VFS.  Changing this value may cause an
+//               implicit call to flush().
+////////////////////////////////////////////////////////////////////
+INLINE void Multifile::
+set_encryption_algorithm(const string &encryption_algorithm) {
+  if (_encryption_algorithm != encryption_algorithm) {
+    if (!_new_subfiles.empty()) {
+      flush();
+    }
+    _encryption_algorithm = encryption_algorithm;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_encryption_algorithm
+//       Access: Public
+//  Description: Returns the encryption algorithm that was specified
+//               by set_encryption_algorithm().
+////////////////////////////////////////////////////////////////////
+INLINE const string &Multifile::
+get_encryption_algorithm() const {
+  return _encryption_algorithm;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::set_encryption_key_length
+//       Access: Public
+//  Description: Specifies the length of the key, in bits, that should
+//               be used to encrypt the stream in future calls to
+//               add_subfile().  The default is whatever is specified
+//               by the encryption-key-length config variable.  
+//
+//               If an invalid key_length for the chosen algorithm is
+//               specified, there is no immediate error return code,
+//               but flush() will fail and the file will be invalid.
+//
+//               It is possible to apply a different key length to
+//               different files, and unlike the password, this does
+//               not interfere with mounting the multifile via VFS.
+//               Changing this value may cause an implicit call to
+//               flush().
+////////////////////////////////////////////////////////////////////
+INLINE void Multifile::
+set_encryption_key_length(int encryption_key_length) {
+  if (_encryption_key_length != encryption_key_length) {
+    if (!_new_subfiles.empty()) {
+      flush();
+    }
+    _encryption_key_length = encryption_key_length;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_encryption_key_length
+//       Access: Public
+//  Description: Returns the encryption key length, in bits, that was
+//               specified by set_encryption_key_length().
+////////////////////////////////////////////////////////////////////
+INLINE int Multifile::
+get_encryption_key_length() const {
+  return _encryption_key_length;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::set_encryption_iteration_count
+//       Access: Public
+//  Description: Specifies the number of times to repeatedly hash the
+//               key before writing it to the stream in future calls
+//               to add_subfile().  Its purpose is to make it
+//               computationally more expensive for an attacker to
+//               search the key space exhaustively.  This should be a
+//               multiple of 1,000 and should not exceed about 65
+//               million; the value 0 indicates just one application
+//               of the hashing algorithm.
+//
+//               The default is whatever is specified by the
+//               multifile-encryption-iteration-count config variable.
+//
+//               It is possible to apply a different iteration count
+//               to different files, and unlike the password, this
+//               does not interfere with mounting the multifile via
+//               VFS.  Changing this value causes an implicit call to
+//               flush().
+////////////////////////////////////////////////////////////////////
+INLINE void Multifile::
+set_encryption_iteration_count(int encryption_iteration_count) {
+  if (_encryption_iteration_count != encryption_iteration_count) {
+    flush();
+    _encryption_iteration_count = encryption_iteration_count;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_encryption_iteration_count
+//       Access: Public
+//  Description: Returns the value that was specified by
+//               set_encryption_iteration_count().
+////////////////////////////////////////////////////////////////////
+INLINE int Multifile::
+get_encryption_iteration_count() const {
+  return _encryption_iteration_count;
 }
 
 ////////////////////////////////////////////////////////////////////

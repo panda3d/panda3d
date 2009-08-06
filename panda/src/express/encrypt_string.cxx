@@ -20,7 +20,8 @@
 //     Function: encrypt_string
 //       Access: Published
 //  Description: Encrypts the indicated source string using the given
-//               password.  Returns the encrypted string.
+//               password, and the algorithm specified by
+//               encryption-algorithm.  Returns the encrypted string.
 ////////////////////////////////////////////////////////////////////
 string
 encrypt_string(const string &source, const string &password) {

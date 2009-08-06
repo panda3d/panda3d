@@ -115,8 +115,14 @@ Multifile() :
   _scale_factor = 1;
   _new_scale_factor = 1;
   _encryption_flag = false;
+  _encryption_iteration_count = multifile_encryption_iteration_count;
   _file_major_ver = 0;
   _file_minor_ver = 0;
+
+  // Get these values from the config file via an EncryptStreamBuf.
+  EncryptStreamBuf tbuf;
+  _encryption_algorithm = tbuf.get_algorithm();
+  _encryption_key_length = tbuf.get_key_length();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1853,7 +1859,7 @@ write_data(ostream &write, istream *read, streampos fpos,
     if ((_flags & SF_encrypted) != 0) {
       // Write it encrypted.
       OEncryptStream *encrypt = new OEncryptStream;
-      encrypt->set_iteration_count(multifile_encryption_iteration_count);
+      encrypt->set_iteration_count(multifile->_encryption_iteration_count);
       encrypt->open(putter, delete_putter, multifile->_encryption_password);
 
       putter = encrypt;
