@@ -244,6 +244,12 @@ write(ostream &out, int indent_level) const {
 
   }
 
+  if(get_scroll_r() != 0) {
+    indent(out, indent_level) 
+      << "<Scalar> scroll_r { " << get_scroll_r() << " }\n";
+
+  }
+
 
   write_object_types(out, indent_level + 2);
   write_decal_flags(out, indent_level + 2);

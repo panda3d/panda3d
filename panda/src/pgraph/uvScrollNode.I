@@ -116,6 +116,7 @@ UvScrollNode(const UvScrollNode &copy) :
   PandaNode(copy),
   _u_speed(copy._u_speed),
   _v_speed(copy._v_speed),
+  _r_speed(copy._r_speed),
   _start_time(copy._start_time)
 {
 }
