@@ -148,7 +148,7 @@ class ClassicFSM(DirectObject):
         self.__finalState = self.getStateNamed(finalStateName)
 
     def requestFinalState(self):
-        self.request(self.__finalState.getName())
+        self.request(self.getFinalState().getName())
 
     def getCurrentState(self):
         return(self.__currentState)
