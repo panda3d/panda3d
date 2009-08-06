@@ -329,6 +329,31 @@ get_encryption_iteration_count() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::remove_subfile
+//       Access: Published
+//  Description: Removes the named subfile from the Multifile, if it
+//               exists; returns true if successfully removed, or
+//               false if it did not exist in the first place.  The
+//               file will not actually be removed from the disk until
+//               the next call to flush().
+//
+//               Note that this does not actually remove the data from
+//               the indicated subfile; it simply removes it from the
+//               index.  The Multifile will not be reduced in size
+//               after this operation, until the next call to
+//               repack().
+////////////////////////////////////////////////////////////////////
+INLINE bool Multifile::
+remove_subfile(const string &subfile_name) {
+  int index = find_subfile(subfile_name);
+  if (index >= 0) {
+    remove_subfile(index);
+    return true;
+  }
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::read_subfile
 //       Access: Published
 //  Description: Returns a string that contains the entire contents of
