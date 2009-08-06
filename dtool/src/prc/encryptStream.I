@@ -15,7 +15,7 @@
 
 ////////////////////////////////////////////////////////////////////
 //     Function: IDecryptStream::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IDecryptStream::
@@ -24,7 +24,7 @@ IDecryptStream() : istream(&_buf) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: IDecryptStream::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE IDecryptStream::
@@ -35,7 +35,7 @@ IDecryptStream(istream *source, bool owns_source,
 
 ////////////////////////////////////////////////////////////////////
 //     Function: IDecryptStream::open
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE IDecryptStream &IDecryptStream::
@@ -47,7 +47,7 @@ open(istream *source, bool owns_source, const string &password) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: IDecryptStream::close
-//       Access: Public
+//       Access: Published
 //  Description: Resets the EncryptStream to empty, but does not actually
 //               close the source istream unless owns_source was true.
 ////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ close() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: IDecryptStream::get_algorithm
-//       Access: Public
+//       Access: Published
 //  Description: Returns the encryption algorithm that was read from
 //               the stream.
 ////////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ get_algorithm() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: IDecryptStream::get_key_length
-//       Access: Public
+//       Access: Published
 //  Description: Returns the encryption key length, in bits, that was
 //               read from the stream.
 ////////////////////////////////////////////////////////////////////
@@ -81,7 +81,7 @@ get_key_length() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: IDecryptStream::get_iteration_count
-//       Access: Public
+//       Access: Published
 //  Description: Returns the value that was was read from the stream.
 ////////////////////////////////////////////////////////////////////
 INLINE int IDecryptStream::
@@ -92,7 +92,7 @@ get_iteration_count() const {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OEncryptStream::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE OEncryptStream::
@@ -101,7 +101,7 @@ OEncryptStream() : ostream(&_buf) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OEncryptStream::Constructor
-//       Access: Public
+//       Access: Published
 //  Description:
 ////////////////////////////////////////////////////////////////////
 INLINE OEncryptStream::
@@ -113,7 +113,7 @@ OEncryptStream(ostream *dest, bool owns_dest, const string &password) :
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OEncryptStream::open
-//       Access: Public
+//       Access: Published
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 INLINE OEncryptStream &OEncryptStream::
@@ -125,7 +125,7 @@ open(ostream *dest, bool owns_dest, const string &password) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OEncryptStream::close
-//       Access: Public
+//       Access: Published
 //  Description: Resets the EncryptStream to empty, but does not actually
 //               close the dest ostream unless owns_dest was true.
 ////////////////////////////////////////////////////////////////////
@@ -138,7 +138,7 @@ close() {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OEncryptStream::set_algorithm
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the encryption algorithm that should be
 //               used for future calls to open().  The default
 //               is whatever is specified by the encryption-algorithm
@@ -157,7 +157,7 @@ set_algorithm(const string &algorithm) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OEncryptStream::set_key_length
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the length of the key, in bits, that should
 //               be used to encrypt the stream in future calls to
 //               open().  The default is whatever is specified
@@ -174,7 +174,7 @@ set_key_length(int key_length) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: OEncryptStream::set_iteration_count
-//       Access: Public
+//       Access: Published
 //  Description: Specifies the number of times to repeatedly hash the
 //               key before writing it to the stream in future calls
 //               to open().  Its purpose is to make it

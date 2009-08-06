@@ -419,6 +419,10 @@ underflow() {
 ////////////////////////////////////////////////////////////////////
 size_t EncryptStreamBuf::
 read_chars(char *start, size_t length) {
+  if (length == 0) {
+    return 0;
+  }
+
   if (_in_read_overflow_buffer != 0) {
     // Take from the overflow buffer.
     length = min(length, _in_read_overflow_buffer);
@@ -493,7 +497,7 @@ read_chars(char *start, size_t length) {
 ////////////////////////////////////////////////////////////////////
 void EncryptStreamBuf::
 write_chars(const char *start, size_t length) {
-  if (_write_valid) {
+  if (_write_valid && length != 0) {
     size_t max_write_buffer = length + _write_block_size;
     unsigned char *write_buffer = (unsigned char *)alloca(max_write_buffer);
     
