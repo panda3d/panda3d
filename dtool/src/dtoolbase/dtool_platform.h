@@ -53,6 +53,12 @@
 #elif defined(__i386)
 #define DTOOL_PLATFORM "linux.i386"
 
+#elif defined(__arm__)
+#define DTOOL_PLATFORM "linux.arm"
+
+#elif defined(__ppc__)
+#define DTOOL_PLATFORM "linux.ppc"
+
 #else
 #error "Can't determine platform; please define DTOOL_PLATFORM in Config.pp file."
 
