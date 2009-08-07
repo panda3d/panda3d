@@ -359,6 +359,12 @@ class Freezer:
     MTExclude = 2
     MTForbid = 3
 
+    class ModuleDef:
+        def __init__(self, token, moduleName, filename = None):
+            self.token = token
+            self.moduleName = moduleName
+            self.filename = filename
+
     def __init__(self, previous = None, debugLevel = 0):
         # Normally, we are freezing for our own platform.  Change this
         # if untrue.
@@ -378,10 +384,6 @@ class Freezer:
         self.objectExtension = '.o'
         if self.platform == 'win32':
             self.objectExtension = '.obj'
-        
-        # True to compile to an executable, false to compile to a dll.  If
-        # setMain() is called, this is automatically set to True.
-        self.compileToExe = False
 
         # Change any of these to change the generated startup and glue
         # code.
@@ -390,32 +392,51 @@ class Freezer:
         self.mainInitCode = mainInitCode
         self.frozenExtensions = frozenExtensions
 
+        # Set this true to encode Python files in a Multifile as their
+        # original source if possible, or false to encode them as
+        # compiled pyc or pyo files.  This has no effect on frozen exe
+        # or dll's; those are always stored with compiled code.
+        self.storePythonSource = False
 
         # End of public interface.  These remaining members should not
         # be directly manipulated by callers.
         self.previousModules = {}
         self.modules = {}
 
+        self.virtualModules = {}
+
         if previous:
             self.previousModules = dict(previous.modules)
             self.modules = dict(previous.modules)
 
-        self.mainModule = None
         self.mf = None
 
         # Make sure we know how to find "direct".
         if direct.__path__:
             modulefinder.AddPackagePath('direct', direct.__path__[0])
 
+    def excludeFrom(self, freezer):
+        """ Excludes all modules that have already been processed by
+        the indicated FreezeTool.  This is equivalent to passing the
+        indicated FreezeTool object as previous to this object's
+        constructor, but it may be called at any point during
+        processing. """
+
+        for key, value in freezer.modules:
+            self.previousModules[key] = value
+            self.modules[key] = value
+
     def excludeModule(self, moduleName, forbid = False):
         """ Adds a module to the list of modules not to be exported by
         this tool.  If forbid is true, the module is furthermore
         forbidden to be imported, even if it exists on disk. """
-        
+
+        assert self.mf == None
+
         if forbid:
-            self.modules[moduleName] = self.MTForbid
+            self.modules[moduleName] = self.ModuleDef(self.MTForbid, moduleName)
         else:
-            self.modules[moduleName] = self.MTExclude
+            self.modules[moduleName] = self.ModuleDef(self.MTExclude, moduleName)
 
     def handleCustomPath(self, moduleName):
         """ Indicates a module that may perform runtime manipulation
@@ -467,10 +488,17 @@ class Freezer:
         else:
             return None
             
-    def addModule(self, moduleName, implicit = False):
+    def addModule(self, moduleName, implicit = False, newName = None,
+                  filename = None):
         """ Adds a module to the list of modules to be exported by
         this tool.  If implicit is true, it is OK if the module does
         not actually exist.
+
+        newName is the name to call the module when it appears in the
+        output.  The default is the same name it had in the original.
+        Use caution when renaming a module; if another module imports
+        this module by its original name, the module will need to be
+        duplicated in the output, a copy for each name.
 
         The module name may end in ".*", which means to add all of the
         .py files (other than __init__.py) in a particular directory.
@@ -478,66 +506,77 @@ class Freezer:
         directories within a particular directory.
         """
 
+        assert self.mf == None
+
+        if not newName:
+            newName = moduleName
         moduleName = moduleName.replace("/", ".").replace("direct.src", "direct")
+        newName = newName.replace("/", ".").replace("direct.src", "direct")
         if implicit:
             token = self.MTAuto
         else:
             token = self.MTInclude
 
         if moduleName.endswith('.*'):
+            assert(newName.endswith('.*'))
             # Find the parent module, so we can get its directory.
             parentName = moduleName[:-2]
-            parentNames = [parentName]
+            newParentName = newName[:-2]
+            parentNames = [(parentName, newParentName)]
 
             if parentName.endswith('.*'):
+                assert(newParentName.endswith('.*'))
                 # Another special case.  The parent name "*" means to
                 # return all possible directories within a particular
                 # directory.
 
                 topName = parentName[:-2]
+                newTopName = newParentName[:-2]
                 parentNames = []
                 for dirname in self.getModulePath(topName):
-                    for filename in os.listdir(dirname):
-                        if os.path.exists(os.path.join(dirname, filename, '__init__.py')):
-                            parentName = '%s.%s' % (topName, filename)
+                    for basename in os.listdir(dirname):
+                        if os.path.exists(os.path.join(dirname, basename, '__init__.py')):
+                            parentName = '%s.%s' % (topName, basename)
+                            newParentName = '%s.%s' % (newTopName, basename)
                             if self.getModulePath(parentName):
-                                parentNames.append(parentName)
+                                parentNames.append((parentName, newParentName))
 
-            for parentName in parentNames:
+            for parentName, newParentName in parentNames:
                 path = self.getModulePath(parentName)
 
                 if path == None:
                     # It's actually a regular module.
-                    self.modules[parentName] = token
+                    self.modules[newParentName] = self.ModuleDef(token, parentName)
 
                 else:
                     # Now get all the py files in the parent directory.
                     for dirname in path:
-                        for filename in os.listdir(dirname):
-                            if '-' in filename:
+                        for basename in os.listdir(dirname):
+                            if '-' in basename:
                                 continue
-                            if filename.endswith('.py') and filename != '__init__.py':
-                                moduleName = '%s.%s' % (parentName, filename[:-3])
-                                self.modules[moduleName] = token
+                            if basename.endswith('.py') and basename != '__init__.py':
+                                moduleName = '%s.%s' % (parentName, basename[:-3])
+                                newName = '%s.%s' % (newParentName, basename[:-3])
+                                self.modules[newName] = self.ModuleDef(token, moduleName)
         else:
             # A normal, explicit module name.
-            self.modules[moduleName] = token
-
-    def setMain(self, moduleName):
-        moduleName = moduleName.replace("/", ".").replace("direct.src", "direct")
-        self.addModule(moduleName)
-        self.mainModule = moduleName
-        self.compileToExe = True
+            self.modules[newName] = self.ModuleDef(token, moduleName, filename = filename)
 
     def done(self):
+        """ Call this method after you have added all modules with
+        addModule().  You may then call generateCode() or
+        writeMultifile() to dump the resulting output.  After a call
+        to done(), you may not add any more modules until you call
+        reset(). """
+        
         assert self.mf == None
 
-        if self.compileToExe:
-            # Ensure that each of our required startup modules is
-            # on the list.
+        # If we have a __main__ module, we also need to implicitly
+        # bring in Python's startup modules.
+        if '__main__' in self.modules:
             for moduleName in startupModules:
                 if moduleName not in self.modules:
-                    self.modules[moduleName] = self.MTAuto
+                    self.modules[moduleName] = self.ModuleDef(self.MTAuto, moduleName)
 
         # Excluding a parent module also excludes all its children.
         # Walk through the list in sorted order, so we reach children
@@ -549,91 +588,131 @@ class Freezer:
         excludeDict = {}
         includes = []
         autoIncludes = []
-        for moduleName, token in names:
-            if '.' in moduleName:
-                parentName, baseName = moduleName.rsplit('.', 1)
+        origToNewName = {}
+        for newName, mdef in names:
+            token = mdef.token
+            origToNewName[mdef.moduleName] = newName
+            if '.' in newName:
+                parentName, baseName = newName.rsplit('.', 1)
                 if parentName in excludeDict:
                     token = excludeDict[parentName]
             
             if token == self.MTInclude:
-                includes.append(moduleName)
+                includes.append(mdef)
             elif token == self.MTAuto:
-                autoIncludes.append(moduleName)
+                autoIncludes.append(mdef)
             elif token == self.MTExclude or token == self.MTForbid:
-                excludes.append(moduleName)
-                excludeDict[moduleName] = token
+                excludes.append(mdef.moduleName)
+                excludeDict[mdef.moduleName] = token
 
         self.mf = modulefinder.ModuleFinder(excludes = excludes)
 
         # Attempt to import the explicit modules into the modulefinder.
-        for moduleName in includes:
-            self.mf.import_hook(moduleName)
+        for mdef in includes:
+            self.__loadModule(mdef)
 
         # Also attempt to import any implicit modules.  If any of
-        # these fail to import, we don't care.
-        for moduleName in autoIncludes:
+        # these fail to import, we don't really care.
+        for mdef in autoIncludes:
             try:
-                self.mf.import_hook(moduleName)
+                self.__loadModule(mdef)
             except ImportError:
                 pass
 
         # Now, any new modules we found get added to the export list.
-        for moduleName in self.mf.modules.keys():
-            if moduleName not in self.modules:
-                self.modules[moduleName] = self.MTAuto
+        for origName in self.mf.modules.keys():
+            if origName not in origToNewName:
+                self.modules[origName] = self.ModuleDef(self.MTAuto, origName)
+                            
+            elif origName not in self.modules:
+                print "Module %s renamed to %s, but imported directly with its original name" % (
+                    origName, origToNewName[origName])
+                self.modules[origName] = self.ModuleDef(self.MTAuto, origName)
 
         missing = []
-        for moduleName in self.mf.any_missing():
-            if moduleName in startupModules:
+        for origName in self.mf.any_missing():
+            if origName in startupModules:
                 continue
-            if moduleName in self.previousModules:
+            if origName in self.previousModules:
                 continue
 
             # This module is missing.  Let it be missing in the
             # runtime also.
-            self.modules[moduleName] = self.MTExclude
+            self.modules[origName] = self.ModuleDef(self.MTExclude, origName)
 
-            if moduleName in okMissing:
+            if origName in okMissing:
                 # If it's listed in okMissing, don't even report it.
                 continue
 
-            prefix = moduleName.split('.')[0]
+            prefix = origName.split('.')[0]
             if prefix not in sourceTrees:
                 # If it's in not one of our standard source trees, assume
                 # it's some wacky system file we don't need.
                 continue
                 
-            missing.append(moduleName)
+            missing.append(origName)
                 
         if missing:
             error = "There are some missing modules: %r" % missing
             print error
             raise StandardError, error
 
-    def mangleName(self, moduleName):
-        return 'M_' + moduleName.replace('.', '__')
+    def __loadModule(self, mdef):
+        """ Adds the indicated module to the modulefinder. """
+        
+        if mdef.filename:
+            # If it has a filename, then we found it as a file on
+            # disk.  In this case, the moduleName may not be accurate
+            # and useful, so load it as a file instead.
 
-    def __getModuleNames(self):
+            pathname = mdef.filename.toOsSpecific()
+            fp = open(pathname, modulefinder.READ_MODE)
+            stuff = ("", "r", imp.PY_SOURCE)
+            self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
+
+        else:
+            # Otherwise, we can just import it normally.
+            self.mf.import_hook(mdef.moduleName)
+
+    def reset(self):
+        """ After a previous call to done(), this resets the
+        FreezeTool object for a new pass.  More modules may be added
+        and dumped to a new target.  Previously-added modules are
+        remembered and will not be dumped again. """
+        
+        self.mf = None
+        self.previousModules = dict(self.modules)
+
+    def mangleName(self, moduleName):
+        return 'M_' + moduleName.replace('.', '__').replace('-', '_')
+
+    def __getModuleDefs(self):
         # Collect a list of all of the modules we will be explicitly
         # referencing.
-        moduleNames = []
+        moduleDefs = []
 
-        for moduleName, token in self.modules.items():
-            prevToken = self.previousModules.get(moduleName, None)
+        for newName, mdef in self.modules.items():
+            token = mdef.token
+            prev = self.previousModules.get(newName, None)
             if token == self.MTInclude or token == self.MTAuto:
                 # Include this module (even if a previous pass
                 # excluded it).  But don't bother if we exported it
                 # previously.
-                if prevToken != self.MTInclude and prevToken != self.MTAuto:
-                    if moduleName in self.mf.modules or \
-                       moduleName in startupModules:
-                        moduleNames.append(moduleName)
+                if prev and \
+                   (prev.token == self.MTInclude or prev.token == self.MTAuto):
+                    # Previously exported.
+                    pass
+                else:
+                    if newName in self.mf.modules or \
+                       newName in startupModules or \
+                       mdef.filename:
+                        moduleDefs.append((newName, mdef))
             elif token == self.MTForbid:
-                if prevToken != self.MTForbid:
-                    moduleNames.append(moduleName)
+                if not prev or prev.token != self.MTForbid:
+                    moduleDefs.append((newName, mdef))
 
-        moduleNames.sort()
-        return moduleNames
+        moduleDefs.sort()
+        return moduleDefs
 
     def __replacePaths(self):
         # Build up the replacement pathname table, so we can eliminate
@@ -672,45 +751,95 @@ class Freezer:
         if str not in moduleDirs:
             # Add an implicit __init__.py file.
             moduleName = '.'.join(dirnames)
-            filename = '/'.join(dirnames) + '/__init__.py'
+            filename = '/'.join(dirnames) + '/__init__'
 
-            stream = StringStream('')
-            multifile.addSubfile(filename, stream, 0)
-            multifile.flush()
+            if self.storePythonSource:
+                filename += '.py'
+                stream = StringStream('')
+                multifile.addSubfile(filename, stream, 0)
+                multifile.flush()
+            else:
+                if __debug__:
+                    filename += '.pyc'
+                else:
+                    filename += '.pyo'
+                code = compile('', moduleName, 'exec')
+                self.__addPyc(multifile, filename, code)
 
             moduleDirs[str] = True
             self.__addPythonDirs(multifile, moduleDirs, dirnames[:-1])
 
-    def __addPythonFile(self, multifile, moduleDirs, moduleName):
+    def __addPythonFile(self, multifile, moduleDirs, moduleName, mdef):
         """ Adds the named module to the multifile as a .pyc file. """
-        module = self.mf.modules.get(moduleName, None)
-        if getattr(module, '__path__', None) is not None:
-            # It's actually a package.  In this case, we really write
-            # the file moduleName/__init__.py.
-            moduleName += '.__init__'
 
         # First, split the module into its subdirectory names.
         dirnames = moduleName.split('.')
         self.__addPythonDirs(multifile, moduleDirs, dirnames[:-1])
 
+        filename = '/'.join(dirnames)
+
+        module = self.mf.modules.get(moduleName, None)
+        if getattr(module, '__path__', None) is not None:
+            # It's actually a package.  In this case, we really write
+            # the file moduleName/__init__.py.
+            filename += '/__init__'
+
+            # Ensure we don't have an implicit filename from above.
+            multifile.removeSubfile(filename + '.py')
+            if __debug__:
+                multifile.removeSubfile(filename + '.pyc')
+            else:
+                multifile.removeSubfile(filename + '.pyo')
+
         # Attempt to add the original source file if we can.
-        if getattr(module, '__file__', None):
-            sourceFilename = Filename.fromOsSpecific(module.__file__)
-            sourceFilename.setExtension("py")
-            if sourceFilename.exists():
-                filename = '/'.join(dirnames) + '.py'
+        if self.storePythonSource:
+            sourceFilename = None
+            if mdef.filename and mdef.filename.getExtension() == "py":
+                sourceFilename = mdef.filename
+            elif getattr(module, '__file__', None):
+                sourceFilename = Filename.fromOsSpecific(module.__file__)
+                sourceFilename.setExtension("py")
+            
+            if sourceFilename and sourceFilename.exists():
+                filename += '.py'
                 multifile.addSubfile(filename, sourceFilename, 0)
                 return
 
         # If we can't find the source file, add the compiled pyc instead.
-        filename = '/'.join(dirnames) + '.pyc'
-        code = getattr(module, "__code__", None)
+        if __debug__:
+            filename += '.pyc'
+        else:
+            filename += '.pyo'
+
+        if module:
+            # Get the compiled code directly from the module object.
+            code = getattr(module, "__code__", None)
+        else:
+            # Read the code from the source file and compile it on-the-fly.
+            sourceFilename = None
+            if mdef.filename and mdef.filename.getExtension() == "py":
+                sourceFilename = mdef.filename
+                source = open(sourceFilename.toOsSpecific(), 'r').read()
+                if source and source[-1] != '\n':
+                    source = source + '\n'
+                code = compile(source, sourceFilename.cStr(), 'exec')
+
         self.__addPyc(multifile, filename, code)
 
+    def addToMultifile(self, multifile):
+        """ After a call to done(), this stores all of the accumulated
+        python code into the indicated Multifile. """
+
+        moduleDirs = {}
+        for moduleName, mdef in self.__getModuleDefs():
+            if mdef.token != self.MTForbid:
+                self.__addPythonFile(multifile, moduleDirs, moduleName, mdef)
     
     def writeMultifile(self, mfname):
-        """Instead of generating a frozen file, put all of the Python
-        code in a multifile. """
+        """ After a call to done(), this stores all of the accumulated
+        python code into a Multifile with the indicated filename,
+        including the extension. """
+
         self.__replacePaths()
 
         Filename(mfname).unlink()
@@ -718,37 +847,49 @@ class Freezer:
         if not multifile.openReadWrite(mfname):
             raise StandardError
 
-        moduleDirs = {}
-        for moduleName in self.__getModuleNames():
-            token = self.modules[moduleName]
-            if token != self.MTForbid:
-                self.__addPythonFile(multifile, moduleDirs, moduleName)
+        self.addToMultifile(multifile)
 
         multifile.flush()
         multifile.repack()
 
-    def generateCode(self, basename):
+    def generateCode(self, basename, compileToExe = False):
+        """ After a call to done(), this freezes all of the
+        accumulated python code into either an executable program (if
+        compileToExe is true) or a dynamic library (if compileToExe is
+        false).  The basename is the name of the file to write,
+        without the extension.
+
+        The return value is the newly-generated filename, including
+        the extension. """
+        
+        if compileToExe:
+            # We must have a __main__ module to make an exe file.
+            if not self.__writingModule('__main__'):
+                message = "Can't generate an executable without a __main__ module."
+                raise StandardError, message
+
         self.__replacePaths()
 
         # Now generate the actual export table.
         moduleDefs = []
         moduleList = []
         
-        for moduleName in self.__getModuleNames():
-            token = self.modules[moduleName]
+        for moduleName, mdef in self.__getModuleDefs():
+            token = mdef.token
+            origName = mdef.moduleName
             if token == self.MTForbid:
                 # Explicitly disallow importing this module.
                 moduleList.append(self.makeForbiddenModuleListEntry(moduleName))
             else:
                 assert token != self.MTExclude
                 # Allow importing this module.
-                module = self.mf.modules.get(moduleName, None)
+                module = self.mf.modules.get(origName, None)
                 code = getattr(module, "__code__", None)
                 if not code and moduleName in startupModules:
                     # Forbid the loading of this startup module.
                     moduleList.append(self.makeForbiddenModuleListEntry(moduleName))
                 else:
-                    if moduleName in sourceTrees:
+                    if origName in sourceTrees:
                         # This is one of our Python source trees.
                         # These are a special case: we don't compile
                         # the __init__.py files within them, since
@@ -763,13 +904,10 @@ class Freezer:
                         mangledName = self.mangleName(moduleName)
                         moduleDefs.append(self.makeModuleDef(mangledName, code))
                         moduleList.append(self.makeModuleListEntry(mangledName, code, moduleName, module))
-                        if moduleName == self.mainModule:
-                            # Add a special entry for __main__.
-                            moduleList.append(self.makeModuleListEntry(mangledName, code, '__main__', module))
 
         filename = basename + self.sourceExtension
 
-        if self.compileToExe:
+        if compileToExe:
             code = self.frozenMainCode
             if self.platform == 'win32':
                 code += self.frozenDllMainCode
@@ -897,3 +1035,18 @@ class Freezer:
     def makeForbiddenModuleListEntry(self, moduleName):
         return '  {"%s", NULL, 0},' % (moduleName)
 
+
+    def __writingModule(self, moduleName):
+        """ Returns true if we are outputting the named module in this
+        pass, false if we have already output in a previous pass, or
+        if it is not yet on the output table. """
+        
+        mdef = self.modules.get(moduleName, (None, None))
+        token = mdef.token
+        if token != self.MTAuto and token != self.MTInclude:
+            return False
+
+        if moduleName in self.previousModules:
+            return False
+
+        return True
