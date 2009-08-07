@@ -29,6 +29,7 @@
 #include "transparencyAttrib.h"
 #include "depthWriteAttrib.h"
 #include "depthTestAttrib.h"
+#include "depthOffsetAttrib.h"
 #include "texMatrixAttrib.h"
 #include "renderModeAttrib.h"
 #include "material.h"
@@ -59,6 +60,8 @@ fill_state(EggPrimitive *egg_prim) {
   bool binary_alpha_only = true;  // true if all alpha sources are binary alpha.
   bool has_draw_order = false;
   int draw_order = 0;
+  bool has_depth_offset = false;
+  int depth_offset = 0;
   bool has_bin = false;
   string bin;
 
@@ -83,6 +86,11 @@ fill_state(EggPrimitive *egg_prim) {
   if (render_mode != (EggRenderMode *)NULL) {
     has_draw_order = true;
     draw_order = render_mode->get_draw_order();
+  }
+  render_mode = egg_prim->determine_depth_offset();
+  if (render_mode != (EggRenderMode *)NULL) {
+    has_depth_offset = true;
+    depth_offset = render_mode->get_depth_offset();
   }
   render_mode = egg_prim->determine_bin();
   if (render_mode != (EggRenderMode *)NULL) {
@@ -397,6 +405,9 @@ fill_state(EggPrimitive *egg_prim) {
 
   } else if (has_draw_order) {
     add_attrib(CullBinAttrib::make("fixed", draw_order));
+  }
+  if (has_depth_offset) {
+    add_attrib(DepthOffsetAttrib::make(depth_offset));
   }
  
 

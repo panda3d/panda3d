@@ -77,6 +77,11 @@ PUBLISHED:
   INLINE void set_visibility_mode(VisibilityMode mode);
   INLINE VisibilityMode get_visibility_mode() const;
 
+  INLINE void set_depth_offset(int bias);
+  INLINE int get_depth_offset() const;
+  INLINE bool has_depth_offset() const;
+  INLINE void clear_depth_offset();
+
   INLINE void set_draw_order(int order);
   INLINE int get_draw_order() const;
   INLINE bool has_draw_order() const;
@@ -102,6 +107,8 @@ private:
   DepthWriteMode _depth_write_mode;
   DepthTestMode _depth_test_mode;
   VisibilityMode _visibility_mode;
+  int _depth_offset;
+  bool _has_depth_offset;
   int _draw_order;
   bool _has_draw_order;
   string _bin;

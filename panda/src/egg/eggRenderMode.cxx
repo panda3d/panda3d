@@ -30,6 +30,8 @@ EggRenderMode() {
   _depth_write_mode = DWM_unspecified;
   _depth_test_mode = DTM_unspecified;
   _visibility_mode = VM_unspecified;
+  _depth_offset = 0;
+  _has_depth_offset = false;
   _draw_order = 0;
   _has_draw_order = false;
 }
@@ -45,6 +47,8 @@ operator = (const EggRenderMode &copy) {
   _depth_write_mode = copy._depth_write_mode;
   _depth_test_mode = copy._depth_test_mode;
   _visibility_mode = copy._visibility_mode;
+  _depth_offset = copy._depth_offset;
+  _has_depth_offset = copy._has_depth_offset;
   _draw_order = copy._draw_order;
   _has_draw_order = copy._has_draw_order;
   return *this;
@@ -74,6 +78,10 @@ write(ostream &out, int indent_level) const {
     indent(out, indent_level)
       << "<Scalar> visibility { " << get_visibility_mode() << " }\n";
   }
+  if (has_depth_offset()) {
+    indent(out, indent_level)
+      << "<Scalar> depth-offset { " << get_depth_offset() << " }\n";
+  }
   if (has_draw_order()) {
     indent(out, indent_level)
       << "<Scalar> draw-order { " << get_draw_order() << " }\n";
@@ -95,8 +103,15 @@ operator == (const EggRenderMode &other) const {
       _depth_write_mode != other._depth_write_mode ||
       _depth_test_mode != other._depth_test_mode ||
       _visibility_mode != other._visibility_mode ||
+      _has_depth_offset != other._has_depth_offset ||
       _has_draw_order != other._has_draw_order) {
     return false;
+  }
+
+  if (_has_depth_offset) {
+    if (_depth_offset != other._depth_offset) {
+      return false;
+    }
   }
 
   if (_has_draw_order) {
@@ -132,10 +147,18 @@ operator < (const EggRenderMode &other) const {
     return (int)_visibility_mode < (int)other._visibility_mode;
   }
 
+  if (_has_depth_offset != other._has_depth_offset) {
+    return (int)_has_depth_offset < (int)other._has_depth_offset;
+  }
   if (_has_draw_order != other._has_draw_order) {
     return (int)_has_draw_order < (int)other._has_draw_order;
   }
 
+  if (_has_depth_offset) {
+    if (_depth_offset != other._depth_offset) {
+      return _depth_offset < other._depth_offset;
+    }
+  }
   if (_has_draw_order) {
     if (_draw_order != other._draw_order) {
       return _draw_order < other._draw_order;

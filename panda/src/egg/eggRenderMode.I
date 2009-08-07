@@ -131,6 +131,54 @@ get_alpha_mode() const {
   return _alpha_mode;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: EggRenderMode::set_depth_offset
+//       Access: Public
+//  Description: Sets the "depth-offset" flag associated with this
+//               object.  This adds or subtracts an offset bias
+//               into the depth buffer. See also DepthOffsetAttrib
+//               and NodePath::set_depth_offset().
+////////////////////////////////////////////////////////////////////
+INLINE void EggRenderMode::
+set_depth_offset(int order) {
+  _depth_offset = order;
+  _has_depth_offset = true;
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggRenderMode::get_depth_offset
+//       Access: Public
+//  Description: Returns the "depth-offset" flag as set for this
+//               particular object.  See set_depth_offset().
+////////////////////////////////////////////////////////////////////
+INLINE int EggRenderMode::
+get_depth_offset() const {
+  return _depth_offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggRenderMode::has_depth_offset
+//       Access: Public
+//  Description: Returns true if the depth-offset flag has been set for
+//               this particular object.  See set_depth_offset().
+////////////////////////////////////////////////////////////////////
+INLINE bool EggRenderMode::
+has_depth_offset() const {
+  return _has_depth_offset;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: EggRenderMode::clear_depth_offset
+//       Access: Public
+//  Description: Removes the depth-offset flag from this particular
+//               object.  See set_depth_offset().
+////////////////////////////////////////////////////////////////////
+INLINE void EggRenderMode::
+clear_depth_offset() {
+  _has_depth_offset = false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: EggRenderMode::set_draw_order

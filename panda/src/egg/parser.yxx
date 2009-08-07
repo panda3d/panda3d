@@ -666,6 +666,9 @@ texture_body:
       texture->set_visibility_mode(m);
     }
 
+  } else if (cmp_nocase_uh(name, "depth_offset") == 0) {
+    texture->set_depth_offset((int)value);
+
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     texture->set_draw_order((int)value);
 
@@ -1267,6 +1270,9 @@ group_body:
     } else {
       group->set_visibility_mode(m);
     }
+
+  } else if (cmp_nocase_uh(name, "depth_offset") == 0) {
+    group->set_depth_offset(ulong_value);
 
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     group->set_draw_order(ulong_value);
@@ -2004,6 +2010,8 @@ primitive_body:
       primitive->set_visibility_mode(m);
     }
 
+  } else if (cmp_nocase_uh(name, "depth_offset") == 0) {
+    primitive->set_depth_offset((int)value);
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {
@@ -2095,6 +2103,8 @@ nurbs_surface_body:
       primitive->set_visibility_mode(m);
     }
 
+  } else if (cmp_nocase_uh(name, "depth_offset") == 0) {
+    primitive->set_depth_offset((int)value);
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {
@@ -2169,6 +2179,8 @@ nurbs_curve_body:
       primitive->set_visibility_mode(m);
     }
 
+  } else if (cmp_nocase_uh(name, "depth_offset") == 0) {
+    primitive->set_depth_offset((int)value);
   } else if (cmp_nocase_uh(name, "draw_order") == 0) {
     primitive->set_draw_order((int)value);
   } else if (cmp_nocase_uh(name, "bin") == 0) {

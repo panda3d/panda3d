@@ -142,6 +142,33 @@ determine_visibility_mode() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: EggPrimitive::determine_depth_offset
+//       Access: Published, Virtual
+//  Description: Walks back up the hierarchy, looking for an EggGroup
+//               or EggPrimitive or some such object at this level or
+//               above this primitive that has a depth_offset specified.
+//               Returns a valid EggRenderMode pointer if one is found,
+//               or NULL otherwise.
+////////////////////////////////////////////////////////////////////
+EggRenderMode *EggPrimitive::
+determine_depth_offset() {
+  if (has_depth_offset()) {
+    return this;
+  }
+
+  EggRenderMode *result = EggNode::determine_depth_offset();
+  if (result == (EggRenderMode *)NULL) {
+    int num_textures = get_num_textures();
+    for (int i = 0; i < num_textures && result == (EggRenderMode *)NULL; i++) {
+      if (get_texture(i)->has_depth_offset()) {
+        result = get_texture(i);
+      }
+    }
+  }
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: EggPrimitive::determine_draw_order
 //       Access: Published, Virtual
 //  Description: Walks back up the hierarchy, looking for an EggGroup

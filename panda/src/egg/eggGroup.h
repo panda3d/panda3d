@@ -154,6 +154,7 @@ PUBLISHED:
   virtual EggRenderMode *determine_depth_write_mode();
   virtual EggRenderMode *determine_depth_test_mode();
   virtual EggRenderMode *determine_visibility_mode();
+  virtual EggRenderMode *determine_depth_offset();
   virtual EggRenderMode *determine_draw_order();
   virtual EggRenderMode *determine_bin();
   virtual bool determine_indexed();
