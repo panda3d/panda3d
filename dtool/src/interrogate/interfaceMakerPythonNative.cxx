@@ -1502,10 +1502,28 @@ write_module_class(ostream &out,  Object *obj) {
       }
     }
 
-    if(HasAGetKeyFunction(obj->_itype)) 
-      {
+    string get_key = HasAGetKeyFunction(obj->_itype);
+    if (!get_key.empty()) {
+      out << "//////////////////\n";
+      out << "//  A LocalHash(getKey) Function for this type\n";
+      out << "//     " <<ClassName << "\n";
+      out << "//////////////////\n";
+      out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
+      out << "{\n";
+      out << "    "<<cClassName  << " * local_this = NULL;\n";
+      out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
+      out << "    if(local_this == NULL)\n";
+      out << "    {\n";
+      out << "       PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
+      out << "       return -1;\n";
+      out << "    };\n";
+      out << "    return local_this->" << get_key << "();\n";
+      out << "}\n\n";
+      has_local_hash = true;
+    } else {
+      if(bases.size() == 0) {
         out << "//////////////////\n";
-        out << "//  A LocalHash(getKey) Function for this type\n";
+        out << "//  A LocalHash(This Pointer) Function for this type\n";
         out << "//     " <<ClassName << "\n";
         out << "//////////////////\n";
         out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
@@ -1517,33 +1535,12 @@ write_module_class(ostream &out,  Object *obj) {
         out << "       PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
         out << "       return -1;\n";
         out << "    };\n";
-        out << "    return local_this->get_key();\n";
+        out << "    return (long)local_this;\n";
         out << "}\n\n";
         has_local_hash = true;
       }
-    else
-      {
-        if(bases.size() == 0)
-          {
-            out << "//////////////////\n";
-            out << "//  A LocalHash(This Pointer) Function for this type\n";
-            out << "//     " <<ClassName << "\n";
-            out << "//////////////////\n";
-            out << "static long  DTool_HashKey_"<<ClassName << "(PyObject * self)\n";
-            out << "{\n";
-            out << "    "<<cClassName  << " * local_this = NULL;\n";
-            out << "    DTOOL_Call_ExtractThisPointerForType(self,&Dtool_"<<  ClassName<<",(void **)&local_this);\n";
-            out << "    if(local_this == NULL)\n";
-            out << "    {\n";
-            out << "       PyErr_SetString(PyExc_AttributeError, \"C++ object is not yet constructed, or already destructed.\");\n";
-            out << "       return -1;\n";
-            out << "    };\n";
-            out << "    return (long)local_this;\n";
-            out << "}\n\n";
-            has_local_hash = true;
-          }
-      }
-
+    }
+    
     int need_repr = NeedsAReprFunction(obj->_itype);
     if(need_repr > 0)
       {
@@ -3383,44 +3380,42 @@ bool   InterfaceMakerPythonNative::DoesInheritFromIsClass( const CPPStructType *
 ////////////////////////////////////////////////////////////////////////////////////////////
 //  Function : HasAGetKeyFunction
 //
-// does the class have a supportable GetKey for hash usage..
+// does the class have a supportable get_key() or get_hash() to return
+// a usable Python hash?  Returns the name of the method, or empty
+// string if there is no suitable method.
 //////////////////////////////////////////////////////////////////////////////////////////
-bool InterfaceMakerPythonNative::HasAGetKeyFunction(const InterrogateType &itype_class)
-{
+string InterfaceMakerPythonNative::
+HasAGetKeyFunction(const InterrogateType &itype_class) {
   InterrogateDatabase *idb = InterrogateDatabase::get_ptr();
 
   int num_methods = itype_class.number_of_methods();
   int mi;
-  for (mi = 0; mi < num_methods; mi++) 
-  {
-      FunctionIndex func_index = itype_class.get_method(mi);
-      const InterrogateFunction &ifunc = idb->get_function(func_index);
-      if(ifunc.get_name() == "get_key") 
-      {
-          if (ifunc._instances != (InterrogateFunction::Instances *)NULL) 
-          {
-              InterrogateFunction::Instances::const_iterator ii;
-              for (ii = ifunc._instances->begin();ii != ifunc._instances->end();++ii) 
-              {
-                  CPPInstance *cppinst = (*ii).second;
-                  CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
-
-                  if(cppfunc != NULL)
-                  {
-                      if(cppfunc->_parameters != NULL && cppfunc->_return_type != NULL && TypeManager::is_integer(cppfunc->_return_type))
-                      {
-                          if(cppfunc->_parameters->_parameters.size() == 0)
-                          {
-                              return true;
-                          }
-                      }
-                  }
-
-              }   
+  for (mi = 0; mi < num_methods; mi++) {
+    FunctionIndex func_index = itype_class.get_method(mi);
+    const InterrogateFunction &ifunc = idb->get_function(func_index);
+    if (ifunc.get_name() == "get_key" || ifunc.get_name() == "get_hash") {
+      if (ifunc._instances != (InterrogateFunction::Instances *)NULL) {
+        InterrogateFunction::Instances::const_iterator ii;
+        for (ii = ifunc._instances->begin();
+             ii != ifunc._instances->end();
+             ++ii) {
+          CPPInstance *cppinst = (*ii).second;
+          CPPFunctionType *cppfunc = cppinst->_type->as_function_type();
+          
+          if (cppfunc != NULL) {
+            if (cppfunc->_parameters != NULL &&
+                cppfunc->_return_type != NULL && 
+                TypeManager::is_integer(cppfunc->_return_type)) {
+              if (cppfunc->_parameters->_parameters.size() == 0) {
+                return ifunc.get_name();
+              }
+            }
           }
+        }   
       }
+    }
   }
-      return false;
+  return string();
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////
