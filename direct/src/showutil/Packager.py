@@ -8,6 +8,7 @@ import os
 import glob
 import marshal
 import new
+from direct.showbase import Loader
 from direct.showutil import FreezeTool
 from direct.directnotify.DirectNotifyGlobal import *
 from pandac.PandaModules import *
@@ -31,10 +32,13 @@ class Packager:
             self.deleteTemp = deleteTemp
 
     class Package:
-        def __init__(self, packageName):
+        def __init__(self, packageName, packager):
             self.packageName = packageName
+            self.packager = packager
             self.version = 'dev'
             self.files = []
+            self.compressionLevel = 0
+            self.importedMapsDir = 'imported_maps'
 
             # This records the current list of modules we have added so
             # far.
@@ -52,31 +56,58 @@ class Packager:
             except OSError:
                 pass
             
-            multifile = Multifile()
-            multifile.openReadWrite(packageFilename)
+            self.multifile = Multifile()
+            self.multifile.openReadWrite(packageFilename)
 
-            sourceFilename = {}
-            targetFilename = {}
+            # Build up a cross-reference of files we've already
+            # discovered.
+            self.sourceFilenames = {}
+            self.targetFilenames = {}
             for file in self.files:
                 if not file.newName:
                     file.newName = file.filename
-                sourceFilename[file.filename] = file
-                targetFilename[file.newName] = file
+
+                # Convert the source filename to an unambiguous
+                # filename for searching.
+                filename = Filename(file.filename)
+                filename.makeCanonical()
+                
+                self.sourceFilenames[filename] = file
+                self.targetFilenames[file.newName] = file
 
             for file in self.files:
                 ext = file.filename.getExtension()
                 if ext == 'py':
                     self.addPyFile(file)
                 else:
-                    # An ordinary file.
-                    multifile.addSubfile(file.newName, file.filename, 0)
+                    if ext == 'pz':
+                        # Strip off an implicit .pz extension.
+                        filename = Filename(file.filename)
+                        filename.setExtension('')
+                        filename = Filename(filename.cStr())
+                        ext = filename.getExtension()
+
+                        filename = Filename(file.newName)
+                        if filename.getExtension() == 'pz':
+                            filename.setExtension('')
+                            file.newName = filename.cStr()
+
+                    if ext == 'egg':
+                        self.addEggFile(file)
+                    elif ext == 'bam':
+                        self.addBamFile(file)
+                    elif ext in self.packager.imageExtensions:
+                        self.addTexture(file)
+                    else:
+                        # An ordinary file.
+                        self.multifile.addSubfile(file.newName, file.filename, self.compressionLevel)
 
             # Pick up any unfrozen Python files.
             self.freezer.done()
-            self.freezer.addToMultifile(multifile)
+            self.freezer.addToMultifile(self.multifile)
 
-            multifile.repack()
-            multifile.close()
+            self.multifile.repack()
+            self.multifile.close()
 
             # Now that all the files have been packed, we can delete
             # the temporary files.
@@ -105,6 +136,122 @@ class Packager:
 
             self.freezer.addModule(moduleName, newName = moduleName,
                                    filename = file.filename)
+
+        def addEggFile(self, file):
+            # Precompile egg files to bam's.
+            np = self.packager.loader.loadModel(file.filename, okMissing = True)
+            if not np:
+                raise StandardError, 'Could not read egg file %s' % (file.filename)
+
+            bamName = Filename(file.newName)
+            bamName.setExtension('bam')
+            self.addNode(np.node(), bamName.cStr())
+
+        def addBamFile(self, file):
+            # Load the bam file so we can massage its textures.
+            bamFile = BamFile()
+            if not bamFile.openRead(file.filename):
+                raise StandardError, 'Could not read bam file %s' % (file.filename)
+
+            if not bamFile.resolve():
+                raise StandardError, 'Could not resolve bam file %s' % (file.filename)
+
+            node = bamFile.readNode()
+            if not node:
+                raise StandardError, 'Not a model file: %s' % (file.filename)
+
+            self.addNode(node, file.newName)
+
+        def addNode(self, node, filename):
+            """ Converts the indicated node to a bam stream, and adds the
+            bam file to the multifile under the indicated filename. """
+
+            # If the Multifile already has a file by this name, don't
+            # bother adding it again.
+            if self.multifile.findSubfile(filename) >= 0:
+                return
+
+            # Be sure to import all of the referenced textures, and tell
+            # them their new location within the multifile.
+
+            for tex in NodePath(node).findAllTextures():
+                if not tex.hasFullpath() and tex.hasRamImage():
+                    # We need to store this texture as a raw-data image.
+                    # Clear the filename so this will happen
+                    # automatically.
+                    tex.clearFilename()
+                    tex.clearAlphaFilename()
+
+                else:
+                    # We can store this texture as a file reference to its
+                    # image.  Copy the file into our multifile, and rename
+                    # its reference in the texture.
+                    if tex.hasFilename():
+                        tex.setFilename(self.addFoundTexture(tex.getFullpath()))
+                    if tex.hasAlphaFilename():
+                        tex.setAlphaFilename(self.addFoundTexture(tex.getAlphaFullpath()))
+
+            # Now generate an in-memory bam file.  Tell the bam writer to
+            # keep the textures referenced by their in-multifile path.
+            bamFile = BamFile()
+            stream = StringStream()
+            bamFile.openWrite(stream)
+            bamFile.getWriter().setFileTextureMode(bamFile.BTMUnchanged)
+            bamFile.writeObject(node)
+            bamFile.close()
+
+            # Clean the node out of memory.
+            node.removeAllChildren()
+
+            # Now we have an in-memory bam file.
+            stream.seekg(0)
+            self.multifile.addSubfile(filename, stream, self.compressionLevel)
+
+            # Flush it so the data gets written to disk immediately, so we
+            # don't have to keep it around in ram.
+            self.multifile.flush()
+
+        def addFoundTexture(self, filename):
+            """ Adds the newly-discovered texture to the output, if it has
+            not already been included.  Returns the new name within the
+            package tree. """
+
+            assert not filename.isLocal()
+
+            filename = Filename(filename)
+            filename.makeCanonical()
+
+            file = self.sourceFilenames.get(filename, None)
+            if file:
+                # Never mind, it's already on the list.
+                return file.newName
+
+            # We have to copy the image into the plugin tree somewhere.
+            newName = self.importedMapsDir + '/' + filename.getBasename()
+            uniqueId = 0
+            while newName in self.targetFilenames:
+                uniqueId += 1
+                newName = '%s/%s_%s.%s' % (
+                    self.importedMapsDir, filename.getBasenameWoExtension(),
+                    uniqueId, filename.getExtension())
+
+            file = Packager.PackFile(filename, newName = newName)
+            self.sourceFilenames[filename] = file
+            self.targetFilenames[newName] = file
+            self.addTexture(file)
+
+            return newName
+
+        def addTexture(self, file):
+            """ Adds a texture image to the output. """
+
+            if self.multifile.findSubfile(file.newName) >= 0:
+                # Already have this texture.
+                return
+
+            # Texture file formats are generally already compressed and
+            # not further compressible.
+            self.multifile.addSubfile(file.newName, file.filename, 0)
 
     def __init__(self):
 
@@ -140,6 +287,17 @@ class Packager:
         # available to the client.  Other suffixes, like AI and UD,
         # are server-side only and should be ignored by the Scrubber.
         self.dcClientSuffixes = ['OV']
+
+        # Get the list of filename extensions that are recognized as
+        # image files.
+        self.imageExtensions = []
+        for type in PNMFileTypeRegistry.getGlobalPtr().getTypes():
+            self.imageExtensions += type.getExtensions()
+
+        # A Loader for loading models.
+        self.loader = Loader.Loader(self)
+        self.sfxManagerList = None
+        self.musicManager = None
 
     def setup(self):
         """ Call this method to initialize the class after filling in
@@ -337,7 +495,7 @@ class Packager:
         basename of the package.  Follow this with a number of calls
         to file() etc., and close the package with endPackage(). """
         
-        package = self.Package(packageName)
+        package = self.Package(packageName, self)
         if self.currentPackage:
             package.freezer.excludeFrom(self.currentPackage.freezer)
             
