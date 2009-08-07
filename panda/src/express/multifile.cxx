@@ -119,10 +119,12 @@ Multifile() :
   _file_major_ver = 0;
   _file_minor_ver = 0;
 
+#ifdef HAVE_OPENSSL
   // Get these values from the config file via an EncryptStreamBuf.
   EncryptStreamBuf tbuf;
   _encryption_algorithm = tbuf.get_algorithm();
   _encryption_key_length = tbuf.get_key_length();
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
