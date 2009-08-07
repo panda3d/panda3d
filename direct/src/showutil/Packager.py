@@ -29,6 +29,7 @@ class Packager:
 
     class PackFile:
         def __init__(self, filename, newName = None, deleteTemp = False):
+            assert isinstance(filename, Filename)
             self.filename = filename
             self.newName = newName
             self.deleteTemp = deleteTemp
@@ -37,37 +38,66 @@ class Packager:
         def __init__(self, packageName, packager):
             self.packageName = packageName
             self.packager = packager
-            self.version = 'dev'
+            self.version = None
+            self.platform = None
+            self.p3dApplication = False
             self.files = []
             self.compressionLevel = 0
             self.importedMapsDir = 'imported_maps'
+
+            # This is the set of files and modules, already included
+            # by required packages, that we can skip.
+            self.skipFilenames = {}
+            self.skipModules = {}
 
             # This records the current list of modules we have added so
             # far.
             self.freezer = FreezeTool.Freezer()
 
+            # Set this true to parse and build up the internal
+            # filelist, but not generate any output.
+            self.dryRun = False
+
         def close(self):
             """ Writes out the contents of the current package. """
 
             packageFilename = self.packageName
-            packageFilename += '_' + self.version
-            packageFilename += '.mf'
+            if self.platform:
+                packageFilename += '_' + self.platform
+            if self.version:
+                packageFilename += '_' + self.version
+
+            if self.p3dApplication:
+                packageFilename += '.p3d'
+            else:
+                packageFilename += '.mf'
             
             try:
                 os.unlink(packageFilename)
             except OSError:
                 pass
-            
-            self.multifile = Multifile()
-            self.multifile.openReadWrite(packageFilename)
+
+            if self.dryRun:
+                self.multifile = None
+            else:
+                self.multifile = Multifile()
+                self.multifile.openReadWrite(packageFilename)
+
+            # Exclude modules already imported in a required package.
+            for moduleName in self.skipModules.keys():
+                self.freezer.excludeModule(moduleName)
 
             # Build up a cross-reference of files we've already
             # discovered.
             self.sourceFilenames = {}
             self.targetFilenames = {}
+            processFiles = []
             for file in self.files:
                 if not file.newName:
                     file.newName = file.filename
+                if file.newName in self.skipFilenames:
+                    # Skip this file.
+                    continue
 
                 # Convert the source filename to an unambiguous
                 # filename for searching.
@@ -76,12 +106,13 @@ class Packager:
                 
                 self.sourceFilenames[filename] = file
                 self.targetFilenames[file.newName] = file
+                processFiles.append(file)
 
-            for file in self.files:
+            for file in processFiles:
                 ext = file.filename.getExtension()
                 if ext == 'py':
                     self.addPyFile(file)
-                else:
+                elif not self.dryRun:
                     if ext == 'pz':
                         # Strip off an implicit .pz extension.
                         filename = Filename(file.filename)
@@ -100,22 +131,31 @@ class Packager:
                         self.addBamFile(file)
                     elif ext in self.packager.imageExtensions:
                         self.addTexture(file)
+                    elif ext in self.packager.uncompressibleExtensions:
+                        # An uncompressible file.
+                        self.multifile.addSubfile(file.newName, file.filename, 0)
                     else:
-                        # An ordinary file.
+                        # Any other file.
                         self.multifile.addSubfile(file.newName, file.filename, self.compressionLevel)
 
             # Pick up any unfrozen Python files.
             self.freezer.done()
-            self.freezer.addToMultifile(self.multifile)
 
-            self.multifile.repack()
-            self.multifile.close()
+            # Add known module names.
+            self.moduleNames = {}
+            for moduleName in self.freezer.getAllModuleNames():
+                self.moduleNames[moduleName] = True
+
+            if not self.dryRun:
+                self.freezer.addToMultifile(self.multifile)
+                self.multifile.repack()
+                self.multifile.close()
 
             # Now that all the files have been packed, we can delete
             # the temporary files.
             for file in self.files:
                 if file.deleteTemp:
-                    os.unlink(file.filename)
+                    file.filename.unlink()
 
         def addPyFile(self, file):
             """ Adds the indicated python file, identified by filename
@@ -319,15 +359,21 @@ class Packager:
         self.sfxManagerList = None
         self.musicManager = None
 
+        # This is filled in during readPackageDef().
+        self.packageList = None
+
+        # A table of all known packages by name.
+        self.packages = {}
+
+        self.dryRun = False
+
+
     def setup(self):
         """ Call this method to initialize the class after filling in
         some of the values in the constructor. """
 
         self.knownExtensions = self.imageExtensions + self.modelExtensions + self.textExtensions + self.binaryExtensions + self.uncompressibleExtensions
 
-        # We need a stack of packages for managing begin_package
-        # .. end_package.
-        self.packageStack = []
         self.currentPackage = None
 
         # The persist dir is the directory in which the results from
@@ -353,10 +399,13 @@ class Packager:
         # created there
         os.chdir(self.persistDir.toOsSpecific())
 
-
     def readPackageDef(self, packageDef):
-        """ Reads the lines in packageDef and dispatches to the
-        appropriate handler method for each line. """
+        """ Reads the lines in the .pdef file named by packageDef and
+        dispatches to the appropriate handler method for each
+        line.  Returns the list of package files."""
+
+        assert self.packageList is None
+        self.packageList = []
 
         self.notify.info('Reading %s' % (packageDef))
         file = open(packageDef.toOsSpecific())
@@ -418,6 +467,11 @@ class Packager:
             inst.args = (inst.args[0] + ' on line %s of %s' % (lineNum[0], packageDef),)
             raise
 
+        packageList = self.packageList
+        self.packageList = None
+
+        return packageList
+
     def parse_setenv(self, lineList):
         """
         setenv variable value
@@ -430,7 +484,7 @@ class Packager:
 
         value = ExecutionEnvironment.expandString(value)
         ExecutionEnvironment.setEnvironmentVariable(variable, value)
-            
+
     def parse_begin_package(self, lineList):
         """
         begin_package packageName
@@ -454,6 +508,23 @@ class Packager:
             raise ArgumentError
 
         self.endPackage(packageName)
+
+    def parse_require(self, lineList):
+        """
+        require packageName
+        """
+
+        try:
+            command, packageName = lineList
+        except ValueError:
+            raise ArgumentError
+
+        package = self.findPackage(packageName)
+        if not package:
+            message = "Unknown package %s" % (packageName)
+            raise PackagerError, message
+
+        self.require(package)
 
     def parse_module(self, lineList):
         """
@@ -533,12 +604,13 @@ class Packager:
         """ Begins a new package specification.  packageName is the
         basename of the package.  Follow this with a number of calls
         to file() etc., and close the package with endPackage(). """
-        
-        package = self.Package(packageName, self)
+
         if self.currentPackage:
-            package.freezer.excludeFrom(self.currentPackage.freezer)
-            
-        self.packageStack.append(package)
+            raise PackagerError, 'unmatched end_package %s' % (self.currentPackage.packageName)
+
+        package = self.Package(packageName, self)
+        package.dryRun = self.dryRun
+        
         self.currentPackage = package
 
     def endPackage(self, packageName):
@@ -555,12 +627,36 @@ class Packager:
         package = self.currentPackage
         package.close()
 
-        del self.packageStack[-1]
-        if self.packageStack:
-            self.currentPackage = self.packageStack[-1]
-            self.currentPackage.freezer.excludeFrom(package.freezer)
-        else:
-            self.currentPackage = None
+        self.packageList.append(package)
+        self.packages[package.packageName] = package
+        self.currentPackage = None
+
+    def findPackage(self, packageName, searchUrl = None):
+        """ Searches for the named package from a previous publish
+        operation, either at the indicated URL or along the default
+        search path.
+
+        Returns the Package object, or None if the package cannot be
+        located. """
+
+        # Is it a package we already have resident?
+        package = self.packages.get(packageName, None)
+        if package:
+            return package
+
+        return None
+
+    def require(self, package):
+        """ Indicates a dependency on the indicated package.
+
+        Attempts to install this package will implicitly install the
+        named package also.  Files already included in the named
+        package will be omitted from this one. """
+
+        for filename in package.targetFilenames.keys():
+            self.currentPackage.skipFilenames[filename] = True
+        for moduleName in package.moduleNames.keys():
+            self.currentPackage.skipModules[moduleName] = True
 
     def module(self, moduleName, newName = None):
         """ Adds the indicated Python module to the current package. """
@@ -584,14 +680,15 @@ class Packager:
         freezer = package.freezer
         freezer.done()
 
-        dirname = ''
-        basename = filename
-        if '/' in basename:
-            dirname, basename = filename.rsplit('/', 1)
-            dirname += '/'
-        basename = freezer.generateCode(basename, compileToExe = compileToExe)
+        if not package.dryRun:
+            dirname = ''
+            basename = filename
+            if '/' in basename:
+                dirname, basename = filename.rsplit('/', 1)
+                dirname += '/'
+            basename = freezer.generateCode(basename, compileToExe = compileToExe)
 
-        package.files.append(self.PackFile(basename, newName = dirname + basename, deleteTemp = True))
+            package.files.append(self.PackFile(Filename(basename), newName = dirname + basename, deleteTemp = True))
 
         # Reset the freezer for more Python files.
         freezer.reset()

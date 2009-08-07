@@ -422,7 +422,7 @@ class Freezer:
         constructor, but it may be called at any point during
         processing. """
 
-        for key, value in freezer.modules:
+        for key, value in freezer.modules.items():
             self.previousModules[key] = value
             self.modules[key] = value
 
@@ -686,9 +686,26 @@ class Freezer:
     def mangleName(self, moduleName):
         return 'M_' + moduleName.replace('.', '__').replace('-', '_')
 
-    def __getModuleDefs(self):
-        # Collect a list of all of the modules we will be explicitly
-        # referencing.
+    def getAllModuleNames(self):
+        """ Return a list of all module names that have been included
+        or forbidden, either in this current pass or in a previous
+        pass.  Module names that have been excluded are not included
+        in this list. """
+
+        moduleNames = []
+
+        for newName, mdef in self.modules.items():
+            if mdef.token != self.MTExclude:
+                moduleNames.append(newName)
+
+        moduleNames.sort()
+        return moduleNames
+
+    def getModuleDefs(self):
+        """ Return a list of all of the modules we will be explicitly
+        or implicitly including.  The return value is actually a list
+        of tuples: (moduleName, moduleDef)."""
+        
         moduleDefs = []
 
         for newName, mdef in self.modules.items():
@@ -831,7 +848,7 @@ class Freezer:
         python code into the indicated Multifile. """
 
         moduleDirs = {}
-        for moduleName, mdef in self.__getModuleDefs():
+        for moduleName, mdef in self.getModuleDefs():
             if mdef.token != self.MTForbid:
                 self.__addPythonFile(multifile, moduleDirs, moduleName, mdef)
     
@@ -874,7 +891,7 @@ class Freezer:
         moduleDefs = []
         moduleList = []
         
-        for moduleName, mdef in self.__getModuleDefs():
+        for moduleName, mdef in self.getModuleDefs():
             token = mdef.token
             origName = mdef.moduleName
             if token == self.MTForbid:
