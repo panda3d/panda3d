@@ -2733,7 +2733,7 @@ atomic_read_contents(string &contents) const {
 
 #else  // WIN32_VC
   string os_specific = to_os_specific();
-  int fd = open(os_specific.c_str(), O_RDONLY | O_CREAT, 0666);
+  int fd = open(os_specific.c_str(), O_RDWR | O_CREAT, 0666);
   if (fd < 0) {
     perror(os_specific.c_str());
     return false;
