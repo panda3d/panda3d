@@ -583,6 +583,9 @@ handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
         if (result != NULL) {
           xresponse->LinkEndChild(pyobj_to_xml(result));
           Py_DECREF(result);
+        } else {
+          // Print the Python error message if there was one.
+          PyErr_Print();
         }
 
         Py_DECREF(obj);
