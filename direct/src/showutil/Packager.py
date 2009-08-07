@@ -13,6 +13,8 @@ from direct.showutil import FreezeTool
 from direct.directnotify.DirectNotifyGlobal import *
 from pandac.PandaModules import *
 
+vfs = VirtualFileSystem.getGlobalPtr()
+
 class PackagerError(StandardError):
     pass
 
@@ -294,6 +296,24 @@ class Packager:
         for type in PNMFileTypeRegistry.getGlobalPtr().getTypes():
             self.imageExtensions += type.getExtensions()
 
+        # Other useful extensions.  The .pz extension is implicitly
+        # stripped.
+
+        # Model files.
+        self.modelExtensions = [ 'egg', 'bam' ]
+
+        # Text files that are copied (and compressed) to the package
+        # without processing.
+        self.textExtensions = [ 'prc', 'ptf', 'txt' ]
+
+        # Binary files that are copied (and compressed) without
+        # processing.
+        self.binaryExtensions = [ 'ttf', 'wav', 'mid' ]
+
+        # Binary files that are considered uncompressible, and are
+        # copied without compression.
+        self.uncompressibleExtensions = [ 'mp3', 'ogg' ]
+
         # A Loader for loading models.
         self.loader = Loader.Loader(self)
         self.sfxManagerList = None
@@ -302,6 +322,8 @@ class Packager:
     def setup(self):
         """ Call this method to initialize the class after filling in
         some of the values in the constructor. """
+
+        self.knownExtensions = self.imageExtensions + self.modelExtensions + self.textExtensions + self.binaryExtensions + self.uncompressibleExtensions
 
         # We need a stack of packages for managing begin_package
         # .. end_package.
@@ -489,6 +511,23 @@ class Packager:
             raise ArgumentError
 
         self.file(filename, newNameOrDir = newNameOrDir)
+
+    def parse_dir(self, lineList):
+        """
+        dir dirname [newDir]
+        """
+
+        newDir = None
+
+        try:
+            if len(lineList) == 2:
+                command, dirname = lineList
+            else:
+                command, dirname, newDir = lineList
+        except ValueError:
+            raise ArgumentError
+
+        self.dir(dirname, newDir = newDir)
     
     def beginPackage(self, packageName):
         """ Begins a new package specification.  packageName is the
@@ -606,8 +645,6 @@ class Packager:
                     message = 'Cannot install multiple files on target filename %s' % (newName)
                     raise PackagerError, message
 
-        package = self.currentPackage
-
         for filename in files:
             filename = Filename.fromOsSpecific(filename)
             basename = filename.getBasename()
@@ -615,6 +652,56 @@ class Packager:
                 self.addFile(filename, newName = newName)
             else:
                 self.addFile(filename, newName = prefix + basename)
+
+    def dir(self, dirname, newDir = None):
+
+        """ Adds the indicated directory hierarchy to the current
+        package.  The directory hierarchy is walked recursively, and
+        all files that match a known extension are added to the package.
+
+        The dirname may include environment variable references.
+
+        newDir specifies the directory name within the package which
+        the contents of the named directory should be installed to.
+        If it is omitted, the contents of the named directory are
+        installed to the root of the package.
+        """
+
+        if not self.currentPackage:
+            raise OutsideOfPackageError
+
+        dirname = Filename.expandFrom(dirname)
+        if not newDir:
+            newDir = ''
+
+        self.__recurseDir(dirname, newDir)
+
+    def __recurseDir(self, filename, newName):
+        dirList = vfs.scanDirectory(filename)
+        if dirList:
+            # It's a directory name.  Recurse.
+            prefix = newName
+            if prefix and prefix[-1] != '/':
+                prefix += '/'
+            for subfile in dirList:
+                filename = subfile.getFilename()
+                self.__recurseDir(filename, prefix + filename.getBasename())
+            return
+
+        # It's a file name.  Add it.
+        ext = filename.getExtension()
+        if ext == 'py':
+            self.addFile(filename, newName = newName)
+        else:
+            if ext == 'pz':
+                # Strip off an implicit .pz extension.
+                newFilename = Filename(filename)
+                newFilename.setExtension('')
+                newFilename = Filename(newFilename.cStr())
+                ext = newFilename.getExtension()
+
+            if ext in self.knownExtensions:
+                self.addFile(filename, newName = newName)
 
     def addFile(self, filename, newName = None):
         """ Adds the named file, giving it the indicated name within
