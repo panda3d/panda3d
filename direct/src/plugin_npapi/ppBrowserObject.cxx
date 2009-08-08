@@ -247,6 +247,18 @@ eval(const string &expression) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PPBrowserObject::clear_class_definition
+//       Access: Public, Static
+//  Description: Should be called when the core API is unloaded, and
+//               the associated class definition object is therefore
+//               invalidated.
+////////////////////////////////////////////////////////////////////
+void PPBrowserObject::
+clear_class_definition() {
+  _browser_object_class = NULL;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PPBrowserObject::get_class_definition
 //       Access: Private, Static
 //  Description: Returns a pointer to the P3D_class_definition object

@@ -738,6 +738,10 @@ start_p3dpython() {
   env += _python_root_dir;
   env += '\0';
 
+  env += "PYTHONHOME=";
+  env += _python_root_dir;
+  env += '\0';
+
   env += "PRC_DIR=";
   env += _python_root_dir;
   env += '\0';
@@ -746,6 +750,7 @@ start_p3dpython() {
   env += _python_root_dir;
   env += '\0';
 
+  nout << "Attempting to start python from " << p3dpython << "\n";
 #ifdef _WIN32
   _p3dpython_handle = win_create_process
     (p3dpython, _python_root_dir, env, _output_filename,

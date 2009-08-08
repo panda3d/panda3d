@@ -43,6 +43,8 @@ public:
                    P3D_object *params[], int num_params) const;
   P3D_object *eval(const string &expression) const;
 
+  static void clear_class_definition();
+
 private:
   static P3D_class_definition *get_class_definition();
 

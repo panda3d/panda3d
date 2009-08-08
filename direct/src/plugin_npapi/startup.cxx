@@ -15,6 +15,7 @@
 #include "startup.h"
 #include "p3d_plugin_config.h"
 #include "p3d_lock.h"
+#include "ppBrowserObject.h"
 
 #ifdef _WIN32
 #include <malloc.h>
@@ -183,6 +184,7 @@ NPError OSCALL
 NP_Shutdown(void) {
   nout << "shutdown\n";
   unload_plugin();
+  PPBrowserObject::clear_class_definition();
 
   // Not clear whether there's a return value or not.  Some versions
   // of the API have different opinions on this.
