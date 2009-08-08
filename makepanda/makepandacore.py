@@ -1138,6 +1138,10 @@ def CheckLinkerLibraryPath():
             os.environ["DYLD_LIBRARY_PATH"] = builtlib + ":" + os.environ["DYLD_LIBRARY_PATH"]
         else:
             os.environ["DYLD_LIBRARY_PATH"] = builtlib
+     
+    # Workaround around compile issue on PCBSD
+    if (platform.uname()[1]=="pcbsd"):
+        os.environ["LD_LIBRARY_PATH"] += ":/usr/PCBSD/local/lib"
 
 ########################################################################
 ##
