@@ -4127,7 +4127,7 @@ def MakeRuntime():
         oscmd("rm -rf %s" % BracketNameWithQuotes(GetOutputDir()+"/tmp/bundle"))
     else:
         plugfile = CalcLocation("nppanda3d.dll", None)
-        CopyFile(plugindir + os.path.basename(plugfile), plugfile)
+        CopyFile(plugindir + "nppanda3d.dmg", plugfile)
     
     # Copy the important libraries to built/rlib/.
     CopyFile(GetOutputDir()+"/rlib/Config.prc", GetOutputDir()+"/etc/Config.prc")
@@ -4172,7 +4172,7 @@ def MakeRuntime():
     if (not sys.platform.startswith("win")):
         if (os.path.exists("runtime_%s_%s.tar.bz2" % (RUNTIME_PLATFORM, RUNTIME_VERSION))):
             os.remove("runtime_%s_%s.tar.bz2" % (RUNTIME_PLATFORM, RUNTIME_VERSION))
-        oscmd("cd " + GetOutputDir() + "/stage/ && tar -cjvf " + os.getcwd() + "/runtime.tar.bz2 coreapi panda3d")
+        oscmd("cd " + GetOutputDir() + "/stage/ && tar -cjvf " + os.getcwd() + ("/runtime_%s_%s.tar.bz2 coreapi panda3d plugin" % (RUNTIME_PLATFORM, RUNTIME_VERSION)))
 
 if (RUNTIME != 0):
     MakeRuntime()
