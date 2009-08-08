@@ -808,8 +808,8 @@ def CompileLink(dll, obj, opts):
                 base = os.path.basename(x)
                 if (base[-3:]==".so") and (base[:3]=="lib"):
                     cmd += ' -l' + base[3:-3]
-                elif (base[-2:]==".a") and (base[:3]=="lib") and (sys.platform != "darwin"):
-                    cmd += ' -l:lib' + base[3:]
+                elif (base[-2:]==".a") and (base[:3]=="lib"):
+                    cmd += ' -l' + base[3:-2]
                 else:
                     cmd += ' ' + x
         for (opt, dir) in LIBDIRECTORIES:
@@ -1705,17 +1705,17 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
     OPTS=['DIR:dtool/metalibs/dtool', 'LINK_ALL_STATIC']
     TargetAdd('static_dtool_dtool.obj', opts=OPTS, input='dtool.cxx')
   
-  TargetAdd('libp3dtool.ilb', input=pref+'dtool_dtool.obj')
-  TargetAdd('libp3dtool.ilb', input=pref+'dtoolutil_gnu_getopt.obj')
-  TargetAdd('libp3dtool.ilb', input=pref+'dtoolutil_gnu_getopt1.obj')
-  TargetAdd('libp3dtool.ilb', input=pref+'dtoolutil_composite.obj')
+  TargetAdd('libp3dtool_s.ilb', input=pref+'dtool_dtool.obj')
+  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolutil_gnu_getopt.obj')
+  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolutil_gnu_getopt1.obj')
+  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolutil_composite.obj')
   if (sys.platform == 'darwin'):
-    TargetAdd('libp3dtool.ilb', input='dtoolutil_filename_assist.obj')
-  TargetAdd('libp3dtool.ilb', input=pref+'dtoolbase_composite1.obj')
-  TargetAdd('libp3dtool.ilb', input=pref+'dtoolbase_composite2.obj')
-  TargetAdd('libp3dtool.ilb', input=pref+'dtoolbase_indent.obj')
-  TargetAdd('libp3dtool.ilb', input=pref+'dtoolbase_lookup3.obj')
-  TargetAdd('libp3dtool.ilb', opts=['ADVAPI','WINSHELL','WINKERNEL'])
+    TargetAdd('libp3dtool_s.ilb', input='dtoolutil_filename_assist.obj')
+  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolbase_composite1.obj')
+  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolbase_composite2.obj')
+  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolbase_indent.obj')
+  TargetAdd('libp3dtool_s.ilb', input=pref+'dtoolbase_lookup3.obj')
+  TargetAdd('libp3dtool_s.ilb', opts=['ADVAPI','WINSHELL','WINKERNEL'])
 
 #
 # DIRECTORY: dtool/src/cppparser/
@@ -1784,11 +1784,11 @@ TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI',  'OPENSSL'])
 if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   pref = ""
   if (sys.platform.startswith("win")): pref = "static_"
-  TargetAdd('libp3dtoolconfig.ilb', input=pref+'interrogatedb_composite.obj')
-  TargetAdd('libp3dtoolconfig.ilb', input=pref+'dconfig_composite.obj')
-  TargetAdd('libp3dtoolconfig.ilb', input=pref+'prc_composite.obj')
-  TargetAdd('libp3dtoolconfig.ilb', input='libp3dtool.ilb')
-  TargetAdd('libp3dtoolconfig.ilb', opts=['ADVAPI',  'OPENSSL'])
+  TargetAdd('libp3dtoolconfig_s.ilb', input=pref+'interrogatedb_composite.obj')
+  TargetAdd('libp3dtoolconfig_s.ilb', input=pref+'dconfig_composite.obj')
+  TargetAdd('libp3dtoolconfig_s.ilb', input=pref+'prc_composite.obj')
+  TargetAdd('libp3dtoolconfig_s.ilb', input='libp3dtool_s.ilb')
+  TargetAdd('libp3dtoolconfig_s.ilb', opts=['ADVAPI',  'OPENSSL'])
 
 #
 # DIRECTORY: dtool/src/pystub/
@@ -1913,12 +1913,12 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   pref = ""
   if (sys.platform.startswith("win")): pref = "static_"
   
-  TargetAdd('libpandaexpress.ilb', input=pref+'downloader_composite.obj')
-  TargetAdd('libpandaexpress.ilb', input=pref+'express_composite1.obj')
-  TargetAdd('libpandaexpress.ilb', input=pref+'express_composite2.obj')
-  TargetAdd('libpandaexpress.ilb', input=pref+'libexpress_igate.obj')
-  TargetAdd('libpandaexpress.ilb', input='libp3dtoolconfig.ilb')
-  TargetAdd('libpandaexpress.ilb', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB'])
+  TargetAdd('libpandaexpress_s.ilb', input=pref+'downloader_composite.obj')
+  TargetAdd('libpandaexpress_s.ilb', input=pref+'express_composite1.obj')
+  TargetAdd('libpandaexpress_s.ilb', input=pref+'express_composite2.obj')
+  TargetAdd('libpandaexpress_s.ilb', input=pref+'libexpress_igate.obj')
+  TargetAdd('libpandaexpress_s.ilb', input='libp3dtoolconfig_s.ilb')
+  TargetAdd('libpandaexpress_s.ilb', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB'])
 
 #
 # DIRECTORY: panda/src/pipeline/
@@ -3125,7 +3125,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
-  TargetAdd('panda3d.exe', input='libpandaexpress.ilb')
+  TargetAdd('panda3d.exe', input='libpandaexpress_s.ilb')
   TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2'])
 
 #
