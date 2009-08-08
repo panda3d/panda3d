@@ -108,10 +108,14 @@ elif sys.platform == 'darwin':
     linkDll = "gcc -undefined dynamic_lookup -bundle -o %(basename)s.so %(basename)s.o"
 
 else:
-    # Linux
+    # Unix
     compileObj = "gcc -fPIC -c -o %(basename)s.o -O2 %(filename)s -I %(pythonIPath)s"
     linkExe = "gcc -o %(basename)s %(basename)s.o -lpython%(pythonVersion)s"
     linkDll = "gcc -shared -o %(basename)s.so %(basename)s.o -lpython%(pythonVersion)s"
+    
+    if (platform.uname()[1]=="pcbsd"):
+        linkExe += " -L/usr/PCBSD/local/lib"
+        linkDll += " -L/usr/PCBSD/local/lib"
 
 # The code from frozenmain.c in the Python source repository.
 frozenMainCode = """
