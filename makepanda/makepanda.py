@@ -4116,7 +4116,16 @@ def MakeRuntime():
     # Copy the p3d_plugin file to coreapi dir and the plugin to the plugin dir.
     plugfile = CalcLocation("p3d_plugin.dll", None)
     CopyFile(coreapidir + os.path.basename(plugfile), plugfile)
-    if (sys.platform != "darwin"): #TODO: bundle OSX plugin in DMG
+    if (sys.platform == "darwin"):
+        plugfile = CalcLocation("nppanda3d.plugin", None)
+        if (os.path.isdir(GetOutputDir()+"/tmp/bundle")):
+            oscmd("rm -rf %s" % BracketNameWithQuotes(GetOutputDir()+"/tmp/bundle"))
+        MakeDirectory(GetOutputDir()+"/tmp/bundle")
+        CopyTree(GetOutputDir()+"/tmp/bundle/nppanda3d.plugin", plugfile)
+        oscmd("hdiutil create -fs HFS+ -srcfolder %s -volname nppanda3d %s" % (GetOutputDir()+"/tmp/bundle", GetOutputDir()+"/plugins/nppanda3d.dmg"))
+        CopyFile(plugindir + os.path.basename(plugfile), GetOutputDir()+"/plugins/nppanda3d.dmg")
+        oscmd("rm -rf %s" % BracketNameWithQuotes(GetOutputDir()+"/tmp/bundle"))
+    else:
         plugfile = CalcLocation("nppanda3d.dll", None)
         CopyFile(plugindir + os.path.basename(plugfile), plugfile)
     
@@ -4325,6 +4334,7 @@ def MakeInstallerOSX():
       oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/bin" % VERSION)
       oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib" % VERSION)
       oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/lib/direct" % VERSION)
+      oscmd("mkdir -p Panda3D-tpl-rw/Panda3D/%s/plugins" % VERSION)
       oscmd("ln -s /usr/bin/python Panda3D-tpl-rw/Panda3D/%s/bin/ppython" % VERSION)
       oscmd("sed -e 's@\\$1@%s@' < direct/src/directscripts/profilepaths-osx.command >> Panda3D-tpl-rw/panda3dpaths.command" % VERSION)
       WriteFile("Panda3D-tpl-rw/Panda3D/%s/lib/direct/__init__.py" % VERSION, "")
@@ -4339,7 +4349,7 @@ def MakeInstallerOSX():
       oscmd("cp -R %s/bin/*           Panda3D-tpl-rw/Panda3D/%s/bin/" % (GetOutputDir(), VERSION))
       if os.path.isdir("samples"):       oscmd("cp -R samples   Panda3D-tpl-rw/Panda3D/%s/samples" % VERSION)
       if os.path.isdir(GetOutputDir()+"/Pmw"):     oscmd("cp -R %s/Pmw Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % (GetOutputDir(), VERSION))
-      if os.path.isdir(GetOutputDir()+"/plugins"): oscmd("cp -R %s/plugins Panda3D-tpl-rw/Panda3D/%s/plugins" % (GetOutputDir(), VERSION))
+      if os.path.isdir(GetOutputDir()+"/plugins"): oscmd("cp %s/plugins/* Panda3D-tpl-rw/Panda3D/%s/plugins/" % (GetOutputDir(), VERSION))
       for base in os.listdir(GetOutputDir()+"/lib"):
           if (not base.endswith(".a")):
               oscmd("cp "+GetOutputDir()+"/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
