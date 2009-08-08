@@ -4122,9 +4122,11 @@ def MakeRuntime():
             oscmd("rm -rf %s" % BracketNameWithQuotes(GetOutputDir()+"/tmp/bundle"))
         MakeDirectory(GetOutputDir()+"/tmp/bundle")
         CopyTree(GetOutputDir()+"/tmp/bundle/nppanda3d.plugin", plugfile)
+        if (os.path.exists(GetOutputDir()+"/plugins/nppanda3d.dmg")):
+            oscmd("rm -rf" + BracketNameWithQuotes(GetOutputDir()+"/plugins/nppanda3d.dmg"))
         oscmd("hdiutil create -fs HFS+ -srcfolder %s -volname nppanda3d %s" % (GetOutputDir()+"/tmp/bundle", GetOutputDir()+"/plugins/nppanda3d.dmg"))
         CopyFile(plugindir + os.path.basename(plugfile), GetOutputDir()+"/plugins/nppanda3d.dmg")
-        oscmd("rm -rf %s" % BracketNameWithQuotes(GetOutputDir()+"/tmp/bundle"))
+        oscmd("rm -rf " + BracketNameWithQuotes(GetOutputDir()+"/tmp/bundle"))
     else:
         plugfile = CalcLocation("nppanda3d.dll", None)
         CopyFile(plugindir + "nppanda3d.dmg", plugfile)
