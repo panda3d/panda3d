@@ -4125,11 +4125,11 @@ def MakeRuntime():
         if (os.path.exists(GetOutputDir()+"/plugins/nppanda3d.dmg")):
             oscmd("rm -rf " + BracketNameWithQuotes(GetOutputDir()+"/plugins/nppanda3d.dmg"))
         oscmd("hdiutil create -fs HFS+ -srcfolder %s -volname nppanda3d %s" % (GetOutputDir()+"/tmp/bundle", GetOutputDir()+"/plugins/nppanda3d.dmg"))
-        CopyFile(plugindir + os.path.basename(plugfile), GetOutputDir()+"/plugins/nppanda3d.dmg")
+        CopyFile(plugindir + "nppanda3d.dmg", GetOutputDir()+"/plugins/nppanda3d.dmg")
         oscmd("rm -rf " + BracketNameWithQuotes(GetOutputDir()+"/tmp/bundle"))
     else:
         plugfile = CalcLocation("nppanda3d.dll", None)
-        CopyFile(plugindir + "nppanda3d.dmg", plugfile)
+        CopyFile(plugindir + os.path.basename(plugfile), plugfile)
     
     # Copy the important libraries to built/rlib/.
     CopyFile(GetOutputDir()+"/rlib/Config.prc", GetOutputDir()+"/etc/Config.prc")
