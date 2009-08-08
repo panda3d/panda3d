@@ -126,7 +126,7 @@ def parseopts(args):
         "optimize=","everything","nothing","installer","runtime",
         "version=","lzma","no-python","threads=","outputdir="]
     anything = 0
-    optimize = ""
+    optimize = "3"
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
     for pkg in PkgListGet(): longopts.append("use-"+pkg.lower())
     try:
