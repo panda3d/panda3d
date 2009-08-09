@@ -441,6 +441,9 @@ compile_parameter(const ShaderArgId  &arg_id,
   if (loc < string::npos) {
     basename = p._id._name.substr(loc + 1);
   }
+  if (basename.size() >= 2 && basename.substr(0, 2) == "__") {
+    return true;
+  }
 
   // Split it at the underscores.
   vector_string pieces;
