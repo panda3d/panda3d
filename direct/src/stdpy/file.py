@@ -89,33 +89,33 @@ class file:
 
             # Actually open the streams.
             if mode == 'w':
-                self.__stream = pm.Pofstream()
+                self.__stream = pm.OFileStream()
                 if not filename.openWrite(self.__stream, True):
                     raise IOError
                 writeMode = True
                 
             elif mode == 'a':
-                self.__stream = pm.Pofstream()
+                self.__stream = pm.OFileStream()
                 if not filename.openAppend(self.__stream):
                     raise IOError
                 writeMode = True
 
             elif mode == 'w+':
-                self.__stream = pm.Pfstream()
+                self.__stream = pm.FileStream()
                 if not filename.openReadWrite(self.__stream, True):
                     raise IOError
                 readMode = True
                 writeMode = True
 
             elif mode == 'a+':
-                self.__stream = pm.Pfstream()
+                self.__stream = pm.FileStream()
                 if not filename.openReadAppend(self.__stream):
                     raise IOError
                 readMode = True
                 writeMode = True
 
             elif mode == 'r+':
-                self.__stream = pm.Pfstream()
+                self.__stream = pm.FileStream()
                 if not filename.exists():
                     raise IOError
                 if not filename.openReadWrite(self.__stream, False):
