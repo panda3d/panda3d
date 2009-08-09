@@ -813,14 +813,14 @@ class Freezer:
                 multifile.removeSubfile(filename + '.pyo')
 
         # Attempt to add the original source file if we can.
-        if self.storePythonSource:
-            sourceFilename = None
-            if mdef.filename and mdef.filename.getExtension() == "py":
-                sourceFilename = mdef.filename
-            elif getattr(module, '__file__', None):
-                sourceFilename = Filename.fromOsSpecific(module.__file__)
-                sourceFilename.setExtension("py")
+        sourceFilename = None
+        if mdef.filename and mdef.filename.getExtension() == "py":
+            sourceFilename = mdef.filename
+        elif getattr(module, '__file__', None):
+            sourceFilename = Filename.fromOsSpecific(module.__file__)
+            sourceFilename.setExtension("py")
             
+        if self.storePythonSource:
             if sourceFilename and sourceFilename.exists():
                 filename += '.py'
                 multifile.addSubfile(filename, sourceFilename, 0)
@@ -832,14 +832,13 @@ class Freezer:
         else:
             filename += '.pyo'
 
+        code = None
         if module:
             # Get the compiled code directly from the module object.
             code = getattr(module, "__code__", None)
         else:
             # Read the code from the source file and compile it on-the-fly.
-            sourceFilename = None
-            if mdef.filename and mdef.filename.getExtension() == "py":
-                sourceFilename = mdef.filename
+            if sourceFilename and sourceFilename.exists():
                 source = open(sourceFilename.toOsSpecific(), 'r').read()
                 if source and source[-1] != '\n':
                     source = source + '\n'

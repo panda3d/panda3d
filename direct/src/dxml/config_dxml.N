@@ -1,0 +1,14 @@
+forcetype TiXmlAttribute
+forcetype TiXmlBase
+forcetype TiXmlComment
+forcetype TiXmlDeclaration
+forcetype TiXmlDocument
+forcetype TiXmlElement
+forcetype TiXmlNode
+forcetype TiXmlParsingData
+forcetype TiXmlText
+forcetype TiXmlUnknown
+forcetype TiXmlVisitor
+
+# This method can't be exported, because it steals ownership of the pointer.
+ignoremember LinkEndChild

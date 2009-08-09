@@ -9,7 +9,7 @@
 #define USE_PACKAGES native_net
 
 #define COMPONENT_LIBS \
-  directbase dcparser showbase deadrec directd interval distributed motiontrail http
+  directbase dcparser showbase deadrec directd interval distributed motiontrail http dxml
 
 #define OTHER_LIBS \
   panda:m \

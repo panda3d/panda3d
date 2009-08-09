@@ -61,19 +61,32 @@ class Packager:
         def close(self):
             """ Writes out the contents of the current package. """
 
-            packageFilename = self.packageName
+            self.packageBasename = self.packageName
+            packageDir = self.packageName
             if self.platform:
-                packageFilename += '_' + self.platform
+                self.packageBasename += '_' + self.platform
+                packageDir += '/' + self.platform
             if self.version:
-                packageFilename += '_' + self.version
+                self.packageBasename += '_' + self.version
+                packageDir += '/' + self.version
 
+            self.packageDesc = self.packageBasename + '.xml'
+            self.packageImportDesc = self.packageBasename + '_import.xml'
             if self.p3dApplication:
-                packageFilename += '.p3d'
+                self.packageBasename += '.p3d'
+                packageDir = ''
             else:
-                packageFilename += '.mf'
-            
+                self.packageBasename += '.mf'
+                packageDir += '/'
+
+            self.packageFilename = packageDir + self.packageBasename
+            self.packageDesc = packageDir + self.packageDesc
+            self.packageImportDesc = packageDir + self.packageImportDesc
+
+            Filename(self.packageFilename).makeDir()
+
             try:
-                os.unlink(packageFilename)
+                os.unlink(self.packageFilename)
             except OSError:
                 pass
 
@@ -81,7 +94,10 @@ class Packager:
                 self.multifile = None
             else:
                 self.multifile = Multifile()
-                self.multifile.openReadWrite(packageFilename)
+                self.multifile.openReadWrite(self.packageFilename)
+
+            self.extracts = []
+            self.components = []
 
             # Exclude modules already imported in a required package.
             for moduleName in self.skipModules.keys():
@@ -131,12 +147,9 @@ class Packager:
                         self.addBamFile(file)
                     elif ext in self.packager.imageExtensions:
                         self.addTexture(file)
-                    elif ext in self.packager.uncompressibleExtensions:
-                        # An uncompressible file.
-                        self.multifile.addSubfile(file.newName, file.filename, 0)
                     else:
                         # Any other file.
-                        self.multifile.addSubfile(file.newName, file.filename, self.compressionLevel)
+                        self.addComponent(file)
 
             # Pick up any unfrozen Python files.
             self.freezer.done()
@@ -146,16 +159,100 @@ class Packager:
             for moduleName in self.freezer.getAllModuleNames():
                 self.moduleNames[moduleName] = True
 
+                xmodule = TiXmlElement('module')
+                xmodule.SetAttribute('name', moduleName)
+                self.components.append(xmodule)
+
             if not self.dryRun:
                 self.freezer.addToMultifile(self.multifile)
                 self.multifile.repack()
                 self.multifile.close()
+
+                if not self.p3dApplication:
+                    self.compressMultifile()
+                    self.writeDescFile()
+                    self.writeImportDescFile()
 
             # Now that all the files have been packed, we can delete
             # the temporary files.
             for file in self.files:
                 if file.deleteTemp:
                     file.filename.unlink()
+
+        def compressMultifile(self):
+            """ Compresses the .mf file into an .mf.pz file. """
+
+            compressedName = self.packageFilename + '.pz'
+            if not compressFile(self.packageFilename, compressedName, 6):
+                message = 'Unable to write %s' % (compressedName)
+                raise PackagerError, message
+
+        def writeDescFile(self):
+            doc = TiXmlDocument(self.packageDesc)
+            decl = TiXmlDeclaration("1.0", "utf-8", "")
+            doc.InsertEndChild(decl)
+
+            xpackage = TiXmlElement('package')
+            xpackage.SetAttribute('name', self.packageName)
+            if self.platform:
+                xpackage.SetAttribute('platform', self.platform)
+            if self.version:
+                xpackage.SetAttribute('version', self.version)
+
+            xuncompressedArchive = self.getFileSpec(
+                'uncompressed_archive', self.packageFilename, self.packageBasename)
+            xcompressedArchive = self.getFileSpec(
+                'compressed_archive', self.packageFilename + '.pz', self.packageBasename + '.pz')
+            xpackage.InsertEndChild(xuncompressedArchive)
+            xpackage.InsertEndChild(xcompressedArchive)
+
+            for xextract in self.extracts:
+                xpackage.InsertEndChild(xextract)
+
+            doc.InsertEndChild(xpackage)
+            doc.SaveFile()
+
+        def writeImportDescFile(self):
+            doc = TiXmlDocument(self.packageImportDesc)
+            decl = TiXmlDeclaration("1.0", "utf-8", "")
+            doc.InsertEndChild(decl)
+
+            xpackage = TiXmlElement('package')
+            xpackage.SetAttribute('name', self.packageName)
+            if self.platform:
+                xpackage.SetAttribute('platform', self.platform)
+            if self.version:
+                xpackage.SetAttribute('version', self.version)
+
+            for xcomponent in self.components:
+                xpackage.InsertEndChild(xcomponent)
+
+            doc.InsertEndChild(xpackage)
+            doc.SaveFile()
+
+
+        def getFileSpec(self, element, filename, newName):
+            """ Returns an xcomponent or similar element with the file
+            information for the indicated file. """
+            
+            xspec = TiXmlElement(element)
+
+            filename = Filename(filename)
+            size = filename.getFileSize()
+            timestamp = filename.getTimestamp()
+
+            hv = HashVal()
+            hv.hashFile(filename)
+            hash = hv.asHex()
+
+            xspec.SetAttribute('filename', newName)
+            xspec.SetAttribute('size', str(size))
+            xspec.SetAttribute('timestamp', str(timestamp))
+            xspec.SetAttribute('hash', hash)
+
+            return xspec
+
+            
 
         def addPyFile(self, file):
             """ Adds the indicated python file, identified by filename
@@ -187,7 +284,7 @@ class Packager:
 
             bamName = Filename(file.newName)
             bamName.setExtension('bam')
-            self.addNode(np.node(), bamName.cStr())
+            self.addNode(np.node(), file.filename, bamName.cStr())
 
         def addBamFile(self, file):
             # Load the bam file so we can massage its textures.
@@ -202,15 +299,15 @@ class Packager:
             if not node:
                 raise StandardError, 'Not a model file: %s' % (file.filename)
 
-            self.addNode(node, file.newName)
+            self.addNode(node, file.filename, file.newName)
 
-        def addNode(self, node, filename):
+        def addNode(self, node, filename, newName):
             """ Converts the indicated node to a bam stream, and adds the
-            bam file to the multifile under the indicated filename. """
+            bam file to the multifile under the indicated newName. """
 
             # If the Multifile already has a file by this name, don't
             # bother adding it again.
-            if self.multifile.findSubfile(filename) >= 0:
+            if self.multifile.findSubfile(newName) >= 0:
                 return
 
             # Be sure to import all of the referenced textures, and tell
@@ -219,7 +316,7 @@ class Packager:
             for tex in NodePath(node).findAllTextures():
                 if not tex.hasFullpath() and tex.hasRamImage():
                     # We need to store this texture as a raw-data image.
-                    # Clear the filename so this will happen
+                    # Clear the newName so this will happen
                     # automatically.
                     tex.clearFilename()
                     tex.clearAlphaFilename()
@@ -247,11 +344,15 @@ class Packager:
 
             # Now we have an in-memory bam file.
             stream.seekg(0)
-            self.multifile.addSubfile(filename, stream, self.compressionLevel)
+            self.multifile.addSubfile(newName, stream, self.compressionLevel)
 
             # Flush it so the data gets written to disk immediately, so we
             # don't have to keep it around in ram.
             self.multifile.flush()
+            
+            xcomponent = TiXmlElement('component')
+            xcomponent.SetAttribute('filename', newName)
+            self.components.append(xcomponent)
 
         def addFoundTexture(self, filename):
             """ Adds the newly-discovered texture to the output, if it has
@@ -293,7 +394,27 @@ class Packager:
 
             # Texture file formats are generally already compressed and
             # not further compressible.
-            self.multifile.addSubfile(file.newName, file.filename, 0)
+            self.addComponent(file, compressible = False)
+
+        def addComponent(self, file, compressible = True, extract = False):
+            ext = Filename(file.newName).getExtension()
+            if ext in self.packager.uncompressibleExtensions:
+                compressible = False
+            if ext in self.packager.extractExtensions:
+                extract = True
+                
+            compressionLevel = 0
+            if compressible:
+                compressionLevel = self.compressionLevel
+                
+            self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
+            if extract:
+                xextract = self.getFileSpec('extract', file.filename, file.newName)
+                self.extracts.append(xextract)
+
+            xcomponent = TiXmlElement('component')
+            xcomponent.SetAttribute('filename', file.newName)
+            self.components.append(xcomponent)
 
     def __init__(self):
 
@@ -349,6 +470,9 @@ class Packager:
         # Binary files that are copied (and compressed) without
         # processing.
         self.binaryExtensions = [ 'ttf', 'wav', 'mid' ]
+
+        # Files that should be extracted to disk.
+        self.extractExtensions = [ 'dll', 'so', 'dylib', 'exe' ]
 
         # Binary files that are considered uncompressible, and are
         # copied without compression.

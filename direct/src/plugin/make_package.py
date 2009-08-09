@@ -5,7 +5,7 @@ This command is used to build a downloadable package for the p3d
 plugin to retrieve and install.  It examines the files in the current
 directory, assumes they are all intended to be part of the package,
 and constructs the necessary package xml file and archive file for
-hosting on the web serevr.
+hosting on the web server.
 
 make_package.py [opts]
 
