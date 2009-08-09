@@ -65,7 +65,7 @@ PUBLISHED:
                            int compression_level = 6);
 
   INLINE OCompressStream &open(ostream *dest, bool owns_dest, 
-                                 int compression_level = 6);
+                               int compression_level = 6);
   INLINE OCompressStream &close();
 
 private:

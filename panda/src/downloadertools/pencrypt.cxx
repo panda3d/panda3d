@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "filename.h"
-#include "encryptStream.h"
+#include "encrypt_string.h"
 #include "pnotify.h"
 
 #ifndef HAVE_GETOPT
@@ -28,40 +28,10 @@ string password;
 bool got_password = false;
 string algorithm;
 bool got_algorithm = false;
-int key_length = 0;
+int key_length = -1;
 bool got_key_length = false;
-int iteration_count = 0;
+int iteration_count = -1;
 bool got_iteration_count = false;
-
-bool
-do_encrypt(istream &read_stream, ostream &write_stream) {
-  OEncryptStream encrypt;
-  if (got_algorithm) {
-    encrypt.set_algorithm(algorithm);
-  }
-  if (got_key_length) {
-    encrypt.set_key_length(key_length);
-  }
-  if (got_iteration_count) {
-    encrypt.set_iteration_count(iteration_count);
-  }
-  encrypt.open(&write_stream, false, password);
-    
-  static const size_t buffer_size = 1024;
-  char buffer[buffer_size];
-
-  read_stream.read(buffer, buffer_size);
-  size_t count = read_stream.gcount();
-  while (count != 0) {
-    encrypt.write(buffer, count);
-    read_stream.read(buffer, buffer_size);
-    count = read_stream.gcount();
-  }
-  encrypt.close();
-
-  return !read_stream.fail() || read_stream.eof() &&
-    (!encrypt.fail() || encrypt.eof());
-}
 
 void 
 usage() {
@@ -209,7 +179,8 @@ main(int argc, char *argv[]) {
           }
 
           cerr << dest_file << "\n";
-          bool success = do_encrypt(read_stream, write_stream);
+          bool success = encrypt_stream(read_stream, write_stream, password,
+                                        algorithm, key_length, iteration_count);
           
           read_stream.close();
           write_stream.close();

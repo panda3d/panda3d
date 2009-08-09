@@ -13,6 +13,7 @@
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h \
     config_express.h \
+    compress_string.h \
     datagram.I datagram.h datagramGenerator.I \
     datagramGenerator.h \
     datagramIterator.I datagramIterator.h datagramSink.I datagramSink.h \
@@ -72,6 +73,7 @@
   #define INCLUDED_SOURCES  \
     buffer.cxx checksumHashGenerator.cxx \
     config_express.cxx \
+    compress_string.cxx \
     datagram.cxx datagramGenerator.cxx \
     datagramIterator.cxx \
     datagramSink.cxx dcast.cxx \
@@ -122,6 +124,7 @@
     checksumHashGenerator.I checksumHashGenerator.h circBuffer.I \
     circBuffer.h \
     config_express.h \
+    compress_string.h \
     datagram.I datagram.h datagramGenerator.I \
     datagramGenerator.h \
     datagramIterator.I datagramIterator.h datagramSink.I datagramSink.h \

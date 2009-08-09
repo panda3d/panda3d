@@ -16,6 +16,9 @@ forcetype NeverFreeMemory
 forcetype IFileStream
 forcetype OFileStream
 forcetype FileStream
+renametype IFileStream IFileStream
+renametype OFileStream OFileStream
+renametype FileStream FileStream
 forcetype IDecryptStream
 forcetype OEncryptStream
 

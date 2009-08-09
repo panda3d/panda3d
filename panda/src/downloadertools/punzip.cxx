@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "filename.h"
-#include "zStream.h"
+#include "compress_string.h"
 #include "pnotify.h"
 
 #ifndef HAVE_GETOPT
@@ -24,30 +24,12 @@
   #endif
 #endif
 
-bool
-do_decompress(istream &read_stream, ostream &write_stream) {
-  IDecompressStream decompress(&read_stream, false);
-
-  static const size_t buffer_size = 1024;
-  char buffer[buffer_size];
-
-  decompress.read(buffer, buffer_size);
-  size_t count = decompress.gcount();
-  while (count != 0) {
-    write_stream.write(buffer, count);
-    decompress.read(buffer, buffer_size);
-    count = decompress.gcount();
-  }
-  
-  return !decompress.fail() || decompress.eof() &&
-    (!write_stream.fail() || write_stream.eof());
-}
-
 void
 usage() {
   cerr
     << "\nUsage:\n"
     << "   punzip file.pz [file2.pz file3.pz ...]\n"
+    << "   punzip -c <file >dest_file\n"
     << "   punzip -o dest_file file.pz\n\n"
     
     << "This program reverses the operation of a previous pzip command.  It\n"
@@ -59,10 +41,11 @@ int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "o:h";
+  const char *optstr = "o:ch";
 
   Filename dest_filename;
   bool got_dest_filename = false;
+  bool use_stdout = false;
 
   int flag = getopt(argc, argv, optstr);
 
@@ -71,6 +54,10 @@ main(int argc, char *argv[]) {
     case 'o':
       dest_filename = Filename::from_os_specific(optarg);
       got_dest_filename = true;
+      break;
+
+    case 'c':
+      use_stdout = true;
       break;
 
     case 'h':
@@ -84,6 +71,20 @@ main(int argc, char *argv[]) {
 
   argc -= (optind-1);
   argv += (optind-1);
+
+  if (use_stdout) {
+    if (argc > 1) {
+      cerr << "No filenames allowed in conjunction with -c.\n";
+      return 1;
+    }
+
+    bool success = decompress_stream(cin, cout);
+    if (!success) {
+      cerr << "Failure compressing standard input\n";
+      return 1;
+    }
+    return 0;
+  }
 
   if (argc < 2) {
     usage();
@@ -126,7 +127,7 @@ main(int argc, char *argv[]) {
 
         } else {
           cerr << dest_file << "\n";
-          bool success = do_decompress(read_stream, write_stream);
+          bool success = decompress_stream(read_stream, write_stream);
           
           read_stream.close();
           write_stream.close();

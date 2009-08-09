@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "filename.h"
-#include "encryptStream.h"
+#include "encrypt_string.h"
 #include "pnotify.h"
 
 #ifndef HAVE_GETOPT
@@ -26,25 +26,6 @@
 
 string password;
 bool got_password = false;
-
-bool
-do_decrypt(istream &read_stream, ostream &write_stream) {
-  IDecryptStream decrypt(&read_stream, false, password);
-
-  static const size_t buffer_size = 1024;
-  char buffer[buffer_size];
-
-  decrypt.read(buffer, buffer_size);
-  size_t count = decrypt.gcount();
-  while (count != 0) {
-    write_stream.write(buffer, count);
-    decrypt.read(buffer, buffer_size);
-    count = decrypt.gcount();
-  }
-  
-  return !decrypt.fail() || decrypt.eof() &&
-    (!write_stream.fail() || write_stream.eof());
-}
 
 void 
 usage() {
@@ -152,7 +133,7 @@ main(int argc, char *argv[]) {
           }
 
           cerr << dest_file << "\n";
-          bool success = do_decrypt(read_stream, write_stream);
+          bool success = decrypt_stream(read_stream, write_stream, password);
           
           read_stream.close();
           write_stream.close();

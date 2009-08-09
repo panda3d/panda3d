@@ -13,7 +13,7 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "filename.h"
-#include "zStream.h"
+#include "compress_string.h"
 #include "pnotify.h"
 
 #ifndef HAVE_GETOPT
@@ -24,33 +24,14 @@
   #endif
 #endif
 
-bool
-do_compress(istream &read_stream, ostream &write_stream) {
-  OCompressStream compress(&write_stream, false);
-
-  static const size_t buffer_size = 1024;
-  char buffer[buffer_size];
-
-  read_stream.read(buffer, buffer_size);
-  size_t count = read_stream.gcount();
-  while (count != 0) {
-    compress.write(buffer, count);
-    read_stream.read(buffer, buffer_size);
-    count = read_stream.gcount();
-  }
-  compress.close();
-
-  return !read_stream.fail() || read_stream.eof() &&
-    (!compress.fail() || compress.eof());
-}
-
 void
 usage() {
   cerr
     << "\nUsage:\n"
     << "   pzip file [file2 file3 ...]\n"
+    << "   pzip -c <file >dest_file\n"
     << "   pzip -o dest_file file\n\n"
-    
+
     << "This program compresses the named file(s) using the Panda native\n"
     << "compression algorithm (gzip in practice, but with a different file\n"
     << "header).  The compressed versions are written to a file with the\n"
@@ -70,17 +51,26 @@ usage() {
 
     << "Note that if you are adding files to a Panda multifile (.mf file) with\n"
     << "the multify command, it is not necessary to compress them separately;\n"
-    << "multify has an inline compression option.\n\n";
+    << "multify has an inline compression option.\n\n"
+
+    << "Options:\n\n"
+
+    << "  -1  compress faster\n"
+    << "  -6  compress default\n"
+    << "  -9  compress better (intermediate compression levels supported also)\n\n";
+    
 }
 
 int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "o:h";
+  const char *optstr = "o:c123456789h";
 
   Filename dest_filename;
   bool got_dest_filename = false;
+  bool use_stdout = false;
+  int compression_level = 6;
 
   int flag = getopt(argc, argv, optstr);
 
@@ -89,6 +79,46 @@ main(int argc, char *argv[]) {
     case 'o':
       dest_filename = Filename::from_os_specific(optarg);
       got_dest_filename = true;
+      break;
+
+    case 'c':
+      use_stdout = true;
+      break;
+
+    case '1':
+      compression_level = 1;
+      break;
+
+    case '2':
+      compression_level = 2;
+      break;
+
+    case '3':
+      compression_level = 3;
+      break;
+
+    case '4':
+      compression_level = 4;
+      break;
+
+    case '5':
+      compression_level = 5;
+      break;
+
+    case '6':
+      compression_level = 6;
+      break;
+
+    case '7':
+      compression_level = 7;
+      break;
+
+    case '8':
+      compression_level = 8;
+      break;
+
+    case '9':
+      compression_level = 9;
       break;
 
     case 'h':
@@ -102,6 +132,20 @@ main(int argc, char *argv[]) {
 
   argc -= (optind-1);
   argv += (optind-1);
+
+  if (use_stdout) {
+    if (argc > 1) {
+      cerr << "No filenames allowed in conjunction with -c.\n";
+      return 1;
+    }
+
+    bool success = compress_stream(cin, cout, compression_level);
+    if (!success) {
+      cerr << "Failure compressing standard input\n";
+      return 1;
+    }
+    return 0;
+  }
 
   if (argc < 2) {
     usage();
@@ -141,7 +185,7 @@ main(int argc, char *argv[]) {
 
         } else {
           cerr << dest_file << "\n";
-          bool success = do_compress(read_stream, write_stream);
+          bool success = compress_stream(read_stream, write_stream, compression_level);
           
           read_stream.close();
           write_stream.close();
