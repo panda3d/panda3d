@@ -173,7 +173,6 @@ handle_entries() {
           if (entry->collided() && ((C == 0) || (entry->get_t() < C->get_t()))) {
             nassertr(from_node_path == entry->get_from_node_path(), false);
             C = entry;
-            break;
           }
         }
         
