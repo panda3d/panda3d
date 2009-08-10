@@ -548,6 +548,19 @@ describe_input_file() {
             "The keyword 'includes' names one or more groups that depend "
             "on this group.\n\n");
 
+  show_text("  :textureswap groupname texturename0 texturename1 [texturename2 ...]", 10,
+            "This option builds a set of matching, interchangeable palette images. "
+            "All palette images in the set share the same internal texture layout. "
+            "The intention is to be able to swap palette images out at runtime, "
+            "to replace entire sets of textures on a model in one operation. "
+            "The textures named by this option indicate the texture images "
+            "which are similar to each other, and which all should be assigned "
+            "to the same placement on the different palette images: "
+            "texturename0 will be assigned to palette image 0, "
+            "texturename1 to the same position on palette image 1, "
+            "texturename2 to the same position on palette image 2, and so on. "
+            "To define a complete palette image, you must repeat this option "
+            "several times to associate all of the similar texture images.\n\n");
 
   nout <<
     "Comments may appear freely throughout the file, and are set off by a "
