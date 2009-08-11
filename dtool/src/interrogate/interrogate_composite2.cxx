@@ -2,6 +2,7 @@
 #include "interrogate.cxx"
 #include "typeManager.cxx"
 #include "parameterRemap.cxx"
+#include "parameterRemapBasicStringPtrToString.cxx"
 #include "parameterRemapBasicStringRefToString.cxx"
 #include "parameterRemapBasicStringToString.cxx"
 #include "parameterRemapCharStarToString.cxx"

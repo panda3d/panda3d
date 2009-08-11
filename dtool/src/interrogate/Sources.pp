@@ -18,7 +18,9 @@
      interfaceMakerPythonSimple.h \
      interfaceMakerPythonNative.h \
      interrogate.h interrogateBuilder.h parameterRemap.I  \
-     parameterRemap.h parameterRemapBasicStringRefToString.h  \
+     parameterRemap.h \
+     parameterRemapBasicStringPtrToString.h  \
+     parameterRemapBasicStringRefToString.h  \
      parameterRemapBasicStringToString.h  \
      parameterRemapCharStarToString.h  \
      parameterRemapConcreteToPointer.h  \
@@ -40,6 +42,7 @@
      interfaceMakerPythonSimple.cxx \
      interfaceMakerPythonNative.cxx \
      interrogate.cxx interrogateBuilder.cxx parameterRemap.cxx  \
+     parameterRemapBasicStringPtrToString.cxx  \
      parameterRemapBasicStringRefToString.cxx  \
      parameterRemapBasicStringToString.cxx  \
      parameterRemapCharStarToString.cxx  \

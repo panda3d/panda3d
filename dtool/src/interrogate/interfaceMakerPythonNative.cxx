@@ -2383,6 +2383,29 @@ write_function_instance(ostream &out, InterfaceMaker::Object *obj,
           param_name + "_len)";
 
         extra_cleanup += " delete[] " + param_name + "_str;";
+        
+      } else if (TypeManager::is_const_ptr_to_basic_string_wchar(orig_type)) {
+        indent(out,indent_level) << "PyUnicodeObject *" << param_name << "\n";
+        format_specifiers += "U";
+        parameter_list += ", &" + param_name;
+
+        extra_convert += " int " + param_name + "_len = PyUnicode_GetSize((PyObject *)" + param_name + "); wchar_t *" + param_name + "_str = new wchar_t[" + param_name + "_len]; PyUnicode_AsWideChar(" + param_name + ", " + param_name + "_str, " + param_name + "_len);";
+
+        pexpr_string = "&basic_string<wchar_t>((wchar_t *)" +
+          param_name + "_str, " +
+          param_name + "_len)";
+
+        extra_cleanup += " delete[] " + param_name + "_str;";
+
+      } else if (TypeManager::is_const_ptr_to_basic_string_char(orig_type)) {
+        indent(out,indent_level) << "char *" << param_name
+            << "_str; int " << param_name << "_len";
+        format_specifiers += "s#";
+        parameter_list += ", &" + param_name
+          + "_str, &" + param_name + "_len";
+        pexpr_string = "&basic_string<char>(" +
+          param_name + "_str, " +
+          param_name + "_len)";
 
       } else {
         indent(out,indent_level) << "char *" << param_name
@@ -2766,6 +2789,28 @@ void InterfaceMakerPythonNative::pack_return_value(ostream &out, int indent_leve
       indent(out, indent_level)
         << "return PyUnicode_FromWideChar("
         << return_expr << ".data(), (int)" << return_expr << ".length());\n";
+
+    } else if (TypeManager::is_const_ptr_to_basic_string_wchar(orig_type)) {
+      indent(out, indent_level)<<"if("<< return_expr<< " == NULL)\n";
+      indent(out, indent_level)<<"{\n";
+      indent(out, indent_level)<<"    Py_INCREF(Py_None);\n";
+      indent(out, indent_level)<<"    return Py_None;\n";
+      indent(out, indent_level)<<"}\n";
+
+      indent(out, indent_level)
+        << "return PyUnicode_FromWideChar("
+        << return_expr << "->data(), (int)" << return_expr << "->length());\n";
+
+    } else if (TypeManager::is_const_ptr_to_basic_string_char(orig_type)) {
+      indent(out, indent_level)<<"if("<< return_expr<< " == NULL)\n";
+      indent(out, indent_level)<<"{\n";
+      indent(out, indent_level)<<"    Py_INCREF(Py_None);\n";
+      indent(out, indent_level)<<"    return Py_None;\n";
+      indent(out, indent_level)<<"}\n";
+
+      indent(out, indent_level)
+        << "return PyString_FromStringAndSize("
+        << return_expr << "->data(), (int)" << return_expr << "->length());\n";
 
     } else {
       indent(out, indent_level)

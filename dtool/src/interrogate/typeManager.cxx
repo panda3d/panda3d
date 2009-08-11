@@ -530,6 +530,23 @@ is_const_ref_to_basic_string_char(CPPType *type) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_const_ptr_to_basic_string_char
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is a const
+//               pointer to basic_string<char>.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_const_ptr_to_basic_string_char(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_pointer:
+    return is_const_basic_string_char(type->as_pointer_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: TypeManager::is_string
 //       Access: Public, Static
 //  Description: Returns true if the type is basic_string<char>, or
@@ -601,6 +618,23 @@ is_const_ref_to_basic_string_wchar(CPPType *type) {
   switch (type->get_subtype()) {
   case CPPDeclaration::ST_reference:
     return is_const_basic_string_wchar(type->as_reference_type()->_pointing_at);
+
+  default:
+    return false;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: TypeManager::is_const_ptr_to_basic_string_wchar
+//       Access: Public, Static
+//  Description: Returns true if the indicated type is a const
+//               pointer to basic_string<wchar_t>.
+////////////////////////////////////////////////////////////////////
+bool TypeManager::
+is_const_ptr_to_basic_string_wchar(CPPType *type) {
+  switch (type->get_subtype()) {
+  case CPPDeclaration::ST_pointer:
+    return is_const_basic_string_wchar(type->as_pointer_type()->_pointing_at);
 
   default:
     return false;
