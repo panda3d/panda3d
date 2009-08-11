@@ -14,6 +14,7 @@
     collisionGeom.I collisionGeom.h \
     collisionHandler.I collisionHandler.h  \
     collisionHandlerEvent.I collisionHandlerEvent.h  \
+    collisionHandlerHighestEvent.h  \
     collisionHandlerFloor.I collisionHandlerFloor.h  \
     collisionHandlerGravity.I collisionHandlerGravity.h  \
     collisionHandlerPhysical.I collisionHandlerPhysical.h  \
@@ -46,6 +47,7 @@
     collisionGeom.cxx \
     collisionHandler.cxx \
     collisionHandlerEvent.cxx  \
+    collisionHandlerHighestEvent.cxx  \
     collisionHandlerFloor.cxx \
     collisionHandlerGravity.cxx \
     collisionHandlerPhysical.cxx  \
@@ -78,6 +80,7 @@
     collisionGeom.I collisionGeom.h \
     collisionHandler.I collisionHandler.h \
     collisionHandlerEvent.I collisionHandlerEvent.h \
+    collisionHandlerHighestEvent.h \
     collisionHandlerFloor.I collisionHandlerFloor.h \
     collisionHandlerGravity.I collisionHandlerGravity.h \
     collisionHandlerPhysical.I collisionHandlerPhysical.h \

@@ -66,7 +66,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   bool got_max = false;
   float max_height = 0.0f;
   CollisionEntry *highest = NULL;
-
+  
   Entries::const_iterator ei;
   for (ei = entries.begin(); ei != entries.end(); ++ei) {
     CollisionEntry *entry = (*ei);
@@ -123,6 +123,8 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   CollisionEntry *highest = NULL;
   CollisionEntry *lowest = NULL;
 
+  pvector<PT(CollisionEntry)> valid_entries;
+
   Entries::const_iterator ei;
   for (ei = entries.begin(); ei != entries.end(); ++ei) {
     CollisionEntry *entry = (*ei);
@@ -135,13 +137,14 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
         collide_cat.debug()
           << "Intersection point detected at " << point << "\n";
       }
-
       float height = point[2];
-      if (height < _offset + _reach &&
-         (!got_max || height > max_height)) {
-        got_max = true;
-        max_height = height;
-        highest = entry;
+      if(height < _offset + _reach) {
+        valid_entries.push_back(entry);
+        if (!got_max || height > max_height) {
+          got_max = true;
+          max_height = height;
+          highest = entry;
+        }
       }
       if (!got_min || height < min_height) {
         got_min = true;
@@ -157,6 +160,7 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
     got_max = true;
     max_height = min_height;
     highest = lowest;
+    valid_entries.push_back(lowest);
   }
   //#*#_has_contact = got_max;
 
@@ -172,9 +176,10 @@ set_highest_collision(const NodePath &target_node_path, const NodePath &from_nod
   
   // We only collide with things we are impacting with.
   // Remove the collisions:
-  //_current_colliding.clear();
+  _current_colliding.clear();
   // Add only the one that we're impacting with:
-  //add_entry(highest);
+  _current_colliding.insert(valid_entries.begin(), valid_entries.end());
+
   
   // Set the contact normal so that other code can make use of the
   // surface slope:

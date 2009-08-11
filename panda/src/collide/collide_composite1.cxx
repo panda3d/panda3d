@@ -3,6 +3,7 @@
 #include "collisionGeom.cxx"
 #include "collisionHandler.cxx"
 #include "collisionHandlerEvent.cxx"
+#include "collisionHandlerHighestEvent.cxx"
 #include "collisionHandlerFloor.cxx"
 #include "collisionHandlerGravity.cxx"
 #include "collisionHandlerPhysical.cxx"
