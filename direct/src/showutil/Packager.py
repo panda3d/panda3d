@@ -83,18 +83,15 @@ class Packager:
             self.packageDesc = packageDir + self.packageDesc
             self.packageImportDesc = packageDir + self.packageImportDesc
 
-            Filename(self.packageFilename).makeDir()
-
-            try:
-                os.unlink(self.packageFilename)
-            except OSError:
-                pass
+            self.packageFullpath = Filename(self.packager.installDir, self.packageFilename)
+            self.packageFullpath.makeDir()
+            self.packageFullpath.unlink()
 
             if self.dryRun:
                 self.multifile = None
             else:
                 self.multifile = Multifile()
-                self.multifile.openReadWrite(self.packageFilename)
+                self.multifile.openReadWrite(self.packageFullpath)
 
             self.extracts = []
             self.components = []
@@ -183,12 +180,14 @@ class Packager:
             """ Compresses the .mf file into an .mf.pz file. """
 
             compressedName = self.packageFilename + '.pz'
-            if not compressFile(self.packageFilename, compressedName, 6):
-                message = 'Unable to write %s' % (compressedName)
+            compressedPath = Filename(self.packager.installDir, compressedName)
+            if not compressFile(self.packageFullpath, compressedPath, 6):
+                message = 'Unable to write %s' % (compressedPath)
                 raise PackagerError, message
 
         def writeDescFile(self):
-            doc = TiXmlDocument(self.packageDesc)
+            packageDescFullpath = Filename(self.packager.installDir, self.packageDesc)
+            doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
             decl = TiXmlDeclaration("1.0", "utf-8", "")
             doc.InsertEndChild(decl)
 
@@ -200,9 +199,11 @@ class Packager:
                 xpackage.SetAttribute('version', self.version)
 
             xuncompressedArchive = self.getFileSpec(
-                'uncompressed_archive', self.packageFilename, self.packageBasename)
+                'uncompressed_archive', self.packageFullpath,
+                self.packageBasename)
             xcompressedArchive = self.getFileSpec(
-                'compressed_archive', self.packageFilename + '.pz', self.packageBasename + '.pz')
+                'compressed_archive', self.packageFullpath + '.pz',
+                self.packageBasename + '.pz')
             xpackage.InsertEndChild(xuncompressedArchive)
             xpackage.InsertEndChild(xcompressedArchive)
 
@@ -213,7 +214,8 @@ class Packager:
             doc.SaveFile()
 
         def writeImportDescFile(self):
-            doc = TiXmlDocument(self.packageImportDesc)
+            packageImportDescFullpath = Filename(self.packager.installDir, self.packageImportDesc)
+            doc = TiXmlDocument(packageImportDescFullpath.toOsSpecific())
             decl = TiXmlDeclaration("1.0", "utf-8", "")
             doc.InsertEndChild(decl)
 
@@ -230,19 +232,52 @@ class Packager:
             doc.InsertEndChild(xpackage)
             doc.SaveFile()
 
+        def readImportDescFile(self, filename):
+            """ Reads the import desc file.  Returns True on success,
+            False on failure. """
 
-        def getFileSpec(self, element, filename, newName):
+            doc = TiXmlDocument(filename.toOsSpecific())
+            if not doc.LoadFile():
+                return False
+            xpackage = doc.FirstChildElement('package')
+            if not xpackage:
+                return False
+
+            self.packageName = xpackage.Attribute('name')
+            self.platform = xpackage.Attribute('platform')
+            self.version = xpackage.Attribute('version')
+
+            self.targetFilenames = {}
+            xcomponent = xpackage.FirstChildElement('component')
+            while xcomponent:
+                xcomponent = xcomponent.ToElement()
+                name = xcomponent.Attribute('filename')
+                if name:
+                    self.targetFilenames[name] = True
+                xcomponent = xcomponent.NextSibling()
+
+            self.moduleNames = {}
+            xmodule = xpackage.FirstChildElement('module')
+            while xmodule:
+                xmodule = xmodule.ToElement()
+                moduleName = xmodule.Attribute('name')
+                if moduleName:
+                    self.moduleNames[moduleName] = True
+                xmodule = xmodule.NextSibling()
+
+            return True
+
+        def getFileSpec(self, element, pathname, newName):
             """ Returns an xcomponent or similar element with the file
             information for the indicated file. """
             
             xspec = TiXmlElement(element)
 
-            filename = Filename(filename)
-            size = filename.getFileSize()
-            timestamp = filename.getTimestamp()
+            size = pathname.getFileSize()
+            timestamp = pathname.getTimestamp()
 
             hv = HashVal()
-            hv.hashFile(filename)
+            hv.hashFile(pathname)
             hash = hv.asHex()
 
             xspec.SetAttribute('filename', newName)
@@ -426,6 +461,10 @@ class Packager:
         self.installDir = None
         self.persistDir = None
 
+        # A search list of directories and/or URL's to search for
+        # installed packages.
+        self.installSearch = []
+
         # The platform string.
         self.platform = PandaSystem.getPlatform()
 
@@ -500,28 +539,26 @@ class Packager:
 
         self.currentPackage = None
 
-        # The persist dir is the directory in which the results from
-        # past publishes are stored so we can generate patches against
-        # them.  There must be a nonempty directory name here.
-        assert(self.persistDir)
+        # We must have an actual install directory.
+        assert(self.installDir)
 
-        # If the persist dir names an empty or nonexistent directory,
-        # we will be generating a brand new publish with no previous
-        # patches.
-        self.persistDir.makeDir()
+##         # If the persist dir names an empty or nonexistent directory,
+##         # we will be generating a brand new publish with no previous
+##         # patches.
+##         self.persistDir.makeDir()
 
-        # Within the persist dir, we make a temporary holding dir for
-        # generating multifiles.
-        self.mfTempDir = Filename(self.persistDir, Filename('mftemp/'))
-        #self.mfTempDir.makeDir()
+##         # Within the persist dir, we make a temporary holding dir for
+##         # generating multifiles.
+##         self.mfTempDir = Filename(self.persistDir, Filename('mftemp/'))
+##         self.mfTempDir.makeDir()
 
-        # We also need a temporary holding dir for squeezing py files.
-        self.pyzTempDir = Filename(self.persistDir, Filename('pyz/'))
-        #self.pyzTempDir.makeDir()
+##         # We also need a temporary holding dir for squeezing py files.
+##         self.pyzTempDir = Filename(self.persistDir, Filename('pyz/'))
+##         self.pyzTempDir.makeDir()
 
-        # Change to the persist directory so the temp files will be
-        # created there
-        os.chdir(self.persistDir.toOsSpecific())
+##         # Change to the persist directory so the temp files will be
+##         # created there
+##         os.chdir(self.persistDir.toOsSpecific())
 
     def readPackageDef(self, packageDef):
         """ Reads the lines in the .pdef file named by packageDef and
@@ -755,20 +792,139 @@ class Packager:
         self.packages[package.packageName] = package
         self.currentPackage = None
 
-    def findPackage(self, packageName, searchUrl = None):
+    def findPackage(self, packageName, version = None, searchUrl = None):
         """ Searches for the named package from a previous publish
-        operation, either at the indicated URL or along the default
+        operation, either at the indicated URL or along the install
         search path.
 
         Returns the Package object, or None if the package cannot be
         located. """
 
         # Is it a package we already have resident?
-        package = self.packages.get(packageName, None)
+        package = self.packages.get((packageName, version), None)
         if package:
             return package
 
+        # Look on the searchlist.
+        for path in self.installSearch:
+            packageDir = Filename(path, packageName)
+            if packageDir.isDirectory():
+                # Hey, this package appears to exist!
+                package = self.scanPackageDir(packageDir, packageName, version)
+                if package:
+                    self.packages[(packageName, version)] = package
+                    return package
+                
         return None
+
+    def scanPackageDir(self, packageDir, packageName, packageVersion):
+        """ Scans a directory on disk, looking for _import.xml files
+        that match the indicated packageName and option version.  If a
+        suitable xml file is found, reads it and returns the assocated
+        Package definition. """
+        
+        bestVersion = None
+        bestPackage = None
+        
+        # First, look for a platform-specific file.
+        platformDir = Filename(packageDir, self.platform)
+        prefix = '%s_%s_' % (packageName, self.platform)
+
+        if packageVersion:
+            # Do we have a specific version request?
+            basename = prefix + '%s_import.xml' % (packageVersion)
+            filename = Filename(platformDir, basename)
+            if filename.exists():
+                # Got it!
+                package = self.readPackageImportDescFile(filename)
+                if package:
+                    return package
+        else:
+            # Look for a generic version request.  Get the highest
+            # version available.
+            files = vfs.scanDirectory(platformDir) or []
+            for file in files:
+                filename = file.getFilename()
+                basename = filename.getBasename()
+                if not basename.startswith(prefix) or \
+                   not basename.endswith('_import.xml'):
+                    continue
+                package = self.readPackageImportDescFile(filename)
+                if not package:
+                    continue
+            
+                parts = basename.split('_')
+                if len(parts) == 3:
+                    # No version number.
+                    if bestVersion is None:
+                        bestPackage = package
+                        
+                elif len(parts) == 4:
+                    # Got a version number.
+                    version = self.parseVersionForCompare(parts[2])
+                    if bestVersion > version:
+                        bestVersion = version
+                        bestPackage = package
+                        
+        # Didn't find a suitable platform-specific file, so look for a
+        # platform-nonspecific one.
+        prefix = '%s_' % (packageName)
+        if packageVersion:
+            # Do we have a specific version request?
+            basename = prefix + '%s_import.xml' % (packageVersion)
+            filename = Filename(packageDir, basename)
+            if filename.exists():
+                # Got it!
+                package = self.readPackageImportDescFile(filename)
+                if package:
+                    return package
+        else:
+            # Look for a generic version request.  Get the highest
+            # version available.
+            files = vfs.scanDirectory(packageDir) or []
+            for file in files:
+                filename = file.getFilename()
+                basename = filename.getBasename()
+                if not basename.startswith(prefix) or \
+                   not basename.endswith('_import.xml'):
+                    continue
+                package = self.readPackageImportDescFile(filename)
+                if not package:
+                    continue
+
+                parts = basename.split('_')
+                if len(parts) == 2:
+                    # No version number.
+                    if bestVersion is None:
+                        bestPackage = package
+
+                elif len(parts) == 3:
+                    # Got a version number.
+                    version = self.parseVersionForCompare(parts[1])
+                    if bestVersion > version:
+                        bestVersion = version
+                        bestPackage = package
+
+        return bestPackage
+
+    def readPackageImportDescFile(self, filename):
+        """ Reads the named xml file as a Package, and returns it if
+        valid, or None otherwise. """
+
+        package = self.Package('', self)
+        if package.readImportDescFile(filename):
+            return package
+
+        return None
+
+
+    def parseVersionForCompare(self, version):
+        """ Given a formatted version string, breaks it up into a
+        tuple, grouped so that putting the tuples into sorted order
+        will put the order numbers in increasing order. """
+
+        # TODO.  For now, we just use a dumb string compare.
+        return (version,)
 
     def require(self, package):
         """ Indicates a dependency on the indicated package.
