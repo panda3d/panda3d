@@ -48,10 +48,11 @@ begin_group() {
       << "begin_group.\n";
   }
   _last_colliding.clear();
-  if(_closest_collider)
+  if (_closest_collider) {
     bool inserted = _last_colliding.insert(_closest_collider).second;
+  }
   _current_colliding.clear();
-  _collider_distance = 10000000000;
+  _collider_distance = 0;
   _closest_collider = NULL;
 }
 
@@ -65,10 +66,10 @@ void CollisionHandlerHighestEvent::
 add_entry(CollisionEntry *entry) {
   nassertv(entry != (CollisionEntry *)NULL);
   LVector3f vec =
-      entry->get_surface_point(entry->get_from_node_path()) -
-      entry->get_from()->get_collision_origin();
+    entry->get_surface_point(entry->get_from_node_path()) -
+    entry->get_from()->get_collision_origin();
   double dist = vec.length_squared();
-  if(dist < _collider_distance) {
+  if (_closest_collider == NULL || dist < _collider_distance) {
     _collider_distance = dist;
     _closest_collider = entry;
   }
@@ -84,7 +85,8 @@ add_entry(CollisionEntry *entry) {
 ////////////////////////////////////////////////////////////////////
 bool CollisionHandlerHighestEvent::
 end_group() {
-  if(_closest_collider)
+  if (_closest_collider) {
     bool inserted = _current_colliding.insert(_closest_collider).second;
+  }
   return CollisionHandlerEvent::end_group();
 }
