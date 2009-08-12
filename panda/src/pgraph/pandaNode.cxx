@@ -1034,6 +1034,9 @@ remove_all_children(Thread *current_thread) {
 //       Access: Published
 //  Description: Moves all the children from the other node onto this
 //               node.
+//
+//               Any NodePaths to child nodes of the other node are
+//               truncated, rather than moved to the new parent.
 ////////////////////////////////////////////////////////////////////
 void PandaNode::
 steal_children(PandaNode *other, Thread *current_thread) {
