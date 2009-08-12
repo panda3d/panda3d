@@ -22,7 +22,7 @@ See pack3d.py for a script that generates these p3d files.
 import sys
 from direct.showbase import VFSImporter
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties, readXmlStream
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.MessengerGlobal import messenger
@@ -192,7 +192,25 @@ class AppRunner(DirectObject):
             # Hang a hook so we know when the window is actually opened.
             self.acceptOnce('window-event', self.windowEvent)
 
-            import main
+            # Look for the startup Python file.  This may be a magic
+            # filename (like "__main__", or any filename that contains
+            # invalid module characters), so we can't just import it
+            # directly; instead, we go through the low-level importer.
+
+            # If there's no p3d_info.xml file, we look for "main".
+            moduleName = 'main'
+            if self.p3dPackage:
+                mainName = self.p3dPackage.Attribute('main_module')
+                if mainName:
+                    moduleName = mainName
+            
+            v = VFSImporter.VFSImporter(MultifileRoot)
+            loader = v.find_module(moduleName)
+            if not loader:
+                message = "No %s.py found in application." % (mainName)
+                raise StandardError, message
+            
+            main = loader.load_module(moduleName)
             if hasattr(main, 'main') and callable(main.main):
                 main.main()
 
@@ -233,31 +251,6 @@ class AppRunner(DirectObject):
 
         # Now go load the applet.
         fname = Filename.fromOsSpecific(p3dFilename)
-        if not p3dFilename:
-            # If we didn't get a literal filename, we have to download it
-            # from the URL.  TODO: make this a smarter temporary filename?
-            fname = Filename.temporary('', 'p3d_')
-            fname.setExtension('p3d')
-            p3dFilename = fname.toOsSpecific()
-            src = self.tokenDict.get('src', None)
-            if not src:
-                raise ArgumentError, "No Panda app specified."
-
-            http = HTTPClient.getGlobalPtr()
-            hc = http.getDocument(src)
-            if not hc.downloadToFile(fname):
-                fname.unlink()
-                raise ArgumentError, "Couldn't download %s" % (src)
-
-            # Set a hook on sys.exit to delete the temporary file.
-            oldexitfunc = getattr(sys, 'exitfunc', None)
-            def deleteTempFile(fname = fname, oldexitfunc = oldexitfunc):
-                fname.unlink()
-                if oldexitfunc:
-                    oldexitfunc()
-
-            sys.exitfunc = deleteTempFile
-
         vfs = VirtualFileSystem.getGlobalPtr()
 
         if not vfs.exists(fname):
@@ -284,6 +277,19 @@ class AppRunner(DirectObject):
                 pathname = '%s/%s' % (MultifileRoot, f)
                 data = open(pathname, 'r').read()
                 loadPrcFileData(pathname, data)
+
+        # Now load the p3dInfo file.
+        self.p3dInfo = None
+        self.p3dPackage = None
+        i = mf.findSubfile('p3d_info.xml')
+        if i >= 0:
+            stream = mf.openReadSubfile(i)
+            self.p3dInfo = readXmlStream(stream)
+            mf.closeReadSubfile(stream)
+        if self.p3dInfo:
+            p3dPackage = self.p3dInfo.FirstChild('package')
+            if p3dPackage:
+                self.p3dPackage = p3dPackage.ToElement()
 
         self.gotP3DFilename = True
 

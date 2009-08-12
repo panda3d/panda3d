@@ -754,16 +754,16 @@ class Freezer:
                 co = self.mf.replace_paths_in_code(module.__code__)
                 module.__code__ = co;
 
-    def __addPyc(self, multifile, filename, code):
+    def __addPyc(self, multifile, filename, code, compressionLevel):
         if code:
             data = imp.get_magic() + '\0\0\0\0' + \
                    marshal.dumps(code)
 
             stream = StringStream(data)
-            multifile.addSubfile(filename, stream, 0)
+            multifile.addSubfile(filename, stream, compressionLevel)
             multifile.flush()
 
-    def __addPythonDirs(self, multifile, moduleDirs, dirnames):
+    def __addPythonDirs(self, multifile, moduleDirs, dirnames, compressionLevel):
         """ Adds all of the names on dirnames as a module directory. """
         if not dirnames:
             return
@@ -785,17 +785,18 @@ class Freezer:
                 else:
                     filename += '.pyo'
                 code = compile('', moduleName, 'exec')
-                self.__addPyc(multifile, filename, code)
+                self.__addPyc(multifile, filename, code, compressionLevel)
 
             moduleDirs[str] = True
-            self.__addPythonDirs(multifile, moduleDirs, dirnames[:-1])
+            self.__addPythonDirs(multifile, moduleDirs, dirnames[:-1], compressionLevel)
 
-    def __addPythonFile(self, multifile, moduleDirs, moduleName, mdef):
+    def __addPythonFile(self, multifile, moduleDirs, moduleName, mdef,
+                        compressionLevel):
         """ Adds the named module to the multifile as a .pyc file. """
 
         # First, split the module into its subdirectory names.
         dirnames = moduleName.split('.')
-        self.__addPythonDirs(multifile, moduleDirs, dirnames[:-1])
+        self.__addPythonDirs(multifile, moduleDirs, dirnames[:-1], compressionLevel)
 
         filename = '/'.join(dirnames)
 
@@ -823,7 +824,7 @@ class Freezer:
         if self.storePythonSource:
             if sourceFilename and sourceFilename.exists():
                 filename += '.py'
-                multifile.addSubfile(filename, sourceFilename, 0)
+                multifile.addSubfile(filename, sourceFilename, compressionLevel)
                 return
 
         # If we can't find the source file, add the compiled pyc instead.
@@ -844,16 +845,17 @@ class Freezer:
                     source = source + '\n'
                 code = compile(source, sourceFilename.cStr(), 'exec')
 
-        self.__addPyc(multifile, filename, code)
+        self.__addPyc(multifile, filename, code, compressionLevel)
 
-    def addToMultifile(self, multifile):
+    def addToMultifile(self, multifile, compressionLevel = 0):
         """ After a call to done(), this stores all of the accumulated
         python code into the indicated Multifile. """
 
         moduleDirs = {}
         for moduleName, mdef in self.getModuleDefs():
             if mdef.token != self.MTForbid:
-                self.__addPythonFile(multifile, moduleDirs, moduleName, mdef)
+                self.__addPythonFile(multifile, moduleDirs, moduleName, mdef,
+                                     compressionLevel)
     
     def writeMultifile(self, mfname):
         """ After a call to done(), this stores all of the accumulated
