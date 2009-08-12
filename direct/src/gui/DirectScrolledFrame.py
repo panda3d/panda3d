@@ -34,6 +34,7 @@ class DirectScrolledFrame(DirectFrame):
             ('manageScrollBars', 1,                self.setManageScrollBars),
             ('autoHideScrollBars', 1,              self.setAutoHideScrollBars),
             ('scrollBarWidth', 0.08,               None),
+            ('borderWidth',    (0.01, 0.01),       self.setBorderWidth),
             )
 
         # Merge keyword options with default options
