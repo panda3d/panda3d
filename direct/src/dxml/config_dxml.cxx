@@ -42,3 +42,33 @@ init_libdxml() {
   }
   initialized = true;
 }
+
+BEGIN_PUBLISH
+////////////////////////////////////////////////////////////////////
+//     Function: read_xml_stream
+//  Description: Reads an XML document from the indicated stream.
+//               Returns the document, or NULL on error.
+////////////////////////////////////////////////////////////////////
+TiXmlDocument *
+read_xml_stream(istream &in) {
+  TiXmlDocument *doc = new TiXmlDocument;
+  in >> *doc;
+  if (in.fail() && !in.eof()) {
+    delete doc;
+    return NULL;
+  }
+
+  return doc;
+}
+END_PUBLISH
+
+BEGIN_PUBLISH
+////////////////////////////////////////////////////////////////////
+//     Function: write_xml_stream
+//  Description: Writes an XML document to the indicated stream.
+////////////////////////////////////////////////////////////////////
+void
+write_xml_stream(ostream &out, TiXmlDocument *doc) {
+  out << *doc;
+}
+END_PUBLISH

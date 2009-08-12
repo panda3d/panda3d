@@ -33,4 +33,10 @@ NotifyCategoryDecl(dxml, EXPCL_DIRECT, EXPTP_DIRECT);
 
 extern EXPCL_DIRECT void init_libdxml();
 
+class TiXmlDocument;
+BEGIN_PUBLISH
+TiXmlDocument *read_xml_stream(istream &in);
+void write_xml_stream(ostream &out, TiXmlDocument *doc);
+END_PUBLISH
+
 #endif
