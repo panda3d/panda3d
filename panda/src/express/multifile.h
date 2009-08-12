@@ -104,6 +104,7 @@ PUBLISHED:
 
   BLOCKING INLINE string read_subfile(int index);
   BLOCKING istream *open_read_subfile(int index);
+  BLOCKING static void close_read_subfile(istream *stream);
   BLOCKING bool extract_subfile(int index, const Filename &filename);
   BLOCKING bool extract_subfile_to(int index, ostream &out);
   BLOCKING bool compare_subfile(int index, const Filename &filename);

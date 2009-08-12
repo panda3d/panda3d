@@ -78,7 +78,7 @@ void Extractor::
 reset() {
   if (_initiated) {
     if (_read != (istream *)NULL) {
-      delete _read;
+      Multifile::close_read_subfile(_read);
       _read = (istream *)NULL;
     }
     _write.close();
@@ -204,7 +204,7 @@ step() {
         downloader_cat.debug()
           << "Finished current subfile.\n";
       }
-      delete _read;
+      Multifile::close_read_subfile(_read);
       _read = (istream *)NULL;
       _write.close();
       _request_index++;

@@ -77,6 +77,11 @@ open_read_file(const Filename &file) const {
   if (subfile_index < 0) {
     return NULL;
   }
+
+  // The caller will eventually pass this pointer to
+  // VirtualFileSystem::close_read_file(), not to
+  // Multifile::close_read_subfile().  Fortunately, these two methods
+  // do the same thing, so that doesn't matter.
   return _multifile->open_read_subfile(subfile_index);
 }
 

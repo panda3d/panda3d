@@ -1072,8 +1072,9 @@ get_subfile_internal_length(int index) const {
 //               subfile.
 //
 //               The returned istream will have been allocated via
-//               new; you should delete it when you are finished
-//               reading the subfile.
+//               new; you should pass the pointer to
+//               close_read_subfile() when you are finished with it to
+//               delete it and release its resources.
 //
 //               Any future calls to repack() or close() (or the
 //               Multifile destructor) will invalidate all currently
@@ -1157,6 +1158,31 @@ open_read_subfile(int index) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::close_read_subfile
+//       Access: Published, Static
+//  Description: Closes a file opened by a previous call to
+//               open_read_subfile().  This really just deletes the
+//               istream pointer, but it is recommended to use this
+//               interface instead of deleting it explicitly, to help
+//               work around compiler issues.
+////////////////////////////////////////////////////////////////////
+void Multifile::
+close_read_subfile(istream *stream) {
+  if (stream != (istream *)NULL) {
+    // For some reason--compiler bug in gcc 3.2?--explicitly deleting
+    // the stream pointer does not call the appropriate global delete
+    // function; instead apparently calling the system delete
+    // function.  So we call the delete function by hand instead.
+#if !defined(WIN32_VC) && !defined(USE_MEMORY_NOWRAPPERS) && defined(REDEFINE_GLOBAL_OPERATOR_NEW)
+    stream->~istream();
+    (*global_operator_delete)(stream);
+#else
+    delete stream;
+#endif
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::extract_subfile
 //       Access: Published
 //  Description: Extracts the nth subfile into a file with the given
@@ -1207,7 +1233,7 @@ extract_subfile_to(int index, ostream &out) {
   }
 
   bool failed = (in->fail() && !in->eof());
-  delete in;
+  close_read_subfile(in);
   nassertr(!failed, false);
 
   return (!out.fail());
@@ -1251,7 +1277,7 @@ compare_subfile(int index, const Filename &filename) {
 
   if (file_size != (streampos)get_subfile_length(index)) {
     // The files have different sizes.
-    delete in1;
+    close_read_subfile(in1);
     return false;
   }
 
@@ -1261,8 +1287,8 @@ compare_subfile(int index, const Filename &filename) {
   int byte2 = in2.get();
   while (!in1->fail() && !in1->eof() &&
          !in2.fail() && !in2.eof()) {
-    if (byte1 != byte2) {
-      delete in1;
+    if (byte1 != byte2) { 
+      close_read_subfile(in1);
       return false;
     }
     byte1 = in1->get();
@@ -1270,7 +1296,7 @@ compare_subfile(int index, const Filename &filename) {
   }
 
   bool failed = (in1->fail() && !in1->eof()) || (in2.fail() && !in2.eof());
-  delete in1;
+  close_read_subfile(in1);
 
   nassertr(!failed, false);
 
@@ -1354,7 +1380,7 @@ read_subfile(int index, pvector<unsigned char> &result) {
   }
 
   bool failed = in->fail() && !in->eof();
-  delete in;
+  close_read_subfile(in);
   nassertr(!failed, false);
   return true;
 }
