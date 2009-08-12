@@ -233,7 +233,7 @@ void DaeMaterials::
 apply_to(const string semantic, const PT(EggGroup) to) {
   if (_materials.count(semantic) > 0) {
     PT(DaeBlendSettings) blend = _materials[semantic]->_blend;
-    if (blend->_enabled) {
+    if (blend && blend->_enabled) {
       to->set_blend_mode(EggGroup::BM_add);
       to->set_blend_color(blend->_color);
       to->set_blend_operand_a(blend->_operand_a);
