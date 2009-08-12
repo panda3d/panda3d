@@ -448,7 +448,7 @@ protected:
   CLP(ShaderContext)  *_texture_binding_shader_context;
 #endif
 #ifdef OPENGLES_2
-  PT(Shader)  _default_shader;
+  static PT(Shader)  _default_shader;
 #endif
 
 #ifdef SUPPORT_IMMEDIATE_MODE

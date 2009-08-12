@@ -75,6 +75,10 @@ PStatCollector CLP(GraphicsStateGuardian)::_primitive_batches_display_list_pcoll
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_display_list_pcollector("Vertices:Display lists");
 PStatCollector CLP(GraphicsStateGuardian)::_vertices_immediate_pcollector("Vertices:Immediate mode");
 
+#ifdef OPENGLES_2
+PT(Shader) CLP(GraphicsStateGuardian)::_default_shader = NULL;
+#endif
+
 // The following noop functions are assigned to the corresponding
 // glext function pointers in the class, in case the functions are not
 // defined by the GL, just so it will always be safe to call the
@@ -973,7 +977,9 @@ reset() {
   // something didn't happen to have a shader applied, or
   // if it failed to compile. This default shader just outputs
   // a red color, indicating that something went wrong.
-  _default_shader = new Shader(default_shader_name, default_shader_body, Shader::SL_GLSL);
+  if (_default_shader == NULL) {
+    _default_shader = new Shader(default_shader_name, default_shader_body, Shader::SL_GLSL);
+  }
 #endif
 
 #ifdef OPENGLES_2
