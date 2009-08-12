@@ -43,30 +43,56 @@ class DirectCameraControl(DirectObject):
             ['DIRECT-mouse3', self.mouseDollyStart],
             ['DIRECT-mouse3Up', self.mouseDollyStop],
             ]
+
+        # [gjeon] moved all of the hotkeys to single place for easy remapping
+##         self.keyEvents = [
+##             ['c', self.centerCamIn, 0.5],
+##             ['f', self.fitOnWidget],                  # Note: This function doesn't work as intended
+##             ['h', self.homeCam],
+##             ['shift-v', self.toggleMarkerVis],          
+##             ['m', self.moveToFit],                      # Note: This function doesn't work as intended; the object dissappears and screen flashes
+##             ['n', self.pickNextCOA],
+##             ['u', self.orbitUprightCam],
+##             ['shift-u', self.uprightCam],
+##             [`1`, self.spawnMoveToView, 1],
+##             [`2`, self.spawnMoveToView, 2],
+##             [`3`, self.spawnMoveToView, 3],
+##             [`4`, self.spawnMoveToView, 4],
+##             [`5`, self.spawnMoveToView, 5],
+##             [`6`, self.spawnMoveToView, 6],
+##             [`7`, self.spawnMoveToView, 7],
+##             [`8`, self.spawnMoveToView, 8],
+##             ['9', self.swingCamAboutWidget, -90.0, t],
+##             ['0', self.swingCamAboutWidget,  90.0, t],
+##             ['`', self.removeManipulateCameraTask],
+##             ['=', self.zoomCam, 0.5, t],
+##             ['+', self.zoomCam, 0.5, t],
+##             ['-', self.zoomCam, -2.0, t],
+##             ['_', self.zoomCam, -2.0, t],
+##             ]
+        
         self.keyEvents = [
-            ['c', self.centerCamIn, 0.5],
-            ['f', self.fitOnWidget],                  # Note: This function doesn't work as intended
-            ['h', self.homeCam],
-            ['shift-v', self.toggleMarkerVis],          
-            ['m', self.moveToFit],                      # Note: This function doesn't work as intended; the object dissappears and screen flashes
-            ['n', self.pickNextCOA],
-            ['u', self.orbitUprightCam],
-            ['shift-u', self.uprightCam],
-            [`1`, self.spawnMoveToView, 1],
-            [`2`, self.spawnMoveToView, 2],
-            [`3`, self.spawnMoveToView, 3],
-            [`4`, self.spawnMoveToView, 4],
-            [`5`, self.spawnMoveToView, 5],
-            [`6`, self.spawnMoveToView, 6],
-            [`7`, self.spawnMoveToView, 7],
-            [`8`, self.spawnMoveToView, 8],
-            ['9', self.swingCamAboutWidget, -90.0, t],
-            ['0', self.swingCamAboutWidget,  90.0, t],
-            ['`', self.removeManipulateCameraTask],
-            ['=', self.zoomCam, 0.5, t],
-            ['+', self.zoomCam, 0.5, t],
-            ['-', self.zoomCam, -2.0, t],
-            ['_', self.zoomCam, -2.0, t],
+            ['DIRECT-centerCamIn', self.centerCamIn, 0.5],
+            ['DIRECT-fitOnWidget', self.fitOnWidget],                  # Note: This function doesn't work as intended
+            ['DIRECT-homeCam', self.homeCam],
+            ['DIRECT-toggleMarkerVis', self.toggleMarkerVis],          
+            ['DIRECT-moveToFit', self.moveToFit],                      # Note: This function doesn't work as intended; the object dissappears and screen flashes
+            ['DIRECT-pickNextCOA', self.pickNextCOA],
+            ['DIRECT-orbitUprightCam', self.orbitUprightCam],
+            ['DIRECT-uprightCam', self.uprightCam],
+            ['DIRECT-spwanMoveToView-1', self.spawnMoveToView, 1],
+            ['DIRECT-spwanMoveToView-2', self.spawnMoveToView, 2],
+            ['DIRECT-spwanMoveToView-3', self.spawnMoveToView, 3],
+            ['DIRECT-spwanMoveToView-4', self.spawnMoveToView, 4],
+            ['DIRECT-spwanMoveToView-5', self.spawnMoveToView, 5],
+            ['DIRECT-spwanMoveToView-6', self.spawnMoveToView, 6],
+            ['DIRECT-spwanMoveToView-7', self.spawnMoveToView, 7],
+            ['DIRECT-spwanMoveToView-8', self.spawnMoveToView, 8],
+            ['DIRECT-swingCamAboutWidget-0', self.swingCamAboutWidget, -90.0, t],
+            ['DIRECT-swingCamAboutWidget-1', self.swingCamAboutWidget,  90.0, t],
+            ['DIRECT-removeManipulateCameraTask', self.removeManipulateCameraTask],
+            ['DIRECT-zoomInCam', self.zoomCam, 0.5, t],
+            ['DIRECT-zoomOutCam', self.zoomCam, -2.0, t],
             ]
         # set this to true to prevent the camera from rolling
         self.lockRoll = False

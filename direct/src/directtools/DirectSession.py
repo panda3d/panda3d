@@ -169,7 +169,19 @@ class DirectSession(DirectObject):
         self.modifierEvents = ['control', 'control-up',
                               'shift', 'shift-up',
                               'alt', 'alt-up',
-                              ]
+                               ]
+
+        keyList = map(chr, range(97, 123))
+        keyList.extend(map(chr, range(48, 58)))
+        keyList.extend(["`", "-", "=", "[", "]", ";", "'", ",", ".", "/", "\\"])
+
+        def addShift(a):
+            return "shift-%s"%a
+
+        self.keyList = keyList[:]
+        self.keyList.extend(map(addShift, keyList))
+        self.keyList.extend(['escape', 'delete', 'page_up', 'page_down'])
+
         self.keyEvents = ['escape', 'delete', 'page_up', 'page_down',
                           '[', '{', ']', '}',
                           'shift-a', 'b', 'control-f',
@@ -188,6 +200,32 @@ class DirectSession(DirectObject):
                             'control-mouse3', 'control-mouse3-up',
                             'alt-mouse3', 'alt-mouse3-up',
                             ]
+
+        self.hotKeyEvents = {
+            'c': 'DIRECT-centerCamIn',
+            'f': 'DIRECT-fitOnWidget',
+            'h': 'DIRECT-homeCam',
+            'shift-v': 'DIRECT-toggleMarkerVis',
+            'm': 'DIRECT-moveToFit',
+            'n': 'DIRECT-pickNextCOA',
+            'u': 'DIRECT-orbitUprightCam',
+            'shift-u': 'DIRECT-uprightCam',
+            '1': 'DIRECT-spwanMoveToView-1',
+            '2': 'DIRECT-spwanMoveToView-2',
+            '3': 'DIRECT-spwanMoveToView-3',
+            '4': 'DIRECT-spwanMoveToView-4',
+            '5': 'DIRECT-spwanMoveToView-5',
+            '6': 'DIRECT-spwanMoveToView-6',
+            '7': 'DIRECT-spwanMoveToView-7',
+            '8': 'DIRECT-spwanMoveToView-8',
+            '9': 'DIRECT-swingCamAboutWidget-0',
+            '0': 'DIRECT-swingCamAboutWidget-1',
+            '`': 'DIRECT-removeManipulateCameraTask',
+            '=': 'DIRECT-zoomInCam',
+            '+': 'DIRECT-zoomInCam',
+            '_': 'DIRECT-zoomOutCam',
+            '-': 'DIRECT-zoomOutCam',
+            }
 
         self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w'] 
 
@@ -366,6 +404,9 @@ class DirectSession(DirectObject):
         for event in self.keyEvents:
             self.accept(event, self.inputHandler, [event])
 
+        for event in self.keyList:
+            self.accept(event, self.inputHandler, [event])
+
     def enableMouseEvents(self):
         for event in self.mouseEvents:
             self.accept(event, self.inputHandler, [event])
@@ -403,7 +444,9 @@ class DirectSession(DirectObject):
                     break
 
         # Deal with keyboard and mouse input
-        if input == 'mouse1-up':
+        if input in self.hotKeyEvents.keys():
+            messenger.send(self.hotKeyEvents[input])
+        elif input == 'mouse1-up':
             self.fMouse1 = 0 # [gjeon] to update alt key information while mouse1 is pressed
             messenger.send('DIRECT-mouse1Up')
         elif input.find('mouse1') != -1:
@@ -1046,6 +1089,7 @@ class DisplayRegionList(DirectObject):
         self.accept("DIRECT-mouse1Up", self.mouseUpdate)
         self.accept("DIRECT-mouse2Up", self.mouseUpdate)
         self.accept("DIRECT-mouse3Up", self.mouseUpdate)
+        self.tryToGetCurrentDr = True
 
     def __getitem__(self, index):
         return self.displayRegionList[index]
@@ -1086,6 +1130,8 @@ class DisplayRegionList(DirectObject):
         #base.direct.dr = self.getCurrentDr()
 
     def getCurrentDr(self):
+        if not self.tryToGetCurrentDr:
+            return base.direct.dr
         for dr in self.displayRegionList:
             if (dr.mouseX >= -1.0 and dr.mouseX <= 1.0 and
                 dr.mouseY >= -1.0 and dr.mouseY <= 1.0):
