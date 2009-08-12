@@ -15,11 +15,11 @@
 
 #end bin_target
 
-#begin bin_target
-  #define TARGET egg2dae
-  #define LOCAL_LIBS daeegg eggbase progbase
-
-  #define SOURCES \
-    eggToDAE.cxx eggToDAE.h
-
-#end bin_target
+//#begin bin_target
+//  #define TARGET egg2dae
+//  #define LOCAL_LIBS daeegg eggbase progbase
+//
+//  #define SOURCES \
+//    eggToDAE.cxx eggToDAE.h
+//
+//#end bin_target
