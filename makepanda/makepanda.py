@@ -4267,7 +4267,7 @@ The Panda3D engine.
 /usr/share/applications/*.desktop
 /etc/ld.so.conf.d/panda3d.conf
 /usr/bin
-/usr/lib
+/usr/%_lib
 /usr/include/panda3d
 """
 
