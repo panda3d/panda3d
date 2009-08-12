@@ -754,9 +754,7 @@ do_flatten_siblings(PandaNode *parent_node, PandaNode *child1,
 
   // Make sure the new child list has child1's children first,
   // followed by child2's children.
-  child1->steal_children(child2);
-
-  new_child->replace_node(child1);
+  child1->replace_node(child2);
   new_child->replace_node(child2);
 
   return new_child;
