@@ -6,7 +6,7 @@
   #define LOCAL_LIBS directbase
   #define OTHER_LIBS \
     interrogatedb:c dconfig:c dtoolconfig:m \
-    dtoolutil:c dtoolbase:c dtool:m
+    dtoolutil:c dtoolbase:c prc:c dtool:m
 
   #define SOURCES \
     config_dxml.h config_dxml.cxx
