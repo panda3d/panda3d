@@ -362,6 +362,7 @@ class Freezer:
     MTInclude = 1
     MTExclude = 2
     MTForbid = 3
+    MTGuess = 4
 
     class ModuleDef:
         def __init__(self, token, moduleName, filename = None):
@@ -423,8 +424,11 @@ class Freezer:
         self.mf = None
 
         # Make sure we know how to find "direct".
-        if direct.__path__:
-            modulefinder.AddPackagePath('direct', direct.__path__[0])
+        for sourceTree in sourceTrees:
+            module = sys.modules.get(sourceTree, None)
+            if module and hasattr(module, '__path__'):
+                path = getattr(module, '__path__')
+                modulefinder.AddPackagePath(sourceTree, path[0])
 
     def excludeFrom(self, freezer):
         """ Excludes all modules that have already been processed by
@@ -463,7 +467,7 @@ class Freezer:
             modulefinder.AddPackagePath(moduleName, path)
 
     def getModulePath(self, moduleName):
-        """ Looks for the indicated directory module and returns its
+        """ Looks for the indicated directory module and returns the 
         __path__ member: the list of directories in which its python
         files can be found.  If the module is a .py file and not a
         directory, returns None. """
@@ -494,10 +498,49 @@ class Freezer:
             
         file, pathname, description = imp.find_module(baseName, path)
 
-        if os.path.isdir(pathname):
-            return [pathname]
-        else:
+        if not os.path.isdir(pathname):
             return None
+        return [pathname]
+
+    def getModuleStar(self, moduleName):
+        """ Looks for the indicated directory module and returns the 
+        __all__ member: the list of symbols within the module. """
+
+        # First, try to import the module directly.  That's the most
+        # reliable answer, if it works.
+        try:
+            module = __import__(moduleName)
+        except:
+            module = None
+
+        if module != None:
+            for symbol in moduleName.split('.')[1:]:
+                module = getattr(module, symbol)
+            if hasattr(module, '__all__'):
+                return module.__all__
+        
+        # If it didn't work, just open the directory and scan for *.py
+        # files.
+        path = None
+        baseName = moduleName
+        if '.' in baseName:
+            parentName, baseName = moduleName.rsplit('.', 1)
+            path = self.getModulePath(parentName)
+            if path == None:
+                return None
+            
+        file, pathname, description = imp.find_module(baseName, path)
+
+        if not os.path.isdir(pathname):
+            return None
+
+        # Scan the directory, looking for .py files.
+        modules = []
+        for basename in os.listdir():
+            if basename.endswith('.py') and basename != '__init__.py':
+                modules.append(basename[:-3])
+
+        return modules
             
     def addModule(self, moduleName, implicit = False, newName = None,
                   filename = None):
@@ -521,8 +564,6 @@ class Freezer:
 
         if not newName:
             newName = moduleName
-        moduleName = moduleName.replace("/", ".").replace("direct.src", "direct")
-        newName = newName.replace("/", ".").replace("direct.src", "direct")
         if implicit:
             token = self.MTAuto
         else:
@@ -553,22 +594,19 @@ class Freezer:
                                 parentNames.append((parentName, newParentName))
 
             for parentName, newParentName in parentNames:
-                path = self.getModulePath(parentName)
+                modules = self.getModuleStar(parentName)
 
-                if path == None:
+                if modules == None:
                     # It's actually a regular module.
                     self.modules[newParentName] = self.ModuleDef(token, parentName)
 
                 else:
                     # Now get all the py files in the parent directory.
-                    for dirname in path:
-                        for basename in os.listdir(dirname):
-                            if '-' in basename:
-                                continue
-                            if basename.endswith('.py') and basename != '__init__.py':
-                                moduleName = '%s.%s' % (parentName, basename[:-3])
-                                newName = '%s.%s' % (newParentName, basename[:-3])
-                                self.modules[newName] = self.ModuleDef(token, moduleName)
+                    for basename in modules:
+                        moduleName = '%s.%s' % (parentName, basename)
+                        newName = '%s.%s' % (newParentName, basename)
+                        mdef = self.ModuleDef(self.MTGuess, moduleName)
+                        self.modules[newName] = mdef
         else:
             # A normal, explicit module name.
             self.modules[newName] = self.ModuleDef(token, moduleName, filename = filename)
@@ -610,7 +648,7 @@ class Freezer:
             
             if token == self.MTInclude:
                 includes.append(mdef)
-            elif token == self.MTAuto:
+            elif token == self.MTAuto or token == self.MTGuess:
                 autoIncludes.append(mdef)
             elif token == self.MTExclude or token == self.MTForbid:
                 excludes.append(mdef.moduleName)
@@ -627,6 +665,8 @@ class Freezer:
         for mdef in autoIncludes:
             try:
                 self.__loadModule(mdef)
+                # Since it succesfully loaded, it's no longer a guess.
+                mdef.token = self.MTAuto
             except ImportError:
                 pass
 
@@ -706,7 +746,7 @@ class Freezer:
         moduleNames = []
 
         for newName, mdef in self.modules.items():
-            if mdef.token != self.MTExclude:
+            if mdef.token != self.MTExclude and mdef.token != self.MTGuess:
                 moduleNames.append(newName)
 
         moduleNames.sort()

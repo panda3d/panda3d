@@ -62,7 +62,9 @@ class Packager:
 
             # Convert the filename to an unambiguous filename for
             # searching.
-            self.filename.makeCanonical()
+            self.filename.makeTrueCase()
+            if self.filename.exists() or not self.filename.isLocal():
+                self.filename.makeCanonical()
 
         def isExcluded(self, package):
             """ Returns true if this file should be excluded or
@@ -181,6 +183,11 @@ class Packager:
                 if self.mainModule not in self.freezer.modules:
                     self.freezer.addModule(self.mainModule)
 
+            # Pick up any unfrozen Python files.
+            self.freezer.done()
+            self.freezer.addToMultifile(self.multifile, self.compressionLevel)
+            self.addExtensionModules()
+
             # Add known module names.
             self.moduleNames = {}
             for moduleName in self.freezer.getAllModuleNames():
@@ -193,11 +200,6 @@ class Packager:
                 xmodule = TiXmlElement('module')
                 xmodule.SetAttribute('name', moduleName)
                 self.components.append(xmodule)
-
-            # Pick up any unfrozen Python files.
-            self.freezer.done()
-            self.freezer.addToMultifile(self.multifile, self.compressionLevel)
-            self.addExtensionModules()
 
             # Now look for implicit shared-library dependencies.
             if PandaSystem.getPlatform().startswith('win'):
@@ -309,12 +311,13 @@ class Packager:
                 # Don't bother, it's already here.
                 return
 
+            self.sourceFilenames[file.filename] = file
+
             if not file.filename.exists():
                 self.packager.notify.warning("No such file: %s" % (file.filename))
                 return
             
             self.files.append(file)
-            self.sourceFilenames[file.filename] = file
             self.targetFilenames[file.newName] = file
 
         def excludeFile(self, filename):
@@ -356,9 +359,16 @@ class Packager:
                     print "Unable to determine dependencies from %s" % (file.filename)
                     continue
 
+                # Attempt to resolve the dependent filename relative
+                # to the original filename, before we resolve it along
+                # the PATH.
+                path = DSearchPath(Filename(file.filename.getDirname()))
+
                 for filename in filenames:
                     filename = Filename.fromOsSpecific(filename)
-                    self.addFile(filename, executable = True)
+                    filename.resolveFilename(path)
+                    self.addFile(filename, newName = filename.getBasename(),
+                                 executable = True)
                         
                     
         def __parseDependenciesWindows(self, tempFile):
@@ -875,7 +885,8 @@ class Packager:
             'advapi32.dll', 'opengl32.dll', 'glu32.dll', 'gdi32.dll',
             'shell32.dll', 'ntdll.dll', 'ws2help.dll', 'rpcrt4.dll',
             'imm32.dll', 'ddraw.dll', 'shlwapi.dll', 'secur32.dll',
-            'dciman32.dll', 'comdlg32.dll', 'comctl32.dll',
+            'dciman32.dll', 'comdlg32.dll', 'comctl32.dll', 'ole32.dll',
+            'oleaut32.dll', 'gdiplus.dll', 'winmm.dll',
             ]
 
         # As above, but with filename globbing to catch a range of
