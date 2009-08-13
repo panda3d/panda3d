@@ -14,6 +14,51 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_info_ready
+//       Access: Public
+//  Description: Returns true if the package file information has been
+//               downloaded and verified and is ready to be consulted,
+//               false if it is not yet available.
+////////////////////////////////////////////////////////////////////
+inline bool P3DPackage::
+get_info_ready() const {
+  return _info_ready;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_download_size
+//       Access: Public
+//  Description: If get_info_ready() is true but get_ready() is false,
+//               it means the package is ready to be downloaded.  In
+//               this case, this method returns the number of bytes
+//               that need to be downloaded for this package.  This is
+//               intended to be used to estimate the download time for
+//               this package relative to other packages, for instance
+//               to update a progress bar sensibly.
+////////////////////////////////////////////////////////////////////
+inline size_t P3DPackage::
+get_download_size() const {
+  return _download_size;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::activate_download
+//       Access: Public
+//  Description: Authorizes the package to begin downloading and
+//               unpacking the meat of its data.  Until this is
+//               called, the package will download its file
+//               information only, and then wait.
+////////////////////////////////////////////////////////////////////
+inline void P3DPackage::
+activate_download() {
+  _allow_data_download = true;
+
+  if (_info_ready) {
+    begin_data_download();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::get_ready
 //       Access: Public
 //  Description: Returns true if the package has been downloaded and

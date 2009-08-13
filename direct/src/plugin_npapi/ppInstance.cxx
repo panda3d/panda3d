@@ -27,6 +27,10 @@
 #include <fstream>
 #include <string.h>  // strcmp()
 
+#ifndef _WIN32
+#include <sys/select.h>
+#endif
+
 PPInstance::FileDatas PPInstance::_file_datas;
 
 ////////////////////////////////////////////////////////////////////
@@ -1336,6 +1340,13 @@ thread_run() {
     // So far, so good.  Read some more.
     _file.read(buffer, buffer_size);
     count = _file.gcount();
+
+    // This is useful for development, to slow things down enough to
+    // see the progress bar move.
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 10000;
+    select(0, NULL, NULL, NULL, &tv);
   }
 
   // End of file.

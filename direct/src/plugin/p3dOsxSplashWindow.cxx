@@ -240,27 +240,30 @@ paint_window() {
              &src_rect, &dest_rect, srcCopy, 0);
   }
 
-  int bar_width = min((int)(win_width * 0.6), 400);
-  int bar_height = min((int)(win_height * 0.1), 24);
-  int bar_x = (win_width - bar_width) / 2;
-  int bar_y = (win_height - bar_height * 2);
-
-  int progress = bar_x + 1 + (int)((bar_width - 2) * _install_progress);
-
-  Rect rbar = { bar_y, bar_x, bar_y + bar_height, bar_x + bar_width };
-  Rect rneed = { bar_y + 1, progress, bar_y + bar_height - 1, bar_x + bar_width - 1 };
-  Rect rdone = { bar_y + 1, bar_x + 1, bar_y + bar_height - 1, progress };
-  FrameRect(&rbar);
-
-  RGBColor blue = { 27756, 42405, 57568 };
-  RGBForeColor(&blue);
-  PaintRect(&rdone);
-  EraseRect(&rneed);
-
-  RGBColor black = { 0, 0, 0 };
-  RGBForeColor(&black);
-
   if (!_install_label.empty()) {
+    // Draw the progress bar.  We don't draw this bar unless the
+    // install_label has been set nonempty.
+    int bar_width = min((int)(win_width * 0.6), 400);
+    int bar_height = min((int)(win_height * 0.1), 24);
+    int bar_x = (win_width - bar_width) / 2;
+    int bar_y = (win_height - bar_height * 2);
+    
+    int progress = bar_x + 1 + (int)((bar_width - 2) * _install_progress);
+    
+    Rect rbar = { bar_y, bar_x, bar_y + bar_height, bar_x + bar_width };
+    Rect rneed = { bar_y + 1, progress, bar_y + bar_height - 1, bar_x + bar_width - 1 };
+    Rect rdone = { bar_y + 1, bar_x + 1, bar_y + bar_height - 1, progress };
+    FrameRect(&rbar);
+    
+    RGBColor blue = { 27756, 42405, 57568 };
+    RGBForeColor(&blue);
+    PaintRect(&rdone);
+    EraseRect(&rneed);
+    
+    RGBColor black = { 0, 0, 0 };
+    RGBForeColor(&black);
+
+    // Now draw the install_label right above it.
     TextFont(0);
     TextFace(bold);
     TextMode(srcOr);

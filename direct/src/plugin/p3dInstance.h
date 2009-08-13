@@ -80,6 +80,7 @@ public:
   inline P3D_request_ready_func *get_request_ready_func() const;
 
   void add_package(P3DPackage *package);
+  bool get_packages_info_ready() const;
   bool get_packages_ready() const;
   bool get_packages_failed() const;
   
@@ -111,7 +112,8 @@ private:
                              const string &property_name, P3D_object *value,
                              bool needs_response, int unique_id);
   void make_splash_window();
-  void start_package_download(P3DPackage *package);
+  void report_package_info_ready(P3DPackage *package);
+  void start_next_download();
   void report_package_progress(P3DPackage *package, double progress);
   void report_package_done(P3DPackage *package, bool progress);
 
@@ -160,6 +162,10 @@ private:
 
   typedef vector<P3DPackage *> Packages;
   Packages _packages;
+  Packages _downloading_packages;
+  int _download_package_index;
+  size_t _total_download_size;
+  size_t _total_downloaded;
 
   // We keep the _panda3d pointer separately because it's so
   // important, but it's in the above vector also.

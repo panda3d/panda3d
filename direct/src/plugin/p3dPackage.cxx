@@ -53,6 +53,9 @@ P3DPackage(const string &package_name,
   _package_fullname += string("_") + _package_version;
   _package_dir += string("/") + _package_version;
 
+  _info_ready = false;
+  _download_size = 0;
+  _allow_data_download = false;
   _ready = false;
   _failed = false;
   _active_download = NULL;
@@ -86,26 +89,26 @@ P3DPackage::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::set_instance
+//     Function: P3DPackage::add_instance
 //       Access: Public
 //  Description: Specifies an instance that may be responsible for
 //               downloading this package.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
-set_instance(P3DInstance *inst) {
+add_instance(P3DInstance *inst) {
   _instances.push_back(inst);
 
-  begin_download();
+  begin_info_download();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::cancel_instance
+//     Function: P3DPackage::remove_instance
 //       Access: Public
 //  Description: Indicates that the given instance will no longer be
 //               responsible for downloading this package.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
-cancel_instance(P3DInstance *inst) {
+remove_instance(P3DInstance *inst) {
   assert(!_instances.empty());
 
   if (inst == _instances[0]) {
@@ -122,23 +125,25 @@ cancel_instance(P3DInstance *inst) {
   assert(ii != _instances.end());
   _instances.erase(ii);
 
-  begin_download();
+  begin_info_download();
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::begin_download
-//       Access: Public
-//  Description: Begins downloading and installing the package, if
-//               needed.
+//     Function: P3DPackage::begin_info_download
+//       Access: Private
+//  Description: Begins downloading and installing the information
+//               about the package, including its file size and
+//               download source and such, if needed.  This is
+//               generally a very small download.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
-begin_download() {  
+begin_info_download() {  
   if (_instances.empty()) {
     // Can't download without any instances.
     return;
   }
 
-  if (_ready) {
+  if (_info_ready) {
     // Already downloaded.
     return;
   }
@@ -341,7 +346,49 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
     // Great, we're ready to begin.
     report_done(true);
 
-  } else if (_uncompressed_archive.quick_verify(_package_dir)) {
+  } else {
+    // We need to get the file data still, but at least we know all
+    // about it by this point.
+    if (!_allow_data_download) {
+      // Not authorized to start downloading yet; just report that
+      // we're ready.
+      report_info_ready();
+    } else {
+      // We've already been authorized to start downloading, so do it.
+      begin_data_download();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::begin_data_download
+//       Access: Private
+//  Description: Begins downloading and installing the package data
+//               itself, if needed.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+begin_data_download() {
+  if (_instances.empty()) {
+    // Can't download without any instances.
+    return;
+  }
+
+  if (_ready) {
+    // Already downloaded.
+    return;
+  }
+
+  if (_active_download != NULL) {
+    // In the middle of downloading.
+    return;
+  }
+
+  if (!_allow_data_download) {
+    // Not authorized yet.
+    return;
+  }
+
+  if (_uncompressed_archive.quick_verify(_package_dir)) {
     // We need to re-extract the archive.
     extract_archive();
 
@@ -581,6 +628,25 @@ report_progress(double progress) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::report_info_ready
+//       Access: Private
+//  Description: Called when the package information has been
+//               successfully downloaded but activate_download() has
+//               not yet been called, and the package is now idle,
+//               waiting for activate_download() to be called.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+report_info_ready() {
+  _info_ready = true;
+  _download_size = _compressed_archive.get_size();
+
+  Instances::iterator ii;
+  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+    (*ii)->report_package_info_ready(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::report_done
 //       Access: Private
 //  Description: Transitions the package to "ready" or "failure"
@@ -590,6 +656,7 @@ report_progress(double progress) {
 void P3DPackage::
 report_done(bool success) {
   if (success) {
+    _info_ready = true;
     _ready = true;
     _failed = false;
   } else {

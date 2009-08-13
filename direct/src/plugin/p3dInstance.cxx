@@ -85,6 +85,8 @@ P3DInstance(P3D_request_ready_func *func,
 
   // Set some initial properties.
   _panda_script_object->set_float_property("downloadProgress", 0.0);
+  _panda_script_object->set_string_property("downloadPackageName", "");
+  _panda_script_object->set_string_property("downloadPackageDisplayName", "");
   _panda_script_object->set_bool_property("downloadComplete", false);
   _panda_script_object->set_string_property("status", "initial");
 }
@@ -108,7 +110,7 @@ P3DInstance::
   // them.
   Packages::iterator pi;
   for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
-    (*pi)->cancel_instance(this);
+    (*pi)->remove_instance(this);
   }
   _packages.clear();
 
@@ -628,11 +630,31 @@ add_package(P3DPackage *package) {
   }
 
   _packages.push_back(package);
-  package->set_instance(this);
+  package->add_instance(this);
 
   if (package->get_package_name() == "panda3d") {
     _panda3d = package;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_packages_info_ready
+//       Access: Public
+//  Description: Returns true if all of the packages required by the
+//               instance have their information available and are
+//               ready to be downloaded, false if one or more of them
+//               is still waiting for information (or has failed).
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+get_packages_info_ready() const {
+  Packages::const_iterator pi;
+  for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
+    if (!(*pi)->get_info_ready()) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1089,14 +1111,97 @@ make_splash_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::start_package_download
+//     Function: P3DInstance::report_package_info_ready
 //       Access: Private
-//  Description: Notified when the package download begins.
+//  Description: Notified when a package information has been
+//               successfully downloaded and the package is idle,
+//               waiting for activate_download() to be called.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-start_package_download(P3DPackage *package) {
-  _panda_script_object->set_string_property("status", "downloading");
-  send_notify("ondownloadbegin");
+report_package_info_ready(P3DPackage *package) {
+  if (get_packages_info_ready()) {
+    // All packages are ready to go.  Let's start some download
+    // action.
+    _downloading_packages.clear();
+    _total_download_size = 0;
+    Packages::const_iterator pi;
+    for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
+      P3DPackage *package = (*pi);
+      if (package->get_info_ready() && !package->get_ready()) {
+        _downloading_packages.push_back(package);
+        _total_download_size += package->get_download_size();
+      }
+    }
+    _download_package_index = 0;
+    _total_downloaded = 0;
+
+    nout << "Beginning download of " << _downloading_packages.size()
+         << " packages, total " << _total_download_size
+         << " bytes required.\n";
+
+    _panda_script_object->set_string_property("status", "downloading");
+    send_notify("ondownloadbegin");
+
+    start_next_download();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::start_next_download
+//       Access: Private
+//  Description: Checks whether all packages are ready and waiting to
+//               be downloaded; if so, starts the next package in
+//               sequence downloading.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+start_next_download() {
+  while (_download_package_index < _downloading_packages.size()) {
+    P3DPackage *package = _downloading_packages[_download_package_index];
+    if (package->get_failed()) {
+      // Too bad.  TODO: fail.
+      return;
+    }
+
+    if (!package->get_ready()) {
+      // This package is ready to download.  Begin.
+      string name = package->get_package_display_name();
+      if (name.empty()) {
+        name = package->get_package_name();
+      }
+      _panda_script_object->set_string_property("downloadPackageName", package->get_package_name());
+      _panda_script_object->set_string_property("downloadPackageDisplayName", name);
+      if (_splash_window != NULL) {
+        _splash_window->set_install_label("Installing " + name);
+      }
+
+      nout << "Downloading " << package->get_package_name()
+           << ", package " << _download_package_index + 1
+           << " of " << _downloading_packages.size()
+           << ", " << package->get_download_size()
+           << " bytes.\n";
+
+      package->activate_download();
+      return;
+    }
+    
+    // This package has been downloaded.  Move to the next.
+    _total_downloaded += package->get_download_size();
+    ++_download_package_index;
+  }
+
+  // Looks like we're all done downloading.  Launch!
+  _downloading_packages.clear();
+
+  if (get_packages_ready()) {
+    _panda_script_object->set_bool_property("downloadComplete", true);
+    _panda_script_object->set_string_property("status", "starting");
+    send_notify("ondownloadcomplete");
+    
+    // Notify the session also.
+    if (_session != NULL) {
+      _session->report_packages_done(this, true);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1106,10 +1211,20 @@ start_package_download(P3DPackage *package) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 report_package_progress(P3DPackage *package, double progress) {
+  if (_download_package_index >= _downloading_packages.size() ||
+      package != _downloading_packages[_download_package_index]) {
+    // Got a report from an unexpected package.
+    nout << "Got download progress report from " << package->get_package_name()
+         << ", not at download head (head is " << _download_package_index
+         << ")\n";
+    return;
+  }
+
+  // Scale the progress into the range appropriate to this package.
+  progress = (progress * package->get_download_size() + _total_downloaded) / _total_download_size;
+  progress = min(progress, 1.0);
+
   if (_splash_window != NULL) {
-    if (!package->get_package_display_name().empty()) {
-      _splash_window->set_install_label("Installing " + package->get_package_display_name());
-    }
     _splash_window->set_install_progress(progress);
   }
   _panda_script_object->set_float_property("downloadProgress", progress);
@@ -1125,17 +1240,9 @@ void P3DInstance::
 report_package_done(P3DPackage *package, bool success) {
   if (success) {
     report_package_progress(package, 1.0);
-
-    if (get_packages_ready()) {
-      _panda_script_object->set_bool_property("downloadComplete", true);
-      _panda_script_object->set_string_property("status", "starting");
-      send_notify("ondownloadcomplete");
-
-      // Notify the session also.
-      if (_session != NULL) {
-        _session->report_packages_done(this, success);
-      }
-    }
+    start_next_download();
+  } else {
+    // TODO: fail.
   }
 }
 

@@ -41,6 +41,10 @@ public:
              const string &package_version);
   ~P3DPackage();
 
+  inline bool get_info_ready() const;
+  inline size_t get_download_size() const;
+
+  inline void activate_download();
   inline bool get_ready() const;
   inline bool get_failed() const;
   inline const string &get_package_dir() const;
@@ -48,8 +52,8 @@ public:
   inline const string &get_package_version() const;
   inline const string &get_package_display_name() const;
 
-  void set_instance(P3DInstance *inst);
-  void cancel_instance(P3DInstance *inst);
+  void add_instance(P3DInstance *inst);
+  void remove_instance(P3DInstance *inst);
 
 private:
   enum DownloadType {
@@ -71,7 +75,7 @@ private:
     DownloadType _dtype;
   };
 
-  void begin_download();
+  void begin_info_download();
   void download_contents_file();
   void contents_file_download_finished(bool success);
 
@@ -79,6 +83,7 @@ private:
   void desc_file_download_finished(bool success);
   void got_desc_file(TiXmlDocument *doc, bool freshly_downloaded);
 
+  void begin_data_download();
   void download_compressed_archive(bool allow_partial);
   void compressed_archive_download_progress(double progress);
   void compressed_archive_download_finished(bool success);
@@ -87,6 +92,7 @@ private:
   void extract_archive();
 
   void report_progress(double progress);
+  void report_info_ready();
   void report_done(bool success);
   void start_download(DownloadType dtype, const string &url, 
                       const string &pathname, bool allow_partial);
@@ -106,6 +112,9 @@ private:
   string _desc_file_basename;
   string _desc_file_pathname;
 
+  bool _info_ready;
+  size_t _download_size;
+  bool _allow_data_download;
   bool _ready;
   bool _failed;
   Download *_active_download;

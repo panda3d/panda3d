@@ -67,41 +67,14 @@ class Packager:
         def close(self):
             """ Writes out the contents of the current package. """
 
-            if not self.p3dApplication and not self.version:
-                # We must have a version string for packages.
-                self.version = '0.0'
-
-            self.packageBasename = self.packageName
-            packageDir = self.packageName
-            if self.platform:
-                self.packageBasename += '_' + self.platform
-                packageDir += '/' + self.platform
-            if self.version:
-                self.packageBasename += '_' + self.version
-                packageDir += '/' + self.version
-
-            self.packageDesc = self.packageBasename + '.xml'
-            self.packageImportDesc = self.packageBasename + '_import.xml'
-            if self.p3dApplication:
-                self.packageBasename += '.p3d'
-                packageDir = ''
-            else:
-                self.packageBasename += '.mf'
-                packageDir += '/'
-
-            self.packageFilename = packageDir + self.packageBasename
-            self.packageDesc = packageDir + self.packageDesc
-            self.packageImportDesc = packageDir + self.packageImportDesc
-
-            self.packageFullpath = Filename(self.packager.installDir, self.packageFilename)
-            self.packageFullpath.makeDir()
-            self.packageFullpath.unlink()
-
             if self.dryRun:
                 self.multifile = None
             else:
+                # Write the multifile to a temporary filename until we
+                # know enough to determine the output filename.
+                multifileFilename = Filename.temporary('', self.packageName)
                 self.multifile = Multifile()
-                self.multifile.openReadWrite(self.packageFullpath)
+                self.multifile.openReadWrite(multifileFilename)
 
             self.extracts = []
             self.components = []
@@ -181,12 +154,48 @@ class Packager:
                 xmodule.SetAttribute('name', moduleName)
                 self.components.append(xmodule)
 
+            # Now that we've processed all of the component files,
+            # (and set our platform if necessary), we can generate the
+            # output filename and write the output files.
+            
+            if not self.p3dApplication and not self.version:
+                # We must have a version string for packages.
+                self.version = '0.0'
+
+            self.packageBasename = self.packageName
+            packageDir = self.packageName
+            if self.platform:
+                self.packageBasename += '_' + self.platform
+                packageDir += '/' + self.platform
+            if self.version:
+                self.packageBasename += '_' + self.version
+                packageDir += '/' + self.version
+
+            self.packageDesc = self.packageBasename + '.xml'
+            self.packageImportDesc = self.packageBasename + '_import.xml'
+            if self.p3dApplication:
+                self.packageBasename += '.p3d'
+                packageDir = ''
+            else:
+                self.packageBasename += '.mf'
+                packageDir += '/'
+
+            self.packageFilename = packageDir + self.packageBasename
+            self.packageDesc = packageDir + self.packageDesc
+            self.packageImportDesc = packageDir + self.packageImportDesc
+
+            self.packageFullpath = Filename(self.packager.installDir, self.packageFilename)
+            self.packageFullpath.makeDir()
+            self.packageFullpath.unlink()
+
             if not self.dryRun:
                 self.freezer.addToMultifile(self.multifile, self.compressionLevel)
                 if self.p3dApplication:
                     self.makeP3dInfo()
                 self.multifile.repack()
                 self.multifile.close()
+
+                multifileFilename.renameTo(self.packageFullpath)
 
                 if not self.p3dApplication:
                     self.compressMultifile()
