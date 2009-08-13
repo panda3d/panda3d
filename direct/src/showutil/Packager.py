@@ -83,6 +83,44 @@ class Packager:
             for moduleName in self.skipModules.keys():
                 self.freezer.excludeModule(moduleName)
 
+            # First, add the explicit py files.  These get turned into
+            # Python modules.
+            for file in self.files:
+                if not file.newName:
+                    file.newName = file.filename
+                if file.newName in self.skipFilenames:
+                    # Skip this file.
+                    continue
+
+                ext = file.filename.getExtension()
+                if ext == 'py':
+                    self.addPyFile(file)
+
+            if not self.mainModule and self.p3dApplication:
+                message = 'No main_module specified for application %s' % (self.packageName)
+                raise PackagerError, message
+            if self.mainModule:
+                if self.mainModule not in self.freezer.modules:
+                    self.freezer.addModule(self.mainModule)
+
+            # Add known module names.
+            self.moduleNames = {}
+            for moduleName in self.freezer.getAllModuleNames():
+                if moduleName == '__main__':
+                    # Ignore this special case.
+                    continue
+                
+                self.moduleNames[moduleName] = True
+
+                xmodule = TiXmlElement('module')
+                xmodule.SetAttribute('name', moduleName)
+                self.components.append(xmodule)
+
+            # Pick up any unfrozen Python files.
+            self.freezer.done()
+            self.freezer.addToMultifile(self.multifile, self.compressionLevel)
+            self.addExtensionModules()
+
             # Build up a cross-reference of files we've already
             # discovered.
             self.sourceFilenames = {}
@@ -104,10 +142,13 @@ class Packager:
                 self.targetFilenames[file.newName] = file
                 processFiles.append(file)
 
+            # Now add all the real, non-Python files.  This will
+            # include the extension modules we just discovered above.
             for file in processFiles:
                 ext = file.filename.getExtension()
                 if ext == 'py':
-                    self.addPyFile(file)
+                    # Already handled, above.
+                    pass
                 elif not self.dryRun:
                     if ext == 'pz':
                         # Strip off an implicit .pz extension.
@@ -131,36 +172,18 @@ class Packager:
                         # Any other file.
                         self.addComponent(file)
 
-            if not self.mainModule and self.p3dApplication:
-                message = 'No main_module specified for application %s' % (self.packageName)
-                raise PackagerError, message
-            if self.mainModule:
-                if self.mainModule not in self.freezer.modules:
-                    self.freezer.addModule(self.mainModule)
-
-            # Pick up any unfrozen Python files.
-            self.freezer.done()
-
-            # Add known module names.
-            self.moduleNames = {}
-            for moduleName in self.freezer.getAllModuleNames():
-                if moduleName == '__main__':
-                    # Ignore this special case.
-                    continue
-                
-                self.moduleNames[moduleName] = True
-
-                xmodule = TiXmlElement('module')
-                xmodule.SetAttribute('name', moduleName)
-                self.components.append(xmodule)
-
             # Now that we've processed all of the component files,
             # (and set our platform if necessary), we can generate the
             # output filename and write the output files.
             
             if not self.p3dApplication and not self.version:
-                # We must have a version string for packages.
+                # We must have a version string for packages.  Use the
+                # first versioned string on our require list.
                 self.version = '0.0'
+                for p2 in self.requires:
+                    if p2.version:
+                        self.version = p2.version
+                        break
 
             self.packageBasename = self.packageName
             packageDir = self.packageName
@@ -189,7 +212,6 @@ class Packager:
             self.packageFullpath.unlink()
 
             if not self.dryRun:
-                self.freezer.addToMultifile(self.multifile, self.compressionLevel)
                 if self.p3dApplication:
                     self.makeP3dInfo()
                 self.multifile.repack()
@@ -207,6 +229,27 @@ class Packager:
             for file in self.files:
                 if file.deleteTemp:
                     file.filename.unlink()
+
+        def addExtensionModules(self):
+            """ Adds the extension modules detected by the freezer to
+            the current list of files. """
+
+            freezer = self.freezer
+            if freezer.extras:
+                if not self.platform:
+                    self.platform = PandaSystem.getPlatform()
+                
+            for moduleName, filename in freezer.extras:
+                filename = Filename.fromOsSpecific(filename)
+                newName = filename.getBasename()
+                if '.' in moduleName:
+                    newName = '/'.join(moduleName.split('.')[:-1])
+                    newName += '/' + filename.getBasename()
+                # Sometimes the PYTHONPATH has the wrong case in it.
+                filename.makeTrueCase()
+                self.files.append(Packager.PackFile(filename, newName = newName, extract = True))
+            freezer.extras = []
+
 
         def makeP3dInfo(self):
             """ Makes the p3d_info.xml file that defines the
@@ -278,7 +321,7 @@ class Packager:
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
                 xrequires.SetAttribute('name', package.packageName)
-                if package.platform:
+                if self.platform and package.platform:
                     xrequires.SetAttribute('platform', package.platform)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
@@ -315,7 +358,7 @@ class Packager:
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
                 xrequires.SetAttribute('name', package.packageName)
-                if package.platform:
+                if self.platform and package.platform:
                     xrequires.SetAttribute('platform', package.platform)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
@@ -635,10 +678,10 @@ class Packager:
         self.binaryExtensions = [ 'ttf', 'wav', 'mid' ]
 
         # Files that should be extracted to disk.
-        self.extractExtensions = [ 'dll', 'so', 'dylib', 'exe' ]
+        self.extractExtensions = [ 'dll', 'pyd', 'so', 'dylib', 'exe' ]
 
         # Files that indicate a platform dependency.
-        self.platformSpecificExtensions = [ 'dll', 'so', 'dylib', 'exe' ]
+        self.platformSpecificExtensions = [ 'dll', 'pyd', 'so', 'dylib', 'exe' ]
 
         # Binary files that are considered uncompressible, and are
         # copied without compression.
@@ -977,6 +1020,24 @@ class Packager:
             raise ArgumentError
 
         self.module(moduleName, newName = newName)
+
+    def parse_exclude_module(self, words):
+        """
+        exclude_module moduleName [forbid=1]
+        """
+        newName = None
+
+        args = self.__parseArgs(words, ['extract'])
+
+        try:
+            command, moduleName = words
+        except ValueError:
+            raise ArgumentError
+
+        forbid = args.get('forbid', None)
+        if forbid is not None:
+            forbid = int(forbid)
+        self.excludeModule(moduleName, forbid = forbid)
 
     def parse_main_module(self, words):
         """
@@ -1353,6 +1414,14 @@ class Packager:
 
         self.currentPackage.freezer.addModule(moduleName, newName = newName)
 
+    def excludeModule(self, moduleName, forbid = False):
+        """ Marks the indicated Python module as not to be included. """
+
+        if not self.currentPackage:
+            raise OutsideOfPackageError
+
+        self.currentPackage.freezer.excludeModule(moduleName, forbid = forbid)
+
     def mainModule(self, moduleName, newName = None):
         """ Names the indicated module as the "main" module of the
         application or exe. """
@@ -1400,24 +1469,16 @@ class Packager:
                 dirname, basename = filename.rsplit('/', 1)
                 dirname += '/'
 
-            basename, extras = freezer.generateCode(basename, compileToExe = compileToExe)
+            basename = freezer.generateCode(basename, compileToExe = compileToExe)
 
             package.files.append(self.PackFile(Filename(basename), newName = dirname + basename, deleteTemp = True, extract = True))
-            for moduleName, filename in extras:
-                filename = Filename.fromOsSpecific(filename)
-                newName = filename.getBasename()
-                if '.' in moduleName:
-                    newName = '/'.join(moduleName.split('.')[:-1])
-                    newName += '/' + filename.getBasename()
-                package.files.append(self.PackFile(filename, newName = newName, extract = True))
-                
+            package.addExtensionModules()
             if not package.platform:
                 package.platform = PandaSystem.getPlatform()
 
         # Reset the freezer for more Python files.
         freezer.reset()
         package.mainModule = None
-
 
     def file(self, filename, newNameOrDir = None, extract = None):
         """ Adds the indicated arbitrary file to the current package.

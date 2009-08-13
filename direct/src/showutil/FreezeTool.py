@@ -402,6 +402,13 @@ class Freezer:
         # or dll's; those are always stored with compiled code.
         self.storePythonSource = False
 
+        # This list will be filled in by generateCode() or
+        # addToMultifile().  It contains a list of all the extension
+        # modules that were discovered, which have not been added to
+        # the output.  The list is a list of tuples of the form
+        # (moduleName, filename).
+        self.extras = []
+
         # End of public interface.  These remaining members should not
         # be directly manipulated by callers.
         self.previousModules = {}
@@ -837,6 +844,19 @@ class Freezer:
         if module:
             # Get the compiled code directly from the module object.
             code = getattr(module, "__code__", None)
+            if not code:
+                # This is a module with no associated Python
+                # code.  It must be an extension module.  Get the
+                # filename.
+                extensionFilename = getattr(module, '__file__', None)
+                if extensionFilename:
+                    self.extras.append((moduleName, extensionFilename))
+                else:
+                    # It doesn't even have a filename; it must
+                    # be a built-in module.  No worries about
+                    # this one, then.
+                    pass
+
         else:
             # Read the code from the source file and compile it on-the-fly.
             if sourceFilename and sourceFilename.exists():
@@ -849,7 +869,8 @@ class Freezer:
 
     def addToMultifile(self, multifile, compressionLevel = 0):
         """ After a call to done(), this stores all of the accumulated
-        python code into the indicated Multifile. """
+        python code into the indicated Multifile.  Additional
+        extension modules are listed in self.extras.  """
 
         moduleDirs = {}
         for moduleName, mdef in self.getModuleDefs():
@@ -860,7 +881,8 @@ class Freezer:
     def writeMultifile(self, mfname):
         """ After a call to done(), this stores all of the accumulated
         python code into a Multifile with the indicated filename,
-        including the extension. """
+        including the extension.  Additional extension modules are
+        listed in self.extras."""
 
         self.__replacePaths()
 
@@ -881,10 +903,9 @@ class Freezer:
         false).  The basename is the name of the file to write,
         without the extension.
 
-        The return value is the tuple (filename, extras) where
-        filename is the newly-generated filename, including the
-        filename extension, and extras is a list of (moduleName,
-        filename), for extension modules. """
+        The return value is the newly-generated filename, including
+        the filename extension.  Additional extension modules are
+        listed in self.extras. """
         
         if compileToExe:
             # We must have a __main__ module to make an exe file.
@@ -897,7 +918,6 @@ class Freezer:
         # Now generate the actual export table.
         moduleDefs = []
         moduleList = []
-        extras = []
         
         for moduleName, mdef in self.getModuleDefs():
             token = mdef.token
@@ -932,11 +952,11 @@ class Freezer:
                     else:
 
                         # This is a module with no associated Python
-                        # code.  It must be a compiled file.  Get the
+                        # code.  It must be an extension module.  Get the
                         # filename.
-                        filename = getattr(module, '__file__', None)
-                        if filename:
-                            extras.append((moduleName, filename))
+                        extensionFilename = getattr(module, '__file__', None)
+                        if extensionFilename:
+                            self.extras.append((moduleName, extensionFilename))
                         else:
                             # It doesn't even have a filename; it must
                             # be a built-in module.  No worries about
@@ -994,7 +1014,7 @@ class Freezer:
             if (os.path.exists(basename + self.objectExtension)):
                 os.unlink(basename + self.objectExtension)
         
-        return (target, extras)
+        return target
 
     def compileExe(self, filename, basename):
         compile = self.compileObj % {
