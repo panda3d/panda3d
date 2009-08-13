@@ -441,8 +441,6 @@ class Packager:
                     print "Unable to determine dependencies from %s" % (file.filename)
                     continue
 
-                print filenames
-
                 # Attempt to resolve the dependent filename relative
                 # to the original filename, before we resolve it along
                 # the PATH.
