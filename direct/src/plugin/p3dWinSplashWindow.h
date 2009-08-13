@@ -73,8 +73,6 @@ private:
   double _install_progress;
   LOCK _install_lock;
 
-  int _loop_started;
-
   bool _thread_continue;
   bool _thread_running;
   HANDLE _thread;

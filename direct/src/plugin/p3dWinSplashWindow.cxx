@@ -253,7 +253,6 @@ thread_run() {
 
   double last_progress = -1.0;
 
-  _loop_started = GetTickCount();
   MSG msg;
   int retval;
   retval = GetMessage(&msg, NULL, 0, 0);
@@ -281,8 +280,7 @@ thread_run() {
     if (got_install && install_progress != last_progress) {
       if (_progress_bar == NULL) {
         // Is it time to create the progress bar?
-        int now = GetTickCount();
-        if (now - _loop_started > 2000) {
+        if (!_install_label.empty()) {
           make_progress_bar();
         }
       } else {
@@ -464,8 +462,8 @@ update_install_label(const string &install_label) {
   int bar_height = min((int)(height * 0.1), 24);
   int bar_y = (height - bar_height * 2);
 
-  int text_width = text_size.cx;
-  int text_height = text_size.cy;
+  int text_width = text_size.cx + 4;
+  int text_height = text_size.cy + 2;
   int text_x = (width - text_width) / 2;
   int text_y = bar_y - text_height - 2;
 
@@ -692,7 +690,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       SetBkColor(dis->hDC, 0x00ffffff);
 
       DrawText(dis->hDC, text_buffer, -1, &(dis->rcItem), 
-               DT_BOTTOM | DT_CENTER | DT_SINGLELINE);
+               DT_VCENTER | DT_CENTER | DT_SINGLELINE);
     }
   };
 

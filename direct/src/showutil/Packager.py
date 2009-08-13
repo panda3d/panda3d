@@ -395,7 +395,7 @@ class Packager:
                     package = self.packager.findPackage(packageName, platform = platform, version = version, requires = self.requires)
                     if package:
                         self.requires.append(package)
-                xrequires = xrequires.NextSiblingElement()
+                xrequires = xrequires.NextSiblingElement('requires')
 
             self.targetFilenames = {}
             xcomponent = xpackage.FirstChildElement('component')
@@ -403,7 +403,7 @@ class Packager:
                 name = xcomponent.Attribute('filename')
                 if name:
                     self.targetFilenames[name] = True
-                xcomponent = xcomponent.NextSiblingElement()
+                xcomponent = xcomponent.NextSiblingElement('component')
 
             self.moduleNames = {}
             xmodule = xpackage.FirstChildElement('module')
@@ -411,7 +411,7 @@ class Packager:
                 moduleName = xmodule.Attribute('name')
                 if moduleName:
                     self.moduleNames[moduleName] = True
-                xmodule = xmodule.NextSiblingElement()
+                xmodule = xmodule.NextSiblingElement('module')
 
             return True
 
