@@ -29,13 +29,82 @@ class Packager:
     notify = directNotify.newCategory("Packager")
 
     class PackFile:
-        def __init__(self, filename, newName = None, deleteTemp = False,
-                     extract = None):
+        def __init__(self, package, filename,
+                     newName = None, deleteTemp = False,
+                     compress = None, extract = None, executable = None):
             assert isinstance(filename, Filename)
-            self.filename = filename
+            self.filename = Filename(filename)
             self.newName = newName
             self.deleteTemp = deleteTemp
+            self.compress = compress
             self.extract = extract
+            self.executable = executable
+
+            if not self.newName:
+                self.newName = self.filename.cStr()
+
+            packager = package.packager
+            ext = Filename(self.newName).getExtension()
+            if self.compress is None:
+                self.compress = (ext not in packager.uncompressibleExtensions)
+
+            if self.executable is None:
+                self.executable = (ext in packager.executableExtensions)
+
+            if self.extract is None:
+                self.extract = self.executable or (ext in packager.extractExtensions)
+            self.platformSpecific = self.executable or (ext in packager.platformSpecificExtensions)
+                
+
+            if self.executable:
+                # Look up the filename along the system PATH, if necessary.
+                self.filename.resolveFilename(packager.dllPath)
+
+            # Convert the filename to an unambiguous filename for
+            # searching.
+            self.filename.makeCanonical()
+
+        def isExcluded(self, package):
+            """ Returns true if this file should be excluded or
+            skipped, false otherwise. """
+
+            if self.newName in package.skipFilenames:
+                return True
+
+            basename = Filename(self.newName).getBasename()
+            if not package.packager.caseSensitive:
+                basename = basename.lower()
+            if basename in package.packager.excludeSystemFiles:
+                return True
+
+            for exclude in package.packager.excludeSystemGlobs:
+                if exclude.matches(basename):
+                    return True
+
+            for exclude in package.excludedFilenames:
+                if exclude.matches(self.filename):
+                    return True
+
+            return False
+                
+    class ExcludeFilename:
+        def __init__(self, filename, caseSensitive):
+            self.localOnly = (not filename.get_dirname())
+            if not self.localOnly:
+                filename = Filename(filename)
+                filename.makeCanonical()
+            self.glob = GlobPattern(filename.cStr())
+
+            if PandaSystem.getPlatform().startswith('win'):
+                self.glob.setCaseSensitive(False)
+            elif PandaSystem.getPlatform().startswith('osx'):
+                self.glob.setCaseSensitive(False)
+
+        def matches(self, filename):
+            if self.localOnly:
+                return self.glob.matches(filename.getBasename())
+            else:
+                return self.glob.matches(filename.cStr())
 
     class Package:
         def __init__(self, packageName, packager):
@@ -45,7 +114,6 @@ class Packager:
             self.platform = None
             self.p3dApplication = False
             self.displayName = None
-            self.files = []
             self.compressionLevel = 0
             self.importedMapsDir = 'imported_maps'
             self.mainModule = None
@@ -55,6 +123,16 @@ class Packager:
             # by required packages, that we can skip.
             self.skipFilenames = {}
             self.skipModules = {}
+
+            # This is a list of ExcludeFilename objects, representing
+            # the files that have been explicitly excluded.
+            self.excludedFilenames = []
+
+            # This is the list of files we will be adding, and a pair
+            # of cross references.
+            self.files = []
+            self.sourceFilenames = {}
+            self.targetFilenames = {}
 
             # This records the current list of modules we have added so
             # far.
@@ -86,15 +164,15 @@ class Packager:
             # First, add the explicit py files.  These get turned into
             # Python modules.
             for file in self.files:
-                if not file.newName:
-                    file.newName = file.filename
-                if file.newName in self.skipFilenames:
+                ext = file.filename.getExtension()
+                if ext != 'py':
+                    continue
+
+                if file.isExcluded(self):
                     # Skip this file.
                     continue
 
-                ext = file.filename.getExtension()
-                if ext == 'py':
-                    self.addPyFile(file)
+                self.addPyFile(file)
 
             if not self.mainModule and self.p3dApplication:
                 message = 'No main_module specified for application %s' % (self.packageName)
@@ -121,35 +199,30 @@ class Packager:
             self.freezer.addToMultifile(self.multifile, self.compressionLevel)
             self.addExtensionModules()
 
-            # Build up a cross-reference of files we've already
-            # discovered.
-            self.sourceFilenames = {}
-            self.targetFilenames = {}
-            processFiles = []
-            for file in self.files:
-                if not file.newName:
-                    file.newName = file.filename
-                if file.newName in self.skipFilenames:
-                    # Skip this file.
-                    continue
-
-                # Convert the source filename to an unambiguous
-                # filename for searching.
-                filename = Filename(file.filename)
-                filename.makeCanonical()
-                
-                self.sourceFilenames[filename] = file
-                self.targetFilenames[file.newName] = file
-                processFiles.append(file)
+            # Now look for implicit shared-library dependencies.
+            if PandaSystem.getPlatform().startswith('win'):
+                self.__addImplicitDependenciesWindows()
+            elif PandaSystem.getPlatform().startswith('osx'):
+                self.__addImplicitDependenciesOSX()
+            else:
+                self.__addImplicitDependenciesPosix()
 
             # Now add all the real, non-Python files.  This will
             # include the extension modules we just discovered above.
-            for file in processFiles:
+
+            # We walk through the list as we modify it.  That's OK,
+            # because we may add new files that we want to process.
+            for file in self.files:
                 ext = file.filename.getExtension()
                 if ext == 'py':
                     # Already handled, above.
-                    pass
-                elif not self.dryRun:
+                    continue
+
+                if file.isExcluded(self):
+                    # Skip this file.
+                    continue
+                
+                if not self.dryRun:
                     if ext == 'pz':
                         # Strip off an implicit .pz extension.
                         filename = Filename(file.filename)
@@ -166,8 +239,6 @@ class Packager:
                         self.addEggFile(file)
                     elif ext == 'bam':
                         self.addBamFile(file)
-                    elif ext in self.packager.imageExtensions:
-                        self.addTexture(file)
                     else:
                         # Any other file.
                         self.addComponent(file)
@@ -230,6 +301,118 @@ class Packager:
                 if file.deleteTemp:
                     file.filename.unlink()
 
+        def addFile(self, *args, **kw):
+            """ Adds the named file to the package. """
+
+            file = Packager.PackFile(self, *args, **kw)
+            if file.filename in self.sourceFilenames:
+                # Don't bother, it's already here.
+                return
+
+            if not file.filename.exists():
+                self.packager.notify.warning("No such file: %s" % (file.filename))
+                return
+            
+            self.files.append(file)
+            self.sourceFilenames[file.filename] = file
+            self.targetFilenames[file.newName] = file
+
+        def excludeFile(self, filename):
+            """ Excludes the named file (or glob pattern) from the
+            package. """
+            xfile = Packager.ExcludeFilename(filename, self.packager.caseSensitive)
+            self.excludedFilenames.append(xfile)
+
+        def __addImplicitDependenciesWindows(self):
+            """ Walks through the list of files, looking for dll's and
+            exe's that might include implicit dependencies on other
+            dll's.  Tries to determine those dependencies, and adds
+            them back into the filelist. """
+
+            # We walk through the list as we modify it.  That's OK,
+            # because we want to follow the transitive closure of
+            # dependencies anyway.
+            for file in self.files:
+                if not file.executable:
+                    continue
+                
+                if file.isExcluded(self):
+                    # Skip this file.
+                    continue
+
+                tempFile = Filename.temporary('', 'p3d_')
+                command = 'dumpbin /dependents "%s" >"%s"' % (
+                    file.filename.toOsSpecific(),
+                    tempFile.toOsSpecific())
+                try:
+                    os.system(command)
+                except:
+                    pass
+                filenames = None
+
+                if tempFile.exists():
+                    filenames = self.__parseDependenciesWindows(tempFile)
+                if filenames is None:
+                    print "Unable to determine dependencies from %s" % (file.filename)
+                    continue
+
+                for filename in filenames:
+                    filename = Filename.fromOsSpecific(filename)
+                    self.addFile(filename, executable = True)
+                        
+                    
+        def __parseDependenciesWindows(self, tempFile):
+            """ Reads the indicated temporary file, the output from
+            dumpbin /dependents, to determine the list of dll's this
+            executable file depends on. """
+
+            lines = open(tempFile.toOsSpecific(), 'rU').readlines()
+            li = 0
+            while li < len(lines):
+                line = lines[li]
+                li += 1
+                if line.find(' has the following dependencies') != -1:
+                    break
+
+            if li < len(lines):
+                line = lines[li]
+                if line.strip() == '':
+                    # Skip a blank line.
+                    li += 1
+
+            # Now we're finding filenames, until the next blank line.
+            filenames = []
+            while li < len(lines):
+                line = lines[li]
+                li += 1
+                line = line.strip()
+                if line == '':
+                    # We're done.
+                    return filenames
+                filenames.append(line)
+
+            # Hmm, we ran out of data.  Oh well.
+            if not filenames:
+                # Some parse error.
+                return None
+
+            # At least we got some data.
+            return filenames
+
+        def __addImplicitDependenciesOSX(self):
+            """ Walks through the list of files, looking for dylib's
+            and executables that might include implicit dependencies
+            on other dylib's.  Tries to determine those dependencies,
+            and adds them back into the filelist. """
+            pass
+
+        def __addImplicitDependenciesPosix(self):
+            """ Walks through the list of files, looking for so's
+            and executables that might include implicit dependencies
+            on other so's.  Tries to determine those dependencies,
+            and adds them back into the filelist. """
+            pass
+
         def addExtensionModules(self):
             """ Adds the extension modules detected by the freezer to
             the current list of files. """
@@ -247,7 +430,7 @@ class Packager:
                     newName += '/' + filename.getBasename()
                 # Sometimes the PYTHONPATH has the wrong case in it.
                 filename.makeTrueCase()
-                self.files.append(Packager.PackFile(filename, newName = newName, extract = True))
+                self.addFile(filename, newName = newName, extract = True)
             freezer.extras = []
 
 
@@ -561,43 +744,19 @@ class Packager:
                     self.importedMapsDir, filename.getBasenameWoExtension(),
                     uniqueId, filename.getExtension())
 
-            file = Packager.PackFile(filename, newName = newName)
-            self.sourceFilenames[filename] = file
-            self.targetFilenames[newName] = file
-            self.addTexture(file)
+            self.addFile(filename, newName = newName, compress = False)
 
-            return newName
-
-        def addTexture(self, file):
-            """ Adds a texture image to the output. """
-
-            if self.multifile.findSubfile(file.newName) >= 0:
-                # Already have this texture.
-                return
-
-            # Texture file formats are generally already compressed and
-            # not further compressible.
-            self.addComponent(file, compressible = False)
-
-        def addComponent(self, file, compressible = True, extract = None):
-            ext = Filename(file.newName).getExtension()
-            if ext in self.packager.uncompressibleExtensions:
-                compressible = False
-
-            extract = file.extract
-            if extract is None and ext in self.packager.extractExtensions:
-                extract = True
-
-            if ext in self.packager.platformSpecificExtensions:
+        def addComponent(self, file):
+            if file.platformSpecific:
                 if not self.platform:
                     self.platform = PandaSystem.getPlatform()
                 
             compressionLevel = 0
-            if compressible:
+            if file.compress:
                 compressionLevel = self.compressionLevel
                 
             self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
-            if extract:
+            if file.extract:
                 xextract = self.getFileSpec('extract', file.filename, file.newName)
                 self.extracts.append(xextract)
 
@@ -632,6 +791,16 @@ class Packager:
         # installed packages.
         self.installSearch = []
 
+        # The system PATH, for searching dll's.
+        self.dllPath = DSearchPath()
+        if PandaSystem.getPlatform().startswith('win'):
+            self.addWindowsSearchPath(self.dllPath, "PATH")
+        elif PandaSystem.getPlatform().startswith('osx'):
+            self.addPosixSearchPath(self.dllPath, "DYLD_LIBRARY_PATH")
+            self.addPosixSearchPath(self.dllPath, "LD_LIBRARY_PATH")
+        else:
+            self.addPosixSearchPath(self.dllPath, "LD_LIBRARY_PATH")
+
         # The platform string.
         self.platform = PandaSystem.getPlatform()
 
@@ -657,6 +826,13 @@ class Packager:
         # are server-side only and should be ignored by the Scrubber.
         self.dcClientSuffixes = ['OV']
 
+        # Is this file system case-sensitive?
+        self.caseSensitive = True
+        if PandaSystem.getPlatform().startswith('win'):
+            self.caseSensitive = False
+        elif PandaSystem.getPlatform().startswith('osx'):
+            self.caseSensitive = False
+
         # Get the list of filename extensions that are recognized as
         # image files.
         self.imageExtensions = []
@@ -677,15 +853,36 @@ class Packager:
         # processing.
         self.binaryExtensions = [ 'ttf', 'wav', 'mid' ]
 
+        # Files that represent an executable or shared library.
+        self.executableExtensions = [ 'dll', 'pyd', 'so', 'dylib', 'exe' ]
+
         # Files that should be extracted to disk.
-        self.extractExtensions = [ 'dll', 'pyd', 'so', 'dylib', 'exe' ]
+        self.extractExtensions = self.executableExtensions[:]
 
         # Files that indicate a platform dependency.
-        self.platformSpecificExtensions = [ 'dll', 'pyd', 'so', 'dylib', 'exe' ]
+        self.platformSpecificExtensions = self.executableExtensions[:]
 
         # Binary files that are considered uncompressible, and are
         # copied without compression.
         self.uncompressibleExtensions = [ 'mp3', 'ogg' ]
+
+        # System files that should never be packaged.  For
+        # case-insensitive filesystems (like Windows), put the
+        # lowercase filename here.  Case-sensitive filesystems should
+        # use the correct case.
+        self.excludeSystemFiles = [
+            'kernel32.dll', 'user32.dll', 'wsock32.dll', 'ws2_32.dll',
+            'advapi32.dll', 'opengl32.dll', 'glu32.dll', 'gdi32.dll',
+            'shell32.dll', 'ntdll.dll', 'ws2help.dll', 'rpcrt4.dll',
+            'imm32.dll', 'ddraw.dll', 'shlwapi.dll', 'secur32.dll',
+            'dciman32.dll', 'comdlg32.dll', 'comctl32.dll',
+            ]
+
+        # As above, but with filename globbing to catch a range of
+        # filenames.
+        self.excludeSystemGlobs = [
+            GlobPattern('d3dx9_*.dll'),
+            ]
 
         # A Loader for loading models.
         self.loader = Loader.Loader(self)
@@ -699,6 +896,26 @@ class Packager:
         self.packages = {}
 
         self.dryRun = False
+
+    def addWindowsSearchPath(self, searchPath, varname):
+        """ Expands $varname, interpreting as a Windows-style search
+        path, and adds its contents to the indicated DSearchPath. """
+
+        path = ExecutionEnvironment.getEnvironmentVariable(varname)
+        for dirname in path.split(';'):
+            dirname = Filename.fromOsSpecific(dirname)
+            if dirname.makeTrueCase():
+                searchPath.appendDirectory(dirname)
+
+    def addPosixSearchPath(self, searchPath, varname):
+        """ Expands $varname, interpreting as a Posix-style search
+        path, and adds its contents to the indicated DSearchPath. """
+
+        path = ExecutionEnvironment.getEnvironmentVariable(varname)
+        for dirname in path.split(':'):
+            dirname = Filename.fromOsSpecific(dirname)
+            if dirname.makeTrueCase():
+                searchPath.appendDirectory(dirname)
 
 
     def setup(self):
@@ -1027,7 +1244,7 @@ class Packager:
         """
         newName = None
 
-        args = self.__parseArgs(words, ['extract'])
+        args = self.__parseArgs(words, ['forbid'])
 
         try:
             command, moduleName = words
@@ -1077,10 +1294,10 @@ class Packager:
 
     def parse_file(self, words):
         """
-        file filename [newNameOrDir] [extract=1]
+        file filename [newNameOrDir] [extract=1] [executable=1]
         """
 
-        args = self.__parseArgs(words, ['extract'])
+        args = self.__parseArgs(words, ['extract', 'executable'])
 
         newNameOrDir = None
 
@@ -1096,8 +1313,25 @@ class Packager:
         if extract is not None:
             extract = int(extract)
 
+        executable = args.get('executable', None)
+        if executable is not None:
+            executable = int(executable)
+
         self.file(Filename.fromOsSpecific(filename),
-                  newNameOrDir = newNameOrDir, extract = extract)
+                  newNameOrDir = newNameOrDir, extract = extract,
+                  executable = executable)
+
+    def parse_exclude(self, words):
+        """
+        exclude filename
+        """
+
+        try:
+            command, filename = words
+        except ValueError:
+            raise ArgumentError
+
+        self.exclude(Filename.fromOsSpecific(filename))
 
     def parse_dir(self, words):
         """
@@ -1471,7 +1705,8 @@ class Packager:
 
             basename = freezer.generateCode(basename, compileToExe = compileToExe)
 
-            package.files.append(self.PackFile(Filename(basename), newName = dirname + basename, deleteTemp = True, extract = True))
+            package.addFile(Filename(basename), newName = dirname + basename,
+                            deleteTemp = True, extract = True)
             package.addExtensionModules()
             if not package.platform:
                 package.platform = PandaSystem.getPlatform()
@@ -1480,7 +1715,8 @@ class Packager:
         freezer.reset()
         package.mainModule = None
 
-    def file(self, filename, newNameOrDir = None, extract = None):
+    def file(self, filename, newNameOrDir = None, extract = None,
+             executable = None):
         """ Adds the indicated arbitrary file to the current package.
 
         The file is placed in the named directory, or the toplevel
@@ -1495,14 +1731,17 @@ class Packager:
         If newNameOrDir ends in a slash character, it specifies the
         directory in which the file should be placed.  In this case,
         all files matched by the filename expression are placed in the
-        named directory.
+        named directory.  If newNameOrDir ends in something other than
+        a slash character, it specifies a new filename.  In this case,
+        the filename expression must match only one file.  If
+        newNameOrDir is unspecified or None, the file is placed in the
+        toplevel directory, regardless of its source directory.
 
-        If newNameOrDir ends in something other than a slash
-        character, it specifies a new filename.  In this case, the
-        filename expression must match only one file.
+        If extract is true, the file is explicitly extracted at
+        runtime.
 
-        If newNameOrDir is unspecified or None, the file is placed in
-        the toplevel directory, regardless of its source directory.
+        If executable is true, the file is marked as an executable
+        filename, for special treatment.
         
         """
 
@@ -1512,8 +1751,7 @@ class Packager:
         filename = Filename(filename)
         files = glob.glob(filename.toOsSpecific())
         if not files:
-            self.notify.warning("No such file: %s" % (filename))
-            return
+            files = [filename.toOsSpecific()]
 
         newName = None
         prefix = ''
@@ -1530,10 +1768,25 @@ class Packager:
         for filename in files:
             filename = Filename.fromOsSpecific(filename)
             basename = filename.getBasename()
-            if newName:
-                self.addFile(filename, newName = newName, extract = extract)
-            else:
-                self.addFile(filename, newName = prefix + basename, extract = extract)
+            name = newName
+            if not name:
+                name = prefix + basename
+                
+            self.currentPackage.addFile(
+                filename, newName = name, extract = extract,
+                executable = executable)
+
+    def exclude(self, filename):
+        """ Marks the indicated filename as not to be included.  The
+        filename may include shell globbing characters, and may or may
+        not include a dirname.  (If it does not include a dirname, it
+        refers to any file with the given basename from any
+        directory.)"""
+
+        if not self.currentPackage:
+            raise OutsideOfPackageError
+
+        self.currentPackage.excludeFile(filename)
 
     def dir(self, dirname, newDir = None):
 
@@ -1571,7 +1824,7 @@ class Packager:
         # It's a file name.  Add it.
         ext = filename.getExtension()
         if ext == 'py':
-            self.addFile(filename, newName = newName)
+            self.currentPackage.addFile(filename, newName = newName)
         else:
             if ext == 'pz':
                 # Strip off an implicit .pz extension.
@@ -1581,14 +1834,4 @@ class Packager:
                 ext = newFilename.getExtension()
 
             if ext in self.knownExtensions:
-                self.addFile(filename, newName = newName)
-
-    def addFile(self, filename, newName = None, extract = None):
-        """ Adds the named file, giving it the indicated name within
-        the package. """
-
-        if not self.currentPackage:
-            raise OutsideOfPackageError
-
-        self.currentPackage.files.append(
-            self.PackFile(filename, newName = newName, extract = extract))
+                self.currentPackage.addFile(filename, newName = newName)
