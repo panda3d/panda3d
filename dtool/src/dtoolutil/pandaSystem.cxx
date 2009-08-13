@@ -57,6 +57,27 @@ get_version_string() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::get_package_version_string
+//       Access: Published, Static
+//  Description: Returns the version of the Panda3D distributable
+//               package associated with this build.  This version
+//               string is set by the builder at compile time;
+//               presumably the person who sets this is also
+//               responsible for building the indicated distributable
+//               package version.
+//
+//               If this string is empty, there is no distributable
+//               package associated with this build, and you should
+//               probably use a different build of Panda3D to generate
+//               your distributable applications to ensure
+//               compatibility.
+////////////////////////////////////////////////////////////////////
+string PandaSystem::
+get_package_version_string() {
+  return PANDA_PACKAGE_VERSION_STR;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: PandaSystem::get_major_version
 //       Access: Published, Static
 //  Description: Returns the major version number of the current

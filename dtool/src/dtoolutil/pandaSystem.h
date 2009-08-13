@@ -33,6 +33,7 @@ protected:
 
 PUBLISHED:
   static string get_version_string();
+  static string get_package_version_string();
 
   static int get_major_version();
   static int get_minor_version();

@@ -60,6 +60,11 @@ $[cdefine PANDA_OFFICIAL_VERSION]
 /* This is a string indicating who has provided this distribution. */
 # define PANDA_DISTRIBUTOR "$[PANDA_DISTRIBUTOR]"
 
+/* The string indicating the version number of the associated Panda3D
+   distributable package, or empty string if there is no associated
+   package. */
+# define PANDA_PACKAGE_VERSION_STR "$[PANDA_PACKAGE_VERSION]"
+
 #end pandaVersion.h
 
 
