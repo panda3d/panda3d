@@ -16,7 +16,7 @@ Usage:
 
 Options:
 
-  -r application_root
+  -d application_root
      Specify the root directory of the application source; this is a
      directory tree that contains all of your .py files and models.
      If this is omitted, the default is the current directory.
@@ -29,6 +29,11 @@ Options:
      called main(), that function will be called after importing it
      (this is preferable to having the module start itself immediately
      upon importing).
+
+  -r package
+     Names an additional package that this application requires at
+     startup time.  The default package is 'panda3d'; you may repeat
+     this option to indicate dependencies on additional packages.
 
   -s search_dir
      Additional directories to search for previously-built packages.
@@ -56,18 +61,22 @@ class ArgumentError(StandardError):
     pass
 
 def makePackedApp(args):
-    opts, args = getopt.getopt(args, 'r:m:s:xh')
+    opts, args = getopt.getopt(args, 'd:m:r:s:xh')
 
     packager = Packager.Packager()
 
     root = '.'
     main = None
+    requires = []
     versionIndependent = False
+    
     for option, value in opts:
-        if option == '-r':
+        if option == '-d':
             root = Filename.fromOsSpecific(value)
         elif option == '-m':
             main = value
+        elif option == '-r':
+            requires.append(value)
         elif option == '-s':
             packager.installSearch.append(Filename.fromOsSpecific(value))
         elif option == '-x':
@@ -110,8 +119,9 @@ def makePackedApp(args):
 
     packager.setup()
     packager.beginPackage(appBase, p3dApplication = True)
-
-    packager.require('panda3d')
+    for requireName in requires:
+        packager.require(requireName)
+        
     packager.dir(root)
     packager.mainModule(mainModule)
         

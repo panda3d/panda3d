@@ -111,10 +111,20 @@ if not packager.installDir:
 packager.installSearch = [packager.installDir] + packager.installSearch
 
 packager.setup()
-packager.readPackageDef(packageDef)
+packages = packager.readPackageDef(packageDef)
 
-# Update the contents.xml at the root of the install directory.
-cm = make_contents.ContentsMaker()
-cm.installDir = packager.installDir.toOsSpecific()
-cm.build()
+# Look to see if we built any true packages, or if all of them were
+# p3d files.
+anyPackages = False
+for package in packages:
+    if not package.p3dApplication:
+        anyPackages = True
+        break
+
+if anyPackages:
+    # If we built any true packages, then update the contents.xml at
+    # the root of the install directory.
+    cm = make_contents.ContentsMaker()
+    cm.installDir = packager.installDir.toOsSpecific()
+    cm.build()
 

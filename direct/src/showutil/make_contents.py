@@ -38,7 +38,7 @@ class FileSpec:
 
         s = os.stat(pathname)
         self.size = s.st_size
-        self.timestamp = s.st_mtime
+        self.timestamp = int(s.st_mtime)
 
         m = md5.new()
         m.update(open(pathname, 'rb').read())

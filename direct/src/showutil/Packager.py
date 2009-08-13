@@ -67,6 +67,10 @@ class Packager:
         def close(self):
             """ Writes out the contents of the current package. """
 
+            if not self.p3dApplication and not self.version:
+                # We must have a version string for packages.
+                self.version = '0.0'
+
             self.packageBasename = self.packageName
             packageDir = self.packageName
             if self.platform:
@@ -262,6 +266,15 @@ class Packager:
             if self.displayName:
                 xpackage.SetAttribute('display_name', self.displayName)
 
+            for package in self.requires:
+                xrequires = TiXmlElement('requires')
+                xrequires.SetAttribute('name', package.packageName)
+                if package.platform:
+                    xrequires.SetAttribute('platform', package.platform)
+                if package.version:
+                    xrequires.SetAttribute('version', package.version)
+                xpackage.InsertEndChild(xrequires)
+
             xuncompressedArchive = self.getFileSpec(
                 'uncompressed_archive', self.packageFullpath,
                 self.packageBasename)
@@ -290,6 +303,15 @@ class Packager:
             if self.version:
                 xpackage.SetAttribute('version', self.version)
 
+            for package in self.requires:
+                xrequires = TiXmlElement('requires')
+                xrequires.SetAttribute('name', package.packageName)
+                if package.platform:
+                    xrequires.SetAttribute('platform', package.platform)
+                if package.version:
+                    xrequires.SetAttribute('version', package.version)
+                xpackage.InsertEndChild(xrequires)
+
             for xcomponent in self.components:
                 xpackage.InsertEndChild(xcomponent)
 
@@ -311,23 +333,33 @@ class Packager:
             self.platform = xpackage.Attribute('platform')
             self.version = xpackage.Attribute('version')
 
+            self.requires = []
+            xrequires = xpackage.FirstChildElement('requires')
+            while xrequires:
+                packageName = xrequires.Attribute('name')
+                platform = xrequires.Attribute('platform')
+                version = xrequires.Attribute('version')
+                if packageName:
+                    package = self.packager.findPackage(packageName, platform = platform, version = version, requires = self.requires)
+                    if package:
+                        self.requires.append(package)
+                xrequires = xrequires.NextSiblingElement()
+
             self.targetFilenames = {}
             xcomponent = xpackage.FirstChildElement('component')
             while xcomponent:
-                xcomponent = xcomponent.ToElement()
                 name = xcomponent.Attribute('filename')
                 if name:
                     self.targetFilenames[name] = True
-                xcomponent = xcomponent.NextSibling()
+                xcomponent = xcomponent.NextSiblingElement()
 
             self.moduleNames = {}
             xmodule = xpackage.FirstChildElement('module')
             while xmodule:
-                xmodule = xmodule.ToElement()
                 moduleName = xmodule.Attribute('name')
                 if moduleName:
                     self.moduleNames[moduleName] = True
-                xmodule = xmodule.NextSibling()
+                xmodule = xmodule.NextSiblingElement()
 
             return True
 
@@ -522,17 +554,17 @@ class Packager:
             self.components.append(xcomponent)
 
         def requirePackage(self, package):
-            """ Indicates a dependency on the given package. """
+            """ Indicates a dependency on the given package.  This
+            also implicitly requires all of the package's requirements
+            as well. """
 
-            if package in self.requires:
-                # Already on the list.
-                return
-
-            self.requires.append(package)
-            for filename in package.targetFilenames.keys():
-                self.skipFilenames[filename] = True
-            for moduleName in package.moduleNames.keys():
-                self.skipModules[moduleName] = True
+            for p2 in package.requires + [package]:
+                if p2 not in self.requires:
+                    self.requires.append(p2)
+                    for filename in p2.targetFilenames.keys():
+                        self.skipFilenames[filename] = True
+                    for moduleName in p2.moduleNames.keys():
+                        self.skipModules[moduleName] = True
 
     def __init__(self):
 
@@ -748,12 +780,13 @@ class Packager:
 
         return words
 
-    def __getNextLine(self, file):
+    def __getNextLine(self, file, lineNum):
         """ Extracts the next line from the input file, and splits it
-        into words.  Returns the list of words, or None at end of
-        file. """
+        into words.  Returns a tuple (lineNum, list), or (lineNum,
+        None) at end of file. """
 
         line = file.readline()
+        lineNum += 1
         while line:
             line = line.strip()
             if not line:
@@ -765,12 +798,13 @@ class Packager:
                 pass
 
             else:
-                return self.__splitLine(line)
+                return (lineNum, self.__splitLine(line))
 
             line = file.readline()
+            lineNum += 1
 
         # End of file.
-        return None
+        return (lineNum, None)
 
     def readPackageDef(self, packageDef):
         """ Reads the lines in the .pdef file named by packageDef and
@@ -781,10 +815,11 @@ class Packager:
 
         self.notify.info('Reading %s' % (packageDef))
         file = open(packageDef.toOsSpecific())
+        lineNum = 0
 
         # Now start parsing the packageDef lines
         try:
-            words = self.__getNextLine(file)
+            lineNum, words = self.__getNextLine(file, lineNum)
             while words:
                 command = words[0]
                 try:
@@ -803,13 +838,13 @@ class Packager:
                     message = '%s command encounted outside of package specification' %(command)
                     raise OutsideOfPackageError, message
 
-                words = self.__getNextLine(file)
+                lineNum, words = self.__getNextLine(file, lineNum)
 
         except PackagerError:
             # Append the line number and file name to the exception
             # error message.
             inst = sys.exc_info()[1]
-            inst.args = (inst.args[0] + ' on line %s of %s' % (lineNum[0], packageDef),)
+            inst.args = (inst.args[0] + ' on line %s of %s' % (lineNum, packageDef),)
             raise
 
         packageList = self.packageList
@@ -1053,15 +1088,20 @@ class Packager:
                     raise PackageError, message
 
         package = self.Package(packageName, self)
+        self.currentPackage = package
+
         package.version = version
         package.p3dApplication = p3dApplication
+
         if package.p3dApplication:
             # Default compression level for an app.
             package.compressionLevel = 6
+
+            # Every p3dapp requires panda3d.
+            self.require('panda3d')
+            
         package.dryRun = self.dryRun
         
-        self.currentPackage = package
-
     def endPackage(self, packageName, p3dApplication = False):
         """ Closes a package specification.  This actually generates
         the package file.  The packageName must match the previous
@@ -1082,40 +1122,55 @@ class Packager:
         package.close()
 
         self.packageList.append(package)
-        self.packages[package.packageName] = package
+        self.packages[(package.packageName, package.platform, package.version)] = package
         self.currentPackage = None
 
-    def findPackage(self, packageName, version = None, searchUrl = None):
+    def findPackage(self, packageName, platform = None, version = None,
+                    requires = None):
         """ Searches for the named package from a previous publish
-        operation, either at the indicated URL or along the install
-        search path.
+        operation along the install search path.
+
+        If requires is not None, it is a list of Package objects that
+        are already required.  The new Package object must be
+        compatible with the existing Packages, or an error is
+        returned.  This is also useful for determining the appropriate
+        package version to choose when a version is not specified.
 
         Returns the Package object, or None if the package cannot be
         located. """
 
+        if not platform:
+            platform = self.platform
+
         # Is it a package we already have resident?
-        package = self.packages.get((packageName, version), None)
+        package = self.packages.get((packageName, platform, version), None)
         if package:
             return package
 
         # Look on the searchlist.
         for path in self.installSearch:
-            package = self.scanPackageDir(path, packageName, version, self.platform)
+            package = self.__scanPackageDir(path, packageName, platform, version, requires = requires)
+            if not package:
+                package = self.__scanPackageDir(path, packageName, None, version, requires = requires)
+
             if package:
-                self.packages[(packageName, version)] = package
-                return package
-            package = self.scanPackageDir(path, packageName, version, None)
-            if package:
-                self.packages[(packageName, version)] = package
+                package = self.packages.setdefault((package.packageName, package.platform, package.version), package)
+                self.packages[(packageName, platform, version)] = package
                 return package
                 
         return None
 
-    def scanPackageDir(self, rootDir, packageName, version, platform):
-        """ Scans a directory on disk, looking for _import.xml files
-        that match the indicated packageName and option version.  If a
+    def __scanPackageDir(self, rootDir, packageName, platform, version,
+                         requires = None):
+        """ Scans a directory on disk, looking for *_import.xml files
+        that match the indicated packageName and optional version.  If a
         suitable xml file is found, reads it and returns the assocated
-        Package definition. """
+        Package definition.
+
+        If a version is not specified, and multiple versions are
+        available, the highest-numbered version that matches will be
+        selected.
+        """
 
         packageDir = Filename(rootDir, packageName)
         basename = packageName
@@ -1125,26 +1180,101 @@ class Packager:
             basename += '_%s' % (platform)
 
         if version:
+            # A specific version package.
             packageDir = Filename(packageDir, version)
             basename += '_%s' % (version)
+        else:
+            # Scan all versions.
+            packageDir = Filename(packageDir, '*')
+            basename += '_%s' % ('*')
 
         basename += '_import.xml'
         filename = Filename(packageDir, basename)
-        if filename.exists():
-            # It exists in the nested directory.
-            package = self.readPackageImportDescFile(filename)
-            if package:
-                return package
-        filename = Filename(rootDir, basename)
-        if filename.exists():
-            # It exists in the root directory.
-            package = self.readPackageImportDescFile(filename)
-            if package:
+        filelist = glob.glob(filename.toOsSpecific())
+        if not filelist:
+            # It doesn't exist in the nested directory; try the root
+            # directory.
+            filename = Filename(rootDir, basename)
+            filelist = glob.glob(filename.toOsSpecific())
+
+        self.__sortPackageImportFilelist(filelist)
+        for file in filelist:
+            package = self.__readPackageImportDescFile(Filename.fromOsSpecific(file))
+            if package and self.__packageIsValid(package, requires):
                 return package
 
         return None
 
-    def readPackageImportDescFile(self, filename):
+    def __sortPackageImportFilelist(self, filelist):
+        """ Given a list of *_import.xml filenames, sorts them in
+        reverse order by version, so that the highest-numbered
+        versions appear first in the list. """
+
+        tuples = []
+        for file in filelist:
+            version = file.split('_')[-2]
+            version = self.__makeVersionTuple(version)
+            tuples.append((version, file))
+        tuples.sort(reverse = True)
+
+        return map(lambda t: t[1], tuples)
+
+    def __makeVersionTuple(self, version):
+        """ Converts a version string into a tuple for sorting, by
+        separating out numbers into separate numeric fields, so that
+        version numbers sort numerically where appropriate. """
+
+        words = []
+        p = 0
+        while p < len(version):
+            # Scan to the first digit.
+            w = ''
+            while p < len(version) and version[p] not in string.digits:
+                w += version[p]
+                p += 1
+            words.append(w)
+
+            # Scan to the end of the string of digits.
+            w = ''
+            while p < len(version) and version[p] in string.digits:
+                w += version[p]
+                p += 1
+            words.append(int(w))
+
+        return tuple(words)
+
+    def __packageIsValid(self, package, requires):
+        """ Returns true if the package is valid, meaning it can be
+        imported without conflicts with existing packages already
+        required (such as different versions of panda3d). """
+
+        if not requires:
+            return True
+
+        # Really, we only check the panda3d package for now.  The
+        # other packages will list this as a dependency, and this is
+        # all that matters.
+
+        panda1 = self.__findPackageInList('panda3d', [package] + package.requires)
+        panda2 = self.__findPackageInList('panda3d', requires)
+
+        if not panda1 or not panda2:
+            return True
+
+        if panda1.version == panda2.version:
+            return True
+
+        return False
+
+    def __findPackageInList(self, packageName, list):
+        """ Returns the first package with the indicated name in the list. """
+        for package in list:
+            if package.packageName == packageName:
+                return package
+
+        return None
+
+    def __readPackageImportDescFile(self, filename):
         """ Reads the named xml file as a Package, and returns it if
         valid, or None otherwise. """
 
@@ -1162,15 +1292,18 @@ class Packager:
         named package also.  Files already included in the named
         package will be omitted from this one when building it. """
 
+        if not self.currentPackage:
+            raise OutsideOfPackageError
+
         # A special case for the Panda3D package.  We enforce that the
         # version number matches what we've been compiled with.
         if packageName == 'panda3d':
             if version is None:
                 version = PandaSystem.getPackageVersionString()
         
-        package = self.findPackage(packageName, version = version)
+        package = self.findPackage(packageName, version = version, requires = self.currentPackage.requires)
         if not package:
-            message = "Unknown package %s" % (packageName)
+            message = 'Unknown package %s, version "%s"' % (packageName, version)
             raise PackagerError, message
 
         self.requirePackage(package)
@@ -1182,6 +1315,9 @@ class Packager:
         Attempts to install this package will implicitly install the
         named package also.  Files already included in the named
         package will be omitted from this one. """
+
+        if not self.currentPackage:
+            raise OutsideOfPackageError
 
         # A special case for the Panda3D package.  We enforce that the
         # version number matches what we've been compiled with.
@@ -1255,9 +1391,17 @@ class Packager:
                 dirname, basename = filename.rsplit('/', 1)
                 dirname += '/'
 
-            basename = freezer.generateCode(basename, compileToExe = compileToExe)
+            basename, extras = freezer.generateCode(basename, compileToExe = compileToExe)
 
             package.files.append(self.PackFile(Filename(basename), newName = dirname + basename, deleteTemp = True, extract = True))
+            for moduleName, filename in extras:
+                filename = Filename.fromOsSpecific(filename)
+                newName = filename.getBasename()
+                if '.' in moduleName:
+                    newName = '/'.join(moduleName.split('.')[:-1])
+                    newName += '/' + filename.getBasename()
+                package.files.append(self.PackFile(filename, newName = newName, extract = True))
+                
             if not package.platform:
                 package.platform = PandaSystem.getPlatform()
 

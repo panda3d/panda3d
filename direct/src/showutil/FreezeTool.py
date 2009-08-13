@@ -881,8 +881,10 @@ class Freezer:
         false).  The basename is the name of the file to write,
         without the extension.
 
-        The return value is the newly-generated filename, including
-        the extension. """
+        The return value is the tuple (filename, extras) where
+        filename is the newly-generated filename, including the
+        filename extension, and extras is a list of (moduleName,
+        filename), for extension modules. """
         
         if compileToExe:
             # We must have a __main__ module to make an exe file.
@@ -895,6 +897,7 @@ class Freezer:
         # Now generate the actual export table.
         moduleDefs = []
         moduleList = []
+        extras = []
         
         for moduleName, mdef in self.getModuleDefs():
             token = mdef.token
@@ -926,6 +929,19 @@ class Freezer:
                         mangledName = self.mangleName(moduleName)
                         moduleDefs.append(self.makeModuleDef(mangledName, code))
                         moduleList.append(self.makeModuleListEntry(mangledName, code, moduleName, module))
+                    else:
+
+                        # This is a module with no associated Python
+                        # code.  It must be a compiled file.  Get the
+                        # filename.
+                        filename = getattr(module, '__file__', None)
+                        if filename:
+                            extras.append((moduleName, filename))
+                        else:
+                            # It doesn't even have a filename; it must
+                            # be a built-in module.  No worries about
+                            # this one, then.
+                            pass
 
         filename = basename + self.sourceExtension
 
@@ -978,7 +994,7 @@ class Freezer:
             if (os.path.exists(basename + self.objectExtension)):
                 os.unlink(basename + self.objectExtension)
         
-        return target
+        return (target, extras)
 
     def compileExe(self, filename, basename):
         compile = self.compileObj % {
