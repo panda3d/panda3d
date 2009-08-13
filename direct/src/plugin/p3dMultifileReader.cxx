@@ -48,11 +48,12 @@ P3DMultifileReader() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DMultifileReader::extract
+//     Function: P3DMultifileReader::extract_all
 //       Access: Public
-//  Description: Reads the named multifile, and extracts all files
-//               within it to the indicated directory.  Returns true
-//               on success, false on failure.
+//  Description: Reads the named multifile, and extracts all the
+//               expected extractable components within it to the
+//               indicated directory.  Returns true on success, false
+//               on failure.
 //
 //               The parameters package, start_progress, and
 //               progress_size are provided to make the appropriate
@@ -60,8 +61,95 @@ P3DMultifileReader() {
 //               during this operation.
 ////////////////////////////////////////////////////////////////////
 bool P3DMultifileReader::
-extract(const string &pathname, const string &to_dir,
-        P3DPackage *package, double start_progress, double progress_size) {
+extract_all(const string &pathname, const string &to_dir,
+            P3DPackage *package, double start_progress, double progress_size) {
+  if (!read_header(pathname)) {
+    return false;
+  }
+
+  // Now walk through all of the files, and extract only the ones we
+  // expect to encounter.
+  size_t num_processed = 0;
+  size_t num_expected = _subfiles.size();
+  if (package != NULL) {
+    num_expected = package->_extracts.size();
+  }
+
+  Subfiles::iterator si;
+  for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
+    const Subfile &s = (*si);
+    if (package != NULL && !package->is_extractable(s._filename)) {
+      continue;
+    }
+
+    string output_pathname = to_dir + "/" + s._filename;
+    if (!mkfile_complete(output_pathname, nout)) {
+      return false;
+    }
+
+    ofstream out(output_pathname.c_str(), ios::out | ios::binary);
+    if (!out) {
+      nout << "Unable to write to " << output_pathname << "\n";
+      return false;
+    }
+
+    if (!extract_subfile(out, s)) {
+      return false;
+    }
+
+    // Set the timestamp according to the multifile.
+    out.close();
+    utimbuf utb;
+    utb.actime = time(NULL);
+    utb.modtime = s._timestamp;
+    utime(output_pathname.c_str(), &utb);
+
+
+    ++num_processed;
+    if (package != NULL) {
+      double progress = (double)num_processed / (double)num_expected;
+      package->report_progress(start_progress + progress * progress_size);
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMultifileReader::extract_one
+//       Access: Public
+//  Description: Reads the named multifile, and extracts only the
+//               named component to the indicated stream.  Returns
+//               true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool P3DMultifileReader::
+extract_one(const string &pathname, ostream &out, const string &filename) {
+  if (!read_header(pathname)) {
+    return false;
+  }
+
+  // Look for the named component.
+  Subfiles::iterator si;
+  for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
+    const Subfile &s = (*si);
+    if (s._filename == filename) {
+      return extract_subfile(out, s);
+    }
+  }
+
+  nout << "Could not extract " << filename << ": not found.\n";
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMultifileReader::read_header
+//       Access: Private
+//  Description: Opens the named multifile and reads the header
+//               information and index, returning true on success,
+//               false on failure.
+////////////////////////////////////////////////////////////////////
+bool P3DMultifileReader::
+read_header(const string &pathname) {
   _subfiles.clear();
 
   _in.open(pathname.c_str(), ios::in | ios::binary);
@@ -99,64 +187,12 @@ extract(const string &pathname, const string &to_dir,
     return false;
   }
 
-  // Now walk through all of the files.
-  size_t num_processed = 0;
-  Subfiles::iterator si;
-  for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
-    const Subfile &s = (*si);
-
-    string output_pathname = to_dir + "/" + s._filename;
-    if (!mkfile_complete(output_pathname, nout)) {
-      return false;
-    }
-
-    ofstream out(output_pathname.c_str(), ios::out | ios::binary);
-    if (!out) {
-      nout << "Unable to write to " << output_pathname << "\n";
-      return false;
-    }
-
-    _in.seekg(s._start);
-
-    static const size_t buffer_size = 1024;
-    char buffer[buffer_size];
-
-    size_t remaining_data = s._length;
-    _in.read(buffer, min(buffer_size, remaining_data));
-    size_t count = _in.gcount();
-    while (count != 0) {
-      remaining_data -= count;
-      out.write(buffer, count);
-      _in.read(buffer, min(buffer_size, remaining_data));
-      count = _in.gcount();
-    }
-
-    if (remaining_data != 0) {
-      nout << "Unable to extract " << s._filename << "\n";
-      return false;
-    }
-
-    // Set the timestamp according to the multifile.
-    out.close();
-    utimbuf utb;
-    utb.actime = time(NULL);
-    utb.modtime = s._timestamp;
-    utime(output_pathname.c_str(), &utb);
-
-
-    ++num_processed;
-    if (package != NULL) {
-      double progress = (double)num_processed / (double)_subfiles.size();
-      package->report_progress(start_progress + progress * progress_size);
-    }
-  }
-
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DMultifileReader::read_index
-//       Access: Public
+//       Access: Private
 //  Description: Assuming the file stream is positioned at the first
 //               record, reads all of the records into the _subfiles
 //               list.  Returns true on success, false on failure.
@@ -172,10 +208,6 @@ read_index() {
     s._start = read_uint32();
     s._length = read_uint32();
     unsigned int flags = read_uint16();
-    if (flags != 0) {
-      nout << "Unsupported per-subfile options in multifile\n";
-      return false;
-    }
     s._timestamp = read_uint32();
     size_t name_length = read_uint16();
     char *buffer = new char[name_length];
@@ -189,7 +221,10 @@ read_index() {
     s._filename = string(buffer, name_length);
     delete[] buffer;
 
-    _subfiles.push_back(s);
+    if (flags == 0) {
+      // We can only support subfiles with no particular flags set.
+      _subfiles.push_back(s);
+    }
 
     _in.seekg(next_entry);
     next_entry = read_uint32();
@@ -200,3 +235,36 @@ read_index() {
 
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMultifileReader::extract_subfile
+//       Access: Private
+//  Description: Extracts the indicated subfile and writes it to the
+//               indicated stream.  Returns true on success, false on
+//               failure.
+////////////////////////////////////////////////////////////////////
+bool P3DMultifileReader::
+extract_subfile(ostream &out, const Subfile &s) {
+  _in.seekg(s._start);
+
+  static const size_t buffer_size = 1024;
+  char buffer[buffer_size];
+  
+  size_t remaining_data = s._length;
+  _in.read(buffer, min(buffer_size, remaining_data));
+  size_t count = _in.gcount();
+  while (count != 0) {
+    remaining_data -= count;
+    out.write(buffer, count);
+    _in.read(buffer, min(buffer_size, remaining_data));
+    count = _in.gcount();
+  }
+  
+  if (remaining_data != 0) {
+    nout << "Unable to extract " << s._filename << "\n";
+    return false;
+  }
+
+  return true;
+}
+

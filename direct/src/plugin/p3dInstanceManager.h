@@ -66,8 +66,7 @@ public:
   void wait_request();
 
   P3DPackage *get_package(const string &package_name, 
-                          const string &package_version,
-                          const string &package_display_name);
+                          const string &package_version);
   bool get_package_desc_file(FileSpec &desc_file, 
                              const string &package_name,
                              const string &package_version);

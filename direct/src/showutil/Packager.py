@@ -8,6 +8,7 @@ import os
 import glob
 import marshal
 import new
+import string
 from direct.showbase import Loader
 from direct.showutil import FreezeTool
 from direct.directnotify.DirectNotifyGlobal import *
@@ -29,7 +30,7 @@ class Packager:
 
     class PackFile:
         def __init__(self, filename, newName = None, deleteTemp = False,
-                     extract = False):
+                     extract = None):
             assert isinstance(filename, Filename)
             self.filename = filename
             self.newName = newName
@@ -43,6 +44,7 @@ class Packager:
             self.version = None
             self.platform = None
             self.p3dApplication = False
+            self.displayName = None
             self.files = []
             self.compressionLevel = 0
             self.importedMapsDir = 'imported_maps'
@@ -208,13 +210,14 @@ class Packager:
             if self.version:
                 xpackage.SetAttribute('version', self.version)
 
+            if self.displayName:
+                xpackage.SetAttribute('display_name', self.displayName)
+
             xpackage.SetAttribute('main_module', self.mainModule)
 
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
                 xrequires.SetAttribute('name', package.packageName)
-                if package.platform:
-                    xrequires.SetAttribute('platform', package.platform)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
                 xpackage.InsertEndChild(xrequires)
@@ -225,7 +228,11 @@ class Packager:
             # can add it to the multifile.
             filename = Filename.temporary('', 'p3d_', '.xml')
             doc.SaveFile(filename.toOsSpecific())
-            self.multifile.addSubfile('p3d_info.xml', filename, self.compressionLevel)
+
+            # It's important not to compress this file: the core API
+            # runtime can't decode compressed subfiles.
+            self.multifile.addSubfile('p3d_info.xml', filename, 0)
+            
             self.multifile.flush()
             filename.unlink()
             
@@ -251,6 +258,9 @@ class Packager:
                 xpackage.SetAttribute('platform', self.platform)
             if self.version:
                 xpackage.SetAttribute('version', self.version)
+
+            if self.displayName:
+                xpackage.SetAttribute('display_name', self.displayName)
 
             xuncompressedArchive = self.getFileSpec(
                 'uncompressed_archive', self.packageFullpath,
@@ -485,13 +495,13 @@ class Packager:
             # not further compressible.
             self.addComponent(file, compressible = False)
 
-        def addComponent(self, file, compressible = True, extract = False):
+        def addComponent(self, file, compressible = True, extract = None):
             ext = Filename(file.newName).getExtension()
             if ext in self.packager.uncompressibleExtensions:
                 compressible = False
 
             extract = file.extract
-            if ext in self.packager.extractExtensions:
+            if extract is None and ext in self.packager.extractExtensions:
                 extract = True
 
             if ext in self.packager.platformSpecificExtensions:
@@ -599,7 +609,7 @@ class Packager:
         self.musicManager = None
 
         # This is filled in during readPackageDef().
-        self.packageList = None
+        self.packageList = []
 
         # A table of all known packages by name.
         self.packages = {}
@@ -636,54 +646,152 @@ class Packager:
 ##         # created there
 ##         os.chdir(self.persistDir.toOsSpecific())
 
+    def __expandVariable(self, line, p):
+        """ Given that line[p] is a dollar sign beginning a variable
+        reference, advances p to the first dollar sign following the
+        reference, and looks up the variable referenced.
+
+        Returns (value, p) where value is the value of the named
+        variable, and p is the first character following the variable
+        reference. """
+
+        p += 1
+        if p >= len(line):
+            return '', p
+        
+        var = ''
+        if line[p] == '{':
+            # Curly braces exactly delimit the variable name.
+            p += 1
+            while p < len(line) and line[p] != '}':
+                var += line[p]
+                p += 1
+        else:
+            # Otherwise, a string of alphanumeric characters,
+            # including underscore, delimits the variable name.
+            var += line[p]
+            p += 1
+            while p < len(line) and (line[p] in string.letters or line[p] in string.digits or line[p] == '_'):
+                var += line[p]
+                p += 1
+
+        return ExecutionEnvironment.getEnvironmentVariable(var), p
+        
+
+    def __splitLine(self, line):
+        """ Separates the indicated line into words at whitespace.
+        Quotation marks and escape characters protect spaces.  This is
+        designed to be similar to the algorithm employed by the Unix
+        shell. """
+
+        words = []
+
+        p = 0
+        while p < len(line):
+            if line[p] == '#':
+                # A word that begins with a hash mark indicates an
+                # inline comment, and the end of the parsing.
+                break
+                
+            # Scan to the end of the word.
+            word = ''
+            while p < len(line) and line[p] not in string.whitespace:
+                if line[p] == '\\':
+                    # Output an escaped character.
+                    p += 1
+                    if p < len(line):
+                        word += line[p]
+                        p += 1
+
+                elif line[p] == '$':
+                    # Output a variable reference.
+                    expand, p = self.__expandVariable(line, p)
+                    word += expand
+
+                elif line[p] == '"':
+                    # Output a double-quoted string.
+                    p += 1
+                    while p < len(line) and line[p] != '"':
+                        if line[p] == '\\':
+                            # Output an escaped character.
+                            p += 1
+                            if p < len(line):
+                                word += line[p]
+                                p += 1
+                        elif line[p] == '$':
+                            # Output a variable reference.
+                            expand, p = self.__expandVariable(line, p)
+                            word += expand
+                        else:
+                            word += line[p]
+                            p += 1
+
+                elif line[p] == "'":
+                    # Output a single-quoted string.  Escape
+                    # characters and dollar signs within single quotes
+                    # are not special.
+                    p += 1
+                    while p < len(line) and line[p] != "'":
+                        word += line[p]
+                        p += 1
+
+                else:
+                    # Output a single character.
+                    word += line[p]
+                    p += 1
+
+            words.append(word)
+
+            # Scan to the beginning of the next word.
+            while p < len(line) and line[p] in string.whitespace:
+                p += 1
+
+        return words
+
+    def __getNextLine(self, file):
+        """ Extracts the next line from the input file, and splits it
+        into words.  Returns the list of words, or None at end of
+        file. """
+
+        line = file.readline()
+        while line:
+            line = line.strip()
+            if not line:
+                # Skip the line, it was just a blank line
+                pass
+            
+            elif line[0] == '#':
+                # Eat python-style comments.
+                pass
+
+            else:
+                return self.__splitLine(line)
+
+            line = file.readline()
+
+        # End of file.
+        return None
+
     def readPackageDef(self, packageDef):
         """ Reads the lines in the .pdef file named by packageDef and
         dispatches to the appropriate handler method for each
         line.  Returns the list of package files."""
 
-        assert self.packageList is None
         self.packageList = []
 
         self.notify.info('Reading %s' % (packageDef))
         file = open(packageDef.toOsSpecific())
-        lines = file.readlines()
-        file.close()
-
-        lineNum = [0]
-        def getNextLine(lineNum = lineNum):
-            """
-            Read in the next line of the packageDef
-            """
-            while lineNum[0] < len(lines):
-                line = lines[lineNum[0]].strip()
-                lineNum[0] += 1
-                if not line:
-                    # Skip the line, it was just a blank line
-                    pass
-                elif line[0] == '#':
-                    # Eat python-style comments.
-                    pass
-                else:
-                    # Remove any trailing comment.
-                    hash = line.find(' #')
-                    if hash != -1:
-                        line = line[:hash].strip()
-                    # Return the line as an array split at whitespace.
-                    return line.split()
-
-            # EOF.
-            return None
 
         # Now start parsing the packageDef lines
         try:
-            lineList = getNextLine()
-            while lineList:
-                command = lineList[0]
+            words = self.__getNextLine(file)
+            while words:
+                command = words[0]
                 try:
                     methodName = 'parse_%s' % (command)
                     method = getattr(self, methodName, None)
                     if method:
-                        method(lineList)
+                        method(words)
 
                     else:
                         message = 'Unknown command %s' % (command)
@@ -695,7 +803,7 @@ class Packager:
                     message = '%s command encounted outside of package specification' %(command)
                     raise OutsideOfPackageError, message
 
-                lineList = getNextLine()
+                words = self.__getNextLine(file)
 
         except PackagerError:
             # Append the line number and file name to the exception
@@ -705,17 +813,17 @@ class Packager:
             raise
 
         packageList = self.packageList
-        self.packageList = None
+        self.packageList = []
 
         return packageList
 
-    def parse_set(self, lineList):
+    def parse_set(self, words):
         """
         set variable=value
         """
         
         try:
-            command, assign = lineList
+            command, assign = words
         except ValueError:
             raise ArgumentNumber
         
@@ -728,15 +836,15 @@ class Packager:
         value = ExecutionEnvironment.expandString(value.strip())
         ExecutionEnvironment.setEnvironmentVariable(variable, value)
 
-    def parse_begin_package(self, lineList):
+    def parse_begin_package(self, words):
         """
         begin_package packageName [version=v]
         """
 
-        args = self.parseArgs(lineList, ['version'])
+        args = self.__parseArgs(words, ['version'])
 
         try:
-            command, packageName = lineList
+            command, packageName = words
         except ValueError:
             raise ArgumentNumber
 
@@ -744,127 +852,149 @@ class Packager:
 
         self.beginPackage(packageName, version = version, p3dApplication = False)
 
-    def parse_end_package(self, lineList):
+    def parse_end_package(self, words):
         """
         end_package packageName
         """
 
         try:
-            command, packageName = lineList
+            command, packageName = words
         except ValueError:
             raise ArgumentError
 
         self.endPackage(packageName, p3dApplication = False)
 
-    def parse_begin_p3d(self, lineList):
+    def parse_begin_p3d(self, words):
         """
         begin_p3d appName
         """
 
         try:
-            command, packageName = lineList
+            command, packageName = words
         except ValueError:
             raise ArgumentNumber
 
         self.beginPackage(packageName, p3dApplication = True)
 
-    def parse_end_p3d(self, lineList):
+    def parse_end_p3d(self, words):
         """
         end_p3d appName
         """
 
         try:
-            command, packageName = lineList
+            command, packageName = words
         except ValueError:
             raise ArgumentError
 
         self.endPackage(packageName, p3dApplication = True)
 
-    def parse_require(self, lineList):
+    def parse_display_name(self, words):
+        """
+        display_name "name"
+        """
+
+        try:
+            command, displayName = words
+        except ValueError:
+            raise ArgumentError
+
+        if not self.currentPackage:
+            raise OutsideOfPackageError
+
+        self.currentPackage.displayName = displayName
+
+    def parse_require(self, words):
         """
         require packageName [version=v]
         """
 
-        args = self.parseArgs(lineList, ['version'])
+        args = self.__parseArgs(words, ['version'])
 
         try:
-            command, packageName = lineList
+            command, packageName = words
         except ValueError:
             raise ArgumentError
 
         version = args.get('version', None)
         self.require(packageName, version = version)
 
-    def parse_module(self, lineList):
+    def parse_module(self, words):
         """
         module moduleName [newName]
         """
         newName = None
 
         try:
-            if len(lineList) == 2:
-                command, moduleName = lineList
+            if len(words) == 2:
+                command, moduleName = words
             else:
-                command, moduleName, newName = lineList
+                command, moduleName, newName = words
         except ValueError:
             raise ArgumentError
 
         self.module(moduleName, newName = newName)
 
-    def parse_main_module(self, lineList):
+    def parse_main_module(self, words):
         """
         main_module moduleName
         """
 
         try:
-            command, moduleName = lineList
+            command, moduleName = words
         except ValueError:
             raise ArgumentError
 
         self.mainModule(moduleName)
 
-    def parse_freeze_exe(self, lineList):
+    def parse_freeze_exe(self, words):
         """
         freeze_exe path/to/basename
         """
 
         try:
-            command, filename = lineList
+            command, filename = words
         except ValueError:
             raise ArgumentError
 
         self.freeze(filename, compileToExe = True)
 
-    def parse_freeze_dll(self, lineList):
+    def parse_freeze_dll(self, words):
         """
         freeze_dll path/to/basename
         """
 
         try:
-            command, filename = lineList
+            command, filename = words
         except ValueError:
             raise ArgumentError
 
         self.freeze(filename, compileToExe = False)
 
-    def parse_file(self, lineList):
+    def parse_file(self, words):
         """
-        file filename [newNameOrDir]
+        file filename [newNameOrDir] [extract=1]
         """
+
+        args = self.__parseArgs(words, ['extract'])
 
         newNameOrDir = None
 
         try:
-            if len(lineList) == 2:
-                command, filename = lineList
+            if len(words) == 2:
+                command, filename = words
             else:
-                command, filename, newNameOrDir = lineList
+                command, filename, newNameOrDir = words
         except ValueError:
             raise ArgumentError
 
-        self.file(filename, newNameOrDir = newNameOrDir)
+        extract = args.get('extract', None)
+        if extract is not None:
+            extract = int(extract)
 
-    def parse_dir(self, lineList):
+        self.file(Filename.fromOsSpecific(filename),
+                  newNameOrDir = newNameOrDir, extract = extract)
+
+    def parse_dir(self, words):
         """
         dir dirname [newDir]
         """
@@ -872,20 +1002,20 @@ class Packager:
         newDir = None
 
         try:
-            if len(lineList) == 2:
-                command, dirname = lineList
+            if len(words) == 2:
+                command, dirname = words
             else:
-                command, dirname, newDir = lineList
+                command, dirname, newDir = words
         except ValueError:
             raise ArgumentError
 
-        self.dir(dirname, newDir = newDir)
+        self.dir(Filename.fromOsSpecific(dirname), newDir = newDir)
 
-    def parseArgs(self, lineList, argList):
+    def __parseArgs(self, words, argList):
         args = {}
         
-        while len(lineList) > 1:
-            arg = lineList[-1]
+        while len(words) > 1:
+            arg = words[-1]
             if '=' not in arg:
                 return args
 
@@ -901,7 +1031,7 @@ class Packager:
 
             args[parameter] = value
 
-            del lineList[-1]
+            del words[-1]
                 
     
     def beginPackage(self, packageName, version = None, p3dApplication = False):
@@ -1026,11 +1156,11 @@ class Packager:
 
     def require(self, packageName, version = None):
         """ Indicates a dependency on the named package, supplied as
-        name.
+        a name.
 
         Attempts to install this package will implicitly install the
         named package also.  Files already included in the named
-        package will be omitted from this one. """
+        package will be omitted from this one when building it. """
 
         # A special case for the Panda3D package.  We enforce that the
         # version number matches what we've been compiled with.
@@ -1136,14 +1266,13 @@ class Packager:
         package.mainModule = None
 
 
-    def file(self, filename, newNameOrDir = None):
+    def file(self, filename, newNameOrDir = None, extract = None):
         """ Adds the indicated arbitrary file to the current package.
 
         The file is placed in the named directory, or the toplevel
         directory if no directory is specified.
 
-        The filename may include environment variable references and
-        shell globbing characters.
+        The filename may include shell globbing characters.
 
         Certain special behavior is invoked based on the filename
         extension.  For instance, .py files may be automatically
@@ -1166,10 +1295,10 @@ class Packager:
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        expanded = Filename.expandFrom(filename)
-        files = glob.glob(expanded.toOsSpecific())
+        filename = Filename(filename)
+        files = glob.glob(filename.toOsSpecific())
         if not files:
-            self.notify.warning("No such file: %s" % (expanded))
+            self.notify.warning("No such file: %s" % (filename))
             return
 
         newName = None
@@ -1188,17 +1317,15 @@ class Packager:
             filename = Filename.fromOsSpecific(filename)
             basename = filename.getBasename()
             if newName:
-                self.addFile(filename, newName = newName)
+                self.addFile(filename, newName = newName, extract = extract)
             else:
-                self.addFile(filename, newName = prefix + basename)
+                self.addFile(filename, newName = prefix + basename, extract = extract)
 
     def dir(self, dirname, newDir = None):
 
         """ Adds the indicated directory hierarchy to the current
         package.  The directory hierarchy is walked recursively, and
         all files that match a known extension are added to the package.
-
-        The dirname may include environment variable references.
 
         newDir specifies the directory name within the package which
         the contents of the named directory should be installed to.
@@ -1209,7 +1336,7 @@ class Packager:
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        dirname = Filename.expandFrom(dirname)
+        dirname = Filename(dirname)
         if not newDir:
             newDir = ''
 
@@ -1242,7 +1369,7 @@ class Packager:
             if ext in self.knownExtensions:
                 self.addFile(filename, newName = newName)
 
-    def addFile(self, filename, newName = None):
+    def addFile(self, filename, newName = None, extract = None):
         """ Adds the named file, giving it the indicated name within
         the package. """
 
@@ -1250,4 +1377,4 @@ class Packager:
             raise OutsideOfPackageError
 
         self.currentPackage.files.append(
-            self.PackFile(filename, newName = newName))
+            self.PackFile(filename, newName = newName, extract = extract))

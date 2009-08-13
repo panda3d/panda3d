@@ -23,21 +23,37 @@ Options:
 import sys
 import getopt
 import os
-
-import direct
-from pandac.PandaModules import *
-
-from FileSpec import FileSpec
+import md5
 
 class ArgumentError(AttributeError):
     pass
 
+class FileSpec:
+    """ Represents a single file in the directory, and its associated
+    timestamp, size, and md5 hash. """
+    
+    def __init__(self, filename, pathname):
+        self.filename = filename
+        self.pathname = pathname
+
+        s = os.stat(pathname)
+        self.size = s.st_size
+        self.timestamp = s.st_mtime
+
+        m = md5.new()
+        m.update(open(pathname, 'rb').read())
+        self.hash = m.hexdigest()
+
+    def getParams(self):
+        return 'filename="%s" size="%s" timestamp="%s" hash="%s"' % (
+            self.filename, self.size, self.timestamp, self.hash)
+
 class ContentsMaker:
     def __init__(self):
-        self.stageDir = None
+        self.installDir = None
 
     def build(self):
-        if not self.stageDir:
+        if not self.installDir:
             raise ArgumentError, "Stage directory not specified."
 
         self.packages = []
@@ -48,9 +64,9 @@ class ContentsMaker:
 
         # Now write the contents.xml file.
         contentsFileBasename = 'contents.xml'
-        contentsFilePathname = Filename(self.stageDir, contentsFileBasename)
+        contentsFilePathname = os.path.join(self.installDir, contentsFileBasename)
 
-        f = open(contentsFilePathname.toOsSpecific(), 'w')
+        f = open(contentsFilePathname, 'w')
         print >> f, '<?xml version="1.0" ?>'
         print >> f, ''
         print >> f, '<contents>'
@@ -64,7 +80,7 @@ class ContentsMaker:
         """ Walks through all the files in the stage directory and
         looks for the package directory xml files. """
 
-        startDir = self.stageDir.toOsSpecific()
+        startDir = self.installDir
         if startDir.endswith(os.sep):
             startDir = startDir[:-1]
         prefix = startDir + os.sep
@@ -91,14 +107,14 @@ class ContentsMaker:
                 packageName, packageVersion, junk = localpath.split('/')
                 packagePlatform = None
                 file = FileSpec(localpath + xml,
-                                Filename(self.stageDir, localpath + xml))
+                                os.path.join(self.installDir, localpath + xml))
                 print file.filename
                 self.packages.append((packageName, packagePlatform, packageVersion, file))
 
             if localpath.count('/') == 3:
                 packageName, packagePlatform, packageVersion, junk = localpath.split('/')
                 file = FileSpec(localpath + xml,
-                                Filename(self.stageDir, localpath + xml))
+                                os.path.join(self.installDir, localpath + xml))
                 print file.filename
                 self.packages.append((packageName, packagePlatform, packageVersion, file))
         
@@ -107,10 +123,10 @@ def makeContents(args):
     opts, args = getopt.getopt(args, 'd:h')
 
     cm = ContentsMaker()
-    cm.stageDir = Filename('.')
+    cm.installDir = '.'
     for option, value in opts:
         if option == '-d':
-            cm.stageDir = Filename.fromOsSpecific(value)
+            cm.installDir = value
             
         elif option == '-h':
             print __doc__
@@ -119,8 +135,9 @@ def makeContents(args):
     cm.build()
         
 
-try:
-    makeContents(sys.argv[1:])
-except ArgumentError, e:
-    print e.args[0]
-    sys.exit(1)
+if __name__ == '__main__':
+    try:
+        makeContents(sys.argv[1:])
+    except ArgumentError, e:
+        print e.args[0]
+        sys.exit(1)

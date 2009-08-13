@@ -24,6 +24,7 @@
 #include "p3dObject.h"
 #include "p3dToplevelObject.h"
 #include "p3dUndefinedObject.h"
+#include "p3dMultifileReader.h"
 
 #include <sstream>
 #include <algorithm>
@@ -68,6 +69,7 @@ P3DInstance(P3D_request_ready_func *func,
   INIT_LOCK(_request_lock);
 
   _session = NULL;
+  _panda3d = NULL;
   _splash_window = NULL;
   _instance_window_opened = false;
   _requested_stop = false;
@@ -157,14 +159,24 @@ set_p3d_filename(const string &p3d_filename) {
   // This also sets up some internal data based on the contents of the
   // above file and the associated tokens.
 
-  // For the moment, all sessions will be unique.
+  // Extract the application desc file from the p3d file.
+  P3DMultifileReader reader;
+  stringstream sstream;
+  if (!reader.extract_one(p3d_filename, sstream, "p3d_info.xml")) {
+    nout << "No p3d_info.xml file found in " << p3d_filename << "\n";
+  } else {
+    sstream.seekg(0);
+    TiXmlDocument doc;
+    sstream >> doc;
+    scan_app_desc_file(&doc);
+  }
+
+  // For the moment, all sessions will be unique.  TODO: support
+  // multiple instances per session.
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   ostringstream strm;
   strm << inst_mgr->get_unique_id();
   _session_key = strm.str();
-
-  // TODO.
-  _python_version = "python24";
 
   // Generate a special notification: onpluginload, indicating the
   // plugin has read its parameters and is ready to be queried (even
@@ -605,15 +617,62 @@ handle_event(P3D_event_data event) {
 //       Access: Public
 //  Description: Adds the package to the list of packages used by this
 //               instance.  The instance will share responsibility for
-//               downloading the package will any of the other
+//               downloading the package with any of the other
 //               instances that use the same package.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 add_package(P3DPackage *package) {
-  assert(find(_packages.begin(), _packages.end(), package) == _packages.end());
+  if (find(_packages.begin(), _packages.end(), package) != _packages.end()) {
+    // Already have this package.
+    return;
+  }
 
   _packages.push_back(package);
   package->set_instance(this);
+
+  if (package->get_package_name() == "panda3d") {
+    _panda3d = package;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_packages_ready
+//       Access: Public
+//  Description: Returns true if all of the packages required by the
+//               instance (as specified in previous calls to
+//               add_package()) have been fully downloaded and are
+//               ready to run, or false if one or more of them still
+//               requires downloading.
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+get_packages_ready() const {
+  Packages::const_iterator pi;
+  for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
+    if (!(*pi)->get_ready()) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::get_packages_failed
+//       Access: Public
+//  Description: Returns true if any of the packages required by the
+//               instance have failed to download (and thus we will
+//               never be ready).
+////////////////////////////////////////////////////////////////////
+bool P3DInstance::
+get_packages_failed() const {
+  Packages::const_iterator pi;
+  for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
+    if ((*pi)->get_failed()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -698,6 +757,37 @@ make_xml() {
   }
 
   return xinstance;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::scan_app_desc_file
+//       Access: Private
+//  Description: Reads the p3d_info.xml file at instance startup, to
+//               determine the set of required packages and so forth.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+scan_app_desc_file(TiXmlDocument *doc) {
+  TiXmlElement *xpackage = doc->FirstChildElement("package");
+  if (xpackage == NULL) {
+    return;
+  }
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  TiXmlElement *xrequires = xpackage->FirstChildElement("requires");
+  while (xrequires != NULL) {
+    const char *name = xrequires->Attribute("name");
+    if (name != NULL) {
+      const char *version = xrequires->Attribute("version");
+      if (version == NULL) {
+        version = "";
+      }
+      P3DPackage *package = inst_mgr->get_package(name, version);
+      add_package(package);
+    }
+
+    xrequires = xrequires->NextSiblingElement("requires");
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1010,31 +1100,42 @@ start_package_download(P3DPackage *package) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::install_progress
+//     Function: P3DInstance::report_package_progress
 //       Access: Private
-//  Description: Notified as the _panda3d package is downloaded.
+//  Description: Notified as a required package is downloaded.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-install_progress(P3DPackage *package, double progress) {
+report_package_progress(P3DPackage *package, double progress) {
   if (_splash_window != NULL) {
-    _splash_window->set_install_label("Installing Panda3D");
+    if (!package->get_package_display_name().empty()) {
+      _splash_window->set_install_label("Installing " + package->get_package_display_name());
+    }
     _splash_window->set_install_progress(progress);
   }
   _panda_script_object->set_float_property("downloadProgress", progress);
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::package_ready
+//     Function: P3DInstance::report_package_done
 //       Access: Private
-//  Description: Notified when the package is fully downloaded.
+//  Description: Notified when a required package is fully downloaded,
+//               or failed.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
-package_ready(P3DPackage *package, bool success) {
+report_package_done(P3DPackage *package, bool success) {
   if (success) {
-    install_progress(package, 1.0);
-    _panda_script_object->set_bool_property("downloadComplete", true);
-    _panda_script_object->set_string_property("status", "starting");
-    send_notify("ondownloadcomplete");
+    report_package_progress(package, 1.0);
+
+    if (get_packages_ready()) {
+      _panda_script_object->set_bool_property("downloadComplete", true);
+      _panda_script_object->set_string_property("status", "starting");
+      send_notify("ondownloadcomplete");
+
+      // Notify the session also.
+      if (_session != NULL) {
+        _session->report_packages_done(this, success);
+      }
+    }
   }
 }
 

@@ -34,6 +34,10 @@ Options:
      copy this directory structure to a web host where it may be
      downloaded by the client.
 
+  -s search_dir
+     Additional directories to search for previously-built packages.
+     This option may be repeated as necessary.
+
   -d persist_dir
      The full path to a local directory that retains persistant state
      between publishes.  This directory structure keeps files that are
@@ -60,6 +64,7 @@ import getopt
 import os
 
 from direct.showutil import Packager
+from direct.showutil import make_contents
 from pandac.PandaModules import *
 
 def usage(code, msg = ''):
@@ -70,13 +75,15 @@ def usage(code, msg = ''):
 packager = Packager.Packager()
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:d:p:Hh')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:s:d:p:Hh')
 except getopt.error, msg:
     usage(1, msg)
 
 for opt, arg in opts:
     if opt == '-i':
         packager.installDir = Filename.fromOsSpecific(arg)
+    elif opt == '-s':
+        packager.installSearch.append(Filename.fromOsSpecific(arg))
     elif opt == '-d':
         packager.persistDir = Filename.fromOsSpecific(arg)
     elif opt == '-p':
@@ -101,7 +108,13 @@ packageDef = Filename.fromOsSpecific(args[0])
 
 if not packager.installDir:
     packager.installDir = Filename('install')
-packager.installSearch = [packager.installDir]
+packager.installSearch = [packager.installDir] + packager.installSearch
 
 packager.setup()
 packager.readPackageDef(packageDef)
+
+# Update the contents.xml at the root of the install directory.
+cm = make_contents.ContentsMaker()
+cm.installDir = packager.installDir.toOsSpecific()
+cm.build()
+

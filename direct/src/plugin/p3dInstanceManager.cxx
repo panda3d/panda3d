@@ -352,8 +352,7 @@ wait_request() {
 //               package.
 ////////////////////////////////////////////////////////////////////
 P3DPackage *P3DInstanceManager::
-get_package(const string &package_name, const string &package_version, 
-            const string &package_display_name) {
+get_package(const string &package_name, const string &package_version) {
   string package_platform = get_platform();
   string key = package_name + "_" + package_platform + "_" + package_version;
   Packages::iterator pi = _packages.find(key);
@@ -361,8 +360,8 @@ get_package(const string &package_name, const string &package_version,
     return (*pi).second;
   }
 
-  P3DPackage *package = new P3DPackage(package_name, package_platform, 
-                                       package_version, package_display_name);
+  P3DPackage *package = 
+    new P3DPackage(package_name, package_platform, package_version);
   bool inserted = _packages.insert(Packages::value_type(key, package)).second;
   assert(inserted);
 

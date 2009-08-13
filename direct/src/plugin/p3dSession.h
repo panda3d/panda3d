@@ -61,9 +61,8 @@ public:
   void drop_p3dobj(int object_id);
 
 private:
-  void install_progress(P3DPackage *package, double progress);
-  void package_ready(P3DPackage *package, bool success);
-  void start_p3dpython();
+  void report_packages_done(P3DInstance *inst, bool success);
+  void start_p3dpython(P3DInstance *inst);
 
   void spawn_read_thread();
   void join_read_thread();
@@ -87,23 +86,11 @@ private:
                        HandleStream &pipe_read, HandleStream &pipe_write);
 #endif
 
-  class PackageCallback : public P3DPackage::Callback {
-  public:
-    PackageCallback(P3DSession *session);
-    
-    virtual void install_progress(P3DPackage *package, double progress);
-    virtual void package_ready(P3DPackage *package, bool success);
-    
-  protected:
-    P3DSession *_session;
-  };
-
 private:
   int _session_id;
   string _session_key;
   string _python_version;
   string _output_filename;
-
   string _python_root_dir;
 
   typedef map<int, P3DInstance *> Instances;
@@ -123,7 +110,6 @@ private:
   SentObjects _sent_objects;
 
   P3DPackage *_panda3d;
-  PackageCallback *_panda3d_callback;
 
   // Members for communicating with the p3dpython child process.
 #ifdef _WIN32
@@ -146,7 +132,7 @@ private:
   bool _read_thread_continue;
   THREAD _read_thread;
 
-  friend class PackageCallback;
+  friend class P3DInstance;
 };
 
 #include "p3dSession.I"

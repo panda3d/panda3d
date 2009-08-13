@@ -38,16 +38,8 @@ class P3DPackage {
 public:
   P3DPackage(const string &package_name, 
              const string &package_platform,
-             const string &package_version,
-             const string &package_display_name);
+             const string &package_version);
   ~P3DPackage();
-
-  class Callback {
-  public:
-    virtual ~Callback();
-    virtual void install_progress(P3DPackage *package, double progress);
-    virtual void package_ready(P3DPackage *package, bool success);
-  };
 
   inline bool get_ready() const;
   inline bool get_failed() const;
@@ -55,9 +47,6 @@ public:
   inline const string &get_package_name() const;
   inline const string &get_package_version() const;
   inline const string &get_package_display_name() const;
-
-  void set_callback(Callback *callback);
-  void cancel_callback(Callback *callback);
 
   void set_instance(P3DInstance *inst);
   void cancel_instance(P3DInstance *inst);
@@ -102,6 +91,8 @@ private:
   void start_download(DownloadType dtype, const string &url, 
                       const string &pathname, bool allow_partial);
 
+  bool is_extractable(const string &filename) const;
+
 private:
   string _package_name;
   string _package_version;
@@ -120,17 +111,14 @@ private:
   Download *_active_download;
   bool _partial_download;
 
-  typedef vector<Callback *> Callbacks;
-  Callbacks _callbacks;
-
   typedef vector<P3DInstance *> Instances;
   Instances _instances;
 
   FileSpec _compressed_archive;
   FileSpec _uncompressed_archive;
 
-  typedef vector<FileSpec> Components;
-  Components _components;
+  typedef vector<FileSpec> Extracts;
+  Extracts _extracts;
 
   friend class Download;
   friend class P3DMultifileReader;

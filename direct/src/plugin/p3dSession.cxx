@@ -65,14 +65,8 @@ P3DSession(P3DInstance *inst) {
   _output_filename = "/tmp/panda3d.3.log";
 #endif  // _WIN32
 
-  _panda3d_callback = NULL;
-
   INIT_LOCK(_instances_lock);
   INIT_THREAD(_read_thread);
-
-  _panda3d = inst_mgr->get_package("panda3d", "dev", "Panda3D");
-  _python_root_dir = _panda3d->get_package_dir();
-  inst->add_package(_panda3d);
 }
 
 
@@ -95,12 +89,6 @@ P3DSession::
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 shutdown() {
-  if (_panda3d_callback != NULL) {
-    _panda3d->cancel_callback(_panda3d_callback);
-    delete _panda3d_callback;
-    _panda3d_callback = NULL;
-  }
-
   if (_p3dpython_running) {
     // Tell the process we're going away.
     TiXmlDocument doc;
@@ -226,16 +214,14 @@ start_instance(P3DInstance *inst) {
   send_command(doc);
   inst->send_browser_script_object();
 
-  if (_panda3d->get_ready()) {
+  if (inst->get_packages_ready()) {
     // If it's ready immediately, go ahead and start.
-    start_p3dpython();
+    start_p3dpython(inst);
+
   } else {
-    // Otherwise, set a callback, so we'll know when it is ready.
-    if (_panda3d_callback == NULL) {
-      _panda3d_callback = new PackageCallback(this);
-      _panda3d->set_callback(_panda3d_callback);
-    }
-    inst->start_package_download(_panda3d);
+    // Otherwise, wait for the instance to download itself.  We'll
+    // automatically get a callback to report_packages_done() when
+    // it's done.
   }
 }
 
@@ -644,43 +630,14 @@ drop_p3dobj(int object_id) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::install_progress
+//     Function: P3DSession::report_packages_done
 //       Access: Private
-//  Description: Notified as the _panda3d package is downloaded.
+//  Description: Notified when a child instance is fully downloaded.
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
-install_progress(P3DPackage *package, double progress) {
-  Instances::iterator ii;
-  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
-    P3DInstance *inst = (*ii).second;
-    inst->install_progress(package, progress);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::package_ready
-//       Access: Private
-//  Description: Notified when the package is fully downloaded.
-////////////////////////////////////////////////////////////////////
-void P3DSession::
-package_ready(P3DPackage *package, bool success) {
-  _panda3d_callback = NULL;
-
-  Instances::iterator ii;
-  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
-    P3DInstance *inst = (*ii).second;
-    inst->package_ready(package, success);
-  }
-
-  if (package == _panda3d) {
-    if (success) {
-      start_p3dpython();
-    } else {
-      nout << "Failed to install " << package->get_package_name()
-           << "_" << package->get_package_version() << "\n";
-    }
-  } else {
-    nout << "Unexpected panda3d package: " << package << "\n";
+report_packages_done(P3DInstance *inst, bool success) {
+  if (success) {
+    start_p3dpython(inst);
   }
 }
 
@@ -690,7 +647,19 @@ package_ready(P3DPackage *package, bool success) {
 //  Description: Starts Python running in a child process.
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
-start_p3dpython() {
+start_p3dpython(P3DInstance *inst) {
+  if (_p3dpython_running) {
+    // Already started.
+    return;
+  }
+
+  if (inst->_panda3d == NULL) {
+    nout << "Couldn't start Python: no panda3d dependency.\n";
+    return;
+  }
+
+  _python_root_dir = inst->_panda3d->get_package_dir();
+
   string p3dpython = P3D_PLUGIN_P3DPYTHON;
   if (p3dpython.empty()) {
     p3dpython = _python_root_dir + "/p3dpython";
@@ -1116,44 +1085,3 @@ posix_create_process(const string &program, const string &start_dir,
   return child;
 }
 #endif  // _WIN32
-
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::PackageCallback::Constructor
-//       Access: Public
-//  Description: 
-////////////////////////////////////////////////////////////////////
-P3DSession::PackageCallback::
-PackageCallback(P3DSession *session) :
-  _session(session)
-{
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::PackageCallback::install_progress
-//       Access: Public, Virtual
-//  Description: This callback is received during the download process
-//               to inform us how much has been installed so far.
-////////////////////////////////////////////////////////////////////
-void P3DSession::PackageCallback::
-install_progress(P3DPackage *package, double progress) {
-  if (this == _session->_panda3d_callback) {
-    _session->install_progress(package, progress);
-  } else {
-    nout << "Unexpected callback for P3DSession\n";
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::PackageCallback::package_ready
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void P3DSession::PackageCallback::
-package_ready(P3DPackage *package, bool success) {
-  if (this == _session->_panda3d_callback) {
-    _session->package_ready(package, success);
-  } else {
-    nout << "Unexpected callback for P3DSession\n";
-  }
-}

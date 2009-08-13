@@ -37,12 +37,10 @@ static const double extract_portion = 0.05;
 P3DPackage::
 P3DPackage(const string &package_name,
            const string &package_platform,
-           const string &package_version,
-           const string &package_display_name) :
+           const string &package_version) :
   _package_name(package_name),
   _package_platform(package_platform),
-  _package_version(package_version),
-  _package_display_name(package_display_name)
+  _package_version(package_version)
 {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
@@ -85,43 +83,6 @@ P3DPackage::
   }
 
   assert(_instances.empty());
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::set_callback
-//       Access: Public
-//  Description: Registers a callback on the package.  The callback
-//               object will be notified when the package is ready for
-//               use (or when it has failed to download properly).
-////////////////////////////////////////////////////////////////////
-void P3DPackage::
-set_callback(Callback *callback) {
-  if (_ready || _failed) {
-    // Actually, we're already done.  Signal the callback immediately.
-    callback->package_ready(this, _ready);
-    delete callback;
-  } else {
-    // Bootstrap still in progress.  Save the callback.
-    _callbacks.push_back(callback);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::cancel_callback
-//       Access: Public
-//  Description: Unregisters a particular callback object.  This
-//               object will no longer be notified when the package is
-//               ready.
-////////////////////////////////////////////////////////////////////
-void P3DPackage::
-cancel_callback(Callback *callback) {
-  Callbacks::iterator ci;
-  ci = find(_callbacks.begin(), _callbacks.end(), callback);
-  if (ci != _callbacks.end()) {
-    _callbacks.erase(ci);
-  } else {
-    nout << "Canceling unknown callback on " << _package_fullname << "\n";
-  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -334,6 +295,11 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   TiXmlElement *compressed_archive = NULL;
   
   if (xpackage != NULL) {
+    const char *display_name_cstr = xpackage->Attribute("display_name");
+    if (display_name_cstr != NULL) {
+      _package_display_name = display_name_cstr;
+    }
+
     uncompressed_archive = xpackage->FirstChildElement("uncompressed_archive");
     compressed_archive = xpackage->FirstChildElement("compressed_archive");
   }
@@ -351,27 +317,27 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   _uncompressed_archive.load_xml(uncompressed_archive);
   _compressed_archive.load_xml(compressed_archive);
 
-  // Now get all the components.
-  _components.clear();
-  TiXmlElement *component = xpackage->FirstChildElement("component");
-  while (component != NULL) {
+  // Now get all the extractable components.
+  _extracts.clear();
+  TiXmlElement *extract = xpackage->FirstChildElement("extract");
+  while (extract != NULL) {
     FileSpec file;
-    file.load_xml(component);
-    _components.push_back(file);
-    component = component->NextSiblingElement("component");
+    file.load_xml(extract);
+    _extracts.push_back(file);
+    extract = extract->NextSiblingElement("extract");
   }
 
-  // Verify all of the components.
-  bool all_components_ok = true;
-  Components::iterator ci;
-  for (ci = _components.begin(); ci != _components.end(); ++ci) {
+  // Verify all of the extracts.
+  bool all_extracts_ok = true;
+  Extracts::iterator ci;
+  for (ci = _extracts.begin(); ci != _extracts.end(); ++ci) {
     if (!(*ci).quick_verify(_package_dir)) {
-      all_components_ok = false;
+      all_extracts_ok = false;
       break;
     }
   }
 
-  if (all_components_ok) {
+  if (all_extracts_ok) {
     // Great, we're ready to begin.
     report_done(true);
 
@@ -589,8 +555,8 @@ void P3DPackage::
 extract_archive() {
   string source_pathname = _package_dir + "/" + _uncompressed_archive.get_filename();
   P3DMultifileReader reader;
-  if (!reader.extract(source_pathname, _package_dir,
-                      this, download_portion + uncompress_portion, extract_portion)) {
+  if (!reader.extract_all(source_pathname, _package_dir,
+                          this, download_portion + uncompress_portion, extract_portion)) {
     nout << "Failure extracting " << _uncompressed_archive.get_filename()
          << "\n";
     report_done(false);
@@ -604,13 +570,13 @@ extract_archive() {
 //     Function: P3DPackage::report_progress
 //       Access: Private
 //  Description: Reports the indicated install progress to all
-//               listening callbacks.
+//               interested instances.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 report_progress(double progress) {
-  Callbacks::iterator ci;
-  for (ci = _callbacks.begin(); ci != _callbacks.end(); ++ci) {
-    (*ci)->install_progress(this, progress);
+  Instances::iterator ii;
+  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+    (*ii)->report_package_progress(this, progress);
   }
 }
 
@@ -618,8 +584,8 @@ report_progress(double progress) {
 //     Function: P3DPackage::report_done
 //       Access: Private
 //  Description: Transitions the package to "ready" or "failure"
-//               state, and reports this change to all the listening
-//               callbacks.
+//               state, and reports this change to all the interested
+//               instances.
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 report_done(bool success) {
@@ -631,16 +597,10 @@ report_done(bool success) {
     _failed = true;
   }
 
-  Callbacks orig_callbacks;
-  orig_callbacks.swap(_callbacks);
-  Callbacks::iterator ci;
-  for (ci = orig_callbacks.begin(); ci != orig_callbacks.end(); ++ci) {
-    (*ci)->package_ready(this, _ready);
-    delete (*ci);
+  Instances::iterator ii;
+  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+    (*ii)->report_package_done(this, success);
   }
-
-  // We shouldn't have added any more callbacks during the above loop.
-  assert(_callbacks.empty());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -674,30 +634,21 @@ start_download(P3DPackage::DownloadType dtype, const string &url,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::Callback::Destructor
-//       Access: Public, Virtual
-//  Description: 
+//     Function: P3DPackage::is_extractable
+//       Access: Private
+//  Description: Returns true if the name file is on the extract list,
+//               false otherwise.
 ////////////////////////////////////////////////////////////////////
-P3DPackage::Callback::
-~Callback() {
-}
+bool P3DPackage::
+is_extractable(const string &filename) const {
+  Extracts::const_iterator ci;
+  for (ci = _extracts.begin(); ci != _extracts.end(); ++ci) {
+    if ((*ci).get_filename() == filename) {
+      return true;
+    }
+  }
 
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::Callback::install_progress
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void P3DPackage::Callback::
-install_progress(P3DPackage *package, double progress) {
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::Callback::package_ready
-//       Access: Public, Virtual
-//  Description: 
-////////////////////////////////////////////////////////////////////
-void P3DPackage::Callback::
-package_ready(P3DPackage *package, bool success) {
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

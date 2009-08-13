@@ -80,6 +80,8 @@ public:
   inline P3D_request_ready_func *get_request_ready_func() const;
 
   void add_package(P3DPackage *package);
+  bool get_packages_ready() const;
+  bool get_packages_failed() const;
   
   void start_download(P3DDownload *download);
   inline bool is_started() const;
@@ -100,6 +102,8 @@ private:
     P3DInstance *_inst;
   };
 
+  void scan_app_desc_file(TiXmlDocument *doc);
+
   void send_browser_script_object();
   P3D_request *make_p3d_request(TiXmlElement *xrequest);
   void handle_notify_request(const string &message);
@@ -108,8 +112,8 @@ private:
                              bool needs_response, int unique_id);
   void make_splash_window();
   void start_package_download(P3DPackage *package);
-  void install_progress(P3DPackage *package, double progress);
-  void package_ready(P3DPackage *package, bool success);
+  void report_package_progress(P3DPackage *package, double progress);
+  void report_package_done(P3DPackage *package, bool progress);
 
   void paint_window();
   void add_modifier_flags(unsigned int &swb_flags, int modifiers);
@@ -157,6 +161,10 @@ private:
   typedef vector<P3DPackage *> Packages;
   Packages _packages;
 
+  // We keep the _panda3d pointer separately because it's so
+  // important, but it's in the above vector also.
+  P3DPackage *_panda3d;  
+
   typedef map<int, P3DDownload *> Downloads;
   Downloads _downloads;
 
@@ -175,6 +183,7 @@ private:
   friend class P3DSession;
   friend class SplashDownload;
   friend class P3DWindowParams;
+  friend class P3DPackage;
 };
 
 #include "p3dInstance.I"

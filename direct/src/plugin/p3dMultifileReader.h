@@ -31,12 +31,20 @@ class P3DMultifileReader {
 public:
   P3DMultifileReader();
 
-  bool extract(const string &pathname, const string &to_dir,
-               P3DPackage *package, double start_progress, 
-               double progress_size);
+  bool extract_all(const string &pathname, const string &to_dir,
+                   P3DPackage *package, double start_progress, 
+                   double progress_size);
+
+  bool extract_one(const string &pathname, ostream &out, 
+                   const string &filename);
 
 private:
+  class Subfile;
+
+  bool read_header(const string &pathname);
   bool read_index();
+  bool extract_subfile(ostream &out, const Subfile &s);
+
   inline unsigned int read_uint16();
   inline unsigned int read_uint32();
 
