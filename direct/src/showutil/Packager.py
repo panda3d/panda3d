@@ -369,7 +369,6 @@ class Packager:
                     filename.resolveFilename(path)
                     self.addFile(filename, newName = filename.getBasename(),
                                  executable = True)
-                        
                     
         def __parseDependenciesWindows(self, tempFile):
             """ Reads the indicated temporary file, the output from
@@ -414,7 +413,73 @@ class Packager:
             and executables that might include implicit dependencies
             on other dylib's.  Tries to determine those dependencies,
             and adds them back into the filelist. """
-            pass
+
+            # We walk through the list as we modify it.  That's OK,
+            # because we want to follow the transitive closure of
+            # dependencies anyway.
+            for file in self.files:
+                if not file.executable:
+                    continue
+                
+                if file.isExcluded(self):
+                    # Skip this file.
+                    continue
+
+                tempFile = Filename.temporary('', 'p3d_')
+                command = 'otool -L "%s" >"%s"' % (
+                    file.filename.toOsSpecific(),
+                    tempFile.toOsSpecific())
+                try:
+                    os.system(command)
+                except:
+                    pass
+                filenames = None
+
+                if tempFile.exists():
+                    filenames = self.__parseDependenciesOSX(tempFile)
+                if filenames is None:
+                    print "Unable to determine dependencies from %s" % (file.filename)
+                    continue
+
+                print filenames
+
+                # Attempt to resolve the dependent filename relative
+                # to the original filename, before we resolve it along
+                # the PATH.
+                path = DSearchPath(Filename(file.filename.getDirname()))
+
+                for filename in filenames:
+                    filename = Filename.fromOsSpecific(filename)
+                    filename.resolveFilename(path)
+                    self.addFile(filename, newName = filename.getBasename(),
+                                 executable = True)
+                    
+        def __parseDependenciesOSX(self, tempFile):
+            """ Reads the indicated temporary file, the output from
+            otool -L, to determine the list of dylib's this
+            executable file depends on. """
+
+            lines = open(tempFile.toOsSpecific(), 'rU').readlines()
+
+            filenames = []
+            for line in lines:
+                if line[0] not in string.whitespace:
+                    continue
+                line = line.strip()
+                if line.startswith('/System/'):
+                    continue
+                s = line.find(' (compatibility')
+                if s != -1:
+                    line = line[:s]
+                else:
+                    s = line.find('.dylib')
+                    if s != -1:
+                        line = line[:s + 6]
+                    else:
+                        continue
+                filenames.append(line)
+
+            return filenames
 
         def __addImplicitDependenciesPosix(self):
             """ Walks through the list of files, looking for so's
@@ -801,15 +866,17 @@ class Packager:
         # installed packages.
         self.installSearch = []
 
-        # The system PATH, for searching dll's.
+        # The system PATH, for searching dll's and exe's.
         self.dllPath = DSearchPath()
         if PandaSystem.getPlatform().startswith('win'):
             self.addWindowsSearchPath(self.dllPath, "PATH")
         elif PandaSystem.getPlatform().startswith('osx'):
             self.addPosixSearchPath(self.dllPath, "DYLD_LIBRARY_PATH")
             self.addPosixSearchPath(self.dllPath, "LD_LIBRARY_PATH")
+            self.addPosixSearchPath(self.dllPath, "PATH")
         else:
             self.addPosixSearchPath(self.dllPath, "LD_LIBRARY_PATH")
+            self.addPosixSearchPath(self.dllPath, "PATH")
 
         # The platform string.
         self.platform = PandaSystem.getPlatform()
@@ -887,6 +954,9 @@ class Packager:
             'imm32.dll', 'ddraw.dll', 'shlwapi.dll', 'secur32.dll',
             'dciman32.dll', 'comdlg32.dll', 'comctl32.dll', 'ole32.dll',
             'oleaut32.dll', 'gdiplus.dll', 'winmm.dll',
+
+            'libSystem.B.dylib', 'libmathCommon.A.dylib', 'libmx.A.dylib',
+            'libstdc++.6.dylib',
             ]
 
         # As above, but with filename globbing to catch a range of
