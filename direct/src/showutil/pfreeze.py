@@ -113,7 +113,7 @@ else:
     freezer.addModule(startfile, newName = '__main__')
     compileToExe = True
 
-freezer.done()
+freezer.done(compileToExe = compileToExe)
 
 if outputType == 'mf':
     freezer.writeMultifile(basename)

@@ -314,7 +314,8 @@ class Packager:
             self.sourceFilenames[file.filename] = file
 
             if not file.filename.exists():
-                self.packager.notify.warning("No such file: %s" % (file.filename))
+                if not file.isExcluded(self):
+                    self.packager.notify.warning("No such file: %s" % (file.filename))
                 return
             
             self.files.append(file)
@@ -484,7 +485,63 @@ class Packager:
             and executables that might include implicit dependencies
             on other so's.  Tries to determine those dependencies,
             and adds them back into the filelist. """
-            pass
+
+            # We walk through the list as we modify it.  That's OK,
+            # because we want to follow the transitive closure of
+            # dependencies anyway.
+            for file in self.files:
+                if not file.executable:
+                    continue
+                
+                if file.isExcluded(self):
+                    # Skip this file.
+                    continue
+
+                tempFile = Filename.temporary('', 'p3d_')
+                command = 'ldd "%s" >"%s"' % (
+                    file.filename.toOsSpecific(),
+                    tempFile.toOsSpecific())
+                try:
+                    os.system(command)
+                except:
+                    pass
+                filenames = None
+
+                if tempFile.exists():
+                    filenames = self.__parseDependenciesPosix(tempFile)
+                if filenames is None:
+                    print "Unable to determine dependencies from %s" % (file.filename)
+                    continue
+
+                # Attempt to resolve the dependent filename relative
+                # to the original filename, before we resolve it along
+                # the PATH.
+                path = DSearchPath(Filename(file.filename.getDirname()))
+
+                for filename in filenames:
+                    filename = Filename.fromOsSpecific(filename)
+                    filename.resolveFilename(path)
+                    self.addFile(filename, newName = filename.getBasename(),
+                                 executable = True)
+                    
+        def __parseDependenciesPosix(self, tempFile):
+            """ Reads the indicated temporary file, the output from
+            ldd, to determine the list of so's this executable file
+            depends on. """
+
+            lines = open(tempFile.toOsSpecific(), 'rU').readlines()
+
+            filenames = []
+            for line in lines:
+                line = line.strip()
+                s = line.find(' => ')
+                if s == -1:
+                    continue
+
+                line = line[:s].strip()
+                filenames.append(line)
+
+            return filenames
 
         def addExtensionModules(self):
             """ Adds the extension modules detected by the freezer to
@@ -872,9 +929,13 @@ class Packager:
             self.addPosixSearchPath(self.dllPath, "DYLD_LIBRARY_PATH")
             self.addPosixSearchPath(self.dllPath, "LD_LIBRARY_PATH")
             self.addPosixSearchPath(self.dllPath, "PATH")
+            self.dllPath.appendDirectory('/lib')
+            self.dllPath.appendDirectory('/usr/lib')
         else:
             self.addPosixSearchPath(self.dllPath, "LD_LIBRARY_PATH")
             self.addPosixSearchPath(self.dllPath, "PATH")
+            self.dllPath.appendDirectory('/lib')
+            self.dllPath.appendDirectory('/usr/lib')
 
         # The platform string.
         self.platform = PandaSystem.getPlatform()
@@ -961,6 +1022,14 @@ class Packager:
         # filenames.
         self.excludeSystemGlobs = [
             GlobPattern('d3dx9_*.dll'),
+
+            GlobPattern('linux-gate.so*'),
+            GlobPattern('libdl.so*'),
+            GlobPattern('libm.so*'),
+            GlobPattern('libc.so*'),
+            GlobPattern('libGL.so*'),
+            GlobPattern('libGLU.so*'),
+            GlobPattern('libX*.so*'),
             ]
 
         # A Loader for loading models.
@@ -1773,7 +1842,7 @@ class Packager:
                 freezer.addModule(package.mainModule, newName = '__main__')
             else:
                 freezer.modules['__main__'] = freezer.modules[package.mainModule]
-        freezer.done()
+        freezer.done(compileToExe = compileToExe)
 
         if not package.dryRun:
             dirname = ''

@@ -611,7 +611,7 @@ class Freezer:
             # A normal, explicit module name.
             self.modules[newName] = self.ModuleDef(token, moduleName, filename = filename)
 
-    def done(self):
+    def done(self, compileToExe = False):
         """ Call this method after you have added all modules with
         addModule().  You may then call generateCode() or
         writeMultifile() to dump the resulting output.  After a call
@@ -620,9 +620,9 @@ class Freezer:
         
         assert self.mf == None
 
-        # If we have a __main__ module, we also need to implicitly
+        # If we are building an exe, we also need to implicitly
         # bring in Python's startup modules.
-        if '__main__' in self.modules:
+        if compileToExe:
             for moduleName in startupModules:
                 if moduleName not in self.modules:
                     self.modules[moduleName] = self.ModuleDef(self.MTAuto, moduleName)
