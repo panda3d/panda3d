@@ -29,6 +29,7 @@ class ShipPilot(PhysicsWalker):
     
     MAX_STRAIGHT_SAIL_BONUS = 2.1     # 1.25 Old
     STRAIGHT_SAIL_BONUS_TIME = 18.0
+    REVERSE_STRAIGHT_SAIL_BONUS_TIME = -8.0
     TURNING_BONUS_REDUCTION = 3.0
     
     # special methods
@@ -378,36 +379,46 @@ class ShipPilot(PhysicsWalker):
             
         # How far did we move based on the amount of time elapsed?
         dt = ClockObject.getGlobalClock().getDt()
+
+        minSpeed = (self.ship.acceleration + self.ship.speedboost) * self.ship.speednerf
+        minStraightSail = 1.0 / self.MAX_STRAIGHT_SAIL_BONUS * self.STRAIGHT_SAIL_BONUS_TIME * self.ship.speednerf
         
         if reverse:
-            # Reverse kills Travel Speed totally
-            self.straightHeading = 0
-        elif (self.__speed < (self.ship.acceleration + self.ship.speedboost) * self.ship.speednerf) and forward:
+            # Decelerate while sails are up
+            self.straightHeading -= dt * self.TURNING_BONUS_REDUCTION * 2.0
+        #elif (self.__speed < minSpeed) and forward:
+        elif (self.straightHeading < minStraightSail) and forward:
             # If not at MinSpeed, Accelerate regardless
             self.straightHeading += dt * 1.5
-        elif self.ship.threatCounter:            
+        elif self.ship.threatCounter:
             # If ship is recently damaged, do not increase Travel Speed
-            self.straightHeading = min(1.0 / self.MAX_STRAIGHT_SAIL_BONUS * self.STRAIGHT_SAIL_BONUS_TIME * self.ship.speednerf, self.straightHeading)           
+            self.straightHeading = min(minStraightSail, self.straightHeading)
         elif turnLeft or turnRight or not forward:
-            # Reset Straight Sailing Bonus
-            self.straightHeading -= dt * self.TURNING_BONUS_REDUCTION
+            # Reset Straight Sailing Bonus - Only if above MinSpeed
+            if forward and (self.straightHeading - (dt * self.TURNING_BONUS_REDUCTION) < minStraightSail) and (self.straightHeading >= minStraightSail):
+                self.straightHeading = minStraightSail
+            else:
+                self.straightHeading -= dt * self.TURNING_BONUS_REDUCTION
         else:
             # Add in the Straight Sailing Time
             self.straightHeading += dt
-        self.straightHeading = max(0, min(self.STRAIGHT_SAIL_BONUS_TIME, self.straightHeading))
+            
+        if reverse:
+            # Allow straightHeading to reach a negative value
+            self.straightHeading = max(self.REVERSE_STRAIGHT_SAIL_BONUS_TIME, self.straightHeading)
+        else:
+            # Normally min straightHeading is 1.0
+            self.straightHeading = max(1.0, min(self.STRAIGHT_SAIL_BONUS_TIME, self.straightHeading))
         
         # Straight Sailing Acceleration Bonus
         straightSailBonus = 0.0
         straightSailBonus = self.straightHeading / self.STRAIGHT_SAIL_BONUS_TIME
         straightSailBonus = min(self.MAX_STRAIGHT_SAIL_BONUS, straightSailBonus * self.MAX_STRAIGHT_SAIL_BONUS)
         
-        self.__speed=(forward and self.ship.acceleration) or \
-                      (reverse and -self.ship.reverseAcceleration)
+        # self.__speed=(forward and self.ship.acceleration) or (reverse and self.ship.reverseAcceleration)
+        self.__speed = self.ship.acceleration
         
-        avatarSlideSpeed=self.ship.acceleration * 0.5 * straightSailBonus
-        #self.__slideSpeed=slide and (
-        #        (turnLeft and -avatarSlideSpeed) or
-        #        (turnRight and avatarSlideSpeed))
+        avatarSlideSpeed = self.ship.acceleration * 0.5 * straightSailBonus
         self.__slideSpeed=(forward or reverse) and (
                 (slideLeft and -avatarSlideSpeed) or
                 (slideRight and avatarSlideSpeed))
@@ -416,11 +427,10 @@ class ShipPilot(PhysicsWalker):
                 (turnRight and -self.ship.turnRate))
         
         # Add in Straight Sailing Multiplier
-        self.__speed *= straightSailBonus 
+        self.__speed *= (straightSailBonus * self.ship.speednerf)
         self.__speed += self.ship.speedboost
         self.__slideSpeed *= straightSailBonus
         maxSpeed = self.ship.maxSpeed
-        self.__speed *= self.ship.speednerf
         
         # Enable debug turbo modec
         debugRunning = inputState.isSet("debugRunning")
@@ -446,13 +456,6 @@ class ShipPilot(PhysicsWalker):
         if self.currentTurning < 0.001 and self.currentTurning > -0.001:
             self.currentTurning = 0.0
         self.__rotationSpeed = self.currentTurning
-        
-        #print "########################"
-        #print self.__speed
-        #print self.ship.baseAcceleration
-        #print self.ship.acceleration
-        #print self.ship.speedboost
-        #print straightSailBonus
         
         # Broadcast Event to Handlers (ShipStatusMeter)
         messenger.send("setShipSpeed-%s" % (self.ship.getDoId()), [self.__speed, self.getMaxSpeed()])
@@ -492,26 +495,25 @@ class ShipPilot(PhysicsWalker):
             rotation = self.__rotationSpeed
             if debugRunning:
                 rotation *= 4
-
+                
             # update pos:
             # Take a step in the direction of our previous heading.
-            self.__vel=Vec3(
-                Vec3.forward() * distance +
-                Vec3.right() * slideDistance)
-
+            self.__vel=Vec3(Vec3.forward() * distance + Vec3.right() * slideDistance)
+            
             # rotMat is the rotation matrix corresponding to
             # our previous heading.
-            rotMat=Mat3.rotateMatNormaxis(
-                self.shipNodePath.getH(), Vec3.up())
+            rotMat=Mat3.rotateMatNormaxis(self.shipNodePath.getH(), Vec3.up())
             step=rotMat.xform(self.__vel)
-
+            
             #newVector = self.acForce.getLocalVector()+Vec3(step)
             newVector = Vec3(step)
             #newVector=Vec3(rotMat.xform(newVector))
             #maxLen = maxSpeed
-
-            maxLen = self.__speed
-
+            if (goForward):
+                maxLen = self.__speed
+            else:
+                maxLen = self.ship.reverseAcceleration
+            
             if newVector.length() > maxLen and \
                not (debugRunning or base.localAvatar.getTurbo()):
                 newVector.normalize()
@@ -522,24 +524,24 @@ class ShipPilot(PhysicsWalker):
                     "newVector", newVector)
                 onScreenDebug.add(
                     "newVector length", newVector.length())
-
+                
             base.controlForce.setVector(newVector)
-
+            
             assert base.controlForce.getLocalVector() == newVector,'1'
             assert base.controlForce.getPhysicsObject(),'2'
             assert base.controlForce.getPhysicsObject() == physObject,'3'
-
+            
             #momentum = self.momentumForce.getLocalVector()
             #momentum *= 0.9
             #self.momentumForce.setVector(momentum)
-
+            
             # update hpr:
             o=physObject.getOrientation()
             r=LRotationf()
             # factor in dt since we're directly setting the rotation here
             r.setHpr(Vec3(rotation * dt, 0.0, 0.0))
             physObject.setOrientation(o*r)
-
+            
             # sync the change:
             self.actorNode.updateTransform()
             #assert self.shipNodePath.getH()==debugTempH-rotation
@@ -549,8 +551,7 @@ class ShipPilot(PhysicsWalker):
             assert physObject.getVelocity().almostEqual(Vec3(0),0.1)
             #base.controlForce.setVector(Vec3.zero())
             goForward = True
-
-
+        
         #*#
         speed = physVel
         if (goForward):
@@ -561,13 +562,13 @@ class ShipPilot(PhysicsWalker):
             if physVelLen > self.ship.maxReverseSpeed:
                 speed.normalize()
                 speed *= self.ship.maxReverseSpeed
-
+            
         #speed *= 1.0 - dt * 0.05
 
         # modify based on sail damage
         speed *= self.ship.Sp
         speed /= self.ship.maxSp
-
+        
         if __debug__:
             q1=self.shipNodePath.getQuat()
             q2=physObject.getOrientation()
