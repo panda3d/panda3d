@@ -567,7 +567,7 @@ INLINE void PointerToArray<Element>::
 set_subdata(size_type n, size_type count, const string &data) {
   nassertv((data.length() % sizeof(Element)) == 0);
   nassertv(n <= size() && n + count <= size());
-  nassertd((this->_void_ptr) != NULL) {
+  if ((this->_void_ptr) == NULL) {
     ((PointerToArray<Element> *)this)->reassign(new ReferenceCountedVector<Element>(_type_handle));
   }
   size_type ncount = data.length() / sizeof(Element);
