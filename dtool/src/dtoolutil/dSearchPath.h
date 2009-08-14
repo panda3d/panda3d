@@ -69,6 +69,7 @@ PUBLISHED:
   bool is_empty() const;
   int get_num_directories() const;
   const Filename &get_directory(int n) const;
+  MAKE_SEQ(get_directories, get_num_directories, get_directory);
 
   Filename find_file(const Filename &filename) const;
   int find_all_files(const Filename &filename, Results &results) const;
