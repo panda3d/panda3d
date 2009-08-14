@@ -187,6 +187,35 @@ reload_implicit_pages() {
         if (q == string::npos) {
           q = path.length();
         }
+        Filename prc_dir_filename = Filename::from_os_specific(path.substr(p, q - p));
+        if (scan_auto_prc_dir(prc_dir_filename)) {
+          _search_path.append_directory(prc_dir_filename);
+        }
+        p = q + 1;
+      }
+    }
+  }
+  
+  // PRC_PATH2_ENVVARS is a special variable that is rarely used; it
+  // exists primarily to support the Cygwin-based "ctattach" tools
+  // used by the Walt Disney VR Studio.  This defines a set of
+  // environment variable(s) that define a search path, as above;
+  // except that the directory names on these search paths are
+  // Panda-style filenames, not Windows-style filenames; and the path
+  // separator is always a space character, regardless of
+  // DEFAULT_PATHSEP.
+  string prc_path2_envvars = PRC_PATH2_ENVVARS;
+  if (!prc_path2_envvars.empty()) {
+    vector_string prc_path_envvar_list;
+    ConfigDeclaration::extract_words(prc_path2_envvars, prc_path_envvar_list);
+    for (size_t i = 0; i < prc_path_envvar_list.size(); ++i) {
+      string path = ExecutionEnvironment::get_environment_variable(prc_path_envvar_list[i]);
+      size_t p = 0;
+      while (p < path.length()) {
+        size_t q = path.find_first_of(' ', p);
+        if (q == string::npos) {
+          q = path.length();
+        }
         Filename prc_dir_filename = path.substr(p, q - p);
         if (scan_auto_prc_dir(prc_dir_filename)) {
           _search_path.append_directory(prc_dir_filename);

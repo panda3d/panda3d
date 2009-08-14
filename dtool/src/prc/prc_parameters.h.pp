@@ -25,6 +25,15 @@
    which to search for prc files. */
 # define PRC_PATH_ENVVARS "$[PRC_PATH_ENVVARS]"
 
+/* This is a special variable that is rarely used; it exists primarily
+   to support the Cygwin-based "ctattach" tools used by the Walt
+   Disney VR Studio.  This defines a set of environment variable(s)
+   that define a search path, as above; except that the directory
+   names on these search paths are Panda-style filenames, not
+   Windows-style filenames; and the path separator is always a space
+   character, regardless of DEFAULT_PATHSEP. */
+# define PRC_PATH2_ENVVARS "$[PRC_PATH2_ENVVARS]"
+
 /* The filename(s) to search for in the above paths.  Normally this is
    *.prc. */
 # define PRC_PATTERNS "$[PRC_PATTERNS]"

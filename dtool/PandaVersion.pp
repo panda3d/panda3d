@@ -18,3 +18,12 @@
 // Panda.  If you build your own Panda, leave this unchanged.
 #define PANDA_DISTRIBUTOR homebuilt
 
+// This string is used to describe the Panda3D "package" associated
+// with this current build of Panda.  It should increment with major
+// and minor version changes, but not sequence (or "bugfix") changes.
+// It should be unique for each unique distributor.  The default is
+// the empty string, which means this build does not precisely match
+// any distributable Panda3D packages.  If you are making a Panda3D
+// build which you will be using to produce a distributable Panda3D
+// package, you should set this string appropriately.
+#define PANDA_PACKAGE_VERSION 

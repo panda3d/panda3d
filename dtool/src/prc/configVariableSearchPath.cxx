@@ -43,7 +43,8 @@ reload_search_path() {
     }
   }
 
-  if (num_unique_references == 0) {
+  if (_prefix.is_empty() && _postfix.is_empty() && 
+      num_unique_references == 0) {
     // An empty search path implicitly has the default value.
     _cache = _default_value;
   }
