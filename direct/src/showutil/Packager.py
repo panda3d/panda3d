@@ -855,8 +855,6 @@ class Packager:
             not already been included.  Returns the new name within the
             package tree. """
 
-            assert not filename.isLocal()
-
             filename = Filename(filename)
             filename.makeCanonical()
 
@@ -1369,6 +1367,32 @@ class Packager:
 
         version = args.get('version', None)
         self.require(packageName, version = version)
+
+    def parse_model_path(self, words):
+        """
+        model_path directory
+        """
+        newName = None
+
+        try:
+            command, dirName = words
+        except ValueError:
+            raise ArgumentError
+
+        getModelPath().appendDirectory(Filename.fromOsSpecific(dirName))
+
+    def parse_reset_model_path(self, words):
+        """
+        reset_model_path
+        """
+        newName = None
+
+        try:
+            (command,) = words
+        except ValueError:
+            raise ArgumentError
+
+        getModelPath().clear()
 
     def parse_module(self, words):
         """

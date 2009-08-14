@@ -361,19 +361,29 @@ subprocess_run() {
     
     if (_image_filename_changed) {
       update_image_filename(_image_filename, _image_filename_temp);
+      override = true;
     }
     _image_filename_changed = false;
-    
+
     if (override || have_event || install_label != prev_label) {
       redraw(install_label);
       override = false;
-      XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
-                     (unsigned int)(install_progress * (_width - 24)), 7);
+
+      // Don't draw the progress bar unless we have some text in
+      // install_label.
+      if (!install_label.empty()) {
+        XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
+                       (unsigned int)(install_progress * (_width - 24)), 7);
+      }
       XFlush(_display);
+
     } else if (install_progress != prev_progress) {
-      XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
-                     (unsigned int)(install_progress * (_width - 24)), 7);
+      if (!install_label.empty()) {
+        XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
+                       (unsigned int)(install_progress * (_width - 24)), 7);
+      }
     }
+
     prev_label = install_label;
     prev_progress = install_progress;
 
@@ -502,11 +512,21 @@ redraw(string label) {
     }
     XClearArea(_display, _window, 10, _height - 20, _width - 20, 10, false);
   }
-  
-  // Draw the rest - the label and the progress bar outline.
-  XDrawString(_display, _window, _graphics_context, _width / 2 - label.size() * 3,
-                                        _height - 30, label.c_str(), label.size());
-  XDrawRectangle(_display, _window, _graphics_context, 10, _height - 20, _width - 20, 10);
+
+  if (!label.empty()) {
+    // Draw the rest - the label and the progress bar outline.
+    int text_width = label.size() * 6;
+    int text_height = 10;
+    int text_x = (_width - text_width) / 2;
+    int text_y = _height - 30;
+
+    XClearArea(_display, _window,
+               text_x - 2, text_y - text_height - 2,
+               text_width + 4, text_height + 4, false);
+    XDrawString(_display, _window, _graphics_context, text_x, text_y,
+                label.c_str(), label.size());
+    XDrawRectangle(_display, _window, _graphics_context, 10, _height - 20, _width - 20, 10);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

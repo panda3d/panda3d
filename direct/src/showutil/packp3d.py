@@ -116,6 +116,7 @@ def makePackedApp(args):
     mainModule = main.cStr().replace('/', '.')
     
     packager.installDir = appDir
+    getModelPath().appendDirectory(root)
 
     packager.setup()
     packager.beginPackage(appBase, p3dApplication = True)
