@@ -2395,15 +2395,86 @@ unlink() const {
 //  Description: Renames the file to the indicated new filename.  If
 //               the new filename is in a different directory, this
 //               will perform a move.  Returns true if successful,
-//               false if failure.
+//               false on failure.
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 rename_to(const Filename &other) const {
   assert(!get_pattern());
   string os_specific = to_os_specific();
   string other_os_specific = other.to_os_specific();
-  return (rename(os_specific.c_str(),
-                 other_os_specific.c_str()) == 0);
+
+  if (rename(os_specific.c_str(),
+             other_os_specific.c_str()) == 0) {
+    // Successfully renamed.
+    return true;
+  }
+
+  // The above might fail if we have tried to move a file to a
+  // different filesystem.  In this case, copy the file into the same
+  // directory first, and then rename it.
+  string dirname = other.get_dirname();
+  if (dirname.empty()) {
+    dirname = ".";
+  }
+  Filename temp = Filename::temporary(dirname, "");
+  temp.set_binary();
+  if (!Filename::binary_filename(*this).copy_to(temp)) {
+    return false;
+  }
+
+  string temp_os_specific = temp.to_os_specific();
+  if (rename(temp_os_specific.c_str(),
+             other_os_specific.c_str()) == 0) {
+    // Successfully renamed.
+    unlink();
+    return true;
+  }
+
+  // Failed.
+  temp.unlink();
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Filename::copy_to
+//       Access: Published
+//  Description: Copies the file to the indicated new filename, by
+//               reading the contents and writing it to the new file.
+//               Returns true if successful, false on failure.
+////////////////////////////////////////////////////////////////////
+bool Filename::
+copy_to(const Filename &other) const {
+  pifstream in;
+  if (!open_read(in)) {
+    return false;
+  }
+
+  pofstream out;
+  if (!other.open_write(out)) {
+    return false;
+  }
+        
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+  
+  in.read(buffer, buffer_size);
+  size_t count = in.gcount();
+  while (count != 0) {
+    out.write(buffer, count);
+    if (out.fail()) {
+      other.unlink();
+      return false;
+    }
+    in.read(buffer, buffer_size);
+    count = in.gcount();
+  }
+
+  if (!in.eof()) {
+    other.unlink();
+    return false;
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////

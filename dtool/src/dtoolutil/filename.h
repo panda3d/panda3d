@@ -196,6 +196,7 @@ PUBLISHED:
   bool touch() const;
   bool unlink() const;
   bool rename_to(const Filename &other) const;
+  bool copy_to(const Filename &other) const;
 
   bool make_dir() const;
 
