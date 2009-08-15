@@ -379,14 +379,16 @@ class ShipPilot(PhysicsWalker):
             
         # How far did we move based on the amount of time elapsed?
         dt = ClockObject.getGlobalClock().getDt()
-
+        
         minSpeed = (self.ship.acceleration + self.ship.speedboost) * self.ship.speednerf
         minStraightSail = 1.0 / self.MAX_STRAIGHT_SAIL_BONUS * self.STRAIGHT_SAIL_BONUS_TIME * self.ship.speednerf
         
         if reverse:
             # Decelerate while sails are up
-            self.straightHeading -= dt * self.TURNING_BONUS_REDUCTION * 2.0
-        #elif (self.__speed < minSpeed) and forward:
+            if (self.straightHeading < 0):
+                self.straightHeading -= dt * self.TURNING_BONUS_REDUCTION * 2.0
+            else:
+                self.straightHeading -= dt * self.TURNING_BONUS_REDUCTION * 4.0
         elif (self.straightHeading < minStraightSail) and forward:
             # If not at MinSpeed, Accelerate regardless
             self.straightHeading += dt * 1.5
@@ -399,7 +401,7 @@ class ShipPilot(PhysicsWalker):
                 self.straightHeading = minStraightSail
             else:
                 self.straightHeading -= dt * self.TURNING_BONUS_REDUCTION
-        else:
+        elif forward:
             # Add in the Straight Sailing Time
             self.straightHeading += dt
             
@@ -407,8 +409,8 @@ class ShipPilot(PhysicsWalker):
             # Allow straightHeading to reach a negative value
             self.straightHeading = max(self.REVERSE_STRAIGHT_SAIL_BONUS_TIME, self.straightHeading)
         else:
-            # Normally min straightHeading is 1.0
-            self.straightHeading = max(1.0, min(self.STRAIGHT_SAIL_BONUS_TIME, self.straightHeading))
+            # Normally min straightHeading is 0.0
+            self.straightHeading = max(0.0, min(self.STRAIGHT_SAIL_BONUS_TIME, self.straightHeading))
         
         # Straight Sailing Acceleration Bonus
         straightSailBonus = 0.0
@@ -456,7 +458,7 @@ class ShipPilot(PhysicsWalker):
         if self.currentTurning < 0.001 and self.currentTurning > -0.001:
             self.currentTurning = 0.0
         self.__rotationSpeed = self.currentTurning
-        
+
         # Broadcast Event to Handlers (ShipStatusMeter)
         messenger.send("setShipSpeed-%s" % (self.ship.getDoId()), [self.__speed, self.getMaxSpeed()])
         
