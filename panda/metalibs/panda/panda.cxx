@@ -5,9 +5,9 @@
 
 #include "panda.h"
 
+#include "config_pnmimagetypes.h"
 #include "config_device.h"
 #include "config_display.h"
-#include "config_pnmimagetypes.h"
 #include "config_pgraph.h"
 #ifdef DO_PSTATS
 #include "config_pstats.h"
@@ -29,10 +29,10 @@
 ////////////////////////////////////////////////////////////////////
 void
 init_libpanda() {
+  init_libpnmimagetypes();
   init_libdevice();
   init_libdisplay();
   init_libpgraph();
-  init_libpnmimagetypes();
 #ifdef DO_PSTATS
   init_libpstatclient();
 #endif
