@@ -22,7 +22,7 @@ See pack3d.py for a script that generates these p3d files.
 import sys
 from direct.showbase import VFSImporter
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties, readXmlStream
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties, readXmlStream, ExecutionEnvironment
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.MessengerGlobal import messenger
@@ -291,7 +291,7 @@ class AppRunner(DirectObject):
         if self.p3dPackage:
             fullDiskAccess = self.p3dPackage.Attribute('full_disk_access')
             try:
-                self.fullDiskAccess = int(fullDiskAccess)
+                self.fullDiskAccess = int(fullDiskAccess or '')
             except ValueError:
                 pass
 

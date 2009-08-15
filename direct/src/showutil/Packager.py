@@ -325,6 +325,13 @@ class Packager:
                 # Don't bother, it's already here.
                 return
 
+            if file.newName in self.targetFilenames:
+                # Another file is already in the same place.
+                file2 = self.targetFilenames[file.newName]
+                self.packager.notify.warning(
+                    "%s is shadowing %s" % (file2.filename, file.filename))
+                return
+
             self.sourceFilenames[file.filename] = file
 
             if not file.filename.exists():
@@ -1035,7 +1042,7 @@ class Packager:
             'dciman32.dll', 'comdlg32.dll', 'comctl32.dll', 'ole32.dll',
             'oleaut32.dll', 'gdiplus.dll', 'winmm.dll',
 
-            'libSystem.B.dylib', 'libmathCommon.A.dylib', 'libmx.A.dylib',
+            'libsystem.b.dylib', 'libmathcommon.a.dylib', 'libmx.a.dylib',
             'libstdc++.6.dylib',
             ]
 

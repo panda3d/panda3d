@@ -231,7 +231,7 @@ download_desc_file() {
   // Attempt to check the desc file for freshness.  If it already
   // exists, and is consistent with the server contents file, we don't
   // need to re-download it.
-  string root_dir = inst_mgr->get_root_dir();
+  string root_dir = inst_mgr->get_root_dir() + "/packages";
   FileSpec desc_file;
   if (!inst_mgr->get_package_desc_file(desc_file, _package_name, _package_version)) {
     nout << "Couldn't find package " << _package_fullname
@@ -242,7 +242,7 @@ download_desc_file() {
          << desc_file.get_pathname(root_dir) 
          << " instead of " << _desc_file_pathname << "\n";
 
-  } else if (!desc_file.quick_verify(root_dir)) {
+  } else if (!desc_file.full_verify(root_dir)) {
     nout << _desc_file_pathname << " is stale.\n";
 
   } else {
@@ -337,6 +337,7 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   Extracts::iterator ci;
   for (ci = _extracts.begin(); ci != _extracts.end(); ++ci) {
     if (!(*ci).quick_verify(_package_dir)) {
+      nout << "File is incorrect: " << (*ci).get_filename() << "\n";
       all_extracts_ok = false;
       break;
     }
@@ -664,9 +665,22 @@ report_done(bool success) {
     _failed = true;
   }
 
-  Instances::iterator ii;
-  for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
-    (*ii)->report_package_done(this, success);
+  if (!_allow_data_download && success) {
+    // If we haven't been authorized to start downloading yet, just
+    // report that we're ready to start, but that we don't have to
+    // download anything.
+    _download_size = 0;
+    Instances::iterator ii;
+    for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+      (*ii)->report_package_info_ready(this);
+    }
+
+  } else {
+    // Otherwise, we can report that we're fully downloaded.
+    Instances::iterator ii;
+    for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+      (*ii)->report_package_done(this, success);
+    }
   }
 }
 

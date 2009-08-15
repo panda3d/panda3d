@@ -11,6 +11,7 @@ from distutils.sysconfig import PREFIX, get_python_inc, get_python_version
 
 import direct
 from pandac.PandaModules import *
+from pandac.extension_native_helpers import dll_suffix, dll_ext
 
 # Check to see if we are running python_d, which implies we have a
 # debug build, and we have to build the module with debug options.
@@ -654,7 +655,7 @@ class Freezer:
                 excludes.append(mdef.moduleName)
                 excludeDict[mdef.moduleName] = token
 
-        self.mf = modulefinder.ModuleFinder(excludes = excludes)
+        self.mf = PandaModuleFinder(excludes = excludes)
 
         # Attempt to import the explicit modules into the modulefinder.
         for mdef in includes:
@@ -1148,3 +1149,31 @@ class Freezer:
             return False
 
         return True
+
+class PandaModuleFinder(modulefinder.ModuleFinder):
+    """ We subclass ModuleFinder here, to add functionality for
+    finding the libpandaexpress etc. modules that interrogate
+    produces. """
+
+    def find_module(self, name, path, parent=None):
+        try:
+            return modulefinder.ModuleFinder.find_module(self, name, path, parent = parent)
+        except ImportError:
+            # It wasn't found.  Maybe it's one of ours.
+            if path:
+                # Only if we're not looking on a particular path,
+                # though.
+                raise
+
+        # This loop is roughly lifted from
+        # extension_native_helpers.Dtool_PreloadDLL().
+        filename = name + dll_suffix + dll_ext
+        for dir in sys.path + [sys.prefix]:
+            lib = os.path.join(dir, filename)
+            if os.path.exists(lib):
+                file = open(lib, 'rb')
+                return (file, lib, (dll_ext, 'rb', 3))
+
+        message = "DLL loader cannot find %s." % (name)
+        raise ImportError, message
+        

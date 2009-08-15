@@ -325,12 +325,22 @@ get_plugin(const string &download_url, const string &this_platform, bool force_d
   
   HTTPClient *http = HTTPClient::get_global_ptr();
   PT(HTTPChannel) channel = http->get_document(url);
-  contents_filename.make_dir();
-  if (!channel->download_to_file(contents_filename)) {
+
+  // First, download it to a temporary file.
+  Filename tempfile = Filename::temporary("", "p3d_");
+  if (!channel->download_to_file(tempfile)) {
     cerr << "Unable to download " << url << "\n";
-    return false;
+    tempfile.unlink();
+
+    // Couldn't download, but fall through and try to read the
+    // contents.xml file anyway.  Maybe it's good enough.
+  } else {
+    // Successfully downloaded; move the temporary file into place.
+    contents_filename.make_dir();
+    contents_filename.unlink();
+    tempfile.rename_to(contents_filename);
   }
-  
+
   return read_contents_file(contents_filename, download_url, this_platform);
 }
 

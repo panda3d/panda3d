@@ -1236,6 +1236,8 @@ report_package_progress(P3DPackage *package, double progress) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 report_package_done(P3DPackage *package, bool success) {
+  nout << "Done downloading " << package->get_package_name()
+       << ": success = " << success << "\n";
   if (success) {
     report_package_progress(package, 1.0);
     start_next_download();
