@@ -56,13 +56,17 @@ int Panda3D::
 run(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "u:p:fl:t:s:o:h";
 
+  // We prefix a "+" sign to tell gnu getopt not to parse options
+  // following the first not-option parameter.  (These will be passed
+  // into the sub-process.)
+  const char *optstr = "+mu:p:ft:s:o:h";
+
+  bool allow_multiple = false;
   string download_url = P3D_PLUGIN_DOWNLOAD;
   string this_platform = DTOOL_PLATFORM;
   bool force_download = false;
 
-  Filename output_filename;
   P3D_window_type window_type = P3D_WT_toplevel;
   int win_x = 0, win_y = 0;
   int win_width = 0, win_height = 0;
@@ -71,6 +75,10 @@ run(int argc, char *argv[]) {
 
   while (flag != EOF) {
     switch (flag) {
+    case 'm':
+      allow_multiple = true;
+      break;
+
     case 'u':
       download_url = optarg;
       break;
@@ -81,10 +89,6 @@ run(int argc, char *argv[]) {
 
     case 'f':
       force_download = true;
-      break;
-
-    case 'l':
-      output_filename = Filename::from_os_specific(optarg);
       break;
 
     case 't':
@@ -118,6 +122,7 @@ run(int argc, char *argv[]) {
 
     case 'h':
     case '?':
+    case '+':
     default:
       usage();
       return 1;
@@ -143,7 +148,24 @@ run(int argc, char *argv[]) {
     return 1;
   }
 
-  int num_instances = argc - 1;
+  int num_instance_filenames, num_instance_args;
+  char **instance_filenames, **instance_args;
+
+  if (allow_multiple) {
+    // With -m, the remaining arguments are all instance filenames.
+    num_instance_filenames = argc - 1;
+    instance_filenames = argv + 1;
+    num_instance_args = 0;
+    instance_args = argv + argc;
+
+  } else {
+    // Without -m, there is one instance filename, and everything else
+    // gets delivered to that instance.
+    num_instance_filenames = 1;
+    instance_filenames = argv + 1;
+    num_instance_args = argc - 2;
+    instance_args = argv + 2;
+  }
 
   P3D_window_handle parent_window;
   if (window_type == P3D_WT_embedded) {
@@ -168,8 +190,8 @@ run(int argc, char *argv[]) {
 #endif
 
     // Subdivide the window into num_x_spans * num_y_spans sub-windows.
-    int num_y_spans = int(sqrt((double)num_instances));
-    int num_x_spans = (num_instances + num_y_spans - 1) / num_y_spans;
+    int num_y_spans = int(sqrt((double)num_instance_filenames));
+    int num_x_spans = (num_instance_filenames + num_y_spans - 1) / num_y_spans;
     
     int inst_width = win_width / num_x_spans;
     int inst_height = win_height / num_y_spans;
@@ -177,7 +199,7 @@ run(int argc, char *argv[]) {
     for (int yi = 0; yi < num_y_spans; ++yi) {
       for (int xi = 0; xi < num_x_spans; ++xi) {
         int i = yi * num_x_spans + xi;
-        if (i >= num_instances) {
+        if (i >= num_instance_filenames) {
           continue;
         }
 
@@ -186,20 +208,20 @@ run(int argc, char *argv[]) {
         int inst_y = win_y + yi * inst_height;
 
         P3D_instance *inst = create_instance
-          (argv[i + 1], P3D_WT_embedded, 
+          (instance_filenames[i], P3D_WT_embedded, 
            inst_x, inst_y, inst_width, inst_height, parent_window,
-           output_filename);
+           instance_args, num_instance_args);
         _instances.insert(inst);
       }
     }
 
   } else {
     // Not an embedded window.  Create each window with the same parameters.
-    for (int i = 0; i < num_instances; ++i) {
+    for (int i = 0; i < num_instance_filenames; ++i) {
       P3D_instance *inst = create_instance
-        (argv[i + 1], window_type, 
+        (instance_filenames[i], window_type, 
          win_x, win_y, win_width, win_height, parent_window,
-         output_filename);
+         instance_args, num_instance_args);
       _instances.insert(inst);
     }
   }
@@ -579,12 +601,8 @@ make_parent_window(P3D_window_handle &parent_window,
 P3D_instance *Panda3D::
 create_instance(const string &arg, P3D_window_type window_type,
                 int win_x, int win_y, int win_width, int win_height,
-                P3D_window_handle parent_window,
-                const Filename &output_filename) {
-
-  string os_output_filename = output_filename.to_os_specific();
+                P3D_window_handle parent_window, char **args, int num_args) {
   P3D_token tokens[] = {
-    { "output_filename", os_output_filename.c_str() },
     { "src", arg.c_str() },
   };
   int num_tokens = sizeof(tokens) / sizeof(P3D_token);
@@ -645,18 +663,24 @@ void Panda3D::
 usage() {
   cerr
     << "\nUsage:\n"
-    << "   panda3d [opts] file.p3d [file_b.p3d file_c.p3d ...]\n\n"
+    << "   panda3d [opts] file.p3d [args]\n\n"
+    << "   panda3d -m [opts] file_a.p3d file_b.p3d [file_c.p3d ...]\n\n"
   
     << "This program is used to execute a Panda3D application bundle stored\n"
-    << "in a .p3d file.  Normally you only run one p3d bundle at a time,\n"
-    << "but it is possible to run multiple bundles simultaneously.\n\n"
+    << "in a .p3d file.  In the first form, without a -m option, it\n"
+    << "executes one application; remaining arguments following the\n"
+    << "application name are passed into the application.  In the second\n"
+    << "form, with a -m option, it can execute multiple applications\n"
+    << "simultaneously, though in this form arguments cannot be passed into\n"
+    << "the applications.\n\n"
 
     << "Options:\n\n"
 
-    << "  -l output.log\n"
-    << "    Specify the name of the file to receive the log output of the\n"
-    << "    plugin process(es).  The default is to send this output to the\n"
-    << "    console.\n\n"
+    << "  -m\n"
+    << "    Indicates that multiple application filenames will be passed on\n"
+    << "    the command line.  All applications will be run at the same\n"
+    << "    time, but additional arguments may not be passed to any of the\n"
+    << "    applictions.\n\n"
 
     << "  -t [toplevel|embedded|fullscreen|hidden]\n"
     << "    Specify the type of graphic window to create.  If you specify\n"

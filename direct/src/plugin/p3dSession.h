@@ -92,6 +92,7 @@ private:
   string _python_version;
   string _output_filename;
   string _python_root_dir;
+  string _start_dir;
 
   typedef map<int, P3DInstance *> Instances;
   Instances _instances;

@@ -1155,7 +1155,7 @@ report_package_info_ready(P3DPackage *package) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 start_next_download() {
-  while (_download_package_index < _downloading_packages.size()) {
+  while (_download_package_index < (int)_downloading_packages.size()) {
     P3DPackage *package = _downloading_packages[_download_package_index];
     if (package->get_failed()) {
       // Too bad.  TODO: fail.
@@ -1211,12 +1211,10 @@ start_next_download() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 report_package_progress(P3DPackage *package, double progress) {
-  if (_download_package_index >= _downloading_packages.size() ||
+  if (_download_package_index >= (int)_downloading_packages.size() ||
       package != _downloading_packages[_download_package_index]) {
-    // Got a report from an unexpected package.
-    nout << "Got download progress report from " << package->get_package_name()
-         << ", not at download head (head is " << _download_package_index
-         << ")\n";
+    // Quietly ignore a download progress report from an unexpected
+    // package.
     return;
   }
 

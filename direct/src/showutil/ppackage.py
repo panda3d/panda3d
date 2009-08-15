@@ -83,7 +83,7 @@ for opt, arg in opts:
     if opt == '-i':
         packager.installDir = Filename.fromOsSpecific(arg)
     elif opt == '-s':
-        packager.installSearch.append(Filename.fromOsSpecific(arg))
+        packager.installSearch.appendDirectory(Filename.fromOsSpecific(arg))
     elif opt == '-d':
         packager.persistDir = Filename.fromOsSpecific(arg)
     elif opt == '-p':
@@ -108,7 +108,7 @@ packageDef = Filename.fromOsSpecific(args[0])
 
 if not packager.installDir:
     packager.installDir = Filename('install')
-packager.installSearch = [packager.installDir] + packager.installSearch
+packager.installSearch.prependDirectory(packager.installDir)
 
 packager.setup()
 packages = packager.readPackageDef(packageDef)

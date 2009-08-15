@@ -45,7 +45,7 @@ P3DPackage(const string &package_name,
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   _package_fullname = _package_name;
-  _package_dir = inst_mgr->get_root_dir() + string("/") + _package_name;
+  _package_dir = inst_mgr->get_root_dir() + string("/packages/") + _package_name;
   if (!_package_platform.empty()) {
     _package_fullname += string("_") + _package_platform;
     _package_dir += string("/") + _package_platform;

@@ -65,6 +65,8 @@ class AppRunner(DirectObject):
         self.windowOpened = False
         self.windowPrc = None
 
+        self.fullDiskAccess = False
+
         self.Undefined = Undefined
         self.ConcreteStruct = ConcreteStruct
 
@@ -139,22 +141,36 @@ class AppRunner(DirectObject):
 
         vfs = VirtualFileSystem.getGlobalPtr()
 
-        # Clear *all* the mount points, including "/", so that we no
-        # longer access the disk directly.
-        vfs.unmountAll()
+        # Unmount directories we don't need.  This doesn't provide
+        # actual security, since it only disables this stuff for users
+        # who go through the vfs; a malicious programmer can always
+        # get to the underlying true file I/O operations.  Still, it
+        # can help prevent honest developers from accidentally getting
+        # stuck where they don't belong.
+        if not self.fullDiskAccess:
+            # Clear *all* the mount points, including "/", so that we
+            # no longer access the disk directly.
+            vfs.unmountAll()
 
-        # Make sure the directories on our standard Python path are mounted
-        # read-only, so we can still load Python.
-        for dirname in sys.path:
-            vfs.mount(dirname, dirname, vfs.MFReadOnly)
+            # Make sure the directories on our standard Python path
+            # are mounted read-only, so we can still load Python.
+            # Note: read-only actually doesn't have any effect on the
+            # vfs right now; careless application code can still write
+            # to these directories inadvertently.
+            for dirname in sys.path:
+                vfs.mount(dirname, dirname, vfs.MFReadOnly)
 
-        # Also mount some standard directories read-write (temporary and
-        # app-data directories).
-        tdir = Filename.temporary('', '')
-        for dirname in set([ tdir.getDirname(),
-                             Filename.getTempDirectory().cStr(),
-                             Filename.getUserAppdataDirectory().cStr(),
-                             Filename.getCommonAppdataDirectory().cStr() ]):
+            # Also mount some standard directories read-write
+            # (temporary and app-data directories).
+            tdir = Filename.temporary('', '')
+            for dirname in set([ tdir.getDirname(),
+                                 Filename.getTempDirectory().cStr(),
+                                 Filename.getUserAppdataDirectory().cStr(),
+                                 Filename.getCommonAppdataDirectory().cStr() ]):
+                vfs.mount(dirname, dirname, 0)
+
+            # And we might need the current working directory.
+            dirname = ExecutionEnvironment.getCwd()
             vfs.mount(dirname, dirname, 0)
 
         # Now set up Python to import this stuff.
@@ -257,11 +273,29 @@ class AppRunner(DirectObject):
             raise ArgumentError, "No such file: %s" % (p3dFilename)
 
         fname.makeAbsolute()
-        self.initPackedAppEnvironment()
-
         mf = Multifile()
         if not mf.openRead(fname):
             raise ArgumentError, "Not a Panda Multifile: %s" % (p3dFilename)
+
+        # Now load the p3dInfo file.
+        self.p3dInfo = None
+        self.p3dPackage = None
+        i = mf.findSubfile('p3d_info.xml')
+        if i >= 0:
+            stream = mf.openReadSubfile(i)
+            self.p3dInfo = readXmlStream(stream)
+            mf.closeReadSubfile(stream)
+        if self.p3dInfo:
+            self.p3dPackage = self.p3dInfo.FirstChildElement('package')
+
+        if self.p3dPackage:
+            fullDiskAccess = self.p3dPackage.Attribute('full_disk_access')
+            try:
+                self.fullDiskAccess = int(fullDiskAccess)
+            except ValueError:
+                pass
+
+        self.initPackedAppEnvironment()
 
         # Mount the Multifile under /mf, by convention.
         vfs.mount(mf, MultifileRoot, vfs.MFReadOnly)
@@ -277,19 +311,6 @@ class AppRunner(DirectObject):
                 pathname = '%s/%s' % (MultifileRoot, f)
                 data = open(pathname, 'r').read()
                 loadPrcFileData(pathname, data)
-
-        # Now load the p3dInfo file.
-        self.p3dInfo = None
-        self.p3dPackage = None
-        i = mf.findSubfile('p3d_info.xml')
-        if i >= 0:
-            stream = mf.openReadSubfile(i)
-            self.p3dInfo = readXmlStream(stream)
-            mf.closeReadSubfile(stream)
-        if self.p3dInfo:
-            p3dPackage = self.p3dInfo.FirstChild('package')
-            if p3dPackage:
-                self.p3dPackage = p3dPackage.ToElement()
 
         self.gotP3DFilename = True
 

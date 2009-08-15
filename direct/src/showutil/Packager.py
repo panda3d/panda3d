@@ -9,6 +9,7 @@ import glob
 import marshal
 import new
 import string
+import types
 from direct.showbase import Loader
 from direct.showutil import FreezeTool
 from direct.directnotify.DirectNotifyGlobal import *
@@ -31,11 +32,13 @@ class Packager:
     class PackFile:
         def __init__(self, package, filename,
                      newName = None, deleteTemp = False,
-                     compress = None, extract = None, executable = None):
+                     explicit = False, compress = None, extract = None,
+                     executable = None):
             assert isinstance(filename, Filename)
             self.filename = Filename(filename)
             self.newName = newName
             self.deleteTemp = deleteTemp
+            self.explicit = explicit
             self.compress = compress
             self.extract = extract
             self.executable = executable
@@ -58,7 +61,7 @@ class Packager:
 
             if self.executable:
                 # Look up the filename along the system PATH, if necessary.
-                self.filename.resolveFilename(packager.dllPath)
+                self.filename.resolveFilename(packager.executablePath)
 
             # Convert the filename to an unambiguous filename for
             # searching.
@@ -73,19 +76,27 @@ class Packager:
             if self.newName in package.skipFilenames:
                 return True
 
-            basename = Filename(self.newName).getBasename()
-            if not package.packager.caseSensitive:
-                basename = basename.lower()
-            if basename in package.packager.excludeSystemFiles:
-                return True
+            if not self.explicit:
+                # Make sure it's not one of our auto-excluded system
+                # files.  (But only make this check if this file was
+                # not explicitly added.)
 
-            for exclude in package.packager.excludeSystemGlobs:
-                if exclude.matches(basename):
+                basename = Filename(self.newName).getBasename()
+                if not package.packager.caseSensitive:
+                    basename = basename.lower()
+                if basename in package.packager.excludeSystemFiles:
                     return True
+                for exclude in package.packager.excludeSystemGlobs:
+                    if exclude.matches(basename):
+                        return True
 
-            for exclude in package.excludedFilenames:
-                if exclude.matches(self.filename):
-                    return True
+                # Also check if it was explicitly excluded.  As above,
+                # omit this check for an explicitly-added file: if you
+                # both include and exclude a file, the file is
+                # included.
+                for exclude in package.excludedFilenames:
+                    if exclude.matches(self.filename):
+                        return True
 
             return False
                 
@@ -115,11 +126,14 @@ class Packager:
             self.version = None
             self.platform = None
             self.p3dApplication = False
-            self.displayName = None
             self.compressionLevel = 0
             self.importedMapsDir = 'imported_maps'
             self.mainModule = None
             self.requires = []
+
+            # This is the set of config variables assigned to the
+            # package.
+            self.configs = {}
 
             # This is the set of files and modules, already included
             # by required packages, that we can skip.
@@ -369,7 +383,7 @@ class Packager:
                     filename = Filename.fromOsSpecific(filename)
                     filename.resolveFilename(path)
                     self.addFile(filename, newName = filename.getBasename(),
-                                 executable = True)
+                                 explicit = False, executable = True)
                     
         def __parseDependenciesWindows(self, tempFile):
             """ Reads the indicated temporary file, the output from
@@ -451,7 +465,7 @@ class Packager:
                     filename = Filename.fromOsSpecific(filename)
                     filename.resolveFilename(path)
                     self.addFile(filename, newName = filename.getBasename(),
-                                 executable = True)
+                                 explicit = False, executable = True)
                     
         def __parseDependenciesOSX(self, tempFile):
             """ Reads the indicated temporary file, the output from
@@ -522,7 +536,7 @@ class Packager:
                     filename = Filename.fromOsSpecific(filename)
                     filename.resolveFilename(path)
                     self.addFile(filename, newName = filename.getBasename(),
-                                 executable = True)
+                                 explicit = False, executable = True)
                     
         def __parseDependenciesPosix(self, tempFile):
             """ Reads the indicated temporary file, the output from
@@ -560,7 +574,8 @@ class Packager:
                     newName += '/' + filename.getBasename()
                 # Sometimes the PYTHONPATH has the wrong case in it.
                 filename.makeTrueCase()
-                self.addFile(filename, newName = newName, extract = True)
+                self.addFile(filename, newName = newName,
+                             explicit = False, extract = True)
             freezer.extras = []
 
 
@@ -579,10 +594,13 @@ class Packager:
             if self.version:
                 xpackage.SetAttribute('version', self.version)
 
-            if self.displayName:
-                xpackage.SetAttribute('display_name', self.displayName)
-
             xpackage.SetAttribute('main_module', self.mainModule)
+
+            for variable, value in self.configs.items():
+                if isinstance(value, types.UnicodeType):
+                    xpackage.SetAttribute(variable, value.encode('utf-8'))
+                else:
+                    xpackage.SetAttribute(variable, str(value))
 
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
@@ -628,8 +646,11 @@ class Packager:
             if self.version:
                 xpackage.SetAttribute('version', self.version)
 
-            if self.displayName:
-                xpackage.SetAttribute('display_name', self.displayName)
+            for variable, value in self.configs.items():
+                if isinstance(value, types.UnicodeType):
+                    xpackage.SetAttribute(variable, value.encode('utf-8'))
+                else:
+                    xpackage.SetAttribute(variable, str(value))
 
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
@@ -872,7 +893,8 @@ class Packager:
                     self.importedMapsDir, filename.getBasenameWoExtension(),
                     uniqueId, filename.getExtension())
 
-            self.addFile(filename, newName = newName, compress = False)
+            self.addFile(filename, newName = newName, explicit = False,
+                         compress = False)
 
         def addComponent(self, file):
             if file.platformSpecific:
@@ -916,24 +938,25 @@ class Packager:
         self.persistDir = None
 
         # A search list of directories and/or URL's to search for
-        # installed packages.
-        self.installSearch = []
+        # installed packages.  We query it from a config variable
+        # initially, but we may also be extending it at runtime.
+        self.installSearch = ConfigVariableSearchPath('pdef-path')
 
         # The system PATH, for searching dll's and exe's.
-        self.dllPath = DSearchPath()
+        self.executablePath = DSearchPath()
         if PandaSystem.getPlatform().startswith('win'):
-            self.addWindowsSearchPath(self.dllPath, "PATH")
+            self.addWindowsSearchPath(self.executablePath, "PATH")
         elif PandaSystem.getPlatform().startswith('osx'):
-            self.addPosixSearchPath(self.dllPath, "DYLD_LIBRARY_PATH")
-            self.addPosixSearchPath(self.dllPath, "LD_LIBRARY_PATH")
-            self.addPosixSearchPath(self.dllPath, "PATH")
-            self.dllPath.appendDirectory('/lib')
-            self.dllPath.appendDirectory('/usr/lib')
+            self.addPosixSearchPath(self.executablePath, "DYLD_LIBRARY_PATH")
+            self.addPosixSearchPath(self.executablePath, "LD_LIBRARY_PATH")
+            self.addPosixSearchPath(self.executablePath, "PATH")
+            self.executablePath.appendDirectory('/lib')
+            self.executablePath.appendDirectory('/usr/lib')
         else:
-            self.addPosixSearchPath(self.dllPath, "LD_LIBRARY_PATH")
-            self.addPosixSearchPath(self.dllPath, "PATH")
-            self.dllPath.appendDirectory('/lib')
-            self.dllPath.appendDirectory('/usr/lib')
+            self.addPosixSearchPath(self.executablePath, "LD_LIBRARY_PATH")
+            self.addPosixSearchPath(self.executablePath, "PATH")
+            self.executablePath.appendDirectory('/lib')
+            self.executablePath.appendDirectory('/usr/lib')
 
         # The platform string.
         self.platform = PandaSystem.getPlatform()
@@ -1286,6 +1309,32 @@ class Packager:
         value = ExecutionEnvironment.expandString(value.strip())
         ExecutionEnvironment.setEnvironmentVariable(variable, value)
 
+    def parse_model_path(self, words):
+        """
+        model_path directory
+        """
+        newName = None
+
+        try:
+            command, dirName = words
+        except ValueError:
+            raise ArgumentError
+
+        getModelPath().appendDirectory(Filename.fromOsSpecific(dirName))
+
+    def parse_reset_model_path(self, words):
+        """
+        reset_model_path
+        """
+        newName = None
+
+        try:
+            (command,) = words
+        except ValueError:
+            raise ArgumentError
+
+        getModelPath().clear()
+
     def parse_begin_package(self, words):
         """
         begin_package packageName [version=v]
@@ -1338,20 +1387,23 @@ class Packager:
 
         self.endPackage(packageName, p3dApplication = True)
 
-    def parse_display_name(self, words):
+    def parse_config(self, words):
         """
-        display_name "name"
+        config variable=value
         """
-
+        
         try:
-            command, displayName = words
+            command, assign = words
         except ValueError:
-            raise ArgumentError
+            raise ArgumentNumber
+        
+        try:
+            variable, value = assign.split('=', 1)
+        except ValueError:
+            raise PackagerError, 'Equals sign required in assignment'
 
-        if not self.currentPackage:
-            raise OutsideOfPackageError
-
-        self.currentPackage.displayName = displayName
+        variable = variable.strip()
+        self.config(variable, value)
 
     def parse_require(self, words):
         """
@@ -1367,32 +1419,6 @@ class Packager:
 
         version = args.get('version', None)
         self.require(packageName, version = version)
-
-    def parse_model_path(self, words):
-        """
-        model_path directory
-        """
-        newName = None
-
-        try:
-            command, dirName = words
-        except ValueError:
-            raise ArgumentError
-
-        getModelPath().appendDirectory(Filename.fromOsSpecific(dirName))
-
-    def parse_reset_model_path(self, words):
-        """
-        reset_model_path
-        """
-        newName = None
-
-        try:
-            (command,) = words
-        except ValueError:
-            raise ArgumentError
-
-        getModelPath().clear()
 
     def parse_module(self, words):
         """
@@ -1624,10 +1650,10 @@ class Packager:
             return package
 
         # Look on the searchlist.
-        for path in self.installSearch:
-            package = self.__scanPackageDir(path, packageName, platform, version, requires = requires)
+        for dirname in self.installSearch.getDirectories():
+            package = self.__scanPackageDir(dirname, packageName, platform, version, requires = requires)
             if not package:
-                package = self.__scanPackageDir(path, packageName, None, version, requires = requires)
+                package = self.__scanPackageDir(dirname, packageName, None, version, requires = requires)
 
             if package:
                 package = self.packages.setdefault((package.packageName, package.platform, package.version), package)
@@ -1727,9 +1753,9 @@ class Packager:
         if not requires:
             return True
 
-        # Really, we only check the panda3d package for now.  The
-        # other packages will list this as a dependency, and this is
-        # all that matters.
+        # Really, we only check the panda3d package.  The other
+        # packages will list this as a dependency, and this is all
+        # that matters.
 
         panda1 = self.__findPackageInList('panda3d', [package] + package.requires)
         panda2 = self.__findPackageInList('panda3d', requires)
@@ -1759,6 +1785,17 @@ class Packager:
             return package
 
         return None
+
+    def config(self, variable, value):
+        """ Sets the indicated p3d config variable to the given value.
+        This will be written into the p3d_info.xml file at the top of
+        the application, or to the package desc file for a package
+        file. """
+
+        if not self.currentPackage:
+            raise OutsideOfPackageError
+
+        self.currentPackage.configs[variable] = value
 
     def require(self, packageName, version = None):
         """ Indicates a dependency on the named package, supplied as
@@ -1878,7 +1915,7 @@ class Packager:
             basename = freezer.generateCode(basename, compileToExe = compileToExe)
 
             package.addFile(Filename(basename), newName = dirname + basename,
-                            deleteTemp = True, extract = True)
+                            deleteTemp = True, explicit = True, extract = True)
             package.addExtensionModules()
             if not package.platform:
                 package.platform = PandaSystem.getPlatform()
@@ -1924,6 +1961,7 @@ class Packager:
         files = glob.glob(filename.toOsSpecific())
         if not files:
             files = [filename.toOsSpecific()]
+        explicit = (len(files) == 1)
 
         newName = None
         prefix = ''
@@ -1946,7 +1984,7 @@ class Packager:
                 
             self.currentPackage.addFile(
                 filename, newName = name, extract = extract,
-                executable = executable)
+                explicit = explicit, executable = executable)
 
     def exclude(self, filename):
         """ Marks the indicated filename as not to be included.  The
@@ -1996,7 +2034,8 @@ class Packager:
         # It's a file name.  Add it.
         ext = filename.getExtension()
         if ext == 'py':
-            self.currentPackage.addFile(filename, newName = newName)
+            self.currentPackage.addFile(filename, newName = newName,
+                                        explicit = False)
         else:
             if ext == 'pz':
                 # Strip off an implicit .pz extension.
@@ -2006,4 +2045,5 @@ class Packager:
                 ext = newFilename.getExtension()
 
             if ext in self.knownExtensions:
-                self.currentPackage.addFile(filename, newName = newName)
+                self.currentPackage.addFile(filename, newName = newName,
+                                            explicit = False)

@@ -25,6 +25,9 @@
 #include "p3dConcreteSequence.h"
 #include "p3dConcreteStruct.h"
 #include "binaryXml.h"
+#include "mkdir_complete.h"
+
+#include <ctype.h>
 
 #ifndef _WIN32
 #include <fcntl.h>
@@ -49,6 +52,7 @@ P3DSession(P3DInstance *inst) {
   _session_key = inst->get_session_key();
   _python_version = inst->get_python_version();
 
+  _start_dir = inst_mgr->get_root_dir() + "/start";
   _p3dpython_running = false;
 
   _started_read_thread = false;
@@ -660,6 +664,28 @@ start_p3dpython(P3DInstance *inst) {
 
   _python_root_dir = inst->_panda3d->get_package_dir();
 
+  mkdir_complete(_start_dir, nout);
+
+  // Build up a search path that includes all of the required packages
+  // that have already been installed.
+  string search_path;
+  size_t pi = 0;
+  assert(pi < inst->_packages.size());
+  search_path = inst->_packages[pi]->get_package_dir();
+  ++pi;
+  while (pi < inst->_packages.size()) {
+#ifdef _WIN32
+    search_path += ';';
+#else
+    search_path += ':';
+#endif  // _WIN32
+
+    search_path += inst->_packages[pi]->get_package_dir();
+    ++pi;
+  }
+
+  nout << "Search path is " << search_path << "\n";
+
   string p3dpython = P3D_PLUGIN_P3DPYTHON;
   if (p3dpython.empty()) {
     p3dpython = _python_root_dir + "/p3dpython";
@@ -692,42 +718,58 @@ start_p3dpython(P3DInstance *inst) {
 
   // Define some new environment variables.
   env += "PATH=";
-  env += _python_root_dir;
+  env += search_path;
   env += '\0';
 
   env += "LD_LIBRARY_PATH=";
-  env += _python_root_dir;
+  env += search_path;
   env += '\0';
 
   env += "DYLD_LIBRARY_PATH=";
-  env += _python_root_dir;
+  env += search_path;
   env += '\0';
 
   env += "PYTHONPATH=";
-  env += _python_root_dir;
+  env += search_path;
   env += '\0';
 
   env += "PYTHONHOME=";
   env += _python_root_dir;
   env += '\0';
 
-  env += "PRC_DIR=";
-  env += _python_root_dir;
+  env += "PRC_PATH=";
+  env += search_path;
   env += '\0';
 
-  env += "PANDA_PRC_DIR=";
-  env += _python_root_dir;
+  env += "PANDA_PRC_PATH=";
+  env += search_path;
   env += '\0';
+    
+  // Define each package's root directory in an environment variable
+  // named after the package, for the convenience of the packages in
+  // setting up their config files.
+  for (size_t pi = 0; pi < inst->_packages.size(); ++pi) {
+    P3DPackage *package = inst->_packages[pi];
+    const string package_name = package->get_package_name();
+    for (string::const_iterator si = package_name.begin();
+         si != package_name.end();
+         ++si) {
+      env += toupper(*si);
+    }
+    env += string("_ROOT=");
+    env += package->get_package_dir();
+    env += '\0';
+  }
 
   nout << "Attempting to start python from " << p3dpython << "\n";
 #ifdef _WIN32
   _p3dpython_handle = win_create_process
-    (p3dpython, _python_root_dir, env, _output_filename,
+    (p3dpython, _start_dir, env, _output_filename,
      _pipe_read, _pipe_write);
   bool started_p3dpython = (_p3dpython_handle != INVALID_HANDLE_VALUE);
 #else
   _p3dpython_pid = posix_create_process
-    (p3dpython, _python_root_dir, env, _output_filename,
+    (p3dpython, _start_dir, env, _output_filename,
      _pipe_read, _pipe_write);
   bool started_p3dpython = (_p3dpython_pid > 0);
 #endif

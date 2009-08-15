@@ -78,7 +78,7 @@ def makePackedApp(args):
         elif option == '-r':
             requires.append(value)
         elif option == '-s':
-            packager.installSearch.append(Filename.fromOsSpecific(value))
+            packager.installSearch.appendDirectory(Filename.fromOsSpecific(value))
         elif option == '-x':
             versionIndependent = True
         elif option == '-h':

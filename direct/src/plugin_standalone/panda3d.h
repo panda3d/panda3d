@@ -59,7 +59,7 @@ private:
                                 int win_x, int win_y, int win_width, 
                                 int win_height,
                                 P3D_window_handle parent_window,
-                                const Filename &output_filename);
+                                char **args, int num_args);
   void delete_instance(P3D_instance *instance);
 
   void usage();
