@@ -65,6 +65,10 @@
 
 class TypedObject;
 
+#ifdef HAVE_PYTHON
+#include "Python.h"
+#endif
+
 ////////////////////////////////////////////////////////////////////
 //       Class : TypeHandle
 // Description : TypeHandle is the identifier used to differentiate
@@ -97,6 +101,10 @@ PUBLISHED:
 
   INLINE TypeHandle();
   INLINE TypeHandle(const TypeHandle &copy);
+
+#ifdef HAVE_PYTHON
+  static PyObject *make(PyObject *classobj);
+#endif  // HAVE_PYTHON
 
   INLINE bool operator == (const TypeHandle &other) const;
   INLINE bool operator != (const TypeHandle &other) const;

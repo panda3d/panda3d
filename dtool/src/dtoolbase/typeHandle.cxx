@@ -19,6 +19,26 @@
 // This is initialized to zero by static initialization.
 TypeHandle TypeHandle::_none;
 
+#ifdef HAVE_PYTHON
+////////////////////////////////////////////////////////////////////
+//     Function: TypeHandle::make
+//       Access: Published
+//  Description: This special method allows coercion to a TypeHandle
+//               from a Python class object or instance.  It simply
+//               attempts to call classobj.getClassType(), and returns
+//               that value (or raises an exception if that method
+//               doesn't work).
+//
+//               This method allows a Python class object to be used
+//               anywhere a TypeHandle is expected by the C++
+//               interface.
+////////////////////////////////////////////////////////////////////
+PyObject *TypeHandle::
+make(PyObject *classobj) {
+  return PyObject_CallMethod(classobj, (char *)"getClassType", (char *)"");
+}
+#endif  // HAVE_PYTHON
+
 #ifdef DO_MEMORY_USAGE
 ////////////////////////////////////////////////////////////////////
 //     Function: TypeHandle::get_memory_usage
