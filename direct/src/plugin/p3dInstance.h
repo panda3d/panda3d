@@ -27,6 +27,10 @@
 #include <CoreFoundation/CoreFoundation.h>
 #endif
 
+#ifndef _WIN32
+#include <sys/time.h>
+#endif
+
 #include <deque>
 #include <map>
 
@@ -48,6 +52,7 @@ public:
               const P3D_token tokens[], size_t num_tokens, void *user_data);
   ~P3DInstance();
 
+  void set_p3d_url(const string &p3d_url);
   void set_p3d_filename(const string &p3d_filename);
   inline const P3DFileParams &get_fparams() const;
 
@@ -95,10 +100,17 @@ private:
   class SplashDownload : public P3DFileDownload {
   public:
     SplashDownload(P3DInstance *inst);
-
   protected:
     virtual void download_finished(bool success);
-
+  private:
+    P3DInstance *_inst;
+  };
+  class InstanceDownload : public P3DFileDownload {
+  public:
+    InstanceDownload(P3DInstance *inst);
+  protected:
+    virtual void download_progress();
+    virtual void download_finished(bool success);
   private:
     P3DInstance *_inst;
   };
@@ -114,8 +126,10 @@ private:
   void make_splash_window();
   void report_package_info_ready(P3DPackage *package);
   void start_next_download();
+  void report_instance_progress(double progress);
   void report_package_progress(P3DPackage *package, double progress);
   void report_package_done(P3DPackage *package, bool progress);
+  void set_install_label(const string &install_label);
 
   void paint_window();
   void add_modifier_flags(unsigned int &swb_flags, int modifiers);
@@ -158,7 +172,17 @@ private:
 #endif  // __APPLE__
 
   P3DSplashWindow *_splash_window;
+  string _install_label;
   bool _instance_window_opened;
+
+  // Members for deciding whether and when to display the progress bar
+  // for downloading the initial instance data.
+#ifdef _WIN32
+  int _start_dl_instance_tick;
+#else
+  struct timeval _start_dl_instance_timeval;
+#endif
+  bool _show_dl_instance_progress;
 
   typedef vector<P3DPackage *> Packages;
   Packages _packages;

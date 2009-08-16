@@ -28,7 +28,6 @@ public:
   enum RequestType {
     RT_contents_file,
     RT_core_dll,
-    RT_instance_data,
     RT_user
   };
 

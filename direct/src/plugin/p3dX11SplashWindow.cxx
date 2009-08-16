@@ -57,7 +57,6 @@ P3DX11SplashWindow(P3DInstance *inst) :
   _resized_width = 0;
   _resized_height = 0;
   _graphics_context = None;
-  _got_install = false;
   _image_filename_changed = false;
   _image_filename_temp = false;
   _install_label_changed = false;
@@ -366,19 +365,17 @@ subprocess_run() {
     _image_filename_changed = false;
 
     if (override || have_event || install_label != prev_label) {
-      redraw(install_label);
       override = false;
-
-      // Don't draw the progress bar unless we have some text in
-      // install_label.
-      if (!install_label.empty()) {
+      
+      if (install_progress != 0.0) {
+        redraw(install_label);
         XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
                        (unsigned int)(install_progress * (_width - 24)), 7);
       }
       XFlush(_display);
 
     } else if (install_progress != prev_progress) {
-      if (!install_label.empty()) {
+      if (install_progress != 0.0) {
         XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
                        (unsigned int)(install_progress * (_width - 24)), 7);
       }
@@ -457,7 +454,6 @@ receive_command() {
         double install_progress = 0.0;
         xcommand->Attribute("install_progress", &install_progress);
 
-        _got_install = true;
         _install_progress = install_progress;
       }
     }
@@ -513,7 +509,7 @@ redraw(string label) {
     XClearArea(_display, _window, 10, _height - 20, _width - 20, 10, false);
   }
 
-  if (!label.empty()) {
+  if (_install_progress != 0.0) {
     // Draw the rest - the label and the progress bar outline.
     int text_width = label.size() * 6;
     int text_height = 10;
@@ -587,8 +583,6 @@ setup_gc() {
     return;
   }
 
-  string install_label = _install_label;
-  double install_progress = _install_progress;
   _install_label_changed = false;
   
   XFontStruct* fs = XLoadQueryFont(_display, "6x13");

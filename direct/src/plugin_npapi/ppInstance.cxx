@@ -61,8 +61,7 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
 
   _root_dir = find_root_dir();
 
-  _started_instance_data = false;
-  _got_instance_data = false;
+  _got_instance_url = false;
   _got_window = false;
   _python_window_open = false;
 }
@@ -180,15 +179,18 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
     // This is an unsolicited stream.  Assume the first unsolicited
     // stream we receive is the instance data; any other unsolicited
     // stream is an error.
-    if (!_started_instance_data) {
-      stream->notifyData = new PPDownloadRequest(PPDownloadRequest::RT_instance_data);
-      *stype = NP_ASFILEONLY;
-      _started_instance_data = true;
-      return NPERR_NO_ERROR;
+
+    // We don't let Mozilla finish downloading the instance data, but
+    // we do extract its URL to pass to the instance.
+    if (!_got_instance_url && stream->url != NULL) {
+      _got_instance_url = true;
+      _instance_url = stream->url;
+      if (_p3d_inst != NULL) {
+        P3D_instance_start(_p3d_inst, false, _instance_url.c_str());
+      }
     }
 
-    // This is an unexpected unsolicited stream.  (Firefox seems to
-    // give us the instance data twice for some reason.)
+    // Don't finish downloading the unsolicited stream.
     return NPERR_GENERIC_ERROR;
   }
 
@@ -793,17 +795,6 @@ downloaded_file(PPDownloadRequest *req, const string &filename) {
     downloaded_plugin(filename);
     break;
 
-  case PPDownloadRequest::RT_instance_data:
-    // This is the instance data, e.g. the p3d filename.  Now we can
-    // launch the instance.
-    _got_instance_data = true;
-    _p3d_filename = filename;
-
-    if (_p3d_inst != NULL) {
-      P3D_instance_start(_p3d_inst, _p3d_filename.c_str());
-    }
-    break;
-
   case PPDownloadRequest::RT_user:
     // Normally, RT_user requests won't come here, unless we
     // short-circuited the browser by "downloading" a file:// url.  In
@@ -987,8 +978,8 @@ create_instance() {
       _script_object->set_p3d_object(obj);
     }
 
-    if (_got_instance_data) {
-      P3D_instance_start(_p3d_inst, _p3d_filename.c_str());
+    if (_got_instance_url) {
+      P3D_instance_start(_p3d_inst, false, _instance_url.c_str());
     }
 
     if (_got_window) {
@@ -1314,6 +1305,7 @@ is_done() const {
 void PPInstance::StreamingFileData::
 thread_run() {
   static const size_t buffer_size = 81920;
+  //static const size_t buffer_size = 512;
   char buffer[buffer_size];
 
   _file.read(buffer, buffer_size);

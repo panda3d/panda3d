@@ -216,21 +216,35 @@ create_instance(P3D_request_ready_func *func,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::start_instance
+//     Function: P3DInstanceManager::set_p3d_filename
 //       Access: Public
-//  Description: Actually starts the instance running.  Before this
-//               call, the instance is in an indeterminate state.  It
-//               is an error to call this more than once for a
-//               particular instance.
+//  Description: Sets the p3d_filename (or p3d_url) on a particular
+//               instance.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
-start_instance(P3DInstance *inst, const string &p3d_filename) {
+set_p3d_filename(P3DInstance *inst, bool is_local,
+                 const string &p3d_filename) {
   if (inst->is_started()) {
     nout << "Instance started twice: " << inst << "\n";
     return false;
   }
-  inst->set_p3d_filename(p3d_filename);
+  if (is_local) {
+    inst->set_p3d_filename(p3d_filename);
+  } else {
+    inst->set_p3d_url(p3d_filename);
+  }
+}
 
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::start_instance
+//       Access: Public
+//  Description: Actually starts the instance running on a particular
+//               session.  This is called by the P3DInstance when it
+//               successfully loads its instance file.
+////////////////////////////////////////////////////////////////////
+bool P3DInstanceManager::
+start_instance(P3DInstance *inst) {
   P3DSession *session;
   Sessions::iterator si = _sessions.find(inst->get_session_key());
   if (si == _sessions.end()) {

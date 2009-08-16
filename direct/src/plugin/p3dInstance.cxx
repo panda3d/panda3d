@@ -84,6 +84,7 @@ P3DInstance(P3D_request_ready_func *func,
 #endif  // __APPLE__
 
   // Set some initial properties.
+  _panda_script_object->set_float_property("instanceDownloadProgress", 0.0);
   _panda_script_object->set_float_property("downloadProgress", 0.0);
   _panda_script_object->set_string_property("downloadPackageName", "");
   _panda_script_object->set_string_property("downloadPackageDisplayName", "");
@@ -148,6 +149,44 @@ P3DInstance::
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::set_p3d_url
+//       Access: Public
+//  Description: Specifies a URL that should be contacted to download
+//               the instance data.  Normally this, or
+//               set_p3d_filename(), is only called once.
+//
+//               The instance data at the other end of this URL is
+//               key.  We can't start the instance until we have
+//               downloaded the instance file and examined the
+//               p3d_info.xml, and we know what Python version we need
+//               and so forth.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+set_p3d_url(const string &p3d_url) {
+  // Make a temporary file to receive the instance data.
+  char *name = tempnam(NULL, "p3d_");
+  string filename = name;
+  free(name);
+
+  // Mark the time we started downloading, so we'll know when to set
+  // the install label.
+#ifdef _WIN32
+  _start_dl_instance_tick = GetTickCount();
+#else
+  gettimeofday(&_start_dl_instance_timeval, NULL);
+#endif
+  _show_dl_instance_progress = false;
+
+  // Start downloading the data.
+  InstanceDownload *download = new InstanceDownload(this);
+  download->set_url(p3d_url);
+  download->set_filename(filename);
+
+  _panda_script_object->set_string_property("status", "downloading_instance");
+  start_download(download);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::set_p3d_filename
 //       Access: Public
 //  Description: Specifies the file that contains the instance data.
@@ -157,6 +196,8 @@ void P3DInstance::
 set_p3d_filename(const string &p3d_filename) {
   _got_fparams = true;
   _fparams.set_p3d_filename(p3d_filename);
+
+  _panda_script_object->set_float_property("instanceDownloadProgress", 1.0);
 
   // This also sets up some internal data based on the contents of the
   // above file and the associated tokens.
@@ -184,6 +225,9 @@ set_p3d_filename(const string &p3d_filename) {
   // plugin has read its parameters and is ready to be queried (even
   // if Python has not yet started).
   send_notify("onpluginload");
+
+  // Now we're ready to start.
+  inst_mgr->start_instance(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1082,6 +1126,7 @@ make_splash_window() {
   assert(_splash_window == NULL);
 
   _splash_window = new SplashWindowType(this);
+  _splash_window->set_install_label(_install_label);
 
   string splash_image_url = _fparams.lookup_token("splash_img");
   if (!_fparams.has_token("splash_img")) {
@@ -1139,6 +1184,9 @@ report_package_info_ready(P3DPackage *package) {
          << " packages, total " << _total_download_size
          << " bytes required.\n";
 
+    if (_splash_window != NULL) {
+      _splash_window->set_install_progress(0.0);
+    }
     _panda_script_object->set_string_property("status", "downloading");
     send_notify("ondownloadbegin");
 
@@ -1170,9 +1218,7 @@ start_next_download() {
       }
       _panda_script_object->set_string_property("downloadPackageName", package->get_package_name());
       _panda_script_object->set_string_property("downloadPackageDisplayName", name);
-      if (_splash_window != NULL) {
-        _splash_window->set_install_label("Installing " + name);
-      }
+      set_install_label("Installing " + name);
 
       nout << "Downloading " << package->get_package_name()
            << ", package " << _download_package_index + 1
@@ -1205,9 +1251,47 @@ start_next_download() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::report_instance_progress
+//       Access: Private
+//  Description: Notified as the instance file is downloaded.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+report_instance_progress(double progress) {
+  if (!_show_dl_instance_progress) {
+    // If we haven't yet set the download label, set it after a full
+    // second has elapsed.  We don't want to set it too soon, because
+    // we're not really sure how long it will take to download (the
+    // instance file might be already in the browser cache).
+#ifdef _WIN32
+    int now = GetTickCount();
+    double elapsed = (double)(now - _start_dl_instance_tick) * 0.001;
+#else
+    struct timeval now;
+    gettimeofday(&now, NULL);
+    double elapsed = (double)(now.tv_sec - _start_dl_instance_timeval.tv_sec) +
+      (double)(now.tv_usec - _start_dl_instance_timeval.tv_usec) / 1000000.0;
+#endif
+
+    // Put up the progress bar after 2 seconds have elapsed, if we've
+    // still got some distance to go; or after 5 seconds have elapsed
+    // regardless.
+    if ((elapsed > 2.0 && progress < 0.7) ||
+        (elapsed > 5.0)) {
+      _show_dl_instance_progress = true;
+    }
+  }
+
+  if (_splash_window != NULL && _show_dl_instance_progress) {
+    _splash_window->set_install_progress(progress);
+  }
+  _panda_script_object->set_float_property("instanceDownloadProgress", progress);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::report_package_progress
 //       Access: Private
-//  Description: Notified as a required package is downloaded.
+//  Description: Notified as the packages required by the instance
+//               file are downloaded.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 report_package_progress(P3DPackage *package, double progress) {
@@ -1243,6 +1327,20 @@ report_package_done(P3DPackage *package, bool success) {
     start_next_download();
   } else {
     // TODO: fail.
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::set_install_label
+//       Access: Private
+//  Description: Sets the install label that will be displayed on the
+//               splash window, if it is present.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+set_install_label(const string &install_label) {
+  _install_label = install_label;
+  if (_splash_window != NULL) {
+    _splash_window->set_install_label(_install_label);
   }
 }
 
@@ -1488,5 +1586,44 @@ download_finished(bool success) {
     if (_inst->_splash_window != NULL) {
       _inst->_splash_window->set_image_filename(get_filename(), true);
     }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::InstanceDownload::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DInstance::InstanceDownload::
+InstanceDownload(P3DInstance *inst) :
+  _inst(inst)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::InstanceDownload::download_progress
+//       Access: Protected, Virtual
+//  Description: Intended to be overloaded to generate an occasional
+//               callback as new data comes in.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::InstanceDownload::
+download_progress() {
+  _inst->report_instance_progress(get_download_progress());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::InstanceDownload::download_finished
+//       Access: Protected, Virtual
+//  Description: Intended to be overloaded to generate a callback
+//               when the download finishes, either successfully or
+//               otherwise.  The bool parameter is true if the
+//               download was successful.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::InstanceDownload::
+download_finished(bool success) {
+  P3DFileDownload::download_finished(success);
+  if (success) {
+    // We've successfully downloaded the instance data.
+    _inst->set_p3d_filename(get_filename());
   }
 }

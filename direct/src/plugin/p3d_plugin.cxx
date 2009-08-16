@@ -116,7 +116,8 @@ P3D_new_instance(P3D_request_ready_func *func,
 }
 
 bool
-P3D_instance_start(P3D_instance *instance, const char *p3d_filename) {
+P3D_instance_start(P3D_instance *instance, bool is_local, 
+                   const char *p3d_filename) {
   nout << "instance_start\n";
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   if (p3d_filename == NULL) {
@@ -127,7 +128,10 @@ P3D_instance_start(P3D_instance *instance, const char *p3d_filename) {
   P3DInstance *inst = inst_mgr->validate_instance(instance);
   bool result = false;
   if (inst != NULL) {
-    result = inst_mgr->start_instance(inst, p3d_filename);
+    // We don't actually start it immediately; the instance will have
+    // to download the p3d url and read it, reading the python
+    // version, before it can start.
+    result = inst_mgr->set_p3d_filename(inst, is_local, p3d_filename);
   }
   RELEASE_LOCK(_api_lock);
   return result;

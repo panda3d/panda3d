@@ -79,7 +79,7 @@ extern "C" {
    (below). This number will be incremented whenever there are changes
    to any of the interface specifications defined in this header
    file. */
-#define P3D_API_VERSION 6
+#define P3D_API_VERSION 7
 
 /************************ GLOBAL FUNCTIONS **************************/
 
@@ -240,14 +240,14 @@ P3D_new_instance_func(P3D_request_ready_func *func,
    P3D_new_instance(); it actually starts the instance running.
    Before this call, the instance will be in an indeterminate state.
 
-   For p3d_filename pass the name of a file on disk that contains the
-   contents of the p3d file that should be launched within the
-   instance.  If this is empty or NULL, the "src" token (below) will
-   be downloaded instead.
+   If is_local is true, then p3d_filename contains the name of a local
+   p3d file on disk.  If false, then p3d_filename contains a URL that
+   should be downloaded to retrieve the p3d file.
 
    The return value is true on success, false on failure. */
 typedef bool
-P3D_instance_start_func(P3D_instance *instance, const char *p3d_filename);
+P3D_instance_start_func(P3D_instance *instance, bool is_local,
+                        const char *p3d_filename);
 
 
 /* Call this function to interrupt a particular instance and stop it

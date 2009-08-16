@@ -98,9 +98,8 @@ private:
   string _root_dir;
   FileSpec _core_api_dll;
 
-  bool _started_instance_data;
-  bool _got_instance_data;
-  string _p3d_filename;
+  bool _got_instance_url;
+  string _instance_url;
 
   // This class is used for feeding local files (accessed via a
   // "file://" url) into the core API.

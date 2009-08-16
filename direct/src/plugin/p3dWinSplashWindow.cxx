@@ -34,7 +34,6 @@ P3DWinSplashWindow(P3DInstance *inst) :
   _progress_bar = NULL;
   _text_label = NULL;
   _thread_running = false;
-  _got_install = false;
   _image_filename_changed = false;
   _image_filename_temp = false;
   _install_label_changed = false;
@@ -137,8 +136,6 @@ set_install_label(const string &install_label) {
 ////////////////////////////////////////////////////////////////////
 void P3DWinSplashWindow::
 set_install_progress(double install_progress) {
-  _got_install = true;
-
   ACQUIRE_LOCK(_install_lock);
   _install_progress = install_progress;
   RELEASE_LOCK(_install_lock);
@@ -265,7 +262,6 @@ thread_run() {
     DispatchMessage(&msg);
 
     ACQUIRE_LOCK(_install_lock);
-    bool got_install = _got_install;
     double install_progress = _install_progress;
     if (_image_filename_changed) {
       update_image_filename(_image_filename, _image_filename_temp);
@@ -277,17 +273,18 @@ thread_run() {
     _install_label_changed = false;
     RELEASE_LOCK(_install_lock);
 
-    if (got_install && install_progress != last_progress) {
+    if (install_progress != last_progress) {
+      int progress = (int)(install_progress * 100.0);
       if (_progress_bar == NULL) {
         // Is it time to create the progress bar?
-        if (!_install_label.empty()) {
+        if (progress != 0) {
           make_progress_bar();
         }
       } else {
         // Update the progress bar.  We do this only within the
         // thread, to ensure we don't get a race condition when
         // starting or closing the thread.
-        SendMessage(_progress_bar, PBM_SETPOS, (int)(install_progress * 100.0), 0);
+        SendMessage(_progress_bar, PBM_SETPOS, progress, 0);
         
         last_progress = install_progress;
       }

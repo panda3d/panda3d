@@ -57,7 +57,9 @@ public:
                   const P3D_token tokens[], size_t num_tokens, 
                   void *user_data);
 
-  bool start_instance(P3DInstance *inst, const string &p3d_filename);
+  bool set_p3d_filename(P3DInstance *inst, bool is_local,
+                        const string &p3d_filename);
+  bool start_instance(P3DInstance *inst);
   void finish_instance(P3DInstance *inst);
 
   P3DInstance *validate_instance(P3D_instance *instance);
