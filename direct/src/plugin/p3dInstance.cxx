@@ -164,6 +164,7 @@ P3DInstance::
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_p3d_url(const string &p3d_url) {
+  nout << "set_p3d_url(" << p3d_url << ")\n";
   // Make a temporary file to receive the instance data.
   char *name = tempnam(NULL, "p3d_");
   string filename = name;
@@ -195,6 +196,7 @@ set_p3d_url(const string &p3d_url) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_p3d_filename(const string &p3d_filename) {
+  nout << "set_p3d_filename(" << p3d_filename << ")\n";
   _got_fparams = true;
   _fparams.set_p3d_filename(p3d_filename);
 
@@ -1609,6 +1611,7 @@ InstanceDownload(P3DInstance *inst) :
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::InstanceDownload::
 download_progress() {
+  P3DFileDownload::download_progress();
   _inst->report_instance_progress(get_download_progress());
 }
 

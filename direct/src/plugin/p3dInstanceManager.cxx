@@ -234,6 +234,8 @@ set_p3d_filename(P3DInstance *inst, bool is_local,
   } else {
     inst->set_p3d_url(p3d_filename);
   }
+
+  return true;
 }
 
 
