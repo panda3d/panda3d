@@ -452,15 +452,16 @@ update_install_label(const string &install_label) {
 
   RECT rect;
   GetClientRect(_hwnd, &rect);
-  int width = rect.right - rect.left;
-  int height = rect.bottom - rect.top;
+  int win_width = rect.right - rect.left;
+  int win_height = rect.bottom - rect.top;
 
-  int bar_height = min((int)(height * 0.1), 24);
-  int bar_y = (height - bar_height * 2);
+  int bar_x, bar_y, bar_width, bar_height;
+  get_bar_placement(win_width, win_height,
+                    bar_x, bar_y, bar_width, bar_height);
 
   int text_width = text_size.cx + 4;
   int text_height = text_size.cy + 2;
-  int text_x = (width - text_width) / 2;
+  int text_x = (win_width - text_width) / 2;
   int text_y = bar_y - text_height - 2;
 
   _text_label = CreateWindowEx(0, "STATIC", text, window_style,
