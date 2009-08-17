@@ -56,7 +56,7 @@ private:
   void subprocess_run();
   void receive_command();
 
-  void redraw(string label);
+  void redraw();
   void make_window();
   void setup_gc();
   void update_image_filename(const string &image_filename, 
@@ -70,10 +70,8 @@ private:
   int _width, _height;
   
   bool _own_display;
-  bool _image_filename_changed;
   string _image_filename;
   bool _image_filename_temp;
-  bool _install_label_changed;
   string _install_label;
   double _install_progress;
   
@@ -82,6 +80,7 @@ private:
   Display *_display;
   int _screen;
   GC _graphics_context;
+  GC _bar_context;
   XImage* _image;
   XImage* _resized_image;
   int _image_width, _image_height;

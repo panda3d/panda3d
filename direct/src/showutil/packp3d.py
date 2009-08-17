@@ -65,7 +65,7 @@ def makePackedApp(args):
 
     packager = Packager.Packager()
 
-    root = '.'
+    root = Filename('.')
     main = None
     requires = []
     versionIndependent = False

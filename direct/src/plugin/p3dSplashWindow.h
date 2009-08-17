@@ -54,6 +54,9 @@ public:
 protected:
   bool read_image(const string &image_filename, bool image_filename_temp,
                   int &height, int &width, int &num_channels, string &data);
+  void get_bar_placement(int win_width, int win_height,
+                         int &bar_x, int &bar_y,
+                         int &bar_width, int &bar_height);
 
 protected:
   P3DInstance *_inst;

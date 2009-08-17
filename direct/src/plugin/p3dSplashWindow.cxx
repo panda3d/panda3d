@@ -219,3 +219,19 @@ read_image(const string &image_filename, bool image_filename_temp,
 
   return true;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::get_bar_placement
+//       Access: Protected
+//  Description: Given the window width and height, determine the
+//               rectangle in which to place the progress bar.
+////////////////////////////////////////////////////////////////////
+void P3DSplashWindow::
+get_bar_placement(int win_width, int win_height,
+                  int &bar_x, int &bar_y,
+                  int &bar_width, int &bar_height) {
+  bar_width = min((int)(win_width * 0.6), 400);
+  bar_height = min((int)(win_height * 0.1), 24);
+  bar_x = (win_width - bar_width) / 2;
+  bar_y = (win_height - bar_height * 2);
+}

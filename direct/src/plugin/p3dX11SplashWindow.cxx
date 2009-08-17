@@ -57,9 +57,8 @@ P3DX11SplashWindow(P3DInstance *inst) :
   _resized_width = 0;
   _resized_height = 0;
   _graphics_context = None;
-  _image_filename_changed = false;
+  _bar_context = None;
   _image_filename_temp = false;
-  _install_label_changed = false;
   _install_progress = 0.0;
 }
 
@@ -330,19 +329,31 @@ subprocess_run() {
 
   make_window();
   setup_gc();
+  if (_graphics_context == None) {
+    // No point in continuing if we couldn't get a graphics context.
+    close_window();
+    return;
+  }
 
   XEvent event;
   XSelectInput(_display, _window, ExposureMask | StructureNotifyMask);
   
-  bool override = true, have_event = false;
+  string prev_image_filename;
   string prev_label;
   double prev_progress;
+
+  bool needs_redraw = true;
+  bool needs_draw_label = false;
+  bool needs_redraw_progress = false;
+  bool needs_update_progress = false;
 
   _subprocess_continue = true;
   while (_subprocess_continue) {
     // First, scan for X events.
-    have_event = XCheckTypedWindowEvent(_display, _window, Expose, &event)
-              || XCheckTypedWindowEvent(_display, _window, GraphicsExpose, &event);
+    if (XCheckTypedWindowEvent(_display, _window, Expose, &event)
+        || XCheckTypedWindowEvent(_display, _window, GraphicsExpose, &event)) {
+      needs_redraw = true;
+    }
     
     if (XCheckTypedWindowEvent(_display, _window, ConfigureNotify, &event)) {
       if (_resized_image != NULL && (event.xconfigure.width  != _width ||
@@ -352,37 +363,80 @@ subprocess_run() {
       }
       _width = event.xconfigure.width;
       _height = event.xconfigure.height;
-      override = true;
+      needs_redraw = true;
     }
     
-    double install_progress = _install_progress;
-    string install_label = _install_label;
-    
-    if (_image_filename_changed) {
+    if (_image_filename != prev_image_filename) {
       update_image_filename(_image_filename, _image_filename_temp);
-      override = true;
+      needs_redraw = true;
+      prev_image_filename = _image_filename;
     }
-    _image_filename_changed = false;
 
-    if (override || have_event || install_label != prev_label) {
-      override = false;
-      
-      if (install_progress != 0.0) {
-        redraw(install_label);
-        XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
-                       (unsigned int)(install_progress * (_width - 24)), 7);
+    if (_install_label != prev_label) {
+      needs_redraw = true;
+      prev_label = _install_label;
+    }
+    
+    if (_install_progress != prev_progress) {
+      needs_update_progress = true;
+      prev_progress = _install_progress;
+
+      if (_install_progress == 0.0) {
+        // If the progress bar drops to zero, repaint the screen to
+        // take the progress bar away.
+        needs_redraw = true;
       }
+    }
+    
+    if (needs_redraw) {
+      redraw();
       XFlush(_display);
 
-    } else if (install_progress != prev_progress) {
-      if (install_progress != 0.0) {
-        XFillRectangle(_display, _window, _graphics_context, 12, _height - 18,
-                       (unsigned int)(install_progress * (_width - 24)), 7);
+      needs_redraw = false;
+      needs_draw_label = true;
+      needs_redraw_progress = true;
+    }
+
+    // Don't draw an install label or a progress bar unless we have
+    // some nonzero progress.
+    if (_install_progress != 0.0) {
+      int bar_x, bar_y, bar_width, bar_height;
+      get_bar_placement(_width, _height,
+                        bar_x, bar_y, bar_width, bar_height);
+
+      if (needs_draw_label) {
+        int text_width = _install_label.size() * 6;
+        int text_height = 10;
+        int text_x = (_width - text_width) / 2;
+        int text_y = bar_y - 4;
+
+        XClearArea(_display, _window,
+                   text_x - 2, text_y - text_height - 2,
+                   text_width + 4, text_height + 4, false);
+        XDrawString(_display, _window, _graphics_context, text_x, text_y,
+                    _install_label.c_str(), _install_label.size());
+        
+        needs_draw_label = false;
+      }
+      
+      if (needs_redraw_progress) {
+        XClearArea(_display, _window, 
+                   bar_x, bar_y, bar_width, bar_height, false);
+        XDrawRectangle(_display, _window, _graphics_context, 
+                       bar_x, bar_y, bar_width, bar_height);
+        needs_update_progress = true;
+        needs_redraw_progress = false;
+      }
+      
+      if (needs_update_progress) {
+        int progress_width = (int)((bar_width - 2) * _install_progress);
+        XFillRectangle(_display, _window, _bar_context, 
+                       bar_x + 1, bar_y + 1,
+                       progress_width + 1, bar_height - 1);
+        needs_update_progress = false;
       }
     }
 
-    prev_label = install_label;
-    prev_progress = install_progress;
 
     // Now check for input from the parent.
     int read_fd = _pipe_read.get_handle();
@@ -437,7 +491,6 @@ receive_command() {
           if (_image_filename != string(str)) {
             _image_filename = str;
             _image_filename_temp = image_filename_temp;
-            _image_filename_changed = true;
           }
         }
 
@@ -446,7 +499,6 @@ receive_command() {
         if (str != NULL) {
           if (_install_label != string(str)) {
             _install_label = str;
-            _install_label_changed = true;
           }
         }
 
@@ -466,9 +518,7 @@ receive_command() {
 //  Description: Redraws the window.
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
-redraw(string label) {
-  if (_graphics_context == NULL) return;
-  
+redraw() {
   if (_image == NULL) {
     XClearWindow(_display, _window);
   } else {
@@ -506,22 +556,6 @@ redraw(string label) {
                 (_width - _resized_width) / 2, (_height - _resized_height) / 2,
                 _resized_width, _resized_height);
     }
-    XClearArea(_display, _window, 10, _height - 20, _width - 20, 10, false);
-  }
-
-  if (_install_progress != 0.0) {
-    // Draw the rest - the label and the progress bar outline.
-    int text_width = label.size() * 6;
-    int text_height = 10;
-    int text_x = (_width - text_width) / 2;
-    int text_y = _height - 30;
-
-    XClearArea(_display, _window,
-               text_x - 2, text_y - text_height - 2,
-               text_width + 4, text_height + 4, false);
-    XDrawString(_display, _window, _graphics_context, text_x, text_y,
-                label.c_str(), label.size());
-    XDrawRectangle(_display, _window, _graphics_context, 10, _height - 20, _width - 20, 10);
   }
 }
 
@@ -579,13 +613,12 @@ make_window() {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 setup_gc() {
-  if (_graphics_context != NULL) {
+  if (_graphics_context != None) {
     return;
   }
 
-  _install_label_changed = false;
-  
   XFontStruct* fs = XLoadQueryFont(_display, "6x13");
+
   XGCValues gcval;
   gcval.font = fs->fid; 
   gcval.function = GXcopy;
@@ -594,6 +627,22 @@ setup_gc() {
   gcval.background = WhitePixel(_display, _screen);
   _graphics_context = XCreateGC(_display, _window, 
     GCFont | GCFunction | GCPlaneMask | GCForeground | GCBackground, &gcval); 
+
+  // Also create a gc for filling in the interior of the progress bar
+  // in a pleasant blue color.
+  XColor blue;
+  blue.red = 27756;
+  blue.green = 42405;
+  blue.blue = 57568;
+  blue.flags = DoRed | DoGreen | DoBlue;
+
+  Colormap colormap = DefaultColormap(_display, _screen);
+  if (XAllocColor(_display, colormap, &blue)) {
+    gcval.foreground = blue.pixel;
+  }
+
+  _bar_context = XCreateGC(_display, _window, 
+    GCFont | GCFunction | GCPlaneMask | GCForeground | GCBackground, &gcval);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -605,14 +654,24 @@ void P3DX11SplashWindow::
 close_window() {
   if (_image != NULL) {
     XDestroyImage(_image);
+    _image = NULL;
   }
   
   if (_resized_image != NULL) {
     XDestroyImage(_resized_image);
+    _resized_image = NULL;
+  }
+  
+  if (_bar_context != None) {
+    if (_bar_context != _graphics_context) {
+      XFreeGC(_display, _bar_context);
+    }
+    _bar_context = None;
   }
   
   if (_graphics_context != None) {
     XFreeGC(_display, _graphics_context);
+    _graphics_context = None;
   }
   
   if (_window != None) {
