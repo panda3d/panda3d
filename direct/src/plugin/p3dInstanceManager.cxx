@@ -207,8 +207,9 @@ read_contents_file(const string &contents_filename) {
 P3DInstance *P3DInstanceManager::
 create_instance(P3D_request_ready_func *func, 
                 const P3D_token tokens[], size_t num_tokens, 
-                void *user_data) {
-  P3DInstance *inst = new P3DInstance(func, tokens, num_tokens, user_data);
+                int argc, const char *argv[], void *user_data) {
+  P3DInstance *inst = new P3DInstance(func, tokens, num_tokens, argc, argv,
+                                      user_data);
   inst->ref();
   _instances.insert(inst);
 

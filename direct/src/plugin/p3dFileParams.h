@@ -32,6 +32,7 @@ public:
 
   void set_p3d_filename(const string &p3d_filename);
   void set_tokens(const P3D_token tokens[], size_t num_tokens);
+  void set_args(int argc, const char *argv[]);
 
   inline const string &get_p3d_filename() const;
   string lookup_token(const string &keyword) const;
@@ -46,9 +47,11 @@ private:
     string _value;
   };
   typedef vector<Token> Tokens;
+  typedef vector<string> Args;
 
   string _p3d_filename;
   Tokens _tokens;
+  Args _args;
 };
 
 #include "p3dFileParams.I"

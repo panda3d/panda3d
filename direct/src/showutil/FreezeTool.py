@@ -371,6 +371,9 @@ class Freezer:
             self.moduleName = moduleName
             self.filename = filename
 
+        def __repr__(self):
+            return 'ModuleDef(%s, %s, %s)' % (repr(self.token), repr(self.moduleName), repr(self.filename))
+
     def __init__(self, previous = None, debugLevel = 0):
         # Normally, we are freezing for our own platform.  Change this
         # if untrue.
@@ -646,7 +649,6 @@ class Freezer:
                 parentName, baseName = newName.rsplit('.', 1)
                 if parentName in excludeDict:
                     token = excludeDict[parentName]
-            
             if token == self.MTInclude:
                 includes.append(mdef)
             elif token == self.MTAuto or token == self.MTGuess:
@@ -772,10 +774,12 @@ class Freezer:
                     # Previously exported.
                     pass
                 else:
-                    if newName in self.mf.modules or \
-                       newName in startupModules or \
+                    if mdef.moduleName in self.mf.modules or \
+                       mdef.moduleName in startupModules or \
                        mdef.filename:
                         moduleDefs.append((newName, mdef))
+                    else:
+                        print "Unknown module %s" % (mdef.moduleName)
             elif token == self.MTForbid:
                 if not prev or prev.token != self.MTForbid:
                     moduleDefs.append((newName, mdef))

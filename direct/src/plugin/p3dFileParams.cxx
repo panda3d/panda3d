@@ -83,6 +83,25 @@ set_tokens(const P3D_token tokens[], size_t num_tokens) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::set_args
+//       Access: Public
+//  Description: Specifies the command-line arguments associated with
+//               the instance.
+////////////////////////////////////////////////////////////////////
+void P3DFileParams::
+set_args(int argc, const char *argv[]) {
+  _args.clear();
+
+  for (int i = 0; i < argc; ++i) {
+    const char *arg = argv[i];
+    if (arg == NULL) {
+      arg = "";
+    }
+    _args.push_back(arg);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DFileParams::lookup_token
 //       Access: Public
 //  Description: Returns the value associated with the first
@@ -136,9 +155,16 @@ make_xml() {
   for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {
     const Token &token = (*ti);
     TiXmlElement *xtoken = new TiXmlElement("token");
-    xtoken->SetAttribute("keyword", token._keyword.c_str());
-    xtoken->SetAttribute("value", token._value.c_str());
+    xtoken->SetAttribute("keyword", token._keyword);
+    xtoken->SetAttribute("value", token._value);
     xfparams->LinkEndChild(xtoken);
+  }
+
+  Args::const_iterator ai;
+  for (ai = _args.begin(); ai != _args.end(); ++ai) {
+    TiXmlElement *xarg = new TiXmlElement("arg");
+    xarg->SetAttribute("value", (*ai));
+    xfparams->LinkEndChild(xarg);
   }
 
   return xfparams;

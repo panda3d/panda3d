@@ -223,12 +223,12 @@ class AppRunner(DirectObject):
             v = VFSImporter.VFSImporter(MultifileRoot)
             loader = v.find_module(moduleName)
             if not loader:
-                message = "No %s.py found in application." % (mainName)
+                message = "No %s found in application." % (moduleName)
                 raise StandardError, message
             
             main = loader.load_module(moduleName)
             if hasattr(main, 'main') and callable(main.main):
-                main.main()
+                main.main(self)
 
     def getPandaScriptObject(self):
         """ Called by the browser to query the Panda instance's
@@ -251,7 +251,7 @@ class AppRunner(DirectObject):
                                needsResponse = False)
         self.deferredEvals = []
 
-    def setP3DFilename(self, p3dFilename, tokens = [],
+    def setP3DFilename(self, p3dFilename, tokens = [], argv = [],
                        instanceId = None):
         # One day we will have support for multiple instances within a
         # Python session.  Against that day, we save the instance ID
@@ -260,6 +260,7 @@ class AppRunner(DirectObject):
 
         self.tokens = tokens
         self.tokenDict = dict(tokens)
+        self.argv = argv
 
         # Tell the browser that Python is up and running, and ready to
         # respond to queries.

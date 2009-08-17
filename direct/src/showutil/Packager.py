@@ -194,8 +194,9 @@ class Packager:
                 message = 'No main_module specified for application %s' % (self.packageName)
                 raise PackagerError, message
             if self.mainModule:
-                if self.mainModule not in self.freezer.modules:
-                    self.freezer.addModule(self.mainModule)
+                moduleName, newName = self.mainModule
+                if newName not in self.freezer.modules:
+                    self.freezer.addModule(moduleName, newName = newName)
 
             # Pick up any unfrozen Python files.
             self.freezer.done()
@@ -601,7 +602,7 @@ class Packager:
             if self.version:
                 xpackage.SetAttribute('version', self.version)
 
-            xpackage.SetAttribute('main_module', self.mainModule)
+            xpackage.SetAttribute('main_module', self.mainModule[1])
 
             for variable, value in self.configs.items():
                 if isinstance(value, types.UnicodeType):
@@ -1463,15 +1464,19 @@ class Packager:
 
     def parse_main_module(self, words):
         """
-        main_module moduleName
+        main_module moduleName [newName]
         """
+        newName = None
 
         try:
-            command, moduleName = words
+            if len(words) == 2:
+                command, moduleName = words
+            else:
+                command, moduleName, newName = words
         except ValueError:
             raise ArgumentError
 
-        self.mainModule(moduleName)
+        self.mainModule(moduleName, newName = newName)
 
     def parse_freeze_exe(self, words):
         """
@@ -1879,11 +1884,13 @@ class Packager:
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        if self.currentPackage.mainModule and self.currentPackage.mainModule != moduleName:
+        if self.currentPackage.mainModule and self.currentPackage.mainModule[0] != moduleName:
             self.notify.warning("Replacing main_module %s with %s" % (
-                self.currentPackage.mainModule, moduleName))
+                self.currentPackage.mainModule[0], moduleName))
 
-        self.currentPackage.mainModule = moduleName
+        if not newName:
+            newName = moduleName
+        self.currentPackage.mainModule = (moduleName, newName)
 
     def freeze(self, filename, compileToExe = False):
         """ Freezes all of the current Python code into either an
@@ -1906,10 +1913,17 @@ class Packager:
             raise PackagerError, message
 
         if package.mainModule:
-            if package.mainModule not in freezer.modules:
-                freezer.addModule(package.mainModule, newName = '__main__')
+            moduleName, newName = package.mainModule
+            if compileToExe:
+                # If we're producing an exe, the main module must
+                # be called "__main__".
+                newName = '__main__'
+                package.mainModule = (moduleName, newName)
+
+            if newName not in freezer.modules:
+                freezer.addModule(moduleName, newName = newName)
             else:
-                freezer.modules['__main__'] = freezer.modules[package.mainModule]
+                freezer.modules[newName] = freezer.modules[moduleName]
         freezer.done(compileToExe = compileToExe)
 
         if not package.dryRun:

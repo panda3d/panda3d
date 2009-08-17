@@ -128,6 +128,12 @@ def makePackedApp(args):
         
     packager.endPackage(appBase, p3dApplication = True)
 
+def main(appRunner):
+    """ This function is called when this module is invoked as
+    packp3d.p3d. """
+
+    makePackedApp(appRunner.argv[1:])
+
 if __name__ == '__main__':
     try:
         makePackedApp(sys.argv[1:])

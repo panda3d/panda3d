@@ -224,6 +224,14 @@ typedef struct {
    passed to the application, who is free to decide how to interpret
    them; they have no meaning at the system level.
 
+   The argc/argv parameters are intended for when the plugin is
+   invoked from the command line; they should be filled a standard
+   C-style argc/argv parameter list, corresponding to the command-line
+   parameters passed to the application.  They may be 0 and NULL when
+   the plugin is invoked from the web.  As above, this array and its
+   string data will be copied into the core API's own internal
+   storage, and need not persist after this call.
+
    The user_data pointer is any arbitrary pointer value; it will be
    copied into the _user_data member of the new P3D_instance object.
    This pointer is intended for the host to use to store private data
@@ -234,6 +242,7 @@ typedef struct {
 typedef P3D_instance *
 P3D_new_instance_func(P3D_request_ready_func *func, 
                       const P3D_token tokens[], size_t num_tokens,
+                      int argc, const char *argv[],
                       void *user_data);
 
 /* This function should be called at some point after

@@ -55,11 +55,11 @@ private:
   void make_parent_window(P3D_window_handle &parent_window, 
                           int win_width, int win_height);
 
-  P3D_instance *create_instance(const string &arg, P3D_window_type window_type,
-                                int win_x, int win_y, int win_width, 
-                                int win_height,
-                                P3D_window_handle parent_window,
-                                char **args, int num_args);
+  P3D_instance *
+  create_instance(const string &p3d, P3D_window_type window_type,
+                  int win_x, int win_y, int win_width, int win_height,
+                  P3D_window_handle parent_window,
+                  char **args, int num_args);
   void delete_instance(P3D_instance *instance);
 
   void usage();

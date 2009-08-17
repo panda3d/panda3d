@@ -942,7 +942,6 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   }
 
   PyObject *token_list = PyList_New(0);
-
   TiXmlElement *xtoken = xfparams->FirstChildElement("token");
   while (xtoken != NULL) {
     string keyword, value;
@@ -963,11 +962,28 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
 
     xtoken = xtoken->NextSiblingElement("token");
   }
+
+  PyObject *arg_list = PyList_New(0);
+  TiXmlElement *xarg = xfparams->FirstChildElement("arg");
+  while (xarg != NULL) {
+    string value;
+    const char *value_c = xarg->Attribute("value");
+    if (value_c != NULL) {
+      value = value_c;
+    }
+
+    PyObject *str = Py_BuildValue("s", value.c_str());
+    PyList_Append(arg_list, str);
+    Py_DECREF(str);
+
+    xarg = xarg->NextSiblingElement("arg");
+  }
   
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setP3DFilename", (char *)"sOi", p3d_filename.c_str(),
-     token_list, inst->get_instance_id());
+    (_runner, (char *)"setP3DFilename", (char *)"sOOi", p3d_filename.c_str(),
+     token_list, arg_list, inst->get_instance_id());
   Py_DECREF(token_list);
+  Py_DECREF(arg_list);
 
   if (result == NULL) {
     PyErr_Print();

@@ -609,30 +609,35 @@ make_parent_window(P3D_window_handle &parent_window,
 //               play a particular .p3d file.
 ////////////////////////////////////////////////////////////////////
 P3D_instance *Panda3D::
-create_instance(const string &arg, P3D_window_type window_type,
+create_instance(const string &p3d, P3D_window_type window_type,
                 int win_x, int win_y, int win_width, int win_height,
                 P3D_window_handle parent_window, char **args, int num_args) {
-  P3D_token tokens[] = {
-    { "src", arg.c_str() },
-  };
-  int num_tokens = sizeof(tokens) / sizeof(P3D_token);
-
   // If the supplied parameter name is a real file, pass it in on the
   // parameter list.  Otherwise, assume it's a URL and let the plugin
   // download it.
-  Filename p3d_filename = Filename::from_os_specific(arg);
-  string os_p3d_filename;
+  Filename p3d_filename = Filename::from_os_specific(p3d);
+  string os_p3d_filename = p3d;
+  bool is_local = false;
   if (p3d_filename.exists()) {
     p3d_filename.make_absolute();
     os_p3d_filename = p3d_filename.to_os_specific();
+    is_local = true;
   } 
 
-  P3D_instance *inst = P3D_new_instance(NULL, tokens, num_tokens, NULL);
+  // Build up the argument list, beginning with the p3d_filename.
+  pvector<const char *> argv;
+  argv.push_back(os_p3d_filename.c_str());
+  for (int i = 0; i < num_args; ++i) {
+    argv.push_back(args[i]);
+  }
+
+  P3D_instance *inst = P3D_new_instance(NULL, NULL, 0,
+                                        argv.size(), &argv[0], NULL);
 
   if (inst != NULL) {
     P3D_instance_setup_window
       (inst, window_type, win_x, win_y, win_width, win_height, parent_window);
-    P3D_instance_start(inst, true, os_p3d_filename.c_str());
+    P3D_instance_start(inst, is_local, os_p3d_filename.c_str());
   }
 
   return inst;

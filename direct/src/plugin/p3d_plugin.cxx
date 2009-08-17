@@ -105,12 +105,13 @@ P3D_finalize() {
 P3D_instance *
 P3D_new_instance(P3D_request_ready_func *func, 
                  const P3D_token tokens[], size_t num_tokens,
-                 void *user_data) {
+                 int argc, const char *argv[], void *user_data) {
   nout << "new_instance\n";
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  P3DInstance *result = inst_mgr->create_instance(func, tokens, num_tokens, user_data);
+  P3DInstance *result = inst_mgr->create_instance(func, tokens, num_tokens, 
+                                                  argc, argv, user_data);
   RELEASE_LOCK(_api_lock);
   return result;
 }

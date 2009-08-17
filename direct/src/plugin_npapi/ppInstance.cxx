@@ -957,7 +957,8 @@ create_instance() {
   if (!_tokens.empty()) {
     tokens = &_tokens[0];
   }
-  _p3d_inst = P3D_new_instance(request_ready, tokens, _tokens.size(), this);
+  _p3d_inst = P3D_new_instance(request_ready, tokens, _tokens.size(), 
+                               0, NULL, this);
 
   if (_p3d_inst != NULL) {
     // Now get the browser's window object, to pass to the plugin.

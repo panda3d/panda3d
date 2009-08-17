@@ -51,7 +51,8 @@ typedef P3DSplashWindow SplashWindowType;
 ////////////////////////////////////////////////////////////////////
 P3DInstance::
 P3DInstance(P3D_request_ready_func *func, 
-            const P3D_token tokens[], size_t num_tokens, void *user_data) :
+            const P3D_token tokens[], size_t num_tokens, 
+            int argc, const char *argv[], void *user_data) :
   _func(func)
 {
   _browser_script_object = NULL;

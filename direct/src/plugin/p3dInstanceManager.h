@@ -55,7 +55,7 @@ public:
   P3DInstance *
   create_instance(P3D_request_ready_func *func, 
                   const P3D_token tokens[], size_t num_tokens, 
-                  void *user_data);
+                  int argc, const char *argv[], void *user_data);
 
   bool set_p3d_filename(P3DInstance *inst, bool is_local,
                         const string &p3d_filename);
