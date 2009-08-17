@@ -638,6 +638,7 @@ setup_gc() {
 
   Colormap colormap = DefaultColormap(_display, _screen);
   if (XAllocColor(_display, colormap, &blue)) {
+    _blue_pixel = blue.pixel;
     gcval.foreground = blue.pixel;
   }
 
@@ -667,6 +668,10 @@ close_window() {
       XFreeGC(_display, _bar_context);
     }
     _bar_context = None;
+
+    // Also free the color we allocated.
+    Colormap colormap = DefaultColormap(_display, _screen);
+    XFreeColors(_display, colormap, &_blue_pixel, 1, 0);
   }
   
   if (_graphics_context != None) {

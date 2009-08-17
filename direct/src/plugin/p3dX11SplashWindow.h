@@ -81,6 +81,7 @@ private:
   int _screen;
   GC _graphics_context;
   GC _bar_context;
+  unsigned long _blue_pixel;
   XImage* _image;
   XImage* _resized_image;
   int _image_width, _image_height;
