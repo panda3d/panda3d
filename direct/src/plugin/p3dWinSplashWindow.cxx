@@ -397,13 +397,12 @@ make_progress_bar() {
 
   RECT rect;
   GetClientRect(_hwnd, &rect);
-  int width = rect.right - rect.left;
-  int height = rect.bottom - rect.top;
+  int win_width = rect.right - rect.left;
+  int win_height = rect.bottom - rect.top;
 
-  int bar_width = min((int)(width * 0.6), 400);
-  int bar_height = min((int)(height * 0.1), 24);
-  int bar_x = (width - bar_width) / 2;
-  int bar_y = (height - bar_height * 2);
+  int bar_x, bar_y, bar_width, bar_height;
+  get_bar_placement(win_width, win_height,
+                    bar_x, bar_y, bar_width, bar_height);
 
   _progress_bar = 
     CreateWindowEx(0, PROGRESS_CLASS, "", window_style,
