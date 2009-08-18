@@ -584,7 +584,7 @@ class Freezer:
 
         # Scan the directory, looking for .py files.
         modules = []
-        for basename in os.listdir():
+        for basename in os.listdir(pathname):
             if basename.endswith('.py') and basename != '__init__.py':
                 modules.append(basename[:-3])
 
@@ -722,7 +722,9 @@ class Freezer:
                 self.__loadModule(mdef)
                 # Since it succesfully loaded, it's no longer a guess.
                 mdef.guess = False
-            except ImportError:
+            except:
+                # Something went wrong, guess it's not an importable
+                # module.
                 pass
 
         # Now, any new modules we found get added to the export list.
