@@ -173,12 +173,8 @@ class Packager:
             self.extracts = []
             self.components = []
 
-            # Exclude modules already imported in a required package.
-            for moduleName in self.skipModules.keys():
-                self.freezer.excludeModule(moduleName)
-
-            # First, add the explicit py files.  These get turned into
-            # Python modules.
+            # Add the explicit py files that were requested by the
+            # pdef file.  These get turned into Python modules.
             for file in self.files:
                 ext = file.filename.getExtension()
                 if ext != 'py':
@@ -190,13 +186,22 @@ class Packager:
 
                 self.addPyFile(file)
 
+            # Add the main module, if any.
             if not self.mainModule and self.p3dApplication:
                 message = 'No main_module specified for application %s' % (self.packageName)
                 raise PackagerError, message
             if self.mainModule:
                 moduleName, newName = self.mainModule
-                if newName not in self.freezer.modules:
-                    self.freezer.addModule(moduleName, newName = newName)
+                self.freezer.addModule(moduleName, newName = newName)
+
+            # Now all module files have been added.  Exclude modules
+            # already imported in a required package, and not
+            # explicitly included by this package.
+            for moduleName, mdef in self.skipModules.items():
+                if moduleName not in self.freezer.modules:
+                    self.freezer.excludeModule(
+                        moduleName, allowChildren = mdef.allowChildren,
+                        forbid = mdef.forbid, fromSource = 'skip')
 
             # Pick up any unfrozen Python files.
             self.freezer.done()
@@ -205,15 +210,37 @@ class Packager:
 
             # Add known module names.
             self.moduleNames = {}
-            for moduleName in self.freezer.getAllModuleNames():
-                if moduleName == '__main__':
+            modules = self.freezer.modules.items()
+            modules.sort()
+            for newName, mdef in modules:
+                if mdef.guess:
+                    # Not really a module.
+                    continue
+
+                if mdef.fromSource == 'skip':
+                    # This record already appeared in a required
+                    # module; don't repeat it now.
+                    continue
+
+                if mdef.exclude and mdef.implicit:
+                    # Don't bother mentioning implicity-excluded
+                    # (i.e. missing) modules.
+                    continue
+
+                if newName == '__main__':
                     # Ignore this special case.
                     continue
-                
-                self.moduleNames[moduleName] = True
+
+                self.moduleNames[newName] = mdef
 
                 xmodule = TiXmlElement('module')
-                xmodule.SetAttribute('name', moduleName)
+                xmodule.SetAttribute('name', newName)
+                if mdef.exclude:
+                    xmodule.SetAttribute('exclude', '1')
+                if mdef.forbid:
+                    xmodule.SetAttribute('forbid', '1')
+                if mdef.exclude and mdef.allowChildren:
+                    xmodule.SetAttribute('allowChildren', '1')
                 self.components.append(xmodule)
 
             # Now look for implicit shared-library dependencies.
@@ -751,8 +778,15 @@ class Packager:
             xmodule = xpackage.FirstChildElement('module')
             while xmodule:
                 moduleName = xmodule.Attribute('name')
+                exclude = int(xmodule.Attribute('exclude') or 0)
+                forbid = int(xmodule.Attribute('forbid') or 0)
+                allowChildren = int(xmodule.Attribute('allowChildren') or 0)
+                
                 if moduleName:
-                    self.moduleNames[moduleName] = True
+                    mdef = FreezeTool.Freezer.ModuleDef(
+                        moduleName, exclude = exclude, forbid = forbid,
+                        allowChildren = allowChildren)
+                    self.moduleNames[moduleName] = mdef
                 xmodule = xmodule.NextSiblingElement('module')
 
             return True
@@ -932,8 +966,8 @@ class Packager:
                     self.requires.append(p2)
                     for filename in p2.targetFilenames.keys():
                         self.skipFilenames[filename] = True
-                    for moduleName in p2.moduleNames.keys():
-                        self.skipModules[moduleName] = True
+                    for moduleName, mdef in p2.moduleNames.items():
+                        self.skipModules[moduleName] = mdef
 
     def __init__(self):
 

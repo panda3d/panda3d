@@ -358,21 +358,64 @@ okMissing = [
     ]
 
 class Freezer:
-    # Module tokens:
-    MTAuto = 0
-    MTInclude = 1
-    MTExclude = 2
-    MTForbid = 3
-    MTGuess = 4
-
     class ModuleDef:
-        def __init__(self, token, moduleName, filename = None):
-            self.token = token
+        def __init__(self, moduleName, filename = None,
+                     implicit = False, guess = False,
+                     exclude = False, forbid = False,
+                     allowChildren = False, fromSource = None):
+            # The Python module name.
             self.moduleName = moduleName
+
+            # The file on disk it was loaded from, if any.
             self.filename = filename
 
+            # True if the module was found via the modulefinder.
+            self.implicit = implicit
+
+            # True if the moduleName might refer to some Python object
+            # other than a module, in which case the module should be
+            # ignored.
+            self.guess = guess
+
+            # True if the module should *not* be included in the
+            # generated output.
+            self.exclude = exclude
+
+            # True if the module should never be allowed, even if it
+            # exists at runtime.
+            self.forbid = forbid
+
+            # True if excluding the module still allows its children
+            # to be included.  This only makes sense if the module
+            # will exist at runtime through some other means
+            # (e.g. from another package).
+            self.allowChildren = allowChildren
+
+            # Additional black-box information about where this module
+            # record came from, supplied by the caller.
+            self.fromSource = fromSource
+
+            # Some sanity checks.
+            if not self.exclude:
+                self.allowChildren = True
+
+            if self.forbid:
+                self.exclude = True
+                self.allowChildren = False
+
         def __repr__(self):
-            return 'ModuleDef(%s, %s, %s)' % (repr(self.token), repr(self.moduleName), repr(self.filename))
+            args = [repr(self.moduleName), repr(self.filename)]
+            if self.implicit:
+                args.append('implicit = True')
+            if self.guess:
+                args.append('guess = True')
+            if self.exclude:
+                args.append('exclude = True')
+            if self.forbid:
+                args.append('forbid = True')
+            if self.allowChildren:
+                args.append('allowChildren = True')
+            return 'ModuleDef(%s)' % (', '.join(args))
 
     def __init__(self, previous = None, debugLevel = 0):
         # Normally, we are freezing for our own platform.  Change this
@@ -419,8 +462,6 @@ class Freezer:
         self.previousModules = {}
         self.modules = {}
 
-        self.virtualModules = {}
-
         if previous:
             self.previousModules = dict(previous.modules)
             self.modules = dict(previous.modules)
@@ -445,17 +486,20 @@ class Freezer:
             self.previousModules[key] = value
             self.modules[key] = value
 
-    def excludeModule(self, moduleName, forbid = False):
+    def excludeModule(self, moduleName, forbid = False, allowChildren = False,
+                      fromSource = None):
         """ Adds a module to the list of modules not to be exported by
         this tool.  If forbid is true, the module is furthermore
-        forbidden to be imported, even if it exists on disk. """
+        forbidden to be imported, even if it exists on disk.  If
+        allowChildren is true, the children of the indicated module
+        may still be included."""
 
         assert self.mf == None
 
-        if forbid:
-            self.modules[moduleName] = self.ModuleDef(self.MTForbid, moduleName)
-        else:
-            self.modules[moduleName] = self.ModuleDef(self.MTExclude, moduleName)
+        self.modules[moduleName] = self.ModuleDef(
+            moduleName, exclude = True,
+            forbid = forbid, allowChildren = allowChildren,
+            fromSource = fromSource)
 
     def handleCustomPath(self, moduleName):
         """ Indicates a module that may perform runtime manipulation
@@ -547,7 +591,7 @@ class Freezer:
         return modules
             
     def addModule(self, moduleName, implicit = False, newName = None,
-                  filename = None):
+                  filename = None, guess = False, fromSource = None):
         """ Adds a module to the list of modules to be exported by
         this tool.  If implicit is true, it is OK if the module does
         not actually exist.
@@ -555,8 +599,9 @@ class Freezer:
         newName is the name to call the module when it appears in the
         output.  The default is the same name it had in the original.
         Use caution when renaming a module; if another module imports
-        this module by its original name, the module will need to be
-        duplicated in the output, a copy for each name.
+        this module by its original name, you will also need to
+        explicitly add the module under its original name, duplicating
+        the module twice in the output.
 
         The module name may end in ".*", which means to add all of the
         .py files (other than __init__.py) in a particular directory.
@@ -568,10 +613,6 @@ class Freezer:
 
         if not newName:
             newName = moduleName
-        if implicit:
-            token = self.MTAuto
-        else:
-            token = self.MTInclude
 
         if moduleName.endswith('.*'):
             assert(newName.endswith('.*'))
@@ -602,18 +643,24 @@ class Freezer:
 
                 if modules == None:
                     # It's actually a regular module.
-                    self.modules[newParentName] = self.ModuleDef(token, parentName)
+                    self.modules[newParentName] = self.ModuleDef(
+                        parentName, implicit = implicit, guess = guess,
+                        fromSource = fromSource)
 
                 else:
                     # Now get all the py files in the parent directory.
                     for basename in modules:
                         moduleName = '%s.%s' % (parentName, basename)
                         newName = '%s.%s' % (newParentName, basename)
-                        mdef = self.ModuleDef(self.MTGuess, moduleName)
+                        mdef = self.ModuleDef(
+                            moduleName, implicit = implicit, guess = True,
+                            fromSource = fromSource)
                         self.modules[newName] = mdef
         else:
             # A normal, explicit module name.
-            self.modules[newName] = self.ModuleDef(token, moduleName, filename = filename)
+            self.modules[newName] = self.ModuleDef(
+                moduleName, filename = filename, implicit = implicit,
+                guess = guess, fromSource = fromSource)
 
     def done(self, compileToExe = False):
         """ Call this method after you have added all modules with
@@ -629,35 +676,40 @@ class Freezer:
         if compileToExe:
             for moduleName in startupModules:
                 if moduleName not in self.modules:
-                    self.modules[moduleName] = self.ModuleDef(self.MTAuto, moduleName)
+                    self.modules[moduleName] = self.ModuleDef(moduleName, implicit = True)
 
-        # Excluding a parent module also excludes all its children.
-        # Walk through the list in sorted order, so we reach children
-        # before parents.
+        # Excluding a parent module also excludes all its
+        # (non-explicit) children, unless the parent has allowChildren
+        # set.
+        
+        # Walk through the list in sorted order, so we reach parents
+        # before children.
         names = self.modules.items()
         names.sort()
 
-        excludes = []
         excludeDict = {}
+        implicitParentDict = {}
         includes = []
         autoIncludes = []
         origToNewName = {}
         for newName, mdef in names:
-            token = mdef.token
-            origToNewName[mdef.moduleName] = newName
-            if '.' in newName:
+            moduleName = mdef.moduleName
+            origToNewName[moduleName] = newName
+            if mdef.implicit and '.' in newName:
+                # For implicit modules, check if the parent is excluded.
                 parentName, baseName = newName.rsplit('.', 1)
-                if parentName in excludeDict:
-                    token = excludeDict[parentName]
-            if token == self.MTInclude:
-                includes.append(mdef)
-            elif token == self.MTAuto or token == self.MTGuess:
-                autoIncludes.append(mdef)
-            elif token == self.MTExclude or token == self.MTForbid:
-                excludes.append(mdef.moduleName)
-                excludeDict[mdef.moduleName] = token
+                if parentName in excludeDict :
+                    mdef = excludeDict[parentName]
 
-        self.mf = PandaModuleFinder(excludes = excludes)
+            if mdef.exclude:
+                if not mdef.allowChildren:
+                    excludeDict[moduleName] = mdef
+            elif mdef.implicit or mdef.guess:
+                autoIncludes.append(mdef)
+            else:
+                includes.append(mdef)
+
+        self.mf = PandaModuleFinder(excludes = excludeDict.keys())
 
         # Attempt to import the explicit modules into the modulefinder.
         for mdef in includes:
@@ -669,20 +721,15 @@ class Freezer:
             try:
                 self.__loadModule(mdef)
                 # Since it succesfully loaded, it's no longer a guess.
-                mdef.token = self.MTAuto
+                mdef.guess = False
             except ImportError:
                 pass
 
         # Now, any new modules we found get added to the export list.
         for origName in self.mf.modules.keys():
             if origName not in origToNewName:
-                self.modules[origName] = self.ModuleDef(self.MTAuto, origName)
+                self.modules[origName] = self.ModuleDef(origName, implicit = True)
                             
-            elif origName not in self.modules:
-                print "Module %s renamed to %s, but imported directly with its original name" % (
-                    origName, origToNewName[origName])
-                self.modules[origName] = self.ModuleDef(self.MTAuto, origName)
-
         missing = []
         for origName in self.mf.any_missing():
             if origName in startupModules:
@@ -692,7 +739,8 @@ class Freezer:
 
             # This module is missing.  Let it be missing in the
             # runtime also.
-            self.modules[origName] = self.ModuleDef(self.MTExclude, origName)
+            self.modules[origName] = self.ModuleDef(origName, exclude = True,
+                                                    implicit = True)
 
             if origName in okMissing:
                 # If it's listed in okMissing, don't even report it.
@@ -749,7 +797,13 @@ class Freezer:
         moduleNames = []
 
         for newName, mdef in self.modules.items():
-            if mdef.token != self.MTExclude and mdef.token != self.MTGuess:
+            if mdef.guess:
+                # Not really a module.
+                pass
+            elif mdef.exclude and not mdef.forbid:
+                # An excluded (but not forbidden) file.
+                pass
+            else:
                 moduleNames.append(newName)
 
         moduleNames.sort()
@@ -763,14 +817,12 @@ class Freezer:
         moduleDefs = []
 
         for newName, mdef in self.modules.items():
-            token = mdef.token
             prev = self.previousModules.get(newName, None)
-            if token == self.MTInclude or token == self.MTAuto:
+            if not mdef.exclude:
                 # Include this module (even if a previous pass
                 # excluded it).  But don't bother if we exported it
                 # previously.
-                if prev and \
-                   (prev.token == self.MTInclude or prev.token == self.MTAuto):
+                if prev and not prev.exclude:
                     # Previously exported.
                     pass
                 else:
@@ -778,10 +830,10 @@ class Freezer:
                        mdef.moduleName in startupModules or \
                        mdef.filename:
                         moduleDefs.append((newName, mdef))
-                    else:
+                    elif not mdef.guess:
                         print "Unknown module %s" % (mdef.moduleName)
-            elif token == self.MTForbid:
-                if not prev or prev.token != self.MTForbid:
+            elif mdef.forbid:
+                if not prev or not prev.forbid:
                     moduleDefs.append((newName, mdef))
 
         moduleDefs.sort()
@@ -852,7 +904,7 @@ class Freezer:
 
         filename = '/'.join(dirnames)
 
-        module = self.mf.modules.get(moduleName, None)
+        module = self.mf.modules.get(mdef.moduleName, None)
         if getattr(module, '__path__', None) is not None:
             # It's actually a package.  In this case, we really write
             # the file moduleName/__init__.py.
@@ -919,7 +971,7 @@ class Freezer:
 
         moduleDirs = {}
         for moduleName, mdef in self.getModuleDefs():
-            if mdef.token != self.MTForbid:
+            if not mdef.exclude:
                 self.__addPythonFile(multifile, moduleDirs, moduleName, mdef,
                                      compressionLevel)
     
@@ -965,13 +1017,12 @@ class Freezer:
         moduleList = []
         
         for moduleName, mdef in self.getModuleDefs():
-            token = mdef.token
             origName = mdef.moduleName
-            if token == self.MTForbid:
+            if mdef.forbid:
                 # Explicitly disallow importing this module.
                 moduleList.append(self.makeForbiddenModuleListEntry(moduleName))
             else:
-                assert token != self.MTExclude
+                assert not mdef.exclude
                 # Allow importing this module.
                 module = self.mf.modules.get(origName, None)
                 code = getattr(module, "__code__", None)
@@ -1145,8 +1196,7 @@ class Freezer:
         if it is not yet on the output table. """
         
         mdef = self.modules.get(moduleName, (None, None))
-        token = mdef.token
-        if token != self.MTAuto and token != self.MTInclude:
+        if mdef.exclude:
             return False
 
         if moduleName in self.previousModules:
