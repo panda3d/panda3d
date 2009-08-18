@@ -1137,6 +1137,7 @@ PRC_PARAMETERS=[
     ("DEFAULT_PRC_DIR",                '"<auto>etc"',            '"<auto>etc"'),
     ("PRC_DIR_ENVVARS",                '"PANDA_PRC_DIR"',        '"PANDA_PRC_DIR"'),
     ("PRC_PATH_ENVVARS",               '"PANDA_PRC_PATH"',       '"PANDA_PRC_PATH"'),
+    ("PRC_PATH2_ENVVARS",              '""',                     '""'),
     ("PRC_PATTERNS",                   '"*.prc"',                '"*.prc"'),
     ("PRC_ENCRYPTED_PATTERNS",         '"*.prc.pe"',             '"*.prc.pe"'),
     ("PRC_ENCRYPTION_KEY",             '""',                     '""'),
