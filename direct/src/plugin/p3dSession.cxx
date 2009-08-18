@@ -702,7 +702,7 @@ start_p3dpython(P3DInstance *inst) {
   const char *keep[] = {
     "TMP", "TEMP", "HOME", "USER", 
 #ifdef _WIN32
-    "SYSTEMROOT", "USERPROFILE",
+    "SYSTEMROOT", "USERPROFILE", "COMSPEC",
 #endif
     NULL
   };

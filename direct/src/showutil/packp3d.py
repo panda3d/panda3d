@@ -132,7 +132,13 @@ def main(appRunner):
     """ This function is called when this module is invoked as
     packp3d.p3d. """
 
-    makePackedApp(appRunner.argv[1:])
+    print "args = %s" % (appRunner.argv,)
+    try:
+        makePackedApp(appRunner.argv[1:])
+    except ArgumentError, e:
+        print e.args[0]
+        sys.exit(1)
+    sys.exit(0)
 
 if __name__ == '__main__':
     try:

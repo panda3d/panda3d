@@ -300,6 +300,7 @@ class AppRunner(DirectObject):
 
         # Mount the Multifile under /mf, by convention.
         vfs.mount(mf, MultifileRoot, vfs.MFReadOnly)
+        VFSImporter.reload_packages(mf, MultifileRoot)
 
         # Load any prc files in the root.  We have to load them
         # explicitly, since the ConfigPageManager can't directly look

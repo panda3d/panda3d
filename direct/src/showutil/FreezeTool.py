@@ -720,7 +720,7 @@ class Freezer:
         for mdef in autoIncludes:
             try:
                 self.__loadModule(mdef)
-                # Since it succesfully loaded, it's no longer a guess.
+                # Since it successfully loaded, it's no longer a guess.
                 mdef.guess = False
             except:
                 # Something went wrong, guess it's not an importable

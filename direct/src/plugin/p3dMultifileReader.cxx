@@ -208,6 +208,11 @@ read_index() {
     s._start = read_uint32();
     s._length = read_uint32();
     unsigned int flags = read_uint16();
+    if ((flags & 0x18) != 0) {
+      // Skip over the uncompressed length.
+      read_uint32();
+    }
+      
     s._timestamp = read_uint32();
     size_t name_length = read_uint16();
     char *buffer = new char[name_length];

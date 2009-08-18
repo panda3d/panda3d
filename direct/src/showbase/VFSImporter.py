@@ -8,7 +8,7 @@ import imp
 import struct
 import __builtin__
 
-__all__ = ['register']
+__all__ = ['register', 'reload_from', 'reload_packages']
 
 vfs = VirtualFileSystem.getGlobalPtr()
 
@@ -274,3 +274,43 @@ def register():
         _registered = True
         sys.path_hooks.insert(0, VFSImporter)
     
+def reload_from(root_path, moduleName):
+    """ Reloads the named module from the indicated root directory,
+    merging it with the module already loaded, if any.  This is
+    particularly useful for merging a VFS-mounted package with a
+    previously-frozen package.  It allows you to release the initial
+    version of a package via the freeze mechanism, while still
+    allowing new additions to be added later via multifile.
+
+    See also reload_packages(), which is a convenience function
+    wrapped around this one.  """
+
+    path = root_path + '/' + '/'.join(moduleName.split('.')[:-1])
+    importer = VFSImporter(path)
+    loader = importer.find_module(moduleName)
+    if loader:
+        loader.load_module(moduleName)
+        
+def reload_packages(multifile, root_path):
+    """ Walks the multifile and looks for Python packages that already
+    exist as frozen modules.  For any such packages found, calls
+    reload_from() to merge them with the preloaded frozen package. """
+
+    for i in range(multifile.getNumSubfiles()):
+        filename = multifile.getSubfileName(i)
+        isInit = False
+        for ext in ['py'] + compiledExtensions:
+            if filename.endswith('/__init__.' + ext):
+                isInit = True
+                break
+        if not isInit:
+            continue
+
+        # Found a package.
+        moduleName = '.'.join(filename.split('/')[:-1])
+        module = sys.modules.get(moduleName, None)
+        if module:
+            file = getattr(module, '__file__', None)
+            if file == '<frozen>':
+                # It's a frozen module; replace it.
+                reload_from(root_path, moduleName)
