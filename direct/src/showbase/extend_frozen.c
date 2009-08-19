@@ -61,6 +61,7 @@ py_extend_frozen_modules(PyObject *self, PyObject *args) {
   int num_elements;
   int i;
   struct _frozen *new_modules;
+  int total_count;
 
   if (!PyArg_ParseTuple(args, "O", &list)) {
     return NULL;
@@ -98,7 +99,7 @@ py_extend_frozen_modules(PyObject *self, PyObject *args) {
 
   Py_DECREF(list);
 
-  int total_count = extend_frozen_modules(new_modules, num_elements);
+  total_count = extend_frozen_modules(new_modules, num_elements);
   free(new_modules);
   
   return Py_BuildValue("i", total_count);
