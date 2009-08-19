@@ -191,9 +191,10 @@ class AppRunner(DirectObject):
         os.listdir = file.listdir
         os.walk = file.walk
 
-        # Make "/mf" our "current directory", for running the multifiles
-        # we plan to mount there.
-        vfs.chdir(MultifileRoot)
+        if not self.fullDiskAccess:
+            # Make "/mf" our "current directory", for running the multifiles
+            # we plan to mount there.
+            vfs.chdir(MultifileRoot)
 
     def startIfReady(self):
         if self.started:
@@ -300,7 +301,7 @@ class AppRunner(DirectObject):
 
         # Mount the Multifile under /mf, by convention.
         vfs.mount(mf, MultifileRoot, vfs.MFReadOnly)
-        VFSImporter.reload_packages(mf, MultifileRoot)
+        VFSImporter.freeze_new_modules(mf, MultifileRoot)
 
         # Load any prc files in the root.  We have to load them
         # explicitly, since the ConfigPageManager can't directly look

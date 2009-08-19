@@ -9,6 +9,12 @@ import imp
 import platform
 from distutils.sysconfig import PREFIX, get_python_inc, get_python_version
 
+# Temporary (?) try..except to protect against unbuilt extend_frozen.
+try:
+    import extend_frozen
+except ImportError:
+    extend_frozen = None
+
 import direct
 from pandac.PandaModules import *
 from pandac.extension_native_helpers import dll_suffix, dll_ext
@@ -298,21 +304,49 @@ static PyMethodDef nullMethods[] = {
   {NULL, NULL}
 };
 
-%(dllexport)svoid init%(moduleName)s() {
-  int count;
-  struct _frozen *new_FrozenModules;
+/*
+ * Call this function to extend the frozen modules array with a new
+ * array of frozen modules, provided in a C-style array, at runtime.
+ * Returns the total number of frozen modules.
+ */
+static int 
+extend_frozen_modules(const struct _frozen *new_modules, int new_count) {
+  int orig_count;
+  struct _frozen *realloc_FrozenModules;
 
-  count = 0;
-  while (PyImport_FrozenModules[count].name != NULL) {
-    ++count;
+  /* First, count the number of frozen modules we had originally. */
+  orig_count = 0;
+  while (PyImport_FrozenModules[orig_count].name != NULL) {
+    ++orig_count;
   }
-  new_FrozenModules = (struct _frozen *)malloc((count + %(newcount)s + 1) * sizeof(struct _frozen));
-  memcpy(new_FrozenModules, _PyImport_FrozenModules, %(newcount)s * sizeof(struct _frozen));
-  memcpy(new_FrozenModules + %(newcount)s, PyImport_FrozenModules, count * sizeof(struct _frozen));
-  memset(new_FrozenModules + count + %(newcount)s, 0, sizeof(struct _frozen));
 
-  PyImport_FrozenModules = new_FrozenModules;
+  if (new_count == 0) {
+    /* Trivial no-op. */
+    return orig_count;
+  }
 
+  /* Reallocate the PyImport_FrozenModules array bigger to make room
+     for the additional frozen modules.  We just leak the original
+     array; it's too risky to try to free it. */
+  realloc_FrozenModules = (struct _frozen *)malloc((orig_count + new_count + 1) * sizeof(struct _frozen));
+
+  /* The new frozen modules go at the front of the list. */
+  memcpy(realloc_FrozenModules, new_modules, new_count * sizeof(struct _frozen));
+
+  /* Then the original set of frozen modules. */
+  memcpy(realloc_FrozenModules + new_count, PyImport_FrozenModules, orig_count * sizeof(struct _frozen));
+
+  /* Finally, a single 0-valued entry marks the end of the array. */
+  memset(realloc_FrozenModules + orig_count + new_count, 0, sizeof(struct _frozen));
+
+  /* Assign the new pointer. */
+  PyImport_FrozenModules = realloc_FrozenModules;
+
+  return orig_count + new_count;
+}
+
+%(dllexport)svoid init%(moduleName)s() {
+  extend_frozen_modules(_PyImport_FrozenModules, %(newcount)s);
   Py_InitModule("%(moduleName)s", nullMethods);
 }
 """
@@ -525,6 +559,7 @@ class Freezer:
         try:
             module = __import__(moduleName)
         except:
+            print "couldn't import %s" % (moduleName)
             module = None
 
         if module != None:
@@ -559,6 +594,7 @@ class Freezer:
         try:
             module = __import__(moduleName)
         except:
+            print "couldn't import %s" % (moduleName)
             module = None
 
         if module != None:
@@ -733,7 +769,7 @@ class Freezer:
                 self.modules[origName] = self.ModuleDef(origName, implicit = True)
                             
         missing = []
-        for origName in self.mf.any_missing():
+        for origName in self.mf.any_missing_maybe()[0]:
             if origName in startupModules:
                 continue
             if origName in self.previousModules:
@@ -752,13 +788,15 @@ class Freezer:
             if prefix not in sourceTrees:
                 # If it's in not one of our standard source trees, assume
                 # it's some wacky system file we don't need.
+                print "ignoring missing %s" % (origName)
                 continue
                 
             missing.append(origName)
-                
+
         if missing:
             error = "There are some missing modules: %r" % missing
             print error
+            print "previous = %s" % (self.previousModules,)
             raise StandardError, error
 
     def __loadModule(self, mdef):
@@ -769,10 +807,22 @@ class Freezer:
             # disk.  In this case, the moduleName may not be accurate
             # and useful, so load it as a file instead.
 
+            tempPath = None
+            if '.' not in mdef.moduleName:
+                # If we loaded a python file from the root, we need to
+                # temporarily add its directory to the module search
+                # path, so the modulefinder can find any sibling
+                # python files it imports as well.
+                tempPath = Filename(mdef.filename.getDirname()).toOsSpecific()
+                self.mf.path.append(tempPath)
+
             pathname = mdef.filename.toOsSpecific()
             fp = open(pathname, modulefinder.READ_MODE)
             stuff = ("", "r", imp.PY_SOURCE)
             self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
+
+            if tempPath:
+                del self.mf.path[-1]
 
         else:
             # Otherwise, we can just import it normally.
@@ -1063,6 +1113,12 @@ class Freezer:
 
         filename = basename + self.sourceExtension
 
+        dllexport = ''
+        dllimport = ''
+        if self.platform == 'win32':
+            dllexport = '__declspec(dllexport) '
+            dllimport = '__declspec(dllimport) '
+
         if compileToExe:
             code = self.frozenMainCode
             if self.platform == 'win32':
@@ -1070,6 +1126,8 @@ class Freezer:
             initCode = self.mainInitCode % {
                 'frozenMainCode' : code,
                 'programName' : os.path.basename(basename),
+                'dllexport' : dllexport,
+                'dllimport' : dllimport,
                 }
             if self.platform == 'win32':
                 initCode += self.frozenExtensions
@@ -1080,17 +1138,16 @@ class Freezer:
             compileFunc = self.compileExe
             
         else:
-            dllexport = ''
             if self.platform == 'win32':
-                dllexport = '__declspec(dllexport) '
                 target = basename + dllext + '.pyd'
             else:
                 target = basename + '.so'
             
             initCode = dllInitCode % {
-                'dllexport' : dllexport,
                 'moduleName' : os.path.basename(basename),
                 'newcount' : len(moduleList),
+                'dllexport' : dllexport,
+                'dllimport' : dllimport,
                 }
             compileFunc = self.compileDll
 
@@ -1215,21 +1272,43 @@ class PandaModuleFinder(modulefinder.ModuleFinder):
         try:
             return modulefinder.ModuleFinder.find_module(self, name, path, parent = parent)
         except ImportError:
-            # It wasn't found.  Maybe it's one of ours.
+            # It wasn't found through the normal channels.  Maybe it's
+            # one of ours, or maybe it's frozen?
             if path:
                 # Only if we're not looking on a particular path,
                 # though.
                 raise
 
-        # This loop is roughly lifted from
-        # extension_native_helpers.Dtool_PreloadDLL().
+            if extend_frozen and extend_frozen.is_frozen_module(name):
+                # It's a frozen module.
+                return (None, name, ('', '', imp.PY_FROZEN))
+
+        # Look for a dtool extension.  This loop is roughly lifted
+        # from extension_native_helpers.Dtool_PreloadDLL().
         filename = name + dll_suffix + dll_ext
         for dir in sys.path + [sys.prefix]:
             lib = os.path.join(dir, filename)
             if os.path.exists(lib):
                 file = open(lib, 'rb')
-                return (file, lib, (dll_ext, 'rb', 3))
+                return (file, lib, (dll_ext, 'rb', imp.C_EXTENSION))
 
         message = "DLL loader cannot find %s." % (name)
         raise ImportError, message
         
+    def load_module(self, fqname, fp, pathname, (suffix, mode, type)):
+        if type == imp.PY_FROZEN:
+            # It's a frozen module.
+            co, isPackage = extend_frozen.get_frozen_module_code(pathname)
+            m = self.add_module(fqname)
+            m.__file__ = '<frozen>'
+            if isPackage:
+                m.__path__ = pathname
+            co = marshal.loads(co)
+            if self.replace_paths:
+                co = self.replace_paths_in_code(co)
+            m.__code__ = co
+            self.scan_code(co, m)
+            self.msgout(2, "load_module ->", m)
+            return m
+        
+        return modulefinder.ModuleFinder.load_module(self, fqname, fp, pathname, (suffix, mode, type))

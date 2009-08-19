@@ -155,6 +155,7 @@ private:
   string _session_key;
   string _python_version;
   string _log_basename;
+  bool _full_disk_access;
 
   // Not ref-counted: session is the parent.
   P3DSession *_session;

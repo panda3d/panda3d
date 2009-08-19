@@ -248,7 +248,11 @@ open = file
 def listdir(path):
     """ Implements os.listdir over vfs. """
     files = []
-    for file in _vfs.scanDirectory(path):
+    dirlist = _vfs.scanDirectory(path)
+    if dirlist is None:
+        message = 'No such file or directory: %s' % (path)
+        raise OSError, message
+    for file in dirlist:
         files.append(file.getFilename().getBasename())
     return files
 

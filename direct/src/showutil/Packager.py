@@ -46,10 +46,20 @@ class Packager:
             if not self.newName:
                 self.newName = self.filename.cStr()
 
-            packager = package.packager
             ext = Filename(self.newName).getExtension()
+            if ext == 'pz':
+                # Strip off a .pz extension; we can compress files
+                # within the Multifile without it.
+                filename = Filename(self.newName)
+                filename.setExtension('')
+                self.newName = filename.cStr()
+                ext = Filename(self.newName).getExtension()
+                if self.compress is None:
+                    self.compress = True
+
+            packager = package.packager
             if self.compress is None:
-                self.compress = (ext not in packager.uncompressibleExtensions)
+                self.compress = (ext not in packager.uncompressibleExtensions and ext not in packager.imageExtensions)
 
             if self.executable is None:
                 self.executable = (ext in packager.executableExtensions)
@@ -176,7 +186,7 @@ class Packager:
             # Add the explicit py files that were requested by the
             # pdef file.  These get turned into Python modules.
             for file in self.files:
-                ext = file.filename.getExtension()
+                ext = Filename(file.newName).getExtension()
                 if ext != 'py':
                     continue
 
@@ -252,13 +262,11 @@ class Packager:
             else:
                 self.__addImplicitDependenciesPosix()
 
-            # Now add all the real, non-Python files.  This will
-            # include the extension modules we just discovered above.
-
-            # We walk through the list as we modify it.  That's OK,
-            # because we may add new files that we want to process.
+            # Now add all the real, non-Python files (except model
+            # files).  This will include the extension modules we just
+            # discovered above.
             for file in self.files:
-                ext = file.filename.getExtension()
+                ext = Filename(file.newName).getExtension()
                 if ext == 'py':
                     # Already handled, above.
                     continue
@@ -268,25 +276,38 @@ class Packager:
                     continue
                 
                 if not self.dryRun:
-                    if ext == 'pz':
-                        # Strip off an implicit .pz extension.
-                        filename = Filename(file.filename)
-                        filename.setExtension('')
-                        filename = Filename(filename.cStr())
-                        ext = filename.getExtension()
+                    if ext == 'egg' or ext == 'bam':
+                        # Skip model files this pass.
+                        pass
+                    else:
+                        # Any other file.
+                        self.addComponent(file)
 
-                        filename = Filename(file.newName)
-                        if filename.getExtension() == 'pz':
-                            filename.setExtension('')
-                            file.newName = filename.cStr()
+            # Finally, now add the model files.  It's important to add
+            # these after we have added all of the texture files, so
+            # we can determine which textures need to be implicitly
+            # pulled in.
 
+            # We walk through the list as we modify it.  That's OK,
+            # because we may add new files that we want to process.
+            for file in self.files:
+                ext = Filename(file.newName).getExtension()
+                if ext == 'py':
+                    # Already handled, above.
+                    continue
+
+                if file.isExcluded(self):
+                    # Skip this file.
+                    continue
+                
+                if not self.dryRun:
                     if ext == 'egg':
                         self.addEggFile(file)
                     elif ext == 'bam':
                         self.addBamFile(file)
                     else:
-                        # Any other file.
-                        self.addComponent(file)
+                        # Handled above.
+                        pass
 
             # Now that we've processed all of the component files,
             # (and set our platform if necessary), we can generate the
@@ -838,7 +859,7 @@ class Packager:
 
         def addEggFile(self, file):
             # Precompile egg files to bam's.
-            np = self.packager.loader.loadModel(file.filename, okMissing = True)
+            np = self.packager.loader.loadModel(file.filename)
             if not np:
                 raise StandardError, 'Could not read egg file %s' % (file.filename)
 
@@ -938,6 +959,7 @@ class Packager:
 
             self.addFile(filename, newName = newName, explicit = False,
                          compress = False)
+            return newName
 
         def addComponent(self, file):
             if file.platformSpecific:

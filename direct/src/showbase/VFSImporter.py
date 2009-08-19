@@ -8,7 +8,7 @@ import imp
 import struct
 import __builtin__
 
-__all__ = ['register', 'reload_from', 'reload_packages']
+__all__ = ['register', 'freeze_new_modules']
 
 vfs = VirtualFileSystem.getGlobalPtr()
 
@@ -273,44 +273,65 @@ def register():
     if not _registered:
         _registered = True
         sys.path_hooks.insert(0, VFSImporter)
-    
-def reload_from(root_path, moduleName):
-    """ Reloads the named module from the indicated root directory,
-    merging it with the module already loaded, if any.  This is
-    particularly useful for merging a VFS-mounted package with a
-    previously-frozen package.  It allows you to release the initial
-    version of a package via the freeze mechanism, while still
-    allowing new additions to be added later via multifile.
-
-    See also reload_packages(), which is a convenience function
-    wrapped around this one.  """
-
-    path = root_path + '/' + '/'.join(moduleName.split('.')[:-1])
-    importer = VFSImporter(path)
-    loader = importer.find_module(moduleName)
-    if loader:
-        loader.load_module(moduleName)
         
-def reload_packages(multifile, root_path):
-    """ Walks the multifile and looks for Python packages that already
-    exist as frozen modules.  For any such packages found, calls
-    reload_from() to merge them with the preloaded frozen package. """
+def freeze_new_modules(multifile, root_path):
+    """ Walks the multifile and looks for Python packages that are
+    children of frozen modules.  These are converted to frozen
+    modules, since the Python runtime system only supports loading
+    frozen children of frozen modules.
 
-    for i in range(multifile.getNumSubfiles()):
-        filename = multifile.getSubfileName(i)
-        isInit = False
-        for ext in ['py'] + compiledExtensions:
-            if filename.endswith('/__init__.' + ext):
-                isInit = True
-                break
-        if not isInit:
-            continue
+    The multifile must be already mounted at root_path.  """
 
-        # Found a package.
-        moduleName = '.'.join(filename.split('/')[:-1])
-        module = sys.modules.get(moduleName, None)
-        if module:
-            file = getattr(module, '__file__', None)
-            if file == '<frozen>':
-                # It's a frozen module; replace it.
-                reload_from(root_path, moduleName)
+    # This module is defined by extend_frozen.c in
+    # direct/src/showbase.  It's a special extension module that
+    # provides hooks into the array of frozen modules, which is
+    # otherwise accessible only to the C level.
+    import extend_frozen
+
+    modules = []
+    pyExtensions = ['py'] + compiledExtensions
+    for filename in multifile.getSubfileNames():
+        filename = Filename(filename)
+        ext = filename.getExtension()
+        if ext in pyExtensions:
+            # A Python file.
+            moduleName = Filename(filename)
+            moduleName.setExtension('')
+            isPackage = False
+            if moduleName.getBasename() == '__init__':
+                # A package.
+                moduleName = moduleName.getDirname()
+            else:
+                moduleName = moduleName.cStr()
+            moduleName = '.'.join(moduleName.split('/'))
+            modules.append(moduleName)
+
+    modules.sort()
+    
+    # Now look for any children of frozen modules; these children need
+    # to become frozen modules themselves.
+    existingFrozenModules = {}
+    newFrozen = []
+    for moduleName in modules:
+        if extend_frozen.is_frozen_module(moduleName):
+            # It's a frozen module.  All children require freezing also.
+            existingFrozenModules[moduleName] = True
+        else:
+            # It's not a frozen module, but maybe it needs to be.
+            if '.' in moduleName:
+                parentModuleName = moduleName.rsplit('.', 1)[0]
+                if parentModuleName in existingFrozenModules:
+                    # Bad news.  We have to freeze this one.
+                    existingFrozenModules[moduleName] = True
+
+                    # Load up the module code.
+                    path = root_path + '/' + '/'.join(moduleName.split('.')[:-1])
+                    importer = VFSImporter(path)
+                    loader = importer.find_module(moduleName)
+                    if loader:
+                        code = loader.get_code(moduleName)
+                        newFrozen.append((moduleName, marshal.dumps(code)))
+
+    # Now pass our list of newly-frozen modules to the low level code.
+    if newFrozen:
+        extend_frozen.extend(newFrozen)

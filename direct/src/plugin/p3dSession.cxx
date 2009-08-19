@@ -652,7 +652,16 @@ start_p3dpython(P3DInstance *inst) {
 
   _python_root_dir = inst->_panda3d->get_package_dir();
 
-  mkdir_complete(_start_dir, nout);
+  // We'll be changing the directory to the standard start directory
+  // only if we don't have full disk access set for the instance.  If
+  // we do have this setting, we'll keep the current directory
+  // instead.
+  bool change_dir = !inst->_full_disk_access;
+  string start_dir;
+  if (change_dir) {
+    start_dir = _start_dir;
+    mkdir_complete(start_dir, nout);
+  }
 
   // Build up a search path that includes all of the required packages
   // that have already been installed.
@@ -753,8 +762,8 @@ start_p3dpython(P3DInstance *inst) {
   string log_basename = inst->_log_basename;
 
   // But we also let it be overridden by the tokens.
-  if (inst->get_fparams().has_token("log")) {
-    log_basename = inst->get_fparams().lookup_token("log");
+  if (inst->get_fparams().has_token("log_basename")) {
+    log_basename = inst->get_fparams().lookup_token("log_basename");
   }
 
   // However, it is always written into the temp directory only; the
@@ -790,12 +799,12 @@ start_p3dpython(P3DInstance *inst) {
   nout << "Attempting to start python from " << p3dpython << "\n";
 #ifdef _WIN32
   _p3dpython_handle = win_create_process
-    (p3dpython, _start_dir, env, _output_filename,
+    (p3dpython, start_dir, env, _output_filename,
      _pipe_read, _pipe_write);
   bool started_p3dpython = (_p3dpython_handle != INVALID_HANDLE_VALUE);
 #else
   _p3dpython_pid = posix_create_process
-    (p3dpython, _start_dir, env, _output_filename,
+    (p3dpython, start_dir, env, _output_filename,
      _pipe_read, _pipe_write);
   bool started_p3dpython = (_p3dpython_pid > 0);
 #endif
@@ -1037,10 +1046,17 @@ win_create_process(const string &program, const string &start_dir,
   startup_info.wShowWindow = SW_HIDE;
   startup_info.dwFlags |= STARTF_USESHOWWINDOW;
 
+  // If the start directory is empty, meaning not to change the
+  // current directory, then pass NULL in to CreateProcess().
+  const char *start_dir_cstr = NULL;
+  if (!start_dir.empty()) {
+    start_dir_cstr = start_dir.c_str();
+  }
+
   PROCESS_INFORMATION process_info; 
   BOOL result = CreateProcess
     (program.c_str(), NULL, NULL, NULL, TRUE, 0,
-     (void *)env.c_str(), start_dir.c_str(),
+     (void *)env.c_str(), start_dir_cstr,
      &startup_info, &process_info);
   bool started_program = (result != 0);
 
@@ -1129,9 +1145,11 @@ posix_create_process(const string &program, const string &start_dir,
     close(to_fd[1]);
     close(from_fd[0]);
 
-    if (chdir(start_dir.c_str()) < 0) {
-      nout << "Could not chdir to " << start_dir << "\n";
-      _exit(1);
+    if (!start_dir.empty()) {
+      if (chdir(start_dir.c_str()) < 0) {
+        nout << "Could not chdir to " << start_dir << "\n";
+        _exit(1);
+      }
     }
 
     // build up an array of char strings for the environment.

@@ -21,6 +21,22 @@
   #define IGATESCAN all
 #end lib_target
 
+// Define a Python extension module for operating on frozen modules.
+// This is a pure C module; it involves no Panda code or C++ code.
+#begin lib_target
+  #define TARGET extend_frozen
+  #define LIB_PREFIX
+  #if $[OSX_PLATFORM]
+    #define LINK_AS_BUNDLE 1
+    #define BUNDLE_EXT .so
+  #endif
+  #if $[WINDOWS_PLATFORM]
+    #define DYNAMIC_LIB_EXT .pyd
+  #endif
+
+  #define SOURCES extend_frozen.c
+#end lib_target
+
 #if $[CTPROJS]
   #define INSTALL_SCRIPTS ppython
 #endif

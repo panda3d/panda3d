@@ -134,6 +134,9 @@ def main(appRunner):
     packp3d.p3d. """
 
     print "args = %s" % (appRunner.argv,)
+    vfs = VirtualFileSystem.getGlobalPtr()
+    print "cwd = %s, %s" % (vfs.getCwd(), ExecutionEnvironment.getCwd())
+    print "sys.path = %s" % (sys.path,)
     try:
         makePackedApp(appRunner.argv[1:])
     except ArgumentError, e:
@@ -142,6 +145,7 @@ def main(appRunner):
     sys.exit(0)
 
 if __name__ == '__main__':
+    print "sys.path = %s" % (sys.path,)
     try:
         makePackedApp(sys.argv[1:])
     except ArgumentError, e:
