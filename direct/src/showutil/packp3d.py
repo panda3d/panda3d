@@ -125,7 +125,7 @@ def makePackedApp(args):
         packager.require(requireName)
         
     packager.dir(root)
-    packager.mainModule(mainModule, filename = main)
+    packager.mainModule(mainModule)
         
     packager.endPackage(appBase, p3dApplication = True)
 
