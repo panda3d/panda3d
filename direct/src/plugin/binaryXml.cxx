@@ -264,6 +264,10 @@ read_xml(istream &in, ostream &logfile) {
   // standard ASCII read.
   TiXmlDocument *doc = new TiXmlDocument;
   in >> *doc;
+  if (in.fail() || in.eof()) {
+    delete doc;
+    return NULL;
+  }
 #endif
 
   if (debug_xml_output) {

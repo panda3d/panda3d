@@ -192,7 +192,8 @@ class Packager:
                 raise PackagerError, message
             if self.mainModule:
                 moduleName, newName = self.mainModule
-                self.freezer.addModule(moduleName, newName = newName)
+                if newName not in self.freezer.modules:
+                    self.freezer.addModule(moduleName, newName = newName)
 
             # Now all module files have been added.  Exclude modules
             # already imported in a required package, and not
@@ -1911,7 +1912,7 @@ class Packager:
 
         self.currentPackage.freezer.excludeModule(moduleName, forbid = forbid)
 
-    def mainModule(self, moduleName, newName = None):
+    def mainModule(self, moduleName, newName = None, filename = None):
         """ Names the indicated module as the "main" module of the
         application or exe. """
 
@@ -1924,6 +1925,13 @@ class Packager:
 
         if not newName:
             newName = moduleName
+
+        if filename:
+            newFilename = Filename('/'.join(moduleName.split('.')))
+            newFilename.setExtension(filename.getExtension())
+            package.addFile(filename, newName = newFilename.cStr(),
+                            deleteTemp = True, explicit = True, extract = True)
+
         self.currentPackage.mainModule = (moduleName, newName)
 
     def freeze(self, filename, compileToExe = False):

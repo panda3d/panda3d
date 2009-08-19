@@ -520,7 +520,20 @@ delete_global_ptr() {
 bool P3DInstanceManager::
 copy_file(const string &from_filename, const string &to_filename) {
   ifstream in(from_filename.c_str(), ios::in | ios::binary);
-  ofstream out(to_filename.c_str(), ios::out | ios::binary);
+
+  // Copy to a temporary file first, in case (a) the filenames
+  // actually refer to the same file, or (b) in case we have different
+  // processes writing to the same file, and (c) to prevent
+  // partially overwriting the file should something go wrong.
+  ostringstream strm;
+  strm << to_filename << ".t";
+#ifdef _WIN32
+  strm << GetCurrentProcessId() << "_" << GetCurrentThreadId();
+#else
+  strm << getpid();
+#endif
+  string temp_filename = strm.str();
+  ofstream out(temp_filename.c_str(), ios::out | ios::binary);
         
   static const size_t buffer_size = 4096;
   char buffer[buffer_size];
@@ -530,6 +543,7 @@ copy_file(const string &from_filename, const string &to_filename) {
   while (count != 0) {
     out.write(buffer, count);
     if (out.fail()) {
+      unlink(temp_filename.c_str());
       return false;
     }
     in.read(buffer, buffer_size);
@@ -537,10 +551,16 @@ copy_file(const string &from_filename, const string &to_filename) {
   }
 
   if (!in.eof()) {
+    unlink(temp_filename.c_str());
     return false;
   }
 
-  return true;
+  if (rename(temp_filename.c_str(), to_filename.c_str()) == 0) {
+    return true;
+  }
+
+  unlink(temp_filename.c_str());
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////

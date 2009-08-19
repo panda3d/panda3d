@@ -111,9 +111,10 @@ def makePackedApp(args):
             main = os.path.split(main[0])[1]
 
     main = Filename.fromOsSpecific(main)
-    main.setExtension('')
+    mainModule = Filename(main)
+    mainModule.setExtension('')
 
-    mainModule = main.cStr().replace('/', '.')
+    mainModule = mainModule.cStr().replace('/', '.')
     
     packager.installDir = appDir
     getModelPath().appendDirectory(root)
@@ -124,7 +125,7 @@ def makePackedApp(args):
         packager.require(requireName)
         
     packager.dir(root)
-    packager.mainModule(mainModule)
+    packager.mainModule(mainModule, filename = main)
         
     packager.endPackage(appBase, p3dApplication = True)
 

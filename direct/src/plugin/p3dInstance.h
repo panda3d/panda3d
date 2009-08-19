@@ -154,6 +154,7 @@ private:
   int _instance_id;
   string _session_key;
   string _python_version;
+  string _log_basename;
 
   // Not ref-counted: session is the parent.
   P3DSession *_session;

@@ -836,12 +836,17 @@ make_xml() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 scan_app_desc_file(TiXmlDocument *doc) {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
   TiXmlElement *xpackage = doc->FirstChildElement("package");
   if (xpackage == NULL) {
     return;
   }
 
-  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  const char *log_basename = xpackage->Attribute("log");
+  if (log_basename != NULL) {
+    _log_basename = log_basename;
+  }
 
   TiXmlElement *xrequires = xpackage->FirstChildElement("requires");
   while (xrequires != NULL) {

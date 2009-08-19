@@ -58,17 +58,6 @@ P3DSession(P3DInstance *inst) {
   _started_read_thread = false;
   _read_thread_continue = false;
 
-#ifdef _WIN32
-  static const size_t buffer_size = 4096;
-  char buffer[buffer_size];
-  if (GetTempPath(buffer_size, buffer) != 0) {
-    _output_filename = buffer;
-    _output_filename += "panda3d.3.log";
-  }
-#else
-  _output_filename = "/tmp/panda3d.3.log";
-#endif  // _WIN32
-
   INIT_LOCK(_instances_lock);
   INIT_THREAD(_read_thread);
 }
@@ -761,6 +750,44 @@ start_p3dpython(P3DInstance *inst) {
     env += '\0';
   }
 
+  // Get the log filename from the p3d_info.xml file.
+  string log_basename = inst->_log_basename;
+
+  // But we also let it be overridden by the tokens.
+  if (inst->get_fparams().has_token("log")) {
+    log_basename = inst->get_fparams().lookup_token("log");
+  }
+
+  // However, it is always written into the temp directory only; the
+  // user may not override the log file to put it anywhere else.
+  size_t slash = log_basename.rfind('/');
+  if (slash != string::npos) {
+    log_basename = log_basename.substr(slash + 1);
+  }
+#ifdef _WIN32
+  slash = log_basename.rfind('\\');
+  if (slash != string::npos) {
+    log_basename = log_basename.substr(slash + 1);
+  }
+#endif  // _WIN32
+
+  if (!log_basename.empty()) {
+#ifdef _WIN32
+    static const size_t buffer_size = 4096;
+    char buffer[buffer_size];
+    if (GetTempPath(buffer_size, buffer) != 0) {
+      _output_filename = buffer;
+    }
+#else
+    _output_filename = "/tmp/";
+#endif  // _WIN32
+    _output_filename += log_basename;
+
+    // We always tack on the extension ".log", to make it even more
+    // difficult to overwrite a system file.
+    _output_filename += ".log";
+  }
+
   nout << "Attempting to start python from " << p3dpython << "\n";
 #ifdef _WIN32
   _p3dpython_handle = win_create_process
@@ -860,7 +887,7 @@ rt_thread_run() {
     rt_handle_request(doc);
   }
 
-  logfile << "Exiting rt_thread_run in " << this << "\n";
+  nout << "Exiting rt_thread_run in " << this << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
