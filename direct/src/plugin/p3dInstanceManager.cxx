@@ -66,6 +66,15 @@ P3DInstanceManager() {
   icc.dwICC = ICC_PROGRESS_CLASS;
   InitCommonControlsEx(&icc);
 #endif
+
+#ifndef _WIN32
+  // On Mac or Linux, we'd better ignore SIGPIPE, or this signal will
+  // shut down the browser if the plugin exits unexpectedly.
+  struct sigaction ignore;
+  memset(&ignore, 0, sizeof(ignore));
+  ignore.sa_handler = SIG_IGN;
+  sigaction(SIGPIPE, &ignore, &_old_sigpipe);
+#endif  // _WIN32
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -83,6 +92,11 @@ P3DInstanceManager::
     JOIN_THREAD(_notify_thread);
     _started_notify_thread = false;
   }
+
+#ifndef _WIN32
+  // Restore the original SIGPIPE handler.
+  sigaction(SIGPIPE, &_old_sigpipe, NULL);
+#endif  // _WIN32
 
   if (_xcontents != NULL) {
     delete _xcontents;

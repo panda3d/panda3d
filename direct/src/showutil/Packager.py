@@ -1929,8 +1929,9 @@ class Packager:
         if filename:
             newFilename = Filename('/'.join(moduleName.split('.')))
             newFilename.setExtension(filename.getExtension())
-            package.addFile(filename, newName = newFilename.cStr(),
-                            deleteTemp = True, explicit = True, extract = True)
+            self.currentPackage.addFile(
+                filename, newName = newFilename.cStr(),
+                deleteTemp = True, explicit = True, extract = True)
 
         self.currentPackage.mainModule = (moduleName, newName)
 

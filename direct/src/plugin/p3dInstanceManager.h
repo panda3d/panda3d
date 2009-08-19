@@ -22,6 +22,10 @@
 #include <map>
 #include <vector>
 
+#ifndef _WIN32
+#include <signal.h>
+#endif
+
 class P3DInstance;
 class P3DSession;
 class P3DPackage;
@@ -134,6 +138,10 @@ private:
   typedef vector<P3DInstance *> NotifyInstances;
   NotifyInstances _notify_instances;
   P3DConditionVar _notify_ready;
+
+#ifndef _WIN32
+  struct sigaction _old_sigpipe;
+#endif
 
   static P3DInstanceManager *_global_ptr;
 };
