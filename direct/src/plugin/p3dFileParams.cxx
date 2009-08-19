@@ -32,7 +32,8 @@ P3DFileParams() {
 P3DFileParams::
 P3DFileParams(const P3DFileParams &copy) :
   _p3d_filename(copy._p3d_filename),
-  _tokens(copy._tokens)
+  _tokens(copy._tokens),
+  _args(copy._args)
 {
 }
 
@@ -45,6 +46,7 @@ void P3DFileParams::
 operator = (const P3DFileParams &other) {
   _p3d_filename = other._p3d_filename;
   _tokens = other._tokens;
+  _args = other._args;
 }
 
 ////////////////////////////////////////////////////////////////////

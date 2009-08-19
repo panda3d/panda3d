@@ -53,6 +53,7 @@ P3DSession(P3DInstance *inst) {
   _python_version = inst->get_python_version();
 
   _start_dir = inst_mgr->get_root_dir() + "/start";
+  _p3dpython_started = false;
   _p3dpython_running = false;
 
   _started_read_thread = false;
@@ -82,7 +83,7 @@ P3DSession::
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 shutdown() {
-  if (_p3dpython_running) {
+  if (_p3dpython_started) {
     // Tell the process we're going away.
     TiXmlDocument doc;
     TiXmlElement *xcommand = new TiXmlElement("command");
@@ -159,6 +160,7 @@ shutdown() {
 #endif  // _WIN32
 
     _p3dpython_running = false;
+    _p3dpython_started = false;
   }
 
   // If there are any leftover commands in the queue (presumably
@@ -258,7 +260,7 @@ terminate_instance(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 send_command(TiXmlDocument *command) {
-  if (_p3dpython_running) {
+  if (_p3dpython_started) {
     // Python is running.  Send the command.
     write_xml(_pipe_write, command, nout);
     delete command;
@@ -285,7 +287,7 @@ send_command(TiXmlDocument *command) {
 ////////////////////////////////////////////////////////////////////
 TiXmlDocument *P3DSession::
 command_and_response(TiXmlDocument *command) {
-  if (!_p3dpython_running) {
+  if (!_p3dpython_started) {
     return NULL;
   }
 
@@ -307,9 +309,6 @@ command_and_response(TiXmlDocument *command) {
   while (ri == _responses.end()) {
     if (!_p3dpython_running) {
       // Hmm, looks like Python has gone away.
-
-      // TODO: make sure _p3dpython_running gets set to false when the
-      // process dies unexpectedly.
       _response_ready.release();
       return NULL;
     }
@@ -593,7 +592,7 @@ signal_request_ready(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 drop_pyobj(int object_id) {
-  if (_p3dpython_running) {
+  if (_p3dpython_started) {
     TiXmlDocument doc;
     TiXmlElement *xcommand = new TiXmlElement("command");
     xcommand->SetAttribute("cmd", "drop_pyobj");
@@ -641,7 +640,7 @@ report_packages_done(P3DInstance *inst, bool success) {
 ////////////////////////////////////////////////////////////////////
 void P3DSession::
 start_p3dpython(P3DInstance *inst) {
-  if (_p3dpython_running) {
+  if (_p3dpython_started) {
     // Already started.
     return;
   }
@@ -805,6 +804,7 @@ start_p3dpython(P3DInstance *inst) {
     nout << "Failed to create process.\n";
     return;
   }
+  _p3dpython_started = true;
   _p3dpython_running = true;
 
   if (!_pipe_read) {
@@ -880,6 +880,10 @@ rt_thread_run() {
     if (doc == NULL) {
       // Some error on reading.  Abort.
       rt_terminate();
+      _p3dpython_running = false;
+      _response_ready.acquire();
+      _response_ready.notify();
+      _response_ready.release();
       return;
     }
 

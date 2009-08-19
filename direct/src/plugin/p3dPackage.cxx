@@ -345,6 +345,8 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
 
   if (all_extracts_ok) {
     // Great, we're ready to begin.
+    nout << "All " << _extracts.size() << " extracts of " << _package_name
+         << " seem good.\n";
     report_done(true);
 
   } else {

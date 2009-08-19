@@ -63,6 +63,7 @@ P3DInstance(P3D_request_ready_func *func,
   _got_wparams = false;
 
   _fparams.set_tokens(tokens, num_tokens);
+  _fparams.set_args(argc, argv);
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _instance_id = inst_mgr->get_unique_id();

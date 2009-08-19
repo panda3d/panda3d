@@ -118,6 +118,7 @@ private:
 #else
   int _p3dpython_pid;
 #endif
+  bool _p3dpython_started;
   bool _p3dpython_running;
 
   // The _response_ready mutex protects this structure.
