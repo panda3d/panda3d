@@ -174,10 +174,14 @@ class Packager:
             if self.dryRun:
                 self.multifile = None
             else:
+                self.multifile = Multifile()
+
+                if self.p3dApplication:
+                    self.multifile.setHeaderPrefix('#! /usr/bin/env panda3d\n')
+
                 # Write the multifile to a temporary filename until we
                 # know enough to determine the output filename.
                 multifileFilename = Filename.temporary('', self.packageName)
-                self.multifile = Multifile()
                 self.multifile.openReadWrite(multifileFilename)
 
             self.extracts = []
@@ -252,7 +256,7 @@ class Packager:
                     xmodule.SetAttribute('forbid', '1')
                 if mdef.exclude and mdef.allowChildren:
                     xmodule.SetAttribute('allowChildren', '1')
-                self.components.append((newName.lower(), xmodule))
+                self.components.append(('m', newName.lower(), xmodule))
 
             # Now look for implicit shared-library dependencies.
             if PandaSystem.getPlatform().startswith('win'):
@@ -356,10 +360,14 @@ class Packager:
 
                 multifileFilename.renameTo(self.packageFullpath)
 
-                if not self.p3dApplication:
+                if self.p3dApplication:
+                    # Make the application file executable.
+                    os.chmod(self.packageFullpath.toOsSpecific(), 0755)
+                else:
                     self.compressMultifile()
                     self.writeDescFile()
                     self.writeImportDescFile()
+                
 
             # Now that all the files have been packed, we can delete
             # the temporary files.
@@ -757,7 +765,7 @@ class Packager:
                 xpackage.InsertEndChild(xrequires)
 
             self.components.sort()
-            for name, xcomponent in self.components:
+            for type, name, xcomponent in self.components:
                 xpackage.InsertEndChild(xcomponent)
 
             doc.InsertEndChild(xpackage)
@@ -935,7 +943,7 @@ class Packager:
             
             xcomponent = TiXmlElement('component')
             xcomponent.SetAttribute('filename', newName)
-            self.components.append((newName.lower(), xcomponent))
+            self.components.append(('c', newName.lower(), xcomponent))
 
         def addFoundTexture(self, filename):
             """ Adds the newly-discovered texture to the output, if it has
@@ -979,7 +987,7 @@ class Packager:
 
             xcomponent = TiXmlElement('component')
             xcomponent.SetAttribute('filename', file.newName)
-            self.components.append((file.newName.lower(), xcomponent))
+            self.components.append(('c', file.newName.lower(), xcomponent))
 
         def requirePackage(self, package):
             """ Indicates a dependency on the given package.  This

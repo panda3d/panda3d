@@ -22,7 +22,7 @@ This script is actually a wrapper around Panda's Packager.py.
 
 Usage:
 
-  ppackage.py [opts] package.pdef
+  %s [opts] package.pdef
 
 Required:
 
@@ -75,7 +75,7 @@ from direct.showutil import make_contents
 from pandac.PandaModules import *
 
 def usage(code, msg = ''):
-    print >> sys.stderr, __doc__
+    print >> sys.stderr, __doc__ % (os.path.split(sys.argv[0])[1])
     print >> sys.stderr, msg
     sys.exit(code)
 

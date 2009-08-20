@@ -158,12 +158,42 @@ read_header(const string &pathname) {
     return false;
   }
 
-  for (size_t i = 0; i < _header_size; ++i) {
-    int ch = _in.get();
-    if (ch != _header[i]) {
-      nout << "Failed header check: " << pathname << "\n";
-      return false;
+  char this_header[_header_size];
+  _in.seekg(0);
+  _in.read(this_header, _header_size);
+  if (_in.fail() || _in.gcount() != (unsigned)_header_size) {
+    nout
+      << "Unable to read Multifile header " << pathname << ".\n";
+    return false;
+  }
+
+  // Here's a special case: if the multifile begins with a hash
+  // character, then we skip at least 6 characters, and continue
+  // reading and discarding lines of ASCII text, until we come across
+  // a nonempty line that does not begin with a hash character.  This
+  // allows a P3D application (which is a multifile) to be run
+  // directly on the command line on Unix-based systems.
+  if (this_header[0] == '#') {
+    int ch = '#';
+    while (ch != EOF && ch == '#') {
+      // Skip to the end of the line.
+      while (ch != EOF && ch != '\n') {
+        ch = _in.get();
+      }
+      // Skip to the first non-whitespace character of the line.
+      while (ch != EOF && (isspace(ch) || ch == '\r')) {
+        ch = _in.get();
+      }
     }
+
+    // Now fill up the header.
+    this_header[0] = ch;
+    _in.read(this_header + 1, _header_size - 1);
+  }
+
+  if (memcmp(this_header, _header, _header_size) != 0) {
+    nout << "Failed header check: " << pathname << "\n";
+    return false;
   }
 
   unsigned int major = read_uint16();

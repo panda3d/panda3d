@@ -7,12 +7,12 @@ tree of .py files and models, into a p3d file for convenient
 distribution.  The resulting p3d file can be run by the Panda3D
 runtime executable, or by the Panda3D web browser plugin.
 
-Also see ppackage.py, which can be used to build p3d files more
+Also see ppackage, which can be used to build p3d files more
 generally, using a pdef description file.
 
 Usage:
 
-  packp3d.py [opts] app.p3d
+  %s [opts] app.p3d
 
 Options:
 
@@ -82,7 +82,7 @@ def makePackedApp(args):
         elif option == '-x':
             versionIndependent = True
         elif option == '-h':
-            print __doc__
+            print __doc__ % (os.path.split(sys.argv[0])[1])
             sys.exit(1)
 
     if not args:
