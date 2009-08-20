@@ -252,7 +252,7 @@ class Packager:
                     xmodule.SetAttribute('forbid', '1')
                 if mdef.exclude and mdef.allowChildren:
                     xmodule.SetAttribute('allowChildren', '1')
-                self.components.append(xmodule)
+                self.components.append((newName.lower(), xmodule))
 
             # Now look for implicit shared-library dependencies.
             if PandaSystem.getPlatform().startswith('win'):
@@ -727,7 +727,8 @@ class Packager:
             xpackage.InsertEndChild(xuncompressedArchive)
             xpackage.InsertEndChild(xcompressedArchive)
 
-            for xextract in self.extracts:
+            self.extracts.sort()
+            for name, xextract in self.extracts:
                 xpackage.InsertEndChild(xextract)
 
             doc.InsertEndChild(xpackage)
@@ -755,7 +756,8 @@ class Packager:
                     xrequires.SetAttribute('version', package.version)
                 xpackage.InsertEndChild(xrequires)
 
-            for xcomponent in self.components:
+            self.components.sort()
+            for name, xcomponent in self.components:
                 xpackage.InsertEndChild(xcomponent)
 
             doc.InsertEndChild(xpackage)
@@ -933,7 +935,7 @@ class Packager:
             
             xcomponent = TiXmlElement('component')
             xcomponent.SetAttribute('filename', newName)
-            self.components.append(xcomponent)
+            self.components.append((newName.lower(), xcomponent))
 
         def addFoundTexture(self, filename):
             """ Adds the newly-discovered texture to the output, if it has
@@ -973,11 +975,11 @@ class Packager:
             self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
             if file.extract:
                 xextract = self.getFileSpec('extract', file.filename, file.newName)
-                self.extracts.append(xextract)
+                self.extracts.append((file.newName.lower(), xextract))
 
             xcomponent = TiXmlElement('component')
             xcomponent.SetAttribute('filename', file.newName)
-            self.components.append(xcomponent)
+            self.components.append((file.newName.lower(), xcomponent))
 
         def requirePackage(self, package):
             """ Indicates a dependency on the given package.  This
@@ -1076,7 +1078,29 @@ class Packager:
         self.binaryExtensions = [ 'ttf', 'wav', 'mid' ]
 
         # Files that represent an executable or shared library.
-        self.executableExtensions = [ 'dll', 'pyd', 'so', 'dylib', 'exe' ]
+        if self.platform.startswith('win'):
+            self.executableExtensions = [ 'dll', 'pyd', 'exe' ]
+        elif self.platform.startswith('osx'):
+            self.executableExtensions = [ 'so', 'dylib' ]
+        else:
+            self.executableExtensions = [ 'so' ]
+
+        # Extensions that are automatically remapped by convention.
+        self.remapExtensions = {}
+        if self.platform.startswith('win'):
+            pass
+        elif self.platform.startswith('osx'):
+            self.remapExtensions = {
+                'dll' : 'dylib',
+                'pyd' : 'dylib',
+                'exe' : ''
+                }
+        else:
+            self.remapExtensions = {
+                'dll' : 'so',
+                'pyd' : 'so',
+                'exe' : ''
+                }
 
         # Files that should be extracted to disk.
         self.extractExtensions = self.executableExtensions[:]
@@ -1596,10 +1620,10 @@ class Packager:
 
     def parse_file(self, words):
         """
-        file filename [newNameOrDir] [extract=1] [executable=1]
+        file filename [newNameOrDir] [extract=1] [executable=1] [literal=1]
         """
 
-        args = self.__parseArgs(words, ['extract', 'executable'])
+        args = self.__parseArgs(words, ['extract', 'executable', 'literal'])
 
         newNameOrDir = None
 
@@ -1619,9 +1643,13 @@ class Packager:
         if executable is not None:
             executable = int(executable)
 
+        literal = args.get('literal', None)
+        if literal is not None:
+            literal = int(literal)
+
         self.file(Filename.fromOsSpecific(filename),
                   newNameOrDir = newNameOrDir, extract = extract,
-                  executable = executable)
+                  executable = executable, literal = literal)
 
     def parse_inline_file(self, words):
         """
@@ -2133,7 +2161,8 @@ class Packager:
         package.mainModule = None
 
     def file(self, filename, source = None, newNameOrDir = None,
-             extract = None, executable = None, deleteTemp = False):
+             extract = None, executable = None, deleteTemp = False,
+             literal = False):
         """ Adds the indicated arbitrary file to the current package.
 
         The file is placed in the named directory, or the toplevel
@@ -2162,6 +2191,12 @@ class Packager:
 
         If deleteTemp is true, the file is a temporary file and will
         be deleted after its contents are copied to the package.
+
+        If literal is true, then the file extension will be respected
+        exactly as it appears, and glob characters will not be
+        expanded.  If this is false, then .dll or .exe files will be
+        renamed to .dylib and no extension on OSX (or .so on Linux);
+        and glob characters will be expanded.
         
         """
 
@@ -2169,9 +2204,26 @@ class Packager:
             raise OutsideOfPackageError
 
         filename = Filename(filename)
-        files = glob.glob(filename.toOsSpecific())
-        if not files:
+
+        if literal:
             files = [filename.toOsSpecific()]
+
+        else:
+            ext = filename.getExtension()
+
+            # A special case, since OSX and Linux don't have a
+            # standard extension for program files.
+            if executable is None and ext == 'exe':
+                executable = True
+
+            newExt = self.remapExtensions.get(ext, None)
+            if newExt is not None:
+                filename.setExtension(newExt)
+
+            files = glob.glob(filename.toOsSpecific())
+            if not files:
+                files = [filename.toOsSpecific()]
+
         explicit = (len(files) == 1)
 
         newName = None

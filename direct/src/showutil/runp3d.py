@@ -222,8 +222,11 @@ class AppRunner(DirectObject):
                 mainName = self.p3dPackage.Attribute('main_module')
                 if mainName:
                     moduleName = mainName
-            
-            v = VFSImporter.VFSImporter(MultifileRoot)
+
+            root = MultifileRoot
+            if '.' in moduleName:
+                root += '/' + '/'.join(moduleName.split('.')[:-1])
+            v = VFSImporter.VFSImporter(root)
             loader = v.find_module(moduleName)
             if not loader:
                 message = "No %s found in application." % (moduleName)
@@ -263,6 +266,10 @@ class AppRunner(DirectObject):
         self.tokens = tokens
         self.tokenDict = dict(tokens)
         self.argv = argv
+
+        # Also store the arguments on sys, for applications that
+        # aren't instance-ready.
+        sys.argv = argv
 
         # Tell the browser that Python is up and running, and ready to
         # respond to queries.

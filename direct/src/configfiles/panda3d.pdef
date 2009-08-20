@@ -1,0 +1,166 @@
+# This file defines a number of standard "packages" that correspond to
+# a Panda3D distribution.  These packages are built by passing this
+# file to the ppackage utility, either as a packaged application, or
+# as the module direct.showutil.ppackage.
+
+# These packages are then downloaded by the Panda3D plugin and
+# standalone runtime executable, and they contain the actual Panda3D
+# runtime libraries.
+
+# We divide the runtime into several smaller packages.  There is the
+# core Panda3D package, which is needed by all Panda3D applications,
+# and then a number of smaller, optional packages, which may or may
+# not be needed by any one particular application.
+
+
+begin_package panda3d
+
+# The core Panda3D package.  Contains Python and most of the graphics
+# code in Panda3D.
+
+config display_name="Panda3D"
+
+# This is the key Python module that is imported at runtime to start
+# an application running.
+module direct.showutil.runp3d
+
+# These are additional Python modules that are needed by most Panda3D
+# applications.  It doesn't matter too much if we miss one or two
+# here, since any module imported by any of this code will
+# automatically be included as well, and we end up with a pretty
+# complete list that way.
+module direct.directbase.DirectStart
+module direct.showbase.*
+module direct.actor.Actor
+module direct.fsm.FSM
+module direct.interval.IntervalGlobal
+module direct.particles.ParticleEffect
+module direct.directutil.Mopath
+
+# Exclude these GUI toolkits; they're big, and many applications don't
+# use them.  We define them as separate, optional packages, below.
+exclude_module wx
+exclude_module direct.showbase.WxGlobal
+
+exclude_module Tkinter
+exclude_module direct.showbase.TkGlobal
+exclude_module direct.tkpanels
+exclude_module direct.tkwidgets
+
+# Bind all of the above Python code into a frozen DLL.  This makes the
+# Python code available when the DLL is imported.  It is actually
+# preferable not to use freeze, but instead just to leave the Python
+# code directly within the Multifile; but in this case we have to use
+# freeze on this very first package, due to bootstrapping
+# requirements.  (Part of the code we're including here is the code
+# required to load Python code from a Multifile, so it can't be placed
+# within a Multifile itself.)
+freeze_dll runp3d_frozen
+
+# This is the main program that drives the plugin application.  It is
+# responsible for loading runp3d_frozen, above, and then importing
+# direct.showutil.runp3d, to start an application running.  Note that
+# the .exe extension is automatically replaced with the
+# platform-specific extension appropriate for an executable.
+file p3dpython.exe
+
+# Most of the core Panda3D DLL's will be included implicitly due to
+# being referenced by the above Python code.  Here we name a few more
+# that are also needed, but aren't referenced by any code.  Again,
+# note that the .dll extension is automatically replaced with the
+# platform-specific extension for an executable.
+file libpandagl.dll
+file libpandadx8.dll
+file libpandadx9.dll
+file libtinydisplay.dll
+
+# A basic config file is needed to lay some some fundamental runtime
+# variables.
+inline_file Config.prc extract=1 <<- <EOF>
+    plugin-path $PANDA3D_ROOT
+    aux-display pandagl
+    aux-display pandadx9
+    aux-display pandadx8
+    aux-display tinydisplay
+<EOF>
+
+end_package panda3d
+
+
+begin_package egg
+
+# This package contains the code for reading and operating on egg
+# files.  Since the Packager automatically converts egg files to bam
+# files, this is not needed for most Panda3D applications.
+
+config display_name="Panda3D egg loader"
+require panda3d
+
+file libpandaegg.dll
+
+inline_file egg.prc extract=1 <<- <EOF>
+    plugin-path $EGG_ROOT
+    load-file-type egg pandaegg
+<EOF>
+
+end_package egg
+
+
+begin_package wx
+config display_name="wxPython GUI Toolkit"
+require panda3d
+
+module direct.showbase.WxGlobal
+module wx
+module wx.*
+
+end_package wx
+
+
+
+begin_package tk
+config display_name="Tk GUI Toolkit"
+require panda3d
+
+module Tkinter
+module direct.showbase.TkGlobal
+module direct.tkpanels
+module direct.tkwidgets
+
+end_package tk
+
+
+begin_p3d packp3d
+
+# This application is a command-line convenience for building a p3d
+# application out of a directory hierarchy on disk.  We build it here
+# into its own p3d application, to allow end-users to easily build p3d
+# applications using the appropriate version of Python and Panda for
+# the targeted runtime.
+
+config display_name="Panda3D Application Packer"
+config full_disk_access=1
+config hidden=1
+require panda3d
+require egg
+
+main_module direct.showutil.packp3d
+
+end_p3d packp3d
+
+
+begin_p3d ppackage
+
+# As above, a packaging utility.  This is the fully-general ppackage
+# utility, which reads pdef files (like this one!) and creates one or
+# more packages or p3d applications.
+
+config display_name="Panda3D General Package Utility"
+config full_disk_access=1
+config hidden=1
+require panda3d
+require egg
+
+main_module direct.showutil.ppackage
+
+end_p3d ppackage

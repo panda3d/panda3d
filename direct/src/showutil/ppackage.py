@@ -1,15 +1,22 @@
 #! /usr/bin/env python
 
 """
-This script can be used to produce a downloadable "Package", which may
-contain arbitrary files--for instance, Python code, bam files, and/or
-compiled DLL's--and which may be downloaded by application code to
-extend an application at runtime.
+This script can be used to produce a Panda3D downloadable "package",
+which may contain arbitrary files--for instance, Python code, bam
+files, and/or compiled DLL's--and which may be downloaded by
+application code to extend an application at runtime.
 
-In addition to building the package in the first place, this script
-can also be used to generate downloadable patches of the package
-against previous versions, and manage the whole tree of patches in a
-directory structure suitable for hosting on a web server somewhere.
+In addition to packages, this script can also be used to build
+standalone p3d applications, that is, packaged Python code in a p3d
+file, for execution by the Panda3D plugin or runtime.  (But also see
+packp3d, which is designed to be a simpler interface for building
+applications.)
+
+In addition to building a package in the first place, this script will
+also generate downloadable patches of the package against previous
+versions, and manage the whole tree of patches in a directory
+structure suitable for hosting on a web server somewhere.  (This part
+is not yet completed.)
 
 This script is actually a wrapper around Panda's Packager.py.
 
