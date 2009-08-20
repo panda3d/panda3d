@@ -98,7 +98,8 @@ public:
   static void delete_global_ptr();
 
 private:
-  bool copy_file(const string &from_filename, const string &to_filename);
+  static string standardize_filename(const string &filename);
+  static bool copy_file(const string &from_filename, const string &to_filename);
 
 private:
   // The notify thread.  This thread runs only for the purpose of

@@ -278,7 +278,8 @@ initialize(const string &contents_filename, const string &download_url,
 //       Access: Public
 //  Description: Reads the contents.xml file in the indicated
 //               filename.  On success, copies the contents.xml file
-//               into the standard location.
+//               into the standard location (if it's not there
+//               already).
 //
 //               Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
@@ -300,7 +301,8 @@ read_contents_file(const string &contents_filename) {
   _xcontents = (TiXmlElement *)xcontents->Clone();
 
   string standard_filename = _root_dir + "/contents.xml";
-  if (standard_filename != contents_filename) {
+  if (standardize_filename(standard_filename) != 
+      standardize_filename(contents_filename)) {
     copy_file(contents_filename, standard_filename);
   }
 
@@ -697,8 +699,38 @@ delete_global_ptr() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::standardize_filename
+//       Access: Private, Static
+//  Description: Attempts to change the filename into some standard
+//               form for comparison with other filenames.  On a
+//               case-insensitive filesystem, this converts the
+//               filename to lowercase.  On Windows, it further
+//               replaces forward slashes with backslashes.
+////////////////////////////////////////////////////////////////////
+string P3DInstanceManager::
+standardize_filename(const string &filename) {
+#if defined(_WIN32) || defined(__APPLE__)
+  string new_filename;
+  for (string::const_iterator si = filename.begin();
+       si != filename.end();
+       ++si) {
+    char ch = *si;
+#ifdef _WIN32
+    if (ch == '/') {
+      ch = '\\';
+    }
+#endif  // _WIN32
+    new_filename += tolower(ch);
+  }
+  return new_filename;
+#else  // _WIN32 || __APPLE__
+  return filename;
+#endif  // _WIN32 || __APPLE__
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::copy_file
-//       Access: Private
+//       Access: Private, Static
 //  Description: Copies the data in the file named by from_filename
 //               into the file named by to_filename.
 ////////////////////////////////////////////////////////////////////
@@ -734,6 +766,7 @@ copy_file(const string &from_filename, const string &to_filename) {
     in.read(buffer, buffer_size);
     count = in.gcount();
   }
+  out.close();
 
   if (!in.eof()) {
     unlink(temp_filename.c_str());
