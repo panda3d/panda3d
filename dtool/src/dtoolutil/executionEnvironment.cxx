@@ -455,7 +455,11 @@ void ExecutionEnvironment::
 read_args() {
 
 #ifdef WIN32_VC
+#ifdef _DEBUG
+  HMODULE dllhandle = GetModuleHandle("libp3dtool_d.dll");
+#else
   HMODULE dllhandle = GetModuleHandle("libp3dtool.dll");
+#endif
   if (dllhandle != 0) {
     static const DWORD buffer_size = 1024;
     char buffer[buffer_size];
