@@ -22,13 +22,13 @@ This script is actually a wrapper around Panda's Packager.py.
 
 Usage:
 
-  %s [opts] package.pdef
+  %(prog)s [opts] package.pdef
 
 Required:
 
   package.pdef
     The config file that describes the contents of the package file(s)
-    to be built, in excruciating detail.  Use "ppackage.py -H" to
+    to be built, in excruciating detail.  Use "%(prog)s -H" to
     describe the syntax of this file.
 
 Options:
@@ -75,7 +75,7 @@ from direct.showutil import make_contents
 from pandac.PandaModules import *
 
 def usage(code, msg = ''):
-    print >> sys.stderr, __doc__ % (os.path.split(sys.argv[0])[1])
+    print >> sys.stderr, __doc__ % {'prog' : os.path.split(sys.argv[0])[1]}
     print >> sys.stderr, msg
     sys.exit(code)
 

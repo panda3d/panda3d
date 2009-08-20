@@ -303,7 +303,6 @@ run(int argc, char *argv[]) {
   }
 
   // All instances have finished; we can exit.
-  cerr << "clean exit\n";
   unload_plugin();
   return 0;
 }

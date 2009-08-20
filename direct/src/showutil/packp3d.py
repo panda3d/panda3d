@@ -86,7 +86,7 @@ def makePackedApp(args):
             sys.exit(1)
 
     if not args:
-        raise ArgumentError, "No destination app specified.  Use:\npackp3d.py app.p3d"
+        raise ArgumentError, "No target app specified.  Use:\n%s app.p3d" % (os.path.split(sys.argv[0])[1])
 
     if len(args) > 1:
         raise ArgumentError, "Too many arguments."
