@@ -158,7 +158,9 @@ class AppRunner(DirectObject):
             # vfs right now; careless application code can still write
             # to these directories inadvertently.
             for dirname in sys.path:
-                vfs.mount(dirname, dirname, vfs.MFReadOnly)
+                dirname = Filename.fromOsSpecific(dirname)
+                if dirname.isDirectory():
+                    vfs.mount(dirname, dirname, vfs.MFReadOnly)
 
             # Also mount some standard directories read-write
             # (temporary and app-data directories).

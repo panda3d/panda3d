@@ -42,6 +42,16 @@ P3DPythonRun(int argc, char *argv[]) {
   _py_argv[0] = argv[0];
   _py_argv[1] = NULL;
 
+#ifdef NDEBUG
+  // In OPTIMIZE 4 compilation mode, run Python in optimized mode too.
+  extern int Py_OptimizeFlag;
+  Py_OptimizeFlag = 2;
+#endif
+
+  // Turn off the automatic load of site.py at startup.
+  extern int Py_NoSiteFlag;
+  Py_NoSiteFlag = 1;
+
   // Initialize Python.  It appears to be important to do this before
   // we open the pipe streams and spawn the thread, below.
   Py_SetProgramName((char *)_program_name.c_str());
