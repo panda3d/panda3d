@@ -1535,6 +1535,38 @@ read_index() {
     close();
     return false;
   }
+
+  // Here's a special case: if the multifile begins with a hash
+  // character, then we skip at least 6 characters (the length of the
+  // original header string we already read), and continue reading and
+  // discarding lines of ASCII text, until we come across a nonempty
+  // line that does not begin with a hash character.  This allows a
+  // P3D application (which is a multifile) to be run directly on the
+  // command line on Unix-based systems.
+  _header_prefix = string();
+
+  if (this_header[0] == '#') {
+    _header_prefix = string(this_header, _header_size);
+    int ch = '#';
+
+    while (ch != EOF && ch == '#') {
+      // Skip to the end of the line.
+      while (ch != EOF && ch != '\n') {
+        _header_prefix += ch;
+        ch = read->get();
+      }
+      // Skip to the first non-whitespace character of the line.
+      while (ch != EOF && (isspace(ch) || ch == '\r')) {
+        _header_prefix += ch;
+        ch = read->get();
+      }
+    }
+
+    // Now fill up the header.
+    this_header[0] = ch;
+    read->read(this_header + 1, _header_size - 1);
+  }
+
   if (memcmp(this_header, _header, _header_size) != 0) {
     express_cat.info()
       << _multifile_name << " is not a Multifile.\n";
@@ -1657,6 +1689,7 @@ write_header() {
 
   nassertr(_write != (ostream *)NULL, false);
   nassertr(_write->tellp() == (streampos)0, false);
+  _write->write(_header_prefix.data(), _header_prefix.size());
   _write->write(_header, _header_size);
   StreamWriter writer(_write, false);
   writer.add_int16(_current_major_ver);

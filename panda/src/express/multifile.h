@@ -114,6 +114,9 @@ PUBLISHED:
 
   static INLINE string get_magic_number();
 
+  INLINE void set_header_prefix(const string &header_prefix);
+  INLINE const string &get_header_prefix() const;
+
 public:
   bool read_subfile(int index, string &result);
   bool read_subfile(int index, pvector<unsigned char> &result);
@@ -199,6 +202,7 @@ private:
   pfstream _read_write_file;
   StreamWrapper _read_write_filew;
   Filename _multifile_name;
+  string _header_prefix;
 
   int _file_major_ver;
   int _file_minor_ver;
