@@ -61,6 +61,20 @@ get_platform() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_log_directory
+//       Access: Public
+//  Description: Returns the pathname of the directory into which all
+//               log files should be written.  This filename will end
+//               with a slash or backslash, as appropriate, so that
+//               logfile pathnames may be made by concatenting
+//               directly with this string.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_log_directory() const {
+  return _log_directory;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::has_contents_file
 //       Access: Public
 //  Description: Returns true if a contents.xml file has been

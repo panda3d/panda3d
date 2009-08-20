@@ -38,8 +38,7 @@
 
 using namespace std;
 
-// Appears in p3d_plugin.cxx.
-extern string plugin_output_filename;
+// Appears in p3dInstanceManager.cxx.
 extern ostream *nout_stream;
 #define nout (*nout_stream)
 

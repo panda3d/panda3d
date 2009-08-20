@@ -30,26 +30,44 @@ static bool logfile_is_open = false;
 static void
 open_logfile() {
   if (!logfile_is_open) {
-#ifdef P3D_PLUGIN_LOGFILE1
-    string logfilename = P3D_PLUGIN_LOGFILE1;
-#else
-    string logfilename;
-#endif  // P3D_PLUGIN_LOGFILE1
+    // Note that this logfile name may not be specified at runtime.  It
+    // must be compiled in if it is specified at all.
 
-    if (logfilename.empty()) {
+    string log_basename;
+#ifdef P3D_PLUGIN_LOG_BASENAME1
+    log_basename = P3D_PLUGIN_LOG_BASENAME1;
+#endif
+
+    if (!log_basename.empty()) {
+      // Get the log directory.
+      string log_directory;
+#ifdef P3D_PLUGIN_LOG_DIRECTORY
+      log_directory = P3D_PLUGIN_LOG_DIRECTORY;
+#endif
+      if (log_directory.empty()) {
 #ifdef _WIN32
-      static const size_t buffer_size = 4096;
-      char buffer[buffer_size];
-      if (GetTempPath(buffer_size, buffer) != 0) {
-        logfilename = buffer;
-        logfilename += "panda3d.1.log";
-      }
+        static const size_t buffer_size = 4096;
+        char buffer[buffer_size];
+        if (GetTempPath(buffer_size, buffer) != 0) {
+          log_directory = buffer;
+        }
 #else
-      logfilename = "/tmp/panda3d.1.log";
+        log_directory = "/tmp/";
 #endif  // _WIN32
+      }
+
+      // Construct the full logfile pathname.
+      string log_pathname = log_directory;
+      log_pathname += log_basename;
+      log_pathname += ".log";
+
+      logfile.open(log_pathname.c_str());
+      logfile.setf(ios::unitbuf);
     }
-    logfile.open(logfilename.c_str());
-    logfile.setf(ios::unitbuf);
+
+    // If we didn't have a logfile name compiled in, we throw away log
+    // output by the simple expedient of never actually opening the
+    // ofstream.
     logfile_is_open = true;
   }
 }

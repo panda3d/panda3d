@@ -65,9 +65,15 @@ private:
   void usage();
   bool parse_int_pair(char *arg, int &x, int &y);
 
+  void report_downloading_package(P3D_instance *instance);
+  void report_download_complete(P3D_instance *instance);
+
 private:
   string _root_dir;
+  string _log_dirname;
+  string _log_basename;
   FileSpec _core_api_dll;
+  bool _reporting_download;
 
   typedef pset<P3D_instance *> Instances;
   Instances _instances;

@@ -35,6 +35,8 @@ public:
   void operator = (const P3DWindowParams &other);
 
   inline P3D_window_type get_window_type() const;
+  inline void set_window_type(P3D_window_type window_type);
+
   inline int get_win_x() const;
   inline int get_win_y() const;
   inline int get_win_width() const;

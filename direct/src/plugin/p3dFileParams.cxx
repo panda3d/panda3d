@@ -123,6 +123,19 @@ lookup_token(const string &keyword) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DFileParams::lookup_token_int
+//       Access: Public
+//  Description: Returns the integer value associated with the first
+//               appearance of the named token, or zero if the
+//               token does not appear or is not an integer.
+////////////////////////////////////////////////////////////////////
+int P3DFileParams::
+lookup_token_int(const string &keyword) const {
+  string value = lookup_token(keyword);
+  return atoi(value.c_str());
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DFileParams::has_token
 //       Access: Public
 //  Description: Returns true if the named token appears in the list,

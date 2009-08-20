@@ -32,14 +32,10 @@
 bool initialized_lock = false;
 LOCK _api_lock;
 
-ofstream logfile;
-string plugin_output_filename;
-ostream *nout_stream;
-
-
 bool 
 P3D_initialize(int api_version, const char *contents_filename,
-               const char *download_url, const char *platform) {
+               const char *download_url, const char *platform,
+               const char *log_directory, const char *log_basename) {
   if (api_version != P3D_API_VERSION) {
     // Can't accept an incompatible version.
     return false;
@@ -63,36 +59,17 @@ P3D_initialize(int api_version, const char *contents_filename,
     platform = "";
   }
 
-#ifdef P3D_PLUGIN_LOGFILE2
-  string logfilename = P3D_PLUGIN_LOGFILE2;
-#else
-  string logfilename;
-#endif  // P3D_PLUGIN_LOGFILE2
-
-  if (logfilename.empty()) {
-#ifdef _WIN32
-    static const size_t buffer_size = 4096;
-    char buffer[buffer_size];
-    if (GetTempPath(buffer_size, buffer) != 0) {
-      logfilename = buffer;
-      logfilename += "panda3d.2.log";
-    }
-#else
-    logfilename = "/tmp/panda3d.2.log";
-#endif  // _WIN32
+  if (log_directory == NULL) {
+    log_directory = "";
   }
 
-  cerr << "logfile: " << logfilename << "\n";
-
-  nout_stream = &cerr;
-  logfile.open(logfilename.c_str(), ios::out | ios::trunc);
-  if (logfile) {
-    logfile.setf(ios::unitbuf);
-    nout_stream = &logfile;
+  if (log_basename == NULL) {
+    log_basename = "";
   }
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  bool result = inst_mgr->initialize(contents_filename, download_url, platform);
+  bool result = inst_mgr->initialize(contents_filename, download_url,
+                                     platform, log_directory, log_basename);
   RELEASE_LOCK(_api_lock);
   return result;
 }

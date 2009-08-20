@@ -244,7 +244,6 @@ class AppRunner(DirectObject):
         same page with the Panda3D plugin. """
 
         self.dom = dom
-        print "setBrowserScriptObject(%s)" % (dom)
 
         # Now evaluate any deferred expressions.
         for expression in self.deferredEvals:
@@ -333,11 +332,6 @@ class AppRunner(DirectObject):
         """ Applies the indicated window parameters to the prc
         settings, for future windows; or applies them directly to the
         main window if the window has already been opened. """
-
-        print "session %s, nextScriptId = %s" % (self.sessionId, self.nextScriptId)
-
-
-        print "setupWindow %s, %s, %s, %s, %s, %s, %s" % (windowType, x, y, width, height, parent, subprocessWindow)
 
         if self.started and base.win:
             # If we've already got a window, this must be a

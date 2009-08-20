@@ -40,6 +40,7 @@ class P3DDownload;
 class P3DPackage;
 class P3DObject;
 class P3DToplevelObject;
+class P3DTemporaryFile;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DInstance
@@ -145,6 +146,9 @@ private:
   P3D_object *_browser_script_object;
   P3DToplevelObject *_panda_script_object;
 
+  P3DTemporaryFile *_temp_p3d_filename;
+  P3DTemporaryFile *_temp_splash_image;
+
   bool _got_fparams;
   P3DFileParams _fparams;
 
@@ -156,6 +160,7 @@ private:
   string _python_version;
   string _log_basename;
   bool _full_disk_access;
+  bool _hidden;
 
   // Not ref-counted: session is the parent.
   P3DSession *_session;

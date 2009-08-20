@@ -25,6 +25,7 @@
 #include "p3dToplevelObject.h"
 #include "p3dUndefinedObject.h"
 #include "p3dMultifileReader.h"
+#include "p3dTemporaryFile.h"
 
 #include <sstream>
 #include <algorithm>
@@ -59,6 +60,8 @@ P3DInstance(P3D_request_ready_func *func,
   _panda_script_object = new P3DToplevelObject;
   _user_data = user_data;
   _request_pending = false;
+  _temp_p3d_filename = NULL;
+  _temp_splash_image = NULL;
   _got_fparams = false;
   _got_wparams = false;
 
@@ -68,6 +71,7 @@ P3DInstance(P3D_request_ready_func *func,
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _instance_id = inst_mgr->get_unique_id();
   _full_disk_access = false;
+  _hidden = false;
   _session = NULL;
   _panda3d = NULL;
   _splash_window = NULL;
@@ -122,6 +126,16 @@ P3DInstance::
     _splash_window = NULL;
   }
 
+  if (_temp_p3d_filename != NULL) {
+    delete _temp_p3d_filename;
+    _temp_p3d_filename = NULL;
+  }
+
+  if (_temp_splash_image != NULL) {
+    delete _temp_splash_image;
+    _temp_splash_image = NULL;
+  }
+
 #ifdef __APPLE__
   if (_frame_timer != NULL) {
     CFRunLoopTimerInvalidate(_frame_timer);
@@ -167,9 +181,8 @@ void P3DInstance::
 set_p3d_url(const string &p3d_url) {
   nout << "set_p3d_url(" << p3d_url << ")\n";
   // Make a temporary file to receive the instance data.
-  char *name = tempnam(NULL, "p3d_");
-  string filename = name;
-  free(name);
+  assert(_temp_p3d_filename == NULL);
+  _temp_p3d_filename = new P3DTemporaryFile(".p3d");
 
   // Mark the time we started downloading, so we'll know when to set
   // the install label.
@@ -183,7 +196,7 @@ set_p3d_url(const string &p3d_url) {
   // Start downloading the data.
   InstanceDownload *download = new InstanceDownload(this);
   download->set_url(p3d_url);
-  download->set_filename(filename);
+  download->set_filename(_temp_p3d_filename->get_filename());
 
   _panda_script_object->set_string_property("status", "downloading_instance");
   start_download(download);
@@ -243,10 +256,15 @@ set_p3d_filename(const string &p3d_filename) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_wparams(const P3DWindowParams &wparams) {
-  nout << "set_wparams, _session = " << _session << "\n";
   _got_wparams = true;
   _wparams = wparams;
-  nout << "set window_type = " << _wparams.get_window_type() << "\n";
+
+  if (_hidden || _wparams.get_win_width() == 0 || _wparams.get_win_height() == 0) {
+    // If we're a hidden app, or if the window has no size, then it is
+    // really a hidden window, regardless of what type it claims to
+    // be.
+    _wparams.set_window_type(P3D_WT_hidden);
+  }
 
   if (_wparams.get_window_type() != P3D_WT_hidden) {
     // Update or create the splash window.
@@ -854,6 +872,15 @@ scan_app_desc_file(TiXmlDocument *doc) {
     _full_disk_access = (full_disk_access != 0);
   }
 
+  int hidden = 0;
+  if (xpackage->QueryIntAttribute("hidden", &hidden) == TIXML_SUCCESS) {
+    _hidden = (hidden != 0);
+  }
+
+  if (_hidden && _got_wparams) {
+    _wparams.set_window_type(P3D_WT_hidden);
+  }
+
   TiXmlElement *xrequires = xpackage->FirstChildElement("requires");
   while (xrequires != NULL) {
     const char *name = xrequires->Attribute("name");
@@ -1015,6 +1042,11 @@ handle_notify_request(const string &message) {
       _splash_window = NULL;
     }
 
+    if (_temp_splash_image != NULL) {
+      delete _temp_splash_image;
+      _temp_splash_image = NULL;
+    }
+
     _panda_script_object->set_string_property("status", "open");
 
 #ifdef __APPLE__
@@ -1112,7 +1144,6 @@ handle_script_request(const string &operation, P3D_object *object,
     char *buffer = new char[size + 1];
     P3D_OBJECT_GET_STRING(value, buffer, size + 1);
     result = P3D_OBJECT_EVAL(object, buffer);
-    logfile << " eval " << *object << ": " << buffer << ", result = " << result << "\n";
     delete[] buffer;
     
     if (result != NULL) {
@@ -1157,14 +1188,13 @@ make_splash_window() {
   }
 
   // Make a temporary file to receive the splash image.
-  char *name = tempnam(NULL, "p3d_");
-  string filename = name;
-  free(name);
+  assert(_temp_splash_image == NULL);
+  _temp_splash_image = new P3DTemporaryFile(".jpg");
 
   // Start downloading the requested splash image.
   SplashDownload *download = new SplashDownload(this);
   download->set_url(splash_image_url);
-  download->set_filename(filename);
+  download->set_filename(_temp_splash_image->get_filename());
 
   start_download(download);
 }
@@ -1202,6 +1232,8 @@ report_package_info_ready(P3DPackage *package) {
       _splash_window->set_install_progress(0.0);
     }
     _panda_script_object->set_string_property("status", "downloading");
+    _panda_script_object->set_int_property("numDownloadingPackages", _downloading_packages.size());
+    _panda_script_object->set_int_property("totalDownloadSize", _total_download_size);
     send_notify("ondownloadbegin");
 
     start_next_download();
@@ -1232,6 +1264,8 @@ start_next_download() {
       }
       _panda_script_object->set_string_property("downloadPackageName", package->get_package_name());
       _panda_script_object->set_string_property("downloadPackageDisplayName", name);
+      _panda_script_object->set_int_property("downloadPackageNumber", _download_package_index + 1);
+      _panda_script_object->set_int_property("downloadPackageSize", package->get_download_size());
       set_install_label("Installing " + name);
 
       nout << "Downloading " << package->get_package_name()
@@ -1241,6 +1275,7 @@ start_next_download() {
            << " bytes.\n";
 
       package->activate_download();
+      send_notify("ondownloadnext");
       return;
     }
     
@@ -1253,10 +1288,12 @@ start_next_download() {
   _downloading_packages.clear();
 
   if (get_packages_ready()) {
-    _panda_script_object->set_bool_property("downloadComplete", true);
-    _panda_script_object->set_string_property("status", "starting");
-    send_notify("ondownloadcomplete");
-    
+    if (!_panda_script_object->get_bool_property("downloadComplete")) {
+      _panda_script_object->set_bool_property("downloadComplete", true);
+      _panda_script_object->set_string_property("status", "starting");
+      send_notify("ondownloadcomplete");
+    }
+      
     // Notify the session also.
     if (_session != NULL) {
       _session->report_packages_done(this, true);

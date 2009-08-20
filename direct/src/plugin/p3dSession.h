@@ -90,7 +90,7 @@ private:
   int _session_id;
   string _session_key;
   string _python_version;
-  string _output_filename;
+  string _log_pathname;
   string _python_root_dir;
   string _start_dir;
 

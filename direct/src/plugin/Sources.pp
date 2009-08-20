@@ -45,6 +45,7 @@
     p3dSession.h p3dSession.I \
     p3dSplashWindow.h p3dSplashWindow.I \
     p3dStringObject.h \
+    p3dTemporaryFile.h p3dTemporaryFile.I \
     p3dToplevelObject.h \
     p3dUndefinedObject.h \
     p3dWinSplashWindow.h p3dWinSplashWindow.I \
@@ -74,6 +75,7 @@
     p3dSession.cxx \
     p3dSplashWindow.cxx \
     p3dStringObject.cxx \
+    p3dTemporaryFile.cxx \
     p3dToplevelObject.cxx \
     p3dUndefinedObject.cxx \
     p3dWinSplashWindow.cxx \

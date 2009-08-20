@@ -44,6 +44,7 @@
 Panda3D::
 Panda3D() {
   _root_dir = find_root_dir();
+  _reporting_download = false;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -60,7 +61,7 @@ run(int argc, char *argv[]) {
   // We prefix a "+" sign to tell gnu getopt not to parse options
   // following the first not-option parameter.  (These will be passed
   // into the sub-process.)
-  const char *optstr = "+mu:p:ft:s:o:h";
+  const char *optstr = "+mu:p:ft:s:o:l:h";
 
   bool allow_multiple = false;
   string download_url = P3D_PLUGIN_DOWNLOAD;
@@ -69,7 +70,7 @@ run(int argc, char *argv[]) {
 
   P3D_window_type window_type = P3D_WT_toplevel;
   int win_x = 0, win_y = 0;
-  int win_width = 0, win_height = 0;
+  int win_width = 640, win_height = 480;
 
   int flag = getopt(argc, argv, optstr);
 
@@ -118,6 +119,11 @@ run(int argc, char *argv[]) {
         cerr << "Invalid value for -o: " << optarg << "\n";
         return 1;
       }
+      break;
+
+    case 'l':
+      _log_dirname = Filename::from_os_specific(optarg).to_os_specific();
+      _log_basename = "panda3d";
       break;
 
     case 'h':
@@ -321,7 +327,6 @@ get_plugin(const string &download_url, const string &this_platform, bool force_d
   // Couldn't read it, so go get it.
   string url = download_url;
   url += "contents.xml";
-  cerr << "Getting URL " << url << "\n";
   
   HTTPClient *http = HTTPClient::get_global_ptr();
   PT(HTTPChannel) channel = http->get_document(url);
@@ -436,7 +441,8 @@ get_core_api(const Filename &contents_filename, const string &download_url,
 #endif  // P3D_PLUGIN_P3D_PLUGIN
 
   if (!load_plugin(pathname, contents_filename.to_os_specific(),
-                   download_url, this_platform)) {
+                   download_url, this_platform, _log_dirname,
+                   _log_basename)) {
     cerr << "Unable to launch core API in " << pathname << "\n" << flush;
     return false;
   }
@@ -481,7 +487,6 @@ handle_request(P3D_request *request) {
 
   switch (request->_request_type) {
   case P3D_RT_stop:
-    cerr << "Got P3D_RT_stop\n";
     delete_instance(request->_instance);
 #ifdef _WIN32
     // Post a silly message to spin the event loop.
@@ -491,8 +496,6 @@ handle_request(P3D_request *request) {
     break;
 
   case P3D_RT_get_url:
-    cerr << "Got P3D_RT_get_url: " << request->_request._get_url._url
-         << "\n";
     {
       int unique_id = request->_request._get_url._unique_id;
       const string &url = request->_request._get_url._url;
@@ -504,8 +507,6 @@ handle_request(P3D_request *request) {
     break;
 
   case P3D_RT_post_url:
-    cerr << "Got P3D_RT_post_url: " << request->_request._post_url._url 
-         << "\n";
     {
       int unique_id = request->_request._post_url._unique_id;
       const string &url = request->_request._post_url._url;
@@ -519,9 +520,15 @@ handle_request(P3D_request *request) {
     break;
 
   case P3D_RT_notify:
-    cerr << "Got P3D_RT_notify: " << request->_request._notify._message
-         << "\n";
-    // Ignore notifications.
+    {
+      if (strcmp(request->_request._notify._message, "ondownloadnext") == 0) {
+        // Tell the user we're downloading a package.
+        report_downloading_package(request->_instance);
+      } else if (strcmp(request->_request._notify._message, "ondownloadcomplete") == 0) {
+        // Tell the user we're done downloading.
+        report_download_complete(request->_instance);
+      }
+    }
     break;
 
   default:
@@ -624,6 +631,30 @@ create_instance(const string &p3d, P3D_window_type window_type,
     is_local = true;
   } 
 
+  // Build up the token list.
+  pvector<P3D_token> tokens;
+  string log_basename;
+  if (!_log_dirname.empty()) {
+    // Generate output to a logfile.
+    log_basename = p3d_filename.get_basename_wo_extension();
+    P3D_token token;
+    token._keyword = "log_basename";
+    token._value = log_basename.c_str();
+    tokens.push_back(token);
+  } else {
+    // Send output to the console.
+    P3D_token token;
+    token._keyword = "console_output";
+    token._value = "1";
+    tokens.push_back(token);
+  }
+
+  P3D_token *tokens_p;
+  size_t num_tokens = tokens.size();
+  if (!tokens.empty()) {
+    tokens_p = &tokens[0];
+  }
+
   // Build up the argument list, beginning with the p3d_filename.
   pvector<const char *> argv;
   argv.push_back(os_p3d_filename.c_str());
@@ -631,13 +662,15 @@ create_instance(const string &p3d, P3D_window_type window_type,
     argv.push_back(args[i]);
   }
 
-  P3D_instance *inst = P3D_new_instance(NULL, NULL, 0,
+  P3D_instance *inst = P3D_new_instance(NULL, tokens_p, num_tokens,
                                         argv.size(), &argv[0], NULL);
 
   if (inst != NULL) {
+    // We call start() first, to give the core API a chance to notice
+    // the "hidden" attrib before we set the window parameters.
+    P3D_instance_start(inst, is_local, os_p3d_filename.c_str());
     P3D_instance_setup_window
       (inst, window_type, win_x, win_y, win_width, win_height, parent_window);
-    P3D_instance_start(inst, is_local, os_p3d_filename.c_str());
   }
 
   return inst;
@@ -682,10 +715,10 @@ usage() {
     << "   panda3d -m [opts] file_a.p3d file_b.p3d [file_c.p3d ...]\n\n"
   
     << "This program is used to execute a Panda3D application bundle stored\n"
-    << "in a .p3d file.  In the first form, without a -m option, it\n"
+    << "in a .p3d file.  In the first form, without the -m option, it\n"
     << "executes one application; remaining arguments following the\n"
     << "application name are passed into the application.  In the second\n"
-    << "form, with a -m option, it can execute multiple applications\n"
+    << "form, with the -m option, it can execute multiple applications\n"
     << "simultaneously, though in this form arguments cannot be passed into\n"
     << "the applications.\n\n"
 
@@ -707,6 +740,11 @@ usage() {
     << "  -o x,y\n"
     << "    Specify the position (origin) of the graphic window on the\n"
     << "    screen, or on the parent window.\n\n"
+
+    << "  -l log_dirname\n"
+    << "    Specify the full path to the directory in which log files are\n"
+    << "    to be written.  If this is not specified, the default is to send\n"
+    << "    the application output to the console.\n\n"
 
     << "  -f\n"
     << "    Force a HTTP contact to the Panda3D download server, to check\n"
@@ -744,6 +782,44 @@ parse_int_pair(char *arg, int &x, int &y) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::report_downloading_package
+//       Access: Private
+//  Description: Tells the user we have to download a package.
+////////////////////////////////////////////////////////////////////
+void Panda3D::
+report_downloading_package(P3D_instance *instance) {
+  P3D_object *obj = P3D_instance_get_panda_script_object(instance);
+  
+  P3D_object *display_name = P3D_object_get_property(obj, "downloadPackageDisplayName");
+  if (display_name == NULL) {
+    cerr << "no name: " << obj << "\n";
+    return;
+  }
+
+  int name_length = P3D_object_get_string(display_name, NULL, 0);
+  char *name = new char[name_length + 1];
+  P3D_object_get_string(display_name, name, name_length + 1);
+
+  cerr << "Downloading " << name << "\n";
+
+  delete[] name;
+  P3D_object_decref(display_name);
+  _reporting_download = true;
+}
+ 
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::report_download_complete
+//       Access: Private
+//  Description: Tells the user we're done downloading packages
+////////////////////////////////////////////////////////////////////
+void Panda3D::
+report_download_complete(P3D_instance *instance) {
+  if (_reporting_download) {
+    cerr << "Download complete.\n";
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::URLGetter::Constructor
 //       Access: Public
 //  Description: 
@@ -757,8 +833,6 @@ URLGetter(P3D_instance *instance, int unique_id,
   _post_data(post_data)
 {
   HTTPClient *http = HTTPClient::get_global_ptr();
-
-  cerr << "Getting URL " << _url << "\n";
 
   _channel = http->make_channel(false);
   if (_post_data.empty()) {
@@ -815,8 +889,6 @@ run() {
       status = P3D_RC_generic_error;
     }
     cerr << "Error getting URL " << _url << "\n";
-  } else {
-    cerr << "Done getting URL " << _url << ", got " << _bytes_sent << " bytes\n";
   }
 
   P3D_instance_feed_url_stream

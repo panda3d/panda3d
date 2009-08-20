@@ -17,11 +17,21 @@
 //     Function: P3DWindowParams::get_window_type
 //       Access: Public
 //  Description: Returns the window_type that was passed to the
-//               constructor.
+//               constructor, or to set_window_type().
 ////////////////////////////////////////////////////////////////////
 inline P3D_window_type P3DWindowParams::
 get_window_type() const {
   return _window_type;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DWindowParams::set_window_type
+//       Access: Public
+//  Description: Changes the window_type.
+////////////////////////////////////////////////////////////////////
+inline void P3DWindowParams::
+set_window_type(P3D_window_type window_type) {
+  _window_type = window_type;
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -13,8 +13,10 @@
 
 /* The filename(s) to generate output to when the plugin is running.
    For debugging purposes only. */
-#$[]define P3D_PLUGIN_LOGFILE1 "$[subst \,\\,$[osfilename $[P3D_PLUGIN_LOGFILE1]]]"
-#$[]define P3D_PLUGIN_LOGFILE2 "$[subst \,\\,$[osfilename $[P3D_PLUGIN_LOGFILE2]]]"
+#$[]define P3D_PLUGIN_LOG_DIRECTORY "$[subst \,\\,$[osfilename $[P3D_PLUGIN_LOG_DIRECTORY]]]"
+#$[]define P3D_PLUGIN_LOG_BASENAME1 "$[P3D_PLUGIN_LOG_BASENAME1]"
+#$[]define P3D_PLUGIN_LOG_BASENAME2 "$[P3D_PLUGIN_LOG_BASENAME2]"
+#$[]define P3D_PLUGIN_LOG_BASENAME3 "$[P3D_PLUGIN_LOG_BASENAME3]"
 
 /* For development only: the location at which p3dpython.exe can be
    found.  Empty string for the default. */

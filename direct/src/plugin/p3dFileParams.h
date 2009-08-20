@@ -36,6 +36,7 @@ public:
 
   inline const string &get_p3d_filename() const;
   string lookup_token(const string &keyword) const;
+  int lookup_token_int(const string &keyword) const;
   bool has_token(const string &keyword) const;
 
   TiXmlElement *make_xml();

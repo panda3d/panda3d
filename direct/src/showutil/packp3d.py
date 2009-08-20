@@ -84,7 +84,7 @@ def makePackedApp(args):
         elif option == '-h':
             print __doc__
             sys.exit(1)
-    
+
     if not args:
         raise ArgumentError, "No destination app specified.  Use:\npackp3d.py app.p3d"
 
@@ -133,10 +133,6 @@ def main(appRunner):
     """ This function is called when this module is invoked as
     packp3d.p3d. """
 
-    print "args = %s" % (appRunner.argv,)
-    vfs = VirtualFileSystem.getGlobalPtr()
-    print "cwd = %s, %s" % (vfs.getCwd(), ExecutionEnvironment.getCwd())
-    print "sys.path = %s" % (sys.path,)
     try:
         makePackedApp(appRunner.argv[1:])
     except ArgumentError, e:
@@ -145,7 +141,6 @@ def main(appRunner):
     sys.exit(0)
 
 if __name__ == '__main__':
-    print "sys.path = %s" % (sys.path,)
     try:
         makePackedApp(sys.argv[1:])
     except ArgumentError, e:

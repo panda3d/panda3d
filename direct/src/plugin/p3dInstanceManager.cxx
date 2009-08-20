@@ -24,6 +24,7 @@
 #include "find_root_dir.h"
 #include "fileSpec.h"
 #include "get_tinyxml.h"
+#include "mkdir_complete.h"
 
 // We can include this header file to get the DTOOL_PLATFORM
 // definition, even though we don't link with dtool.
@@ -32,8 +33,11 @@
 #ifdef _WIN32
 #include <shlobj.h>
 #else
-//#include <sys/stat.h>
+#include <sys/stat.h>
 #endif
+
+static ofstream logfile;
+ostream *nout_stream = &logfile;
 
 P3DInstanceManager *P3DInstanceManager::_global_ptr;
 
@@ -45,6 +49,7 @@ P3DInstanceManager *P3DInstanceManager::_global_ptr;
 P3DInstanceManager::
 P3DInstanceManager() {
   _is_initialized = false;
+  _next_temp_filename_counter = 0;
   _unique_id = 0;
   _xcontents = NULL;
 
@@ -105,6 +110,15 @@ P3DInstanceManager::
   assert(_instances.empty());
   assert(_sessions.empty());
 
+  // Delete any remaining temporary files.
+  TempFilenames::iterator ti;
+  for (ti = _temp_filenames.begin(); ti != _temp_filenames.end(); ++ti) {
+    const string &filename = (*ti);
+    nout << "Removing delinquent temp file " << filename << "\n";
+    unlink(filename.c_str());
+  }
+  _temp_filenames.clear();
+
   nout << "counts: " << _undefined_object->_ref_count
        << " " << _none_object->_ref_count
        << " " << _true_object->_ref_count
@@ -138,21 +152,102 @@ P3DInstanceManager::
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
 initialize(const string &contents_filename, const string &download_url,
-           const string &platform) {
+           const string &platform, const string &log_directory,
+           const string &log_basename) {
 
   _root_dir = find_root_dir();
   _download_url = download_url;
+#ifdef P3D_PLUGIN_DOWNLOAD
   if (_download_url.empty()) {
     _download_url = P3D_PLUGIN_DOWNLOAD;
   }
+#endif
   _platform = platform;
   if (_platform.empty()) {
     _platform = DTOOL_PLATFORM;
   }
 
+  _log_directory = log_directory;
+#ifdef P3D_PLUGIN_LOG_DIRECTORY
+  if (_log_directory.empty()) {
+    _log_directory = P3D_PLUGIN_LOG_DIRECTORY;
+  }
+#endif
+
+  // Determine the temporary directory.
+#ifdef _WIN32
+  size_t needs_size_1 = GetTempPath(0, NULL);
+  char *buffer_1 = new char[needs_size_1];
+  if (GetTempPath(needs_size_1, buffer_1) != 0) {
+    _temp_directory = buffer_1;
+  }
+  delete[] buffer_1;
+
+  static const size_t buffer_size = 4096;
+  char buffer[buffer_size];
+  if (GetTempPath(buffer_size, buffer) != 0) {
+    _temp_directory = buffer;
+  }
+  
+  // Also insist that the temp directory is fully specified.
+  size_t needs_size_2 = GetFullPathName(_temp_directory.c_str(), 0, NULL, NULL);
+  char *buffer_2 = new char[needs_size_2];
+  if (GetFullPathName(_temp_directory.c_str(), needs_size_2, buffer_2, NULL) != 0) {
+    _temp_directory = buffer_2;
+  }
+  delete[] buffer_2;
+
+  // Also make sure the directory actually exists.
+  mkdir_complete(_temp_directory, nout);
+
+#else
+  _temp_directory = "/tmp/";
+#endif  // _WIN32
+
+  // If the log directory is still empty, use the temp directory.
+  if (_log_directory.empty()) {
+    _log_directory = _temp_directory;
+  }
+
+  _log_basename = log_basename;
+#ifdef P3D_PLUGIN_LOG_BASENAME2
+  if (_log_basename.empty()) {
+    _log_basename = P3D_PLUGIN_LOG_BASENAME2;
+  }
+#endif
+
   // Ensure that the download URL ends with a slash.
   if (!_download_url.empty() && _download_url[_download_url.size() - 1] != '/') {
     _download_url += "/";
+  }
+
+  // Ensure that the temp directory ends with a slash.
+  if (!_temp_directory.empty() && _temp_directory[_temp_directory.size() - 1] != '/') {
+#ifdef _WIN32
+    if (_temp_directory[_temp_directory.size() - 1] != '\\')
+#endif
+      _temp_directory += "/";
+  }
+
+  // Ensure that the log directory ends with a slash.
+  if (!_log_directory.empty() && _log_directory[_log_directory.size() - 1] != '/') {
+#ifdef _WIN32
+    if (_log_directory[_log_directory.size() - 1] != '\\')
+#endif
+      _log_directory += "/";
+  }
+
+  // Construct the logfile pathname.
+  if (!_log_basename.empty()) {
+    _log_pathname = _log_directory;
+    _log_pathname += _log_basename;
+    _log_pathname += ".log";
+
+    logfile.open(_log_pathname.c_str(), ios::out | ios::trunc);
+    if (logfile) {
+      logfile.setf(ios::unitbuf);
+      nout_stream = &logfile;
+    }
   }
 
   nout << "_root_dir = " << _root_dir
@@ -495,6 +590,82 @@ make_class_definition() const {
   P3D_class_definition *new_class = new P3D_class_definition(P3DObject::_generic_class);
   // TODO: save this pointer so we can delete it on destruction.
   return new_class;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::make_temp_filename
+//       Access: Public
+//  Description: Constructs a new, unique temporary filename with the
+//               indicated extension.  You should use the
+//               P3DTemporaryFilename interface instead of calling
+//               this method directly.
+////////////////////////////////////////////////////////////////////
+string P3DInstanceManager::
+make_temp_filename(const string &extension) {
+  string result;
+  bool exists;
+
+  do {
+    int tid;
+#ifdef _WIN32
+    tid = GetCurrentProcessId();
+#else
+    tid = getpid();
+#endif
+    if (tid == 0) {
+      tid = 1;
+    }
+    int hash = ((clock() + _next_temp_filename_counter) * ((time(NULL) * tid) >> 8)) & 0xffffff;
+    ++_next_temp_filename_counter;
+    char hex_code[10];
+    sprintf(hex_code, "%06x", hash);
+
+    result = _temp_directory;
+    result += "p3d_";
+    result += hex_code;
+    result += extension;
+    
+    exists = false;
+    if (_temp_filenames.find(result) != _temp_filenames.end()) {
+      // We've previously allocated this file.
+      exists = true;
+
+    } else {
+
+      // Check if the file exists on disk.
+#ifdef _WIN32
+      DWORD results = GetFileAttributes(result.c_str());
+      if (results != -1) {
+        exists = true;
+      }
+
+#else  // _WIN32
+      struct stat this_buf;
+      if (stat(result.c_str(), &this_buf) == 0) {
+        exists = true;
+      }
+#endif
+    }
+
+  } while (exists);
+
+  nout << "make_temp_filename: " << result << "\n";
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::release_temp_filename
+//       Access: Public
+//  Description: Releases a temporary filename assigned earlier via
+//               make_temp_filename().  If the file exists, it will be
+//               removed.  You should use the P3DTemporaryFilename
+//               interface instead of calling this method directly.
+////////////////////////////////////////////////////////////////////
+void P3DInstanceManager::
+release_temp_filename(const string &filename) {
+  nout << "release_temp_filename: " << filename << "\n";
+  _temp_filenames.erase(filename);
+  unlink(filename.c_str());
 }
 
 ////////////////////////////////////////////////////////////////////

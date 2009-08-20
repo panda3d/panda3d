@@ -978,7 +978,7 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
 
     xarg = xarg->NextSiblingElement("arg");
   }
-  
+
   PyObject *result = PyObject_CallMethod
     (_runner, (char *)"setP3DFilename", (char *)"sOOi", p3d_filename.c_str(),
      token_list, arg_list, inst->get_instance_id());

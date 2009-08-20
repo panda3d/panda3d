@@ -45,13 +45,16 @@ private:
 public:
   bool initialize(const string &contents_filename,
                   const string &download_url,
-                  const string &platform);
+                  const string &platform,
+                  const string &log_directory,
+                  const string &log_basename);
 
   inline bool is_initialized() const;
 
   inline const string &get_root_dir() const;
   inline const string &get_download_url() const;
   inline const string &get_platform() const;
+  inline const string &get_log_directory() const;
 
   inline bool has_contents_file() const;
   bool read_contents_file(const string &contents_filename);
@@ -88,6 +91,9 @@ public:
   inline P3D_object *new_none_object();
   inline P3D_object *new_bool_object(bool value);
 
+  string make_temp_filename(const string &extension);
+  void release_temp_filename(const string &filename);
+
   static P3DInstanceManager *get_global_ptr();
   static void delete_global_ptr();
 
@@ -106,6 +112,10 @@ private:
   string _root_dir;
   string _download_url;
   string _platform;
+  string _log_directory;
+  string _log_basename;
+  string _log_pathname;
+  string _temp_directory;
 
   TiXmlElement *_xcontents;
 
@@ -122,6 +132,10 @@ private:
 
   typedef map<string, P3DPackage *> Packages;
   Packages _packages;
+
+  typedef set<string> TempFilenames;
+  TempFilenames _temp_filenames;
+  int _next_temp_filename_counter;
 
   int _unique_id;
 

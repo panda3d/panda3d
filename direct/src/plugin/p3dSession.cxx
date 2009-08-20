@@ -650,6 +650,8 @@ start_p3dpython(P3DInstance *inst) {
     return;
   }
 
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
   _python_root_dir = inst->_panda3d->get_package_dir();
 
   // We'll be changing the directory to the standard start directory
@@ -699,7 +701,7 @@ start_p3dpython(P3DInstance *inst) {
   const char *keep[] = {
     "TMP", "TEMP", "HOME", "USER", 
 #ifdef _WIN32
-    "SYSTEMROOT", "USERPROFILE", "COMSPEC",
+    "SYSTEMROOT", "USERPROFILE", "COMSPEC", "PANDA_ROOT",
 #endif
     NULL
   };
@@ -766,7 +768,17 @@ start_p3dpython(P3DInstance *inst) {
     log_basename = inst->get_fparams().lookup_token("log_basename");
   }
 
-  // However, it is always written into the temp directory only; the
+  bool console_output = (inst->get_fparams().lookup_token_int("console_output") != 0);
+
+#ifdef P3D_PLUGIN_LOG_BASENAME3
+  if (log_basename.empty()) {
+    // No log_basename specified for the app; use the compiled-in
+    // default.
+    log_basename = P3D_PLUGIN_LOG_BASENAME3;
+  }
+#endif
+
+  // However, it is always written into the log directory only; the
   // user may not override the log file to put it anywhere else.
   size_t slash = log_basename.rfind('/');
   if (slash != string::npos) {
@@ -779,32 +791,24 @@ start_p3dpython(P3DInstance *inst) {
   }
 #endif  // _WIN32
 
-  if (!log_basename.empty()) {
-#ifdef _WIN32
-    static const size_t buffer_size = 4096;
-    char buffer[buffer_size];
-    if (GetTempPath(buffer_size, buffer) != 0) {
-      _output_filename = buffer;
-    }
-#else
-    _output_filename = "/tmp/";
-#endif  // _WIN32
-    _output_filename += log_basename;
+  if (!console_output && !log_basename.empty()) {
+    _log_pathname = inst_mgr->get_log_directory();
+    _log_pathname += log_basename;
 
     // We always tack on the extension ".log", to make it even more
     // difficult to overwrite a system file.
-    _output_filename += ".log";
+    _log_pathname += ".log";
   }
 
   nout << "Attempting to start python from " << p3dpython << "\n";
 #ifdef _WIN32
   _p3dpython_handle = win_create_process
-    (p3dpython, start_dir, env, _output_filename,
+    (p3dpython, start_dir, env, _log_pathname,
      _pipe_read, _pipe_write);
   bool started_p3dpython = (_p3dpython_handle != INVALID_HANDLE_VALUE);
 #else
   _p3dpython_pid = posix_create_process
-    (p3dpython, start_dir, env, _output_filename,
+    (p3dpython, start_dir, env, _log_pathname,
      _pipe_read, _pipe_write);
   bool started_p3dpython = (_p3dpython_pid > 0);
 #endif
@@ -976,7 +980,7 @@ rt_terminate() {
 //       Access: Private, Static
 //  Description: Creates a sub-process to run the named program
 //               executable, with the indicated environment string.
-//               Standard error is logged to output_filename, if that
+//               Standard error is logged to log_pathname, if that
 //               string is nonempty.
 //
 //               Opens the two HandleStreams as the read and write
@@ -988,7 +992,7 @@ rt_terminate() {
 ////////////////////////////////////////////////////////////////////
 HANDLE P3DSession::
 win_create_process(const string &program, const string &start_dir,
-                   const string &env, const string &output_filename,
+                   const string &env, const string &log_pathname,
                    HandleStream &pipe_read, HandleStream &pipe_write) {
 
   // Create a bi-directional pipe to communicate with the sub-process.
@@ -1013,19 +1017,19 @@ win_create_process(const string &program, const string &start_dir,
   }
 
   HANDLE error_handle = GetStdHandle(STD_ERROR_HANDLE);
-  bool got_output_filename = !output_filename.empty();
-  if (got_output_filename) {
+  bool got_log_pathname = !log_pathname.empty();
+  if (got_log_pathname) {
     // Open the named file for output and redirect the child's stderr
     // into it.
     HANDLE handle = CreateFile
-      (output_filename.c_str(), GENERIC_WRITE, 
+      (log_pathname.c_str(), GENERIC_WRITE, 
        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
        NULL, CREATE_ALWAYS, 0, NULL);
     if (handle != INVALID_HANDLE_VALUE) {
       error_handle = handle;
       SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
     } else {
-      nout << "Unable to open " << output_filename << "\n";
+      nout << "Unable to open " << log_pathname << "\n";
     }
   }
 
@@ -1063,7 +1067,7 @@ win_create_process(const string &program, const string &start_dir,
   // Close the pipe handles that are now owned by the child.
   CloseHandle(w_from);
   CloseHandle(r_to);
-  if (got_output_filename) {
+  if (got_log_pathname) {
     CloseHandle(error_handle);
   }
 
@@ -1099,7 +1103,7 @@ win_create_process(const string &program, const string &start_dir,
 ////////////////////////////////////////////////////////////////////
 int P3DSession::
 posix_create_process(const string &program, const string &start_dir,
-                     const string &env, const string &output_filename,
+                     const string &env, const string &log_pathname,
                      HandleStream &pipe_read, HandleStream &pipe_write) {
   // Create a bi-directional pipe to communicate with the sub-process.
   int to_fd[2];
@@ -1124,14 +1128,14 @@ posix_create_process(const string &program, const string &start_dir,
 
   if (child == 0) {
     // Here we are in the child process.
-    bool got_output_filename = !output_filename.empty();
-    if (got_output_filename) {
+    bool got_log_pathname = !log_pathname.empty();
+    if (got_log_pathname) {
       // Open the named file for output and redirect the child's stderr
       // into it.
-      int logfile_fd = open(output_filename.c_str(), 
+      int logfile_fd = open(log_pathname.c_str(), 
                             O_WRONLY | O_CREAT | O_TRUNC, 0666);
       if (logfile_fd < 0) {
-        nout << "Unable to open " << output_filename << "\n";
+        nout << "Unable to open " << log_pathname << "\n";
       } else {
         dup2(logfile_fd, STDERR_FILENO);
         close(logfile_fd);

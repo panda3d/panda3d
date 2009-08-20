@@ -21,6 +21,7 @@
 #include "get_tinyxml.h"
 
 class P3DInstance;
+class P3DTemporaryFile;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DPackage
@@ -107,7 +108,7 @@ private:
   string _package_fullname;
   string _package_dir;
 
-  string _contents_file_pathname;
+  P3DTemporaryFile *_temp_contents_file;
 
   string _desc_file_basename;
   string _desc_file_pathname;

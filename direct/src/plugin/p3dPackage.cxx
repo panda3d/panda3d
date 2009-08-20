@@ -16,6 +16,7 @@
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
 #include "p3dMultifileReader.h"
+#include "p3dTemporaryFile.h"
 #include "mkdir_complete.h"
 
 #include "zlib.h"
@@ -53,6 +54,8 @@ P3DPackage(const string &package_name,
   _package_fullname += string("_") + _package_version;
   _package_dir += string("/") + _package_version;
 
+  _temp_contents_file = NULL;
+
   _info_ready = false;
   _download_size = 0;
   _allow_data_download = false;
@@ -85,6 +88,7 @@ P3DPackage::
     _active_download = NULL;
   }
 
+  assert(_temp_contents_file == NULL);
   assert(_instances.empty());
 }
 
@@ -179,10 +183,10 @@ download_contents_file() {
 
   // Download contents.xml to a temporary filename first, in case
   // multiple packages are downloading it simultaneously.
-  _contents_file_pathname = tempnam(NULL, "p3d_");
+  assert(_temp_contents_file == NULL);
+  _temp_contents_file = new P3DTemporaryFile(".xml");
 
-  cerr << "starting contents download\n";
-  start_download(DT_contents_file, url, _contents_file_pathname, false);
+  start_download(DT_contents_file, url, _temp_contents_file->get_filename(), false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -193,20 +197,18 @@ download_contents_file() {
 void P3DPackage::
 contents_file_download_finished(bool success) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  cerr << "done contents download: " << success 
-       << ", has_contents = " << inst_mgr->has_contents_file()
-       << "\n";
 
   if (!inst_mgr->has_contents_file()) {
-    if (!success || !inst_mgr->read_contents_file(_contents_file_pathname)) {
-      nout << "Couldn't read " << _contents_file_pathname << "\n";
+    if (!success || !inst_mgr->read_contents_file(_temp_contents_file->get_filename())) {
+      nout << "Couldn't read " << *_temp_contents_file << "\n";
 
       // Maybe we can read an already-downloaded contents.xml file.
       string standard_filename = inst_mgr->get_root_dir() + "/contents.xml";
       if (!inst_mgr->read_contents_file(standard_filename)) {
         // Couldn't even read that.  Fail.
         report_done(false);
-        unlink(_contents_file_pathname.c_str());
+        delete _temp_contents_file;
+        _temp_contents_file = NULL;
         return;
       }
     }
@@ -214,7 +216,8 @@ contents_file_download_finished(bool success) {
     
   // The file is correctly installed by now; we can remove the
   // temporary file.
-  unlink(_contents_file_pathname.c_str());
+  delete _temp_contents_file;
+  _temp_contents_file = NULL;
 
   download_desc_file();
 }
