@@ -1283,13 +1283,13 @@ class Packager:
 
         return words
 
-    def __getNextLine(self, file, lineNum):
-        """ Extracts the next line from the input file, and splits it
-        into words.  Returns a tuple (lineNum, list), or (lineNum,
-        None) at end of file. """
+    def __getNextLine(self):
+        """ Extracts the next line from self.inFile, and splits it
+        into words.  Returns the list of words, or None at end of
+        file. """
 
-        line = file.readline()
-        lineNum += 1
+        line = self.inFile.readline()
+        self.lineNum += 1
         while line:
             line = line.strip()
             if not line:
@@ -1301,13 +1301,13 @@ class Packager:
                 pass
 
             else:
-                return (lineNum, self.__splitLine(line))
+                return self.__splitLine(line)
 
-            line = file.readline()
-            lineNum += 1
+            line = self.inFile.readline()
+            self.lineNum += 1
 
         # End of file.
-        return (lineNum, None)
+        return None
 
     def readPackageDef(self, packageDef):
         """ Reads the lines in the .pdef file named by packageDef and
@@ -1317,13 +1317,13 @@ class Packager:
         self.packageList = []
 
         self.notify.info('Reading %s' % (packageDef))
-        file = open(packageDef.toOsSpecific())
-        lineNum = 0
+        self.inFile = open(packageDef.toOsSpecific())
+        self.lineNum = 0
 
         # Now start parsing the packageDef lines
         try:
-            lineNum, words = self.__getNextLine(file, lineNum)
-            while words:
+            words = self.__getNextLine()
+            while words is not None:
                 command = words[0]
                 try:
                     methodName = 'parse_%s' % (command)
@@ -1341,19 +1341,54 @@ class Packager:
                     message = '%s command encounted outside of package specification' %(command)
                     raise OutsideOfPackageError, message
 
-                lineNum, words = self.__getNextLine(file, lineNum)
+                words = self.__getNextLine()
 
         except PackagerError:
             # Append the line number and file name to the exception
             # error message.
             inst = sys.exc_info()[1]
-            inst.args = (inst.args[0] + ' on line %s of %s' % (lineNum, packageDef),)
+            inst.args = (inst.args[0] + ' on line %s of %s' % (self.lineNum, packageDef),)
+            del self.inFile
+            del self.lineNum
             raise
+
+        del self.inFile
+        del self.lineNum
 
         packageList = self.packageList
         self.packageList = []
 
         return packageList
+
+    def __expandTabs(self, line, tabWidth = 8):
+        """ Expands tab characters in the line to 8 spaces. """
+        p = 0
+        while p < len(line):
+            if line[p] == '\t':
+                # Expand a tab.
+                nextStop = ((p + tabWidth) / tabWidth) * tabWidth
+                numSpaces = nextStop - p
+                line = line[:p] + ' ' * numSpaces + line[p + 1:]
+                p = nextStop
+            else:
+                p += 1
+
+        return line
+
+    def __countLeadingWhitespace(self, line):
+        """ Returns the number of leading whitespace characters in the
+        line. """
+
+        line = self.__expandTabs(line)
+        return len(line) - len(line.lstrip())
+
+    def __stripLeadingWhitespace(self, line, whitespaceCount):
+        """ Removes the indicated number of whitespace characters, but
+        no more. """
+
+        line = self.__expandTabs(line)
+        line = line[:whitespaceCount].lstrip() + line[whitespaceCount:]
+        return line
 
     def parse_set(self, words):
         """
@@ -1587,6 +1622,93 @@ class Packager:
         self.file(Filename.fromOsSpecific(filename),
                   newNameOrDir = newNameOrDir, extract = extract,
                   executable = executable)
+
+    def parse_inline_file(self, words):
+        """
+        inline_file newName [extract=1] <<[-] eof-symbol
+           .... file text
+           .... file text
+        eof-symbol
+        """
+
+        if not self.currentPackage:
+            raise OutsideOfPackageError
+
+        # Look for the eof-symbol at the end of the command line.
+        eofSymbols = None
+        for i in range(len(words)):
+            if words[i].startswith('<<'):
+                eofSymbols = words[i:]
+                words = words[:i]
+                break
+        if eofSymbols is None:
+            raise PackagerError, 'No << appearing on inline_file'
+
+        # Following the bash convention, <<- means to strip leading
+        # whitespace, << means to keep it.
+        stripWhitespace = False
+        if eofSymbols[0][0:3] == '<<-':
+            stripWhitespace = True
+            eofSymbols[0] = eofSymbols[0][3:]
+        else:
+            eofSymbols[0] = eofSymbols[0][2:]
+
+        # If there's nothing left in the first word, look to the next
+        # word.
+        if not eofSymbols[0]:
+            del eofSymbols[0]
+            
+        if len(eofSymbols) == 1:
+            # The eof symbol is the only word.
+            eofSymbol = eofSymbols[0]
+        else:
+            # It must be only one word.
+            raise PackagerError, 'Only one word may follow <<'
+
+        # Now parse the remaining args.
+        args = self.__parseArgs(words, ['extract'])
+
+        newName = None
+        try:
+            command, newName = words
+        except ValueError:
+            raise ArgumentError
+
+        extract = args.get('extract', None)
+        if extract is not None:
+            extract = int(extract)
+
+        tempFile = Filename.temporary('', self.currentPackage.packageName)
+        temp = open(tempFile.toOsSpecific(), 'w')
+
+        # Now read text from the input file until we come across
+        # eofSymbol on a line by itself.
+        lineNum = self.lineNum
+        line = self.inFile.readline()
+        if not line:
+            raise PackagerError, 'No text following inline_file'
+        lineNum += 1
+        line = line.rstrip()
+        if stripWhitespace:
+            # For the first line, we count up the amount of
+            # whitespace.
+            whitespaceCount = self.__countLeadingWhitespace(line)
+            line = self.__stripLeadingWhitespace(line, whitespaceCount)
+            
+        while line != eofSymbol:
+            print >> temp, line
+            line = self.inFile.readline()
+            if not line:
+                raise PackagerError, 'EOF indicator not found following inline_file'
+            lineNum += 1
+            line = line.rstrip()
+            if stripWhitespace:
+                line = self.__stripLeadingWhitespace(line, whitespaceCount)
+
+        temp.close()
+        self.lineNum = lineNum
+        self.file(tempFile, deleteTemp = True,
+                  newNameOrDir = newName, extract = extract)
 
     def parse_exclude(self, words):
         """
@@ -2010,8 +2132,8 @@ class Packager:
         freezer.reset()
         package.mainModule = None
 
-    def file(self, filename, newNameOrDir = None, extract = None,
-             executable = None):
+    def file(self, filename, source = None, newNameOrDir = None,
+             extract = None, executable = None, deleteTemp = False):
         """ Adds the indicated arbitrary file to the current package.
 
         The file is placed in the named directory, or the toplevel
@@ -2037,6 +2159,9 @@ class Packager:
 
         If executable is true, the file is marked as an executable
         filename, for special treatment.
+
+        If deleteTemp is true, the file is a temporary file and will
+        be deleted after its contents are copied to the package.
         
         """
 
@@ -2070,7 +2195,8 @@ class Packager:
                 
             self.currentPackage.addFile(
                 filename, newName = name, extract = extract,
-                explicit = explicit, executable = executable)
+                explicit = explicit, executable = executable,
+                deleteTemp = deleteTemp)
 
     def exclude(self, filename):
         """ Marks the indicated filename as not to be included.  The
