@@ -31,7 +31,6 @@ _magic_number[SubprocessWindowBuffer::magic_number_length] = "pNdaSWB";
 ////////////////////////////////////////////////////////////////////
 void *SubprocessWindowBuffer::
 operator new(size_t, void *addr) {
-  cerr << "operator new: " << addr << "\n";
   return addr;
 }
 
@@ -45,7 +44,6 @@ operator new(size_t, void *addr) {
 ////////////////////////////////////////////////////////////////////
 SubprocessWindowBuffer::
 SubprocessWindowBuffer(int x_size, int y_size) {
-  cerr << "Constructing " << this << "\n";
   memcpy(_this_magic, _magic_number, magic_number_length);
   _x_size = x_size;
   _y_size = y_size;
@@ -77,7 +75,6 @@ SubprocessWindowBuffer(const SubprocessWindowBuffer &copy) :
   _event_out = 0;
   _last_written = 0;
   _last_read = 0;
-  cerr << "Copy Constructing " << this << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -87,7 +84,6 @@ SubprocessWindowBuffer(const SubprocessWindowBuffer &copy) :
 ////////////////////////////////////////////////////////////////////
 SubprocessWindowBuffer::
 ~SubprocessWindowBuffer() {
-  cerr << "Destructing " << this << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -114,7 +110,6 @@ new_buffer(int &fd, size_t &mmap_size, string &filename,
   fd = -1;
 
   filename = tmpnam(NULL);
-  cerr << "new_buffer: " << filename << "\n";
 
   fd = open(filename.c_str(), O_RDWR | O_CREAT | O_EXCL, 0600);
   if (fd == -1) {
@@ -134,9 +129,6 @@ new_buffer(int &fd, size_t &mmap_size, string &filename,
     write(fd, zero, zero_size);
   }
 
-  cerr << "size = " << x_size << " * " << y_size << " = " 
-       << mmap_size << " bytes\n";
-
   void *shared_mem = mmap(NULL, mmap_size, PROT_READ | PROT_WRITE,
                           MAP_SHARED, fd, 0);
   if (shared_mem == (void *)-1) {
@@ -146,8 +138,6 @@ new_buffer(int &fd, size_t &mmap_size, string &filename,
     mmap_size = 0;
     return NULL;
   }
-
-  cerr << "shared_mem = " << shared_mem << "\n";
 
   // Now create the actual object in the shared-memory buffer.
   return new(shared_mem) SubprocessWindowBuffer(temp);
@@ -192,8 +182,6 @@ destroy_buffer(int fd, size_t mmap_size, const string &filename,
 ////////////////////////////////////////////////////////////////////
 SubprocessWindowBuffer *SubprocessWindowBuffer::
 open_buffer(int &fd, size_t &mmap_size, const string &filename) {
-  cerr << "open_buffer: " << filename << "\n";
-
   mmap_size = 0;
 
   fd = open(filename.c_str(), O_RDWR);
