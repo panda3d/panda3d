@@ -612,8 +612,11 @@ class Freezer:
             path = self.getModulePath(parentName)
             if path == None:
                 return None
-            
-        file, pathname, description = imp.find_module(baseName, path)
+
+        try:
+            file, pathname, description = imp.find_module(baseName, path)
+        except ImportError:
+            return None
 
         if not os.path.isdir(pathname):
             return None
@@ -826,7 +829,10 @@ class Freezer:
 
         else:
             # Otherwise, we can just import it normally.
-            self.mf.import_hook(mdef.moduleName)
+            try:
+                self.mf.import_hook(mdef.moduleName)
+            except ImportError:
+                print "Unknown module: %s" % (mdef.moduleName)
 
     def reset(self):
         """ After a previous call to done(), this resets the
