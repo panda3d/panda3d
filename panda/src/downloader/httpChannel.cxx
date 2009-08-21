@@ -380,14 +380,16 @@ run() {
         BIO_set_nbio(*_bio, 1);
       }
 
-      if (_connect_count > 0) {
-        downloader_cat.info()
-          << "Reconnecting to " << _bio->get_server_name() << ":" 
-          << _bio->get_port() << "\n";
-      } else {
-        downloader_cat.info()
-          << "Connecting to " << _bio->get_server_name() << ":" 
-          << _bio->get_port() << "\n";
+      if (downloader_cat.is_debug()) {
+        if (_connect_count > 0) {
+          downloader_cat.debug()
+            << "Reconnecting to " << _bio->get_server_name() << ":" 
+            << _bio->get_port() << "\n";
+        } else {
+          downloader_cat.debug()
+            << "Connecting to " << _bio->get_server_name() << ":" 
+            << _bio->get_port() << "\n";
+        }
       }
       
       _state = S_connecting;
