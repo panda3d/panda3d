@@ -72,13 +72,14 @@ class AppRunner(DirectObject):
         # may have to be different for each instance.
         self.multifileRoot = '/mf'
 
-        # The attributes of this object will be exposed as attributes
-        # of the plugin instance in the DOM.
-        self.attributes = ScriptAttributes()
+        # The "main" object will be exposed to the DOM as a property
+        # of the plugin object; that is, document.pluginobject.main in
+        # JavaScript will be appRunner.main here.
+        self.main = ScriptAttributes()
 
         # By default, we publish a stop() method so the browser can
         # easy stop the plugin.
-        self.attributes.stop = self.stop
+        self.main.stop = self.stop
 
         # This will be the browser's toplevel window DOM object;
         # e.g. self.dom.document will be the document.
@@ -233,8 +234,9 @@ class AppRunner(DirectObject):
         """ Called by the browser to query the Panda instance's
         toplevel scripting object, for querying properties in the
         Panda instance.  The attributes on this object are mapped to
-        the plugin instance within the DOM. """
-        return self.attributes
+        document.pluginobject.main within the DOM. """
+
+        return self.main
 
     def setBrowserScriptObject(self, dom):
         """ Called by the browser to supply the browser's toplevel DOM

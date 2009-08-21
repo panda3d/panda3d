@@ -436,6 +436,7 @@ class Packager:
 
                 if tempFile.exists():
                     filenames = self.__parseDependenciesWindows(tempFile)
+                    tempFile.unlink()
                 if filenames is None:
                     print "Unable to determine dependencies from %s" % (file.filename)
                     continue
@@ -518,6 +519,7 @@ class Packager:
 
                 if tempFile.exists():
                     filenames = self.__parseDependenciesOSX(tempFile)
+                    tempFile.unlink()
                 if filenames is None:
                     print "Unable to determine dependencies from %s" % (file.filename)
                     continue
@@ -589,6 +591,7 @@ class Packager:
 
                 if tempFile.exists():
                     filenames = self.__parseDependenciesPosix(tempFile)
+                    tempFile.unlink()
                 if filenames is None:
                     print "Unable to determine dependencies from %s" % (file.filename)
                     continue

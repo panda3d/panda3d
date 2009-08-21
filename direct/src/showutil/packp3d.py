@@ -37,15 +37,8 @@ Options:
 
   -s search_dir
      Additional directories to search for previously-built packages.
-     This option may be repeated as necessary.
-
-  -x
-     If this is specified, a version-independent application is built.
-     This stores source py files instead of compiled pyc files, and
-     egg files instead of bam files.  This application can then be run
-     with any version of Panda (provided you are careful not to make
-     any Python or Panda calls that are version-specific).  This is
-     not recommended except for very small, simple applications.
+     This option may be repeated as necessary.  These directories may
+     also be specified with the pdef-path Config.prc variable.
 
 """
 
@@ -61,14 +54,13 @@ class ArgumentError(StandardError):
     pass
 
 def makePackedApp(args):
-    opts, args = getopt.getopt(args, 'd:m:r:s:xh')
+    opts, args = getopt.getopt(args, 'd:m:r:s:h')
 
     packager = Packager.Packager()
 
     root = Filename('.')
     main = None
     requires = []
-    versionIndependent = False
     
     for option, value in opts:
         if option == '-d':
@@ -79,8 +71,6 @@ def makePackedApp(args):
             requires.append(value)
         elif option == '-s':
             packager.installSearch.appendDirectory(Filename.fromOsSpecific(value))
-        elif option == '-x':
-            versionIndependent = True
         elif option == '-h':
             print __doc__ % (os.path.split(sys.argv[0])[1])
             sys.exit(1)
@@ -96,6 +86,8 @@ def makePackedApp(args):
         raise ArgumentError, 'Application filename must end in ".p3d".'
 
     appDir = Filename(appFilename.getDirname())
+    if not appDir:
+      appDir = Filename('.')
     appBase = appFilename.getBasenameWoExtension()
 
     if not main:
