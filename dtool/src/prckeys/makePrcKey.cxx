@@ -32,7 +32,7 @@
 #ifndef HAVE_GETOPT
   #include "gnu_getopt.h"
 #else
-  #ifdef HAVE_GETOPT_H
+  #ifdef PHAVE_GETOPT_H
     #include <getopt.h>
   #endif
 #endif

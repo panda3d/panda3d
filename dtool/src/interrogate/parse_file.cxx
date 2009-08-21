@@ -27,7 +27,7 @@
 #ifndef HAVE_GETOPT_LONG_ONLY
   #include "gnu_getopt.h"
 #else
-  #ifdef HAVE_GETOPT_H
+  #ifdef PHAVE_GETOPT_H
     #include <getopt.h>
   #endif
 #endif
