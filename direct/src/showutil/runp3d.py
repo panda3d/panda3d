@@ -35,15 +35,6 @@ import os
 import types
 import __builtin__
 
-MultifileRoot = '/mf'
-
-# This defines the default prc file that is implicitly loaded with an
-# application.
-AppPrcFilename = 'App.prc'
-AppPrc = """
-default-model-extension .bam
-"""
-
 class ArgumentError(AttributeError):
     pass
 
@@ -75,6 +66,11 @@ class AppRunner(DirectObject):
 
         # TODO: we need one of these per instance, not per session.
         self.instanceId = None
+
+        # The mount point for the multifile.  For now, this is always
+        # the same, but when we move to multiple-instance sessions, it
+        # may have to be different for each instance.
+        self.multifileRoot = '/mf'
 
         # The attributes of this object will be exposed as attributes
         # of the plugin instance in the DOM.
@@ -177,13 +173,10 @@ class AppRunner(DirectObject):
 
         # Now set up Python to import this stuff.
         VFSImporter.register()
-        sys.path = [ MultifileRoot ] + sys.path
+        sys.path = [ self.multifileRoot ] + sys.path
 
-        # Put our root directory on the model-path and prc-path, too.
-        getModelPath().prependDirectory(MultifileRoot)
-
-        # Load the implicit App.prc file.
-        loadPrcFileData(AppPrcFilename, AppPrc)
+        # Put our root directory on the model-path, too.
+        getModelPath().prependDirectory(self.multifileRoot)
 
         # Replace the builtin open and file symbols so user code will get
         # our versions by default, which can open and read files out of
@@ -196,7 +189,7 @@ class AppRunner(DirectObject):
         if not self.fullDiskAccess:
             # Make "/mf" our "current directory", for running the multifiles
             # we plan to mount there.
-            vfs.chdir(MultifileRoot)
+            vfs.chdir(self.multifileRoot)
 
     def startIfReady(self):
         if self.started:
@@ -223,7 +216,7 @@ class AppRunner(DirectObject):
                 if mainName:
                     moduleName = mainName
 
-            root = MultifileRoot
+            root = self.multifileRoot
             if '.' in moduleName:
                 root += '/' + '/'.join(moduleName.split('.')[:-1])
             v = VFSImporter.VFSImporter(root)
@@ -308,8 +301,8 @@ class AppRunner(DirectObject):
         self.initPackedAppEnvironment()
 
         # Mount the Multifile under /mf, by convention.
-        vfs.mount(mf, MultifileRoot, vfs.MFReadOnly)
-        VFSImporter.freeze_new_modules(mf, MultifileRoot)
+        vfs.mount(mf, self.multifileRoot, vfs.MFReadOnly)
+        VFSImporter.freeze_new_modules(mf, self.multifileRoot)
 
         # Load any prc files in the root.  We have to load them
         # explicitly, since the ConfigPageManager can't directly look
@@ -319,7 +312,7 @@ class AppRunner(DirectObject):
         for f in mf.getSubfileNames():
             fn = Filename(f)
             if fn.getDirname() == '' and fn.getExtension() == 'prc':
-                pathname = '%s/%s' % (MultifileRoot, f)
+                pathname = '%s/%s' % (self.multifileRoot, f)
                 data = open(pathname, 'r').read()
                 loadPrcFileData(pathname, data)
 

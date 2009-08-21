@@ -370,23 +370,23 @@ read_contents_file(Filename contents_filename, const string &download_url,
 
   TiXmlElement *xcontents = doc.FirstChildElement("contents");
   if (xcontents != NULL) {
-    TiXmlElement *xpackage = xcontents->FirstChildElement("package");
-    while (xpackage != NULL) {
-      const char *name = xpackage->Attribute("name");
+    TiXmlElement *xplugin = xcontents->FirstChildElement("plugin");
+    while (xplugin != NULL) {
+      const char *name = xplugin->Attribute("name");
       if (name != NULL && strcmp(name, "coreapi") == 0) {
-        const char *xplatform = xpackage->Attribute("platform");
+        const char *xplatform = xplugin->Attribute("platform");
         if (xplatform != NULL && strcmp(xplatform, this_platform.c_str()) == 0) {
           return get_core_api(contents_filename, download_url, this_platform,
-                              xpackage);
+                              xplugin);
         }
       }
       
-      xpackage = xpackage->NextSiblingElement("package");
+      xplugin = xplugin->NextSiblingElement("plugin");
     }
   }
 
-  // Couldn't find the coreapi package description.
-  cerr << "No coreapi package defined in contents file for "
+  // Couldn't find the coreapi plugin description.
+  cerr << "No coreapi plugin defined in contents file for "
        << this_platform << "\n";
   return false;
 }
@@ -401,8 +401,8 @@ read_contents_file(Filename contents_filename, const string &download_url,
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
 get_core_api(const Filename &contents_filename, const string &download_url,
-             const string &this_platform, TiXmlElement *xpackage) {
-  _core_api_dll.load_xml(xpackage);
+             const string &this_platform, TiXmlElement *xplugin) {
+  _core_api_dll.load_xml(xplugin);
 
   if (!_core_api_dll.quick_verify(_root_dir)) {
     // The DLL file needs to be downloaded.  Go get it.

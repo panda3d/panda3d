@@ -49,7 +49,7 @@ private:
                           const string &this_platform);
   bool get_core_api(const Filename &contents_filename, 
                     const string &download_url, const string &this_platform,
-                    TiXmlElement *xpackage);
+                    TiXmlElement *xplugin);
   void run_getters();
   void handle_request(P3D_request *request);
   void make_parent_window(P3D_window_handle &parent_window, 

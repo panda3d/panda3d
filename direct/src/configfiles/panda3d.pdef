@@ -78,10 +78,13 @@ file libtinydisplay.dll
 # variables.
 inline_file Config.prc extract=1 <<- <EOF>
     plugin-path $PANDA3D_ROOT
+
     aux-display pandagl
     aux-display pandadx9
     aux-display pandadx8
     aux-display tinydisplay
+
+    default-model-extension .bam
 <EOF>
 
 end_package panda3d

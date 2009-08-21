@@ -712,23 +712,23 @@ read_contents_file(const string &contents_filename) {
 
   TiXmlElement *xcontents = doc.FirstChildElement("contents");
   if (xcontents != NULL) {
-    TiXmlElement *xpackage = xcontents->FirstChildElement("package");
-    while (xpackage != NULL) {
-      const char *name = xpackage->Attribute("name");
+    TiXmlElement *xplugin = xcontents->FirstChildElement("plugin");
+    while (xplugin != NULL) {
+      const char *name = xplugin->Attribute("name");
       if (name != NULL && strcmp(name, "coreapi") == 0) {
-        const char *platform = xpackage->Attribute("platform");
+        const char *platform = xplugin->Attribute("platform");
         if (platform != NULL && strcmp(platform, DTOOL_PLATFORM) == 0) {
-          get_core_api(xpackage);
+          get_core_api(xplugin);
           return true;
         }
       }
     
-      xpackage = xpackage->NextSiblingElement("package");
+      xplugin = xplugin->NextSiblingElement("plugin");
     }
   }
 
-  // Couldn't find the coreapi package description.
-  nout << "No coreapi package defined in contents file for "
+  // Couldn't find the coreapi plugin description.
+  nout << "No coreapi plugin defined in contents file for "
        << DTOOL_PLATFORM << "\n";
   return false;
 }
@@ -828,8 +828,8 @@ feed_file(PPDownloadRequest *req, const string &filename) {
 //               if necessary.
 ////////////////////////////////////////////////////////////////////
 void PPInstance::
-get_core_api(TiXmlElement *xpackage) {
-  _core_api_dll.load_xml(xpackage);
+get_core_api(TiXmlElement *xplugin) {
+  _core_api_dll.load_xml(xplugin);
 
   if (_core_api_dll.quick_verify(_root_dir)) {
     // The DLL file is good.  Just load it.

@@ -23,7 +23,12 @@ Options:
 import sys
 import getopt
 import os
-import md5
+
+try:
+    import hashlib
+except ImportError:
+    # Legacy Python support
+    import md5 as hashlib
 
 class ArgumentError(AttributeError):
     pass
@@ -40,7 +45,7 @@ class FileSpec:
         self.size = s.st_size
         self.timestamp = int(s.st_mtime)
 
-        m = md5.new()
+        m = hashlib.md5()
         m.update(open(pathname, 'rb').read())
         self.hash = m.hexdigest()
 
@@ -70,9 +75,9 @@ class ContentsMaker:
         print >> f, '<?xml version="1.0" ?>'
         print >> f, ''
         print >> f, '<contents>'
-        for packageName, packagePlatform, packageVersion, file in self.packages:
-            print >> f, '  <package name="%s" platform="%s" version="%s" %s />' % (
-                packageName, packagePlatform or '', packageVersion, file.getParams())
+        for type, packageName, packagePlatform, packageVersion, file in self.packages:
+            print >> f, '  <%s name="%s" platform="%s" version="%s" %s />' % (
+                type, packageName, packagePlatform or '', packageVersion, file.getParams())
         print >> f, '</contents>'
         f.close()
 
@@ -93,12 +98,15 @@ class ContentsMaker:
                 localpath = dirpath[len(prefix):].replace(os.sep, '/') + '/'
                 xml = dirpath[len(prefix):].replace(os.sep, '_') + '.xml'
 
+            type = 'package'
+
             # A special case: the "plugin" and "coreapi" directories
             # don't have xml files, just dll's.
             if xml.startswith('plugin_') or xml.startswith('coreapi_'):
                 if filenames:
                     assert len(filenames) == 1
                     xml = filenames[0]
+                    type = 'plugin'
 
             if xml not in filenames:
                 continue
@@ -106,17 +114,28 @@ class ContentsMaker:
             if localpath.count('/') == 2:
                 packageName, packageVersion, junk = localpath.split('/')
                 packagePlatform = None
-                file = FileSpec(localpath + xml,
-                                os.path.join(self.installDir, localpath + xml))
-                print file.filename
-                self.packages.append((packageName, packagePlatform, packageVersion, file))
 
-            if localpath.count('/') == 3:
+            elif localpath.count('/') == 3:
                 packageName, packagePlatform, packageVersion, junk = localpath.split('/')
-                file = FileSpec(localpath + xml,
-                                os.path.join(self.installDir, localpath + xml))
-                print file.filename
-                self.packages.append((packageName, packagePlatform, packageVersion, file))
+            else:
+                continue
+
+            file = FileSpec(localpath + xml,
+                            os.path.join(self.installDir, localpath + xml))
+            print file.filename
+            self.packages.append((type, packageName, packagePlatform, packageVersion, file))
+
+            if type == 'package':
+                # Look for an _import.xml file, too.
+                xml = xml[:-4] + '_import.xml'
+                try:
+                    file = FileSpec(localpath + xml,
+                                    os.path.join(self.installDir, localpath + xml))
+                except OSError:
+                    file = None
+                if file:
+                    print file.filename
+                    self.packages.append(('import', packageName, packagePlatform, packageVersion, file))
         
                 
 def makeContents(args):
