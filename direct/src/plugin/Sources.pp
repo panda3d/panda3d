@@ -115,6 +115,9 @@
 
   #define WIN_SYS_LIBS user32.lib
 
+  // If you have to link with a static Python library, define it here.
+  #define EXTRA_LIBS $[EXTRA_P3DPYTHON_LIBS]
+
 #end bin_target
 
 #begin static_lib_target
