@@ -330,14 +330,19 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
     extract = extract->NextSiblingElement("extract");
   }
 
-  // Verify all of the extracts.
+  // Verify the uncompressed archive.
   bool all_extracts_ok = true;
+  if (!_uncompressed_archive.quick_verify(_package_dir)) {
+    nout << "File is incorrect: " << _uncompressed_archive.get_filename() << "\n";
+    all_extracts_ok = false;
+  }
+
+  // Verify all of the extracts.
   Extracts::iterator ci;
-  for (ci = _extracts.begin(); ci != _extracts.end(); ++ci) {
+  for (ci = _extracts.begin(); ci != _extracts.end() && all_extracts_ok; ++ci) {
     if (!(*ci).quick_verify(_package_dir)) {
       nout << "File is incorrect: " << (*ci).get_filename() << "\n";
       all_extracts_ok = false;
-      break;
     }
   }
 

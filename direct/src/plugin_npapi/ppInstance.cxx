@@ -14,6 +14,7 @@
 
 #include "ppInstance.h"
 #include "ppPandaObject.h"
+#include "ppToplevelObject.h"
 #include "ppBrowserObject.h"
 #include "startup.h"
 #include "p3d_plugin_config.h"
@@ -73,7 +74,6 @@ PPInstance(NPMIMEType pluginType, NPP instance, uint16 mode,
 ////////////////////////////////////////////////////////////////////
 PPInstance::
 ~PPInstance() {
-  nout << "Destructing PPInstance\n";
   cleanup_window();
 
   if (_p3d_inst != NULL) {
@@ -187,7 +187,17 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
       _instance_url = stream->url;
       if (_p3d_inst != NULL) {
         P3D_instance_start(_p3d_inst, false, _instance_url.c_str());
-      }
+      } 
+
+      // We don't want the rest of this stream any more, but we can't
+      // just return NPERR_GENERIC_ERROR, though--that seems to freak
+      // out Mozilla.  Instead, we'll "accept" it for now, and then
+      // immediately stop it when we get the first write_stream()
+      // call.
+      stream->notifyData = new PPDownloadRequest(PPDownloadRequest::RT_instance_data);
+
+      *stype = NP_NORMAL;
+      return NPERR_NO_ERROR;
     }
 
     // Don't finish downloading the unsolicited stream.
@@ -232,6 +242,7 @@ int PPInstance::
 write_stream(NPStream *stream, int offset, int len, void *buffer) {
   if (stream->notifyData == NULL) {
     nout << "Unexpected write_stream on " << stream->url << "\n";
+    browser->destroystream(_npp_instance, stream, NPRES_USER_BREAK);
     return 0;
   }
 
@@ -242,12 +253,18 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
                                  P3D_RC_in_progress, 0,
                                  stream->end, buffer, len);
     return len;
+
+  case PPDownloadRequest::RT_instance_data:
+    // Here's a stream we don't really want.
+    browser->destroystream(_npp_instance, stream, NPRES_USER_BREAK);
+    return 0;
     
   default:
     nout << "Unexpected write_stream on " << stream->url << "\n";
     break;
   }
 
+  browser->destroystream(_npp_instance, stream, NPRES_USER_BREAK);
   return 0;
 }
 
@@ -262,7 +279,7 @@ NPError PPInstance::
 destroy_stream(NPStream *stream, NPReason reason) {
   if (stream->notifyData == NULL) {
     nout << "Unexpected destroy_stream on " << stream->url << "\n";
-    return NPERR_GENERIC_ERROR;
+    return NPERR_NO_ERROR;
   }
 
   PPDownloadRequest *req = (PPDownloadRequest *)(stream->notifyData);
@@ -280,10 +297,16 @@ destroy_stream(NPStream *stream, NPReason reason) {
     }
     break;
 
+  case PPDownloadRequest::RT_instance_data:
+    // We won't get a url_notify on this one, so delete it now.
+    delete req;
+    break;
+
   default:
+    nout << "Unexpected destroy_stream on " << stream->url << "\n";
     break;
   }
-  
+
   return NPERR_NO_ERROR;
 }
 
@@ -333,6 +356,7 @@ url_notify(const char *url, NPReason reason, void *notifyData) {
     break;
     
   default:
+    nout << "Unexpected url_notify on stream type " << req->_rtype << "\n";
     break;
   }
   
@@ -539,13 +563,14 @@ get_panda_script_object() {
     return _script_object;
   }
 
-  P3D_object *obj = NULL;
+  P3D_object *main = NULL;
 
   if (_p3d_inst != NULL) {
-    obj = P3D_instance_get_panda_script_object(_p3d_inst);
+    main = P3D_instance_get_panda_script_object(_p3d_inst);
   }
 
-  _script_object = PPPandaObject::make_new(this, obj);
+  _script_object = PPToplevelObject::make_new(this);
+  _script_object->set_main(main);
 
   browser->retainobject(_script_object);
   return _script_object;
@@ -975,8 +1000,8 @@ create_instance() {
     if (_script_object != NULL) {
       // Now that we have a true instance, initialize our
       // script_object with the proper P3D_object pointer.
-      P3D_object *obj = P3D_instance_get_panda_script_object(_p3d_inst);
-      _script_object->set_p3d_object(obj);
+      P3D_object *main = P3D_instance_get_panda_script_object(_p3d_inst);
+      _script_object->set_main(main);
     }
 
     if (_got_instance_url) {
@@ -1069,7 +1094,6 @@ send_window() {
     // No size: hidden.
     window_type = P3D_WT_hidden;
   }    
-  nout << "window_type = " << window_type << "\n";
 
   P3D_instance_setup_window
     (_p3d_inst, window_type,
@@ -1090,7 +1114,6 @@ cleanup_window() {
     // Restore the parent window to its own window handler.
     HWND hwnd = (HWND)_window.window;
     SetWindowLongPtr(hwnd, GWL_WNDPROC, _orig_window_proc);
-    nout << "Restored window handler for " << hwnd << "\n";
     InvalidateRect(hwnd, NULL, true);
 #endif  // _WIN32
     _got_window = false;

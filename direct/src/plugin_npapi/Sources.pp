@@ -21,6 +21,7 @@
     ppDownloadRequest.h ppDownloadRequest.I \
     ppInstance.h ppInstance.I \
     ppPandaObject.h ppPandaObject.I \
+    ppToplevelObject.h ppToplevelObject.I \
     startup.h
 
   #define INCLUDED_SOURCES \
@@ -28,6 +29,7 @@
     ppDownloadRequest.cxx \
     ppInstance.cxx \
     ppPandaObject.cxx \
+    ppToplevelObject.cxx \
     startup.cxx
  
   // Windows-specific options.

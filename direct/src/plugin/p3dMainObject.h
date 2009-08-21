@@ -1,4 +1,4 @@
-// Filename: p3dToplevelObject.h
+// Filename: p3dMainObject.h
 // Created by:  drose (10Jul09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,8 +12,8 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#ifndef P3DTOPLEVELOBJECT_H
-#define P3DTOPLEVELOBJECT_H
+#ifndef P3DMAINOBJECT_H
+#define P3DMAINOBJECT_H
 
 #include "p3d_plugin_common.h"
 #include "p3dObject.h"
@@ -22,10 +22,13 @@
 class P3DSession;
 
 ////////////////////////////////////////////////////////////////////
-//       Class : P3DToplevelObject
-// Description : This corresponds to the toplevel "Python" object
-//               owned by a particular instance, as returned by
-//               P3DInstance::get_panda_script_object().
+//       Class : P3DMainObject
+// Description : This corresponds to the "main" object exposed by a
+//               particular instance, as returned by
+//               P3DInstance::get_panda_script_object().  This object
+//               corresponds to the appRunner.main object in Python,
+//               and the document.pluginobject.main object in
+//               JavaScript.
 //
 //               This is mostly a wrapper around a P3DPythonObject
 //               pointer, and therefore functions like any other
@@ -35,10 +38,10 @@ class P3DSession;
 //               generated directly by the core API (like
 //               downloadProgress and such).
 ////////////////////////////////////////////////////////////////////
-class P3DToplevelObject : public P3DObject {
+class P3DMainObject : public P3DObject {
 public:
-  P3DToplevelObject();
-  virtual ~P3DToplevelObject();
+  P3DMainObject();
+  virtual ~P3DMainObject();
 
 public:
   virtual P3D_object_type get_type();

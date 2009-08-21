@@ -49,7 +49,7 @@ P3DInstanceManager *P3DInstanceManager::_global_ptr;
 P3DInstanceManager::
 P3DInstanceManager() {
   _is_initialized = false;
-  _next_temp_filename_counter = 0;
+  _next_temp_filename_counter = 1;
   _unique_id = 0;
 
   _notify_thread_continue = false;

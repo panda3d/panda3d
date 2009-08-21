@@ -22,7 +22,7 @@
 
 #include <vector>
 
-class PPPandaObject;
+class PPToplevelObject;
 class PPDownloadRequest;
 
 ////////////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ private:
 
   bool _python_window_open;
 
-  PPPandaObject *_script_object;
+  PPToplevelObject *_script_object;
 
   P3D_instance *_p3d_inst;
 };

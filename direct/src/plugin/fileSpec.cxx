@@ -94,33 +94,33 @@ quick_verify(const string &package_dir) const {
   string pathname = get_pathname(package_dir);
   struct stat st;
   if (stat(pathname.c_str(), &st) != 0) {
-    //nout << "file not found: " << _filename << "\n";
+    //cerr << "file not found: " << _filename << "\n";
     return false;
   }
 
   if (st.st_size != _size) {
     // If the size is wrong, the file fails.
-    //nout << "size wrong: " << _filename << "\n";
+    //cerr << "size wrong: " << _filename << "\n";
     return false;
   }
 
   if (st.st_mtime == _timestamp) {
     // If the size is right and the timestamp is right, the file passes.
-    //nout << "file ok: " << _filename << "\n";
+    //cerr << "file ok: " << _filename << "\n";
     return true;
   }
 
-  //nout << "modification time wrong: " << _filename << "\n";
+  //cerr << "modification time wrong: " << _filename << "\n";
 
   // If the size is right but the timestamp is wrong, the file
   // soft-fails.  We follow this up with a hash check.
   if (!check_hash(pathname)) {
     // Hard fail, the hash is wrong.
-    //nout << "hash check wrong: " << _filename << "\n";
+    //cerr << "hash check wrong: " << _filename << "\n";
     return false;
   }
 
-  //nout << "hash check ok: " << _filename << "\n";
+  //cerr << "hash check ok: " << _filename << "\n";
 
   // The hash is OK after all.  Change the file's timestamp back to
   // what we expect it to be, so we can quick-verify it successfully
@@ -149,13 +149,13 @@ full_verify(const string &package_dir) const {
   string pathname = get_pathname(package_dir);
   struct stat st;
   if (stat(pathname.c_str(), &st) != 0) {
-    //nout << "file not found: " << _filename << "\n";
+    //cerr << "file not found: " << _filename << "\n";
     return false;
   }
 
   if (st.st_size != _size) {
     // If the size is wrong, the file fails.
-    //nout << "size wrong: " << _filename << "\n";
+    //cerr << "size wrong: " << _filename << "\n";
     return false;
   }
 
@@ -163,11 +163,11 @@ full_verify(const string &package_dir) const {
   // soft-fails.  We follow this up with a hash check.
   if (!check_hash(pathname)) {
     // Hard fail, the hash is wrong.
-    //nout << "hash check wrong: " << _filename << "\n";
+    //cerr << "hash check wrong: " << _filename << "\n";
     return false;
   }
 
-  //nout << "hash check ok: " << _filename << "\n";
+  //cerr << "hash check ok: " << _filename << "\n";
 
   // The hash is OK.  If the timestamp is wrong, change it back to
   // what we expect it to be, so we can quick-verify it successfully
@@ -193,7 +193,7 @@ bool FileSpec::
 check_hash(const string &pathname) const {
   ifstream stream(pathname.c_str(), ios::in | ios::binary);
   if (!stream) {
-    //nout << "unable to read " << pathname << "\n";
+    //cerr << "unable to read " << pathname << "\n";
     return false;
   }
 

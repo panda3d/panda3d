@@ -22,7 +22,7 @@
 #include "p3dOsxSplashWindow.h"
 #include "p3dX11SplashWindow.h"
 #include "p3dObject.h"
-#include "p3dToplevelObject.h"
+#include "p3dMainObject.h"
 #include "p3dUndefinedObject.h"
 #include "p3dMultifileReader.h"
 #include "p3dTemporaryFile.h"
@@ -57,7 +57,7 @@ P3DInstance(P3D_request_ready_func *func,
   _func(func)
 {
   _browser_script_object = NULL;
-  _panda_script_object = new P3DToplevelObject;
+  _panda_script_object = new P3DMainObject;
   _user_data = user_data;
   _request_pending = false;
   _temp_p3d_filename = NULL;
@@ -1011,7 +1011,7 @@ handle_notify_request(const string &message) {
   // to this instance.
   nout << "Got notify: " << message << "\n";
   if (message == "onpythonload") {
-    // Once Python is up and running, we can get the actual toplevel
+    // Once Python is up and running, we can get the actual main
     // object from the Python side, and merge it with our own.
 
     TiXmlDocument *doc = new TiXmlDocument;

@@ -36,6 +36,7 @@
     p3dInstance.h p3dInstance.I \
     p3dInstanceManager.h p3dInstanceManager.I \
     p3dIntObject.h \
+    p3dMainObject.h \
     p3dMultifileReader.h p3dMultifileReader.I \
     p3dNoneObject.h \
     p3dObject.h p3dObject.I \
@@ -47,7 +48,6 @@
     p3dSplashWindow.h p3dSplashWindow.I \
     p3dStringObject.h \
     p3dTemporaryFile.h p3dTemporaryFile.I \
-    p3dToplevelObject.h \
     p3dUndefinedObject.h \
     p3dWinSplashWindow.h p3dWinSplashWindow.I \
     p3dX11SplashWindow.h \
@@ -67,6 +67,7 @@
     p3dInstance.cxx \
     p3dInstanceManager.cxx \
     p3dIntObject.cxx \
+    p3dMainObject.cxx \
     p3dMultifileReader.cxx \
     p3dNoneObject.cxx \
     p3dObject.cxx \
@@ -78,7 +79,6 @@
     p3dSplashWindow.cxx \
     p3dStringObject.cxx \
     p3dTemporaryFile.cxx \
-    p3dToplevelObject.cxx \
     p3dUndefinedObject.cxx \
     p3dWinSplashWindow.cxx \
     p3dX11SplashWindow.cxx \

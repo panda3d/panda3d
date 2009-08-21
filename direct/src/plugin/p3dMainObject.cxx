@@ -1,4 +1,4 @@
-// Filename: p3dToplevelObject.cxx
+// Filename: p3dMainObject.cxx
 // Created by:  drose (10Jul09)
 //
 ////////////////////////////////////////////////////////////////////
@@ -12,26 +12,26 @@
 //
 ////////////////////////////////////////////////////////////////////
 
-#include "p3dToplevelObject.h"
+#include "p3dMainObject.h"
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::Constructor
+//     Function: P3DMainObject::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DToplevelObject::
-P3DToplevelObject() :
+P3DMainObject::
+P3DMainObject() :
   _pyobj(NULL)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::Destructor
+//     Function: P3DMainObject::Destructor
 //       Access: Public, Virtual
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DToplevelObject::
-~P3DToplevelObject() {
+P3DMainObject::
+~P3DMainObject() {
   set_pyobj(NULL);
 
   // Clear the local properties.
@@ -44,58 +44,58 @@ P3DToplevelObject::
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::get_type
+//     Function: P3DMainObject::get_type
 //       Access: Public, Virtual
 //  Description: Returns the fundamental type of this kind of object.
 ////////////////////////////////////////////////////////////////////
-P3D_object_type P3DToplevelObject::
+P3D_object_type P3DMainObject::
 get_type() {
   return P3D_OT_object;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::get_bool
+//     Function: P3DMainObject::get_bool
 //       Access: Public, Virtual
 //  Description: Returns the object value coerced to a boolean, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-bool P3DToplevelObject::
+bool P3DMainObject::
 get_bool() {
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::get_int
+//     Function: P3DMainObject::get_int
 //       Access: Public, Virtual
 //  Description: Returns the object value coerced to an integer, if
 //               possible.
 ////////////////////////////////////////////////////////////////////
-int P3DToplevelObject::
+int P3DMainObject::
 get_int() {
   return 0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::get_float
+//     Function: P3DMainObject::get_float
 //       Access: Public, Virtual
 //  Description: Returns the object value coerced to a floating-point
 //               value, if possible.
 ////////////////////////////////////////////////////////////////////
-double P3DToplevelObject::
+double P3DMainObject::
 get_float() {
   return 0.0;
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::make_string
+//     Function: P3DMainObject::make_string
 //       Access: Public, Virtual
 //  Description: Fills the indicated C++ string object with the value
 //               of this object coerced to a string.
 ////////////////////////////////////////////////////////////////////
-void P3DToplevelObject::
+void P3DMainObject::
 make_string(string &value) {
   if (_pyobj == NULL) {
-    value = "P3DToplevelObject";
+    value = "P3DMainObject";
   } else {
     int size = P3D_OBJECT_GET_STRING(_pyobj, NULL, 0);
     char *buffer = new char[size];
@@ -106,13 +106,13 @@ make_string(string &value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::get_property
+//     Function: P3DMainObject::get_property
 //       Access: Public, Virtual
 //  Description: Returns the named property element in the object.  The
 //               return value is a new-reference P3D_object, or NULL
 //               on error.
 ////////////////////////////////////////////////////////////////////
-P3D_object *P3DToplevelObject::
+P3D_object *P3DMainObject::
 get_property(const string &property) {
   if (_pyobj == NULL) {
     // Without a pyobj, we just report whatever's been stored locally.
@@ -131,13 +131,13 @@ get_property(const string &property) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::set_property
+//     Function: P3DMainObject::set_property
 //       Access: Public, Virtual
 //  Description: Modifies (or deletes, if value is NULL) the named
 //               property element in the object.  Returns true on
 //               success, false on failure.
 ////////////////////////////////////////////////////////////////////
-bool P3DToplevelObject::
+bool P3DMainObject::
 set_property(const string &property, P3D_object *value) {
   // First, we set the property locally.
   if (value != NULL) {
@@ -171,12 +171,12 @@ set_property(const string &property, P3D_object *value) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::has_method
+//     Function: P3DMainObject::has_method
 //       Access: Public, Virtual
 //  Description: Returns true if the named method exists on this
 //               object, false otherwise.
 ////////////////////////////////////////////////////////////////////
-bool P3DToplevelObject::
+bool P3DMainObject::
 has_method(const string &method_name) {
   if (_pyobj == NULL) {
     // No methods until we get our pyobj.
@@ -187,7 +187,7 @@ has_method(const string &method_name) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::call
+//     Function: P3DMainObject::call
 //       Access: Public, Virtual
 //  Description: Invokes the named method on the object, passing the
 //               indicated parameters.  If the method name is empty,
@@ -199,7 +199,7 @@ has_method(const string &method_name) {
 //               value is always NULL, and there is no way to
 //               determine success or failure.
 ////////////////////////////////////////////////////////////////////
-P3D_object *P3DToplevelObject::
+P3D_object *P3DMainObject::
 call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
   if (_pyobj == NULL) {
@@ -212,28 +212,28 @@ call(const string &method_name, bool needs_response,
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::output
+//     Function: P3DMainObject::output
 //       Access: Public, Virtual
 //  Description: Writes a formatted representation of the value to the
 //               indicated string.  This is intended for developer
 //               assistance.
 ////////////////////////////////////////////////////////////////////
-void P3DToplevelObject::
+void P3DMainObject::
 output(ostream &out) {
-  out << "P3DToplevelObject";
+  out << "P3DMainObject";
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::set_pyobj
+//     Function: P3DMainObject::set_pyobj
 //       Access: Public
 //  Description: Changes the internal pyobj pointer.  This is the
 //               P3D_object that references the actual PyObject held
 //               within the child process, corresponding to the true
-//               toplevel object there.  The new object's reference
+//               main object there.  The new object's reference
 //               count is incremented, and the previous object's is
 //               decremented.
 ////////////////////////////////////////////////////////////////////
-void P3DToplevelObject::
+void P3DMainObject::
 set_pyobj(P3D_object *pyobj) {
   if (_pyobj != pyobj) {
     P3D_OBJECT_XDECREF(_pyobj);
@@ -254,12 +254,12 @@ set_pyobj(P3D_object *pyobj) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DToplevelObject::get_pyobj
+//     Function: P3DMainObject::get_pyobj
 //       Access: Public
 //  Description: Returns the internal pyobj pointer, or NULL if it has
 //               not yet been set.
 ////////////////////////////////////////////////////////////////////
-P3D_object *P3DToplevelObject::
+P3D_object *P3DMainObject::
 get_pyobj() const {
   return _pyobj;
 }

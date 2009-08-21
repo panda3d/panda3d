@@ -39,7 +39,7 @@ class P3DSplashWindow;
 class P3DDownload;
 class P3DPackage;
 class P3DObject;
-class P3DToplevelObject;
+class P3DMainObject;
 class P3DTemporaryFile;
 
 ////////////////////////////////////////////////////////////////////
@@ -144,7 +144,7 @@ private:
 
   P3D_request_ready_func *_func;
   P3D_object *_browser_script_object;
-  P3DToplevelObject *_panda_script_object;
+  P3DMainObject *_panda_script_object;
 
   P3DTemporaryFile *_temp_p3d_filename;
   P3DTemporaryFile *_temp_splash_image;
