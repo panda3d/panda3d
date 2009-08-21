@@ -103,7 +103,7 @@ set_param_lo_stop(int axis, dReal val) {
   if ( axis == 0 ) {
     dJointSetUniversalParam(_id, dParamLoStop, val);
   } else if ( axis == 1 ) {
-    dJointSetUniversalParam(_id, dParamLoStop, val);
+    dJointSetUniversalParam(_id, dParamLoStop2, val);
   }
 }
 
@@ -114,7 +114,7 @@ set_param_hi_stop(int axis, dReal val) {
   if ( axis == 0 ) {
     dJointSetUniversalParam(_id, dParamHiStop, val);
   } else if ( axis == 1 ) {
-    dJointSetUniversalParam(_id, dParamHiStop, val);
+    dJointSetUniversalParam(_id, dParamHiStop2, val);
   }
 }
 
@@ -125,7 +125,7 @@ set_param_vel(int axis, dReal val) {
   if ( axis == 0 ) {
     dJointSetUniversalParam(_id, dParamVel, val);
   } else if ( axis == 1 ) {
-    dJointSetUniversalParam(_id, dParamVel, val);
+    dJointSetUniversalParam(_id, dParamVel2, val);
   }
 }
 
@@ -136,7 +136,7 @@ set_param_f_max(int axis, dReal val) {
   if ( axis == 0 ) {
     dJointSetUniversalParam(_id, dParamFMax, val);
   } else if ( axis == 1 ) {
-    dJointSetUniversalParam(_id, dParamFMax, val);
+    dJointSetUniversalParam(_id, dParamFMax2, val);
   }
 }
 
@@ -147,7 +147,7 @@ set_param_fudge_factor(int axis, dReal val) {
   if ( axis == 0 ) {
     dJointSetUniversalParam(_id, dParamFudgeFactor, val);
   } else if ( axis == 1 ) {
-    dJointSetUniversalParam(_id, dParamFudgeFactor, val);
+    dJointSetUniversalParam(_id, dParamFudgeFactor2, val);
   }
 }
 
@@ -158,7 +158,7 @@ set_param_bounce(int axis, dReal val) {
   if ( axis == 0 ) {
     dJointSetUniversalParam(_id, dParamBounce, val);
   } else if ( axis == 1 ) {
-    dJointSetUniversalParam(_id, dParamBounce, val);
+    dJointSetUniversalParam(_id, dParamBounce2, val);
   }
 }
 
@@ -169,7 +169,7 @@ set_param_CFM(int axis, dReal val) {
   if ( axis == 0 ) {
     dJointSetUniversalParam(_id, dParamCFM, val);
   } else if ( axis == 1 ) {
-    dJointSetUniversalParam(_id, dParamCFM, val);
+    dJointSetUniversalParam(_id, dParamCFM2, val);
   }
 }
 
@@ -180,7 +180,7 @@ set_param_stop_ERP(int axis, dReal val) {
   if ( axis == 0 ) {
     dJointSetUniversalParam(_id, dParamStopERP, val);
   } else if ( axis == 1 ) {
-    dJointSetUniversalParam(_id, dParamStopERP, val);
+    dJointSetUniversalParam(_id, dParamStopERP2, val);
   }
 }
 
@@ -191,7 +191,7 @@ set_param_stop_CFM(int axis, dReal val) {
   if ( axis == 0 ) {
     dJointSetUniversalParam(_id, dParamStopCFM, val);
   } else if ( axis == 1 ) {
-    dJointSetUniversalParam(_id, dParamStopCFM, val);
+    dJointSetUniversalParam(_id, dParamStopCFM2, val);
   }
 }
 
@@ -202,7 +202,7 @@ get_param_lo_stop(int axis) const {
   if ( axis == 0 ) {
     return dJointGetUniversalParam(_id, dParamLoStop);
   } else if ( axis == 1 ) {
-    return dJointGetUniversalParam(_id, dParamLoStop);
+    return dJointGetUniversalParam(_id, dParamLoStop2);
   }
   return 0;
 }
@@ -214,7 +214,7 @@ get_param_hi_stop(int axis) const {
   if ( axis == 0 ) {
     return dJointGetUniversalParam(_id, dParamHiStop);
   } else if ( axis == 1 ) {
-    return dJointGetUniversalParam(_id, dParamHiStop);
+    return dJointGetUniversalParam(_id, dParamHiStop2);
   }
   return 0;
 }
@@ -226,7 +226,7 @@ get_param_vel(int axis) const {
   if ( axis == 0 ) {
     return dJointGetUniversalParam(_id, dParamVel);
   } else if ( axis == 1 ) {
-    return dJointGetUniversalParam(_id, dParamVel);
+    return dJointGetUniversalParam(_id, dParamVel2);
   }
   return 0;
 }
@@ -238,7 +238,7 @@ get_param_f_max(int axis) const {
   if ( axis == 0 ) {
     return dJointGetUniversalParam(_id, dParamFMax);
   } else if ( axis == 1 ) {
-    return dJointGetUniversalParam(_id, dParamFMax);
+    return dJointGetUniversalParam(_id, dParamFMax2);
   }
   return 0;
 }
@@ -250,7 +250,7 @@ get_param_fudge_factor(int axis) const {
   if ( axis == 0 ) {
     return dJointGetUniversalParam(_id, dParamFudgeFactor);
   } else if ( axis == 1 ) {
-    return dJointGetUniversalParam(_id, dParamFudgeFactor);
+    return dJointGetUniversalParam(_id, dParamFudgeFactor2);
   }
   return 0;
 }
@@ -262,7 +262,7 @@ get_param_bounce(int axis) const {
   if ( axis == 0 ) {
     return dJointGetUniversalParam(_id, dParamBounce);
   } else if ( axis == 1 ) {
-    return dJointGetUniversalParam(_id, dParamBounce);
+    return dJointGetUniversalParam(_id, dParamBounce2);
   }
   return 0;
 }
@@ -274,7 +274,7 @@ get_param_CFM(int axis) const {
   if ( axis == 0 ) {
     return dJointGetUniversalParam(_id, dParamCFM);
   } else if ( axis == 1 ) {
-    return dJointGetUniversalParam(_id, dParamCFM);
+    return dJointGetUniversalParam(_id, dParamCFM2);
   }
   return 0;
 }
@@ -286,7 +286,7 @@ get_param_stop_ERP(int axis) const {
   if ( axis == 0 ) {
     return dJointGetUniversalParam(_id, dParamStopERP);
   } else if ( axis == 1 ) {
-    return dJointGetUniversalParam(_id, dParamStopERP);
+    return dJointGetUniversalParam(_id, dParamStopERP2);
   }
   return 0;
 }
@@ -298,7 +298,7 @@ get_param_stop_CFM(int axis) const {
   if ( axis == 0 ) {
     return dJointGetUniversalParam(_id, dParamStopCFM);
   } else if ( axis == 1 ) {
-    return dJointGetUniversalParam(_id, dParamStopCFM);
+    return dJointGetUniversalParam(_id, dParamStopCFM2);
   }
   return 0;
 }
