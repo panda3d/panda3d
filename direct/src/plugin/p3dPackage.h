@@ -20,6 +20,7 @@
 #include "fileSpec.h"
 #include "get_tinyxml.h"
 
+class P3DHost;
 class P3DInstance;
 class P3DTemporaryFile;
 
@@ -31,23 +32,26 @@ class P3DTemporaryFile;
 //               runtime, which consists of a bunch of dll's
 //               downloaded in a single tar file, is a package.
 //
-//               The plugin is responsible for managing these packages
-//               on disk, downloading new versions when needed, and
-//               removing stale versions to limit disk space waste.
+//               The core API is responsible for managing these
+//               packages on disk, downloading new versions when
+//               needed, and removing stale versions to limit disk
+//               space waste.
 ////////////////////////////////////////////////////////////////////
 class P3DPackage {
-public:
-  P3DPackage(const string &package_name, 
-             const string &package_platform,
+private:
+  P3DPackage(P3DHost *host,
+             const string &package_name, 
              const string &package_version);
   ~P3DPackage();
 
+public:
   inline bool get_info_ready() const;
   inline size_t get_download_size() const;
 
   inline void activate_download();
   inline bool get_ready() const;
   inline bool get_failed() const;
+  inline P3DHost *get_host() const;
   inline const string &get_package_dir() const;
   inline const string &get_package_name() const;
   inline const string &get_package_version() const;
@@ -101,6 +105,8 @@ private:
   bool is_extractable(const string &filename) const;
 
 private:
+  P3DHost *_host;
+
   string _package_name;
   string _package_version;
   string _package_platform;
@@ -132,6 +138,8 @@ private:
 
   friend class Download;
   friend class P3DMultifileReader;
+
+  friend class P3DHost;
 };
 
 #include "p3dPackage.I"

@@ -108,7 +108,7 @@ void PPInstance::
 begin() {
   if (!is_plugin_loaded()) {
     // Go download the contents file, so we can download the core DLL.
-    string url = P3D_PLUGIN_DOWNLOAD;
+    string url = PANDA_PACKAGE_HOST_URL;
     if (!url.empty() && url[url.length() - 1] != '/') {
       url += '/';
     }
@@ -837,7 +837,7 @@ get_core_api(TiXmlElement *xplugin) {
 
   } else {
     // The DLL file needs to be downloaded.  Go get it.
-    string url = P3D_PLUGIN_DOWNLOAD;
+    string url = PANDA_PACKAGE_HOST_URL;
     if (!url.empty() && url[url.length() - 1] != '/') {
       url += '/';
     }

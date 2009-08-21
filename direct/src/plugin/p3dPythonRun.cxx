@@ -18,7 +18,7 @@
 
 // There is only one P3DPythonRun object in any given process space.
 // Makes the statics easier to deal with, and we don't need multiple
-// instances of this think.
+// instances of this thing.
 P3DPythonRun *P3DPythonRun::_global_ptr = NULL;
 
 ////////////////////////////////////////////////////////////////////

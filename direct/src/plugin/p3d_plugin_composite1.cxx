@@ -7,6 +7,7 @@
 #include "p3dFileDownload.cxx"
 #include "p3dFileParams.cxx"
 #include "p3dFloatObject.cxx"
+#include "p3dHost.cxx"
 #include "p3dInstance.cxx"
 #include "p3dInstanceManager.cxx"
 #include "p3dIntObject.cxx"

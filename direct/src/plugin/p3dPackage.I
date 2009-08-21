@@ -82,6 +82,17 @@ get_failed() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_host
+//       Access: Public
+//  Description: Returns the host server which offers this package for
+//               download.
+////////////////////////////////////////////////////////////////////
+inline P3DHost *P3DPackage::
+get_host() const {
+  return _host;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::get_package_dir
 //       Access: Public
 //  Description: Returns the directory into which this package is

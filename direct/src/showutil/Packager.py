@@ -133,8 +133,9 @@ class Packager:
         def __init__(self, packageName, packager):
             self.packageName = packageName
             self.packager = packager
-            self.version = None
             self.platform = None
+            self.version = None
+            self.host = None
             self.p3dApplication = False
             self.compressionLevel = 0
             self.importedMapsDir = 'imported_maps'
@@ -672,6 +673,7 @@ class Packager:
                 xrequires.SetAttribute('name', package.packageName)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
+                xrequires.SetAttribute('host', package.host)
                 xpackage.InsertEndChild(xrequires)
 
             doc.InsertEndChild(xpackage)
@@ -699,6 +701,9 @@ class Packager:
                 raise PackagerError, message
 
         def writeDescFile(self):
+            """ Makes the package.xml file that describes the package
+            and its contents, for download. """
+            
             packageDescFullpath = Filename(self.packager.installDir, self.packageDesc)
             doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
             decl = TiXmlDeclaration("1.0", "utf-8", "")
@@ -724,6 +729,7 @@ class Packager:
                     xrequires.SetAttribute('platform', package.platform)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
+                xrequires.SetAttribute('host', package.host)
                 xpackage.InsertEndChild(xrequires)
 
             xuncompressedArchive = self.getFileSpec(
@@ -743,6 +749,10 @@ class Packager:
             doc.SaveFile()
 
         def writeImportDescFile(self):
+            """ Makes the package_import.xml file that describes the
+            package and its contents, for other packages and
+            applications that may wish to "require" this one. """
+        
             packageImportDescFullpath = Filename(self.packager.installDir, self.packageImportDesc)
             doc = TiXmlDocument(packageImportDescFullpath.toOsSpecific())
             decl = TiXmlDeclaration("1.0", "utf-8", "")
@@ -754,6 +764,7 @@ class Packager:
                 xpackage.SetAttribute('platform', self.platform)
             if self.version:
                 xpackage.SetAttribute('version', self.version)
+            xpackage.SetAttribute('host', self.host)
 
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
@@ -762,6 +773,7 @@ class Packager:
                     xrequires.SetAttribute('platform', package.platform)
                 if package.version:
                     xrequires.SetAttribute('version', package.version)
+                xrequires.SetAttribute('host', package.host)
                 xpackage.InsertEndChild(xrequires)
 
             self.components.sort()
@@ -785,6 +797,7 @@ class Packager:
             self.packageName = xpackage.Attribute('name')
             self.platform = xpackage.Attribute('platform')
             self.version = xpackage.Attribute('version')
+            self.host = xpackage.Attribute('host')
 
             self.requires = []
             xrequires = xpackage.FirstChildElement('requires')
@@ -792,8 +805,11 @@ class Packager:
                 packageName = xrequires.Attribute('name')
                 platform = xrequires.Attribute('platform')
                 version = xrequires.Attribute('version')
+                host = xrequires.Attribute('host')
                 if packageName:
-                    package = self.packager.findPackage(packageName, platform = platform, version = version, requires = self.requires)
+                    package = self.packager.findPackage(
+                        packageName, platform = platform, version = version,
+                        host = host, requires = self.requires)
                     if package:
                         self.requires.append(package)
                 xrequires = xrequires.NextSiblingElement('requires')
@@ -1012,9 +1028,12 @@ class Packager:
         self.installDir = None
         self.persistDir = None
 
-        # A search list of directories and/or URL's to search for
-        # installed packages.  We query it from a config variable
-        # initially, but we may also be extending it at runtime.
+        # The download URL at which these packages will eventually be
+        # hosted.  This may also be changed with the "host" command.
+        self.host = PandaSystem.getPackageHostUrl()
+        self.hostDescriptiveName = None
+
+        # A search list for previously-built local packages.
         self.installSearch = ConfigVariableSearchPath('pdef-path')
 
         # The system PATH, for searching dll's and exe's.
@@ -1195,23 +1214,8 @@ class Packager:
         # We must have an actual install directory.
         assert(self.installDir)
 
-##         # If the persist dir names an empty or nonexistent directory,
-##         # we will be generating a brand new publish with no previous
-##         # patches.
-##         self.persistDir.makeDir()
-
-##         # Within the persist dir, we make a temporary holding dir for
-##         # generating multifiles.
-##         self.mfTempDir = Filename(self.persistDir, Filename('mftemp/'))
-##         self.mfTempDir.makeDir()
-
-##         # We also need a temporary holding dir for squeezing py files.
-##         self.pyzTempDir = Filename(self.persistDir, Filename('pyz/'))
-##         self.pyzTempDir.makeDir()
-
-##         # Change to the persist directory so the temp files will be
-##         # created there
-##         os.chdir(self.persistDir.toOsSpecific())
+        if not PandaSystem.getPackageVersionString() or not PandaSystem.getPackageHostUrl():
+            raise PackagerError, 'This script must be run using a version of Panda3D that has been built\nfor distribution.  Try using ppackage.p3d or packp3d.p3d instead.'
 
     def __expandVariable(self, line, p):
         """ Given that line[p] is a dollar sign beginning a variable
@@ -1441,6 +1445,32 @@ class Packager:
         value = ExecutionEnvironment.expandString(value.strip())
         ExecutionEnvironment.setEnvironmentVariable(variable, value)
 
+    def parse_host(self, words):
+        """
+        host "url" ["descriptive name"]
+        """
+
+        hostDescriptiveName = None
+        try:
+            if len(words) == 2:
+                command, host = words
+            else:
+                command, host, hostDescriptiveName = words
+        except ValueError:
+            raise ArgumentNumber
+
+        if self.currentPackage:
+            self.currentPackage.host = host
+        else:
+            # Outside of a package, the "host" command specifies the
+            # host for all future packages.
+            self.host = host
+
+        # The descriptive name, if specified, is kept until the end,
+        # where it may be passed to make_contents by ppackage.py.
+        if hostDescriptiveName:
+            self.hostDescriptiveName = hostDescriptiveName
+
     def parse_model_path(self, words):
         """
         model_path directory
@@ -1469,10 +1499,10 @@ class Packager:
 
     def parse_begin_package(self, words):
         """
-        begin_package packageName [version=v]
+        begin_package packageName [version=v] [host=host]
         """
 
-        args = self.__parseArgs(words, ['version'])
+        args = self.__parseArgs(words, ['version', 'host'])
 
         try:
             command, packageName = words
@@ -1480,8 +1510,10 @@ class Packager:
             raise ArgumentNumber
 
         version = args.get('version', None)
+        host = args.get('host', None)
 
-        self.beginPackage(packageName, version = version, p3dApplication = False)
+        self.beginPackage(packageName, version = version, host = host,
+                          p3dApplication = False)
 
     def parse_end_package(self, words):
         """
@@ -1539,10 +1571,10 @@ class Packager:
 
     def parse_require(self, words):
         """
-        require packageName [version=v]
+        require packageName [version=v] [host=url]
         """
 
-        args = self.__parseArgs(words, ['version'])
+        args = self.__parseArgs(words, ['version', 'host'])
 
         try:
             command, packageName = words
@@ -1550,7 +1582,8 @@ class Packager:
             raise ArgumentError
 
         version = args.get('version', None)
-        self.require(packageName, version = version)
+        host = args.get('host', None)
+        self.require(packageName, version = version, host = host)
 
     def parse_module(self, words):
         """
@@ -1798,7 +1831,8 @@ class Packager:
             del words[-1]
                 
     
-    def beginPackage(self, packageName, version = None, p3dApplication = False):
+    def beginPackage(self, packageName, version = None, host = None,
+                     p3dApplication = False):
         """ Begins a new package specification.  packageName is the
         basename of the package.  Follow this with a number of calls
         to file() etc., and close the package with endPackage(). """
@@ -1806,20 +1840,33 @@ class Packager:
         if self.currentPackage:
             raise PackagerError, 'unmatched end_package %s' % (self.currentPackage.packageName)
 
-        # A special case for the Panda3D package.  We enforce that the
-        # version number matches what we've been compiled with.
+        if host is None and not p3dApplication:
+            # Every package that doesn't specify otherwise uses the
+            # current download host.
+            host = self.host
+
+        # A special case when building the "panda3d" package.  We
+        # enforce that the version number matches what we've been
+        # compiled with.
         if packageName == 'panda3d':
             if version is None:
                 version = PandaSystem.getPackageVersionString()
-            else:
-                if version != PandaSystem.getPackageVersionString():
-                    message = 'mismatched Panda3D version: requested %s, but Panda3D is built as %s' % (version, PandaSystem.getPackageVersionString())
-                    raise PackageError, message
+            if host is None:
+                host = PandaSystem.getPackageHostUrl()
+
+            if version != PandaSystem.getPackageVersionString():
+                message = 'mismatched Panda3D version: requested %s, but Panda3D is built as %s' % (version, PandaSystem.getPackageVersionString())
+                raise PackageError, message
+
+            if host != PandaSystem.getPackageHostUrl():
+                message = 'mismatched Panda3D host: requested %s, but Panda3D is built as %s' % (host, PandaSystem.getPackageHostUrl())
+                raise PackageError, message
 
         package = self.Package(packageName, self)
         self.currentPackage = package
 
         package.version = version
+        package.host = host
         package.p3dApplication = p3dApplication
 
         if package.p3dApplication:
@@ -1855,7 +1902,7 @@ class Packager:
         self.currentPackage = None
 
     def findPackage(self, packageName, platform = None, version = None,
-                    requires = None):
+                    host = None, requires = None):
         """ Searches for the named package from a previous publish
         operation along the install search path.
 
@@ -1872,25 +1919,32 @@ class Packager:
             platform = self.platform
 
         # Is it a package we already have resident?
-        package = self.packages.get((packageName, platform, version), None)
+        package = self.packages.get((packageName, platform, version, host), None)
         if package:
             return package
 
         # Look on the searchlist.
         for dirname in self.installSearch.getDirectories():
-            package = self.__scanPackageDir(dirname, packageName, platform, version, requires = requires)
+            package = self.__scanPackageDir(dirname, packageName, platform, version, host, requires = requires)
             if not package:
-                package = self.__scanPackageDir(dirname, packageName, None, version, requires = requires)
+                package = self.__scanPackageDir(dirname, packageName, None, version, host, requires = requires)
 
             if package:
-                package = self.packages.setdefault((package.packageName, package.platform, package.version), package)
-                self.packages[(packageName, platform, version)] = package
-                return package
+                break
+
+        if not package:
+            # Query the indicated host.
+            package = self.__findPackageOnHost(packageName, platform, version, host, requires = requires)
+
+        if package:
+            package = self.packages.setdefault((package.packageName, package.platform, package.version, package.host), package)
+            self.packages[(packageName, platform, version, host)] = package
+            return package
                 
         return None
 
     def __scanPackageDir(self, rootDir, packageName, platform, version,
-                         requires = None):
+                         host, requires = None):
         """ Scans a directory on disk, looking for *_import.xml files
         that match the indicated packageName and optional version.  If a
         suitable xml file is found, reads it and returns the assocated
@@ -1917,6 +1971,9 @@ class Packager:
             packageDir = Filename(packageDir, '*')
             basename += '_%s' % ('*')
 
+        # Actually, the host means little for this search, since we're
+        # only looking in a local directory at this point.
+
         basename += '_import.xml'
         filename = Filename(packageDir, basename)
         filelist = glob.glob(filename.toOsSpecific())
@@ -1932,6 +1989,10 @@ class Packager:
             if package and self.__packageIsValid(package, requires):
                 return package
 
+        return None
+
+    def __findPackageOnHost(self, packageName, platform, version, host, requires = None):
+        # TODO.
         return None
 
     def __sortPackageImportFilelist(self, filelist):
@@ -1968,7 +2029,8 @@ class Packager:
             while p < len(version) and version[p] in string.digits:
                 w += version[p]
                 p += 1
-            words.append(int(w))
+            if w:
+                words.append(int(w))
 
         return tuple(words)
 
@@ -2024,7 +2086,7 @@ class Packager:
 
         self.currentPackage.configs[variable] = value
 
-    def require(self, packageName, version = None):
+    def require(self, packageName, version = None, host = None):
         """ Indicates a dependency on the named package, supplied as
         a name.
 
@@ -2035,13 +2097,17 @@ class Packager:
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        # A special case for the Panda3D package.  We enforce that the
-        # version number matches what we've been compiled with.
+        # A special case when requiring the "panda3d" package.  We
+        # supply the version number what we've been compiled with as a
+        # default.
         if packageName == 'panda3d':
             if version is None:
                 version = PandaSystem.getPackageVersionString()
+            if host is None:
+                host = PandaSystem.getPackageHostUrl()
         
-        package = self.findPackage(packageName, version = version, requires = self.currentPackage.requires)
+        package = self.findPackage(packageName, version = version, host = host,
+                                   requires = self.currentPackage.requires)
         if not package:
             message = 'Unknown package %s, version "%s"' % (packageName, version)
             raise PackagerError, message
@@ -2059,20 +2125,14 @@ class Packager:
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        # A special case for the Panda3D package.  We enforce that the
-        # version number matches what we've been compiled with.
+        # A special case when requiring the "panda3d" package.  We
+        # complain if the version number doesn't match what we've been
+        # compiled with.
         if package.packageName == 'panda3d':
             if package.version != PandaSystem.getPackageVersionString():
-                if not PandaSystem.getPackageVersionString():
-                    # We haven't been compiled with any particular
-                    # version of Panda.  This is a warning, not an
-                    # error.
-                    print "Warning: requiring panda3d version %s, which may or may not match the current build of Panda.  Recommend that you use only the official Panda3D build for making distributable applications to ensure compatibility." % (package.version)
-                else:
-                    # This particular version of Panda doesn't match
-                    # the requested version.  Again, a warning, not an
-                    # error.
-                    print "Warning: requiring panda3d version %s, which does not match the current build of Panda, which is version %s." % (package, PandaSystem.getPackageVersionString())
+                print "Warning: requiring panda3d version %s, which does not match the current build of Panda, which is version %s." % (package, PandaSystem.getPackageVersionString())
+            elif package.host != PandaSystem.getPackageHostUrl():
+                print "Warning: requiring panda3d host %s, which does not match the current build of Panda, which is host %s." % (package, PandaSystem.getPackageHostUrl())
 
         self.currentPackage.requirePackage(package)
 

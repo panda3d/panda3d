@@ -64,7 +64,7 @@ run(int argc, char *argv[]) {
   const char *optstr = "+mu:p:ft:s:o:l:h";
 
   bool allow_multiple = false;
-  string download_url = P3D_PLUGIN_DOWNLOAD;
+  string download_url = PANDA_PACKAGE_HOST_URL;
   string this_platform = DTOOL_PLATFORM;
   bool force_download = false;
 
@@ -752,7 +752,7 @@ usage() {
 
     << "  -u url\n"
     << "    Specify the URL of the Panda3D download server.  The default is\n"
-    << "    \"" << P3D_PLUGIN_DOWNLOAD << "\" .\n\n"
+    << "    \"" << PANDA_PACKAGE_HOST_URL << "\" .\n\n"
 
     << "  -p platform\n"
     << "    Specify the platform to masquerade as.  The default is \""

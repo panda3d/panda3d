@@ -119,15 +119,21 @@ def makePackedApp(args):
     packager.installDir = appDir
     getModelPath().appendDirectory(root)
 
-    packager.setup()
-    packager.beginPackage(appBase, p3dApplication = True)
-    for requireName in requires:
-        packager.require(requireName)
-        
-    packager.dir(root)
-    packager.mainModule(mainModule)
-        
-    packager.endPackage(appBase, p3dApplication = True)
+    try:
+        packager.setup()
+        packager.beginPackage(appBase, p3dApplication = True)
+        for requireName in requires:
+            packager.require(requireName)
+
+        packager.dir(root)
+        packager.mainModule(mainModule)
+
+        packager.endPackage(appBase, p3dApplication = True)
+    except Packager.PackagerError:
+        # Just print the error message and exit gracefully.
+        inst = sys.exc_info()[1]
+        print inst.args[0]
+        sys.exit(1)
 
 def main(appRunner):
     """ This function is called when this module is invoked as

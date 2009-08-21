@@ -38,12 +38,13 @@ Options:
      ready-to-be-published files into.  This directory structure may
      contain multiple different packages from multiple different
      invocations of this script.  It is the user's responsibility to
-     copy this directory structure to a web host where it may be
-     downloaded by the client.
+     copy this directory structure to a server, which will have the
+     URL specified by -u, below.
 
   -s search_dir
      Additional directories to search for previously-built packages.
-     This option may be repeated as necessary.
+     This option may be repeated as necessary.  These directories may
+     also be specified with the pdef-path Config.prc variable.
 
   -d persist_dir
      The full path to a local directory that retains persistant state
@@ -53,6 +54,21 @@ Options:
      this package.  If this directory structure does not exist or is
      empty, patches will not be created for this publish; but the
      directory structure will be populated for the next publish.
+
+  -u host_url
+     Specifies the URL to the download server that will eventually
+     host these packages (that is, the public URL of the install
+     directory).  This may also be overridden with a "host" command
+     appearing within the pdef file.  This is used for packages only;
+     it is ignored for p3d applications, which are not specific to a
+     particular host.
+
+  -n "host descriptive name"
+     Specifies a descriptive name of the download server named by -u.
+     This name may be presented to the user when managing installed
+     packages.  This may also be overridden with a "host" command
+     appearing within the pdef file.  This information is written to
+     the contents.xml file at the top of the install directory.
 
   -p platform
      Specify the platform to masquerade as.  The default is whatever
@@ -82,7 +98,7 @@ def usage(code, msg = ''):
 packager = Packager.Packager()
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:s:d:p:Hh')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:s:d:p:u:n:Hh')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -95,6 +111,10 @@ for opt, arg in opts:
         packager.persistDir = Filename.fromOsSpecific(arg)
     elif opt == '-p':
         packager.platform = arg
+    elif opt == '-u':
+        package.host = arg
+    elif opt == '-n':
+        package.hostDescriptiveName = arg
         
     elif opt == '-h':
         usage(0)
@@ -117,8 +137,14 @@ if not packager.installDir:
     packager.installDir = Filename('install')
 packager.installSearch.prependDirectory(packager.installDir)
 
-packager.setup()
-packages = packager.readPackageDef(packageDef)
+try:
+    packager.setup()
+    packages = packager.readPackageDef(packageDef)
+except Packager.PackagerError:
+    # Just print the error message and exit gracefully.
+    inst = sys.exc_info()[1]
+    print inst.args[0]
+    sys.exit(1)
 
 # Look to see if we built any true packages, or if all of them were
 # p3d files.
@@ -133,5 +159,6 @@ if anyPackages:
     # the root of the install directory.
     cm = make_contents.ContentsMaker()
     cm.installDir = packager.installDir.toOsSpecific()
+    cm.hostDescriptiveName = packager.hostDescriptiveName
     cm.build()
 

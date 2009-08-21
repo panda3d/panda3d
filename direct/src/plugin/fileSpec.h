@@ -32,6 +32,7 @@ public:
   void load_xml(TiXmlElement *element);
 
   inline const string &get_filename() const;
+  inline void set_filename(const string &filename);
   inline string get_pathname(const string &package_dir) const;
   inline size_t get_size() const;
   

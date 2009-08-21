@@ -28,7 +28,7 @@
 
 class P3DInstance;
 class P3DSession;
-class P3DPackage;
+class P3DHost;
 class FileSpec;
 class TiXmlElement;
 
@@ -52,12 +52,8 @@ public:
   inline bool is_initialized() const;
 
   inline const string &get_root_dir() const;
-  inline const string &get_download_url() const;
   inline const string &get_platform() const;
   inline const string &get_log_directory() const;
-
-  inline bool has_contents_file() const;
-  bool read_contents_file(const string &contents_filename);
 
   P3DInstance *
   create_instance(P3D_request_ready_func *func, 
@@ -74,11 +70,7 @@ public:
   P3DInstance *check_request();
   void wait_request();
 
-  P3DPackage *get_package(const string &package_name, 
-                          const string &package_version);
-  bool get_package_desc_file(FileSpec &desc_file, 
-                             const string &package_name,
-                             const string &package_version);
+  P3DHost *get_host(const string &host_url);
 
   inline int get_num_instances() const;
 
@@ -98,10 +90,6 @@ public:
   static void delete_global_ptr();
 
 private:
-  static string standardize_filename(const string &filename);
-  static bool copy_file(const string &from_filename, const string &to_filename);
-
-private:
   // The notify thread.  This thread runs only for the purpose of
   // generating asynchronous notifications of requests, to callers who
   // ask for it.
@@ -111,14 +99,11 @@ private:
 private:
   bool _is_initialized;
   string _root_dir;
-  string _download_url;
   string _platform;
   string _log_directory;
   string _log_basename;
   string _log_pathname;
   string _temp_directory;
-
-  TiXmlElement *_xcontents;
 
   P3D_object *_undefined_object;
   P3D_object *_none_object;
@@ -131,8 +116,8 @@ private:
   typedef map<string, P3DSession *> Sessions;
   Sessions _sessions;
 
-  typedef map<string, P3DPackage *> Packages;
-  Packages _packages;
+  typedef map<string, P3DHost *> Hosts;
+  Hosts _hosts;
 
   typedef set<string> TempFilenames;
   TempFilenames _temp_filenames;

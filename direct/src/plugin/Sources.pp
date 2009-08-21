@@ -32,6 +32,7 @@
     p3dFileDownload.h p3dFileDownload.I \
     p3dFileParams.h p3dFileParams.I \
     p3dFloatObject.h \
+    p3dHost.h p3dHost.I \
     p3dInstance.h p3dInstance.I \
     p3dInstanceManager.h p3dInstanceManager.I \
     p3dIntObject.h \
@@ -62,6 +63,7 @@
     p3dFileDownload.cxx \
     p3dFileParams.cxx \
     p3dFloatObject.cxx \
+    p3dHost.cxx \
     p3dInstance.cxx \
     p3dInstanceManager.cxx \
     p3dIntObject.cxx \

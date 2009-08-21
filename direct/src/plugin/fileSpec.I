@@ -25,6 +25,17 @@ get_filename() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: FileSpec::set_filename
+//       Access: Private
+//  Description: Changes the relative path to this file on disk,
+//               within the package root directory.
+////////////////////////////////////////////////////////////////////
+inline void FileSpec::
+set_filename(const string &filename) {
+  _filename = filename;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: FileSpec::get_pathname
 //       Access: Private
 //  Description: Returns the full path to this file on disk.

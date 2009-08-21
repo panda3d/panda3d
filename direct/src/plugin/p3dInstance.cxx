@@ -884,12 +884,14 @@ scan_app_desc_file(TiXmlDocument *doc) {
   TiXmlElement *xrequires = xpackage->FirstChildElement("requires");
   while (xrequires != NULL) {
     const char *name = xrequires->Attribute("name");
-    if (name != NULL) {
+    const char *host_url = xrequires->Attribute("host");
+    if (name != NULL && host_url != NULL) {
       const char *version = xrequires->Attribute("version");
       if (version == NULL) {
         version = "";
       }
-      P3DPackage *package = inst_mgr->get_package(name, version);
+      P3DHost *host = inst_mgr->get_host(host_url);
+      P3DPackage *package = host->get_package(name, version);
       add_package(package);
     }
 
@@ -1177,9 +1179,10 @@ make_splash_window() {
   if (!_fparams.has_token("splash_img")) {
     // No specific splash image is specified; get the default splash
     // image.
-    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-    splash_image_url = inst_mgr->get_download_url();
-    splash_image_url += "coreapi/splash.jpg";
+    if (_panda3d != NULL) {
+      splash_image_url = _panda3d->get_host()->get_host_url_prefix();
+      splash_image_url += "coreapi/splash.jpg";
+    }
   }
 
   if (splash_image_url.empty()) {

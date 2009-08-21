@@ -12,17 +12,24 @@ make_contents.py [opts]
 
 Options:
 
-  -d stage_dir
+  -i install_dir
+     The full path to a local directory that contains the
+     ready-to-be-published files, as populated by one or more
+     iterations of the ppackage script.  It is the user's
+     responsibility to copy this directory structure to a server.
 
-     Specify the staging directory.  This is a temporary directory on
-     the local machine that contains a copy of the web server
-     contents.  The default is the current directory.
+  -n "host descriptive name"
+     Specifies a descriptive name of the download server that will
+     host these contents.  This name may be presented to the user when
+     managing installed packages.  If this option is omitted, the name
+     is unchanged from the previous pass.
 
 """
 
 import sys
 import getopt
 import os
+import types
 
 try:
     import hashlib
@@ -56,6 +63,7 @@ class FileSpec:
 class ContentsMaker:
     def __init__(self):
         self.installDir = None
+        self.hostDescriptiveName = None
 
     def build(self):
         if not self.installDir:
@@ -67,20 +75,56 @@ class ContentsMaker:
         if not self.packages:
             raise ArgumentError, "No packages found."
 
-        # Now write the contents.xml file.
         contentsFileBasename = 'contents.xml'
         contentsFilePathname = os.path.join(self.installDir, contentsFileBasename)
+        contentsLine = None
+        if self.hostDescriptiveName is not None:
+            if self.hostDescriptiveName:
+                contentsLine = '<contents descriptive_name="%s">' % (
+                    self.quoteString(self.hostDescriptiveName))
+        else:
+            contentsLine = self.readContentsLine(contentsFilePathname)
+        if not contentsLine:
+            contentsLine = '<contents>'
 
+        # Now write the contents.xml file.
         f = open(contentsFilePathname, 'w')
-        print >> f, '<?xml version="1.0" ?>'
+        print >> f, '<?xml version="1.0" encoding="utf-8" ?>'
         print >> f, ''
-        print >> f, '<contents>'
+        print >> f, contentsLine
         for type, packageName, packagePlatform, packageVersion, file in self.packages:
             print >> f, '  <%s name="%s" platform="%s" version="%s" %s />' % (
                 type, packageName, packagePlatform or '', packageVersion, file.getParams())
         print >> f, '</contents>'
         f.close()
 
+    def readContentsLine(self, contentsFilePathname):
+        """ Reads the previous iteration of contents.xml to get the
+        previous top-level contents line, which contains the
+        hostDescriptiveName. """
+
+        try:
+            f = open(contentsFilePathname, 'r')
+        except OSError:
+            return None
+
+        for line in f.readlines():
+            if line.startswith('<contents'):
+                return line.rstrip()
+
+        return None
+
+    def quoteString(self, str):
+        """ Correctly quotes a string for embedding in the xml file. """
+        if isinstance(str, types.UnicodeType):
+            str = str.encode('utf-8')
+        str = str.replace('&', '&amp;')
+        str = str.replace('"', '&quot;')
+        str = str.replace('\'', '&apos;')
+        str = str.replace('<', '&lt;')
+        str = str.replace('>', '&gt;')
+        return str
+    
     def scanDirectory(self):
         """ Walks through all the files in the stage directory and
         looks for the package directory xml files. """
@@ -139,13 +183,16 @@ class ContentsMaker:
         
                 
 def makeContents(args):
-    opts, args = getopt.getopt(args, 'd:h')
+    opts, args = getopt.getopt(args, 'i:n:h')
 
     cm = ContentsMaker()
     cm.installDir = '.'
     for option, value in opts:
-        if option == '-d':
+        if option == '-i':
             cm.installDir = value
+
+        elif option == '-n':
+            cm.hostDescriptiveName = value
             
         elif option == '-h':
             print __doc__

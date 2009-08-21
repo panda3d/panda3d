@@ -15,7 +15,7 @@
 #include "p3dInstanceManager.h"
 #include "p3dInstance.h"
 #include "p3dSession.h"
-#include "p3dPackage.h"
+#include "p3dHost.h"
 #include "p3d_plugin_config.h"
 #include "p3dWinSplashWindow.h"
 #include "p3dUndefinedObject.h"
@@ -51,7 +51,6 @@ P3DInstanceManager() {
   _is_initialized = false;
   _next_temp_filename_counter = 0;
   _unique_id = 0;
-  _xcontents = NULL;
 
   _notify_thread_continue = false;
   _started_notify_thread = false;
@@ -103,12 +102,14 @@ P3DInstanceManager::
   sigaction(SIGPIPE, &_old_sigpipe, NULL);
 #endif  // _WIN32
 
-  if (_xcontents != NULL) {
-    delete _xcontents;
-  }
-
   assert(_instances.empty());
   assert(_sessions.empty());
+
+  Hosts::iterator hi;
+  for (hi = _hosts.begin(); hi != _hosts.end(); ++hi) {
+    delete (*hi).second;
+  }
+  _hosts.clear();
 
   // Delete any remaining temporary files.
   TempFilenames::iterator ti;
@@ -145,7 +146,7 @@ P3DInstanceManager::
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::initialize
 //       Access: Public
-//  Description: Called by the host at application startup.  It
+//  Description: Called by the plugin host at application startup.  It
 //               returns true if the DLL is successfully initialized,
 //               false if it should be immediately shut down and
 //               redownloaded.
@@ -156,12 +157,7 @@ initialize(const string &contents_filename, const string &download_url,
            const string &log_basename) {
 
   _root_dir = find_root_dir();
-  _download_url = download_url;
-#ifdef P3D_PLUGIN_DOWNLOAD
-  if (_download_url.empty()) {
-    _download_url = P3D_PLUGIN_DOWNLOAD;
-  }
-#endif
+
   _platform = platform;
   if (_platform.empty()) {
     _platform = DTOOL_PLATFORM;
@@ -197,7 +193,7 @@ initialize(const string &contents_filename, const string &download_url,
   }
   delete[] buffer_2;
 
-  // Also make sure the directory actually exists.
+  // And make sure the directory actually exists.
   mkdir_complete(_temp_directory, nout);
 
 #else
@@ -215,11 +211,6 @@ initialize(const string &contents_filename, const string &download_url,
     _log_basename = P3D_PLUGIN_LOG_BASENAME2;
   }
 #endif
-
-  // Ensure that the download URL ends with a slash.
-  if (!_download_url.empty() && _download_url[_download_url.size() - 1] != '/') {
-    _download_url += "/";
-  }
 
   // Ensure that the temp directory ends with a slash.
   if (!_temp_directory.empty() && _temp_directory[_temp_directory.size() - 1] != '/') {
@@ -251,8 +242,6 @@ initialize(const string &contents_filename, const string &download_url,
   }
 
   nout << "_root_dir = " << _root_dir
-       << ", contents = " << contents_filename
-       << ", download = " << _download_url
        << ", platform = " << _platform
        << "\n";
 
@@ -263,47 +252,13 @@ initialize(const string &contents_filename, const string &download_url,
 
   _is_initialized = true;
 
-  // Attempt to read the supplied contents.xml file.
-  if (!contents_filename.empty()) {
-    if (!read_contents_file(contents_filename)) {
+  if (!download_url.empty() && !contents_filename.empty()) {
+    // Attempt to pre-read the supplied contents.xml file, to avoid an
+    // unnecessary download later.
+    P3DHost *host = get_host(download_url);
+    if (!host->read_contents_file(contents_filename)) {
       nout << "Couldn't read " << contents_filename << "\n";
     }
-  }
-
-  return true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::read_contents_file
-//       Access: Public
-//  Description: Reads the contents.xml file in the indicated
-//               filename.  On success, copies the contents.xml file
-//               into the standard location (if it's not there
-//               already).
-//
-//               Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
-bool P3DInstanceManager::
-read_contents_file(const string &contents_filename) {
-  TiXmlDocument doc(contents_filename.c_str());
-  if (!doc.LoadFile()) {
-    return false;
-  }
-
-  TiXmlElement *xcontents = doc.FirstChildElement("contents");
-  if (xcontents == NULL) {
-    return false;
-  }
-
-  if (_xcontents != NULL) {
-    delete _xcontents;
-  }
-  _xcontents = (TiXmlElement *)xcontents->Clone();
-
-  string standard_filename = _root_dir + "/contents.xml";
-  if (standardize_filename(standard_filename) != 
-      standardize_filename(contents_filename)) {
-    copy_file(contents_filename, standard_filename);
   }
 
   return true;
@@ -473,67 +428,23 @@ wait_request() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_package
+//     Function: P3DInstanceManager::get_host
 //       Access: Public
 //  Description: Returns a (possibly shared) pointer to the indicated
-//               package.
+//               download host.
 ////////////////////////////////////////////////////////////////////
-P3DPackage *P3DInstanceManager::
-get_package(const string &package_name, const string &package_version) {
-  string package_platform = get_platform();
-  string key = package_name + "_" + package_platform + "_" + package_version;
-  Packages::iterator pi = _packages.find(key);
-  if (pi != _packages.end()) {
+P3DHost *P3DInstanceManager::
+get_host(const string &host_url) {
+  Hosts::iterator pi = _hosts.find(host_url);
+  if (pi != _hosts.end()) {
     return (*pi).second;
   }
 
-  P3DPackage *package = 
-    new P3DPackage(package_name, package_platform, package_version);
-  bool inserted = _packages.insert(Packages::value_type(key, package)).second;
+  P3DHost *host = new P3DHost(this, host_url);
+  bool inserted = _hosts.insert(Hosts::value_type(host_url, host)).second;
   assert(inserted);
 
-  return package;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_package_desc_file
-//       Access: Public
-//  Description: Fills the indicated FileSpec with the hash
-//               information for the package's desc file.  Returns
-//               true if successful, false if the package is unknown.
-//               This requires has_contents_file() to return true in
-//               order to be successful.
-////////////////////////////////////////////////////////////////////
-bool P3DInstanceManager::
-get_package_desc_file(FileSpec &desc_file,
-                      const string &package_name,
-                      const string &package_version) {
-  if (_xcontents == NULL) {
-    return false;
-  }
-
-  string package_platform = get_platform();
-
-  // Scan the contents data for the indicated package.
-  TiXmlElement *xpackage = _xcontents->FirstChildElement("package");
-  while (xpackage != NULL) {
-    const char *name = xpackage->Attribute("name");
-    const char *platform = xpackage->Attribute("platform");
-    const char *version = xpackage->Attribute("version");
-    if (name != NULL && platform != NULL && version != NULL &&
-        package_name == name && 
-        package_platform == platform &&
-        package_version == version) {
-      // Here's the matching package definition.
-      desc_file.load_xml(xpackage);
-      return true;
-    }
-
-    xpackage = xpackage->NextSiblingElement("package");
-  }
-
-  // Couldn't find the named package.
-  return false;
+  return host;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -699,89 +610,6 @@ delete_global_ptr() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::standardize_filename
-//       Access: Private, Static
-//  Description: Attempts to change the filename into some standard
-//               form for comparison with other filenames.  On a
-//               case-insensitive filesystem, this converts the
-//               filename to lowercase.  On Windows, it further
-//               replaces forward slashes with backslashes.
-////////////////////////////////////////////////////////////////////
-string P3DInstanceManager::
-standardize_filename(const string &filename) {
-#if defined(_WIN32) || defined(__APPLE__)
-  string new_filename;
-  for (string::const_iterator si = filename.begin();
-       si != filename.end();
-       ++si) {
-    char ch = *si;
-#ifdef _WIN32
-    if (ch == '/') {
-      ch = '\\';
-    }
-#endif  // _WIN32
-    new_filename += tolower(ch);
-  }
-  return new_filename;
-#else  // _WIN32 || __APPLE__
-  return filename;
-#endif  // _WIN32 || __APPLE__
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::copy_file
-//       Access: Private, Static
-//  Description: Copies the data in the file named by from_filename
-//               into the file named by to_filename.
-////////////////////////////////////////////////////////////////////
-bool P3DInstanceManager::
-copy_file(const string &from_filename, const string &to_filename) {
-  ifstream in(from_filename.c_str(), ios::in | ios::binary);
-
-  // Copy to a temporary file first, in case (a) the filenames
-  // actually refer to the same file, or (b) in case we have different
-  // processes writing to the same file, and (c) to prevent
-  // partially overwriting the file should something go wrong.
-  ostringstream strm;
-  strm << to_filename << ".t";
-#ifdef _WIN32
-  strm << GetCurrentProcessId() << "_" << GetCurrentThreadId();
-#else
-  strm << getpid();
-#endif
-  string temp_filename = strm.str();
-  ofstream out(temp_filename.c_str(), ios::out | ios::binary);
-        
-  static const size_t buffer_size = 4096;
-  char buffer[buffer_size];
-  
-  in.read(buffer, buffer_size);
-  size_t count = in.gcount();
-  while (count != 0) {
-    out.write(buffer, count);
-    if (out.fail()) {
-      unlink(temp_filename.c_str());
-      return false;
-    }
-    in.read(buffer, buffer_size);
-    count = in.gcount();
-  }
-  out.close();
-
-  if (!in.eof()) {
-    unlink(temp_filename.c_str());
-    return false;
-  }
-
-  if (rename(temp_filename.c_str(), to_filename.c_str()) == 0) {
-    return true;
-  }
-
-  unlink(temp_filename.c_str());
-  return false;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::nt_thread_run
 //       Access: Private
 //  Description: The main function for the notify thread.
@@ -791,12 +619,12 @@ nt_thread_run() {
   // The notify thread exists because we need to be able to send
   // asynchronous notifications of request events.  These request
   // events were detected in the various read threads associated with
-  // each session, but we can't call back into the host space from the
-  // read thread, since if the host immediately response to a callback
-  // by calling back into the p3d_plugin space, now we have our read
-  // thread doing stuff in here that's not related to the read thread.
-  // Even worse, some of the things it might need to do might require
-  // a separate read thread to be running!
+  // each session, but we can't call back into the plugin host space
+  // from the read thread, since if the host immediately response to a
+  // callback by calling back into the p3d_plugin space, now we have
+  // our read thread doing stuff in here that's not related to the
+  // read thread.  Even worse, some of the things it might need to do
+  // might require a separate read thread to be running!
 
   _notify_ready.acquire();
   while (_notify_thread_continue) {

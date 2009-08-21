@@ -37,18 +37,6 @@ get_root_dir() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::get_download_url
-//       Access: Public
-//  Description: Returns the URL of the download server.  All
-//               downloadable files will be retrieved from various
-//               subdirectories of this URL root.
-////////////////////////////////////////////////////////////////////
-inline const string &P3DInstanceManager::
-get_download_url() const {
-  return _download_url;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_platform
 //       Access: Public
 //  Description: Returns the string that corresponds to the platform
@@ -72,17 +60,6 @@ get_platform() const {
 inline const string &P3DInstanceManager::
 get_log_directory() const {
   return _log_directory;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DInstanceManager::has_contents_file
-//       Access: Public
-//  Description: Returns true if a contents.xml file has been
-//               successfully read, false otherwise.
-////////////////////////////////////////////////////////////////////
-inline bool P3DInstanceManager::
-has_contents_file() const {
-  return (_xcontents != NULL);
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -6,10 +6,9 @@
 /********************************** DO NOT EDIT ****************************/
 
 /* The URL that is the root of the download server that this plugin
-   should contact.  The nppanda3d.dll file should be found at this
-   location; as well as the contents.xml file that defines where the
-   various Panda3D packages will be found. */
-#$[]define P3D_PLUGIN_DOWNLOAD "$[P3D_PLUGIN_DOWNLOAD]$[if $[notdir $[P3D_PLUGIN_DOWNLOAD]],/]"
+   should contact.  The contents.xml file that defines this particular
+   "coreapi" package should be found at this location. */
+#$[]define PANDA_PACKAGE_HOST_URL "$[PANDA_PACKAGE_HOST_URL]"
 
 /* The filename(s) to generate output to when the plugin is running.
    For debugging purposes only. */
