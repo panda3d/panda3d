@@ -419,20 +419,23 @@ contains_hexahedron(const BoundingHexahedron *hexahedron) const {
       // completely outside of the hexahedron.
       return IF_no_intersection;
 
-    } else if (dist < 0.0f && dist2 < radius2) {
+    } else {/*if (dist < 0.0f && dist2 < radius2) {*/
       // The sphere is not completely behind this plane, but some of
       // it is.
 
       // Look a little closer.
-      bool all_in = true;
-      for (int i = 0; i < 8 && all_in; ++i) {
-        if (p.dist_to_plane(hexahedron->get_point(i)) < 0.0f) {
+      unsigned points_out = 0;
+      for (int i = 0; i < 8; ++i) {
+        if (p.dist_to_plane(hexahedron->get_point(i)) > 0.0f) {
           // This point is outside the plane.
-          all_in = false;
+          ++points_out;
         }
       }
 
-      if (!all_in) {
+      if (points_out != 0) {
+        if (points_out == 8) {
+          return IF_no_intersection;
+        }
         result &= ~IF_all;
       }
     }
@@ -464,8 +467,6 @@ set_planes() {
     _planes[4] = Planef(_points[3], _points[4], _points[0]);
     _planes[5] = Planef(_points[4], _points[7], _points[6]);
 
-    nassertv(_planes[0].dist_to_plane(_centroid) < 0);
-
   } else {
     // No, a perfectly sane universe.
     _planes[1] = Planef(_points[0], _points[1], _points[5]);
@@ -474,6 +475,13 @@ set_planes() {
     _planes[4] = Planef(_points[3], _points[0], _points[4]);
     _planes[5] = Planef(_points[4], _points[6], _points[7]);
   }
+
+  nassertv(_planes[0].dist_to_plane(_centroid) <= 0.001);
+  nassertv(_planes[1].dist_to_plane(_centroid) <= 0.001);
+  nassertv(_planes[2].dist_to_plane(_centroid) <= 0.001);
+  nassertv(_planes[3].dist_to_plane(_centroid) <= 0.001);
+  nassertv(_planes[4].dist_to_plane(_centroid) <= 0.001);
+  nassertv(_planes[5].dist_to_plane(_centroid) <= 0.001);
 }
 
 ////////////////////////////////////////////////////////////////////
