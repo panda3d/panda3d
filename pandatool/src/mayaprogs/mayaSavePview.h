@@ -35,11 +35,11 @@
 // make this program platform-independent.
 #include "dtool_config.h"
 
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
 // This will ask Maya 5.0 or better to use the new <iostream> library
 // instead of the old <iostream.h> library.
 #define REQUIRE_IOSTREAM
-#endif  // HAVE_IOSTREAM
+#endif  // PHAVE_IOSTREAM
 
 #include <maya/MArgList.h>
 #include <maya/MPxCommand.h>

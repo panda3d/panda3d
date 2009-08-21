@@ -547,72 +547,72 @@ $[cdefine GLOBAL_ARGV]
 $[cdefine GLOBAL_ARGC]
 
 /* Define if you have the <io.h> header file.  */
-$[cdefine HAVE_IO_H]
+$[cdefine PHAVE_IO_H]
 
 /* Define if you have the <iostream> header file.  */
-$[cdefine HAVE_IOSTREAM]
+$[cdefine PHAVE_IOSTREAM]
 
 /* Define if you have the <malloc.h> header file.  */
-$[cdefine HAVE_MALLOC_H]
+$[cdefine PHAVE_MALLOC_H]
 
 /* Define if you have the <sys/malloc.h> header file.  */
-$[cdefine HAVE_SYS_MALLOC_H]
+$[cdefine PHAVE_SYS_MALLOC_H]
 
 /* Define if you have the <alloca.h> header file.  */
-$[cdefine HAVE_ALLOCA_H]
+$[cdefine PHAVE_ALLOCA_H]
 
 /* Define if you have the <locale.h> header file.  */
-$[cdefine HAVE_LOCALE_H]
+$[cdefine PHAVE_LOCALE_H]
 
 /* Define if you have the <string.h> header file.  */
-$[cdefine HAVE_STRING_H]
+$[cdefine PHAVE_STRING_H]
 
 /* Define if you have the <stdlib.h> header file.  */
-$[cdefine HAVE_STDLIB_H]
+$[cdefine PHAVE_STDLIB_H]
 
 /* Define if you have the <limits.h> header file.  */
-$[cdefine HAVE_LIMITS_H]
+$[cdefine PHAVE_LIMITS_H]
 
 /* Define if you have the <minmax.h> header file.  */
-$[cdefine HAVE_MINMAX_H]
+$[cdefine PHAVE_MINMAX_H]
 
 /* Define if you have the <sstream> header file.  */
-$[cdefine HAVE_SSTREAM]
+$[cdefine PHAVE_SSTREAM]
 
 /* Define if you have the <new> header file.  */
-$[cdefine HAVE_NEW]
+$[cdefine PHAVE_NEW]
 
 /* Define if you have the <sys/types.h> header file.  */
-$[cdefine HAVE_SYS_TYPES_H]
+$[cdefine PHAVE_SYS_TYPES_H]
 
 /* Define if you have the <sys/time.h> header file.  */
-$[cdefine HAVE_SYS_TIME_H]
+$[cdefine PHAVE_SYS_TIME_H]
 
 /* Define if you have the <unistd.h> header file.  */
-$[cdefine HAVE_UNISTD_H]
+$[cdefine PHAVE_UNISTD_H]
 
 /* Define if you have the <utime.h> header file.  */
-$[cdefine HAVE_UTIME_H]
+$[cdefine PHAVE_UTIME_H]
 
 /* Define if you have the <glob.h> header file.  */
-$[cdefine HAVE_GLOB_H]
+$[cdefine PHAVE_GLOB_H]
 
 /* Define if you have the <dirent.h> header file.  */
-$[cdefine HAVE_DIRENT_H]
+$[cdefine PHAVE_DIRENT_H]
 
 /* Define if you have the <drfftw.h> header file.  */
-$[cdefine HAVE_DRFFTW_H]
+$[cdefine PHAVE_DRFFTW_H]
 
 /* Do we have <sys/soundcard.h> (and presumably a Linux-style audio
    interface)? */
-$[cdefine HAVE_SYS_SOUNDCARD_H]
+$[cdefine PHAVE_SYS_SOUNDCARD_H]
 
 /* Do we have <ucontext.h> (and therefore makecontext() /
    swapcontext())? */
-$[cdefine HAVE_UCONTEXT_H]
+$[cdefine PHAVE_UCONTEXT_H]
 
 /* Do we have <linux/input.h> ? This enables us to use raw mouse input. */
-$[cdefine HAVE_LINUX_INPUT_H]
+$[cdefine PHAVE_LINUX_INPUT_H]
 
 /* Do we have RTTI (and <typeinfo>)? */
 $[cdefine HAVE_RTTI]

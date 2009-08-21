@@ -111,7 +111,7 @@ get_literal_flag() {
   static ios_fmtflags flag;
 
   if (!got_flag) {
-#ifndef HAVE_IOSTREAM
+#ifndef PHAVE_IOSTREAM
     flag = ios::bitalloc();
 #else
     // We lost bitalloc in the new iostream?  Ok, this feature will

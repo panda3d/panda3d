@@ -59,9 +59,9 @@ typedef istream maya_istream;
 // instead of the old <iostream.h> headers.  It also says this is for
 // Linux only, but it seems to work just fine on Windows, obviating
 // the need for sneaky #defines in this and in post_maya_include.h.
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
 #define REQUIRE_IOSTREAM
-#endif  // HAVE_IOSTREAM
+#endif  // PHAVE_IOSTREAM
 
 #ifdef __MACH__
 #undef _BOOL

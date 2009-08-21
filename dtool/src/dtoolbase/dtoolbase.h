@@ -106,55 +106,55 @@
 #define _LARGEFILE_SOURCE 1
 #endif
 
-#ifdef HAVE_TYPES_H
+#ifdef PHAVE_TYPES_H
 #include <types.h>
 #endif
 
-#ifdef HAVE_SYS_TYPES_H
+#ifdef PHAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 
-#ifdef HAVE_MALLOC_H
+#ifdef PHAVE_MALLOC_H
 #include <malloc.h>
 #endif
 
-#ifdef HAVE_SYS_MALLOC_H
+#ifdef PHAVE_SYS_MALLOC_H
 #include <sys/malloc.h>
 #endif
 
-#ifdef HAVE_ALLOCA_H
+#ifdef PHAVE_ALLOCA_H
 #include <alloca.h>
 #endif
 
-#ifdef HAVE_UNISTD_H
+#ifdef PHAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
-#ifdef HAVE_IO_H
+#ifdef PHAVE_IO_H
 #include <io.h>
 #endif
 
-#ifdef HAVE_LOCALE_H
+#ifdef PHAVE_LOCALE_H
 #include <locale.h>
 #endif
 
-#ifdef HAVE_STRING_H
+#ifdef PHAVE_STRING_H
 #include <string.h>
 #endif
 
-#ifdef HAVE_STDLIB_H
+#ifdef PHAVE_STDLIB_H
 #include <stdlib.h>
 #endif
 
-#ifdef HAVE_LIMITS_H
+#ifdef PHAVE_LIMITS_H
 #include <limits.h>
 #endif
 
-#ifdef HAVE_MINMAX_H
+#ifdef PHAVE_MINMAX_H
 #include <minmax.h>
 #endif
 
-#ifdef HAVE_SYS_TIME_H
+#ifdef PHAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
 

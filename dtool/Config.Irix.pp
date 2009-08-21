@@ -53,7 +53,7 @@
 #define HAVE_GETOPT_LONG_ONLY
 
 // Are the above getopt() functions defined in getopt.h, or somewhere else?
-#define HAVE_GETOPT_H 1
+#define PHAVE_GETOPT_H 1
 
 // Can we determine the terminal width by making an ioctl(TIOCGWINSZ) call?
 #define IOCTL_TERMINAL_WIDTH 1
@@ -83,13 +83,13 @@
 // command-line arguments at static init time?
 #define HAVE_PROC_SELF_CMDLINE
 
-// Should we include <iostream> or <iostream.h>?  Define HAVE_IOSTREAM
+// Should we include <iostream> or <iostream.h>?  Define PHAVE_IOSTREAM
 // to nonempty if we should use <iostream>, or empty if we should use
 // <iostream.h>.
-#define HAVE_IOSTREAM
+#define PHAVE_IOSTREAM
 
 // Do we have a true stringstream class defined in <sstream>?
-#define HAVE_SSTREAM
+#define PHAVE_SSTREAM
 
 // Does fstream::open() require a third parameter, specifying the
 // umask?
@@ -103,39 +103,39 @@
 #define HAVE_WSTRING 1
 
 // Do we have <new>?
-#define HAVE_NEW
+#define PHAVE_NEW
 
 // Do we have <io.h>?
-#define HAVE_IO_H
+#define PHAVE_IO_H
 
 // Do we have <malloc.h>?
-#define HAVE_MALLOC_H 1
+#define PHAVE_MALLOC_H 1
 
 // Do we have <alloca.h>?
-#define HAVE_ALLOCA_H 1
+#define PHAVE_ALLOCA_H 1
 
 // Do we have <locale.h>?
-#define HAVE_LOCALE_H 1
+#define PHAVE_LOCALE_H 1
 
 // Do we have <minmax.h>?
-#define HAVE_MINMAX_H
+#define PHAVE_MINMAX_H
 
 // Do we have <sys/types.h>?
-#define HAVE_SYS_TYPES_H 1
-#define HAVE_SYS_TIME_H 1
+#define PHAVE_SYS_TYPES_H 1
+#define PHAVE_SYS_TIME_H 1
 
 // Do we have <unistd.h>?
-#define HAVE_UNISTD_H 1
+#define PHAVE_UNISTD_H 1
 
 // Do we have <utime.h>?
-#define HAVE_UTIME_H 1
+#define PHAVE_UTIME_H 1
 
 // Do we have <dirent.h>?
-#define HAVE_DIRENT_H 1
+#define PHAVE_DIRENT_H 1
 
 // Do we have <sys/soundcard.h> (and presumably a Linux-style audio
 // interface)?
-#define HAVE_SYS_SOUNDCARD_H
+#define PHAVE_SYS_SOUNDCARD_H
 
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1

@@ -32,7 +32,7 @@
 #undef howmany
 #endif
 
-#ifdef HAVE_DRFFTW_H
+#ifdef PHAVE_DRFFTW_H
   #include "drfftw.h"
 #else
   #include "rfftw.h"

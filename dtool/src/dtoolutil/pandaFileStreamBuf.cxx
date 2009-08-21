@@ -47,7 +47,7 @@ PandaFileStreamBuf() {
   _fd = -1;
 #endif  // _WIN32
 
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   _buffer = (char *)PANDA_MALLOC_ARRAY(file_buffer_size * 2);
   char *ebuf = _buffer + file_buffer_size * 2;
   char *mbuf = _buffer + file_buffer_size;
@@ -77,7 +77,7 @@ PandaFileStreamBuf() {
 PandaFileStreamBuf::
 ~PandaFileStreamBuf() {
   close();
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   PANDA_FREE_ARRAY(_buffer);
 #endif
 }

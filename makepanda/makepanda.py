@@ -1050,8 +1050,8 @@ DTOOL_CONFIG=[
     ("GETTIMEOFDAY_ONE_PARAM",         'UNDEF',                  'UNDEF'),
     ("HAVE_GETOPT",                    'UNDEF',                  '1'),
     ("HAVE_GETOPT_LONG_ONLY",          'UNDEF',                  '1'),
-    ("HAVE_GETOPT_H",                  'UNDEF',                  '1'),
-    ("HAVE_LINUX_INPUT_H",             'UNDEF',                  '1'),
+    ("PHAVE_GETOPT_H",                 'UNDEF',                  '1'),
+    ("PHAVE_LINUX_INPUT_H",            'UNDEF',                  '1'),
     ("IOCTL_TERMINAL_WIDTH",           'UNDEF',                  '1'),
     ("HAVE_STREAMSIZE",                '1',                      '1'),
     ("HAVE_IOS_TYPEDEFS",              '1',                      '1'),
@@ -1068,26 +1068,26 @@ DTOOL_CONFIG=[
     ("PROTOTYPE_GLOBAL_ARGV",          'UNDEF',                  'UNDEF'),
     ("GLOBAL_ARGV",                    '__argv',                 'UNDEF'),
     ("GLOBAL_ARGC",                    '__argc',                 'UNDEF'),
-    ("HAVE_IO_H",                      '1',                      'UNDEF'),
-    ("HAVE_IOSTREAM",                  '1',                      '1'),
-    ("HAVE_STRING_H",                  'UNDEF',                  '1'),
-    ("HAVE_LIMITS_H",                  'UNDEF',                  '1'),
-    ("HAVE_STDLIB_H",                  'UNDEF',                  '1'),
-    ("HAVE_MALLOC_H",                  '1',                      '1'),
-    ("HAVE_SYS_MALLOC_H",              'UNDEF',                  'UNDEF'),
-    ("HAVE_ALLOCA_H",                  'UNDEF',                  '1'),
-    ("HAVE_LOCALE_H",                  'UNDEF',                  '1'),
-    ("HAVE_MINMAX_H",                  '1',                      'UNDEF'),
-    ("HAVE_SSTREAM",                   '1',                      '1'),
-    ("HAVE_NEW",                       '1',                      '1'),
-    ("HAVE_SYS_TYPES_H",               '1',                      '1'),
-    ("HAVE_SYS_TIME_H",                'UNDEF',                  '1'),
-    ("HAVE_UNISTD_H",                  'UNDEF',                  '1'),
-    ("HAVE_UTIME_H",                   'UNDEF',                  '1'),
-    ("HAVE_GLOB_H",                    'UNDEF',                  '1'),
-    ("HAVE_DIRENT_H",                  'UNDEF',                  '1'),
-    ("HAVE_SYS_SOUNDCARD_H",           'UNDEF',                  '1'),
-    ("HAVE_UCONTEXT_H",                'UNDEF',                  '1'),
+    ("PHAVE_IO_H",                     '1',                      'UNDEF'),
+    ("PHAVE_IOSTREAM",                 '1',                      '1'),
+    ("PHAVE_STRING_H",                 'UNDEF',                  '1'),
+    ("PHAVE_LIMITS_H",                 'UNDEF',                  '1'),
+    ("PHAVE_STDLIB_H",                 'UNDEF',                  '1'),
+    ("PHAVE_MALLOC_H",                 '1',                      '1'),
+    ("PHAVE_SYS_MALLOC_H",             'UNDEF',                  'UNDEF'),
+    ("PHAVE_ALLOCA_H",                 'UNDEF',                  '1'),
+    ("PHAVE_LOCALE_H",                 'UNDEF',                  '1'),
+    ("PHAVE_MINMAX_H",                 '1',                      'UNDEF'),
+    ("PHAVE_SSTREAM",                  '1',                      '1'),
+    ("PHAVE_NEW",                      '1',                      '1'),
+    ("PHAVE_SYS_TYPES_H",              '1',                      '1'),
+    ("PHAVE_SYS_TIME_H",               'UNDEF',                  '1'),
+    ("PHAVE_UNISTD_H",                 'UNDEF',                  '1'),
+    ("PHAVE_UTIME_H",                  'UNDEF',                  '1'),
+    ("PHAVE_GLOB_H",                   'UNDEF',                  '1'),
+    ("PHAVE_DIRENT_H",                 'UNDEF',                  '1'),
+    ("PHAVE_SYS_SOUNDCARD_H",          'UNDEF',                  '1'),
+    ("PHAVE_UCONTEXT_H",               'UNDEF',                  '1'),
     ("HAVE_RTTI",                      '1',                      '1'),
     ("HAVE_X11",                       'UNDEF',                  '1'),
     ("HAVE_XF86DGA",                   'UNDEF',                  '1'),
@@ -1191,8 +1191,8 @@ def WriteConfigSettings():
     
     if (sys.platform == "darwin"):
         dtool_config["PYTHON_FRAMEWORK"] = 'Python'
-        dtool_config["HAVE_MALLOC_H"] = 'UNDEF'
-        dtool_config["HAVE_SYS_MALLOC_H"] = '1'
+        dtool_config["PHAVE_MALLOC_H"] = 'UNDEF'
+        dtool_config["PHAVE_SYS_MALLOC_H"] = '1'
         dtool_config["HAVE_OPENAL_FRAMEWORK"] = '1'
         dtool_config["HAVE_X11"] = 'UNDEF'  # We might have X11, but we don't need it.
         dtool_config["HAVE_XF86DGA"] = 'UNDEF'
@@ -1202,9 +1202,9 @@ def WriteConfigSettings():
     if (sys.platform.startswith("freebsd")):
         dtool_config["IS_LINUX"] = 'UNDEF'
         dtool_config["IS_FREEBSD"] = '1'
-        dtool_config["HAVE_ALLOCA_H"] = 'UNDEF'
-        dtool_config["HAVE_MALLOC_H"] = 'UNDEF'
-        dtool_config["HAVE_LINUX_INPUT_H"] = 'UNDEF'
+        dtool_config["PHAVE_ALLOCA_H"] = 'UNDEF'
+        dtool_config["PHAVE_MALLOC_H"] = 'UNDEF'
+        dtool_config["PHAVE_LINUX_INPUT_H"] = 'UNDEF'
         dtool_config["HAVE_PROC_CURPROC_FILE"] = '1'
         dtool_config["HAVE_PROC_CURPROC_MAP"] = '1'
         dtool_config["HAVE_PROC_CURPROC_CMDLINE"] = '1'
@@ -1305,6 +1305,7 @@ PANDAVERSION_H="""
 #define PANDA_VERSION_STR "VERSION1.VERSION2.VERSION3"
 #define PANDA_DISTRIBUTOR "makepanda"
 #define PANDA_PACKAGE_VERSION_STR ""
+#define PANDA_PACKAGE_HOST_URL ""
 """
 
 CHECKPANDAVERSION_CXX="""

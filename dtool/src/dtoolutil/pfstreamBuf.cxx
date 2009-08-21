@@ -20,7 +20,7 @@ PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) :
 {
   init_pipe();
 
-#ifndef HAVE_IOSTREAM
+#ifndef PHAVE_IOSTREAM
   // These lines, which are essential on older implementations of the
   // iostream library, are not understood by more recent versions.
   allocate();
@@ -30,7 +30,7 @@ PipeStreamBuf::PipeStreamBuf(PipeStreamBuf::Direction dir) :
   } else {
     setp(base(), ebuf());
   }
-#endif /* HAVE_IOSTREAM */
+#endif /* PHAVE_IOSTREAM */
 }
 
 PipeStreamBuf::
@@ -104,22 +104,22 @@ int PipeStreamBuf::underflow(void) {
   if (eof_pipe()) {
     return EOF;
   }
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   size_t len = 4096;
-#else /* HAVE_IOSTREAM */
+#else /* PHAVE_IOSTREAM */
   size_t len = ebuf() - base();
-#endif /* HAVE_IOSTREAM */
+#endif /* PHAVE_IOSTREAM */
   char* buf = new char[len];
   size_t n = read_pipe(buf, len);
   int ret = buf[0];
   if (n == 0)
     ret = EOF;
   else {
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
     memcpy(eback()+(len-n), buf, n);
-#else /* HAVE_IOSTREAM */
+#else /* PHAVE_IOSTREAM */
     memcpy(base()+(len-n), buf, n);
-#endif /* HAVE_IOSTREAM */
+#endif /* PHAVE_IOSTREAM */
     gbump(-((int)n));
   }
   delete buf;

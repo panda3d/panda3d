@@ -83,7 +83,7 @@ EncryptStreamBuf() {
   _read_overflow_buffer = NULL;
   _in_read_overflow_buffer = 0;
 
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   char *buf = new char[4096];
   char *ebuf = buf + 4096;
   setg(buf, ebuf, ebuf);

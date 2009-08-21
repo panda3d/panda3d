@@ -51,7 +51,7 @@ SubStreamBuf() {
   // the unused part of the buffer.
   _unused = 0;
 
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   // The new-style iostream library doesn't seem to support allocate().
   _buffer = (char *)PANDA_MALLOC_ARRAY(4096);
   char *ebuf = _buffer + 4096;
@@ -71,7 +71,7 @@ SubStreamBuf() {
 SubStreamBuf::
 ~SubStreamBuf() {
   close();
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   PANDA_FREE_ARRAY(_buffer);
 #endif
 }

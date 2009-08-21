@@ -172,7 +172,7 @@
 #define HAVE_GETOPT_LONG_ONLY 
 
 // Are the above getopt() functions defined in getopt.h, or somewhere else?
-#define HAVE_GETOPT_H 1
+#define PHAVE_GETOPT_H 1
 
 // Can we determine the terminal width by making an ioctl(TIOCGWINSZ) call?
 #define IOCTL_TERMINAL_WIDTH 1
@@ -201,13 +201,13 @@
 #define GLOBAL_ARGV __Argv
 #define GLOBAL_ARGC __Argc
 
-// Should we include <iostream> or <iostream.h>?  Define HAVE_IOSTREAM
+// Should we include <iostream> or <iostream.h>?  Define PHAVE_IOSTREAM
 // to nonempty if we should use <iostream>, or empty if we should use
 // <iostream.h>.
-#define HAVE_IOSTREAM 1
+#define PHAVE_IOSTREAM 1
 
 // Do we have a true stringstream class defined in <sstream>?
-#define HAVE_SSTREAM 1
+#define PHAVE_SSTREAM 1
 
 // Does fstream::open() require a third parameter, specifying the
 // umask?  Versions of gcc prior to 3.2 had this.
@@ -221,54 +221,54 @@
 #define HAVE_WSTRING 1
 
 // Do we have <new>?
-#define HAVE_NEW 1
+#define PHAVE_NEW 1
 
 // Do we have <io.h>?
-#define HAVE_IO_H
+#define PHAVE_IO_H
 
 // Do we have <malloc.h>?
-#define HAVE_MALLOC_H
+#define PHAVE_MALLOC_H
 
 // Do we have <alloca.h>?
-#define HAVE_ALLOCA_H 1
+#define PHAVE_ALLOCA_H 1
 
 // Do we have <locale.h>?
-#define HAVE_LOCALE_H 1
+#define PHAVE_LOCALE_H 1
 
 // Do we have <string.h>?
-#define HAVE_STRING_H 1
+#define PHAVE_STRING_H 1
 
 // Do we have <stdlib.h>?
-#define HAVE_STDLIB_H 1
+#define PHAVE_STDLIB_H 1
 
 // Do we have <limits.h>?
-#define HAVE_LIMITS_H 1
+#define PHAVE_LIMITS_H 1
 
 // Do we have <minmax.h>?
-#define HAVE_MINMAX_H
+#define PHAVE_MINMAX_H
 
 // Do we have <sys/types.h>?
-#define HAVE_SYS_TYPES_H 1
-#define HAVE_SYS_TIME_H 1
+#define PHAVE_SYS_TYPES_H 1
+#define PHAVE_SYS_TIME_H 1
 
 // Do we have <unistd.h>?
-#define HAVE_UNISTD_H 1
+#define PHAVE_UNISTD_H 1
 
 // Do we have <utime.h>?
-#define HAVE_UTIME_H 1
+#define PHAVE_UTIME_H 1
 
 // Do we have <dirent.h>?
-#define HAVE_DIRENT_H 1
+#define PHAVE_DIRENT_H 1
 
 // Do we have <glob.h> (and do we want to use it instead of dirent.h)?
-#define HAVE_GLOB_H 1
+#define PHAVE_GLOB_H 1
 
 // Do we have <sys/soundcard.h> (and presumably a Linux-style audio
 // interface)?
-#define HAVE_SYS_SOUNDCARD_H 1
+#define PHAVE_SYS_SOUNDCARD_H 1
 
 // Do we have <ucontext.h> (and therefore makecontext() / swapcontext())?
-#define HAVE_UCONTEXT_H 1
+#define PHAVE_UCONTEXT_H 1
 
 // Do we have RTTI (and <typeinfo>)?
 #define HAVE_RTTI 1

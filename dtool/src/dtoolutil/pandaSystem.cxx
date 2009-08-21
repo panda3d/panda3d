@@ -60,21 +60,49 @@ get_version_string() {
 //     Function: PandaSystem::get_package_version_string
 //       Access: Published, Static
 //  Description: Returns the version of the Panda3D distributable
-//               package associated with this build.  This version
-//               string is set by the builder at compile time;
-//               presumably the person who sets this is also
-//               responsible for building the indicated distributable
-//               package version.
+//               package that provides this build of Panda.
 //
-//               If this string is empty, there is no distributable
-//               package associated with this build, and you should
-//               probably use a different build of Panda3D to generate
-//               your distributable applications to ensure
-//               compatibility.
+//               When the currently-executing version of Panda was
+//               loaded from a distributable package, such as via the
+//               browser plugin, then this string will be nonempty and
+//               will contain the corresponding version string.  You
+//               can build applications that use this particular
+//               version of Panda by requesting it in the pdef file,
+//               using "panda3d", this version string, and the
+//               download host provided by get_package_host_url().
+//
+//               If this string is empty, then the currently-executing
+//               Panda was built independently, and is not part of a
+//               distributable package.
+//
+//               This string is set explicitly at compilation time.
+//               Normally, it should be set to a nonempty string only
+//               when building a Panda3D package for distribution.
 ////////////////////////////////////////////////////////////////////
 string PandaSystem::
 get_package_version_string() {
   return PANDA_PACKAGE_VERSION_STR;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: PandaSystem::get_package_host_url
+//       Access: Published, Static
+//  Description: Returns the URL of the download server that provides
+//               the Panda3D distributable package currently running.
+//               This can be used, along with the
+//               get_package_version_string(), to uniquely identify
+//               the running version of Panda among distributable
+//               Panda versions.
+//
+//               See get_package_version_string() for more information.
+//
+//               This string is set explicitly at compilation time.
+//               Normally, it should be set to a nonempty string only
+//               when building a Panda3D package for distribution.
+////////////////////////////////////////////////////////////////////
+string PandaSystem::
+get_package_host_url() {
+  return PANDA_PACKAGE_HOST_URL;
 }
 
 ////////////////////////////////////////////////////////////////////

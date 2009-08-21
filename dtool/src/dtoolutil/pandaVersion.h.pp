@@ -65,6 +65,11 @@ $[cdefine PANDA_OFFICIAL_VERSION]
    package. */
 # define PANDA_PACKAGE_VERSION_STR "$[PANDA_PACKAGE_VERSION]"
 
+/* The string indicating the URL from which the associated Panda3D
+   distributable package may be downloaded, or empty string if there
+   is no associated package. */
+# define PANDA_PACKAGE_HOST_URL "$[PANDA_PACKAGE_HOST_URL]"
+
 #end pandaVersion.h
 
 

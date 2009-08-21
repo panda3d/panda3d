@@ -498,7 +498,7 @@
 #defer HAVE_FFTW $[libtest $[FFTW_LPATH],$[FFTW_LIBS]]
 // This is because darwinport's version of the fftw lib is called
 // drfftw instead of rfftw.
-#defer HAVE_DRFFTW_H $[libtest $[FFTW_LPATH],drfftw]
+#defer PHAVE_DRFFTW_H $[libtest $[FFTW_LPATH],drfftw]
 
 // Is libsquish installed, and where?
 #define SQUISH_IPATH /usr/local/include

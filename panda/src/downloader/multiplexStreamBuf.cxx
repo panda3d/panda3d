@@ -91,7 +91,7 @@ write_string(const string &str) {
 ////////////////////////////////////////////////////////////////////
 MultiplexStreamBuf::
 MultiplexStreamBuf() {
-#ifndef HAVE_IOSTREAM
+#ifndef PHAVE_IOSTREAM
   // Older iostream implementations required this.
   allocate();
   setp(base(), ebuf());

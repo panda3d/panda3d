@@ -36,7 +36,7 @@ ChunkedStreamBuf() {
   _wanted_nonblocking = false;
   _read_state = ISocketStream::RS_initial;
 
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   _buffer = (char *)PANDA_MALLOC_ARRAY(4096);
   char *ebuf = _buffer + 4096;
   setg(_buffer, ebuf, ebuf);
@@ -57,7 +57,7 @@ ChunkedStreamBuf() {
 ChunkedStreamBuf::
 ~ChunkedStreamBuf() {
   close_read();
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   PANDA_FREE_ARRAY(_buffer);
 #endif
 }

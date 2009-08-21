@@ -43,7 +43,7 @@ ZStreamBuf() {
   _dest = (ostream *)NULL;
   _owns_dest = false;
 
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   _buffer = (char *)PANDA_MALLOC_ARRAY(4096);
   char *ebuf = _buffer + 4096;
   setg(_buffer, ebuf, ebuf);
@@ -65,7 +65,7 @@ ZStreamBuf::
 ~ZStreamBuf() {
   close_read();
   close_write();
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   PANDA_FREE_ARRAY(_buffer);
 #endif
 }

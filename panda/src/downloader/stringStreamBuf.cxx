@@ -23,7 +23,7 @@
 ////////////////////////////////////////////////////////////////////
 StringStreamBuf::
 StringStreamBuf() {
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   _buffer = (char *)PANDA_MALLOC_ARRAY(2048);
   char *ebuf = _buffer + 2048;
   char *mbuf = _buffer + 1024;
@@ -52,7 +52,7 @@ StringStreamBuf() {
 ////////////////////////////////////////////////////////////////////
 StringStreamBuf::
 ~StringStreamBuf() {
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
   PANDA_FREE_ARRAY(_buffer);
 #endif
 }

@@ -45,7 +45,7 @@ typedef int ios_seekdir;
 
 #else  // CPPPARSER
 
-#ifdef HAVE_IOSTREAM
+#ifdef PHAVE_IOSTREAM
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -55,13 +55,13 @@ typedef int ios_seekdir;
 #include <iomanip.h>
 #endif
 
-#ifdef HAVE_SSTREAM
+#ifdef PHAVE_SSTREAM
 #include <sstream>
 #else
 #include "fakestringstream.h"
 #endif
 
-#ifdef HAVE_NEW
+#ifdef PHAVE_NEW
 #include <new>
 #endif
 
