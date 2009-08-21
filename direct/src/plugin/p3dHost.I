@@ -71,3 +71,17 @@ inline bool P3DHost::
 has_contents_file() const {
   return (_xcontents != NULL);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::encode_hexdigit
+//       Access: Private
+//  Description: Returns the hex digit corresponding to the
+//               indicated integer value.
+////////////////////////////////////////////////////////////////////
+inline char P3DHost::
+encode_hexdigit(int c) {
+  if (c >= 10) {
+    return c - 10 + 'a';
+  }
+  return c + '0';
+}

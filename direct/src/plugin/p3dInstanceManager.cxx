@@ -153,11 +153,12 @@ P3DInstanceManager::
 ////////////////////////////////////////////////////////////////////
 bool P3DInstanceManager::
 initialize(const string &contents_filename, const string &download_url,
+           bool verify_contents,
            const string &platform, const string &log_directory,
            const string &log_basename) {
 
   _root_dir = find_root_dir();
-
+  _verify_contents = verify_contents;
   _platform = platform;
   if (_platform.empty()) {
     _platform = DTOOL_PLATFORM;
@@ -252,7 +253,8 @@ initialize(const string &contents_filename, const string &download_url,
 
   _is_initialized = true;
 
-  if (!download_url.empty() && !contents_filename.empty()) {
+  if (!_verify_contents &&
+      !download_url.empty() && !contents_filename.empty()) {
     // Attempt to pre-read the supplied contents.xml file, to avoid an
     // unnecessary download later.
     P3DHost *host = get_host(download_url);
@@ -440,7 +442,7 @@ get_host(const string &host_url) {
     return (*pi).second;
   }
 
-  P3DHost *host = new P3DHost(this, host_url);
+  P3DHost *host = new P3DHost(host_url);
   bool inserted = _hosts.insert(Hosts::value_type(host_url, host)).second;
   assert(inserted);
 

@@ -43,13 +43,13 @@ public:
 
 private:
   bool get_plugin(const string &download_url, const string &this_platform,
-                  bool force_download);
-  bool read_contents_file(Filename contents_filename, 
+                  bool verify_contents);
+  bool read_contents_file(Filename contents_filename,
                           const string &download_url,
-                          const string &this_platform);
+                          const string &this_platform, bool verify_contents);
   bool get_core_api(const Filename &contents_filename, 
                     const string &download_url, const string &this_platform,
-                    TiXmlElement *xplugin);
+                    bool verify_contents, TiXmlElement *xplugin);
   void run_getters();
   void handle_request(P3D_request *request);
   void make_parent_window(P3D_window_handle &parent_window, 

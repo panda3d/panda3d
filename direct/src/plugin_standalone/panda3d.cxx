@@ -66,7 +66,7 @@ run(int argc, char *argv[]) {
   bool allow_multiple = false;
   string download_url = PANDA_PACKAGE_HOST_URL;
   string this_platform = DTOOL_PLATFORM;
-  bool force_download = false;
+  bool verify_contents = false;
 
   P3D_window_type window_type = P3D_WT_toplevel;
   int win_x = 0, win_y = 0;
@@ -89,7 +89,7 @@ run(int argc, char *argv[]) {
       break;
 
     case 'f':
-      force_download = true;
+      verify_contents = true;
       break;
 
     case 't':
@@ -149,7 +149,7 @@ run(int argc, char *argv[]) {
     download_url += '/';
   }
 
-  if (!get_plugin(download_url, this_platform, force_download)) {
+  if (!get_plugin(download_url, this_platform, verify_contents)) {
     cerr << "Unable to load Panda3D plugin.\n";
     return 1;
   }
@@ -315,10 +315,11 @@ run(int argc, char *argv[]) {
 //               true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
-get_plugin(const string &download_url, const string &this_platform, bool force_download) {
+get_plugin(const string &download_url, const string &this_platform, 
+           bool verify_contents) {
   // First, look for the existing contents.xml file.
   Filename contents_filename = Filename(Filename::from_os_specific(_root_dir), "contents.xml");
-  if (!force_download && read_contents_file(contents_filename, download_url, this_platform)) {
+  if (!verify_contents && read_contents_file(contents_filename, download_url, this_platform, verify_contents)) {
     // Got the file, and it's good.
     return true;
   }
@@ -345,7 +346,11 @@ get_plugin(const string &download_url, const string &this_platform, bool force_d
     tempfile.rename_to(contents_filename);
   }
 
-  return read_contents_file(contents_filename, download_url, this_platform);
+  // Since we had to download some of it, might as well ask the core
+  // API to check all of it.
+  verify_contents = true;
+
+  return read_contents_file(contents_filename, download_url, this_platform, verify_contents);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -357,7 +362,7 @@ get_plugin(const string &download_url, const string &this_platform, bool force_d
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
 read_contents_file(Filename contents_filename, const string &download_url, 
-                   const string &this_platform) {
+                   const string &this_platform, bool verify_contents) {
   ifstream in;
   contents_filename.set_text();
   if (!contents_filename.open_read(in)) {
@@ -376,8 +381,8 @@ read_contents_file(Filename contents_filename, const string &download_url,
       if (name != NULL && strcmp(name, "coreapi") == 0) {
         const char *xplatform = xplugin->Attribute("platform");
         if (xplatform != NULL && strcmp(xplatform, this_platform.c_str()) == 0) {
-          return get_core_api(contents_filename, download_url, this_platform,
-                              xplugin);
+          return get_core_api(contents_filename, download_url, 
+                              this_platform, verify_contents, xplugin);
         }
       }
       
@@ -401,7 +406,8 @@ read_contents_file(Filename contents_filename, const string &download_url,
 ////////////////////////////////////////////////////////////////////
 bool Panda3D::
 get_core_api(const Filename &contents_filename, const string &download_url,
-             const string &this_platform, TiXmlElement *xplugin) {
+             const string &this_platform, bool verify_contents,
+             TiXmlElement *xplugin) {
   _core_api_dll.load_xml(xplugin);
 
   if (!_core_api_dll.quick_verify(_root_dir)) {
@@ -418,10 +424,14 @@ get_core_api(const Filename &contents_filename, const string &download_url,
       return false;
     }
 
-    if (!_core_api_dll.quick_verify(_root_dir)) {
+    if (!_core_api_dll.full_verify(_root_dir)) {
       cerr << "Mismatched download for " << url << "\n";
       return false;
     }
+
+    // Since we had to download some of it, might as well ask the core
+    // API to check all of it.
+    verify_contents = true;
   }
 
   // Now we've got the DLL.  Load it.
@@ -440,7 +450,7 @@ get_core_api(const Filename &contents_filename, const string &download_url,
 #endif  // P3D_PLUGIN_P3D_PLUGIN
 
   if (!load_plugin(pathname, contents_filename.to_os_specific(),
-                   download_url, this_platform, _log_dirname,
+                   download_url, verify_contents, this_platform, _log_dirname,
                    _log_basename)) {
     cerr << "Unable to launch core API in " << pathname << "\n" << flush;
     return false;
@@ -746,7 +756,7 @@ usage() {
     << "    the application output to the console.\n\n"
 
     << "  -f\n"
-    << "    Force a HTTP contact to the Panda3D download server, to check\n"
+    << "    Force an initial contact of the Panda3D download server, to check\n"
     << "    if a new version is available.  Normally, this is done only\n"
     << "    if contents.xml cannot be read.\n\n"
 

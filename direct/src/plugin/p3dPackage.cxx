@@ -162,6 +162,13 @@ begin_info_download() {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 download_contents_file() {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  if (!_host->has_contents_file() && !inst_mgr->get_verify_contents()) {
+    // If we're allowed to read a contents file without checking the
+    // server first, try it now.
+    _host->read_contents_file();
+  }
+
   if (_host->has_contents_file()) {
     // We've already got a contents.xml file; go straight to the
     // package desc file.

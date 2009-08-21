@@ -134,7 +134,7 @@ quick_verify(const string &package_dir) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: FileSpec::quick_verify
+//     Function: FileSpec::full_verify
 //       Access: Public
 //  Description: Performs a more thorough test to ensure the file has
 //               not been modified.  This test is less vulnerable to

@@ -105,7 +105,7 @@ class ContentsMaker:
 
         try:
             f = open(contentsFilePathname, 'r')
-        except OSError:
+        except IOError:
             return None
 
         for line in f.readlines():

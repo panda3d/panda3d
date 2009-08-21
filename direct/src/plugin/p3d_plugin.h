@@ -96,7 +96,14 @@ extern "C" {
    If this is NULL, a new file will be downloaded as needed.
 
    If download_url is not NULL or empty, it specifies the root URL of
-   the download server; otherwise, the compiled-in default is used.
+   the download server that provided the contents_filename.
+
+   If verify_contents is true, it means that the download server will
+   be contacted to verify that contents.xml is current, before
+   continuing.  If it is false, it means that contents.xml will be
+   loaded without checking the download server, if possible.  This can
+   be used to minimize unnecessary network operations for standalone
+   applications.  For a web plugin, it should be set true.
 
    If platform is not NULL or empty, it specifies the current platform
    string; otherwise, the compiled-in default is used.
@@ -119,7 +126,8 @@ extern "C" {
    immediately unload the DLL and (if possible) download a new one. */
 typedef bool 
 P3D_initialize_func(int api_version, const char *contents_filename,
-                    const char *download_url, const char *platform,
+                    const char *download_url, bool verify_contents,
+                    const char *platform,
                     const char *log_directory, const char *log_basename);
 
 /* This function should be called to unload the core API.  It will

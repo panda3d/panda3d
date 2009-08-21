@@ -778,6 +778,11 @@ start_download(P3DDownload *download) {
   assert(download->get_download_id() == 0);
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
+  // Since we're downloading something, we might as well check all
+  // contents files from this point on.
+  inst_mgr->reset_verify_contents();
+
   int download_id = inst_mgr->get_unique_id();
   download->set_download_id(download_id);
 

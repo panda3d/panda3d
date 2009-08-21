@@ -15,6 +15,7 @@
 #include "p3dHost.h"
 #include "p3dInstanceManager.h"
 #include "p3dPackage.h"
+#include "openssl/md5.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::Constructor
@@ -23,12 +24,9 @@
 //               P3DHost.
 ////////////////////////////////////////////////////////////////////
 P3DHost::
-P3DHost(P3DInstanceManager *inst_mgr, const string &host_url) :
+P3DHost(const string &host_url) :
   _host_url(host_url) 
 {
-  _host_dir = inst_mgr->get_root_dir();
-  _host_dir += "/host";  // TODO.
-
   // Ensure that the download URL ends with a slash.
   _host_url_prefix = _host_url;
   if (!_host_url_prefix.empty() && _host_url_prefix[_host_url_prefix.size() - 1] != '/') {
@@ -36,6 +34,8 @@ P3DHost(P3DInstanceManager *inst_mgr, const string &host_url) :
   }
 
   _xcontents = NULL;
+
+  fill_host_dir();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -54,6 +54,20 @@ P3DHost::
     delete (*pi).second;
   }
   _packages.clear();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::read_contents_file
+//       Access: Public
+//  Description: Reads the contents.xml file in the standard
+//               filename, if possible.
+//
+//               Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool P3DHost::
+read_contents_file() {
+  string standard_filename = _host_dir + "/contents.xml";
+  return read_contents_file(standard_filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -180,6 +194,82 @@ get_package_desc_file(FileSpec &desc_file,              // out
   // Couldn't find the named package.
   return false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DHost::fill_host_dir
+//       Access: Private
+//  Description: Hashes the host_url into a (mostly) unique directory
+//               string for this particular host.  Stores the result
+//               in _host_dir.
+////////////////////////////////////////////////////////////////////
+void P3DHost::
+fill_host_dir() {
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  _host_dir = inst_mgr->get_root_dir();
+  _host_dir += "/";
+
+  string hostname;
+
+  // Look for a server name in the URL.  Including this string in the
+  // directory name makes it friendlier for people browsing the
+  // directory.
+  size_t p = _host_url.find("://");
+  if (p != string::npos) {
+    size_t start = p + 3;
+    size_t end = _host_url.find("/",  start);
+    // Now start .. end is something like "username@host:port".
+
+    size_t at = _host_url.find("@", start);
+    if (at < end) {
+      start = at + 1;
+    }
+
+    size_t colon = _host_url.find(":", start);
+    if (colon < end) {
+      end = colon;
+    }
+
+    // Now start .. end is just the hostname.
+    hostname = _host_url.substr(start, end - start);
+  }
+
+  // Now build a hash string of the whole URL.  We'll use MD5 to get a
+  // pretty good hash, with a minimum chance of collision.  Even if
+  // there is a hash collision, though, it's not the end of the world;
+  // it just means that both hosts will dump their packages into the
+  // same directory, and they'll fight over the toplevel contents.xml
+  // file.  Assuming they use different version numbers (which should
+  // be safe since they have the same hostname), there will be minimal
+  // redownloading.
+
+
+  static const size_t hash_size = 16;
+  unsigned char md[hash_size];
+
+  size_t keep_hash = hash_size;
+
+  if (!hostname.empty()) {
+    _host_dir += hostname;
+    _host_dir += "_";
+
+    // If we successfully got a hostname, we don't really need the
+    // full hash.  We'll keep half of it.
+    keep_hash = hash_size / 2;
+  }
+
+  MD5_CTX ctx;
+  MD5_Init(&ctx);
+  MD5_Update(&ctx, _host_url.data(), _host_url.size());
+  MD5_Final(md, &ctx);
+
+  for (size_t i = 0; i < keep_hash; ++i) {
+    int high = (md[i] >> 4) & 0xf;
+    int low = md[i] & 0xf;
+    _host_dir += encode_hexdigit(high);
+    _host_dir += encode_hexdigit(low);
+  }
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DHost::standardize_filename

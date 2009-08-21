@@ -30,7 +30,7 @@ class P3DPackage;
 ////////////////////////////////////////////////////////////////////
 class P3DHost {
 private:
-  P3DHost(P3DInstanceManager *inst_mgr, const string &host_url);
+  P3DHost(const string &host_url);
   ~P3DHost();
 
 public:
@@ -40,6 +40,7 @@ public:
   inline const string &get_descriptive_name() const;
 
   inline bool has_contents_file() const;
+  bool read_contents_file();
   bool read_contents_file(const string &contents_filename);
 
   P3DPackage *get_package(const string &package_name, 
@@ -50,8 +51,11 @@ public:
                              const string &package_version);
 
 private:
+  void fill_host_dir();
+
   static string standardize_filename(const string &filename);
   static bool copy_file(const string &from_filename, const string &to_filename);
+  static inline char encode_hexdigit(int c);
 
 private:
   string _host_dir;

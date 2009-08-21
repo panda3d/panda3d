@@ -59,8 +59,9 @@ extern P3D_instance_handle_event_func *P3D_instance_handle_event;
 
 string get_plugin_basename();
 bool 
-load_plugin(const string &p3d_plugin_filename, const string &contents_filename,
-            const string &download_url, const string &platform,
+load_plugin(const string &p3d_plugin_filename, 
+            const string &contents_filename, const string &download_url,
+            bool verify_contents, const string &platform,
             const string &log_directory, const string &log_basename);
 void unload_plugin();
 bool is_plugin_loaded();

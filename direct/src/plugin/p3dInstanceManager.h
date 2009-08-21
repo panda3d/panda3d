@@ -45,11 +45,14 @@ private:
 public:
   bool initialize(const string &contents_filename,
                   const string &download_url,
+                  bool verify_contents,
                   const string &platform,
                   const string &log_directory,
                   const string &log_basename);
 
   inline bool is_initialized() const;
+  inline bool get_verify_contents() const;
+  inline void reset_verify_contents();
 
   inline const string &get_root_dir() const;
   inline const string &get_platform() const;
@@ -99,6 +102,7 @@ private:
 private:
   bool _is_initialized;
   string _root_dir;
+  bool _verify_contents;
   string _platform;
   string _log_directory;
   string _log_basename;
