@@ -191,9 +191,7 @@ new_stream(NPMIMEType type, NPStream *stream, bool seekable, uint16 *stype) {
 
       // We don't want the rest of this stream any more, but we can't
       // just return NPERR_GENERIC_ERROR, though--that seems to freak
-      // out Mozilla.  Instead, we'll "accept" it for now, and then
-      // immediately stop it when we get the first write_stream()
-      // call.
+      // out Firefox.
       stream->notifyData = new PPDownloadRequest(PPDownloadRequest::RT_instance_data);
 
       *stype = NP_NORMAL;
@@ -255,11 +253,10 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
     return len;
 
   case PPDownloadRequest::RT_instance_data:
-    // Here's a stream we don't really want.  But stopping it early
+    // Here's a stream we don't really want.  But stopping it here
     // seems to freak out Safari.  (And stopping it before it starts
-    // freaks out Firefox.)
-
-    // Whatever.  We'll just quietly ignore the data.
+    // freaks out Firefox.)  Whatever.  We'll just quietly ignore the
+    // data.
     return len;
     
   default:
@@ -301,8 +298,6 @@ destroy_stream(NPStream *stream, NPReason reason) {
     break;
 
   case PPDownloadRequest::RT_instance_data:
-    // We won't get a url_notify on this one, so delete it now.
-    delete req;
     break;
 
   default:

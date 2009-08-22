@@ -1183,9 +1183,13 @@ make_splash_window() {
     // Don't know where to put it yet.
     return;
   }
-  if (_wparams.get_window_type() == P3D_WT_toplevel && !_stuff_to_download) {
-    // If it's a toplevel window, then we don't want a splash window
-    // until we have stuff to download.
+  if (_wparams.get_window_type() == P3D_WT_hidden) {
+    // We're hidden, and so is the splash window.
+    return;
+  }
+  if (_wparams.get_window_type() != P3D_WT_embedded && !_stuff_to_download) {
+    // If it's a toplevel or fullscreen window, then we don't want a
+    // splash window until we have stuff to download.
     return;
   }
 

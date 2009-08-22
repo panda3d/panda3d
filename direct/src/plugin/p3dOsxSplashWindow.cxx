@@ -78,8 +78,9 @@ set_wparams(const P3DWindowParams &wparams) {
       r.top = _wparams.get_win_y();
       r.left = _wparams.get_win_x();
       if (r.top == 0 && r.left == 0) {
-        r.top = 250;
-        r.left = 210;
+        // These are the same defaults used by Panda's osxGraphicsWindow.
+        r.top = 50;
+        r.left = 10;
       }
 
       r.right = r.left + _wparams.get_win_width();

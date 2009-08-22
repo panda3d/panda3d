@@ -386,7 +386,6 @@ read_contents_file(Filename contents_filename, const string &download_url,
   ifstream in;
   contents_filename.set_text();
   if (!contents_filename.open_read(in)) {
-    cerr << "Couldn't read " << contents_filename.to_os_specific() << "\n";
     return false;
   }
 
