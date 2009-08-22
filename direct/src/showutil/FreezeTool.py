@@ -752,7 +752,10 @@ class Freezer:
 
         # Attempt to import the explicit modules into the modulefinder.
         for mdef in includes:
-            self.__loadModule(mdef)
+            try:
+                self.__loadModule(mdef)
+            except ImportError:
+                print "Unknown module: %s" % (mdef.moduleName)
 
         # Also attempt to import any implicit modules.  If any of
         # these fail to import, we don't really care.
@@ -829,10 +832,7 @@ class Freezer:
 
         else:
             # Otherwise, we can just import it normally.
-            try:
-                self.mf.import_hook(mdef.moduleName)
-            except ImportError:
-                print "Unknown module: %s" % (mdef.moduleName)
+            self.mf.import_hook(mdef.moduleName)
 
     def reset(self):
         """ After a previous call to done(), this resets the
