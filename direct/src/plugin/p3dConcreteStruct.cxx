@@ -135,6 +135,54 @@ set_property(const string &property, P3D_object *value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DConcreteStruct::has_method
+//       Access: Public, Virtual
+//  Description: Returns true if the named method exists on this
+//               object, false otherwise.
+////////////////////////////////////////////////////////////////////
+bool P3DConcreteStruct::
+has_method(const string &method_name) {
+  if (method_name == "toString") {
+    return true;
+  }
+
+  return false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DConcreteStruct::call
+//       Access: Public, Virtual
+//  Description: Invokes the named method on the object, passing the
+//               indicated parameters.  If the method name is empty,
+//               invokes the object itself.
+//
+//               If needs_response is true, the return value is a
+//               new-reference P3D_object on success, or NULL on
+//               failure.  If needs_response is false, the return
+//               value is always NULL, and there is no way to
+//               determine success or failure.
+////////////////////////////////////////////////////////////////////
+P3D_object *P3DConcreteStruct::
+call(const string &method_name, bool needs_response,
+     P3D_object *params[], int num_params) {
+  P3D_object *result = NULL;
+
+  if (method_name == "toString") {
+    string value;
+    make_string(value);
+    result = P3D_new_string_object(value.data(), value.length());
+  }
+
+  if (result != NULL && !needs_response) {
+    P3D_OBJECT_DECREF(result);
+    result = NULL;
+  }
+
+  return result;
+}
+
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DConcreteStruct::fill_xml
 //       Access: Public, Virtual
 //  Description: If this object has a valid XML representation for the

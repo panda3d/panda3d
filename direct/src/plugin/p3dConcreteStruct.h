@@ -25,7 +25,8 @@
 //               Python and Javascript, so it may be more optimal for
 //               relatively small objects.
 //
-//               Methods are not supported.
+//               Methods are not supported, other than built-in
+//               methods like toString().
 ////////////////////////////////////////////////////////////////////
 class P3DConcreteStruct : public P3DObject {
 public:
@@ -39,6 +40,10 @@ public:
 
   virtual P3D_object *get_property(const string &property);
   virtual bool set_property(const string &property, P3D_object *value);
+
+  virtual bool has_method(const string &method_name);
+  virtual P3D_object *call(const string &method_name, bool needs_response,
+                           P3D_object *params[], int num_params);
 
   virtual bool fill_xml(TiXmlElement *xvalue, P3DSession *session);
 
