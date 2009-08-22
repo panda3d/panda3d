@@ -100,6 +100,7 @@ invalidate() {
 bool PPPandaObject::
 has_method(NPIdentifier name) {
   string method_name = identifier_to_string(name);
+  //nout << this << ".has_method(" << method_name << ")\n";
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -131,6 +132,7 @@ bool PPPandaObject::
 invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
        NPVariant *result) {
   string method_name = identifier_to_string(name);
+  //nout << this << ".invoke(" << method_name << ")\n";
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -170,6 +172,7 @@ invoke(NPIdentifier name, const NPVariant *args, uint32_t argCount,
 bool PPPandaObject::
 invoke_default(const NPVariant *args, uint32_t argCount,
                NPVariant *result) {
+  //nout << this << ".invoke_default()\n";
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -208,6 +211,7 @@ invoke_default(const NPVariant *args, uint32_t argCount,
 bool PPPandaObject::
 has_property(NPIdentifier name) {
   string property_name = identifier_to_string(name);
+  //nout << this << ".has_property(" << property_name << ")\n";
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -236,6 +240,7 @@ has_property(NPIdentifier name) {
 bool PPPandaObject::
 get_property(NPIdentifier name, NPVariant *result) {
   string property_name = identifier_to_string(name);
+  //nout << this << ".get_property(" << property_name << ")\n";
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -262,6 +267,7 @@ get_property(NPIdentifier name, NPVariant *result) {
 bool PPPandaObject::
 set_property(NPIdentifier name, const NPVariant *value) {
   string property_name = identifier_to_string(name);
+  //nout << this << ".set_property(" << property_name << ")\n";
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -282,6 +288,7 @@ set_property(NPIdentifier name, const NPVariant *value) {
 bool PPPandaObject::
 remove_property(NPIdentifier name) {
   string property_name = identifier_to_string(name);
+  //nout << this << ".remove_property(" << property_name << ")\n";
   if (_p3d_object == NULL) {
     // Not powered up yet.
     return false;
@@ -299,6 +306,7 @@ remove_property(NPIdentifier name) {
 ////////////////////////////////////////////////////////////////////
 bool PPPandaObject::
 enumerate(NPIdentifier **value, uint32_t *count) {
+  //nout << this << ".enumerate()\n";
   // TODO: Not implemented yet.
 
   // Note that the array of values must be allocated here with
