@@ -820,7 +820,7 @@ report_downloading_package(P3D_instance *instance) {
   
   P3D_object *display_name = P3D_object_get_property(obj, "downloadPackageDisplayName");
   if (display_name == NULL) {
-    cerr << "Downloading package.\n";
+    cerr << "Installing package.\n";
     return;
   }
 
@@ -828,7 +828,7 @@ report_downloading_package(P3D_instance *instance) {
   char *name = new char[name_length + 1];
   P3D_object_get_string(display_name, name, name_length + 1);
 
-  cerr << "Downloading " << name << "\n";
+  cerr << "Installing " << name << "\n";
 
   delete[] name;
   P3D_object_decref(display_name);
@@ -843,7 +843,7 @@ report_downloading_package(P3D_instance *instance) {
 void Panda3D::
 report_download_complete(P3D_instance *instance) {
   if (_reporting_download) {
-    cerr << "Download complete.\n";
+    cerr << "Install complete.\n";
   }
 }
 
