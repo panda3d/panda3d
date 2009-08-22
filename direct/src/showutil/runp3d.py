@@ -9,11 +9,10 @@ previously been generated via packp3d.py.
 
 Usage:
 
-  runp3d.py app.p3d [keyword=value [keyword=value ...] ]
+  runp3d.py app.p3d [args]
 
-The command-line keywords mimic the additional parameters that may
-appear in HTML syntax when the p3d file appears on a web page.  These
-are passed as given to the app, which may decide what to do with them.
+The command-line arguments following the application name are passed
+into the application unchanged.
 
 See pack3d.py for a script that generates these p3d files.
 
@@ -478,9 +477,16 @@ class AppRunner(DirectObject):
         self.sendRequest('drop_p3dobj', objectId)
 
     def parseSysArgs(self):
-        """ Converts sys.argv into (p3dFilename, tokens). """
+        """ Handles sys.argv, if there are any local arguments, and
+        returns a new argv suitable for passing into the
+        application. """
+        
         import getopt
-        opts, args = getopt.getopt(sys.argv[1:], 'h')
+
+        # We prefix a "+" sign, following the GNU convention, to tell
+        # getopt not to parse options following the first non-option
+        # parameter.
+        opts, args = getopt.getopt(sys.argv[1:], '+h')
 
         for option, value in opts:
             if option == '-h':
@@ -490,30 +496,20 @@ class AppRunner(DirectObject):
         if not args or not args[0]:
             raise ArgumentError, "No Panda app specified.  Use:\nrunp3d.py app.p3d"
 
-        tokens = []
-        for token in args[1:]:
-            if '=' in token:
-                keyword, value = token.split('=', 1)
-            else:
-                keyword = token
-                value = ''
-            tokens.append((keyword.lower(), value))
+        arg0 = args[0]
+        p3dFilename = Filename.fromOsSpecific(arg0)
+        if p3dFilename.exists():
+            p3dFilename.makeAbsolute()
+            arg0 = p3dFilename.toOsSpecific()
 
-        p3dFilename = Filename.fromOsSpecific(sys.argv[1])
-        osFilename = p3dFilename.toOsSpecific()
-        if not p3dFilename.exists():
-            # If the filename doesn't exist, it must be a URL.
-            osFilename = ''
-            if 'src' not in dict(tokens):
-                tokens.append(('src', sys.argv[1]))
-
-        return (osFilename, tokens)
+        return [arg0] + args[1:]
 
 if __name__ == '__main__':
     runner = AppRunner()
     runner.gotWindow = True
     try:
-        runner.setP3DFilename(*runner.parseSysArgs())
+        argv = runner.parseSysArgs()
+        runner.setP3DFilename(argv[0], argv = argv)
     except ArgumentError, e:
         print e.args[0]
         sys.exit(1)
