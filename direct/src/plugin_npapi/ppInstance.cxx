@@ -255,9 +255,12 @@ write_stream(NPStream *stream, int offset, int len, void *buffer) {
     return len;
 
   case PPDownloadRequest::RT_instance_data:
-    // Here's a stream we don't really want.
-    browser->destroystream(_npp_instance, stream, NPRES_USER_BREAK);
-    return 0;
+    // Here's a stream we don't really want.  But stopping it early
+    // seems to freak out Safari.  (And stopping it before it starts
+    // freaks out Firefox.)
+
+    // Whatever.  We'll just quietly ignore the data.
+    return len;
     
   default:
     nout << "Unexpected write_stream on " << stream->url << "\n";

@@ -31,6 +31,7 @@ P3DOsxSplashWindow(P3DInstance *inst) :
   _image_data = NULL;
   _install_progress = 0;
   _got_wparams = false;
+  _toplevel_window = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -40,6 +41,13 @@ P3DOsxSplashWindow(P3DInstance *inst) :
 ////////////////////////////////////////////////////////////////////
 P3DOsxSplashWindow::
 ~P3DOsxSplashWindow() {
+  if (_toplevel_window != NULL) {
+    SetWRefCon(_toplevel_window, 0);
+    HideWindow(_toplevel_window);
+    DisposeWindow(_toplevel_window);
+    _toplevel_window = NULL;
+  }
+    
   if (_image != NULL) {
     DisposeGWorld(_image);
   }
@@ -61,6 +69,43 @@ void P3DOsxSplashWindow::
 set_wparams(const P3DWindowParams &wparams) {
   P3DSplashWindow::set_wparams(wparams);
   _got_wparams = true;
+
+  if (_wparams.get_window_type() == P3D_WT_toplevel ||
+      _wparams.get_window_type() == P3D_WT_fullscreen) {
+    // Creating a toplevel splash window.
+    if (_toplevel_window == NULL) {
+      Rect r;
+      r.top = _wparams.get_win_y();
+      r.left = _wparams.get_win_x();
+      if (r.top == 0 && r.left == 0) {
+        r.top = 250;
+        r.left = 210;
+      }
+
+      r.right = r.left + _wparams.get_win_width();
+      r.bottom = r.top + _wparams.get_win_height();
+      WindowAttributes attrib = 
+        kWindowStandardDocumentAttributes | kWindowStandardHandlerAttribute;
+      CreateNewWindow(kDocumentWindowClass, attrib, &r, &_toplevel_window);
+ 
+      EventHandlerRef application_event_ref_ref1;
+      EventTypeSpec list1[] = { 
+        { kEventClassWindow, kEventWindowDrawContent },
+        //{ kEventClassWindow, kEventWindowUpdate },
+      };
+        
+      EventHandlerUPP gEvtHandler = NewEventHandlerUPP(st_event_callback);
+      InstallWindowEventHandler(_toplevel_window, gEvtHandler, 
+                                GetEventTypeCount(list1), list1, this, &application_event_ref_ref1);
+
+      ProcessSerialNumber psn = { 0, kCurrentProcess };
+      TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+      SetFrontProcess(&psn);
+
+      ShowWindow(_toplevel_window);
+    }
+  }
+
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -130,7 +175,7 @@ set_image_filename(const string &image_filename,
     return;
   }
 
-  _inst->request_refresh();
+  refresh();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -142,7 +187,7 @@ set_image_filename(const string &image_filename,
 void P3DOsxSplashWindow::
 set_install_label(const string &install_label) {
   _install_label = install_label;
-  _inst->request_refresh();
+  refresh();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,7 +199,7 @@ void P3DOsxSplashWindow::
 set_install_progress(double install_progress) {
   if ((int)(install_progress * 500.0) != (int)(_install_progress * 500.0)) {
     // Only request a refresh if we're changing substantially.
-    _inst->request_refresh();
+    refresh();
   }
   _install_progress = install_progress;
 }
@@ -176,6 +221,25 @@ handle_event(P3D_event_data event) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::refresh
+//       Access: Private
+//  Description: Requests that the window will be repainted.
+////////////////////////////////////////////////////////////////////
+void P3DOsxSplashWindow::
+refresh() {
+  if (_toplevel_window != NULL) {
+    int win_width = _wparams.get_win_width();
+    int win_height = _wparams.get_win_height();
+    
+    Rect r = { 0, 0, win_height, win_width }; 
+    InvalWindowRect(_toplevel_window, &r);
+
+  } else {
+    _inst->request_refresh();
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DOsxSplashWindow::paint_window
 //       Access: Private
 //  Description: Redraws the current splash window.
@@ -186,16 +250,28 @@ paint_window() {
     return;
   }
 
-  GrafPtr out_port = _wparams.get_parent_window()._port;
+  GrafPtr out_port = NULL;
   GrafPtr portSave = NULL;
-  Boolean portChanged = QDSwapPort(out_port, &portSave);
+  Boolean portChanged = false;
+
+  if (_toplevel_window != NULL) {
+    /*
+    GetPort(&portSave);
+    SetPortWindowPort(_toplevel_window);
+    BeginUpdate(_toplevel_window);
+    */
+    GetPort(&out_port);
+
+  } else {
+    out_port = _wparams.get_parent_window()._port;
+    portChanged = QDSwapPort(out_port, &portSave);
+  }
 
   int win_width = _wparams.get_win_width();
   int win_height = _wparams.get_win_height();
 
   Rect r = { 0, 0, win_height, win_width }; 
   ClipRect(&r);
-
   EraseRect(&r);
 
   if (_image != NULL) {
@@ -246,8 +322,8 @@ paint_window() {
   get_bar_placement(win_width, win_height,
                     bar_x, bar_y, bar_width, bar_height);
   
-  int progress_width = (int)((bar_width - 2) * _install_progress);
-  if (progress_width > 0) {
+  if (_install_progress != 0.0) {
+    int progress_width = (int)((bar_width - 2) * _install_progress);
     int progress = bar_x + 1 + progress_width;
     
     Rect rbar = { bar_y, bar_x, bar_y + bar_height, bar_x + bar_width };
@@ -262,37 +338,77 @@ paint_window() {
     
     RGBColor black = { 0, 0, 0 };
     RGBForeColor(&black);
-  }
 
-  if (!_install_label.empty()) {
-    // Now draw the install_label right above it.
-    TextFont(0);
-    TextFace(bold);
-    TextMode(srcOr);
-    TextSize(0);
+    if (!_install_label.empty()) {
+      // Now draw the install_label right above it.
+      TextFont(0);
+      TextFace(bold);
+      TextMode(srcOr);
+      TextSize(0);
+      
+      Point numer = { 1, 1 };
+      Point denom = { 1, 1 };
+      FontInfo font_info;
+      StdTxMeas(_install_label.size(), _install_label.data(), &numer, &denom, &font_info);
+      int ascent = font_info.ascent * numer.v / denom.v;
+      int descent = font_info.descent * numer.v / denom.v;
+      
+      int text_width = TextWidth(_install_label.data(), 0, _install_label.size());
+      int text_x = (win_width - text_width) / 2;
+      int text_y = bar_y - descent - 8;
+      
+      Rect rtext = { text_y - ascent - 2, text_x - 2, 
+                     text_y + descent + 2, text_x + text_width + 2 }; 
+      EraseRect(&rtext);
+      
+      MoveTo(text_x, text_y);
+      DrawText(_install_label.data(), 0, _install_label.size());
+    }
+  }
     
-    Point numer = { 1, 1 };
-    Point denom = { 1, 1 };
-    FontInfo font_info;
-    StdTxMeas(_install_label.size(), _install_label.data(), &numer, &denom, &font_info);
-    int ascent = font_info.ascent * numer.v / denom.v;
-    int descent = font_info.descent * numer.v / denom.v;
+  if (_toplevel_window == NULL) {
+    if (portChanged) {
+      QDSwapPort(portSave, NULL);
+    }
+  }
+}
 
-    int text_width = TextWidth(_install_label.data(), 0, _install_label.size());
-    int text_x = (win_width - text_width) / 2;
-    int text_y = bar_y - descent - 8;
-    
-    Rect rtext = { text_y - ascent - 2, text_x - 2, 
-                   text_y + descent + 2, text_x + text_width + 2 }; 
-    EraseRect(&rtext);
+////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::st_event_callback
+//       Access: Private, Static
+//  Description: The event callback on the toplevel window.
+////////////////////////////////////////////////////////////////////
+pascal OSStatus P3DOsxSplashWindow::
+st_event_callback(EventHandlerCallRef my_handler, EventRef event, 
+                  void *user_data) {
+  return ((P3DOsxSplashWindow *)user_data)->event_callback(my_handler, event);
+}
 
-    MoveTo(text_x, text_y);
-    DrawText(_install_label.data(), 0, _install_label.size());
+////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::event_callback
+//       Access: Private
+//  Description: The event callback on the toplevel window.
+////////////////////////////////////////////////////////////////////
+OSStatus P3DOsxSplashWindow::
+event_callback(EventHandlerCallRef my_handler, EventRef event) {
+  OSStatus result = eventNotHandledErr;
+
+  WindowRef window = NULL; 
+  UInt32 the_class = GetEventClass(event);
+  UInt32 kind = GetEventKind(event);
+  
+  GetEventParameter(event, kEventParamWindowRef, typeWindowRef, NULL, 
+                    sizeof(WindowRef), NULL, (void*) &window);
+  switch (the_class) {
+  case kEventClassWindow:
+    switch (kind) {
+    case kEventWindowDrawContent:
+      paint_window();
+      result = noErr;
+    }
   }
 
-  if (portChanged) {
-    QDSwapPort(portSave, NULL);
-  }
+  return result;
 }
 
 

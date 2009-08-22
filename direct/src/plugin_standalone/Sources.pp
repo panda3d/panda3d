@@ -14,7 +14,7 @@
     express:c downloader:c pandaexpress:m \
     pystub
 
-  #define OSX_SYS_FRAMEWORKS Foundation AppKit
+  #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
 
   #define SOURCES \
     panda3d.cxx panda3d.h panda3d.I

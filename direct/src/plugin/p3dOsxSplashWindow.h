@@ -42,7 +42,13 @@ public:
   virtual bool handle_event(P3D_event_data event);
 
 private:
+  void refresh();
   void paint_window();
+
+  static pascal OSStatus
+  st_event_callback(EventHandlerCallRef my_handler, EventRef event, 
+                    void *user_data);
+  OSStatus event_callback(EventHandlerCallRef my_handler, EventRef event);
 
 private:
   bool _got_wparams;
@@ -52,6 +58,8 @@ private:
 
   string _install_label;
   double _install_progress;
+
+  WindowRef _toplevel_window;
 };
 
 #include "p3dOsxSplashWindow.I"

@@ -68,6 +68,11 @@ private:
   void report_downloading_package(P3D_instance *instance);
   void report_download_complete(P3D_instance *instance);
 
+#ifdef __APPLE__
+  static pascal void st_timer_callback(EventLoopTimerRef timer, void *user_data);
+  void timer_callback(EventLoopTimerRef timer);
+#endif
+
 private:
   string _root_dir;
   string _log_dirname;

@@ -265,7 +265,6 @@ run(int argc, char *argv[]) {
       retval = GetMessage(&msg, NULL, 0, 0);
     }
     
-    cerr << "WM_QUIT\n";
     // WM_QUIT has been received.  Terminate all instances, and fall
     // through.
     while (!_instances.empty()) {
@@ -287,8 +286,27 @@ run(int argc, char *argv[]) {
       run_getters();
     }
   }
+
+#elif defined(__APPLE__)
+  // OSX really prefers to own the main loop, so we install a timer to
+  // call out to our instances and getters, rather than polling within
+  // the event loop as we do in the Windows case, above.
+  EventLoopRef main_loop = GetMainEventLoop();
+  EventLoopTimerUPP timer_upp = NewEventLoopTimerUPP(st_timer_callback);
+  EventLoopTimerRef timer;
+  EventTimerInterval interval = 200 * kEventDurationMillisecond;
+  InstallEventLoopTimer(main_loop, interval, interval,
+                        timer_upp, this, &timer);
+  RunApplicationEventLoop();
+  RemoveEventLoopTimer(timer);
+  
+  // Terminate all instances, and fall through.
+  while (!_instances.empty()) {
+    P3D_instance *inst = *(_instances.begin());
+    delete_instance(inst);
+  }
     
-#endif
+#else  // _WIN32, __APPLE__
 
   // Now wait while we process pending requests.
   while (!_instances.empty()) {
@@ -301,6 +319,8 @@ run(int argc, char *argv[]) {
     }
     run_getters();
   }
+
+#endif  // _WIN32, __APPLE__
 
   // All instances have finished; we can exit.
   unload_plugin();
@@ -642,17 +662,17 @@ create_instance(const string &p3d, P3D_window_type window_type,
 
   // Build up the token list.
   pvector<P3D_token> tokens;
+  P3D_token token;
+
   string log_basename;
   if (!_log_dirname.empty()) {
     // Generate output to a logfile.
     log_basename = p3d_filename.get_basename_wo_extension();
-    P3D_token token;
     token._keyword = "log_basename";
     token._value = log_basename.c_str();
     tokens.push_back(token);
   } else {
     // Send output to the console.
-    P3D_token token;
     token._keyword = "console_output";
     token._value = "1";
     tokens.push_back(token);
@@ -801,7 +821,7 @@ report_downloading_package(P3D_instance *instance) {
   
   P3D_object *display_name = P3D_object_get_property(obj, "downloadPackageDisplayName");
   if (display_name == NULL) {
-    cerr << "no name: " << obj << "\n";
+    cerr << "Downloading package.\n";
     return;
   }
 
@@ -828,6 +848,48 @@ report_download_complete(P3D_instance *instance) {
   }
 }
 
+#ifdef __APPLE__
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::st_timer_callback
+//       Access: Private, Static
+//  Description: Installed as a timer on the event loop, so we can
+//               process local events, in the Apple implementation.
+////////////////////////////////////////////////////////////////////
+pascal void Panda3D::
+st_timer_callback(EventLoopTimerRef timer, void *user_data) {
+  ((Panda3D *)user_data)->timer_callback(timer);
+}
+#endif  // __APPLE__
+
+#ifdef __APPLE__
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::timer_callback
+//       Access: Private
+//  Description: Installed as a timer on the event loop, so we can
+//               process local events, in the Apple implementation.
+////////////////////////////////////////////////////////////////////
+void Panda3D::
+timer_callback(EventLoopTimerRef timer) {
+  // Check for new requests from the Panda3D plugin.
+  P3D_instance *inst = P3D_check_request(false);
+  while (inst != (P3D_instance *)NULL) {
+    P3D_request *request = P3D_instance_get_request(inst);
+    if (request != (P3D_request *)NULL) {
+      handle_request(request);
+    }
+    inst = P3D_check_request(false);
+  }
+  
+  // Check the download tasks.
+  run_getters();
+
+  // If we're out of instances, exit the application.
+  if (_instances.empty()) {
+    QuitApplicationEventLoop();
+  }
+}
+#endif  // __APPLE__
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::URLGetter::Constructor
 //       Access: Public
@@ -844,6 +906,7 @@ URLGetter(P3D_instance *instance, int unique_id,
   HTTPClient *http = HTTPClient::get_global_ptr();
 
   _channel = http->make_channel(false);
+  //  _channel->set_download_throttle(true);
   if (_post_data.empty()) {
     _channel->begin_get_document(_url);
   } else {

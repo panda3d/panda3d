@@ -162,7 +162,6 @@ private:
   bool _full_disk_access;
   bool _hidden;
 
-  // Not ref-counted: session is the parent.
   P3DSession *_session;
 
 #ifdef __APPLE__
@@ -182,6 +181,7 @@ private:
   P3DSplashWindow *_splash_window;
   string _install_label;
   bool _instance_window_opened;
+  bool _stuff_to_download;
 
   // Members for deciding whether and when to display the progress bar
   // for downloading the initial instance data.

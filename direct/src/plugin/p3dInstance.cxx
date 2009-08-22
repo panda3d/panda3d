@@ -76,6 +76,7 @@ P3DInstance(P3D_request_ready_func *func,
   _panda3d = NULL;
   _splash_window = NULL;
   _instance_window_opened = false;
+  _stuff_to_download = false;
 
   INIT_LOCK(_request_lock);
   _requested_stop = false;
@@ -179,10 +180,13 @@ P3DInstance::
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_p3d_url(const string &p3d_url) {
-  nout << "set_p3d_url(" << p3d_url << ")\n";
   // Make a temporary file to receive the instance data.
   assert(_temp_p3d_filename == NULL);
   _temp_p3d_filename = new P3DTemporaryFile(".p3d");
+  _stuff_to_download = true;
+
+  // Maybe it's time to open a splash window now.
+  make_splash_window();
 
   // Mark the time we started downloading, so we'll know when to set
   // the install label.
@@ -210,7 +214,6 @@ set_p3d_url(const string &p3d_url) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_p3d_filename(const string &p3d_filename) {
-  nout << "set_p3d_filename(" << p3d_filename << ")\n";
   _got_fparams = true;
   _fparams.set_p3d_filename(p3d_filename);
 
@@ -268,11 +271,10 @@ set_wparams(const P3DWindowParams &wparams) {
 
   if (_wparams.get_window_type() != P3D_WT_hidden) {
     // Update or create the splash window.
-    if (!_instance_window_opened) {
-      if (_splash_window == NULL) {
-        make_splash_window();
-      }
+    if (_splash_window != NULL) {
       _splash_window->set_wparams(_wparams);
+    } else {
+      make_splash_window();
     }
     
 #ifdef __APPLE__
@@ -281,7 +283,6 @@ set_wparams(const P3DWindowParams &wparams) {
     // to the browser.  Set up this mechanism.
     int x_size = _wparams.get_win_width();
     int y_size = _wparams.get_win_height();
-    nout << "x_size, y_size = " << x_size << ", " << y_size << "\n";
     if (x_size != 0 && y_size != 0) {
       if (_swbuffer == NULL || _swbuffer->get_x_size() != x_size ||
           _swbuffer->get_y_size() != y_size) {
@@ -1169,25 +1170,38 @@ handle_script_request(const string &operation, P3D_object *object,
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::make_splash_window
 //       Access: Private
-//  Description: Creates the splash window to be displayed at startup.
-//               This method is called as soon as we have received
-//               both _fparams and _wparams.
+//  Description: Creates the splash window to be displayed at startup,
+//               if it's time.
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 make_splash_window() {
-  assert(_splash_window == NULL);
+  if (_splash_window != NULL || _instance_window_opened) {
+    // Already got one, or we're already showing the real instance.
+    return;
+  }
+  if (!_got_wparams) {
+    // Don't know where to put it yet.
+    return;
+  }
+  if (_wparams.get_window_type() == P3D_WT_toplevel && !_stuff_to_download) {
+    // If it's a toplevel window, then we don't want a splash window
+    // until we have stuff to download.
+    return;
+  }
 
   _splash_window = new SplashWindowType(this);
+  _splash_window->set_wparams(_wparams);
   _splash_window->set_install_label(_install_label);
 
   string splash_image_url = _fparams.lookup_token("splash_img");
   if (!_fparams.has_token("splash_img")) {
     // No specific splash image is specified; get the default splash
     // image.
-    if (_panda3d != NULL) {
-      splash_image_url = _panda3d->get_host()->get_host_url_prefix();
-      splash_image_url += "coreapi/splash.jpg";
+    splash_image_url = PANDA_PACKAGE_HOST_URL;
+    if (!splash_image_url.empty() && splash_image_url[splash_image_url.size() - 1] != '/') {
+      splash_image_url += "/";
     }
+    splash_image_url += "coreapi/splash.jpg";
   }
 
   if (splash_image_url.empty()) {
@@ -1235,6 +1249,13 @@ report_package_info_ready(P3DPackage *package) {
     nout << "Beginning download of " << _downloading_packages.size()
          << " packages, total " << _total_download_size
          << " bytes required.\n";
+
+    if (_downloading_packages.size() > 0) {
+      _stuff_to_download = true;
+
+      // Maybe it's time to open a splash window now.
+      make_splash_window();
+    }
 
     if (_splash_window != NULL) {
       _splash_window->set_install_progress(0.0);
@@ -1525,7 +1546,7 @@ paint_window() {
   // offscreen, the top left of the clipping rectangle will no longer
   // correspond to the top left of the original image.
   CGRect rect = CGContextGetClipBoundingBox(context);
-  cerr << "rect: " << rect.origin.x << " " << rect.origin.y
+  nout << "rect: " << rect.origin.x << " " << rect.origin.y
        << " " << rect.size.width << " " << rect.size.height << "\n";
   rect.size.width = x_size;
   rect.size.height = y_size;

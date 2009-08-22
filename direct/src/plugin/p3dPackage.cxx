@@ -81,7 +81,11 @@ P3DPackage::
     _active_download = NULL;
   }
 
-  assert(_temp_contents_file == NULL);
+  if (_temp_contents_file != NULL) {
+    delete _temp_contents_file;
+    _temp_contents_file = NULL;
+  }
+
   assert(_instances.empty());
 }
 
