@@ -727,9 +727,9 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
     int j = 0;
     for (int i = 0; i < 3 * _image_width * _image_height; i += 3) {
       unsigned int r, g, b;
-      r = data[i+0] * r_ratio;
-      g = data[i+1] * g_ratio;
-      b = data[i+2] * b_ratio;
+      r = (unsigned int)(data[i+0] * r_ratio);
+      g = (unsigned int)(data[i+1] * g_ratio);
+      b = (unsigned int)(data[i+2] * b_ratio);
       new_data[j++] = (r & dvisual->red_mask) |
                       (g & dvisual->green_mask) |
                       (b & dvisual->blue_mask);
@@ -738,9 +738,9 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
     // A grayscale image.  Replicate out the channels.
     for (int i = 0; i < _image_width * _image_height; ++i) {
       unsigned int r, g, b;
-      r = data[i] * r_ratio;
-      g = data[i] * g_ratio;
-      b = data[i] * b_ratio;
+      r = (unsigned int)(data[i+0] * r_ratio);
+      g = (unsigned int)(data[i+1] * g_ratio);
+      b = (unsigned int)(data[i+2] * b_ratio);
       new_data[i] = (r & dvisual->red_mask) |
                     (g & dvisual->green_mask) |
                     (b & dvisual->blue_mask);
