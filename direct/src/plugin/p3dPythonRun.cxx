@@ -977,20 +977,16 @@ add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
   const char *platform = xpackage->Attribute("platform");
   const char *version = xpackage->Attribute("version");
   const char *host = xpackage->Attribute("host");
-  const char *install_dir = xpackage->Attribute("install_dir");
   if (name == NULL || version == NULL || host == NULL) {
     return;
   }
   if (platform == NULL) {
     platform = "";
   }
-  if (install_dir == NULL) {
-    install_dir = "";
-  }
 
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"addPackageInfo", (char *)"sssss",
-     name, platform, version, host, install_dir);
+    (_runner, (char *)"addPackageInfo", (char *)"ssss",
+     name, platform, version, host);
 
   if (result == NULL) {
     PyErr_Print();

@@ -16,15 +16,15 @@ import __builtin__
 
 from direct.showbase import VFSImporter
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties, readXmlStream, ExecutionEnvironment, HashVal
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties, readXmlStream, ExecutionEnvironment, PandaSystem, URLSpec
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.MessengerGlobal import messenger
 from direct.showbase import AppRunnerGlobal
-from PackageInfo import PackageInfo
+from direct.p3d.HostInfo import HostInfo
 
 # These imports are read by the C++ wrapper in p3dPythonRun.cxx.
-from JavaScript import UndefinedObject, Undefined, ConcreteStruct, BrowserObject
+from direct.p3d.JavaScript import UndefinedObject, Undefined, ConcreteStruct, BrowserObject
 
 class ArgumentError(AttributeError):
     pass
@@ -52,6 +52,7 @@ class AppRunner(DirectObject):
         self.started = False
         self.windowOpened = False
         self.windowPrc = None
+        self.http = HTTPClient.getGlobalPtr()
 
         self.fullDiskAccess = False
 
@@ -69,7 +70,11 @@ class AppRunner(DirectObject):
         self.rootDir = None
 
         # A list of the Panda3D packages that have been loaded.
-        self.packages = []
+        self.installedPackages = []
+
+        # A dictionary of HostInfo objects for the various download
+        # hosts we have imported packages from.
+        self.hosts = {}
 
         # The mount point for the multifile.  For now, this is always
         # the same, but when we move to multiple-instance sessions, it
@@ -82,7 +87,8 @@ class AppRunner(DirectObject):
         self.main = ScriptAttributes()
 
         # By default, we publish a stop() method so the browser can
-        # easy stop the plugin.
+        # easy stop the plugin.  A particular application can remove
+        # this if it chooses.
         self.main.stop = self.stop
 
         # This will be the browser's toplevel window DOM object;
@@ -106,9 +112,57 @@ class AppRunner(DirectObject):
         if AppRunnerGlobal.appRunner is None:
             AppRunnerGlobal.appRunner = self
 
-        # We use this messenger hook to dispatch this startIfReady()
+        # We use this messenger hook to dispatch this __startIfReady()
         # call back to the main thread.
-        self.accept('startIfReady', self.startIfReady)
+        self.accept('AppRunner_startIfReady', self.__startIfReady)
+
+    def getHost(self, hostUrl):
+        """ Returns a new HostInfo object corresponding to the
+        indicated host URL.  If we have already seen this URL
+        previously, returns the same object. """
+
+        host = self.hosts.get(hostUrl, None)
+        if not host:
+            host = HostInfo(hostUrl, self)
+            self.hosts[hostUrl] = host
+        return host
+
+    def freshenFile(self, host, fileSpec, localPathname):
+        """ Ensures that the localPathname is the most current version
+        of the file defined by fileSpec, as offered by host.  If not,
+        it downloads a new version on-the-spot.  Returns true on
+        success, false on failure. """
+
+        if fileSpec.quickVerify(pathname = localPathname):
+            # It's good, keep it.
+            return True
+
+        # It's stale, get a new one.
+        url = URLSpec(host.hostUrlPrefix + fileSpec.filename)
+        print "Downloading %s" % (url)
+        doc = self.http.getDocument(url)
+        if not doc.isValid():
+            return False
+        
+        file = Filename.temporary('', 'p3d_')
+        if not doc.downloadToFile(file):
+            # Failed to download.
+            file.unlink()
+            return False
+
+        # Successfully downloaded!
+        localPathname.makeDir()
+        if not file.renameTo(localPathname):
+            # Couldn't move it into place.
+            file.unlink()
+            return False
+
+        if not fileSpec.fullVerify(pathname = localPathname):
+            # No good after download.
+            print "%s is still no good after downloading." % (url)
+            return False
+
+        return True
             
     def stop(self):
         """ This method can be called by JavaScript to stop the
@@ -191,7 +245,8 @@ class AppRunner(DirectObject):
             # we plan to mount there.
             vfs.chdir(self.multifileRoot)
 
-    def startIfReady(self):
+    def __startIfReady(self):
+        """ Called internally to start the application. """
         if self.started:
             return
 
@@ -199,10 +254,10 @@ class AppRunner(DirectObject):
             self.started = True
 
             # Now we can ignore future calls to startIfReady().
-            self.ignore('startIfReady')
+            self.ignore('AppRunner_startIfReady')
 
             # Hang a hook so we know when the window is actually opened.
-            self.acceptOnce('window-event', self.windowEvent)
+            self.acceptOnce('window-event', self.__windowEvent)
 
             # Look for the startup Python file.  This may be a magic
             # filename (like "__main__", or any filename that contains
@@ -259,13 +314,19 @@ class AppRunner(DirectObject):
         
         self.rootDir = Filename.fromOsSpecific(rootDir)
 
-    def addPackageInfo(self, name, platform, version, host, installDir):
+    def addPackageInfo(self, name, platform, version, hostUrl):
         """ Called by the browser to list all of the "required"
         packages that were preloaded before starting the
         application. """
 
-        installDir = Filename.fromOsSpecific(installDir)
-        self.packages.append(PackageInfo(name, platform, version, host, installDir))
+        host = self.getHost(hostUrl)
+        host.readContentsFile()
+
+        if not platform:
+            platform = None
+        package = host.getPackage(name, version, platform = platform)
+        assert package
+        self.installedPackages.append(package)
 
     def setP3DFilename(self, p3dFilename, tokens = [], argv = [],
                        instanceId = None):
@@ -342,9 +403,9 @@ class AppRunner(DirectObject):
         self.gotP3DFilename = True
 
         # Send this call to the main thread; don't call it directly.
-        messenger.send('startIfReady', taskChain = 'default')
+        messenger.send('AppRunner_startIfReady', taskChain = 'default')
 
-    def clearWindowPrc(self):
+    def __clearWindowPrc(self):
         """ Clears the windowPrc file that was created in a previous
         call to setupWindow(), if any. """
         
@@ -356,7 +417,8 @@ class AppRunner(DirectObject):
                     parent, subprocessWindow):
         """ Applies the indicated window parameters to the prc
         settings, for future windows; or applies them directly to the
-        main window if the window has already been opened. """
+        main window if the window has already been opened.  This is
+        called by the browser. """
 
         if self.started and base.win:
             # If we've already got a window, this must be a
@@ -395,77 +457,19 @@ class AppRunner(DirectObject):
         if width or height:
             data += 'win-size %s %s\n' % (width, height)
 
-        self.clearWindowPrc()
+        self.__clearWindowPrc()
         self.windowPrc = loadPrcFileData("setupWindow", data)
 
         self.gotWindow = True
 
         # Send this call to the main thread; don't call it directly.
-        messenger.send('startIfReady', taskChain = 'default')
+        messenger.send('AppRunner_startIfReady', taskChain = 'default')
 
     def setRequestFunc(self, func):
-        """ This method is called by the plugin at startup to supply a
+        """ This method is called by the browser at startup to supply a
         function that can be used to deliver requests upstream, to the
-        plugin, and thereby to the browser. """
+        core API, and thereby to the browser. """
         self.requestFunc = func
-
-    def determineHostDir(self, hostUrl):
-        """ Hashes the indicated host URL into a (mostly) unique
-        directory string, which will be the root of the host's install
-        tree.  Returns the resulting path, as a Filename.
-
-        This code is duplicated in C++, in
-        P3DHost::determine_host_dir(). """
-
-        hostDir = self.rootDir + '/'
-
-        # Look for a server name in the URL.  Including this string in the
-        # directory name makes it friendlier for people browsing the
-        # directory.
-
-        # We could use URLSpec, but we do it by hand instead, to make
-        # it more likely that our hash code will exactly match the
-        # similar logic in P3DHost.
-        p = hostUrl.find('://')
-        if p != -1:
-            start = p + 3
-            end = hostUrl.find('/', start)
-            # Now start .. end is something like "username@host:port".
-
-            at = hostUrl.find('@', start)
-            if at != -1 and at < end:
-                start = at + 1
-
-            colon = hostUrl.find(':', start)
-            if colon != -1 and colon < end:
-                end = colon
-
-            # Now start .. end is just the hostname.
-            hostname = hostUrl[start : end]
-
-        # Now build a hash string of the whole URL.  We'll use MD5 to
-        # get a pretty good hash, with a minimum chance of collision.
-        # Even if there is a hash collision, though, it's not the end
-        # of the world; it just means that both hosts will dump their
-        # packages into the same directory, and they'll fight over the
-        # toplevel contents.xml file.  Assuming they use different
-        # version numbers (which should be safe since they have the
-        # same hostname), there will be minimal redownloading.
-
-        hashSize = 16
-        keepHash = hashSize
-        if hostname:
-            hostDir += hostname + '_'
-
-            # If we successfully got a hostname, we don't really need the
-            # full hash.  We'll keep half of it.
-            keepHash = keepHash / 2;
-
-        md = HashVal()
-        md.hashString(hostUrl)
-        hostDir += md.asHex()[:keepHash]
-
-        return hostDir
         
     def sendRequest(self, request, *args):
         """ Delivers a request to the browser via self.requestFunc.
@@ -475,7 +479,7 @@ class AppRunner(DirectObject):
         assert self.requestFunc
         return self.requestFunc(self.instanceId, request, args)
 
-    def windowEvent(self, win):
+    def __windowEvent(self, win):
         """ This method is called when we get a window event.  We
         listen for this to detect when the window has been
         successfully opened. """
@@ -485,7 +489,7 @@ class AppRunner(DirectObject):
 
             # Now that the window is open, we don't need to keep those
             # prc settings around any more.
-            self.clearWindowPrc()
+            self.__clearWindowPrc()
 
             # Inform the plugin and browser.
             self.notifyRequest('onwindowopen')
@@ -519,7 +523,10 @@ class AppRunner(DirectObject):
     def scriptRequest(self, operation, object, propertyName = '',
                       value = None, needsResponse = True):
         """ Issues a new script request to the browser.  This queries
-        or modifies one of the browser's DOM properties.
+        or modifies one of the browser's DOM properties.  This is a
+        low-level method that user code should not call directly;
+        instead, just operate on the Python wrapper objects that
+        shadow the DOM objects, beginning with appRunner.dom.
         
         operation may be one of [ 'get_property', 'set_property',
         'call', 'evaluate' ].
@@ -552,6 +559,63 @@ class AppRunner(DirectObject):
     def dropObject(self, objectId):
         """ Inform the parent process that we no longer have an
         interest in the P3D_object corresponding to the indicated
-        objectId. """
+        objectId.  Not intended to be called by user code. """
 
         self.sendRequest('drop_p3dobj', objectId)
+
+def dummyAppRunner(tokens = [], argv = None, fullDiskAccess = False):
+    """ This function creates a dummy global AppRunner object, which
+    is useful for testing running in a packaged environment without
+    actually bothering to package up the application.  Call this at
+    the start of your application to enable it.
+
+    It places the current working directory under /mf, as if it were
+    mounted from a packed multifile.  It doesn't convert egg files to
+    bam files, of course; and there are other minor differences from
+    running in an actual packaged environment.  But it can be a useful
+    first-look sanity check. """
+
+    if AppRunnerGlobal.appRunner:
+        print "Already have AppRunner, not creating a new one."
+        return
+
+    appRunner = AppRunner()
+    AppRunnerGlobal.appRunner = appRunner
+
+    platform = PandaSystem.getPlatform()
+    version = PandaSystem.getPackageVersionString()
+    hostUrl = PandaSystem.getPackageHostUrl()
+    
+    if platform.startswith('win'):
+        rootDir = Filename(Filename.getUserAppDataDirectory(), 'Panda3D')
+    else:
+        rootDir = Filename(Filename.getHomeDirectory(), '.panda3d')
+
+    appRunner.rootDir = rootDir
+
+    # Of course we will have the panda3d application loaded.
+    appRunner.addPackageInfo('panda3d', platform, version, hostUrl)
+        
+    appRunner.tokens = tokens
+    appRunner.tokenDict = dict(tokens)
+    if argv is None:
+        argv = sys.argv
+    appRunner.argv = argv
+
+    appRunner.p3dInfo = None
+    appRunner.p3dPackage = None
+    appRunner.fullDiskAccess = fullDiskAccess
+
+    # Mount the current directory under the multifileRoot, as if it
+    # were coming from a multifile.
+    cwd = ExecutionEnvironment.getCwd()
+    vfs = VirtualFileSystem.getGlobalPtr()
+    vfs.mount(cwd, appRunner.multifileRoot, vfs.MFReadOnly)
+
+    appRunner.initPackedAppEnvironment()
+
+    __builtin__.file = file.file
+    __builtin__.open = file.open
+    os.listdir = file.listdir
+    os.walk = file.walk
+

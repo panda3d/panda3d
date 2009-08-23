@@ -11,6 +11,7 @@ import new
 import string
 import types
 from direct.showbase import Loader
+from direct.showbase import AppRunnerGlobal
 from direct.showutil import FreezeTool
 from direct.directnotify.DirectNotifyGlobal import *
 from pandac.PandaModules import *
@@ -1994,9 +1995,33 @@ class Packager:
 
         return None
 
-    def __findPackageOnHost(self, packageName, platform, version, host, requires = None):
-        # TODO.
-        return None
+    def __findPackageOnHost(self, packageName, platform, version, hostUrl, requires = None):
+        appRunner = AppRunnerGlobal.appRunner
+        if not appRunner:
+            # We don't download import files from a host unless we're
+            # running in a packaged environment ourselves.  It would
+            # be possible to do this, but a fair bit of work for not
+            # much gain--this is meant to be run in a packaged
+            # environment.
+            return None
+
+        host = appRunner.getHost(hostUrl)
+        package = host.getPackage(packageName, version, platform = platform)
+        if not package or not package.importDescFile:
+            return None
+
+        # Now we've retrieved a PackageInfo.  Get the import desc file
+        # from it.
+        filename = Filename(host.importsDir, package.importDescFile.basename)
+        if not appRunner.freshenFile(host, package.importDescFile, filename):
+            print "Couldn't download import file."
+            return None
+
+        # Now that we have the import desc file, use it to load one of
+        # our Package objects.
+        package = self.Package('', self)
+        if package.readImportDescFile(filename):
+            return package
 
     def __sortPackageImportFilelist(self, filelist):
         """ Given a list of *_import.xml filenames, sorts them in

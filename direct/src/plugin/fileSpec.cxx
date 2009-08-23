@@ -52,26 +52,26 @@ FileSpec() {
 //  Description: Reads the data from the indicated XML file.
 ////////////////////////////////////////////////////////////////////
 void FileSpec::
-load_xml(TiXmlElement *element) {
-  const char *filename = element->Attribute("filename");
+load_xml(TiXmlElement *xelement) {
+  const char *filename = xelement->Attribute("filename");
   if (filename != NULL) {
     _filename = filename;
   }
 
-  const char *size = element->Attribute("size");
+  const char *size = xelement->Attribute("size");
   if (size != NULL) {
     char *endptr;
     _size = strtoul(size, &endptr, 10);
   }
 
-  const char *timestamp = element->Attribute("timestamp");
+  const char *timestamp = xelement->Attribute("timestamp");
   if (timestamp != NULL) {
     char *endptr;
     _timestamp = strtoul(timestamp, &endptr, 10);
   }
 
   _got_hash = false;
-  const char *hash = element->Attribute("hash");
+  const char *hash = xelement->Attribute("hash");
   if (hash != NULL && strlen(hash) == (hash_size * 2)) {
     // Decode the hex hash string.
     _got_hash = decode_hex(_hash, hash, hash_size);
@@ -159,8 +159,6 @@ full_verify(const string &package_dir) const {
     return false;
   }
 
-  // If the size is right but the timestamp is wrong, the file
-  // soft-fails.  We follow this up with a hash check.
   if (!check_hash(pathname)) {
     // Hard fail, the hash is wrong.
     //cerr << "hash check wrong: " << _filename << "\n";

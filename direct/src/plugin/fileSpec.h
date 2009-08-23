@@ -29,7 +29,7 @@ using namespace std;
 class FileSpec {
 public:
   FileSpec();
-  void load_xml(TiXmlElement *element);
+  void load_xml(TiXmlElement *xelement);
 
   inline const string &get_filename() const;
   inline void set_filename(const string &filename);

@@ -148,7 +148,6 @@ make_xml() {
     xpackage->SetAttribute("version", _package_version);
   }
   xpackage->SetAttribute("host", _host->get_host_url());
-  xpackage->SetAttribute("install_dir", _package_dir);
 
   return xpackage;
 }

@@ -97,6 +97,11 @@ read_contents_file(const string &contents_filename) {
   }
   _xcontents = (TiXmlElement *)xcontents->Clone();
 
+  const char *descriptive_name = _xcontents->Attribute("descriptive_name");
+  if (descriptive_name != NULL) {
+    _descriptive_name = descriptive_name;
+  }
+
   string standard_filename = _host_dir + "/contents.xml";
   if (standardize_filename(standard_filename) != 
       standardize_filename(contents_filename)) {
@@ -203,7 +208,7 @@ get_package_desc_file(FileSpec &desc_file,              // out
 //               tree.  Stores the result in _host_dir.
 //
 //               This code is duplicated in Python, in
-//               AppRunner.determineHostDir().
+//               HostInfo.determineHostDir().
 ////////////////////////////////////////////////////////////////////
 void P3DHost::
 determine_host_dir() {
