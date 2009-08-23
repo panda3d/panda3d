@@ -1792,9 +1792,9 @@ class Packager:
         for keyword, value in kw.items():
             self.currentPackage.configs[keyword] = value
 
-    def do_require(self, packageName, version = None, host = None):
-        """ Indicates a dependency on the named package, supplied as
-        a name.
+    def do_require(self, *args, **kw):
+        """ Indicates a dependency on the named package(s), supplied
+        as a name.
 
         Attempts to install this package will implicitly install the
         named package also.  Files already included in the named
@@ -1803,22 +1803,35 @@ class Packager:
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        # A special case when requiring the "panda3d" package.  We
-        # supply the version number what we've been compiled with as a
-        # default.
-        if packageName == 'panda3d':
-            if version is None:
-                version = PandaSystem.getPackageVersionString()
-            if host is None:
-                host = PandaSystem.getPackageHostUrl()
-        
-        package = self.findPackage(packageName, version = version, host = host,
-                                   requires = self.currentPackage.requires)
-        if not package:
-            message = 'Unknown package %s, version "%s"' % (packageName, version)
-            raise PackagerError, message
+        version = kw.get('version', None)
+        host = kw.get('host', None)
 
-        self.requirePackage(package)
+        for key in ['version', 'host']:
+            if key in kw:
+                del kw['version']
+        if kw:
+            message = "do_require() got an unexpected keyword argument '%s'" % (kw.keys()[0])
+            raise TypeError, message
+
+        for packageName in args:
+            # A special case when requiring the "panda3d" package.  We
+            # supply the version number what we've been compiled with as a
+            # default.
+            pversion = version
+            phost = host
+            if packageName == 'panda3d':
+                if pversion is None:
+                    pversion = PandaSystem.getPackageVersionString()
+                if phost is None:
+                    phost = PandaSystem.getPackageHostUrl()
+
+            package = self.findPackage(packageName, version = pversion, host = phost,
+                                       requires = self.currentPackage.requires)
+            if not package:
+                message = 'Unknown package %s, version "%s"' % (packageName, version)
+                raise PackagerError, message
+
+            self.requirePackage(package)
 
     def requirePackage(self, package):
         """ Indicates a dependency on the indicated package, supplied
@@ -1842,21 +1855,32 @@ class Packager:
 
         self.currentPackage.requirePackage(package)
 
-    def do_module(self, moduleName, newName = None):
-        """ Adds the indicated Python module to the current package. """
+    def do_module(self, *args):
+        """ Adds the indicated Python module(s) to the current package. """
+
+        if not self.currentPackage:
+            raise OutsideOfPackageError
+
+        for moduleName in args:
+            self.currentPackage.freezer.addModule(moduleName)
+
+    def do_renameModule(self, moduleName, newName):
+        """ Adds the indicated Python module to the current package,
+        renaming to a new name. """
 
         if not self.currentPackage:
             raise OutsideOfPackageError
 
         self.currentPackage.freezer.addModule(moduleName, newName = newName)
 
-    def do_excludeModule(self, moduleName, forbid = False):
+    def do_excludeModule(self, *args):
         """ Marks the indicated Python module as not to be included. """
 
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        self.currentPackage.freezer.excludeModule(moduleName, forbid = forbid)
+        for moduleName in args:
+            self.currentPackage.freezer.excludeModule(moduleName)
 
     def do_mainModule(self, moduleName, newName = None, filename = None):
         """ Names the indicated module as the "main" module of the
@@ -1934,15 +1958,23 @@ class Packager:
         freezer.reset()
         package.mainModule = None
 
-    def do_file(self, filename, text = None, newNameOrDir = None,
+    def do_file(self, *args, **kw):
+        """ Adds the indicated file or files to the current package.
+        See addFiles(). """
+
+        self.addFiles(args, **kw)
+
+    def addFiles(self, filenames, text = None, newNameOrDir = None,
                 extract = None, executable = None, deleteTemp = False,
                 literal = False):
-        """ Adds the indicated arbitrary file to the current package.
 
-        The file is placed in the named directory, or the toplevel
+        """ Adds the indicated arbitrary files to the current package.
+
+        filenames is a list of Filename or string objects, and each
+        may include shell globbing characters.
+
+        Each file is placed in the named directory, or the toplevel
         directory if no directory is specified.
-
-        The filename may include shell globbing characters.
 
         Certain special behavior is invoked based on the filename
         extension.  For instance, .py files may be automatically
@@ -1981,28 +2013,34 @@ class Packager:
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        filename = Filename(filename)
+        files = []
+        explicit = True
+        
+        for filename in filenames:
+            filename = Filename(filename)
 
-        if literal:
-            files = [filename.toOsSpecific()]
+            if literal:
+                thisFiles = [filename.toOsSpecific()]
 
-        else:
-            ext = filename.getExtension()
+            else:
+                ext = filename.getExtension()
 
-            # A special case, since OSX and Linux don't have a
-            # standard extension for program files.
-            if executable is None and ext == 'exe':
-                executable = True
+                # A special case, since OSX and Linux don't have a
+                # standard extension for program files.
+                if executable is None and ext == 'exe':
+                    executable = True
 
-            newExt = self.remapExtensions.get(ext, None)
-            if newExt is not None:
-                filename.setExtension(newExt)
+                newExt = self.remapExtensions.get(ext, None)
+                if newExt is not None:
+                    filename.setExtension(newExt)
 
-            files = glob.glob(filename.toOsSpecific())
-            if not files:
-                files = [filename.toOsSpecific()]
+                thisFiles = glob.glob(filename.toOsSpecific())
+                if not thisFiles:
+                    thisFiles = [filename.toOsSpecific()]
 
-        explicit = (len(files) == 1)
+            if len(thisFiles) > 1:
+                explicit = False
+            files += thisFiles
 
         newName = None
         prefix = ''
@@ -2017,8 +2055,11 @@ class Packager:
                     raise PackagerError, message
 
         if text:
+            if len(files) != 1:
+                message = 'Cannot install text to multiple files'
+                raise PackagerError, message
             if not newName:
-                newName = filename.cStr()
+                newName = str(filenames[0])
 
             tempFile = Filename.temporary('', self.currentPackage.packageName)
             temp = open(tempFile.toOsSpecific(), 'w')

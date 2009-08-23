@@ -34,6 +34,9 @@ startupModules = [
     'org',
     ]
 
+# These are missing modules that we've reported already this session.
+reportedMissing = {}
+
 # Our own Python source trees to watch out for.
 sourceTrees = ['direct']
 
@@ -791,19 +794,13 @@ class Freezer:
                 continue
 
             prefix = origName.split('.')[0]
-            if prefix not in sourceTrees:
-                # If it's in not one of our standard source trees, assume
-                # it's some wacky system file we don't need.
-                print "ignoring missing %s" % (origName)
-                continue
-                
-            missing.append(origName)
+            if origName not in reportedMissing:
+                missing.append(origName)
+                reportedMissing[origName] = True
 
         if missing:
-            error = "There are some missing modules: %r" % missing
-            print error
-            print "previous = %s" % (self.previousModules,)
-            raise StandardError, error
+            missing.sort()
+            print "There are some missing modules: %r" % missing
 
     def __loadModule(self, mdef):
         """ Adds the indicated module to the modulefinder. """
