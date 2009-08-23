@@ -532,11 +532,6 @@ finish_request(P3D_request *request, bool handled) {
     free((char *)request->_request._get_url._url);
     break;
 
-  case P3D_RT_post_url:
-    free((char *)request->_request._post_url._url);
-    free((char *)request->_request._post_url._post_data);
-    break;
-
   case P3D_RT_notify:
     free((char *)request->_request._notify._message);
     break;
@@ -548,9 +543,9 @@ finish_request(P3D_request *request, bool handled) {
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::feed_url_stream
 //       Access: Public
-//  Description: Called by the host in response to a get_url or
-//               post_url request, this sends the data retrieved from
-//               the requested URL, a piece at a time.
+//  Description: Called by the host in response to a get_url request,
+//               this sends the data retrieved from the requested URL,
+//               a piece at a time.
 ////////////////////////////////////////////////////////////////////
 bool P3DInstance::
 feed_url_stream(int unique_id,

@@ -100,13 +100,15 @@ extern "C" {
 
    If verify_contents is true, it means that the download server will
    be contacted to verify that contents.xml is current, before
-   continuing.  If it is false, it means that contents.xml will be
-   loaded without checking the download server, if possible.  This can
-   be used to minimize unnecessary network operations for standalone
+   continuing, for any contents.xml file that is loaded.  If it is
+   false, it means that the contents.xml will be loaded without
+   checking the download server, if possible.  This can be used to
+   minimize unnecessary network operations for standalone
    applications.  For a web plugin, it should be set true.
 
    If platform is not NULL or empty, it specifies the current platform
-   string; otherwise, the compiled-in default is used.
+   string; otherwise, the compiled-in default is used.  This should
+   generally be left at NULL.
 
    If log_directory is not NULL or empty, it specifies the directory
    into which all log files will be written; otherwise, the
@@ -164,6 +166,7 @@ typedef struct {
   HWND _hwnd;
 
 #elif defined(__APPLE__)
+  /* As provided by Mozilla. */
   GrafPtr _port;
 
 #elif defined(HAVE_X11)
@@ -205,8 +208,8 @@ typedef enum {
 } P3D_window_type;
 
 
-/* This function pointer must be passed to P3D_new_instance(), below.
-   The host must pass in a pointer to a valid function in the host's
+/* This function pointer is passed to P3D_new_instance(), below.  The
+   host must pass in a pointer to a valid function in the host's
    address space, or NULL.  If not NULL, this function will be called
    asynchronously by the core API when it needs to make a request from
    the host.  After this notification has been received, the host
@@ -319,9 +322,10 @@ P3D_instance_setup_window_func(P3D_instance *instance,
 
    These function types define the methods available on a class.
    These are function type declarations only; they do not correspond
-   to named functions within the core API DLL.  Instead, the function
+   to named functions within the core API DLL (but see the named
+   function pointers, further below).  Instead, the function
    pointers themselves are stored within the P3D_class_definition
-   structure, below. */
+   structure. */
 
 /* A forward declaration of P3D_object. */
 typedef struct _P3D_object P3D_object;
@@ -513,6 +517,10 @@ struct _P3D_object {
 #define P3D_OBJECT_DECREF(object) { if (--(object)->_ref_count <= 0) { (object)->_class->_finish((object)); } }
 #define P3D_OBJECT_XDECREF(object) { if ((object) != (P3D_object *)NULL) { P3D_OBJECT_DECREF(object); } }
 
+/* End of method pointer definitions.  The following function types
+   are once again meant to define actual function pointers to be found
+   within the core API DLL. */
+
 /* Use these functions for thread-safe variants of the above macros. */
 typedef P3D_object_type
 P3D_object_get_type_func(P3D_object *object);
@@ -548,10 +556,6 @@ typedef void
 P3D_object_decref_func(P3D_object *object);
 
 
-/* End of method pointer definitions.  The following function types
-   are once again meant to define actual function pointers to be found
-   within the core API DLL. */
-
 /* Returns a new P3D_class_definition object, filled with generic
    function pointers that have reasonable default behavior for all
    methods.  The host should use this function to get a clean
@@ -566,7 +570,7 @@ P3D_make_class_definition_func();
    corresponds to the undefined or void type on JavaScript.  It is
    similar to Python's None, but has a subtly different shade of
    meaning; we map it to an explicit Undefined instance in
-   runp3d.py. */
+   AppRunner.py. */
 typedef P3D_object *
 P3D_new_undefined_object_func();
 
@@ -658,7 +662,6 @@ P3D_instance_set_browser_script_object_func(P3D_instance *instance,
 typedef enum {
   P3D_RT_stop,
   P3D_RT_get_url,
-  P3D_RT_post_url,
   P3D_RT_notify,
   P3D_RT_refresh,
 } P3D_request_type;
@@ -685,17 +688,6 @@ typedef struct {
   int _unique_id;
 } P3D_request_get_url;
 
-/* A post_url request.  Similar to get_url, but additional data is to
-   be sent via POST to the indicated URL.  The result of the POST is
-   returned in a mechanism similar to get_url.
-*/
-typedef struct {
-  const char *_url;
-  const char *_post_data;
-  size_t _post_data_size;
-  int _unique_id;
-} P3D_request_post_url;
-
 /* A general notification.  This is just a message of some event
    having occurred within the Panda3D instance.  It may be safely
    ignored.
@@ -718,7 +710,6 @@ typedef struct {
   union {
     P3D_request_stop _stop;
     P3D_request_get_url _get_url;
-    P3D_request_post_url _post_url;
     P3D_request_notify _notify;
     P3D_request_refresh _refresh;
   } _request;

@@ -5,8 +5,8 @@ code that runs in a browser via the web plugin. """
 
 class UndefinedObject:
     """ This is a special object that is returned by the browser to
-    represent an "undefined" value, typically the value for an
-    uninitialized variable or undefined property.  It has no
+    represent an "undefined" or "void" value, typically the value for
+    an uninitialized variable or undefined property.  It has no
     attributes, similar to None, but it is a slightly different
     concept in JavaScript. """
 
@@ -32,9 +32,11 @@ class ConcreteStruct:
         pass
 
     def getConcreteProperties(self):
-        """ Returns a list of 2-tuples of the (key, value) pairs
-        that are to be passed to the concrete instance.  By default,
-        this returns all properties of the object. """
+        """ Returns a list of 2-tuples of the (key, value) pairs that
+        are to be passed to the concrete instance.  By default, this
+        returns all properties of the object.  You can override this
+        to restrict the set of properties that are uploaded. """
+        
         return self.__dict__.items()
 
 class BrowserObject:

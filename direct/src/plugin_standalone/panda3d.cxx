@@ -534,19 +534,6 @@ handle_request(P3D_request *request) {
     }
     break;
 
-  case P3D_RT_post_url:
-    {
-      int unique_id = request->_request._post_url._unique_id;
-      const string &url = request->_request._post_url._url;
-      string post_data(request->_request._post_url._post_data, 
-                       request->_request._post_url._post_data_size);
-      URLGetter *getter = new URLGetter
-        (request->_instance, unique_id, URLSpec(url), post_data);
-      _url_getters.insert(getter);
-      handled = true;
-    }
-    break;
-
   case P3D_RT_notify:
     {
       if (strcmp(request->_request._notify._message, "ondownloadnext") == 0) {
