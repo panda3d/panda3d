@@ -130,6 +130,30 @@ remove_instance(P3DInstance *inst) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::make_xml
+//       Access: Public
+//  Description: Returns a newly-allocated XML structure that
+//               corresponds to the package data within this
+//               instance.
+////////////////////////////////////////////////////////////////////
+TiXmlElement *P3DPackage::
+make_xml() {
+  TiXmlElement *xpackage = new TiXmlElement("package");
+
+  xpackage->SetAttribute("name", _package_name);
+  if (!_package_platform.empty()) {
+    xpackage->SetAttribute("platform", _package_platform);
+  }
+  if (!_package_version.empty()) {
+    xpackage->SetAttribute("version", _package_version);
+  }
+  xpackage->SetAttribute("host", _host->get_host_url());
+  xpackage->SetAttribute("install_dir", _package_dir);
+
+  return xpackage;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::begin_info_download
 //       Access: Private
 //  Description: Begins downloading and installing the information

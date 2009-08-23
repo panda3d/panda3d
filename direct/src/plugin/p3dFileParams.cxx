@@ -164,7 +164,7 @@ TiXmlElement *P3DFileParams::
 make_xml() {
   TiXmlElement *xfparams = new TiXmlElement("fparams");
 
-  xfparams->SetAttribute("p3d_filename", _p3d_filename.c_str());
+  xfparams->SetAttribute("p3d_filename", _p3d_filename);
 
   Tokens::const_iterator ti;
   for (ti = _tokens.begin(); ti != _tokens.end(); ++ti) {

@@ -51,7 +51,7 @@ public:
                              const string &package_version);
 
 private:
-  void fill_host_dir();
+  void determine_host_dir();
 
   static string standardize_filename(const string &filename);
   static bool copy_file(const string &from_filename, const string &to_filename);

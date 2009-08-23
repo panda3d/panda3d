@@ -27,6 +27,11 @@ enum NodeType {
   NT_text,
 };
 
+// These are both prime numbers, though I don't know if that really
+// matters.  Mainly, they're big random numbers.
+static const size_t length_nonce1 = 812311453;
+static const size_t length_nonce2 = 612811373;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: write_xml_node
 //  Description: Recursively writes a node and all of its children to
@@ -53,7 +58,15 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
 
   const string &value = xnode->ValueStr();
   size_t value_length = value.length();
+  size_t value_proof = (value_length + length_nonce1) * length_nonce2;
+
+  // We write out not only value_length, but the same value again
+  // hashed by length_nonce1 and 2 (and truncated back to size_t),
+  // just to prove to the reader that we're still on the same page.
+  // We do this only on the top node; we don't bother for the nested
+  // nodes.
   out.write((char *)&value_length, sizeof(value_length));
+  out.write((char *)&value_proof, sizeof(value_proof));
   out.write(value.data(), value_length);
 
   if (type == NT_element) {
@@ -104,7 +117,8 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
 //               return value.  Returns NULL on error.
 ////////////////////////////////////////////////////////////////////
 static TiXmlNode *
-read_xml_node(istream &in, char *&buffer, size_t &buffer_length) {
+read_xml_node(istream &in, char *&buffer, size_t &buffer_length,
+              ostream &logfile) {
   NodeType type = (NodeType)in.get();
   if (type == NT_unknown) {
     return NULL;
@@ -113,6 +127,34 @@ read_xml_node(istream &in, char *&buffer, size_t &buffer_length) {
   size_t value_length;
   in.read((char *)&value_length, sizeof(value_length));
   if (in.gcount() != sizeof(value_length)) {
+    return NULL;
+  }
+  size_t value_proof_expect = (value_length + length_nonce1) * length_nonce2;
+  size_t value_proof;
+  in.read((char *)&value_proof, sizeof(value_proof));
+  if (in.gcount() != sizeof(value_proof)) {
+    return NULL;
+  }
+  if (value_proof != value_proof_expect) {
+    // Hey, we ran into garbage: the proof value didn't match our
+    // expected proof value.
+    logfile << "Garbage on XML stream!\n";
+
+    // Print out the garbage; maybe it will help the developer figure
+    // out where it came from.
+    logfile << "Begin garbage:\n";
+    ostringstream strm;
+    strm.write((char *)&value_length, sizeof(value_length));
+    strm.write((char *)&value_proof, sizeof(value_proof));
+    logfile << strm.str();
+    for (size_t i = 0; i < 100; ++i) {
+      int ch = in.get();
+      if (ch != EOF) {
+        logfile.put(ch);
+      }
+    }
+    logfile << "\n";
+    logfile << "End garbage.\n";
     return NULL;
   }
 
@@ -187,7 +229,7 @@ read_xml_node(istream &in, char *&buffer, size_t &buffer_length) {
   
   while (got_child && in && !in.eof()) {
     // We have a child.
-    TiXmlNode *xchild = read_xml_node(in, buffer, buffer_length);
+    TiXmlNode *xchild = read_xml_node(in, buffer, buffer_length, logfile);
     if (xchild != NULL) {
       xnode->LinkEndChild(xchild);
     }
@@ -251,7 +293,7 @@ read_xml(istream &in, ostream &logfile) {
   // binary read.
   size_t buffer_length = 128;
   char *buffer = new char[buffer_length];
-  TiXmlNode *xnode = read_xml_node(in, buffer, buffer_length);
+  TiXmlNode *xnode = read_xml_node(in, buffer, buffer_length, logfile);
   delete[] buffer;
   if (xnode == NULL) {
     return NULL;

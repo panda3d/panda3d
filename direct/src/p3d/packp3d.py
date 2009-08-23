@@ -47,7 +47,7 @@ import os
 import getopt
 import glob
 import direct
-from direct.showutil import Packager 
+from direct.p3d import Packager 
 from pandac.PandaModules import *
 
 class ArgumentError(StandardError):

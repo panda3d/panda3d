@@ -60,6 +60,8 @@ public:
   void add_instance(P3DInstance *inst);
   void remove_instance(P3DInstance *inst);
 
+  TiXmlElement *make_xml();
+
 private:
   enum DownloadType {
     DT_contents_file,

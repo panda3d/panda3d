@@ -87,6 +87,8 @@ private:
 
   void start_instance(P3DCInstance *inst, TiXmlElement *xinstance);
   void terminate_instance(int id);
+  void set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance);
+  void add_package_info(P3DCInstance *inst, TiXmlElement *xpackage);
   void set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams);
   void setup_window(int id, TiXmlElement *xwparams);
   void setup_window(P3DCInstance *inst, TiXmlElement *xwparams);

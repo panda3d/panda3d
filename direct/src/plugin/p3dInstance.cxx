@@ -842,12 +842,21 @@ make_xml() {
   TiXmlElement *xinstance = new TiXmlElement("instance");
   xinstance->SetAttribute("instance_id", _instance_id);
 
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  xinstance->SetAttribute("root_dir", inst_mgr->get_root_dir());
+
   TiXmlElement *xfparams = _fparams.make_xml();
   xinstance->LinkEndChild(xfparams);
 
   if (_got_wparams) {
     TiXmlElement *xwparams = _wparams.make_xml(this);
     xinstance->LinkEndChild(xwparams);
+  }
+
+  Packages::const_iterator pi;
+  for (pi = _packages.begin(); pi != _packages.end(); ++pi) {
+    TiXmlElement *xpackage = (*pi)->make_xml();
+    xinstance->LinkEndChild(xpackage);
   }
 
   return xinstance;

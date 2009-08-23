@@ -127,14 +127,14 @@ run_python() {
   Py_DECREF(runp3d_frozen);
 
   // So now we can import the module itself.
-  PyObject *runp3d = PyImport_ImportModule("direct.showutil.runp3d");
-  if (runp3d == NULL) {
+  PyObject *app_runner_module = PyImport_ImportModule("direct.p3d.AppRunner");
+  if (app_runner_module == NULL) {
     PyErr_Print();
     return false;
   }
 
   // Get the pointers to the objects needed within the module.
-  PyObject *app_runner_class = PyObject_GetAttrString(runp3d, "AppRunner");
+  PyObject *app_runner_class = PyObject_GetAttrString(app_runner_module, "AppRunner");
   if (app_runner_class == NULL) {
     PyErr_Print();
     return false;
@@ -149,41 +149,41 @@ run_python() {
   Py_DECREF(app_runner_class);
 
   // Get the UndefinedObject class.
-  _undefined_object_class = PyObject_GetAttrString(runp3d, "UndefinedObject");
+  _undefined_object_class = PyObject_GetAttrString(app_runner_module, "UndefinedObject");
   if (_undefined_object_class == NULL) {
     PyErr_Print();
     return false;
   }
 
   // And the "Undefined" instance.
-  _undefined = PyObject_GetAttrString(runp3d, "Undefined");
+  _undefined = PyObject_GetAttrString(app_runner_module, "Undefined");
   if (_undefined == NULL) {
     PyErr_Print();
     return false;
   }
 
   // Get the ConcreteStruct class.
-  _concrete_struct_class = PyObject_GetAttrString(runp3d, "ConcreteStruct");
+  _concrete_struct_class = PyObject_GetAttrString(app_runner_module, "ConcreteStruct");
   if (_concrete_struct_class == NULL) {
     PyErr_Print();
     return false;
   }
 
   // Get the BrowserObject class.
-  _browser_object_class = PyObject_GetAttrString(runp3d, "BrowserObject");
+  _browser_object_class = PyObject_GetAttrString(app_runner_module, "BrowserObject");
   if (_browser_object_class == NULL) {
     PyErr_Print();
     return false;
   }
 
   // Get the global TaskManager.
-  _taskMgr = PyObject_GetAttrString(runp3d, "taskMgr");
+  _taskMgr = PyObject_GetAttrString(app_runner_module, "taskMgr");
   if (_taskMgr == NULL) {
     PyErr_Print();
     return false;
   }
 
-  Py_DECREF(runp3d);
+  Py_DECREF(app_runner_module);
 
 
   // Construct a Python wrapper around our methods we need to expose to Python.
@@ -903,6 +903,14 @@ void P3DPythonRun::
 start_instance(P3DCInstance *inst, TiXmlElement *xinstance) {
   _instances[inst->get_instance_id()] = inst;
 
+  set_instance_info(inst, xinstance);
+
+  TiXmlElement *xpackage = xinstance->FirstChildElement("package");
+  while (xpackage != (TiXmlElement *)NULL) {
+    add_package_info(inst, xpackage);
+    xpackage = xpackage->NextSiblingElement("package");
+  }
+
   TiXmlElement *xfparams = xinstance->FirstChildElement("fparams");
   if (xfparams != (TiXmlElement *)NULL) {
     set_p3d_filename(inst, xfparams);
@@ -935,6 +943,59 @@ terminate_instance(int id) {
   // of a multi-instance session.  This will require a different
   // Python interface than ShowBase.
   terminate_session();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::set_instance_info
+//       Access: Private
+//  Description: Sets some global information about the instance.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+set_instance_info(P3DCInstance *inst, TiXmlElement *xinstance) {
+  const char *root_dir = xinstance->Attribute("root_dir");
+  if (root_dir == NULL) {
+    root_dir = "";
+  }
+
+  PyObject *result = PyObject_CallMethod
+    (_runner, (char *)"setInstanceInfo", (char *)"s", root_dir);
+
+  if (result == NULL) {
+    PyErr_Print();
+  }
+  Py_XDECREF(result);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::add_package_info
+//       Access: Private
+//  Description: Adds some information about a pre-loaded package.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
+  const char *name = xpackage->Attribute("name");
+  const char *platform = xpackage->Attribute("platform");
+  const char *version = xpackage->Attribute("version");
+  const char *host = xpackage->Attribute("host");
+  const char *install_dir = xpackage->Attribute("install_dir");
+  if (name == NULL || version == NULL || host == NULL) {
+    return;
+  }
+  if (platform == NULL) {
+    platform = "";
+  }
+  if (install_dir == NULL) {
+    install_dir = "";
+  }
+
+  PyObject *result = PyObject_CallMethod
+    (_runner, (char *)"addPackageInfo", (char *)"sssss",
+     name, platform, version, host, install_dir);
+
+  if (result == NULL) {
+    PyErr_Print();
+  }
+  Py_XDECREF(result);
 }
 
 ////////////////////////////////////////////////////////////////////

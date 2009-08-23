@@ -35,7 +35,7 @@ P3DHost(const string &host_url) :
 
   _xcontents = NULL;
 
-  fill_host_dir();
+  determine_host_dir();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -196,14 +196,17 @@ get_package_desc_file(FileSpec &desc_file,              // out
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DHost::fill_host_dir
+//     Function: P3DHost::determine_host_dir
 //       Access: Private
 //  Description: Hashes the host_url into a (mostly) unique directory
-//               string for this particular host.  Stores the result
-//               in _host_dir.
+//               string, which will be the root of the host's install
+//               tree.  Stores the result in _host_dir.
+//
+//               This code is duplicated in Python, in
+//               AppRunner.determineHostDir().
 ////////////////////////////////////////////////////////////////////
 void P3DHost::
-fill_host_dir() {
+determine_host_dir() {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _host_dir = inst_mgr->get_root_dir();
   _host_dir += "/";
@@ -213,6 +216,9 @@ fill_host_dir() {
   // Look for a server name in the URL.  Including this string in the
   // directory name makes it friendlier for people browsing the
   // directory.
+
+  // We can't use URLSpec here, because we don't link with Panda3D.
+  // We have to do it by hand.
   size_t p = _host_url.find("://");
   if (p != string::npos) {
     size_t start = p + 3;
@@ -254,7 +260,7 @@ fill_host_dir() {
 
     // If we successfully got a hostname, we don't really need the
     // full hash.  We'll keep half of it.
-    keep_hash = hash_size / 2;
+    keep_hash = keep_hash / 2;
   }
 
   MD5_CTX ctx;

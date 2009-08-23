@@ -86,8 +86,8 @@ import sys
 import getopt
 import os
 
-from direct.showutil import Packager
-from direct.showutil import make_contents
+from direct.p3d import Packager
+from direct.p3d import make_contents
 from pandac.PandaModules import *
 
 def usage(code, msg = ''):
