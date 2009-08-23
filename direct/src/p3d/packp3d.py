@@ -118,12 +118,13 @@ def makePackedApp(args):
         packager.setup()
         packager.beginPackage(appBase, p3dApplication = True)
         for requireName in requires:
-            packager.require(requireName)
+            packager.do_require(requireName)
 
-        packager.dir(root)
-        packager.mainModule(mainModule)
+        packager.do_dir(root)
+        packager.do_mainModule(mainModule)
 
-        packager.endPackage(appBase, p3dApplication = True)
+        packager.endPackage()
+        
     except Packager.PackagerError:
         # Just print the error message and exit gracefully.
         inst = sys.exc_info()[1]

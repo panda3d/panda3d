@@ -144,6 +144,7 @@ except Packager.PackagerError:
     # Just print the error message and exit gracefully.
     inst = sys.exc_info()[1]
     print inst.args[0]
+    #raise
     sys.exit(1)
 
 # Look to see if we built any true packages, or if all of them were

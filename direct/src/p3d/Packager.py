@@ -173,6 +173,31 @@ class Packager:
         def close(self):
             """ Writes out the contents of the current package. """
 
+            if not self.host:
+                self.host = self.packager.host
+
+            # A special case when building the "panda3d" package.  We
+            # enforce that the version number matches what we've been
+            # compiled with.
+            if self.packageName == 'panda3d':
+                if self.version is None:
+                    self.version = PandaSystem.getPackageVersionString()
+
+                if self.version != PandaSystem.getPackageVersionString():
+                    message = 'mismatched Panda3D version: requested %s, but Panda3D is built as %s' % (self.version, PandaSystem.getPackageVersionString())
+                    raise PackageError, message
+
+                if self.host != PandaSystem.getPackageHostUrl():
+                    message = 'mismatched Panda3D host: requested %s, but Panda3D is built as %s' % (self.host, PandaSystem.getPackageHostUrl())
+                    raise PackageError, message
+
+            if self.p3dApplication:
+                # Default compression level for an app.
+                self.compressionLevel = 6
+
+                # Every p3dapp requires panda3d.
+                self.packager.do_require('panda3d')
+
             if self.dryRun:
                 self.multifile = None
             else:
@@ -666,11 +691,7 @@ class Packager:
 
             xpackage.SetAttribute('main_module', self.mainModule[1])
 
-            for variable, value in self.configs.items():
-                if isinstance(value, types.UnicodeType):
-                    xpackage.SetAttribute(variable, value.encode('utf-8'))
-                else:
-                    xpackage.SetAttribute(variable, str(value))
+            self.__addConfigs(xpackage)
 
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
@@ -720,11 +741,7 @@ class Packager:
             if self.version:
                 xpackage.SetAttribute('version', self.version)
 
-            for variable, value in self.configs.items():
-                if isinstance(value, types.UnicodeType):
-                    xpackage.SetAttribute(variable, value.encode('utf-8'))
-                else:
-                    xpackage.SetAttribute(variable, str(value))
+            self.__addConfigs(xpackage)
 
             for package in self.requires:
                 xrequires = TiXmlElement('requires')
@@ -751,6 +768,19 @@ class Packager:
 
             doc.InsertEndChild(xpackage)
             doc.SaveFile()
+
+        def __addConfigs(self, xpackage):
+            """ Adds the XML config values defined in self.configs to
+            the indicated XML element. """
+            
+            for variable, value in self.configs.items():
+                if isinstance(value, types.UnicodeType):
+                    xpackage.SetAttribute(variable, value.encode('utf-8'))
+                elif isinstance(value, types.BooleanType):
+                    # True or False must be encoded as 1 or 0.
+                    xpackage.SetAttribute(variable, str(int(value)))
+                else:
+                    xpackage.SetAttribute(variable, str(value))
 
         def writeImportDescFile(self):
             """ Makes the package_import.xml file that describes the
@@ -1350,55 +1380,91 @@ class Packager:
         return None
 
     def readPackageDef(self, packageDef):
-        """ Reads the lines in the .pdef file named by packageDef and
-        dispatches to the appropriate handler method for each
-        line.  Returns the list of package files."""
-
-        self.packageList = []
+        """ Reads the named .pdef file and constructs the packages
+        indicated within it.  Raises an exception if the pdef file is
+        invalid.  Returns the list of packages constructed. """
 
         self.notify.info('Reading %s' % (packageDef))
-        self.inFile = open(packageDef.toOsSpecific())
-        self.lineNum = 0
 
-        # Now start parsing the packageDef lines
+        # We use exec to "read" the .pdef file.  This has the nice
+        # side-effect that the user can put arbitrary Python code in
+        # there to control conditional execution, and such.
+
+        # Set up the global and local dictionaries for exec.
+        globals = {}
+        globals['__name__'] = packageDef.getBasenameWoExtension()
+
+        globals['platform'] = PandaSystem.getPlatform()
+
+        # The local dictionary is initially empty, but it will be
+        # filled with all the definitions at the module scope when we
+        # parse the pdef file.
+        locals = {}
+
+        # We'll stuff all of the predefined functions, and both of the
+        # predefined classes, in the global dictionary, so the pdef
+        # file can reference them.
+
+        # By convention, the existence of a method of this class named
+        # do_foo(self) is sufficient to define a pdef method call
+        # foo().
+        for methodName in self.__class__.__dict__.keys():
+            if methodName.startswith('do_'):
+                name = methodName[3:]
+                c = func_closure(name)
+                globals[name] = c.generic_func
+
+        globals['p3d'] = class_p3d
+        globals['package'] = class_package
+
+        # Now exec the pdef file.  Assuming there are no syntax
+        # errors, and that the pdef file doesn't contain any really
+        # crazy Python code, all this will do is fill in the
+        # '__statements' list in the module scope.
+        execfile(packageDef.toOsSpecific(), globals, locals)
+
+        packages = []
+
+        # Now iterate through the statements and operate on them.
         try:
-            words = self.__getNextLine()
-            while words is not None:
-                command = words[0]
-                try:
-                    methodName = 'parse_%s' % (command)
-                    method = getattr(self, methodName, None)
-                    if method:
-                        method(words)
-
-                    else:
-                        message = 'Unknown command %s' % (command)
-                        raise PackagerError, message
-                except ArgumentError:
-                    message = 'Wrong number of arguments for command %s' %(command)
-                    raise ArgumentError, message
-                except OutsideOfPackageError:
-                    message = '%s command encounted outside of package specification' %(command)
-                    raise OutsideOfPackageError, message
-
-                words = self.__getNextLine()
-
+            for (lineno, stype, name, args, kw) in locals['__statements']:
+                if stype == 'class':
+                    classDef = locals[name]
+                    p3dApplication = (class_p3d in classDef.__bases__)
+                    self.beginPackage(name, p3dApplication = p3dApplication)
+                    statements = classDef.__dict__['__statements']
+                    for (lineno, stype, name, args, kw) in statements:
+                        if stype == 'class':
+                            raise PackagerError, 'Nested classes not allowed'
+                        self.__evalFunc(name, args, kw)
+                    package = self.endPackage()
+                    packages.append(package)
+                else:
+                    self.__evalFunc(name, args, kw)
         except PackagerError:
             # Append the line number and file name to the exception
             # error message.
             inst = sys.exc_info()[1]
-            inst.args = (inst.args[0] + ' on line %s of %s' % (self.lineNum, packageDef),)
-            del self.inFile
-            del self.lineNum
+            if not inst.args:
+                inst.args = ('Error',)
+                
+            inst.args = (inst.args[0] + ' on line %s of %s' % (lineno, packageDef),)
             raise
+                    
+        return packages
 
-        del self.inFile
-        del self.lineNum
-
-        packageList = self.packageList
-        self.packageList = []
-
-        return packageList
+    def __evalFunc(self, name, args, kw):
+        """ This is called from readPackageDef(), above, to call the
+        function do_name(*args, **kw), as extracted from the pdef
+        file. """
+        
+        funcname = 'do_%s' % (name)
+        func = getattr(self, funcname)
+        try:
+            func(*args, **kw)
+        except OutsideOfPackageError:
+            message = '%s encountered outside of package definition' % (name)
+            raise OutsideOfPackageError, message
 
     def __expandTabs(self, line, tabWidth = 8):
         """ Expands tab characters in the line to 8 spaces. """
@@ -1430,55 +1496,29 @@ class Packager:
         line = line[:whitespaceCount].lstrip() + line[whitespaceCount:]
         return line
 
-    def parse_set(self, words):
-        """
-        set variable=value
-        """
-        
-        try:
-            command, assign = words
-        except ValueError:
-            raise ArgumentNumber
-        
-        try:
-            variable, value = assign.split('=', 1)
-        except ValueError:
-            raise PackagerError, 'Equals sign required in assignment'
-
-        variable = variable.strip()
-        value = ExecutionEnvironment.expandString(value.strip())
-        ExecutionEnvironment.setEnvironmentVariable(variable, value)
-
-    def parse_host(self, words):
-        """
-        host "url" ["descriptive name"]
-        """
-
-        hostDescriptiveName = None
-        try:
-            if len(words) == 2:
-                command, host = words
-            else:
-                command, host, hostDescriptiveName = words
-        except ValueError:
-            raise ArgumentNumber
+    def do_host(self, hostUrl, descriptiveName = None):
+        """ Specifies the server that will eventually host this
+        published content.  """
 
         if self.currentPackage:
-            self.currentPackage.host = host
+            self.currentPackage.host = hostUrl
         else:
             # Outside of a package, the "host" command specifies the
             # host for all future packages.
-            self.host = host
+            self.host = hostUrl
 
         # The descriptive name, if specified, is kept until the end,
         # where it may be passed to make_contents by ppackage.py.
-        if hostDescriptiveName:
-            self.hostDescriptiveName = hostDescriptiveName
+        if descriptiveName:
+            self.hostDescriptiveName = descriptiveName
 
-    def parse_model_path(self, words):
-        """
-        model_path directory
-        """
+    def do_modelPath(self, dirName):
+        """ Specifies an additional directory that will be searched
+        for required models, especially textures.  Models in this
+        directory are not automatically added to the package unless
+        references to them are discovered; use dir() if you want to
+        add an entire directory hierarchy of models.  """
+        
         newName = None
 
         try:
@@ -1487,330 +1527,6 @@ class Packager:
             raise ArgumentError
 
         getModelPath().appendDirectory(Filename.fromOsSpecific(dirName))
-
-    def parse_reset_model_path(self, words):
-        """
-        reset_model_path
-        """
-        newName = None
-
-        try:
-            (command,) = words
-        except ValueError:
-            raise ArgumentError
-
-        getModelPath().clear()
-
-    def parse_begin_package(self, words):
-        """
-        begin_package packageName [version=v] [host=host]
-        """
-
-        args = self.__parseArgs(words, ['version', 'host'])
-
-        try:
-            command, packageName = words
-        except ValueError:
-            raise ArgumentNumber
-
-        version = args.get('version', None)
-        host = args.get('host', None)
-
-        self.beginPackage(packageName, version = version, host = host,
-                          p3dApplication = False)
-
-    def parse_end_package(self, words):
-        """
-        end_package packageName
-        """
-
-        try:
-            command, packageName = words
-        except ValueError:
-            raise ArgumentError
-
-        self.endPackage(packageName, p3dApplication = False)
-
-    def parse_begin_p3d(self, words):
-        """
-        begin_p3d appName
-        """
-
-        try:
-            command, packageName = words
-        except ValueError:
-            raise ArgumentNumber
-
-        self.beginPackage(packageName, p3dApplication = True)
-
-    def parse_end_p3d(self, words):
-        """
-        end_p3d appName
-        """
-
-        try:
-            command, packageName = words
-        except ValueError:
-            raise ArgumentError
-
-        self.endPackage(packageName, p3dApplication = True)
-
-    def parse_config(self, words):
-        """
-        config variable=value
-        """
-        
-        try:
-            command, assign = words
-        except ValueError:
-            raise ArgumentNumber
-        
-        try:
-            variable, value = assign.split('=', 1)
-        except ValueError:
-            raise PackagerError, 'Equals sign required in assignment'
-
-        variable = variable.strip()
-        self.config(variable, value)
-
-    def parse_require(self, words):
-        """
-        require packageName [version=v] [host=url]
-        """
-
-        args = self.__parseArgs(words, ['version', 'host'])
-
-        try:
-            command, packageName = words
-        except ValueError:
-            raise ArgumentError
-
-        version = args.get('version', None)
-        host = args.get('host', None)
-        self.require(packageName, version = version, host = host)
-
-    def parse_module(self, words):
-        """
-        module moduleName [newName]
-        """
-        newName = None
-
-        try:
-            if len(words) == 2:
-                command, moduleName = words
-            else:
-                command, moduleName, newName = words
-        except ValueError:
-            raise ArgumentError
-
-        self.module(moduleName, newName = newName)
-
-    def parse_exclude_module(self, words):
-        """
-        exclude_module moduleName [forbid=1]
-        """
-        newName = None
-
-        args = self.__parseArgs(words, ['forbid'])
-
-        try:
-            command, moduleName = words
-        except ValueError:
-            raise ArgumentError
-
-        forbid = args.get('forbid', None)
-        if forbid is not None:
-            forbid = int(forbid)
-        self.excludeModule(moduleName, forbid = forbid)
-
-    def parse_main_module(self, words):
-        """
-        main_module moduleName [newName]
-        """
-        newName = None
-
-        try:
-            if len(words) == 2:
-                command, moduleName = words
-            else:
-                command, moduleName, newName = words
-        except ValueError:
-            raise ArgumentError
-
-        self.mainModule(moduleName, newName = newName)
-
-    def parse_freeze_exe(self, words):
-        """
-        freeze_exe path/to/basename
-        """
-
-        try:
-            command, filename = words
-        except ValueError:
-            raise ArgumentError
-
-        self.freeze(filename, compileToExe = True)
-
-    def parse_freeze_dll(self, words):
-        """
-        freeze_dll path/to/basename
-        """
-
-        try:
-            command, filename = words
-        except ValueError:
-            raise ArgumentError
-
-        self.freeze(filename, compileToExe = False)
-
-    def parse_file(self, words):
-        """
-        file filename [newNameOrDir] [extract=1] [executable=1] [literal=1]
-        """
-
-        args = self.__parseArgs(words, ['extract', 'executable', 'literal'])
-
-        newNameOrDir = None
-
-        try:
-            if len(words) == 2:
-                command, filename = words
-            else:
-                command, filename, newNameOrDir = words
-        except ValueError:
-            raise ArgumentError
-
-        extract = args.get('extract', None)
-        if extract is not None:
-            extract = int(extract)
-
-        executable = args.get('executable', None)
-        if executable is not None:
-            executable = int(executable)
-
-        literal = args.get('literal', None)
-        if literal is not None:
-            literal = int(literal)
-
-        self.file(Filename.fromOsSpecific(filename),
-                  newNameOrDir = newNameOrDir, extract = extract,
-                  executable = executable, literal = literal)
-
-    def parse_inline_file(self, words):
-        """
-        inline_file newName [extract=1] <<[-] eof-symbol
-           .... file text
-           .... file text
-        eof-symbol
-        """
-
-        if not self.currentPackage:
-            raise OutsideOfPackageError
-
-        # Look for the eof-symbol at the end of the command line.
-        eofSymbols = None
-        for i in range(len(words)):
-            if words[i].startswith('<<'):
-                eofSymbols = words[i:]
-                words = words[:i]
-                break
-        if eofSymbols is None:
-            raise PackagerError, 'No << appearing on inline_file'
-
-        # Following the bash convention, <<- means to strip leading
-        # whitespace, << means to keep it.
-        stripWhitespace = False
-        if eofSymbols[0][0:3] == '<<-':
-            stripWhitespace = True
-            eofSymbols[0] = eofSymbols[0][3:]
-        else:
-            eofSymbols[0] = eofSymbols[0][2:]
-
-        # If there's nothing left in the first word, look to the next
-        # word.
-        if not eofSymbols[0]:
-            del eofSymbols[0]
-            
-        if len(eofSymbols) == 1:
-            # The eof symbol is the only word.
-            eofSymbol = eofSymbols[0]
-        else:
-            # It must be only one word.
-            raise PackagerError, 'Only one word may follow <<'
-
-        # Now parse the remaining args.
-        args = self.__parseArgs(words, ['extract'])
-
-        newName = None
-        try:
-            command, newName = words
-        except ValueError:
-            raise ArgumentError
-
-        extract = args.get('extract', None)
-        if extract is not None:
-            extract = int(extract)
-
-        tempFile = Filename.temporary('', self.currentPackage.packageName)
-        temp = open(tempFile.toOsSpecific(), 'w')
-
-        # Now read text from the input file until we come across
-        # eofSymbol on a line by itself.
-        lineNum = self.lineNum
-        line = self.inFile.readline()
-        if not line:
-            raise PackagerError, 'No text following inline_file'
-        lineNum += 1
-        line = line.rstrip()
-        if stripWhitespace:
-            # For the first line, we count up the amount of
-            # whitespace.
-            whitespaceCount = self.__countLeadingWhitespace(line)
-            line = self.__stripLeadingWhitespace(line, whitespaceCount)
-            
-        while line != eofSymbol:
-            print >> temp, line
-            line = self.inFile.readline()
-            if not line:
-                raise PackagerError, 'EOF indicator not found following inline_file'
-            lineNum += 1
-            line = line.rstrip()
-            if stripWhitespace:
-                line = self.__stripLeadingWhitespace(line, whitespaceCount)
-
-        temp.close()
-        self.lineNum = lineNum
-        self.file(tempFile, deleteTemp = True,
-                  newNameOrDir = newName, extract = extract)
-
-    def parse_exclude(self, words):
-        """
-        exclude filename
-        """
-
-        try:
-            command, filename = words
-        except ValueError:
-            raise ArgumentError
-
-        self.exclude(Filename.fromOsSpecific(filename))
-
-    def parse_dir(self, words):
-        """
-        dir dirname [newDir]
-        """
-
-        newDir = None
-
-        try:
-            if len(words) == 2:
-                command, dirname = words
-            else:
-                command, dirname, newDir = words
-        except ValueError:
-            raise ArgumentError
-
-        self.dir(Filename.fromOsSpecific(dirname), newDir = newDir)
 
     def __parseArgs(self, words, argList):
         args = {}
@@ -1835,68 +1551,26 @@ class Packager:
             del words[-1]
                 
     
-    def beginPackage(self, packageName, version = None, host = None,
-                     p3dApplication = False):
+    def beginPackage(self, packageName, p3dApplication = False):
         """ Begins a new package specification.  packageName is the
         basename of the package.  Follow this with a number of calls
         to file() etc., and close the package with endPackage(). """
 
         if self.currentPackage:
-            raise PackagerError, 'unmatched end_package %s' % (self.currentPackage.packageName)
-
-        if host is None and not p3dApplication:
-            # Every package that doesn't specify otherwise uses the
-            # current download host.
-            host = self.host
-
-        # A special case when building the "panda3d" package.  We
-        # enforce that the version number matches what we've been
-        # compiled with.
-        if packageName == 'panda3d':
-            if version is None:
-                version = PandaSystem.getPackageVersionString()
-            if host is None:
-                host = PandaSystem.getPackageHostUrl()
-
-            if version != PandaSystem.getPackageVersionString():
-                message = 'mismatched Panda3D version: requested %s, but Panda3D is built as %s' % (version, PandaSystem.getPackageVersionString())
-                raise PackageError, message
-
-            if host != PandaSystem.getPackageHostUrl():
-                message = 'mismatched Panda3D host: requested %s, but Panda3D is built as %s' % (host, PandaSystem.getPackageHostUrl())
-                raise PackageError, message
+            raise PackagerError, 'unclosed endPackage %s' % (self.currentPackage.packageName)
 
         package = self.Package(packageName, self)
         self.currentPackage = package
 
-        package.version = version
-        package.host = host
         package.p3dApplication = p3dApplication
-
-        if package.p3dApplication:
-            # Default compression level for an app.
-            package.compressionLevel = 6
-
-            # Every p3dapp requires panda3d.
-            self.require('panda3d')
-            
         package.dryRun = self.dryRun
         
-    def endPackage(self, packageName, p3dApplication = False):
-        """ Closes a package specification.  This actually generates
-        the package file.  The packageName must match the previous
-        call to beginPackage(). """
+    def endPackage(self):
+        """ Closes the current package specification.  This actually
+        generates the package file.  Returns the finished package."""
         
         if not self.currentPackage:
-            raise PackagerError, 'unmatched end_package %s' % (packageName)
-        if self.currentPackage.packageName != packageName:
-            raise PackagerError, 'end_package %s where %s expected' % (
-                packageName, self.currentPackage.packageName)
-        if self.currentPackage.p3dApplication != p3dApplication:
-            if p3dApplication:
-                raise PackagerError, 'end_p3d where end_package expected'
-            else:
-                raise PackagerError, 'end_package where end_p3d expected'
+            raise PackagerError, 'unmatched endPackage'
 
         package = self.currentPackage
         package.close()
@@ -1904,6 +1578,8 @@ class Packager:
         self.packageList.append(package)
         self.packages[(package.packageName, package.platform, package.version)] = package
         self.currentPackage = None
+
+        return package
 
     def findPackage(self, packageName, platform = None, version = None,
                     host = None, requires = None):
@@ -2103,18 +1779,20 @@ class Packager:
 
         return None
 
-    def config(self, variable, value):
-        """ Sets the indicated p3d config variable to the given value.
-        This will be written into the p3d_info.xml file at the top of
-        the application, or to the package desc file for a package
-        file. """
+    def do_config(self, **kw):
+        """ Called with any number of keyword parameters.  For each
+        keyword parameter, sets the corresponding p3d config variable
+        to the given value.  This will be written into the
+        p3d_info.xml file at the top of the application, or to the
+        package desc file for a package file. """
 
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        self.currentPackage.configs[variable] = value
+        for keyword, value in kw.items():
+            self.currentPackage.configs[keyword] = value
 
-    def require(self, packageName, version = None, host = None):
+    def do_require(self, packageName, version = None, host = None):
         """ Indicates a dependency on the named package, supplied as
         a name.
 
@@ -2164,7 +1842,7 @@ class Packager:
 
         self.currentPackage.requirePackage(package)
 
-    def module(self, moduleName, newName = None):
+    def do_module(self, moduleName, newName = None):
         """ Adds the indicated Python module to the current package. """
 
         if not self.currentPackage:
@@ -2172,7 +1850,7 @@ class Packager:
 
         self.currentPackage.freezer.addModule(moduleName, newName = newName)
 
-    def excludeModule(self, moduleName, forbid = False):
+    def do_excludeModule(self, moduleName, forbid = False):
         """ Marks the indicated Python module as not to be included. """
 
         if not self.currentPackage:
@@ -2180,7 +1858,7 @@ class Packager:
 
         self.currentPackage.freezer.excludeModule(moduleName, forbid = forbid)
 
-    def mainModule(self, moduleName, newName = None, filename = None):
+    def do_mainModule(self, moduleName, newName = None, filename = None):
         """ Names the indicated module as the "main" module of the
         application or exe. """
 
@@ -2188,7 +1866,7 @@ class Packager:
             raise OutsideOfPackageError
 
         if self.currentPackage.mainModule and self.currentPackage.mainModule[0] != moduleName:
-            self.notify.warning("Replacing main_module %s with %s" % (
+            self.notify.warning("Replacing mainModule %s with %s" % (
                 self.currentPackage.mainModule[0], moduleName))
 
         if not newName:
@@ -2203,7 +1881,7 @@ class Packager:
 
         self.currentPackage.mainModule = (moduleName, newName)
 
-    def freeze(self, filename, compileToExe = False):
+    def do_freeze(self, filename, compileToExe = False):
         """ Freezes all of the current Python code into either an
         executable (if compileToExe is true) or a dynamic library (if
         it is false).  The resulting compiled binary is added to the
@@ -2256,9 +1934,9 @@ class Packager:
         freezer.reset()
         package.mainModule = None
 
-    def file(self, filename, source = None, newNameOrDir = None,
-             extract = None, executable = None, deleteTemp = False,
-             literal = False):
+    def do_file(self, filename, text = None, newNameOrDir = None,
+                extract = None, executable = None, deleteTemp = False,
+                literal = False):
         """ Adds the indicated arbitrary file to the current package.
 
         The file is placed in the named directory, or the toplevel
@@ -2278,6 +1956,10 @@ class Packager:
         the filename expression must match only one file.  If
         newNameOrDir is unspecified or None, the file is placed in the
         toplevel directory, regardless of its source directory.
+
+        If text is nonempty, it contains the text of the file.  In
+        this case, the filename is not read, but the supplied text is
+        used instead.
 
         If extract is true, the file is explicitly extracted at
         runtime.
@@ -2334,6 +2016,17 @@ class Packager:
                     message = 'Cannot install multiple files on target filename %s' % (newName)
                     raise PackagerError, message
 
+        if text:
+            if not newName:
+                newName = filename.cStr()
+
+            tempFile = Filename.temporary('', self.currentPackage.packageName)
+            temp = open(tempFile.toOsSpecific(), 'w')
+            temp.write(text)
+            temp.close()
+            files = [tempFile.toOsSpecific()]
+            deleteTemp = True
+
         for filename in files:
             filename = Filename.fromOsSpecific(filename)
             basename = filename.getBasename()
@@ -2346,7 +2039,7 @@ class Packager:
                 explicit = explicit, executable = executable,
                 deleteTemp = deleteTemp)
 
-    def exclude(self, filename):
+    def do_exclude(self, filename):
         """ Marks the indicated filename as not to be included.  The
         filename may include shell globbing characters, and may or may
         not include a dirname.  (If it does not include a dirname, it
@@ -2358,7 +2051,7 @@ class Packager:
 
         self.currentPackage.excludeFile(filename)
 
-    def dir(self, dirname, newDir = None):
+    def do_dir(self, dirname, newDir = None):
 
         """ Adds the indicated directory hierarchy to the current
         package.  The directory hierarchy is walked recursively, and
@@ -2407,3 +2100,83 @@ class Packager:
             if ext in self.knownExtensions:
                 self.currentPackage.addFile(filename, newName = newName,
                                             explicit = False)
+
+
+# The following class and function definitions represent a few sneaky
+# Python tricks to allow the pdef syntax to contain the pseudo-Python
+# code they do.  These tricks bind the function and class definitions
+# into a bit table as they are parsed from the pdef file, so we can
+# walk through that table later and perform the operations requested
+# in order.
+
+class metaclass_def(type):
+    """ A metaclass is invoked by Python when the class definition is
+    read, for instance to define a child class.  By defining a
+    metaclass for class_p3d and class_package, we can get a callback
+    when we encounter "class foo(p3d)" in the pdef file.  The callback
+    actually happens after all of the code within the class scope has
+    been parsed first. """
+    
+    def __new__(self, name, bases, dict):
+
+        # At the point of the callback, now, "name" is the name of the
+        # class we are instantiating, "bases" is the list of parent
+        # classes, and "dict" is the class dictionary we have just
+        # parsed.
+
+        # If "dict" contains __metaclass__, then we must be parsing
+        # class_p3d or class_ppackage, below--skip it.  But if it
+        # doesn't contain __metaclass__, then we must be parsing
+        # "class foo(p3d)" (or whatever) from the pdef file.
+        
+        if '__metaclass__' not in dict:
+            # Get the context in which this class was created
+            # (presumably, the module scope) out of the stack frame.
+            frame = sys._getframe(1)
+            mdict = frame.f_locals
+            lineno = frame.f_lineno
+
+            # Store the class name on a statements list in that
+            # context, so we can later resolve the class names in
+            # the order they appeared in the file.
+            mdict.setdefault('__statements', []).append((lineno, 'class', name, None, None))
+            
+        return type.__new__(self, name, bases, dict)
+
+class class_p3d:
+    __metaclass__ = metaclass_def
+    pass
+
+class class_package:
+    __metaclass__ = metaclass_def
+    pass
+
+class func_closure:
+
+    """ This class is used to create a closure on the function name,
+    and also allows the *args, **kw syntax.  In Python, the lambda
+    syntax, used with default parameters, is used more often to create
+    a closure (that is, a binding of one or more variables into a
+    callable object), but that syntax doesn't work with **kw.
+    Fortunately, a class method is also a form of a closure, because
+    it binds self; and this doesn't have any syntax problems with
+    **kw. """
+
+    def __init__(self, name):
+        self.name = name
+
+    def generic_func(self, *args, **kw):
+        """ This method is bound to all the functions that might be
+        called from the pdef file.  It's a special function; when it is
+        called, it does nothing but store its name and arguments in the
+        caller's local scope, where they can be pulled out later. """
+
+        # Get the context in which this function was called (presumably,
+        # the class dictionary) out of the stack frame.
+        frame = sys._getframe(1)
+        cldict = frame.f_locals
+        lineno = frame.f_lineno
+
+        # Store the function on a statements list in that context, so we
+        # can later walk through the function calls for each class.
+        cldict.setdefault('__statements', []).append((lineno, 'func', self.name, args, kw))
