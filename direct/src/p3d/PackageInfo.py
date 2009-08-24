@@ -12,7 +12,7 @@ class PackageInfo:
         self.packageVersion = packageVersion
         self.platform = platform
 
-        self.packageFullname = '%s_%s' % (self.packageName, self.packageVersion)
+        self.packageFullname = '%s.%s' % (self.packageName, self.packageVersion)
         self.packageDir = Filename(host.hostDir, 'packages/%s/%s' % (self.packageName, self.packageVersion))
         self.descFileBasename = self.packageFullname + '.xml'
 

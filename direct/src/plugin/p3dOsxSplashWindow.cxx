@@ -319,18 +319,19 @@ paint_window() {
                     bar_x, bar_y, bar_width, bar_height);
   
   if (_install_progress != 0.0) {
-    int progress_width = (int)((bar_width - 2) * _install_progress);
-    int progress = bar_x + 1 + progress_width;
-    
     Rect rbar = { bar_y, bar_x, bar_y + bar_height, bar_x + bar_width };
-    Rect rneed = { bar_y + 1, progress, bar_y + bar_height - 1, bar_x + bar_width - 1 };
-    Rect rdone = { bar_y + 1, bar_x + 1, bar_y + bar_height - 1, progress };
     FrameRect(&rbar);
-    
-    RGBColor blue = { 27756, 42405, 57568 };
-    RGBForeColor(&blue);
-    PaintRect(&rdone);
-    EraseRect(&rneed);
+
+    int progress_width = (int)((bar_width - 2) * _install_progress);
+    if (progress_width != 0) {
+      int progress = bar_x + 1 + progress_width;
+      Rect rneed = { bar_y + 1, progress, bar_y + bar_height - 1, bar_x + bar_width - 1 };
+      Rect rdone = { bar_y + 1, bar_x + 1, bar_y + bar_height - 1, progress };
+      RGBColor blue = { 27756, 42405, 57568 };
+      RGBForeColor(&blue);
+      PaintRect(&rdone);
+      EraseRect(&rneed);
+    }
     
     RGBColor black = { 0, 0, 0 };
     RGBForeColor(&black);

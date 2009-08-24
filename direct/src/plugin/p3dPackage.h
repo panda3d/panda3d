@@ -121,6 +121,7 @@ private:
 
   P3DTemporaryFile *_temp_contents_file;
 
+  string _desc_file_url;
   string _desc_file_basename;
   string _desc_file_pathname;
 

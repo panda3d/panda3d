@@ -46,7 +46,7 @@ P3DPackage(P3DHost *host, const string &package_name,
   _package_dir = _host->get_host_dir() + string("/") + _package_name;
 
   if (!_package_version.empty()) {
-    _package_fullname += string("_") + _package_version;
+    _package_fullname += string(".") + _package_version;
     _package_dir += string("/") + _package_version;
   }
 
@@ -275,6 +275,9 @@ download_desc_file() {
   // locally.  Adjust desc_file to point to the local file.
   string url_filename = desc_file.get_filename();
 
+  _desc_file_url = _host->get_host_url_prefix();
+  _desc_file_url += url_filename;
+
   _desc_file_basename = url_filename;
   size_t slash = _desc_file_basename.rfind('/');
   if (slash != string::npos) {
@@ -302,10 +305,7 @@ download_desc_file() {
   }
 
   // The desc file is not current.  Go download it.
-  string url = _host->get_host_url_prefix();
-  url += url_filename;
-
-  start_download(DT_desc_file, url, _desc_file_pathname, false);
+  start_download(DT_desc_file, _desc_file_url, _desc_file_pathname, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -466,13 +466,14 @@ begin_data_download() {
 ////////////////////////////////////////////////////////////////////
 void P3DPackage::
 download_compressed_archive(bool allow_partial) {
-  string url = _host->get_host_url_prefix();
-  url += _package_name;
-  if (!_package_platform.empty()) {
-    url += "/" + _package_platform;
+  string url = _desc_file_url;
+  size_t slash = url.rfind('/');
+  if (slash != string::npos) {
+    url = url.substr(0, slash + 1);
   }
-  url += "/" + _package_version;
-  url += "/" + _compressed_archive.get_filename();
+  url += _compressed_archive.get_filename();
+  cerr << "_desc_file_url = " << _desc_file_url << ", url = " << url 
+       << "\n";
 
   string target_pathname = _package_dir + "/" + _compressed_archive.get_filename();
 

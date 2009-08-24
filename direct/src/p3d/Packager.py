@@ -257,13 +257,12 @@ class Packager:
             if platformSpecific and not self.platform:
                 self.platform = PandaSystem.getPlatform()
             
-            if not self.p3dApplication and self.platform and not self.version:
-                # We must have a version string for platform-specific
-                # packages.  Use the first versioned string on our
-                # require list.
-                self.version = 'base'
+            if not self.p3dApplication and not self.version:
+                # If we don't have an implicit version, inherit the
+                # version from the 'panda3d' package on our require
+                # list.
                 for p2 in self.requires:
-                    if p2.version:
+                    if p2.packageName == 'panda3d' and p2.version:
                         self.version = p2.version
                         break
 
@@ -420,15 +419,15 @@ class Packager:
 
             self.packageBasename = self.packageName
             packageDir = self.packageName
-            if self.platform:
-                self.packageBasename += '_' + self.platform
-                packageDir += '/' + self.platform
             if self.version:
-                self.packageBasename += '_' + self.version
+                self.packageBasename += '.' + self.version
                 packageDir += '/' + self.version
+            if self.platform:
+                self.packageBasename += '.' + self.platform
+                packageDir += '/' + self.platform
 
             self.packageDesc = self.packageBasename + '.xml'
-            self.packageImportDesc = self.packageBasename + '_import.xml'
+            self.packageImportDesc = self.packageBasename + '.import.xml'
             if self.p3dApplication:
                 self.packageBasename += '.p3d'
                 packageDir = ''
@@ -917,7 +916,7 @@ class Packager:
                     xpackage.SetAttribute(variable, str(value))
 
         def writeImportDescFile(self):
-            """ Makes the package_import.xml file that describes the
+            """ Makes the package.import.xml file that describes the
             package and its contents, for other packages and
             applications that may wish to "require" this one. """
         
@@ -1635,7 +1634,7 @@ class Packager:
 
     def __scanPackageDir(self, rootDir, packageName, platform, version,
                          host, requires = None):
-        """ Scans a directory on disk, looking for *_import.xml files
+        """ Scans a directory on disk, looking for *.import.xml files
         that match the indicated packageName and optional version.  If a
         suitable xml file is found, reads it and returns the assocated
         Package definition.
@@ -1648,23 +1647,23 @@ class Packager:
         packageDir = Filename(rootDir, packageName)
         basename = packageName
 
-        if platform:
-            packageDir = Filename(packageDir, platform)
-            basename += '_%s' % (platform)
-
         if version:
             # A specific version package.
             packageDir = Filename(packageDir, version)
-            basename += '_%s' % (version)
+            basename += '.%s' % (version)
         else:
             # Scan all versions.
             packageDir = Filename(packageDir, '*')
-            basename += '_%s' % ('*')
+            basename += '.%s' % ('*')
+
+        if platform:
+            packageDir = Filename(packageDir, platform)
+            basename += '.%s' % (platform)
 
         # Actually, the host means little for this search, since we're
         # only looking in a local directory at this point.
 
-        basename += '_import.xml'
+        basename += '.import.xml'
         filename = Filename(packageDir, basename)
         filelist = glob.glob(filename.toOsSpecific())
         if not filelist:
@@ -1673,9 +1672,13 @@ class Packager:
             filename = Filename(rootDir, basename)
             filelist = glob.glob(filename.toOsSpecific())
 
-        self.__sortPackageImportFilelist(filelist)
+        packages = []
         for file in filelist:
             package = self.__readPackageImportDescFile(Filename.fromOsSpecific(file))
+            packages.append(package)
+
+        self.__sortImportPackages(packages)
+        for package in packages:
             if package and self.__packageIsValid(package, requires):
                 return package
 
@@ -1709,15 +1712,14 @@ class Packager:
         if package.readImportDescFile(filename):
             return package
 
-    def __sortPackageImportFilelist(self, filelist):
-        """ Given a list of *_import.xml filenames, sorts them in
-        reverse order by version, so that the highest-numbered
-        versions appear first in the list. """
+    def __sortImportPackages(self, packages):
+        """ Given a list of Packages read from *.import.xml filenames,
+        sorts them in reverse order by version, so that the
+        highest-numbered versions appear first in the list. """
 
         tuples = []
-        for file in filelist:
-            version = file.split('_')[-2]
-            version = self.__makeVersionTuple(version)
+        for package in packages:
+            version = self.__makeVersionTuple(package.version)
             tuples.append((version, file))
         tuples.sort(reverse = True)
 

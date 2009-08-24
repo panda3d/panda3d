@@ -124,6 +124,7 @@ def makePackedApp(args):
         packager.do_mainModule(mainModule)
 
         packager.endPackage()
+        packager.close()
         
     except Packager.PackagerError:
         # Just print the error message and exit gracefully.
