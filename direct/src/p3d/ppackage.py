@@ -87,7 +87,6 @@ import getopt
 import os
 
 from direct.p3d import Packager
-from direct.p3d import make_contents
 from pandac.PandaModules import *
 
 def usage(code, msg = ''):
@@ -112,9 +111,9 @@ for opt, arg in opts:
     elif opt == '-p':
         packager.platform = arg
     elif opt == '-u':
-        package.host = arg
+        packager.host = arg
     elif opt == '-n':
-        package.hostDescriptiveName = arg
+        packager.hostDescriptiveName = arg
         
     elif opt == '-h':
         usage(0)
@@ -140,26 +139,10 @@ packager.installSearch.prependDirectory(packager.installDir)
 try:
     packager.setup()
     packages = packager.readPackageDef(packageDef)
+    packager.close()
 except Packager.PackagerError:
     # Just print the error message and exit gracefully.
     inst = sys.exc_info()[1]
     print inst.args[0]
     #raise
     sys.exit(1)
-
-# Look to see if we built any true packages, or if all of them were
-# p3d files.
-anyPackages = False
-for package in packages:
-    if not package.p3dApplication:
-        anyPackages = True
-        break
-
-if anyPackages:
-    # If we built any true packages, then update the contents.xml at
-    # the root of the install directory.
-    cm = make_contents.ContentsMaker()
-    cm.installDir = packager.installDir.toOsSpecific()
-    cm.hostDescriptiveName = packager.hostDescriptiveName
-    cm.build()
-

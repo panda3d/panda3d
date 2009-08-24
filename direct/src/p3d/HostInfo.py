@@ -58,7 +58,8 @@ class HostInfo:
             platform = xpackage.Attribute('platform')
             version = xpackage.Attribute('version')
             package = self.__makePackage(name, platform, version)
-            package.descFile = FileSpec(xpackage)
+            package.descFile = FileSpec()
+            package.descFile.loadXml(xpackage)
 
             xpackage = xpackage.NextSiblingElement('package')
 
@@ -69,7 +70,8 @@ class HostInfo:
             platform = ximport.Attribute('platform')
             version = ximport.Attribute('version')
             package = self.__makePackage(name, platform, version)
-            package.importDescFile = FileSpec(ximport)
+            package.importDescFile = FileSpec()
+            package.importDescFile.loadXml(ximport)
 
             ximport = ximport.NextSiblingElement('import')
 

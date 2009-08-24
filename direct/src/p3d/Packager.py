@@ -10,6 +10,7 @@ import marshal
 import new
 import string
 import types
+from direct.p3d.FileSpec import FileSpec
 from direct.showbase import Loader
 from direct.showbase import AppRunnerGlobal
 from direct.showutil import FreezeTool
@@ -129,6 +130,56 @@ class Packager:
                 return self.glob.matches(filename.getBasename())
             else:
                 return self.glob.matches(filename.cStr())
+
+    class PackageEntry:
+        """ This corresponds to an entry in the contents.xml file. """
+        
+        def __init__(self):
+            pass
+
+        def getKey(self):
+            """ Returns a tuple used for sorting the PackageEntry
+            objects uniquely per package. """
+            return (self.packageName, self.platform, self.version)
+
+        def fromFile(self, packageName, platform, version, solo, isImport,
+                     installDir, descFilename):
+            self.packageName = packageName
+            self.platform = platform
+            self.version = version
+            self.solo = solo
+            self.isImport = isImport
+
+            self.descFile = FileSpec()
+            self.descFile.fromFile(installDir, descFilename)
+
+        def loadXml(self, xelement):
+            self.packageName = xelement.Attribute('name')
+            self.platform = xelement.Attribute('platform')
+            self.version = xelement.Attribute('version')
+            solo = xelement.Attribute('solo')
+            self.solo = int(solo or '0')
+            self.isImport = (xelement.Value() == 'import')
+
+            self.descFile = FileSpec()
+            self.descFile.loadXml(xelement)
+
+        def makeXml(self):
+            """ Returns a new TiXmlElement. """
+            value = 'package'
+            if self.isImport:
+                value = 'import'
+            xelement = TiXmlElement(value)
+            xelement.SetAttribute('name', self.packageName)
+            if self.platform:
+                xelement.SetAttribute('platform', self.platform)
+            if self.version:
+                xelement.SetAttribute('version', self.version)
+            if self.solo:
+                xelement.SetAttribute('solo', '1')
+
+            self.descFile.storeXml(xelement)
+            return xelement
 
     class Package:
         def __init__(self, packageName, packager):
@@ -408,13 +459,26 @@ class Packager:
                 self.writeDescFile()
                 self.writeImportDescFile()
 
+                # Replace or add the entry in the contents.
+                a = Packager.PackageEntry()
+                a.fromFile(self.packageName, self.platform, self.version,
+                           False, False, self.packager.installDir,
+                           self.packageDesc)
+
+                b = Packager.PackageEntry()
+                b.fromFile(self.packageName, self.platform, self.version,
+                           False, True, self.packager.installDir,
+                           self.packageImportDesc)
+                self.packager.contents[a.getKey()] = [a, b]
+                self.packager.contentsChanged = True
+
             self.cleanup()
 
         def installSolo(self):
             """ Installs the package as a "solo", which means we
-            simply copy all files into the install directory.  This is
-            primarily intended for the "coreapi" plugin, which is just
-            a single dll and a jpg file; but it can support other
+            simply copy the one file into the install directory.  This
+            is primarily intended for the "coreapi" plugin, which is
+            just a single dll and a jpg file; but it can support other
             kinds of similar "solo" packages as well. """
 
             packageDir = self.packageName
@@ -430,22 +494,38 @@ class Packager:
                 for origFile in origFiles:
                     origFile.getFilename().unlink()
 
-            if not self.files:
-                # No files, never mind.
-                return
-            
-            Filename(installPath, '').makeDir()
-            
+            files = []
             for file in self.files:
                 if file.isExcluded(self):
                     # Skip this file.
                     continue
-                targetPath = Filename(installPath, file.newName)
-                targetPath.setBinary()
-                file.filename.setBinary()
-                if not file.filename.copyTo(targetPath):
-                    print "Could not copy %s to %s" % (
-                        file.filename, targetPath)
+                files.append(file)
+
+            if not files:
+                # No files, never mind.
+                return
+
+            if len(files) != 1:
+                raise PackagerError, 'Multiple files in "solo" package %s' % (self.packageName)
+            
+            Filename(installPath, '').makeDir()
+
+            file = files[0]
+            targetPath = Filename(installPath, file.newName)
+            targetPath.setBinary()
+            file.filename.setBinary()
+            if not file.filename.copyTo(targetPath):
+                print "Could not copy %s to %s" % (
+                    file.filename, targetPath)
+
+
+            # Replace or add the entry in the contents.
+            a = Packager.PackageEntry()
+            a.fromFile(self.packageName, self.platform, self.version,
+                       True, False, self.packager.installDir,
+                       Filename(packageDir, file.newName))
+            self.packager.contents[a.getKey()] = [a]
+            self.packager.contentsChanged = True
 
             self.cleanup()
                
@@ -1106,6 +1186,7 @@ class Packager:
                     for moduleName, mdef in p2.moduleNames.items():
                         self.skipModules[moduleName] = mdef
 
+    # Packager constructor
     def __init__(self):
 
         # The following are config settings that the caller may adjust
@@ -1268,6 +1349,10 @@ class Packager:
         # A table of all known packages by name.
         self.packages = {}
 
+        # A list of PackageEntry objects read from the contents.xml
+        # file.
+        self.contents = {}
+
     def addWindowsSearchPath(self, searchPath, varname):
         """ Expands $varname, interpreting as a Windows-style search
         path, and adds its contents to the indicated DSearchPath. """
@@ -1303,133 +1388,13 @@ class Packager:
         if not PandaSystem.getPackageVersionString() or not PandaSystem.getPackageHostUrl():
             raise PackagerError, 'This script must be run using a version of Panda3D that has been built\nfor distribution.  Try using ppackage.p3d or packp3d.p3d instead.'
 
-    def __expandVariable(self, line, p):
-        """ Given that line[p] is a dollar sign beginning a variable
-        reference, advances p to the first dollar sign following the
-        reference, and looks up the variable referenced.
+        self.readContentsFile()
 
-        Returns (value, p) where value is the value of the named
-        variable, and p is the first character following the variable
-        reference. """
+    def close(self):
+        """ Called after reading all of the package def files, this
+        performs any final cleanup appropriate. """
 
-        p += 1
-        if p >= len(line):
-            return '', p
-        
-        var = ''
-        if line[p] == '{':
-            # Curly braces exactly delimit the variable name.
-            p += 1
-            while p < len(line) and line[p] != '}':
-                var += line[p]
-                p += 1
-        else:
-            # Otherwise, a string of alphanumeric characters,
-            # including underscore, delimits the variable name.
-            var += line[p]
-            p += 1
-            while p < len(line) and (line[p] in string.letters or line[p] in string.digits or line[p] == '_'):
-                var += line[p]
-                p += 1
-
-        return ExecutionEnvironment.getEnvironmentVariable(var), p
-        
-
-    def __splitLine(self, line):
-        """ Separates the indicated line into words at whitespace.
-        Quotation marks and escape characters protect spaces.  This is
-        designed to be similar to the algorithm employed by the Unix
-        shell. """
-
-        words = []
-
-        p = 0
-        while p < len(line):
-            if line[p] == '#':
-                # A word that begins with a hash mark indicates an
-                # inline comment, and the end of the parsing.
-                break
-                
-            # Scan to the end of the word.
-            word = ''
-            while p < len(line) and line[p] not in string.whitespace:
-                if line[p] == '\\':
-                    # Output an escaped character.
-                    p += 1
-                    if p < len(line):
-                        word += line[p]
-                        p += 1
-
-                elif line[p] == '$':
-                    # Output a variable reference.
-                    expand, p = self.__expandVariable(line, p)
-                    word += expand
-
-                elif line[p] == '"':
-                    # Output a double-quoted string.
-                    p += 1
-                    while p < len(line) and line[p] != '"':
-                        if line[p] == '\\':
-                            # Output an escaped character.
-                            p += 1
-                            if p < len(line):
-                                word += line[p]
-                                p += 1
-                        elif line[p] == '$':
-                            # Output a variable reference.
-                            expand, p = self.__expandVariable(line, p)
-                            word += expand
-                        else:
-                            word += line[p]
-                            p += 1
-
-                elif line[p] == "'":
-                    # Output a single-quoted string.  Escape
-                    # characters and dollar signs within single quotes
-                    # are not special.
-                    p += 1
-                    while p < len(line) and line[p] != "'":
-                        word += line[p]
-                        p += 1
-
-                else:
-                    # Output a single character.
-                    word += line[p]
-                    p += 1
-
-            words.append(word)
-
-            # Scan to the beginning of the next word.
-            while p < len(line) and line[p] in string.whitespace:
-                p += 1
-
-        return words
-
-    def __getNextLine(self):
-        """ Extracts the next line from self.inFile, and splits it
-        into words.  Returns the list of words, or None at end of
-        file. """
-
-        line = self.inFile.readline()
-        self.lineNum += 1
-        while line:
-            line = line.strip()
-            if not line:
-                # Skip the line, it was just a blank line
-                pass
-            
-            elif line[0] == '#':
-                # Eat python-style comments.
-                pass
-
-            else:
-                return self.__splitLine(line)
-
-            line = self.inFile.readline()
-            self.lineNum += 1
-
-        # End of file.
-        return None
+        self.writeContentsFile()
 
     def readPackageDef(self, packageDef):
         """ Reads the named .pdef file and constructs the packages
@@ -1568,7 +1533,7 @@ class Packager:
             self.host = hostUrl
 
         # The descriptive name, if specified, is kept until the end,
-        # where it may be passed to make_contents by ppackage.py.
+        # where it may be written into the contents file.
         if descriptiveName:
             self.hostDescriptiveName = descriptiveName
 
@@ -2187,6 +2152,59 @@ class Packager:
                 self.currentPackage.addFile(filename, newName = newName,
                                             explicit = False)
 
+
+    def readContentsFile(self):
+        """ Reads the contents.xml file at the beginning of
+        processing. """
+
+        self.contents = {}
+        self.contentsChanged = False
+
+        contentsFilename = Filename(self.installDir, 'contents.xml')
+        doc = TiXmlDocument(contentsFilename.toOsSpecific())
+        if not doc.LoadFile():
+            # Couldn't read file.
+            return
+
+        xcontents = doc.FirstChildElement('contents')
+        if xcontents:
+            if self.hostDescriptiveName is None:
+                self.hostDescriptiveName = xcontents.Attribute('descriptive_name')
+            
+            xelement = xcontents.FirstChildElement()
+            while xelement:
+                package = self.PackageEntry()
+                package.loadXml(xelement)
+                self.contents.setdefault(package.getKey(), []).append(package)
+                xelement = xelement.NextSiblingElement()
+
+    def writeContentsFile(self):
+        """ Rewrites the contents.xml file at the end of
+        processing. """
+
+        if not self.contentsChanged:
+            # No need to rewrite.
+            return
+
+        contentsFilename = Filename(self.installDir, 'contents.xml')
+        doc = TiXmlDocument(contentsFilename.toOsSpecific())
+        decl = TiXmlDeclaration("1.0", "utf-8", "")
+        doc.InsertEndChild(decl)
+
+        xcontents = TiXmlElement('contents')
+        if self.hostDescriptiveName:
+            xcontents.SetAttribute('descriptive_name', self.hostDescriptiveName)
+
+        contents = self.contents.items()
+        contents.sort()
+        for key, entryList in contents:
+            for entry in entryList:
+                xelement = entry.makeXml()
+                xcontents.InsertEndChild(xelement)
+
+        doc.InsertEndChild(xcontents)
+        doc.SaveFile()
+        
 
 # The following class and function definitions represent a few sneaky
 # Python tricks to allow the pdef syntax to contain the pseudo-Python

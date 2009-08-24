@@ -163,7 +163,10 @@ get_package_desc_file(FileSpec &desc_file,              // out
     const char *platform = xpackage->Attribute("platform");
     const char *version = xpackage->Attribute("version");
     const char *solo = xpackage->Attribute("solo");
-    if (name != NULL && platform != NULL && version != NULL &&
+    if (version == NULL) {
+      version = "";
+    }
+    if (name != NULL && platform != NULL &&
         package_name == name && 
         inst_mgr->get_platform() == platform &&
         package_version == version) {
@@ -190,7 +193,10 @@ get_package_desc_file(FileSpec &desc_file,              // out
     if (platform == NULL) {
       platform = "";
     }
-    if (name != NULL && version != NULL &&
+    if (version == NULL) {
+      version = "";
+    }
+    if (name != NULL &&
         package_name == name && 
         *platform == '\0' &&
         package_version == version) {

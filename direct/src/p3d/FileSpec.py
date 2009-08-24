@@ -1,5 +1,5 @@
 import os
-from pandac.PandaModules import Filename, HashVal
+from pandac.PandaModules import Filename, HashVal, VirtualFileSystem
 
 class FileSpec:
     """ This class represents a disk file whose hash and size
@@ -7,7 +7,31 @@ class FileSpec:
     verify whether the file on disk matches the version demanded by
     the xml. """
 
-    def __init__(self, xelement):
+    def __init__(self):
+        pass
+
+    def fromFile(self, packageDir, filename):
+        """ Reads the file information from the indicated file. """
+        vfs = VirtualFileSystem.getGlobalPtr()
+
+        filename = Filename(filename)
+        pathname = Filename(packageDir, filename)
+        
+        self.filename = filename.cStr()
+        self.basename = filename.getBasename()
+
+        st = os.stat(pathname.toOsSpecific())
+        self.size = st.st_size
+        self.timestamp = st.st_mtime
+
+        hv = HashVal()
+        hv.hashFile(pathname)
+        self.hash = hv.asHex()
+
+    def loadXml(self, xelement):
+        """ Reads the file information from the indicated XML
+        element. """
+        
         self.filename = xelement.Attribute('filename')
         self.basename = Filename(self.filename).getBasename()
         size = xelement.Attribute('size')
@@ -23,6 +47,15 @@ class FileSpec:
             self.timestamp = 0
 
         self.hash = xelement.Attribute('hash')
+
+    def storeXml(self, xelement):
+        """ Adds the file information to the indicated XML
+        element. """
+
+        xelement.SetAttribute('filename', self.filename)
+        xelement.SetAttribute('size', str(self.size))
+        xelement.SetAttribute('timestamp', str(self.timestamp))
+        xelement.SetAttribute('hash', self.hash)
             
     def quickVerify(self, packageDir = None, pathname = None):
         """ Performs a quick test to ensure the file has not been
