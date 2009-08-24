@@ -138,6 +138,7 @@ class Packager:
             self.version = None
             self.host = None
             self.p3dApplication = False
+            self.solo = False
             self.compressionLevel = 0
             self.importedMapsDir = 'imported_maps'
             self.mainModule = None
@@ -165,10 +166,6 @@ class Packager:
             # This records the current list of modules we have added so
             # far.
             self.freezer = FreezeTool.Freezer()
-
-            # Set this true to parse and build up the internal
-            # filelist, but not generate any output.
-            self.dryRun = False
 
         def close(self):
             """ Writes out the contents of the current package. """
@@ -198,18 +195,46 @@ class Packager:
                 # Every p3dapp requires panda3d.
                 self.packager.do_require('panda3d')
 
-            if self.dryRun:
-                self.multifile = None
+            # Check to see if any of the files are platform-specific.
+            platformSpecific = False
+            for file in self.files:
+                if file.isExcluded(self):
+                    # Skip this file.
+                    continue
+                if file.platformSpecific:
+                    platformSpecific = True
+            if platformSpecific and not self.platform:
+                self.platform = PandaSystem.getPlatform()
+            
+            if not self.p3dApplication and self.platform and not self.version:
+                # We must have a version string for platform-specific
+                # packages.  Use the first versioned string on our
+                # require list.
+                self.version = 'base'
+                for p2 in self.requires:
+                    if p2.version:
+                        self.version = p2.version
+                        break
+
+            if self.solo:
+                self.installSolo()
             else:
-                self.multifile = Multifile()
+                self.installMultifile()
 
-                if self.p3dApplication:
-                    self.multifile.setHeaderPrefix('#! /usr/bin/env panda3d\n')
+        def installMultifile(self):
+            """ Installs the package, either as a p3d application, or
+            as a true package.  Either is implemented with a
+            Multifile. """
+            
+            self.multifile = Multifile()
 
-                # Write the multifile to a temporary filename until we
-                # know enough to determine the output filename.
-                multifileFilename = Filename.temporary('', self.packageName)
-                self.multifile.openReadWrite(multifileFilename)
+            if self.p3dApplication:
+                self.multifile.setHeaderPrefix('#! /usr/bin/env panda3d\n')
+
+            # Write the multifile to a temporary filename until we
+            # know enough to determine the output filename.
+            multifileFilename = Filename.temporary('', self.packageName)
+            self.multifile.openReadWrite(multifileFilename)
 
             self.extracts = []
             self.components = []
@@ -306,13 +331,12 @@ class Packager:
                     # Skip this file.
                     continue
                 
-                if not self.dryRun:
-                    if ext == 'egg' or ext == 'bam':
-                        # Skip model files this pass.
-                        pass
-                    else:
-                        # Any other file.
-                        self.addComponent(file)
+                if ext == 'egg' or ext == 'bam':
+                    # Skip model files this pass.
+                    pass
+                else:
+                    # Any other file.
+                    self.addComponent(file)
 
             # Finally, now add the model files.  It's important to add
             # these after we have added all of the texture files, so
@@ -331,27 +355,17 @@ class Packager:
                     # Skip this file.
                     continue
                 
-                if not self.dryRun:
-                    if ext == 'egg':
-                        self.addEggFile(file)
-                    elif ext == 'bam':
-                        self.addBamFile(file)
-                    else:
-                        # Handled above.
-                        pass
+                if ext == 'egg':
+                    self.addEggFile(file)
+                elif ext == 'bam':
+                    self.addBamFile(file)
+                else:
+                    # Handled above.
+                    pass
 
             # Now that we've processed all of the component files,
             # (and set our platform if necessary), we can generate the
             # output filename and write the output files.
-            
-            if not self.p3dApplication and not self.version:
-                # We must have a version string for packages.  Use the
-                # first versioned string on our require list.
-                self.version = '0.0'
-                for p2 in self.requires:
-                    if p2.version:
-                        self.version = p2.version
-                        break
 
             self.packageBasename = self.packageName
             packageDir = self.packageName
@@ -379,23 +393,63 @@ class Packager:
             self.packageFullpath.makeDir()
             self.packageFullpath.unlink()
 
-            if not self.dryRun:
-                if self.p3dApplication:
-                    self.makeP3dInfo()
-                self.multifile.repack()
-                self.multifile.close()
+            if self.p3dApplication:
+                self.makeP3dInfo()
+            self.multifile.repack()
+            self.multifile.close()
 
-                multifileFilename.renameTo(self.packageFullpath)
+            multifileFilename.renameTo(self.packageFullpath)
 
-                if self.p3dApplication:
-                    # Make the application file executable.
-                    os.chmod(self.packageFullpath.toOsSpecific(), 0755)
-                else:
-                    self.compressMultifile()
-                    self.writeDescFile()
-                    self.writeImportDescFile()
-                
+            if self.p3dApplication:
+                # Make the application file executable.
+                os.chmod(self.packageFullpath.toOsSpecific(), 0755)
+            else:
+                self.compressMultifile()
+                self.writeDescFile()
+                self.writeImportDescFile()
 
+            self.cleanup()
+
+        def installSolo(self):
+            """ Installs the package as a "solo", which means we
+            simply copy all files into the install directory.  This is
+            primarily intended for the "coreapi" plugin, which is just
+            a single dll and a jpg file; but it can support other
+            kinds of similar "solo" packages as well. """
+
+            packageDir = self.packageName
+            if self.platform:
+                packageDir += '/' + self.platform
+            if self.version:
+                packageDir += '/' + self.version
+
+            installPath = Filename(self.packager.installDir, packageDir)
+            # Remove any files already in the installPath.
+            origFiles = vfs.scanDirectory(installPath)
+            if origFiles:
+                for origFile in origFiles:
+                    origFile.getFilename().unlink()
+
+            if not self.files:
+                # No files, never mind.
+                return
+            
+            Filename(installPath, '').makeDir()
+            
+            for file in self.files:
+                if file.isExcluded(self):
+                    # Skip this file.
+                    continue
+                targetPath = Filename(installPath, file.newName)
+                targetPath.setBinary()
+                file.filename.setBinary()
+                if not file.filename.copyTo(targetPath):
+                    print "Could not copy %s to %s" % (
+                        file.filename, targetPath)
+
+            self.cleanup()
+               
+        def cleanup(self):
             # Now that all the files have been packed, we can delete
             # the temporary files.
             for file in self.files:
@@ -1214,8 +1268,6 @@ class Packager:
         # A table of all known packages by name.
         self.packages = {}
 
-        self.dryRun = False
-
     def addWindowsSearchPath(self, searchPath, varname):
         """ Expands $varname, interpreting as a Windows-style search
         path, and adds its contents to the indicated DSearchPath. """
@@ -1390,18 +1442,13 @@ class Packager:
         # side-effect that the user can put arbitrary Python code in
         # there to control conditional execution, and such.
 
-        # Set up the global and local dictionaries for exec.
+        # Set up the namespace dictionary for exec.
         globals = {}
         globals['__name__'] = packageDef.getBasenameWoExtension()
 
         globals['platform'] = PandaSystem.getPlatform()
 
-        # The local dictionary is initially empty, but it will be
-        # filled with all the definitions at the module scope when we
-        # parse the pdef file.
-        locals = {}
-
-        # We'll stuff all of the predefined functions, and both of the
+        # We'll stuff all of the predefined functions, and the
         # predefined classes, in the global dictionary, so the pdef
         # file can reference them.
 
@@ -1416,23 +1463,36 @@ class Packager:
 
         globals['p3d'] = class_p3d
         globals['package'] = class_package
+        globals['solo'] = class_solo
 
         # Now exec the pdef file.  Assuming there are no syntax
         # errors, and that the pdef file doesn't contain any really
         # crazy Python code, all this will do is fill in the
         # '__statements' list in the module scope.
-        execfile(packageDef.toOsSpecific(), globals, locals)
+
+        # It appears that having a separate globals and locals
+        # dictionary causes problems with resolving symbols within a
+        # class scope.  So, we just use one dictionary, the globals.
+        execfile(packageDef.toOsSpecific(), globals)
 
         packages = []
 
         # Now iterate through the statements and operate on them.
+        statements = globals.get('__statements', [])
+        if not statements:
+            print "No packages defined."
+        
         try:
-            for (lineno, stype, name, args, kw) in locals['__statements']:
+            for (lineno, stype, name, args, kw) in statements:
                 if stype == 'class':
-                    classDef = locals[name]
+                    classDef = globals[name]
                     p3dApplication = (class_p3d in classDef.__bases__)
-                    self.beginPackage(name, p3dApplication = p3dApplication)
-                    statements = classDef.__dict__['__statements']
+                    solo = (class_solo in classDef.__bases__)
+                    self.beginPackage(name, p3dApplication = p3dApplication,
+                                      solo = solo)
+                    statements = classDef.__dict__.get('__statements', [])
+                    if not statements:
+                        print "No files added to %s" % (name)
                     for (lineno, stype, name, args, kw) in statements:
                         if stype == 'class':
                             raise PackagerError, 'Nested classes not allowed'
@@ -1512,22 +1572,6 @@ class Packager:
         if descriptiveName:
             self.hostDescriptiveName = descriptiveName
 
-    def do_modelPath(self, dirName):
-        """ Specifies an additional directory that will be searched
-        for required models, especially textures.  Models in this
-        directory are not automatically added to the package unless
-        references to them are discovered; use dir() if you want to
-        add an entire directory hierarchy of models.  """
-        
-        newName = None
-
-        try:
-            command, dirName = words
-        except ValueError:
-            raise ArgumentError
-
-        getModelPath().appendDirectory(Filename.fromOsSpecific(dirName))
-
     def __parseArgs(self, words, argList):
         args = {}
         
@@ -1551,7 +1595,8 @@ class Packager:
             del words[-1]
                 
     
-    def beginPackage(self, packageName, p3dApplication = False):
+    def beginPackage(self, packageName, p3dApplication = False,
+                     solo = False):
         """ Begins a new package specification.  packageName is the
         basename of the package.  Follow this with a number of calls
         to file() etc., and close the package with endPackage(). """
@@ -1563,7 +1608,7 @@ class Packager:
         self.currentPackage = package
 
         package.p3dApplication = p3dApplication
-        package.dryRun = self.dryRun
+        package.solo = solo
         
     def endPackage(self):
         """ Closes the current package specification.  This actually
@@ -1939,20 +1984,19 @@ class Packager:
                 freezer.modules[newName] = freezer.modules[moduleName]
         freezer.done(compileToExe = compileToExe)
 
-        if not package.dryRun:
-            dirname = ''
-            basename = filename
-            if '/' in basename:
-                dirname, basename = filename.rsplit('/', 1)
-                dirname += '/'
+        dirname = ''
+        basename = filename
+        if '/' in basename:
+            dirname, basename = filename.rsplit('/', 1)
+            dirname += '/'
 
-            basename = freezer.generateCode(basename, compileToExe = compileToExe)
+        basename = freezer.generateCode(basename, compileToExe = compileToExe)
 
-            package.addFile(Filename(basename), newName = dirname + basename,
-                            deleteTemp = True, explicit = True, extract = True)
-            package.addExtensionModules()
-            if not package.platform:
-                package.platform = PandaSystem.getPlatform()
+        package.addFile(Filename(basename), newName = dirname + basename,
+                        deleteTemp = True, explicit = True, extract = True)
+        package.addExtensionModules()
+        if not package.platform:
+            package.platform = PandaSystem.getPlatform()
 
         # Reset the freezer for more Python files.
         freezer.reset()
@@ -1964,9 +2008,9 @@ class Packager:
 
         self.addFiles(args, **kw)
 
-    def addFiles(self, filenames, text = None, newNameOrDir = None,
-                extract = None, executable = None, deleteTemp = False,
-                literal = False):
+    def addFiles(self, filenames, text = None, newName = None,
+                 newDir = None, extract = None, executable = None,
+                 deleteTemp = False, literal = False):
 
         """ Adds the indicated arbitrary files to the current package.
 
@@ -1980,13 +2024,15 @@ class Packager:
         extension.  For instance, .py files may be automatically
         compiled and stored as Python modules.
 
-        If newNameOrDir ends in a slash character, it specifies the
-        directory in which the file should be placed.  In this case,
-        all files matched by the filename expression are placed in the
-        named directory.  If newNameOrDir ends in something other than
-        a slash character, it specifies a new filename.  In this case,
-        the filename expression must match only one file.  If
-        newNameOrDir is unspecified or None, the file is placed in the
+        If newDir is not None, it specifies the directory in which the
+        file should be placed.  In this case, all files matched by the
+        filename expression are placed in the named directory.
+
+        If newName is not None, it specifies a new filename.  In this
+        case, newDir is ignored, and the filename expression must
+        match only one file.
+
+        If newName and newDir are both None, the file is placed in the
         toplevel directory, regardless of its source directory.
 
         If text is nonempty, it contains the text of the file.  In
@@ -2042,17 +2088,16 @@ class Packager:
                 explicit = False
             files += thisFiles
 
-        newName = None
         prefix = ''
+        if newDir:
+            prefix = Filename(newDir).cStr()
+            if prefix[-1] != '/':
+                prefix += '/'
         
-        if newNameOrDir:
-            if newNameOrDir[-1] == '/':
-                prefix = newNameOrDir
-            else:
-                newName = newNameOrDir
-                if len(files) != 1:
-                    message = 'Cannot install multiple files on target filename %s' % (newName)
-                    raise PackagerError, message
+        if newName:
+            if len(files) != 1:
+                message = 'Cannot install multiple files on target filename %s' % (newName)
+                raise PackagerError, message
 
         if text:
             if len(files) != 1:
@@ -2189,6 +2234,10 @@ class class_p3d:
     pass
 
 class class_package:
+    __metaclass__ = metaclass_def
+    pass
+
+class class_solo:
     __metaclass__ = metaclass_def
     pass
 

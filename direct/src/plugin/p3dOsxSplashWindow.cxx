@@ -256,11 +256,6 @@ paint_window() {
   Boolean portChanged = false;
 
   if (_toplevel_window != NULL) {
-    /*
-    GetPort(&portSave);
-    SetPortWindowPort(_toplevel_window);
-    BeginUpdate(_toplevel_window);
-    */
     GetPort(&out_port);
 
   } else {

@@ -147,6 +147,7 @@ private:
   P3DMainObject *_panda_script_object;
 
   P3DTemporaryFile *_temp_p3d_filename;
+  P3DPackage *_splash_package;
   P3DTemporaryFile *_temp_splash_image;
 
   bool _got_fparams;

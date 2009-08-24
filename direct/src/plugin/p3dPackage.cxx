@@ -43,9 +43,16 @@ P3DPackage(P3DHost *host, const string &package_name,
   _package_version(package_version)
 {
   _package_fullname = _package_name;
-  _package_dir = _host->get_host_dir() + string("/packages/") + _package_name;
-  _package_fullname += string("_") + _package_version;
-  _package_dir += string("/") + _package_version;
+  _package_dir = _host->get_host_dir() + string("/") + _package_name;
+
+  if (!_package_version.empty()) {
+    _package_fullname += string("_") + _package_version;
+    _package_dir += string("/") + _package_version;
+  }
+
+  // This is set true if the package is a "solo", i.e. a single
+  // file, instead of an xml file and a multifile to unpack.
+  _package_solo = false;
 
   _temp_contents_file = NULL;
 
@@ -59,9 +66,6 @@ P3DPackage(P3DHost *host, const string &package_name,
 
   // Ensure the package directory exists; create it if it does not.
   mkdir_complete(_package_dir, nout);
-
-  _desc_file_basename = _package_fullname + ".xml";
-  _desc_file_pathname = _package_dir + "/" + _desc_file_basename;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -258,7 +262,8 @@ download_desc_file() {
   // exists, and is consistent with the server contents file, we don't
   // need to re-download it.
   FileSpec desc_file;
-  if (!_host->get_package_desc_file(desc_file, _package_platform,
+  if (!_host->get_package_desc_file(desc_file, _package_platform, 
+                                    _package_solo,
                                     _package_name, _package_version)) {
     nout << "Couldn't find package " << _package_fullname
          << " in contents file.\n";
@@ -266,21 +271,33 @@ download_desc_file() {
   }
 
   // The desc file might have a different path on the host server than
-  // it has locally, because we strip out the platform locally.
-  // Adjust desc_file to point to the local file.
+  // it has locally, because we strip out the platform directory
+  // locally.  Adjust desc_file to point to the local file.
   string url_filename = desc_file.get_filename();
+
+  _desc_file_basename = url_filename;
+  size_t slash = _desc_file_basename.rfind('/');
+  if (slash != string::npos) {
+    _desc_file_basename = _desc_file_basename.substr(slash + 1);
+  }
   desc_file.set_filename(_desc_file_basename);
-  assert (desc_file.get_pathname(_package_dir) == _desc_file_pathname);
+  _desc_file_pathname = desc_file.get_pathname(_package_dir);
 
   if (!desc_file.full_verify(_package_dir)) {
     nout << _desc_file_pathname << " is stale.\n";
 
   } else {
     // The desc file is current.  Attempt to read it.
-    TiXmlDocument doc(_desc_file_pathname.c_str());
-    if (doc.LoadFile()) {
-      got_desc_file(&doc, false);
+    if (_package_solo) {
+      // No need to load it: the desc file *is* the package.
+      report_done(true);
       return;
+    } else {
+      TiXmlDocument doc(_desc_file_pathname.c_str());
+      if (doc.LoadFile()) {
+        got_desc_file(&doc, false);
+        return;
+      }
     }
   }
 
@@ -303,14 +320,21 @@ desc_file_download_finished(bool success) {
     return;
   }
 
-  TiXmlDocument doc(_desc_file_pathname.c_str());
-  if (!doc.LoadFile()) {
-    nout << "Couldn't read " << _desc_file_pathname << "\n";
-    report_done(false);
+  if (_package_solo) {
+    // No need to load it: the desc file *is* the package.
+    report_done(true);
     return;
-  }
 
-  got_desc_file(&doc, true);
+  } else {
+    TiXmlDocument doc(_desc_file_pathname.c_str());
+    if (!doc.LoadFile()) {
+      nout << "Couldn't read " << _desc_file_pathname << "\n";
+      report_done(false);
+      return;
+    }
+    
+    got_desc_file(&doc, true);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -92,9 +92,12 @@ class ContentsMaker:
         print >> f, '<?xml version="1.0" encoding="utf-8" ?>'
         print >> f, ''
         print >> f, contentsLine
-        for type, packageName, packagePlatform, packageVersion, file in self.packages:
-            print >> f, '  <%s name="%s" platform="%s" version="%s" %s />' % (
-                type, packageName, packagePlatform or '', packageVersion, file.getParams())
+        for type, packageName, packagePlatform, packageVersion, file, solo in self.packages:
+            extra = ''
+            if solo:
+                extra += 'solo="1" '
+            print >> f, '  <%s name="%s" platform="%s" version="%s" %s%s />' % (
+                type, packageName, packagePlatform or '', packageVersion or '', extra, file.getParams())
         print >> f, '</contents>'
         f.close()
 
@@ -142,20 +145,23 @@ class ContentsMaker:
                 localpath = dirpath[len(prefix):].replace(os.sep, '/') + '/'
                 xml = dirpath[len(prefix):].replace(os.sep, '_') + '.xml'
 
-            type = 'package'
+            solo = False
 
-            # A special case: the "plugin" and "coreapi" directories
-            # don't have xml files, just dll's.
-            if xml.startswith('plugin_') or xml.startswith('coreapi_'):
-                if filenames:
-                    assert len(filenames) == 1
-                    xml = filenames[0]
-                    type = 'plugin'
+            # A special case: if a directory contains just one file,
+            # it's a "solo", not an xml package.
+            if len(filenames) == 1 and not filenames[0].endswith('.xml'):
+                xml = filenames[0]
+                solo = True
 
             if xml not in filenames:
                 continue
+
+            if localpath.count('/') == 1:
+                packageName, junk = localpath.split('/')
+                packageVersion = None
+                packagePlatform = None
             
-            if localpath.count('/') == 2:
+            elif localpath.count('/') == 2:
                 packageName, packageVersion, junk = localpath.split('/')
                 packagePlatform = None
 
@@ -167,9 +173,9 @@ class ContentsMaker:
             file = FileSpec(localpath + xml,
                             os.path.join(self.installDir, localpath + xml))
             print file.filename
-            self.packages.append((type, packageName, packagePlatform, packageVersion, file))
+            self.packages.append(('package', packageName, packagePlatform, packageVersion, file, solo))
 
-            if type == 'package':
+            if not solo:
                 # Look for an _import.xml file, too.
                 xml = xml[:-4] + '_import.xml'
                 try:
@@ -179,7 +185,7 @@ class ContentsMaker:
                     file = None
                 if file:
                     print file.filename
-                    self.packages.append(('import', packageName, packagePlatform, packageVersion, file))
+                    self.packages.append(('import', packageName, packagePlatform, packageVersion, file, False))
         
                 
 def makeContents(args):

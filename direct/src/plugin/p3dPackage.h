@@ -57,6 +57,8 @@ public:
   inline const string &get_package_version() const;
   inline const string &get_package_display_name() const;
 
+  inline const string &get_desc_file_pathname() const;
+
   void add_instance(P3DInstance *inst);
   void remove_instance(P3DInstance *inst);
 
@@ -112,6 +114,7 @@ private:
   string _package_name;
   string _package_version;
   string _package_platform;
+  bool _package_solo;
   string _package_display_name;
   string _package_fullname;
   string _package_dir;

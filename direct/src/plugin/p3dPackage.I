@@ -139,3 +139,16 @@ inline const string &P3DPackage::
 get_package_display_name() const {
   return _package_display_name;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_desc_file_pathname
+//       Access: Public
+//  Description: Returns the full path to the package's desc file.  If
+//               this is a "solo" type package, the desc file itself
+//               represents the entire contents of the package.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DPackage::
+get_desc_file_pathname() const {
+  return _desc_file_pathname;
+}
+

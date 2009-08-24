@@ -146,6 +146,7 @@ get_package(const string &package_name, const string &package_version) {
 bool P3DHost::
 get_package_desc_file(FileSpec &desc_file,              // out
                       string &package_platform,         // out
+                      bool &package_solo,               // out
                       const string &package_name,       // in
                       const string &package_version) {  // in
   if (_xcontents == NULL) {
@@ -161,6 +162,7 @@ get_package_desc_file(FileSpec &desc_file,              // out
     const char *name = xpackage->Attribute("name");
     const char *platform = xpackage->Attribute("platform");
     const char *version = xpackage->Attribute("version");
+    const char *solo = xpackage->Attribute("solo");
     if (name != NULL && platform != NULL && version != NULL &&
         package_name == name && 
         inst_mgr->get_platform() == platform &&
@@ -168,6 +170,10 @@ get_package_desc_file(FileSpec &desc_file,              // out
       // Here's the matching package definition.
       desc_file.load_xml(xpackage);
       package_platform = platform;
+      package_solo = false;
+      if (solo != NULL) {
+        package_solo = (atoi(solo) != 0);
+      }
       return true;
     }
 
@@ -180,6 +186,7 @@ get_package_desc_file(FileSpec &desc_file,              // out
     const char *name = xpackage->Attribute("name");
     const char *platform = xpackage->Attribute("platform");
     const char *version = xpackage->Attribute("version");
+    const char *solo = xpackage->Attribute("solo");
     if (platform == NULL) {
       platform = "";
     }
@@ -190,6 +197,10 @@ get_package_desc_file(FileSpec &desc_file,              // out
       // Here's the matching package definition.
       desc_file.load_xml(xpackage);
       package_platform = platform;
+      package_solo = false;
+      if (solo != NULL) {
+        package_solo = (atoi(solo) != 0);
+      }
       return true;
     }
 

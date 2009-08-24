@@ -61,6 +61,7 @@ P3DInstance(P3D_request_ready_func *func,
   _user_data = user_data;
   _request_pending = false;
   _temp_p3d_filename = NULL;
+  _splash_package = NULL;
   _temp_splash_image = NULL;
   _got_fparams = false;
   _got_wparams = false;
@@ -121,6 +122,10 @@ P3DInstance::
     (*pi)->remove_instance(this);
   }
   _packages.clear();
+  if (_splash_package != NULL) {
+    _splash_package->remove_instance(this);
+    _splash_package = NULL;
+  }
 
   if (_splash_window != NULL) {
     delete _splash_window;
@@ -1201,32 +1206,37 @@ make_splash_window() {
   _splash_window->set_wparams(_wparams);
   _splash_window->set_install_label(_install_label);
 
-  string splash_image_url = _fparams.lookup_token("splash_img");
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+
   if (!_fparams.has_token("splash_img")) {
     // No specific splash image is specified; get the default splash
-    // image.
-    splash_image_url = PANDA_PACKAGE_HOST_URL;
-    if (!splash_image_url.empty() && splash_image_url[splash_image_url.size() - 1] != '/') {
-      splash_image_url += "/";
+    // image.  We do this via the P3DPackage interface, so we can
+    // use the cached version on disk if it's good.
+    P3DHost *host = inst_mgr->get_host(PANDA_PACKAGE_HOST_URL);
+    _splash_package = host->get_package("splash", "");
+    _splash_package->add_instance(this);
+
+  } else {
+    // We have an explicit splash image specified, so just download it
+    // directly.  This one won't be cached locally (though the browser
+    // might be free to cache it).
+    string splash_image_url = _fparams.lookup_token("splash_img");
+    if (splash_image_url.empty()) {
+      // No splash image.  Never mind.
+      return;
     }
-    splash_image_url += "coreapi/splash.jpg";
+    
+    // Make a temporary file to receive the splash image.
+    assert(_temp_splash_image == NULL);
+    _temp_splash_image = new P3DTemporaryFile(".jpg");
+    
+    // Start downloading the requested splash image.
+    SplashDownload *download = new SplashDownload(this);
+    download->set_url(splash_image_url);
+    download->set_filename(_temp_splash_image->get_filename());
+    
+    start_download(download);
   }
-
-  if (splash_image_url.empty()) {
-    // No splash image.  Never mind.
-    return;
-  }
-
-  // Make a temporary file to receive the splash image.
-  assert(_temp_splash_image == NULL);
-  _temp_splash_image = new P3DTemporaryFile(".jpg");
-
-  // Start downloading the requested splash image.
-  SplashDownload *download = new SplashDownload(this);
-  download->set_url(splash_image_url);
-  download->set_filename(_temp_splash_image->get_filename());
-
-  start_download(download);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1238,6 +1248,16 @@ make_splash_window() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 report_package_info_ready(P3DPackage *package) {
+  if (package == _splash_package) {
+    // A special case: we just downloaded the splash image, via the
+    // package interface.
+    if (_splash_window != NULL) {
+      string filename = package->get_desc_file_pathname();
+      _splash_window->set_image_filename(filename, false);
+    }
+    return;
+  }
+
   if (get_packages_info_ready()) {
     // All packages are ready to go.  Let's start some download
     // action.
@@ -1669,8 +1689,9 @@ void P3DInstance::SplashDownload::
 download_finished(bool success) {
   P3DFileDownload::download_finished(success);
   if (success) {
-    // We've successfully downloaded the splash image.  Put it
-    // onscreen if our splash window still exists.
+    // We've successfully downloaded the splash image (directly, not
+    // via the package interface).  Put it onscreen if our splash
+    // window still exists.
     if (_inst->_splash_window != NULL) {
       _inst->_splash_window->set_image_filename(get_filename(), true);
     }

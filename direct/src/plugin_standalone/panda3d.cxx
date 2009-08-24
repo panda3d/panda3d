@@ -394,18 +394,18 @@ read_contents_file(Filename contents_filename, const string &download_url,
 
   TiXmlElement *xcontents = doc.FirstChildElement("contents");
   if (xcontents != NULL) {
-    TiXmlElement *xplugin = xcontents->FirstChildElement("plugin");
-    while (xplugin != NULL) {
-      const char *name = xplugin->Attribute("name");
+    TiXmlElement *xpackage = xcontents->FirstChildElement("package");
+    while (xpackage != NULL) {
+      const char *name = xpackage->Attribute("name");
       if (name != NULL && strcmp(name, "coreapi") == 0) {
-        const char *xplatform = xplugin->Attribute("platform");
+        const char *xplatform = xpackage->Attribute("platform");
         if (xplatform != NULL && strcmp(xplatform, this_platform.c_str()) == 0) {
           return get_core_api(contents_filename, download_url, 
-                              this_platform, verify_contents, xplugin);
+                              this_platform, verify_contents, xpackage);
         }
       }
       
-      xplugin = xplugin->NextSiblingElement("plugin");
+      xpackage = xpackage->NextSiblingElement("package");
     }
   }
 
@@ -426,8 +426,8 @@ read_contents_file(Filename contents_filename, const string &download_url,
 bool Panda3D::
 get_core_api(const Filename &contents_filename, const string &download_url,
              const string &this_platform, bool verify_contents,
-             TiXmlElement *xplugin) {
-  _core_api_dll.load_xml(xplugin);
+             TiXmlElement *xpackage) {
+  _core_api_dll.load_xml(xpackage);
 
   if (!_core_api_dll.quick_verify(_root_dir)) {
     // The DLL file needs to be downloaded.  Go get it.

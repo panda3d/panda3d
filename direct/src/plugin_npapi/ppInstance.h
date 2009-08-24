@@ -72,7 +72,7 @@ private:
   void feed_file(PPDownloadRequest *req, const string &filename);
 
   bool read_contents_file(const string &contents_filename);
-  void get_core_api(TiXmlElement *xplugin);
+  void get_core_api(TiXmlElement *xpackage);
   void downloaded_plugin(const string &filename);
   void do_load_plugin();
 

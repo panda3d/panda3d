@@ -1,3 +1,5 @@
+from pandac.PandaModules import getModelPath, Filename
+
 # This file defines a number of standard "packages" that correspond to
 # a Panda3D distribution.  These packages are built by passing this
 # file to the ppackage utility, either as a packaged application, or
@@ -12,6 +14,19 @@
 # and then a number of smaller, optional packages, which may or may
 # not be needed by any one particular application.
 
+class coreapi(solo):
+    # The special "coreapi" package.  As a "solo", this is just a
+    # single .dll (or dylib, or whatever).
+    file('p3d_plugin.dll')
+
+class splash(solo):
+    # We also store the default splash image, as "solo".  Well, it
+    # has to go somewhere.
+    splashFilename = Filename('maps/panda_splash.jpg')
+    if splashFilename.resolveFilename(getModelPath().getValue()):
+        file(splashFilename, newName = 'splash.jpg')
+    else:
+        print "Could not locate %s" % (splashFilename)
 
 class panda3d(package):
     # The core Panda3D package.  Contains Python and most of the graphics

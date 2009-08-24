@@ -47,6 +47,7 @@ public:
                           const string &package_version);
   bool get_package_desc_file(FileSpec &desc_file, 
                              string &package_platform,
+                             bool &package_solo,
                              const string &package_name,
                              const string &package_version);
 
