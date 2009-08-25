@@ -14,6 +14,16 @@
 
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HTTPChannel::get_client
+//       Access: Published
+//  Description: Returns the HTTPClient object that owns this channel.
+////////////////////////////////////////////////////////////////////
+INLINE HTTPClient *HTTPChannel::
+get_client() const {
+  return _client;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HTTPChannel::is_valid
 //       Access: Published
 //  Description: Returns true if the last-requested document was

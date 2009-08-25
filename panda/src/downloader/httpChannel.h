@@ -97,6 +97,8 @@ PUBLISHED:
     SC_download_invalid_range,
   };
 
+  INLINE HTTPClient *get_client() const;
+
   INLINE bool is_valid() const;
   INLINE bool is_connection_ready() const;
 

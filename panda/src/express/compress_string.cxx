@@ -115,7 +115,7 @@ EXPCL_PANDAEXPRESS bool
 decompress_file(const Filename &source, const Filename &dest) {
   Filename source_filename = Filename::binary_filename(source);
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-  istream *source_stream = vfs->open_read_file(source_filename, true);
+  istream *source_stream = vfs->open_read_file(source_filename, false);
   if (source_stream == NULL) {
     express_cat.info() << "Couldn't open file " << source_filename << "\n";
     return false;
