@@ -188,13 +188,13 @@ class PackageInfo:
         
         allExtractsOk = True
         if not self.uncompressedArchive.quickVerify(self.packageDir):
-            print "File is incorrect: %s" % (self.uncompressedArchive.filename)
+            #print "File is incorrect: %s" % (self.uncompressedArchive.filename)
             allExtractsOk = False
 
         if allExtractsOk:
             for file in self.extracts:
                 if not file.quickVerify(self.packageDir):
-                    print "File is incorrect: %s" % (file.filename)
+                    #print "File is incorrect: %s" % (file.filename)
                     allExtractsOk = False
                     break
 
@@ -251,7 +251,6 @@ class PackageInfo:
         sourcePathname = Filename(self.packageDir, self.compressedArchive.filename)
         targetPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
 
-        print sourcePathname, targetPathname
         decompressor = Decompressor()
         decompressor.initiate(sourcePathname, targetPathname)
         totalBytes = self.uncompressedArchive.size
