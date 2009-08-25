@@ -90,6 +90,20 @@ get_log_directory() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_keep_cwd
+//       Access: Public
+//  Description: Returns the value of the keep_cwd flag passed to the
+//               constructor.  This is true if the original working
+//               directory was valuable and meaningful, and should be
+//               preserved; or false if it is meaningless and should
+//               be changed.
+////////////////////////////////////////////////////////////////////
+inline bool P3DInstanceManager::
+get_keep_cwd() const {
+  return _keep_cwd;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_num_instances
 //       Access: Public
 //  Description: Returns the number of instances currently running

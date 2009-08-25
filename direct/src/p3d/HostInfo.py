@@ -1,4 +1,4 @@
-from pandac.PandaModules import TiXmlDocument, HashVal, Filename, PandaSystem
+from pandac.PandaModules import TiXmlDocument, HashVal, Filename, PandaSystem, URLSpec, Ramfile
 from direct.p3d.PackageInfo import PackageInfo
 from direct.p3d.FileSpec import FileSpec
 
@@ -31,6 +31,37 @@ class HostInfo:
         self.__determineHostDir(appRunner)
         self.importsDir = Filename(self.hostDir, 'imports')
 
+    def downloadContentsFile(self, http):
+        """ Downloads the contents.xml file for this particular host,
+        synchronously, and then reads it.  Returns true on success,
+        false on failure. """
+
+        if self.hasContentsFile:
+            # We've already got one.
+            return True
+
+        url = URLSpec(self.hostUrlPrefix + 'contents.xml')
+        print "Downloading %s" % (url)
+
+        rf = Ramfile()
+        channel = http.getDocument(url)
+        if not channel.downloadToRam(rf):
+            print "Unable to download %s" % (url)
+
+        filename = Filename(self.hostDir, 'contents.xml')
+        filename.makeDir()
+        f = open(filename.toOsSpecific(), 'wb')
+        f.write(rf.getData())
+        f.close()
+
+        try:
+            self.readContentsFile()
+        except ValueError:
+            print "Failure reading %s" % (filename)
+            return False
+
+        return True
+
     def readContentsFile(self):
         """ Reads the contents.xml file for this particular host.
         Presumably this has already been downloaded and installed. """
@@ -43,7 +74,7 @@ class HostInfo:
 
         doc = TiXmlDocument(filename.toOsSpecific())
         if not doc.LoadFile():
-            raise IOError
+            raise ValueError
 
         xcontents = doc.FirstChildElement('contents')
         if not xcontents:
@@ -60,6 +91,7 @@ class HostInfo:
             package = self.__makePackage(name, platform, version)
             package.descFile = FileSpec()
             package.descFile.loadXml(xpackage)
+            package.setupFilenames()
 
             xpackage = xpackage.NextSiblingElement('package')
 
@@ -100,6 +132,7 @@ class HostInfo:
         version and the indicated platform or the current runtime
         platform, if one is provided by this host, or None if not. """
 
+        assert self.hasContentsFile
         platforms = self.packages.get((name, version), {})
 
         if platform is not None:
@@ -115,7 +148,7 @@ class HostInfo:
         # If not found, look for one matching no particular platform.
         if not package:
             package = platforms.get(None, None)
-            
+
         return package
 
     def __determineHostDir(self, appRunner):

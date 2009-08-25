@@ -654,13 +654,11 @@ start_p3dpython(P3DInstance *inst) {
 
   _python_root_dir = inst->_panda3d->get_package_dir();
 
-  // We'll be changing the directory to the standard start directory
-  // only if we don't have full disk access set for the instance.  If
-  // we do have this setting, we'll keep the current directory
-  // instead.
-  bool change_dir = !inst->_full_disk_access;
+  // Change the current directory to the standard start directory, but
+  // only if the runtime environment told us the original current
+  // directory isn't meaningful.
   string start_dir;
-  if (change_dir) {
+  if (!inst_mgr->get_keep_cwd()) {
     start_dir = _start_dir;
     mkdir_complete(start_dir, nout);
   }

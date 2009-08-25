@@ -160,7 +160,6 @@ private:
   string _session_key;
   string _python_version;
   string _log_basename;
-  bool _full_disk_access;
   bool _hidden;
 
   P3DSession *_session;

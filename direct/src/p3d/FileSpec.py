@@ -113,7 +113,7 @@ class FileSpec:
         redownloaded. """
 
         if not pathname:
-            pathname = Filename(packageDir, pathname)
+            pathname = Filename(packageDir, self.filename)
         try:
             st = os.stat(pathname.toOsSpecific())
         except OSError:

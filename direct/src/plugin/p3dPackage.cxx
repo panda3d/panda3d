@@ -345,8 +345,8 @@ desc_file_download_finished(bool success) {
 void P3DPackage::
 got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   TiXmlElement *xpackage = doc->FirstChildElement("package");
-  TiXmlElement *uncompressed_archive = NULL;
-  TiXmlElement *compressed_archive = NULL;
+  TiXmlElement *xuncompressed_archive = NULL;
+  TiXmlElement *xcompressed_archive = NULL;
   
   if (xpackage != NULL) {
     const char *display_name_cstr = xpackage->Attribute("display_name");
@@ -354,11 +354,11 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
       _package_display_name = display_name_cstr;
     }
 
-    uncompressed_archive = xpackage->FirstChildElement("uncompressed_archive");
-    compressed_archive = xpackage->FirstChildElement("compressed_archive");
+    xuncompressed_archive = xpackage->FirstChildElement("uncompressed_archive");
+    xcompressed_archive = xpackage->FirstChildElement("compressed_archive");
   }
 
-  if (uncompressed_archive == NULL || compressed_archive == NULL) {
+  if (xuncompressed_archive == NULL || xcompressed_archive == NULL) {
     // The desc file didn't include the archive file itself, weird.
     if (!freshly_downloaded) {
       download_desc_file();
@@ -368,8 +368,8 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
     return;
   }
 
-  _uncompressed_archive.load_xml(uncompressed_archive);
-  _compressed_archive.load_xml(compressed_archive);
+  _uncompressed_archive.load_xml(xuncompressed_archive);
+  _compressed_archive.load_xml(xcompressed_archive);
 
   // Now get all the extractable components.
   _extracts.clear();
@@ -472,8 +472,6 @@ download_compressed_archive(bool allow_partial) {
     url = url.substr(0, slash + 1);
   }
   url += _compressed_archive.get_filename();
-  cerr << "_desc_file_url = " << _desc_file_url << ", url = " << url 
-       << "\n";
 
   string target_pathname = _package_dir + "/" + _compressed_archive.get_filename();
 

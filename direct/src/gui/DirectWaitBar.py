@@ -13,10 +13,9 @@ d = DirectWaitBar(borderWidth=(0, 0))
 """
 
 class DirectWaitBar(DirectFrame):
-    """
-    DirectEntry(parent) - Create a DirectGuiWidget which responds
-    to keyboard buttons
-    """
+    """ DirectWaitBar - A DirectWidget that shows progress completed
+    towards a task.  """
+    
     def __init__(self, parent = None, **kw):
         # Inherits from DirectFrame
         # A Direct Frame can have:

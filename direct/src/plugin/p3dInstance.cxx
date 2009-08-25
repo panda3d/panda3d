@@ -71,7 +71,6 @@ P3DInstance(P3D_request_ready_func *func,
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _instance_id = inst_mgr->get_unique_id();
-  _full_disk_access = false;
   _hidden = false;
   _session = NULL;
   _panda3d = NULL;
@@ -880,11 +879,6 @@ scan_app_desc_file(TiXmlDocument *doc) {
   const char *log_basename = xpackage->Attribute("log_basename");
   if (log_basename != NULL) {
     _log_basename = log_basename;
-  }
-
-  int full_disk_access = 0;
-  if (xpackage->QueryIntAttribute("full_disk_access", &full_disk_access) == TIXML_SUCCESS) {
-    _full_disk_access = (full_disk_access != 0);
   }
 
   int hidden = 0;

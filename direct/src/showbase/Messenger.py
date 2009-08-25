@@ -312,19 +312,48 @@ class Messenger:
             if taskChain:
                 # Queue the event onto the indicated task chain.
                 from direct.task.TaskManagerGlobal import taskMgr
-                taskMgr.add(self.__lockAndDispatch, name = 'Messenger-%s-%s' % (event, taskChain), extraArgs = [acceptorDict, event, sentArgs, foundWatch], taskChain = taskChain)
+                queue = self._eventQueuesByTaskChain.setdefault(taskChain, [])
+                queue.append((acceptorDict, event, sentArgs, foundWatch))
+                if len(queue) == 1:
+                    # If this is the first (only) item on the queue,
+                    # spawn the task to empty it.
+                    taskMgr.add(self.__taskChainDispatch, name = 'Messenger-%s' % (taskChain),
+                                extraArgs = [taskChain], taskChain = taskChain,
+                                appendTask = True)
             else:
                 # Handle the event immediately.
                 self.__dispatch(acceptorDict, event, sentArgs, foundWatch)
         finally:
             self.lock.release()
 
-    def __lockAndDispatch(self, acceptorDict, event, sentArgs, foundWatch):
-        self.lock.acquire()
-        try:
-            self.__dispatch(acceptorDict, event, sentArgs, foundWatch)
-        finally:
-            self.lock.release()
+    def __taskChainDispatch(self, taskChain, task):
+        """ This task is spawned each time an event is sent across
+        task chains.  Its job is to empty the task events on the queue
+        for this particular task chain.  This guarantees that events
+        are still delivered in the same order they were sent. """
+
+        while True:
+            eventTuple = None
+            self.lock.acquire()
+            try:
+                queue = self._eventQueuesByTaskChain.get(taskChain, None)
+                if queue:
+                    eventTuple = queue[0]
+                    del queue[0]
+                if not queue:
+                    # The queue is empty, we're done.
+                    if queue is not None:
+                        del self._eventQueuesByTaskChain[taskChain]
+
+                if not eventTuple:
+                    # No event; we're done.
+                    return task.done
+                
+                self.__dispatch(*eventTuple)
+            finally:
+                self.lock.release()
+
+        return task.done
 
     def __dispatch(self, acceptorDict, event, sentArgs, foundWatch):
         for id in acceptorDict.keys():

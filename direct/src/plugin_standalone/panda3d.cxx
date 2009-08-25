@@ -470,7 +470,7 @@ get_core_api(const Filename &contents_filename, const string &download_url,
 
   if (!load_plugin(pathname, contents_filename.to_os_specific(),
                    download_url, verify_contents, this_platform, _log_dirname,
-                   _log_basename)) {
+                   _log_basename, true)) {
     cerr << "Unable to launch core API in " << pathname << "\n" << flush;
     return false;
   }

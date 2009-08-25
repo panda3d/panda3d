@@ -51,7 +51,7 @@ from direct.p3d import Packager
 from pandac.PandaModules import *
 
 # Temp hack for debugging.
-#from direct.p3d.AppRunner import dummyAppRunner; dummyAppRunner(fullDiskAccess = 1)
+#from direct.p3d.AppRunner import dummyAppRunner; dummyAppRunner()
 
 class ArgumentError(StandardError):
     pass

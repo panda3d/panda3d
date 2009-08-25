@@ -51,6 +51,7 @@ P3DInstanceManager() {
   _is_initialized = false;
   _next_temp_filename_counter = 1;
   _unique_id = 0;
+  _keep_cwd = false;
 
   _notify_thread_continue = false;
   _started_notify_thread = false;
@@ -155,8 +156,8 @@ bool P3DInstanceManager::
 initialize(const string &contents_filename, const string &download_url,
            bool verify_contents,
            const string &platform, const string &log_directory,
-           const string &log_basename) {
-
+           const string &log_basename, bool keep_cwd) {
+  _keep_cwd = keep_cwd;
   _root_dir = find_root_dir();
   _verify_contents = verify_contents;
   _platform = platform;

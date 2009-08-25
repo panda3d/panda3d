@@ -126,7 +126,8 @@ bool
 load_plugin(const string &p3d_plugin_filename, 
             const string &contents_filename, const string &download_url, 
             bool verify_contents, const string &platform,
-            const string &log_directory, const string &log_basename) {
+            const string &log_directory, const string &log_basename,
+            bool keep_cwd) {
   string filename = p3d_plugin_filename;
   if (filename.empty()) {
     // Look for the plugin along the path.
@@ -297,7 +298,8 @@ load_plugin(const string &p3d_plugin_filename,
 
   if (!P3D_initialize(P3D_API_VERSION, contents_filename.c_str(),
                       download_url.c_str(), verify_contents, platform.c_str(),
-                      log_directory.c_str(), log_basename.c_str())) {
+                      log_directory.c_str(), log_basename.c_str(),
+                      keep_cwd)) {
     // Oops, failure to initialize.
     cerr << "Failed to initialize plugin (wrong API version?)\n";
     unload_plugin();

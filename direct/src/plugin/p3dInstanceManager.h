@@ -48,7 +48,8 @@ public:
                   bool verify_contents,
                   const string &platform,
                   const string &log_directory,
-                  const string &log_basename);
+                  const string &log_basename,
+                  bool keep_cwd);
 
   inline bool is_initialized() const;
   inline bool get_verify_contents() const;
@@ -57,6 +58,7 @@ public:
   inline const string &get_root_dir() const;
   inline const string &get_platform() const;
   inline const string &get_log_directory() const;
+  inline bool get_keep_cwd() const;
 
   P3DInstance *
   create_instance(P3D_request_ready_func *func, 
@@ -108,6 +110,7 @@ private:
   string _log_basename;
   string _log_pathname;
   string _temp_directory;
+  bool _keep_cwd;
 
   P3D_object *_undefined_object;
   P3D_object *_none_object;

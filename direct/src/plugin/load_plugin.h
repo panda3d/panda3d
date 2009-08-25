@@ -62,7 +62,8 @@ bool
 load_plugin(const string &p3d_plugin_filename, 
             const string &contents_filename, const string &download_url,
             bool verify_contents, const string &platform,
-            const string &log_directory, const string &log_basename);
+            const string &log_directory, const string &log_basename,
+            bool keep_cwd);
 void unload_plugin();
 bool is_plugin_loaded();
 

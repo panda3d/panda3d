@@ -147,7 +147,6 @@ class packp3d(p3d):
     # the targeted runtime.
 
     config(display_name = "Panda3D Application Packer",
-           full_disk_access = True,
            hidden = True)
     require('panda3d', 'egg')
 
@@ -160,7 +159,6 @@ class ppackage(p3d):
     # more packages or p3d applications.
 
     config(display_name = "Panda3D General Package Utility",
-           full_disk_access = True,
            hidden = True)
     require('panda3d', 'egg')
 

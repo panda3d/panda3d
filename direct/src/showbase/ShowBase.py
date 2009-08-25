@@ -2483,7 +2483,7 @@ class ShowBase(DirectObject.DirectObject):
         # has to be responsible for running the main loop, so we can't
         # allow the application to do it.  This is a minor hack, but
         # should work for 99% of the cases.
-        if self.appRunner is None:
+        if self.appRunner is None or self.appRunner.dummy:
             self.taskMgr.run()
 
 

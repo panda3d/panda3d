@@ -161,6 +161,16 @@ class TaskManager:
             # Next time around invoke the default handler
             signal.signal(signal.SIGINT, self.invokeDefaultHandler)
 
+    def hasTaskChain(self, chainName):
+        """ Returns true if a task chain with the indicated name has
+        already been defined, or false otherwise.  Note that
+        setupTaskChain() will implicitly define a task chain if it has
+        not already been defined, or modify an existing one if it has,
+        so in most cases there is no need to check this method
+        first. """
+
+        return (self.mgr.findTaskChain(chainName) != None)
+
     def setupTaskChain(self, chainName, numThreads = None, tickClock = None,
                        threadPriority = None, frameBudget = None,
                        timeslicePriority = None):

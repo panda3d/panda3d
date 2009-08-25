@@ -36,6 +36,16 @@ class ScriptAttributes:
     pass
 
 class AppRunner(DirectObject):
+
+    """ This class is intended to be compiled into the Panda3D runtime
+    distributable, to execute a packaged p3d application.  It also
+    provides some useful runtime services while running in that
+    packaged environment.
+
+    It does not usually exist while running Python directly, but you
+    can use dummyAppRunner() to create one at startup for testing or
+    development purposes.  """
+    
     def __init__(self):
         DirectObject.__init__(self)
 
@@ -45,6 +55,9 @@ class AppRunner(DirectObject):
         # child.
         sys.stdout = sys.stderr
 
+        # This is set true by dummyAppRunner(), below.
+        self.dummy = False
+
         self.sessionId = 0
         self.packedAppEnvironmentInitialized = False
         self.gotWindow = False
@@ -53,8 +66,6 @@ class AppRunner(DirectObject):
         self.windowOpened = False
         self.windowPrc = None
         self.http = HTTPClient.getGlobalPtr()
-
-        self.fullDiskAccess = False
 
         self.Undefined = Undefined
         self.ConcreteStruct = ConcreteStruct
@@ -72,9 +83,17 @@ class AppRunner(DirectObject):
         # A list of the Panda3D packages that have been loaded.
         self.installedPackages = []
 
+        # A list of the Panda3D packages that in the queue to be
+        # downloaded.
+        self.downloadingPackages = []
+
         # A dictionary of HostInfo objects for the various download
         # hosts we have imported packages from.
         self.hosts = {}
+
+        # Managing packages for runtime download.
+        self.downloadingPackages = []
+        self.downloadTask = None
 
         # The mount point for the multifile.  For now, this is always
         # the same, but when we move to multiple-instance sessions, it
@@ -115,6 +134,36 @@ class AppRunner(DirectObject):
         # We use this messenger hook to dispatch this __startIfReady()
         # call back to the main thread.
         self.accept('AppRunner_startIfReady', self.__startIfReady)
+
+    def installPackage(self, packageName, version = None, hostUrl = None):
+
+        """ Installs the named package, downloading it first if
+        necessary.  Returns true on success, false on failure.  This
+        method runs synchronously, and will block until it is
+        finished; see the PackageInstaller class if you want this to
+        happen asynchronously instead. """
+
+        host = self.getHost(hostUrl)
+        if not host.downloadContentsFile(self.http):
+            return False
+
+        # All right, get the package info now.
+        package = host.getPackage(packageName, version)
+        if not package:
+            print "Package %s %s not known on %s" % (
+                packageName, version, hostUrl)
+            return False
+
+        if not package.downloadDescFile(self.http):
+            return False
+
+        if not package.downloadPackage(self.http):
+            return False
+
+        if not package.installPackage(self):
+            return False
+
+        print "Package %s %s installed." % (packageName, version)
 
     def getHost(self, hostUrl):
         """ Returns a new HostInfo object corresponding to the
@@ -163,7 +212,7 @@ class AppRunner(DirectObject):
             return False
 
         return True
-            
+
     def stop(self):
         """ This method can be called by JavaScript to stop the
         application. """
@@ -191,40 +240,6 @@ class AppRunner(DirectObject):
 
         vfs = VirtualFileSystem.getGlobalPtr()
 
-        # Unmount directories we don't need.  This doesn't provide
-        # actual security, since it only disables this stuff for users
-        # who go through the vfs; a malicious programmer can always
-        # get to the underlying true file I/O operations.  Still, it
-        # can help prevent honest developers from accidentally getting
-        # stuck where they don't belong.
-        if not self.fullDiskAccess:
-            # Clear *all* the mount points, including "/", so that we
-            # no longer access the disk directly.
-            vfs.unmountAll()
-
-            # Make sure the directories on our standard Python path
-            # are mounted read-only, so we can still load Python.
-            # Note: read-only actually doesn't have any effect on the
-            # vfs right now; careless application code can still write
-            # to these directories inadvertently.
-            for dirname in sys.path:
-                dirname = Filename.fromOsSpecific(dirname)
-                if dirname.isDirectory():
-                    vfs.mount(dirname, dirname, vfs.MFReadOnly)
-
-            # Also mount some standard directories read-write
-            # (temporary and app-data directories).
-            tdir = Filename.temporary('', '')
-            for dirname in set([ tdir.getDirname(),
-                                 Filename.getTempDirectory().cStr(),
-                                 Filename.getUserAppdataDirectory().cStr(),
-                                 Filename.getCommonAppdataDirectory().cStr() ]):
-                vfs.mount(dirname, dirname, 0)
-
-            # And we might need the current working directory.
-            dirname = ExecutionEnvironment.getCwd()
-            vfs.mount(dirname, dirname, 0)
-
         # Now set up Python to import this stuff.
         VFSImporter.register()
         sys.path = [ self.multifileRoot ] + sys.path
@@ -239,11 +254,6 @@ class AppRunner(DirectObject):
         __builtin__.open = file.open
         os.listdir = file.listdir
         os.walk = file.walk
-
-        if not self.fullDiskAccess:
-            # Make "/mf" our "current directory", for running the multifiles
-            # we plan to mount there.
-            vfs.chdir(self.multifileRoot)
 
     def __startIfReady(self):
         """ Called internally to start the application. """
@@ -320,13 +330,26 @@ class AppRunner(DirectObject):
         application. """
 
         host = self.getHost(hostUrl)
-        host.readContentsFile()
+
+        try:
+            host.readContentsFile()
+        except ValueError:
+            print "Host %s has not been downloaded, cannot preload %s." % (hostUrl, name)
+            return
 
         if not platform:
             platform = None
         package = host.getPackage(name, version, platform = platform)
         assert package
         self.installedPackages.append(package)
+
+        if package.checkStatus():
+            # The package should have been loaded already.  If it has,
+            # go ahead and mount it.
+            package.installPackage(self)
+        else:
+            print "%s %s is not preloaded." % (
+                package.packageName, package.packageVersion)
 
     def setP3DFilename(self, p3dFilename, tokens = [], argv = [],
                        instanceId = None):
@@ -375,36 +398,36 @@ class AppRunner(DirectObject):
         if self.p3dInfo:
             self.p3dPackage = self.p3dInfo.FirstChildElement('package')
 
-        if self.p3dPackage:
-            fullDiskAccess = self.p3dPackage.Attribute('full_disk_access')
-            try:
-                self.fullDiskAccess = int(fullDiskAccess or '')
-            except ValueError:
-                pass
-
         self.initPackedAppEnvironment()
 
         # Mount the Multifile under /mf, by convention.
         vfs.mount(mf, self.multifileRoot, vfs.MFReadOnly)
         VFSImporter.freeze_new_modules(mf, self.multifileRoot)
 
-        # Load any prc files in the root.  We have to load them
-        # explicitly, since the ConfigPageManager can't directly look
-        # inside the vfs.  Use the Multifile interface to find the prc
-        # files, rather than vfs.scanDirectory(), so we only pick up the
-        # files in this particular multifile.
-        for f in mf.getSubfileNames():
-            fn = Filename(f)
-            if fn.getDirname() == '' and fn.getExtension() == 'prc':
-                pathname = '%s/%s' % (self.multifileRoot, f)
-                data = open(pathname, 'r').read()
-                loadPrcFileData(pathname, data)
-
+        self.loadMultifilePrcFiles(mf, self.multifileRoot)
         self.gotP3DFilename = True
 
         # Send this call to the main thread; don't call it directly.
         messenger.send('AppRunner_startIfReady', taskChain = 'default')
 
+    def loadMultifilePrcFiles(self, mf, root):
+        """ Loads any prc files in the root of the indicated
+        Multifile, which is presumbed to have been mounted already
+        under root. """
+        
+        # We have to load these prc files explicitly, since the
+        # ConfigPageManager can't directly look inside the vfs.  Use
+        # the Multifile interface to find the prc files, rather than
+        # vfs.scanDirectory(), so we only pick up the files in this
+        # particular multifile.
+        for f in mf.getSubfileNames():
+            fn = Filename(f)
+            if fn.getDirname() == '' and fn.getExtension() == 'prc':
+                pathname = '%s/%s' % (root, f)
+                data = open(pathname, 'r').read()
+                loadPrcFileData(pathname, data)
+        
+    
     def __clearWindowPrc(self):
         """ Clears the windowPrc file that was created in a previous
         call to setupWindow(), if any. """
@@ -563,7 +586,7 @@ class AppRunner(DirectObject):
 
         self.sendRequest('drop_p3dobj', objectId)
 
-def dummyAppRunner(tokens = [], argv = None, fullDiskAccess = False):
+def dummyAppRunner(tokens = [], argv = None):
     """ This function creates a dummy global AppRunner object, which
     is useful for testing running in a packaged environment without
     actually bothering to package up the application.  Call this at
@@ -580,6 +603,7 @@ def dummyAppRunner(tokens = [], argv = None, fullDiskAccess = False):
         return
 
     appRunner = AppRunner()
+    appRunner.dummy = True
     AppRunnerGlobal.appRunner = appRunner
 
     platform = PandaSystem.getPlatform()
@@ -604,7 +628,6 @@ def dummyAppRunner(tokens = [], argv = None, fullDiskAccess = False):
 
     appRunner.p3dInfo = None
     appRunner.p3dPackage = None
-    appRunner.fullDiskAccess = fullDiskAccess
 
     # Mount the current directory under the multifileRoot, as if it
     # were coming from a multifile.
@@ -618,4 +641,6 @@ def dummyAppRunner(tokens = [], argv = None, fullDiskAccess = False):
     __builtin__.open = file.open
     os.listdir = file.listdir
     os.walk = file.walk
+
+    return appRunner
 
