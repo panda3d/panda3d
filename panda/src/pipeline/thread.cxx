@@ -334,10 +334,27 @@ call_python_func(PyObject *function, PyObject *args) {
     // using true OS-level threading.  PyGILState enforces policies
     // like only one thread state per OS-level thread, which is not
     // true in the case of SIMPLE_THREADS.
-    
+
+    // For some reason I don't fully understand, I'm getting a crash
+    // when I clean up old PyThreadState objects with
+    // PyThreadState_Delete().  It appears that the thread state is
+    // still referenced somewhere at the time I call delete, and the
+    // crash occurs because I've deleted an active pointer.
+
+    // Storing these pointers in a vector for permanent recycling
+    // seems to avoid this problem.  I wish I understood better what's
+    // going wrong, but I guess this workaround will do.
+    static pvector<PyThreadState *> thread_states;
+
     PyThreadState *orig_thread_state = PyThreadState_Get();
     PyInterpreterState *istate = orig_thread_state->interp;
-    PyThreadState *new_thread_state = PyThreadState_New(istate);
+    PyThreadState *new_thread_state;
+    if (thread_states.empty()) {
+      new_thread_state = PyThreadState_New(istate);
+    } else {
+      new_thread_state = thread_states.back();
+      thread_states.pop_back();
+    }
     PyThreadState_Swap(new_thread_state);
     
     // Call the user's function.
@@ -360,8 +377,9 @@ call_python_func(PyObject *function, PyObject *args) {
       PyErr_Print();
 
       PyThreadState_Swap(orig_thread_state);
-      PyThreadState_Clear(new_thread_state);
-      PyThreadState_Delete(new_thread_state);
+      thread_states.push_back(new_thread_state);
+      //PyThreadState_Clear(new_thread_state);
+      //PyThreadState_Delete(new_thread_state);
 
       PyErr_Restore(exc, val, tb);
 
@@ -372,9 +390,10 @@ call_python_func(PyObject *function, PyObject *args) {
 
     } else {
       // No exception.  Restore the thread state normally.
-      PyThreadState_Swap(orig_thread_state);
-      PyThreadState_Clear(new_thread_state);
-      PyThreadState_Delete(new_thread_state);
+      PyThreadState *state = PyThreadState_Swap(orig_thread_state);
+      thread_states.push_back(new_thread_state);
+      //PyThreadState_Clear(new_thread_state);
+      //PyThreadState_Delete(new_thread_state);
     }
     
 #else  // SIMPLE_THREADS

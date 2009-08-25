@@ -1998,6 +1998,9 @@ run_reading_header() {
 bool HTTPChannel::
 run_start_direct_file_read() {
   _state = S_read_header;
+  if (!open_download_file()) {
+    return false;
+  }
   return false;
 }
 

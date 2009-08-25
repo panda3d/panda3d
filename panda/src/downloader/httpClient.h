@@ -128,9 +128,9 @@ PUBLISHED:
   void clear_expected_servers();
 
   PT(HTTPChannel) make_channel(bool persistent_connection);
-  PT(HTTPChannel) post_form(const URLSpec &url, const string &body);
-  PT(HTTPChannel) get_document(const URLSpec &url);
-  PT(HTTPChannel) get_header(const URLSpec &url);
+  BLOCKING PT(HTTPChannel) post_form(const URLSpec &url, const string &body);
+  BLOCKING PT(HTTPChannel) get_document(const URLSpec &url);
+  BLOCKING PT(HTTPChannel) get_header(const URLSpec &url);
 
   INLINE static string base64_encode(const string &s);
   INLINE static string base64_decode(const string &s);
