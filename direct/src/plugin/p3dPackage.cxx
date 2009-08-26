@@ -349,13 +349,16 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
   TiXmlElement *xcompressed_archive = NULL;
   
   if (xpackage != NULL) {
-    const char *display_name_cstr = xpackage->Attribute("display_name");
-    if (display_name_cstr != NULL) {
-      _package_display_name = display_name_cstr;
-    }
-
     xuncompressed_archive = xpackage->FirstChildElement("uncompressed_archive");
     xcompressed_archive = xpackage->FirstChildElement("compressed_archive");
+
+    TiXmlElement *xconfig = xpackage->FirstChildElement("config");
+    if (xconfig != NULL) {
+      const char *display_name_cstr = xconfig->Attribute("display_name");
+      if (display_name_cstr != NULL) {
+        _package_display_name = display_name_cstr;
+      }
+    }
   }
 
   if (xuncompressed_archive == NULL || xcompressed_archive == NULL) {

@@ -146,8 +146,12 @@ class PackageInfo:
         if not xpackage:
             raise ValueError
 
-        # The name for display to an English-speaking user.
-        self.displayName = xpackage.Attribute('display_name')
+        self.displayName = None
+        
+        xconfig = xpackage.FirstChildElement('config')
+        if xconfig:
+            # The name for display to an English-speaking user.
+            self.displayName = xconfig.Attribute('display_name')
 
         # The uncompressed archive, which will be mounted directly,
         # and also used for patching.

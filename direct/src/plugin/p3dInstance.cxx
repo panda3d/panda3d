@@ -882,8 +882,12 @@ scan_app_desc_file(TiXmlDocument *doc) {
   }
 
   int hidden = 0;
-  if (xpackage->QueryIntAttribute("hidden", &hidden) == TIXML_SUCCESS) {
-    _hidden = (hidden != 0);
+
+  TiXmlElement *xconfig = xpackage->FirstChildElement("config");
+  if (xconfig != NULL) {
+    if (xconfig->QueryIntAttribute("hidden", &hidden) == TIXML_SUCCESS) {
+      _hidden = (hidden != 0);
+    }
   }
 
   if (_hidden && _got_wparams) {

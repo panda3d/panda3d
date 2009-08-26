@@ -139,7 +139,8 @@ class Packager:
                 return self.glob.matches(filename.cStr())
 
     class PackageEntry:
-        """ This corresponds to an entry in the contents.xml file. """
+        """ This corresponds to a <package> entry in the contents.xml
+        file. """
         
         def __init__(self):
             pass
@@ -164,18 +165,18 @@ class Packager:
                 self.importDescFile = FileSpec()
                 self.importDescFile.fromFile(installDir, importDescFilename)
 
-        def loadXml(self, xelement):
-            self.packageName = xelement.Attribute('name')
-            self.platform = xelement.Attribute('platform')
-            self.version = xelement.Attribute('version')
-            solo = xelement.Attribute('solo')
+        def loadXml(self, xpackage):
+            self.packageName = xpackage.Attribute('name')
+            self.platform = xpackage.Attribute('platform')
+            self.version = xpackage.Attribute('version')
+            solo = xpackage.Attribute('solo')
             self.solo = int(solo or '0')
 
             self.descFile = FileSpec()
-            self.descFile.loadXml(xelement)
+            self.descFile.loadXml(xpackage)
 
             self.importDescFile = None
-            ximport = xelement.FirstChildElement('import')
+            ximport = xpackage.FirstChildElement('import')
             if ximport:
                 self.importDescFile = FileSpec()
                 self.importDescFile.loadXml(ximport)
@@ -202,6 +203,11 @@ class Packager:
             return xpackage
 
     class Package:
+        """ This is the full information on a particular package we
+        are constructing.  Don't confuse it with PackageEntry, above,
+        which contains only the information found in the toplevel
+        contents.xml file."""
+        
         def __init__(self, packageName, packager):
             self.packageName = packageName
             self.packager = packager
@@ -490,13 +496,15 @@ class Packager:
             else:
                 # The "base" package file is the bottom of the patch chain.
                 packageBaseFullpath = Filename(self.packageFullpath + '.base')
-                if not packageBaseFullpath.exists() and self.packageFullpath.exists():
+                if not packageBaseFullpath.exists() and \
+                   self.packageFullpath.exists():
                     # There's a previous version of the package file.
                     # It becomes the "base".
                     self.packageFullpath.renameTo(packageBaseFullpath)
 
                 multifileFilename.renameTo(self.packageFullpath)
                 self.compressMultifile()
+                self.readDescFile()
                 self.writeDescFile()
                 self.writeImportDescFile()
 
@@ -916,10 +924,38 @@ class Packager:
                 message = 'Unable to write %s' % (compressedPath)
                 raise PackagerError, message
 
+        def readDescFile(self):
+            """ Reads the existing package.xml file before rewriting
+            it.  We need this to preserve the list of patchfiles
+            between sessions. """
+
+            self.patchVersion = '1'
+            self.patches = []
+            
+            packageDescFullpath = Filename(self.packager.installDir, self.packageDesc)
+            doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
+            if not doc.LoadFile():
+                return
+            
+            xpackage = doc.FirstChildElement('package')
+            if not xpackage:
+                return
+
+            patchVersion = xpackage.Attribute('patch_version')
+            if not patchVersion:
+                patchVersion = xpackage.Attribute('last_patch_version')
+            if patchVersion:
+                self.patchVersion = patchVersion
+
+            xpatch = xpackage.FirstChildElement('patch')
+            while xpatch:
+                self.patches.append(xpatch.Clone())
+                xpatch = xpatch.NextSiblingElement('patch')
+
         def writeDescFile(self):
             """ Makes the package.xml file that describes the package
             and its contents, for download. """
-            
+
             packageDescFullpath = Filename(self.packager.installDir, self.packageDesc)
             doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
             decl = TiXmlDeclaration("1.0", "utf-8", "")
@@ -931,6 +967,8 @@ class Packager:
                 xpackage.SetAttribute('platform', self.platform)
             if self.version:
                 xpackage.SetAttribute('version', self.version)
+
+            xpackage.SetAttribute('last_patch_version', self.patchVersion)
 
             self.__addConfigs(xpackage)
 
@@ -947,11 +985,24 @@ class Packager:
             xuncompressedArchive = self.getFileSpec(
                 'uncompressed_archive', self.packageFullpath,
                 self.packageBasename)
+            xpackage.InsertEndChild(xuncompressedArchive)
+
             xcompressedArchive = self.getFileSpec(
                 'compressed_archive', self.packageFullpath + '.pz',
                 self.packageBasename + '.pz')
-            xpackage.InsertEndChild(xuncompressedArchive)
             xpackage.InsertEndChild(xcompressedArchive)
+
+            packageBaseFullpath = Filename(self.packageFullpath + '.base')
+            if packageBaseFullpath.exists():
+                xbaseVersion = self.getFileSpec(
+                    'base_version', packageBaseFullpath,
+                    self.packageBasename + '.base')
+                xpackage.InsertEndChild(xbaseVersion)
+
+            # Copy in the patch entries read from the previous version
+            # of the desc file.
+            for xpatch in self.patches:
+                xpackage.InsertEndChild(xpatch)
 
             self.extracts.sort()
             for name, xextract in self.extracts:
@@ -963,15 +1014,20 @@ class Packager:
         def __addConfigs(self, xpackage):
             """ Adds the XML config values defined in self.configs to
             the indicated XML element. """
-            
-            for variable, value in self.configs.items():
-                if isinstance(value, types.UnicodeType):
-                    xpackage.SetAttribute(variable, value.encode('utf-8'))
-                elif isinstance(value, types.BooleanType):
-                    # True or False must be encoded as 1 or 0.
-                    xpackage.SetAttribute(variable, str(int(value)))
-                else:
-                    xpackage.SetAttribute(variable, str(value))
+
+            if self.configs:
+                xconfig = TiXmlElement('config')
+
+                for variable, value in self.configs.items():
+                    if isinstance(value, types.UnicodeType):
+                        xconfig.SetAttribute(variable, value.encode('utf-8'))
+                    elif isinstance(value, types.BooleanType):
+                        # True or False must be encoded as 1 or 0.
+                        xconfig.SetAttribute(variable, str(int(value)))
+                    else:
+                        xconfig.SetAttribute(variable, str(value))
+                        
+                xpackage.InsertEndChild(xconfig)
 
         def writeImportDescFile(self):
             """ Makes the package.import.xml file that describes the
@@ -2227,12 +2283,12 @@ class Packager:
             if self.hostDescriptiveName is None:
                 self.hostDescriptiveName = xcontents.Attribute('descriptive_name')
             
-            xelement = xcontents.FirstChildElement('package')
-            while xelement:
+            xpackage = xcontents.FirstChildElement('package')
+            while xpackage:
                 pe = self.PackageEntry()
-                pe.loadXml(xelement)
+                pe.loadXml(xpackage)
                 self.contents[pe.getKey()] = pe
-                xelement = xelement.NextSiblingElement('package')
+                xpackage = xpackage.NextSiblingElement('package')
 
     def writeContentsFile(self):
         """ Rewrites the contents.xml file at the end of
@@ -2254,8 +2310,8 @@ class Packager:
         contents = self.contents.items()
         contents.sort()
         for key, pe in contents:
-            xelement = pe.makeXml()
-            xcontents.InsertEndChild(xelement)
+            xpackage = pe.makeXml()
+            xcontents.InsertEndChild(xpackage)
 
         doc.InsertEndChild(xcontents)
         doc.SaveFile()
