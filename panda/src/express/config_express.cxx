@@ -59,14 +59,6 @@ ConfigVariableBool keep_temporary_files
           "default) to delete these.  Mainly useful for debugging "
           "when the process goes wrong."));
 
-ConfigVariableInt multifile_encryption_iteration_count
-("multifile-encryption-iteration-count", 0,
- PRC_DESC("This is a special value of encryption-iteration-count used to encrypt "
-          "subfiles within a multifile.  It has a default value of 0 (just one "
-          "application), on the assumption that the files from a multifile must "
-          "be loaded quickly, without paying the cost of an expensive hash on "
-          "each subfile in order to decrypt it."));
-
 ConfigVariableBool collect_tcp
 ("collect-tcp", false,
  PRC_DESC("Set this true to enable accumulation of several small consecutive "

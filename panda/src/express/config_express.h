@@ -48,8 +48,6 @@ extern ConfigVariableInt patchfile_zone_size;
 
 extern ConfigVariableBool keep_temporary_files;
 
-extern ConfigVariableInt multifile_encryption_iteration_count;
-
 extern EXPCL_PANDAEXPRESS ConfigVariableBool collect_tcp;
 extern EXPCL_PANDAEXPRESS ConfigVariableDouble collect_tcp_interval;
 
