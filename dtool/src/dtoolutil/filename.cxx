@@ -2430,6 +2430,15 @@ rename_to(const Filename &other) const {
     return true;
   }
 
+  // Try unlinking the target first.
+  other.unlink();
+  if (rename(temp_os_specific.c_str(),
+             other_os_specific.c_str()) == 0) {
+    // Successfully renamed.
+    unlink();
+    return true;
+  }
+
   // Failed.
   temp.unlink();
   return false;
