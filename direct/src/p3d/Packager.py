@@ -519,27 +519,6 @@ class Packager:
 
             self.cleanup()
 
-##         def buildPatch(self, origFilename, newFilename):
-##             """ Creates a patch file from origFilename to newFilename,
-##             in a temporary filename.  Returns the temporary filename
-##             on success, or None on failure. """
-
-##             if not origFilename.exists():
-##                 # No original version to patch from.
-##                 return None
-            
-##             print "Building patch from %s" % (origFilename)
-##             patchFilename = Filename.temporary('', self.packageName + '.', '.patch')
-##             p = Patchfile()
-##             if p.build(origFilename, newFilename, patchFilename):
-##                 return patchFilename
-
-##             # Unable to build a patch for some reason.
-##             patchFilename.unlink()
-##             return None
-            
-            
-
         def installSolo(self):
             """ Installs the package as a "solo", which means we
             simply copy the one file into the install directory.  This
