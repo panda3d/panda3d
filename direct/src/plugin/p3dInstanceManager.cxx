@@ -245,6 +245,9 @@ initialize(const string &contents_filename, const string &download_url,
 
   nout << "_root_dir = " << _root_dir
        << ", platform = " << _platform
+       << ", contents_filename = " << contents_filename
+       << ", download_url = " << download_url
+       << ", verify_contents = " << verify_contents
        << "\n";
 
   if (_root_dir.empty()) {
