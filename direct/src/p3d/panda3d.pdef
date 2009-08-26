@@ -147,7 +147,7 @@ class packp3d(p3d):
     # the targeted runtime.
 
     config(display_name = "Panda3D Application Packer",
-           hidden = True)
+           hidden = True, platform_specific = False)
     require('panda3d', 'egg')
 
     mainModule('direct.p3d.packp3d')
@@ -159,7 +159,7 @@ class ppackage(p3d):
     # more packages or p3d applications.
 
     config(display_name = "Panda3D General Package Utility",
-           hidden = True)
+           hidden = True, platform_specific = False)
     require('panda3d', 'egg')
 
     mainModule('direct.p3d.ppackage')

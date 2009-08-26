@@ -341,6 +341,6 @@ class PackageInfo:
 
         if root not in sys.path:
             sys.path.append(root)
-        print "Installed %s %s" % (self.packageName, self.packageVersion)
+        #print "Installed %s %s" % (self.packageName, self.packageVersion)
         
         

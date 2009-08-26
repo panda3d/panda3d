@@ -35,7 +35,7 @@ class Packager:
         def __init__(self, package, filename,
                      newName = None, deleteTemp = False,
                      explicit = False, compress = None, extract = None,
-                     executable = None):
+                     executable = None, platformSpecific = None):
             assert isinstance(filename, Filename)
             self.filename = Filename(filename)
             self.newName = newName
@@ -44,6 +44,7 @@ class Packager:
             self.compress = compress
             self.extract = extract
             self.executable = executable
+            self.platformSpecific = platformSpecific
 
             if not self.newName:
                 self.newName = self.filename.cStr()
@@ -68,7 +69,8 @@ class Packager:
 
             if self.extract is None:
                 self.extract = self.executable or (ext in packager.extractExtensions)
-            self.platformSpecific = self.executable or (ext in packager.platformSpecificExtensions)
+            if self.platformSpecific is None:
+                self.platformSpecific = self.executable or (ext in packager.platformSpecificExtensions)
                 
 
             if self.executable:
@@ -109,6 +111,11 @@ class Packager:
                 for exclude in package.excludedFilenames:
                     if exclude.matches(self.filename):
                         return True
+
+                # A platform-specific file is implicitly excluded from
+                # not-platform-specific packages.
+                if self.platformSpecific and package.platformSpecificConfig is False:
+                    return True
 
             return False
                 
@@ -224,6 +231,12 @@ class Packager:
             if not self.host:
                 self.host = self.packager.host
 
+            # Check the platform_specific config variable.  This has
+            # only three settings: None (unset), True, or False.
+            self.platformSpecificConfig = self.configs.get('platform_specific', None)
+            if self.platformSpecificConfig is not None:
+                self.platformSpecificConfig = bool(self.platformSpecificConfig)
+
             # A special case when building the "panda3d" package.  We
             # enforce that the version number matches what we've been
             # compiled with.
@@ -245,17 +258,6 @@ class Packager:
 
                 # Every p3dapp requires panda3d.
                 self.packager.do_require('panda3d')
-
-            # Check to see if any of the files are platform-specific.
-            platformSpecific = False
-            for file in self.files:
-                if file.isExcluded(self):
-                    # Skip this file.
-                    continue
-                if file.platformSpecific:
-                    platformSpecific = True
-            if platformSpecific and not self.platform:
-                self.platform = PandaSystem.getPlatform()
             
             if not self.p3dApplication and not self.version:
                 # If we don't have an implicit version, inherit the
@@ -270,6 +272,23 @@ class Packager:
                 self.installSolo()
             else:
                 self.installMultifile()
+
+        def considerPlatform(self):
+            # Check to see if any of the files are platform-specific,
+            # making the overall package platform-specific.
+
+            platformSpecific = self.platformSpecificConfig
+            for file in self.files:
+                if file.isExcluded(self):
+                    # Skip this file.
+                    continue
+                if file.platformSpecific:
+                    platformSpecific = True
+
+            if platformSpecific and self.platformSpecificConfig is not False:
+                if not self.platform:
+                    self.platform = PandaSystem.getPlatform()
+            
 
         def installMultifile(self):
             """ Installs the package, either as a p3d application, or
@@ -413,6 +432,9 @@ class Packager:
                     # Handled above.
                     pass
 
+            # Check to see if we should be platform-specific.
+            self.considerPlatform()
+
             # Now that we've processed all of the component files,
             # (and set our platform if necessary), we can generate the
             # output filename and write the output files.
@@ -480,6 +502,8 @@ class Packager:
             just a single dll and a jpg file; but it can support other
             kinds of similar "solo" packages as well. """
 
+            self.considerPlatform()
+
             packageDir = self.packageName
             if self.platform:
                 packageDir += '/' + self.platform
@@ -516,7 +540,6 @@ class Packager:
             if not file.filename.copyTo(targetPath):
                 print "Could not copy %s to %s" % (
                     file.filename, targetPath)
-
 
             # Replace or add the entry in the contents.
             a = Packager.PackageEntry()
@@ -790,10 +813,6 @@ class Packager:
             the current list of files. """
 
             freezer = self.freezer
-            if freezer.extras:
-                if not self.platform:
-                    self.platform = PandaSystem.getPlatform()
-                
             for moduleName, filename in freezer.extras:
                 filename = Filename.fromOsSpecific(filename)
                 newName = filename.getBasename()
@@ -803,7 +822,9 @@ class Packager:
                 # Sometimes the PYTHONPATH has the wrong case in it.
                 filename.makeTrueCase()
                 self.addFile(filename, newName = newName,
-                             explicit = False, extract = True)
+                             explicit = False, extract = True,
+                             executable = True,
+                             platformSpecific = True)
             freezer.extras = []
 
 
@@ -1155,10 +1176,6 @@ class Packager:
             return newName
 
         def addComponent(self, file):
-            if file.platformSpecific:
-                if not self.platform:
-                    self.platform = PandaSystem.getPlatform()
-                
             compressionLevel = 0
             if file.compress:
                 compressionLevel = self.compressionLevel
