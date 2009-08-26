@@ -48,9 +48,13 @@ PUBLISHED:
   int read_header(const Filename &patch_file);
 
   int initiate(const Filename &patch_file, const Filename &file);
+  int initiate(const Filename &patch_file, const Filename &orig_file,
+               const Filename &target_file);
   int run();
 
   bool apply(Filename &patch_file, Filename &file);
+  bool apply(Filename &patch_file, Filename &orig_file, 
+             const Filename &target_file);
 
   INLINE float get_progress() const;
 
@@ -182,7 +186,9 @@ protected:
 
   Filename _patch_file;
   Filename _orig_file;
-  Filename _temp_file;
+  Filename _output_file;
+  bool _rename_output_to_orig;
+  bool _delete_patchfile;
 
   static const PN_uint32 _v0_magic_number;
   static const PN_uint32 _magic_number;

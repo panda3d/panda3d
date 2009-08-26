@@ -100,7 +100,6 @@ const PN_uint32 Patchfile::_HASH_MASK = (PN_uint32(1) << Patchfile::_HASH_BITS) 
 ////////////////////////////////////////////////////////////////////
 Patchfile::
 Patchfile() {
-  _hash_table = NULL;
   PT(Buffer) buffer = new Buffer(patchfile_buffer_size);
   init(buffer);
 }
@@ -112,7 +111,6 @@ Patchfile() {
 ////////////////////////////////////////////////////////////////////
 Patchfile::
 Patchfile(PT(Buffer) buffer) {
-  _hash_table = NULL;
   init(buffer);
 }
 
@@ -123,6 +121,9 @@ Patchfile(PT(Buffer) buffer) {
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
 init(PT(Buffer) buffer) {
+  _rename_output_to_orig = false;
+  _delete_patchfile = false;
+  _hash_table = NULL;
   _initiated = false;
   nassertv(!buffer.is_null());
   _buffer = buffer;
@@ -143,8 +144,9 @@ Patchfile::
     PANDA_FREE_ARRAY(_hash_table);
   }
 
-  if (true == _initiated)
+  if (_initiated) {
     cleanup();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -154,7 +156,7 @@ Patchfile::
 ////////////////////////////////////////////////////////////////////
 void Patchfile::
 cleanup() {
-  if (false == _initiated) {
+  if (!_initiated) {
     express_cat.error()
       << "Patchfile::cleanup() - Patching has not been initiated"
       << endl;
@@ -189,6 +191,22 @@ cleanup() {
 ////////////////////////////////////////////////////////////////////
 int Patchfile::
 initiate(const Filename &patch_file, const Filename &file) {
+  int result = initiate(patch_file, file, Filename::temporary("", "patch_"));
+  _rename_output_to_orig = true;
+  _delete_patchfile = !keep_temporary_files;
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::initiate
+//       Access: Published
+//  Description: Set up to apply the patch to the file.  In this form,
+//               neither the original file nor the patch file are
+//               destroyed.
+////////////////////////////////////////////////////////////////////
+int Patchfile::
+initiate(const Filename &patch_file, const Filename &orig_file,
+         const Filename &target_file) {
   if (_initiated) {
     express_cat.error()
       << "Patchfile::initiate() - Patching has already been initiated"
@@ -196,8 +214,10 @@ initiate(const Filename &patch_file, const Filename &file) {
     return EU_error_abort;
   }
 
+  nassertr(orig_file != target_file, EU_error_abort);
+
   // Open the original file for read
-  _orig_file = file;
+  _orig_file = orig_file;
   _orig_file.set_binary();
   if (!_orig_file.open_read(_origfile_stream)) {
     express_cat.error()
@@ -206,32 +226,20 @@ initiate(const Filename &patch_file, const Filename &file) {
   }
 
   // Open the temp file for write
-  {
-    char *tempfilename = tempnam(".", "pf");
-    if (NULL == tempfilename) {
-      express_cat.error()
-        << "Patchfile::initiate() - Failed to create temp file name, using default" << endl;
-      _temp_file = "patcher_temp_file";
-    } else {
-      _temp_file = Filename::from_os_specific(tempfilename);
-      free(tempfilename);
-    }
-  }
-
-  _temp_file.set_binary();
-  if (!_temp_file.open_write(_write_stream)) {
+  _output_file = target_file;
+  _output_file.set_binary();
+  if (!_output_file.open_write(_write_stream)) {
     express_cat.error()
-      << "Patchfile::initiate() - Failed to open file: " << _temp_file << endl;
+      << "Patchfile::initiate() - Failed to open file: " << _output_file << endl;
     return get_write_error();
   }
 
   if (express_cat.is_debug()) {
     express_cat.debug()
-      << "Using temporary file " << _temp_file << "\n";
+      << "Patchfile using output file " << _output_file << "\n";
   }
 
   int result = internal_read_header(patch_file);
-
   _total_bytes_processed = 0;
 
   _initiated = true;
@@ -410,7 +418,7 @@ run() {
       // check the MD5 from the patch file against the newly patched file
       {
         HashVal MD5_actual;
-        MD5_actual.hash_file(_temp_file);
+        MD5_actual.hash_file(_output_file);
         if (_MD5_ofResult != MD5_actual) {
           // Whoops, patching screwed up somehow.
           _origfile_stream.close();
@@ -447,8 +455,10 @@ run() {
           }
 
           // delete the temp file and the patch file
-          if (!keep_temporary_files) {
-            _temp_file.unlink();
+          if (_rename_output_to_orig) {
+            _output_file.unlink();
+          }
+          if (_delete_patchfile) {
             _patch_file.unlink();
           }
           // return "invalid checksum"
@@ -456,25 +466,20 @@ run() {
         }
       }
 
-      // delete the patch file and the original file
-      if (!keep_temporary_files) {
+      // delete the patch file
+      if (_delete_patchfile) {
         _patch_file.unlink();
-        _orig_file.unlink();
-
-      } else {
-        // If we're keeping temporary files, rename the orig file to a
-        // backup.
-        Filename orig_backup = _orig_file.get_fullpath() + ".orig";
-        orig_backup.unlink();
-        _orig_file.rename_to(orig_backup);
       }
 
       // rename the temp file to the original file name
-      if (!_temp_file.rename_to(_orig_file)) {
-        express_cat.error()
-          << "Patchfile::run() failed to rename temp file to: " << _orig_file
-          << endl;
-        return EU_error_write_file_rename;
+      if (_rename_output_to_orig) {
+        _orig_file.unlink();
+        if (!_output_file.rename_to(_orig_file)) {
+          express_cat.error()
+            << "Patchfile::run() failed to rename temp file to: " << _orig_file
+            << endl;
+          return EU_error_write_file_rename;
+        }
       }
 
       return EU_success;
@@ -489,6 +494,9 @@ run() {
 //       Access: Public
 //  Description: Patches the entire file in one call
 //               returns true on success and false on error
+//
+//               This version will delete the patch file and overwrite
+//               the original file.
 ////////////////////////////////////////////////////////////////////
 bool Patchfile::
 apply(Filename &patch_file, Filename &file) {
@@ -504,6 +512,30 @@ apply(Filename &patch_file, Filename &file) {
   }
   return false;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Patchfile::apply
+//       Access: Public
+//  Description: Patches the entire file in one call
+//               returns true on success and false on error
+//
+//               This version will not delete any files.
+////////////////////////////////////////////////////////////////////
+bool Patchfile::
+apply(Filename &patch_file, Filename &orig_file, const Filename &target_file) {
+  int ret = initiate(patch_file, orig_file, target_file);
+  if (ret < 0)
+    return false;
+  for (;;) {
+    ret = run();
+    if (ret == EU_success)
+      return true;
+    if (ret < 0)
+      return false;
+  }
+  return false;
+}
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::internal_read_header
