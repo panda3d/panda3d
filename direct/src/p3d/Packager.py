@@ -35,6 +35,7 @@ class Packager:
         def __init__(self, package, filename,
                      newName = None, deleteTemp = False,
                      explicit = False, compress = None, extract = None,
+                     text = None, unprocessed = None,
                      executable = None, platformSpecific = None):
             assert isinstance(filename, Filename)
             self.filename = Filename(filename)
@@ -43,6 +44,8 @@ class Packager:
             self.explicit = explicit
             self.compress = compress
             self.extract = extract
+            self.text = text
+            self.unprocessed = unprocessed
             self.executable = executable
             self.platformSpecific = platformSpecific
 
@@ -72,6 +75,8 @@ class Packager:
             if self.platformSpecific is None:
                 self.platformSpecific = self.executable or (ext in packager.platformSpecificExtensions)
                 
+            if self.unprocessed is None:
+                self.unprocessed = self.executable or (ext in packager.unprocessedExtensions)
 
             if self.executable:
                 # Look up the filename along the system PATH, if necessary.
@@ -211,6 +216,8 @@ class Packager:
         def __init__(self, packageName, packager):
             self.packageName = packageName
             self.packager = packager
+            self.notify = packager.notify
+            
             self.platform = None
             self.version = None
             self.host = None
@@ -250,11 +257,18 @@ class Packager:
             if not self.host:
                 self.host = self.packager.host
 
+            # Check the version config variable.
+            version = self.configs.get('version', None)
+            if version is not None:
+                self.version = version
+                del self.configs['version']
+
             # Check the platform_specific config variable.  This has
             # only three settings: None (unset), True, or False.
             self.platformSpecificConfig = self.configs.get('platform_specific', None)
             if self.platformSpecificConfig is not None:
                 self.platformSpecificConfig = bool(self.platformSpecificConfig)
+                del self.configs['platform_specific']
 
             # A special case when building the "panda3d" package.  We
             # enforce that the version number matches what we've been
@@ -265,11 +279,11 @@ class Packager:
 
                 if self.version != PandaSystem.getPackageVersionString():
                     message = 'mismatched Panda3D version: requested %s, but Panda3D is built as %s' % (self.version, PandaSystem.getPackageVersionString())
-                    raise PackageError, message
+                    raise PackagerError, message
 
                 if self.host != PandaSystem.getPackageHostUrl():
                     message = 'mismatched Panda3D host: requested %s, but Panda3D is built as %s' % (self.host, PandaSystem.getPackageHostUrl())
-                    raise PackageError, message
+                    raise PackagerError, message
 
             if self.p3dApplication:
                 # Default compression level for an app.
@@ -330,15 +344,20 @@ class Packager:
             # Add the explicit py files that were requested by the
             # pdef file.  These get turned into Python modules.
             for file in self.files:
-                ext = Filename(file.newName).getExtension()
-                if ext != 'py':
-                    continue
-
                 if file.isExcluded(self):
                     # Skip this file.
                     continue
+                if file.unprocessed:
+                    # Unprocessed files get dealt with below.
+                    continue
 
-                self.addPyFile(file)
+                ext = Filename(file.newName).getExtension()
+                if ext == 'dc':
+                    # Add the modules named implicitly in the dc file.
+                    self.addDcImports(file)
+
+                elif ext == 'py':
+                    self.addPyFile(file)
 
             # Add the main module, if any.
             if not self.mainModule and self.p3dApplication:
@@ -411,17 +430,24 @@ class Packager:
             # discovered above.
             for file in self.files:
                 ext = Filename(file.newName).getExtension()
-                if ext == 'py':
+                if file.unprocessed:
+                    # Add an unprocessed file verbatim.
+                    self.addComponent(file)
+                elif ext == 'py':
                     # Already handled, above.
-                    continue
-
-                if file.isExcluded(self):
+                    pass
+                elif file.isExcluded(self):
                     # Skip this file.
-                    continue
-                
-                if ext == 'egg' or ext == 'bam':
+                    pass
+                elif ext == 'egg' or ext == 'bam':
                     # Skip model files this pass.
                     pass
+                elif ext == 'dc':
+                    # dc files get a special treatment.
+                    self.addDcFile(file)
+                elif ext == 'prc':
+                    # So do prc files.
+                    self.addPrcFile(file)
                 else:
                     # Any other file.
                     self.addComponent(file)
@@ -435,15 +461,16 @@ class Packager:
             # because we may add new files that we want to process.
             for file in self.files:
                 ext = Filename(file.newName).getExtension()
-                if ext == 'py':
+                if file.unprocessed:
                     # Already handled, above.
-                    continue
-
-                if file.isExcluded(self):
+                    pass
+                elif ext == 'py':
+                    # Already handled, above.
+                    pass
+                elif file.isExcluded(self):
                     # Skip this file.
-                    continue
-                
-                if ext == 'egg':
+                    pass
+                elif ext == 'egg':
                     self.addEggFile(file)
                 elif ext == 'bam':
                     self.addBamFile(file)
@@ -488,12 +515,7 @@ class Packager:
             self.multifile.repack()
             self.multifile.close()
 
-            if self.p3dApplication:
-                # No patches for an application; just move it into place.
-                multifileFilename.renameTo(self.packageFullpath)
-                # Make the application file executable.
-                os.chmod(self.packageFullpath.toOsSpecific(), 0755)
-            else:
+            if not self.p3dApplication:
                 # The "base" package file is the bottom of the patch chain.
                 packageBaseFullpath = Filename(self.packageFullpath + '.base')
                 if not packageBaseFullpath.exists() and \
@@ -502,7 +524,14 @@ class Packager:
                     # It becomes the "base".
                     self.packageFullpath.renameTo(packageBaseFullpath)
 
-                multifileFilename.renameTo(self.packageFullpath)
+            if not multifileFilename.renameTo(self.packageFullpath):
+                self.notify.error("Cannot move %s to %s" % (multifileFilename, self.packageFullpath))
+
+            if self.p3dApplication:
+                # No patches for an application; just move it into place.
+                # Make the application file executable.
+                os.chmod(self.packageFullpath.toOsSpecific(), 0755)
+            else:
                 self.compressMultifile()
                 self.readDescFile()
                 self.writeDescFile()
@@ -562,8 +591,8 @@ class Packager:
             targetPath.setBinary()
             file.filename.setBinary()
             if not file.filename.copyTo(targetPath):
-                print "Could not copy %s to %s" % (
-                    file.filename, targetPath)
+                self.notify.warning("Could not copy %s to %s" % (
+                    file.filename, targetPath))
 
             # Replace or add the entry in the contents.
             pe = Packager.PackageEntry()
@@ -599,7 +628,7 @@ class Packager:
 
             self.sourceFilenames[file.filename] = file
 
-            if not file.filename.exists():
+            if file.text is None and not file.filename.exists():
                 if not file.isExcluded(self):
                     self.packager.notify.warning("No such file: %s" % (file.filename))
                 return
@@ -644,7 +673,7 @@ class Packager:
                     filenames = self.__parseDependenciesWindows(tempFile)
                     tempFile.unlink()
                 if filenames is None:
-                    print "Unable to determine dependencies from %s" % (file.filename)
+                    self.notify.warning("Unable to determine dependencies from %s" % (file.filename))
                     continue
 
                 # Attempt to resolve the dependent filename relative
@@ -727,7 +756,7 @@ class Packager:
                     filenames = self.__parseDependenciesOSX(tempFile)
                     tempFile.unlink()
                 if filenames is None:
-                    print "Unable to determine dependencies from %s" % (file.filename)
+                    self.notify.warning("Unable to determine dependencies from %s" % (file.filename))
                     continue
 
                 # Attempt to resolve the dependent filename relative
@@ -799,7 +828,7 @@ class Packager:
                     filenames = self.__parseDependenciesPosix(tempFile)
                     tempFile.unlink()
                 if filenames is None:
-                    print "Unable to determine dependencies from %s" % (file.filename)
+                    self.notify.warning("Unable to determine dependencies from %s" % (file.filename))
                     continue
 
                 # Attempt to resolve the dependent filename relative
@@ -1247,12 +1276,127 @@ class Packager:
                          compress = False)
             return newName
 
+        def addDcFile(self, file):
+            """ Adds a dc file to the archive.  A dc file gets its
+            internal comments and parameter names stripped out of the
+            final result automatically.  This is as close as we can
+            come to "compiling" a dc file, since all of the remaining
+            symbols are meaningful at runtime. """
+            
+            # First, read in the dc file
+            dcFile = DCFile()
+            if not dcFile.read(file.filename):
+                self.notify.error("Unable to parse %s." % (file.filename))
+
+            # And then write it out without the comments and such.
+            stream = StringStream()
+            if not dcFile.write(stream, True):
+                self.notify.error("Unable to write %s." % (file.filename))
+
+            file.text = stream.getData()
+            self.addComponent(file)
+
+        def addDcImports(self, file):
+            """ Adds the Python modules named by the indicated dc
+            file. """
+
+            dcFile = DCFile()
+            if not dcFile.read(file.filename):
+                self.notify.error("Unable to parse %s." % (file.filename))
+
+            for n in range(dcFile.getNumImportModules()):
+                moduleName = dcFile.getImportModule(n)
+                moduleSuffixes = []
+                if '/' in moduleName:
+                    moduleName, suffixes = moduleName.split('/', 1)
+                    moduleSuffixes = suffixes.split('/')
+                self.freezer.addModule(moduleName)
+
+                for suffix in self.packager.dcClientSuffixes:
+                    if suffix in moduleSuffixes:
+                        self.freezer.addModule(moduleName + suffix)
+
+                for i in range(dcFile.getNumImportSymbols(n)):
+                    symbolName = dcFile.getImportSymbol(n, i)
+                    symbolSuffixes = []
+                    if '/' in symbolName:
+                        symbolName, suffixes = symbolName.split('/', 1)
+                        symbolSuffixes = suffixes.split('/')
+
+                    # "from moduleName import symbolName".
+
+                    # Maybe this symbol is itself a module; if that's
+                    # the case, we need to add it to the list also.
+                    self.freezer.addModule('%s.%s' % (moduleName, symbolName),
+                                           implicit = True)
+                    for suffix in self.packager.dcClientSuffixes:
+                        if suffix in symbolSuffixes:
+                            self.freezer.addModule('%s.%s%s' % (moduleName, symbolName, suffix),
+                                                   implicit = True)
+
+            
+        def addPrcFile(self, file):
+            """ Adds a prc file to the archive.  Like the dc file,
+            this strips comments and such before adding.  It's also
+            possible to set prcEncryptionKey and/or prcSignCommand to
+            further manipulate prc files during processing. """
+
+            # First, read it in.
+            if file.text:
+                textLines = file.text.split('\n')
+            else:
+                textLines = open(file.filename.toOsSpecific(), 'rU').readlines()
+
+            # Then write it out again, without the comments.
+            tempFilename = Filename.temporary('', 'p3d_', '.prc')
+            temp = open(tempFilename.toOsSpecific(), 'w')
+            for line in textLines:
+                line = line.strip()
+                if line and line[0] != '#':
+                    # Write the line out only if it's not a comment.
+                    temp.write(line + '\n')
+            temp.close()
+
+            if self.packager.prcSignCommand:
+                # Now sign the file.
+                command = '%s -n "%s"' % (
+                    self.packager.prcSignCommand, tempFilename.toOsSpecific())
+                self.notify.info(command)
+                exitStatus = os.system(command)
+                if exitStatus != 0:
+                    self.notify.error('Command failed: %s' % (command))
+
+            if self.packager.prcEncryptionKey:
+                # And now encrypt it.
+                if file.newName.endswith('.prc'):
+                    # Change .prc -> .pre
+                    file.newName = file.newName[:-1] + 'e'
+                
+                preFilename = Filename.temporary('', 'p3d_', '.pre')
+                encryptFile(tempFilename, preFilename, self.packager.prcEncryptionKey)
+                tempFilename.unlink()
+                tempFilename = preFilename
+
+            if file.deleteTemp:
+                file.filename.unlink()
+
+            file.filename = tempFilename
+            file.text = None
+            file.deleteTemp = True
+
+            self.addComponent(file)
+
         def addComponent(self, file):
             compressionLevel = 0
             if file.compress:
                 compressionLevel = self.compressionLevel
-                
-            self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
+
+            if file.text:
+                stream = StringStream(file.text)
+                self.multifile.addSubfile(file.newName, stream, compressionLevel)
+                self.multifile.flush()
+            else:
+                self.multifile.addSubfile(file.newName, file.filename, compressionLevel)
             if file.extract:
                 xextract = self.getFileSpec('extract', file.filename, file.newName)
                 self.extracts.append((file.newName.lower(), xextract))
@@ -1286,7 +1430,7 @@ class Packager:
         self.persistDir = None
 
         # The download URL at which these packages will eventually be
-        # hosted.  This may also be changed with the "host" command.
+        # hosted.
         self.host = PandaSystem.getPackageHostUrl()
         self.hostDescriptiveName = None
 
@@ -1396,6 +1540,10 @@ class Packager:
         # copied without compression.
         self.uncompressibleExtensions = [ 'mp3', 'ogg' ]
 
+        # Files which are not to be processed further, but which
+        # should be added exactly byte-for-byte as they are.
+        self.unprocessedExtensions = []
+
         # System files that should never be packaged.  For
         # case-insensitive filesystems (like Windows), put the
         # lowercase filename here.  Case-sensitive filesystems should
@@ -1466,7 +1614,7 @@ class Packager:
         """ Call this method to initialize the class after filling in
         some of the values in the constructor. """
 
-        self.knownExtensions = self.imageExtensions + self.modelExtensions + self.textExtensions + self.binaryExtensions + self.uncompressibleExtensions
+        self.knownExtensions = self.imageExtensions + self.modelExtensions + self.textExtensions + self.binaryExtensions + self.uncompressibleExtensions + self.unprocessedExtensions
 
         self.currentPackage = None
 
@@ -1500,6 +1648,7 @@ class Packager:
         globals['__name__'] = packageDef.getBasenameWoExtension()
 
         globals['platform'] = PandaSystem.getPlatform()
+        globals['packager'] = self
 
         # We'll stuff all of the predefined functions, and the
         # predefined classes, in the global dictionary, so the pdef
@@ -1533,7 +1682,7 @@ class Packager:
         # Now iterate through the statements and operate on them.
         statements = globals.get('__statements', [])
         if not statements:
-            print "No packages defined."
+            self.notify.info("No packages defined.")
         
         try:
             for (lineno, stype, name, args, kw) in statements:
@@ -1545,7 +1694,7 @@ class Packager:
                                       solo = solo)
                     statements = classDef.__dict__.get('__statements', [])
                     if not statements:
-                        print "No files added to %s" % (name)
+                        self.notify.info("No files added to %s" % (name))
                     for (lineno, stype, name, args, kw) in statements:
                         if stype == 'class':
                             raise PackagerError, 'Nested classes not allowed'
@@ -1608,22 +1757,6 @@ class Packager:
         line = self.__expandTabs(line)
         line = line[:whitespaceCount].lstrip() + line[whitespaceCount:]
         return line
-
-    def do_host(self, hostUrl, descriptiveName = None):
-        """ Specifies the server that will eventually host this
-        published content.  """
-
-        if self.currentPackage:
-            self.currentPackage.host = hostUrl
-        else:
-            # Outside of a package, the "host" command specifies the
-            # host for all future packages.
-            self.host = hostUrl
-
-        # The descriptive name, if specified, is kept until the end,
-        # where it may be written into the contents file.
-        if descriptiveName:
-            self.hostDescriptiveName = descriptiveName
 
     def __parseArgs(self, words, argList):
         args = {}
@@ -1792,7 +1925,7 @@ class Packager:
         # from it.
         filename = Filename(host.importsDir, package.importDescFile.basename)
         if not appRunner.freshenFile(host, package.importDescFile, filename):
-            print "Couldn't download import file."
+            self.notify.error("Couldn't download import file.")
             return None
 
         # Now that we have the import desc file, use it to load one of
@@ -1950,9 +2083,9 @@ class Packager:
         # compiled with.
         if package.packageName == 'panda3d':
             if package.version != PandaSystem.getPackageVersionString():
-                print "Warning: requiring panda3d version %s, which does not match the current build of Panda, which is version %s." % (package, PandaSystem.getPackageVersionString())
+                self.notify.warning("Requiring panda3d version %s, which does not match the current build of Panda, which is version %s." % (package, PandaSystem.getPackageVersionString()))
             elif package.host != PandaSystem.getPackageHostUrl():
-                print "Warning: requiring panda3d host %s, which does not match the current build of Panda, which is host %s." % (package, PandaSystem.getPackageHostUrl())
+                self.notify.warning("Requiring panda3d host %s, which does not match the current build of Panda, which is host %s." % (package, PandaSystem.getPackageHostUrl()))
 
         self.currentPackage.requirePackage(package)
 
@@ -2145,9 +2278,9 @@ class Packager:
             files += thisFiles
 
         prefix = ''
-        if newDir:
+        if newDir is not None:
             prefix = Filename(newDir).cStr()
-            if prefix[-1] != '/':
+            if prefix and prefix[-1] != '/':
                 prefix += '/'
         
         if newName:
@@ -2162,13 +2295,6 @@ class Packager:
             if not newName:
                 newName = str(filenames[0])
 
-            tempFile = Filename.temporary('', self.currentPackage.packageName + '.', Filename(newName).getExtension())
-            temp = open(tempFile.toOsSpecific(), 'w')
-            temp.write(text)
-            temp.close()
-            files = [tempFile.toOsSpecific()]
-            deleteTemp = True
-
         for filename in files:
             filename = Filename.fromOsSpecific(filename)
             basename = filename.getBasename()
@@ -2179,7 +2305,7 @@ class Packager:
             self.currentPackage.addFile(
                 filename, newName = name, extract = extract,
                 explicit = explicit, executable = executable,
-                deleteTemp = deleteTemp)
+                text = text, deleteTemp = deleteTemp)
 
     def do_exclude(self, filename):
         """ Marks the indicated filename as not to be included.  The
@@ -2193,7 +2319,7 @@ class Packager:
 
         self.currentPackage.excludeFile(filename)
 
-    def do_dir(self, dirname, newDir = None):
+    def do_dir(self, dirname, newDir = None, unprocessed = None):
 
         """ Adds the indicated directory hierarchy to the current
         package.  The directory hierarchy is walked recursively, and
@@ -2203,6 +2329,12 @@ class Packager:
         the contents of the named directory should be installed to.
         If it is omitted, the contents of the named directory are
         installed to the root of the package.
+
+        If unprocessed is false (the default), bam files are loaded and
+        scanned for textures, and these texture paths within the bam
+        files are manipulated to point to the new paths within the
+        package.  If unprocessed is true, this operation is bypassed,
+        and bam files are packed exactly as they are.
         """
 
         if not self.currentPackage:
@@ -2212,9 +2344,9 @@ class Packager:
         if not newDir:
             newDir = ''
 
-        self.__recurseDir(dirname, newDir)
+        self.__recurseDir(dirname, newDir, unprocessed = unprocessed)
 
-    def __recurseDir(self, filename, newName):
+    def __recurseDir(self, filename, newName, unprocessed = None):
         dirList = vfs.scanDirectory(filename)
         if dirList:
             # It's a directory name.  Recurse.
@@ -2230,7 +2362,7 @@ class Packager:
         ext = filename.getExtension()
         if ext == 'py':
             self.currentPackage.addFile(filename, newName = newName,
-                                        explicit = False)
+                                        explicit = False, unprocessed = unprocessed)
         else:
             if ext == 'pz':
                 # Strip off an implicit .pz extension.
@@ -2241,7 +2373,7 @@ class Packager:
 
             if ext in self.knownExtensions:
                 self.currentPackage.addFile(filename, newName = newName,
-                                            explicit = False)
+                                            explicit = False, unprocessed = unprocessed)
 
 
     def readContentsFile(self):

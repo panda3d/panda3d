@@ -507,7 +507,10 @@ class Freezer:
 
         # Make sure we know how to find "direct".
         for sourceTree in sourceTrees:
-            module = sys.modules.get(sourceTree, None)
+            try:
+                module = __import__(sourceTree)
+            except:
+                module = None
             if module and hasattr(module, '__path__'):
                 path = getattr(module, '__path__')
                 modulefinder.AddPackagePath(sourceTree, path[0])

@@ -34,7 +34,7 @@ class panda3d(package):
 
     config(display_name = "Panda3D")
 
-    # This is the key Python module('that is imported at runtime to start')
+    # This is the key Python module that is imported at runtime to start
     # an application running.
     module('direct.p3d.AppRunner')
 

@@ -424,7 +424,7 @@ class AppRunner(DirectObject):
             fn = Filename(f)
             if fn.getDirname() == '' and fn.getExtension() == 'prc':
                 pathname = '%s/%s' % (root, f)
-                data = open(pathname, 'r').read()
+                data = file.open(Filename(pathname), 'r').read()
                 loadPrcFileData(pathname, data)
         
     
