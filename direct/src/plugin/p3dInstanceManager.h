@@ -73,7 +73,7 @@ public:
   P3DInstance *validate_instance(P3D_instance *instance);
 
   P3DInstance *check_request();
-  void wait_request();
+  void wait_request(double timeout);
 
   P3DHost *get_host(const string &host_url);
 

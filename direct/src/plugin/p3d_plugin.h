@@ -738,10 +738,9 @@ P3D_instance_get_request_func(P3D_instance *instance);
    If any open instance has a pending request, this function will
    return a pointer to one of them (which you may then pass to
    P3D_instance_get_request_func).  If no instances have a pending
-   request, this function will return NULL.  If wait is true, this
-   function will never return NULL unless there are no instances open;
-   instead, it will wait indefinitely until there is a request
-   available.
+   request, this function will return NULL.  This function will not
+   return until at least timeout seconds have elapsed, or a request is
+   available, whichever comes first.
 
    Note that, due to race conditions, it is possible for this function
    to return a P3D_instance that does not in fact have any requests
@@ -749,7 +748,7 @@ P3D_instance_get_request_func(P3D_instance *instance);
    should always verify that the return value of
    P3D_instance_get_request() is not NULL. */
 typedef P3D_instance *
-P3D_check_request_func(bool wait);
+P3D_check_request_func(double timeout);
 
 /* A request retrieved by P3D_instance_get_request() should eventually
    be passed here, after it has been handled, to deallocate its

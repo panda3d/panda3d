@@ -36,6 +36,9 @@
 #endif
 
 
+// The amount of time in seconds to wait for new messages.
+static const double wait_cycle = 0.2;
+
 ////////////////////////////////////////////////////////////////////
 //     Function: Panda3D::Constructor
 //       Access: Public
@@ -61,7 +64,7 @@ run(int argc, char *argv[]) {
   // We prefix a "+" sign to tell gnu getopt not to parse options
   // following the first not-option parameter.  (These will be passed
   // into the sub-process.)
-  const char *optstr = "+mu:p:ft:s:o:l:h";
+  const char *optstr = "+mu:p:fw:t:s:o:l:h";
 
   bool allow_multiple = false;
   string download_url = PANDA_PACKAGE_HOST_URL;
@@ -92,7 +95,7 @@ run(int argc, char *argv[]) {
       verify_contents = true;
       break;
 
-    case 't':
+    case 'w':
       if (strcmp(optarg, "toplevel") == 0) {
         window_type = P3D_WT_toplevel;
       } else if (strcmp(optarg, "embedded") == 0) {
@@ -102,7 +105,14 @@ run(int argc, char *argv[]) {
       } else if (strcmp(optarg, "hidden") == 0) {
         window_type = P3D_WT_hidden;
       } else {
-        cerr << "Invalid value for -t: " << optarg << "\n";
+        cerr << "Invalid value for -w: " << optarg << "\n";
+        return 1;
+      }
+      break;
+
+    case 't':
+      if (!parse_token(optarg)) {
+        cerr << "Web tokens (-t) must be of the form token=value: " << optarg << "\n";
         return 1;
       }
       break;
@@ -248,13 +258,13 @@ run(int argc, char *argv[]) {
       DispatchMessage(&msg);
 
       // Check for new requests from the Panda3D plugin.
-      P3D_instance *inst = P3D_check_request(false);
+      P3D_instance *inst = P3D_check_request(wait_cycle);
       while (inst != (P3D_instance *)NULL) {
         P3D_request *request = P3D_instance_get_request(inst);
         if (request != (P3D_request *)NULL) {
           handle_request(request);
         }
-        inst = P3D_check_request(false);
+        inst = P3D_check_request(wait_cycle);
       }
 
       while (!_url_getters.empty() && 
@@ -276,7 +286,7 @@ run(int argc, char *argv[]) {
     // Not an embedded window, so we don't have our own window to
     // generate Windows events.  Instead, just wait for requests.
     while (!_instances.empty()) {
-      P3D_instance *inst = P3D_check_request(false);
+      P3D_instance *inst = P3D_check_request(wait_cycle);
       if (inst != (P3D_instance *)NULL) {
         P3D_request *request = P3D_instance_get_request(inst);
         if (request != (P3D_request *)NULL) {
@@ -294,7 +304,7 @@ run(int argc, char *argv[]) {
   EventLoopRef main_loop = GetMainEventLoop();
   EventLoopTimerUPP timer_upp = NewEventLoopTimerUPP(st_timer_callback);
   EventLoopTimerRef timer;
-  EventTimerInterval interval = 200 * kEventDurationMillisecond;
+  EventTimerInterval interval = wait_cycle * kEventDurationSecond;
   InstallEventLoopTimer(main_loop, interval, interval,
                         timer_upp, this, &timer);
   RunApplicationEventLoop();
@@ -310,7 +320,7 @@ run(int argc, char *argv[]) {
 
   // Now wait while we process pending requests.
   while (!_instances.empty()) {
-    P3D_instance *inst = P3D_check_request(false);
+    P3D_instance *inst = P3D_check_request(wait_cycle);
     if (inst != (P3D_instance *)NULL) {
       P3D_request *request = P3D_instance_get_request(inst);
       if (request != (P3D_request *)NULL) {
@@ -647,7 +657,7 @@ create_instance(const string &p3d, P3D_window_type window_type,
   } 
 
   // Build up the token list.
-  pvector<P3D_token> tokens;
+  Tokens tokens = _tokens;
   P3D_token token;
 
   string log_basename;
@@ -745,7 +755,11 @@ usage() {
     << "    time, but additional arguments may not be passed to any of the\n"
     << "    applictions.\n\n"
 
-    << "  -t [toplevel|embedded|fullscreen|hidden]\n"
+    << "  -t token=value\n"
+    << "    Defines a web token or parameter to pass to the application(s).\n"
+    << "    This simulates a <param> entry in an <object> tag.\n\n"
+
+    << "  -w [toplevel|embedded|fullscreen|hidden]\n"
     << "    Specify the type of graphic window to create.  If you specify\n"
     << "    \"embedded\", a new window is created to be the parent.\n\n"
 
@@ -773,6 +787,33 @@ usage() {
     << "  -p platform\n"
     << "    Specify the platform to masquerade as.  The default is \""
     << DTOOL_PLATFORM << "\" .\n\n";
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Panda3D::parse_token
+//       Access: Private
+//  Description: Parses a web token of the form token=value, and
+//               stores it in _tokens.  Returns true on success, false
+//               on failure.
+////////////////////////////////////////////////////////////////////
+bool Panda3D::
+parse_token(char *arg) {
+  char *equals = strchr(arg, '=');
+  if (equals == NULL) {
+    return false;
+  }
+
+  // Directly munge the C string to truncate it at the equals sign.
+  // Classic C tricks.
+  *equals = '\0';
+  P3D_token token;
+  token._keyword = strdup(arg);
+  token._value = strdup(equals + 1);
+  *equals = '=';
+
+  _tokens.push_back(token);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -857,13 +898,13 @@ st_timer_callback(EventLoopTimerRef timer, void *user_data) {
 void Panda3D::
 timer_callback(EventLoopTimerRef timer) {
   // Check for new requests from the Panda3D plugin.
-  P3D_instance *inst = P3D_check_request(false);
+  P3D_instance *inst = P3D_check_request(0.0);
   while (inst != (P3D_instance *)NULL) {
     P3D_request *request = P3D_instance_get_request(inst);
     if (request != (P3D_request *)NULL) {
       handle_request(request);
     }
-    inst = P3D_check_request(false);
+    inst = P3D_check_request(0.0);
   }
   
   // Check the download tasks.

@@ -25,6 +25,7 @@
 #include "p3dStringObject.h"
 
 #include <assert.h>
+#include <math.h>
 
 // Use a simple lock to protect the C-style API functions in this
 // module from parallel access by multiple threads in the host.
@@ -405,21 +406,65 @@ P3D_instance_get_request(P3D_instance *instance) {
 }
 
 P3D_instance *
-P3D_check_request(bool wait) {
+P3D_check_request(double timeout) {
   assert(P3DInstanceManager::get_global_ptr()->is_initialized());
   ACQUIRE_LOCK(_api_lock);
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   P3D_instance *inst = inst_mgr->check_request();
 
-  if (inst != NULL || !wait) {
+  if (inst != NULL || timeout <= 0.0) {
     RELEASE_LOCK(_api_lock);
     return inst;
   }
-  
+
+#ifdef _WIN32
+  int stop_tick = int(GetTickCount() + timeout * 1000.0);
+#else
+  struct timeval stop_time;
+  gettimeofday(&stop_time, NULL);
+
+  int seconds = (int)floor(timeout);
+  stop_time.tv_sec += seconds;
+  stop_time.tv_usec += (int)((timeout - seconds) * 1000.0);
+  if (stop_time.tv_usec > 1000) {
+    stop_time.tv_usec -= 1000;
+    ++stop_time.tv_sec;
+  }
+#endif
+
   // Now we have to block until a request is available.
+  RELEASE_LOCK(_api_lock);
+  inst_mgr->wait_request(timeout);
+  ACQUIRE_LOCK(_api_lock);
+  inst = inst_mgr->check_request();
+
   while (inst == NULL && inst_mgr->get_num_instances() != 0) {
+#ifdef _WIN32
+    int remaining_ticks = stop_tick - GetTickCount();
+    if (remaining_ticks <= 0) {
+      break;
+    }
+    timeout = remaining_ticks * 0.001;
+#else
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    struct timeval remaining;
+    remaining.tv_sec = stop_time.tv_sec - now.tv_sec;
+    remaining.tv_usec = stop_time.tv_usec - now.tv_usec;
+
+    if (remaining.tv_usec < 0) {
+      remaining.tv_usec += 1000;
+      --remaining.tv_sec;
+    }
+    if (remaining.tv_sec < 0) {
+      break;
+    }
+    timeout = remaining.tv_sec + remaining.tv_usec * 0.001;
+#endif
+
     RELEASE_LOCK(_api_lock);
-    inst_mgr->wait_request();
+    inst_mgr->wait_request(timeout);
     ACQUIRE_LOCK(_api_lock);
     inst = inst_mgr->check_request();
   }

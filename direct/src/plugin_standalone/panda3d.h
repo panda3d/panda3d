@@ -63,6 +63,7 @@ private:
   void delete_instance(P3D_instance *instance);
 
   void usage();
+  bool parse_token(char *arg);
   bool parse_int_pair(char *arg, int &x, int &y);
 
   void report_downloading_package(P3D_instance *instance);
@@ -82,6 +83,9 @@ private:
 
   typedef pset<P3D_instance *> Instances;
   Instances _instances;
+
+  typedef pvector<P3D_token> Tokens;
+  Tokens _tokens;
 
   // This nested class keeps track of active URL requests.
   class URLGetter {

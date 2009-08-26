@@ -404,7 +404,8 @@ check_request() {
 //     Function: P3DInstanceManager::wait_request
 //       Access: Public
 //  Description: Does not return until a request is pending on some
-//               instance, or until no instances remain.  Use
+//               instance, or until no instances remain, or until the
+//               indicated time in seconds has elapsed.  Use
 //               check_request to retrieve the pending request.  Due
 //               to the possibility of race conditions, it is possible
 //               for this function to return when there is in fact no
@@ -412,9 +413,60 @@ check_request() {
 //               the request first).
 ////////////////////////////////////////////////////////////////////
 void P3DInstanceManager::
-wait_request() {
+wait_request(double timeout) {
+#ifdef _WIN32
+  int stop_tick = int(GetTickCount() + timeout * 1000.0);
+#else
+  struct timeval stop_time;
+  gettimeofday(&stop_time, NULL);
+
+  int seconds = (int)floor(timeout);
+  stop_time.tv_sec += seconds;
+  stop_time.tv_usec += (int)((timeout - seconds) * 1000.0);
+  if (stop_time.tv_usec > 1000) {
+    stop_time.tv_usec -= 1000;
+    ++stop_time.tv_sec;
+  }
+#endif
+
   _request_ready.acquire();
+  if (check_request() != (P3DInstance *)NULL) {
+    _request_ready.release();
+    return;
+  }
+  if (_instances.empty()) {
+    _request_ready.release();
+    return;
+  }
+  
+  // No pending requests; go to sleep.
+  _request_ready.wait(timeout);
+
   while (true) {
+#ifdef _WIN32
+    int remaining_ticks = stop_tick - GetTickCount();
+    if (remaining_ticks <= 0) {
+      break;
+    }
+    timeout = remaining_ticks * 0.001;
+#else
+    struct timeval now;
+    gettimeofday(&now, NULL);
+
+    struct timeval remaining;
+    remaining.tv_sec = stop_time.tv_sec - now.tv_sec;
+    remaining.tv_usec = stop_time.tv_usec - now.tv_usec;
+
+    if (remaining.tv_usec < 0) {
+      remaining.tv_usec += 1000;
+      --remaining.tv_sec;
+    }
+    if (remaining.tv_sec < 0) {
+      break;
+    }
+    timeout = remaining.tv_sec + remaining.tv_usec * 0.001;
+#endif
+
     if (check_request() != (P3DInstance *)NULL) {
       _request_ready.release();
       return;
@@ -425,7 +477,7 @@ wait_request() {
     }
     
     // No pending requests; go to sleep.
-    _request_ready.wait();
+    _request_ready.wait(timeout);
   }
   _request_ready.release();
 }

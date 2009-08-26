@@ -44,12 +44,21 @@ class panda3d(package):
     # automatically be included as well, and we end up with a pretty
     # complete list that way.
     module('direct.directbase.DirectStart',
+           'direct.actor.*',
+           'direct.controls.*',
+           'direct.directdevices.*',
+           'direct.directnotify.*',
+           'direct.directtools.*',
+           'direct.directutil.*',
+           'direct.distributed.*',
+           'direct.fsm.*',
+           'direct.gui.*',
+           'direct.interval.*',
+           'direct.particles.*',
            'direct.showbase.*',
-           'direct.actor.Actor',
-           'direct.fsm.FSM',
-           'direct.interval.IntervalGlobal',
-           'direct.particles.ParticleEffect',
-           'direct.directutil.Mopath')
+           'direct.showutil.*',
+           'direct.stdpy.*')          
+
 
     # Exclude these GUI toolkits; they're big, and many applications don't
     # use them.  We define them as separate, optional packages, below.
