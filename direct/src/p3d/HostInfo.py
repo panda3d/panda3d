@@ -82,7 +82,7 @@ class HostInfo:
 
         self.descriptiveName = xcontents.Attribute('descriptive_name')
 
-        # Get the list of packages available for download.
+        # Get the list of packages available for download and/or import.
         xpackage = xcontents.FirstChildElement('package')
         while xpackage:
             name = xpackage.Attribute('name')
@@ -93,19 +93,13 @@ class HostInfo:
             package.descFile.loadXml(xpackage)
             package.setupFilenames()
 
+            package.importDescFile = None
+            ximport = xpackage.FirstChildElement('import')
+            if ximport:
+                package.importDescFile = FileSpec()
+                package.importDescFile.loadXml(ximport)
+
             xpackage = xpackage.NextSiblingElement('package')
-
-        # Also get the list of packages available for import.
-        ximport = xcontents.FirstChildElement('import')
-        while ximport:
-            name = ximport.Attribute('name')
-            platform = ximport.Attribute('platform')
-            version = ximport.Attribute('version')
-            package = self.__makePackage(name, platform, version)
-            package.importDescFile = FileSpec()
-            package.importDescFile.loadXml(ximport)
-
-            ximport = ximport.NextSiblingElement('import')
 
         self.hasContentsFile = True
 

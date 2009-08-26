@@ -149,16 +149,20 @@ class Packager:
             objects uniquely per package. """
             return (self.packageName, self.platform, self.version)
 
-        def fromFile(self, packageName, platform, version, solo, isImport,
-                     installDir, descFilename):
+        def fromFile(self, packageName, platform, version, solo,
+                     installDir, descFilename, importDescFilename):
             self.packageName = packageName
             self.platform = platform
             self.version = version
             self.solo = solo
-            self.isImport = isImport
 
             self.descFile = FileSpec()
             self.descFile.fromFile(installDir, descFilename)
+
+            self.importDescFile = None
+            if importDescFilename:
+                self.importDescFile = FileSpec()
+                self.importDescFile.fromFile(installDir, importDescFilename)
 
         def loadXml(self, xelement):
             self.packageName = xelement.Attribute('name')
@@ -166,27 +170,36 @@ class Packager:
             self.version = xelement.Attribute('version')
             solo = xelement.Attribute('solo')
             self.solo = int(solo or '0')
-            self.isImport = (xelement.Value() == 'import')
 
             self.descFile = FileSpec()
             self.descFile.loadXml(xelement)
 
+            self.importDescFile = None
+            ximport = xelement.FirstChildElement('import')
+            if ximport:
+                self.importDescFile = FileSpec()
+                self.importDescFile.loadXml(ximport)
+            
+
         def makeXml(self):
             """ Returns a new TiXmlElement. """
-            value = 'package'
-            if self.isImport:
-                value = 'import'
-            xelement = TiXmlElement(value)
-            xelement.SetAttribute('name', self.packageName)
+            xpackage = TiXmlElement('package')
+            xpackage.SetAttribute('name', self.packageName)
             if self.platform:
-                xelement.SetAttribute('platform', self.platform)
+                xpackage.SetAttribute('platform', self.platform)
             if self.version:
-                xelement.SetAttribute('version', self.version)
+                xpackage.SetAttribute('version', self.version)
             if self.solo:
-                xelement.SetAttribute('solo', '1')
+                xpackage.SetAttribute('solo', '1')
 
-            self.descFile.storeXml(xelement)
-            return xelement
+            self.descFile.storeXml(xpackage)
+
+            if self.importDescFile:
+                ximport = TiXmlElement('import')
+                self.importDescFile.storeXml(ximport)
+                xpackage.InsertEndChild(ximport)
+            
+            return xpackage
 
     class Package:
         def __init__(self, packageName, packager):
@@ -302,7 +315,7 @@ class Packager:
 
             # Write the multifile to a temporary filename until we
             # know enough to determine the output filename.
-            multifileFilename = Filename.temporary('', self.packageName)
+            multifileFilename = Filename.temporary('', self.packageName + '.', '.mf')
             self.multifile.openReadWrite(multifileFilename)
 
             self.extracts = []
@@ -463,37 +476,61 @@ class Packager:
 
             self.packageFullpath = Filename(self.packager.installDir, self.packageFilename)
             self.packageFullpath.makeDir()
-            self.packageFullpath.unlink()
 
             if self.p3dApplication:
                 self.makeP3dInfo()
             self.multifile.repack()
             self.multifile.close()
 
-            multifileFilename.renameTo(self.packageFullpath)
-
             if self.p3dApplication:
+                # No patches for an application; just move it into place.
+                multifileFilename.renameTo(self.packageFullpath)
                 # Make the application file executable.
                 os.chmod(self.packageFullpath.toOsSpecific(), 0755)
             else:
+                # The "base" package file is the bottom of the patch chain.
+                packageBaseFullpath = Filename(self.packageFullpath + '.base')
+                if not packageBaseFullpath.exists() and self.packageFullpath.exists():
+                    # There's a previous version of the package file.
+                    # It becomes the "base".
+                    self.packageFullpath.renameTo(packageBaseFullpath)
+
+                multifileFilename.renameTo(self.packageFullpath)
                 self.compressMultifile()
                 self.writeDescFile()
                 self.writeImportDescFile()
 
                 # Replace or add the entry in the contents.
-                a = Packager.PackageEntry()
-                a.fromFile(self.packageName, self.platform, self.version,
-                           False, False, self.packager.installDir,
-                           self.packageDesc)
-
-                b = Packager.PackageEntry()
-                b.fromFile(self.packageName, self.platform, self.version,
-                           False, True, self.packager.installDir,
-                           self.packageImportDesc)
-                self.packager.contents[a.getKey()] = [a, b]
+                pe = Packager.PackageEntry()
+                pe.fromFile(self.packageName, self.platform, self.version,
+                            False, self.packager.installDir,
+                            self.packageDesc, self.packageImportDesc)
+                
+                self.packager.contents[pe.getKey()] = pe
                 self.packager.contentsChanged = True
 
             self.cleanup()
+
+##         def buildPatch(self, origFilename, newFilename):
+##             """ Creates a patch file from origFilename to newFilename,
+##             in a temporary filename.  Returns the temporary filename
+##             on success, or None on failure. """
+
+##             if not origFilename.exists():
+##                 # No original version to patch from.
+##                 return None
+            
+##             print "Building patch from %s" % (origFilename)
+##             patchFilename = Filename.temporary('', self.packageName + '.', '.patch')
+##             p = Patchfile()
+##             if p.build(origFilename, newFilename, patchFilename):
+##                 return patchFilename
+
+##             # Unable to build a patch for some reason.
+##             patchFilename.unlink()
+##             return None
+            
+            
 
         def installSolo(self):
             """ Installs the package as a "solo", which means we
@@ -542,11 +579,11 @@ class Packager:
                     file.filename, targetPath)
 
             # Replace or add the entry in the contents.
-            a = Packager.PackageEntry()
-            a.fromFile(self.packageName, self.platform, self.version,
-                       True, False, self.packager.installDir,
-                       Filename(packageDir, file.newName))
-            self.packager.contents[a.getKey()] = [a]
+            pe = Packager.PackageEntry()
+            pe.fromFile(self.packageName, self.platform, self.version,
+                        True, self.packager.installDir,
+                        Filename(packageDir, file.newName), None)
+            self.packager.contents[pe.getKey()] = pe
             self.packager.contentsChanged = True
 
             self.cleanup()
@@ -606,7 +643,7 @@ class Packager:
                     # Skip this file.
                     continue
 
-                tempFile = Filename.temporary('', 'p3d_')
+                tempFile = Filename.temporary('', 'p3d_', '.txt')
                 command = 'dumpbin /dependents "%s" >"%s"' % (
                     file.filename.toOsSpecific(),
                     tempFile.toOsSpecific())
@@ -689,7 +726,7 @@ class Packager:
                     # Skip this file.
                     continue
 
-                tempFile = Filename.temporary('', 'p3d_')
+                tempFile = Filename.temporary('', 'p3d_', '.txt')
                 command = 'otool -L "%s" >"%s"' % (
                     file.filename.toOsSpecific(),
                     tempFile.toOsSpecific())
@@ -761,7 +798,7 @@ class Packager:
                     # Skip this file.
                     continue
 
-                tempFile = Filename.temporary('', 'p3d_')
+                tempFile = Filename.temporary('', 'p3d_', '.txt')
                 command = 'ldd "%s" >"%s"' % (
                     file.filename.toOsSpecific(),
                     tempFile.toOsSpecific())
@@ -2090,7 +2127,7 @@ class Packager:
             if not newName:
                 newName = str(filenames[0])
 
-            tempFile = Filename.temporary('', self.currentPackage.packageName)
+            tempFile = Filename.temporary('', self.currentPackage.packageName + '.', Filename(newName).getExtension())
             temp = open(tempFile.toOsSpecific(), 'w')
             temp.write(text)
             temp.close()
@@ -2190,12 +2227,12 @@ class Packager:
             if self.hostDescriptiveName is None:
                 self.hostDescriptiveName = xcontents.Attribute('descriptive_name')
             
-            xelement = xcontents.FirstChildElement()
+            xelement = xcontents.FirstChildElement('package')
             while xelement:
-                package = self.PackageEntry()
-                package.loadXml(xelement)
-                self.contents.setdefault(package.getKey(), []).append(package)
-                xelement = xelement.NextSiblingElement()
+                pe = self.PackageEntry()
+                pe.loadXml(xelement)
+                self.contents[pe.getKey()] = pe
+                xelement = xelement.NextSiblingElement('package')
 
     def writeContentsFile(self):
         """ Rewrites the contents.xml file at the end of
@@ -2216,10 +2253,9 @@ class Packager:
 
         contents = self.contents.items()
         contents.sort()
-        for key, entryList in contents:
-            for entry in entryList:
-                xelement = entry.makeXml()
-                xcontents.InsertEndChild(xelement)
+        for key, pe in contents:
+            xelement = pe.makeXml()
+            xcontents.InsertEndChild(xelement)
 
         doc.InsertEndChild(xcontents)
         doc.SaveFile()
