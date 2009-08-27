@@ -19,7 +19,7 @@
 
 #ifdef THREAD_SIMPLE_IMPL
 
-#if defined(HAVE_UCONTEXT_H)
+#if defined(PHAVE_UCONTEXT_H)
 
 /* The getcontext() / setcontext() implementation.  Easy-peasy. */
 

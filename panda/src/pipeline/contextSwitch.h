@@ -30,7 +30,7 @@
 
 #ifdef THREAD_SIMPLE_IMPL
 
-#if defined(HAVE_UCONTEXT_H)
+#if defined(PHAVE_UCONTEXT_H)
 /* We'd prefer to use getcontext() / setcontext() to portably change
    execution contexts within C code.  That's what these library
    functions are designed for. */
