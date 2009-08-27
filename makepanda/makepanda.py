@@ -1235,16 +1235,13 @@ def WriteConfigSettings():
         dtool_config["SIMPLE_THREADS"] = 'UNDEF'
 
     if (PkgSkip("PLUGIN")==0):
-        #FIXME: do this at runtime or so.
-        if (sys.platform.startswith("win")):
-            plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file://C:\\p3dstage/"
-        else:
-            plugin_config["P3D_PLUGIN_DOWNLOAD"] = "file:///p3dstage/"
-        plugin_config["P3D_PLUGIN_LOGFILE1"] = ""
-        plugin_config["P3D_PLUGIN_LOGFILE2"] = ""
+        plugin_config["PANDA_PACKAGE_HOST_URL"] = "http://runtime.panda3d.org/"
+        #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
+        #plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = ""
+        #plugin_config["P3D_PLUGIN_LOG_BASENAME2"] = ""
+        #plugin_config["P3D_PLUGIN_LOG_BASENAME3"] = ""
         plugin_config["P3D_PLUGIN_P3D_PLUGIN"] = ""
         plugin_config["P3D_PLUGIN_P3DPYTHON"] = ""
-        plugin_config["P3D_PLUGIN_PLATFORM"] = RUNTIME_PLATFORM
 
     conf = "/* prc_parameters.h.  Generated automatically by makepanda.py */\n"
     for key in prc_parameters.keys():
@@ -1305,7 +1302,7 @@ PANDAVERSION_H="""
 #define PANDA_VERSION_STR "VERSION1.VERSION2.VERSION3"
 #define PANDA_DISTRIBUTOR "makepanda"
 #define PANDA_PACKAGE_VERSION_STR ""
-#define PANDA_PACKAGE_HOST_URL ""
+#define PANDA_PACKAGE_HOST_URL "http://runtime.panda3d.org/"
 """
 
 CHECKPANDAVERSION_CXX="""
