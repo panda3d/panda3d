@@ -313,6 +313,28 @@ get_want_message_bundling() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::set_in_quiet_zone
+//       Access: Published
+//  Description: Enables/disables quiet zone mode
+////////////////////////////////////////////////////////////////////
+INLINE void CConnectionRepository::
+set_in_quiet_zone(bool flag) {
+  ReMutexHolder holder(_lock);
+  _in_quiet_zone = flag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: CConnectionRepository::get_in_quiet_zone
+//       Access: Published
+//  Description: Returns true if repository is in quiet zone mode
+////////////////////////////////////////////////////////////////////
+INLINE bool CConnectionRepository::
+get_in_quiet_zone() const {
+  ReMutexHolder holder(_lock);
+  return _in_quiet_zone;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: CConnectionRepository::set_simulated_disconnect
 //       Access: Published
 //  Description: Sets the simulated disconnect flag.  While this is

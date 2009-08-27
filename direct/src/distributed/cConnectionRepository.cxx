@@ -71,7 +71,8 @@ CConnectionRepository(bool has_owner_view) :
   _has_owner_view(has_owner_view),
   _handle_c_updates(true),
   _want_message_bundling(true),
-  _bundling_msgs(0)
+  _bundling_msgs(0),
+  _in_quiet_zone(0)
 {
 #if defined(HAVE_NET) && defined(SIMULATE_NETWORK_DELAY)
   if (min_lag != 0.0 || max_lag != 0.0) {
@@ -714,6 +715,19 @@ handle_update_field() {
       DCClass *dclass = (DCClass *)PyInt_AsLong(dclass_this);
       Py_DECREF(dclass_this);
 
+      // If in quiet zone mode, throw update away unless distobj
+      // has 'neverDisable' attribute set to non-zero
+      if (_in_quiet_zone) {
+        PyObject *neverDisable = PyObject_GetAttrString(distobj, "neverDisable");
+        nassertr(neverDisable != NULL, false);
+
+        unsigned int cNeverDisable = PyInt_AsLong(neverDisable);
+        if (!cNeverDisable) {
+          // in quiet zone and distobj is disable-able
+          // drop update on the floor
+          return true;
+        }
+      }
 
       // It's a good idea to ensure the reference count to distobj is
       // raised while we call the update method--otherwise, the update

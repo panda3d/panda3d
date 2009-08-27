@@ -127,6 +127,9 @@ PUBLISHED:
   INLINE void set_want_message_bundling(bool flag);
   INLINE bool get_want_message_bundling() const;
 
+  INLINE void set_in_quiet_zone(bool flag);
+  INLINE bool get_in_quiet_zone() const;
+
   void start_message_bundle();
   INLINE bool is_bundling_messages() const;
   void send_message_bundle(unsigned int channel, unsigned int sender_channel);
@@ -191,6 +194,7 @@ private:
   bool _handle_datagrams_internally;
   bool _simulated_disconnect;
   bool _verbose;
+  bool _in_quiet_zone;
 
   Datagram _dg;
   DatagramIterator _di;
