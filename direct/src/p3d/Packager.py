@@ -2034,20 +2034,20 @@ class Packager:
         named package also.  Files already included in the named
         package will be omitted from this one when building it. """
 
+        self.requirePackagesNamed(args, **kw)
+
+    def requirePackagesNamed(self, names, version = None, host = None):
+        """ Indicates a dependency on the named package(s), supplied
+        as a name.
+
+        Attempts to install this package will implicitly install the
+        named package also.  Files already included in the named
+        package will be omitted from this one when building it. """
+
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        version = kw.get('version', None)
-        host = kw.get('host', None)
-
-        for key in ['version', 'host']:
-            if key in kw:
-                del kw['version']
-        if kw:
-            message = "do_require() got an unexpected keyword argument '%s'" % (kw.keys()[0])
-            raise TypeError, message
-
-        for packageName in args:
+        for packageName in names:
             # A special case when requiring the "panda3d" package.  We
             # supply the version number what we've been compiled with as a
             # default.
@@ -2083,9 +2083,9 @@ class Packager:
         # compiled with.
         if package.packageName == 'panda3d':
             if package.version != PandaSystem.getPackageVersionString():
-                self.notify.warning("Requiring panda3d version %s, which does not match the current build of Panda, which is version %s." % (package, PandaSystem.getPackageVersionString()))
+                self.notify.warning("Requiring panda3d version %s, which does not match the current build of Panda, which is version %s." % (package.version, PandaSystem.getPackageVersionString()))
             elif package.host != PandaSystem.getPackageHostUrl():
-                self.notify.warning("Requiring panda3d host %s, which does not match the current build of Panda, which is host %s." % (package, PandaSystem.getPackageHostUrl()))
+                self.notify.warning("Requiring panda3d host %s, which does not match the current build of Panda, which is host %s." % (package.host, PandaSystem.getPackageHostUrl()))
 
         self.currentPackage.requirePackage(package)
 

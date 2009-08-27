@@ -340,7 +340,10 @@ class AppRunner(DirectObject):
         if not platform:
             platform = None
         package = host.getPackage(name, version, platform = platform)
-        assert package
+        if not package:
+            print "Couldn't find %s %s on %s" % (name, version, hostUrl)
+            return
+
         self.installedPackages.append(package)
 
         if package.checkStatus():
