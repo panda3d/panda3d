@@ -2158,6 +2158,8 @@ class Packager:
         self.do_module('VFSImporter', filename = filename)
         self.do_freeze('_vfsimporter', compileToExe = False)
 
+        self.do_file('libpandaexpress.dll');
+
         # Now that we're done freezing, explicitly add 'direct' to
         # counteract the previous explicit excludeModule().
         self.do_module('direct')

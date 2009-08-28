@@ -128,8 +128,23 @@ run_python() {
   
 #endif
 
-  // First, load _vfsimporter.pyd.  Since this is a magic frozen pyd,
-  // importing it automatically makes all of its frozen contents
+  // We'll need libpandaexpress to be imported before we can load
+  // _vfsimporter.  So, find it and load it.
+  Filename libpandaexpress(_archive_file.get_dirname(), 
+                           Filename::dso_filename("libpandaexpress.so"));
+  if (!libpandaexpress.exists()) {
+    nout << "Can't find " << libpandaexpress << "\n";
+    return false;
+  }
+
+  string startup;
+  startup = "import imp; imp.load_dynamic('libpandaexpress', \"";
+  startup += libpandaexpress.to_os_specific();
+  startup += "\");";
+  PyRun_SimpleString(startup.c_str());
+
+  // Now we can load _vfsimporter.pyd.  Since this is a magic frozen
+  // pyd, importing it automatically makes all of its frozen contents
   // available to import as well.
   PyObject *vfsimporter = PyImport_ImportModule("_vfsimporter");
   if (vfsimporter == NULL) {
