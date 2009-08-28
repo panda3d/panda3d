@@ -664,13 +664,15 @@ start_p3dpython(P3DInstance *inst) {
   }
 
   // Build up a search path that includes all of the required packages
-  // that have already been installed.
+  // that have already been installed.  We build this in reverse
+  // order, so that the higher-order packages come first in the list;
+  // that allows them to shadow settings in the lower-order packages.
+  assert(!inst->_packages.empty());
   string search_path;
-  size_t pi = 0;
-  assert(pi < inst->_packages.size());
+  size_t pi = inst->_packages.size() - 1;
   search_path = inst->_packages[pi]->get_package_dir();
-  ++pi;
-  while (pi < inst->_packages.size()) {
+  while (pi > 0) {
+    --pi;
 #ifdef _WIN32
     search_path += ';';
 #else
@@ -678,7 +680,6 @@ start_p3dpython(P3DInstance *inst) {
 #endif  // _WIN32
 
     search_path += inst->_packages[pi]->get_package_dir();
-    ++pi;
   }
 
   nout << "Search path is " << search_path << "\n";

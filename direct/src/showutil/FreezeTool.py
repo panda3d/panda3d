@@ -1096,12 +1096,12 @@ class Freezer:
                     moduleList.append(self.makeForbiddenModuleListEntry(moduleName))
                 else:
                     if origName in sourceTrees:
-                        # This is one of our Python source trees.
-                        # These are a special case: we don't compile
-                        # the __init__.py files within them, since
-                        # their only purpose is to munge the __path__
-                        # variable anyway.  Instead, we pretend the
-                        # __init__.py files are empty.
+                        # This is one of Panda3D's own Python source
+                        # trees.  These are a special case: we don't
+                        # compile the __init__.py files within them,
+                        # since their only purpose is to munge the
+                        # __path__ variable anyway.  Instead, we
+                        # pretend the __init__.py files are empty.
                         code = compile('', moduleName, 'exec')
 
                     if code:

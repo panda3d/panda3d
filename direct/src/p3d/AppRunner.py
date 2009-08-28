@@ -294,16 +294,12 @@ class AppRunner(DirectObject):
                 if mainName:
                     moduleName = mainName
 
-            root = self.multifileRoot
-            if '.' in moduleName:
-                root += '/' + '/'.join(moduleName.split('.')[:-1])
-            v = VFSImporter.VFSImporter(root)
-            loader = v.find_module(moduleName)
-            if not loader:
+            try:
+                __import__(moduleName)
+            except ImportError:
                 message = "No %s found in application." % (moduleName)
                 raise StandardError, message
-            
-            main = loader.load_module(moduleName)
+            main = sys.modules[moduleName]
             if hasattr(main, 'main') and callable(main.main):
                 main.main(self)
 
@@ -418,6 +414,7 @@ class AppRunner(DirectObject):
 
         # Mount the Multifile under /mf, by convention.
         vfs.mount(mf, self.multifileRoot, vfs.MFReadOnly)
+        VFSImporter.reloadSharedPackages()
 
         self.loadMultifilePrcFiles(mf, self.multifileRoot)
         self.gotP3DFilename = True

@@ -363,3 +363,19 @@ class PackageInfo:
         if not foundOnPath:
             # Not already here; add it.
             sys.path.append(root)
+
+        # Also, find any toplevel Python packages, and add these as
+        # shared packages.  This will allow different packages
+        # installed in different directories to share Python files as
+        # if they were all in the same directory.
+        for filename in mf.getSubfileNames():
+            if filename.endswith('/__init__.pyc') or \
+               filename.endswith('/__init__.pyo') or \
+               filename.endswith('/__init__.py'):
+                components = filename.split('/')[:-1]
+                moduleName = '.'.join(components)
+                VFSImporter.sharedPackages[moduleName] = True
+
+        # Fix up any shared directories so we can load packages from
+        # disparate locations.
+        VFSImporter.reloadSharedPackages()

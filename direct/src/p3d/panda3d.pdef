@@ -101,58 +101,58 @@ default-model-extension .bam
 """ + auxDisplays)
 
 
-## class egg(package):
-##     # This package contains the code for reading and operating on egg
-##     # files.  Since the Packager automatically converts egg files to bam
-##     # files, this is not needed for most Panda3D applications.
+class egg(package):
+    # This package contains the code for reading and operating on egg
+    # files.  Since the Packager automatically converts egg files to bam
+    # files, this is not needed for most Panda3D applications.
 
-##     config(display_name = "Panda3D egg loader")
-##     require('panda3d')
+    config(display_name = "Panda3D egg loader")
+    require('panda3d')
 
-##     file('libpandaegg.dll')
+    file('libpandaegg.dll')
 
-##     file('egg.prc', extract = True, text = """
-## plugin-path $EGG_ROOT
-## load-file-type egg pandaegg
-## """)
+    file('egg.prc', extract = True, text = """
+plugin-path $EGG_ROOT
+load-file-type egg pandaegg
+""")
 
-## class wx(package):
-##     config(display_name = "wxPython GUI Toolkit")
-##     require('panda3d')
+class wx(package):
+    config(display_name = "wxPython GUI Toolkit")
+    require('panda3d')
 
-##     module('direct.showbase.WxGlobal', 'wx', 'wx.*')
-
-
-## class tk(package):
-##     config(display_name = "Tk GUI Toolkit")
-##     require('panda3d')
-
-##     module('Tkinter',
-##            'direct.showbase.TkGlobal',
-##            'direct.tkpanels',
-##            'direct.tkwidgets')
-
-## class packp3d(p3d):
-##     # This application is a command-line convenience for building a p3d
-##     # application out of a directory hierarchy on disk.  We build it here
-##     # into its own p3d application, to allow end-users to easily build p3d
-##     # applications using the appropriate version of Python and Panda for
-##     # the targeted runtime.
-
-##     config(display_name = "Panda3D Application Packer",
-##            hidden = True, platform_specific = False)
-##     require('panda3d', 'egg')
-
-##     mainModule('direct.p3d.packp3d')
+    module('direct.showbase.WxGlobal', 'wx', 'wx.*')
 
 
-## class ppackage(p3d):
-##     # As above, a packaging utility.  This is the fully-general ppackage
-##     # utility, which reads pdef files (like this one!) and creates one or
-##     # more packages or p3d applications.
+class tk(package):
+    config(display_name = "Tk GUI Toolkit")
+    require('panda3d')
 
-##     config(display_name = "Panda3D General Package Utility",
-##            hidden = True, platform_specific = False)
-##     require('panda3d', 'egg')
+    module('Tkinter',
+           'direct.showbase.TkGlobal',
+           'direct.tkpanels',
+           'direct.tkwidgets')
 
-##     mainModule('direct.p3d.ppackage')
+class packp3d(p3d):
+    # This application is a command-line convenience for building a p3d
+    # application out of a directory hierarchy on disk.  We build it here
+    # into its own p3d application, to allow end-users to easily build p3d
+    # applications using the appropriate version of Python and Panda for
+    # the targeted runtime.
+
+    config(display_name = "Panda3D Application Packer",
+           hidden = True, platform_specific = False)
+    require('panda3d', 'egg')
+
+    mainModule('direct.p3d.packp3d')
+
+
+class ppackage(p3d):
+    # As above, a packaging utility.  This is the fully-general ppackage
+    # utility, which reads pdef files (like this one!) and creates one or
+    # more packages or p3d applications.
+
+    config(display_name = "Panda3D General Package Utility",
+           hidden = True, platform_specific = False)
+    require('panda3d', 'egg')
+
+    mainModule('direct.p3d.ppackage')

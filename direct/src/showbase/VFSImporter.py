@@ -5,9 +5,26 @@ import os
 import marshal
 import imp
 import struct
+import types
 import __builtin__
 
-__all__ = ['register', 'freeze_new_modules']
+__all__ = ['register', 'sharedPackages',
+           'reloadSharedPackage', 'reloadSharedPackages']
+
+# The sharedPackages dictionary lists all of the "shared packages",
+# special Python packages that automatically span multiple directories
+# via magic in the VFSImporter.  You can make a package "shared"
+# simply by adding its name into this dictionary (and then calling
+# reloadSharedPackages() if it's already been imported).
+
+# When a package name is in this dictionary at import time, *all*
+# instances of the package are located along sys.path, and merged into
+# a single Python module with a __path__ setting that represents the
+# union.  Thus, you can have a direct.showbase.foo in your own
+# application, and loading it won't shadow the system
+# direct.showbase.ShowBase which is in a different directory on disk.
+
+sharedPackages = {}
 
 vfs = VirtualFileSystem.getGlobalPtr()
 
@@ -102,22 +119,36 @@ class VFSLoader:
         self.desc = desc
         self.packagePath = packagePath
     
-    def load_module(self, fullname):
+    def load_module(self, fullname, loadingShared = False):
         #print >>sys.stderr, "load_module(%s), dir_path = %s, filename = %s" % (fullname, self.dir_path, self.filename)
         if self.fileType == FTFrozenModule:
             return self._import_frozen_module(fullname)
         if self.fileType == FTExtensionModule:
             return self._import_extension_module(fullname)
+
+        # Check if this is a child of a shared package.
+        if not loadingShared and self.packagePath and '.' in fullname:
+            parentname = fullname.rsplit('.', 1)[0]
+            if parentname in sharedPackages:
+                # It is.  That means it's a shared package too.
+                parent = sys.modules[parentname]
+                path = getattr(parent, '__path__', None)
+                importer = VFSSharedImporter()
+                sharedPackages[fullname] = True
+                loader = importer.find_module(fullname, path = path)
+                assert loader
+                return loader.load_module(fullname)
         
         code = self._read_code()
         if not code:
             raise ImportError, 'No Python code in %s' % (fullname)
         
         mod = sys.modules.setdefault(fullname, new.module(fullname))
-        mod.__file__ = self.filename.cStr()
+        mod.__file__ = self.filename.toOsSpecific()
         mod.__loader__ = self
         if self.packagePath:
-            mod.__path__ = [self.packagePath.cStr()]
+            mod.__path__ = [self.packagePath.toOsSpecific()]
+            #print >> sys.stderr, "loaded %s, path = %s" % (fullname, mod.__path__)
 
         exec code in mod.__dict__
         return mod
@@ -137,6 +168,9 @@ class VFSLoader:
 
     def get_source(self, fullname):
         return self._read_source()
+
+    def get_filename(self, fullname):
+        return self.filename.toOsSpecific()
         
     def _read_source(self):
         """ Returns the Python source for this file, if it is
@@ -190,7 +224,7 @@ class VFSLoader:
 
         module = imp.load_module(fullname, None, filename.toOsSpecific(),
                                  self.desc)
-        module.__file__ = self.filename.cStr()
+        module.__file__ = self.filename.toOsSpecific()
         return module
 
     def _import_frozen_module(self, fullname):
@@ -199,7 +233,6 @@ class VFSLoader:
         #print >>sys.stderr, "importing frozen %s" % (fullname)
         module = imp.load_module(fullname, None, fullname,
                                  ('', '', imp.PY_FROZEN))
-        #print >>sys.stderr, "got frozen %s" % (module)
         return module
 
     def _read_code(self):
@@ -269,7 +302,7 @@ class VFSLoader:
         
         if source and source[-1] != '\n':
             source = source + '\n'
-        code = __builtin__.compile(source, filename.cStr(), 'exec')
+        code = __builtin__.compile(source, filename.toOsSpecific(), 'exec')
 
         # try to cache the compiled code
         pycFilename = Filename(filename)
@@ -289,6 +322,138 @@ class VFSLoader:
 
         return code
 
+class VFSSharedImporter:
+    """ This is a special importer that is added onto the meta_path
+    list, so that it is called before sys.path is traversed.  It uses
+    special logic to load one of the "shared" packages, by searching
+    the entire sys.path for all instances of this shared package, and
+    merging them. """
+
+    def __init__(self):
+        pass
+    
+    def find_module(self, fullname, path = None, reload = False):
+        #print >>sys.stderr, "shared find_module(%s), path = %s" % (fullname, path)
+
+        if fullname not in sharedPackages:
+            # Not a shared package; fall back to normal import.
+            return None
+
+        if path is None:
+            path = sys.path
+
+        excludePaths = []
+        if reload:
+            # If reload is true, we are simply reloading the module,
+            # looking for new paths to add.
+            mod = sys.modules[fullname]
+            excludePaths = getattr(mod, '_vfs_shared_path', None)
+            if excludePaths is None:
+                # If there isn't a _vfs_shared_path symbol already,
+                # the module must have been loaded through
+                # conventional means.  Try to guess which path it was
+                # found on.
+                d = self.getLoadedDirname(mod)
+                excludePaths = [d]
+
+        loaders = []
+        for dir in path:
+            if dir in excludePaths:
+                continue
+            
+            importer = sys.path_importer_cache.get(dir, None)
+            if importer is None:
+                try:
+                    importer = VFSImporter(dir)
+                except ImportError:
+                    continue
+                
+                sys.path_importer_cache[dir] = importer
+
+            try:
+                loader = importer.find_module(fullname)
+                if not loader:
+                    continue
+            except ImportError:
+                continue
+
+            loaders.append(loader)
+
+        if not loaders:
+            return None
+        return VFSSharedLoader(loaders, reload = reload)
+
+    def getLoadedDirname(self, mod):
+        """ Returns the directory name that the indicated
+        conventionally-loaded module must have been loaded from. """
+
+        fullname = mod.__name__
+        dirname = Filename.fromOsSpecific(mod.__file__).getDirname()
+
+        parentname = None
+        basename = fullname
+        if '.' in fullname:
+            parentname, basename = fullname.rsplit('.', 1)
+
+        path = None
+        if parentname:
+            parent = sys.modules[parentname]
+            path = parent.__path__
+        if path is None:
+            path = sys.path
+
+        for dir in path:
+            pdir = Filename.fromOsSpecific(dir).cStr()
+            if pdir + '/' + basename == dirname:
+                # We found it!
+                return dir
+
+        # Couldn't figure it out.
+        return None
+        
+class VFSSharedLoader:
+    """ The second part of VFSSharedImporter, this imports a list of
+    packages and combines them. """
+    
+    def __init__(self, loaders, reload):
+        self.loaders = loaders
+        self.reload = reload
+    
+    def load_module(self, fullname):
+        #print >>sys.stderr, "shared load_module(%s), loaders = %s" % (fullname, map(lambda l: l.dir_path, self.loaders))
+
+        mod = None
+        path = []
+        vfs_shared_path = []
+        if self.reload:
+            mod = sys.modules[fullname]
+            path = mod.__path__ or []
+            vfs_shared_path = getattr(mod, '_vfs_shared_path', [])
+
+        for loader in self.loaders:
+            try:
+                mod = loader.load_module(fullname, loadingShared = True)
+            except ImportError:
+                continue
+            for dir in getattr(mod, '__path__', []):
+                if dir not in path:
+                    path.append(dir)
+
+        if mod is None:
+            # If all of them failed to load, raise ImportError.
+            raise ImportError
+
+        # If at least one of them loaded successfully, return the
+        # union of loaded modules.
+        mod.__path__ = path
+
+        # Also set this special symbol, which records that this is a
+        # shared package, and also lists the paths we have already
+        # loaded.
+        mod._vfs_shared_path = vfs_shared_path + map(lambda l: l.dir_path, self.loaders)
+
+        return mod
+
 _registered = False
 def register():
     """ Register the VFSImporter on the path_hooks, if it has not
@@ -300,8 +465,52 @@ def register():
     if not _registered:
         _registered = True
         sys.path_hooks.insert(0, VFSImporter)
-
+        sys.meta_path.insert(0, VFSSharedImporter())
+        
         # Blow away the importer cache, so we'll come back through the
         # VFSImporter for every folder in the future, even those
         # folders that previously were loaded directly.
         sys.path_importer_cache = {}
+
+def reloadSharedPackage(mod):
+    """ Reloads the specific module as a shared package, adding any
+    new directories that might have appeared on the search path. """
+
+    fullname = mod.__name__
+    path = None
+    if '.' in fullname:
+        parentname = fullname.rsplit('.', 1)[0]
+        parent = sys.modules[parentname]
+        path = parent.__path__
+
+    importer = VFSSharedImporter()
+    loader = importer.find_module(fullname, path = path, reload = True)
+    if loader:
+        loader.load_module(fullname)
+
+    # Also force any child packages to become shared packages, if
+    # they aren't already.
+    for basename, child in mod.__dict__.items():
+        if isinstance(child, types.ModuleType):
+            childname = child.__name__
+            if childname == fullname + '.' + basename and \
+               hasattr(child, '__path__') and \
+               childname not in sharedPackages:
+                sharedPackages[childname] = True
+                reloadSharedPackage(child)
+
+def reloadSharedPackages():
+    """ Walks through the sharedPackages list, and forces a reload of
+    any modules on that list that have already been loaded.  This
+    allows new directories to be added to the search path. """
+
+    #print >> sys.stderr, "reloadSharedPackages, path = %s, sharedPackages = %s" % (sys.path, sharedPackages.keys())
+
+    for fullname in sharedPackages.keys():
+        mod = sys.modules.get(fullname, None)
+        if not mod:
+            continue
+
+        reloadSharedPackage(mod)
+                    
+                
