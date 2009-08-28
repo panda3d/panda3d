@@ -152,3 +152,15 @@ get_desc_file_pathname() const {
   return _desc_file_pathname;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_archive_file_pathname
+//       Access: Public
+//  Description: Returns the full path to the package's uncompressed
+//               archive file.  This is only valid if get_ready() is
+//               true and the package is not a "solo" package.
+////////////////////////////////////////////////////////////////////
+inline string P3DPackage::
+get_archive_file_pathname() const {
+  return _uncompressed_archive.get_pathname(_package_dir);
+}
+

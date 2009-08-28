@@ -30,6 +30,7 @@
 #include "pdeque.h"
 #include "pmutex.h"
 #include "get_tinyxml.h"
+#include "filename.h"
 
 #include <Python.h>
 
@@ -111,6 +112,7 @@ private:
   int _session_id;
 
   string _program_name;
+  Filename _archive_file;
   int _py_argc;
   char **_py_argv;
 

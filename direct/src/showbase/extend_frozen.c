@@ -7,6 +7,15 @@
 #endif
 
 /*
+ * This pointer is kept internally to this module.  It represents the
+ * locally-allocated FrozenModules array.  If the
+ * PyImport_FrozenModules is any other value, then it wasn't allocated
+ * via this module.
+ */
+static struct _frozen *frozen_modules = NULL;
+static int num_frozen_modules = 0;
+
+/*
  * Call this function to extend the frozen modules array with a new
  * array of frozen modules, provided in a C-style array, at runtime.
  * Returns the total number of frozen modules.
@@ -16,10 +25,18 @@ extend_frozen_modules(const struct _frozen *new_modules, int new_count) {
   int orig_count;
   struct _frozen *realloc_FrozenModules;
 
-  /* First, count the number of frozen modules we had originally. */
-  orig_count = 0;
-  while (PyImport_FrozenModules[orig_count].name != NULL) {
-    ++orig_count;
+  if (PyImport_FrozenModules == frozen_modules) {
+    /* If the previous array was allocated through this module, we
+       already know the count. */
+    orig_count = num_frozen_modules;
+
+  } else {
+    /* If the previous array came from anywhere else, we have to count
+       up its length. */
+    orig_count = 0;
+    while (PyImport_FrozenModules[orig_count].name != NULL) {
+      ++orig_count;
+    }
   }
 
   if (new_count == 0) {
@@ -28,9 +45,15 @@ extend_frozen_modules(const struct _frozen *new_modules, int new_count) {
   }
 
   /* Reallocate the PyImport_FrozenModules array bigger to make room
-     for the additional frozen modules.  We just leak the original
-     array; it's too risky to try to free it. */
+     for the additional frozen modules. */
   realloc_FrozenModules = (struct _frozen *)malloc((orig_count + new_count + 1) * sizeof(struct _frozen));
+
+  /* If the previous array was allocated through this module, we can
+     free it; otherwise, we have to leak it. */
+  if (frozen_modules != NULL) {
+    free(frozen_modules);
+    frozen_modules = NULL;
+  }
 
   /* The new frozen modules go at the front of the list. */
   memcpy(realloc_FrozenModules, new_modules, new_count * sizeof(struct _frozen));
@@ -43,8 +66,10 @@ extend_frozen_modules(const struct _frozen *new_modules, int new_count) {
 
   /* Assign the new pointer. */
   PyImport_FrozenModules = realloc_FrozenModules;
+  frozen_modules = realloc_FrozenModules;
+  num_frozen_modules = orig_count + new_count;
 
-  return orig_count + new_count;
+  return num_frozen_modules;
 }
 
 /* 

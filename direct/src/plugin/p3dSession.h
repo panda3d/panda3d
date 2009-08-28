@@ -76,12 +76,14 @@ private:
 
 #ifdef _WIN32
   static HANDLE 
-  win_create_process(const string &program, const string &start_dir,
+  win_create_process(const string &program, const string &archive_file,
+                     const string &start_dir,
                      const string &env, const string &output_filename,
                      HandleStream &pipe_read, HandleStream &pipe_write);
 #else
   static int 
-  posix_create_process(const string &program, const string &start_dir,
+  posix_create_process(const string &program, const string &archive_file,
+                       const string &start_dir,
                        const string &env, const string &output_filename,
                        HandleStream &pipe_read, HandleStream &pipe_write);
 #endif

@@ -798,15 +798,17 @@ start_p3dpython(P3DInstance *inst) {
     _log_pathname += ".log";
   }
 
+  string archive_file = inst->_panda3d->get_archive_file_pathname();
+
   nout << "Attempting to start python from " << p3dpython << "\n";
 #ifdef _WIN32
   _p3dpython_handle = win_create_process
-    (p3dpython, start_dir, env, _log_pathname,
+    (p3dpython, archive_file, start_dir, env, _log_pathname,
      _pipe_read, _pipe_write);
   bool started_p3dpython = (_p3dpython_handle != INVALID_HANDLE_VALUE);
 #else
   _p3dpython_pid = posix_create_process
-    (p3dpython, start_dir, env, _log_pathname,
+    (p3dpython, archive_file, start_dir, env, _log_pathname,
      _pipe_read, _pipe_write);
   bool started_p3dpython = (_p3dpython_pid > 0);
 #endif
@@ -989,7 +991,8 @@ rt_terminate() {
 //               or INVALID_HANDLE_VALUE on falure.
 ////////////////////////////////////////////////////////////////////
 HANDLE P3DSession::
-win_create_process(const string &program, const string &start_dir,
+win_create_process(const string &program, const string &archive_file,
+                   const string &start_dir,
                    const string &env, const string &log_pathname,
                    HandleStream &pipe_read, HandleStream &pipe_write) {
 
@@ -1055,12 +1058,24 @@ win_create_process(const string &program, const string &start_dir,
     start_dir_cstr = start_dir.c_str();
   }
 
+  ostringstream stream;
+  stream << "\"" << program << "\" \"" << archive_file << "\"";
+
+  // I'm not sure why CreateProcess wants a non-const char pointer for
+  // the command-line argument, but I'm not taking chances.  It gets a
+  // non-const char array that it can modify.
+  string command_line_str = stream.str();
+  char *command_line = new char[command_line_str.size() + 1];
+  strcpy(command_line, command_line_str.c_str());
+
   PROCESS_INFORMATION process_info; 
   BOOL result = CreateProcess
-    (program.c_str(), NULL, NULL, NULL, TRUE, 0,
+    (program.c_str(), command_line, NULL, NULL, TRUE, 0,
      (void *)env.c_str(), start_dir_cstr,
      &startup_info, &process_info);
   bool started_program = (result != 0);
+
+  delete[] command_line;
 
   // Close the pipe handles that are now owned by the child.
   CloseHandle(w_from);
@@ -1100,7 +1115,8 @@ win_create_process(const string &program, const string &start_dir,
 //               -1 on falure.
 ////////////////////////////////////////////////////////////////////
 int P3DSession::
-posix_create_process(const string &program, const string &start_dir,
+posix_create_process(const string &program, const string &archive_file,
+                     const string &start_dir,
                      const string &env, const string &log_pathname,
                      HandleStream &pipe_read, HandleStream &pipe_write) {
   // Create a bi-directional pipe to communicate with the sub-process.
@@ -1165,7 +1181,9 @@ posix_create_process(const string &program, const string &start_dir,
     }
     ptrs.push_back((char *)NULL);
     
-    execle(program.c_str(), program.c_str(), (char *)0, &ptrs[0]);
+    execle(program.c_str(), 
+           program.c_str(), archive_file.c_str(), (char *)0, 
+           &ptrs[0]);
     nout << "Failed to exec " << program << "\n";
     _exit(1);
   }

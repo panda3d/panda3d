@@ -1,5 +1,4 @@
-from direct.stdpy.file import open
-from pandac.PandaModules import Filename, VirtualFileSystem, VirtualFileMountSystem
+from libpandaexpress import Filename, VirtualFileSystem, VirtualFileMountSystem
 import sys
 import new
 import os
@@ -15,7 +14,8 @@ vfs = VirtualFileSystem.getGlobalPtr()
 # Possible file types.
 FTPythonSource = 0
 FTPythonCompiled = 1
-FTCompiledModule = 2
+FTExtensionModule = 2
+FTFrozenModule = 3
 
 compiledExtensions = [ 'pyc', 'pyo' ]
 if not __debug__:
@@ -32,16 +32,21 @@ class VFSImporter:
     def __init__(self, path):
         self.dir_path = Filename.fromOsSpecific(path)
 
-    def find_module(self, fullname):
+    def find_module(self, fullname, path = None):
+        if path is None:
+            dir_path = self.dir_path
+        else:
+            dir_path = path
+        #print >>sys.stderr, "find_module(%s), dir_path = %s" % (fullname, dir_path)
         basename = fullname.split('.')[-1]
-        path = Filename(self.dir_path, basename)
+        path = Filename(dir_path, basename)
 
         # First, look for Python files.
         filename = Filename(path)
         filename.setExtension('py')
         vfile = vfs.getFile(filename, True)
         if vfile:
-            return VFSLoader(self, vfile, filename, FTPythonSource)
+            return VFSLoader(dir_path, vfile, filename, FTPythonSource)
 
         # If there's no .py file, but there's a .pyc file, load that
         # anyway.
@@ -50,9 +55,9 @@ class VFSImporter:
             filename.setExtension(ext)
             vfile = vfs.getFile(filename, True)
             if vfile:
-                return VFSLoader(self, vfile, filename, FTPythonCompiled)
+                return VFSLoader(dir_path, vfile, filename, FTPythonCompiled)
 
-        # Look for a compiled C/C++ module.
+        # Look for a C/C++ extension module.
         for desc in imp.get_suffixes():
             if desc[2] != imp.C_EXTENSION:
                 continue
@@ -61,7 +66,7 @@ class VFSImporter:
             filename.setExtension(desc[0][1:])
             vfile = vfs.getFile(filename, True)
             if vfile:
-                return VFSLoader(self, vfile, filename, FTCompiledModule,
+                return VFSLoader(dir_path, vfile, filename, FTExtensionModule,
                                  desc = desc)
         
 
@@ -70,34 +75,39 @@ class VFSImporter:
         filename = Filename(path, '__init__.py')
         vfile = vfs.getFile(filename, True)
         if vfile:
-            return VFSLoader(self, vfile, filename, FTPythonSource,
+            return VFSLoader(dir_path, vfile, filename, FTPythonSource,
                              packagePath = path)
         for ext in compiledExtensions:
             filename = Filename(path, '__init__.' + ext)
             vfile = vfs.getFile(filename, True)
             if vfile:
-                return VFSLoader(self, vfile, filename, FTPythonCompiled,
+                return VFSLoader(dir_path, vfile, filename, FTPythonCompiled,
                                  packagePath = path)
 
+        #print >>sys.stderr, "not found."
         return None
 
 class VFSLoader:
     """ The second part of VFSImporter, this is created for a
     particular .py file or directory. """
     
-    def __init__(self, importer, vfile, filename, fileType,
+    def __init__(self, dir_path, vfile, filename, fileType,
                  desc = None, packagePath = None):
-        self.importer = importer
-        self.dir_path = importer.dir_path
-        self.timestamp = vfile.getTimestamp()
+        self.dir_path = dir_path
+        self.timestamp = None
+        if vfile:
+            self.timestamp = vfile.getTimestamp()
         self.filename = filename
         self.fileType = fileType
         self.desc = desc
         self.packagePath = packagePath
     
     def load_module(self, fullname):
-        if self.fileType == FTCompiledModule:
-            return self._import_compiled_module(fullname)
+        #print >>sys.stderr, "load_module(%s), dir_path = %s, filename = %s" % (fullname, self.dir_path, self.filename)
+        if self.fileType == FTFrozenModule:
+            return self._import_frozen_module(fullname)
+        if self.fileType == FTExtensionModule:
+            return self._import_extension_module(fullname)
         
         code = self._read_code()
         if not code:
@@ -114,8 +124,10 @@ class VFSLoader:
 
     def getdata(self, path):
         path = Filename(self.dir_path, Filename.fromOsSpecific(path))
-        f = open(path, 'rb')
-        return f.read()
+        vfile = vfs.getFile(path)
+        if not vfile:
+            raise IOError
+        return vfile.readFile(True)
 
     def is_package(self, fullname):
         return bool(self.packagePath)
@@ -131,21 +143,23 @@ class VFSLoader:
         available, or None if it is not.  May raise IOError. """
         
         if self.fileType == FTPythonCompiled or \
-           self.fileType == FTCompiledModule:
+           self.fileType == FTExtensionModule:
             return None
         
         filename = Filename(self.filename)
         filename.setExtension('py')
-        file = open(filename, 'rU')
-        return file.read()
+        vfile = vfs.getFile(filename)
+        if not vfile:
+            raise IOError
+        return vfile.readFile(True)
 
-    def _import_compiled_module(self, fullname):
-        """ Loads the compiled C/C++ shared object as a Python module,
-        and returns it. """
+    def _import_extension_module(self, fullname):
+        """ Loads the binary shared object as a Python module, and
+        returns it. """
 
         vfile = vfs.getFile(self.filename, False)
 
-        # We can only import a compiled module if it already exists on
+        # We can only import an extension module if it already exists on
         # disk.  This means if it's a truly virtual file that has no
         # on-disk equivalent, we have to write it to a temporary file
         # first.
@@ -153,26 +167,40 @@ class VFSLoader:
            isinstance(vfile.getMount(), VirtualFileMountSystem):
             # It's a real file.
             filename = self.filename
+        elif self.filename.exists():
+            # It's a virtual file, but it's shadowing a real file.
+            # Assume they're the same, and load the real one.
+            filename = self.filename
         else:
-            # It's a virtual file.  Dump it.
+            # It's a virtual file with no real-world existence.  Dump
+            # it to disk.  TODO: clean up this filename.
             filename = Filename.temporary('', self.filename.getBasenameWoExtension(),
                                           '.' + self.filename.getExtension(),
                                           type = Filename.TDso)
             filename.setExtension(self.filename.getExtension())
-            fin = open(vfile, 'rb')
-            fout = open(filename, 'wb')
-            data = fin.read(4096)
-            while data:
-                fout.write(data)
-                data = fin.read(4096)
-            fin.close()
-            fout.close()
+            filename.setBinary()
+            sin = vfile.openReadFile()
+            sout = OFileStream()
+            if not filename.openWrite(sout):
+                raise IOError
+            if not copyStream(sin, sout):
+                raise IOError
+            vfile.closeReadFile(sin)
+            del sout
 
         module = imp.load_module(fullname, None, filename.toOsSpecific(),
                                  self.desc)
         module.__file__ = self.filename.cStr()
         return module
-        
+
+    def _import_frozen_module(self, fullname):
+        """ Imports the frozen module without messing around with
+        searching any more. """
+        #print >>sys.stderr, "importing frozen %s" % (fullname)
+        module = imp.load_module(fullname, None, fullname,
+                                 ('', '', imp.PY_FROZEN))
+        #print >>sys.stderr, "got frozen %s" % (module)
+        return module
 
     def _read_code(self):
         """ Returns the Python compiled code object for this file, if
@@ -187,7 +215,7 @@ class VFSLoader:
                 return self._loadPyc(pycVfile, None)
             raise IOError, 'Could not read %s' % (self.filename)
 
-        elif self.fileType == FTCompiledModule:
+        elif self.fileType == FTExtensionModule:
             return None
 
         # It's a .py file (or an __init__.py file; same thing).  Read
@@ -222,16 +250,15 @@ class VFSLoader:
         Raises ValueError if there is a problem. """
         
         code = None
-        f = open(vfile, 'rb')
-        if f.read(4) == imp.get_magic():
-            t = struct.unpack('<I', f.read(4))[0]
+        data = vfile.readFile(True)
+        if data[:4] == imp.get_magic():
+            t = struct.unpack('<I', data[4:8])[0]
             if not timestamp or t == timestamp:
-                code = marshal.loads(f.read())
+                code = marshal.loads(data[8:])
             else:
                 raise ValueError, 'Timestamp wrong on %s' % (vfile)
         else:
             raise ValueError, 'Bad magic number in %s' % (vfile)
-        f.close()
         return code
         
 
@@ -248,7 +275,7 @@ class VFSLoader:
         pycFilename = Filename(filename)
         pycFilename.setExtension(compiledExtensions[0])
         try:
-            f = open(pycFilename, 'wb')
+            f = open(pycFilename.toOsSpecific(), 'wb')
         except IOError:
             pass
         else:
@@ -268,70 +295,13 @@ def register():
     already been registered, so that future Python import statements
     will vector through here (and therefore will take advantage of
     Panda's virtual file system). """
-    
+
     global _registered
     if not _registered:
         _registered = True
         sys.path_hooks.insert(0, VFSImporter)
-        
-def freeze_new_modules(multifile, root_path):
-    """ Walks the multifile and looks for Python packages that are
-    children of frozen modules.  These are converted to frozen
-    modules, since the Python runtime system only supports loading
-    frozen children of frozen modules.
 
-    The multifile must be already mounted at root_path.  """
-
-    # This module is defined by extend_frozen.c in
-    # direct/src/showbase.  It's a special extension module that
-    # provides hooks into the array of frozen modules, which is
-    # otherwise accessible only to the C level.
-    import extend_frozen
-
-    modules = []
-    pyExtensions = ['py'] + compiledExtensions
-    for filename in multifile.getSubfileNames():
-        filename = Filename(filename)
-        ext = filename.getExtension()
-        if ext in pyExtensions:
-            # A Python file.
-            moduleName = Filename(filename)
-            moduleName.setExtension('')
-            isPackage = False
-            if moduleName.getBasename() == '__init__':
-                # A package.
-                moduleName = moduleName.getDirname()
-            else:
-                moduleName = moduleName.cStr()
-            moduleName = '.'.join(moduleName.split('/'))
-            modules.append(moduleName)
-
-    modules.sort()
-    
-    # Now look for any children of frozen modules; these children need
-    # to become frozen modules themselves.
-    existingFrozenModules = {}
-    newFrozen = []
-    for moduleName in modules:
-        if extend_frozen.is_frozen_module(moduleName):
-            # It's a frozen module.  All children require freezing also.
-            existingFrozenModules[moduleName] = True
-        else:
-            # It's not a frozen module, but maybe it needs to be.
-            if '.' in moduleName:
-                parentModuleName = moduleName.rsplit('.', 1)[0]
-                if parentModuleName in existingFrozenModules:
-                    # Bad news.  We have to freeze this one.
-                    existingFrozenModules[moduleName] = True
-
-                    # Load up the module code.
-                    path = root_path + '/' + '/'.join(moduleName.split('.')[:-1])
-                    importer = VFSImporter(path)
-                    loader = importer.find_module(moduleName)
-                    if loader:
-                        code = loader.get_code(moduleName)
-                        newFrozen.append((moduleName, marshal.dumps(code)))
-
-    # Now pass our list of newly-frozen modules to the low level code.
-    if newFrozen:
-        extend_frozen.extend(newFrozen)
+        # Blow away the importer cache, so we'll come back through the
+        # VFSImporter for every folder in the future, even those
+        # folders that previously were loaded directly.
+        sys.path_importer_cache = {}

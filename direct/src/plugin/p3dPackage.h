@@ -58,6 +58,7 @@ public:
   inline const string &get_package_display_name() const;
 
   inline const string &get_desc_file_pathname() const;
+  inline string get_archive_file_pathname() const;
 
   void add_instance(P3DInstance *inst);
   void remove_instance(P3DInstance *inst);

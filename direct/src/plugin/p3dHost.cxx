@@ -378,6 +378,11 @@ copy_file(const string &from_filename, const string &to_filename) {
     return true;
   }
 
+  unlink(to_filename.c_str());
+  if (rename(temp_filename.c_str(), to_filename.c_str()) == 0) {
+    return true;
+  }
+
   unlink(temp_filename.c_str());
   return false;
 }

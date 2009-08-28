@@ -762,6 +762,7 @@ class Freezer:
                 self.__loadModule(mdef)
             except ImportError:
                 print "Unknown module: %s" % (mdef.moduleName)
+                import pdb; pdb.set_trace()
 
         # Also attempt to import any implicit modules.  If any of
         # these fail to import, we don't really care.
@@ -823,9 +824,15 @@ class Freezer:
                 self.mf.path.append(tempPath)
 
             pathname = mdef.filename.toOsSpecific()
-            fp = open(pathname, modulefinder.READ_MODE)
-            stuff = ("", "r", imp.PY_SOURCE)
-            self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
+            ext = mdef.filename.getExtension()
+            if ext == 'pyc' or ext == 'pyo':
+                fp = open(pathname, 'rb')
+                stuff = ("", "rb", imp.PY_COMPILED)
+                self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
+            else:
+                fp = open(pathname, modulefinder.READ_MODE)
+                stuff = ("", "r", imp.PY_SOURCE)
+                self.mf.load_module(mdef.moduleName, fp, pathname, stuff)
 
             if tempPath:
                 del self.mf.path[-1]

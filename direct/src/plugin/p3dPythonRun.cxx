@@ -15,6 +15,8 @@
 #include "p3dPythonRun.h"
 #include "asyncTaskManager.h"
 #include "binaryXml.h"
+#include "multifile.h"
+#include "virtualFileSystem.h"
 
 // There is only one P3DPythonRun object in any given process space.
 // Makes the statics easier to deal with, and we don't need multiple
@@ -36,10 +38,20 @@ P3DPythonRun(int argc, char *argv[]) {
   _session_id = 0;
   _next_sent_id = 0;
 
-  _program_name = argv[0];
+  if (argc >= 1) {
+    _program_name = argv[0];
+  }
+  if (argc >= 2) {
+    _archive_file = Filename::from_os_specific(argv[1]);
+  }
+  if (_archive_file.empty()) {
+    nout << "No archive filename specified on command line.\n";
+    exit(1);
+  }
+
   _py_argc = 1;
   _py_argv = (char **)malloc(2 * sizeof(char *));
-  _py_argv[0] = argv[0];
+  _py_argv[0] = (char *)_program_name.c_str();
   _py_argv[1] = NULL;
 
 #ifdef NDEBUG
@@ -116,17 +128,49 @@ run_python() {
   
 #endif
 
-  // First, load runp3d_frozen.pyd.  Since this is a magic frozen pyd,
+  // First, load _vfsimporter.pyd.  Since this is a magic frozen pyd,
   // importing it automatically makes all of its frozen contents
   // available to import as well.
-  PyObject *runp3d_frozen = PyImport_ImportModule("runp3d_frozen");
-  if (runp3d_frozen == NULL) {
+  PyObject *vfsimporter = PyImport_ImportModule("_vfsimporter");
+  if (vfsimporter == NULL) {
     PyErr_Print();
     return false;
   }
-  Py_DECREF(runp3d_frozen);
+  Py_DECREF(vfsimporter);
 
-  // So now we can import the module itself.
+  // And now we can import the VFSImporter module that was so defined.
+  PyObject *vfsimporter_module = PyImport_ImportModule("VFSImporter");
+  if (vfsimporter_module == NULL) {
+    PyErr_Print();
+    return false;
+  }
+
+  // And register the VFSImporter.
+  PyObject *result = PyObject_CallMethod(vfsimporter_module, (char *)"register", (char *)"");
+  if (result == NULL) {
+    PyErr_Print();
+    return false;
+  }
+  Py_DECREF(result);
+  Py_DECREF(vfsimporter_module);
+
+  // Now, the VFSImporter has been registered, which means we can
+  // start importing the rest of the Python modules, where are all
+  // defined in the multifile.  First, we need to mount the multifile
+  // into the VFS.
+  PT(Multifile) mf = new Multifile;
+  if (!mf->open_read(_archive_file)) {
+    nout << "Could not read " << _archive_file << "\n";
+    return false;
+  }
+  Filename dir = _archive_file.get_dirname();
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  if (!vfs->mount(mf, dir, VirtualFileSystem::MF_read_only)) {
+    nout << "Could not mount " << _archive_file << "\n";
+    return false;
+  }
+
+  // And finally, we can import the startup module.
   PyObject *app_runner_module = PyImport_ImportModule("direct.p3d.AppRunner");
   if (app_runner_module == NULL) {
     PyErr_Print();
@@ -207,7 +251,7 @@ run_python() {
 
   // Now pass that func pointer back to our AppRunner instance, so it
   // can call up to us.
-  PyObject *result = PyObject_CallMethod(_runner, (char *)"setRequestFunc", (char *)"O", request_func);
+  result = PyObject_CallMethod(_runner, (char *)"setRequestFunc", (char *)"O", request_func);
   if (result == NULL) {
     PyErr_Print();
     return false;

@@ -126,7 +126,7 @@ class Packager:
                 
     class ExcludeFilename:
         def __init__(self, filename, caseSensitive):
-            self.localOnly = (not filename.get_dirname())
+            self.localOnly = (not filename.getDirname())
             if not self.localOnly:
                 filename = Filename(filename)
                 filename.makeCanonical()
@@ -2089,23 +2089,19 @@ class Packager:
 
         self.currentPackage.requirePackage(package)
 
-    def do_module(self, *args):
+    def do_module(self, *args, **kw):
         """ Adds the indicated Python module(s) to the current package. """
+        self.addModule(args, **kw)
 
+    def addModule(self, moduleNames, newName = None, filename = None):
         if not self.currentPackage:
             raise OutsideOfPackageError
 
-        for moduleName in args:
-            self.currentPackage.freezer.addModule(moduleName)
+        if (newName or filename) and len(moduleNames) != 1:
+            raise PackagerError, 'Cannot specify newName with multiple modules'
 
-    def do_renameModule(self, moduleName, newName):
-        """ Adds the indicated Python module to the current package,
-        renaming to a new name. """
-
-        if not self.currentPackage:
-            raise OutsideOfPackageError
-
-        self.currentPackage.freezer.addModule(moduleName, newName = newName)
+        for moduleName in moduleNames:
+            self.currentPackage.freezer.addModule(moduleName, newName = newName, filename = filename)
 
     def do_excludeModule(self, *args):
         """ Marks the indicated Python module as not to be included. """
@@ -2138,6 +2134,45 @@ class Packager:
                 deleteTemp = True, explicit = True, extract = True)
 
         self.currentPackage.mainModule = (moduleName, newName)
+
+    def do_setupPanda3D(self):
+        """ A special convenience command that adds the minimum
+        startup modules for a panda3d package, intended for developers
+        producing their own custom panda3d for download.  Should be
+        called before any other Python modules are named. """
+
+        # First, freeze just VFSImporter.py into its own
+        # _vfsimporter.pyd file.  This one is a special case, because
+        # we need this code in order to load python files from the
+        # Multifile, so this file can't itself be in the Multifile.
+
+        # This requires a bit of care, because we only want to freeze
+        # VFSImporter.py, and not any other part of direct.
+        self.do_excludeModule('direct')
+
+        # Import the actual VFSImporter module to get its filename on
+        # disk.
+        from direct.showbase import VFSImporter
+        filename = Filename.fromOsSpecific(VFSImporter.__file__)
+        
+        self.do_module('VFSImporter', filename = filename)
+        self.do_freeze('_vfsimporter', compileToExe = False)
+
+        # Now that we're done freezing, explicitly add 'direct' to
+        # counteract the previous explicit excludeModule().
+        self.do_module('direct')
+
+        # This is the key Python module that is imported at runtime to
+        # start an application running.
+        self.do_module('direct.p3d.AppRunner')
+
+        # This is the main program that drives the runtime Python.  It
+        # is responsible for loading _vfsimporter.pyd, and then
+        # importing direct.p3d.AppRunner, to start an application
+        # running.  Note that the .exe extension is automatically
+        # replaced with the platform-specific extension appropriate
+        # for an executable.
+        self.do_file('p3dpython.exe')
 
     def do_freeze(self, filename, compileToExe = False):
         """ Freezes all of the current Python code into either an
@@ -2317,6 +2352,7 @@ class Packager:
         if not self.currentPackage:
             raise OutsideOfPackageError
 
+        filename = Filename(filename)
         self.currentPackage.excludeFile(filename)
 
     def do_dir(self, dirname, newDir = None, unprocessed = None):

@@ -14,7 +14,20 @@ import os
 import types
 import __builtin__
 
-from direct.showbase import VFSImporter
+if 'VFSImporter' in sys.modules:
+    # If we've already got a VFSImporter module defined at the
+    # toplevel, we must have come in here by way of the
+    # p3dPythonRun.cxx program, which starts out by importing a frozen
+    # VFSImporter.  Let's make sure we don't have two VFSImporter
+    # modules.
+    import VFSImporter
+    import direct.showbase
+    direct.showbase.VFSImporter = VFSImporter
+    sys.modules['direct.showbase.VFSImporter'] = VFSImporter
+else:
+    # Otherwise, we can import the VFSImporter normally.
+    from direct.showbase import VFSImporter
+
 from direct.showbase.DirectObject import DirectObject
 from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties, readXmlStream, ExecutionEnvironment, PandaSystem, URLSpec
 from direct.stdpy import file
@@ -405,7 +418,6 @@ class AppRunner(DirectObject):
 
         # Mount the Multifile under /mf, by convention.
         vfs.mount(mf, self.multifileRoot, vfs.MFReadOnly)
-        VFSImporter.freeze_new_modules(mf, self.multifileRoot)
 
         self.loadMultifilePrcFiles(mf, self.multifileRoot)
         self.gotP3DFilename = True

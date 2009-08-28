@@ -1,5 +1,6 @@
 from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, TiXmlDocument, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread
 from direct.p3d.FileSpec import FileSpec
+from direct.showbase import VFSImporter
 import os
 import sys
 
@@ -343,8 +344,22 @@ class PackageInfo:
 
         appRunner.loadMultifilePrcFiles(mf, root)
 
-        if root not in sys.path:
+        # Add this to the Python search path, if it's not already
+        # there.  We have to take a bit of care to check if it's
+        # already there, since there can be some ambiguity in
+        # os-specific path strings.
+        root = self.packageDir.toOsSpecific()
+        foundOnPath = False
+        for p in sys.path:
+            if root == p:
+                # Already here, exactly.
+                foundOnPath = True
+                break
+            elif root == Filename.fromOsSpecific(p).toOsSpecific():
+                # Already here, with some futzing.
+                foundOnPath = True
+                break
+
+        if not foundOnPath:
+            # Not already here; add it.
             sys.path.append(root)
-        #print "Installed %s %s" % (self.packageName, self.packageVersion)
-        
-        
