@@ -137,11 +137,23 @@ run_python() {
     return false;
   }
 
-  string startup;
-  startup = "import imp; imp.load_dynamic('libpandaexpress', \"";
-  startup += libpandaexpress.to_os_specific();
-  startup += "\");";
-  PyRun_SimpleString(startup.c_str());
+  // We need the "imp" built-in module for that.
+  PyObject *imp_module = PyImport_ImportModule("imp");
+  if (imp_module == NULL) {
+    PyErr_Print();
+    return false;
+  }
+
+  string os_specific = libpandaexpress.to_os_specific();
+  PyObject *result = PyObject_CallMethod
+    (imp_module, (char *)"load_dynamic", (char *)"ss", 
+     "libpandaexpress", os_specific.c_str());
+  if (result == NULL) {
+    PyErr_Print();
+    return false;
+  }
+  Py_DECREF(result);
+  Py_DECREF(imp_module);
 
   // Now we can load _vfsimporter.pyd.  Since this is a magic frozen
   // pyd, importing it automatically makes all of its frozen contents
@@ -161,7 +173,7 @@ run_python() {
   }
 
   // And register the VFSImporter.
-  PyObject *result = PyObject_CallMethod(vfsimporter_module, (char *)"register", (char *)"");
+  result = PyObject_CallMethod(vfsimporter_module, (char *)"register", (char *)"");
   if (result == NULL) {
     PyErr_Print();
     return false;
