@@ -156,6 +156,7 @@ class DirectSession(DirectObject):
             ['SGE_Fit', self.fitOnNodePath],
             ['SGE_Delete', self.removeNodePath],
             ['SGE_Set Name', self.getAndSetName],
+            ['DIRECT-delete', self.removeAllSelected],
             ]
 
         if base.wantTk:
@@ -175,18 +176,22 @@ class DirectSession(DirectObject):
         keyList.extend(map(chr, range(48, 58)))
         keyList.extend(["`", "-", "=", "[", "]", ";", "'", ",", ".", "/", "\\"])
 
+        def addCtrl(a):
+            return "control-%s"%a
+
         def addShift(a):
             return "shift-%s"%a
 
-        self.keyList = keyList[:]
-        self.keyList.extend(map(addShift, keyList))
-        self.keyList.extend(['escape', 'delete', 'page_up', 'page_down'])
+        self.keyEvents = keyList[:]
+        self.keyEvents.extend(map(addCtrl, keyList))
+        self.keyEvents.extend(map(addShift, keyList))        
+        self.keyEvents.extend(['escape', 'delete', 'page_up', 'page_down'])
 
-        self.keyEvents = ['escape', 'delete', 'page_up', 'page_down',
-                          '[', '{', ']', '}',
-                          'shift-a', 'b', 'control-f',
-                          'l', 'shift-l', 'o', 'p', 'r',
-                          'shift-r', 's', 't', 'v', 'w']
+##         self.keyEvents = ['escape', 'delete', 'page_up', 'page_down',
+##                           '[', '{', ']', '}',
+##                           'shift-a', 'b', 'control-f',
+##                           'l', 'shift-l', 'o', 'p', 'r',
+##                           'shift-r', 's', 't', 'v', 'w']
         self.mouseEvents = ['mouse1', 'mouse1-up',
                             'shift-mouse1', 'shift-mouse1-up',
                             'control-mouse1', 'control-mouse1-up',
@@ -225,6 +230,9 @@ class DirectSession(DirectObject):
             '+': 'DIRECT-zoomInCam',
             '_': 'DIRECT-zoomOutCam',
             '-': 'DIRECT-zoomOutCam',
+            'delete': 'DIRECT-delete',
+            '.': 'DIRECT-widgetScaleUp',
+            ',': 'DIRECT-widgetScaleDown',
             }
 
         self.passThroughKeys = ['v','b','l','p', 'r', 'shift-r', 's', 't','shift-a', 'w'] 
@@ -404,9 +412,6 @@ class DirectSession(DirectObject):
         for event in self.keyEvents:
             self.accept(event, self.inputHandler, [event])
 
-        for event in self.keyList:
-            self.accept(event, self.inputHandler, [event])
-
     def enableMouseEvents(self):
         for event in self.mouseEvents:
             self.accept(event, self.inputHandler, [event])
@@ -441,6 +446,8 @@ class DirectSession(DirectObject):
                     base.direct.iRay = base.direct.dr.iRay
                     base.mouseWatcher = winCtrl.mouseWatcher
                     base.mouseWatcherNode = winCtrl.mouseWatcher.node()
+                    if base.direct.manipulationControl.fMultiView:
+                        base.direct.widget = base.direct.manipulationControl.widgetList[base.camList.index(NodePath(winCtrl.camNode))]
                     break
 
         # Deal with keyboard and mouse input
@@ -491,8 +498,8 @@ class DirectSession(DirectObject):
             self.downAncestry()
         elif input == 'escape':
             self.deselectAll()
-        elif input == 'delete':
-            self.removeAllSelected()
+##         elif input == 'delete':
+##             self.removeAllSelected()
         elif input == 'v':
             self.toggleWidgetVis()
         elif input == 'b':
@@ -566,9 +573,19 @@ class DirectSession(DirectObject):
         if not taskMgr.hasTaskNamed('resizeObjectHandles'):
             dnp = self.selected.last
             if dnp:
-                nodeCamDist = Vec3(dnp.getPos(direct.camera)).length()
-                sf = 0.075 * nodeCamDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
-                self.widget.setDirectScalingFactor(sf)
+                if self.manipulationControl.fMultiView:
+                    for i in range(3):
+                        sf = 30.0 * direct.drList[i].orthoFactor
+                        self.manipulationControl.widgetList[i].setDirectScalingFactor(sf)
+
+                    nodeCamDist = Vec3(dnp.getPos(base.camList[3])).length()
+                    sf = 0.075 * nodeCamDist * math.tan(deg2Rad(direct.drList[3].fovV))
+                    self.manipulationControl.widgetList[3].setDirectScalingFactor(sf)
+                        
+                else:
+                    nodeCamDist = Vec3(dnp.getPos(direct.camera)).length()
+                    sf = 0.075 * nodeCamDist * math.tan(deg2Rad(direct.drList.getCurrentDr().fovV))
+                    self.widget.setDirectScalingFactor(sf)
         return Task.cont
     
     def select(self, nodePath, fMultiSelect = 0,
@@ -585,7 +602,11 @@ class DirectSession(DirectObject):
             self.selectedNPReadout.setText(
                 'Selected:' + dnp.getName())
             # Show the manipulation widget
-            self.widget.showWidget()
+            if self.manipulationControl.fMultiView:
+                for widget in self.manipulationControl.widgetList:
+                    widget.showWidget()
+            else:
+                self.widget.showWidget()
             editTypes = self.manipulationControl.getEditTypes([dnp])
             if (editTypes & EDIT_TYPE_UNEDITABLE == EDIT_TYPE_UNEDITABLE):
                 self.manipulationControl.disableWidgetMove()
@@ -601,8 +622,12 @@ class DirectSession(DirectObject):
             # This uses the additional scaling factor used to grow and
             # shrink the widget
             if not self.fScaleWidgetByCam: # [gjeon] for not scaling widget by distance from camera
-                self.widget.setScalingFactor(dnp.getRadius())
-            
+                if self.manipulationControl.fMultiView:
+                    for widget in self.manipulationControl.widgetList:
+                        widget.setScalingFactor(dnp.getRadius())
+                else:
+                    self.widget.setScalingFactor(dnp.getRadius())
+                
             # Spawn task to have object handles follow the selected object
             taskMgr.remove('followSelectedNodePath')
             t = Task.Task(self.followSelectedNodePathTask)
@@ -624,7 +649,11 @@ class DirectSession(DirectObject):
         dnp = self.selected.deselect(nodePath)
         if dnp:
             # Hide the manipulation widget
-            self.widget.hideWidget()
+            if self.manipulationControl.fMultiView:
+                for widget in self.manipulationControl.widgetList:
+                    widget.hideWidget()
+            else:
+                self.widget.hideWidget()                
             self.selectedNPReadout.reparentTo(hidden)
             self.selectedNPReadout.setText(' ')
             taskMgr.remove('followSelectedNodePath')
@@ -635,7 +664,11 @@ class DirectSession(DirectObject):
     def deselectAll(self):
         self.selected.deselectAll()
         # Hide the manipulation widget
-        self.widget.hideWidget()
+        if self.manipulationControl.fMultiView:
+            for widget in self.manipulationControl.widgetList:
+                widget.hideWidget()
+        else:
+            self.widget.hideWidget()
         self.selectedNPReadout.reparentTo(hidden)
         self.selectedNPReadout.setText(' ')
         taskMgr.remove('followSelectedNodePath')
