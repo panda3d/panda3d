@@ -349,7 +349,7 @@ determine_size() {
     force_replace();
     _omit_reason = OR_size;
 
-  } else if (pal->_omit_everything) {
+  } else if (pal->_omit_everything && (_group->is_none_texture_swap())) {
     // If we're omitting everything, omit everything.
     force_replace();
     _omit_reason = OR_default_omit;

@@ -91,6 +91,7 @@ public:
   void update_images(bool redo_all);
 
   void add_texture_swap_info(const string sourceTextureName, const vector_string &swapTextures);
+  bool is_none_texture_swap() const;
 
 private:
   string _dirname;

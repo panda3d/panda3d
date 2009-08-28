@@ -823,3 +823,14 @@ add_texture_swap_info(const string sourceTextureName, const vector_string &swapT
   }
   _textureSwapInfo.insert(TextureSwapInfo::value_type(sourceTextureName, swapTextures));
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: PaletteGroup::is_none_texture_swap
+//       Access: Public
+//  Description: Returns textureswap information is set or not,
+//               True if it's not set.
+////////////////////////////////////////////////////////////////////
+bool PaletteGroup::
+is_none_texture_swap() const {
+  return _textureSwapInfo.empty();
+}
