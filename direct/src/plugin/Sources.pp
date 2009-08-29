@@ -18,6 +18,7 @@
     find_root_dir.cxx find_root_dir.h \
     get_tinyxml.h \
     binaryXml.cxx binaryXml.h \
+    fhandle.h \
     handleStream.cxx handleStream.h handleStream.I \
     handleStreamBuf.cxx handleStreamBuf.h handleStreamBuf.I \
     mkdir_complete.cxx mkdir_complete.h \
@@ -51,7 +52,8 @@
     p3dUndefinedObject.h \
     p3dWinSplashWindow.h p3dWinSplashWindow.I \
     p3dX11SplashWindow.h \
-    p3dWindowParams.h p3dWindowParams.I
+    p3dWindowParams.h p3dWindowParams.I \
+    run_p3dpython.h
 
   #define INCLUDED_SOURCES \
     p3d_plugin.cxx \
@@ -91,7 +93,7 @@
 
 #end lib_target
 
-#begin bin_target
+#begin lib_target
   #define BUILD_TARGET $[HAVE_PYTHON]
   #define USE_PACKAGES tinyxml python
   #define TARGET p3dpython
@@ -105,19 +107,31 @@
 
   #define SOURCES \
     binaryXml.cxx binaryXml.h \
+    fhandle.h \
     handleStream.cxx handleStream.h handleStream.I \
     handleStreamBuf.cxx handleStreamBuf.h handleStreamBuf.I \
     p3d_lock.h p3d_plugin.h \
     p3d_plugin_config.h \
     p3dCInstance.cxx \
     p3dCInstance.h p3dCInstance.I \
-    p3dPythonRun.cxx p3dPythonRun.h p3dPythonRun.I
+    p3dPythonRun.cxx p3dPythonRun.h p3dPythonRun.I \
+    run_p3dpython.h
 
   #define WIN_SYS_LIBS user32.lib
 
   // If you have to link with a static Python library, define it here.
   #define EXTRA_LIBS $[EXTRA_P3DPYTHON_LIBS]
 
+#end lib_target
+
+#begin bin_target
+  #define BUILD_TARGET $[HAVE_PYTHON]
+  #define TARGET p3dpython
+
+  #define SOURCES \
+    fhandle.h \
+    p3dPythonMain.cxx \
+    run_p3dpython.h
 #end bin_target
 
 #begin static_lib_target

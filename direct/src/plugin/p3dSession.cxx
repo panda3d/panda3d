@@ -26,6 +26,7 @@
 #include "p3dConcreteStruct.h"
 #include "binaryXml.h"
 #include "mkdir_complete.h"
+#include "run_p3dpython.h"
 
 #include <ctype.h>
 
@@ -34,6 +35,7 @@
 #include <sys/wait.h>
 #include <sys/select.h>
 #include <signal.h>
+#include <dlfcn.h>
 #endif
 
 ////////////////////////////////////////////////////////////////////
@@ -53,6 +55,7 @@ P3DSession(P3DInstance *inst) {
   _python_version = inst->get_python_version();
 
   _start_dir = inst_mgr->get_root_dir() + "/start";
+  _p3dpython_one_process = false;
   _p3dpython_started = false;
   _p3dpython_running = false;
 
@@ -100,67 +103,86 @@ shutdown() {
 
     static const int max_wait_ms = 2000;
 
+    if (_p3dpython_one_process) {
+      // Since it's running in a thread, we can't reliably force-kill
+      // it.  So, just wait.
+      nout << "Waiting for Python thread to exit\n";
+      JOIN_THREAD(_p3dpython_thread);
+      nout << "Done waiting.\n";
+      _p3dpython_one_process = false;
+
+    } else {
+      // Python's running in a sub-process, the preferred way.  In
+      // this case, we can wait a brief amount of time before it
+      // closes itself; but if it doesn't, we can safely force-kill
+      // it.
+
 #ifdef _WIN32
-    // Now give the process a chance to terminate itself cleanly.
-    if (WaitForSingleObject(_p3dpython_handle, max_wait_ms) == WAIT_TIMEOUT) {
-      // It didn't shut down cleanly, so kill it the hard way.
-      nout << "Force-killing python process.\n";
-      TerminateProcess(_p3dpython_handle, 2);
-    }
-
-    CloseHandle(_p3dpython_handle);
-#else  // _WIN32
-
-    // Wait for a certain amount of time for the process to stop by
-    // itself.
-    struct timeval start;
-    gettimeofday(&start, NULL);
-    int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
-    
-    int status;
-    pid_t result = waitpid(_p3dpython_pid, &status, WNOHANG);
-    while (result != _p3dpython_pid) {
-      if (result == -1) {
-        perror("waitpid");
-        break;
-      }
-
-      struct timeval now;
-      gettimeofday(&now, NULL);
-      int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
-      int elapsed = now_ms - start_ms;
-
-      if (elapsed > max_wait_ms) {
-        // Tired of waiting.  Kill the process.
-        nout << "Force-killing python process, pid " << _p3dpython_pid 
-             << "\n";
-        kill(_p3dpython_pid, SIGKILL);
-        start_ms = now_ms;
+      // Wait for a certain amount of time for the process to stop by
+      // itself.
+      if (WaitForSingleObject(_p3dpython_handle, max_wait_ms) == WAIT_TIMEOUT) {
+        // It didn't shut down cleanly, so kill it the hard way.
+        nout << "Force-killing python process.\n";
+        TerminateProcess(_p3dpython_handle, 2);
       }
       
-      // Yield the timeslice and wait some more.
-      struct timeval tv;
-      tv.tv_sec = 0;
-      tv.tv_usec = 1;
-      select(0, NULL, NULL, NULL, &tv);
-      result = waitpid(_p3dpython_pid, &status, WNOHANG);
-    }
+      CloseHandle(_p3dpython_handle);
 
-    nout << "Python process has successfully stopped.\n";
-    if (WIFEXITED(status)) {
-      nout << "  exited normally, status = "
-           << WEXITSTATUS(status) << "\n";
-    } else if (WIFSIGNALED(status)) {
-      nout << "  signalled by " << WTERMSIG(status) << ", core = " 
-           << WCOREDUMP(status) << "\n";
-    } else if (WIFSTOPPED(status)) {
-      nout << "  stopped by " << WSTOPSIG(status) << "\n";
-    }
-
+#else  // _WIN32
+      // Wait for a certain amount of time for the process to stop by
+      // itself.
+      struct timeval start;
+      gettimeofday(&start, NULL);
+      int start_ms = start.tv_sec * 1000 + start.tv_usec / 1000;
+      
+      int status;
+      pid_t result = waitpid(_p3dpython_pid, &status, WNOHANG);
+      while (result != _p3dpython_pid) {
+        if (result == -1) {
+          perror("waitpid");
+          break;
+        }
+        
+        struct timeval now;
+        gettimeofday(&now, NULL);
+        int now_ms = now.tv_sec * 1000 + now.tv_usec / 1000;
+        int elapsed = now_ms - start_ms;
+        
+        if (elapsed > max_wait_ms) {
+          // Tired of waiting.  Kill the process.
+          nout << "Force-killing python process, pid " << _p3dpython_pid 
+               << "\n";
+          kill(_p3dpython_pid, SIGKILL);
+          start_ms = now_ms;
+        }
+        
+        // Yield the timeslice and wait some more.
+        struct timeval tv;
+        tv.tv_sec = 0;
+        tv.tv_usec = 1;
+        select(0, NULL, NULL, NULL, &tv);
+        result = waitpid(_p3dpython_pid, &status, WNOHANG);
+      }
+      
+      nout << "Python process has successfully stopped.\n";
+      if (WIFEXITED(status)) {
+        nout << "  exited normally, status = "
+             << WEXITSTATUS(status) << "\n";
+      } else if (WIFSIGNALED(status)) {
+        nout << "  signalled by " << WTERMSIG(status) << ", core = " 
+             << WCOREDUMP(status) << "\n";
+      } else if (WIFSTOPPED(status)) {
+        nout << "  stopped by " << WSTOPSIG(status) << "\n";
+      }
+      
 #endif  // _WIN32
+    }
 
     _p3dpython_running = false;
     _p3dpython_started = false;
+
+    // Close the pipe now.
+    _pipe_read.close();
   }
 
   // If there are any leftover commands in the queue (presumably
@@ -657,10 +679,9 @@ start_p3dpython(P3DInstance *inst) {
   // Change the current directory to the standard start directory, but
   // only if the runtime environment told us the original current
   // directory isn't meaningful.
-  string start_dir;
-  if (!inst_mgr->get_keep_cwd()) {
-    start_dir = _start_dir;
-    mkdir_complete(start_dir, nout);
+  _use_start_dir = !inst_mgr->get_keep_cwd();
+  if (_use_start_dir) {
+    mkdir_complete(_start_dir, nout);
   }
 
 #ifdef _WIN32
@@ -725,16 +746,30 @@ start_p3dpython(P3DInstance *inst) {
          << "PRC_PATH set to: " << prc_path << "\n";
   }
 
-  string p3dpython = P3D_PLUGIN_P3DPYTHON;
-  if (p3dpython.empty()) {
-    p3dpython = _python_root_dir + "/p3dpython";
+  // Get the name of the executable and dynamic library to run.
+  // Ideally, we'll run the executable successfully, in a sub-process;
+  // this will in turn load and run the dynamic library.  If that
+  // fails for some reason, we can fall back to loading and running
+  // the library directly.
+  _p3dpython_exe = _python_root_dir + "/p3dpython";
 #ifdef _WIN32
-    p3dpython += ".exe";
+  _p3dpython_exe += ".exe";
+#endif
+
+  _p3dpython_dll = P3D_PLUGIN_P3DPYTHON;
+  if (_p3dpython_dll.empty()) {
+    _p3dpython_dll = _python_root_dir + "/libp3dpython";
+#ifdef _WIN32
+    _p3dpython_dll += ".dll";
+#elif defined(__APPLE__)
+    _p3dpython_dll += ".dylib";
+#else
+    _p3dpython_dll += ".so";
 #endif
   }
 
   // Populate the new process' environment.
-  string env;
+  _env = string();
 
   // These are the enviroment variables we forward from the current
   // environment, if they are set.
@@ -748,41 +783,41 @@ start_p3dpython(P3DInstance *inst) {
   for (int ki = 0; keep[ki] != NULL; ++ki) {
     char *value = getenv(keep[ki]);
     if (value != NULL) {
-      env += keep[ki];
-      env += "=";
-      env += value;
-      env += '\0';
+      _env += keep[ki];
+      _env += "=";
+      _env += value;
+      _env += '\0';
     }
   }
 
   // Define some new environment variables.
-  env += "PATH=";
-  env += search_path;
-  env += '\0';
+  _env += "PATH=";
+  _env += search_path;
+  _env += '\0';
 
-  env += "LD_LIBRARY_PATH=";
-  env += search_path;
-  env += '\0';
+  _env += "LD_LIBRARY_PATH=";
+  _env += search_path;
+  _env += '\0';
 
-  env += "DYLD_LIBRARY_PATH=";
-  env += search_path;
-  env += '\0';
+  _env += "DYLD_LIBRARY_PATH=";
+  _env += search_path;
+  _env += '\0';
 
-  env += "PYTHONPATH=";
-  env += python_path;
-  env += '\0';
+  _env += "PYTHONPATH=";
+  _env += python_path;
+  _env += '\0';
 
-  env += "PYTHONHOME=";
-  env += _python_root_dir;
-  env += '\0';
+  _env += "PYTHONHOME=";
+  _env += _python_root_dir;
+  _env += '\0';
 
-  env += "PRC_PATH=";
-  env += prc_path;
-  env += '\0';
+  _env += "PRC_PATH=";
+  _env += prc_path;
+  _env += '\0';
 
-  env += "PANDA_PRC_PATH=";
-  env += prc_path;
-  env += '\0';
+  _env += "PANDA_PRC_PATH=";
+  _env += prc_path;
+  _env += '\0';
     
   // Define each package's root directory in an environment variable
   // named after the package, for the convenience of the packages in
@@ -793,11 +828,11 @@ start_p3dpython(P3DInstance *inst) {
     for (string::const_iterator si = package_name.begin();
          si != package_name.end();
          ++si) {
-      env += toupper(*si);
+      _env += toupper(*si);
     }
-    env += string("_ROOT=");
-    env += package->get_package_dir();
-    env += '\0';
+    _env += string("_ROOT=");
+    _env += package->get_package_dir();
+    _env += '\0';
   }
 
   // Get the log filename from the p3d_info.xml file.
@@ -809,6 +844,7 @@ start_p3dpython(P3DInstance *inst) {
   }
 
   bool console_output = (inst->get_fparams().lookup_token_int("console_output") != 0);
+  bool one_process = (inst->get_fparams().lookup_token_int("one_process") != 0);
 
 #ifdef P3D_PLUGIN_LOG_BASENAME3
   if (log_basename.empty()) {
@@ -840,24 +876,82 @@ start_p3dpython(P3DInstance *inst) {
     _log_pathname += ".log";
   }
 
-  string archive_file = inst->_panda3d->get_archive_file_pathname();
-
-  nout << "Attempting to start python from " << p3dpython << "\n";
+  // Create the pipes for communication.
 #ifdef _WIN32
-  _p3dpython_handle = win_create_process
-    (p3dpython, archive_file, start_dir, env, _log_pathname,
-     _pipe_read, _pipe_write);
-  bool started_p3dpython = (_p3dpython_handle != INVALID_HANDLE_VALUE);
+  // Create a bi-directional pipe to communicate with the sub-process.
+  HANDLE r_to, w_to, r_from, w_from;
+
+  // Create the pipe to the process.
+  if (!CreatePipe(&r_to, &w_to, NULL, 0)) {
+    nout << "failed to create pipe\n";
+  } else {
+    // Make sure the right end of the pipe is inheritable.
+    SetHandleInformation(r_to, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+    SetHandleInformation(w_to, HANDLE_FLAG_INHERIT, 0);
+  }
+
+  // Create the pipe from the process.
+  if (!CreatePipe(&r_from, &w_from, NULL, 0)) {
+    nout << "failed to create pipe\n";
+  } else { 
+    // Make sure the right end of the pipe is inheritable.
+    SetHandleInformation(w_from, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+    SetHandleInformation(r_from, HANDLE_FLAG_INHERIT, 0);
+  }
+
+  _output = w_from;
+  _input = r_to;
+  _pipe_read.open_read(r_from);
+  _pipe_write.open_write(w_to);
+
 #else
-  _p3dpython_pid = posix_create_process
-    (p3dpython, archive_file, start_dir, env, _log_pathname,
-     _pipe_read, _pipe_write);
-  bool started_p3dpython = (_p3dpython_pid > 0);
+  // Create a bi-directional pipe to communicate with the sub-process.
+  int to_fd[2];
+  if (pipe(to_fd) < 0) {
+    perror("failed to create pipe");
+  }
+  int from_fd[2];
+  if (pipe(from_fd) < 0) {
+    perror("failed to create pipe");
+  }
+
+  _input = to_fd[0];
+  _output = from_fd[1];
+  _pipe_read.open_read(from_fd[0]);
+  _pipe_write.open_write(to_fd[1]);
+#endif // _WIN32
+
+  // Get the filename to the Panda3D multifile.  We need to pass this
+  // to p3dpython.
+  _mf_filename = inst->_panda3d->get_archive_file_pathname();
+
+  bool started_p3dpython;
+  if (one_process) {
+    nout << "one_process is set; running Python within parent process.\n";
+    started_p3dpython = false;
+  } else {
+    nout << "Attempting to start python from " << _p3dpython_exe 
+         << " and " << _p3dpython_dll << "\n";
+#ifdef _WIN32
+    _p3dpython_handle = win_create_process();
+    started_p3dpython = (_p3dpython_handle != INVALID_HANDLE_VALUE);
+#else
+    _p3dpython_pid = posix_create_process();
+    started_p3dpython = (_p3dpython_pid > 0);
 #endif
+    if (!started_p3dpython) {
+      nout << "Failed to create process.\n";
+    }
+  }
 
   if (!started_p3dpython) {
-    nout << "Failed to create process.\n";
-    return;
+    // Well, we couldn't run python in a sub-process, for some reason.
+    // Fall back to running it in a sub-thread within the same
+    // process.  This isn't nearly as good, but I guess it's better
+    // than nothing.
+    INIT_THREAD(_p3dpython_thread);
+    SPAWN_THREAD(_p3dpython_thread, p3dpython_thread_run, this);
+    _p3dpython_one_process = true;
   }
   _p3dpython_started = true;
   _p3dpython_running = true;
@@ -1019,60 +1113,37 @@ rt_terminate() {
 #ifdef _WIN32
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::win_create_process
-//       Access: Private, Static
-//  Description: Creates a sub-process to run the named program
-//               executable, with the indicated environment string.
-//               Standard error is logged to log_pathname, if that
-//               string is nonempty.
+//       Access: Private
+//  Description: Creates a sub-process to run _p3dpython_exe, with
+//               the appropriate command-line arguments, and the
+//               environment string defined in _env.  Standard error
+//               is logged to _log_pathname, if that string is
+//               nonempty.
 //
-//               Opens the two HandleStreams as the read and write
-//               pipes to the child process's standard output and
-//               standard input, respectively.
+//               Opens the two HandleStreams _pipe_read and
+//               _pipe_write as the read and write pipes to the child
+//               process's standard output and standard input,
+//               respectively.
 //
 //               Returns the handle to the created process on success,
 //               or INVALID_HANDLE_VALUE on falure.
 ////////////////////////////////////////////////////////////////////
 HANDLE P3DSession::
-win_create_process(const string &program, const string &archive_file,
-                   const string &start_dir,
-                   const string &env, const string &log_pathname,
-                   HandleStream &pipe_read, HandleStream &pipe_write) {
-
-  // Create a bi-directional pipe to communicate with the sub-process.
-  HANDLE r_to, w_to, r_from, w_from;
-
-  // Create the pipe to the process.
-  if (!CreatePipe(&r_to, &w_to, NULL, 0)) {
-    nout << "failed to create pipe\n";
-  } else {
-    // Make sure the right end of the pipe is inheritable.
-    SetHandleInformation(r_to, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-    SetHandleInformation(w_to, HANDLE_FLAG_INHERIT, 0);
-  }
-
-  // Create the pipe from the process.
-  if (!CreatePipe(&r_from, &w_from, NULL, 0)) {
-    nout << "failed to create pipe\n";
-  } else { 
-    // Make sure the right end of the pipe is inheritable.
-    SetHandleInformation(w_from, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-    SetHandleInformation(r_from, HANDLE_FLAG_INHERIT, 0);
-  }
-
+win_create_process() {
   HANDLE error_handle = GetStdHandle(STD_ERROR_HANDLE);
-  bool got_log_pathname = !log_pathname.empty();
+  bool got_log_pathname = !_log_pathname.empty();
   if (got_log_pathname) {
     // Open the named file for output and redirect the child's stderr
     // into it.
     HANDLE handle = CreateFile
-      (log_pathname.c_str(), GENERIC_WRITE, 
+      (_log_pathname.c_str(), GENERIC_WRITE, 
        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
        NULL, CREATE_ALWAYS, 0, NULL);
     if (handle != INVALID_HANDLE_VALUE) {
       error_handle = handle;
       SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
     } else {
-      nout << "Unable to open " << log_pathname << "\n";
+      nout << "Unable to open " << _log_pathname << "\n";
     }
   }
 
@@ -1085,8 +1156,8 @@ win_create_process(const string &program, const string &archive_file,
   ZeroMemory(&startup_info, sizeof(STARTUPINFO));
   startup_info.cb = sizeof(startup_info); 
   startup_info.hStdError = error_handle;
-  startup_info.hStdOutput = w_from;
-  startup_info.hStdInput = r_to;
+  startup_info.hStdOutput = _output;
+  startup_info.hStdInput = _input;
   startup_info.dwFlags |= STARTF_USESTDHANDLES;
 
   // Make sure the "python" console window is hidden.
@@ -1096,15 +1167,18 @@ win_create_process(const string &program, const string &archive_file,
   // If the start directory is empty, meaning not to change the
   // current directory, then pass NULL in to CreateProcess().
   const char *start_dir_cstr = NULL;
-  if (!start_dir.empty()) {
-    start_dir_cstr = start_dir.c_str();
+  if (_use_start_dir) {
+    start_dir_cstr = _start_dir.c_str();
   }
 
+  // Construct the command-line string, containing the quoted
+  // command-line arguments.
   ostringstream stream;
-  stream << "\"" << program << "\" \"" << archive_file << "\"";
+  stream << "\"" << _p3dpython_exe << "\" \"" << _p3dpython_dll
+         << "\" \"" << _mf_filename << "\"";
 
   // I'm not sure why CreateProcess wants a non-const char pointer for
-  // the command-line argument, but I'm not taking chances.  It gets a
+  // its command-line string, but I'm not taking chances.  It gets a
   // non-const char array that it can modify.
   string command_line_str = stream.str();
   char *command_line = new char[command_line_str.size() + 1];
@@ -1112,28 +1186,25 @@ win_create_process(const string &program, const string &archive_file,
 
   PROCESS_INFORMATION process_info; 
   BOOL result = CreateProcess
-    (program.c_str(), command_line, NULL, NULL, TRUE, 0,
-     (void *)env.c_str(), start_dir_cstr,
+    (_p3dpython_exe.c_str(), command_line, NULL, NULL, TRUE, 0,
+     (void *)_env.c_str(), _start_dir_cstr,
      &startup_info, &process_info);
   bool started_program = (result != 0);
 
   delete[] command_line;
 
   // Close the pipe handles that are now owned by the child.
-  CloseHandle(w_from);
-  CloseHandle(r_to);
+  CloseHandle(_output);
+  CloseHandle(_input);
   if (got_log_pathname) {
     CloseHandle(error_handle);
   }
 
   if (!started_program) {
-    CloseHandle(r_from);
-    CloseHandle(w_to);
+    _pipe_read.close();
+    _pipe_write.close();
     return INVALID_HANDLE_VALUE;
   }
-
-  pipe_read.open_read(r_from);
-  pipe_write.open_write(w_to);
 
   CloseHandle(process_info.hThread);
   return process_info.hProcess;
@@ -1144,54 +1215,40 @@ win_create_process(const string &program, const string &archive_file,
 #ifndef _WIN32
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSession::posix_create_process
-//       Access: Private, Static
-//  Description: Creates a sub-process to run the named program
-//               executable, with the indicated environment string.
+//       Access: Private
+//  Description: Creates a sub-process to run _p3dpython_exe, with
+//               the appropriate command-line arguments, and the
+//               environment string defined in _env.  Standard error
+//               is logged to _log_pathname, if that string is
+//               nonempty.
 //
-//               Opens the two HandleStreams as the read and write
-//               pipes to the child process's standard output and
-//               standard input, respectively.  Returns true on
-//               success, false on failure.
+//               Opens the two HandleStreams _pipe_read and
+//               _pipe_write as the read and write pipes to the child
+//               process's standard output and standard input,
+//               respectively.
 //
-//               Returns the pid of the created process on success, or
-//               -1 on falure.
+//               Returns the handle to the created process on success,
+//               or INVALID_HANDLE_VALUE on falure.
 ////////////////////////////////////////////////////////////////////
 int P3DSession::
-posix_create_process(const string &program, const string &archive_file,
-                     const string &start_dir,
-                     const string &env, const string &log_pathname,
-                     HandleStream &pipe_read, HandleStream &pipe_write) {
-  // Create a bi-directional pipe to communicate with the sub-process.
-  int to_fd[2];
-  if (pipe(to_fd) < 0) {
-    perror("failed to create pipe");
-  }
-  int from_fd[2];
-  if (pipe(from_fd) < 0) {
-    perror("failed to create pipe");
-  }
-
+posix_create_process() {
   // Fork and exec.
   pid_t child = fork();
   if (child < 0) {
-    close(to_fd[0]);
-    close(to_fd[1]);
-    close(from_fd[0]);
-    close(from_fd[1]);
     perror("fork");
     return -1;
   }
 
   if (child == 0) {
     // Here we are in the child process.
-    bool got_log_pathname = !log_pathname.empty();
+    bool got_log_pathname = !_log_pathname.empty();
     if (got_log_pathname) {
       // Open the named file for output and redirect the child's stderr
       // into it.
-      int logfile_fd = open(log_pathname.c_str(), 
+      int logfile_fd = open(_log_pathname.c_str(), 
                             O_WRONLY | O_CREAT | O_TRUNC, 0666);
       if (logfile_fd < 0) {
-        nout << "Unable to open " << log_pathname << "\n";
+        nout << "Unable to open " << _log_pathname << "\n";
       } else {
         dup2(logfile_fd, STDERR_FILENO);
         close(logfile_fd);
@@ -1200,41 +1257,108 @@ posix_create_process(const string &program, const string &archive_file,
 
     // Set the appropriate ends of the bi-directional pipe as the
     // standard input and standard output of the child process.
-    dup2(to_fd[0], STDIN_FILENO);
-    dup2(from_fd[1], STDOUT_FILENO);
-    close(to_fd[1]);
-    close(from_fd[0]);
+    dup2(_input, STDIN_FILENO);
+    dup2(_output, STDOUT_FILENO);
+    _pipe_read.close();
+    _pipe_write.close();
 
-    if (!start_dir.empty()) {
-      if (chdir(start_dir.c_str()) < 0) {
-        nout << "Could not chdir to " << start_dir << "\n";
-        _exit(1);
+    if (_use_start_dir) {
+      if (chdir(_start_dir.c_str()) < 0) {
+        nout << "Could not chdir to " << _start_dir << "\n";
+        // This is a warning, not an error.  We don't actually care
+        // that much about the starting directory.
       }
     }
 
     // build up an array of char strings for the environment.
     vector<const char *> ptrs;
     size_t p = 0;
-    size_t zero = env.find('\0', p);
+    size_t zero = _env.find('\0', p);
     while (zero != string::npos) {
-      ptrs.push_back(env.data() + p);
+      ptrs.push_back(_env.data() + p);
       p = zero + 1;
-      zero = env.find('\0', p);
+      zero = _env.find('\0', p);
     }
     ptrs.push_back((char *)NULL);
-    
-    execle(program.c_str(), 
-           program.c_str(), archive_file.c_str(), (char *)0, 
+
+    execle(_p3dpython_exe.c_str(), 
+           _p3dpython_exe.c_str(), _p3dpython_dll.c_str(), _mf_filename.c_str(), (char *)0, 
            &ptrs[0]);
-    nout << "Failed to exec " << program << "\n";
+    nout << "Failed to exec " << _p3dpython_exe << "\n";
     _exit(1);
   }
 
-  pipe_read.open_read(from_fd[0]);
-  pipe_write.open_write(to_fd[1]);
-  close(to_fd[0]);
-  close(from_fd[1]);
+  close(_input);
+  close(_output);
 
   return child;
 }
 #endif  // _WIN32
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSession::p3dpython_thread_run
+//       Access: Private
+//  Description: This method is called in a sub-thread to fire up
+//               p3dpython within this same process, but only if the
+//               above attempt to create a sub-process failed.
+////////////////////////////////////////////////////////////////////
+void P3DSession::
+p3dpython_thread_run() {
+  nout << "running p3dpython_thread_run()\n";
+
+  // Set the environment.  Hopefully this won't be too destructive to
+  // the current process, and hopefully these changes will be read
+  // properly by Python.
+  size_t p = 0;
+  size_t zero = _env.find('\0', p);
+  while (zero != string::npos) {
+    const char *start = _env.data() + p;
+    const char *equals = strchr(start, '=');
+    if (equals != NULL) {
+      string variable(start, equals - start);
+#ifdef _WIN32
+      _putenv_s(variable.c_str(), equals + 1);
+#else
+      setenv(variable.c_str(), equals + 1, true);
+#endif  // _WIN32
+    }
+    p = zero + 1;
+    zero = _env.find('\0', p);
+  }
+
+  // Now load the library.
+#ifdef _WIN32
+  SetErrorMode(0);
+  HMODULE module = LoadLibrary(_p3dpython_dll.c_str());
+  if (module == NULL) {
+    // Couldn't load the DLL.
+    nout << "Couldn't load " << _p3dpython_dll << "\n";
+    return;
+  }
+
+  #define get_func GetProcAddress
+
+#else  // _WIN32
+  // Posix case.
+  void *module = dlopen(_p3dpython_dll.c_str(), RTLD_GLOBAL);
+  if (module == NULL) {
+    // Couldn't load the .so.
+    nout << "Couldn't load " << _p3dpython_dll << "\n";
+    return;
+  }
+
+  #define get_func dlsym
+
+#endif  // _WIN32
+
+  run_p3dpython_func *run_p3dpython = (run_p3dpython_func *)get_func(module, "run_p3dpython");
+  if (run_p3dpython == NULL) {
+    nout << "Couldn't find run_p3dpython\n";
+    return;
+  }
+
+  if (!run_p3dpython(_p3dpython_dll.c_str(), _mf_filename.c_str(),
+                     _input, _output)) {
+    nout << "Failure on startup.\n";
+  }
+}

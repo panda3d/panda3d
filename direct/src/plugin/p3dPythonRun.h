@@ -22,6 +22,7 @@
 #include <windows.h>
 #endif
 
+#include "run_p3dpython.h"
 #include "p3d_lock.h"
 #include "handleStream.h"
 #include "p3dCInstance.h"
@@ -65,7 +66,8 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////
 class P3DPythonRun {
 public:
-  P3DPythonRun(int argc, char *argv[]);
+  P3DPythonRun(const char *program_name, const char *archive_file,
+               FHandle input, FHandle output);
   ~P3DPythonRun();
 
   bool run_python();
@@ -153,6 +155,7 @@ private:
 
   bool _read_thread_continue;
   bool _program_continue;
+  bool _session_terminated;
   THREAD _read_thread;
 
 public:

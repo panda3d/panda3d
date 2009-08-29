@@ -2185,10 +2185,12 @@ class Packager:
         # This is the main program that drives the runtime Python.  It
         # is responsible for loading _vfsimporter.pyd, and then
         # importing direct.p3d.AppRunner, to start an application
-        # running.  Note that the .exe extension is automatically
-        # replaced with the platform-specific extension appropriate
-        # for an executable.
+        # running.  The program comes in two parts: an executable, and
+        # an associated dynamic library.  Note that the .exe and .dll
+        # extensions are automatically replaced with the appropriate
+        # platform-specific extensions.
         self.do_file('p3dpython.exe')
+        self.do_file('libp3dpython.dll')
 
     def do_freeze(self, filename, compileToExe = False):
         """ Freezes all of the current Python code into either an

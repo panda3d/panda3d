@@ -75,18 +75,15 @@ private:
   void rt_handle_request(TiXmlDocument *doc);
 
 #ifdef _WIN32
-  static HANDLE 
-  win_create_process(const string &program, const string &archive_file,
-                     const string &start_dir,
-                     const string &env, const string &output_filename,
-                     HandleStream &pipe_read, HandleStream &pipe_write);
+  HANDLE win_create_process();
 #else
-  static int 
-  posix_create_process(const string &program, const string &archive_file,
-                       const string &start_dir,
-                       const string &env, const string &output_filename,
-                       HandleStream &pipe_read, HandleStream &pipe_write);
+  int posix_create_process();
 #endif
+
+  // In case we can't get a separate process, we'll run p3dpython in a
+  // sub-thread.
+  THREAD_CALLBACK_DECLARATION(P3DSession, p3dpython_thread_run);
+  void p3dpython_thread_run();
 
 private:
   int _session_id;
@@ -95,6 +92,15 @@ private:
   string _log_pathname;
   string _python_root_dir;
   string _start_dir;
+  bool _use_start_dir;
+
+  // This information is passed to create_process(), or to
+  // p3dpython_thread_run().
+  string _p3dpython_exe;
+  string _p3dpython_dll;
+  string _mf_filename;
+  string _env;
+  FHandle _input, _output;
 
   typedef map<int, P3DInstance *> Instances;
   Instances _instances;
@@ -114,12 +120,21 @@ private:
 
   P3DPackage *_panda3d;
 
-  // Members for communicating with the p3dpython child process.
+  // If this is true, then CreateProcess() or fork() failed (or we had
+  // one_process set true in the tokens), and we're forced to run
+  // p3dpython in a sub-thread within the same process, rather than in
+  // a separate process.  This means we can't have multiple sessions
+  // running simultaneously, because Python don't play that way.
+  bool _p3dpython_one_process;
+
+  // Members for communicating with the p3dpython child process (or
+  // thread, as the case may be).
 #ifdef _WIN32
   HANDLE _p3dpython_handle;
 #else
   int _p3dpython_pid;
 #endif
+  THREAD _p3dpython_thread;
   bool _p3dpython_started;
   bool _p3dpython_running;
 

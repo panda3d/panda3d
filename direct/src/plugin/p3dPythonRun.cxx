@@ -29,28 +29,27 @@ P3DPythonRun *P3DPythonRun::_global_ptr = NULL;
 //  Description: 
 ////////////////////////////////////////////////////////////////////
 P3DPythonRun::
-P3DPythonRun(int argc, char *argv[]) {
+P3DPythonRun(const char *program_name, const char *archive_file,
+              FHandle input, FHandle output) {
   _read_thread_continue = false;
   _program_continue = true;
+  _session_terminated = false;
   INIT_LOCK(_commands_lock);
   INIT_THREAD(_read_thread);
 
   _session_id = 0;
   _next_sent_id = 0;
 
-  if (argc >= 1) {
-    _program_name = argv[0];
+  if (program_name != NULL) {
+    _program_name = program_name;
   }
-  if (argc >= 2) {
-    _archive_file = Filename::from_os_specific(argv[1]);
-  }
-  if (_archive_file.empty()) {
-    nout << "No archive filename specified on command line.\n";
-    exit(1);
+  if (archive_file != NULL) {
+    _archive_file = Filename::from_os_specific(archive_file);
   }
 
   _py_argc = 1;
   _py_argv = (char **)malloc(2 * sizeof(char *));
+
   _py_argv[0] = (char *)_program_name.c_str();
   _py_argv[1] = NULL;
 
@@ -66,28 +65,15 @@ P3DPythonRun(int argc, char *argv[]) {
 
   // Initialize Python.  It appears to be important to do this before
   // we open the pipe streams and spawn the thread, below.
+  PyEval_InitThreads();
   Py_SetProgramName((char *)_program_name.c_str());
   Py_Initialize();
   PySys_SetArgv(_py_argc, _py_argv);
 
   // Open the pipe streams with the input and output handles from the
   // parent.
-#ifdef _WIN32
-  HANDLE read = GetStdHandle(STD_INPUT_HANDLE);
-  HANDLE write = GetStdHandle(STD_OUTPUT_HANDLE);
-  if (!SetStdHandle(STD_INPUT_HANDLE, INVALID_HANDLE_VALUE)) {
-    nout << "unable to reset input handle\n";
-  }
-  if (!SetStdHandle(STD_OUTPUT_HANDLE, INVALID_HANDLE_VALUE)) {
-    nout << "unable to reset input handle\n";
-  }
-
-  _pipe_read.open_read(read);
-  _pipe_write.open_write(write);
-#else
-  _pipe_read.open_read(STDIN_FILENO);
-  _pipe_write.open_write(STDOUT_FILENO);
-#endif  // _WIN32
+  _pipe_read.open_read(input);
+  _pipe_write.open_write(output);
 
   if (!_pipe_read) {
     nout << "unable to open read pipe\n";
@@ -125,7 +111,6 @@ run_python() {
   // "_d", so that the Panda DLL preloader can import the correct
   // filenames.
   PyRun_SimpleString("import sys; sys.dll_suffix = '_d'");
-  
 #endif
 
   // We'll need libpandaexpress to be imported before we can load
@@ -696,6 +681,9 @@ check_comm() {
     _commands.pop_front();
     RELEASE_LOCK(_commands_lock);
     handle_command(doc);
+    if (_session_terminated) {
+      return;
+    }
     ACQUIRE_LOCK(_commands_lock);
   }
   RELEASE_LOCK(_commands_lock);
@@ -704,6 +692,7 @@ check_comm() {
     // The low-level thread detected an error, for instance pipe
     // closed.  We should exit gracefully.
     terminate_session();
+    return;
   }
 
   // Sleep to yield the timeslice, but only if we're not running in
@@ -758,6 +747,9 @@ wait_script_response(int response_id) {
           _commands.erase(ci);
           RELEASE_LOCK(_commands_lock);
           handle_command(doc);
+          if (_session_terminated) {
+            return NULL;
+          }
           ACQUIRE_LOCK(_commands_lock);
           break;
         }
@@ -791,6 +783,7 @@ wait_script_response(int response_id) {
 
     if (!_program_continue) {
       terminate_session();
+      return NULL;
     }
 
 #ifdef _WIN32
@@ -839,6 +832,9 @@ py_request_func(PyObject *args) {
     }
 
     TiXmlDocument *doc = wait_script_response(response_id);
+    if (_session_terminated) {
+      return Py_BuildValue("");
+    }
     assert(doc != NULL);
     TiXmlElement *xcommand = doc->FirstChildElement("command");
     assert(xcommand != NULL);
@@ -1230,10 +1226,7 @@ terminate_session() {
   }
   Py_DECREF(result);
 
-  // The task manager is cleaned up.  Let's exit immediately here,
-  // rather than returning all the way up.  This just makes it easier
-  // when we call terminate_session() from a deeply-nested loop.
-  exit(0);
+  _session_terminated = true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1561,16 +1554,18 @@ rt_thread_run() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: main
-//  Description: Starts the program running.
+//     Function: run_p3dpython
+//  Description: This externally-visible function is the main entry
+//               point to this DLL, and it starts the whole thing
+//               running.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
-int
-main(int argc, char *argv[]) {
-  P3DPythonRun::_global_ptr = new P3DPythonRun(argc, argv);
-  
-  if (!P3DPythonRun::_global_ptr->run_python()) {
-    nout << "Couldn't initialize Python.\n";
-    return 1;
-  }
-  return 0;
+bool
+run_p3dpython(const char *program_name, const char *archive_file,
+              FHandle input, FHandle output) {
+  P3DPythonRun::_global_ptr = 
+    new P3DPythonRun(program_name, archive_file, input, output);
+  bool result = P3DPythonRun::_global_ptr->run_python();
+  delete P3DPythonRun::_global_ptr;
+  P3DPythonRun::_global_ptr = NULL;
+  return result;
 }

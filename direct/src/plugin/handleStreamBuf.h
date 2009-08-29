@@ -15,14 +15,7 @@
 #ifndef HANDLESTREAMBUF_H
 #define HANDLESTREAMBUF_H
 
-#ifdef _WIN32
-#include <windows.h>
-typedef HANDLE FHandle;
-#else
-// On POSIX, we use a file descriptor as a "handle".
-typedef int FHandle;
-#endif
-
+#include "fhandle.h"
 #include <iostream>
 
 using namespace std;

@@ -12,7 +12,7 @@
     prc:c dtoolutil:c dtoolbase:c dtool:m \
     interrogatedb:c dconfig:c dtoolconfig:m \
     express:c downloader:c pandaexpress:m \
-    pystub
+    $[if $[WINDOWS_PLATFORM],pystub,]
 
   #define OSX_SYS_FRAMEWORKS Foundation AppKit Carbon
 
