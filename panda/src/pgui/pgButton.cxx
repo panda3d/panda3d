@@ -243,6 +243,12 @@ setup(const NodePath &ready, const NodePath &depressed,
   instance_to_state_def(S_depressed, depressed);
   instance_to_state_def(S_rollover, rollover);
   instance_to_state_def(S_inactive, inactive);
+
+  // Set the button frame size.
+  LPoint3f min_point, max_point;
+  ready.calc_tight_bounds(min_point, max_point);
+  set_frame(min_point[0], max_point[0],
+            min_point[2], max_point[2]);
 }
 
 ////////////////////////////////////////////////////////////////////
