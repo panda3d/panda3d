@@ -127,7 +127,7 @@ class HostInfo:
         platform, if one is provided by this host, or None if not. """
 
         assert self.hasContentsFile
-        platforms = self.packages.get((name, version), {})
+        platforms = self.packages.get((name, version or None), {})
 
         if platform is not None:
             # In this case, we are looking for a specific platform

@@ -40,6 +40,15 @@ Options:
      This option may be repeated as necessary.  These directories may
      also be specified with the pdef-path Config.prc variable.
 
+  -D
+     Allow the application to be run with -D on the panda3d command
+     line, or equivalently, "python_dev=1" in the web tokens.  If this
+     is allowed, then it will preserve the PYTHONPATH environment
+     variable from the user's environment, allowing Python files on
+     disk to shadow the same-named Python files within the p3d file,
+     for rapid iteration on the Python code.  If the appliation is not
+     built with -D here, this option does nothing at runtime.
+
 """
 
 import sys
@@ -57,13 +66,14 @@ class ArgumentError(StandardError):
     pass
 
 def makePackedApp(args):
-    opts, args = getopt.getopt(args, 'd:m:r:s:h')
+    opts, args = getopt.getopt(args, 'd:m:r:s:Dh')
 
     packager = Packager.Packager()
 
     root = Filename('.')
     main = None
     requires = []
+    allowPythonDev = False
     
     for option, value in opts:
         if option == '-d':
@@ -74,6 +84,8 @@ def makePackedApp(args):
             requires.append(value)
         elif option == '-s':
             packager.installSearch.appendDirectory(Filename.fromOsSpecific(value))
+        elif option == '-D':
+            allowPythonDev = True
         elif option == '-h':
             print __doc__ % (os.path.split(sys.argv[0])[1])
             sys.exit(1)
@@ -119,6 +131,9 @@ def makePackedApp(args):
         packager.beginPackage(appBase, p3dApplication = True)
         for requireName in requires:
             packager.do_require(requireName)
+
+        if allowPythonDev:
+            packager.do_config(allow_python_dev = True)
 
         packager.do_dir(root)
         packager.do_mainModule(mainModule)

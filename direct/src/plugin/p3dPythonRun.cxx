@@ -1048,8 +1048,11 @@ add_package_info(P3DCInstance *inst, TiXmlElement *xpackage) {
   const char *platform = xpackage->Attribute("platform");
   const char *version = xpackage->Attribute("version");
   const char *host = xpackage->Attribute("host");
-  if (name == NULL || version == NULL || host == NULL) {
+  if (name == NULL || host == NULL) {
     return;
+  }
+  if (version == NULL) {
+    version = "";
   }
   if (platform == NULL) {
     platform = "";

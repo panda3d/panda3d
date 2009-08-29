@@ -161,6 +161,7 @@ private:
   string _python_version;
   string _log_basename;
   bool _hidden;
+  bool _allow_python_dev;
 
   P3DSession *_session;
 

@@ -663,6 +663,12 @@ start_p3dpython(P3DInstance *inst) {
     mkdir_complete(start_dir, nout);
   }
 
+#ifdef _WIN32
+  char sep = ';';
+#else
+  char sep = ':';
+#endif  // _WIN32
+
   // Build up a search path that includes all of the required packages
   // that have already been installed.  We build this in reverse
   // order, so that the higher-order packages come first in the list;
@@ -673,16 +679,51 @@ start_p3dpython(P3DInstance *inst) {
   search_path = inst->_packages[pi]->get_package_dir();
   while (pi > 0) {
     --pi;
-#ifdef _WIN32
-    search_path += ';';
-#else
-    search_path += ':';
-#endif  // _WIN32
-
+    search_path += sep;
     search_path += inst->_packages[pi]->get_package_dir();
   }
 
   nout << "Search path is " << search_path << "\n";
+
+  bool python_dev = false;
+  if (inst->_allow_python_dev) {
+    // If "allow_python_dev" is set in the instance's p3d_info.xml,
+    // *and* we have python_dev in the tokens, then we set python_dev
+    // true.
+    python_dev = (inst->get_fparams().lookup_token_int("python_dev") != 0);
+  }
+
+  string python_path = search_path;
+  string prc_path = search_path;
+
+  if (python_dev) {
+    // With python_dev true, we preserve the PYTHONPATH setting from
+    // the caller's environment; in fact, we put it in the front.
+    // This allows the caller's on-disk Python files to shadow the
+    // similar-named files in the p3d file, allowing easy iteration on
+    // the code in the p3d file.
+    const char *pypath = getenv("PYTHONPATH");
+    if (pypath != (char *)NULL) {
+      python_path = pypath;
+      python_path += sep;
+      python_path += search_path;
+    }
+
+    // We also preserve PRC_PATH.
+    const char *prcpath = getenv("PRC_PATH");
+    if (prcpath == NULL) {
+      prcpath = getenv("PANDA_PRC_PATH");
+    }
+    if (prcpath != (char *)NULL) {
+      prc_path = prcpath;
+      prc_path += sep;
+      prc_path += search_path;
+    }
+
+    nout << "python_dev is true\n"
+         << "PYTHONPATH set to: " << python_path << "\n"
+         << "PRC_PATH set to: " << prc_path << "\n";
+  }
 
   string p3dpython = P3D_PLUGIN_P3DPYTHON;
   if (p3dpython.empty()) {
@@ -728,7 +769,7 @@ start_p3dpython(P3DInstance *inst) {
   env += '\0';
 
   env += "PYTHONPATH=";
-  env += search_path;
+  env += python_path;
   env += '\0';
 
   env += "PYTHONHOME=";
@@ -736,11 +777,11 @@ start_p3dpython(P3DInstance *inst) {
   env += '\0';
 
   env += "PRC_PATH=";
-  env += search_path;
+  env += prc_path;
   env += '\0';
 
   env += "PANDA_PRC_PATH=";
-  env += search_path;
+  env += prc_path;
   env += '\0';
     
   // Define each package's root directory in an environment variable

@@ -1,4 +1,4 @@
-from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, TiXmlDocument, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread
+from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, TiXmlDocument, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath
 from direct.p3d.FileSpec import FileSpec
 from direct.showbase import VFSImporter
 import os
@@ -16,7 +16,9 @@ class PackageInfo:
         self.packageVersion = packageVersion
         self.platform = platform
 
-        self.packageDir = Filename(host.hostDir, '%s/%s' % (self.packageName, self.packageVersion))
+        self.packageDir = Filename(host.hostDir, self.packageName)
+        if self.packageVersion:
+            self.packageDir = Filename(self.packageDir, self.packageVersion)
 
         # These will be filled in by HostInfo when the package is read
         # from contents.xml.
@@ -362,7 +364,12 @@ class PackageInfo:
 
         if not foundOnPath:
             # Not already here; add it.
-            sys.path.append(root)
+            sys.path.insert(0, root)
+
+        # Put it on the model-path, too.  We do this indiscriminantly,
+        # because the Panda3D runtime won't be adding things to the
+        # model-path, so it shouldn't be already there.
+        getModelPath().prependDirectory(self.packageDir)
 
         # Also, find any toplevel Python packages, and add these as
         # shared packages.  This will allow different packages

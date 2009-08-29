@@ -306,6 +306,12 @@ class Packager:
             else:
                 self.installMultifile()
 
+            if self.p3dApplication:
+                allowPythonDev = self.configs.get('allow_python_dev', 0)
+                if int(allowPythonDev):
+                    print "\n*** Generating %s.p3d with allow_python_dev enabled ***\n" % (self.packageName)
+
+
         def considerPlatform(self):
             # Check to see if any of the files are platform-specific,
             # making the overall package platform-specific.
@@ -1866,38 +1872,43 @@ class Packager:
         selected.
         """
 
-        packageDir = Filename(rootDir, packageName)
-        basename = packageName
+        packages = []
 
         if version:
             # A specific version package.
-            packageDir = Filename(packageDir, version)
-            basename += '.%s' % (version)
+            versionList = [version]
         else:
-            # Scan all versions.
-            packageDir = Filename(packageDir, '*')
-            basename += '.%s' % ('*')
+            # An unversioned package, or any old version.
+            versionList = [None, '*']
 
-        if platform:
-            packageDir = Filename(packageDir, platform)
-            basename += '.%s' % (platform)
+        for version in versionList:
+            packageDir = Filename(rootDir, packageName)
+            basename = packageName
 
-        # Actually, the host means little for this search, since we're
-        # only looking in a local directory at this point.
+            if version:
+                # A specific or nonspecific version package.
+                packageDir = Filename(packageDir, version)
+                basename += '.%s' % (version)
 
-        basename += '.import.xml'
-        filename = Filename(packageDir, basename)
-        filelist = glob.glob(filename.toOsSpecific())
-        if not filelist:
-            # It doesn't exist in the nested directory; try the root
-            # directory.
-            filename = Filename(rootDir, basename)
+            if platform:
+                packageDir = Filename(packageDir, platform)
+                basename += '.%s' % (platform)
+
+            # Actually, the host means little for this search, since we're
+            # only looking in a local directory at this point.
+
+            basename += '.import.xml'
+            filename = Filename(packageDir, basename)
             filelist = glob.glob(filename.toOsSpecific())
+            if not filelist:
+                # It doesn't exist in the nested directory; try the root
+                # directory.
+                filename = Filename(rootDir, basename)
+                filelist = glob.glob(filename.toOsSpecific())
 
-        packages = []
-        for file in filelist:
-            package = self.__readPackageImportDescFile(Filename.fromOsSpecific(file))
-            packages.append(package)
+            for file in filelist:
+                package = self.__readPackageImportDescFile(Filename.fromOsSpecific(file))
+                packages.append(package)
 
         self.__sortImportPackages(packages)
         for package in packages:
@@ -1951,6 +1962,9 @@ class Packager:
         """ Converts a version string into a tuple for sorting, by
         separating out numbers into separate numeric fields, so that
         version numbers sort numerically where appropriate. """
+
+        if not version:
+            return ('',)
 
         words = []
         p = 0

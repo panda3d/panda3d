@@ -64,7 +64,7 @@ run(int argc, char *argv[]) {
   // We prefix a "+" sign to tell gnu getopt not to parse options
   // following the first not-option parameter.  (These will be passed
   // into the sub-process.)
-  const char *optstr = "+mu:p:fw:t:s:o:l:h";
+  const char *optstr = "+mu:p:fw:t:s:o:l:Dh";
 
   bool allow_multiple = false;
   string download_url = PANDA_PACKAGE_HOST_URL;
@@ -134,6 +134,15 @@ run(int argc, char *argv[]) {
     case 'l':
       _log_dirname = Filename::from_os_specific(optarg).to_os_specific();
       _log_basename = "panda3d";
+      break;
+
+    case 'D':
+      {
+        P3D_token token;
+        token._keyword = "python_dev";
+        token._value = "1";
+        _tokens.push_back(token);
+      }
       break;
 
     case 'h':
@@ -779,6 +788,14 @@ usage() {
     << "    Force an initial contact of the Panda3D download server, to check\n"
     << "    if a new version is available.  Normally, this is done only\n"
     << "    if contents.xml cannot be read.\n\n"
+
+    << "  -D\n"
+    << "    Request python_dev mode.  This requires that the application was\n"
+    << "    also built with -D on the packp3d command line.  If so, this will\n"
+    << "    preserve the PYTHONPATH environment variable from the user's\n"
+    << "    environment, allowing Python files on disk to shadow the same-named\n"
+    << "    Python files within the p3d file, for rapid iteration on the Python\n"
+    << "    code.\n\n"
 
     << "  -u url\n"
     << "    Specify the URL of the Panda3D download server.  The default is\n"

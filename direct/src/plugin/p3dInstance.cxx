@@ -72,6 +72,7 @@ P3DInstance(P3D_request_ready_func *func,
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _instance_id = inst_mgr->get_unique_id();
   _hidden = false;
+  _allow_python_dev = false;
   _session = NULL;
   _panda3d = NULL;
   _splash_window = NULL;
@@ -881,12 +882,16 @@ scan_app_desc_file(TiXmlDocument *doc) {
     _log_basename = log_basename;
   }
 
-  int hidden = 0;
-
   TiXmlElement *xconfig = xpackage->FirstChildElement("config");
   if (xconfig != NULL) {
+    int hidden = 0;
     if (xconfig->QueryIntAttribute("hidden", &hidden) == TIXML_SUCCESS) {
       _hidden = (hidden != 0);
+    }
+
+    int allow_python_dev = 0;
+    if (xconfig->QueryIntAttribute("allow_python_dev", &allow_python_dev) == TIXML_SUCCESS) {
+      _allow_python_dev = (allow_python_dev != 0);
     }
   }
 
