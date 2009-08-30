@@ -706,20 +706,21 @@ start_p3dpython(P3DInstance *inst) {
 
   nout << "Search path is " << search_path << "\n";
 
-  bool python_dev = false;
+  bool keep_pythonpath = false;
   if (inst->_allow_python_dev) {
     // If "allow_python_dev" is set in the instance's p3d_info.xml,
-    // *and* we have python_dev in the tokens, then we set python_dev
-    // true.
-    python_dev = (inst->get_fparams().lookup_token_int("python_dev") != 0);
+    // *and* we have keep_pythonpath in the tokens, then we set
+    // keep_pythonpath true.
+    keep_pythonpath = (inst->get_fparams().lookup_token_int("keep_pythonpath") != 0);
   }
 
+  string dyld_path = search_path;
   string python_path = search_path;
   string prc_path = search_path;
 
-  if (python_dev) {
-    // With python_dev true, we preserve the PYTHONPATH setting from
-    // the caller's environment; in fact, we put it in the front.
+  if (keep_pythonpath) {
+    // With keep_pythonpath true, we preserve the PYTHONPATH setting
+    // from the caller's environment; in fact, we put it in the front.
     // This allows the caller's on-disk Python files to shadow the
     // similar-named files in the p3d file, allowing easy iteration on
     // the code in the p3d file.
@@ -741,7 +742,7 @@ start_p3dpython(P3DInstance *inst) {
       prc_path += search_path;
     }
 
-    nout << "python_dev is true\n"
+    nout << "keep_pythonpath is true\n"
          << "PYTHONPATH set to: " << python_path << "\n"
          << "PRC_PATH set to: " << prc_path << "\n";
   }
@@ -766,6 +767,31 @@ start_p3dpython(P3DInstance *inst) {
 #else
     _p3dpython_dll += ".so";
 #endif
+  } else {
+    // We have a custom path to libp3dpython.dylib etc., for
+    // development.
+
+#ifdef __APPLE__
+    // For some bizarre reason, Apple's dlopen() goes out of its way to
+    // ignore whatever full path you specify, and always searches for
+    // the file's basename along $DYLD_LIBRARY_PATH.  Weird.  To work
+    // around this and load the full path we're actually asking for, we
+    // have to ensure that our desired path appears first on
+    // $DYLD_LIBRARY_PATH.
+
+    // This may also inadvertently put other (incorrect) files first
+    // on the path, but presumably this won't cause too much trouble,
+    // since the user is in development mode anyway and maybe won't
+    // mind.
+    size_t slash = _p3dpython_dll.rfind('/');
+    if (slash != string::npos) {
+      string dirname = _p3dpython_dll.substr(0, slash);
+      cerr << "dirname is " << dirname << "\n";
+
+      dyld_path = dirname + ":" + dyld_path;
+      cerr << "dyld_path is " << dyld_path << "\n";
+    }
+#endif  // __APPLE__
   }
 
   // Populate the new process' environment.
@@ -800,7 +826,7 @@ start_p3dpython(P3DInstance *inst) {
   _env += '\0';
 
   _env += "DYLD_LIBRARY_PATH=";
-  _env += search_path;
+  _env += dyld_path;
   _env += '\0';
 
   _env += "PYTHONPATH=";
@@ -835,6 +861,23 @@ start_p3dpython(P3DInstance *inst) {
     _env += '\0';
   }
 
+  // Check for a few tokens that have special meaning at this level.
+  bool console_output = (inst->get_fparams().lookup_token_int("console_output") != 0);
+  bool one_process = (inst->get_fparams().lookup_token_int("one_process") != 0);
+  _interactive_console = (inst->get_fparams().lookup_token_int("interactive_console") != 0);
+
+  if (!inst->_allow_python_dev) {
+    // interactive_console is only allowed to be enabled if
+    // allow_python_dev is also set within the p3d file.
+    _interactive_console = false;
+  }
+
+  if (_interactive_console) {
+    // If we have interactive_console set, it follows we also need
+    // console_output.
+    console_output = true;
+  }
+
   // Get the log filename from the p3d_info.xml file.
   string log_basename = inst->_log_basename;
 
@@ -842,9 +885,6 @@ start_p3dpython(P3DInstance *inst) {
   if (inst->get_fparams().has_token("log_basename")) {
     log_basename = inst->get_fparams().lookup_token("log_basename");
   }
-
-  bool console_output = (inst->get_fparams().lookup_token_int("console_output") != 0);
-  bool one_process = (inst->get_fparams().lookup_token_int("one_process") != 0);
 
 #ifdef P3D_PLUGIN_LOG_BASENAME3
   if (log_basename.empty()) {
@@ -899,8 +939,8 @@ start_p3dpython(P3DInstance *inst) {
     SetHandleInformation(r_from, HANDLE_FLAG_INHERIT, 0);
   }
 
-  _output = w_from;
-  _input = r_to;
+  _output_handle = w_from;
+  _input_handle = r_to;
   _pipe_read.open_read(r_from);
   _pipe_write.open_write(w_to);
 
@@ -915,23 +955,57 @@ start_p3dpython(P3DInstance *inst) {
     perror("failed to create pipe");
   }
 
-  _input = to_fd[0];
-  _output = from_fd[1];
+  _input_handle = to_fd[0];
+  _output_handle = from_fd[1];
   _pipe_read.open_read(from_fd[0]);
   _pipe_write.open_write(to_fd[1]);
 #endif // _WIN32
 
-  // Get the filename to the Panda3D multifile.  We need to pass this
+  // Create the error stream for log output.  This means opening the
+  // logfile, if we have one, or keeping the standard error if we
+  // don't.
+  _got_error_handle = false;
+#ifdef _WIN32
+  _error_handle = GetStdHandle(STD_ERROR_HANDLE);
+  if (!_log_pathname.empty()) {
+    HANDLE handle = CreateFile
+      (_log_pathname.c_str(), GENERIC_WRITE, 
+       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+       NULL, CREATE_ALWAYS, 0, NULL);
+    if (handle != INVALID_HANDLE_VALUE) {
+      _error_handle = handle;
+      SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+      _got_error_handle = true;
+    } else {
+      nout << "Unable to open " << _log_pathname << "\n";
+    }
+  }
+#else  // _WIN32
+  _error_handle = STDERR_FILENO;
+  if (!_log_pathname.empty()) {
+    int logfile_fd = open(_log_pathname.c_str(), 
+                          O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    if (logfile_fd < 0) {
+      nout << "Unable to open " << _log_pathname << "\n";
+    } else {
+      _error_handle = logfile_fd;
+      _got_error_handle = true;
+    }
+  }
+#endif  // _WIN32
+
+  // Get the filename of the Panda3D multifile.  We need to pass this
   // to p3dpython.
   _mf_filename = inst->_panda3d->get_archive_file_pathname();
+
+  nout << "Attempting to start python from " << _p3dpython_exe 
+       << " and " << _p3dpython_dll << "\n";
 
   bool started_p3dpython;
   if (one_process) {
     nout << "one_process is set; running Python within parent process.\n";
     started_p3dpython = false;
   } else {
-    nout << "Attempting to start python from " << _p3dpython_exe 
-         << " and " << _p3dpython_dll << "\n";
 #ifdef _WIN32
     _p3dpython_handle = win_create_process();
     started_p3dpython = (_p3dpython_handle != INVALID_HANDLE_VALUE);
@@ -1130,42 +1204,19 @@ rt_terminate() {
 ////////////////////////////////////////////////////////////////////
 HANDLE P3DSession::
 win_create_process() {
-  HANDLE error_handle = GetStdHandle(STD_ERROR_HANDLE);
-  bool got_log_pathname = !_log_pathname.empty();
-  if (got_log_pathname) {
-    // Open the named file for output and redirect the child's stderr
-    // into it.
-    HANDLE handle = CreateFile
-      (_log_pathname.c_str(), GENERIC_WRITE, 
-       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-       NULL, CREATE_ALWAYS, 0, NULL);
-    if (handle != INVALID_HANDLE_VALUE) {
-      error_handle = handle;
-      SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-    } else {
-      nout << "Unable to open " << _log_pathname << "\n";
-    }
-  }
-
   // Make sure we see an error dialog if there is a missing DLL.
   SetErrorMode(0);
 
-  // Pass the appropriate ends of the bi-directional pipe as the
-  // standard input and standard output of the child process.
   STARTUPINFO startup_info;
   ZeroMemory(&startup_info, sizeof(STARTUPINFO));
   startup_info.cb = sizeof(startup_info); 
-  startup_info.hStdError = error_handle;
-  startup_info.hStdOutput = _output;
-  startup_info.hStdInput = _input;
-  startup_info.dwFlags |= STARTF_USESTDHANDLES;
 
   // Make sure the "python" console window is hidden.
   startup_info.wShowWindow = SW_HIDE;
   startup_info.dwFlags |= STARTF_USESHOWWINDOW;
 
-  // If the start directory is empty, meaning not to change the
-  // current directory, then pass NULL in to CreateProcess().
+  // If _use_start_dir is false, meaning not to change the current
+  // directory, then pass NULL in to CreateProcess().
   const char *start_dir_cstr = NULL;
   if (_use_start_dir) {
     start_dir_cstr = _start_dir.c_str();
@@ -1175,7 +1226,9 @@ win_create_process() {
   // command-line arguments.
   ostringstream stream;
   stream << "\"" << _p3dpython_exe << "\" \"" << _p3dpython_dll
-         << "\" \"" << _mf_filename << "\"";
+         << "\" \"" << _mf_filename << "\" \"" << _input_handle
+         << "\" \"" << _output_handle << "\" \"" << _error_handle
+         << "\" \"" << _interactive_console << "\"";
 
   // I'm not sure why CreateProcess wants a non-const char pointer for
   // its command-line string, but I'm not taking chances.  It gets a
@@ -1194,10 +1247,10 @@ win_create_process() {
   delete[] command_line;
 
   // Close the pipe handles that are now owned by the child.
-  CloseHandle(_output);
-  CloseHandle(_input);
-  if (got_log_pathname) {
-    CloseHandle(error_handle);
+  CloseHandle(_output_handle);
+  CloseHandle(_input_handle);
+  if (_got_error_handle) {
+    CloseHandle(_error_handle);
   }
 
   if (!started_program) {
@@ -1227,8 +1280,8 @@ win_create_process() {
 //               process's standard output and standard input,
 //               respectively.
 //
-//               Returns the handle to the created process on success,
-//               or INVALID_HANDLE_VALUE on falure.
+//               Returns the pid of the created process on success, or
+//               -1 on falure.
 ////////////////////////////////////////////////////////////////////
 int P3DSession::
 posix_create_process() {
@@ -1241,24 +1294,8 @@ posix_create_process() {
 
   if (child == 0) {
     // Here we are in the child process.
-    bool got_log_pathname = !_log_pathname.empty();
-    if (got_log_pathname) {
-      // Open the named file for output and redirect the child's stderr
-      // into it.
-      int logfile_fd = open(_log_pathname.c_str(), 
-                            O_WRONLY | O_CREAT | O_TRUNC, 0666);
-      if (logfile_fd < 0) {
-        nout << "Unable to open " << _log_pathname << "\n";
-      } else {
-        dup2(logfile_fd, STDERR_FILENO);
-        close(logfile_fd);
-      }
-    }
 
-    // Set the appropriate ends of the bi-directional pipe as the
-    // standard input and standard output of the child process.
-    dup2(_input, STDIN_FILENO);
-    dup2(_output, STDOUT_FILENO);
+    // Close the parent's ends of the pipes.
     _pipe_read.close();
     _pipe_write.close();
 
@@ -1281,15 +1318,33 @@ posix_create_process() {
     }
     ptrs.push_back((char *)NULL);
 
+    stringstream input_handle_stream;
+    input_handle_stream << _input_handle;
+    string input_handle_str = input_handle_stream.str();
+
+    stringstream output_handle_stream;
+    output_handle_stream << _output_handle;
+    string output_handle_str = output_handle_stream.str();
+
+    stringstream error_handle_stream;
+    error_handle_stream << _error_handle;
+    string error_handle_str = error_handle_stream.str();
+
     execle(_p3dpython_exe.c_str(), 
-           _p3dpython_exe.c_str(), _p3dpython_dll.c_str(), _mf_filename.c_str(), (char *)0, 
-           &ptrs[0]);
+           _p3dpython_exe.c_str(), _p3dpython_dll.c_str(), 
+           _mf_filename.c_str(), input_handle_str.c_str(),
+           output_handle_str.c_str(), error_handle_str.c_str(),
+           _interactive_console ? "1" : "0", (char *)0, &ptrs[0]);
     nout << "Failed to exec " << _p3dpython_exe << "\n";
     _exit(1);
   }
 
-  close(_input);
-  close(_output);
+  // Close the handles that are now owned by the child.
+  close(_input_handle);
+  close(_output_handle);
+  if (_got_error_handle) {
+    close(_error_handle);
+  }
 
   return child;
 }
@@ -1307,8 +1362,12 @@ p3dpython_thread_run() {
   nout << "running p3dpython_thread_run()\n";
 
   // Set the environment.  Hopefully this won't be too destructive to
-  // the current process, and hopefully these changes will be read
-  // properly by Python.
+  // the current process.
+
+  // Note that on OSX at least, changing the DYLD_LIBRARY_PATH after
+  // the process has started has no effect (and furthermore you can't
+  // specify a full path to dlopen() calls), so this whole one-process
+  // approach is fatally flawed on OSX.
   size_t p = 0;
   size_t zero = _env.find('\0', p);
   while (zero != string::npos) {
@@ -1340,7 +1399,7 @@ p3dpython_thread_run() {
 
 #else  // _WIN32
   // Posix case.
-  void *module = dlopen(_p3dpython_dll.c_str(), RTLD_GLOBAL);
+  void *module = dlopen(_p3dpython_dll.c_str(), RTLD_LOCAL);
   if (module == NULL) {
     // Couldn't load the .so.
     nout << "Couldn't load " << _p3dpython_dll << "\n";
@@ -1358,7 +1417,8 @@ p3dpython_thread_run() {
   }
 
   if (!run_p3dpython(_p3dpython_dll.c_str(), _mf_filename.c_str(),
-                     _input, _output)) {
+                     _input_handle, _output_handle, _error_handle,
+                     _interactive_console)) {
     nout << "Failure on startup.\n";
   }
 }

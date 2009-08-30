@@ -67,12 +67,14 @@ using namespace std;
 class P3DPythonRun {
 public:
   P3DPythonRun(const char *program_name, const char *archive_file,
-               FHandle input, FHandle output);
+               FHandle input_handle, FHandle output_handle, 
+               FHandle error_handle, bool interactive_console);
   ~P3DPythonRun();
 
   bool run_python();
 
 private:
+  void run_interactive_console();
   void handle_command(TiXmlDocument *doc);
   void handle_pyobj_command(TiXmlElement *xcommand, bool needs_response,
                             int want_response_id);
@@ -117,6 +119,7 @@ private:
   Filename _archive_file;
   int _py_argc;
   char **_py_argv;
+  bool _interactive_console;
 
   PyObject *_runner;
   PyObject *_undefined_object_class;
@@ -152,6 +155,7 @@ private:
 
   HandleStream _pipe_read;
   HandleStream _pipe_write;
+  HandleStream _error_log;
 
   bool _read_thread_continue;
   bool _program_continue;

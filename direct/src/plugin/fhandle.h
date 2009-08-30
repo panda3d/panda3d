@@ -21,9 +21,11 @@
 #ifdef _WIN32
 #include <windows.h>
 typedef HANDLE FHandle;
+static const HANDLE invalid_fhandle = INVALID_HANDLE_VALUE;
 #else
 // On POSIX, we use a file descriptor as a "handle".
 typedef int FHandle;
+static const int invalid_fhandle = -1;
 #endif
 
 #endif

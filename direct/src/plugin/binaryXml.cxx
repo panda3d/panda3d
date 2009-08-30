@@ -39,23 +39,6 @@ static const size_t length_nonce2 = 612811373;
 ////////////////////////////////////////////////////////////////////
 static void
 write_xml_node(ostream &out, TiXmlNode *xnode) {
-  NodeType type = NT_element;
-  if (xnode->ToDocument() != NULL) {
-    type = NT_document;
-  } else if (xnode->ToElement() != NULL) {
-    type = NT_element;
-  } else if (xnode->ToText() != NULL) {
-    type = NT_text;
-  } else {
-    type = NT_unknown;
-  }
-
-  out.put((char)type);
-  // We don't bother to write any data for the unknown types.
-  if (type == NT_unknown) {
-    return;
-  }
-
   const string &value = xnode->ValueStr();
   size_t value_length = value.length();
   size_t value_proof = (value_length + length_nonce1) * length_nonce2;
@@ -68,6 +51,24 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
   out.write((char *)&value_length, sizeof(value_length));
   out.write((char *)&value_proof, sizeof(value_proof));
   out.write(value.data(), value_length);
+
+  // Now write out the node type.
+  NodeType type = NT_element;
+  if (xnode->ToDocument() != NULL) {
+    type = NT_document;
+  } else if (xnode->ToElement() != NULL) {
+    type = NT_element;
+  } else if (xnode->ToText() != NULL) {
+    type = NT_text;
+  } else {
+    type = NT_unknown;
+  }
+
+  out.put((char)type);
+  // We don't bother to write any further data for the unknown types.
+  if (type == NT_unknown) {
+    return;
+  }
 
   if (type == NT_element) {
     // Write the element attributes.
@@ -119,11 +120,6 @@ write_xml_node(ostream &out, TiXmlNode *xnode) {
 static TiXmlNode *
 read_xml_node(istream &in, char *&buffer, size_t &buffer_length,
               ostream &logfile) {
-  NodeType type = (NodeType)in.get();
-  if (type == NT_unknown) {
-    return NULL;
-  }
-
   size_t value_length;
   in.read((char *)&value_length, sizeof(value_length));
   if (in.gcount() != sizeof(value_length)) {
@@ -166,6 +162,12 @@ read_xml_node(istream &in, char *&buffer, size_t &buffer_length,
 
   in.read(buffer, value_length);
   string value(buffer, value_length);
+
+  // Read the node type.
+  NodeType type = (NodeType)in.get();
+  if (type == NT_unknown) {
+    return NULL;
+  }
 
   TiXmlNode *xnode = NULL;
   if (type == NT_element) {

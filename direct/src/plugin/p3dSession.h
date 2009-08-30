@@ -100,7 +100,9 @@ private:
   string _p3dpython_dll;
   string _mf_filename;
   string _env;
-  FHandle _input, _output;
+  FHandle _input_handle, _output_handle, _error_handle;
+  bool _got_error_handle;
+  bool _interactive_console;
 
   typedef map<int, P3DInstance *> Instances;
   Instances _instances;

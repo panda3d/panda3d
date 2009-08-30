@@ -41,13 +41,12 @@ Options:
      also be specified with the pdef-path Config.prc variable.
 
   -D
-     Allow the application to be run with -D on the panda3d command
-     line, or equivalently, "python_dev=1" in the web tokens.  If this
-     is allowed, then it will preserve the PYTHONPATH environment
-     variable from the user's environment, allowing Python files on
-     disk to shadow the same-named Python files within the p3d file,
-     for rapid iteration on the Python code.  If the appliation is not
-     built with -D here, this option does nothing at runtime.
+     Sets the allow_python_dev flag in the application.  This enables
+     additional runtime debug operations, particularly the -i option
+     to the panda3d command, which enables a live Python prompt within
+     the application's environment.  Setting this flag may be useful
+     to develop an application initially, but should not be set on an
+     application intended for secure deployment.
 
 """
 

@@ -164,7 +164,7 @@ load_plugin(const string &p3d_plugin_filename,
 #else  // _WIN32
   // Posix case.
   assert(module == NULL);
-  module = dlopen(filename.c_str(), RTLD_NOW | RTLD_LOCAL);
+  module = dlopen(filename.c_str(), RTLD_LOCAL);
   if (module == NULL) {
     // Couldn't load the .so.
     return false;

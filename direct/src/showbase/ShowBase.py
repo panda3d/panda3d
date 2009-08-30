@@ -832,8 +832,14 @@ class ShowBase(DirectObject.DirectObject):
                 self.win.setClearStencilActive(oldClearStencilActive)
                 self.win.setClearStencil(oldClearStencil)
 
-            self.setFrameRateMeter(self.config.GetBool(
-                'show-frame-rate-meter', 0))
+            flag = self.config.GetBool('show-frame-rate-meter', False)
+            if self.appRunner is not None and self.appRunner.allowPythonDev:
+                # In an allow_python_dev p3d application, we always
+                # start up with the frame rate meter enabled, to
+                # provide a visual reminder that this flag has been
+                # set.
+                flag = True
+            self.setFrameRateMeter(flag)
         return success
 
     def setSleep(self, amount):
@@ -2477,13 +2483,12 @@ class ShowBase(DirectObject.DirectObject):
         self.startDirect(fWantDirect = fDirect, fWantTk = fTk, fWantWx = fWx)
 
     def run(self):
-        # This method only does anything when self.appRunner is None,
-        # which is to say, when we are not running from within a p3d
-        # file.  When we *are* within a p3d file, the Panda runtime
-        # has to be responsible for running the main loop, so we can't
-        # allow the application to do it.  This is a minor hack, but
-        # should work for 99% of the cases.
-        if self.appRunner is None or self.appRunner.dummy:
+        # This method runs the TaskManager when self.appRunner is
+        # None, which is to say, when we are not running from within a
+        # p3d file.  When we *are* within a p3d file, the Panda
+        # runtime has to be responsible for running the main loop, so
+        # we can't allow the application to do it.
+        if self.appRunner is None or self.appRunner.dummy or self.appRunner.interactiveConsole:
             self.taskMgr.run()
 
 

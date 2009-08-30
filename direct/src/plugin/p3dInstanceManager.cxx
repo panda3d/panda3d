@@ -34,6 +34,7 @@
 #include <shlobj.h>
 #else
 #include <sys/stat.h>
+#include <signal.h>
 #endif
 
 static ofstream logfile;

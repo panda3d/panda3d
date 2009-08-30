@@ -29,7 +29,7 @@ else:
     from direct.showbase import VFSImporter
 
 from direct.showbase.DirectObject import DirectObject
-from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties, readXmlStream, ExecutionEnvironment, PandaSystem, URLSpec
+from pandac.PandaModules import VirtualFileSystem, Filename, Multifile, loadPrcFileData, unloadPrcFile, getModelPath, HTTPClient, Thread, WindowProperties, readXmlStream, ExecutionEnvironment, PandaSystem, URLSpec, Notify, StreamWriter, ConfigVariableString
 from direct.stdpy import file
 from direct.task.TaskManagerGlobal import taskMgr
 from direct.showbase.MessengerGlobal import messenger
@@ -62,14 +62,20 @@ class AppRunner(DirectObject):
     def __init__(self):
         DirectObject.__init__(self)
 
-        # We need to make sure sys.stdout maps to sys.stderr instead,
-        # so if someone makes an unadorned print command within Python
-        # code, it won't muck up the data stream between parent and
-        # child.
-        sys.stdout = sys.stderr
+        # We direct both our stdout and stderr objects onto Panda's
+        # Notify stream.  This ensures that unadorned print statements
+        # made within Python will get routed into the log properly.
+        stream = StreamWriter(Notify.out(), False)
+        sys.stdout = stream
+        sys.stderr = stream
 
         # This is set true by dummyAppRunner(), below.
         self.dummy = False
+
+        # These will be set from the application flags when
+        # setP3DFilename() is called.
+        self.allowPythonDev = False
+        self.interactiveConsole = False
 
         self.sessionId = 0
         self.packedAppEnvironmentInitialized = False
@@ -303,6 +309,12 @@ class AppRunner(DirectObject):
             if hasattr(main, 'main') and callable(main.main):
                 main.main(self)
 
+            if self.interactiveConsole:
+                # At this point, we have successfully loaded the app.
+                # If the interactive_console flag is enabled, stop the
+                # main loop now and give the user a Python prompt.
+                taskMgr.stop()
+
     def getPandaScriptObject(self):
         """ Called by the browser to query the Panda instance's
         toplevel scripting object, for querying properties in the
@@ -363,8 +375,8 @@ class AppRunner(DirectObject):
             print "%s %s is not preloaded." % (
                 package.packageName, package.packageVersion)
 
-    def setP3DFilename(self, p3dFilename, tokens = [], argv = [],
-                       instanceId = None):
+    def setP3DFilename(self, p3dFilename, tokens, argv, instanceId,
+                       interactiveConsole):
         """ Called by the browser to specify the p3d file that
         contains the application itself, along with the web tokens
         and/or command-line arguments.  Once this method has been
@@ -402,6 +414,9 @@ class AppRunner(DirectObject):
         # Now load the p3dInfo file.
         self.p3dInfo = None
         self.p3dPackage = None
+        self.p3dConfig = None
+        self.allowPythonDev = False
+        
         i = mf.findSubfile('p3d_info.xml')
         if i >= 0:
             stream = mf.openReadSubfile(i)
@@ -409,6 +424,24 @@ class AppRunner(DirectObject):
             mf.closeReadSubfile(stream)
         if self.p3dInfo:
             self.p3dPackage = self.p3dInfo.FirstChildElement('package')
+        if self.p3dPackage:
+            self.p3dConfig = self.p3dPackage.FirstChildElement('config')
+
+        if self.p3dConfig:
+            allowPythonDev = self.p3dConfig.Attribute('allow_python_dev')
+            if allowPythonDev:
+                self.allowPythonDev = int(allowPythonDev)
+
+        # The interactiveConsole flag can only be set true if the
+        # application has allow_python_dev set.
+        if not self.allowPythonDev and interactiveConsole:
+            raise StandardError, "Impossible, interactive_console set without allow_python_dev."
+        self.interactiveConsole = interactiveConsole
+
+        if self.allowPythonDev:
+            # Set the fps text to remind the user that
+            # allow_python_dev is enabled.
+            ConfigVariableString('frame-rate-meter-text-pattern').setValue('allow_python_dev %0.1f fps')
 
         self.initPackedAppEnvironment()
 

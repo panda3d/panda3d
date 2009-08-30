@@ -25,6 +25,8 @@
 #include <sstream>
 #ifdef _WIN32
 #include <windows.h>
+#else
+#include <signal.h>
 #endif
 
 #ifndef HAVE_GETOPT
@@ -64,7 +66,7 @@ run(int argc, char *argv[]) {
   // We prefix a "+" sign to tell gnu getopt not to parse options
   // following the first not-option parameter.  (These will be passed
   // into the sub-process.)
-  const char *optstr = "+mu:p:fw:t:s:o:l:Dh";
+  const char *optstr = "+mu:p:fw:t:s:o:l:ih";
 
   bool allow_multiple = false;
   string download_url = PANDA_PACKAGE_HOST_URL;
@@ -136,12 +138,26 @@ run(int argc, char *argv[]) {
       _log_basename = "panda3d";
       break;
 
-    case 'D':
+    case 'i':
       {
         P3D_token token;
-        token._keyword = "python_dev";
+        token._keyword = "keep_pythonpath";
         token._value = "1";
         _tokens.push_back(token);
+        token._keyword = "interactive_console";
+        token._value = "1";
+        _tokens.push_back(token);
+
+#ifndef _WIN32
+        // We should also ignore SIGINT in this case, so that a
+        // control-C operation will be delivered to the subordinate
+        // Python process and return to a command shell, and won't
+        // just kill the panda3d process.
+        struct sigaction ignore;
+        memset(&ignore, 0, sizeof(ignore));
+        ignore.sa_handler = SIG_IGN;
+        sigaction(SIGINT, &ignore, NULL);
+#endif  // _WIN32
       }
       break;
 
@@ -789,10 +805,11 @@ usage() {
     << "    if a new version is available.  Normally, this is done only\n"
     << "    if contents.xml cannot be read.\n\n"
 
-    << "  -D\n"
-    << "    Request python_dev mode.  This requires that the application was\n"
-    << "    also built with -D on the packp3d command line.  If so, this will\n"
-    << "    preserve the PYTHONPATH environment variable from the user's\n"
+    << "  -i\n"
+    << "    Runs the application interactively.  This requires that the application\n"
+    << "    was built with -D on the packp3d command line.  If so, this option will\n"
+    << "    create an interactive Python prompt after the application has loaded.\n"
+    << "    It will also the PYTHONPATH environment variable from the user's\n"
     << "    environment, allowing Python files on disk to shadow the same-named\n"
     << "    Python files within the p3d file, for rapid iteration on the Python\n"
     << "    code.\n\n"

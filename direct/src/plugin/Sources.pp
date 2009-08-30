@@ -115,7 +115,7 @@
     p3dCInstance.cxx \
     p3dCInstance.h p3dCInstance.I \
     p3dPythonRun.cxx p3dPythonRun.h p3dPythonRun.I \
-    run_p3dpython.h
+    run_p3dpython.h run_p3dpython.cxx
 
   #define WIN_SYS_LIBS user32.lib
 

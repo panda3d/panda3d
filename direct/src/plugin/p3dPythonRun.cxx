@@ -30,7 +30,8 @@ P3DPythonRun *P3DPythonRun::_global_ptr = NULL;
 ////////////////////////////////////////////////////////////////////
 P3DPythonRun::
 P3DPythonRun(const char *program_name, const char *archive_file,
-              FHandle input, FHandle output) {
+             FHandle input_handle, FHandle output_handle, 
+             FHandle error_handle, bool interactive_console) {
   _read_thread_continue = false;
   _program_continue = true;
   _session_terminated = false;
@@ -39,6 +40,8 @@ P3DPythonRun(const char *program_name, const char *archive_file,
 
   _session_id = 0;
   _next_sent_id = 0;
+
+  _interactive_console = interactive_console;
 
   if (program_name != NULL) {
     _program_name = program_name;
@@ -70,10 +73,18 @@ P3DPythonRun(const char *program_name, const char *archive_file,
   Py_Initialize();
   PySys_SetArgv(_py_argc, _py_argv);
 
+  // Open the error output before we do too much more.
+  _error_log.open_write(error_handle);
+  if (_error_log) {
+    // Set up the indicated error log as the Notify output.
+    _error_log.setf(ios::unitbuf);
+    Notify::ptr()->set_ostream_ptr(&_error_log, false);
+  }
+
   // Open the pipe streams with the input and output handles from the
   // parent.
-  _pipe_read.open_read(input);
-  _pipe_write.open_write(output);
+  _pipe_read.open_read(input_handle);
+  _pipe_write.open_write(output_handle);
 
   if (!_pipe_read) {
     nout << "unable to open read pipe\n";
@@ -96,6 +107,10 @@ P3DPythonRun::
 
   join_read_thread();
   DESTROY_LOCK(_commands_lock);
+
+  // Restore the notify stream in case it tries to write to anything
+  // else after our shutdown.
+  Notify::ptr()->set_ostream_ptr(&cerr, false);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -301,14 +316,45 @@ run_python() {
   Py_DECREF(check_comm);
 
   // Finally, get lost in taskMgr.run().
+  bool okflag = true;
   PyObject *done = PyObject_CallMethod(_taskMgr, (char *)"run", (char *)"");
   if (done == NULL) {
     PyErr_Print();
-    return false;
+    okflag = false;
+  } else {
+    Py_DECREF(done);
   }
-  Py_DECREF(done);
 
-  return true;
+  if (_interactive_console) {
+    run_interactive_console();
+    okflag = true;
+  }
+
+  return okflag;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPythonRun::run_interactive_console
+//       Access: Private
+//  Description: Gives the user a chance to type interactive Python
+//               commands, for easy development of a p3d application.
+//               This method is only called if "interactive_console=1"
+//               is set as a web token, and "allow_python_dev" is set
+//               within the application itself.
+////////////////////////////////////////////////////////////////////
+void P3DPythonRun::
+run_interactive_console() {
+  // The "readline" module makes the Python prompt friendlier, with
+  // command history and everything.  Simply importing it is
+  // sufficient.
+  PyObject *readline_module = PyImport_ImportModule("readline");
+  if (readline_module == NULL) {
+    PyErr_Print();
+  } else {
+    Py_DECREF(readline_module);
+  }
+
+  PyRun_InteractiveLoop(stdin, "<stdin>");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1117,8 +1163,8 @@ set_p3d_filename(P3DCInstance *inst, TiXmlElement *xfparams) {
   }
 
   PyObject *result = PyObject_CallMethod
-    (_runner, (char *)"setP3DFilename", (char *)"sOOi", p3d_filename.c_str(),
-     token_list, arg_list, inst->get_instance_id());
+    (_runner, (char *)"setP3DFilename", (char *)"sOOii", p3d_filename.c_str(),
+     token_list, arg_list, inst->get_instance_id(), _interactive_console);
   Py_DECREF(token_list);
   Py_DECREF(arg_list);
 
@@ -1551,21 +1597,4 @@ rt_thread_run() {
     _commands.push_back(doc);
     RELEASE_LOCK(_commands_lock);
   }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: run_p3dpython
-//  Description: This externally-visible function is the main entry
-//               point to this DLL, and it starts the whole thing
-//               running.  Returns true on success, false on failure.
-////////////////////////////////////////////////////////////////////
-bool
-run_p3dpython(const char *program_name, const char *archive_file,
-              FHandle input, FHandle output) {
-  P3DPythonRun::_global_ptr = 
-    new P3DPythonRun(program_name, archive_file, input, output);
-  bool result = P3DPythonRun::_global_ptr->run_python();
-  delete P3DPythonRun::_global_ptr;
-  P3DPythonRun::_global_ptr = NULL;
-  return result;
 }
