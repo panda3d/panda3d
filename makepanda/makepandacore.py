@@ -18,6 +18,7 @@ SUFFIX_LIB=[".lib",".ilb"]
 STARTTIME=time.time()
 MAINTHREAD=threading.currentThread()
 OUTPUTDIR="built"
+CUSTOM_OUTPUTDIR=False
 OPTIMIZE="3"
 
 ########################################################################
@@ -645,8 +646,9 @@ def GetOutputDir():
   return OUTPUTDIR
 
 def SetOutputDir(outputdir):
-  global OUTPUTDIR
+  global OUTPUTDIR, CUSTOM_OUTPUTDIR
   OUTPUTDIR=outputdir
+  CUSTOM_OUTPUTDIR=True
 
 def GetOptimize():
   return int(OPTIMIZE)

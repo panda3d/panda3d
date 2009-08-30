@@ -33,18 +33,21 @@ COMPILER=0
 THIRDPARTYLIBS=0
 VC90CRTVERSION=""
 INSTALLER=0
-RUNTIME=0
 GENMAN=0
 VERBOSE=1
 COMPRESSOR="zlib"
 THREADCOUNT=0
 CFLAGS=""
+RUNTIME=0
+RUNTIME_VERSION="dev"
+RUNTIME_PLATFORM="other"
+RUNTIME_DISTRIBUTOR=""
 
 PkgListSet(MAYAVERSIONS + MAXVERSIONS + DXVERSIONS + [
   "PYTHON","ZLIB","PNG","JPEG","TIFF","VRPN","TINYXML",
   "FMODEX","OPENAL","NVIDIACG","OPENSSL","FREETYPE",
   "FFTW","ARTOOLKIT","SQUISH","ODE","DIRECTCAM","NPAPI",
-  "OPENCV","FFMPEG","FCOLLADA","PLUGIN","PANDATOOL"
+  "OPENCV","FFMPEG","FCOLLADA","PANDATOOL"
 ])
 
 CheckPandaSourceTree()
@@ -55,32 +58,6 @@ def keyboardInterruptHandler(x,y):
     exit("keyboard interrupt")
 
 signal.signal(signal.SIGINT, keyboardInterruptHandler)
-
-########################################################################
-##
-## Store version and platform for the runtime build.
-##
-########################################################################
-
-RUNTIME_VERSION = "dev"
-RUNTIME_PLATFORM = "other"
-if (sys.platform.startswith("win")):
-    if (platform.architecture()[0] == "64bit"):
-        RUNTIME_PLATFORM = "win64"
-    else:
-        RUNTIME_PLATFORM = "win32"
-elif (sys.platform.startswith("linux")):
-    if (platform.architecture()[0] == "64bit"):
-        RUNTIME_PLATFORM = "linux.amd64"
-    else:
-        RUNTIME_PLATFORM = "linux.i386"
-elif (sys.platform == "darwin"):
-    RUNTIME_PLATFORM = "osx.fat"
-elif (sys.platform.startswith("freebsd")):
-    if (platform.architecture()[0] == "64bit"):
-        RUNTIME_PLATFORM = "freebsd.amd64"
-    else:
-        RUNTIME_PLATFORM = "freebsd.i386"
 
 ########################################################################
 ##
@@ -119,14 +96,14 @@ def usage(problem):
     os._exit(0)
 
 def parseopts(args):
-    global INSTALLER,RUNTIME,GENMAN
+    global INSTALLER,RUNTIME,GENMAN,RUNTIME_DISTRIBUTOR
     global VERSION,COMPRESSOR,VERBOSE,THREADCOUNT
     longopts = [
-        "help",
+        "help","distributor=",
         "optimize=","everything","nothing","installer","runtime",
         "version=","lzma","no-python","threads=","outputdir="]
     anything = 0
-    optimize = "3"
+    optimize = ""
     for pkg in PkgListGet(): longopts.append("no-"+pkg.lower())
     for pkg in PkgListGet(): longopts.append("use-"+pkg.lower())
     try:
@@ -135,6 +112,7 @@ def parseopts(args):
             if (option=="--help"): raise "usage"
             elif (option=="--optimize"): optimize=value
             elif (option=="--installer"): INSTALLER=1
+            elif (option=="--distributor"): RUNTIME_DISTRIBUTOR=value
             elif (option=="--runtime"): RUNTIME=1
             elif (option=="--genman"): GENMAN=1
             elif (option=="--everything"): PkgEnableAll()
@@ -157,6 +135,8 @@ def parseopts(args):
             anything = 1
     except: usage(0)
     if (anything==0): usage(0)
+    if (optimize=="" and RUNTIME): optimize = "4"
+    elif (optimize==""): optimize = "3"
     try:
         SetOptimize(int(optimize))
         assert GetOptimize() in [1, 2, 3, 4]
@@ -172,11 +152,47 @@ parseopts(sys.argv[1:])
 ########################################################################
 
 if ("CFLAGS" in os.environ):
-    CFLAGS=os.environ["CFLAGS"]
+    CFLAGS = os.environ["CFLAGS"]
 if ("RPM_OPT_FLAGS" in os.environ):
-    CFLAGS+=os.environ["RPM_OPT_FLAGS"]
+    CFLAGS += " " + os.environ["RPM_OPT_FLAGS"]
+CFLAGS = CFLAGS.strip()
 
 os.environ["MAKEPANDA"] = os.path.abspath(sys.argv[0])
+
+########################################################################
+##
+## Store version and platform for the runtime build.
+##
+########################################################################
+
+if (RUNTIME):
+    PkgDisable("PANDATOOL")
+    
+    if (RUNTIME_DISTRIBUTOR.strip() == ""):
+        exit("You must provide a valid distributor name when making a plugin runtime build!")
+
+    if (not CUSTOM_OUTPUTDIR):
+        SetOutputDir("built_" + RUNTIME_DISTRIBUTOR.strip())
+
+    RUNTIME_VERSION = RUNTIME_DISTRIBUTOR.strip() + "_" + VERSION[:3]
+
+if (sys.platform.startswith("win")):
+    if (platform.architecture()[0] == "64bit"):
+        RUNTIME_PLATFORM = "win64"
+    else:
+        RUNTIME_PLATFORM = "win32"
+elif (sys.platform.startswith("linux")):
+    if (platform.architecture()[0] == "64bit"):
+        RUNTIME_PLATFORM = "linux.amd64"
+    else:
+        RUNTIME_PLATFORM = "linux.i386"
+elif (sys.platform == "darwin"):
+    RUNTIME_PLATFORM = "osx.fat"
+elif (sys.platform.startswith("freebsd")):
+    if (platform.architecture()[0] == "64bit"):
+        RUNTIME_PLATFORM = "freebsd.amd64"
+    else:
+        RUNTIME_PLATFORM = "freebsd.i386"
 
 ########################################################################
 ##
@@ -229,6 +245,7 @@ if (sys.platform == "win32"):
 else:
     CheckLinkerLibraryPath()
     COMPILER="LINUX"
+    
     if (sys.platform == "darwin"):
         THIRDPARTYLIBS="thirdparty/darwin-libs-a/"
     elif (sys.platform.startswith("linux")):
@@ -250,6 +267,7 @@ AddToPathEnv("PYTHONPATH", builtdir)
 if (sys.platform.startswith("win")):
     AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "bin"))
 else:
+    AddToPathEnv("PATH", os.path.join(builtdir, "bin"))
     AddToPathEnv("PYTHONPATH", os.path.join(builtdir, "lib"))
 
 ##########################################################################################
@@ -264,8 +282,8 @@ if (sys.platform.startswith("win")):
 if (INSTALLER) and (PkgSkip("PYTHON")):
     exit("Cannot build installer without python")
 
-if (RUNTIME) and (PkgSkip("PLUGIN") or PkgSkip("TINYXML")):
-    exit("Cannot build runtime without plugin or tinyxml")
+if (RUNTIME) and (PkgSkip("TINYXML")):
+    exit("Cannot build runtime without tinyxml")
 
 ########################################################################
 ##
@@ -1234,7 +1252,7 @@ def WriteConfigSettings():
     if (sys.platform.startswith("win") and platform.architecture()[0] == "64bit"):
         dtool_config["SIMPLE_THREADS"] = 'UNDEF'
 
-    if (PkgSkip("PLUGIN")==0):
+    if (RUNTIME):
         plugin_config["PANDA_PACKAGE_HOST_URL"] = "http://runtime.panda3d.org/"
         #plugin_config["P3D_PLUGIN_LOG_DIRECTORY"] = ""
         #plugin_config["P3D_PLUGIN_LOG_BASENAME1"] = ""
@@ -1260,7 +1278,7 @@ def WriteConfigSettings():
         del dtool_config[key]
     ConditionalWriteFile(GetOutputDir() + '/include/dtool_config.h', conf)
 
-    if (PkgSkip("PLUGIN")==0):
+    if (RUNTIME):
         conf = "/* p3d_plugin_config.h.  Generated automatically by makepanda.py */\n"
         for key in plugin_config.keys():
             val = plugin_config[key]
@@ -1301,8 +1319,6 @@ PANDAVERSION_H="""
 #define PANDA_VERSION NVERSION
 #define PANDA_VERSION_STR "VERSION1.VERSION2.VERSION3"
 #define PANDA_DISTRIBUTOR "makepanda"
-#define PANDA_PACKAGE_VERSION_STR ""
-#define PANDA_PACKAGE_HOST_URL "http://runtime.panda3d.org/"
 """
 
 CHECKPANDAVERSION_CXX="""
@@ -1331,6 +1347,9 @@ def CreatePandaVersionFiles():
     pandaversion_h = pandaversion_h.replace("VERSION2",str(version2))
     pandaversion_h = pandaversion_h.replace("VERSION3",str(version3))
     pandaversion_h = pandaversion_h.replace("NVERSION",str(nversion))
+    if (RUNTIME):
+        pandaversion_h += "\n#define PANDA_PACKAGE_VERSION_STR \"" + RUNTIME_VERSION + "\""
+        pandaversion_h += "\n#define PANDA_PACKAGE_HOST_URL \"http://runtime.panda3d.org/\""
     
     checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("VERSION1",str(version1))
     checkpandaversion_cxx = checkpandaversion_cxx.replace("VERSION2",str(version2))
@@ -1456,6 +1475,7 @@ DeleteCVS(GetOutputDir()+'/include/parser-inc')
 
 CopyAllHeaders('dtool/src/dtoolbase')
 CopyAllHeaders('dtool/src/dtoolutil', skip=["pandaVersion.h", "checkPandaVersion.h"])
+CopyFile(GetOutputDir()+'/include/','dtool/src/dtoolutil/vector_src.cxx')
 CopyAllHeaders('dtool/metalibs/dtool')
 CopyAllHeaders('dtool/src/cppparser')
 CopyAllHeaders('dtool/src/prc', skip=["prc_parameters.h"])
@@ -1550,53 +1570,54 @@ CopyAllHeaders('direct/src/showbase')
 CopyAllHeaders('direct/metalibs/direct')
 CopyAllHeaders('direct/src/dcparse')
 CopyAllHeaders('direct/src/heapq')
-CopyAllHeaders('direct/src/plugin', skip=["p3d_plugin_config.h"])
-CopyAllHeaders('direct/src/plugin_npapi')
-CopyAllHeaders('direct/src/plugin_standalone')
+if (RUNTIME):
+    CopyAllHeaders('direct/src/plugin', skip=["p3d_plugin_config.h"])
+    CopyAllHeaders('direct/src/plugin_npapi')
+    CopyAllHeaders('direct/src/plugin_standalone')
 
-CopyAllHeaders('pandatool/src/pandatoolbase')
-CopyAllHeaders('pandatool/src/converter')
-CopyAllHeaders('pandatool/src/progbase')
-CopyAllHeaders('pandatool/src/eggbase')
-CopyAllHeaders('pandatool/src/bam')
-CopyAllHeaders('pandatool/src/cvscopy')
-CopyAllHeaders('pandatool/src/daeegg')
-CopyAllHeaders('pandatool/src/daeprogs')
-CopyAllHeaders('pandatool/src/dxf')
-CopyAllHeaders('pandatool/src/dxfegg')
-CopyAllHeaders('pandatool/src/dxfprogs')
-CopyAllHeaders('pandatool/src/palettizer')
-CopyAllHeaders('pandatool/src/egg-mkfont')
-CopyAllHeaders('pandatool/src/eggcharbase')
-CopyAllHeaders('pandatool/src/egg-optchar')
-CopyAllHeaders('pandatool/src/egg-palettize')
-CopyAllHeaders('pandatool/src/egg-qtess')
-CopyAllHeaders('pandatool/src/eggprogs')
-CopyAllHeaders('pandatool/src/flt')
-CopyAllHeaders('pandatool/src/fltegg')
-CopyAllHeaders('pandatool/src/fltprogs')
-CopyAllHeaders('pandatool/src/imagebase')
-CopyAllHeaders('pandatool/src/imageprogs')
-CopyAllHeaders('pandatool/src/lwo')
-CopyAllHeaders('pandatool/src/lwoegg')
-CopyAllHeaders('pandatool/src/lwoprogs')
-CopyAllHeaders('pandatool/src/maya')
-CopyAllHeaders('pandatool/src/mayaegg')
-CopyAllHeaders('pandatool/src/maxegg')
-CopyAllHeaders('pandatool/src/maxprogs')
-CopyAllHeaders('pandatool/src/vrml')
-CopyAllHeaders('pandatool/src/vrmlegg')
-CopyAllHeaders('pandatool/src/xfile')
-CopyAllHeaders('pandatool/src/xfileegg')
-CopyAllHeaders('pandatool/src/ptloader')
-CopyAllHeaders('pandatool/src/miscprogs')
-CopyAllHeaders('pandatool/src/pstatserver')
-CopyAllHeaders('pandatool/src/softprogs')
-CopyAllHeaders('pandatool/src/text-stats')
-CopyAllHeaders('pandatool/src/vrmlprogs')
-CopyAllHeaders('pandatool/src/win-stats')
-CopyAllHeaders('pandatool/src/xfileprogs')
-CopyFile(GetOutputDir()+'/include/','dtool/src/dtoolutil/vector_src.cxx')
+if (PkgSkip("PANDATOOL")==0):
+    CopyAllHeaders('pandatool/src/pandatoolbase')
+    CopyAllHeaders('pandatool/src/converter')
+    CopyAllHeaders('pandatool/src/progbase')
+    CopyAllHeaders('pandatool/src/eggbase')
+    CopyAllHeaders('pandatool/src/bam')
+    CopyAllHeaders('pandatool/src/cvscopy')
+    CopyAllHeaders('pandatool/src/daeegg')
+    CopyAllHeaders('pandatool/src/daeprogs')
+    CopyAllHeaders('pandatool/src/dxf')
+    CopyAllHeaders('pandatool/src/dxfegg')
+    CopyAllHeaders('pandatool/src/dxfprogs')
+    CopyAllHeaders('pandatool/src/palettizer')
+    CopyAllHeaders('pandatool/src/egg-mkfont')
+    CopyAllHeaders('pandatool/src/eggcharbase')
+    CopyAllHeaders('pandatool/src/egg-optchar')
+    CopyAllHeaders('pandatool/src/egg-palettize')
+    CopyAllHeaders('pandatool/src/egg-qtess')
+    CopyAllHeaders('pandatool/src/eggprogs')
+    CopyAllHeaders('pandatool/src/flt')
+    CopyAllHeaders('pandatool/src/fltegg')
+    CopyAllHeaders('pandatool/src/fltprogs')
+    CopyAllHeaders('pandatool/src/imagebase')
+    CopyAllHeaders('pandatool/src/imageprogs')
+    CopyAllHeaders('pandatool/src/lwo')
+    CopyAllHeaders('pandatool/src/lwoegg')
+    CopyAllHeaders('pandatool/src/lwoprogs')
+    CopyAllHeaders('pandatool/src/maya')
+    CopyAllHeaders('pandatool/src/mayaegg')
+    CopyAllHeaders('pandatool/src/maxegg')
+    CopyAllHeaders('pandatool/src/maxprogs')
+    CopyAllHeaders('pandatool/src/vrml')
+    CopyAllHeaders('pandatool/src/vrmlegg')
+    CopyAllHeaders('pandatool/src/xfile')
+    CopyAllHeaders('pandatool/src/xfileegg')
+    CopyAllHeaders('pandatool/src/ptloader')
+    CopyAllHeaders('pandatool/src/miscprogs')
+    CopyAllHeaders('pandatool/src/pstatserver')
+    CopyAllHeaders('pandatool/src/softprogs')
+    CopyAllHeaders('pandatool/src/text-stats')
+    CopyAllHeaders('pandatool/src/vrmlprogs')
+    CopyAllHeaders('pandatool/src/win-stats')
+    CopyAllHeaders('pandatool/src/xfileprogs')
 
 ########################################################################
 # 
@@ -1656,7 +1677,7 @@ TargetAdd('dtoolbase_composite2.obj', opts=OPTS, input='dtoolbase_composite2.cxx
 TargetAdd('dtoolbase_lookup3.obj',    opts=OPTS, input='lookup3.c')
 TargetAdd('dtoolbase_indent.obj',     opts=OPTS, input='indent.cxx')
 
-if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (sys.platform.startswith("win") and RUNTIME):
   OPTS=['DIR:dtool/src/dtoolbase', 'LINK_ALL_STATIC']
   TargetAdd('static_dtoolbase_composite1.obj', opts=OPTS, input='dtoolbase_composite1.cxx')
   TargetAdd('static_dtoolbase_composite2.obj', opts=OPTS, input='dtoolbase_composite2.cxx')
@@ -1674,7 +1695,7 @@ TargetAdd('dtoolutil_composite.obj',   opts=OPTS, input='dtoolutil_composite.cxx
 if (sys.platform == 'darwin'):
   TargetAdd('dtoolutil_filename_assist.obj',   opts=OPTS, input='filename_assist.mm')
 
-if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (sys.platform.startswith("win") and RUNTIME):
   OPTS=['DIR:dtool/src/dtoolutil', 'LINK_ALL_STATIC']
   TargetAdd('static_dtoolutil_gnu_getopt.obj',  opts=OPTS, input='gnu_getopt.c')
   TargetAdd('static_dtoolutil_gnu_getopt1.obj', opts=OPTS, input='gnu_getopt1.c')
@@ -1698,7 +1719,7 @@ TargetAdd('libp3dtool.dll', input='dtoolbase_indent.obj')
 TargetAdd('libp3dtool.dll', input='dtoolbase_lookup3.obj')
 TargetAdd('libp3dtool.dll', opts=['ADVAPI','WINSHELL','WINKERNEL'])
 
-if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (RUNTIME):
   pref = ""
   if (sys.platform.startswith("win")):
     pref = "static_"
@@ -1736,7 +1757,7 @@ TargetAdd('libcppParser.ilb', input='cppParser_cppBison.obj')
 OPTS=['DIR:dtool/src/prc', 'BUILDING:DTOOLCONFIG', 'OPENSSL']
 TargetAdd('prc_composite.obj', opts=OPTS, input='prc_composite.cxx')
 
-if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (sys.platform.startswith("win") and RUNTIME):
   OPTS=['DIR:dtool/src/prc', 'LINK_ALL_STATIC', 'OPENSSL']
   TargetAdd('static_prc_composite.obj', opts=OPTS, input='prc_composite.cxx')
 
@@ -1747,7 +1768,7 @@ if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML
 OPTS=['DIR:dtool/src/dconfig', 'BUILDING:DTOOLCONFIG']
 TargetAdd('dconfig_composite.obj', opts=OPTS, input='dconfig_composite.cxx')
 
-if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (sys.platform.startswith("win") and RUNTIME):
   OPTS=['DIR:dtool/src/dconfig', 'LINK_ALL_STATIC']
   TargetAdd('static_dconfig_composite.obj', opts=OPTS, input='dconfig_composite.cxx')
 
@@ -1758,7 +1779,7 @@ if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML
 OPTS=['DIR:dtool/src/interrogatedb', 'BUILDING:DTOOLCONFIG']
 TargetAdd('interrogatedb_composite.obj', opts=OPTS, input='interrogatedb_composite.cxx')
 
-if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (sys.platform.startswith("win") and RUNTIME):
   OPTS=['DIR:dtool/src/interrogatedb', 'LINK_ALL_STATIC']
   TargetAdd('static_interrogatedb_composite.obj', opts=OPTS, input='interrogatedb_composite.cxx')
 
@@ -1781,13 +1802,12 @@ TargetAdd('libp3dtoolconfig.dll', input='prc_composite.obj')
 TargetAdd('libp3dtoolconfig.dll', input='libp3dtool.dll')
 TargetAdd('libp3dtoolconfig.dll', opts=['ADVAPI',  'OPENSSL'])
 
-if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (RUNTIME):
   pref = ""
   if (sys.platform.startswith("win")): pref = "static_"
   TargetAdd('libp3dtoolconfig_s.ilb', input=pref+'interrogatedb_composite.obj')
   TargetAdd('libp3dtoolconfig_s.ilb', input=pref+'dconfig_composite.obj')
   TargetAdd('libp3dtoolconfig_s.ilb', input=pref+'prc_composite.obj')
-  TargetAdd('libp3dtoolconfig_s.ilb', input='libp3dtool_s.ilb')
   TargetAdd('libp3dtoolconfig_s.ilb', opts=['ADVAPI',  'OPENSSL'])
 
 #
@@ -1863,7 +1883,7 @@ TargetAdd('libexpress.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libexpress.in', opts=['IMOD:pandaexpress', 'ILIB:libexpress', 'SRCDIR:panda/src/express'])
 TargetAdd('libexpress_igate.obj', input='libexpress.in', opts=["DEPENDENCYONLY"])
 
-if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (sys.platform.startswith("win") and RUNTIME):
   OPTS=['DIR:panda/src/express', 'LINK_ALL_STATIC', 'OPENSSL', 'ZLIB']
   TargetAdd('static_express_composite1.obj', opts=OPTS, input='express_composite1.cxx')
   TargetAdd('static_express_composite2.obj', opts=OPTS, input='express_composite2.cxx')
@@ -1883,7 +1903,7 @@ TargetAdd('libdownloader.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libdownloader.in', opts=['IMOD:pandaexpress', 'ILIB:libdownloader', 'SRCDIR:panda/src/downloader'])
 TargetAdd('libdownloader_igate.obj', input='libdownloader.in', opts=["DEPENDENCYONLY"])
 
-if (sys.platform.startswith("win") and PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (sys.platform.startswith("win") and RUNTIME):
   OPTS=['DIR:panda/src/downloader', 'LINK_ALL_STATIC', 'OPENSSL', 'ZLIB']
   TargetAdd('static_downloader_composite.obj', opts=OPTS, input='downloader_composite.cxx')
 
@@ -1909,7 +1929,7 @@ TargetAdd('libpandaexpress.dll', input='pandabase_pandabase.obj')
 TargetAdd('libpandaexpress.dll', input=COMMON_DTOOL_LIBS)
 TargetAdd('libpandaexpress.dll', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB'])
 
-if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (RUNTIME):
   pref = ""
   if (sys.platform.startswith("win")): pref = "static_"
   
@@ -1917,7 +1937,6 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
   TargetAdd('libpandaexpress_s.ilb', input=pref+'express_composite1.obj')
   TargetAdd('libpandaexpress_s.ilb', input=pref+'express_composite2.obj')
   TargetAdd('libpandaexpress_s.ilb', input=pref+'libexpress_igate.obj')
-  TargetAdd('libpandaexpress_s.ilb', input='libp3dtoolconfig_s.ilb')
   TargetAdd('libpandaexpress_s.ilb', opts=['ADVAPI', 'WINSOCK2',  'OPENSSL', 'ZLIB'])
 
 #
@@ -2057,6 +2076,7 @@ OPTS=['DIR:panda/src/gobj', 'BUILDING:PANDA',  'NVIDIACG', 'ZLIB', 'SQUISH', "BI
 TargetAdd('gobj_composite1.obj', opts=OPTS, input='gobj_composite1.cxx')
 TargetAdd('gobj_composite2.obj', opts=OPTS, input='gobj_composite2.cxx')
 IGATEFILES=GetDirectoryContents('panda/src/gobj', ["*.h", "*_composite.cxx"])
+if ("cgfx_states.h" in IGATEFILES): IGATEFILES.remove("cgfx_states.h")
 TargetAdd('libgobj.in', opts=OPTS, input=IGATEFILES)
 TargetAdd('libgobj.in', opts=['IMOD:panda', 'ILIB:libgobj', 'SRCDIR:panda/src/gobj'])
 TargetAdd('libgobj_igate.obj', input='libgobj.in', opts=["DEPENDENCYONLY"])
@@ -2989,6 +3009,18 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('libshowbase_igate.obj', input='libshowbase.in', opts=["DEPENDENCYONLY"])
 
 #
+# DIRECTORY: direct/src/dxml/
+#
+
+if (PkgSkip("PYTHON")==0 and PkgSkip("TINYXML")==0):
+  OPTS=['DIR:direct/src/dxml', 'BUILDING:DIRECT', 'TINYXML']
+  TargetAdd('dxml_config_dxml.obj', opts=OPTS, input='config_dxml.cxx')
+  IGATEFILES=GetDirectoryContents('direct/src/dxml', ["*.h", "config_dxml.cxx"])
+  TargetAdd('libdxml.in', opts=OPTS, input=IGATEFILES)
+  TargetAdd('libdxml.in', opts=['IMOD:p3direct', 'ILIB:libdxml', 'SRCDIR:direct/src/dxml'])
+  TargetAdd('libdxml_igate.obj', input='libdxml.in', opts=["DEPENDENCYONLY"])
+
+#
 # DIRECTORY: direct/metalibs/direct/
 #
 
@@ -3001,6 +3033,8 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('libp3direct_module.obj', input='libdeadrec.in')
   TargetAdd('libp3direct_module.obj', input='libinterval.in')
   TargetAdd('libp3direct_module.obj', input='libdistributed.in')
+  if (PkgSkip("TINYXML")==0):
+    TargetAdd('libp3direct_module.obj', input='libdxml.in')
   TargetAdd('libp3direct_module.obj', opts=OPTS)
   TargetAdd('libp3direct_module.obj', opts=['IMOD:p3direct', 'ILIB:libp3direct'])
 
@@ -3021,8 +3055,11 @@ if (PkgSkip("PYTHON")==0):
   TargetAdd('libp3direct.dll', input='distributed_cConnectionRepository.obj')
   TargetAdd('libp3direct.dll', input='distributed_cDistributedSmoothNodeBase.obj')
   TargetAdd('libp3direct.dll', input='libdistributed_igate.obj')
+  if (PkgSkip("TINYXML")==0):
+    TargetAdd('libp3direct.dll', input='dxml_config_dxml.obj')
+    TargetAdd('libp3direct.dll', input='libdxml_igate.obj')
   TargetAdd('libp3direct.dll', input=COMMON_PANDA_LIBS)
-  TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER'])
+  TargetAdd('libp3direct.dll', opts=['ADVAPI',  'OPENSSL', 'WINUSER', 'TINYXML'])
 
 #
 # DIRECTORY: direct/src/dcparse/
@@ -3052,7 +3089,7 @@ if (PkgSkip("PYTHON")==0):
 # DIRECTORY: direct/src/plugin/
 #
 
-if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (RUNTIME):
   # Explicitly define this as we don't include dtool_config.h here.
   if (sys.platform != "darwin" and not sys.platform.startswith("win")):
     DefSymbol("PLUGIN", "HAVE_X11", "1")
@@ -3092,7 +3129,7 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
 # DIRECTORY: direct/src/plugin_npapi/
 #
 
-if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
+if (RUNTIME and PkgSkip("NPAPI")==0):
   OPTS=['DIR:direct/src/plugin_npapi', 'PLUGIN']
   if (sys.platform.startswith("win")):
     TargetAdd('nppanda3d.res', opts=OPTS, input='nppanda3d.rc')
@@ -3120,12 +3157,14 @@ if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0 and PkgSkip("NPAPI")==0):
 # DIRECTORY: direct/src/plugin_standalone/
 #
 
-if (PkgSkip("PLUGIN")==0 and PkgSkip("TINYXML")==0):
+if (RUNTIME):
   OPTS=['DIR:direct/src/plugin_standalone', 'PLUGIN', 'LINK_ALL_STATIC', 'TINYXML', 'OPENSSL']
   TargetAdd('plugin_standalone_panda3d.obj', opts=OPTS, input='panda3d.cxx')
   TargetAdd('panda3d.exe', input='plugin_standalone_panda3d.obj')
   TargetAdd('panda3d.exe', input='plugin_common.obj')
   TargetAdd('panda3d.exe', input='libpandaexpress_s.ilb')
+  TargetAdd('panda3d.exe', input='libp3dtoolconfig_s.ilb')
+  TargetAdd('panda3d.exe', input='libp3dtool_s.ilb')
   TargetAdd('panda3d.exe', opts=['PYTHON', 'TINYXML', 'OPENSSL', 'ZLIB', 'WINGDI', 'WINUSER', 'WINSHELL', 'ADVAPI', 'WINSOCK2'])
 
 #
@@ -3937,17 +3976,8 @@ if (PkgSkip("PYTHON")==0):
 #
 
 if (PkgSkip("PYTHON")==0):
-  if (sys.platform == "darwin" or sys.platform.startswith("win") or ("PYTHONVERSION" in SDK and SDK["PYTHONVERSION"] == "python2.6")):
-    TargetAdd('runp3d.exe', input='direct/src/showutil/runp3d.py')
-    TargetAdd('packp3d.exe', input='direct/src/showutil/packp3d.py')
   TargetAdd('packpanda.exe', input='direct/src/directscripts/packpanda.py')
   TargetAdd('eggcacher.exe', input='direct/src/directscripts/eggcacher.py')
-  
-  TargetAdd('runp3d_frozen.pyd', input='direct/src/showutil/runp3d.py')
-  TargetAdd('runp3d_frozen.pyd', input='direct/src/directbase/DirectStart.py')
-  TargetAdd('runp3d_frozen.pyd', input='direct/src/actor/Actor.py')
-  TargetAdd('runp3d_frozen.pyd', input='direct/src/fsm/FSM.py')
-  TargetAdd('runp3d_frozen.pyd', input='direct/src/directutil/Mopath.py')
 
 #
 # Generate the models directory and samples directory
@@ -4092,89 +4122,14 @@ except:
 #
 ##########################################################################################
 
-RUNTIME_OMIT = ["libp3mayaloader*.*", "libp3ptloader.*", "libpandaskel.*","libpandaegg.*",
-                              "libpanda*stripped.*", "codec_*.*", "output_*.*", "dsp_*.*"]
-
 def MakeRuntime():
-    # Delete the current.
-    if (os.path.exists(GetOutputDir()+"/stage")):
-      shutil.rmtree(GetOutputDir()+"/stage")
-    if (os.path.exists(GetOutputDir()+"/rlib")):
-      shutil.rmtree(GetOutputDir()+"/rlib")
-    
-    # Create a couple of directories.
-    coreapidir = GetOutputDir()+"/stage/coreapi/"+RUNTIME_PLATFORM+"/"+RUNTIME_VERSION+"/"
-    plugindir = GetOutputDir()+"/stage/plugin/"+RUNTIME_PLATFORM+"/"+RUNTIME_VERSION+"/"
-    MakeDirectory(GetOutputDir()+"/rlib")
-    MakeDirectory(GetOutputDir()+"/stage")
-    MakeDirectory(GetOutputDir()+"/stage/coreapi")
-    MakeDirectory(GetOutputDir()+"/stage/coreapi/"+RUNTIME_PLATFORM)
-    MakeDirectory(GetOutputDir()+"/stage/plugin")
-    MakeDirectory(GetOutputDir()+"/stage/plugin/"+RUNTIME_PLATFORM)
-    MakeDirectory(coreapidir); MakeDirectory(plugindir)
-    
-    # Copy the p3d_plugin file to coreapi dir and the plugin to the plugin dir.
-    plugfile = CalcLocation("p3d_plugin.dll", None)
-    CopyFile(coreapidir + os.path.basename(plugfile), plugfile)
-    if (sys.platform == "darwin"):
-        plugfile = CalcLocation("nppanda3d.plugin", None)
-        if (os.path.isdir(GetOutputDir()+"/tmp/bundle")):
-            oscmd("rm -rf %s" % BracketNameWithQuotes(GetOutputDir()+"/tmp/bundle"))
-        MakeDirectory(GetOutputDir()+"/tmp/bundle")
-        CopyTree(GetOutputDir()+"/tmp/bundle/nppanda3d.plugin", plugfile)
-        if (os.path.exists(GetOutputDir()+"/plugins/nppanda3d.dmg")):
-            oscmd("rm -rf " + BracketNameWithQuotes(GetOutputDir()+"/plugins/nppanda3d.dmg"))
-        oscmd("hdiutil create -fs HFS+ -srcfolder %s -volname nppanda3d %s" % (GetOutputDir()+"/tmp/bundle", GetOutputDir()+"/plugins/nppanda3d.dmg"))
-        CopyFile(plugindir + "nppanda3d.dmg", GetOutputDir()+"/plugins/nppanda3d.dmg")
-        oscmd("rm -rf " + BracketNameWithQuotes(GetOutputDir()+"/tmp/bundle"))
-    else:
-        plugfile = CalcLocation("nppanda3d.dll", None)
-        CopyFile(plugindir + os.path.basename(plugfile), plugfile)
-    
-    # Copy the important libraries to built/rlib/.
-    CopyFile(GetOutputDir()+"/rlib/Config.prc", GetOutputDir()+"/etc/Config.prc")
-    plugfile = CalcLocation("p3dpython.exe", None)
-    CopyFile(GetOutputDir()+"/rlib/"+os.path.basename(plugfile), plugfile)
-    plugfile = CalcLocation("runp3d_frozen.pyd", None)
-    CopyFile(GetOutputDir()+"/rlib/"+os.path.basename(plugfile), plugfile)
-    if (sys.platform.startswith("win")):
-        for base in os.listdir(GetOutputDir()+"/bin"):
-            if (base.endswith(".dll")):
-                omit = False
-                for romit in RUNTIME_OMIT:
-                    if fnmatch.fnmatch(base, romit):
-                        omit = True
-                if omit: continue
-                CopyFile(GetOutputDir()+"/rlib/"+base, GetOutputDir()+"/bin/"+base)
-    else:
-        for base in os.listdir(GetOutputDir()+"/lib"):
-            if (base.startswith("lib")) and (base.endswith(".so") or base.endswith(".dylib")):
-                omit = False
-                for romit in RUNTIME_OMIT:
-                    if fnmatch.fnmatch(base, romit):
-                        omit = True
-                if omit: continue
-                CopyFile(GetOutputDir()+"/rlib/"+base, GetOutputDir()+"/lib/"+base)
-                if (sys.platform == "darwin"):
-                    oscmd("strip "+GetOutputDir()+"/rlib/"+base)
-                else:
-                    oscmd("strip --strip-all "+GetOutputDir()+"/rlib/"+base)
-    
-    # Invoke the make_package and make_contents scripts.
-    command = SDK["PYTHONEXEC"] + " direct/src/plugin/make_package.py"
-    command += " -d \"" + GetOutputDir() + "/stage\""
-    command += " -s \"" + GetOutputDir() + "/rlib\""
-    command += " -p panda3d_%s_%s" % (RUNTIME_PLATFORM, RUNTIME_VERSION)
-    oscmd(command)
-    command = SDK["PYTHONEXEC"] + " direct/src/plugin/make_contents.py"
-    command += " -d \"" + GetOutputDir() + "/stage\""
+    # Invoke the ppackage script.
+    command = SDK["PYTHONEXEC"] + " direct/src/p3d/ppackage.py"
+    command += " -i \"" + GetOutputDir() + "/stage\""
+    command += " direct/src/p3d/panda3d.pdef"
     oscmd(command)
     
-    # Tar the whole thing.
-    if (not sys.platform.startswith("win")):
-        if (os.path.exists("runtime_%s_%s.tar.bz2" % (RUNTIME_PLATFORM, RUNTIME_VERSION))):
-            os.remove("runtime_%s_%s.tar.bz2" % (RUNTIME_PLATFORM, RUNTIME_VERSION))
-        oscmd("cd " + GetOutputDir() + "/stage/ && tar -cjvf " + os.getcwd() + ("/runtime_%s_%s.tar.bz2 coreapi panda3d plugin" % (RUNTIME_PLATFORM, RUNTIME_VERSION)))
+    print "Runtime output stored in \"" + GetOutputDir() + "/stage\"."
 
 if (RUNTIME != 0):
     MakeRuntime()
