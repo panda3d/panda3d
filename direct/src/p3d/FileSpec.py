@@ -10,14 +10,15 @@ class FileSpec:
     def __init__(self):
         self.actualFile = None
 
-    def fromFile(self, packageDir, filename, st = None):
+    def fromFile(self, packageDir, filename, pathname = None, st = None):
         """ Reads the file information from the indicated file.  If st
         is supplied, it is the result of os.stat on the filename. """
         
         vfs = VirtualFileSystem.getGlobalPtr()
 
         filename = Filename(filename)
-        pathname = Filename(packageDir, filename)
+        if pathname is None:
+            pathname = Filename(packageDir, filename)
         
         self.filename = filename.cStr()
         self.basename = filename.getBasename()
@@ -108,7 +109,7 @@ class FileSpec:
 
         # If the size is right but the timestamp is wrong, the file
         # soft-fails.  We follow this up with a hash check.
-        if not self.checkHash(packageDir, st):
+        if not self.checkHash(packageDir, pathname, st):
             # Hard fail, the hash is wrong.
             #print "hash check wrong: %s" % (pathname)
             return False
@@ -145,7 +146,7 @@ class FileSpec:
             #print "size wrong: %s" % (pathname)
             return False
 
-        if not self.checkHash(packageDir, st):
+        if not self.checkHash(packageDir, pathname, st):
             # Hard fail, the hash is wrong.
             #print "hash check wrong: %s" % (pathname)
             return False
@@ -160,13 +161,14 @@ class FileSpec:
 
         return True
 
-    def checkHash(self, packageDir, st):
+    def checkHash(self, packageDir, pathname, st):
         """ Returns true if the file has the expected md5 hash, false
         otherwise.  As a side effect, stores a FileSpec corresponding
         to the on-disk file in self.actualFile. """
 
         fileSpec = FileSpec()
-        fileSpec.fromFile(packageDir, self.filename, st = st)
+        fileSpec.fromFile(packageDir, self.filename,
+                          pathname = pathname, st = st)
         self.actualFile = fileSpec
 
         return (fileSpec.hash == self.hash)
