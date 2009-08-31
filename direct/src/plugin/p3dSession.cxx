@@ -1351,7 +1351,11 @@ p3dpython_thread_run() {
   // Now load the library.
   string libp3dpython = _python_root_dir + "/libp3dpython";
 #ifdef _WIN32
+#ifdef _DEBUG
+  libp3dpython += "_d.dll";
+#else  
   libp3dpython += ".dll";
+#endif
   SetErrorMode(0);
   HMODULE module = LoadLibrary(libp3dpython.c_str());
   if (module == NULL) {

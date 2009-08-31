@@ -2337,6 +2337,23 @@ class Packager:
                 if not thisFiles:
                     thisFiles = [filename.toOsSpecific()]
 
+                if newExt == 'dll' or (ext == 'dll' and newExt is None):
+                    # Go through the dsoFilename interface on Windows,
+                    # to insert a _d if we are running on a debug
+                    # build.
+                    dllFilename = Filename(filename)
+                    dllFilename.setExtension('so')
+                    dllFilename = Filename.dsoFilename(dllFilename.cStr())
+                    if dllFilename != filename:
+                        thisFiles = glob.glob(filename.toOsSpecific())
+                        if not thisFiles:
+                            # We have to resolve this filename to
+                            # determine if it's a _d or not.
+                            if dllFilename.resolveFilename(self.executablePath):
+                                thisFiles = [dllFilename.toOsSpecific()]
+                            else:
+                                thisFiles = [filename.toOsSpecific()]
+
             if len(thisFiles) > 1:
                 explicit = False
             files += thisFiles
