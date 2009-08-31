@@ -478,7 +478,6 @@ if (COMPILER=="LINUX"):
         LibName("CARBON", "-framework Carbon")
         LibName("COCOA", "-framework Cocoa")
         LibName("GLUT", "-framework OpenGL")
-        LibName("GLUT", "-lOSMesa")
         # Fix for a bug in OSX:
         LibName("GLUT", "-dylib_file /System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib:/System/Library/Frameworks/OpenGL.framework/Versions/A/Libraries/libGL.dylib")
     else:
@@ -610,8 +609,11 @@ def CompileCxx(obj,src,opts):
             if (opt=="ALWAYS") or (opts.count(opt)): cmd += ' -D' + var + '=' + val
         for x in ipath: cmd += ' -I' + x
         if (sys.platform == "darwin"):
-            cmd += " -isysroot " + SDK["MACOSX"] + " -arch i386"
-            if ("NOPPC" not in opts): cmd += " -arch ppc"
+            if (int(platform.mac_ver()[0][3]) >= 6):
+                cmd += " -isysroot " + SDK["MACOSX"] + " -arch x86_64"
+            else:
+                cmd += " -isysroot " + SDK["MACOSX"] + " -arch i386"
+                if ("NOPPC" not in opts): cmd += " -arch ppc"
         optlevel = GetOptimizeOption(opts)
         if (optlevel==1): cmd += " -g -D_DEBUG"
         if (optlevel==2): cmd += " -O1 -D_DEBUG"

@@ -966,7 +966,9 @@ def SdkLocateMSPlatform():
 
 def SdkLocateMacOSX():
     if (sys.platform != "darwin"): return
-    if (os.path.exists("/Developer/SDKs/MacOSX10.5.sdk")):
+    if (os.path.exists("/Developer/SDKs/MacOSX10.6.sdk")):
+        SDK["MACOSX"] = "/Developer/SDKs/MacOSX10.6.sdk"
+    elif (os.path.exists("/Developer/SDKs/MacOSX10.5.sdk")):
         SDK["MACOSX"] = "/Developer/SDKs/MacOSX10.5.sdk"
     elif (os.path.exists("/Developer/SDKs/MacOSX10.4u.sdk")):
         SDK["MACOSX"] = "/Developer/SDKs/MacOSX10.4u.sdk"
