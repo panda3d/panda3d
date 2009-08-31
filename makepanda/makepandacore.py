@@ -20,6 +20,7 @@ MAINTHREAD=threading.currentThread()
 OUTPUTDIR="built"
 CUSTOM_OUTPUTDIR=False
 OPTIMIZE="3"
+USE_COLORGCC=os.path.isfile("/usr/bin/colorgcc")
 
 ########################################################################
 ##
@@ -130,6 +131,8 @@ def oscmd(cmd, ignoreError = False):
                 exit("Cannot find "+exe+" on search path")
         res = os.spawnl(os.P_WAIT, exe, cmd)
     else:
+        if (USE_COLORGCC and (cmd.startswith("g++ ") or cmd.startswith("gcc "))):
+            cmd = "colorgcc" + cmd[3:]
         res = os.system(cmd)
     if res != 0 and not ignoreError:
         exit("")
