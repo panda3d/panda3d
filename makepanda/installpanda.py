@@ -153,7 +153,7 @@ def InstallPanda(destdir="", prefix="/usr", outputdir="built"):
     if (os.path.isfile(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")):
       os.remove(destdir+prefix+"/share/panda3d/direct/leveleditor/copyfiles.pl")
 
-def InstallPlugin(destdir="", prefix="/usr", outputdir="built"):
+def InstallRuntime(destdir="", prefix="/usr", outputdir="built"):
     if (not prefix.startswith("/")): prefix = "/" + prefix
     oscmd("mkdir -p "+destdir+prefix+"/bin")
     oscmd("mkdir -p "+destdir+prefix+"/share/mime-info")

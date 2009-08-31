@@ -4187,6 +4187,25 @@ Recommends: python-profiler (>= PV)
 Provides: panda3d
 Maintainer: etc-panda3d@lists.andrew.cmu.edu
 Description: The Panda3D free 3D engine
+  Panda3D is a game engine which includes graphics, audio, I/O, collision detection, and other abilities relevant to the creation of 3D games. Panda3D is open source and free software under the revised BSD license, and can be used for both free and commercial game development at no financial cost.
+  Panda3D's intended game-development language is Python. The engine itself is written in C++, and utilizes an automatic wrapper-generator to expose the complete functionality of the engine in a Python interface.
+
+This is the package for the developers, install panda3d-runtime for the runtime files.
+
+"""
+
+RUNTIME_INSTALLER_DEB_FILE="""
+Package: panda3d-runtime
+Version: VERSION
+Section: web
+Priority: optional
+Architecture: ARCH
+Essential: no
+Provides: panda3d-runtime
+Maintainer: etc-panda3d@lists.andrew.cmu.edu
+Description: The Panda3D free 3D engine
+  This package contains the Panda3D runtime, which is necessary to run p3d files, and the mozilla browser plugin.
+
 """
 
 # We're not putting "python" in the "Requires" field,
@@ -4239,8 +4258,11 @@ def MakeInstallerLinux():
     oscmd("mkdir linuxroot")
     
     # Invoke installpanda.py to install it into a temporary dir
-    InstallPanda(destdir = "linuxroot", outputdir = GetOutputDir())
-    oscmd("chmod -R 555 linuxroot/usr/share/panda3d")
+    if RUNTIME:
+      InstallRuntime(destdir = "linuxroot", outputdir = GetOutputDir())
+    else:
+      InstallPanda(destdir = "linuxroot", outputdir = GetOutputDir())
+      oscmd("chmod -R 555 linuxroot/usr/share/panda3d")
     
     if (os.path.exists("/usr/bin/rpmbuild") and not os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("rm -rf linuxroot/DEBIAN")
@@ -4255,16 +4277,24 @@ def MakeInstallerLinux():
     if (os.path.exists("/usr/bin/dpkg-deb")):
         oscmd("dpkg --print-architecture > "+GetOutputDir()+"/tmp/architecture.txt")
         ARCH=ReadFile(GetOutputDir()+"/tmp/architecture.txt").strip()
-        txt = INSTALLER_DEB_FILE[1:].replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV).replace("ARCH",ARCH).replace("PV",PV)
+        if RUNTIME:
+          txt = RUNTIME_INSTALLER_DEB_FILE[1:]
+        else:
+          txt = INSTALLER_DEB_FILE[1:]
+        txt = txt.replace("VERSION",str(VERSION)).replace("PYTHONV",PYTHONV).replace("ARCH",ARCH).replace("PV",PV)
         oscmd("mkdir -p linuxroot/DEBIAN")
         oscmd("cd linuxroot ; (find usr -type f -exec md5sum {} \;) >  DEBIAN/md5sums")
-        oscmd("cd linuxroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
-        WriteFile("linuxroot/DEBIAN/conffiles","/etc/Config.prc\n")
+        if (not RUNTIME):
+          oscmd("cd linuxroot ; (find etc -type f -exec md5sum {} \;) >> DEBIAN/md5sums")
+          WriteFile("linuxroot/DEBIAN/conffiles","/etc/Config.prc\n")
         WriteFile("linuxroot/DEBIAN/control",txt)
         WriteFile("linuxroot/DEBIAN/postinst","#!/bin/sh\necho running ldconfig\nldconfig\n")
         oscmd("chmod 755 linuxroot/DEBIAN/postinst")
         oscmd("cp linuxroot/DEBIAN/postinst linuxroot/DEBIAN/postrm")
-        oscmd("dpkg-deb -b linuxroot panda3d_"+VERSION+"_"+ARCH+".deb")
+        if (RUNTIME):
+            oscmd("dpkg-deb -b linuxroot panda3d-runtime_"+VERSION+"_"+ARCH+".deb")
+        else:
+            oscmd("dpkg-deb -b linuxroot panda3d_"+VERSION+"_"+ARCH+".deb")
         oscmd("chmod -R 755 linuxroot")
     
     if not(os.path.exists("/usr/bin/rpmbuild") or os.path.exists("/usr/bin/dpkg-deb")):
@@ -4306,7 +4336,7 @@ def MakeInstallerOSX():
       oscmd("cp -R %s/bin/*           Panda3D-tpl-rw/Panda3D/%s/bin/" % (GetOutputDir(), VERSION))
       if os.path.isdir("samples"):       oscmd("cp -R samples   Panda3D-tpl-rw/Panda3D/%s/samples" % VERSION)
       if os.path.isdir(GetOutputDir()+"/Pmw"):     oscmd("cp -R %s/Pmw Panda3D-tpl-rw/Panda3D/%s/lib/Pmw" % (GetOutputDir(), VERSION))
-      if os.path.isdir(GetOutputDir()+"/plugins"): oscmd("cp %s/plugins/* Panda3D-tpl-rw/Panda3D/%s/plugins/" % (GetOutputDir(), VERSION))
+      if os.path.isdir(GetOutputDir()+"/plugins"): oscmd("cp -R %s/plugins/* Panda3D-tpl-rw/Panda3D/%s/plugins/" % (GetOutputDir(), VERSION))
       for base in os.listdir(GetOutputDir()+"/lib"):
           if (not base.endswith(".a")):
               oscmd("cp "+GetOutputDir()+"/lib/"+base+" Panda3D-tpl-rw/Panda3D/"+VERSION+"/lib/"+base)
