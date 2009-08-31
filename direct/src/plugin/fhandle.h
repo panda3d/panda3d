@@ -19,6 +19,7 @@
 // pass around a handle to an open file object.
 
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 typedef HANDLE FHandle;
 static const HANDLE invalid_fhandle = INVALID_HANDLE_VALUE;

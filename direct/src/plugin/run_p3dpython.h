@@ -31,7 +31,7 @@ run_p3dpython_func(const char *program_name, const char *archive_file,
                    FHandle input_handle, FHandle output_handle, 
                    FHandle error_handle, bool interactive_console);
 
-EXPCL_P3DPYTHON extern "C" bool
+extern "C" EXPCL_P3DPYTHON bool
 run_p3dpython(const char *program_name, const char *archive_file,
               FHandle input_handle, FHandle output_handle, 
               FHandle error_handle, bool interactive_console);

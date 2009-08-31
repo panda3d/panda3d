@@ -75,7 +75,7 @@ P3DPythonRun(const char *program_name, const char *archive_file,
 
   // Open the error output before we do too much more.
   _error_log.open_write(error_handle);
-  if (_error_log) {
+  if (!_error_log.fail()) {
     // Set up the indicated error log as the Notify output.
     _error_log.setf(ios::unitbuf);
     Notify::ptr()->set_ostream_ptr(&_error_log, false);

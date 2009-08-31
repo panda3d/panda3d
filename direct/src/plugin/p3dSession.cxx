@@ -974,7 +974,7 @@ start_p3dpython(P3DInstance *inst) {
        NULL, CREATE_ALWAYS, 0, NULL);
     if (handle != INVALID_HANDLE_VALUE) {
       _error_handle = handle;
-      SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+      SetHandleInformation(_error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
       _got_error_handle = true;
     } else {
       nout << "Unable to open " << _log_pathname << "\n";
@@ -1240,7 +1240,7 @@ win_create_process() {
   PROCESS_INFORMATION process_info; 
   BOOL result = CreateProcess
     (_p3dpython_exe.c_str(), command_line, NULL, NULL, TRUE, 0,
-     (void *)_env.c_str(), _start_dir_cstr,
+     (void *)_env.c_str(), start_dir_cstr,
      &startup_info, &process_info);
   bool started_program = (result != 0);
 
@@ -1372,15 +1372,15 @@ p3dpython_thread_run() {
   size_t zero = _env.find('\0', p);
   while (zero != string::npos) {
     const char *start = _env.data() + p;
+#ifdef _WIN32
+    _putenv(start);
+#else
     const char *equals = strchr(start, '=');
     if (equals != NULL) {
       string variable(start, equals - start);
-#ifdef _WIN32
-      _putenv_s(variable.c_str(), equals + 1);
-#else
       setenv(variable.c_str(), equals + 1, true);
-#endif  // _WIN32
     }
+#endif  // _WIN32
     p = zero + 1;
     zero = _env.find('\0', p);
   }

@@ -109,7 +109,7 @@ main(int argc, char *argv[]) {
     stringstream stream(interactive_console_str);
     int flag;
     stream >> flag;
-    if (stream) {
+    if (!stream.fail()) {
       interactive_console = (flag != 0);
     }
   }
