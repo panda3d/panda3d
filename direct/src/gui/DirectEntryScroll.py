@@ -23,6 +23,12 @@ class DirectEntryScroll(DirectFrame):
         self.clipXMax = 0.0
         self.initialiseoptions(DirectEntryScroll)
               
+        # don't set a scale on the entry
+        # instead make it the correct size, use something like:         
+           # text_scale = 0.035,
+           # frameSize = (-0.006, 3.2, -0.015, 0.036),
+        # if you need to scale the entry scale it's parent instead
+        
         self.entry = entry
         self.canvas = NodePath(self.guiItem.getCanvasNode())
         self.entry.reparentTo(self.canvas)
@@ -33,8 +39,7 @@ class DirectEntryScroll(DirectFrame):
         self.canvas.node().setBounds(OmniBoundingVolume())
         self.canvas.node().setFinal(1)
         self.resetCanvas()
-        
-        base.scroller = self
+
         
  
         
