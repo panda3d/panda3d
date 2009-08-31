@@ -762,7 +762,6 @@ class Freezer:
                 self.__loadModule(mdef)
             except ImportError:
                 print "Unknown module: %s" % (mdef.moduleName)
-                import pdb; pdb.set_trace()
 
         # Also attempt to import any implicit modules.  If any of
         # these fail to import, we don't really care.
