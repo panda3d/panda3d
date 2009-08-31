@@ -1321,6 +1321,7 @@ PANDAVERSION_H="""
 #define PANDA_VERSION NVERSION
 #define PANDA_VERSION_STR "VERSION1.VERSION2.VERSION3"
 #define PANDA_DISTRIBUTOR "makepanda"
+#define PANDA_PACKAGE_HOST_URL "http://runtime.panda3d.org/"
 """
 
 CHECKPANDAVERSION_CXX="""
@@ -1351,7 +1352,8 @@ def CreatePandaVersionFiles():
     pandaversion_h = pandaversion_h.replace("NVERSION",str(nversion))
     if (RUNTIME):
         pandaversion_h += "\n#define PANDA_PACKAGE_VERSION_STR \"" + RUNTIME_VERSION + "\""
-        pandaversion_h += "\n#define PANDA_PACKAGE_HOST_URL \"http://runtime.panda3d.org/\""
+    else:
+        pandaversion_h += "\n#define PANDA_PACKAGE_VERSION_STR \"\""
     
     checkpandaversion_cxx = CHECKPANDAVERSION_CXX.replace("VERSION1",str(version1))
     checkpandaversion_cxx = checkpandaversion_cxx.replace("VERSION2",str(version2))
