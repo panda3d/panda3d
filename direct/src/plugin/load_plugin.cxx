@@ -156,6 +156,7 @@ load_plugin(const string &p3d_plugin_filename,
   module = LoadLibrary(filename.c_str());
   if (module == NULL) {
     // Couldn't load the DLL.
+    cerr << "Couldn't load " << filename << "\n";
     return false;
   }
 
@@ -164,9 +165,10 @@ load_plugin(const string &p3d_plugin_filename,
 #else  // _WIN32
   // Posix case.
   assert(module == NULL);
-  module = dlopen(filename.c_str(), RTLD_LOCAL);
+  module = dlopen(filename.c_str(), RTLD_LAZY | RTLD_LOCAL);
   if (module == NULL) {
     // Couldn't load the .so.
+    cerr << "Couldn't load " << filename << "\n";
     return false;
   }
 

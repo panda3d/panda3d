@@ -1399,7 +1399,7 @@ p3dpython_thread_run() {
 
 #else  // _WIN32
   // Posix case.
-  void *module = dlopen(_p3dpython_dll.c_str(), RTLD_LOCAL);
+  void *module = dlopen(_p3dpython_dll.c_str(), RTLD_LAZY | RTLD_LOCAL);
   if (module == NULL) {
     // Couldn't load the .so.
     nout << "Couldn't load " << _p3dpython_dll << "\n";

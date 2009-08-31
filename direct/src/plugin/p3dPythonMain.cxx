@@ -191,10 +191,16 @@ main(int argc, char *argv[]) {
     
 #else  // _WIN32
   // Posix case.
-  void *module = dlopen(dll_file, RTLD_LOCAL);
+  void *module = dlopen(dll_file, RTLD_LAZY | RTLD_LOCAL);
   if (module == NULL) {
     // Couldn't load the .so.
     cerr << "Couldn't load " << dll_file << "\n";
+    char *message = dlerror();
+    if (message != (char *)NULL) {
+      cerr << message << "\n";
+    } else {
+      cerr << "No error.\n";
+    }
     return 1;
   }
 
