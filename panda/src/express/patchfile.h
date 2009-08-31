@@ -165,7 +165,7 @@ private:
   PN_uint32 _cache_copy_start;
   PN_uint32 _cache_copy_length;
 
-protected:
+private:
   PT(Buffer) _buffer; // this is the work buffer for apply -- used to prevent virtual memory swapping
 
   // async patch apply state variables
@@ -180,9 +180,9 @@ protected:
   PN_uint32 _total_bytes_to_process;
   PN_uint32 _total_bytes_processed;
 
-  pifstream _patch_stream;
+  istream *_patch_stream;
   pofstream _write_stream;
-  pifstream _origfile_stream;
+  istream *_origfile_stream;
 
   Filename _patch_file;
   Filename _orig_file;

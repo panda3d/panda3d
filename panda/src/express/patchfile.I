@@ -17,11 +17,13 @@
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::get_progress
 //       Access: Published
-//  Description:
+//  Description: Returns a value in the range 0..1, representing the
+//               amount of progress through the patchfile, during a
+//               session.
 ////////////////////////////////////////////////////////////////////
 INLINE float Patchfile::
 get_progress() const {
-  if (false == _initiated) {
+  if (!_initiated) {
     express_cat.warning()
       << "Patchfile::get_progress() - Patch has not been initiated" << endl;
     return 0.0f;
@@ -39,6 +41,9 @@ get_progress() const {
 //               subfile-by-subfile basis.  If this flag is false, the
 //               Patchfile will always patch the file on a full-file
 //               basis.
+//
+//               This has effect only when building patches; it is not
+//               used for applying patches.
 ////////////////////////////////////////////////////////////////////
 INLINE void Patchfile::
 set_allow_multifile(bool allow_multifile) {
@@ -48,7 +53,7 @@ set_allow_multifile(bool allow_multifile) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Patchfile::get_allow_multifile
 //       Access: Published
-//  Description:
+//  Description: See set_allow_multifile().
 ////////////////////////////////////////////////////////////////////
 INLINE bool Patchfile::
 get_allow_multifile() {

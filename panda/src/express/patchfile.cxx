@@ -23,18 +23,14 @@
 #include "streamWriter.h"
 #include "multifile.h"
 #include "hashVal.h"
+#include "virtualFileSystem.h"
 
-#include <stdio.h> // for tempnam
 #include <string.h>  // for strstr
 
 #ifdef HAVE_TAR
 #include "libtar.h"
 #include <fcntl.h>  // for O_RDONLY
 #endif  // HAVE_TAR
-
-#ifdef WIN32_VC
-#define tempnam _tempnam
-#endif
 
 #ifdef HAVE_TAR
 istream *Patchfile::_tar_istream = NULL;
@@ -130,6 +126,10 @@ init(PT(Buffer) buffer) {
 
   _version_number = 0;
   _allow_multifile = true;
+
+  _patch_stream = NULL;
+  _origfile_stream = NULL;
+
   reset_footprint_length();
 }
 
@@ -147,6 +147,9 @@ Patchfile::
   if (_initiated) {
     cleanup();
   }
+
+  nassertv(_patch_stream == NULL);
+  nassertv(_origfile_stream == NULL);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -164,8 +167,15 @@ cleanup() {
   }
 
   // close files
-  _origfile_stream.close();
-  _patch_stream.close();
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  if (_origfile_stream != NULL) {
+    vfs->close_read_file(_origfile_stream);
+    _origfile_stream = NULL;
+  }
+  if (_patch_stream != NULL) {
+    vfs->close_read_file(_patch_stream);
+    _patch_stream = NULL;
+  }
   _write_stream.close();
 
   _initiated = false;
@@ -216,10 +226,14 @@ initiate(const Filename &patch_file, const Filename &orig_file,
 
   nassertr(orig_file != target_file, EU_error_abort);
 
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
   // Open the original file for read
+  nassertr(_origfile_stream == NULL, EU_error_abort);
   _orig_file = orig_file;
   _orig_file.set_binary();
-  if (!_orig_file.open_read(_origfile_stream)) {
+  _origfile_stream = vfs->open_read_file(_orig_file, false);
+  if (_origfile_stream == NULL) {
     express_cat.error()
       << "Patchfile::initiate() - Failed to open file: " << _orig_file << endl;
     return get_write_error();
@@ -264,7 +278,11 @@ read_header(const Filename &patch_file) {
   }
 
   int result = internal_read_header(patch_file);
-  _patch_stream.close();
+  if (_patch_stream != NULL) {
+    VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+    vfs->close_read_file(_patch_stream);
+    _patch_stream = NULL;
+  }
   return result;
 }
 
@@ -296,7 +314,9 @@ run() {
     return EU_error_abort;
   }
 
-  StreamReader patch_reader(_patch_stream);
+  nassertr(_patch_stream != NULL, EU_error_abort);
+  nassertr(_origfile_stream != NULL, EU_error_abort);
+  StreamReader patch_reader(*_patch_stream);
 
   buflen = _buffer->get_length();
   bytes_read = 0;
@@ -306,7 +326,7 @@ run() {
     // read # of ADD bytes
     nassertr(_buffer->get_length() >= (int)sizeof(ADD_length), false);
     ADD_length = patch_reader.get_uint16();
-    if (_patch_stream.fail()) {
+    if (_patch_stream->fail()) {
       express_cat.error()
         << "Truncated patch file.\n";
       return EU_error_file_invalid;
@@ -330,8 +350,8 @@ run() {
     PN_uint32 bytes_left = (PN_uint32)ADD_length;
     while (bytes_left > 0) {
       PN_uint32 bytes_this_time = (PN_uint32) min(bytes_left, (PN_uint32) buflen);
-      _patch_stream.read(_buffer->_buffer, bytes_this_time);
-      if (_patch_stream.fail()) {
+      _patch_stream->read(_buffer->_buffer, bytes_this_time);
+      if (_patch_stream->fail()) {
         express_cat.error()
           << "Truncated patch file.\n";
         return EU_error_file_invalid;
@@ -344,7 +364,7 @@ run() {
     // read # of COPY bytes
     nassertr(_buffer->get_length() >= (int)sizeof(COPY_length), false);
     COPY_length = patch_reader.get_uint16();
-    if (_patch_stream.fail()) {
+    if (_patch_stream->fail()) {
       express_cat.error()
         << "Truncated patch file.\n";
       return EU_error_file_invalid;
@@ -363,7 +383,7 @@ run() {
       // read copy offset
       nassertr(_buffer->get_length() >= (int)sizeof(COPY_offset), false);
       COPY_offset = patch_reader.get_int32();
-      if (_patch_stream.fail()) {
+      if (_patch_stream->fail()) {
         express_cat.error()
           << "Truncated patch file.\n";
         return EU_error_file_invalid;
@@ -371,11 +391,11 @@ run() {
 
       // seek to the copy source pos
       if (_version_number < 2) {
-        _origfile_stream.seekg(COPY_offset, ios::beg);
+        _origfile_stream->seekg(COPY_offset, ios::beg);
       } else {
-        _origfile_stream.seekg(COPY_offset, ios::cur);
+        _origfile_stream->seekg(COPY_offset, ios::cur);
       }
-      if (_origfile_stream.fail()) {
+      if (_origfile_stream->fail()) {
         express_cat.error()
           << "Invalid copy offset in patch file.\n";
         return EU_error_file_invalid;
@@ -384,7 +404,7 @@ run() {
       if (express_cat.is_spam()) {
         express_cat.spam()
           << "COPY: " << COPY_length << " bytes from offset "
-          << COPY_offset << " (from " << _origfile_stream.tellg()
+          << COPY_offset << " (from " << _origfile_stream->tellg()
           << " to " << _write_stream.tellp() << ")"
           << endl;
       }
@@ -394,8 +414,8 @@ run() {
 
       while (bytes_left > 0) {
         PN_uint32 bytes_this_time = (PN_uint32) min(bytes_left, (PN_uint32) buflen);
-        _origfile_stream.read(_buffer->_buffer, bytes_this_time);
-        if (_origfile_stream.fail()) {
+        _origfile_stream->read(_buffer->_buffer, bytes_this_time);
+        if (_origfile_stream->fail()) {
           express_cat.error()
             << "Invalid copy length in patch file.\n";
           return EU_error_file_invalid;
@@ -421,7 +441,11 @@ run() {
         MD5_actual.hash_file(_output_file);
         if (_MD5_ofResult != MD5_actual) {
           // Whoops, patching screwed up somehow.
-          _origfile_stream.close();
+          if (_origfile_stream != NULL) {
+            VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+            vfs->close_read_file(_origfile_stream);
+            _origfile_stream = NULL;
+          }
           _write_stream.close();
 
           express_cat.info()
@@ -545,9 +569,12 @@ apply(Filename &patch_file, Filename &orig_file, const Filename &target_file) {
 int Patchfile::
 internal_read_header(const Filename &patch_file) {
   // Open the patch file for read
+  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+  nassertr(_patch_stream == NULL, EU_error_abort);
   _patch_file = patch_file;
   _patch_file.set_binary();
-  if (!_patch_file.open_read(_patch_stream)) {
+  _patch_stream = vfs->open_read_file(_patch_file, true);
+  if (_patch_stream == NULL) {
     express_cat.error()
       << "Patchfile::initiate() - Failed to open file: " << _patch_file << endl;
     return get_write_error();
@@ -556,7 +583,7 @@ internal_read_header(const Filename &patch_file) {
   /////////////
   // read header, make sure the patch file is valid
 
-  StreamReader patch_reader(_patch_stream);
+  StreamReader patch_reader(*_patch_stream);
 
   // check the magic number
   nassertr(_buffer->get_length() >= _v0_header_length, false);
