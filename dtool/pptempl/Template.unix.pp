@@ -386,13 +386,13 @@ $[TAB] rm -f $[sort $[installed_files]]
 $[install_lib_dir]/$[lib_prefix]$[TARGET]$[lib_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 #define local $[ODIR]/$[lib_prefix]$[TARGET]$[lib_ext]
 #define dest $[install_lib_dir]
-$[TAB] $[INSTALL]
+$[TAB] $[INSTALL_PROG]
 
 #if $[link_extra_bundle]
 $[install_lib_dir]/$[lib_prefix]$[TARGET]$[bundle_ext] : $[ODIR]/$[lib_prefix]$[TARGET]$[bundle_ext]
 #define local $[ODIR]/$[lib_prefix]$[TARGET]$[bundle_ext]
 #define dest $[install_lib_dir]
-$[TAB] $[INSTALL]
+$[TAB] $[INSTALL_PROG]
 #endif  // link_extra_bundle
 
 #if $[igatescan]
