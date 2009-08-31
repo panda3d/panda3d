@@ -415,3 +415,15 @@ INLINE void StreamWriter::
 flush() {
   _out->flush();
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: StreamWriter::write
+//       Access: Published
+//  Description: A synonym of append_data().  This is useful when
+//               assigning the StreamWriter to sys.stderr and/or
+//               sys.stdout in Python.
+////////////////////////////////////////////////////////////////////
+INLINE void StreamWriter::
+write(const string &data) {
+  append_data(data.data(), data.length());
+}

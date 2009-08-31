@@ -76,6 +76,8 @@ PUBLISHED:
 
   BLOCKING INLINE void flush();
 
+  BLOCKING INLINE void write(const string &str);
+
 private:
   ostream *_out;
   bool _owns_stream;
