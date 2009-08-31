@@ -162,7 +162,7 @@ eggyywarning(ostringstream &strm) {
 // Now define a function to take input from an istream instead of a
 // stdio FILE pointer.  This is flex-specific.
 static void
-input_chars(char *buffer, yy_size_t &result, int max_size) {
+input_chars(char *buffer, int &result, int max_size) {
   nassertv(inp != NULL);
   if (*inp) {
     inp->read(buffer, max_size);
@@ -193,7 +193,14 @@ input_chars(char *buffer, yy_size_t &result, int max_size) {
   Thread::consider_yield();
 }
 #undef YY_INPUT
-#define YY_INPUT(buffer, result, max_size) input_chars(buffer, result, max_size)
+
+// Define this macro carefully, since different flex versions call it
+// with a different type for result.
+#define YY_INPUT(buffer, result, max_size) { \
+  int int_result; \
+  input_chars((buffer), int_result, (max_size)); \
+  (result) = int_result; \
+}
 
 // read_char reads and returns a single character, incrementing the
 // supplied line and column numbers as appropriate.  A convenience
