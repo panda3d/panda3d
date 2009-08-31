@@ -35,13 +35,6 @@ class PackageInstaller(DirectObject):
     class PendingPackage:
         """ This class describes a package added to the installer for
         download. """
-
-        # Weight factors for computing download progress.  This
-        # attempts to reflect the relative time-per-byte of each of
-        # these operations.
-        downloadFactor = 1
-        uncompressFactor = 0.02
-        unpackFactor = 0.01
         
         def __init__(self, packageName, version, host):
             self.packageName = packageName
@@ -63,28 +56,15 @@ class PackageInstaller(DirectObject):
             # bytes uncompressed, and bytes extracted; and each of
             # which is weighted differently into one grand total.  So,
             # the total doesn't really represent bytes; it's a
-            # unitless number, which means something only as a ratio.
-            self.targetDownloadSize = 0
-
-        def getCurrentDownloadSize(self):
-            """ Returns the current amount of stuff we have processed
-            so far in the download. """
-            if self.done:
-                return self.targetDownloadSize
-
-            return (
-                self.package.bytesDownloaded * self.downloadFactor +
-                self.package.bytesUncompressed * self.uncompressFactor +
-                self.package.bytesUnpacked * self.unpackFactor)
+            # unitless number, which means something only as a ratio
+            # to other packages.
+            self.downloadEffort = 0
 
         def getProgress(self):
             """ Returns the download progress of this package in the
             range 0..1. """
 
-            if not self.targetDownloadSize:
-                return 1
-
-            return float(self.getCurrentDownloadSize()) / float(self.targetDownloadSize)
+            return self.package.downloadProgress
 
         def getDescFile(self, http):
             """ Synchronously downloads the desc files required for
@@ -104,11 +84,8 @@ class PackageInstaller(DirectObject):
                 return False
 
             self.package.checkStatus()
-            self.targetDownloadSize = (
-                self.package.getDownloadSize() * self.downloadFactor +
-                self.package.getUncompressSize() * self.uncompressFactor +
-                self.package.getUnpackSize() * self.unpackFactor)
-            
+            self.downloadEffort = self.package.getDownloadEffort()
+
             return True
 
     def __init__(self, appRunner, taskChain = 'install'):
@@ -484,7 +461,7 @@ class PackageInstaller(DirectObject):
         # Now serve this one package.
         messenger.send('PackageInstaller-%s-packageStarted' % self.uniqueId,
                        [pp], taskChain = 'default')
-        
+
         if not pp.package.downloadPackage(self.appRunner.http):
             self.__donePackage(pp, False)
             return task.cont
@@ -527,18 +504,19 @@ class PackageInstaller(DirectObject):
                 self.progressTask = None
                 return task.done
 
-            targetDownloadSize = 0
+            downloadEffort = 0
             currentDownloadSize = 0
             for pp in self.packages:
-                targetDownloadSize += pp.targetDownloadSize
-                currentDownloadSize += pp.getCurrentDownloadSize()
+                downloadEffort += pp.downloadEffort
+                packageProgress = pp.getProgress()
+                currentDownloadSize += pp.downloadEffort * packageProgress
                 if pp.calledPackageStarted and not pp.calledPackageFinished:
-                    self.packageProgress(pp.package, pp.getProgress())
+                    self.packageProgress(pp.package, packageProgress)
 
-            if not targetDownloadSize:
+            if not downloadEffort:
                 progress = 1
             else:
-                progress = float(currentDownloadSize) / float(targetDownloadSize)
+                progress = float(currentDownloadSize) / float(downloadEffort)
             self.downloadProgress(progress)
             
         finally:

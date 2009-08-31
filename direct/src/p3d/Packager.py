@@ -943,7 +943,7 @@ class Packager:
             it.  We need this to preserve the list of patchfiles
             between sessions. """
 
-            self.patchVersion = '1'
+            self.patchVersion = None
             self.patches = []
             
             packageDescFullpath = Filename(self.packager.installDir, self.packageDesc)
@@ -982,7 +982,8 @@ class Packager:
             if self.version:
                 xpackage.SetAttribute('version', self.version)
 
-            xpackage.SetAttribute('last_patch_version', self.patchVersion)
+            if self.patchVersion:
+                xpackage.SetAttribute('last_patch_version', self.patchVersion)
 
             self.__addConfigs(xpackage)
 
@@ -1637,6 +1638,16 @@ class Packager:
         performs any final cleanup appropriate. """
 
         self.writeContentsFile()
+
+    def buildPatches(self, packages):
+        """ Call this after calling close(), to build patches for the
+        indicated packages. """
+
+        packageNames = map(lambda package: package.packageName, packages)
+
+        from PatchMaker import PatchMaker
+        pm = PatchMaker(self.installDir)
+        pm.buildPatches(packageNames = packageNames)
 
     def readPackageDef(self, packageDef):
         """ Reads the named .pdef file and constructs the packages

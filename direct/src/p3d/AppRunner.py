@@ -25,7 +25,10 @@ if 'VFSImporter' in sys.modules:
     direct.showbase.VFSImporter = VFSImporter
     sys.modules['direct.showbase.VFSImporter'] = VFSImporter
 else:
-    # Otherwise, we can import the VFSImporter normally.
+    # Otherwise, we can import the VFSImporter normally.  We have to
+    # import PandaModules first, to get the funny renaming with
+    # pandaexpress.
+    from pandac import PandaModules
     from direct.showbase import VFSImporter
 
 from direct.showbase.DirectObject import DirectObject

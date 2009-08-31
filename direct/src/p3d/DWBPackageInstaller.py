@@ -4,7 +4,16 @@ from direct.gui import DirectGuiGlobals as DGG
 
 class DWBPackageInstaller(DirectWaitBar, PackageInstaller):
     """ This class presents a PackageInstaller that also inherits from
-    DirectWaitBar, so it updates its own GUI as it downloads. """
+    DirectWaitBar, so it updates its own GUI as it downloads.
+
+    Specify perPackage = True to make the progress bar reset for each
+    package, or False (the default) to show one continuous progress
+    bar for all packages.
+
+    Specify updateText = True (the default) to update the text label
+    with the name of the package or False to leave it up to you to set
+    it.
+    """
 
     def __init__(self, appRunner, parent = None, **kw):
         PackageInstaller.__init__(self, appRunner)
@@ -18,7 +27,9 @@ class DWBPackageInstaller(DirectWaitBar, PackageInstaller):
             ('barRelief',      DGG.RAISED,         self.setBarRelief),
             ('text',           'Starting',         self.setText),
             ('text_pos',       (0, -0.025),        None),
-            ('text_scale',     0.1,                None)
+            ('text_scale',     0.1,                None),
+            ('perPackage',     False,              None),
+            ('updateText',     True,               None),
             )
         self.defineoptions(kw, optiondefs)
         DirectWaitBar.__init__(self, parent, **kw)
@@ -40,8 +51,18 @@ class DWBPackageInstaller(DirectWaitBar, PackageInstaller):
         """ This callback is made for each package between
         downloadStarted() and downloadFinished() to indicate the start
         of a new package. """
-        self['text'] = 'Installing %s' % (package.displayName)
+        if self['updateText']:
+            self['text'] = 'Installing %s' % (package.displayName)
         self.show()
+
+    def packageProgress(self, package, progress):
+        """ This callback is made repeatedly between packageStarted()
+        and packageFinished() to update the current progress on the
+        indicated package only.  The progress value ranges from 0
+        (beginning) to 1 (complete). """
+
+        if self['perPackage']:
+            self['value'] = progress * self['range']
         
     def downloadProgress(self, overallProgress):
         """ This callback is made repeatedly between downloadStarted()
@@ -49,7 +70,8 @@ class DWBPackageInstaller(DirectWaitBar, PackageInstaller):
         all packages.  The progress value ranges from 0 (beginning) to
         1 (complete). """
 
-        self['value'] = overallProgress * self['range']
+        if not self['perPackage']:
+            self['value'] = overallProgress * self['range']
 
     def downloadFinished(self, success):
         """ This callback is made when all of the packages have been

@@ -8,10 +8,12 @@ class FileSpec:
     the xml. """
 
     def __init__(self):
-        pass
+        self.actualFile = None
 
-    def fromFile(self, packageDir, filename):
-        """ Reads the file information from the indicated file. """
+    def fromFile(self, packageDir, filename, st = None):
+        """ Reads the file information from the indicated file.  If st
+        is supplied, it is the result of os.stat on the filename. """
+        
         vfs = VirtualFileSystem.getGlobalPtr()
 
         filename = Filename(filename)
@@ -20,7 +22,8 @@ class FileSpec:
         self.filename = filename.cStr()
         self.basename = filename.getBasename()
 
-        st = os.stat(pathname.toOsSpecific())
+        if st is None:
+            st = os.stat(pathname.toOsSpecific())
         self.size = st.st_size
         self.timestamp = st.st_mtime
 
@@ -33,17 +36,20 @@ class FileSpec:
         element. """
         
         self.filename = xelement.Attribute('filename')
-        self.basename = Filename(self.filename).getBasename()
+        self.basename = None
+        if self.filename:
+            self.basename = Filename(self.filename).getBasename()
+            
         size = xelement.Attribute('size')
         try:
             self.size = int(size)
-        except ValueError:
+        except:
             self.size = 0
 
         timestamp = xelement.Attribute('timestamp')
         try:
             self.timestamp = int(timestamp)
-        except ValueError:
+        except:
             self.timestamp = 0
 
         self.hash = xelement.Attribute('hash')
@@ -52,10 +58,23 @@ class FileSpec:
         """ Adds the file information to the indicated XML
         element. """
 
-        xelement.SetAttribute('filename', self.filename)
-        xelement.SetAttribute('size', str(self.size))
-        xelement.SetAttribute('timestamp', str(self.timestamp))
-        xelement.SetAttribute('hash', self.hash)
+        if self.filename:
+            xelement.SetAttribute('filename', self.filename)
+        if self.size:
+            xelement.SetAttribute('size', str(self.size))
+        if self.timestamp:
+            xelement.SetAttribute('timestamp', str(self.timestamp))
+        if self.hash:
+            xelement.SetAttribute('hash', self.hash)
+
+    def storeMiniXml(self, xelement):
+        """ Adds the just the "mini" file information--size and
+        hash--to the indicated XML element. """
+
+        if self.size:
+            xelement.SetAttribute('size', str(self.size))
+        if self.hash:
+            xelement.SetAttribute('hash', self.hash)
             
     def quickVerify(self, packageDir = None, pathname = None):
         """ Performs a quick test to ensure the file has not been
@@ -89,7 +108,7 @@ class FileSpec:
 
         # If the size is right but the timestamp is wrong, the file
         # soft-fails.  We follow this up with a hash check.
-        if not self.checkHash(pathname):
+        if not self.checkHash(packageDir, st):
             # Hard fail, the hash is wrong.
             #print "hash check wrong: %s" % (pathname)
             return False
@@ -126,7 +145,7 @@ class FileSpec:
             #print "size wrong: %s" % (pathname)
             return False
 
-        if not self.checkHash(pathname):
+        if not self.checkHash(packageDir, st):
             # Hard fail, the hash is wrong.
             #print "hash check wrong: %s" % (pathname)
             return False
@@ -141,11 +160,14 @@ class FileSpec:
 
         return True
 
-    def checkHash(self, pathname):
+    def checkHash(self, packageDir, st):
         """ Returns true if the file has the expected md5 hash, false
-        otherwise. """
+        otherwise.  As a side effect, stores a FileSpec corresponding
+        to the on-disk file in self.actualFile. """
 
-        hv = HashVal()
-        hv.hashFile(pathname)
-        return (hv.asHex() == self.hash)
+        fileSpec = FileSpec()
+        fileSpec.fromFile(packageDir, self.filename, st = st)
+        self.actualFile = fileSpec
+
+        return (fileSpec.hash == self.hash)
     

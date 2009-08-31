@@ -28,8 +28,8 @@ Required:
 
   package.pdef
     The config file that describes the contents of the package file(s)
-    to be built, in excruciating detail.  Use "%(prog)s -H" to
-    describe the syntax of this file.
+    to be built, in excruciating detail.  See the Panda3D manual for
+    the syntax of this file.
 
 Options:
 
@@ -40,6 +40,19 @@ Options:
      invocations of this script.  It is the user's responsibility to
      copy this directory structure to a server, which will have the
      URL specified by -u, below.
+
+  -p
+     Automatically build patches against previous versions after
+     generating the results.  Patches are difference files that users
+     can download when updating a package, in lieu of redownloading
+     the whole package; this happens automatically if patches are
+     present.  You should generally build patches when you are
+     committing to a final, public-facing release.  Patches are
+     usually a good idea, but generating a patch for each internal
+     test build may needlessly generate a lot of small, inefficient
+     patch files instead of a few larger ones.  You can also generate
+     patches after the fact, by running ppatcher on the install
+     directory.
 
   -s search_dir
      Additional directories to search for previously-built packages.
@@ -70,13 +83,10 @@ Options:
      appearing within the pdef file.  This information is written to
      the contents.xml file at the top of the install directory.
 
-  -p platform
+  -P platform
      Specify the platform to masquerade as.  The default is whatever
      platform Panda has been built for.  It is probably unwise to set
      this, unless you know what you are doing.
-
-  -H
-     Describe the syntax of the package.pdef input file.
 
   -h
      Display this help
@@ -95,20 +105,23 @@ def usage(code, msg = ''):
     sys.exit(code)
 
 packager = Packager.Packager()
+buildPatches = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:s:d:p:u:n:Hh')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:d:P:u:n:h')
 except getopt.error, msg:
     usage(1, msg)
 
 for opt, arg in opts:
     if opt == '-i':
         packager.installDir = Filename.fromOsSpecific(arg)
+    elif opt == '-p':
+        buildPatches = True
     elif opt == '-s':
         packager.installSearch.appendDirectory(Filename.fromOsSpecific(arg))
     elif opt == '-d':
         packager.persistDir = Filename.fromOsSpecific(arg)
-    elif opt == '-p':
+    elif opt == '-P':
         packager.platform = arg
     elif opt == '-u':
         packager.host = arg
@@ -117,9 +130,6 @@ for opt, arg in opts:
         
     elif opt == '-h':
         usage(0)
-    elif opt == '-H':
-        print 'Not yet implemented.'
-        sys.exit(1)
     else:
         print 'illegal option: ' + flag
         sys.exit(1)
@@ -140,6 +150,9 @@ try:
     packager.setup()
     packages = packager.readPackageDef(packageDef)
     packager.close()
+    if buildPatches:
+        packager.buildPatches(packages)
+        
 except Packager.PackagerError:
     # Just print the error message and exit gracefully.
     inst = sys.exc_info()[1]

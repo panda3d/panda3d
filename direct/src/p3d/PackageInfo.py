@@ -1,4 +1,4 @@
-from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, TiXmlDocument, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath
+from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, TiXmlDocument, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, Patchfile
 from direct.p3d.FileSpec import FileSpec
 from direct.showbase import VFSImporter
 import os
@@ -10,6 +10,36 @@ class PackageInfo:
     can be (or has been) installed into the current runtime.  It is
     the Python equivalent of the P3DPackage class in the core API. """
 
+    # Weight factors for computing download progress.  This
+    # attempts to reflect the relative time-per-byte of each of
+    # these operations.
+    downloadFactor = 1
+    uncompressFactor = 0.01
+    unpackFactor = 0.01
+    patchFactor = 0.01
+
+    class InstallStep:
+        """ This class is one step of the installPlan list; it
+        represents a single atomic piece of the installation step, and
+        the relative effort of that piece.  When the plan is executed,
+        it will call the saved function pointer here. """
+        def __init__(self, func, bytes, factor):
+            self.func = func
+            self.bytesNeeded = bytes
+            self.bytesDone = 0
+            self.bytesFactor = factor
+
+        def getEffort(self):
+            """ Returns the relative amount of effort of this step. """
+            return self.bytesNeeded * self.bytesFactor
+
+        def getProgress(self):
+            """ Returns the progress of this step, in the range
+            0..1. """
+            if self.bytesNeeded == 0:
+                return 1
+            return min(float(self.bytesDone) / float(self.bytesNeeded), 1)
+    
     def __init__(self, host, packageName, packageVersion, platform = None):
         self.host = host
         self.packageName = packageName
@@ -32,40 +62,28 @@ class PackageInfo:
         self.uncompressedArchive = None
         self.compressedArchive = None
         self.extracts = []
-
-        # These are incremented during downloadPackage().
-        self.bytesDownloaded = 0
-        self.bytesUncompressed = 0
-        self.bytesUnpacked = 0
+        self.installPlans = None
+ 
+        # This is updated during downloadPackage().  It is in the
+        # range 0..1.
+        self.downloadProgress = 0
         
         # This is set true when the package file has been fully
         # downloaded and unpackaged.
         self.hasPackage = False
 
-    def getDownloadSize(self):
-        """ Returns the number of bytes we will need to download in
-        order to install this package. """
-        if self.hasPackage:
-            return 0
-        return self.compressedArchive.size
+    def getDownloadEffort(self):
+        """ Returns the relative amount of effort it will take to
+        download this package.  The units are meaningless, except
+        relative to other packges."""
 
-    def getUncompressSize(self):
-        """ Returns the number of bytes we will need to uncompress in
-        order to install this package. """
-        if self.hasPackage:
-            return 0
-        return self.uncompressedArchive.size
-
-    def getUnpackSize(self):
-        """ Returns the number of bytes that we will need to unpack
-        when installing the package. """
-
-        if self.hasPackage:
+        if not self.installPlans:
             return 0
 
-        size = 0
-        for file in self.extracts:
-            size += file.size
+        # Return the size of plan A, assuming it will work.
+        plan = self.installPlans[0]
+        size = sum(map(lambda step: step.getEffort(), plan))
+        
         return size
 
     def setupFilenames(self):
@@ -189,6 +207,71 @@ class PackageInfo:
         # We need to download an update.
         self.hasPackage = False
 
+        # Now determine what we will need to download, and build a
+        # plan (or two) to download it all.
+        self.installPlans = None
+
+        # We know we will at least need to unpackage the archive at
+        # the end.
+        unpackSize = 0
+        for file in self.extracts:
+            unpackSize += file.size
+        step = self.InstallStep(self.__unpackArchive, unpackSize, self.unpackFactor)
+        planA = [step]
+
+        # If the uncompressed archive file is good, that's all we'll
+        # need to do.
+        self.uncompressedArchive.actualFile = None
+        if self.uncompressedArchive.quickVerify(self.packageDir):
+            self.installPlans = [planA]
+            return
+
+        # Maybe the compressed archive file is good.
+        if self.compressedArchive.quickVerify(self.packageDir):
+            uncompressSize = self.uncompressedArchive.size
+            step = self.InstallStep(self.__uncompressArchive, uncompressSize, self.uncompressFactor)
+            planA = [step] + planA
+            self.installPlans = [planA]
+            return
+
+        # Maybe we can download one or more patches.  We'll come back
+        # to that in a minute as plan A.  For now, construct on plan
+        # B, which will be to download the whole archive.
+        planB = planA[:]
+
+        uncompressSize = self.uncompressedArchive.size
+        step = self.InstallStep(self.__uncompressArchive, uncompressSize, self.uncompressFactor)
+        planB = [step] + planB
+
+        downloadSize = self.compressedArchive.size
+        func = lambda step, fileSpec = self.compressedArchive: self.__downloadFile(step, fileSpec)
+
+        step = self.InstallStep(func, downloadSize, self.downloadFactor)
+        planB = [step] + planB
+
+        # Now look for patches.  Start with the md5 hash from the
+        # uncompressedArchive file we have on disk, and see if we can
+        # find a patch chain from this file to our target.
+        pathname = Filename(self.packageDir, self.uncompressedArchive.filename)
+        fileSpec = self.uncompressedArchive.actualFile
+        if fileSpec is None and pathname.exists():
+            fileSpec = FileSpec()
+            fileSpec.fromFile(self.packageDir, self.uncompressedArchive.filename)
+        plan = None
+        if fileSpec:
+            plan = self.__findPatchChain(fileSpec)
+        if plan:
+            # We can download patches.  Great!  That means this is
+            # plan A, and the full download is plan B (in case
+            # something goes wrong with the patching).
+            planA = plan + planA
+            self.installPlans = [planA, planB]
+        else:
+            # There are no patches to download, oh well.  Stick with
+            # plan B as the only plan.
+            self.installPlans = [planB]
+        
+
     def __checkArchiveStatus(self):
         """ Returns true if the archive and all extractable files are
         already correct on disk, false otherwise. """
@@ -207,6 +290,15 @@ class PackageInfo:
 
         return allExtractsOk
 
+    def __updateStepProgress(self, step):
+        """ This callback is made from within the several step
+        functions as the download step proceeds.  It updates
+        self.downloadProgress with the current progress, so the caller
+        can asynchronously query this value. """
+
+        size = self.totalPlanCompleted + self.currentStepEffort * step.getProgress()
+        self.downloadProgress = min(float(size) / float(self.totalPlanSize), 1)
+    
     def downloadPackage(self, http):
         """ Downloads the package file, synchronously, then
         uncompresses and unpacks it.  Returns true on success, false
@@ -218,68 +310,165 @@ class PackageInfo:
             # We've already got one.
             return True
 
-        if self.uncompressedArchive.quickVerify(self.packageDir):
-            return self.__unpackArchive()
+        # We should have an install plan by the time we get here.
+        assert self.installPlans
 
-        if self.compressedArchive.quickVerify(self.packageDir):
-            return self.__uncompressArchive()
+        self.http = http
+        for plan in self.installPlans:
+            self.totalPlanSize = sum(map(lambda step: step.getEffort(), plan))
+            self.totalPlanCompleted = 0
+            self.downloadProgress = 0
 
+            planFailed = False
+            for step in plan:
+                self.currentStepEffort = step.getEffort()
+
+                if not step.func(step):
+                    planFailed = True
+                    break
+                self.totalPlanCompleted += self.currentStepEffort
+                
+            if not planFailed:
+                # Successfully downloaded!
+                return True
+
+        # All plans failed.
+        return False
+
+    def __findPatchChain(self, fileSpec):
+        """ Finds the chain of patches that leads from the indicated
+        patch version to the current patch version.  If found,
+        constructs an installPlan that represents the steps of the
+        patch installation; otherwise, returns None. """
+
+        from direct.p3d.PatchMaker import PatchMaker
+
+        patchMaker = PatchMaker(self.packageDir)
+        package = patchMaker.readPackageDescFile(self.descFileBasename)
+        patchMaker.buildPatchChains()
+        fromPv = patchMaker.getPackageVersion(package.getGenericKey(fileSpec))
+        toPv = package.currentPv
+        patchChain = toPv.getPatchChain(fromPv)
+
+        if patchChain is None:
+            # No path.
+            patchMaker.cleanup()
+            return None
+
+        plan = []
+        for patchfile in patchChain:
+            downloadSize = patchfile.file.size
+            func = lambda step, fileSpec = patchfile.file: self.__downloadFile(step, fileSpec)
+            step = self.InstallStep(func, downloadSize, self.downloadFactor)
+            plan.append(step)
+
+            patchSize = patchfile.targetFile.size
+            func = lambda step, patchfile = patchfile: self.__applyPatch(step, patchfile)
+            step = self.InstallStep(func, patchSize, self.patchFactor)
+            plan.append(step)
+
+        patchMaker.cleanup()
+        return plan
+
+    def __downloadFile(self, step, fileSpec):
+        """ Downloads the indicated file from the host into
+        packageDir.  Returns true on success, false on failure. """
+        
         url = self.descFileUrl.rsplit('/', 1)[0]
-        url += '/' + self.compressedArchive.filename
+        url += '/' + fileSpec.filename
         url = DocumentSpec(url)
         print "Downloading %s" % (url)
 
-        targetPathname = Filename(self.packageDir, self.compressedArchive.filename)
+        targetPathname = Filename(self.packageDir, fileSpec.filename)
         targetPathname.setBinary()
         
-        channel = http.makeChannel(False)
+        channel = self.http.makeChannel(False)
         channel.beginGetDocument(url)
         channel.downloadToFile(targetPathname)
         while channel.run():
-            self.bytesDownloaded = channel.getBytesDownloaded()
+            step.bytesDone = channel.getBytesDownloaded()
+            self.__updateStepProgress(step)
             Thread.considerYield()
-        self.bytesDownloaded = channel.getBytesDownloaded()
+        step.bytesDone = channel.getBytesDownloaded()
+        self.__updateStepProgress(step)
         if not channel.isValid():
             print "Failed to download %s" % (url)
             return False
 
-        if not self.compressedArchive.fullVerify(self.packageDir):
-            print "after downloading, %s still incorrect" % (
-                self.compressedArchive.filename)
+        if not fileSpec.fullVerify(self.packageDir):
+            print "after downloading, %s incorrect" % (
+                fileSpec.filename)
             return False
         
-        return self.__uncompressArchive()
+        return True
 
-    def __uncompressArchive(self):
+    def __applyPatch(self, step, patchfile):
+        """ Applies the indicated patching in-place to the current
+        uncompressed archive.  The patchfile is removed after the
+        operation.  Returns true on success, false on failure. """
+
+        origPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
+        patchPathname = Filename(self.packageDir, patchfile.file.filename)
+        result = Filename.temporary('', 'patch_')
+        print "Patching %s with %s" % (origPathname, patchPathname)
+
+        p = Patchfile()  # The C++ class
+
+        ret = p.initiate(patchPathname, origPathname, result)
+        if ret == EUSuccess:
+            ret = p.run()
+        while ret == EUOk:
+            step.bytesDone = step.bytesNeeded * p.getProgress()
+            self.__updateStepProgress(step)
+            Thread.considerYield()
+            ret = p.run()
+        del p
+        patchPathname.unlink()
+        
+        if ret < 0:
+            print "Patching failed."
+            result.unlink()
+            return False
+
+        if not result.renameTo(origPathname):
+            print "Couldn't rename %s to %s" % (result, origPathname)
+            return False
+            
+        return True
+
+    def __uncompressArchive(self, step):
         """ Turns the compressed archive into the uncompressed
-        archive, then unpacks it.  Returns true on success, false on
-        failure. """
+        archive.  Returns true on success, false on failure. """
 
         sourcePathname = Filename(self.packageDir, self.compressedArchive.filename)
         targetPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
-
+        print "Uncompressing %s to %s" % (sourcePathname, targetPathname)
         decompressor = Decompressor()
         decompressor.initiate(sourcePathname, targetPathname)
         totalBytes = self.uncompressedArchive.size
         result = decompressor.run()
         while result == EUOk:
-            self.bytesUncompressed = int(totalBytes * decompressor.getProgress())
+            step.bytesDone = int(totalBytes * decompressor.getProgress())
+            self.__updateStepProgress(step)
             result = decompressor.run()
             Thread.considerYield()
 
         if result != EUSuccess:
             return False
             
-        self.bytesUncompressed = totalBytes
+        step.bytesDone = totalBytes
+        self.__updateStepProgress(step)
 
         if not self.uncompressedArchive.quickVerify(self.packageDir):
             print "after uncompressing, %s still incorrect" % (
                 self.uncompressedArchive.filename)
             return False
 
-        return self.__unpackArchive()
+        # Now we can safely remove the compressed archive.
+        sourcePathname.unlink()
+        return True
     
-    def __unpackArchive(self):
+    def __unpackArchive(self, step):
         """ Unpacks any files in the archive that want to be unpacked
         to disk. """
 
@@ -289,13 +478,14 @@ class PackageInfo:
             return True
 
         mfPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
+        print "Unpacking %s" % (mfPathname)
         mf = Multifile()
         if not mf.openRead(mfPathname):
             print "Couldn't open %s" % (mfPathname)
             return False
         
         allExtractsOk = True
-        self.bytesUnpacked = 0
+        step.bytesDone = 0
         for file in self.extracts:
             i = mf.findSubfile(file.filename)
             if i == -1:
@@ -317,7 +507,8 @@ class PackageInfo:
             # Make sure it's executable.
             os.chmod(targetPathname.toOsSpecific(), 0755)
 
-            self.bytesUnpacked += file.size
+            step.bytesDone += file.size
+            self.__updateStepProgress(step)
             Thread.considerYield()
 
         if not allExtractsOk:
