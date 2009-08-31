@@ -132,6 +132,12 @@ run_python() {
   // _vfsimporter.  So, find it and load it.
   Filename libpandaexpress(_archive_file.get_dirname(), 
                            Filename::dso_filename("libpandaexpress.so"));
+#if defined(__APPLE__) && PY_VERSION_HEX < 0x02050000
+  // On OSX, for Python versions 2.4 and before, we have to load the
+  // .so file, not the .dylib file.
+  libpandaexpress.set_type(Filename::T_general);
+#endif
+
   if (!libpandaexpress.exists()) {
     nout << "Can't find " << libpandaexpress << "\n";
     return false;
