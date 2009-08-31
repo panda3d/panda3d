@@ -118,10 +118,6 @@
     run_p3dpython.h run_p3dpython.cxx
 
   #define WIN_SYS_LIBS user32.lib
-
-  // If you have to link with a static Python library, define it here.
-  #define EXTRA_LIBS $[EXTRA_P3DPYTHON_LIBS]
-
 #end lib_target
 
 #begin bin_target
