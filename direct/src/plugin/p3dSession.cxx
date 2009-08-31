@@ -747,51 +747,16 @@ start_p3dpython(P3DInstance *inst) {
          << "PRC_PATH set to: " << prc_path << "\n";
   }
 
-  // Get the name of the executable and dynamic library to run.
-  // Ideally, we'll run the executable successfully, in a sub-process;
-  // this will in turn load and run the dynamic library.  If that
-  // fails for some reason, we can fall back to loading and running
-  // the library directly.
-  _p3dpython_exe = _python_root_dir + "/p3dpython";
+  // Get the name of the executable to run.  Ideally, we'll run the
+  // executable successfully, in a sub-process; this will in turn load
+  // and run the dynamic library.  If that fails for some reason, we
+  // can fall back to loading and running the library directly.
+  _p3dpython_exe = P3D_PLUGIN_P3DPYTHON;
+  if (_p3dpython_exe.empty()) {
+    _p3dpython_exe = _python_root_dir + "/p3dpython";
 #ifdef _WIN32
-  _p3dpython_exe += ".exe";
+    _p3dpython_exe += ".exe";
 #endif
-
-  _p3dpython_dll = P3D_PLUGIN_P3DPYTHON;
-  if (_p3dpython_dll.empty()) {
-    _p3dpython_dll = _python_root_dir + "/libp3dpython";
-#ifdef _WIN32
-    _p3dpython_dll += ".dll";
-#elif defined(__APPLE__)
-    _p3dpython_dll += ".dylib";
-#else
-    _p3dpython_dll += ".so";
-#endif
-  } else {
-    // We have a custom path to libp3dpython.dylib etc., for
-    // development.
-
-#ifdef __APPLE__
-    // For some bizarre reason, Apple's dlopen() goes out of its way to
-    // ignore whatever full path you specify, and always searches for
-    // the file's basename along $DYLD_LIBRARY_PATH.  Weird.  To work
-    // around this and load the full path we're actually asking for, we
-    // have to ensure that our desired path appears first on
-    // $DYLD_LIBRARY_PATH.
-
-    // This may also inadvertently put other (incorrect) files first
-    // on the path, but presumably this won't cause too much trouble,
-    // since the user is in development mode anyway and maybe won't
-    // mind.
-    size_t slash = _p3dpython_dll.rfind('/');
-    if (slash != string::npos) {
-      string dirname = _p3dpython_dll.substr(0, slash);
-      cerr << "dirname is " << dirname << "\n";
-
-      dyld_path = dirname + ":" + dyld_path;
-      cerr << "dyld_path is " << dyld_path << "\n";
-    }
-#endif  // __APPLE__
   }
 
   // Populate the new process' environment.
@@ -998,8 +963,7 @@ start_p3dpython(P3DInstance *inst) {
   // to p3dpython.
   _mf_filename = inst->_panda3d->get_archive_file_pathname();
 
-  nout << "Attempting to start python from " << _p3dpython_exe 
-       << " and " << _p3dpython_dll << "\n";
+  nout << "Attempting to start python from " << _p3dpython_exe << "\n";
 
   bool started_p3dpython;
   if (one_process) {
@@ -1225,10 +1189,10 @@ win_create_process() {
   // Construct the command-line string, containing the quoted
   // command-line arguments.
   ostringstream stream;
-  stream << "\"" << _p3dpython_exe << "\" \"" << _p3dpython_dll
-         << "\" \"" << _mf_filename << "\" \"" << _input_handle
-         << "\" \"" << _output_handle << "\" \"" << _error_handle
-         << "\" \"" << _interactive_console << "\"";
+  stream << "\"" << _p3dpython_exe << "\" \"" << _mf_filename
+         << "\" \"" << _input_handle << "\" \"" << _output_handle
+         << "\" \"" << _error_handle << "\" \"" << _interactive_console
+         << "\"";
 
   // I'm not sure why CreateProcess wants a non-const char pointer for
   // its command-line string, but I'm not taking chances.  It gets a
@@ -1330,8 +1294,7 @@ posix_create_process() {
     error_handle_stream << _error_handle;
     string error_handle_str = error_handle_stream.str();
 
-    execle(_p3dpython_exe.c_str(), 
-           _p3dpython_exe.c_str(), _p3dpython_dll.c_str(), 
+    execle(_p3dpython_exe.c_str(), _p3dpython_exe.c_str(),
            _mf_filename.c_str(), input_handle_str.c_str(),
            output_handle_str.c_str(), error_handle_str.c_str(),
            _interactive_console ? "1" : "0", (char *)0, &ptrs[0]);
@@ -1386,12 +1349,14 @@ p3dpython_thread_run() {
   }
 
   // Now load the library.
+  string libp3dpython = _python_root_dir + "/libp3dpython";
 #ifdef _WIN32
+  libp3dpython += ".dll";
   SetErrorMode(0);
-  HMODULE module = LoadLibrary(_p3dpython_dll.c_str());
+  HMODULE module = LoadLibrary(libp3dpython.c_str());
   if (module == NULL) {
     // Couldn't load the DLL.
-    nout << "Couldn't load " << _p3dpython_dll << "\n";
+    nout << "Couldn't load " << libp3dpython << "\n";
     return;
   }
 
@@ -1399,10 +1364,15 @@ p3dpython_thread_run() {
 
 #else  // _WIN32
   // Posix case.
-  void *module = dlopen(_p3dpython_dll.c_str(), RTLD_LAZY | RTLD_LOCAL);
+  #ifdef __APPLE__
+  libp3dpython += ".dylib";
+  #else
+  libp3dpython += ".so";
+  #endif
+  void *module = dlopen(libp3dpython.c_str(), RTLD_LAZY | RTLD_LOCAL);
   if (module == NULL) {
     // Couldn't load the .so.
-    nout << "Couldn't load " << _p3dpython_dll << "\n";
+    nout << "Couldn't load " << libp3dpython << "\n";
     return;
   }
 
@@ -1416,7 +1386,7 @@ p3dpython_thread_run() {
     return;
   }
 
-  if (!run_p3dpython(_p3dpython_dll.c_str(), _mf_filename.c_str(),
+  if (!run_p3dpython(libp3dpython.c_str(), _mf_filename.c_str(),
                      _input_handle, _output_handle, _error_handle,
                      _interactive_console)) {
     nout << "Failure on startup.\n";

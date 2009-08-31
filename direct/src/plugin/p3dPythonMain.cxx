@@ -19,29 +19,16 @@
 #include <string.h>  // strrchr
 using namespace std;
 
-#ifndef _WIN32
-#include <dlfcn.h>
-#endif
-
-#ifdef _WIN32
-static const string dll_ext = ".dll";
-#elif defined(__APPLE__)
-static const string dll_ext = ".dylib";
-#else
-static const string dll_ext = ".so";
-#endif
-
 ////////////////////////////////////////////////////////////////////
 //     Function: main
-//  Description: This is a trivial main() function that loads and runs
-//               libp3dpython.dll.  It's used to build p3dpython.exe,
+//  Description: This is a trivial main() function that invokes
+//               P3DPythonRun.  It's used to build p3dpython.exe,
 //               which is the preferred way to run Python in a child
 //               process, as a separate executable.
 ////////////////////////////////////////////////////////////////////
 int
 main(int argc, char *argv[]) {
   const char *program_name = argv[0];
-  const char *dll_file = NULL;
   const char *archive_file = NULL;
   const char *input_handle_str = NULL;
   const char *output_handle_str = NULL;
@@ -49,27 +36,19 @@ main(int argc, char *argv[]) {
   const char *interactive_console_str = NULL;
 
   if (argc > 1) {
-    dll_file = argv[1];
+    archive_file = argv[1];
   }
   if (argc > 2) {
-    archive_file = argv[2];
+    input_handle_str = argv[2];
   }
   if (argc > 3) {
-    input_handle_str = argv[3];
+    output_handle_str = argv[3];
   }
   if (argc > 4) {
-    output_handle_str = argv[4];
+    error_handle_str = argv[4];
   }
   if (argc > 5) {
-    error_handle_str = argv[5];
-  }
-  if (argc > 6) {
-    interactive_console_str = argv[6];
-  }
-
-  if (dll_file == NULL || *dll_file == '\0') {
-    cerr << "No libp3dpython filename specified on command line.\n";
-    return 1;
+    interactive_console_str = argv[5];
   }
 
   if (archive_file == NULL || *archive_file == '\0') {
@@ -117,121 +96,6 @@ main(int argc, char *argv[]) {
   cerr << "handles: " << input_handle << ", " << output_handle
        << ", " << error_handle << "\n";
   cerr << "interactive_console = " << interactive_console << "\n";
-
-  // For some vague idea of security, we insist that this program can
-  // only run libp3dpython.dll: you can't use it to load just any
-  // arbitrary DLL on the system.  Of course, if you're successfully
-  // running this program in the first place, you probably don't need
-  // any help to load an arbitrary DLL, but whatever.
-
-  // Find the basename of the dll_file.
-  const char *slash = strrchr(dll_file, '/');
-#ifdef _WIN32
-  const char *backslash = strrchr(dll_file, '\\');
-  if (backslash != NULL && (slash == NULL || backslash > slash)) {
-    slash = backslash;
-  }
-#endif
-  string basename;
-  if (slash == NULL) {
-    basename = dll_file;
-  } else {
-    //dirname = string(dll_file, slash - dll_file);
-    basename = (slash + 1);
-  }
-
-  string expected_basename = "libp3dpython" + dll_ext;
-  if (basename != expected_basename) {
-    cerr << dll_file << " does not name " << expected_basename << "\n";
-    return 1;
-  }
-
-  // Everything checks out.  Load and run the library.
-
-#ifdef _WIN32
-  SetErrorMode(0);
-  HMODULE module = LoadLibrary(dll_file);
-  if (module == NULL) {
-    // Couldn't load the DLL.
-    cerr << "Couldn't load " << dll_file << "\n";
-    return 1;
-  }
-
-  #define get_func GetProcAddress
-
-  // Get the default values for the communication handles, if we
-  // weren't given specific handles.
-  if (input_handle == invalid_fhandle) {
-    input_handle = GetStdHandle(STD_INPUT_HANDLE);
-
-    // Close the system input handle, so application code won't
-    // accidentally read from our private input stream.
-    if (!SetStdHandle(STD_INPUT_HANDLE, INVALID_HANDLE_VALUE)) {
-      cerr << "unable to reset input handle\n";
-    }
-  }
-
-  if (output_handle == invalid_fhandle) {
-    output_handle = GetStdHandle(STD_OUTPUT_HANDLE);
-
-    // Close the system output handle, so application code won't
-    // accidentally write to our private output stream.
-    if (!SetStdHandle(STD_OUTPUT_HANDLE, INVALID_HANDLE_VALUE)) {
-      cerr << "unable to reset input handle\n";
-    }
-  }
-
-  // No matter what error handle we were given, make it
-  // STD_ERROR_HANDLE.
-  if (error_handle == invalid_fhandle) {
-    error_handle = GetStdHandle(STD_ERROR_HANDLE);
-  } else {
-    SetStdHandle(STD_ERROR_HANDLE, error_handle);
-  }
-    
-#else  // _WIN32
-  // Posix case.
-  void *module = dlopen(dll_file, RTLD_LAZY | RTLD_LOCAL);
-  if (module == NULL) {
-    // Couldn't load the .so.
-    cerr << "Couldn't load " << dll_file << "\n";
-    char *message = dlerror();
-    if (message != (char *)NULL) {
-      cerr << message << "\n";
-    } else {
-      cerr << "No error.\n";
-    }
-    return 1;
-  }
-
-  #define get_func dlsym
-
-  // Get the default values for the communication handles, if we
-  // weren't given specific handles.
-  if (input_handle == invalid_fhandle) {
-    input_handle = STDIN_FILENO;
-  }
-
-  if (output_handle == invalid_fhandle) {
-    output_handle = STDOUT_FILENO;
-  }
-
-  // No matter what error handle we were given, make it STDERR_FILENO.
-  if (error_handle == invalid_fhandle) {
-    error_handle = STDERR_FILENO;
-  } else if (error_handle != STDERR_FILENO) {
-    dup2(error_handle, STDERR_FILENO);
-    close(error_handle);
-    error_handle = STDERR_FILENO;
-  }
-
-#endif  // _WIN32
-
-  run_p3dpython_func *run_p3dpython = (run_p3dpython_func *)get_func(module, "run_p3dpython");
-  if (run_p3dpython == NULL) {
-    cerr << "Couldn't find run_p3dpython\n";
-    return 1;
-  }
 
   if (!run_p3dpython(program_name, archive_file, input_handle, output_handle, 
                      error_handle, interactive_console)) {
