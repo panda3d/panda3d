@@ -162,7 +162,7 @@ eggyywarning(ostringstream &strm) {
 // Now define a function to take input from an istream instead of a
 // stdio FILE pointer.  This is flex-specific.
 static void
-input_chars(char *buffer, int &result, int max_size) {
+input_chars(char *buffer, yy_size_t &result, int max_size) {
   nassertv(inp != NULL);
   if (*inp) {
     inp->read(buffer, max_size);
