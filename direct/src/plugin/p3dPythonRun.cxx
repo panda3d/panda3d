@@ -130,14 +130,32 @@ run_python() {
 
   // We'll need libpandaexpress to be imported before we can load
   // _vfsimporter.  So, find it and load it.
-  Filename libpandaexpress(_archive_file.get_dirname(), 
-                           Filename::dso_filename("libpandaexpress.so"));
-#if defined(__APPLE__) && PY_VERSION_HEX < 0x02050000
-  // On OSX, for Python versions 2.4 and before, we have to load the
-  // .so file, not the .dylib file.
-  libpandaexpress.set_type(Filename::T_general);
-#endif
+  Filename libpandaexpress;
 
+#ifdef _WIN32
+  // Of course it's already resident, so use that version.
+  HMODULE h = GetModuleHandle("libpandaexpress.dll");
+  if (h == NULL) {
+    nout << "Can't find libpandaexpress in memory.\n";
+  } else {
+    static const int buffer_size = 4096;
+    char buffer[buffer_size];
+    GetModuleFileName(h, buffer, buffer_size);
+    libpandaexpress = Filename::from_os_specific(buffer);
+  }
+#endif  // _WIN32
+
+  if (libpandaexpress.empty()) {
+    // Go look for it on disk.
+    libpandaexpress = Filename(_archive_file.get_dirname(), 
+                               Filename::dso_filename("libpandaexpress.so"));
+#if defined(__APPLE__) && PY_VERSION_HEX < 0x02050000
+    // On OSX, for Python versions 2.4 and before, we have to load the
+    // .so file, not the .dylib file.
+    libpandaexpress.set_type(Filename::T_general);
+#endif
+  }
+  
   if (!libpandaexpress.exists()) {
     nout << "Can't find " << libpandaexpress << "\n";
     return false;
@@ -350,12 +368,19 @@ run_python() {
 ////////////////////////////////////////////////////////////////////
 void P3DPythonRun::
 run_interactive_console() {
+#ifdef _WIN32
+  // Make sure that control-C support is enabled for the interpreter.
+  SetConsoleCtrlHandler(NULL, false);
+#endif
+
   // The "readline" module makes the Python prompt friendlier, with
   // command history and everything.  Simply importing it is
   // sufficient.
   PyObject *readline_module = PyImport_ImportModule("readline");
   if (readline_module == NULL) {
-    PyErr_Print();
+    // But, the module might not exist on certain platforms.  If not,
+    // no sweat.
+    PyErr_Clear();
   } else {
     Py_DECREF(readline_module);
   }

@@ -148,11 +148,13 @@ run(int argc, char *argv[]) {
         token._value = "1";
         _tokens.push_back(token);
 
-#ifndef _WIN32
-        // We should also ignore SIGINT in this case, so that a
-        // control-C operation will be delivered to the subordinate
-        // Python process and return to a command shell, and won't
-        // just kill the panda3d process.
+        // We should also ignore control-C in this case, so that an
+        // interrupt will be delivered to the subordinate Python
+        // process and return to a command shell, and won't just kill
+        // the panda3d process.
+#ifdef _WIN32
+        SetConsoleCtrlHandler(NULL, true);
+#else
         struct sigaction ignore;
         memset(&ignore, 0, sizeof(ignore));
         ignore.sa_handler = SIG_IGN;

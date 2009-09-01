@@ -303,6 +303,12 @@ class AppRunner(DirectObject):
                 if mainName:
                     moduleName = mainName
 
+            # Temporarily clear this flag while we import the app, so
+            # that if the app calls run() within its own main.py, it
+            # will properly get ignored by ShowBase.
+            interactiveConsole = self.interactiveConsole
+            self.interactiveConsole = False
+
             try:
                 __import__(moduleName)
             except ImportError:
@@ -311,6 +317,9 @@ class AppRunner(DirectObject):
             main = sys.modules[moduleName]
             if hasattr(main, 'main') and callable(main.main):
                 main.main(self)
+
+            # Now restore this flag.
+            self.interactiveConsole = interactiveConsole
 
             if self.interactiveConsole:
                 # At this point, we have successfully loaded the app.

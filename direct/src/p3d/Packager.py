@@ -435,6 +435,9 @@ class Packager:
             # files).  This will include the extension modules we just
             # discovered above.
             for file in self.files:
+                if file.isExcluded(self):
+                    # Skip this file.
+                    continue
                 ext = Filename(file.newName).getExtension()
                 if file.unprocessed:
                     # Add an unprocessed file verbatim.
@@ -466,6 +469,9 @@ class Packager:
             # We walk through the list as we modify it.  That's OK,
             # because we may add new files that we want to process.
             for file in self.files:
+                if file.isExcluded(self):
+                    # Skip this file.
+                    continue
                 ext = Filename(file.newName).getExtension()
                 if file.unprocessed:
                     # Already handled, above.
