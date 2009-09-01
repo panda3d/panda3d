@@ -2,6 +2,7 @@
 #include "checksumHashGenerator.cxx"
 #include "config_express.cxx"
 #include "compress_string.cxx"
+#include "copy_stream.cxx"
 #include "datagram.cxx"
 #include "datagramGenerator.cxx"
 #include "datagramIterator.cxx"

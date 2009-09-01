@@ -14,6 +14,7 @@
     circBuffer.h \
     config_express.h \
     compress_string.h \
+    copy_stream.h \
     datagram.I datagram.h datagramGenerator.I \
     datagramGenerator.h \
     datagramIterator.I datagramIterator.h datagramSink.I datagramSink.h \
@@ -74,6 +75,7 @@
     buffer.cxx checksumHashGenerator.cxx \
     config_express.cxx \
     compress_string.cxx \
+    copy_stream.cxx \
     datagram.cxx datagramGenerator.cxx \
     datagramIterator.cxx \
     datagramSink.cxx dcast.cxx \
@@ -125,6 +127,7 @@
     circBuffer.h \
     config_express.h \
     compress_string.h \
+    copy_stream.h \
     datagram.I datagram.h datagramGenerator.I \
     datagramGenerator.h \
     datagramIterator.I datagramIterator.h datagramSink.I datagramSink.h \
