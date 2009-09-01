@@ -46,7 +46,7 @@ Options:
      to the panda3d command, which enables a live Python prompt within
      the application's environment.  Setting this flag may be useful
      to develop an application initially, but should not be set on an
-     application intended for secure deployment.
+     application intended for deployment.
 
 """
 

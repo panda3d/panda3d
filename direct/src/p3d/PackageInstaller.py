@@ -1,5 +1,7 @@
 from direct.showbase.DirectObject import DirectObject
 from direct.stdpy.threading import Lock
+from direct.showbase.MessengerGlobal import messenger
+from direct.task.TaskManagerGlobal import taskMgr
 
 class PackageInstaller(DirectObject):
 

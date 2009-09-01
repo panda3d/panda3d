@@ -22,14 +22,20 @@ This script is actually a wrapper around Panda's Packager.py.
 
 Usage:
 
-  %(prog)s [opts] package.pdef
+  %(prog)s [opts] package.pdef [packageName1 .. packageNameN]
 
-Required:
+Parameters:
 
   package.pdef
     The config file that describes the contents of the package file(s)
     to be built, in excruciating detail.  See the Panda3D manual for
     the syntax of this file.
+
+  packageName1 .. packageNameN
+    Specify the names of the package(s) you wish to build out of the
+    package.pdef file.  This allows you to build only a subset of the
+    packages defined in this file.  If you omit these parameters, all
+    packages are built.
 
 Options:
 
@@ -83,6 +89,15 @@ Options:
      appearing within the pdef file.  This information is written to
      the contents.xml file at the top of the install directory.
 
+  -D
+     Sets the allow_python_dev flag in any applications built with
+     this command.  This enables additional runtime debug operations,
+     particularly the -i option to the panda3d command, which enables
+     a live Python prompt within the application's environment.
+     Setting this flag may be useful to develop an application
+     initially, but should not be set on an application intended for
+     deployment.
+
   -P platform
      Specify the platform to masquerade as.  The default is whatever
      platform Panda has been built for.  It is probably unwise to set
@@ -108,7 +123,7 @@ packager = Packager.Packager()
 buildPatches = False
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:d:P:u:n:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:ps:d:DP:u:n:h')
 except getopt.error, msg:
     usage(1, msg)
 
@@ -121,6 +136,8 @@ for opt, arg in opts:
         packager.installSearch.appendDirectory(Filename.fromOsSpecific(arg))
     elif opt == '-d':
         packager.persistDir = Filename.fromOsSpecific(arg)
+    elif opt == '-D':
+        packager.allowPythonDev = True
     elif opt == '-P':
         packager.platform = arg
     elif opt == '-u':
@@ -136,11 +153,11 @@ for opt, arg in opts:
 
 if not args:
     usage(0)
-    
-if len(args) != 1:
-    usage(1)
 
 packageDef = Filename.fromOsSpecific(args[0])
+packageNames = None
+if len(args) > 1:
+    packageNames = args[1:]
 
 if not packager.installDir:
     packager.installDir = Filename('install')
@@ -148,7 +165,7 @@ packager.installSearch.prependDirectory(packager.installDir)
 
 try:
     packager.setup()
-    packages = packager.readPackageDef(packageDef)
+    packages = packager.readPackageDef(packageDef, packageNames = packageNames)
     packager.close()
     if buildPatches:
         packager.buildPatches(packages)

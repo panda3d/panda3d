@@ -291,6 +291,10 @@ class Packager:
 
                 # Every p3dapp requires panda3d.
                 self.packager.do_require('panda3d')
+
+                # If this flag is set, enable allow_python_dev.
+                if self.packager.allowPythonDev:
+                    self.configs['allow_python_dev'] = True
             
             if not self.p3dApplication and not self.version:
                 # If we don't have an implicit version, inherit the
@@ -518,6 +522,8 @@ class Packager:
             self.packageFilename = packageDir + self.packageBasename
             self.packageDesc = packageDir + self.packageDesc
             self.packageImportDesc = packageDir + self.packageImportDesc
+
+            print "Generating %s" % (self.packageFilename)
 
             self.packageFullpath = Filename(self.packager.installDir, self.packageFilename)
             self.packageFullpath.makeDir()
@@ -1466,6 +1472,10 @@ class Packager:
             self.executablePath.appendDirectory('/lib')
             self.executablePath.appendDirectory('/usr/lib')
 
+        # Set this flag true to automatically add allow_python_dev to
+        # any applications.
+        self.allowPythonDev = False
+
         # The platform string.
         self.platform = PandaSystem.getPlatform()
 
@@ -1512,7 +1522,7 @@ class Packager:
 
         # Text files that are copied (and compressed) to the package
         # without processing.
-        self.textExtensions = [ 'prc', 'ptf', 'txt' ]
+        self.textExtensions = [ 'prc', 'ptf', 'txt', 'cg' ]
 
         # Binary files that are copied (and compressed) without
         # processing.
@@ -1655,10 +1665,11 @@ class Packager:
         pm = PatchMaker(self.installDir)
         pm.buildPatches(packageNames = packageNames)
 
-    def readPackageDef(self, packageDef):
-        """ Reads the named .pdef file and constructs the packages
-        indicated within it.  Raises an exception if the pdef file is
-        invalid.  Returns the list of packages constructed. """
+    def readPackageDef(self, packageDef, packageNames = None):
+        """ Reads the named .pdef file and constructs the named
+        packages, or all packages if packageNames is None.  Raises an
+        exception if the pdef file is invalid.  Returns the list of
+        packages constructed. """
 
         self.notify.info('Reading %s' % (packageDef))
 
@@ -1710,20 +1721,21 @@ class Packager:
         try:
             for (lineno, stype, name, args, kw) in statements:
                 if stype == 'class':
-                    classDef = globals[name]
-                    p3dApplication = (class_p3d in classDef.__bases__)
-                    solo = (class_solo in classDef.__bases__)
-                    self.beginPackage(name, p3dApplication = p3dApplication,
-                                      solo = solo)
-                    statements = classDef.__dict__.get('__statements', [])
-                    if not statements:
-                        self.notify.info("No files added to %s" % (name))
-                    for (lineno, stype, name, args, kw) in statements:
-                        if stype == 'class':
-                            raise PackagerError, 'Nested classes not allowed'
-                        self.__evalFunc(name, args, kw)
-                    package = self.endPackage()
-                    packages.append(package)
+                    if packageNames is None or name in packageNames:
+                        classDef = globals[name]
+                        p3dApplication = (class_p3d in classDef.__bases__)
+                        solo = (class_solo in classDef.__bases__)
+                        self.beginPackage(name, p3dApplication = p3dApplication,
+                                          solo = solo)
+                        statements = classDef.__dict__.get('__statements', [])
+                        if not statements:
+                            self.notify.info("No files added to %s" % (name))
+                        for (lineno, stype, name, args, kw) in statements:
+                            if stype == 'class':
+                                raise PackagerError, 'Nested classes not allowed'
+                            self.__evalFunc(name, args, kw)
+                        package = self.endPackage()
+                        packages.append(package)
                 else:
                     self.__evalFunc(name, args, kw)
         except PackagerError:

@@ -192,6 +192,9 @@ class AppRunner(DirectObject):
         indicated host URL.  If we have already seen this URL
         previously, returns the same object. """
 
+        if hostUrl is None:
+            hostUrl = PandaSystem.getPackageHostUrl()
+
         host = self.hosts.get(hostUrl, None)
         if not host:
             host = HostInfo(hostUrl, self)
@@ -668,7 +671,7 @@ def dummyAppRunner(tokens = [], argv = None):
     hostUrl = PandaSystem.getPackageHostUrl()
     
     if platform.startswith('win'):
-        rootDir = Filename(Filename.getUserAppDataDirectory(), 'Panda3D')
+        rootDir = Filename(Filename.getUserAppdataDirectory(), 'Panda3D')
     else:
         rootDir = Filename(Filename.getHomeDirectory(), '.panda3d')
 
