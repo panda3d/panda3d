@@ -147,23 +147,6 @@ get_dt(Thread *current_thread) const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: ClockObject::set_dt
-//       Access: Published
-//  Description: In non-real-time mode, sets the number of seconds
-//               that should appear to elapse between frames.  In
-//               forced mode or limited mode, sets our target dt.  In
-//               normal mode, this has no effect.  
-//
-//               Also see set_frame_rate(), which is a different way
-//               to specify the same quantity.
-////////////////////////////////////////////////////////////////////
-INLINE void ClockObject::
-set_dt(double dt) {
-  nassertv(dt != 0.0);
-  set_frame_rate(1.0 / dt);
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::get_max_dt
 //       Access: Published
 //  Description: Returns the current maximum allowable time elapsed

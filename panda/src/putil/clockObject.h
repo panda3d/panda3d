@@ -94,7 +94,7 @@ PUBLISHED:
   INLINE double get_net_frame_rate(Thread *current_thread = Thread::get_current_thread()) const;
 
   INLINE double get_dt(Thread *current_thread = Thread::get_current_thread()) const;
-  INLINE void set_dt(double dt);
+  void set_dt(double dt);
   void set_frame_rate(double frame_rate);
 
   INLINE double get_max_dt() const;

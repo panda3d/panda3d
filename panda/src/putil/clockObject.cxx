@@ -225,6 +225,34 @@ set_frame_count(int frame_count, Thread *current_thread) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: ClockObject::set_dt
+//       Access: Published
+//  Description: In non-real-time mode, sets the number of seconds
+//               that should appear to elapse between frames.  In
+//               forced mode or limited mode, sets our target dt.  In
+//               normal mode, this has no effect.  
+//
+//               Also see set_frame_rate(), which is a different way
+//               to specify the same quantity.
+////////////////////////////////////////////////////////////////////
+void ClockObject::
+set_dt(double dt) {
+  if (_mode == M_slave) {
+    // In M_slave mode, we can set any dt we like.
+    CDWriter cdata(_cycler, Thread::get_current_thread());
+    cdata->_dt = dt;
+    if (dt != 0.0) {
+      set_frame_rate(1.0 / dt);
+    }
+
+  } else {
+    // In any other mode, we can only set non-zero dt.
+    nassertv(dt != 0.0);
+    set_frame_rate(1.0 / dt);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: ClockObject::set_frame_rate
 //       Access: Published
 //  Description: In non-real-time mode, sets the number of frames per
