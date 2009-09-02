@@ -62,6 +62,10 @@ usage() {
     << "      are more secure.  If this is not specified, the user is prompted from\n"
     << "      standard input.\n\n"
 
+    << "  -t  Read the file as a text file.  This will automatically convert\n"
+    << "      universal end-of-line characters into a newline character, ascii\n"
+    << "      10.\n\n"
+
     << "  -a \"algorithm\"\n"
     << "      Specifies the particular encryption algorithm to use.  The complete\n"
     << "      set of available algorithms is defined by the current version of\n"
@@ -88,10 +92,11 @@ int
 main(int argc, char *argv[]) {
   extern char *optarg;
   extern int optind;
-  const char *optstr = "o:p:a:k:i:h";
+  const char *optstr = "o:p:ta:k:i:h";
 
   Filename dest_filename;
   bool got_dest_filename = false;
+  bool text_file = false;
 
   int flag = getopt(argc, argv, optstr);
 
@@ -100,6 +105,10 @@ main(int argc, char *argv[]) {
     case 'o':
       dest_filename = Filename::from_os_specific(optarg);
       got_dest_filename = true;
+      break;
+
+    case 't':
+      text_file = true;
       break;
 
     case 'p':
@@ -157,7 +166,11 @@ main(int argc, char *argv[]) {
 
       // Open source file
       pifstream read_stream;
-      source_file.set_binary();
+      if (text_file) {
+        source_file.set_text();
+      } else {
+        source_file.set_binary();
+      }
       if (!source_file.open_read(read_stream)) {
         cerr << "Couldn't read: " << source_file << endl;
         all_ok = false;
