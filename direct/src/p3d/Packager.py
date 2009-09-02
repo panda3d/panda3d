@@ -519,6 +519,7 @@ class Packager:
                 self.packageBasename += '.mf'
                 packageDir += '/'
 
+            self.packageDir = packageDir
             self.packageFilename = packageDir + self.packageBasename
             self.packageDesc = packageDir + self.packageDesc
             self.packageImportDesc = packageDir + self.packageImportDesc
@@ -550,8 +551,8 @@ class Packager:
                 # Make the application file executable.
                 os.chmod(self.packageFullpath.toOsSpecific(), 0755)
             else:
-                self.compressMultifile()
                 self.readDescFile()
+                self.compressMultifile()
                 self.writeDescFile()
                 self.writeImportDescFile()
 
@@ -944,8 +945,15 @@ class Packager:
         def compressMultifile(self):
             """ Compresses the .mf file into an .mf.pz file. """
 
-            compressedName = self.packageFilename + '.pz'
-            compressedPath = Filename(self.packager.installDir, compressedName)
+            if self.oldCompressedBasename:
+                # Remove the previous compressed file first.
+                compressedPath = Filename(self.packager.installDir, Filename(self.packageDir, self.oldCompressedBasename))
+                compressedPath.unlink()
+
+            newCompressedFilename = '%s.pz' % (self.packageFilename)
+
+            # Now build the new version.
+            compressedPath = Filename(self.packager.installDir, newCompressedFilename)
             if not compressFile(self.packageFullpath, compressedPath, 6):
                 message = 'Unable to write %s' % (compressedPath)
                 raise PackagerError, message
@@ -957,6 +965,8 @@ class Packager:
 
             self.patchVersion = None
             self.patches = []
+
+            self.oldCompressedBasename = None
             
             packageDescFullpath = Filename(self.packager.installDir, self.packageDesc)
             doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
@@ -966,6 +976,12 @@ class Packager:
             xpackage = doc.FirstChildElement('package')
             if not xpackage:
                 return
+
+            xcompressed = xpackage.FirstChildElement('compressed_archive')
+            if xcompressed:
+                compressedFilename = xcompressed.Attribute('filename')
+                if compressedFilename:
+                    self.oldCompressedBasename = compressedFilename
 
             patchVersion = xpackage.Attribute('patch_version')
             if not patchVersion:

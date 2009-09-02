@@ -35,18 +35,21 @@ This script is actually a wrapper around Panda's PatchMaker.py.
 
 Usage:
 
-  %(prog)s [opts]
+  %(prog)s [opts] [packageName1 .. packageNameN]
+
+Parameters:
+
+  packageName1 .. packageNameN
+    Specify the names of the package(s) you wish to generate patches
+    for.  This allows you to build patches for only a subset of the
+    packages found in the tree.  If you omit these parameters, patches
+    are built for all packages that require them.
 
 Options:
 
   -i install_dir
      The full path to the install directory.  This should be the same
      directory named by the -i parameter to ppackage.
-
-  -p packageName
-     Generates patches for the named package only.  This may be
-     repeated to name multiple packages.  If this is omitted, all
-     packages in the directory are scanned.
 
   -h
      Display this help
@@ -65,18 +68,14 @@ def usage(code, msg = ''):
     sys.exit(code)
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], 'i:p:h')
+    opts, args = getopt.getopt(sys.argv[1:], 'i:h')
 except getopt.error, msg:
     usage(1, msg)
 
 installDir = None
-packageNames = []
-
 for opt, arg in opts:
     if opt == '-i':
         installDir = Filename.fromOsSpecific(arg)
-    elif opt == '-p':
-        packageNames.append(arg)
         
     elif opt == '-h':
         usage(0)
@@ -84,8 +83,7 @@ for opt, arg in opts:
         print 'illegal option: ' + flag
         sys.exit(1)
 
-if args:
-    usage(1)
+packageNames = args
 
 if not installDir:
     installDir = Filename('install')

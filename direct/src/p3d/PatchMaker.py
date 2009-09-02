@@ -299,6 +299,24 @@ class PatchMaker:
                 self.baseFile = FileSpec()
                 self.baseFile.loadXml(xarchive)
 
+            # Put the patchVersion in the compressed filename, for
+            # cache-busting.  This means when the version changes, its
+            # URL will also change, guaranteeing that users will
+            # download the latest version, and not some stale cache
+            # file.
+            xcompressed = xpackage.FirstChildElement('compressed_archive')
+            if xcompressed:
+                compressedFile = FileSpec()
+                compressedFile.loadXml(xcompressed)
+
+                oldCompressedFilename = compressedFile.filename
+                newCompressedFilename = '%s.%s.pz' % (self.currentFile.filename, self.patchVersion)
+                oldCompressedPathname = Filename(self.packageDir, oldCompressedFilename)
+                newCompressedPathname = Filename(self.packageDir, newCompressedFilename)
+                if oldCompressedPathname.renameTo(newCompressedPathname):
+                    compressedFile.fromFile(self.packageDir, newCompressedFilename)
+                    compressedFile.storeXml(xcompressed)
+
             self.patches = []
             xpatch = xpackage.FirstChildElement('patch')
             while xpatch:
