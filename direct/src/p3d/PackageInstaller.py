@@ -2,6 +2,7 @@ from direct.showbase.DirectObject import DirectObject
 from direct.stdpy.threading import Lock
 from direct.showbase.MessengerGlobal import messenger
 from direct.task.TaskManagerGlobal import taskMgr
+from direct.p3d.PackageInfo import PackageInfo
 
 class PackageInstaller(DirectObject):
 
@@ -43,12 +44,23 @@ class PackageInstaller(DirectObject):
             self.version = version
             self.host = host
 
-            # Filled in by getDescFile().
-            self.package = None
+            # This will be filled in properly by checkDescFile() or
+            # getDescFile(); in the meantime, set a placeholder.
+            self.package = PackageInfo(host, packageName, version)
 
+            # Set true when the package has finished downloading,
+            # either successfully or unsuccessfully.
             self.done = False
+
+            # Set true or false when self.done has been set.
             self.success = False
 
+            # Set true when the packageFinished() callback has been
+            # delivered.
+            self.notified = False
+
+            # These are used to ensure the callbacks only get
+            # delivered once for a particular package.
             self.calledPackageStarted = False
             self.calledPackageFinished = False
 
@@ -59,7 +71,8 @@ class PackageInstaller(DirectObject):
             # which is weighted differently into one grand total.  So,
             # the total doesn't really represent bytes; it's a
             # unitless number, which means something only as a ratio
-            # to other packages.
+            # to other packages.  Filled in by checkDescFile() or
+            # getDescFile().
             self.downloadEffort = 0
 
         def getProgress(self):
@@ -67,6 +80,33 @@ class PackageInstaller(DirectObject):
             range 0..1. """
 
             return self.package.downloadProgress
+
+        def checkDescFile(self):
+            """ Returns true if the desc file is already downloaded
+            and good, or false if it needs to be downloaded. """
+
+            if not self.host.hasContentsFile:
+                # If the contents file isn't ready yet, we can't check
+                # the desc file yet.
+                return False
+
+            # All right, get the package info now.
+            package = self.host.getPackage(self.packageName, self.version)
+            if not package:
+                print "Package %s %s not known on %s" % (
+                    self.packageName, self.version, self.host.hostUrl)
+                return False
+
+            self.package = package
+            self.package.checkStatus()
+
+            if not self.package.hasDescFile:
+                return False
+
+            self.downloadEffort = self.package.getDownloadEffort()
+
+            return True
+            
 
         def getDescFile(self, http):
             """ Synchronously downloads the desc files required for
@@ -76,12 +116,13 @@ class PackageInstaller(DirectObject):
                 return False
 
             # All right, get the package info now.
-            self.package = self.host.getPackage(self.packageName, self.version)
-            if not self.package:
+            package = self.host.getPackage(self.packageName, self.version)
+            if not package:
                 print "Package %s %s not known on %s" % (
                     self.packageName, self.version, self.host.hostUrl)
                 return False
 
+            self.package = package
             if not self.package.downloadDescFile(http):
                 return False
 
@@ -124,6 +165,10 @@ class PackageInstaller(DirectObject):
         # installed.
         self.needsDownload = []
         self.downloadTask = None
+
+        # A list of packages that were already done at the time they
+        # were passed to addPackage().
+        self.earlyDone = []
 
         # A list of packages that have been successfully installed, or
         # packages that have failed.
@@ -184,11 +229,23 @@ class PackageInstaller(DirectObject):
         self.packageLock.acquire()
         try:
             self.packages.append(pp)
-            self.needsDescFile.append(pp)
-            if not self.descFileTask:
-                self.descFileTask = taskMgr.add(
-                    self.__getDescFileTask, 'getDescFile',
-                    taskChain = self.taskChain)
+            if not pp.checkDescFile():
+                # Still need to download the desc file.
+                self.needsDescFile.append(pp)
+                if not self.descFileTask:
+                    self.descFileTask = taskMgr.add(
+                        self.__getDescFileTask, 'getDescFile',
+                        taskChain = self.taskChain)
+
+            elif not pp.package.hasPackage:
+                # The desc file is good, but the package itself needs
+                # to be downloaded.
+                self.needsDownload.append(pp)
+
+            else:
+                # The package is already fully downloaded.
+                self.earlyDone.append(pp)
+                    
         finally:
             self.packageLock.release()
 
@@ -197,15 +254,19 @@ class PackageInstaller(DirectObject):
         installed, call donePackages() to mark the end of the list.
         This is necessary to determine what the complete set of
         packages is (and therefore how large the total download size
-        is).  Until this is called, no low-level callbacks will be
-        made as the packages are downloading. """
+        is).  None of the low-level callbacks will be made before this
+        call. """
 
         if self.state != self.S_initial:
             # We've already been here.
             return
 
-        working = True
-        
+        # Throw the messages for packages that were already done
+        # before we started.
+        for pp in self.earlyDone:
+            self.__donePackage(pp, True)
+        self.earlyDone = []
+
         self.packageLock.acquire()
         try:
             if self.state != self.S_initial:
@@ -213,12 +274,13 @@ class PackageInstaller(DirectObject):
             self.state = self.S_ready
             if not self.needsDescFile:
                 # All package desc files are already available; so begin.
-                working = self.__prepareToStart()
+                self.__prepareToStart()
         finally:
             self.packageLock.release()
 
-        if not working:
-            self.downloadFinished(True)
+        if not self.packages:
+            # Trivial no-op.
+            self.__callDownloadFinished(True)
 
     def downloadStarted(self):
         """ This callback is made at some point after donePackages()
@@ -321,20 +383,15 @@ class PackageInstaller(DirectObject):
         downloaded and installed, or has failed. """
         print "Downloaded %s: %s" % (pp.packageName, pp.success)
         self.__callPackageFinished(pp, pp.success)
+        pp.notified = True
 
-        if not pp.calledPackageStarted:
-            # Trivially done; this one was done before it got started.
-            return
-
-        assert self.state == self.S_started
         # See if there are more packages to go.
         success = True
         allDone = True
         self.packageLock.acquire()
         try:
-            assert self.state == self.S_started
             for pp in self.packages:
-                if pp.done:
+                if pp.notified:
                     success = success and pp.success
                 else:
                     allDone = False
@@ -468,8 +525,6 @@ class PackageInstaller(DirectObject):
             self.__donePackage(pp, False)
             return task.cont
 
-        pp.package.installPackage(self.appRunner)
-
         # Successfully downloaded and installed.
         self.__donePackage(pp, True)
         
@@ -479,6 +534,9 @@ class PackageInstaller(DirectObject):
         """ Marks the indicated package as done, either successfully
         or otherwise. """
         assert not pp.done
+
+        if success:
+            pp.package.installPackage(self.appRunner)
 
         self.packageLock.acquire()
         try:

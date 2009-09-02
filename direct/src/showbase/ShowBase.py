@@ -54,7 +54,7 @@ class ShowBase(DirectObject.DirectObject):
 
     notify = directNotify.newCategory("ShowBase")
 
-    def __init__(self, fStartDirect = True):
+    def __init__(self, fStartDirect = True, windowType = None):
         __builtin__.__dev__ = config.GetBool('want-dev', 0)
         if config.GetBool('want-variable-dump', 0):
             ExceptionVarDump.install()
@@ -139,7 +139,9 @@ class ShowBase(DirectObject.DirectObject):
         # we get a window-event.
         self.__oldAspectRatio = None
 
-        self.windowType = self.config.GetString('window-type', 'onscreen')
+        self.windowType = windowType
+        if self.windowType is None:
+            self.windowType = self.config.GetString('window-type', 'onscreen')
         self.requireWindow = self.config.GetBool('require-window', 1)
 
         # base.win is the main, or only window; base.winList is a list of

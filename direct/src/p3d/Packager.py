@@ -1392,6 +1392,7 @@ class Packager:
                     file.newName = file.newName[:-1] + 'e'
                 
                 preFilename = Filename.temporary('', 'p3d_', '.pre')
+                tempFilename.setText()
                 encryptFile(tempFilename, preFilename, self.packager.prcEncryptionKey)
                 tempFilename.unlink()
                 tempFilename = preFilename

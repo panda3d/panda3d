@@ -7,8 +7,8 @@ tree of .py files and models, into a p3d file for convenient
 distribution.  The resulting p3d file can be run by the Panda3D
 runtime executable, or by the Panda3D web browser plugin.
 
-Also see ppackage, which can be used to build p3d files more
-generally, using a pdef description file.
+Also see ppackage, a more powerful (but more complex) tool that can
+also be used to build p3d applications, using a pdef description file.
 
 Usage:
 

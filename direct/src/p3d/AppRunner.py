@@ -363,15 +363,17 @@ class AppRunner(DirectObject):
     def addPackageInfo(self, name, platform, version, hostUrl):
         """ Called by the browser to list all of the "required"
         packages that were preloaded before starting the
-        application. """
+        application.  If for some reason the package isn't already
+        downloaded, this will download it on the spot. """
 
         host = self.getHost(hostUrl)
 
         try:
             host.readContentsFile()
         except ValueError:
-            print "Host %s has not been downloaded, cannot preload %s." % (hostUrl, name)
-            return
+            if not host.downloadContentsFile(self.http):
+                print "Host %s cannot be downloaded, cannot preload %s." % (hostUrl, name)
+                return
 
         if not platform:
             platform = None
@@ -380,15 +382,9 @@ class AppRunner(DirectObject):
             print "Couldn't find %s %s on %s" % (name, version, hostUrl)
             return
 
-        self.installedPackages.append(package)
-
-        if package.checkStatus():
-            # The package should have been loaded already.  If it has,
-            # go ahead and mount it.
-            package.installPackage(self)
-        else:
-            print "%s %s is not preloaded." % (
-                package.packageName, package.packageVersion)
+        package.downloadDescFile(self.http)
+        package.downloadPackage(self.http)
+        package.installPackage(self)
 
     def setP3DFilename(self, p3dFilename, tokens, argv, instanceId,
                        interactiveConsole):

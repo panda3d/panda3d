@@ -1,4 +1,4 @@
-from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, TiXmlDocument, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, Patchfile
+from pandac.PandaModules import Filename, URLSpec, DocumentSpec, Ramfile, TiXmlDocument, Multifile, Decompressor, EUOk, EUSuccess, VirtualFileSystem, Thread, getModelPath, Patchfile, ExecutionEnvironment
 from direct.p3d.FileSpec import FileSpec
 from direct.showbase import VFSImporter
 import os
@@ -71,6 +71,10 @@ class PackageInfo:
         # This is set true when the package file has been fully
         # downloaded and unpackaged.
         self.hasPackage = False
+
+        # This is set true when the package has been "installed",
+        # meaning it's been added to the paths and all.
+        self.installed = False
 
     def getDownloadEffort(self):
         """ Returns the relative amount of effort it will take to
@@ -348,7 +352,10 @@ class PackageInfo:
         patchMaker.buildPatchChains()
         fromPv = patchMaker.getPackageVersion(package.getGenericKey(fileSpec))
         toPv = package.currentPv
-        patchChain = toPv.getPatchChain(fromPv)
+
+        patchChain = None
+        if toPv and fromPv:
+            patchChain = toPv.getPatchChain(fromPv)
 
         if patchChain is None:
             # No path.
@@ -383,6 +390,8 @@ class PackageInfo:
         targetPathname.setBinary()
         
         channel = self.http.makeChannel(False)
+        # TODO: check for a previous partial download, and resume it.
+        targetPathname.unlink()
         channel.beginGetDocument(url)
         channel.downloadToFile(targetPathname)
         while channel.run():
@@ -522,7 +531,11 @@ class PackageInfo:
         available for use. """
 
         assert self.hasPackage
-        
+        if self.installed:
+            # Already installed.
+            return True
+        assert self not in appRunner.installedPackages
+
         mfPathname = Filename(self.packageDir, self.uncompressedArchive.filename)
         mf = Multifile()
         if not mf.openRead(mfPathname):
@@ -562,6 +575,10 @@ class PackageInfo:
         # model-path, so it shouldn't be already there.
         getModelPath().prependDirectory(self.packageDir)
 
+        # Set the environment variable to reference the package root.
+        envvar = '%s_ROOT' % (self.packageName.upper())
+        ExecutionEnvironment.setEnvironmentVariable(envvar, self.packageDir.toOsSpecific())
+
         # Also, find any toplevel Python packages, and add these as
         # shared packages.  This will allow different packages
         # installed in different directories to share Python files as
@@ -577,3 +594,8 @@ class PackageInfo:
         # Fix up any shared directories so we can load packages from
         # disparate locations.
         VFSImporter.reloadSharedPackages()
+
+        self.installed = True
+        appRunner.installedPackages.append(self)
+
+        return True

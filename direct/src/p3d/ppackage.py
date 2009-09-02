@@ -12,13 +12,9 @@ file, for execution by the Panda3D plugin or runtime.  (But also see
 packp3d, which is designed to be a simpler interface for building
 applications.)
 
-In addition to building a package in the first place, this script will
-also generate downloadable patches of the package against previous
-versions, and manage the whole tree of patches in a directory
-structure suitable for hosting on a web server somewhere.  (This part
-is not yet completed.)
-
-This script is actually a wrapper around Panda's Packager.py.
+This script is actually a wrapper around Panda's Packager.py, which
+can be invoked directly by Python code that requires a programmatic
+interface to building packages.
 
 Usage:
 
