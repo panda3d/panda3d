@@ -24,7 +24,7 @@
 #include <sys/stat.h>
 #include <algorithm>
 
-#ifdef HAVE_UTIME_H
+#ifdef PHAVE_UTIME_H
 #include <utime.h>
 
 // We assume we have these too.
@@ -32,20 +32,20 @@
 #include <fcntl.h>
 #endif
 
-#ifdef HAVE_GLOB_H
+#ifdef PHAVE_GLOB_H
   #include <glob.h>
   #ifndef GLOB_NOMATCH
     #define GLOB_NOMATCH -3
   #endif
 #endif
 
-#ifdef HAVE_DIRENT_H
+#ifdef PHAVE_DIRENT_H
 #include <dirent.h>
 #endif
 
 // It's true that dtoolbase.h includes this already, but we include
 // this again in case we are building this file within ppremake.
-#ifdef HAVE_UNISTD_H
+#ifdef PHAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
