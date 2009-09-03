@@ -19,6 +19,7 @@ class WxSlider(wx.Slider):
         intMin = 0
         intMax = 100
         self.textValue = None
+        self.updateCB = None
         
         if style & wx.SL_HORIZONTAL:
             newStyle = wx.SL_HORIZONTAL
@@ -57,6 +58,8 @@ class WxSlider(wx.Slider):
         # update textValue from slider
         self.textValue.Clear()
         self.textValue.WriteText("%.2f"%self.GetValue())
+        if self.updateCB: # callback function sould receive event as the argument
+            self.updateCB(event)
         event.Skip()
 
     def onEnter(self, event):
@@ -65,7 +68,12 @@ class WxSlider(wx.Slider):
             return
         intVal = 100.0 / (self.maxValue - self.minValue) * (float(self.textValue.GetValue()) - self.minValue)
         wx.Slider.SetValue(self, intVal)
+        if self.updateCB: # callback function should receive event as the argument
+            self.updateCB(event)
         event.Skip()
+
+    def bindFunc(self, updateCB):
+        self.updateCB = updateCB
 
     def Disable(self):
         # overriding wx.Slider.Disable()
