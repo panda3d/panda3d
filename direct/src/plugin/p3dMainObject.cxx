@@ -302,17 +302,16 @@ set_instance(P3DInstance *inst) {
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DMainObject::
 call_read_game_log() {
-  nout << "call_read_game_log: " << _inst << "\n";
   if (_inst == NULL) {
     return new P3DUndefinedObject();
   }
 
   P3DSession *session = _inst->get_session();
-  nout << "session = " << session << "\n";
+  if (session == NULL) {
+    return new P3DUndefinedObject();
+  }
 
   string log_pathname = session->get_log_pathname();
-  nout << "log_pathname = " << log_pathname << "\n";
-
   ifstream log(log_pathname.c_str(), ios::in);
 
   // Get the size of the file.
@@ -341,12 +340,9 @@ call_read_game_log() {
 ////////////////////////////////////////////////////////////////////
 P3D_object *P3DMainObject::
 call_read_system_log() {
-  nout << "call_read_system_log: " << _inst << "\n";
-
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
-  string log_pathname = inst_mgr->get_log_pathname();
-  nout << "log_pathname = " << log_pathname << "\n";
 
+  string log_pathname = inst_mgr->get_log_pathname();
   ifstream log(log_pathname.c_str(), ios::in);
 
   // Get the size of the file.
