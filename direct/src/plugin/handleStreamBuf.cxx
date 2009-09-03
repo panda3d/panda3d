@@ -36,7 +36,7 @@ HandleStreamBuf() {
   _is_open_read = false;
   _is_open_write = false;
   
-  _handle = INVALID_HANDLE_VALUE;
+  _handle = invalid_fhandle;
 
   INIT_LOCK(_lock);
 
