@@ -43,7 +43,7 @@ public:
   void shutdown();
 
   inline const string &get_session_key() const;
-  inline const string &get_python_version() const;
+  inline const string &get_log_pathname() const;
 
   void start_instance(P3DInstance *inst);
   void terminate_instance(P3DInstance *inst);
@@ -88,7 +88,6 @@ private:
 private:
   int _session_id;
   string _session_key;
-  string _python_version;
   string _log_pathname;
   string _python_root_dir;
   string _start_dir;
@@ -100,8 +99,7 @@ private:
   string _p3dpython_dll;
   string _mf_filename;
   string _env;
-  FHandle _input_handle, _output_handle, _error_handle;
-  bool _got_error_handle;
+  FHandle _input_handle, _output_handle;
   bool _interactive_console;
 
   typedef map<int, P3DInstance *> Instances;

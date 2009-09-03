@@ -52,7 +52,6 @@ P3DSession(P3DInstance *inst) {
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
   _session_id = inst_mgr->get_unique_id();
   _session_key = inst->get_session_key();
-  _python_version = inst->get_python_version();
 
   _start_dir = inst_mgr->get_root_dir() + "/start";
   _p3dpython_one_process = false;
@@ -180,9 +179,6 @@ shutdown() {
 
     _p3dpython_running = false;
     _p3dpython_started = false;
-
-    // Close the pipe now.
-    _pipe_read.close();
   }
 
   // If there are any leftover commands in the queue (presumably
@@ -195,6 +191,9 @@ shutdown() {
   _commands.clear();
 
   join_read_thread();
+
+  // Close the pipe now.
+  _pipe_read.close();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -211,7 +210,6 @@ void P3DSession::
 start_instance(P3DInstance *inst) {
   assert(inst->_session == NULL);
   assert(inst->get_session_key() == _session_key);
-  assert(inst->get_python_version() == _python_version);
 
   inst->ref();
   ACQUIRE_LOCK(_instances_lock);
@@ -684,6 +682,10 @@ start_p3dpython(P3DInstance *inst) {
     mkdir_complete(_start_dir, nout);
   }
 
+  // Also make sure the prc directory is present.
+  string prc_root = inst_mgr->get_root_dir() + "/prc";
+  mkdir_complete(prc_root, nout);
+
 #ifdef _WIN32
   char sep = ';';
 #else
@@ -716,7 +718,14 @@ start_p3dpython(P3DInstance *inst) {
 
   string dyld_path = search_path;
   string python_path = search_path;
-  string prc_path = search_path;
+  string prc_path = prc_root + sep + search_path;
+
+  string prc_name = inst->get_fparams().lookup_token("prc_name");
+  if (!prc_name.empty()) {
+    // Add the prc_name to the path too, even if this directory doesn't
+    // actually exist.
+    prc_path = inst_mgr->get_root_dir() + "/" + prc_name + sep + prc_path;    
+  }
 
   if (keep_pythonpath) {
     // With keep_pythonpath true, we preserve the PYTHONPATH setting
@@ -929,34 +938,8 @@ start_p3dpython(P3DInstance *inst) {
   // Create the error stream for log output.  This means opening the
   // logfile, if we have one, or keeping the standard error if we
   // don't.
-  _got_error_handle = false;
 #ifdef _WIN32
-  _error_handle = GetStdHandle(STD_ERROR_HANDLE);
-  if (!_log_pathname.empty()) {
-    HANDLE handle = CreateFile
-      (_log_pathname.c_str(), GENERIC_WRITE, 
-       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-       NULL, CREATE_ALWAYS, 0, NULL);
-    if (handle != INVALID_HANDLE_VALUE) {
-      _error_handle = handle;
-      SetHandleInformation(_error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
-      _got_error_handle = true;
-    } else {
-      nout << "Unable to open " << _log_pathname << "\n";
-    }
-  }
 #else  // _WIN32
-  _error_handle = STDERR_FILENO;
-  if (!_log_pathname.empty()) {
-    int logfile_fd = open(_log_pathname.c_str(), 
-                          O_WRONLY | O_CREAT | O_TRUNC, 0666);
-    if (logfile_fd < 0) {
-      nout << "Unable to open " << _log_pathname << "\n";
-    } else {
-      _error_handle = logfile_fd;
-      _got_error_handle = true;
-    }
-  }
 #endif  // _WIN32
 
   // Get the filename of the Panda3D multifile.  We need to pass this
@@ -1049,7 +1032,6 @@ join_read_thread() {
   }
 
   _read_thread_continue = false;
-  _pipe_read.close();
 
   JOIN_THREAD(_read_thread);
   _started_read_thread = false;
@@ -1171,9 +1153,33 @@ win_create_process() {
   // Make sure we see an error dialog if there is a missing DLL.
   SetErrorMode(0);
 
+  // Open the log file.
+  HANDLE error_handle = GetStdHandle(STD_ERROR_HANDLE);
+  bool got_error_handle = false;
+  if (!_log_pathname.empty()) {
+    HANDLE handle = CreateFile
+      (_log_pathname.c_str(), GENERIC_WRITE, 
+       FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+       NULL, CREATE_ALWAYS, 0, NULL);
+    if (handle != INVALID_HANDLE_VALUE) {
+      error_handle = handle;
+      SetHandleInformation(error_handle, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT);
+      got_error_handle = true;
+    } else {
+      nout << "Unable to open " << _log_pathname << "\n";
+    }
+  }
+
   STARTUPINFO startup_info;
   ZeroMemory(&startup_info, sizeof(STARTUPINFO));
   startup_info.cb = sizeof(startup_info); 
+
+  // Set up the I/O handles.  We send stderr and stdout to our
+  // error_handle.
+  startup_info.hStdError = error_handle;
+  startup_info.hStdOutput = error_handle;
+  startup_info.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+  startup_info.dwFlags |= STARTF_USESTDHANDLES;
 
   // Make sure the "python" console window is hidden.
   startup_info.wShowWindow = SW_HIDE;
@@ -1191,8 +1197,7 @@ win_create_process() {
   ostringstream stream;
   stream << "\"" << _p3dpython_exe << "\" \"" << _mf_filename
          << "\" \"" << _input_handle << "\" \"" << _output_handle
-         << "\" \"" << _error_handle << "\" \"" << _interactive_console
-         << "\"";
+         << "\" \"" << _interactive_console << "\"";
 
   // I'm not sure why CreateProcess wants a non-const char pointer for
   // its command-line string, but I'm not taking chances.  It gets a
@@ -1213,8 +1218,8 @@ win_create_process() {
   // Close the pipe handles that are now owned by the child.
   CloseHandle(_output_handle);
   CloseHandle(_input_handle);
-  if (_got_error_handle) {
-    CloseHandle(_error_handle);
+  if (got_error_handle) {
+    CloseHandle(error_handle);
   }
 
   if (!started_program) {
@@ -1263,6 +1268,20 @@ posix_create_process() {
     _pipe_read.close();
     _pipe_write.close();
 
+    if (!_log_pathname.empty()) {
+      // Open a logfile.
+      int logfile_fd = open(_log_pathname.c_str(), 
+                            O_WRONLY | O_CREAT | O_TRUNC, 0666);
+      if (logfile_fd < 0) {
+        nout << "Unable to open " << _log_pathname << "\n";
+      } else {
+        // Redirect stderr and stdout onto our logfile.
+        dup2(logfile_fd, STDERR_FILENO);
+        dup2(logfile_fd, STDOUT_FILENO);
+        close(logfile_fd);
+      }
+    }
+
     if (_use_start_dir) {
       if (chdir(_start_dir.c_str()) < 0) {
         nout << "Could not chdir to " << _start_dir << "\n";
@@ -1290,13 +1309,9 @@ posix_create_process() {
     output_handle_stream << _output_handle;
     string output_handle_str = output_handle_stream.str();
 
-    stringstream error_handle_stream;
-    error_handle_stream << _error_handle;
-    string error_handle_str = error_handle_stream.str();
-
     execle(_p3dpython_exe.c_str(), _p3dpython_exe.c_str(),
            _mf_filename.c_str(), input_handle_str.c_str(),
-           output_handle_str.c_str(), error_handle_str.c_str(),
+           output_handle_str.c_str(),
            _interactive_console ? "1" : "0", (char *)0, &ptrs[0]);
     nout << "Failed to exec " << _p3dpython_exe << "\n";
     _exit(1);
@@ -1305,9 +1320,6 @@ posix_create_process() {
   // Close the handles that are now owned by the child.
   close(_input_handle);
   close(_output_handle);
-  if (_got_error_handle) {
-    close(_error_handle);
-  }
 
   return child;
 }
@@ -1391,7 +1403,7 @@ p3dpython_thread_run() {
   }
 
   if (!run_p3dpython(libp3dpython.c_str(), _mf_filename.c_str(),
-                     _input_handle, _output_handle, _error_handle,
+                     _input_handle, _output_handle, _log_pathname.c_str(),
                      _interactive_console)) {
     nout << "Failure on startup.\n";
   }

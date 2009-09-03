@@ -90,6 +90,21 @@ get_log_directory() const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstanceManager::get_log_pathname
+//       Access: Public
+//  Description: Returns the filename of the system log file; this
+//               file is responsible for downloading and installing
+//               updates, and launching applications.  This is
+//               different from the session log file(s), which
+//               represent the output from a particular Python
+//               session.
+////////////////////////////////////////////////////////////////////
+inline const string &P3DInstanceManager::
+get_log_pathname() const {
+  return _log_pathname;
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstanceManager::get_keep_cwd
 //       Access: Public
 //  Description: Returns the value of the keep_cwd flag passed to the

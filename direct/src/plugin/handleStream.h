@@ -32,6 +32,7 @@ public:
   inline void open_read(FHandle handle);
   inline void open_write(FHandle handle);
   inline void close();
+  inline void close_handle();
 
   inline FHandle get_handle() const;
 

@@ -24,10 +24,10 @@
 bool
 run_p3dpython(const char *program_name, const char *archive_file,
               FHandle input_handle, FHandle output_handle, 
-              FHandle error_handle, bool interactive_console) {
+              const char *log_pathname, bool interactive_console) {
   P3DPythonRun::_global_ptr = 
     new P3DPythonRun(program_name, archive_file, input_handle, output_handle, 
-                     error_handle, interactive_console);
+                     log_pathname, interactive_console);
   bool result = P3DPythonRun::_global_ptr->run_python();
   delete P3DPythonRun::_global_ptr;
   P3DPythonRun::_global_ptr = NULL;

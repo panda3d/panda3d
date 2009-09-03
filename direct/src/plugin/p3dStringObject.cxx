@@ -24,6 +24,15 @@ P3DStringObject(const string &value) : _value(value) {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DStringObject::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+P3DStringObject::
+P3DStringObject(const char *data, size_t size) : _value(data, size) {
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DStringObject::Copy Constructor
 //       Access: Public
 //  Description: 

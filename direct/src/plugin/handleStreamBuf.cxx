@@ -36,12 +36,9 @@ HandleStreamBuf() {
   _is_open_read = false;
   _is_open_write = false;
   
-#ifdef _WIN32
-  // Windows case.
-  _handle = NULL;
-#else
-  _handle = -1;
-#endif  // _WIN32
+  _handle = INVALID_HANDLE_VALUE;
+
+  INIT_LOCK(_lock);
 
   _buffer = new char[handle_buffer_size];
   char *ebuf = _buffer + handle_buffer_size;
@@ -59,6 +56,8 @@ HandleStreamBuf::
   close();
 
   delete[] _buffer;
+
+  DESTROY_LOCK(_lock);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -123,6 +122,20 @@ close() {
   // Make sure the write buffer is flushed.
   sync();
 
+  close_handle();
+
+  pbump(pbase() - pptr());
+  gbump(egptr() - gptr());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: HandleStreamBuf::close_handle
+//       Access: Public
+//  Description: Closes the underlying handle, *without* attempting to
+//               flush the stream.
+////////////////////////////////////////////////////////////////////
+void HandleStreamBuf::
+close_handle() {
 #ifdef _WIN32
   if (_handle != NULL) {
     CloseHandle(_handle);
@@ -137,9 +150,6 @@ close() {
 
   _is_open_read = false;
   _is_open_write = false;
-
-  pbump(pbase() - pptr());
-  gbump(egptr() - gptr());
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -150,11 +160,15 @@ close() {
 ////////////////////////////////////////////////////////////////////
 int HandleStreamBuf::
 overflow(int ch) {
+  ACQUIRE_LOCK(_lock);
+
   bool okflag = true;
 
+  assert(pptr() >= pbase());
   size_t n = pptr() - pbase();
   if (n != 0) {
     size_t wrote = write_chars(pbase(), n);
+    assert(wrote <= n);
     pbump(-(int)wrote);
     if (wrote != n) {
       okflag = false;
@@ -172,6 +186,8 @@ overflow(int ch) {
     }
   }
 
+  RELEASE_LOCK(_lock);
+
   if (!okflag) {
     return EOF;
   }
@@ -186,10 +202,15 @@ overflow(int ch) {
 ////////////////////////////////////////////////////////////////////
 int HandleStreamBuf::
 sync() {
+  ACQUIRE_LOCK(_lock);
+  assert(pptr() >= pbase());
   size_t n = pptr() - pbase();
 
   size_t wrote = write_chars(pbase(), n);
+  assert(wrote <= n);
   pbump(-(int)wrote);
+
+  RELEASE_LOCK(_lock);
 
   if (n != wrote) {
     return EOF;
@@ -205,6 +226,7 @@ sync() {
 ////////////////////////////////////////////////////////////////////
 int HandleStreamBuf::
 underflow() {
+  ACQUIRE_LOCK(_lock);
   // Sometimes underflow() is called even if the buffer is not empty.
   if (gptr() >= egptr()) {
     // Mark the buffer filled (with buffer_size bytes).
@@ -218,6 +240,7 @@ underflow() {
       // Oops, we didn't read what we thought we would.
       if (read_count == 0) {
         gbump(num_bytes);
+        RELEASE_LOCK(_lock);
         return EOF;
       }
 
@@ -229,7 +252,10 @@ underflow() {
     }
   }
 
-  return (unsigned char)*gptr();
+  unsigned char next = *gptr();
+  RELEASE_LOCK(_lock);
+
+  return next;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -309,6 +335,7 @@ write_chars(const char *start, size_t length) {
   DWORD bytes_written = 0;
   BOOL success = WriteFile(_handle, start, length, &bytes_written, NULL);
   if (!success) {
+    assert(bytes_written <= length);
     DWORD error = GetLastError();
     if (error != ERROR_NO_DATA && error != ERROR_BROKEN_PIPE) {
       cerr << "Error writing " << length

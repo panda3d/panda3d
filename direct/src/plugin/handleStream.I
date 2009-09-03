@@ -74,6 +74,17 @@ close() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: HandleStream::close_handle
+//       Access: Public
+//  Description: Closes the underlying handle, *without* attempting to
+//               flush the stream.
+////////////////////////////////////////////////////////////////////
+inline void HandleStream::
+close_handle() {
+  _buf.close_handle();
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: HandleStream::get_handle
 //       Access: Public
 //  Description: Returns the handle that was passed to open_read() or

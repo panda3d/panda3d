@@ -58,6 +58,7 @@ P3DInstance(P3D_request_ready_func *func,
 {
   _browser_script_object = NULL;
   _panda_script_object = new P3DMainObject;
+  _panda_script_object->set_instance(this);
   _user_data = user_data;
   _request_pending = false;
   _temp_p3d_filename = NULL;
@@ -113,6 +114,7 @@ P3DInstance::
 
   nout << "panda_script_object ref = "
        << _panda_script_object->_ref_count << "\n";
+  _panda_script_object->set_instance(NULL);
   P3D_OBJECT_DECREF(_panda_script_object);
 
   // Tell all of the packages that we're no longer in business for
@@ -458,7 +460,7 @@ bake_requests() {
       // No more requests to process right now.
       return;
     }
-    
+
     // Now we've got a request in XML form; convert it to P3D_request
     // form.
     TiXmlElement *xrequest = doc->FirstChildElement("request");
@@ -1000,6 +1002,11 @@ make_p3d_request(TiXmlElement *xrequest) {
         // We no longer need to keep this reference.
         _session->drop_p3dobj(object_id);
       }
+    
+    } else if (strcmp(rtype, "stop") == 0) {
+      // A stop request from Python code.  This is kind of weird, but OK.
+      request = new P3D_request;
+      request->_request_type = P3D_RT_stop;
 
     } else {
       nout << "Ignoring request of type " << rtype << "\n";

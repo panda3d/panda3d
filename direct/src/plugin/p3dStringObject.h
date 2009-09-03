@@ -25,6 +25,7 @@
 class P3DStringObject : public P3DObject {
 public:
   P3DStringObject(const string &value);
+  P3DStringObject(const char *data, size_t size);
   P3DStringObject(const P3DStringObject &copy);
 
 public:

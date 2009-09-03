@@ -31,7 +31,7 @@ P3DPythonRun *P3DPythonRun::_global_ptr = NULL;
 P3DPythonRun::
 P3DPythonRun(const char *program_name, const char *archive_file,
              FHandle input_handle, FHandle output_handle, 
-             FHandle error_handle, bool interactive_console) {
+             const char *log_pathname, bool interactive_console) {
   _read_thread_continue = false;
   _program_continue = true;
   _session_terminated = false;
@@ -74,11 +74,14 @@ P3DPythonRun(const char *program_name, const char *archive_file,
   PySys_SetArgv(_py_argc, _py_argv);
 
   // Open the error output before we do too much more.
-  _error_log.open_write(error_handle);
-  if (!_error_log.fail()) {
-    // Set up the indicated error log as the Notify output.
-    _error_log.setf(ios::unitbuf);
-    Notify::ptr()->set_ostream_ptr(&_error_log, false);
+  if (log_pathname != NULL && *log_pathname != '\0') {
+    Filename f = Filename::from_os_specific(log_pathname);
+    f.set_text();
+    if (f.open_write(_error_log)) {
+      // Set up the indicated error log as the Notify output.
+      _error_log.setf(ios::unitbuf);
+      Notify::ptr()->set_ostream_ptr(&_error_log, false);
+    }
   }
 
   // Open the pipe streams with the input and output handles from the
@@ -103,6 +106,9 @@ P3DPythonRun(const char *program_name, const char *archive_file,
 ////////////////////////////////////////////////////////////////////
 P3DPythonRun::
 ~P3DPythonRun() {
+  // Close the write pipe, so the parent process will terminate us.
+  _pipe_write.close();
+
   Py_Finalize();
 
   join_read_thread();
@@ -339,22 +345,32 @@ run_python() {
 
   Py_DECREF(check_comm);
 
-  // Finally, get lost in taskMgr.run().
-  bool okflag = true;
-  PyObject *done = PyObject_CallMethod(_taskMgr, (char *)"run", (char *)"");
+  // Finally, get lost in AppRunner.run() (which is really a call to
+  // taskMgr.run()).
+  PyObject *done = PyObject_CallMethod(_runner, (char *)"run", (char *)"");
   if (done == NULL) {
+    // An uncaught application exception, and not handled by
+    // appRunner.exceptionHandler.
     PyErr_Print();
-    okflag = false;
-  } else {
-    Py_DECREF(done);
+
+    if (_interactive_console) {
+      // Give an interactive user a chance to explore the exception.
+      run_interactive_console();
+      return true;
+    }
+
+    // We're done.
+    return false;
   }
+
+  // A normal exit from the taskManager.  We're presumably done.
+  Py_DECREF(done);
 
   if (_interactive_console) {
     run_interactive_console();
-    okflag = true;
   }
 
-  return okflag;
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1032,8 +1048,6 @@ spawn_read_thread() {
 void P3DPythonRun::
 join_read_thread() {
   _read_thread_continue = false;
-  _pipe_read.close();
-
   JOIN_THREAD(_read_thread);
 }
 

@@ -182,6 +182,7 @@ class VFSLoader:
         
         filename = Filename(self.filename)
         filename.setExtension('py')
+        filename.setText()
         vfile = vfs.getFile(filename)
         if not vfile:
             raise IOError

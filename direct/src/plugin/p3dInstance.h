@@ -82,7 +82,8 @@ public:
 
   inline int get_instance_id() const;
   inline const string &get_session_key() const;
-  inline const string &get_python_version() const;
+
+  inline P3DSession *get_session() const;
 
   inline P3D_request_ready_func *get_request_ready_func() const;
 
@@ -158,7 +159,6 @@ private:
 
   int _instance_id;
   string _session_key;
-  string _python_version;
   string _log_basename;
   bool _hidden;
   bool _allow_python_dev;

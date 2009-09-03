@@ -20,6 +20,7 @@
 #include <map>
 
 class P3DSession;
+class P3DInstance;
 
 ////////////////////////////////////////////////////////////////////
 //       Class : P3DMainObject
@@ -63,8 +64,15 @@ public:
   void set_pyobj(P3D_object *pyobj);
   P3D_object *get_pyobj() const;
 
+  void set_instance(P3DInstance *inst);
+
+private:
+  P3D_object *call_read_game_log();
+  P3D_object *call_read_system_log();
+
 private:
   P3D_object *_pyobj;
+  P3DInstance *_inst;
 
   // This map is used to store properties and retrieve until
   // set_pyobj() is called for the firs ttime.  At that point, the

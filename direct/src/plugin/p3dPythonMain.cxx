@@ -32,7 +32,6 @@ main(int argc, char *argv[]) {
   const char *archive_file = NULL;
   const char *input_handle_str = NULL;
   const char *output_handle_str = NULL;
-  const char *error_handle_str = NULL;
   const char *interactive_console_str = NULL;
 
   if (argc > 1) {
@@ -45,10 +44,7 @@ main(int argc, char *argv[]) {
     output_handle_str = argv[3];
   }
   if (argc > 4) {
-    error_handle_str = argv[4];
-  }
-  if (argc > 5) {
-    interactive_console_str = argv[5];
+    interactive_console_str = argv[4];
   }
 
   if (archive_file == NULL || *archive_file == '\0') {
@@ -74,15 +70,6 @@ main(int argc, char *argv[]) {
     }
   }
 
-  FHandle error_handle = invalid_fhandle;
-  if (error_handle_str != NULL && *error_handle_str) {
-    stringstream stream(error_handle_str);
-    stream >> error_handle;
-    if (!stream) {
-      error_handle = invalid_fhandle;
-    }
-  }
-
   bool interactive_console = false;
   if (interactive_console_str != NULL && *interactive_console_str) {
     stringstream stream(interactive_console_str);
@@ -93,12 +80,11 @@ main(int argc, char *argv[]) {
     }
   }
 
-  cerr << "handles: " << input_handle << ", " << output_handle
-       << ", " << error_handle << "\n";
+  cerr << "handles: " << input_handle << ", " << output_handle << "\n";
   cerr << "interactive_console = " << interactive_console << "\n";
 
   if (!run_p3dpython(program_name, archive_file, input_handle, output_handle, 
-                     error_handle, interactive_console)) {
+                     NULL, interactive_console)) {
     cerr << "Failure on startup.\n";
     return 1;
   }

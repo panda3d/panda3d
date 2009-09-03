@@ -58,6 +58,7 @@ public:
   inline const string &get_root_dir() const;
   inline const string &get_platform() const;
   inline const string &get_log_directory() const;
+  inline const string &get_log_pathname() const;
   inline bool get_keep_cwd() const;
 
   P3DInstance *

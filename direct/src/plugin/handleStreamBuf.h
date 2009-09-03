@@ -16,6 +16,7 @@
 #define HANDLESTREAMBUF_H
 
 #include "fhandle.h"
+#include "p3d_lock.h"
 #include <iostream>
 
 using namespace std;
@@ -34,6 +35,7 @@ public:
   bool is_open_read() const;
   bool is_open_write() const;
   void close();
+  void close_handle();
 
   inline FHandle get_handle() const;
 
@@ -51,6 +53,7 @@ private:
   bool _is_open_write;
 
   FHandle _handle;
+  LOCK _lock;
 
   char *_buffer;
 };

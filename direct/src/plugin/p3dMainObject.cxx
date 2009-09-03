@@ -13,6 +13,11 @@
 ////////////////////////////////////////////////////////////////////
 
 #include "p3dMainObject.h"
+#include "p3dInstance.h"
+#include "p3dSession.h"
+#include "p3dUndefinedObject.h"
+#include "p3dStringObject.h"
+#include "p3dInstanceManager.h"
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DMainObject::Constructor
@@ -178,6 +183,13 @@ set_property(const string &property, P3D_object *value) {
 ////////////////////////////////////////////////////////////////////
 bool P3DMainObject::
 has_method(const string &method_name) {
+  // Some special-case methods implemented in-place.
+  if (method_name == "read_game_log") {
+    return true;
+  } else if (method_name == "read_system_log") {
+    return true;
+  }
+
   if (_pyobj == NULL) {
     // No methods until we get our pyobj.
     return false;
@@ -202,6 +214,12 @@ has_method(const string &method_name) {
 P3D_object *P3DMainObject::
 call(const string &method_name, bool needs_response,
      P3D_object *params[], int num_params) {
+  if (method_name == "read_game_log") {
+    return call_read_game_log();
+  } else if (method_name == "read_system_log") {
+    return call_read_system_log();
+  }
+
   if (_pyobj == NULL) {
     // No methods until we get our pyobj.
     return NULL;
@@ -262,4 +280,89 @@ set_pyobj(P3D_object *pyobj) {
 P3D_object *P3DMainObject::
 get_pyobj() const {
   return _pyobj;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMainObject::set_instance
+//       Access: Public
+//  Description: Sets a callback pointer to the instance that owns
+//               this object.  When this instance destructs, it clears
+//               this pointer to NULL.
+////////////////////////////////////////////////////////////////////
+void P3DMainObject::
+set_instance(P3DInstance *inst) {
+  _inst = inst;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMainObject::call_read_game_log
+//       Access: Private
+//  Description: Reads the entire logfile as a string, and returns it
+//               to the calling JavaScript process.
+////////////////////////////////////////////////////////////////////
+P3D_object *P3DMainObject::
+call_read_game_log() {
+  nout << "call_read_game_log: " << _inst << "\n";
+  if (_inst == NULL) {
+    return new P3DUndefinedObject();
+  }
+
+  P3DSession *session = _inst->get_session();
+  nout << "session = " << session << "\n";
+
+  string log_pathname = session->get_log_pathname();
+  nout << "log_pathname = " << log_pathname << "\n";
+
+  ifstream log(log_pathname.c_str(), ios::in);
+
+  // Get the size of the file.
+  log.seekg(0, ios::end);
+  size_t size = (size_t)log.tellg();
+  log.seekg(0, ios::beg);
+
+  // Read the entire file into memory all at once.
+  char *buffer = new char[size];
+  if (buffer == NULL) {
+    return NULL;
+  }
+
+  log.read(buffer, size);
+  P3D_object *result = new P3DStringObject(buffer, size);
+  delete[] buffer;
+  
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DMainObject::call_read_system_log
+//       Access: Private
+//  Description: As above, but reads the system log, the logfile for
+//               the installation process.
+////////////////////////////////////////////////////////////////////
+P3D_object *P3DMainObject::
+call_read_system_log() {
+  nout << "call_read_system_log: " << _inst << "\n";
+
+  P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+  string log_pathname = inst_mgr->get_log_pathname();
+  nout << "log_pathname = " << log_pathname << "\n";
+
+  ifstream log(log_pathname.c_str(), ios::in);
+
+  // Get the size of the file.
+  log.seekg(0, ios::end);
+  size_t size = (size_t)log.tellg();
+  log.seekg(0, ios::beg);
+
+  // Read the entire file into memory all at once.
+  char *buffer = new char[size];
+  if (buffer == NULL) {
+    return NULL;
+  }
+
+  log.read(buffer, size);
+  P3D_object *result = new P3DStringObject(buffer, size);
+  delete[] buffer;
+  
+  return result;
 }

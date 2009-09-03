@@ -61,14 +61,14 @@ get_session_key() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::get_python_version
+//     Function: P3DInstance::get_session
 //       Access: Public
-//  Description: Returns a string that uniquely identifies this
-//               instance's required Python version.
+//  Description: Returns the P3DSession that is hosting this instance,
+//               or NULL if the instance is not running.
 ////////////////////////////////////////////////////////////////////
-inline const string &P3DInstance::
-get_python_version() const {
-  return _python_version;
+inline P3DSession *P3DInstance::
+get_session() const {
+  return _session;
 }
 
 ////////////////////////////////////////////////////////////////////

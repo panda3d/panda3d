@@ -26,6 +26,7 @@
 #include "p3d_lock.h"
 #include "handleStream.h"
 #include "p3dCInstance.h"
+#include "pandaFileStreamBuf.h"
 #include "pythonTask.h"
 #include "pmap.h"
 #include "pdeque.h"
@@ -68,7 +69,7 @@ class P3DPythonRun {
 public:
   P3DPythonRun(const char *program_name, const char *archive_file,
                FHandle input_handle, FHandle output_handle, 
-               FHandle error_handle, bool interactive_console);
+               const char *log_pathname, bool interactive_console);
   ~P3DPythonRun();
 
   bool run_python();
@@ -155,7 +156,7 @@ private:
 
   HandleStream _pipe_read;
   HandleStream _pipe_write;
-  HandleStream _error_log;
+  pofstream _error_log;
 
   bool _read_thread_continue;
   bool _program_continue;

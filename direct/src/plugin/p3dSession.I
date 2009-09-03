@@ -25,14 +25,16 @@ get_session_key() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::get_python_version
+//     Function: P3DSession::get_log_pathname
 //       Access: Public
-//  Description: Returns a string that uniquely identifies this
-//               session's required Python version.
+//  Description: Returns the log filename for this particular session,
+//               if the session was started and if it has a log file.
+//               Returns empty string if the session never started or
+//               if it lacks a log file.
 ////////////////////////////////////////////////////////////////////
 inline const string &P3DSession::
-get_python_version() const {
-  return _python_version;
+get_log_pathname() const {
+  return _log_pathname;
 }
 
 ////////////////////////////////////////////////////////////////////

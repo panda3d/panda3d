@@ -113,6 +113,11 @@ class AppRunner(DirectObject):
         # hosts we have imported packages from.
         self.hosts = {}
 
+        # Application code can assign a callable object here; if so,
+        # it will be invoked when an uncaught exception propagates to
+        # the top of the TaskMgr.run() loop.
+        self.exceptionHandler = None
+
         # Managing packages for runtime download.
         self.downloadingPackages = []
         self.downloadTask = None
@@ -156,6 +161,49 @@ class AppRunner(DirectObject):
         # We use this messenger hook to dispatch this __startIfReady()
         # call back to the main thread.
         self.accept('AppRunner_startIfReady', self.__startIfReady)
+
+    def getToken(self, tokenName):
+        """ Returns the value of the indicated web token as a string,
+        if it was set, or None if it was not. """
+
+        return self.tokenDict.get(tokenName.lower(), None)
+
+    def getTokenInt(self, tokenName):
+        """ Returns the value of the indicated web token as an integer
+        value, if it was set, or None if it was not, or not an
+        integer. """
+
+        value = self.getToken(tokenName)
+        if value is not None:
+            try:
+                value = int(value)
+            except ValueError:
+                value = None
+        return value
+
+    def getTokenFloat(self, tokenName):
+        """ Returns the value of the indicated web token as a
+        floating-point value value, if it was set, or None if it was
+        not, or not a number. """
+
+        value = self.getToken(tokenName)
+        if value is not None:
+            try:
+                value = float(value)
+            except ValueError:
+                value = None
+        return value
+
+    def getTokenBool(self, tokenName):
+        """ Returns the value of the indicated web token as a boolean
+        value, if it was set, or None if it was not. """
+
+        value = self.getTokenInt(tokenName)
+        if value is not None:
+            value = bool(value)
+        return value
+
+        
 
     def installPackage(self, packageName, version = None, hostUrl = None):
 
@@ -247,6 +295,33 @@ class AppRunner(DirectObject):
         # help protect against race conditions as the application
         # shuts down.
         taskMgr.doMethodLater(0.5, sys.exit, 'exit')
+
+    def run(self):
+        """ This method calls taskMgr.run(), with an optional
+        exception handler.  This is generally the program's main loop
+        when running in a p3d environment (except on unusual platforms
+        like the iPhone, which have to hand the main loop off to the
+        OS, and don't use this interface. """
+
+        try:
+            taskMgr.run()
+
+        except SystemExit:
+            # Presumably the window has already been shut down here, but shut
+            # it down again for good measure.
+            if hasattr(__builtin__, "base"):
+                base.destroy()
+
+            self.notify.info("Normal exit.")
+            raise
+
+        except:
+            # Some unexpected Python exception; pass it to the
+            # optional handler, if it is defined.
+            if self.exceptionHandler:
+                self.exceptionHandler()
+            else:
+                raise
 
     def setSessionId(self, sessionId):
         """ This message should come in at startup. """
