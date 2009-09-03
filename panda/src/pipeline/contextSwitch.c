@@ -332,5 +332,5 @@ switch_to_thread_context(struct ThreadContext *context) {
   abort();
 }
 
-#endif  /* HAVE_UCONTEXT_H */
+#endif  /* PHAVE_UCONTEXT_H */
 #endif  /* THREAD_SIMPLE_IMPL */

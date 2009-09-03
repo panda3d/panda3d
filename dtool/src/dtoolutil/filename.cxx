@@ -1755,7 +1755,7 @@ scan_directory(vector_string &contents) const {
   sort(contents.begin() + orig_size, contents.end());
   return scan_ok;
 
-#elif defined(HAVE_DIRENT_H)
+#elif defined(PHAVE_DIRENT_H)
   // Use Posix's opendir() / readir() to walk through the list of
   // files in a directory.
   size_t orig_size = contents.size();
@@ -1801,7 +1801,7 @@ scan_directory(vector_string &contents) const {
   sort(contents.begin() + orig_size, contents.end());
   return true;
 
-#elif defined(HAVE_GLOB_H)
+#elif defined(PHAVE_GLOB_H)
   // It's hard to imagine a system that provides glob.h but does not
   // provide openddir() .. readdir(), but this code is leftover from a
   // time when there was an undetected bug in the above readdir()
@@ -2318,7 +2318,7 @@ touch() const {
   CloseHandle(fhandle);
   return true;
 
-#elif defined(HAVE_UTIME_H)
+#elif defined(PHAVE_UTIME_H)
   // Most Unix systems can do this explicitly.
 
   string os_specific = to_os_specific();
@@ -2351,14 +2351,14 @@ touch() const {
     return false;
   }
   return true;
-#else  // WIN32, HAVE_UTIME_H
+#else  // WIN32, PHAVE_UTIME_H
   // Other systems may not have an explicit control over the
   // modification time.  For these systems, we'll just temporarily
   // open the file in append mode, then close it again (it gets closed
   // when the pfstream goes out of scope).
   pfstream file;
   return open_append(file);
-#endif  // WIN32, HAVE_UTIME_H
+#endif  // WIN32, PHAVE_UTIME_H
 }
 
 ////////////////////////////////////////////////////////////////////

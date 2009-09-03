@@ -46,7 +46,7 @@ struct ThreadContext {
 #endif
 };
 
-#else  /* HAVE_UCONTEXT_H */
+#else  /* PHAVE_UCONTEXT_H */
 /* Unfortunately, setcontext() is not defined everywhere (even though
    it claims to be adopted by Posix).  So we have to fall back to
    setjmp() / longjmp() in its absence.  This is a hackier solution. */
@@ -84,7 +84,7 @@ struct ThreadContext {
   cs_jmp_buf _jmp_context;
 };
 
-#endif  /* HAVE_UCONTEXT_H */
+#endif  /* PHAVE_UCONTEXT_H */
 
 #ifdef __cplusplus
 extern "C" {
