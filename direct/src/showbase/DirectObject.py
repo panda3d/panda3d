@@ -7,7 +7,7 @@ from direct.directnotify.DirectNotifyGlobal import directNotify
 from MessengerGlobal import messenger
 from direct.showbase.PythonUtil import ClassTree
 
-class DirectObject:
+class DirectObject(object):
     """
     This is the class that all Direct/SAL classes should inherit from
     """
