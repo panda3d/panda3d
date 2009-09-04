@@ -114,7 +114,7 @@ PUBLISHED:
 
   static INLINE string get_magic_number();
 
-  INLINE void set_header_prefix(const string &header_prefix);
+  void set_header_prefix(const string &header_prefix);
   INLINE const string &get_header_prefix() const;
 
 public:

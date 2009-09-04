@@ -31,9 +31,9 @@ bool append = false;           // -r
 bool update = false;           // -u
 bool tlist = false;            // -t
 bool extract = false;          // -x
-bool kill_cmd = false;             // -k
+bool kill_cmd = false;         // -k
 bool verbose = false;          // -v
-bool compress_flag = false;         // -z
+bool compress_flag = false;    // -z
 int default_compression_level = 6;
 Filename multifile_name;       // -f
 bool got_multifile_name = false;
@@ -41,13 +41,15 @@ bool to_stdout = false;        // -O
 bool encryption_flag = false;  // -e
 string password;               // -p
 bool got_password = false;
+string header_prefix;          // -P
+bool got_header_prefix = false;
 Filename chdir_to;             // -C
 bool got_chdir_to = false;
 size_t scale_factor = 0;       // -F
 pset<string> dont_compress;    // -Z
 
 // Default extensions not to compress.  May be overridden with -Z.
-string dont_compress_str = "jpg,mp3";
+string dont_compress_str = "jpg,png,mp3,ogg";
 
 bool got_record_timestamp_flag = false;
 bool record_timestamp_flag = true;
@@ -177,6 +179,15 @@ help() {
     "      Specifies the password to encrypt or decrypt subfiles.  If this is not\n"
     "      specified, and passwords are required, the user will be prompted from\n"
     "      standard input.\n\n"
+
+    "  -P \"prefix\"\n"
+    "      Specifies a header_prefix to write to the beginning of the multifile.\n"
+    "      This is primarily useful for creating a multifile that can be invoked\n"
+    "      directly as a program from the shell on Unix-like environments,\n"
+    "      for instance, p3d files.  The header_prefix must begin with a hash\n"
+    "      mark and end with a newline; this will be enforced if it is not\n"
+    "      already so.  This only has effect in conjunction with with -c, -u,\n"
+    "      or -k.\n\n"
 
     "  -F <scale_factor>\n"
     "      Specify a Multifile scale factor.  This is only necessary to support\n"
@@ -330,6 +341,10 @@ add_files(int argc, char *argv[]) {
     multifile->set_encryption_password(get_password());
   }
 
+  if (got_header_prefix) {
+    multifile->set_header_prefix(header_prefix);
+  }
+
   if (scale_factor != 0 && scale_factor != multifile->get_scale_factor()) {
     cerr << "Setting scale factor to " << scale_factor << "\n";
     multifile->set_scale_factor(scale_factor);
@@ -449,6 +464,10 @@ kill_files(int argc, char *argv[]) {
   if (!multifile->open_read_write(multifile_name)) {
     cerr << "Unable to open " << multifile_name << " for read/write.\n";
     return false;
+  }
+
+  if (got_header_prefix) {
+    multifile->set_header_prefix(header_prefix);
   }
 
   int i = 0;
@@ -628,7 +647,7 @@ main(int argc, char *argv[]) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "crutxkvz123456789Z:T:f:OC:ep:F:h";
+  static const char *optflags = "crutxkvz123456789Z:T:f:OC:ep:P:F:h";
   int flag = getopt(argc, argv, optflags);
   Filename rel_path;
   while (flag != EOF) {
@@ -726,6 +745,10 @@ main(int argc, char *argv[]) {
     case 'p':
       password = optarg;
       got_password = true;
+      break;
+    case 'P':
+      header_prefix = optarg;
+      got_header_prefix = true;
       break;
     case 'F':
       {

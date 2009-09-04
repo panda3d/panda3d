@@ -378,25 +378,6 @@ get_magic_number() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: Multifile::set_header_prefix
-//       Access: Published
-//  Description: Sets the string which is written to the Multifile
-//               before the Multifile header.  This string must begin
-//               with a hash mark and end with a newline character,
-//               and include at least 6 characters; and if it includes
-//               embedded newline characters, each one must be
-//               followed by a hash mark.
-//
-//               This is primarily useful as a simple hack to allow
-//               p3d applications to be run directly from the command
-//               line on Unix-like systems.
-////////////////////////////////////////////////////////////////////
-INLINE void Multifile::
-set_header_prefix(const string &header_prefix) {
-  _header_prefix = header_prefix;
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: Multifile::get_header_prefix
 //       Access: Published
 //  Description: Returns the string that preceded the Multifile header

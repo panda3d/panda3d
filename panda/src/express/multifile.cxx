@@ -691,7 +691,7 @@ flush() {
   // Also update the overall timestamp.
   if (_timestamp_dirty) {
     nassertr(!_write->fail(), false);
-    static const size_t timestamp_pos = _header_size + 2 + 2 + 4;
+    static const size_t timestamp_pos = _header_prefix.size() + _header_size + 2 + 2 + 4;
     _write->seekp(timestamp_pos);
     nassertr(!_write->fail(), false);
     
@@ -1336,7 +1336,57 @@ ls(ostream &out) const {
   }
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::set_header_prefix
+//       Access: Published
+//  Description: Sets the string which is written to the Multifile
+//               before the Multifile header.  This string must begin
+//               with a hash mark and end with a newline character;
+//               and if it includes embedded newline characters, each
+//               one must be followed by a hash mark.  If these
+//               conditions are not initially true, the string will be
+//               modified as necessary to make it so.
+//
+//               This is primarily useful as a simple hack to allow
+//               p3d applications to be run directly from the command
+//               line on Unix-like systems.
+//
+//               The return value is true if successful, or false on
+//               failure (for instance, because the header prefix
+//               violates the above rules).
+////////////////////////////////////////////////////////////////////
+void Multifile::
+set_header_prefix(const string &header_prefix) {
+  string new_header_prefix = header_prefix;
 
+  if (!new_header_prefix.empty()) {
+    // It must begin with a hash mark.
+    if (new_header_prefix[0] != '#') {
+      new_header_prefix = string("#") + new_header_prefix;
+    }
+    
+    // It must end with a newline.
+    if (new_header_prefix[new_header_prefix.size() - 1] != '\n') {
+      new_header_prefix += string("\n");
+    }
+    
+    // Embedded newlines must be followed by a hash mark.
+    size_t newline = new_header_prefix.find('\n');
+    while (newline < new_header_prefix.size() - 1) {
+      if (new_header_prefix[newline + 1] != '#') {
+        new_header_prefix = new_header_prefix.substr(0, newline + 1) + string("#") + new_header_prefix.substr(newline + 1);
+      }
+      newline = new_header_prefix.find('#', newline);
+    }
+  }
+
+  if (_header_prefix != new_header_prefix) {
+    _header_prefix = new_header_prefix;
+    _needs_repack = true;
+  }
+}
+  
+  
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::read_subfile
 //       Access: Public
@@ -1535,28 +1585,17 @@ read_index() {
 
   char this_header[_header_size];
   read->seekg(0);
-  read->read(this_header, _header_size);
-  if (read->fail() || read->gcount() != (unsigned)_header_size) {
-    express_cat.info()
-      << "Unable to read Multifile header " << _multifile_name << ".\n";
-    _read->release();
-    close();
-    return false;
-  }
 
   // Here's a special case: if the multifile begins with a hash
-  // character, then we skip at least 6 characters (the length of the
-  // original header string we already read), and continue reading and
-  // discarding lines of ASCII text, until we come across a nonempty
-  // line that does not begin with a hash character.  This allows a
-  // P3D application (which is a multifile) to be run directly on the
-  // command line on Unix-based systems.
+  // character, then we continue reading and discarding lines of ASCII
+  // text, until we come across a nonempty line that does not begin
+  // with a hash character.  This allows a P3D application (which is a
+  // multifile) to be run directly on the command line on Unix-based
+  // systems.
   _header_prefix = string();
+  int ch = read->get();
 
-  if (this_header[0] == '#') {
-    _header_prefix = string(this_header, _header_size);
-    int ch = '#';
-
+  if (ch == '#') {
     while (ch != EOF && ch == '#') {
       // Skip to the end of the line.
       while (ch != EOF && ch != '\n') {
@@ -1569,10 +1608,17 @@ read_index() {
         ch = read->get();
       }
     }
+  }
 
-    // Now fill up the header.
-    this_header[0] = ch;
-    read->read(this_header + 1, _header_size - 1);
+  // Now read the actual Multifile header.
+  this_header[0] = ch;
+  read->read(this_header + 1, _header_size - 1);
+  if (read->fail() || read->gcount() != (unsigned)(_header_size - 1)) {
+    express_cat.info()
+      << "Unable to read Multifile header " << _multifile_name << ".\n";
+    _read->release();
+    close();
+    return false;
   }
 
   if (memcmp(this_header, _header, _header_size) != 0) {
