@@ -114,7 +114,46 @@ close_gsg(GraphicsPipe *pipe, GraphicsStateGuardian *gsg) {
 ////////////////////////////////////////////////////////////////////
 //     Function: GraphicsEngine::make_buffer
 //       Access: Published
-//  Description: Syntactic shorthand for make_output
+//  Description: Syntactic shorthand for make_output.  This is the
+//               preferred way to create an offscreen buffer, when you
+//               already have an onscreen window or another buffer to
+//               start with.  For the first parameter, pass an
+//               existing GraphicsOutput object, e.g. the main window;
+//               this allows the buffer to adapt itself to that
+//               window's framebuffer properties, and allows maximum
+//               sharing of resources.
+////////////////////////////////////////////////////////////////////
+INLINE GraphicsOutput *GraphicsEngine::
+make_buffer(GraphicsOutput *host, const string &name,
+            int sort, int x_size, int y_size) {
+  GraphicsOutput *result = make_output(host->get_pipe(), name, sort,
+                                       FrameBufferProperties(), 
+                                       WindowProperties::size(x_size, y_size),
+                                       GraphicsPipe::BF_refuse_window |
+                                       GraphicsPipe::BF_fb_props_optional,
+                                       host->get_gsg(), host);
+  return result;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: GraphicsEngine::make_buffer
+//       Access: Published
+//  Description: Syntactic shorthand for make_output.  This flavor
+//               accepts a GSG rather than a GraphicsOutput as the
+//               first parameter, which is too limiting and disallows
+//               the possibility of creating a ParasiteBuffer if the
+//               user's graphics hardware prefers that.  It also
+//               attempts to request specific framebuffer properties
+//               and may therefore do a poorer job of sharing the GSG
+//               between the old buffer and the new.
+//
+//               For these reasons, this variant is a poor choice
+//               unless you are creating an offscreen buffer for the
+//               first time, without an onscreen window already in
+//               existence.  If you already have an onscreen window,
+//               you should use the other flavor of make_buffer()
+//               instead, which accepts a GraphicsOutput as the first
+//               parameter.
 ////////////////////////////////////////////////////////////////////
 INLINE GraphicsOutput *GraphicsEngine::
 make_buffer(GraphicsStateGuardian *gsg, const string &name,

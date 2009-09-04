@@ -79,6 +79,9 @@ PUBLISHED:
                               GraphicsOutput *host = NULL);
   
   // Syntactic shorthand versions of make_output
+  INLINE GraphicsOutput *make_buffer(GraphicsOutput *host,
+                                     const string &name, int sort,
+                                     int x_size, int y_size);
   INLINE GraphicsOutput *make_buffer(GraphicsStateGuardian *gsg,
                                      const string &name, int sort,
                                      int x_size, int y_size);
