@@ -102,67 +102,65 @@ class InstallerMaker:
             return
         InstallerMaker.notify.info("Creating %s.exe..." % self.shortname)
 
+        tempfile = self.shortname + ".nsi"
+        nsi = open(tempfile, "w")
+
         # Some global info
-        nsi = 'Name "%s"' % self.fullname
-        nsi += 'OutFile "%s.exe"' % self.shortname
-        nsi += 'InstallDir "$PROGRAMFILES\%s"' % self.fullname
-        nsi += 'SetCompress auto'
-        nsi += 'SetCompressor lzma'
-        nsi += 'ShowInstDetails nevershow'
-        nsi += 'ShowUninstDetails nevershow'
-        nsi += 'InstType "Typical"'
+        nsi.write('Name "%s"\n' % self.fullname)
+        nsi.write('OutFile "%s.exe"\n' % self.shortname)
+        nsi.write('InstallDir "$PROGRAMFILES\%s"\n' % self.fullname)
+        nsi.write('SetCompress auto\n')
+        nsi.write('SetCompressor lzma\n')
+        nsi.write('ShowInstDetails nevershow\n')
+        nsi.write('ShowUninstDetails nevershow\n')
+        nsi.write('InstType "Typical"\n')
 
         # Tell Vista that we require admin rights
-        nsi += 'RequestExecutionLevel admin'
-        nsi += ''
-        nsi += 'Function launch'
-        nsi += '  ExecShell "open" "$INSTDIR\%s.bat"' % self.shortname
-        nsi += 'FunctionEnd'
-        nsi += ''
-        nsi += '!include "MUI2.nsh"'
-        nsi += '!define MUI_HEADERIMAGE'
-        nsi += '!define MUI_HEADERIMAGE_BITMAP "/home/pro-rsoft/Projects/vikings-old/Vikings/installer.bmp"'
-        nsi += '!define MUI_HEADERIMAGE_UNBITMAP "/home/pro-rsoft/Projects/vikings-old/Vikings/installer.bmp"'
-        nsi += '!define MUI_WELCOMEFINISHPAGE_BITMAP "/home/pro-rsoft/Projects/vikings-old/Vikings/installer.bmp"'
-        nsi += '!define MUI_UNWELCOMEFINISHPAGE_BITMAP "/home/pro-rsoft/Projects/vikings-old/Vikings/installer.bmp"'
-        nsi += '!define MUI_ABORTWARNING'
-        nsi += '!define MUI_FINISHPAGE_RUN'
-        nsi += '!define MUI_FINISHPAGE_RUN_FUNCTION launch'
-        nsi += '!define MUI_FINISHPAGE_RUN_TEXT "Play %s"' % self.fullname
-        nsi += ''
-        nsi += 'Var StartMenuFolder'
-        nsi += '!insertmacro MUI_PAGE_WELCOME'
-        nsi += ';!insertmacro MUI_PAGE_LICENSE "weirdo.egg"'
-        nsi += '!insertmacro MUI_PAGE_DIRECTORY'
-        nsi += '!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder'
-        nsi += '!insertmacro MUI_PAGE_INSTFILES'
-        nsi += '!insertmacro MUI_PAGE_FINISH'
-        nsi += '!insertmacro MUI_UNPAGE_WELCOME'
-        nsi += '!insertmacro MUI_UNPAGE_CONFIRM'
-        nsi += '!insertmacro MUI_UNPAGE_INSTFILES'
-        nsi += '!insertmacro MUI_UNPAGE_FINISH'
-        nsi += '!insertmacro MUI_LANGUAGE "English"'
+        nsi.write('RequestExecutionLevel admin\n')
+        nsi.write('\n')
+        nsi.write('Function launch\n')
+        nsi.write('  ExecShell "open" "$INSTDIR\%s.bat"\n' % self.shortname)
+        nsi.write('FunctionEnd\n')
+        nsi.write('\n')
+        nsi.write('!include "MUI2.nsh"\n')
+        nsi.write('!define MUI_ABORTWARNING\n')
+        nsi.write('!define MUI_FINISHPAGE_RUN\n')
+        nsi.write('!define MUI_FINISHPAGE_RUN_FUNCTION launch\n')
+        nsi.write('!define MUI_FINISHPAGE_RUN_TEXT "Play %s"\n' % self.fullname)
+        nsi.write('\n')
+        nsi.write('Var StartMenuFolder\n')
+        nsi.write('!insertmacro MUI_PAGE_WELCOME\n')
+        nsi.write('!insertmacro MUI_PAGE_DIRECTORY\n')
+        nsi.write('!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder\n')
+        nsi.write('!insertmacro MUI_PAGE_INSTFILES\n')
+        nsi.write('!insertmacro MUI_PAGE_FINISH\n')
+        nsi.write('!insertmacro MUI_UNPAGE_WELCOME\n')
+        nsi.write('!insertmacro MUI_UNPAGE_CONFIRM\n')
+        nsi.write('!insertmacro MUI_UNPAGE_INSTFILES\n')
+        nsi.write('!insertmacro MUI_UNPAGE_FINISH\n')
+        nsi.write('!insertmacro MUI_LANGUAGE "English"\n')
 
         # This section defines the installer.
-        nsi += 'Section "Install"'
-        nsi += '  SetOutPath "$INSTDIR"'
-        nsi += '  WriteUninstaller "$INSTDIR\Uninstall.exe"'
-        nsi += '  ; Start menu items'
-        nsi += '  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application'
-        nsi += '    CreateDirectory "$SMPROGRAMS\$StartMenuFolder"'
-        nsi += '    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe"'
-        nsi += '  !insertmacro MUI_STARTMENU_WRITE_END'
-        nsi += 'SectionEnd'
+        nsi.write('Section "Install"\n')
+        nsi.write('  SetOutPath "$INSTDIR"\n')
+        nsi.write('  WriteUninstaller "$INSTDIR\Uninstall.exe"\n')
+        nsi.write('  ; Start menu items\n')
+        nsi.write('  !insertmacro MUI_STARTMENU_WRITE_BEGIN Application\n')
+        nsi.write('    CreateDirectory "$SMPROGRAMS\$StartMenuFolder"\n')
+        nsi.write('    CreateShortCut "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk" "$INSTDIR\Uninstall.exe"\n')
+        nsi.write('  !insertmacro MUI_STARTMENU_WRITE_END\n')
+        nsi.write('SectionEnd\n')
 
         # This section defines the uninstaller.
-        nsi += 'Section "Uninstall"'
-        nsi += '  Delete "$INSTDIR\Uninstall.exe"'
-        nsi += '  RMDir "$INSTDIR"'
-        nsi += '  ; Start menu items'
-        nsi += '  !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder'
-        nsi += '  Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"'
-        nsi += '  RMDir "$SMPROGRAMS\$StartMenuFolder"'
-        nsi += 'SectionEnd'
+        nsi.write('Section "Uninstall"\n')
+        nsi.write('  Delete "$INSTDIR\Uninstall.exe"\n')
+        nsi.write('  RMDir "$INSTDIR"\n')
+        nsi.write('  ; Start menu items\n')
+        nsi.write('  !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuFolder\n')
+        nsi.write('  Delete "$SMPROGRAMS\$StartMenuFolder\Uninstall.lnk"\n')
+        nsi.write('  RMDir "$SMPROGRAMS\$StartMenuFolder"\n')
+        nsi.write('SectionEnd')
+        nsi.close()
 
-        subprocess.call(makensis)
+        os.system(makensis + " " + tempfile)
 
