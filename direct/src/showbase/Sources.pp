@@ -24,6 +24,7 @@
 // Define a Python extension module for operating on frozen modules.
 // This is a pure C module; it involves no Panda code or C++ code.
 #begin lib_target
+  #define BUILD_TARGET $[HAVE_PYTHON]
   #define TARGET extend_frozen
   #define LIB_PREFIX
   #if $[OSX_PLATFORM]
