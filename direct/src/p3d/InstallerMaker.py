@@ -19,10 +19,14 @@ class InstallerMaker:
         self.shortname = shortname
         self.fullname = fullname
         self.p3dfile = p3dfile
-        self.__makeNSIS()
-        self.__makeDEB()
+        self.version = "1"
 
-    def __makeDEB(self):
+    def build(self):
+        """ Creates the installer. Call this after you have set all the parameters. """
+        self.__buildDEB()
+        self.__buildNSIS()
+
+    def __buildDEB(self):
         InstallerMaker.notify.info("Creating %s.deb..." % self.shortname)
 
         # Create a temporary directory and write the control file + launcher to it
@@ -31,7 +35,7 @@ class InstallerMaker:
         tempdir = tempdir.toOsSpecific()
         controlfile = open(os.path.join(tempdir, "control"), "w")
         controlfile.write("Package: %s\n" % self.shortname)
-        controlfile.write("Version: 1\n")
+        controlfile.write("Version: %s\n" % self.version)
         controlfile.write("Section: games\n")
         controlfile.write("Priority: optional\n")
         controlfile.write("Architecture: all\n")
@@ -63,11 +67,13 @@ class InstallerMaker:
         # Open the deb file and write to it. It's actually
         # just an AR file, which is very easy to make.
         modtime = str(int(time.time())).ljust(11)
+        if os.path.isfile(self.shortname + ".deb"):
+            os.remove(self.shortname + ".deb")
         debfile = open(self.shortname + ".deb", "wb")
         debfile.write("!<arch>\x0A")
         debfile.write("debian-binary   %s 0     0     100644  4         \x60\x0A" % modtime)
         debfile.write("2.0\x0A")
-        debfile.write("control.tar.gz  %s 0     0     100644  %s \x60\x0A" % (modtime, str(len(controltargz.str)-1).ljust(9)))
+        debfile.write("control.tar.gz  %s 0     0     100644  %s \x60\x0A" % (modtime, str(len(controltargz.str)).ljust(9)))
         debfile.write(controltargz.str)
         debfile.write("data.tar.gz     %s 0     0     100644  %s \x60\x0A" % (modtime, str(os.path.getsize(os.path.join(tempdir, "data.tar.gz"))).ljust(9)))
 
@@ -79,8 +85,9 @@ class InstallerMaker:
             data = datatargz.read(1024 * 1024)
         datatargz.close()
         debfile.close()
+        shutil.rmtree(tempdir)
 
-    def __makeNSIS(self):
+    def __buildNSIS(self):
         # Check if we have makensis first
         makensis = None
         if (sys.platform.startswith("win")):
@@ -162,5 +169,15 @@ class InstallerMaker:
         nsi.write('SectionEnd')
         nsi.close()
 
-        os.system(makensis + " " + tempfile)
+        options = ["V2"]
+        cmd = makensis
+        for o in options:
+            if sys.platform.startswith("win"):
+                cmd += " /" + o
+            else:
+                cmd += " -" + o
+        cmd += " " + tempfile
+        os.system(cmd)
+
+        os.remove(tempfile)
 
