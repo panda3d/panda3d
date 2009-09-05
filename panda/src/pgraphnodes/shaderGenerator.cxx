@@ -591,12 +591,10 @@ synthesize_shader(const RenderState *rs) {
   const TextureAttrib *texture = DCAST(TextureAttrib, rs->get_attrib_def(TextureAttrib::get_class_slot()));
   const TexGenAttrib *tex_gen = DCAST(TexGenAttrib, rs->get_attrib_def(TexGenAttrib::get_class_slot()));
   for (int i=0; i<_num_textures; i++) {
-    if (!tex_gen->has_stage(texture->get_on_stage(i))) {
-      texcoord_vreg.push_back(alloc_vreg());
-      texcoord_freg.push_back(alloc_freg());
-      text << "\t in float4 vtx_texcoord" << i << " : " << texcoord_vreg[i] << ",\n";
-      text << "\t out float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
-    }
+    texcoord_vreg.push_back(alloc_vreg());
+    texcoord_freg.push_back(alloc_freg());
+    text << "\t in float4 vtx_texcoord" << i << " : " << texcoord_vreg[i] << ",\n";
+    text << "\t out float4 l_texcoord" << i << " : " << texcoord_freg[i] << ",\n";
   }
   if (_vertex_colors) {
     text << "\t in float4 vtx_color : COLOR,\n";
