@@ -95,9 +95,11 @@ load_certificates(const Filename &filename) {
     return 0;
   }
 
-  express_cat.info()
-    << "Appending " << result << " SSL certificates from "
-    << filename << "\n";
+  if (express_cat.is_debug()) {
+    express_cat.debug()
+      << "Appending " << result << " SSL certificates from "
+      << filename << "\n";
+  }
 
   return result;
 }
