@@ -23,7 +23,6 @@
 // communications.
 
 #ifdef HAVE_OPENSSL
-#define OPENSSL_NO_KRB5
 
 #include "urlSpec.h"
 #include "httpAuthorization.h"
@@ -35,13 +34,7 @@
 #include "pmap.h"
 #include "pset.h"
 #include "referenceCount.h"
-
-#include "openssl/ssl.h"
-
-// Windows may define this macro inappropriately.
-#ifdef X509_NAME
-#undef X509_NAME
-#endif
+#include "openSSLWrapper.h"
 
 class Filename;
 class HTTPChannel;
@@ -155,9 +148,6 @@ private:
 
   void unload_client_certificate();
 
-  static void initialize_ssl();
-  static int load_verify_locations(SSL_CTX *ctx, const Filename &ca_file);
-
   static X509_NAME *parse_x509_name(const string &source);
 
 #if defined(SSL_097) && !defined(NDEBUG)
@@ -205,9 +195,6 @@ private:
   bool _client_certificate_loaded;
   X509 *_client_certificate_pub;
   EVP_PKEY *_client_certificate_priv;
-
-  static bool _ssl_initialized;
-  static X509_STORE *_x509_store;
 
   static PT(HTTPClient) _global_ptr;
 

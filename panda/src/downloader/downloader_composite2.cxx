@@ -13,7 +13,6 @@
 #include "multiplexStreamBuf.cxx"
 #include "patcher.cxx"
 #include "socketStream.cxx"
-#include "ssl_utils.cxx"
 #include "stringStreamBuf.cxx"
 #include "stringStream.cxx"
 #include "urlSpec.cxx"

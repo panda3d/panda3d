@@ -22,6 +22,7 @@
 #include "pointerTo.h"
 #include "filename.h"
 #include "pset.h"
+#include "vector_string.h"
 #include <stdio.h>
 #include <time.h>
 
@@ -47,6 +48,8 @@ Filename chdir_to;             // -C
 bool got_chdir_to = false;
 size_t scale_factor = 0;       // -F
 pset<string> dont_compress;    // -Z
+vector_string sign_params;     // -S
+pvector<Filename> cert_chain;  // -N
 
 // Default extensions not to compress.  May be overridden with -Z.
 string dont_compress_str = "jpg,png,mp3,ogg";
@@ -220,7 +223,27 @@ help() {
     "  -1 .. -9\n"
     "      Specify the compression level when -z is in effect.  Larger numbers\n"
     "      generate slightly smaller files, but compression takes longer.  The\n"
-    "      default is -" << default_compression_level << ".\n\n";
+    "      default is -" << default_compression_level << ".\n\n"
+
+    "  -N ca-chain.crt\n"
+    "      Adds the indicated certificate chain file to the multifile.  This must\n"
+    "      used in conjunction with -c or -u mode.  The indicated file must be\n"
+    "      a PEM-formatted collection of certificates, representing the chain of\n"
+    "      authentication from the certificate used to sign the multifile (-S,\n"
+    "      below), and a certificate authority.  This may be necessary for\n"
+    "      certain certificates whose signing authority is one or more steps\n"
+    "      removed from a well-known certificate authority.  You must add this\n"
+    "      file to the multifile before signing it (or at least at the same time).\n\n"
+
+    "  -S file.crt,file.key[,\"password\"]\n"
+    "      Sign the multifile.  The signing certificate should be in PEM form in\n"
+    "      file.crt, with its private key in PEM form in file.key.  If the key\n"
+    "      is encrypted on-disk, specify the decryption password as the third\n"
+    "      option.  PEM form is the form accepted by the Apache web server.  The\n"
+    "      signature is written to the multifile to prove it is unchanged; any\n"
+    "      subsequent change to the multifile will invalidate the signature.\n"
+    "      This parameter may be repeated to sign the multifile with different\n"
+    "      certificates.\n\n";
 }
 
 const string &
@@ -236,16 +259,17 @@ get_password() {
 
 
 bool
-is_named(const string &subfile_name, int argc, char *argv[]) {
+is_named(const string &subfile_name, const vector_string &params) {
   // Returns true if the indicated subfile appears on the list of
   // files named on the command line.
-  if (argc < 2) {
+  if (params.empty()) {
     // No named files; everything is listed.
     return true;
   }
 
-  for (int i = 1; i < argc; i++) {
-    if (subfile_name == argv[i]) {
+  vector_string::const_iterator pi;
+  for (pi = params.begin(); pi != params.end(); ++pi) {
+    if (subfile_name == (*pi)) {
       return true;
     }
   }
@@ -273,20 +297,39 @@ get_compression_level(const Filename &subfile_name) {
 }
 
 bool
-add_directory(Multifile *multifile, const Filename &directory_name) {
+do_add_files(Multifile *multifile, const pvector<Filename> &filenames,
+             bool cert_chain_flag);
+
+bool
+do_add_directory(Multifile *multifile, const Filename &directory_name,
+                 bool cert_chain_flag) {
   vector_string files;
   if (!directory_name.scan_directory(files)) {
     cerr << "Unable to scan directory " << directory_name << "\n";
     return false;
   }
 
-  bool okflag = true;
-
+  pvector<Filename> filenames;
+  filenames.reserve(files.size());
   vector_string::const_iterator fi;
   for (fi = files.begin(); fi != files.end(); ++fi) {
     Filename subfile_name(directory_name, (*fi));
+    filenames.push_back(subfile_name);
+  }
+
+  return do_add_files(multifile, filenames, cert_chain_flag);
+}
+
+bool
+do_add_files(Multifile *multifile, const pvector<Filename> &filenames,
+             bool cert_chain_flag) {
+  bool okflag = true;
+  pvector<Filename>::const_iterator fi;
+  for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
+    const Filename &subfile_name = (*fi);
+
     if (subfile_name.is_directory()) {
-      if (!add_directory(multifile, subfile_name)) {
+      if (!do_add_directory(multifile, subfile_name, cert_chain_flag)) {
         okflag = false;
       }
 
@@ -310,15 +353,20 @@ add_directory(Multifile *multifile, const Filename &directory_name) {
         if (verbose) {
           cout << new_subfile_name << "\n";
         }
+        if (cert_chain_flag) {
+          // Set the cert_chain flag on the file.
+          int index = multifile->find_subfile(new_subfile_name);
+          nassertr(index >= 0, false);
+          multifile->set_subfile_is_cert_chain(index, true);
+        }
       }
     }
   }
-
   return okflag;
 }
 
 bool
-add_files(int argc, char *argv[]) {
+add_files(const vector_string &params) {
   PT(Multifile) multifile = new Multifile;
   if (append || update) {
     if (!multifile->open_read_write(multifile_name)) {
@@ -350,36 +398,17 @@ add_files(int argc, char *argv[]) {
     multifile->set_scale_factor(scale_factor);
   }
 
-  bool okflag = true;
-  for (int i = 1; i < argc; i++) {
-    Filename subfile_name = Filename::from_os_specific(argv[i]);
-    if (subfile_name.is_directory()) {
-      if (!add_directory(multifile, subfile_name)) {
-        okflag = false;
-      }
+  pvector<Filename> filenames;
+  filenames.reserve(params.size());
+  vector_string::const_iterator si;
+  for (si = params.begin(); si != params.end(); ++si) {
+    Filename subfile_name = Filename::from_os_specific(*si);
+    filenames.push_back(subfile_name);
+  }
 
-    } else if (!subfile_name.exists()) {
-      cerr << "Not found: " << subfile_name << "\n";
-      okflag = false;
-
-    } else {
-      string new_subfile_name;
-      if (update) {
-        new_subfile_name = multifile->update_subfile
-          (subfile_name, subfile_name, get_compression_level(subfile_name));
-      } else {
-        new_subfile_name = multifile->add_subfile
-          (subfile_name, subfile_name, get_compression_level(subfile_name));
-      }
-      if (new_subfile_name.empty()) {
-        cerr << "Unable to add " << subfile_name << ".\n";
-        okflag = false;
-      } else {
-        if (verbose) {
-          cout << new_subfile_name << "\n";
-        }
-      }
-    }
+  bool okflag = do_add_files(multifile, filenames, false);
+  if (okflag && !cert_chain.empty()) {
+    okflag = do_add_files(multifile, cert_chain, true);
   }
 
   if (multifile->needs_repack()) {
@@ -398,7 +427,7 @@ add_files(int argc, char *argv[]) {
 }
 
 bool
-extract_files(int argc, char *argv[]) {
+extract_files(const vector_string &params) {
   if (!multifile_name.exists()) {
     cerr << multifile_name << " not found.\n";
     return false;
@@ -418,7 +447,7 @@ extract_files(int argc, char *argv[]) {
   bool any_encrypted = false;
   for (i = 0; i < num_subfiles && !any_encrypted; i++) {
     string subfile_name = multifile->get_subfile_name(i);
-    if (is_named(subfile_name, argc, argv)) {
+    if (is_named(subfile_name, params)) {
       if (multifile->is_subfile_encrypted(i)) {
         any_encrypted = true;
       }
@@ -432,7 +461,7 @@ extract_files(int argc, char *argv[]) {
   // Now walk back through the list and this time do the extraction.
   for (i = 0; i < num_subfiles; i++) {
     string subfile_name = multifile->get_subfile_name(i);
-    if (is_named(subfile_name, argc, argv)) {
+    if (is_named(subfile_name, params)) {
       Filename filename = subfile_name;
       if (got_chdir_to) {
         filename = Filename(chdir_to, subfile_name);
@@ -455,7 +484,7 @@ extract_files(int argc, char *argv[]) {
 }
 
 bool
-kill_files(int argc, char *argv[]) {
+kill_files(const vector_string &params) {
   if (!multifile_name.exists()) {
     cerr << multifile_name << " not found.\n";
     return false;
@@ -473,7 +502,7 @@ kill_files(int argc, char *argv[]) {
   int i = 0;
   while (i < multifile->get_num_subfiles()) {
     string subfile_name = multifile->get_subfile_name(i);
-    if (is_named(subfile_name, argc, argv)) {
+    if (is_named(subfile_name, params)) {
       Filename filename = subfile_name;
 
       if (verbose) {
@@ -500,6 +529,50 @@ kill_files(int argc, char *argv[]) {
   }
 
   return okflag;
+}
+
+bool
+sign_multifile() {
+#ifndef HAVE_OPENSSL
+  cerr << "Cannot sign multifiles without OpenSSL compiled in.\n";
+  return false;
+
+#else  // HAVE_OPENSSL
+  // Re-open the Multifile, and sign it with the indicated certificate
+  // and key files.
+  PT(Multifile) multifile = new Multifile;
+  if (!multifile->open_read_write(multifile_name)) {
+    cerr << "Unable to re-open " << multifile_name << " for signing.\n";
+    return false;
+  }
+
+  vector_string::iterator si;
+  for (si = sign_params.begin(); si != sign_params.end(); ++si) {
+    const string &param = (*si);
+    size_t comma1 = param.find(',');
+    if (comma1 == string::npos) {
+      cerr << "Signing parameter requires a comma: " << param << "\n";
+      return false;
+    }
+    size_t comma2 = param.find(',', comma1 + 1);
+
+    Filename certificate = Filename::from_os_specific(param.substr(0, comma1));
+    Filename pkey;
+    string password;
+    if (comma2 != string::npos) {
+      pkey = Filename::from_os_specific(param.substr(comma1 + 1, comma2 - comma1 - 1));
+      password = param.substr(comma2 + 1);
+    } else {
+      pkey = Filename::from_os_specific(param.substr(comma1 + 1));
+    }
+
+    if (!multifile->add_signature(certificate, pkey, password)) {
+      return false;
+    }
+  }    
+
+  return true;
+#endif  // HAVE_OPENSSL
 }
 
 const char *
@@ -533,7 +606,7 @@ format_timestamp(bool record_timestamp, time_t timestamp) {
 }
 
 bool
-list_files(int argc, char *argv[]) {
+list_files(const vector_string &params) {
   if (!multifile_name.exists()) {
     cerr << multifile_name << " not found.\n";
     return false;
@@ -546,14 +619,19 @@ list_files(int argc, char *argv[]) {
 
   int num_subfiles = multifile->get_num_subfiles();
   
+  int i;
   if (verbose) {
     cout << num_subfiles << " subfiles:\n" << flush;
-    for (int i = 0; i < num_subfiles; i++) {
+    for (i = 0; i < num_subfiles; i++) {
       string subfile_name = multifile->get_subfile_name(i);
-      if (is_named(subfile_name, argc, argv)) {
+      if (is_named(subfile_name, params)) {
         char encrypted_symbol = ' ';
         if (multifile->is_subfile_encrypted(i)) {
           encrypted_symbol = 'e';
+        }
+        char cert_chain_symbol = ' ';
+        if (multifile->get_subfile_is_cert_chain(i)) {
+          cert_chain_symbol = 'N';
         }
         if (multifile->is_subfile_compressed(i)) {
           size_t orig_length = multifile->get_subfile_length(i);
@@ -563,24 +641,25 @@ list_files(int argc, char *argv[]) {
             ratio = (double)internal_length / (double)orig_length;
           }
           if (ratio > 1.0) {
-            printf("%12d worse %c %s %s\n",
+            printf("%12d worse %c%c %s %s\n",
                    (int)multifile->get_subfile_length(i),
-                   encrypted_symbol,
+                   encrypted_symbol, cert_chain_symbol,
                    format_timestamp(multifile->get_record_timestamp(),
                                     multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           } else {
-            printf("%12d  %3.0f%% %c %s %s\n",
+            printf("%12d  %3.0f%% %c%c %s %s\n",
                    (int)multifile->get_subfile_length(i),
-                   100.0 - ratio * 100.0, encrypted_symbol,
+                   100.0 - ratio * 100.0, 
+                   encrypted_symbol, cert_chain_symbol,
                    format_timestamp(multifile->get_record_timestamp(),
                                     multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           }
         } else {
-          printf("%12d       %c %s %s\n", 
+          printf("%12d       %c%c %s %s\n", 
                  (int)multifile->get_subfile_length(i),
-                 encrypted_symbol,
+                 encrypted_symbol, cert_chain_symbol,
                  format_timestamp(multifile->get_record_timestamp(),
                                   multifile->get_subfile_timestamp(i)),
                  subfile_name.c_str());
@@ -601,13 +680,34 @@ list_files(int argc, char *argv[]) {
       cout << "Multifile needs to be repacked.\n";
     }
   } else {
-    for (int i = 0; i < num_subfiles; i++) {
+    for (i = 0; i < num_subfiles; i++) {
       string subfile_name = multifile->get_subfile_name(i);
-      if (is_named(subfile_name, argc, argv)) {
+      if (is_named(subfile_name, params)) {
         cout << subfile_name << "\n";
       }
     }
   }
+
+#ifdef HAVE_OPENSSL
+  int num_signatures = multifile->get_num_signatures();
+  if (num_signatures != 0) {
+    multifile->load_certificate_chains();
+    cout << "\n";
+    for (i = 0; i < num_signatures; ++i) {
+      cout << "Signed by " << multifile->get_signature_common_name(i);
+      int verify_result = multifile->validate_signature_certificate(i);
+      if (verify_result == 0) {
+        cout << " (certificate validated)\n";
+      } else {
+        cout << " (certificate unknown, reason " << verify_result << ")\n";
+      }
+      if (verbose) {
+        multifile->write_signature_certificate(i, cout);
+        cout << "\n";
+      }
+    }
+  }
+#endif  // HAVE_OPENSSL
 
   return true;
 }
@@ -647,7 +747,7 @@ main(int argc, char *argv[]) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "crutxkvz123456789Z:T:f:OC:ep:P:F:h";
+  static const char *optflags = "crutxkvz123456789Z:T:S:T:f:OC:ep:P:F:h";
   int flag = getopt(argc, argv, optflags);
   Filename rel_path;
   while (flag != EOF) {
@@ -714,6 +814,12 @@ main(int argc, char *argv[]) {
       break;
     case 'Z':
       dont_compress_str = optarg;
+      break;
+    case 'N':
+      cert_chain.push_back(Filename::from_os_specific(optarg));
+      break;
+    case 'S':
+      sign_params.push_back(optarg);
       break;
     case 'T':
       {
@@ -798,24 +904,35 @@ main(int argc, char *argv[]) {
   // Split out the extensions named by -Z into different words.
   tokenize_extensions(dont_compress_str, dont_compress);
 
+  // Build a list of remaining parameters.
+  vector_string params;
+  params.reserve(argc - 1);
+  for (int i = 1; i < argc; i++) {
+    params.push_back(argv[i]);
+  }
+
   bool okflag = true;
   if (create || append || update) {
-    okflag = add_files(argc, argv);
+    okflag = add_files(params);
   } else if (extract) {
     if (got_record_timestamp_flag) {
       cerr << "Warning: -T ignored on extract.\n";
     }
-    okflag = extract_files(argc, argv);
+    okflag = extract_files(params);
   } else if (kill_cmd) {
     if (got_record_timestamp_flag) {
       cerr << "Warning: -T ignored on kill.\n";
     }
-    okflag = kill_files(argc, argv);
+    okflag = kill_files(params);
   } else { // list
     if (got_record_timestamp_flag) {
       cerr << "Warning: -T ignored on list.\n";
     }
-    okflag = list_files(argc, argv);
+    okflag = list_files(params);
+  }
+
+  if (okflag && !sign_params.empty()) {
+    sign_multifile();
   }
 
   if (okflag) {

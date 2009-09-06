@@ -14,7 +14,7 @@
 
 #include "bioStreamBuf.h"
 #include "config_downloader.h"
-#include "ssl_utils.h"
+#include "openSSLWrapper.h"
 #include <errno.h>
 
 #ifdef HAVE_OPENSSL
@@ -199,7 +199,7 @@ underflow() {
             << "Lost connection to "
             << _source->get_server_name() << ":" 
             << _source->get_port() << " (" << read_count << ").\n";
-          notify_ssl_errors();
+          OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
 
           SSL *ssl = NULL;
           BIO_get_ssl(*_source, &ssl);

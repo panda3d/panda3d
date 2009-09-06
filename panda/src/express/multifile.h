@@ -25,6 +25,7 @@
 #include "indirectLess.h"
 #include "referenceCount.h"
 #include "pvector.h"
+#include "openSSLWrapper.h"
 
 ////////////////////////////////////////////////////////////////////
 //       Class : Multifile
@@ -81,6 +82,22 @@ PUBLISHED:
                      int compression_level);
   string update_subfile(const string &subfile_name, const Filename &filename,
                         int compression_level);
+
+#ifdef HAVE_OPENSSL
+  bool add_signature(const Filename &certificate, const Filename &pkey,
+                     const string &password = "");
+  bool add_signature(X509 *certificate, EVP_PKEY *pkey);
+
+  int get_num_signatures() const;
+  X509 *get_signature(int n) const;
+  string get_signature_subject_name(int n) const;
+  string get_signature_common_name(int n) const;
+  void write_signature_certificate(int n, ostream &out) const;
+
+  void load_certificate_chains();
+  int validate_signature_certificate(int n) const;
+#endif  // HAVE_OPENSSL
+
   BLOCKING bool flush();
   BLOCKING bool repack();
 
@@ -97,6 +114,8 @@ PUBLISHED:
   time_t get_subfile_timestamp(int index) const;
   bool is_subfile_compressed(int index) const;
   bool is_subfile_encrypted(int index) const;
+  void set_subfile_is_cert_chain(int index, bool flag);
+  bool get_subfile_is_cert_chain(int index) const;
 
   streampos get_index_end() const;
   streampos get_subfile_internal_start(int index) const;
@@ -128,6 +147,8 @@ private:
     SF_data_invalid   = 0x0004,
     SF_compressed     = 0x0008,
     SF_encrypted      = 0x0010,
+    SF_cert_chain     = 0x0020,
+    SF_signature      = 0x0040,
   };
 
   class Subfile {
@@ -145,9 +166,12 @@ private:
     INLINE bool is_deleted() const;
     INLINE bool is_index_invalid() const;
     INLINE bool is_data_invalid() const;
+    INLINE bool is_cert_special() const;
+    INLINE streampos get_last_byte_pos() const;
 
     string _name;
     streampos _index_start;
+    size_t _index_length;
     streampos _data_start;
     size_t _data_length;
     size_t _uncompressed_length;
@@ -156,6 +180,9 @@ private:
     Filename _source_filename;
     int _flags;
     int _compression_level;  // Not preserved on disk.
+#ifdef HAVE_OPENSSL
+    EVP_PKEY *_pkey;         // Not preserved on disk.
+#endif
   };
 
   INLINE streampos word_to_streampos(size_t word) const;
@@ -164,24 +191,34 @@ private:
   streampos pad_to_streampos(streampos fpos);
 
   void add_new_subfile(Subfile *subfile, int compression_level);
+  istream *open_read_subfile(Subfile *subfile);
   string standardize_subfile_name(const string &subfile_name) const;
+  static bool read_to_pvector(pvector<unsigned char> &result, istream &stream);
 
   void clear_subfiles();
   bool read_index();
   bool write_header();
 
+  void check_signatures();
 
   typedef ov_set<Subfile *, IndirectLess<Subfile> > Subfiles;
   Subfiles _subfiles;
   typedef pvector<Subfile *> PendingSubfiles;
   PendingSubfiles _new_subfiles;
   PendingSubfiles _removed_subfiles;
+  PendingSubfiles _cert_special;
+
+#ifdef HAVE_OPENSSL
+  typedef pvector<X509 *> Certificates;
+  Certificates _signatures;
+#endif
 
   IStreamWrapper *_read;
   ostream *_write;
   bool _owns_stream;
   streampos _next_index;
   streampos _last_index;
+  streampos _last_data_byte;
 
   bool _needs_repack;
   time_t _timestamp;

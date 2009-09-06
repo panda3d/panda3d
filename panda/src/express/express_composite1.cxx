@@ -21,6 +21,7 @@
 #include "nodePointerToBase.cxx"
 #include "nodePointerTo.cxx"
 #include "nodeReferenceCount.cxx"
+#include "openSSLWrapper.cxx"
 #include "ordered_vector.cxx"
 #include "patchfile.cxx"
 #include "password_hash.cxx"

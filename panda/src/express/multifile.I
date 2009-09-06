@@ -436,15 +436,26 @@ Subfile() {
   _source = (istream *)NULL;
   _flags = 0;
   _compression_level = 0;
+#ifdef HAVE_OPENSSL
+  _pkey = NULL;
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::Subfile::operator <
 //       Access: Public
-//  Description: 
+//  Description: Compares two Subfiles for proper sorting within the
+//               index.
 ////////////////////////////////////////////////////////////////////
 INLINE bool Multifile::Subfile::
 operator < (const Multifile::Subfile &other) const {
+  // This should only be called on normal subfiles, not on certificate
+  // files or signature files.  (We don't attempt to sort these
+  // special signature files.)
+  nassertr(!is_cert_special() && !other.is_cert_special(), false);
+
+  // Normal subfiles are simply sorted in alphabetical order by
+  // filename.
   return _name < other._name;
 }
 
@@ -483,4 +494,29 @@ is_index_invalid() const {
 INLINE bool Multifile::Subfile::
 is_data_invalid() const {
   return (_flags & SF_data_invalid) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::Subfile::is_cert_special
+//       Access: Public
+//  Description: Returns true if this Subfile represents a signature
+//               record, which is treated specially; or false if it is
+//               an ordinary Subfile.
+////////////////////////////////////////////////////////////////////
+INLINE bool Multifile::Subfile::
+is_cert_special() const {
+  return (_flags & SF_signature) != 0;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::Subfile::get_last_byte_pos
+//       Access: Public
+//  Description: Returns the byte position within the Multifile of the
+//               last byte that contributes to this Subfile, either in
+//               the index record or in the subfile data.
+////////////////////////////////////////////////////////////////////
+INLINE streampos Multifile::Subfile::
+get_last_byte_pos() const {
+  return max(_index_start + (streampos)_index_length, 
+             _data_start + (streampos)_data_length) - (streampos)1;
 }

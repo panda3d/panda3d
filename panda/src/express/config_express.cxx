@@ -69,6 +69,9 @@ ConfigVariableBool collect_tcp
 ConfigVariableDouble collect_tcp_interval
 ("collect-tcp-interval", 0.2);
 
+ConfigVariableList ssl_certificates
+("ssl-certificates");
+
 ////////////////////////////////////////////////////////////////////
 //     Function: init_libexpress
 //  Description: Initializes the library.  This must be called at

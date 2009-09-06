@@ -16,7 +16,6 @@
 #include "httpClient.h"
 #include "httpCookie.h"
 #include "bioStream.h"
-#include "ssl_utils.h"
 #include "chunkedStream.h"
 #include "identityStream.h"
 #include "config_downloader.h"
@@ -26,7 +25,6 @@
 #include <stdio.h>
 
 #ifdef HAVE_OPENSSL
-#include "openssl/x509.h"
 
 #ifdef WIN32_VC
   #include <WinSock2.h>
@@ -989,7 +987,7 @@ run_connecting() {
     downloader_cat.info()
       << "Could not connect to " << _bio->get_server_name() << ":" 
       << _bio->get_port() << "\n";
-    notify_ssl_errors();
+    OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
     _status_entry._status_code = SC_no_connection;
     _state = S_try_next_proxy;
     return false;
@@ -1487,7 +1485,7 @@ run_setup_ssl() {
   if (result == 0) {
     downloader_cat.error()
       << "Invalid cipher list: '" << cipher_list << "'\n";
-    notify_ssl_errors();
+    OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
     _status_entry._status_code = SC_ssl_internal_failure;
     _state = S_failure;
     return false;
@@ -1563,7 +1561,7 @@ run_ssl_handshake() {
     downloader_cat.info()
       << "Could not establish SSL handshake with " 
       << _request.get_url().get_server_and_port() << "\n";
-    notify_ssl_errors();
+    OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
 
     // It seems to be an error to free sbio at this point; perhaps
     // it's already been freed?
@@ -2485,7 +2483,7 @@ begin_request(HTTPEnum::Method method, const DocumentSpec &url,
 
     } else {
       // Couldn't read the file.
-      notify_ssl_errors();
+      OpenSSLWrapper::get_global_ptr()->notify_ssl_errors();
       _status_entry._status_code = SC_no_connection;
       _state = S_failure;
     }

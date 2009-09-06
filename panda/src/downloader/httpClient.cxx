@@ -15,7 +15,6 @@
 #include "httpClient.h"
 #include "httpChannel.h"
 #include "config_downloader.h"
-#include "ssl_utils.h"
 #include "filename.h"
 #include "config_express.h"
 #include "virtualFileSystem.h"
@@ -25,19 +24,6 @@
 #include "globPattern.h"
 
 #ifdef HAVE_OPENSSL
-
-#include "openssl/rand.h"
-#include "openssl/err.h"
-
-// Windows may define this macro inappropriately.
-#ifdef X509_NAME
-#undef X509_NAME
-#endif
-
-bool HTTPClient::_ssl_initialized = false;
-
-// This is created once and never freed.
-X509_STORE *HTTPClient::_x509_store = NULL;
 
 PT(HTTPClient) HTTPClient::_global_ptr;
 
@@ -183,10 +169,8 @@ HTTPClient() {
   _client_certificate_priv = NULL;
 
   // The first time we create an HTTPClient, we must initialize the
-  // OpenSSL library.
-  if (!_ssl_initialized) {
-    initialize_ssl();
-  }
+  // OpenSSL library.  The OpenSSLWrapper object does that.
+  OpenSSLWrapper::get_global_ptr();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -238,7 +222,6 @@ HTTPClient::
   // pointer from it, so it won't be destroyed along with it (this
   // object is shared among all contexts).
   if (_ssl_ctx != (SSL_CTX *)NULL) {
-    nassertv(_ssl_ctx->cert_store == _x509_store);
     _ssl_ctx->cert_store = NULL;
     SSL_CTX_free(_ssl_ctx);
   }
@@ -267,16 +250,9 @@ HTTPClient::
 ////////////////////////////////////////////////////////////////////
 void HTTPClient::
 init_random_seed() {
-  static bool _initialized = false;
-  if (!_initialized) {
-    _initialized = true;
-
-    // It is necessary to call this before making any other OpenSSL
-    // call, per the docs.  Also, the docs say that making this call
-    // will seed the random number generator.  Apparently you can get
-    // away with not calling it in versions prior to 0.9.8, however.
-    SSL_library_init();
-  }
+  // Creating the global OpenSSLWrapper object is nowadays sufficient
+  // to ensure that OpenSSL and its random seed have been initialized.
+  OpenSSLWrapper::get_global_ptr();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -995,26 +971,8 @@ parse_http_version_string(const string &version) {
 ////////////////////////////////////////////////////////////////////
 bool HTTPClient::
 load_certificates(const Filename &filename) {
-  // The line below might be a recursive call, but it should be safe,
-  // since get_ssl_ctx() won't call load_certificates() until after it
-  // has assigned _ssl_ctx--guaranteeing that the second call to
-  // get_ssl_ctx() will be a no-op.
-  SSL_CTX *ctx = get_ssl_ctx();
-
-  int result = load_verify_locations(ctx, filename);
-
-  if (result <= 0) {
-    downloader_cat.info()
-      << "Could not load certificates from " << filename << ".\n";
-    notify_ssl_errors();
-    return false;
-  }
-
-  downloader_cat.info()
-    << "Appending " << result << " SSL certificates from "
-    << filename << "\n";
-
-  return true;
+  OpenSSLWrapper *sslw = OpenSSLWrapper::get_global_ptr();
+  return sslw->load_certificates(filename);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1178,7 +1136,8 @@ get_ssl_ctx() {
 #endif
 
   // Make sure the error strings are loaded.
-  notify_ssl_errors();
+  OpenSSLWrapper *sslw = OpenSSLWrapper::get_global_ptr();
+  sslw->notify_ssl_errors();
 
   // Get the configured set of expected servers.
   int num_servers = expected_ssl_server.get_num_unique_values();
@@ -1187,29 +1146,7 @@ get_ssl_ctx() {
     add_expected_server(expected_server);
   }
 
-  if (_x509_store != (X509_STORE *)NULL) {
-    // If we've already created an x509 store object, share it with
-    // this context.  It would be better to make a copy of the store
-    // object for each context, so we could locally add certificates,
-    // but (a) there doesn't seem to be an interface for this, and (b)
-    // something funny about loading certificates that seems to save
-    // some persistent global state anyway.
-    SSL_CTX_set_cert_store(_ssl_ctx, _x509_store);
-
-  } else {
-    // Create the first x509 store object, and fill it up with our
-    // certificates.
-    _x509_store = X509_STORE_new();
-    SSL_CTX_set_cert_store(_ssl_ctx, _x509_store);
-
-    // Load in any default certificates listed in the Configrc file.
-    int num_certs = ssl_certificates.get_num_unique_values();
-    for (int ci = 0; ci < num_certs; ci++) {
-      string cert_file = ssl_certificates.get_unique_value(ci);
-      Filename filename = Filename::expand_from(cert_file);
-      load_certificates(filename);
-    }
-  }
+  SSL_CTX_set_cert_store(_ssl_ctx, sslw->get_x509_store());
 
   return _ssl_ctx;
 }
@@ -1459,114 +1396,6 @@ unload_client_certificate() {
   }
 
   _client_certificate_loaded = false;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::initialize_ssl
-//       Access: Private, Static
-//  Description: Called once the first time this class is used to
-//               initialize the OpenSSL library.
-////////////////////////////////////////////////////////////////////
-void HTTPClient::
-initialize_ssl() {
-  OpenSSL_add_all_algorithms();
-  _ssl_initialized = true;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: HTTPClient::load_verify_locations
-//       Access: Private, Static
-//  Description: An implementation of the OpenSSL-provided
-//               SSL_CTX_load_verify_locations() that takes a Filename
-//               (and supports Panda vfs).
-//
-//               This reads the certificates from the named ca_file
-//               and makes them available to the given SSL context.
-//               It returns a positive number on success, or <= 0 on
-//               failure.
-////////////////////////////////////////////////////////////////////
-int HTTPClient::
-load_verify_locations(SSL_CTX *ctx, const Filename &ca_file) {
-  VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
-
-  // First, read the complete file into memory.
-  string data;
-  if (!vfs->read_file(ca_file, data, true)) {
-    // Could not find or read file.
-    downloader_cat.info()
-      << "Could not read " << ca_file << ".\n";
-    return 0;
-  }
-
-  STACK_OF(X509_INFO) *inf;
-
-  // Now create an in-memory BIO to read the "file" from the buffer we
-  // just read, and call the low-level routines to read the
-  // certificates from the BIO.
-  BIO *mbio = BIO_new_mem_buf((void *)data.data(), data.length());
-
-  // We have to be sure and clear the OpenSSL error state before we
-  // call this function, or it will get confused.
-  ERR_clear_error();
-  inf = PEM_X509_INFO_read_bio(mbio, NULL, NULL, NULL);
-  BIO_free(mbio);
-
-  if (!inf) {
-    // Could not scan certificates.
-    downloader_cat.info()
-      << "PEM_X509_INFO_read_bio() returned NULL.\n";
-    notify_ssl_errors();
-    return 0;
-  }
-  
-  if (downloader_cat.is_spam()) {
-    downloader_cat.spam()
-      << "PEM_X509_INFO_read_bio() found " << sk_X509_INFO_num(inf)
-      << " entries.\n";
-  }
-
-  // Now add the certificates to the context.
-  X509_STORE *store = ctx->cert_store;
-
-  int count = 0;
-  int num_entries = sk_X509_INFO_num(inf);
-  for (int i = 0; i < num_entries; i++) {
-    X509_INFO *itmp = sk_X509_INFO_value(inf, i);
-
-    if (itmp->x509) {
-      X509_STORE_add_cert(store, itmp->x509);
-      count++;
-      if (downloader_cat.is_spam()) {
-        downloader_cat.spam()
-          << "Entry " << i << " is x509\n";
-      }
-
-    } else if (itmp->crl) {
-      X509_STORE_add_crl(store, itmp->crl);
-      count++;
-      if (downloader_cat.is_spam()) {
-        downloader_cat.spam()
-          << "Entry " << i << " is crl\n";
-      }
-
-    } else if (itmp->x_pkey) {
-      //      X509_STORE_add_crl(store, itmp->x_pkey);
-      //      count++;
-      if (downloader_cat.is_spam()) {
-        downloader_cat.spam()
-          << "Entry " << i << " is pkey\n";
-      }
-
-    } else {
-      if (downloader_cat.is_spam()) {
-        downloader_cat.spam()
-          << "Entry " << i << " is unknown type\n";
-      }
-    }
-  }
-  sk_X509_INFO_pop_free(inf, X509_INFO_free);
-
-  return count;
 }
 
 ////////////////////////////////////////////////////////////////////
