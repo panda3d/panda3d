@@ -104,6 +104,7 @@ PUBLISHED:
   const CertChain &get_signature(int n) const;
   string get_signature_subject_name(int n) const;
   string get_signature_common_name(int n) const;
+  string get_signature_public_key(int n) const;
   void write_signature_certificate(int n, ostream &out) const;
 
   int validate_signature_certificate(int n) const;
@@ -208,6 +209,8 @@ private:
   bool write_header();
 
   void check_signatures();
+
+  static INLINE char tohex(unsigned int nibble);
 
   typedef ov_set<Subfile *, IndirectLess<Subfile> > Subfiles;
   Subfiles _subfiles;

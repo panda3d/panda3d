@@ -795,13 +795,18 @@ add_signature(const Multifile::CertChain &cert_chain, EVP_PKEY *pkey) {
 ////////////////////////////////////////////////////////////////////
 //     Function: Multifile::get_num_signatures
 //       Access: Published
-//  Description: Returns the number of signatures found on the
-//               Multifile.  This reports only the signatures that
-//               match the contents of the Multifile; signatures that
-//               have become invalidated by a change in the Multifile
-//               are not reported here.  However, this does not verify
-//               that the certificates themselves are valid; only that
-//               they match the Multifile contents.
+//  Description: Returns the number of matching signatures found on
+//               the Multifile.  These signatures may be iterated via
+//               get_signature() and related methods.
+//
+//               A signature on this list is guaranteed to match the
+//               Multifile contents, proving that the Multifile has
+//               been unmodified since the signature was applied.
+//               However, this does not guarantee that the certificate
+//               itself is actually from who it says it is from; only
+//               that it matches the Multifile contents.  See
+//               validate_signature_certificate() to authenticate a
+//               particular certificate.
 ////////////////////////////////////////////////////////////////////
 int Multifile::
 get_num_signatures() const {
@@ -832,8 +837,10 @@ get_signature(int n) const {
 //  Description: Returns the "subject name" for the nth signature found
 //               on the Multifile.  This is a string formatted
 //               according to RFC2253 that should more-or-less
-//               identify a particular certificate.  See the comments
-//               in get_num_signatures().
+//               identify a particular certificate; when paired with
+//               the public key (see get_signature_public_key()), it
+//               can uniquely identify a certificate.  See the
+//               comments in get_num_signatures().
 ////////////////////////////////////////////////////////////////////
 string Multifile::
 get_signature_subject_name(int n) const {
@@ -900,6 +907,43 @@ get_signature_common_name(int n) const {
         }
       }
     }
+  }
+
+  return string();
+}
+#endif  // HAVE_OPENSSL
+
+#ifdef HAVE_OPENSSL
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::get_signature_public_key
+//       Access: Published
+//  Description: Returns the public key used for the nth signature
+//               found on the Multifile.  This is encoded in DER form
+//               and returned as a string of hex digits.
+//
+//               This can be used, in conjunction with the subject
+//               name (see get_signature_subject_name()), to uniquely
+//               identify a particular certificate and its subsequent
+//               reissues.  See the comments in get_num_signatures().
+////////////////////////////////////////////////////////////////////
+string Multifile::
+get_signature_public_key(int n) const {
+  const CertChain &cert_chain = get_signature(n);
+  nassertr(!cert_chain.empty(), string());
+
+  EVP_PKEY *pkey = X509_get_pubkey(cert_chain[0]._cert);
+  if (pkey != NULL) {
+    int key_len = i2d_PublicKey(pkey, NULL);
+    unsigned char *key_buf = new unsigned char[key_len];
+    unsigned char *p = key_buf;
+    i2d_PublicKey(pkey, &p);
+    string result;
+    for (int i = 0; i < key_len; ++i) {
+      result += tohex(key_buf[i] >> 4);
+      result += tohex(key_buf[i]);
+    }
+    delete[] key_buf;
+    return result;
   }
 
   return string();

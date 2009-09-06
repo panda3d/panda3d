@@ -423,6 +423,20 @@ normalize_streampos(streampos fpos) const {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: Multifile::tohex
+//       Access: Private, Static
+//  Description: Converts a single nibble to a hex digit.
+////////////////////////////////////////////////////////////////////
+INLINE char Multifile::
+tohex(unsigned int nibble) {
+  nibble &= 0xf;
+  if (nibble < 10) {
+    return nibble + '0';
+  }
+  return nibble - 10 + 'a';
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: Multifile::Subfile::Constructor
 //       Access: Public
 //  Description: 
