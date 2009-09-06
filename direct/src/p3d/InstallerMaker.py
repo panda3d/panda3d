@@ -15,11 +15,14 @@ class CachedFile:
 class InstallerMaker:
     notify = directNotify.newCategory("InstallerMaker")
 
-    def __init__(self, shortname, fullname, p3dfile):
+    def __init__(self, shortname, fullname, p3dfile, version):
         self.shortname = shortname
         self.fullname = fullname
+        self.version = str(version)
+        # All paths given must be OS-specific!
         self.p3dfile = p3dfile
-        self.version = "1"
+        self.licensename = ""
+        self.licensefile = ""
 
     def build(self):
         """ Creates the installer. Call this after you have set all the parameters. """
@@ -27,7 +30,8 @@ class InstallerMaker:
         self.__buildNSIS()
 
     def __buildDEB(self):
-        InstallerMaker.notify.info("Creating %s.deb..." % self.shortname)
+        debfn = "%s_%s_all.deb" % (self.shortname, self.version)
+        InstallerMaker.notify.info("Creating %s..." % debfn)
 
         # Create a temporary directory and write the control file + launcher to it
         tempdir = Filename.temporary("", self.shortname + "_deb_", "") + "/"
@@ -42,15 +46,17 @@ class InstallerMaker:
         controlfile.write("Depends: panda3d-runtime\n")
         controlfile.write("Description: %s\n" % self.fullname)
         controlfile.close()
-        os.mkdir(os.path.join(tempdir, "usr"))
-        os.mkdir(os.path.join(tempdir, "usr", "bin"))
-        os.mkdir(os.path.join(tempdir, "usr", "share"))
-        os.mkdir(os.path.join(tempdir, "usr", "share", "games"))
+        os.makedirs(os.path.join(tempdir, "usr", "bin"))
+        os.makedirs(os.path.join(tempdir, "usr", "share", "games", self.shortname))
+        if self.licensefile != "":
+            os.makedirs(os.path.join(tempdir, "usr", "share", "doc", self.shortname))
         launcherfile = open(os.path.join(tempdir, "usr", "bin", self.shortname), "w")
         launcherfile.write("#!/bin/sh\n")
         launcherfile.write("/usr/bin/panda3d /usr/share/games/%s/data.p3d\n" % self.shortname)
         launcherfile.close()
-        shutil.copyfile(self.p3dfile, os.path.join(tempdir, "usr", "share", "games", "data.p3d"))
+        shutil.copyfile(self.p3dfile, os.path.join(tempdir, "usr", "share", "games", self.shortname, "data.p3d"))
+        if self.licensefile != "":
+            shutil.copyfile(self.licensefile, os.path.join(tempdir, "usr", "share", "doc", self.shortname, "copyright"))
 
         # Create a control.tar.gz file in memory
         controltargz = CachedFile()
@@ -68,9 +74,9 @@ class InstallerMaker:
         # Open the deb file and write to it. It's actually
         # just an AR file, which is very easy to make.
         modtime = int(time.time())
-        if os.path.isfile(self.shortname + ".deb"):
-            os.remove(self.shortname + ".deb")
-        debfile = open(self.shortname + ".deb", "wb")
+        if os.path.isfile(debfn):
+            os.remove(debfn)
+        debfile = open(debfn, "wb")
         debfile.write("!<arch>\x0A")
         debfile.write("debian-binary   %-12lu0     0     100644  %-10ld\x60\x0A" % (modtime, 4))
         debfile.write("2.0\x0A")
@@ -133,6 +139,8 @@ class InstallerMaker:
         nsi.write('\n')
         nsi.write('Var StartMenuFolder\n')
         nsi.write('!insertmacro MUI_PAGE_WELCOME\n')
+        if self.licensefile != "":
+            nsi.write('!insertmacro MUI_PAGE_LICENSE "%s"\n' % self.licensefile)
         nsi.write('!insertmacro MUI_PAGE_DIRECTORY\n')
         nsi.write('!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder\n')
         nsi.write('!insertmacro MUI_PAGE_INSTFILES\n')
