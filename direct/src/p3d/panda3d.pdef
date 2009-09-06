@@ -58,8 +58,7 @@ class panda3d(package):
            'direct.particles.*',
            'direct.showbase.*',
            'direct.showutil.*',
-           'direct.stdpy.*')          
-
+           'direct.stdpy.*')
 
     # Exclude these GUI toolkits; they're big, and many applications don't
     # use them.  We define them as separate, optional packages, below.
@@ -115,6 +114,16 @@ class egg(package):
 plugin-path $EGG_ROOT
 load-file-type egg pandaegg
 """)
+
+class ode(package):
+    # This package contains the code for the ODE integration.
+    # As not every application uses the ODE layers, and to cut down
+    # the download size, it is provided as separate package.
+
+    config(display_name = "Panda3D Open Dynamics Engine integration")
+    require('panda3d')
+
+    file('libpandaode.dll')
 
 class wx(package):
     config(display_name = "wxPython GUI Toolkit")
