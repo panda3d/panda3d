@@ -54,36 +54,32 @@ class InstallerMaker:
 
         # Create a control.tar.gz file in memory
         controltargz = CachedFile()
-        controltarfile = tarfile.TarFile.gzopen("control.tar.gz", "w", controltargz)
+        controltarfile = tarfile.TarFile.gzopen("control.tar.gz", "w", controltargz, 9)
         controltarfile.add(os.path.join(tempdir, "control"), "control")
         controltarfile.close()
         os.remove(os.path.join(tempdir, "control"))
 
         # Create the data.tar.gz file in the temporary directory
-        datatarfile = tarfile.TarFile.gzopen(os.path.join(tempdir, "data.tar.gz"), "w")
+        datatargz = CachedFile()
+        datatarfile = tarfile.TarFile.gzopen("data.tar.gz", "w", datatargz, 9)
         datatarfile.add(tempdir + "/usr", "/usr")
         datatarfile.close()
 
         # Open the deb file and write to it. It's actually
         # just an AR file, which is very easy to make.
-        modtime = str(int(time.time())).ljust(11)
+        modtime = int(time.time())
         if os.path.isfile(self.shortname + ".deb"):
             os.remove(self.shortname + ".deb")
         debfile = open(self.shortname + ".deb", "wb")
         debfile.write("!<arch>\x0A")
-        debfile.write("debian-binary   %s 0     0     100644  4         \x60\x0A" % modtime)
+        debfile.write("debian-binary   %-12lu0     0     100644  %-10ld\x60\x0A" % (modtime, 4))
         debfile.write("2.0\x0A")
-        debfile.write("control.tar.gz  %s 0     0     100644  %s \x60\x0A" % (modtime, str(len(controltargz.str)).ljust(9)))
+        debfile.write("control.tar.gz  %-12lu0     0     100644  %-10ld\x60\x0A" % (modtime, len(controltargz.str)))
         debfile.write(controltargz.str)
-        debfile.write("data.tar.gz     %s 0     0     100644  %s \x60\x0A" % (modtime, str(os.path.getsize(os.path.join(tempdir, "data.tar.gz"))).ljust(9)))
-
-        # Copy everything from data.tar.gz to the deb file megabyte by megabyte.
-        datatargz = open(os.path.join(tempdir, "data.tar.gz"), "rb")
-        data = datatargz.read(1024 * 1024)
-        while data != "":
-            debfile.write(data)
-            data = datatargz.read(1024 * 1024)
-        datatargz.close()
+        if (len(controltargz.str) & 1): debfile.write("\x0A")
+        debfile.write("data.tar.gz     %-12lu0     0     100644  %-10ld\x60\x0A" % (modtime, len(datatargz.str)))
+        debfile.write(datatargz.str)
+        if (len(datatargz.str) & 1): debfile.write("\x0A")
         debfile.close()
         shutil.rmtree(tempdir)
 
