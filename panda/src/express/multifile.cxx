@@ -570,6 +570,10 @@ update_subfile(const string &subfile_name, const Filename &filename,
 //               subsequent changes to the Multifile will
 //               automatically invalidate and remove the signature.
 //
+//               The chain filename may be empty if the certificate
+//               does not require an authenticating certificate chain
+//               (e.g. because it is self-signed).
+//
 //               The specified private key must match the certificate,
 //               and the Multifile must be open in read-write mode.
 //               The private key is only used for generating the
@@ -589,9 +593,11 @@ update_subfile(const string &subfile_name, const Filename &filename,
 //               parameter will be used as the password to decrypt it.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-add_signature(const Filename &certificate, const Filename &pkey,
-              const string &password) {
+add_signature(const Filename &certificate, const Filename &chain,
+              const Filename &pkey, const string &password) {
   VirtualFileSystem *vfs = VirtualFileSystem::get_global_ptr();
+
+  CertChain cert_chain;
 
   // Read the certificate file from VFS.  First, read the complete
   // file into memory.
@@ -612,6 +618,34 @@ add_signature(const Filename &certificate, const Filename &pkey,
     return false;
   }
 
+  // Store the first X509--the actual certificate--as the first record
+  // in our CertChain object.
+  cert_chain.push_back(CertRecord(x509));
+
+  // Read the rest of the certificates in the chain file.
+  if (!chain.empty()) {
+    string chain_data;
+    if (!vfs->read_file(chain, chain_data, true)) {
+      express_cat.info()
+        << "Could not read " << chain << ".\n";
+      return false;
+    }
+
+    BIO *chain_mbio = BIO_new_mem_buf((void *)chain_data.data(), chain_data.size());
+    X509 *c = PEM_read_bio_X509(chain_mbio, NULL, NULL, (void *)"");
+    while (c != NULL) {
+      cert_chain.push_back(c);
+      c = PEM_read_bio_X509(chain_mbio, NULL, NULL, (void *)"");
+    }
+    BIO_free(chain_mbio);
+
+    if (cert_chain.size() == 1) {
+      express_cat.info()
+        << "Could not read certificate chain in " << chain << ".\n";
+      return false;
+    }
+  }
+
   // Now do the same thing with the private key.  This one may be
   // password-encrypted on disk.
   string pkey_data;
@@ -621,7 +655,6 @@ add_signature(const Filename &certificate, const Filename &pkey,
     return false;
   }
 
-  // Create an in-memory BIO to read the "file" from the buffer.
   BIO *pkey_mbio = BIO_new_mem_buf((void *)pkey_data.data(), pkey_data.size());
   EVP_PKEY *evp_pkey = PEM_read_bio_PrivateKey(pkey_mbio, NULL, NULL,
                                                (void *)password.c_str());
@@ -629,16 +662,55 @@ add_signature(const Filename &certificate, const Filename &pkey,
   if (evp_pkey == NULL) {
     express_cat.info()
       << "Could not read private key in " << pkey << ".\n";
-    X509_free(x509);
     return false;
   }
 
-  bool result = add_signature(x509, evp_pkey);
+  bool result = add_signature(cert_chain, evp_pkey);
 
   EVP_PKEY_free(evp_pkey);
-  X509_free(x509);
 
   return result;
+}
+#endif  // HAVE_OPENSSL
+#ifdef HAVE_OPENSSL
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::add_signature
+//       Access: Published
+//  Description: Adds a new signature to the Multifile.  This
+//               signature associates the indicated certificate with
+//               the current contents of the Multifile.  When the
+//               Multifile is read later, the signature will still be
+//               present only if the Multifile is unchanged; any
+//               subsequent changes to the Multifile will
+//               automatically invalidate and remove the signature.
+//
+//               If chain is non-NULL, it represents the certificate
+//               chain that validates the certificate.
+//
+//               The specified private key must match the certificate,
+//               and the Multifile must be open in read-write mode.
+//               The private key is only used for generating the
+//               signature; it is not written to the Multifile and
+//               cannot be retrieved from the Multifile later.
+//               (However, the certificate *can* be retrieved from the
+//               Multifile later, to identify the entity that created
+//               the signature.)
+//
+//               This implicitly causes a repack() operation if one is
+//               needed.  Returns true on success, false on failure.
+////////////////////////////////////////////////////////////////////
+bool Multifile::
+add_signature(X509 *certificate, STACK *chain, EVP_PKEY *pkey) {
+  // Convert the certificate and chain into our own CertChain
+  // structure.
+  CertChain cert_chain;
+  cert_chain.push_back(CertRecord(certificate));
+  if (chain != NULL) {
+    int num = sk_num(chain);
+    for (int i = 0; i < num; ++i) {
+      cert_chain.push_back(CertRecord((X509 *)sk_value(chain, i)));
+    }
+  }
 }
 #endif  // HAVE_OPENSSL
 
@@ -654,6 +726,10 @@ add_signature(const Filename &certificate, const Filename &pkey,
 //               subsequent changes to the Multifile will
 //               automatically invalidate and remove the signature.
 //
+//               The signature certificate is the first certificate on
+//               the CertChain object.  Any remaining certificates are
+//               support certificates to authenticate the first one.
+//
 //               The specified private key must match the certificate,
 //               and the Multifile must be open in read-write mode.
 //               The private key is only used for generating the
@@ -667,7 +743,7 @@ add_signature(const Filename &certificate, const Filename &pkey,
 //               needed.  Returns true on success, false on failure.
 ////////////////////////////////////////////////////////////////////
 bool Multifile::
-add_signature(X509 *certificate, EVP_PKEY *pkey) {
+add_signature(const Multifile::CertChain &cert_chain, EVP_PKEY *pkey) {
   if (_needs_repack) {
     if (!repack()) {
       return false;
@@ -677,18 +753,26 @@ add_signature(X509 *certificate, EVP_PKEY *pkey) {
       return false;
     }
   }
+  
+  // Now encode that list of certs to a stream in DER form.
+  stringstream der_stream;
+  StreamWriter der_writer(der_stream);
+  der_writer.add_uint32(cert_chain.size());
 
-  // Encode the certificate into DER form for writing to the
-  // Multifile.
-  int der_len = i2d_X509(certificate, NULL);
-  unsigned char *der_buf = new unsigned char[der_len];
-  unsigned char *p = der_buf;
-  i2d_X509(certificate, &p);
-  string der_string((char *)der_buf, der_len);
-  delete[] der_buf;
-  istringstream der_stream(der_string);
+  CertChain::const_iterator ci;
+  for (ci = cert_chain.begin(); ci != cert_chain.end(); ++ci) {
+    X509 *cert = (*ci)._cert;
+
+    int der_len = i2d_X509(cert, NULL);
+    unsigned char *der_buf = new unsigned char[der_len];
+    unsigned char *p = der_buf;
+    i2d_X509(cert, &p);
+    der_writer.append_data(der_buf, der_len);
+    delete[] der_buf;
+  }
 
   // Create a temporary Subfile for writing out the signature.
+  der_stream.seekg(0);
   Subfile *subfile = new Subfile;
   subfile->_pkey = pkey;
   subfile->_flags |= SF_signature;
@@ -733,9 +817,10 @@ get_num_signatures() const {
 //  Description: Returns the nth signature found on the Multifile.
 //               See the comments in get_num_signatures().
 ////////////////////////////////////////////////////////////////////
-X509 *Multifile::
+const Multifile::CertChain &Multifile::
 get_signature(int n) const {
-  nassertr(n >= 0 && n < (int)_signatures.size(), NULL);
+  static CertChain error_chain;
+  nassertr(n >= 0 && n < (int)_signatures.size(), error_chain);
   return _signatures[n];
 }
 #endif  // HAVE_OPENSSL
@@ -752,10 +837,10 @@ get_signature(int n) const {
 ////////////////////////////////////////////////////////////////////
 string Multifile::
 get_signature_subject_name(int n) const {
-  X509 *x509 = get_signature(n);
-  nassertr(x509 != NULL, "");
+  const CertChain &cert_chain = get_signature(n);
+  nassertr(!cert_chain.empty(), string());
 
-  X509_NAME *xname = X509_get_subject_name(x509);
+  X509_NAME *xname = X509_get_subject_name(cert_chain[0]._cert);
   if (xname != NULL) {
     // We use "print" to dump the output to a memory BIO.  Is
     // there an easier way to extract the X509_NAME text?  Curse
@@ -786,12 +871,12 @@ get_signature_subject_name(int n) const {
 ////////////////////////////////////////////////////////////////////
 string Multifile::
 get_signature_common_name(int n) const {
-  X509 *x509 = get_signature(n);
-  nassertr(x509 != NULL, "");
+  const CertChain &cert_chain = get_signature(n);
+  nassertr(!cert_chain.empty(), string());
 
   // A complex OpenSSL interface to extract out the common name in
   // utf-8.
-  X509_NAME *xname = X509_get_subject_name(x509);
+  X509_NAME *xname = X509_get_subject_name(cert_chain[0]._cert);
   if (xname != NULL) {
     int pos = X509_NAME_get_index_by_NID(xname, NID_commonName, -1);
     if (pos != -1) {
@@ -831,11 +916,11 @@ get_signature_common_name(int n) const {
 ////////////////////////////////////////////////////////////////////
 void Multifile::
 write_signature_certificate(int n, ostream &out) const {
-  X509 *x509 = get_signature(n);
-  nassertv(x509 != NULL);
+  const CertChain &cert_chain = get_signature(n);
+  nassertv(!cert_chain.empty());
 
   BIO *mbio = BIO_new(BIO_s_mem());
-  X509_print(mbio, x509);
+  X509_print(mbio, cert_chain[0]._cert);
 
   char *pp;
   long pp_size = BIO_get_mem_data(mbio, &pp);
@@ -843,49 +928,6 @@ write_signature_certificate(int n, ostream &out) const {
   BIO_free(mbio);
 }
 #endif  // HAVE_OPENSSL
-
-#ifdef HAVE_OPENSSL
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::load_certificate_chains
-//       Access: Published
-//  Description: Loads any certificate chains specified in the
-//               Multifile into the global certificate store.  This
-//               may be necessary to successfully validate the
-//               certificate used to sign the multifile in
-//               validate_signature_certificate(), below.
-////////////////////////////////////////////////////////////////////
-void Multifile::
-load_certificate_chains() {
-  OpenSSLWrapper *sslw = OpenSSLWrapper::get_global_ptr();
-
-  Subfiles::iterator si;
-  for (si = _subfiles.begin(); si != _subfiles.end(); ++si) {
-    Subfile *subfile = (*si);
-
-    if ((subfile->_flags & SF_cert_chain) != 0) {
-      // If it's a certificate chain, add it to the global chain list.
-
-      // Read the cert chain into memory.
-      istream *stream = open_read_subfile(subfile);
-      nassertv(stream != NULL);
-      pvector<unsigned char> buffer;
-      bool success = read_to_pvector(buffer, *stream);
-      nassertv(success);
-      close_read_subfile(stream);
-
-      // Now it to the global chain.
-      if (!buffer.empty()) {
-        int result = sslw->load_certificates_from_ram((char *)&buffer[0], buffer.size());
-        if (result > 0) {
-          express_cat.info()
-            << "Loaded " << result << " certificates from "
-            << subfile->_name << "\n";
-        }
-      }
-    }
-  }
-}
-#endif // HAVE_OPENSSL
 
 #ifdef HAVE_OPENSSL
 ////////////////////////////////////////////////////////////////////
@@ -902,17 +944,32 @@ int Multifile::
 validate_signature_certificate(int n) const {
   int verify_result = -1;
 
-  X509 *x509 = get_signature(n);
-  nassertr(x509 != NULL, false);
+  const CertChain &chain = get_signature(n);
+  nassertr(!chain.empty(), false);
 
   OpenSSLWrapper *sslw = OpenSSLWrapper::get_global_ptr();
 
+  // Copy our CertChain structure into an X509 pointer and
+  // accompanying STACK pointer.
+  X509 *x509 = chain[0]._cert;
+  STACK *stack = NULL;
+  if (chain.size() > 1) {
+    stack = sk_new(NULL);
+    for (size_t n = 1; n < chain.size(); ++n) {
+      sk_push(stack, (char *)chain[n]._cert);
+    }
+  }
+
+  // Create the X509_STORE_CTX for verifying the cert and chain.
   X509_STORE_CTX *ctx = X509_STORE_CTX_new();
-  X509_STORE_CTX_init(ctx, sslw->get_x509_store(), x509, NULL);
+  X509_STORE_CTX_init(ctx, sslw->get_x509_store(), x509, stack);
   X509_STORE_CTX_set_cert(ctx, x509);
 
-  X509_verify_cert(ctx);
-  verify_result = X509_STORE_CTX_get_error(ctx);
+  if (X509_verify_cert(ctx)) {
+    verify_result = 0;
+  } else {
+    verify_result = X509_STORE_CTX_get_error(ctx);
+  }
 
   if (express_cat.is_debug()) {
     express_cat.debug()
@@ -920,6 +977,7 @@ validate_signature_certificate(int n) const {
       << "\n";
   }
 
+  sk_free(stack);
   X509_STORE_CTX_cleanup(ctx);
   X509_STORE_CTX_free(ctx);
 
@@ -1391,51 +1449,6 @@ bool Multifile::
 is_subfile_encrypted(int index) const {
   nassertr(index >= 0 && index < (int)_subfiles.size(), false);
   return (_subfiles[index]->_flags & SF_encrypted) != 0;
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::set_subfile_is_cert_chain
-//       Access: Published
-//  Description: Sets the cert_chain flag on the indicated subfile.
-//               This should be set for any subfiles that define the
-//               certificate chain that will be necessary to validate
-//               signatures that are subsequently used to sign the
-//               multifile.
-//
-//               Note that the certificate chain subfiles must be
-//               added and this flag set *before* signing the
-//               multifile.
-////////////////////////////////////////////////////////////////////
-void Multifile::
-set_subfile_is_cert_chain(int index, bool flag) {
-  nassertv(is_write_valid());
-  nassertv(index >= 0 && index < (int)_subfiles.size());
-
-  Subfile *subfile = _subfiles[index];
-  bool current_flag = (subfile->_flags & SF_cert_chain) != 0;
-  if (current_flag != flag) {
-    if (flag) {
-      subfile->_flags |= SF_cert_chain;
-    } else {
-      subfile->_flags &= ~SF_cert_chain;
-    }
-    subfile->rewrite_index_flags(*_write);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: Multifile::get_subfile_is_cert_chain
-//       Access: Published
-//  Description: Returns the cert_chain flag on the indicated subfile.
-//               This should be set for any subfiles that define the
-//               certificate chain that will be necessary to validate
-//               signatures that are subsequently used to sign the
-//               multifile.
-////////////////////////////////////////////////////////////////////
-bool Multifile::
-get_subfile_is_cert_chain(int index) const {
-  nassertr(index >= 0 && index < (int)_subfiles.size(), false);
-  return (_subfiles[index]->_flags & SF_cert_chain) != 0;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -2021,13 +2034,6 @@ clear_subfiles() {
     delete subfile;
   }
   _cert_special.clear();
-
-  Certificates::iterator ci;
-  for (ci = _signatures.begin(); ci != _signatures.end(); ++ci) {
-    X509 *cert = (*ci);
-    X509_free(cert);
-  }
-  _signatures.clear();
 #endif  // HAVE_OPENSSL
 
   Subfiles::iterator fi;
@@ -2288,21 +2294,36 @@ check_signatures() {
     StreamReader reader(*stream);
     size_t sig_size = reader.get_uint32();
     string sig_string = reader.extract_bytes(sig_size);
-    
+
+    size_t num_certs = reader.get_uint32();
+
+    // Read the remaining buffer of certificate data.
     pvector<unsigned char> buffer;
     bool success = read_to_pvector(buffer, *stream);
     nassertv(success);
     close_read_subfile(stream);
-    
-    X509 *x509 = NULL;
+
+    // Now convert each of the certificates to an X509 object, and
+    // store it in our CertChain.
+    CertChain chain;
     EVP_PKEY *pkey = NULL;
     if (!buffer.empty()) {
       const unsigned char *bp = (const unsigned char *)&buffer[0];
-      x509 = d2i_X509(NULL, &bp, buffer.size());
+      const unsigned char *bp_end = bp + buffer.size();
+      X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
+      while (num_certs > 0 && x509 != NULL) {
+        chain.push_back(CertRecord(x509));
+        --num_certs;
+        x509 = d2i_X509(NULL, &bp, bp_end - bp);
+      }
+      if (num_certs != 0 || x509 != NULL) {
+        express_cat.warning() 
+          << "Extra data in signature record.\n";
+      }
     }
     
-    if (x509 != NULL) {
-      pkey = X509_get_pubkey(x509);
+    if (!chain.empty()) {
+      pkey = X509_get_pubkey(chain[0]._cert);
     }
     
     if (pkey != NULL) {
@@ -2342,19 +2363,12 @@ check_signatures() {
                         (unsigned char *)sig_string.data(), 
                         sig_string.size(), pkey);
       if (verify_result == 1) {
-        // The signature matches; save the certificate.
-        _signatures.push_back(x509);
-        x509 = NULL;
+        // The signature matches; save the certificate and its chain.
+        _signatures.push_back(chain);
       } else {
         // Bad match.
         _needs_repack = true;
       }
-    }
-    
-    if (x509 != NULL) {
-      // If we still have the X509 pointer by this point, we haven't
-      // saved it anywhere, so free it now.
-      X509_free(x509);
     }
   }
 #endif  // HAVE_OPENSSL

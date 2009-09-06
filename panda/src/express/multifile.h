@@ -84,17 +84,28 @@ PUBLISHED:
                         int compression_level);
 
 #ifdef HAVE_OPENSSL
-  bool add_signature(const Filename &certificate, const Filename &pkey,
+  class CertRecord {
+  public:
+    INLINE CertRecord(X509 *cert);
+    INLINE CertRecord(const CertRecord &copy);
+    INLINE ~CertRecord();
+    X509 *_cert;
+  };
+  typedef pvector<CertRecord> CertChain;
+
+  bool add_signature(const Filename &certificate, 
+                     const Filename &chain,
+                     const Filename &pkey,
                      const string &password = "");
-  bool add_signature(X509 *certificate, EVP_PKEY *pkey);
+  bool add_signature(X509 *certificate, STACK *chain, EVP_PKEY *pkey);
+  bool add_signature(const CertChain &chain, EVP_PKEY *pkey);
 
   int get_num_signatures() const;
-  X509 *get_signature(int n) const;
+  const CertChain &get_signature(int n) const;
   string get_signature_subject_name(int n) const;
   string get_signature_common_name(int n) const;
   void write_signature_certificate(int n, ostream &out) const;
 
-  void load_certificate_chains();
   int validate_signature_certificate(int n) const;
 #endif  // HAVE_OPENSSL
 
@@ -114,8 +125,6 @@ PUBLISHED:
   time_t get_subfile_timestamp(int index) const;
   bool is_subfile_compressed(int index) const;
   bool is_subfile_encrypted(int index) const;
-  void set_subfile_is_cert_chain(int index, bool flag);
-  bool get_subfile_is_cert_chain(int index) const;
 
   streampos get_index_end() const;
   streampos get_subfile_internal_start(int index) const;
@@ -147,8 +156,7 @@ private:
     SF_data_invalid   = 0x0004,
     SF_compressed     = 0x0008,
     SF_encrypted      = 0x0010,
-    SF_cert_chain     = 0x0020,
-    SF_signature      = 0x0040,
+    SF_signature      = 0x0020,
   };
 
   class Subfile {
@@ -209,7 +217,7 @@ private:
   PendingSubfiles _cert_special;
 
 #ifdef HAVE_OPENSSL
-  typedef pvector<X509 *> Certificates;
+  typedef pvector<CertChain> Certificates;
   Certificates _signatures;
 #endif
 

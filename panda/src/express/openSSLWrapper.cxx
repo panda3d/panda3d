@@ -36,6 +36,7 @@ OpenSSLWrapper() {
   OpenSSL_add_all_algorithms();
 
   _x509_store = X509_STORE_new();
+  X509_STORE_set_default_paths(_x509_store);
 
   // Load in any default certificates listed in the Config.prc file.
   int num_certs = ssl_certificates.get_num_unique_values();
@@ -67,6 +68,10 @@ OpenSSLWrapper::
 //
 //               Returns the number of certificates read on success,
 //               or 0 on failure.
+//
+//               You should call this only with trusted,
+//               locally-stored certificates; not with certificates
+//               received from an untrusted source.
 ////////////////////////////////////////////////////////////////////
 int OpenSSLWrapper::
 load_certificates(const Filename &filename) {
@@ -100,10 +105,14 @@ load_certificates(const Filename &filename) {
 ////////////////////////////////////////////////////////////////////
 //     Function: OpenSSLWrapper::load_certificates_from_ram
 //       Access: Public
-//  Description: Reads a chain of certificates from the indicated
-//               data buffer and adds them to the X509_STORE object.
-//               Returns the number of certificates read on success,
-//               or 0 on failure.
+//  Description: Reads a chain of trusted certificates from the
+//               indicated data buffer and adds them to the X509_STORE
+//               object.  Returns the number of certificates read on
+//               success, or 0 on failure.
+//
+//               You should call this only with trusted,
+//               locally-stored certificates; not with certificates
+//               received from an untrusted source.
 ////////////////////////////////////////////////////////////////////
 int OpenSSLWrapper::
 load_certificates_from_ram(const char *data, size_t data_size) {

@@ -520,3 +520,37 @@ get_last_byte_pos() const {
   return max(_index_start + (streampos)_index_length, 
              _data_start + (streampos)_data_length) - (streampos)1;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::CertRecord::Constructor
+//       Access: Public
+//  Description: Ownership of the X509 object is passed into the
+//               CertRecord; it will be freed when the CertRecord
+//               destructs.
+////////////////////////////////////////////////////////////////////
+INLINE Multifile::CertRecord::
+CertRecord(X509 *cert) :
+  _cert(cert)
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::CertRecord::Copy Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Multifile::CertRecord::
+CertRecord(const Multifile::CertRecord &copy) :
+  _cert(X509_dup(copy._cert))
+{
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: Multifile::CertRecord::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+INLINE Multifile::CertRecord::
+~CertRecord() {
+  X509_free(_cert);
+}

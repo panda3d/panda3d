@@ -49,7 +49,6 @@ bool got_chdir_to = false;
 size_t scale_factor = 0;       // -F
 pset<string> dont_compress;    // -Z
 vector_string sign_params;     // -S
-pvector<Filename> cert_chain;  // -N
 
 // Default extensions not to compress.  May be overridden with -Z.
 string dont_compress_str = "jpg,png,mp3,ogg";
@@ -225,21 +224,14 @@ help() {
     "      generate slightly smaller files, but compression takes longer.  The\n"
     "      default is -" << default_compression_level << ".\n\n"
 
-    "  -N ca-chain.crt\n"
-    "      Adds the indicated certificate chain file to the multifile.  This must\n"
-    "      used in conjunction with -c or -u mode.  The indicated file must be\n"
-    "      a PEM-formatted collection of certificates, representing the chain of\n"
-    "      authentication from the certificate used to sign the multifile (-S,\n"
-    "      below), and a certificate authority.  This may be necessary for\n"
-    "      certain certificates whose signing authority is one or more steps\n"
-    "      removed from a well-known certificate authority.  You must add this\n"
-    "      file to the multifile before signing it (or at least at the same time).\n\n"
-
-    "  -S file.crt,file.key[,\"password\"]\n"
+    "  -S file.crt,[chain.crt],file.key[,\"password\"]\n"
     "      Sign the multifile.  The signing certificate should be in PEM form in\n"
     "      file.crt, with its private key in PEM form in file.key.  If the key\n"
     "      is encrypted on-disk, specify the decryption password as the third\n"
-    "      option.  PEM form is the form accepted by the Apache web server.  The\n"
+    "      option.  If a certificate chain is required, chain.crt should also\n"
+    "      be specified; note that the commas should be supplied even if this\n"
+    "      optional filename is omitted.\n"
+    "      PEM form is the form accepted by the Apache web server.  The\n"
     "      signature is written to the multifile to prove it is unchanged; any\n"
     "      subsequent change to the multifile will invalidate the signature.\n"
     "      This parameter may be repeated to sign the multifile with different\n"
@@ -297,12 +289,10 @@ get_compression_level(const Filename &subfile_name) {
 }
 
 bool
-do_add_files(Multifile *multifile, const pvector<Filename> &filenames,
-             bool cert_chain_flag);
+do_add_files(Multifile *multifile, const pvector<Filename> &filenames);
 
 bool
-do_add_directory(Multifile *multifile, const Filename &directory_name,
-                 bool cert_chain_flag) {
+do_add_directory(Multifile *multifile, const Filename &directory_name) {
   vector_string files;
   if (!directory_name.scan_directory(files)) {
     cerr << "Unable to scan directory " << directory_name << "\n";
@@ -317,19 +307,18 @@ do_add_directory(Multifile *multifile, const Filename &directory_name,
     filenames.push_back(subfile_name);
   }
 
-  return do_add_files(multifile, filenames, cert_chain_flag);
+  return do_add_files(multifile, filenames);
 }
 
 bool
-do_add_files(Multifile *multifile, const pvector<Filename> &filenames,
-             bool cert_chain_flag) {
+do_add_files(Multifile *multifile, const pvector<Filename> &filenames) {
   bool okflag = true;
   pvector<Filename>::const_iterator fi;
   for (fi = filenames.begin(); fi != filenames.end(); ++fi) {
     const Filename &subfile_name = (*fi);
 
     if (subfile_name.is_directory()) {
-      if (!do_add_directory(multifile, subfile_name, cert_chain_flag)) {
+      if (!do_add_directory(multifile, subfile_name)) {
         okflag = false;
       }
 
@@ -352,12 +341,6 @@ do_add_files(Multifile *multifile, const pvector<Filename> &filenames,
       } else {
         if (verbose) {
           cout << new_subfile_name << "\n";
-        }
-        if (cert_chain_flag) {
-          // Set the cert_chain flag on the file.
-          int index = multifile->find_subfile(new_subfile_name);
-          nassertr(index >= 0, false);
-          multifile->set_subfile_is_cert_chain(index, true);
         }
       }
     }
@@ -406,10 +389,7 @@ add_files(const vector_string &params) {
     filenames.push_back(subfile_name);
   }
 
-  bool okflag = do_add_files(multifile, filenames, false);
-  if (okflag && !cert_chain.empty()) {
-    okflag = do_add_files(multifile, cert_chain, true);
-  }
+  bool okflag = do_add_files(multifile, filenames);
 
   if (multifile->needs_repack()) {
     if (!multifile->repack()) {
@@ -551,22 +531,28 @@ sign_multifile() {
     const string &param = (*si);
     size_t comma1 = param.find(',');
     if (comma1 == string::npos) {
-      cerr << "Signing parameter requires a comma: " << param << "\n";
+      cerr << "Signing parameter requires two commas: " << param << "\n";
       return false;
     }
     size_t comma2 = param.find(',', comma1 + 1);
+    if (comma2 == string::npos) {
+      cerr << "Signing parameter requires two commas: " << param << "\n";
+      return false;
+    }
+    size_t comma3 = param.find(',', comma2 + 1);
 
     Filename certificate = Filename::from_os_specific(param.substr(0, comma1));
+    Filename chain = Filename::from_os_specific(param.substr(comma1 + 1, comma2 - comma1 - 1));
     Filename pkey;
     string password;
-    if (comma2 != string::npos) {
-      pkey = Filename::from_os_specific(param.substr(comma1 + 1, comma2 - comma1 - 1));
-      password = param.substr(comma2 + 1);
+    if (comma3 != string::npos) {
+      pkey = Filename::from_os_specific(param.substr(comma2 + 1, comma3 - comma2 - 1));
+      password = param.substr(comma3 + 1);
     } else {
-      pkey = Filename::from_os_specific(param.substr(comma1 + 1));
+      pkey = Filename::from_os_specific(param.substr(comma2 + 1));
     }
 
-    if (!multifile->add_signature(certificate, pkey, password)) {
+    if (!multifile->add_signature(certificate, chain, pkey, password)) {
       return false;
     }
   }    
@@ -629,10 +615,6 @@ list_files(const vector_string &params) {
         if (multifile->is_subfile_encrypted(i)) {
           encrypted_symbol = 'e';
         }
-        char cert_chain_symbol = ' ';
-        if (multifile->get_subfile_is_cert_chain(i)) {
-          cert_chain_symbol = 'N';
-        }
         if (multifile->is_subfile_compressed(i)) {
           size_t orig_length = multifile->get_subfile_length(i);
           size_t internal_length = multifile->get_subfile_internal_length(i);
@@ -641,25 +623,25 @@ list_files(const vector_string &params) {
             ratio = (double)internal_length / (double)orig_length;
           }
           if (ratio > 1.0) {
-            printf("%12d worse %c%c %s %s\n",
+            printf("%12d worse %c %s %s\n",
                    (int)multifile->get_subfile_length(i),
-                   encrypted_symbol, cert_chain_symbol,
+                   encrypted_symbol, 
                    format_timestamp(multifile->get_record_timestamp(),
                                     multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           } else {
-            printf("%12d  %3.0f%% %c%c %s %s\n",
+            printf("%12d  %3.0f%% %c %s %s\n",
                    (int)multifile->get_subfile_length(i),
                    100.0 - ratio * 100.0, 
-                   encrypted_symbol, cert_chain_symbol,
+                   encrypted_symbol, 
                    format_timestamp(multifile->get_record_timestamp(),
                                     multifile->get_subfile_timestamp(i)),
                    subfile_name.c_str());
           }
         } else {
-          printf("%12d       %c%c %s %s\n", 
+          printf("%12d       %c %s %s\n", 
                  (int)multifile->get_subfile_length(i),
-                 encrypted_symbol, cert_chain_symbol,
+                 encrypted_symbol, 
                  format_timestamp(multifile->get_record_timestamp(),
                                   multifile->get_subfile_timestamp(i)),
                  subfile_name.c_str());
@@ -691,7 +673,6 @@ list_files(const vector_string &params) {
 #ifdef HAVE_OPENSSL
   int num_signatures = multifile->get_num_signatures();
   if (num_signatures != 0) {
-    multifile->load_certificate_chains();
     cout << "\n";
     for (i = 0; i < num_signatures; ++i) {
       cout << "Signed by " << multifile->get_signature_common_name(i);
@@ -747,7 +728,7 @@ main(int argc, char *argv[]) {
 
   extern char *optarg;
   extern int optind;
-  static const char *optflags = "crutxkvz123456789Z:T:S:T:f:OC:ep:P:F:h";
+  static const char *optflags = "crutxkvz123456789Z:T:S:f:OC:ep:P:F:h";
   int flag = getopt(argc, argv, optflags);
   Filename rel_path;
   while (flag != EOF) {
@@ -814,9 +795,6 @@ main(int argc, char *argv[]) {
       break;
     case 'Z':
       dont_compress_str = optarg;
-      break;
-    case 'N':
-      cert_chain.push_back(Filename::from_os_specific(optarg));
       break;
     case 'S':
       sign_params.push_back(optarg);
