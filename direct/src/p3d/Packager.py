@@ -1611,6 +1611,7 @@ class Packager:
             GlobPattern('libc.so*'),
             GlobPattern('libGL.so*'),
             GlobPattern('libGLU.so*'),
+            GlobPattern('libGLcore.so*'),
             GlobPattern('libX*.so*'),
             ]
 
