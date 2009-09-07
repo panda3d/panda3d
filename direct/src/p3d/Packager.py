@@ -534,15 +534,6 @@ class Packager:
             self.multifile.repack()
             self.multifile.close()
 
-            if not self.p3dApplication:
-                # The "base" package file is the bottom of the patch chain.
-                packageBaseFullpath = Filename(self.packageFullpath + '.base')
-                if not packageBaseFullpath.exists() and \
-                   self.packageFullpath.exists():
-                    # There's a previous version of the package file.
-                    # It becomes the "base".
-                    self.packageFullpath.renameTo(packageBaseFullpath)
-
             if not multifileFilename.renameTo(self.packageFullpath):
                 self.notify.error("Cannot move %s to %s" % (multifileFilename, self.packageFullpath))
 
@@ -555,6 +546,11 @@ class Packager:
                 self.compressMultifile()
                 self.writeDescFile()
                 self.writeImportDescFile()
+
+                # Now that we've written out the desc file, we don't
+                # need to keep around the uncompressed archive
+                # anymore.
+                self.packageFullpath.unlink()
 
                 # Replace or add the entry in the contents.
                 pe = Packager.PackageEntry()
@@ -960,8 +956,8 @@ class Packager:
 
         def readDescFile(self):
             """ Reads the existing package.xml file before rewriting
-            it.  We need this to preserve the list of patchfiles
-            between sessions. """
+            it.  We need this to preserve the list of patches, and
+            similar historic data, between sessions. """
 
             self.patchVersion = None
             self.patches = []
@@ -989,6 +985,12 @@ class Packager:
             if patchVersion:
                 self.patchVersion = patchVersion
 
+            # Extract the base_version and patch entries, if any, and
+            # preserve these entries verbatim for the next version.
+            xbase = xpackage.FirstChildElement('base_version')
+            if xbase:
+                self.patches.append(xbase.Clone())
+                
             xpatch = xpackage.FirstChildElement('patch')
             while xpatch:
                 self.patches.append(xpatch.Clone())
@@ -1034,13 +1036,6 @@ class Packager:
                 'compressed_archive', self.packageFullpath + '.pz',
                 self.packageBasename + '.pz')
             xpackage.InsertEndChild(xcompressedArchive)
-
-            packageBaseFullpath = Filename(self.packageFullpath + '.base')
-            if packageBaseFullpath.exists():
-                xbaseVersion = self.getFileSpec(
-                    'base_version', packageBaseFullpath,
-                    self.packageBasename + '.base')
-                xpackage.InsertEndChild(xbaseVersion)
 
             # Copy in the patch entries read from the previous version
             # of the desc file.
@@ -1677,7 +1672,13 @@ class Packager:
         """ Call this after calling close(), to build patches for the
         indicated packages. """
 
-        packageNames = map(lambda package: package.packageName, packages)
+        # We quietly ignore any p3d applications or solo packages
+        # passed in the packages list; we only build patches for
+        # actual Multifile-based packages.
+        packageNames = []
+        for package in packages:
+            if not package.p3dApplication and not package.solo:
+                packageNames.append(package.packageName)
 
         from PatchMaker import PatchMaker
         pm = PatchMaker(self.installDir)

@@ -1,5 +1,6 @@
 from direct.p3d.FileSpec import FileSpec
 from pandac.PandaModules import *
+import copy
 
 class PatchMaker:
     """ This class will operate on an existing package install
@@ -19,6 +20,7 @@ class PatchMaker:
             self.version = version
             self.host = host
             self.file = file
+            self.printName = None
 
             # The Package object that produces this version, if this
             # is the current form or the base form, respectively.
@@ -65,40 +67,48 @@ class PatchMaker:
             return bestPatchChain
 
         def getRecreateFilePlan(self):
-            """ Returns the tuple (startFile, plan), describing how to
-            recreate the archive file for this version.  startFile is
-            the Filename of the file to start with, and plan is a list
-            of tuples (patchfile, pv), listing the patches to apply in
-            sequence, and the packageVersion object associated with
-            each patch.  Returns (None, None) if there is no way to
-            recreate this archive file.  """
+            """ Returns the tuple (startFile, startPv, plan),
+            describing how to recreate the archive file for this
+            version.  startFile and startPv is the Filename and
+            packageVersion of the file to start with, and plan is a
+            list of tuples (patchfile, pv), listing the patches to
+            apply in sequence, and the packageVersion object
+            associated with each patch.  Returns (None, None) if there
+            is no way to recreate this archive file.  """
             
             if self.tempFile:
-                return (self.tempFile, [])
+                return (self.tempFile, self, [])
 
             if self.packageCurrent:
+                # This PackageVersion instance represents the current
+                # version of some package.
                 package = self.packageCurrent
-                return (Filename(package.packageDir, package.currentFile.filename), [])
+                return (Filename(package.packageDir, package.compressedFilename), self, [])
+            
             if self.packageBase:
+                # This PackageVersion instance represents the base
+                # (oldest) version of some package.
                 package = self.packageBase
-                return (Filename(package.packageDir, package.baseFile.filename), [])
+                return (Filename(package.packageDir, package.baseFile.filename  + '.pz'), self, [])
 
             # We'll need to re-create the file.
             bestPlan = None
             bestStartFile = None
+            bestStartPv = None
             for patchfile in self.fromPatches:
                 fromPv = patchfile.fromPv
-                startFile, plan = fromPv.getRecreateFilePlan()
+                startFile, startPv, plan = fromPv.getRecreateFilePlan()
                 if plan is not None:
                     # There's a path through this patchfile.
                     plan = plan + [(patchfile, self)]
                     if bestPlan is None or len(plan) < len(bestPlan):
                         bestPlan = plan
                         bestStartFile = startFile
+                        bestStartPv = startPv
 
             # Return the shortest path found, or None if there were no
             # paths found.
-            return (bestStartFile, bestPlan)
+            return (bestStartFile, bestStartPv, bestPlan)
 
         def getFile(self):
             """ Returns the Filename of the archive file associated
@@ -106,7 +116,18 @@ class PatchMaker:
             disk, a temporary file will be created.  Returns None if
             the file can't be recreated. """
 
-            startFile, plan = self.getRecreateFilePlan()
+            startFile, startPv, plan = self.getRecreateFilePlan()
+
+            if startFile.getExtension() == 'pz':
+                # If the starting file is compressed, we have to
+                # decompress it first.
+                assert startPv.tempFile is None
+                startPv.tempFile = Filename.temporary('', 'patch_')
+                if not decompressFile(startFile, startPv.tempFile):
+                    # Failure trying to decompress the file.
+                    return None
+                startFile = startPv.tempFile
+            
             if not plan:
                 # If plan is a zero-length list, we're already
                 # here--return startFile.  If plan is None, there's no
@@ -252,6 +273,8 @@ class PatchMaker:
             """ Reads the existing package.xml file and stores
             it in this class for later rewriting. """
 
+            self.anyChanges = False
+
             packageDescFullpath = Filename(self.patchMaker.installDir, self.packageDesc)
             self.doc = TiXmlDocument(packageDescFullpath.toOsSpecific())
             if not self.doc.LoadFile():
@@ -285,19 +308,23 @@ class PatchMaker:
                 if patchVersion:
                     self.patchVersion = int(patchVersion)
                     self.patchVersion += 1
+                self.anyChanges = True
 
             self.currentFile = None
             self.baseFile = None
+            self.compressedFilename = None
         
             xarchive = xpackage.FirstChildElement('uncompressed_archive')
             if xarchive:
                 self.currentFile = FileSpec()
                 self.currentFile.loadXml(xarchive)
 
-            xarchive = xpackage.FirstChildElement('base_version')
+            # We need to know the filename of the compressed archive
+            # (the uncompressed_archive may not actually exist
+            # anymore, but the compressed_archive still should).
+            xarchive = xpackage.FirstChildElement('compressed_archive')
             if xarchive:
-                self.baseFile = FileSpec()
-                self.baseFile.loadXml(xarchive)
+                self.compressedFilename = xarchive.Attribute('filename')
 
             # Put the patchVersion in the compressed filename, for
             # cache-busting.  This means when the version changes, its
@@ -317,6 +344,34 @@ class PatchMaker:
                     compressedFile.fromFile(self.packageDir, newCompressedFilename)
                     compressedFile.storeXml(xcompressed)
 
+                self.compressedFilename = newCompressedFilename
+
+            # Get the base_version--the bottom (oldest) of the patch
+            # chain.
+            xarchive = xpackage.FirstChildElement('base_version')
+            if xarchive:
+                self.baseFile = FileSpec()
+                self.baseFile.loadXml(xarchive)
+            else:
+                # If there isn't a base_version yet, we have to make
+                # one, by duplicating the currentFile.
+                self.baseFile = copy.copy(self.currentFile)
+
+                # Note that the we only store the compressed version
+                # of base_filename on disk, but we store the md5 of
+                # the uncompressed version in the xml file.  To
+                # emphasize this, we name it without the .pz extension
+                # in the xml file, even though the compressed file on
+                # disk actually has a .pz extension.
+                self.baseFile.filename += '.base'
+
+                # Also duplicate the (compressed) file itself.
+                if self.compressedFilename:
+                    fromPathname = Filename(self.packageDir, self.compressedFilename)
+                    toPathname = Filename(self.packageDir, self.baseFile.filename + '.pz')
+                    fromPathname.copyTo(toPathname)
+                self.anyChanges = True
+
             self.patches = []
             xpatch = xpackage.FirstChildElement('patch')
             while xpatch:
@@ -324,8 +379,6 @@ class PatchMaker:
                 patchfile.loadXml(xpatch)
                 self.patches.append(patchfile)
                 xpatch = xpatch.NextSiblingElement('patch')
-
-            self.anyChanges = False
 
         def writeDescFile(self):
             """ Rewrites the desc file with the new patch
@@ -464,10 +517,12 @@ class PatchMaker:
             currentPv = self.getPackageVersion(package.getCurrentKey())
             package.currentPv = currentPv
             currentPv.packageCurrent = package
+            currentPv.printName = package.currentFile.filename
 
             basePv = self.getPackageVersion(package.getBaseKey())
             package.basePv = basePv
             basePv.packageBase = package
+            basePv.printName = package.baseFile.filename
             
             for patchfile in package.patches:
                 self.recordPatchfile(patchfile)
@@ -483,6 +538,7 @@ class PatchMaker:
         toPv = self.getPackageVersion(patchfile.getTargetKey())
         patchfile.toPv = toPv
         toPv.fromPatches.append(patchfile)
+        toPv.printName = patchfile.file.filename
 
     def processSomePackages(self, packageNames):
         """ Builds missing patches only for the named packages. """
@@ -535,11 +591,9 @@ class PatchMaker:
         v2, and stores it in patchFilename.pz.  Returns true on
         success, false on failure."""
 
-        f1 = v1.getFile()
-        f2 = v2.getFile()
-
         pathname = Filename(package.packageDir, patchFilename)
-        if not self.buildPatchFile(f1, f2, pathname):
+        if not self.buildPatchFile(v1.getFile(), v2.getFile(), pathname,
+                                   v1.printName, v2.printName):
             return False
 
         compressedPathname = Filename(pathname + '.pz')
@@ -558,7 +612,8 @@ class PatchMaker:
 
         return True
 
-    def buildPatchFile(self, origFilename, newFilename, patchFilename):
+    def buildPatchFile(self, origFilename, newFilename, patchFilename,
+                       printOrigName, printNewName):
         """ Creates a patch file from origFilename to newFilename,
         storing the result in patchFilename.  Returns true on success,
         false on failure. """
@@ -567,7 +622,7 @@ class PatchMaker:
             # No original version to patch from.
             return False
 
-        print "Building patch to %s" % (newFilename)
+        print "Building patch from %s to %s" % (printOrigName, printNewName)
         patchFilename.unlink()
         p = Patchfile()  # The C++ class
         if p.build(origFilename, newFilename, patchFilename):
