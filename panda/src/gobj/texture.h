@@ -336,8 +336,11 @@ PUBLISHED:
   INLINE size_t get_expected_ram_mipmap_image_size(int n) const;
   INLINE size_t get_expected_ram_mipmap_page_size(int n) const;
   CPTA_uchar get_ram_mipmap_image(int n);
+  void * get_ram_mipmap_pointer(int n);
   INLINE PTA_uchar modify_ram_mipmap_image(int n);
   INLINE PTA_uchar make_ram_mipmap_image(int n);
+  void set_ram_mipmap_pointer(int n, void *image, size_t page_size = 0);
+  void set_ram_mipmap_pointer_from_int(long long pointer, int n, int page_size);
   INLINE void set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size = 0);
   void clear_ram_mipmap_image(int n);
   INLINE void clear_ram_mipmap_images();
@@ -558,6 +561,8 @@ protected:
   public:
     PTA_uchar _image;
     size_t _page_size;
+    void *_pointer_image;   // we will allow the ram image to accept a void* (basically a block of memory)
+                            // instead of a PTA_uchar
   };
 
 private:

@@ -830,6 +830,7 @@ set_ram_image(CPTA_uchar image, Texture::CompressionMode compression,
   nassertv(compression != CM_off || image.size() == do_get_expected_ram_image_size());
   if (_ram_images.empty()) {
     _ram_images.push_back(RamImage());
+    _ram_images.back()._pointer_image = NULL;
   } else {
     do_clear_ram_mipmap_images();
   }
@@ -841,6 +842,7 @@ set_ram_image(CPTA_uchar image, Texture::CompressionMode compression,
       _ram_image_compression != compression) {
     _ram_images[0]._image = image.cast_non_const();
     _ram_images[0]._page_size = page_size;
+    _ram_images[0]._pointer_image = NULL;
     _ram_image_compression = compression;
     ++_image_modified;
   }
@@ -937,6 +939,7 @@ clear_ram_mipmap_image(int n) {
   }
   _ram_images[n]._image.clear();
   _ram_images[n]._page_size = 0;
+  _ram_images[n]._pointer_image = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -3258,6 +3261,7 @@ do_make_ram_image() {
   _ram_images[0]._page_size = do_get_expected_ram_page_size();
   _ram_images[0]._image = PTA_uchar::empty_array(do_get_expected_ram_image_size(), get_class_type());
   _ram_image_compression = CM_off;
+  _ram_images[0]._pointer_image = NULL;
   return _ram_images[0]._image;
 }
 
@@ -3290,10 +3294,12 @@ do_make_ram_mipmap_image(int n) {
   while (n >= (int)_ram_images.size()) {
     _ram_images.push_back(RamImage());
     _ram_images.back()._page_size = 0;
+    _ram_images.back()._pointer_image = NULL;
   }
 
   _ram_images[n]._image = PTA_uchar::empty_array(do_get_expected_ram_mipmap_image_size(n), get_class_type());
   _ram_images[n]._page_size = do_get_expected_ram_mipmap_page_size(n);
+  _ram_images[n]._pointer_image = NULL;
   return _ram_images[n]._image;
 }
 
@@ -3309,6 +3315,7 @@ do_set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size) {
   while (n >= (int)_ram_images.size()) {
     _ram_images.push_back(RamImage());
     _ram_images.back()._page_size = 0;
+    _ram_images.back()._pointer_image = NULL;
   }
   if (page_size == 0) {
     page_size = image.size();
@@ -3318,8 +3325,69 @@ do_set_ram_mipmap_image(int n, CPTA_uchar image, size_t page_size) {
       _ram_images[n]._page_size != page_size) {
     _ram_images[n]._image = image.cast_non_const();
     _ram_images[n]._page_size = page_size;
+    _ram_images[n]._pointer_image = NULL;
     ++_image_modified;
   }
+}
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_ram_mipmap_pointer
+//       Access: Published
+//  Description: Sets this textures ram pointer image.  This
+////
+//               
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_ram_mipmap_pointer(int n, void *image, size_t page_size) {
+  nassertv(_ram_image_compression != CM_off || page_size == get_expected_ram_mipmap_image_size(n));
+
+  while (n >= (int)_ram_images.size()) {
+    _ram_images.push_back(RamImage());
+    _ram_images.back()._page_size = 0;
+    _ram_images.back()._pointer_image = NULL;
+  }
+  //if (page_size == 0) {
+  //  page_size = image.size();
+  //}
+
+  _ram_images[n]._page_size = page_size; 
+  _ram_images[n]._pointer_image = image;
+  ++_image_modified;
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::set_ram_mipmap_pointer
+//       Access: Published
+//  Description: Takes in an int and casts it to a pointer which
+//               is then used as the textures raw pointer image
+////////////////////////////////////////////////////////////////////
+void Texture::
+set_ram_mipmap_pointer_from_int(long long pointer, int n, int page_size) {
+  set_ram_mipmap_pointer(n,(void*)pointer,(size_t)page_size);
+}
+
+
+
+////////////////////////////////////////////////////////////////////
+//     Function: Texture::get_ram_mipmap_pointer
+//       Access: Published
+//  Description: Returns the system-RAM image data associated with the
+//               nth mipmap level, if present.  Returns NULL if the
+//               nth mipmap level is not present.
+//               Similiar to the function above, however, in this case
+//               the void pointer for the given ram image is 
+//               returned.  This will be NULL unless it has been
+//               explicitly set
+////////////////////////////////////////////////////////////////////
+void *Texture::
+get_ram_mipmap_pointer(int n) {
+  if (n < (int)_ram_images.size()) {
+    return _ram_images[n]._pointer_image;
+  }
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -4451,6 +4519,7 @@ do_generate_ram_mipmap_images() {
     int n = 0;
     while (x_size > 1 || y_size > 1 || z_size > 1) {
       _ram_images.push_back(RamImage());
+      _ram_images.back()._pointer_image = NULL;
       filter_3d_mipmap_level(_ram_images[n + 1], _ram_images[n],
                              x_size, y_size, z_size);
       x_size = max(x_size >> 1, 1);
@@ -4466,6 +4535,7 @@ do_generate_ram_mipmap_images() {
     int n = 0;
     while (x_size > 1 || y_size > 1) {
       _ram_images.push_back(RamImage());
+      _ram_images.back()._pointer_image = NULL;
       filter_2d_mipmap_pages(_ram_images[n + 1], _ram_images[n],
                              x_size, y_size);
       x_size = max(x_size >> 1, 1);
@@ -6022,6 +6092,7 @@ fillin(DatagramIterator &scan, BamReader *manager, bool has_rawdata) {
     for (int n = 0; n < num_ram_images; ++n) {
       _ram_images.push_back(RamImage());
       _ram_images[n]._page_size = get_expected_ram_page_size();
+      _ram_images[n]._pointer_image = NULL;
       if (manager->get_file_minor_ver() >= 1) {
         _ram_images[n]._page_size = scan.get_uint32();
       }
