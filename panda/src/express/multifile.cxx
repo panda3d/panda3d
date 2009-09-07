@@ -23,6 +23,7 @@
 #include "virtualFileSystem.h"
 
 #include <algorithm>
+#include <time.h>
 
 // This sequence of bytes begins each Multifile to identify it as a
 // Multifile.
