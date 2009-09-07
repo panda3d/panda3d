@@ -17,13 +17,17 @@
 
 #include "pandabase.h"
 #include "graphicsWindow.h"
-#define WIN32_LEAN_AND_MEAN 1
+#ifndef WIN32_LEAN_AND_MEAN
+	#define WIN32_LEAN_AND_MEAN 1
+#endif
 #include <windows.h>
 
 class WinGraphicsPipe;
 
 #define PM_ACTIVE   (WM_APP+123)
+
 #define PM_INACTIVE  (WM_APP+124)
+
 
 
 ////////////////////////////////////////////////////////////////////
