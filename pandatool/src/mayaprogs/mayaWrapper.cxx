@@ -40,7 +40,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
-#include <limits.h>
 #define PATH_MAX 1024
 
 #ifdef __APPLE__
@@ -144,20 +143,12 @@ void getWrapperName(char *prog)
 void getMayaLocation(char *ver, char *loc)
 {
   char mpath[64];
-#if __WORDSIZE == 64
-  sprintf(mpath, "/usr/autodesk/maya%s-x64", ver);
-#else
   sprintf(mpath, "/usr/autodesk/maya%s", ver);
-#endif
   struct stat st;
   if(stat(mpath, &st) == 0) {
     strcpy(loc, mpath);
   } else {
-#if __WORDSIZE == 64
-    sprintf(mpath, "/usr/aw/maya%s-x64", ver);
-#else
     sprintf(mpath, "/usr/aw/maya%s", ver);
-#endif
     if(stat(mpath, &st) == 0) {
       strcpy(loc, mpath);
     } else {
@@ -181,8 +172,9 @@ void getWrapperName(char *prog)
 
 int main(int argc, char **argv)
 {
-  char loc[1024], prog[1024];
-  char *key, *path, *env1, *env2, *env3, *env4; int len;
+  char loc[PATH_MAX], prog[PATH_MAX];
+  char *key, *path, *env1, *env2, *env3, *env4;
+  int nLocLen;
   
   key = getVersionNumber(TOSTRING(MAYAVERSION));
   if (key == 0) {
@@ -208,24 +200,95 @@ int main(int argc, char **argv)
   strcat(prog, "-wrapped");
 #endif
 
+  // "loc" == MAYA_LOCATION
+  // Now set PYTHONHOME & PYTHONPATH.  Maya requires this to be
+  // set and pointing within MAYA_LOCATION, or it might get itself
+  // confused with another Python installation (e.g. Panda's).
+  // Finally, prepend PATH with MAYA_LOCATION\bin; as well.
+
+// As of Sept. 2009, at least some WIN32 platforms had 
+// much difficulty with Maya 2009 egging, e.g., see forums:
+// http://www.panda3d.org/phpbb2/viewtopic.php?p=42790 
+// 
+// Historically:
+// http://www.panda3d.org/phpbb2/viewtopic.php?t=3842 
+// http://www.panda3d.org/phpbb2/viewtopic.php?t=6468 
+// http://www.panda3d.org/phpbb2/viewtopic.php?t=6533 
+// http://www.panda3d.org/phpbb2/viewtopic.php?t=5070 
+// 
+// Hoped solution:  carry over code that was in mayapath.cxx 
+// and use that here to set 4 important environment variables:
+// MAYA_LOCATION
+// PYTHONPATH
+// PYTHONHOME
+// PATH (add Maya bin to start of this)
+// BUT... mayapath.cxx makes use of FILENAME and other code
+// from the rest of the Panda build, so for now, to keep this
+// wrapper thinner, just correct/verify that the latter 3 environment
+// variables are set properly (as they are in mayapath.cxx)
+// for use with Maya under WIN32.
+// FIRST TRY, keeping PYTHONPATH simple, as just loc\Python, failed.
+// SECOND TRY, as coded formerly here (in mayaWrapper.cxx), also fails:
+//   PYTHONPATH=%s\\bin;%s\\Python;%s\\Python\\DLLs;%s\\Python\\lib;%s\\Python\\lib\\site-packages
+// Eventually, solution was found that has AT MOST this (which does NOT match mayapath.cxx....):
+//   PYTHONPATH=%s\\bin\\python25.zip;%s\\Python\\DLLs;%s\\Python\\lib;%s\\Python\\lib\\plat-win;%s\\Python\\lib\\lib-tk;%s\\bin;%s\\Python;%s\\Python\\lib\\site-packages", loc, loc, loc, loc, loc, loc, loc, loc);
+// One attempt to thin down to just the .zip file and the site-packages file works!  This seems to be minimum needed 
+// as removing the .zip file mentioned first will then break again with the dreaded:
+// "Invalid Python Environment: Python is unable to find Maya's Python modules"
+// Again, this minimal necessary set (for Maya 2009 32-bit at least) does NOT match mayapath.cxx....):
+//   PYTHONPATH=%s\\bin\\python25.zip;%s\\Python\\lib\\site-packages", loc, loc);
+// 
+
 #ifdef _WIN32
+  // Not sure of non-WIN32 environments, but for WIN32,
+  // verify that terminating directory/folder separator
+  // character \ is NOT found at end of "loc" string:
+  nLocLen = strlen(loc);
+  if (nLocLen > 0 && loc[nLocLen - 1] == '\\')
+  {
+    loc[nLocLen - 1] = '\0';
+  }
   path = getenv("PATH");
   if (path == 0) path = "";
   env1 = (char*)malloc(100 + strlen(loc) + strlen(path));
   sprintf(env1, "PATH=%s\\bin;%s", loc, path);
   env2 = (char*)malloc(100 + strlen(loc));
   sprintf(env2, "MAYA_LOCATION=%s", loc);
-  env3 = (char*)malloc(300 + 5*strlen(loc));
-  sprintf(env3, "PYTHONPATH=%s\\bin;%s\\Python;%s\\Python\\DLLs;%s\\Python\\lib;%s\\Python\\lib\\site-packages", loc, loc, loc, loc, loc);
+  env3 = (char*)malloc(100 + strlen(loc));
+  sprintf(env3, "PYTHONHOME=%s\\Python", loc);
+  env4 = (char*)malloc(100 + 2*strlen(loc));
+  // FYI,  background on what does Maya (e.g., Maya 2009) expect
+  // in PYTHONPATH by doing a check of sys.paths in Python
+  // as discussed in 
+  // http://www.rtrowbridge.com/blog/2008/11/27/maya-python-import-scripts/
+  // gives this:
+  // C:\Program Files\Autodesk\Maya2009\bin\python25.zip
+  // C:\Program Files\Autodesk\Maya2009\Python\DLLs
+  // C:\Program Files\Autodesk\Maya2009\Python\lib
+  // C:\Program Files\Autodesk\Maya2009\Python\lib\plat-win
+  // C:\Program Files\Autodesk\Maya2009\Python\lib\lib-tk
+  // C:\Program Files\Autodesk\Maya2009\bin
+  // C:\Program Files\Autodesk\Maya2009\Python
+  // C:\Program Files\Autodesk\Maya2009\Python\lib\site-packages
+  // ...
+  // Experimenting and a check of 
+  // http://www.panda3d.org/phpbb2/viewtopic.php?t=3842
+  // leads to these 2 items being necessary and hopefully sufficient:
+  // bin\python25.zip (within loc)
+  // Python\lib\site-packages (within loc)
+  // ...so set PYTHONPATH accordingly:
+  sprintf(env4, "PYTHONPATH=%s\\bin\\python25.zip;%s\\Python\\lib\\site-packages", loc, loc);
+  // Set environment variables MAYA_LOCATION, PYTHONHOME, PYTHONPATH, PATH
+  _putenv(env2);
+  _putenv(env3);
+  _putenv(env4);
+  _putenv(env1);
 #else
 #ifdef __APPLE__
   path = getenv("DYLD_LIBRARY_PATH");
   if (path == 0) path = "";
   env1 = (char*)malloc(100 + strlen(loc) + strlen(path));
   sprintf(env1, "DYLD_LIBRARY_PATH=%s/MacOS:%s", loc, path);
-  env3 = (char*)malloc(100 + strlen(loc));
-  sprintf(env3, "PYTHONHOME=%s/Frameworks/Python.framework/Versions/Current", loc);
-  _putenv(env3);
 #else
   path = getenv("LD_LIBRARY_PATH");
   if (path == 0) path = "";
@@ -234,9 +297,13 @@ int main(int argc, char **argv)
 #endif // __APPLE__
   env2 = (char*)malloc(100 + strlen(loc));
   sprintf(env2, "MAYA_LOCATION=%s", loc);
-#endif // _WIN32
+  env3 = (char*)malloc(100 + strlen(loc));
+  sprintf(env3, "PYTHONHOME=%s/Frameworks/Python.framework/Versions/Current", loc);
+  
   _putenv(env1);
   _putenv(env2);
+  _putenv(env3);
+#endif // _WIN32
   
 #ifdef _WIN32
   STARTUPINFO si; PROCESS_INFORMATION pi;
