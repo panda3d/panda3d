@@ -2453,13 +2453,15 @@ rename_to(const Filename &other) const {
 ////////////////////////////////////////////////////////////////////
 bool Filename::
 copy_to(const Filename &other) const {
+  Filename this_filename = Filename::binary_filename(*this);
   pifstream in;
-  if (!open_read(in)) {
+  if (!this_filename.open_read(in)) {
     return false;
   }
 
+  Filename other_filename = Filename::binary_filename(other);
   pofstream out;
-  if (!other.open_write(out)) {
+  if (!other_filename.open_write(out)) {
     return false;
   }
         
