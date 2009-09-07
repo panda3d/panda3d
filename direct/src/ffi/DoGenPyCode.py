@@ -258,7 +258,11 @@ def generateNativeWrappers():
         Dtool_PreloadDLL(moduleName)
         exec('import %s as module' % moduleName)
 
-        pandaModules.write('from %sModules import *\n' % (moduleName))
+        # Wrap the import in a try..except so that we can continue if
+        # the library isn't present.  This is particularly necessary
+        # in the runtime (plugin) environment, where all libraries are
+        # not necessarily downloaded.
+        pandaModules.write('try:\n  from %sModules import *\nexcept ImportError:\n  pass\n\n' % (moduleName))
 
         moduleModulesFilename = os.path.join(outputCodeDir, '%sModules.py' % (moduleName))
         moduleModules = open(moduleModulesFilename, 'w')
