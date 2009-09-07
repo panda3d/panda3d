@@ -122,12 +122,18 @@ CPT(Shader::ShaderFile) default_shader_name = new Shader::ShaderFile("default-sh
 CPT(Shader::ShaderFile) default_shader_body = new Shader::ShaderFile("\
 uniform mediump mat4 p3d_ModelViewProjectionMatrix;\
 attribute highp vec4 p3d_Vertex;\
+
 void main(void) {\
-  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\}\n",
+
+  gl_Position = p3d_ModelViewProjectionMatrix * p3d_Vertex;\
+}\n",
 "void main(void) {\
+
   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\
+
 }\n");
 #endif
+
 
 ////////////////////////////////////////////////////////////////////
 //     Function: uchar_bgr_to_rgb
@@ -8449,13 +8455,19 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
 
     for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
-      const unsigned char *image_ptr = tex->get_ram_mipmap_image(n);
+      // we grab the mipmap pointer first, if it is NULL we grab the
+      // normal mipmap image pointer which is a PTA_uchar
+      const unsigned char *image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
       if (image_ptr == (const unsigned char *)NULL) {
-        GLCAT.warning()
-          << "No mipmap level " << n << " defined for " << tex->get_name()
-          << "\n";
-        // No mipmap level n; stop here.
-        break;
+        CPTA_uchar ptimage = tex->get_ram_mipmap_image(n);
+        if (ptimage == (const unsigned char *)NULL) {
+          GLCAT.warning()
+            << "No mipmap level " << n << " defined for " << tex->get_name()
+            << "\n";
+          // No mipmap level n; stop here.
+          break;
+        }
+        image_ptr = ptimage;
       }
 
       size_t image_size = tex->get_ram_mipmap_image_size(n);
@@ -8575,17 +8587,18 @@ upload_texture_image(CLP(TextureContext) *gtc,
     }
     
     for (int n = mipmap_bias; n < num_ram_mipmap_levels; ++n) {
-      CPTA_uchar ptimage = tex->get_ram_mipmap_image(n);
-      if (ptimage == (const unsigned char *)NULL) {
-        if (GLCAT.is_debug()) {
-          GLCAT.debug()
+ 	  const unsigned char * image_ptr = (unsigned char*)tex->get_ram_mipmap_pointer(n);
+      if (image_ptr == (const unsigned char *)NULL) {
+        CPTA_uchar ptimage = tex->get_ram_mipmap_image(n);
+        if (ptimage == (const unsigned char *)NULL) {
+          GLCAT.warning()
             << "No mipmap level " << n << " defined for " << tex->get_name()
             << "\n";
+          // No mipmap level n; stop here.
+          break;
         }
-        // No mipmap level n; stop here.
-        break;
+        image_ptr = ptimage;
       }
-      const unsigned char *image_ptr = ptimage;
 
       size_t image_size = tex->get_ram_mipmap_image_size(n);
       if (one_page_only) {
