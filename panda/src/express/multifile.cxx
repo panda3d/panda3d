@@ -2355,9 +2355,11 @@ check_signatures() {
     CertChain chain;
     EVP_PKEY *pkey = NULL;
     if (!buffer.empty()) {
-#ifdef OPENSSL_097
+#if OPENSSL_VERSION_NUMBER >= 0x00908000L
+      // Beginning in 0.9.8, d2i_X509() accepted a const unsigned char **.
       const unsigned char *bp, *bp_end;
 #else
+      // Prior to 0.9.8, d2i_X509() accepted an unsigned char **.
       unsigned char *bp, *bp_end;
 #endif
       bp = (unsigned char *)&buffer[0];
