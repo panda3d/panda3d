@@ -120,7 +120,17 @@ def deployApp(args):
             im.licensefile = licensefile
             im.build()
         elif deploy_mode == 'web':
-            raise NotImplementedError, 'The "web" mode is yet implemented.'
+            print "Creating %s.html..." % shortname
+            html = open(shortname + ".html", "w")
+            html.write("<html>\n")
+            html.write("  <head>\n")
+            html.write("    <title>%s</title>\n" % fullname)
+            html.write("  </head>\n")
+            html.write("  <body>\n")
+            html.write("    <object data=\"%s\" type=\"application/x-panda3d\"></object>\n" % appFilename.getBasename())
+            html.write("  </body>\n")
+            html.write("</html>\n")
+            html.close()
         
     except: raise
     #except InstallerMaker.InstallerMakerError:
