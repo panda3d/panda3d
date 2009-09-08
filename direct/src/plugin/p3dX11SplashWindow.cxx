@@ -50,8 +50,6 @@ P3DX11SplashWindow(P3DInstance *inst) :
   _image = NULL;
   _resized_image = NULL;
   _screen = 0;
-  _width = 0;
-  _height = 0;
   _image_width = 0;
   _image_height = 0;
   _resized_width = 0;
@@ -351,13 +349,13 @@ subprocess_run() {
     }
     
     if (XCheckTypedWindowEvent(_display, _window, ConfigureNotify, &event)) {
-      if (_resized_image != NULL && (event.xconfigure.width  != _width ||
-                                     event.xconfigure.height != _height)) {
+      if (_resized_image != NULL && (event.xconfigure.width  != _win_width ||
+                                     event.xconfigure.height != _win_height)) {
         XDestroyImage(_resized_image);
         _resized_image = NULL;
       }
-      _width = event.xconfigure.width;
-      _height = event.xconfigure.height;
+      _win_width = event.xconfigure.width;
+      _win_height = event.xconfigure.height;
       needs_redraw = true;
     }
     
@@ -401,7 +399,7 @@ subprocess_run() {
       if (needs_draw_label) {
         int text_width = _install_label.size() * 6;
         int text_height = 10;
-        int text_x = (_width - text_width) / 2;
+        int text_x = (_win_width - text_width) / 2;
         int text_y = bar_y - 4;
 
         XClearArea(_display, _window,
@@ -514,29 +512,29 @@ redraw() {
     XClearWindow(_display, _window);
   } else {
     // We have an image. Let's see how we can output it.
-    if (_image_width <= _width && _image_height <= _height) {
+    if (_image_width <= _win_width && _image_height <= _win_height) {
       // It fits within the window - just draw it.
       XPutImage(_display, _window, _graphics_context, _image, 0, 0, 
-                (_width - _image_width) / 2, (_height - _image_height) / 2,
+                (_win_width - _image_width) / 2, (_win_height - _image_height) / 2,
                 _image_width, _image_height);
     } else if (_resized_image != NULL) {
       // We have a resized image already, draw that one.
       XPutImage(_display, _window, _graphics_context, _resized_image, 0, 0, 
-                (_width - _resized_width) / 2, (_height - _resized_height) / 2,
+                (_win_width - _resized_width) / 2, (_win_height - _resized_height) / 2,
                 _resized_width, _resized_height);
     } else {
       // Yuck, the bad case - we need to scale it down.
-      double scale = min((double) _width  / (double) _image_width,
-                         (double) _height / (double) _image_height);
+      double scale = min((double) _win_width  / (double) _image_width,
+                         (double) _win_height / (double) _image_height);
       _resized_width = (int)(_image_width * scale);
       _resized_height = (int)(_image_height * scale);
-      char *new_data = (char*) malloc(4 * _width * _height);
+      char *new_data = (char*) malloc(4 * _win_width * _win_height);
       _resized_image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
-                                    ZPixmap, 0, (char *) new_data, _width, _height, 32, 0);
+                                    ZPixmap, 0, (char *) new_data, _win_width, _win_height, 32, 0);
       double x_ratio = ((double) _image_width) / ((double) _resized_width);
       double y_ratio = ((double) _image_height) / ((double) _resized_height);
-      for (int x = 0; x < _width; ++x) {
-        for (int y = 0; y < _height; ++y) {
+      for (int x = 0; x < _win_width; ++x) {
+        for (int y = 0; y < _win_height; ++y) {
           XPutPixel(_resized_image, x, y, 
                     XGetPixel(_image,
                               (int)clamp(x * x_ratio, 0, _image_width),
@@ -544,7 +542,7 @@ redraw() {
         }
       }
       XPutImage(_display, _window, _graphics_context, _resized_image, 0, 0,
-                (_width - _resized_width) / 2, (_height - _resized_height) / 2,
+                (_win_width - _resized_width) / 2, (_win_height - _resized_height) / 2,
                 _resized_width, _resized_height);
     }
   }
