@@ -359,19 +359,10 @@ load_image(OsxImageData &image, const string &image_filename) {
         char r = source[0];
         char g = source[1];
         char b = source[2];
-#ifndef __BIG_ENDIAN__
-        // Little-endian.
         dest[0] = b;
         dest[1] = g;
         dest[2] = r;
         dest[3] = 0xff;
-#else  // __BIG_ENDIAN__
-        // Big-endian.
-        dest[0] = 0xff;
-        dest[1] = r;
-        dest[2] = g;
-        dest[3] = b;
-#endif  // __BIG_ENDIAN__
         source += 3;
         dest += 4;
       }
@@ -382,19 +373,11 @@ load_image(OsxImageData &image, const string &image_filename) {
         char g = source[1];
         char b = source[2];
         char a = source[3];
-#ifndef __BIG_ENDIAN__
         // Little-endian.
         dest[0] = b;
         dest[1] = g;
         dest[2] = r;
         dest[3] = a;
-#else  // __BIG_ENDIAN__
-        // Big-endian.
-        dest[0] = a;
-        dest[1] = r;
-        dest[2] = g;
-        dest[3] = b;
-#endif  // __BIG_ENDIAN__
         source += 4;
         dest += 4;
       }
