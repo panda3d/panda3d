@@ -2355,8 +2355,13 @@ check_signatures() {
     CertChain chain;
     EVP_PKEY *pkey = NULL;
     if (!buffer.empty()) {
-      const unsigned char *bp = (const unsigned char *)&buffer[0];
-      const unsigned char *bp_end = bp + buffer.size();
+#ifdef OPENSSL_097
+      const unsigned char *bp, *bp_end;
+#else
+      unsigned char *bp, *bp_end;
+#endif
+      bp = (unsigned char *)&buffer[0];
+      bp_end = bp + buffer.size();
       X509 *x509 = d2i_X509(NULL, &bp, bp_end - bp);
       while (num_certs > 0 && x509 != NULL) {
         chain.push_back(CertRecord(x509));
