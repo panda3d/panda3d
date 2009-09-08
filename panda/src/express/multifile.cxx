@@ -712,6 +712,8 @@ add_signature(X509 *certificate, STACK *chain, EVP_PKEY *pkey) {
       cert_chain.push_back(CertRecord((X509 *)sk_value(chain, i)));
     }
   }
+
+  return add_signature(cert_chain, pkey);
 }
 #endif  // HAVE_OPENSSL
 
