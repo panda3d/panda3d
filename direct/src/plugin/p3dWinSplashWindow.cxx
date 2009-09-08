@@ -30,11 +30,9 @@ P3DWinSplashWindow(P3DInstance *inst) :
   _thread = NULL;
   _thread_id = 0;
   _hwnd = NULL;
-  _bitmap = NULL;
   _progress_bar = NULL;
   _text_label = NULL;
   _thread_running = false;
-  _image_filename_changed = false;
   _install_label_changed = false;
   _install_progress = 0.0;
 
@@ -78,12 +76,33 @@ set_wparams(const P3DWindowParams &wparams) {
 void P3DWinSplashWindow::
 set_image_filename(const string &image_filename, ImagePlacement image_placement) {
   nout << "image_filename = " << image_filename << ", thread_id = " << _thread_id << "\n";
-  ACQUIRE_LOCK(_install_lock);
-  if (_image_filename != image_filename) {
-    _image_filename = image_filename;
-    _image_filename_changed = true;
+  WinImageData *image = NULL;
+  switch (image_placement) {
+  case IP_background:
+    image = &_background_image;
+    break;
+
+  case IP_button_ready:
+    image = &_button_ready_image;
+    set_button_range(_button_ready_image);
+    break;
+
+  case IP_button_rollover:
+    image = &_button_rollover_image;
+    break;
+   
+  case IP_button_click:
+    image = &_button_click_image;
+    break;
   }
-  RELEASE_LOCK(_install_lock);
+  if (image != NULL) {
+    ACQUIRE_LOCK(_install_lock);
+    if (image->_filename != image_filename) {
+      image->_filename = image_filename;
+      image->_filename_changed = true;
+    }
+    RELEASE_LOCK(_install_lock);
+  }
 
   if (_thread_id != 0) {
     // Post a silly message to spin the message loop.
@@ -162,6 +181,7 @@ register_window_class() {
     ZeroMemory(&wc, sizeof(WNDCLASS));
     wc.lpfnWndProc = st_window_proc;
     wc.hInstance = application;
+    wc.hCursor = LoadCursor(NULL, IDC_ARROW);
     wc.lpszClassName = "panda3d_splash";
     
     if (!RegisterClass(&wc)) {
@@ -258,14 +278,22 @@ thread_run() {
 
     ACQUIRE_LOCK(_install_lock);
     double install_progress = _install_progress;
-    if (_image_filename_changed) {
-      update_image_filename(_image_filename);
-    }
-    _image_filename_changed = false;
+
+    update_image(_background_image);
+    update_image(_button_ready_image);
+    update_image(_button_rollover_image);
+    update_image(_button_click_image);
+
     if (_install_label_changed && _progress_bar != NULL) {
       update_install_label(_install_label);
     }
     _install_label_changed = false;
+
+    if (_drawn_bstate != _bstate) {
+      // The button has changed state.  Redraw it.
+      _drawn_bstate = _bstate;
+      InvalidateRect(_hwnd, NULL, TRUE);
+    }
     RELEASE_LOCK(_install_lock);
 
     if (install_progress != last_progress) {
@@ -454,19 +482,22 @@ update_install_label(const string &install_label) {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DWinSplashWindow::update_image_filename
+//     Function: P3DWinSplashWindow::update_image
 //       Access: Private
-//  Description: Loads the splash image, converts to to BITMAP form,
-//               and stores it in _bitmap.  Runs only in the
-//               sub-thread.
+//  Description: Loads the image from the named file (if it has
+//               changed), converts to to BITMAP form, and stores it
+//               in _bitmap.  Runs only in the sub-thread.
 ////////////////////////////////////////////////////////////////////
 void P3DWinSplashWindow::
-update_image_filename(const string &image_filename) {
-  // Clear the old image.
-  if (_bitmap != NULL) {
-    DeleteObject(_bitmap);
-    _bitmap = NULL;
+update_image(WinImageData &image) {
+  if (!image._filename_changed) {
+    // No changes.
+    return;
   }
+  image._filename_changed = false;
+
+  // Clear the old image.
+  image.dump_image();
 
   // Since we'll be displaying a new image, we need to refresh the
   // window.
@@ -474,50 +505,59 @@ update_image_filename(const string &image_filename) {
 
   // Go read the image.
   string data;
-  ImageData image;
-  if (!read_image_data(image, data, image_filename)) {
+  if (!read_image_data(image, data, image._filename)) {
     return;
   }
 
-  // Temp legacy support.
-  _bitmap_width = image._width;
-  _bitmap_height = image._height;
-  int num_channels =image._num_channels;
-
   // Massage the data into Windows' conventions.
-  int row_stride = _bitmap_width * num_channels;
-  int new_row_stride = (_bitmap_width * 3);
-  // DWORD-pad the row.
-  new_row_stride = 4 * ((new_row_stride + 3) / 4);
+  int row_stride = image._width * image._num_channels;
+  int new_row_stride = (image._width * 4);
 
-  int new_data_length = new_row_stride * _bitmap_height;
+  int new_data_length = new_row_stride * image._height;
   char *new_data = new char[new_data_length];
 
-  if (num_channels == 3) {
+  if (image._num_channels == 4) {
     // We have to reverse the order of the RGB channels: libjpeg and
     // Windows follow an opposite convention.
-    for (int yi = 0; yi < _bitmap_height; ++yi) {
+    for (int yi = 0; yi < image._height; ++yi) {
       const char *sp = data.data() + yi * row_stride;
       char *dp = new_data + yi * new_row_stride;
-      for (int xi = 0; xi < _bitmap_width; ++xi) {
+      for (int xi = 0; xi < image._width; ++xi) {
         dp[0] = sp[2];
         dp[1] = sp[1];
         dp[2] = sp[0];
-        sp += num_channels;
-        dp += 3;
+        dp[3] = sp[3];
+        sp += 4;
+        dp += 4;
       }
     }
-  } else if (num_channels == 1) {
-    // A grayscale image.  Replicate out the channels.
-    for (int yi = 0; yi < _bitmap_height; ++yi) {
+  } else if (image._num_channels == 3) {
+    // We have to reverse the order of the RGB channels: libjpeg and
+    // Windows follow an opposite convention.
+    for (int yi = 0; yi < image._height; ++yi) {
       const char *sp = data.data() + yi * row_stride;
       char *dp = new_data + yi * new_row_stride;
-      for (int xi = 0; xi < _bitmap_width; ++xi) {
+      for (int xi = 0; xi < image._width; ++xi) {
+        dp[0] = sp[2];
+        dp[1] = sp[1];
+        dp[2] = sp[0];
+        dp[3] = (char)0xff;
+        sp += 3;
+        dp += 4;
+      }
+    }
+  } else if (image._num_channels == 1) {
+    // A grayscale image.  Replicate out the channels.
+    for (int yi = 0; yi < image._height; ++yi) {
+      const char *sp = data.data() + yi * row_stride;
+      char *dp = new_data + yi * new_row_stride;
+      for (int xi = 0; xi < image._width; ++xi) {
         dp[0] = sp[0];
         dp[1] = sp[0];
         dp[2] = sp[0];
-        sp += num_channels;
-        dp += 3;
+        dp[3] = (char)0xff;
+        sp += 1;
+        dp += 4;
       }
     }
   }
@@ -525,10 +565,10 @@ update_image_filename(const string &image_filename) {
   // Now load the image.
   BITMAPINFOHEADER bmih;
   bmih.biSize = sizeof(bmih);
-  bmih.biWidth = _bitmap_width;
-  bmih.biHeight = -_bitmap_height;
+  bmih.biWidth = image._width;
+  bmih.biHeight = -image._height;
   bmih.biPlanes = 1;
-  bmih.biBitCount = 24;
+  bmih.biBitCount = 32;
   bmih.biCompression = BI_RGB;
   bmih.biSizeImage = 0;
   bmih.biXPelsPerMeter = 0;
@@ -540,12 +580,12 @@ update_image_filename(const string &image_filename) {
   memcpy(&bmi, &bmih, sizeof(bmih));
 
   HDC dc = GetDC(_hwnd);
-  _bitmap = CreateDIBitmap(dc, &bmih, CBM_INIT, new_data, &bmi, 0);
+  image._bitmap = CreateDIBitmap(dc, &bmih, CBM_INIT, new_data, &bmi, 0);
   ReleaseDC(_hwnd, dc);
 
   delete[] new_data;
 
-  nout << "Loaded splash file image: " << image_filename << "\n";
+  nout << "Loaded image: " << image._filename << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -562,10 +602,10 @@ close_window() {
     _hwnd = NULL;
   }
 
-  if (_bitmap != NULL) {
-    DeleteObject(_bitmap);
-    _bitmap = NULL;
-  }
+  _background_image.dump_image();
+  _button_ready_image.dump_image();
+  _button_rollover_image.dump_image();
+  _button_click_image.dump_image();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -578,57 +618,110 @@ void P3DWinSplashWindow::
 paint_window(HDC dc) {
   RECT rect;
   GetClientRect(_hwnd, &rect);
-  _win_width = rect.right - rect.left;
-  _win_height = rect.bottom - rect.top;
-  
-  if (_bitmap != NULL) {
-    // Paint the background splash image.
-    HDC mem_dc = CreateCompatibleDC(dc);
-    SelectObject(mem_dc, _bitmap);
-    
-    // Determine the relative size of bitmap and window.
-    int bm_width = _bitmap_width;
-    int bm_height = _bitmap_height;
-    
-    int win_cx = _win_width / 2;
-    int win_cy = _win_height / 2;
-    
-    if (bm_width <= _win_width && bm_height <= _win_height) {
-      // The bitmap fits within the window; center it.
-      
-      // This is the top-left corner of the bitmap in window coordinates.
-      int p_x = win_cx - bm_width / 2;
-      int p_y = win_cy - bm_height / 2;
-      
-      BitBlt(dc, p_x, p_y, bm_width, bm_height,
-             mem_dc, 0, 0, SRCCOPY);
 
-      // Now don't paint over this in the below FillRect().
-      ExcludeClipRect(dc, p_x, p_y, p_x + bm_width, p_y + bm_height);
-      
-    } else {
-      // The bitmap is larger than the window; scale it down.
-      double x_scale = (double)_win_width / (double)bm_width;
-      double y_scale = (double)_win_height / (double)bm_height;
-      double scale = min(x_scale, y_scale);
-      int sc_width = (int)(bm_width * scale);
-      int sc_height = (int)(bm_height * scale);
-      
-      int p_x = win_cx - sc_width / 2;
-      int p_y = win_cy - sc_height / 2;
-      StretchBlt(dc, p_x, p_y, sc_width, sc_height,
-                 mem_dc, 0, 0, bm_width, bm_height, SRCCOPY);
-
-      // Now don't paint over this in the below FillRect().
-      ExcludeClipRect(dc, p_x, p_y, p_x + sc_width, p_y + sc_height);
-    }
-    
-    SelectObject(mem_dc, NULL);
-    DeleteDC(mem_dc);
+  int width = rect.right - rect.left;
+  int height = rect.bottom - rect.top;
+  if (width != _win_width || height != _win_height) {
+    _win_width = width;
+    _win_height = height;
+    set_button_range(_button_ready_image);
   }
 
-  // Paint everything else the background color.
-  FillRect(dc, &rect, WHITE_BRUSH);
+  // Double-buffer with an offscreen bitmap first.
+  HDC bdc = CreateCompatibleDC(dc);
+  HBITMAP buffer = CreateCompatibleBitmap(dc, _win_width, _win_height);
+  SelectObject(bdc, buffer);
+
+  // Start by painting the background color.
+  FillRect(bdc, &rect, WHITE_BRUSH);
+
+  // Then paint the background image on top of that.
+  paint_image(bdc, _background_image);
+
+  // And then, paint the button, if any, on top of *that*.
+  switch (_drawn_bstate) {
+  case BS_hidden:
+    break;
+  case BS_ready:
+    paint_image(bdc, _button_ready_image);
+    break;
+  case BS_rollover:
+    if (!paint_image(bdc, _button_rollover_image)) {
+      paint_image(bdc, _button_ready_image);
+    }
+    break;
+  case BS_click:
+    if (!paint_image(bdc, _button_click_image)) {
+      paint_image(bdc, _button_ready_image);
+    }
+    break;
+  }
+
+  // Now blit the buffer to the window.
+  BitBlt(dc, 0, 0, _win_width, _win_height, bdc, 0, 0, SRCCOPY);
+
+  DeleteObject(bdc);
+  DeleteObject(buffer);
+}
+  
+////////////////////////////////////////////////////////////////////
+//     Function: P3DWinSplashWindow::paint_image
+//       Access: Private
+//  Description: Draws the indicated image, centered within the
+//               window.  Returns true on success, false if the image
+//               is not defined.
+////////////////////////////////////////////////////////////////////
+bool P3DWinSplashWindow::
+paint_image(HDC dc, const WinImageData &image) {
+  if (image._bitmap == NULL) {
+    return false;
+  }
+
+  // Paint the background splash image.
+  HDC mem_dc = CreateCompatibleDC(dc);
+  SelectObject(mem_dc, image._bitmap);
+  
+  // Determine the relative size of bitmap and window.
+  int win_cx = _win_width / 2;
+  int win_cy = _win_height / 2;
+
+  BLENDFUNCTION bf;
+  bf.BlendOp = AC_SRC_OVER;
+  bf.BlendFlags = 0;
+  bf.SourceConstantAlpha = 0xff;
+  bf.AlphaFormat = AC_SRC_ALPHA;
+  
+  if (image._width <= _win_width && image._height <= _win_height) {
+    // The bitmap fits within the window; center it.
+    
+    // This is the top-left corner of the bitmap in window coordinates.
+    int p_x = win_cx - image._width / 2;
+    int p_y = win_cy - image._height / 2;
+    
+    AlphaBlend(dc, p_x, p_y, image._width, image._height,
+               mem_dc, 0, 0, image._width, image._height,
+               bf);
+    
+  } else {
+    // The bitmap is larger than the window; scale it down.
+    double x_scale = (double)_win_width / (double)image._width;
+    double y_scale = (double)_win_height / (double)image._height;
+    double scale = min(x_scale, y_scale);
+    int sc_width = (int)(image._width * scale);
+    int sc_height = (int)(image._height * scale);
+    
+    int p_x = win_cx - sc_width / 2;
+    int p_y = win_cy - sc_height / 2;
+
+    AlphaBlend(dc, p_x, p_y, sc_width, sc_height,
+               mem_dc, 0, 0, image._width, image._height, 
+               bf);
+  }
+  
+  SelectObject(mem_dc, NULL);
+  DeleteDC(mem_dc);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -649,7 +742,7 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
 
   case WM_ERASEBKGND:
     return true;
-
+    
   case WM_PAINT:
     {
       PAINTSTRUCT ps;
@@ -676,6 +769,21 @@ window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
       DrawText(dis->hDC, text_buffer, -1, &(dis->rcItem), 
                DT_VCENTER | DT_CENTER | DT_SINGLELINE);
     }
+    return true;
+
+  case WM_MOUSEMOVE: 
+    set_mouse_data(LOWORD(lparam), HIWORD(lparam), _mouse_down);
+    break;
+
+  case WM_LBUTTONDOWN:
+    SetCapture(hwnd);
+    set_mouse_data(_mouse_x, _mouse_y, true);
+    break;
+
+  case WM_LBUTTONUP:
+    set_mouse_data(_mouse_x, _mouse_y, false);
+    ReleaseCapture();
+    break;
   };
 
   return DefWindowProc(hwnd, msg, wparam, lparam);
@@ -695,6 +803,19 @@ st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
   }
 
   return ((P3DWinSplashWindow *)self)->window_proc(hwnd, msg, wparam, lparam);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DWinSplashWindow::WinImageData::dump_image
+//       Access: Public
+//  Description: Frees the previous image data.
+////////////////////////////////////////////////////////////////////
+void P3DWinSplashWindow::WinImageData::
+dump_image() {
+  if (_bitmap != NULL) {
+    DeleteObject(_bitmap);
+    _bitmap = NULL;
+  }
 }
 
 #endif  // _WIN32

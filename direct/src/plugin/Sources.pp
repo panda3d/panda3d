@@ -89,7 +89,7 @@
   #define INSTALL_HEADERS \
     p3d_plugin.h
 
-  #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib comctl32.lib
+  #define WIN_SYS_LIBS user32.lib gdi32.lib shell32.lib comctl32.lib msimg32.lib
 
 #end lib_target
 

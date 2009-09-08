@@ -48,6 +48,8 @@ private:
   void stop_thread();
 
 private:
+  class WinImageData;
+
   // These methods run only within the window thread.
   void thread_run();
   static DWORD WINAPI win_thread_run(LPVOID data);
@@ -55,20 +57,36 @@ private:
   void make_window();
   void make_progress_bar();
   void update_install_label(const string &install_label);
-  void update_image_filename(const string &image_filename);
+  void update_image(WinImageData &image);
   void close_window();
 
   void paint_window(HDC dc);
+  bool paint_image(HDC dc, const WinImageData &image);
   LONG window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
   static LONG WINAPI st_window_proc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
 
 private:
+  class WinImageData : public ImageData {
+  public:
+    inline WinImageData();
+    inline ~WinImageData();
+    void dump_image();
+
+    string _filename;
+    bool _filename_changed;
+    HBITMAP _bitmap;
+  };
+
+  WinImageData _background_image;
+  WinImageData _button_ready_image;
+  WinImageData _button_rollover_image;
+  WinImageData _button_click_image;
+
   bool _got_install;
-  bool _image_filename_changed;
-  string _image_filename;
   bool _install_label_changed;
   string _install_label;
   double _install_progress;
+  ButtonState _drawn_bstate;
   LOCK _install_lock;
 
   bool _thread_continue;
@@ -76,8 +94,7 @@ private:
   HANDLE _thread;
   DWORD _thread_id;
   HWND _hwnd;
-  HBITMAP _bitmap;
-  int _bitmap_width, _bitmap_height;
+
   HWND _progress_bar;
   HWND _text_label;
 
