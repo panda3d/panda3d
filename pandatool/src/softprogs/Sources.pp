@@ -1,6 +1,7 @@
 #begin bin_target
   #define TARGET softcvs
   #define LOCAL_LIBS progbase
+  #define USE_PACKAGES openssl
 
   #define OTHER_LIBS \
     egg:c pandaegg:m \
