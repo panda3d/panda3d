@@ -2296,6 +2296,7 @@ add_window(Windows &wlist, GraphicsOutput *window) {
 ////////////////////////////////////////////////////////////////////
 void GraphicsEngine::WindowRenderer::
 remove_window(GraphicsOutput *window) {
+  nassertv(window != NULL);
   LightReMutexHolder holder(_wl_lock);
   PT(GraphicsOutput) ptwin = window;
 
@@ -2481,13 +2482,16 @@ do_pending(GraphicsEngine *engine, Thread *current_thread) {
         << "_pending_close.size() = " << _pending_close.size() << "\n";
     }
 
-    // Close any windows that were pending closure.
+    // Close any windows that were pending closure.  Carefully protect
+    // against recursive entry to this function by swapping the vector
+    // to a local copy first.
     Windows::iterator wi;
-    for (wi = _pending_close.begin(); wi != _pending_close.end(); ++wi) {
+    Windows pending_close;
+    _pending_close.swap(pending_close);
+    for (wi = pending_close.begin(); wi != pending_close.end(); ++wi) {
       GraphicsOutput *win = (*wi);
       win->set_close_now();
     }
-    _pending_close.clear();
   }
 }
 
