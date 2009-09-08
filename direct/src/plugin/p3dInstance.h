@@ -20,6 +20,8 @@
 #include "p3dFileParams.h"
 #include "p3dWindowParams.h"
 #include "p3dReferenceCount.h"
+#include "p3dSplashWindow.h"
+#include "p3dTemporaryFile.h"
 #include "get_tinyxml.h"
 
 #ifdef __APPLE__
@@ -98,15 +100,17 @@ public:
   void request_refresh();
 
   TiXmlElement *make_xml();
+  void splash_button_clicked();
 
 private:
-  class SplashDownload : public P3DFileDownload {
+  class ImageDownload : public P3DFileDownload {
   public:
-    SplashDownload(P3DInstance *inst);
+    ImageDownload(P3DInstance *inst, int index);
   protected:
     virtual void download_finished(bool success);
   private:
     P3DInstance *_inst;
+    int _index;
   };
   class InstanceDownload : public P3DFileDownload {
   public:
@@ -118,6 +122,20 @@ private:
     P3DInstance *_inst;
   };
 
+  // The different kinds of image files we download for the splash
+  // window.
+  enum ImageType {
+    IT_download,
+    IT_ready,
+    IT_failed,
+    IT_launch,
+    IT_play_ready,
+    IT_play_rollover,
+    IT_play_click,
+    IT_none,                // Must be the last value
+    IT_num_image_types,     // Not a real value
+  };
+
   void scan_app_desc_file(TiXmlDocument *doc);
 
   void send_browser_script_object();
@@ -127,8 +145,11 @@ private:
                              const string &property_name, P3D_object *value,
                              bool needs_response, int unique_id);
   void make_splash_window();
+  void set_background_image(ImageType image_type);
+  void set_button_image(ImageType image_type);
   void report_package_info_ready(P3DPackage *package);
   void start_next_download();
+  void ready_to_start();
   void report_instance_progress(double progress);
   void report_package_progress(P3DPackage *package, double progress);
   void report_package_done(P3DPackage *package, bool progress);
@@ -148,8 +169,25 @@ private:
   P3DMainObject *_panda_script_object;
 
   P3DTemporaryFile *_temp_p3d_filename;
-  P3DPackage *_splash_package;
-  P3DTemporaryFile *_temp_splash_image;
+
+  // For downloading the various images used by the splash window.
+  P3DPackage *_image_package;
+  static const char *_image_type_names[IT_num_image_types];
+
+  class ImageFile {
+  public:
+    inline ImageFile();
+    inline ~ImageFile();
+    inline void cleanup();
+
+    bool _use_standard_image;
+    P3DTemporaryFile *_temp_filename;
+    string _filename;
+    P3DSplashWindow::ImagePlacement _image_placement;
+  };
+  ImageFile _image_files[IT_num_image_types];
+  ImageType _current_background_image;
+  ImageType _current_button_image;
 
   bool _got_fparams;
   P3DFileParams _fparams;
@@ -162,6 +200,7 @@ private:
   string _log_basename;
   bool _hidden;
   bool _allow_python_dev;
+  bool _auto_start;
 
   P3DSession *_session;
 
@@ -220,7 +259,7 @@ private:
   BakedRequests _baked_requests;
 
   friend class P3DSession;
-  friend class SplashDownload;
+  friend class ImageDownload;
   friend class P3DWindowParams;
   friend class P3DPackage;
 };

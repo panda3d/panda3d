@@ -61,7 +61,6 @@ public:
   void drop_p3dobj(int object_id);
 
 private:
-  void report_packages_done(P3DInstance *inst, bool success);
   void start_p3dpython(P3DInstance *inst);
 
   void spawn_read_thread();

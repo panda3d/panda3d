@@ -3,8 +3,8 @@
 #define BUILD_DIRECTORY $[and $[HAVE_P3D_PLUGIN],$[HAVE_TINYXML],$[HAVE_OPENSSL],$[HAVE_ZLIB]]
 
 #begin lib_target
-  #define BUILD_TARGET $[HAVE_JPEG]
-  #define USE_PACKAGES tinyxml openssl zlib jpeg x11
+  #define BUILD_TARGET $[and $[HAVE_JPEG],$[HAVE_PNG]]
+  #define USE_PACKAGES tinyxml openssl zlib jpeg png x11
   #define TARGET p3d_plugin
   #define LIB_PREFIX
 
@@ -111,7 +111,7 @@
     interrogatedb:c dconfig:c dtoolconfig:m \
     express:c pandaexpress:m \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
-    pipeline:c event:c nativenet:c net:c panda:m
+    pipeline:c event:c nativenet:c net:c display:c panda:m
 
   #define SOURCES \
     binaryXml.cxx binaryXml.h \
@@ -138,7 +138,7 @@
     interrogatedb:c dconfig:c dtoolconfig:m \
     express:c pandaexpress:m \
     prc:c pstatclient:c pandabase:c linmath:c putil:c \
-    pipeline:c event:c nativenet:c net:c panda:m
+    pipeline:c event:c nativenet:c net:c display:c panda:m
 
   #define SOURCES \
     binaryXml.cxx binaryXml.h \

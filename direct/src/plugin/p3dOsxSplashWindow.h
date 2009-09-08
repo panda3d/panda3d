@@ -35,15 +35,21 @@ public:
 
   virtual void set_wparams(const P3DWindowParams &wparams);
   virtual void set_image_filename(const string &image_filename,
-                                  bool image_filename_temp);
+                                  ImagePlacement image_placement);
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress);
 
   virtual bool handle_event(P3D_event_data event);
 
+protected:
+  virtual void refresh();
+
 private:
-  void refresh();
   void paint_window();
+  class OsxImageData;
+
+  void load_image(OsxImageData &image, const string &image_filename);
+  bool paint_image(GrafPtr out_port, const OsxImageData &image);
 
   static pascal OSStatus
   st_event_callback(EventHandlerCallRef my_handler, EventRef event, 
@@ -52,13 +58,32 @@ private:
 
 private:
   bool _got_wparams;
-  GWorldPtr _image;
-  char *_image_data;
-  int _image_height, _image_width;
+
+  class OsxImageData : public ImageData {
+  public:
+    inline OsxImageData();
+    inline ~OsxImageData();
+    void dump_image();
+
+    char *_raw_data;
+    CFDataRef _data;
+    CGDataProviderRef _provider;
+    CGColorSpaceRef _color_space;
+    CGImageRef _image;
+  };
+
+  OsxImageData _background_image;
+  OsxImageData _button_ready_image;
+  OsxImageData _button_rollover_image;
+  OsxImageData _button_click_image;
 
   string _install_label;
   double _install_progress;
 
+  // Used to track the mouse within the window in the embedded case.
+  bool _mouse_active;
+
+  // Filled only in the non-embedded case.
   WindowRef _toplevel_window;
 };
 

@@ -48,7 +48,7 @@ public:
   inline bool get_info_ready() const;
   inline size_t get_download_size() const;
 
-  inline void activate_download();
+  void activate_download();
   inline bool get_ready() const;
   inline bool get_failed() const;
   inline P3DHost *get_host() const;
@@ -56,6 +56,7 @@ public:
   inline const string &get_package_name() const;
   inline const string &get_package_version() const;
   inline const string &get_package_display_name() const;
+  inline const TiXmlElement *get_xconfig() const;
 
   inline const string &get_desc_file_pathname() const;
   inline string get_archive_file_pathname() const;
@@ -119,6 +120,7 @@ private:
   string _package_display_name;
   string _package_fullname;
   string _package_dir;
+  TiXmlElement *_xconfig;
 
   P3DTemporaryFile *_temp_contents_file;
 

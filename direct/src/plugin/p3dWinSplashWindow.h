@@ -36,7 +36,7 @@ public:
 
   virtual void set_wparams(const P3DWindowParams &wparams);
   virtual void set_image_filename(const string &image_filename,
-                                  bool image_filename_temp);
+                                  ImagePlacement image_placement);
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress);
 
@@ -55,8 +55,7 @@ private:
   void make_window();
   void make_progress_bar();
   void update_install_label(const string &install_label);
-  void update_image_filename(const string &image_filename, 
-                             bool image_filename_temp);
+  void update_image_filename(const string &image_filename);
   void close_window();
 
   void paint_window(HDC dc);
@@ -67,7 +66,6 @@ private:
   bool _got_install;
   bool _image_filename_changed;
   string _image_filename;
-  bool _image_filename_temp;
   bool _install_label_changed;
   string _install_label;
   double _install_progress;

@@ -54,6 +54,7 @@ P3DPackage(P3DHost *host, const string &package_name,
   // file, instead of an xml file and a multifile to unpack.
   _package_solo = false;
 
+  _xconfig = NULL;
   _temp_contents_file = NULL;
 
   _info_ready = false;
@@ -78,6 +79,11 @@ P3DPackage::
   // Tell any pending callbacks that we're no good any more.
   report_done(false);
 
+  if (_xconfig != NULL) {
+    delete _xconfig;
+    _xconfig = NULL;
+  }
+
   // Cancel any pending download.
   if (_active_download != NULL) {
     _active_download->cancel();
@@ -91,6 +97,38 @@ P3DPackage::
   }
 
   assert(_instances.empty());
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::activate_download
+//       Access: Public
+//  Description: Authorizes the package to begin downloading and
+//               unpacking the meat of its data.  Until this is
+//               called, the package will download its file
+//               information only, and then wait.
+////////////////////////////////////////////////////////////////////
+void P3DPackage::
+activate_download() {
+  if (_allow_data_download) {
+    // Already activated.
+  }
+
+  _allow_data_download = true;
+
+  if (_ready) {
+    // If we've already been downloaded, we can report that now.
+    Instances::iterator ii;
+    for (ii = _instances.begin(); ii != _instances.end(); ++ii) {
+      (*ii)->report_package_done(this, true);
+    }
+
+  } else {
+    // Otherwise, if we've already got the desc file, then start the
+    // download.
+    if (_info_ready) {
+      begin_data_download();
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -358,6 +396,9 @@ got_desc_file(TiXmlDocument *doc, bool freshly_downloaded) {
       if (display_name_cstr != NULL) {
         _package_display_name = display_name_cstr;
       }
+
+      // Save the config entry within this class for others to query.
+      _xconfig = (TiXmlElement *)xconfig->Clone();
     }
   }
 

@@ -42,23 +42,6 @@ get_download_size() const {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DPackage::activate_download
-//       Access: Public
-//  Description: Authorizes the package to begin downloading and
-//               unpacking the meat of its data.  Until this is
-//               called, the package will download its file
-//               information only, and then wait.
-////////////////////////////////////////////////////////////////////
-inline void P3DPackage::
-activate_download() {
-  _allow_data_download = true;
-
-  if (_info_ready) {
-    begin_data_download();
-  }
-}
-
-////////////////////////////////////////////////////////////////////
 //     Function: P3DPackage::get_ready
 //       Access: Public
 //  Description: Returns true if the package has been downloaded and
@@ -138,6 +121,17 @@ get_package_version() const {
 inline const string &P3DPackage::
 get_package_display_name() const {
   return _package_display_name;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DPackage::get_xconfig
+//       Access: Public
+//  Description: Returns the <config> entry of the package desc file,
+//               if any, or NULL if it was not present.
+////////////////////////////////////////////////////////////////////
+inline const TiXmlElement *P3DPackage::
+get_xconfig() const {
+  return _xconfig;
 }
 
 ////////////////////////////////////////////////////////////////////

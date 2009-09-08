@@ -37,7 +37,7 @@ public:
 
   virtual void set_wparams(const P3DWindowParams &wparams);
   virtual void set_image_filename(const string &image_filename,
-                                  bool image_filename_temp);
+                                  ImagePlacement image_placement);
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress);
 
@@ -59,19 +59,16 @@ private:
   void redraw();
   void make_window();
   void setup_gc();
-  void update_image_filename(const string &image_filename, 
-                             bool image_filename_temp);
+  void update_image_filename(const string &image_filename); 
   void close_window();
 
 private:
   // Data members that are stored in the subprocess.
   bool _subprocess_continue;
   HandleStream _pipe_read;
-  int _width, _height;
   
   bool _own_display;
   string _image_filename;
-  bool _image_filename_temp;
   string _install_label;
   double _install_progress;
   

@@ -45,6 +45,19 @@ typedef P3DX11SplashWindow SplashWindowType;
 typedef P3DSplashWindow SplashWindowType;
 #endif
 
+// These are the various image files we might download for use in the
+// splash window.  This list must match the ImageType enum.
+const char *P3DInstance::_image_type_names[P3DInstance::IT_num_image_types] = {
+  "download",
+  "ready",
+  "failed",
+  "launch",
+  "play_ready",
+  "play_rollover",
+  "play_click",
+  "none",  // Not really used.
+};
+
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::Constructor
 //       Access: Public
@@ -62,8 +75,9 @@ P3DInstance(P3D_request_ready_func *func,
   _user_data = user_data;
   _request_pending = false;
   _temp_p3d_filename = NULL;
-  _splash_package = NULL;
-  _temp_splash_image = NULL;
+  _image_package = NULL;
+  _current_background_image = IT_none;
+  _current_button_image = IT_none;
   _got_fparams = false;
   _got_wparams = false;
 
@@ -74,12 +88,13 @@ P3DInstance(P3D_request_ready_func *func,
   _instance_id = inst_mgr->get_unique_id();
   _hidden = false;
   _allow_python_dev = false;
+  _auto_start = false;
   _session = NULL;
   _panda3d = NULL;
   _splash_window = NULL;
   _instance_window_opened = false;
   _stuff_to_download = false;
-
+  
   INIT_LOCK(_request_lock);
   _requested_stop = false;
 
@@ -124,9 +139,9 @@ P3DInstance::
     (*pi)->remove_instance(this);
   }
   _packages.clear();
-  if (_splash_package != NULL) {
-    _splash_package->remove_instance(this);
-    _splash_package = NULL;
+  if (_image_package != NULL) {
+    _image_package->remove_instance(this);
+    _image_package = NULL;
   }
 
   if (_splash_window != NULL) {
@@ -137,11 +152,6 @@ P3DInstance::
   if (_temp_p3d_filename != NULL) {
     delete _temp_p3d_filename;
     _temp_p3d_filename = NULL;
-  }
-
-  if (_temp_splash_image != NULL) {
-    delete _temp_splash_image;
-    _temp_splash_image = NULL;
   }
 
 #ifdef __APPLE__
@@ -221,7 +231,6 @@ set_p3d_url(const string &p3d_url) {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 set_p3d_filename(const string &p3d_filename) {
-  _got_fparams = true;
   _fparams.set_p3d_filename(p3d_filename);
 
   _panda_script_object->set_float_property("instanceDownloadProgress", 1.0);
@@ -238,6 +247,9 @@ set_p3d_filename(const string &p3d_filename) {
     sstream.seekg(0);
     TiXmlDocument doc;
     sstream >> doc;
+
+    // This also starts required packages downloading.  When all
+    // packages have been installed, we will start the instance.
     scan_app_desc_file(&doc);
   }
 
@@ -248,13 +260,23 @@ set_p3d_filename(const string &p3d_filename) {
   strm << inst_mgr->get_unique_id();
   _session_key = strm.str();
 
+  // Until we've done all of the above processing, we haven't fully
+  // committed to having fparams.  (Setting this flag down here
+  // instead of up there avoids starting the instance in
+  // scan_app_desc_file(), before we've had a chance to finish
+  // processing this method.)
+  _got_fparams = true;
+
   // Generate a special notification: onpluginload, indicating the
   // plugin has read its parameters and is ready to be queried (even
   // if Python has not yet started).
   send_notify("onpluginload");
 
-  // Now we're ready to start.
-  inst_mgr->start_instance(this);
+  // Now that we're all set up, start the instance if we're fully
+  // downloaded.
+  if (get_packages_ready() && _got_wparams) {
+    ready_to_start();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -330,6 +352,10 @@ set_wparams(const P3DWindowParams &wparams) {
     xcommand->LinkEndChild(xwparams);
 
     _session->send_command(doc);
+  }
+
+  if (get_packages_ready() && _got_fparams) {
+    ready_to_start();
   }
 }
 
@@ -607,14 +633,14 @@ handle_event(P3D_event_data event) {
   // convert the mouse coordinates successfully via
   // GlobalToLocal().
   GrafPtr out_port = _wparams.get_parent_window()._port;
-  GrafPtr portSave = NULL;
-  Boolean portChanged = QDSwapPort(out_port, &portSave);
+  GrafPtr port_save = NULL;
+  Boolean port_changed = QDSwapPort(out_port, &port_save);
   
   Point pt = er->where;
   GlobalToLocal(&pt);
 
-  if (portChanged) {
-    QDSwapPort(portSave, NULL);
+  if (port_changed) {
+    QDSwapPort(port_save, NULL);
   }
 
   SubprocessWindowBuffer::Event swb_event;
@@ -698,12 +724,16 @@ add_package(P3DPackage *package) {
     return;
   }
 
-  _packages.push_back(package);
-  package->add_instance(this);
-
   if (package->get_package_name() == "panda3d") {
     _panda3d = package;
   }
+
+  _packages.push_back(package);
+
+  // This call must be at the end of this method, because it might
+  // ultimately start the application before it returns (if this was
+  // the last required package).
+  package->add_instance(this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -865,6 +895,22 @@ make_xml() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::splash_button_clicked
+//       Access: Public
+//  Description: Called by the P3DSplashWindow code when the user
+//               clicks the play button visible on the splash window.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+splash_button_clicked() {
+  // If we haven't launched yet, launch now.
+  if (_session == NULL) {
+    set_background_image(IT_launch);
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    inst_mgr->start_instance(this);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DInstance::scan_app_desc_file
 //       Access: Private
 //  Description: Reads the p3d_info.xml file at instance startup, to
@@ -872,6 +918,7 @@ make_xml() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 scan_app_desc_file(TiXmlDocument *doc) {
+  cerr << "scan_app_desc_file\n";
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
   TiXmlElement *xpackage = doc->FirstChildElement("package");
@@ -895,7 +942,22 @@ scan_app_desc_file(TiXmlDocument *doc) {
     if (xconfig->QueryIntAttribute("allow_python_dev", &allow_python_dev) == TIXML_SUCCESS) {
       _allow_python_dev = (allow_python_dev != 0);
     }
+
+    int auto_start = 0;
+    if (xconfig->QueryIntAttribute("auto_start", &auto_start) == TIXML_SUCCESS) {
+      _auto_start = (auto_start != 0);
+    }
   }
+
+  // auto_start is true if it is set in the application itself, or in
+  // the web tokens.
+  if (_fparams.lookup_token_int("auto_start") != 0) {
+    _auto_start = true;
+  }
+  nout << "_auto_start = " << _auto_start << "\n";
+
+  // But auto_start will be set false if the p3d file has not been
+  // signed by an approved signature.  TODO.
 
   if (_hidden && _got_wparams) {
     _wparams.set_window_type(P3D_WT_hidden);
@@ -1069,9 +1131,8 @@ handle_notify_request(const string &message) {
       _splash_window = NULL;
     }
 
-    if (_temp_splash_image != NULL) {
-      delete _temp_splash_image;
-      _temp_splash_image = NULL;
+    for (int i = 0; i < (int)IT_num_image_types; ++i) {
+      _image_files[i].cleanup();
     }
 
     _panda_script_object->set_string_property("status", "open");
@@ -1206,11 +1267,13 @@ make_splash_window() {
     // We're hidden, and so is the splash window.
     return;
   }
+  /* temp removing: hack for debugging.
   if (_wparams.get_window_type() != P3D_WT_embedded && !_stuff_to_download) {
     // If it's a toplevel or fullscreen window, then we don't want a
     // splash window until we have stuff to download.
     return;
   }
+  */
 
   _splash_window = new SplashWindowType(this);
   _splash_window->set_wparams(_wparams);
@@ -1218,34 +1281,117 @@ make_splash_window() {
 
   P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
 
-  if (!_fparams.has_token("splash_img")) {
-    // No specific splash image is specified; get the default splash
-    // image.  We do this via the P3DPackage interface, so we can
-    // use the cached version on disk if it's good.
-    P3DHost *host = inst_mgr->get_host(PANDA_PACKAGE_HOST_URL);
-    _splash_package = host->get_package("splash", "");
-    _splash_package->add_instance(this);
+  // Direct the "download" image to the background slot on the splash
+  // window for now, while we perform the download.
+  set_background_image(IT_download);
 
-  } else {
-    // We have an explicit splash image specified, so just download it
-    // directly.  This one won't be cached locally (though the browser
-    // might be free to cache it).
-    string splash_image_url = _fparams.lookup_token("splash_img");
-    if (splash_image_url.empty()) {
-      // No splash image.  Never mind.
-      return;
+  // Go get the required images.
+  for (int i = 0; i < (int)IT_none; ++i) {
+    string token_keyword = string(_image_type_names[i]) + "_img";
+    if (!_fparams.has_token(token_keyword)) {
+      // No specific image for this type is specified; get the default
+      // image.  We do this via the P3DPackage interface, so we can
+      // use the cached version on disk if it's good.
+      _image_files[i]._use_standard_image = true;
+      if (_image_package == NULL) {
+        P3DHost *host = inst_mgr->get_host(PANDA_PACKAGE_HOST_URL);
+        _image_package = host->get_package("images", "");
+        _image_package->add_instance(this);
+      }
+      
+    } else {
+      // We have an explicit image specified for this slot, so just
+      // download it directly.  This one won't be cached locally
+      // (though the browser might be free to cache it).
+      _image_files[i]._use_standard_image = false;
+      string image_url = _fparams.lookup_token(token_keyword);
+      if (image_url.empty()) {
+        // No splash image.  Never mind.
+        return;
+      }
+      
+      // Make a temporary file to receive the splash image.
+      assert(_image_files[i]._temp_filename == NULL);
+      _image_files[i]._temp_filename = new P3DTemporaryFile(".jpg");
+      
+      // Start downloading the requested image.
+      ImageDownload *download = new ImageDownload(this, i);
+      download->set_url(image_url);
+      download->set_filename(_image_files[i]._temp_filename->get_filename());
+      
+      start_download(download);
     }
-    
-    // Make a temporary file to receive the splash image.
-    assert(_temp_splash_image == NULL);
-    _temp_splash_image = new P3DTemporaryFile(".jpg");
-    
-    // Start downloading the requested splash image.
-    SplashDownload *download = new SplashDownload(this);
-    download->set_url(splash_image_url);
-    download->set_filename(_temp_splash_image->get_filename());
-    
-    start_download(download);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::set_background_image
+//       Access: Private
+//  Description: Specifies the particular image that should be
+//               displayed as the background image in the splash
+//               window.  Specify IT_none to take the background image
+//               away.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+set_background_image(ImageType image_type) {
+  if (image_type != _current_background_image) {
+    // Remove the previous image.
+    _image_files[_current_background_image]._image_placement = P3DSplashWindow::IP_none;
+
+    // Install the new image.
+    _current_background_image = image_type;
+    if (_current_background_image != IT_none) {
+      _image_files[_current_background_image]._image_placement = P3DSplashWindow::IP_background;
+    }
+
+    // Update the splash window.
+    if (_splash_window != NULL) {
+      _splash_window->set_image_filename(_image_files[_current_background_image]._filename, P3DSplashWindow::IP_background);
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::set_button_image
+//       Access: Private
+//  Description: Specifies the particular image that should be
+//               displayed as the button image in the splash
+//               window.  Specify IT_none to take the button image
+//               away.
+//
+//               This actually defines a trilogy of button images:
+//               ready, rollover, click.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+set_button_image(ImageType image_type) {
+  if (image_type != _current_button_image) {
+    // Remove the previous image.
+    _image_files[_current_button_image]._image_placement = P3DSplashWindow::IP_none;
+    if (_current_button_image != IT_none) {
+      _image_files[_current_button_image + 1]._image_placement = P3DSplashWindow::IP_none;
+      _image_files[_current_button_image + 2]._image_placement = P3DSplashWindow::IP_none;
+    }
+
+    // Install the new image.
+    _current_button_image = image_type;
+    if (_current_button_image != IT_none) {
+      _image_files[_current_button_image]._image_placement = P3DSplashWindow::IP_button_ready;
+      _image_files[_current_button_image + 1]._image_placement = P3DSplashWindow::IP_button_rollover;
+      _image_files[_current_button_image + 2]._image_placement = P3DSplashWindow::IP_button_click;
+    }
+
+    // Update the splash window.
+    if (_splash_window != NULL) {
+      if (_current_button_image != IT_none) {
+        _splash_window->set_image_filename(_image_files[_current_button_image]._filename, P3DSplashWindow::IP_button_ready);
+        _splash_window->set_image_filename(_image_files[_current_button_image + 1]._filename, P3DSplashWindow::IP_button_rollover);
+        _splash_window->set_image_filename(_image_files[_current_button_image + 2]._filename, P3DSplashWindow::IP_button_click);
+      } else {
+        _splash_window->set_image_filename(string(), P3DSplashWindow::IP_button_ready);
+        _splash_window->set_image_filename(string(), P3DSplashWindow::IP_button_rollover);
+        _splash_window->set_image_filename(string(), P3DSplashWindow::IP_button_click);
+      }
+    }
   }
 }
 
@@ -1258,13 +1404,10 @@ make_splash_window() {
 ////////////////////////////////////////////////////////////////////
 void P3DInstance::
 report_package_info_ready(P3DPackage *package) {
-  if (package == _splash_package) {
-    // A special case: we just downloaded the splash image, via the
-    // package interface.
-    if (_splash_window != NULL) {
-      string filename = package->get_desc_file_pathname();
-      _splash_window->set_image_filename(filename, false);
-    }
+  if (package == _image_package) {
+    // A special case: the image package gets immediately downloaded,
+    // without waiting for anything else.
+    package->activate_download();
     return;
   }
 
@@ -1360,11 +1503,37 @@ start_next_download() {
       _panda_script_object->set_string_property("status", "starting");
       send_notify("ondownloadcomplete");
     }
-      
-    // Notify the session also.
-    if (_session != NULL) {
-      _session->report_packages_done(this, true);
+
+    // Take down the download progress bar.
+    if (_splash_window != NULL) {
+      _splash_window->set_install_progress(0.0);
+      _splash_window->set_install_label("");
     }
+
+    if (_got_wparams && _got_fparams) {
+      ready_to_start();
+    }
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::ready_to_start
+//       Access: Private
+//  Description: Called internally when we have got the wparams and
+//               fparams and we have downloaded all required packages.
+////////////////////////////////////////////////////////////////////
+void P3DInstance::
+ready_to_start() {
+  if (_auto_start) {
+    set_background_image(IT_launch);
+    P3DInstanceManager *inst_mgr = P3DInstanceManager::get_global_ptr();
+    inst_mgr->start_instance(this);
+
+  } else if (_splash_window != NULL) {
+    // We're fully downloaded, and waiting for the user to click play.
+    set_background_image(IT_ready);
+    set_button_image(IT_play_ready);
+    _splash_window->set_button_active(true);
   }
 }
 
@@ -1440,6 +1609,41 @@ void P3DInstance::
 report_package_done(P3DPackage *package, bool success) {
   nout << "Done downloading " << package->get_package_name()
        << ": success = " << success << "\n";
+
+  if (package == _image_package) {
+    // A special case: we just downloaded the image package, so get
+    // the image files out of it and point them to the splash window.
+    string package_dir = package->get_package_dir();
+    const TiXmlElement *xconfig = package->get_xconfig();
+    if (xconfig == NULL) {
+      nout << "No <config> entry in image package\n";
+      return;
+    }
+    for (int i = 0; i < (int)IT_none; ++i) {
+      if (_image_files[i]._use_standard_image) {
+        // This image indexes into the package.  Go get the standard
+        // image filename.
+        string token = string(_image_type_names[i]) + "_img";
+        const string *basename = xconfig->Attribute(token);
+        if (basename == NULL) {
+          nout << "No entry in image package for " << token << "\n";
+        } else {
+          string image_filename = package_dir + "/" + *basename;
+          _image_files[i]._filename = image_filename;
+          
+          // If the image should be on the window now, and the window
+          // still exists, put it up.
+          if (_splash_window != NULL &&
+              _image_files[i]._image_placement != P3DSplashWindow::IP_none) {
+            P3DSplashWindow::ImagePlacement image_placement = _image_files[i]._image_placement;
+            _splash_window->set_image_filename(image_filename, image_placement);
+          }
+        }
+      }
+    }
+    return;
+  }
+
   if (success) {
     report_package_progress(package, 1.0);
     start_next_download();
@@ -1615,8 +1819,8 @@ paint_window() {
   }
 
   GrafPtr out_port = _wparams.get_parent_window()._port;
-  GrafPtr portSave = NULL;
-  Boolean portChanged = QDSwapPort(out_port, &portSave);
+  GrafPtr port_save = NULL;
+  Boolean port_changed = QDSwapPort(out_port, &port_save);
 
   // Make sure the clipping rectangle isn't in the way.  Is there a
   // better way to eliminate the cliprect from consideration?
@@ -1627,8 +1831,8 @@ paint_window() {
            GetPortBitMapForCopyBits(out_port), 
            &src_rect, &ddrc_rect, srcCopy, 0);
   
-  if (portChanged) {
-    QDSwapPort(portSave, NULL);
+  if (port_changed) {
+    QDSwapPort(port_save, NULL);
   }
   
   DisposeGWorld(pGWorld);
@@ -1677,33 +1881,39 @@ timer_callback(CFRunLoopTimerRef timer, void *info) {
 #endif  // __APPLE__
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::SplashDownload::Constructor
+//     Function: P3DInstance::ImageDownload::Constructor
 //       Access: Public
 //  Description: 
 ////////////////////////////////////////////////////////////////////
-P3DInstance::SplashDownload::
-SplashDownload(P3DInstance *inst) :
-  _inst(inst)
+P3DInstance::ImageDownload::
+ImageDownload(P3DInstance *inst, int index) :
+  _inst(inst),
+  _index(index)
 {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DInstance::SplashDownload::download_finished
+//     Function: P3DInstance::ImageDownload::download_finished
 //       Access: Protected, Virtual
 //  Description: Intended to be overloaded to generate a callback
 //               when the download finishes, either successfully or
 //               otherwise.  The bool parameter is true if the
 //               download was successful.
 ////////////////////////////////////////////////////////////////////
-void P3DInstance::SplashDownload::
+void P3DInstance::ImageDownload::
 download_finished(bool success) {
   P3DFileDownload::download_finished(success);
   if (success) {
-    // We've successfully downloaded the splash image (directly, not
-    // via the package interface).  Put it onscreen if our splash
-    // window still exists.
-    if (_inst->_splash_window != NULL) {
-      _inst->_splash_window->set_image_filename(get_filename(), true);
+    // We've successfully downloaded the image (directly, not via the
+    // package interface).
+    _inst->_image_files[_index]._filename = get_filename();
+
+    // Put it onscreen if it's supposed to be onscreen now, and our
+    // splash window still exists.
+    if (_inst->_splash_window != NULL &&
+        _inst->_image_files[_index]._image_placement != P3DSplashWindow::IP_none) {
+      P3DSplashWindow::ImagePlacement image_placement = _inst->_image_files[_index]._image_placement;
+      _inst->_splash_window->set_image_filename(get_filename(), image_placement);
     }
   }
 }

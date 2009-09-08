@@ -32,3 +32,15 @@ inline const P3DWindowParams &P3DSplashWindow::
 get_wparams() const {
   return _wparams;
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DSplashWindow::ImageData::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+inline P3DSplashWindow::ImageData::
+ImageData() {
+  _width = 0;
+  _height = 0;
+  _num_channels = 0;
+}

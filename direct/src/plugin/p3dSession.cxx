@@ -229,15 +229,11 @@ start_instance(P3DInstance *inst) {
   send_command(doc);
   inst->send_browser_script_object();
 
-  if (inst->get_packages_ready()) {
-    // If it's ready immediately, go ahead and start.
-    start_p3dpython(inst);
+  // We shouldn't have gotten here unless the instance is fully
+  // downloaded and ready to start.
+  assert(inst->get_packages_ready());
 
-  } else {
-    // Otherwise, wait for the instance to download itself.  We'll
-    // automatically get a callback to report_packages_done() when
-    // it's done.
-  }
+  start_p3dpython(inst);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -638,18 +634,6 @@ drop_p3dobj(int object_id) {
     P3D_object *obj = (*si).second;
     P3D_OBJECT_DECREF(obj);
     _sent_objects.erase(si);
-  }
-}
-
-////////////////////////////////////////////////////////////////////
-//     Function: P3DSession::report_packages_done
-//       Access: Private
-//  Description: Notified when a child instance is fully downloaded.
-////////////////////////////////////////////////////////////////////
-void P3DSession::
-report_packages_done(P3DInstance *inst, bool success) {
-  if (success) {
-    start_p3dpython(inst);
   }
 }
 

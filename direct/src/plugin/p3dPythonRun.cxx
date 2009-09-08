@@ -109,6 +109,7 @@ P3DPythonRun::
   // Close the write pipe, so the parent process will terminate us.
   _pipe_write.close();
 
+  // Shut down Python and Panda.
   Py_Finalize();
 
   join_read_thread();

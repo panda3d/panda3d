@@ -94,3 +94,38 @@ inline bool P3DInstance::
 is_started() const {
   return (_session != NULL);
 }
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::ImageFile::Constructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+inline P3DInstance::ImageFile::
+ImageFile() {
+  _use_standard_image = true;
+  _temp_filename = NULL;
+  _image_placement = P3DSplashWindow::IP_none;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::ImageFile::Destructor
+//       Access: Public
+//  Description: 
+////////////////////////////////////////////////////////////////////
+inline P3DInstance::ImageFile::
+~ImageFile() {
+  cleanup();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DInstance::ImageFile::cleanup
+//       Access: Public
+//  Description: Removes the temporary file, if any.
+////////////////////////////////////////////////////////////////////
+inline void P3DInstance::ImageFile::
+cleanup() {
+  if (_temp_filename != NULL) {
+    delete _temp_filename;
+    _temp_filename = NULL;
+  }
+}

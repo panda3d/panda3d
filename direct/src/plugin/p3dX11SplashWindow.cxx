@@ -58,7 +58,6 @@ P3DX11SplashWindow(P3DInstance *inst) :
   _resized_height = 0;
   _graphics_context = None;
   _bar_context = None;
-  _image_filename_temp = false;
   _install_progress = 0.0;
 }
 
@@ -92,13 +91,10 @@ set_wparams(const P3DWindowParams &wparams) {
 //     Function: P3DX11SplashWindow::set_image_filename
 //       Access: Public, Virtual
 //  Description: Specifies the name of a JPEG image file that is
-//               displayed in the center of the splash window.  If
-//               image_filename_temp is true, the file is immediately
-//               deleted after it has been read.
+//               displayed in the center of the splash window.
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
-set_image_filename(const string &image_filename,
-                   bool image_filename_temp) {
+set_image_filename(const string &image_filename, ImagePlacement image_placement) {
   if (_subprocess_pid == -1) {
     return;
   }
@@ -107,7 +103,6 @@ set_image_filename(const string &image_filename,
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "set_image_filename");
   xcommand->SetAttribute("image_filename", image_filename);
-  xcommand->SetAttribute("image_filename_temp", (int)image_filename_temp);
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
 
@@ -367,7 +362,7 @@ subprocess_run() {
     }
     
     if (_image_filename != prev_image_filename) {
-      update_image_filename(_image_filename, _image_filename_temp);
+      update_image_filename(_image_filename);
       needs_redraw = true;
       prev_image_filename = _image_filename;
     }
@@ -401,8 +396,7 @@ subprocess_run() {
     // some nonzero progress.
     if (_install_progress != 0.0) {
       int bar_x, bar_y, bar_width, bar_height;
-      get_bar_placement(_width, _height,
-                        bar_x, bar_y, bar_width, bar_height);
+      get_bar_placement(bar_x, bar_y, bar_width, bar_height);
 
       if (needs_draw_label) {
         int text_width = _install_label.size() * 6;
@@ -485,12 +479,9 @@ receive_command() {
 
       } else if (strcmp(cmd, "set_image_filename") == 0) {
         const char *str = xcommand->Attribute("image_filename");
-        int image_filename_temp = 0;
-        xcommand->Attribute("image_filename_temp", &image_filename_temp);
         if (str != NULL) {
           if (_image_filename != string(str)) {
             _image_filename = str;
-            _image_filename_temp = image_filename_temp;
           }
         }
 
@@ -570,11 +561,11 @@ make_window() {
   int x = _wparams.get_win_x();
   int y = _wparams.get_win_y();
   
-  _width = 320;
-  _height = 240;
+  _win_width = 320;
+  _win_height = 240;
   if (_wparams.get_win_width() != 0 && _wparams.get_win_height() != 0) {
-    _width = _wparams.get_win_width();
-    _height = _wparams.get_win_height();
+    _win_width = _wparams.get_win_width();
+    _win_height = _wparams.get_win_height();
   }
 
   Window parent = 0;
@@ -602,7 +593,7 @@ make_window() {
   
   assert(_display != NULL);
   assert(parent != None);
-  _window = XCreateSimpleWindow(_display, parent, x, y, _width, _height, 0, 0, -1);
+  _window = XCreateSimpleWindow(_display, parent, x, y, _win_width, _win_height, 0, 0, -1);
   XMapWindow(_display, _window);
 }
 
@@ -698,7 +689,7 @@ close_window() {
 //               sub-thread.
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
-update_image_filename(const string &image_filename, bool image_filename_temp) {
+update_image_filename(const string &image_filename) {
   // Clear the old image.
   if (_image != NULL) {
     XDestroyImage(_image);
@@ -711,11 +702,15 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
 
   // Go read the image.
   string data;
-  int num_channels;
-  if (!read_image(image_filename, image_filename_temp, 
-                  _image_height, _image_width, num_channels, data)) {
+  ImageData image;
+  if (!read_image_data(image, data, image_filename)) {
     return;
   }
+
+  // Temp legacy support.
+  _image_width = image._width;
+  _image_height = image._height;
+  int num_channels =image._num_channels;
 
   Visual *dvisual = DefaultVisual(_display, _screen);
   double r_ratio = dvisual->red_mask / 255.0;

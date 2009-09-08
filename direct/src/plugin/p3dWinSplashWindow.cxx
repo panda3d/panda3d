@@ -35,7 +35,6 @@ P3DWinSplashWindow(P3DInstance *inst) :
   _text_label = NULL;
   _thread_running = false;
   _image_filename_changed = false;
-  _image_filename_temp = false;
   _install_label_changed = false;
   _install_progress = 0.0;
 
@@ -74,18 +73,14 @@ set_wparams(const P3DWindowParams &wparams) {
 //     Function: P3DWinSplashWindow::set_image_filename
 //       Access: Public, Virtual
 //  Description: Specifies the name of a JPEG image file that is
-//               displayed in the center of the splash window.  If
-//               image_filename_temp is true, the file is immediately
-//               deleted after it has been read.
+//               displayed in the center of the splash window.
 ////////////////////////////////////////////////////////////////////
 void P3DWinSplashWindow::
-set_image_filename(const string &image_filename,
-                   bool image_filename_temp) {
+set_image_filename(const string &image_filename, ImagePlacement image_placement) {
   nout << "image_filename = " << image_filename << ", thread_id = " << _thread_id << "\n";
   ACQUIRE_LOCK(_install_lock);
   if (_image_filename != image_filename) {
     _image_filename = image_filename;
-    _image_filename_temp = image_filename_temp;
     _image_filename_changed = true;
   }
   RELEASE_LOCK(_install_lock);
@@ -264,7 +259,7 @@ thread_run() {
     ACQUIRE_LOCK(_install_lock);
     double install_progress = _install_progress;
     if (_image_filename_changed) {
-      update_image_filename(_image_filename, _image_filename_temp);
+      update_image_filename(_image_filename);
     }
     _image_filename_changed = false;
     if (_install_label_changed && _progress_bar != NULL) {
@@ -395,14 +390,8 @@ make_progress_bar() {
   DWORD window_style = 
     WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-  RECT rect;
-  GetClientRect(_hwnd, &rect);
-  int win_width = rect.right - rect.left;
-  int win_height = rect.bottom - rect.top;
-
   int bar_x, bar_y, bar_width, bar_height;
-  get_bar_placement(win_width, win_height,
-                    bar_x, bar_y, bar_width, bar_height);
+  get_bar_placement(bar_x, bar_y, bar_width, bar_height);
 
   _progress_bar = 
     CreateWindowEx(0, PROGRESS_CLASS, "", window_style,
@@ -450,18 +439,12 @@ update_install_label(const string &install_label) {
   DWORD window_style = 
     SS_OWNERDRAW | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-  RECT rect;
-  GetClientRect(_hwnd, &rect);
-  int win_width = rect.right - rect.left;
-  int win_height = rect.bottom - rect.top;
-
   int bar_x, bar_y, bar_width, bar_height;
-  get_bar_placement(win_width, win_height,
-                    bar_x, bar_y, bar_width, bar_height);
+  get_bar_placement(bar_x, bar_y, bar_width, bar_height);
 
   int text_width = text_size.cx + 4;
   int text_height = text_size.cy + 2;
-  int text_x = (win_width - text_width) / 2;
+  int text_x = (_win_width - text_width) / 2;
   int text_y = bar_y - text_height - 2;
 
   _text_label = CreateWindowEx(0, "STATIC", text, window_style,
@@ -478,7 +461,7 @@ update_install_label(const string &install_label) {
 //               sub-thread.
 ////////////////////////////////////////////////////////////////////
 void P3DWinSplashWindow::
-update_image_filename(const string &image_filename, bool image_filename_temp) {
+update_image_filename(const string &image_filename) {
   // Clear the old image.
   if (_bitmap != NULL) {
     DeleteObject(_bitmap);
@@ -491,11 +474,15 @@ update_image_filename(const string &image_filename, bool image_filename_temp) {
 
   // Go read the image.
   string data;
-  int num_channels;
-  if (!read_image(image_filename, image_filename_temp, 
-                  _bitmap_height, _bitmap_width, num_channels, data)) {
+  ImageData image;
+  if (!read_image_data(image, data, image_filename)) {
     return;
   }
+
+  // Temp legacy support.
+  _bitmap_width = image._width;
+  _bitmap_height = image._height;
+  int num_channels =image._num_channels;
 
   // Massage the data into Windows' conventions.
   int row_stride = _bitmap_width * num_channels;
@@ -591,8 +578,8 @@ void P3DWinSplashWindow::
 paint_window(HDC dc) {
   RECT rect;
   GetClientRect(_hwnd, &rect);
-  int win_width = rect.right - rect.left;
-  int win_height = rect.bottom - rect.top;
+  _win_width = rect.right - rect.left;
+  _win_height = rect.bottom - rect.top;
   
   if (_bitmap != NULL) {
     // Paint the background splash image.
@@ -603,10 +590,10 @@ paint_window(HDC dc) {
     int bm_width = _bitmap_width;
     int bm_height = _bitmap_height;
     
-    int win_cx = win_width / 2;
-    int win_cy = win_height / 2;
+    int win_cx = _win_width / 2;
+    int win_cy = _win_height / 2;
     
-    if (bm_width <= win_width && bm_height <= win_height) {
+    if (bm_width <= _win_width && bm_height <= _win_height) {
       // The bitmap fits within the window; center it.
       
       // This is the top-left corner of the bitmap in window coordinates.
@@ -621,8 +608,8 @@ paint_window(HDC dc) {
       
     } else {
       // The bitmap is larger than the window; scale it down.
-      double x_scale = (double)win_width / (double)bm_width;
-      double y_scale = (double)win_height / (double)bm_height;
+      double x_scale = (double)_win_width / (double)bm_width;
+      double y_scale = (double)_win_height / (double)bm_height;
       double scale = min(x_scale, y_scale);
       int sc_width = (int)(bm_width * scale);
       int sc_height = (int)(bm_height * scale);

@@ -27,10 +27,9 @@ P3DOsxSplashWindow::
 P3DOsxSplashWindow(P3DInstance *inst) : 
   P3DSplashWindow(inst)
 {
-  _image = NULL;
-  _image_data = NULL;
   _install_progress = 0;
   _got_wparams = false;
+  _mouse_active = false;
   _toplevel_window = NULL;
 }
 
@@ -46,15 +45,6 @@ P3DOsxSplashWindow::
     HideWindow(_toplevel_window);
     DisposeWindow(_toplevel_window);
     _toplevel_window = NULL;
-  }
-    
-  if (_image != NULL) {
-    DisposeGWorld(_image);
-  }
-
-  if (_image_data != NULL) {
-    delete[] _image_data;
-    _image_data = NULL;
   }
 }
 
@@ -83,8 +73,8 @@ set_wparams(const P3DWindowParams &wparams) {
         r.left = 10;
       }
 
-      r.right = r.left + _wparams.get_win_width();
-      r.bottom = r.top + _wparams.get_win_height();
+      r.right = r.left + _win_width;
+      r.bottom = r.top + _win_height;
       WindowAttributes attrib = 
         kWindowStandardDocumentAttributes | kWindowStandardHandlerAttribute;
       CreateNewWindow(kDocumentWindowClass, attrib, &r, &_toplevel_window);
@@ -93,6 +83,10 @@ set_wparams(const P3DWindowParams &wparams) {
       EventTypeSpec list1[] = { 
         { kEventClassWindow, kEventWindowDrawContent },
         //{ kEventClassWindow, kEventWindowUpdate },
+        { kEventClassMouse, kEventMouseUp },
+        { kEventClassMouse, kEventMouseDown },
+        { kEventClassMouse, kEventMouseMoved },
+        { kEventClassMouse, kEventMouseDragged },
       };
         
       EventHandlerUPP gEvtHandler = NewEventHandlerUPP(st_event_callback);
@@ -113,67 +107,27 @@ set_wparams(const P3DWindowParams &wparams) {
 //     Function: P3DOsxSplashWindow::set_image_filename
 //       Access: Public, Virtual
 //  Description: Specifies the name of a JPEG image file that is
-//               displayed in the center of the splash window.  If
-//               image_filename_temp is true, the file is immediately
-//               deleted after it has been read.
+//               displayed in the center of the splash window.
 ////////////////////////////////////////////////////////////////////
 void P3DOsxSplashWindow::
-set_image_filename(const string &image_filename,
-                   bool image_filename_temp) {
-  int num_channels;
-  string data;
-  if (!read_image(image_filename, image_filename_temp, 
-                  _image_height, _image_width, num_channels, data)) {
-    return;
-  }
+set_image_filename(const string &image_filename, ImagePlacement image_placement) {
+  switch (image_placement) {
+  case IP_background:
+    load_image(_background_image, image_filename);
+    break;
 
-  QDErr err;
-  Rect src_rect = { 0, 0, _image_height, _image_width };
+  case IP_button_ready:
+    load_image(_button_ready_image, image_filename);
+    set_button_range(_button_ready_image);
+    break;
 
-  if (_image != NULL) {
-    DisposeGWorld(_image);
-    _image = NULL;
-  }
-
-  if (_image_data != NULL) {
-    delete[] _image_data;
-    _image_data = NULL;
-  }
-
-  // Now we need to copy from the RGB source image into the BGRA target image.
-  int row_stride = _image_width * num_channels;
-  int new_row_stride = _image_width * 4;
-  _image_data = new char[new_row_stride * _image_height];
-  for (int yi = 0; yi < _image_height; ++yi) {
-    char *dest = _image_data + yi * new_row_stride;
-    const char *source = data.data() + yi * row_stride;
-    for (int xi = 0; xi < _image_width; ++xi) {
-      char r = source[0];
-      char g = source[1];
-      char b = source[2];
-#ifndef __BIG_ENDIAN__
-      // Little-endian.
-      dest[0] = b;
-      dest[1] = g;
-      dest[2] = r;
-      dest[3] = 0xff;
-#else  // __BIG_ENDIAN__
-      // Big-endian.
-      dest[0] = 0xff;
-      dest[1] = r;
-      dest[2] = g;
-      dest[3] = b;
-#endif  // __BIG_ENDIAN__
-      source += 3;
-      dest += 4;
-    }
-  }
-
-  err = NewGWorldFromPtr(&_image, k32BGRAPixelFormat, &src_rect, 0, 0, 0, 
-                         _image_data, new_row_stride);
-  if (err != noErr) {
-    nout << " error in NewGWorldFromPtr, called from set_image_filename()\n";
-    return;
+  case IP_button_rollover:
+    load_image(_button_rollover_image, image_filename);
+    break;
+   
+  case IP_button_click:
+    load_image(_button_click_image, image_filename);
+    break;
   }
 
   refresh();
@@ -215,24 +169,58 @@ set_install_progress(double install_progress) {
 bool P3DOsxSplashWindow::
 handle_event(P3D_event_data event) {
   EventRecord *er = event._event;
-  if (er->what == updateEvt) {
-    paint_window();
+
+  // Need to ensure we have the correct port set, in order to
+  // convert the mouse coordinates successfully via
+  // GlobalToLocal().
+  GrafPtr out_port = _wparams.get_parent_window()._port;
+  GrafPtr port_save = NULL;
+  Boolean port_changed = QDSwapPort(out_port, &port_save);
+  
+  Point pt = er->where;
+  GlobalToLocal(&pt);
+
+  if (port_changed) {
+    QDSwapPort(port_save, NULL);
   }
+
+  switch (er->what) {
+  case updateEvt:
+    paint_window();
+    break;
+
+  case mouseDown:
+    set_mouse_data(_mouse_x, _mouse_y, true);
+    break;
+
+  case mouseUp:
+    set_mouse_data(_mouse_x, _mouse_y, false);
+    break;
+
+  case activateEvt:
+    _mouse_active = ((er->modifiers & 1) != 0);
+    break;
+
+  default:
+    break;
+  }
+
+  if (_mouse_active) {
+    set_mouse_data(pt.h, pt.v, _mouse_down);
+  }
+
   return false;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DOsxSplashWindow::refresh
-//       Access: Private
+//       Access: Protected, Virtual
 //  Description: Requests that the window will be repainted.
 ////////////////////////////////////////////////////////////////////
 void P3DOsxSplashWindow::
 refresh() {
   if (_toplevel_window != NULL) {
-    int win_width = _wparams.get_win_width();
-    int win_height = _wparams.get_win_height();
-    
-    Rect r = { 0, 0, win_height, win_width }; 
+    Rect r = { 0, 0, _win_height, _win_width }; 
     InvalWindowRect(_toplevel_window, &r);
 
   } else {
@@ -263,60 +251,34 @@ paint_window() {
     portChanged = QDSwapPort(out_port, &portSave);
   }
 
-  int win_width = _wparams.get_win_width();
-  int win_height = _wparams.get_win_height();
-
-  Rect r = { 0, 0, win_height, win_width }; 
+  Rect r = { 0, 0, _win_height, _win_width }; 
   ClipRect(&r);
   EraseRect(&r);
 
-  if (_image != NULL) {
-    Rect src_rect = { 0, 0, _image_height, _image_width };
-    Rect dest_rect;
-    
-    // Determine the relative size of image and window.
-    int win_cx = win_width / 2;
-    int win_cy = win_height / 2;
-    
-    if (_image_width <= win_width && _image_height <= win_height) {
-      // The bitmap fits within the window; center it.
-      
-      // This is the top-left corner of the bitmap in window coordinates.
-      int p_x = win_cx - _image_width / 2;
-      int p_y = win_cy - _image_height / 2;
+  paint_image(out_port, _background_image);
 
-      dest_rect.left = p_x;
-      dest_rect.top = p_y;
-      dest_rect.right = p_x + _image_width;
-      dest_rect.bottom = p_y + _image_height;
-      
-    } else {
-      // The bitmap is larger than the window; scale it down.
-      double x_scale = (double)win_width / (double)_image_width;
-      double y_scale = (double)win_height / (double)_image_height;
-      double scale = min(x_scale, y_scale);
-      int sc_width = (int)(_image_width * scale);
-      int sc_height = (int)(_image_height * scale);
-      
-      int p_x = win_cx - sc_width / 2;
-      int p_y = win_cy - sc_height / 2;
-
-      dest_rect.left = p_x;
-      dest_rect.top = p_y;
-      dest_rect.right = p_x + sc_width;
-      dest_rect.bottom = p_y + sc_height;
+  switch (_bstate) {
+  case BS_hidden:
+    break;
+  case BS_ready:
+    paint_image(out_port, _button_ready_image);
+    break;
+  case BS_rollover:
+    if (!paint_image(out_port, _button_rollover_image)) {
+      paint_image(out_port, _button_ready_image);
     }
-
-    CopyBits(GetPortBitMapForCopyBits(_image), 
-             GetPortBitMapForCopyBits(out_port), 
-             &src_rect, &dest_rect, srcCopy, 0);
+    break;
+  case BS_click:
+    if (!paint_image(out_port, _button_click_image)) {
+      paint_image(out_port, _button_ready_image);
+    }
+    break;
   }
 
   // Draw the progress bar.  We don't draw this bar at all unless we
   // have nonzero progress.
   int bar_x, bar_y, bar_width, bar_height;
-  get_bar_placement(win_width, win_height,
-                    bar_x, bar_y, bar_width, bar_height);
+  get_bar_placement(bar_x, bar_y, bar_width, bar_height);
   
   if (_install_progress != 0.0) {
     Rect rbar = { bar_y, bar_x, bar_y + bar_height, bar_x + bar_width };
@@ -351,7 +313,7 @@ paint_window() {
       int descent = font_info.descent * numer.v / denom.v;
       
       int text_width = TextWidth(_install_label.data(), 0, _install_label.size());
-      int text_x = (win_width - text_width) / 2;
+      int text_x = (_win_width - text_width) / 2;
       int text_y = bar_y - descent - 8;
       
       Rect rtext = { text_y - ascent - 2, text_x - 2, 
@@ -368,6 +330,155 @@ paint_window() {
       QDSwapPort(portSave, NULL);
     }
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::load_image
+//       Access: Private
+//  Description: Loads the named image file into an OsxImageData object.
+////////////////////////////////////////////////////////////////////
+void P3DOsxSplashWindow::
+load_image(OsxImageData &image, const string &image_filename) {
+  image.dump_image();
+  string string_data;
+  if (!read_image_data(image, string_data, image_filename)) {
+    return;
+  }
+
+  // Now we need to copy from the RGB (or RGBA) source image into the
+  // BGRA target image.
+  int row_stride = image._width * image._num_channels;
+  int new_row_stride = image._width * 4;
+  image._raw_data = new char[new_row_stride * image._height];
+  for (int yi = 0; yi < image._height; ++yi) {
+    char *dest = image._raw_data + yi * new_row_stride;
+    const char *source = string_data.data() + yi * row_stride;
+    if (image._num_channels == 3) {
+      // Source is RGB.
+      for (int xi = 0; xi < image._width; ++xi) {
+        char r = source[0];
+        char g = source[1];
+        char b = source[2];
+#ifndef __BIG_ENDIAN__
+        // Little-endian.
+        dest[0] = b;
+        dest[1] = g;
+        dest[2] = r;
+        dest[3] = 0xff;
+#else  // __BIG_ENDIAN__
+        // Big-endian.
+        dest[0] = 0xff;
+        dest[1] = r;
+        dest[2] = g;
+        dest[3] = b;
+#endif  // __BIG_ENDIAN__
+        source += 3;
+        dest += 4;
+      }
+    } else if (image._num_channels == 4) {
+      // Source is RGBA.
+      for (int xi = 0; xi < image._width; ++xi) {
+        char r = source[0];
+        char g = source[1];
+        char b = source[2];
+        char a = source[3];
+#ifndef __BIG_ENDIAN__
+        // Little-endian.
+        dest[0] = b;
+        dest[1] = g;
+        dest[2] = r;
+        dest[3] = a;
+#else  // __BIG_ENDIAN__
+        // Big-endian.
+        dest[0] = a;
+        dest[1] = r;
+        dest[2] = g;
+        dest[3] = b;
+#endif  // __BIG_ENDIAN__
+        source += 4;
+        dest += 4;
+      }
+    }
+  }
+
+  image._data =
+    CFDataCreateWithBytesNoCopy(NULL, (const UInt8 *)image._raw_data, 
+                                image._height * new_row_stride, kCFAllocatorNull);
+  image._provider = CGDataProviderCreateWithCFData(image._data);
+  image._color_space = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+
+  image._image =
+    CGImageCreate(image._width, image._height, 8, 32, 
+                  new_row_stride, image._color_space,
+                  kCGImageAlphaFirst | kCGBitmapByteOrder32Little, 
+                  image._provider, NULL, false, kCGRenderingIntentDefault);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::paint_image
+//       Access: Private
+//  Description: Draws the indicated image, centered within the
+//               window.  Returns true on success, false if the image
+//               is not defined.
+////////////////////////////////////////////////////////////////////
+bool P3DOsxSplashWindow::
+paint_image(GrafPtr out_port, const OsxImageData &image) {
+  if (image._image == NULL) {
+    return false;
+  }
+
+  CGContextRef context;
+  QDErr err = QDBeginCGContext(out_port, &context);
+  if (err != noErr) {
+    nout << "Error: QDBeginCGContext\n";
+    return false;
+  }
+
+  // We have to rely on the clipping rectangle having been set up
+  // correctly in order to get the proper location to draw the image.
+  // This isn't completely right, because if the image is slightly
+  // offscreen, the top left of the clipping rectangle will no longer
+  // correspond to the top left of the original image.
+  CGRect rect = CGContextGetClipBoundingBox(context);
+    
+  // Determine the relative size of image and window.
+  int win_cx = _win_width / 2;
+  int win_cy = _win_height / 2;
+    
+  if (image._width <= _win_width && image._height <= _win_height) {
+    // The bitmap fits within the window; center it.
+      
+    // This is the top-left corner of the bitmap in window coordinates.
+    int p_x = win_cx - image._width / 2;
+    int p_y = win_cy - image._height / 2;
+
+    rect.origin.x += p_x;
+    rect.origin.y += p_y;
+    rect.size.width = image._width;
+    rect.size.height = image._height;
+      
+  } else {
+    // The bitmap is larger than the window; scale it down.
+    double x_scale = (double)_win_width / (double)image._width;
+    double y_scale = (double)_win_height / (double)image._height;
+    double scale = min(x_scale, y_scale);
+    int sc_width = (int)(image._width * scale);
+    int sc_height = (int)(image._height * scale);
+      
+    int p_x = win_cx - sc_width / 2;
+    int p_y = win_cy - sc_height / 2;
+
+    rect.origin.x += p_x;
+    rect.origin.y += p_y;
+    rect.size.width = sc_width;
+    rect.size.height = sc_height;
+  }
+
+  CGContextDrawImage(context, rect, image._image);
+  
+  QDEndCGContext(out_port, &context);
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -402,11 +513,75 @@ event_callback(EventHandlerCallRef my_handler, EventRef event) {
     case kEventWindowDrawContent:
       paint_window();
       result = noErr;
+    };
+    break;
+
+  case kEventClassMouse:
+    switch (kind) {
+    case kEventMouseUp:
+      set_mouse_data(_mouse_x, _mouse_y, false);
+      break;
+
+    case kEventMouseDown:
+      set_mouse_data(_mouse_x, _mouse_y, true);
+      break;
+
+    case kEventMouseMoved:
+    case kEventMouseDragged:
+      {
+        Point point;
+        GetEventParameter(event, kEventParamMouseLocation, typeQDPoint, NULL,
+                          sizeof(Point), NULL, (void *)&point);
+
+        GrafPtr port = _wparams.get_parent_window()._port;
+        if (_toplevel_window != NULL) {
+          port = GetWindowPort(_toplevel_window);
+        }
+        GrafPtr port_save = NULL;
+        Boolean port_changed = QDSwapPort(port, &port_save);
+        GlobalToLocal(&point);
+        if (port_changed) {
+          QDSwapPort(port_save, NULL);
+        }
+
+        set_mouse_data(point.h, point.v, _mouse_down);
+      }
+      break;
+
+      break;
     }
   }
 
   return result;
 }
 
+////////////////////////////////////////////////////////////////////
+//     Function: P3DOsxSplashWindow::OsxImageData::dump_image
+//       Access: Public
+//  Description: Frees the previous image data.
+////////////////////////////////////////////////////////////////////
+void P3DOsxSplashWindow::OsxImageData::
+dump_image() {
+  if (_image != NULL) {
+    CGImageRelease(_image);
+    _image = NULL;
+  }
+  if (_color_space != NULL) {
+    CGColorSpaceRelease(_color_space);
+    _color_space = NULL;
+  }
+  if (_provider != NULL) {
+    CGDataProviderRelease(_provider);
+    _provider = NULL;
+  }
+  if (_data != NULL) {
+    CFRelease(_data);
+    _data = NULL;
+  }
+  if (_raw_data != NULL) {
+    delete[] _raw_data;
+    _raw_data = NULL;
+  }
+}
 
 #endif  // __APPLE__

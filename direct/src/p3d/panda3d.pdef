@@ -19,14 +19,39 @@ class coreapi(solo):
     # single .dll (or dylib, or whatever).
     file('p3d_plugin.dll')
 
-class splash(solo):
-    # We also store the default splash image, as "solo".  Well, it
-    # has to go somewhere.
-    splashFilename = Filename('maps/panda_splash.jpg')
-    if splashFilename.resolveFilename(getModelPath().getValue()):
-        file(splashFilename, newName = 'splash.jpg')
-    else:
-        print "Could not locate %s" % (splashFilename)
+class images(package):
+    # The default startup images are stored as their own package.
+    names = ['download', 'play_click', 'play_ready', 'play_rollover',
+             'auth_click', 'auth_ready', 'auth_rollover']
+    configDict = {}
+    for name in names:
+        # Look for a png image first.
+        basename = '%s.png' % (name)
+        filename = Filename('plugin_images/%s' % (basename))
+        found = filename.resolveFilename(getModelPath().getValue())
+        if not found:
+            # Then try a jpeg image.
+            basename = '%s.jpg' % (name)
+            filename = Filename('plugin_images/%s' % (basename))
+            found = filename.resolveFilename(getModelPath().getValue())
+            
+        if found:
+            # Add the image file to the package
+            file(filename, newName = basename, extract = True)
+
+            # And set the config variable to reference it.
+            token = '%s_img' % (name)
+            configDict[token] = basename
+        else:
+            print "Could not locate %s" % (filename)
+
+    # Also make a few special cases.  We use the same default image
+    # for both download and launch.
+    download = configDict.get('download_img', None)
+    if download:
+        configDict['launch_img'] = download
+
+    config(**configDict)
 
 class panda3d(package):
     # The core Panda3D package.  Contains Python and most of the graphics
