@@ -19,10 +19,11 @@ class InstallerMaker:
         self.shortname = shortname
         self.fullname = fullname
         self.version = str(version)
-        # All paths given must be OS-specific!
-        self.p3dfile = p3dfile
         self.licensename = ""
-        self.licensefile = ""
+        # All paths given must be a Filename instance!
+        assert isinstance(p3dfile, Filename)
+        self.p3dfile = p3dfile
+        self.licensefile = Filename()
 
     def build(self):
         """ Creates the installer. Call this after you have set all the parameters. """
@@ -48,15 +49,16 @@ class InstallerMaker:
         controlfile.close()
         os.makedirs(os.path.join(tempdir, "usr", "bin"))
         os.makedirs(os.path.join(tempdir, "usr", "share", "games", self.shortname))
-        if self.licensefile != "":
+        if not self.licensefile.empty():
             os.makedirs(os.path.join(tempdir, "usr", "share", "doc", self.shortname))
         launcherfile = open(os.path.join(tempdir, "usr", "bin", self.shortname), "w")
         launcherfile.write("#!/bin/sh\n")
-        launcherfile.write("/usr/bin/panda3d /usr/share/games/%s/data.p3d\n" % self.shortname)
+        launcherfile.write("/usr/bin/env panda3d /usr/share/games/%s/data.p3d\n" % self.shortname)
         launcherfile.close()
-        shutil.copyfile(self.p3dfile, os.path.join(tempdir, "usr", "share", "games", self.shortname, "data.p3d"))
-        if self.licensefile != "":
-            shutil.copyfile(self.licensefile, os.path.join(tempdir, "usr", "share", "doc", self.shortname, "copyright"))
+        os.chmod(os.path.join(tempdir, "usr", "bin", self.shortname), 0755)
+        shutil.copyfile(self.p3dfile.toOsSpecific(), os.path.join(tempdir, "usr", "share", "games", self.shortname, "data.p3d"))
+        if not self.licensefile.empty():
+            shutil.copyfile(self.licensefile.toOsSpecific(), os.path.join(tempdir, "usr", "share", "doc", self.shortname, "copyright"))
 
         # Create a control.tar.gz file in memory
         controltargz = CachedFile()
@@ -139,8 +141,8 @@ class InstallerMaker:
         nsi.write('\n')
         nsi.write('Var StartMenuFolder\n')
         nsi.write('!insertmacro MUI_PAGE_WELCOME\n')
-        if self.licensefile != "":
-            nsi.write('!insertmacro MUI_PAGE_LICENSE "%s"\n' % self.licensefile)
+        if not self.licensefile.empty():
+            nsi.write('!insertmacro MUI_PAGE_LICENSE "%s"\n' % self.licensefile.toOsSpecific())
         nsi.write('!insertmacro MUI_PAGE_DIRECTORY\n')
         nsi.write('!insertmacro MUI_PAGE_STARTMENU Application $StartMenuFolder\n')
         nsi.write('!insertmacro MUI_PAGE_INSTFILES\n')
