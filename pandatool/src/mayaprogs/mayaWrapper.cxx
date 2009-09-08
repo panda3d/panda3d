@@ -40,6 +40,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+#include <limits.h>
 #define PATH_MAX 1024
 
 #ifdef __APPLE__
@@ -143,12 +144,20 @@ void getWrapperName(char *prog)
 void getMayaLocation(char *ver, char *loc)
 {
   char mpath[64];
+#if __WORDSIZE == 64
+  sprintf(mpath, "/usr/autodesk/maya%s-x64", ver);
+#else
   sprintf(mpath, "/usr/autodesk/maya%s", ver);
+#endif
   struct stat st;
   if(stat(mpath, &st) == 0) {
     strcpy(loc, mpath);
   } else {
+#if __WORDSIZE == 64
+    sprintf(mpath, "/usr/aw/maya%s-x64", ver);
+#else
     sprintf(mpath, "/usr/aw/maya%s", ver);
+#endif
     if(stat(mpath, &st) == 0) {
       strcpy(loc, mpath);
     } else {
@@ -289,6 +298,9 @@ int main(int argc, char **argv)
   if (path == 0) path = "";
   env1 = (char*)malloc(100 + strlen(loc) + strlen(path));
   sprintf(env1, "DYLD_LIBRARY_PATH=%s/MacOS:%s", loc, path);
+  env3 = (char*)malloc(100 + strlen(loc));
+  sprintf(env3, "PYTHONHOME=%s/Frameworks/Python.framework/Versions/Current", loc);
+  _putenv(env3);
 #else
   path = getenv("LD_LIBRARY_PATH");
   if (path == 0) path = "";
@@ -297,12 +309,9 @@ int main(int argc, char **argv)
 #endif // __APPLE__
   env2 = (char*)malloc(100 + strlen(loc));
   sprintf(env2, "MAYA_LOCATION=%s", loc);
-  env3 = (char*)malloc(100 + strlen(loc));
-  sprintf(env3, "PYTHONHOME=%s/Frameworks/Python.framework/Versions/Current", loc);
   
   _putenv(env1);
   _putenv(env2);
-  _putenv(env3);
 #endif // _WIN32
   
 #ifdef _WIN32
