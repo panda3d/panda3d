@@ -102,7 +102,7 @@
 // for now as an experiment, but it will likely be removed very soon.
 // ****
   #define BUILD_TARGET $[HAVE_PYTHON]
-  #define USE_PACKAGES tinyxml python
+  #define USE_PACKAGES tinyxml python openssl
   #define TARGET libp3dpython
   #define LIB_PREFIX
 
@@ -130,7 +130,7 @@
 
 #begin bin_target
   #define BUILD_TARGET $[HAVE_PYTHON]
-  #define USE_PACKAGES tinyxml python
+  #define USE_PACKAGES tinyxml python openssl
   #define TARGET p3dpython
 
   #define OTHER_LIBS \
