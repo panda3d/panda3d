@@ -1267,13 +1267,12 @@ make_splash_window() {
     // We're hidden, and so is the splash window.
     return;
   }
-  /* temp removing: hack for debugging.
-  if (_wparams.get_window_type() != P3D_WT_embedded && !_stuff_to_download) {
+  if (_wparams.get_window_type() != P3D_WT_embedded && 
+      !_stuff_to_download && _auto_start) {
     // If it's a toplevel or fullscreen window, then we don't want a
     // splash window until we have stuff to download.
     return;
   }
-  */
 
   _splash_window = new SplashWindowType(this);
   _splash_window->set_wparams(_wparams);

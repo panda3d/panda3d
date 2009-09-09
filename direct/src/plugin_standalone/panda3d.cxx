@@ -701,6 +701,10 @@ create_instance(const string &p3d, P3D_window_type window_type,
     tokens.push_back(token);
   }
 
+  token._keyword = "auto_start";
+  token._value = "1";
+  tokens.push_back(token);
+
   P3D_token *tokens_p;
   size_t num_tokens = tokens.size();
   if (!tokens.empty()) {
