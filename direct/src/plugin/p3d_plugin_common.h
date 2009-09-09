@@ -42,6 +42,9 @@ using namespace std;
 extern ostream *nout_stream;
 #define nout (*nout_stream)
 
+// Appears in p3d_plugin.cxx.
+extern LOCK _api_lock;
+
 // A convenience function for formatting a generic P3D_object to an
 // ostream.
 inline ostream &

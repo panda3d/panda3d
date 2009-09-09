@@ -43,6 +43,9 @@ public:
   static void register_window_class();
   static void unregister_window_class();
 
+protected:
+  virtual void button_click_detected();
+
 private:
   void start_thread();
   void stop_thread();

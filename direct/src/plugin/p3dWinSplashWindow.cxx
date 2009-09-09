@@ -210,6 +210,25 @@ unregister_window_class() {
 }
 
 ////////////////////////////////////////////////////////////////////
+//     Function: P3DWinSplashWindow::button_click_detected
+//       Access: Protected, Virtual
+//  Description: Called when a button click by the user is detected in
+//               set_mouse_data(), this method simply turns around and
+//               notifies the instance.  It's a virtual method to give
+//               subclasses a chance to redirect this message to the
+//               main thread or process, as necessary.
+////////////////////////////////////////////////////////////////////
+void P3DWinSplashWindow::
+button_click_detected() {
+  // Since this message is detected in the sub-thread in the Windows
+  // case, we have to protect ourselves from re-entry by grabbing the
+  // global _api_lock.
+  ACQUIRE_LOCK(_api_lock);
+  P3DSplashWindow::button_click_detected();
+  RELEASE_LOCK(_api_lock);
+}
+
+////////////////////////////////////////////////////////////////////
 //     Function: P3DWinSplashWindow::start_thread
 //       Access: Private
 //  Description: Spawns the sub-thread.
