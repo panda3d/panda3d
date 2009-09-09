@@ -24,12 +24,6 @@
 #include <sys/select.h>
 #include <signal.h>
 
-// Sleeps for a short time.
-#define MILLISLEEP() \
-  timespec ts; \
-  ts.tv_sec = 0; ts.tv_nsec = 100000; \
-  nanosleep(&ts, NULL);
-
 // Clamps a value to two boundaries.
 #define clamp(x, lb, hb) (x < lb ? lb : (x > hb ? hb : x))
 
@@ -44,6 +38,10 @@ P3DX11SplashWindow(P3DInstance *inst) :
 {
   // Init for parent process
   _subprocess_pid = -1;
+
+  // Init for read thread
+  _started_read_thread = false;
+  INIT_THREAD(_read_thread);
 
   // Init for subprocess
   _display = None;
@@ -185,6 +183,11 @@ button_click_detected() {
   // This method is called in the child process, and must relay
   // the information to the parent process.
   cerr << "click detected\n";
+
+  TiXmlDocument doc;
+  TiXmlElement *xcommand = new TiXmlElement("click");
+  doc.LinkEndChild(xcommand);
+  write_xml(_pipe_write, &doc, nout);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -198,10 +201,13 @@ void P3DX11SplashWindow::
 start_subprocess() {
   assert(_subprocess_pid == -1);
 
-  // Create a directional pipe to send messages to the sub-process.
-  // (We don't need a receive pipe.)
+  // Create a bi-directional pipe to communicate with the sub-process.
   int to_fd[2];
   if (pipe(to_fd) < 0) {
+    perror("failed to create pipe");
+  }
+  int from_fd[2];
+  if (pipe(from_fd) < 0) {
     perror("failed to create pipe");
   }
 
@@ -210,6 +216,8 @@ start_subprocess() {
   if (child < 0) {
     close(to_fd[0]);
     close(to_fd[1]);
+    close(from_fd[0]);
+    close(from_fd[1]);
     perror("fork");
     return;
   }
@@ -220,6 +228,8 @@ start_subprocess() {
     // Open the read end of the pipe, and close the write end.
     _pipe_read.open_read(to_fd[0]);
     close(to_fd[1]);
+    _pipe_write.open_write(from_fd[1]);
+    close(from_fd[0]);
 
     subprocess_run();
     _exit(0);
@@ -229,6 +239,10 @@ start_subprocess() {
   _subprocess_pid = child;
   _pipe_write.open_write(to_fd[1]);
   close(to_fd[0]);
+  _pipe_read.open_read(from_fd[0]);
+  close(from_fd[1]);
+
+  spawn_read_thread();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -300,6 +314,8 @@ stop_subprocess() {
   } else if (WIFSTOPPED(status)) {
     nout << "  stopped by " << WSTOPSIG(status) << "\n";
   }
+
+  join_read_thread();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -343,7 +359,74 @@ check_stopped() {
   }
 
   _subprocess_pid = -1;
+  join_read_thread();
+
   _inst->request_stop();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::spawn_read_thread
+//       Access: Private
+//  Description: Starts the read thread.  We need this thread to
+//               listen for feedback from the subprocess.  (At the
+//               moment, the only kind of feedback we might receive is
+//               whether the button has been clicked.)
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+spawn_read_thread() {
+  SPAWN_THREAD(_read_thread, rt_thread_run, this);
+  _started_read_thread = true;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::join_read_thread
+//       Access: Private
+//  Description: Waits for the read thread to stop.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+join_read_thread() {
+  if (!_started_read_thread) {
+    return;
+  }
+
+  JOIN_THREAD(_read_thread);
+  _started_read_thread = false;
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::rt_thread_run
+//       Access: Private
+//  Description: The main function for the read thread.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+rt_thread_run() {
+  while (true) {
+    TiXmlDocument *doc = read_xml(_pipe_read, nout);
+    if (doc == NULL) {
+      // Some error on reading.
+      return;
+    }
+
+    // Successfully read an XML document.
+    rt_handle_request(doc);
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::rt_handle_request
+//       Access: Private
+//  Description: Processes a single request or notification received
+//               from an instance.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+rt_handle_request(TiXmlDocument *doc) {
+  // Eh, don't even bother decoding the XML.  We know it can only be a
+  // click notification.
+  delete doc;
+
+  ACQUIRE_LOCK(_api_lock);
+  P3DSplashWindow::button_click_detected();
+  RELEASE_LOCK(_api_lock);
 }
 
 ////////////////////////////////////////////////////////////////////

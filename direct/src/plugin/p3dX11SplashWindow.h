@@ -51,10 +51,25 @@ private:
   void stop_subprocess();
   void check_stopped();
 
+  void spawn_read_thread();
+  void join_read_thread();
+
+private:
+  // These methods run only within the read thread.
+  THREAD_CALLBACK_DECLARATION(P3DX11SplashWindow, rt_thread_run);
+  void rt_thread_run();
+  void rt_terminate();
+  void rt_handle_request(TiXmlDocument *doc);
+
 private:
   // Data members that are stored in the parent process.
   pid_t _subprocess_pid;
+  HandleStream _pipe_read;
   HandleStream _pipe_write;
+
+  // The remaining members are manipulated by or for the read thread.
+  bool _started_read_thread;
+  THREAD _read_thread;
 
 private:
   // These methods run only within the subprocess.
@@ -93,7 +108,6 @@ private:
   X11ImageData _button_click_image;
 
   bool _subprocess_continue;
-  HandleStream _pipe_read;
   
   bool _own_display;
   string _install_label;
