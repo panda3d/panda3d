@@ -38,6 +38,7 @@ public:
   void close_handle();
 
   inline FHandle get_handle() const;
+  inline bool has_gdata() const;
 
 protected:
   virtual int overflow(int c);

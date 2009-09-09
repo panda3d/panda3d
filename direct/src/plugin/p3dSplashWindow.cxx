@@ -137,7 +137,7 @@ handle_event(P3D_event_data event) {
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DSplashWindow::set_button_active
-//       Access: Public
+//       Access: Public, Virtual
 //  Description: Sets whether the button should be visible and active
 //               (true) or invisible and inactive (false).  If active,
 //               the button image will be displayed in the window, and
@@ -417,10 +417,12 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
   _mouse_y = mouse_y;
   _mouse_down = mouse_down;
 
+  ButtonState bstate = BS_hidden;
+
   if (!_button_active) {
     // The button isn't active, so it's hidden, regardless of the
     // mouse position.
-    _bstate = BS_hidden;
+    bstate = BS_hidden;
   } else {
     // Is the mouse pointer within the button region?
     bool is_within = (_mouse_x >= _button_x && _mouse_x < _button_x + _button_width &&
@@ -435,7 +437,7 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
         // and dragging over the button doesn't count.
         if (orig_bstate == BS_rollover || _button_depressed) {
           _button_depressed = true;
-          _bstate = BS_click;
+          bstate = BS_click;
         }
       } else {
         _button_depressed = false;
@@ -443,24 +445,25 @@ set_mouse_data(int mouse_x, int mouse_y, bool mouse_down) {
           // If we just transitioned from mouse down to mouse up, this
           // means a click.  And the button automatically hides itself
           // after a successful click.
-          _bstate = BS_hidden;
+          bstate = BS_hidden;
           _button_active = false;
           button_click_detected();
         } else {
-          _bstate = BS_rollover;
+          bstate = BS_rollover;
         }
       }
     } else {
       // The mouse is not within the button region.  This means ready
       // state.
-      _bstate = BS_ready;
+      bstate = BS_ready;
       if (!_mouse_down) {
         _button_depressed = false;
       }
     }
   }
 
-  if (orig_bstate != _bstate) {
+  if (_bstate != bstate) {
+    _bstate = bstate;
     // If we've changed button states, we need to refresh the window.
     refresh();
   }

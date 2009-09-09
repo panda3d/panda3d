@@ -57,7 +57,7 @@ public:
 
   virtual bool handle_event(P3D_event_data event);
 
-  void set_button_active(bool flag);
+  virtual void set_button_active(bool flag);
 
 protected:
   // This ImageData base class provides minimal functionality for

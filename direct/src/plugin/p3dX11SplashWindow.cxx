@@ -17,6 +17,7 @@
 #ifdef HAVE_X11
 
 #include "get_tinyxml.h"
+#include "binaryXml.h"
 #include <time.h>
 #include <fcntl.h>
 #include <sys/wait.h>
@@ -47,13 +48,7 @@ P3DX11SplashWindow(P3DInstance *inst) :
   // Init for subprocess
   _display = None;
   _window = None;
-  _image = NULL;
-  _resized_image = NULL;
   _screen = 0;
-  _image_width = 0;
-  _image_height = 0;
-  _resized_width = 0;
-  _resized_height = 0;
   _graphics_context = None;
   _bar_context = None;
   _install_progress = 0.0;
@@ -101,6 +96,7 @@ set_image_filename(const string &image_filename, ImagePlacement image_placement)
   TiXmlElement *xcommand = new TiXmlElement("command");
   xcommand->SetAttribute("cmd", "set_image_filename");
   xcommand->SetAttribute("image_filename", image_filename);
+  xcommand->SetAttribute("image_placement", (int)image_placement);
   doc.LinkEndChild(xcommand);
   write_xml(_pipe_write, &doc, nout);
 
@@ -148,6 +144,47 @@ set_install_progress(double install_progress) {
   write_xml(_pipe_write, &doc, nout);
 
   check_stopped();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::set_button_active
+//       Access: Public, Virtual
+//  Description: Sets whether the button should be visible and active
+//               (true) or invisible and inactive (false).  If active,
+//               the button image will be displayed in the window, and
+//               a click event will be generated when the user clicks
+//               the button.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+set_button_active(bool flag) {
+  if (_subprocess_pid == -1) {
+    return;
+  }
+
+  TiXmlDocument doc;
+  TiXmlElement *xcommand = new TiXmlElement("command");
+  xcommand->SetAttribute("cmd", "set_button_active");
+  xcommand->SetAttribute("button_active", (int)flag);
+  doc.LinkEndChild(xcommand);
+  write_xml(_pipe_write, &doc, nout);
+
+  check_stopped();
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::button_click_detected
+//       Access: Protected, Virtual
+//  Description: Called when a button click by the user is detected in
+//               set_mouse_data(), this method simply turns around and
+//               notifies the instance.  It's a virtual method to give
+//               subclasses a chance to redirect this message to the
+//               main thread or process, as necessary.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::
+button_click_detected() {
+  // This method is called in the child process, and must relay
+  // the information to the parent process.
+  cerr << "click detected\n";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -328,12 +365,9 @@ subprocess_run() {
     return;
   }
 
-  XEvent event;
-  XSelectInput(_display, _window, ExposureMask | StructureNotifyMask);
-  
-  string prev_image_filename;
+  ButtonState prev_bstate = BS_hidden;
   string prev_label;
-  double prev_progress;
+  double prev_progress = 0.0;
 
   bool needs_redraw = true;
   bool needs_draw_label = false;
@@ -343,26 +377,52 @@ subprocess_run() {
   _subprocess_continue = true;
   while (_subprocess_continue) {
     // First, scan for X events.
-    if (XCheckTypedWindowEvent(_display, _window, Expose, &event)
-        || XCheckTypedWindowEvent(_display, _window, GraphicsExpose, &event)) {
-      needs_redraw = true;
-    }
-    
-    if (XCheckTypedWindowEvent(_display, _window, ConfigureNotify, &event)) {
-      if (_resized_image != NULL && (event.xconfigure.width  != _win_width ||
-                                     event.xconfigure.height != _win_height)) {
-        XDestroyImage(_resized_image);
-        _resized_image = NULL;
+    XEvent event;
+    while (XCheckWindowEvent(_display, _window, ~0, &event)) {
+      switch (event.type) {
+      case Expose:
+      case GraphicsExpose:
+        needs_redraw = true;
+        break;
+
+      case ConfigureNotify:
+        if (event.xconfigure.width != _win_width ||
+            event.xconfigure.height != _win_height) {
+          _win_width = event.xconfigure.width;
+          _win_height = event.xconfigure.height;
+          
+          // If the window changes size, we need to recompute all of the
+          // resized images.
+          _background_image.dump_resized_image();
+          _button_ready_image.dump_resized_image();
+          _button_rollover_image.dump_resized_image();
+          _button_click_image.dump_resized_image();
+        }
+        needs_redraw = true;
+        break;
+        
+      case MotionNotify:
+        set_mouse_data(event.xmotion.x, event.xmotion.y, _mouse_down);
+        break;
+
+      case ButtonPress:
+        set_mouse_data(_mouse_x, _mouse_y, true);
+        break;
+        
+      case ButtonRelease:
+        set_mouse_data(_mouse_x, _mouse_y, false);
+        break;
       }
-      _win_width = event.xconfigure.width;
-      _win_height = event.xconfigure.height;
-      needs_redraw = true;
     }
-    
-    if (_image_filename != prev_image_filename) {
-      update_image_filename(_image_filename);
+
+    update_image(_background_image, needs_redraw);
+    update_image(_button_ready_image, needs_redraw);
+    update_image(_button_rollover_image, needs_redraw);
+    update_image(_button_click_image, needs_redraw);
+
+    if (_bstate != prev_bstate) {
       needs_redraw = true;
-      prev_image_filename = _image_filename;
+      prev_bstate = _bstate;
     }
 
     if (_install_label != prev_label) {
@@ -431,23 +491,30 @@ subprocess_run() {
 
 
     // Now check for input from the parent.
-    int read_fd = _pipe_read.get_handle();
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(read_fd, &fds);
+    bool input_ready = _pipe_read.has_gdata();
+    if (!input_ready) {
+      int read_fd = _pipe_read.get_handle();
+      fd_set fds;
+      FD_ZERO(&fds);
+      FD_SET(read_fd, &fds);
+      
+      struct timeval tv;
+      tv.tv_sec = 0;
+      tv.tv_usec = 1;  // Sleep a bit to yield the timeslice if there's
+      // nothing new.
+      
+      int result = select(read_fd + 1, &fds, NULL, NULL, &tv);
+      if (result > 0) {
+        // There is some noise on the pipe, so read it.
+        input_ready = true;
+      } else if (result == -1) {
+        // Error in select.
+        perror("select");
+      }
+    }
 
-    struct timeval tv;
-    tv.tv_sec = 0;
-    tv.tv_usec = 1;  // Sleep a bit to yield the timeslice if there's
-                     // nothing new.
-
-    int result = select(read_fd + 1, &fds, NULL, NULL, &tv);
-    if (result == 1) {
-      // There is some noise on the pipe, so read it.
+    if (input_ready) {
       receive_command();
-    } else if (result == -1) {
-      // Error in select.
-      perror("select");
     }
   }
 
@@ -476,10 +543,35 @@ receive_command() {
         _subprocess_continue = false;
 
       } else if (strcmp(cmd, "set_image_filename") == 0) {
-        const char *str = xcommand->Attribute("image_filename");
-        if (str != NULL) {
-          if (_image_filename != string(str)) {
-            _image_filename = str;
+        const string *image_filename = xcommand->Attribute(string("image_filename"));
+        int image_placement;
+        if (image_filename != NULL && 
+            xcommand->QueryIntAttribute("image_placement", &image_placement) == TIXML_SUCCESS) {
+          
+          X11ImageData *image = NULL;
+          switch ((ImagePlacement)image_placement) {
+          case IP_background:
+            image = &_background_image;
+            break;
+            
+          case IP_button_ready:
+            image = &_button_ready_image;
+            set_button_range(_button_ready_image);
+            break;
+            
+          case IP_button_rollover:
+            image = &_button_rollover_image;
+            break;
+            
+          case IP_button_click:
+            image = &_button_click_image;
+            break;
+          }
+          if (image != NULL) {
+            if (image->_filename != *image_filename) {
+              image->_filename = *image_filename;
+              image->_filename_changed = true;
+            }
           }
         }
 
@@ -496,6 +588,12 @@ receive_command() {
         xcommand->Attribute("install_progress", &install_progress);
 
         _install_progress = install_progress;
+
+      } else if (strcmp(cmd, "set_button_active") == 0) {
+        int button_active = 0;
+        xcommand->Attribute("button_active", &button_active);
+
+        P3DSplashWindow::set_button_active(button_active != 0);
       }
     }
   }
@@ -508,51 +606,85 @@ receive_command() {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 redraw() {
-  if (_image == NULL) {
-    XClearWindow(_display, _window);
-  } else {
-    // We have an image. Let's see how we can output it.
-    if (_image_width <= _win_width && _image_height <= _win_height) {
-      // It fits within the window - just draw it.
-      XPutImage(_display, _window, _graphics_context, _image, 0, 0, 
-                (_win_width - _image_width) / 2, (_win_height - _image_height) / 2,
-                _image_width, _image_height);
-    } else if (_resized_image != NULL) {
-      // We have a resized image already, draw that one.
-      XPutImage(_display, _window, _graphics_context, _resized_image, 0, 0, 
-                (_win_width - _resized_width) / 2, (_win_height - _resized_height) / 2,
-                _resized_width, _resized_height);
-    } else {
-      // Yuck, the bad case - we need to scale it down.
-      double scale = min((double) _win_width  / (double) _image_width,
-                         (double) _win_height / (double) _image_height);
-      _resized_width = (int)(_image_width * scale);
-      _resized_height = (int)(_image_height * scale);
-      char *new_data = (char*) malloc(4 * _win_width * _win_height);
-      _resized_image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
-                                    ZPixmap, 0, (char *) new_data, _win_width, _win_height, 32, 0);
-      double x_ratio = ((double) _image_width) / ((double) _resized_width);
-      double y_ratio = ((double) _image_height) / ((double) _resized_height);
-      for (int x = 0; x < _win_width; ++x) {
-        for (int y = 0; y < _win_height; ++y) {
-          XPutPixel(_resized_image, x, y, 
-                    XGetPixel(_image,
-                              (int)clamp(x * x_ratio, 0, _image_width),
-                              (int)clamp(y * y_ratio, 0, _image_height)));
-        }
-      }
-      XPutImage(_display, _window, _graphics_context, _resized_image, 0, 0,
-                (_win_width - _resized_width) / 2, (_win_height - _resized_height) / 2,
-                _resized_width, _resized_height);
+  XClearWindow(_display, _window);
+
+  paint_image(_background_image);
+
+  switch (_bstate) {
+  case BS_hidden:
+    break;
+  case BS_ready:
+    paint_image(_button_ready_image);
+    break;
+  case BS_rollover:
+    if (!paint_image(_button_rollover_image)) {
+      paint_image(_button_ready_image);
     }
+    break;
+  case BS_click:
+    if (!paint_image(_button_click_image)) {
+      paint_image(_button_ready_image);
+    }
+    break;
   }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::paint_image
+//       Access: Private
+//  Description: Draws the indicated image, centered within the
+//               window.  Returns true on success, false if the image
+//               is not defined.
+////////////////////////////////////////////////////////////////////
+bool P3DX11SplashWindow::
+paint_image(X11ImageData &image) {
+  if (image._image == NULL) {
+    return false;
+  }
+
+  // We have an image. Let's see how we can output it.
+  if (image._width <= _win_width && image._height <= _win_height) {
+    // It fits within the window - just draw it.
+    XPutImage(_display, _window, _graphics_context, image._image, 0, 0, 
+              (_win_width - image._width) / 2, (_win_height - image._height) / 2,
+              image._width, image._height);
+  } else if (image._resized_image != NULL) {
+    // We have a resized image already, draw that one.
+    XPutImage(_display, _window, _graphics_context, image._resized_image, 0, 0, 
+              (_win_width - image._resized_width) / 2, (_win_height - image._resized_height) / 2,
+              image._resized_width, image._resized_height);
+  } else {
+    // Yuck, the bad case - we need to scale it down.
+    double scale = min((double) _win_width  / (double) image._width,
+                       (double) _win_height / (double) image._height);
+    image._resized_width = (int)(image._width * scale);
+    image._resized_height = (int)(image._height * scale);
+    char *new_data = (char*) malloc(4 * _win_width * _win_height);
+    image._resized_image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
+                                  ZPixmap, 0, (char *) new_data, _win_width, _win_height, 32, 0);
+    double x_ratio = ((double) image._width) / ((double) image._resized_width);
+    double y_ratio = ((double) image._height) / ((double) image._resized_height);
+    for (int x = 0; x < _win_width; ++x) {
+      for (int y = 0; y < _win_height; ++y) {
+        XPutPixel(image._resized_image, x, y, 
+                  XGetPixel(image._image,
+                            (int)clamp(x * x_ratio, 0, image._width),
+                            (int)clamp(y * y_ratio, 0, image._height)));
+      }
+    }
+    XPutImage(_display, _window, _graphics_context, image._resized_image, 0, 0,
+              (_win_width - image._resized_width) / 2, (_win_height - image._resized_height) / 2,
+              image._resized_width, image._resized_height);
+  }
+
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 //     Function: P3DX11SplashWindow::make_window
 //       Access: Private
 //  Description: Creates the window for displaying progress.  Runs
-//               within the sub-thread.
+//               within the sub-process.
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 make_window() {
@@ -591,7 +723,26 @@ make_window() {
   
   assert(_display != NULL);
   assert(parent != None);
-  _window = XCreateSimpleWindow(_display, parent, x, y, _win_width, _win_height, 0, 0, -1);
+
+  int depth = DefaultDepth(_display, _screen);
+  Visual *dvisual = DefaultVisual(_display, _screen);
+
+  long event_mask =
+    ButtonPressMask | ButtonReleaseMask |
+    PointerMotionMask | StructureNotifyMask;
+
+  // Initialize window attributes
+  XSetWindowAttributes wa;
+  wa.background_pixel = XWhitePixel(_display, _screen);
+  wa.border_pixel = 0;
+  wa.event_mask = event_mask;
+
+  unsigned long attrib_mask = CWBackPixel | CWBorderPixel | CWEventMask;
+
+  _window = XCreateWindow
+    (_display, parent, x, y, _win_width, _win_height,
+     0, depth, InputOutput, dvisual, attrib_mask, &wa);
+
   XMapWindow(_display, _window);
 }
 
@@ -642,15 +793,10 @@ setup_gc() {
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
 close_window() {
-  if (_image != NULL) {
-    XDestroyImage(_image);
-    _image = NULL;
-  }
-  
-  if (_resized_image != NULL) {
-    XDestroyImage(_resized_image);
-    _resized_image = NULL;
-  }
+  _background_image.dump_image();
+  _button_ready_image.dump_image();
+  _button_rollover_image.dump_image();
+  _button_click_image.dump_image();
   
   if (_bar_context != None) {
     if (_bar_context != _graphics_context) {
@@ -680,45 +826,41 @@ close_window() {
 }
 
 ////////////////////////////////////////////////////////////////////
-//     Function: P3DX11SplashWindow::update_image_filename
+//     Function: P3DX11SplashWindow::update_image
 //       Access: Private
-//  Description: Loads the splash image, converts to to bitmap form,
+//  Description: Loads the splash image, converts to to an XImage,
 //               and stores it in _image.  Runs only in the
-//               sub-thread.
+//               child process.
+//
+//               If the image is changed, sets needs_redraw to true.
 ////////////////////////////////////////////////////////////////////
 void P3DX11SplashWindow::
-update_image_filename(const string &image_filename) {
+update_image(X11ImageData &image, bool &needs_redraw) {
+  if (!image._filename_changed) {
+    // No changes.
+    return;
+  }
+  image._filename_changed = false;
+  needs_redraw = true;
+
   // Clear the old image.
-  if (_image != NULL) {
-    XDestroyImage(_image);
-    _image = NULL;
-  }
-  if (_resized_image != NULL) {
-    XDestroyImage(_resized_image);
-    _resized_image = NULL;
-  }
+  image.dump_image();
 
   // Go read the image.
   string data;
-  ImageData image;
-  if (!read_image_data(image, data, image_filename)) {
+  if (!read_image_data(image, data, image._filename)) {
     return;
   }
-
-  // Temp legacy support.
-  _image_width = image._width;
-  _image_height = image._height;
-  int num_channels =image._num_channels;
 
   Visual *dvisual = DefaultVisual(_display, _screen);
   double r_ratio = dvisual->red_mask / 255.0;
   double g_ratio = dvisual->green_mask / 255.0;
   double b_ratio = dvisual->blue_mask / 255.0;
-  uint32_t *new_data = (uint32_t*) malloc(4 * _image_width * _image_height);
+  uint32_t *new_data = (uint32_t*)malloc(4 * image._width * image._height);
 
-  if (num_channels == 3) {
+  if (image._num_channels == 4) {
     int j = 0;
-    for (int i = 0; i < 3 * _image_width * _image_height; i += 3) {
+    for (int i = 0; i < 4 * image._width * image._height; i += 4) {
       unsigned int r, g, b;
       r = (unsigned int)(data[i+0] * r_ratio);
       g = (unsigned int)(data[i+1] * g_ratio);
@@ -727,13 +869,24 @@ update_image_filename(const string &image_filename) {
                       (g & dvisual->green_mask) |
                       (b & dvisual->blue_mask);
     }
-  } else if (num_channels == 1) {
-    // A grayscale image.  Replicate out the channels.
-    for (int i = 0; i < _image_width * _image_height; ++i) {
+  } else if (image._num_channels == 3) {
+    int j = 0;
+    for (int i = 0; i < 3 * image._width * image._height; i += 3) {
       unsigned int r, g, b;
       r = (unsigned int)(data[i+0] * r_ratio);
       g = (unsigned int)(data[i+1] * g_ratio);
       b = (unsigned int)(data[i+2] * b_ratio);
+      new_data[j++] = (r & dvisual->red_mask) |
+                      (g & dvisual->green_mask) |
+                      (b & dvisual->blue_mask);
+    }
+  } else if (image._num_channels == 1) {
+    // A grayscale image.  Replicate out the channels.
+    for (int i = 0; i < image._width * image._height; ++i) {
+      unsigned int r, g, b;
+      r = (unsigned int)(data[i] * r_ratio);
+      g = (unsigned int)(data[i] * g_ratio);
+      b = (unsigned int)(data[i] * b_ratio);
       new_data[i] = (r & dvisual->red_mask) |
                     (g & dvisual->green_mask) |
                     (b & dvisual->blue_mask);
@@ -741,8 +894,39 @@ update_image_filename(const string &image_filename) {
   }
 
   // Now load the image.
-  _image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
-                ZPixmap, 0, (char *) new_data, _image_width, _image_height, 32, 0);
+  image._image = XCreateImage(_display, CopyFromParent, DefaultDepth(_display, _screen), 
+                              ZPixmap, 0, (char *)new_data, image._width, image._height, 32, 0);
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::X11ImageData::dump_image
+//       Access: Public
+//  Description: Frees the previous image data.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::X11ImageData::
+dump_image() {
+  if (_image != NULL) {
+    XDestroyImage(_image);
+    _image = NULL;
+  }
+  if (_resized_image != NULL) {
+    XDestroyImage(_resized_image);
+    _resized_image = NULL;
+  }
+}
+
+////////////////////////////////////////////////////////////////////
+//     Function: P3DX11SplashWindow::X11ImageData::dump_resized_image
+//       Access: Public
+//  Description: Frees the previous resized image data only, retaining
+//               the original image data.
+////////////////////////////////////////////////////////////////////
+void P3DX11SplashWindow::X11ImageData::
+dump_resized_image() {
+  if (_resized_image != NULL) {
+    XDestroyImage(_resized_image);
+    _resized_image = NULL;
+  }
 }
 
 #endif  // HAVE_X11

@@ -41,6 +41,11 @@ public:
   virtual void set_install_label(const string &install_label);
   virtual void set_install_progress(double install_progress);
 
+  virtual void set_button_active(bool flag);
+
+protected:
+  virtual void button_click_detected();
+
 private:
   void start_subprocess();
   void stop_subprocess();
@@ -53,22 +58,44 @@ private:
 
 private:
   // These methods run only within the subprocess.
+  class X11ImageData;
+
   void subprocess_run();
   void receive_command();
 
   void redraw();
+  bool paint_image(X11ImageData &image);
   void make_window();
   void setup_gc();
-  void update_image_filename(const string &image_filename); 
+  void update_image(X11ImageData &image, bool &needs_redraw); 
   void close_window();
 
 private:
   // Data members that are stored in the subprocess.
+  class X11ImageData : public ImageData {
+  public:
+    inline X11ImageData();
+    inline ~X11ImageData();
+    void dump_image();
+    void dump_resized_image();
+
+    string _filename;
+    bool _filename_changed;
+    XImage *_image;
+
+    XImage *_resized_image;
+    int _resized_width, _resized_height;
+  };
+
+  X11ImageData _background_image;
+  X11ImageData _button_ready_image;
+  X11ImageData _button_rollover_image;
+  X11ImageData _button_click_image;
+
   bool _subprocess_continue;
   HandleStream _pipe_read;
   
   bool _own_display;
-  string _image_filename;
   string _install_label;
   double _install_progress;
   
@@ -79,13 +106,11 @@ private:
   GC _graphics_context;
   GC _bar_context;
   unsigned long _blue_pixel;
-  XImage* _image;
-  XImage* _resized_image;
-  int _image_width, _image_height;
-  int _resized_width, _resized_height;
   
   Window _window;
 };
+
+#include "p3dX11SplashWindow.I"
 
 #endif  // HAVE_X11
 

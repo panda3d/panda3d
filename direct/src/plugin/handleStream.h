@@ -35,6 +35,7 @@ public:
   inline void close_handle();
 
   inline FHandle get_handle() const;
+  inline bool has_gdata() const;
 
 private:
   HandleStreamBuf _buf;
