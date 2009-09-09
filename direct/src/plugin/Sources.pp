@@ -51,7 +51,7 @@
     p3dTemporaryFile.h p3dTemporaryFile.I \
     p3dUndefinedObject.h \
     p3dWinSplashWindow.h p3dWinSplashWindow.I \
-    p3dX11SplashWindow.h \
+    p3dX11SplashWindow.h p3dX11SplashWindow.I \
     p3dWindowParams.h p3dWindowParams.I \
     run_p3dpython.h
 
